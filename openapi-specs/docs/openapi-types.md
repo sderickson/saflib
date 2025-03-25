@@ -1,6 +1,6 @@
 # Working with OpenAPI Types
 
-This guide explains how to work with and set up OpenAPI-generated types in the SAF-2025 monorepo.
+This guide explains how to work with and set up OpenAPI-generated types in a SAF monorepo.
 
 ## Overview
 

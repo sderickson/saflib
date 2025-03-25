@@ -1,6 +1,6 @@
 {
   "name": "@saflib/auth-vue",
-  "description": "Shared authentication components and utilities for SAF-2025",
+  "description": "Shared authentication components and utilities for SAF",
   "private": true,
   "type": "module",
   "main": "src/index.ts",
