@@ -1,0 +1,21 @@
+{
+  "name": "@saflib/vue-spa",
+  "description": "All-in-one set of helper methods and documents for creating Vue SPAs for SAF applications",
+  "type": "module",
+  "main": "./index.ts",
+  "dependencies": {
+    "vite": "^6.0.0",
+    "vue": "^3.0.0",
+    "vue-router": "^4.0.0",
+    "@tanstack/vue-query": "^5.0.0",
+    "openapi-fetch": "^0.13.0",
+    "vuetify": "^3.0.0",
+    "@mdi/font": "^7.0.0",
+    "@vitejs/plugin-vue": "^5.0.0",
+    "@vue/tsconfig": "^0.7.0",
+    "rollup-plugin-ignore": "^1.0.0",
+    "vite-plugin-vue-devtools": "^7.0.0",
+    "vite-plugin-vuetify": "^2.0.0",
+    "vue-tsc": "^2.0.0"
+  }
+}

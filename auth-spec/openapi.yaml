@@ -1,0 +1,19 @@
+openapi: 3.0.0
+info:
+  title: SAF-2025 Auth API
+  version: 1.0.0
+  description: Authentication API for SAF-2025
+
+paths:
+  /auth/register:
+    $ref: "./routes/auth.yaml#/register"
+  /auth/login:
+    $ref: "./routes/auth.yaml#/login"
+  /auth/logout:
+    $ref: "./routes/auth.yaml#/logout"
+  /auth/verify:
+    $ref: "./routes/auth.yaml#/verify"
+
+components:
+  schemas:
+    $ref: "./routes/auth.yaml#/components/schemas"

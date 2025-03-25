@@ -1,0 +1,9 @@
+{
+  "name": "@saflib/openapi-specs",
+  "description": "Shared dependencies for generating OpenAPI specs in SAF projects",
+  "dependencies": {
+    "@redocly/cli": "^1.0.0",
+    "openapi-typescript": "^7.0.0",
+    "serve": "^14.0.0"
+  }
+}

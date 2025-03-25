@@ -1,0 +1,19 @@
+{
+  "name": "@saflib/drizzle-sqlite3",
+  "type": "module",
+  "main": "./src/index.ts",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.0.0",
+    "drizzle-kit": "^0.30.5",
+    "drizzle-orm": "^0.41.0"
+  },
+  "devDependencies": {
+    "@saflib/drizzle-sqlite3-dev": "*",
+    "@saflib/vitest": "*"
+  }
+}

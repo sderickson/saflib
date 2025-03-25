@@ -1,0 +1,9 @@
+{
+  "name": "@saflib/vitest",
+  "description": "Library common testing dependencies and helpers",
+  "type": "module",
+  "dependencies": {
+    "vitest": "^3.0.0",
+    "@vitest/coverage-v8": "^3.0.0"
+  }
+}

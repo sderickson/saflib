@@ -1,0 +1,21 @@
+{
+  "name": "@saflib/auth-spec",
+  "description": "API specifications for SAF-2025 authentication",
+  "private": true,
+  "type": "module",
+  "main": "./index.ts",
+  "scripts": {
+    "generate:types": "openapi-typescript ./openapi.yaml -o dist/openapi.d.ts",
+    "generate:json": "redocly bundle openapi.yaml --ext json --output dist/openapi.json",
+    "generate:html": "redocly build-docs ./openapi.yaml --output=dist/index.html",
+    "generate": "npm run generate:types && npm run generate:json && npm run generate:html",
+    "serve": "serve dist -p 3000",
+    "generate-and-serve": "npm run generate && npm run serve"
+  },
+  "devDependencies": {
+    "@saflib/openapi-specs": "*"
+  },
+  "files": [
+    "dist"
+  ]
+} 
