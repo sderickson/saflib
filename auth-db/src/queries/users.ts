@@ -57,17 +57,15 @@ export function createUserQueries(db: any) {
       }
     ),
 
-    getById: queryWrapper(
-      async (id: number): Promise<SelectUser | undefined> => {
-        const result = await db.query.users.findFirst({
-          where: eq(users.id, id),
-        });
-        if (!result) {
-          throw new UserNotFoundError();
-        }
-        return result;
+    getById: queryWrapper(async (id: number): Promise<SelectUser> => {
+      const result = await db.query.users.findFirst({
+        where: eq(users.id, id),
+      });
+      if (!result) {
+        throw new UserNotFoundError();
       }
-    ),
+      return result;
+    }),
 
     updateLastLogin: queryWrapper(async (id: number): Promise<SelectUser> => {
       const now = new Date();

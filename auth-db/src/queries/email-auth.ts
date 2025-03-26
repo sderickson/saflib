@@ -1,4 +1,4 @@
-import { emailAuth, users } from "../schema.ts";
+import { emailAuth } from "../schema.ts";
 import { AuthDatabaseError } from "../errors.ts";
 import { queryWrapper } from "@saflib/drizzle-sqlite3";
 import { eq } from "drizzle-orm";
@@ -23,7 +23,7 @@ export function createEmailAuthQueries(db: any) {
     ),
 
     getByEmail: queryWrapper(
-      async (email: string): Promise<SelectEmailAuth | undefined> => {
+      async (email: string): Promise<SelectEmailAuth> => {
         const result = await db.query.emailAuth.findFirst({
           where: eq(emailAuth.email, email),
         });

@@ -14,6 +14,9 @@ export interface AuthDBConfig {
 }
 
 export class AuthDB {
+  users: ReturnType<typeof createUserQueries>;
+  emailAuth: ReturnType<typeof createEmailAuthQueries>;
+
   constructor(config: AuthDBConfig = {}) {
     try {
       const sqlite =
@@ -28,10 +31,9 @@ export class AuthDB {
         migrationsFolder: config.migrationsPath || getMigrationsPath(),
       });
 
-      // Add query methods to this instance
-      Object.assign(this, db);
-      Object.assign(this, createUserQueries(db));
-      Object.assign(this, createEmailAuthQueries(db));
+      // Initialize query methods
+      this.users = createUserQueries(db);
+      this.emailAuth = createEmailAuthQueries(db);
     } catch (error) {
       throw new AuthDatabaseError(
         `Failed to initialize database: ${error instanceof Error ? error.message : String(error)}`
