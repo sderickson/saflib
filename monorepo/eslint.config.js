@@ -34,5 +34,5 @@ export const config = typescriptEslint.config(
       ],
     },
   },
-  eslintConfigPrettier
+  eslintConfigPrettier,
 );

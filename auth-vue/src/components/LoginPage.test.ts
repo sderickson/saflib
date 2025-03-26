@@ -56,7 +56,7 @@ describe("LoginPage", () => {
   const fillLoginForm = async (
     wrapper: VueWrapper,
     email: string,
-    password: string
+    password: string,
   ) => {
     const emailInput = getEmailInput(wrapper);
     const passwordInput = getPasswordInput(wrapper);
@@ -101,7 +101,7 @@ describe("LoginPage", () => {
     // Verify the login function was called with correct credentials
     expect(mockMutate).toHaveBeenCalledWith(
       { email: "test@example.com", password: "validpassword123" },
-      expect.any(Object)
+      expect.any(Object),
     );
   });
 });

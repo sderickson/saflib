@@ -88,7 +88,7 @@ withResizeObserverMock(() => {
       expect(consoleSpy).toHaveBeenCalledWith(
         "send reset link",
         "test@example.com",
-        { valid: true }
+        { valid: true },
       );
     });
 

@@ -41,7 +41,7 @@ describe("auth requests", () => {
 
       const [result, app] = withVueQuery(() => useLogin());
       await expect(result.mutateAsync(validCredentials)).rejects.toEqual(
-        mockError
+        mockError,
       );
       app.unmount();
     });
@@ -96,7 +96,7 @@ describe("auth requests", () => {
 
       const [result, app] = withVueQuery(() => useRegister());
       await expect(result.mutateAsync(validRegistration)).rejects.toEqual(
-        mockError
+        mockError,
       );
       app.unmount();
     });

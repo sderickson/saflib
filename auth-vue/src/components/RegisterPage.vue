@@ -23,7 +23,7 @@ watch(
     if (success) {
       window.location.href = "/app/";
     }
-  }
+  },
 );
 
 const handleRegister = () => {

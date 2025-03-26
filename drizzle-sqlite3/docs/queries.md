@@ -73,7 +73,7 @@ For one-to-one relationships (like user profiles or settings), implement an "ups
 export const upsertUserProfile = queryWrapper(
   async (
     userId: number,
-    profileData: Partial<NewUserProfile>
+    profileData: Partial<NewUserProfile>,
   ): Promise<UserProfile> => {
     // Check if a profile already exists for this user
     const existingProfile = await db
@@ -106,7 +106,7 @@ export const upsertUserProfile = queryWrapper(
 
       return result[0];
     }
-  }
+  },
 );
 ```
 

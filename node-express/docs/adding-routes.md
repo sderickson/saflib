@@ -29,7 +29,7 @@ router.get(
     };
 
     return exampleResponse;
-  })
+  }),
 );
 
 // In your app.ts file

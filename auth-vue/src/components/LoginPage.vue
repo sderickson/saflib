@@ -19,7 +19,7 @@ const handleLogin = () => {
       onSuccess: () => {
         window.location.href = "/app/";
       },
-    }
+    },
   );
 };
 </script>

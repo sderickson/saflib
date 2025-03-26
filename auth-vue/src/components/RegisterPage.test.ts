@@ -46,7 +46,7 @@ describe("RegisterPage", () => {
 
   const getConfirmPasswordInput = (wrapper: VueWrapper) => {
     const confirmPasswordInput = wrapper.find(
-      "[placeholder='Confirm your password']"
+      "[placeholder='Confirm your password']",
     );
     expect(confirmPasswordInput.exists()).toBe(true);
     return confirmPasswordInput;
@@ -65,7 +65,7 @@ describe("RegisterPage", () => {
       email,
       password,
       confirmPassword,
-    }: { email: string; password: string; confirmPassword: string }
+    }: { email: string; password: string; confirmPassword: string },
   ) => {
     await getEmailInput(wrapper).setValue(email);
     await getPasswordInput(wrapper).setValue(password);

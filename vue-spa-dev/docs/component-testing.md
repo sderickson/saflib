@@ -109,7 +109,7 @@ const wrapper = mountWithPlugins(
   },
   {
     router, // Pass your app's router instance
-  }
+  },
 );
 ```
 
@@ -435,7 +435,7 @@ withResizeObserverMock(() => {
       return mountWithPlugins(
         LoginForm,
         { props },
-        { router } // Pass your app's router
+        { router }, // Pass your app's router
       );
     };
 
