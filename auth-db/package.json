@@ -1,0 +1,20 @@
+{
+  "name": "@saflib/auth-db",
+  "description": "Shared authentication database library for SAF services",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "generate": "drizzle-kit generate"
+  },
+  "dependencies": {
+    "@saflib/drizzle-sqlite3": "*"
+  },
+  "devDependencies": {
+    "@saflib/drizzle-sqlite3-dev": "*",
+    "@saflib/vitest": "*"
+  }
+}

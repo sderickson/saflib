@@ -1,6 +1,6 @@
-# Creating TypeScript Packages
+# TypeScript Packages
 
-This guide outlines the best practices for creating TypeScript packages in your monorepo.
+This guide outlines the basic best practices for creating TypeScript packages in your monorepo.
 
 ## Package Structure
 
@@ -9,8 +9,10 @@ A typical TypeScript package should have the following structure:
 ```
 package-name/
 ├── package.json
-└── src/           # Source files
-    └── index.ts   # Main entry point
+├── index.ts        # Main entry point
+├── types.ts        # Public types
+└── src/           # Private implementation
+    └── internal/  # Internal code
 ```
 
 ## Package.json
@@ -23,7 +25,10 @@ The `package.json` should be minimal and focused:
   "description": "Brief description of the package",
   "private": true,
   "type": "module",
-  "main": "src/index.ts",
+  "exports": {
+    ".": "./index.ts",
+    "./types": "./types.ts"
+  },
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
@@ -42,7 +47,7 @@ The `package.json` should be minimal and focused:
 Key points:
 
 - No version field needed (we're not publishing)
-- `main` points to the TypeScript file (we strip types at runtime)
+- Use `exports` field to explicitly define public API
 - `type` is `module` - we're using ESM
 - No separate types field needed
 - Use vitest for testing
@@ -107,7 +112,7 @@ Example:
 import { Something } from "./something.ts";
 
 // Good - importing from another package
-import { OtherThing } from "@your-org/other-package/src/thing.ts";
+import { OtherThing } from "@your-org/other-package/thing.ts";
 
 // Bad - using .js extension
 import { Something } from "./something.js";
@@ -115,6 +120,13 @@ import { Something } from "./something.js";
 // Bad - using relative path to another package
 import { OtherThing } from "../../other-package/src/thing.ts";
 ```
+
+## Additional Guidelines
+
+For more specific guidance, see:
+
+- [Database Packages](./db-packages.md) - For packages that manage data storage
+- [Library Packages](./library-packages.md) - For reusable library packages
 
 ## Generated Code
 
