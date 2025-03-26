@@ -15,6 +15,7 @@ export class EmailAuthNotFoundError extends AuthDatabaseError {
 
 export function createEmailAuthQueries(db: any) {
   return {
+    EmailAuthNotFoundError,
     create: queryWrapper(
       async (auth: NewEmailAuth): Promise<SelectEmailAuth> => {
         const result = await db.insert(emailAuth).values(auth).returning();

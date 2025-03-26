@@ -22,6 +22,8 @@ export class UserNotFoundError extends AuthDatabaseError {
 
 export function createUserQueries(db: any) {
   return {
+    UserNotFoundError,
+    EmailConflictError,
     create: queryWrapper(async (user: NewUser): Promise<SelectUser> => {
       try {
         const now = new Date();
