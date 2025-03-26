@@ -7,7 +7,7 @@ This guide outlines best practices for creating packages that manage data storag
 Packages that manage data (such as SQLite databases, session storage, etc.) should:
 
 1. Store their data in a `data/` directory within the package
-2. Handle the data path internally rather than requiring it to be passed in
+2. Handle the data path internally by default rather than requiring it to be passed in
 3. Create the `data/` directory if it doesn't exist
 4. Add `data/` to `.gitignore` to prevent committing data files
 

@@ -8,7 +8,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "db:generate": "drizzle-kit generate"
+    "generate": "drizzle-kit generate"
   },
   "dependencies": {
     "@saflib/drizzle-sqlite3": "*"
