@@ -42,7 +42,7 @@ export class AuthDB {
       this.emailAuth = createEmailAuthQueries(db);
     } catch (error) {
       throw new AuthDatabaseError(
-        `Failed to initialize database: ${error instanceof Error ? error.message : String(error)}`
+        `Failed to initialize database: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   }

@@ -54,7 +54,7 @@ describe("email-auth queries", () => {
 
     it("should throw EmailAuthNotFoundError when email not found", async () => {
       await expect(
-        db.emailAuth.getByEmail("nonexistent@example.com")
+        db.emailAuth.getByEmail("nonexistent@example.com"),
       ).rejects.toThrow(EmailAuthNotFoundError);
     });
   });
@@ -82,7 +82,7 @@ describe("email-auth queries", () => {
         user.id,
         token,
         expiresAt,
-        null
+        null,
       );
       expect(updated).toMatchObject({
         verificationToken: token,
@@ -93,7 +93,7 @@ describe("email-auth queries", () => {
 
     it("should throw EmailAuthNotFoundError when user not found", async () => {
       await expect(
-        db.emailAuth.updateVerification(999, "token", new Date(), null)
+        db.emailAuth.updateVerification(999, "token", new Date(), null),
       ).rejects.toThrow(EmailAuthNotFoundError);
     });
   });
@@ -120,7 +120,7 @@ describe("email-auth queries", () => {
       const updated = await db.emailAuth.updateForgotPasswordToken(
         user.id,
         token,
-        expiresAt
+        expiresAt,
       );
       expect(updated).toMatchObject({
         forgotPasswordToken: token,
@@ -130,7 +130,7 @@ describe("email-auth queries", () => {
 
     it("should throw EmailAuthNotFoundError when user not found", async () => {
       await expect(
-        db.emailAuth.updateForgotPasswordToken(999, "token", new Date())
+        db.emailAuth.updateForgotPasswordToken(999, "token", new Date()),
       ).rejects.toThrow(EmailAuthNotFoundError);
     });
   });
@@ -152,7 +152,7 @@ describe("email-auth queries", () => {
       const newPasswordHash = Buffer.from([4, 5, 6]);
       const updated = await db.emailAuth.updatePasswordHash(
         user.id,
-        newPasswordHash
+        newPasswordHash,
       );
       expect(updated).toMatchObject({
         passwordHash: newPasswordHash,
@@ -161,7 +161,7 @@ describe("email-auth queries", () => {
 
     it("should throw EmailAuthNotFoundError when user not found", async () => {
       await expect(
-        db.emailAuth.updatePasswordHash(999, Buffer.from([4, 5, 6]))
+        db.emailAuth.updatePasswordHash(999, Buffer.from([4, 5, 6])),
       ).rejects.toThrow(EmailAuthNotFoundError);
     });
   });

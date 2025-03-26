@@ -17,4 +17,4 @@
     "@saflib/drizzle-sqlite3-dev": "*",
     "@saflib/vitest": "*"
   }
-} 
+}

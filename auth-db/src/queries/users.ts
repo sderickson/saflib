@@ -56,7 +56,7 @@ export function createUserQueries(db: any) {
           throw new UserNotFoundError();
         }
         return result;
-      }
+      },
     ),
 
     getById: queryWrapper(async (id: number): Promise<SelectUser> => {

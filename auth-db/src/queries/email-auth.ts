@@ -20,7 +20,7 @@ export function createEmailAuthQueries(db: any) {
       async (auth: NewEmailAuth): Promise<SelectEmailAuth> => {
         const result = await db.insert(emailAuth).values(auth).returning();
         return result[0];
-      }
+      },
     ),
 
     getByEmail: queryWrapper(
@@ -32,7 +32,7 @@ export function createEmailAuthQueries(db: any) {
           throw new EmailAuthNotFoundError();
         }
         return result;
-      }
+      },
     ),
 
     updateVerification: queryWrapper(
@@ -40,7 +40,7 @@ export function createEmailAuthQueries(db: any) {
         userId: number,
         verificationToken: string | null,
         verificationTokenExpiresAt: Date | null,
-        verifiedAt: Date | null
+        verifiedAt: Date | null,
       ): Promise<SelectEmailAuth> => {
         const result = await db
           .update(emailAuth)
@@ -56,14 +56,14 @@ export function createEmailAuthQueries(db: any) {
           throw new EmailAuthNotFoundError();
         }
         return result[0];
-      }
+      },
     ),
 
     updateForgotPasswordToken: queryWrapper(
       async (
         userId: number,
         forgotPasswordToken: string | null,
-        forgotPasswordTokenExpiresAt: Date | null
+        forgotPasswordTokenExpiresAt: Date | null,
       ): Promise<SelectEmailAuth> => {
         const result = await db
           .update(emailAuth)
@@ -78,13 +78,13 @@ export function createEmailAuthQueries(db: any) {
           throw new EmailAuthNotFoundError();
         }
         return result[0];
-      }
+      },
     ),
 
     updatePasswordHash: queryWrapper(
       async (
         userId: number,
-        passwordHash: Uint8Array
+        passwordHash: Uint8Array,
       ): Promise<SelectEmailAuth> => {
         const result = await db
           .update(emailAuth)
@@ -96,7 +96,7 @@ export function createEmailAuthQueries(db: any) {
           throw new EmailAuthNotFoundError();
         }
         return result[0];
-      }
+      },
     ),
 
     deleteAll: queryWrapper(async (): Promise<void> => {
