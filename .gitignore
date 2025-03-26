@@ -1,5 +1,6 @@
 **/node_modules
-coverage
+**/coverage
+**/data/*.sqlite
 
 # Editor directories and files
 .vscode/*
