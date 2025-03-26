@@ -5,7 +5,7 @@ Shared authentication database library for SAF services. This package provides a
 ## Features
 
 - User management
-- Session handling
+- Email authentication
 - SQLite-based storage using Drizzle ORM
 
 ## Usage
@@ -18,6 +18,12 @@ const db = new AuthDB({
 });
 
 // Use the database
+await db.users.create({ email: "user@example.com", createdAt: new Date() });
+await db.emailAuth.create({
+  userId: 1,
+  email: "user@example.com",
+  passwordHash: new Uint8Array(),
+});
 ```
 
 ## Development
@@ -38,3 +44,9 @@ npm run db:generate
 - Node.js v18+
 - SQLite3
 - Drizzle ORM
+
+## Notes
+
+- Session management is handled by the auth service using `better-sqlite3-session-store`
+- This package focuses on core user identity and authentication data
+- Different services can implement their own session management strategies
