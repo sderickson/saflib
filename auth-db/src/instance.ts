@@ -19,10 +19,16 @@ export class AuthDB {
 
   constructor(config: AuthDBConfig = {}) {
     try {
-      const sqlite =
-        config.inMemory || process.env.NODE_ENV === "test"
-          ? new Database(":memory:")
-          : new Database(config.dbPath || getDbPath());
+      // Unless overridden by config, use an in-memory database for testing and file-based storage otherwise
+      let dbStorage = ":memory:";
+      if (config.dbPath) {
+        dbStorage = config.dbPath;
+      } else if (config.inMemory || process.env.NODE_ENV === "test") {
+        dbStorage = ":memory:";
+      } else {
+        dbStorage = getDbPath();
+      }
+      const sqlite = new Database(dbStorage);
 
       const db = drizzle(sqlite, { schema });
 
