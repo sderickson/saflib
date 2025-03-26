@@ -1,0 +1,26 @@
+name: Run Unit Tests for PRs
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "npm"
+      - name: Install dependencies
+        run: npm install
+
+      # Tests fail to run if this one package isn't installed
+      - name: Install rollup for linux
+        run: npm install @rollup/rollup-linux-x64-gnu
+
+      - name: Run Unit Tests
+        run: npm run test
