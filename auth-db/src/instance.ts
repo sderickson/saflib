@@ -3,34 +3,35 @@ import Database from "better-sqlite3";
 import * as schema from "./schema.ts";
 import { migrate } from "drizzle-orm/better-sqlite3/migrator";
 import { AuthDatabaseError } from "./errors.ts";
+import { getDbPath, getMigrationsPath } from "../drizzle.config.ts";
 
 export interface AuthDBConfig {
   dbPath?: string;
-  migrationsPath: string;
+  migrationsPath?: string;
   inMemory?: boolean;
 }
 
 export class AuthDB {
-  private db: ReturnType<typeof drizzle>;
-
-  constructor(config: AuthDBConfig) {
+  constructor(config: AuthDBConfig = {}) {
     try {
-      const sqlite = config.inMemory
-        ? new Database(":memory:")
-        : new Database(config.dbPath || ":memory:");
+      const sqlite =
+        config.inMemory || process.env.NODE_ENV === "test"
+          ? new Database(":memory:")
+          : new Database(config.dbPath || getDbPath());
 
-      this.db = drizzle(sqlite, { schema });
+      const db = drizzle(sqlite, { schema });
 
       // Run migrations
-      migrate(this.db, { migrationsFolder: config.migrationsPath });
+      migrate(db, {
+        migrationsFolder: config.migrationsPath || getMigrationsPath(),
+      });
+
+      // Add query methods to this instance
+      Object.assign(this, db);
     } catch (error) {
       throw new AuthDatabaseError(
         `Failed to initialize database: ${error instanceof Error ? error.message : String(error)}`
       );
     }
-  }
-
-  get instance() {
-    return this.db;
   }
 }
