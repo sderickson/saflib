@@ -1,6 +1,6 @@
-# Creating TypeScript Packages
+# TypeScript Packages
 
-This guide outlines the best practices for creating TypeScript packages in your monorepo.
+This guide outlines the basic best practices for creating TypeScript packages in your monorepo.
 
 ## Package Structure
 
@@ -115,6 +115,13 @@ import { Something } from "./something.js";
 // Bad - using relative path to another package
 import { OtherThing } from "../../other-package/src/thing.ts";
 ```
+
+## Additional Guidelines
+
+For more specific guidance, see:
+
+- [Database Packages](./db-packages.md) - For packages that manage data storage
+- [Library Packages](./library-packages.md) - For reusable library packages
 
 ## Generated Code
 
