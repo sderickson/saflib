@@ -70,8 +70,11 @@ This guide outlines best practices for creating reusable library packages in the
    ```
 
 2. **Directory Structure**
+
+   Libraries should use a `src/` directory to encapsulate implementation details:
+
    ```
-   package-name/
+   library-package/
    ├── package.json
    ├── types.ts           # Public types
    ├── errors.ts         # Public error types
@@ -80,6 +83,45 @@ This guide outlines best practices for creating reusable library packages in the
        ├── db.ts         # Database operations
        ├── schema.ts     # Database schema
        └── utils.ts      # Internal utilities
+   ```
+
+   Services should use a flatter structure since they are the end consumers:
+
+   ```
+   service-package/
+   ├── package.json
+   ├── types.ts          # Public types
+   ├── errors.ts        # Public error types
+   ├── index.ts         # Main entry point
+   ├── routes/          # Route handlers
+   ├── middleware/      # Express middleware
+   ├── db.ts           # Database operations
+   └── utils.ts        # Internal utilities
+   ```
+
+3. **Configuration Files**
+
+   - Keep configuration files (e.g., YAML, JSON) in a dedicated `config/` directory
+   - Do not place implementation code in the `config/` directory
+   - Implementation code that reads or processes config should live at the root level for services, or in `src/` for libraries
+   - This separation allows config files to be mounted as volumes in production
+   - Examples:
+
+   ```
+   # Library package
+   library-package/
+   ├── config/           # Configuration files only
+   │   └── settings.yaml
+   └── src/             # Implementation code
+       ├── config.ts    # Config loading/processing logic
+       └── ...
+
+   # Service package
+   service-package/
+   ├── config/          # Configuration files only
+   │   └── settings.yaml
+   ├── config.ts        # Config loading/processing logic
+   └── ...
    ```
 
 ## Testing
@@ -111,7 +153,7 @@ This guide outlines best practices for creating reusable library packages in the
        await expect(
          db.createUser({
            /* invalid data */
-         }),
+         })
        ).rejects.toThrow(DatabaseError);
      });
    });

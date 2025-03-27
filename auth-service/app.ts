@@ -13,7 +13,7 @@ import {
 import express from "express";
 import session from "express-session";
 import passport from "passport";
-import { setupPassport } from "./config/passport.ts";
+import { setupPassport } from "./passport.ts";
 import { authRouter } from "./routes/auth.ts";
 import { sessionStore } from "./session-store.ts";
 // Define properties added to Express Request objects by middleware
@@ -49,7 +49,7 @@ app.use(
     resave: false,
     saveUninitialized: false,
     cookie,
-  }),
+  })
 );
 
 // Initialize Passport and restore authentication state from session
