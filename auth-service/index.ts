@@ -1,4 +1,4 @@
-import { createApp } from "@saflib/node-express";
+import { createApp } from "./src/app.ts";
 import type { AuthApp, AuthConfig } from "./types.ts";
 
 /**
@@ -10,15 +10,15 @@ import type { AuthApp, AuthConfig } from "./types.ts";
  * - SESSION_SECRET: Secret for session encryption
  */
 export function createAuthApp(): AuthApp {
-  const app = createApp() as AuthApp;
+  const config: AuthConfig = {
+    domain: process.env.DOMAIN || "localhost",
+    protocol: (process.env.PROTOCOL as "http" | "https") || "http",
+    nodeEnv:
+      (process.env.NODE_ENV as "development" | "production") || "development",
+    sessionSecret: process.env.SESSION_SECRET || "your-secret-key",
+  };
 
-  // TODO: Configure all necessary middleware
-  // TODO: Set up session handling
-  // TODO: Configure passport with local strategy
-  // TODO: Set up all auth routes
-  // TODO: Configure error handling
-
-  return app;
+  return createApp(config);
 }
 
 export type { AuthApp, AuthConfig } from "./types.ts";
