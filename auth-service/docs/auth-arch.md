@@ -48,9 +48,9 @@ Caddy uses forward authentication to verify requests to protected services. When
 3. Caddy propagates these headers to the target service:
    ```caddy
    forward_auth auth:3000 {
-       uri /auth/verify
-       header_up X-Request-ID {http.request.uuid}
-       header_up X-User-Scopes {http.reverse_proxy.header.X-User-Scopes}
+      uri /auth/verify
+      ...
+      copy_headers X-User-ID X-User-Email X-User-Scopes
    }
    ```
 
