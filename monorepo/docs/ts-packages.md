@@ -62,7 +62,30 @@ Avoid creating one. By default, use the root tsconfig.
 
 ### Adding New Dependencies
 
-1. Add the package to your package.json without versions:
+1. Always add dependencies from the root directory using the workspace flag:
+
+```bash
+# Add a dependency to a specific workspace
+npm install package-name --workspace @your-org/package-name
+# or use the shorthand -w flag
+npm install package-name -w @your-org/package-name
+
+```
+
+Or if you're contributing to a SAF library when saflib is a git submodule
+
+```bash
+npm install package-name --workspace @saflib/package-name
+```
+
+This ensures:
+
+- Dependencies are installed in the root `node_modules`
+- The correct workspace's package.json is updated
+- The root package-lock.json is updated
+- No nested node_modules folders are created
+
+2. The dependency will be added to your package.json without versions:
 
 ```json
 {
@@ -75,7 +98,7 @@ Avoid creating one. By default, use the root tsconfig.
 }
 ```
 
-2. Run `npm install` from the root directory to:
+3. The root package-lock.json will:
    - Install the latest versions and lock the versions
    - Ensure consistent versions across the monorepo
    - Set up proper workspace linking
