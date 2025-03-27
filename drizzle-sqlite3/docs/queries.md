@@ -8,13 +8,31 @@ Queries are the "public" interface for the database. Services should not craft t
 This way, the database layer never exposes errors emitted by SQLite. If it did, service layers may try
 to handle them directly and this would lead to tight coupling.
 
-### Creating Database Queries with Error Handling
+## File Organization
+
+All queries should be organized in the following structure:
+
+```
+src/
+├── queries/           # All query files go here
+│   ├── users.ts      # User-related queries
+│   ├── users.test.ts # Tests for user queries
+│   ├── todos.ts      # Todo-related queries
+│   └── todos.test.ts # Tests for todo queries
+├── schema.ts         # Database schema
+├── instance.ts       # Database instance and query factory initialization
+└── errors.ts         # Error types
+```
+
+## Creating Database Queries with Error Handling
+
+Each query file should export a factory function that takes a database instance and returns an object with query methods:
 
 ```typescript
-// In your database layer (e.g., queries/todos.ts)
+// In src/queries/todos.ts
 import { queryWrapper, HandledDatabaseError } from "@saflib/drizzle-sqlite3";
 import { eq } from "drizzle-orm";
-import { todos } from "../schema";
+import { todos } from "../schema.ts";
 
 // Define specific handled errors
 export class TodoNotFoundError extends HandledDatabaseError {
@@ -23,20 +41,48 @@ export class TodoNotFoundError extends HandledDatabaseError {
   }
 }
 
-// Wrap database queries to standardize error handling
-export const getTodoById = (db) => async (id: string) => {
-  return queryWrapper(async () => {
-    const todo = await db.query.todos.findFirst({
-      where: eq(todos.id, id),
-    });
+// Export a factory function that takes a db instance
+export function createTodoQueries(db: any) {
+  return {
+    TodoNotFoundError,
+    // Wrap database queries to standardize error handling
+    getById: queryWrapper(async (id: string) => {
+      const todo = await db.query.todos.findFirst({
+        where: eq(todos.id, id),
+      });
 
-    if (!todo) {
-      throw new TodoNotFoundError(id);
+      if (!todo) {
+        throw new TodoNotFoundError(id);
+      }
+
+      return todo;
+    }),
+  };
+}
+```
+
+Then in your instance.ts, initialize the queries:
+
+```typescript
+// In src/instance.ts
+import { createTodoQueries } from "./queries/todos.ts";
+
+export class DatabaseInstance {
+  todos: ReturnType<typeof createTodoQueries>;
+
+  constructor(config: DatabaseConfig = {}) {
+    try {
+      // ... database initialization ...
+
+      // Initialize query methods
+      this.todos = createTodoQueries(db);
+    } catch (error) {
+      throw new DatabaseError(
+        `Failed to initialize database: ${error instanceof Error ? error.message : String(error)}`
+      );
     }
-
-    return todo;
-  });
-};
+  }
+}
 ```
 
 ### Creating Custom Database Errors
@@ -69,45 +115,49 @@ export class InvalidDataError extends HandledDatabaseError {
 For one-to-one relationships (like user profiles or settings), implement an "upsert" pattern:
 
 ```typescript
-// Upsert a user profile (create if it doesn't exist, update if it does)
-export const upsertUserProfile = queryWrapper(
-  async (
-    userId: number,
-    profileData: Partial<NewUserProfile>,
-  ): Promise<UserProfile> => {
-    // Check if a profile already exists for this user
-    const existingProfile = await db
-      .select()
-      .from(userProfiles)
-      .where(eq(userProfiles.userId, userId));
+// In src/queries/profiles.ts
+export function createProfileQueries(db: any) {
+  return {
+    upsert: queryWrapper(
+      async (
+        userId: number,
+        profileData: Partial<NewUserProfile>
+      ): Promise<UserProfile> => {
+        // Check if a profile already exists for this user
+        const existingProfile = await db
+          .select()
+          .from(userProfiles)
+          .where(eq(userProfiles.userId, userId));
 
-    if (existingProfile.length > 0) {
-      // Update existing profile
-      const result = await db
-        .update(userProfiles)
-        .set({
-          ...profileData,
-          updatedAt: new Date(),
-        })
-        .where(eq(userProfiles.userId, userId))
-        .returning();
+        if (existingProfile.length > 0) {
+          // Update existing profile
+          const result = await db
+            .update(userProfiles)
+            .set({
+              ...profileData,
+              updatedAt: new Date(),
+            })
+            .where(eq(userProfiles.userId, userId))
+            .returning();
 
-      return result[0];
-    } else {
-      // Create a new profile
-      const result = await db
-        .insert(userProfiles)
-        .values({
-          userId,
-          ...profileData,
-          updatedAt: new Date(),
-        })
-        .returning();
+          return result[0];
+        } else {
+          // Create a new profile
+          const result = await db
+            .insert(userProfiles)
+            .values({
+              userId,
+              ...profileData,
+              updatedAt: new Date(),
+            })
+            .returning();
 
-      return result[0];
-    }
-  },
-);
+          return result[0];
+        }
+      }
+    ),
+  };
+}
 ```
 
 ### Error Handling
@@ -135,6 +185,27 @@ if (!isValidEmail(email)) {
 ### Testing
 
 Tests should be in the fuzzy space between unit and integration tests; they should include the database itself to ensure the queries work as expected with the database client and database. SQLite makes this easy by being able to be run in-memory.
+
+Example test:
+
+```typescript
+// In src/queries/todos.test.ts
+import { describe, it, expect } from "vitest";
+import { DatabaseInstance } from "../instance.ts";
+
+describe("Todo Queries", () => {
+  it("creates and retrieves a todo", async () => {
+    const db = new DatabaseInstance();
+    const todo = await db.todos.create({
+      title: "Test Todo",
+      completed: false,
+    });
+
+    const retrieved = await db.todos.getById(todo.id);
+    expect(retrieved).toEqual(todo);
+  });
+});
+```
 
 ## Development
 
