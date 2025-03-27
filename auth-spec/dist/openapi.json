@@ -1,16 +1,18 @@
 {
   "openapi": "3.0.0",
   "info": {
-    "title": "SAF-2025 Auth API",
+    "title": "SAF Auth API",
     "version": "1.0.0",
-    "description": "Authentication API for SAF-2025"
+    "description": "Authentication API for SAF"
   },
   "paths": {
     "/auth/register": {
       "post": {
         "summary": "Register New User",
         "operationId": "registerUser",
-        "tags": ["auth"],
+        "tags": [
+          "auth"
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -49,7 +51,9 @@
       "post": {
         "summary": "Authenticate User",
         "operationId": "loginUser",
-        "tags": ["auth"],
+        "tags": [
+          "auth"
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -88,7 +92,9 @@
       "post": {
         "summary": "Logout User",
         "operationId": "logoutUser",
-        "tags": ["auth"],
+        "tags": [
+          "auth"
+        ],
         "responses": {
           "200": {
             "description": "Successful logout"
@@ -101,7 +107,9 @@
         "summary": "Verify Authentication Status",
         "description": "Used by Caddy for forward authentication. Verifies if the user is authenticated and adds user information headers for downstream services.",
         "operationId": "verifyAuth",
-        "tags": ["auth"],
+        "tags": [
+          "auth"
+        ],
         "responses": {
           "200": {
             "description": "User is authenticated",
@@ -118,6 +126,12 @@
                   "format": "email"
                 },
                 "description": "The authenticated user's email"
+              },
+              "X-User-Scopes": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Comma-separated list of user's permission scopes"
               }
             },
             "content": {
@@ -146,7 +160,10 @@
     "schemas": {
       "RegisterRequest": {
         "type": "object",
-        "required": ["email", "password"],
+        "required": [
+          "email",
+          "password"
+        ],
         "properties": {
           "email": {
             "type": "string",
@@ -160,7 +177,10 @@
       },
       "UserResponse": {
         "type": "object",
-        "required": ["id", "email"],
+        "required": [
+          "id",
+          "email"
+        ],
         "properties": {
           "id": {
             "type": "number"
@@ -168,12 +188,21 @@
           "email": {
             "type": "string",
             "format": "email"
+          },
+          "scopes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of user's permission scopes"
           }
         }
       },
       "error": {
         "type": "object",
-        "required": ["error"],
+        "required": [
+          "error"
+        ],
         "properties": {
           "error": {
             "type": "string",
@@ -183,7 +212,10 @@
       },
       "LoginRequest": {
         "type": "object",
-        "required": ["email", "password"],
+        "required": [
+          "email",
+          "password"
+        ],
         "properties": {
           "email": {
             "type": "string",

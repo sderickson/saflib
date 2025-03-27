@@ -1,5 +1,4 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import type { Mock } from "vitest";
 import request from "supertest";
 import express from "express";
 import session from "express-session";
@@ -312,9 +311,11 @@ describe("Auth Routes", () => {
       expect(verifyResponse.body).toEqual({
         id: user.id,
         email: user.email,
+        scopes: [],
       });
       expect(verifyResponse.header["x-user-id"]).toBe(user.id.toString());
       expect(verifyResponse.header["x-user-email"]).toBe(user.email);
+      expect(verifyResponse.header["x-user-scopes"]).toBe("");
     });
 
     it("should handle health check requests", async () => {
@@ -333,6 +334,71 @@ describe("Auth Routes", () => {
 
       expect(response.status).toBe(200);
       expect(response.body).toEqual({});
+    });
+
+    it("should return user scopes when user has admin permission", async () => {
+      // Setup test user
+      const userData = {
+        email: "admin@example.com",
+        password: "password123",
+      };
+
+      const user = {
+        id: 1,
+        email: userData.email,
+        createdAt: new Date(),
+        lastLoginAt: null,
+      };
+
+      // Mock database responses
+      vi.spyOn(db.users, "getByEmail").mockResolvedValue(user);
+      vi.spyOn(db.emailAuth, "getByEmail").mockResolvedValue({
+        userId: user.id,
+        email: user.email,
+        passwordHash: Buffer.from("hashed-password"),
+        verifiedAt: null,
+        verificationToken: null,
+        verificationTokenExpiresAt: null,
+        forgotPasswordToken: null,
+        forgotPasswordTokenExpiresAt: null,
+      });
+      vi.spyOn(db.users, "getById").mockResolvedValue(user);
+      vi.spyOn(db.users, "updateLastLogin").mockResolvedValue({
+        ...user,
+        lastLoginAt: new Date(),
+      });
+      vi.spyOn(argon2, "verify").mockResolvedValue(true);
+
+      // Mock permissions to return admin scope
+      vi.spyOn(db.permissions, "getByUserId").mockResolvedValue([
+        {
+          userId: user.id,
+          permissionId: "admin",
+          createdAt: new Date(),
+          grantedBy: user.id,
+        },
+      ]);
+
+      // Use agent to maintain cookies between requests
+      const agent = request.agent(app);
+
+      // Login first to establish session
+      const loginResponse = await agent.post("/auth/login").send(userData);
+
+      expect(loginResponse.status).toBe(200);
+
+      // Then verify authentication
+      const verifyResponse = await agent.get("/auth/verify");
+
+      expect(verifyResponse.status).toBe(200);
+      expect(verifyResponse.body).toEqual({
+        id: user.id,
+        email: user.email,
+        scopes: ["admin"],
+      });
+      expect(verifyResponse.header["x-user-id"]).toBe(user.id.toString());
+      expect(verifyResponse.header["x-user-email"]).toBe(user.email);
+      expect(verifyResponse.header["x-user-scopes"]).toBe("admin");
     });
   });
 });
