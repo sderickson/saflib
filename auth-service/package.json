@@ -3,9 +3,11 @@
   "description": "Authentication service library for SAF-2025 framework",
   "type": "module",
   "scripts": {
+    "start": "node --experimental-strip-types ./bin/www",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "healthcheck": "node --experimental-strip-types ./bin/healthcheck"
   },
   "dependencies": {
     "@saflib/auth-db": "*",
