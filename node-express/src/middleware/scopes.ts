@@ -35,9 +35,11 @@ export const createScopeValidator = (
     const requiredScopes = new Set<string>();
 
     // Extract required scopes from security requirements
-    for (const requirement of security) {
-      for (const [scope, _] of Object.entries(requirement)) {
-        requiredScopes.add(scope);
+    for (const strategy of security) {
+      if (strategy.scopes) {
+        for (const scope of strategy.scopes) {
+          requiredScopes.add(scope);
+        }
       }
     }
 

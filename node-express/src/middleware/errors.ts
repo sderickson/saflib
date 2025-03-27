@@ -17,13 +17,13 @@ export const errorHandler = (
   err: HttpError,
   req: Request,
   res: Response,
-  next: NextFunction,
+  _: NextFunction
 ): void => {
   // Log error
   const status = err.status || 500;
 
   if (status >= 500) {
-    if (!req.log) {
+    if (!req.log || process.env.NODE_ENV === "test") {
       console.error(err.stack);
     } else {
       req.log.error(err.stack);

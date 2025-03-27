@@ -40,7 +40,7 @@ interface PreMiddlewareOptions {
 }
 
 export const createPreMiddleware = (
-  options: PreMiddlewareOptions = {},
+  options: PreMiddlewareOptions = {}
 ): Handler[] => {
   const { apiSpec, parseAuthHeaders, disableCors, healthCheck } = options;
 
@@ -55,7 +55,7 @@ export const createPreMiddleware = (
   }
 
   let authMiddleware: Handler[] = [];
-  if (parseAuthHeaders) {
+  if (parseAuthHeaders || apiSpec) {
     authMiddleware = [auth];
   }
 
@@ -73,8 +73,8 @@ export const createPreMiddleware = (
     urlencoded({ extended: false }),
     loggerInjector,
     ...corsMiddleware,
-    ...openApiValidatorMiddleware,
     ...authMiddleware,
+    ...openApiValidatorMiddleware,
   ];
 };
 
