@@ -31,3 +31,16 @@ export const emailAuth = sqliteTable("email_auth", {
     mode: "timestamp",
   }),
 });
+
+// User permissions
+export const userPermissions = sqliteTable("user_permissions", {
+  id: int().primaryKey({ autoIncrement: true }),
+  userId: int("user_id")
+    .notNull()
+    .references(() => users.id),
+  permissionId: int("permission_id").notNull(),
+  createdAt: int("created_at", { mode: "timestamp" }).notNull(),
+  grantedBy: int("granted_by")
+    .notNull()
+    .references(() => users.id),
+});
