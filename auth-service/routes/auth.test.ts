@@ -116,6 +116,139 @@ describe("Auth Routes", () => {
       expect(response.status).toBe(409);
       expect(response.body).toEqual({ message: "Email already exists" });
     });
+
+    it("should auto-assign admin permission for test environment users with admin.*@email.com pattern", async () => {
+      const userData = {
+        email: "admin.test@email.com",
+        password: "password123",
+      };
+
+      const createdUser = {
+        id: 1,
+        email: userData.email,
+        createdAt: new Date(),
+        lastLoginAt: null,
+      };
+
+      vi.spyOn(db.users, "create").mockResolvedValue(createdUser);
+      vi.spyOn(db.emailAuth, "create").mockResolvedValue({
+        userId: createdUser.id,
+        email: createdUser.email,
+        passwordHash: Buffer.from("hashed-password"),
+        verifiedAt: null,
+        verificationToken: null,
+        verificationTokenExpiresAt: null,
+        forgotPasswordToken: null,
+        forgotPasswordTokenExpiresAt: null,
+      });
+      vi.spyOn(db.permissions, "add").mockResolvedValue(undefined);
+
+      // Set NODE_ENV to TEST
+      const originalEnv = process.env.NODE_ENV;
+      process.env.NODE_ENV = "test";
+
+      const response = await request(app).post("/auth/register").send(userData);
+
+      // Restore original NODE_ENV
+      process.env.NODE_ENV = originalEnv;
+
+      expect(response.status).toBe(200);
+      expect(response.body).toMatchObject({
+        email: userData.email,
+        id: createdUser.id,
+      });
+      expect(db.permissions.add).toHaveBeenCalledWith(
+        createdUser.id,
+        1,
+        createdUser.id
+      );
+    });
+
+    it("should not auto-assign admin permission for non-admin email pattern", async () => {
+      const userData = {
+        email: "test@email.com",
+        password: "password123",
+      };
+
+      const createdUser = {
+        id: 1,
+        email: userData.email,
+        createdAt: new Date(),
+        lastLoginAt: null,
+      };
+
+      vi.spyOn(db.users, "create").mockResolvedValue(createdUser);
+      vi.spyOn(db.emailAuth, "create").mockResolvedValue({
+        userId: createdUser.id,
+        email: createdUser.email,
+        passwordHash: Buffer.from("hashed-password"),
+        verifiedAt: null,
+        verificationToken: null,
+        verificationTokenExpiresAt: null,
+        forgotPasswordToken: null,
+        forgotPasswordTokenExpiresAt: null,
+      });
+      vi.spyOn(db.permissions, "add").mockResolvedValue(undefined);
+
+      // Set NODE_ENV to TEST
+      const originalEnv = process.env.NODE_ENV;
+      process.env.NODE_ENV = "test";
+
+      const response = await request(app).post("/auth/register").send(userData);
+
+      // Restore original NODE_ENV
+      process.env.NODE_ENV = originalEnv;
+
+      expect(response.status).toBe(200);
+      expect(response.body).toMatchObject({
+        email: userData.email,
+        id: createdUser.id,
+      });
+      expect(db.permissions.add).not.toHaveBeenCalled();
+    });
+
+    it("should not auto-assign admin permission when NODE_ENV is not TEST", async () => {
+      const userData = {
+        email: "admin.test@email.com",
+        password: "password123",
+      };
+
+      const createdUser = {
+        id: 1,
+        email: userData.email,
+        createdAt: new Date(),
+        lastLoginAt: null,
+      };
+
+      vi.spyOn(db.users, "create").mockResolvedValue(createdUser);
+      vi.spyOn(db.emailAuth, "create").mockResolvedValue({
+        userId: createdUser.id,
+        email: createdUser.email,
+        passwordHash: Buffer.from("hashed-password"),
+        verifiedAt: null,
+        verificationToken: null,
+        verificationTokenExpiresAt: null,
+        forgotPasswordToken: null,
+        forgotPasswordTokenExpiresAt: null,
+      });
+      vi.spyOn(db.permissions, "add").mockResolvedValue(undefined);
+
+      // Set NODE_ENV to PRODUCTION
+      const originalEnv = process.env.NODE_ENV;
+      process.env.NODE_ENV = "production";
+
+      const response = await request(app).post("/auth/register").send(userData);
+
+      // Restore original NODE_ENV
+      process.env.NODE_ENV = originalEnv;
+
+      expect(response.status).toBe(200);
+      expect(response.body).toMatchObject({
+        email: userData.email,
+        id: createdUser.id,
+      });
+      expect(db.permissions.add).not.toHaveBeenCalled();
+    });
   });
 
   describe("POST /auth/login", () => {

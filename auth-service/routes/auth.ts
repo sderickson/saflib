@@ -40,6 +40,14 @@ authRouter.post(
         createdAt: new Date(),
       });
 
+      // Auto-assign admin permission for test environment users with admin.*@email.com pattern
+      if (
+        process.env.NODE_ENV === "test" &&
+        email.match(/^admin\..*@email\.com$/)
+      ) {
+        await req.db.permissions.add(user.id, 1, user.id); // 1 is the admin permission ID
+      }
+
       // Create email authentication
       await req.db.emailAuth.create({
         userId: user.id,
