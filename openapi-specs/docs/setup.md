@@ -75,43 +75,104 @@ servers:
   - url: http://api.docker.localhost/
     description: Development server
 
-paths:
-  $ref: "./routes/your-routes.yaml"
-
 components:
+  securitySchemes:
+    scopes:
+      type: apiKey
+      in: header
+      name: X-User-Scopes
+      description: Comma-separated list of user scopes
   schemas:
-    $ref: "./schemas/your-schemas.yaml"
+    YourSchema:
+      $ref: "./schemas/your-schema.yaml"
+
+paths:
+  /your-endpoint:
+    get:
+      $ref: "./routes/your-routes.yaml#/get"
+    post:
+      $ref: "./routes/your-routes.yaml#/post"
+  /your-endpoint/{id}:
+    put:
+      $ref: "./routes/your-routes.yaml#/~1{id}/put"
+    delete:
+      $ref: "./routes/your-routes.yaml#/~1{id}/delete"
 ```
 
 2. Create route definitions in `routes/your-routes.yaml`:
 
 ```yaml
-/your-endpoint:
-  get:
-    summary: Your endpoint description
-    operationId: yourOperation
-    tags:
-      - your-tag
-    responses:
-      "200":
-        description: Success response
-        content:
-          application/json:
-            schema:
-              $ref: "../schemas/your-schema.yaml"
+get:
+  summary: Your endpoint description
+  operationId: yourOperation
+  tags:
+    - your-tag
+  responses:
+    "200":
+      description: Success response
+      content:
+        application/json:
+          schema:
+            $ref: "../schemas/your-schema.yaml"
+
+post:
+  summary: Create a new item
+  operationId: createItem
+  tags:
+    - your-tag
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: "../schemas/your-schema.yaml"
+  responses:
+    "201":
+      description: Item created
+      content:
+        application/json:
+          schema:
+            $ref: "../schemas/your-schema.yaml"
+
+~1{id}/put:
+  summary: Update an item
+  operationId: updateItem
+  tags:
+    - your-tag
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: "../schemas/your-schema.yaml"
+  responses:
+    "200":
+      description: Item updated
+      content:
+        application/json:
+          schema:
+            $ref: "../schemas/your-schema.yaml"
+
+~1{id}/delete:
+  summary: Delete an item
+  operationId: deleteItem
+  tags:
+    - your-tag
+  responses:
+    "204":
+      description: Item deleted
 ```
 
-3. Create schema definitions in `schemas/your-schemas.yaml`:
+3. Create schema definitions in `schemas/your-schema.yaml`:
 
 ```yaml
-YourSchema:
-  type: object
-  required:
-    - requiredField
-  properties:
-    requiredField:
-      type: string
-      description: Field description
+type: object
+required:
+  - requiredField
+properties:
+  requiredField:
+    type: string
+    description: Field description
 ```
 
 ## Generating Specs
@@ -156,3 +217,5 @@ import type { YourSchema } from "@saf-2025/specs-your-spec";
 4. Define all possible response status codes in the spec
 5. Use proper security schemes for protected endpoints
 6. Keep the spec up to date with implementation changes
+7. Use `$ref` to reference paths and schemas from separate files
+8. For path parameters in references, use `~1` to escape the forward slash (e.g., `~1{id}`)
