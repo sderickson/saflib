@@ -1,7 +1,6 @@
 {
   "name": "@saflib/auth-spec",
   "description": "API specifications for SAF authentication",
-  
   "type": "module",
   "main": "./index.ts",
   "scripts": {

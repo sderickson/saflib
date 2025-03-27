@@ -132,7 +132,7 @@ export class DatabaseInstance {
       this.users = createUserQueries(db);
     } catch (error) {
       throw new DatabaseError(
-        `Failed to initialize database: ${error instanceof Error ? error.message : String(error)}`
+        `Failed to initialize database: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   }

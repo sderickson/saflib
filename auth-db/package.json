@@ -1,7 +1,6 @@
 {
   "name": "@saflib/auth-db",
   "description": "Shared authentication database library for SAF services",
-  
   "type": "module",
   "main": "src/index.ts",
   "scripts": {
