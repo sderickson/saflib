@@ -1,12 +1,7 @@
 {
   "name": "@saflib/auth-service",
   "description": "Authentication service library for SAF-2025 framework",
-  "private": true,
   "type": "module",
-  "exports": {
-    ".": "./index.ts",
-    "./types": "./types.ts"
-  },
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",

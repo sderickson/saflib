@@ -51,7 +51,7 @@ authRouter.post(
       }
       next(err);
     }
-  })
+  }),
 );
 
 authRouter.post(
@@ -62,7 +62,7 @@ authRouter.post(
       (
         err: Error | null,
         user: Express.User | false,
-        info: IVerifyOptions | undefined
+        info: IVerifyOptions | undefined,
       ) => {
         if (err) {
           return next(err);
@@ -84,9 +84,9 @@ authRouter.post(
 
           res.json(response);
         });
-      }
+      },
     )(req, res, next);
-  })
+  }),
 );
 
 authRouter.post(
@@ -98,7 +98,7 @@ authRouter.post(
       }
       res.status(200).end();
     });
-  })
+  }),
 );
 
 authRouter.get(
@@ -132,5 +132,5 @@ authRouter.get(
       id: user.id,
       email: user.email,
     });
-  })
+  }),
 );
