@@ -114,6 +114,12 @@ get:
         application/json:
           schema:
             $ref: "../schemas/your-schema.yaml"
+    "401":
+      description: Unauthorized - missing or invalid auth headers
+      content:
+        application/json:
+          schema:
+            $ref: "../schemas/error.yaml"
 
 post:
   summary: Create a new item
@@ -133,6 +139,36 @@ post:
         application/json:
           schema:
             $ref: "../schemas/your-schema.yaml"
+    "401":
+      description: Unauthorized - missing or invalid auth headers
+      content:
+        application/json:
+          schema:
+            $ref: "../schemas/error.yaml"
+
+# Example of an endpoint requiring admin scope
+delete:
+  summary: Delete all items
+  operationId: deleteAllItems
+  tags:
+    - your-tag
+  security:
+    - scopes: ["admin"]
+  responses:
+    "204":
+      description: All items successfully deleted
+    "401":
+      description: Unauthorized - missing or invalid auth headers
+      content:
+        application/json:
+          schema:
+            $ref: "../schemas/error.yaml"
+    "403":
+      description: User does not have permission to delete all items
+      content:
+        application/json:
+          schema:
+            $ref: "../schemas/error.yaml"
 
 ~1{id}/put:
   summary: Update an item
@@ -152,6 +188,12 @@ post:
         application/json:
           schema:
             $ref: "../schemas/your-schema.yaml"
+    "401":
+      description: Unauthorized - missing or invalid auth headers
+      content:
+        application/json:
+          schema:
+            $ref: "../schemas/error.yaml"
 
 ~1{id}/delete:
   summary: Delete an item
@@ -161,6 +203,12 @@ post:
   responses:
     "204":
       description: Item deleted
+    "401":
+      description: Unauthorized - missing or invalid auth headers
+      content:
+        application/json:
+          schema:
+            $ref: "../schemas/error.yaml"
 ```
 
 3. Create schema definitions in `schemas/your-schema.yaml`:
@@ -219,3 +267,5 @@ import type { YourSchema } from "@saf-2025/specs-your-spec";
 6. Keep the spec up to date with implementation changes
 7. Use `$ref` to reference paths and schemas from separate files
 8. For path parameters in references, use `~1` to escape the forward slash (e.g., `~1{id}`)
+9. Always include 401 responses for endpoints that require authentication
+10. Include 403 responses for endpoints that require specific scopes
