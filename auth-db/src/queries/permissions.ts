@@ -18,10 +18,10 @@ export function createPermissionQueries(db: any) {
 
     // Add a permission to a user
     add: queryWrapper(
-      async (userId: number, permissionId: number, grantedBy: number) => {
+      async (userId: number, permission: string, grantedBy: number) => {
         return db.insert(userPermissions).values({
           userId,
-          permissionId,
+          permission,
           createdAt: new Date(),
           grantedBy,
         });
@@ -29,23 +29,23 @@ export function createPermissionQueries(db: any) {
     ),
 
     // Remove a permission from a user
-    remove: queryWrapper(async (userId: number, permissionId: number) => {
+    remove: queryWrapper(async (userId: number, permission: string) => {
       return db
         .delete(userPermissions)
         .where(
           eq(userPermissions.userId, userId) &&
-            eq(userPermissions.permissionId, permissionId)
+            eq(userPermissions.permission, permission)
         );
     }),
 
     // Check if a user has a specific permission
-    has: queryWrapper(async (userId: number, permissionId: number) => {
+    has: queryWrapper(async (userId: number, permission: string) => {
       const result = await db
         .select()
         .from(userPermissions)
         .where(
           eq(userPermissions.userId, userId) &&
-            eq(userPermissions.permissionId, permissionId)
+            eq(userPermissions.permission, permission)
         );
       return result.length > 0;
     }),

@@ -19,10 +19,10 @@ describe("Permission Queries", () => {
     });
 
     // Add admin permission to the user
-    await db.permissions.add(user.id, 1, admin.id);
+    await db.permissions.add(user.id, "admin", admin.id);
 
     // Check if user has the permission
-    const hasPermission = await db.permissions.has(user.id, 1);
+    const hasPermission = await db.permissions.has(user.id, "admin");
     expect(hasPermission).toBe(true);
 
     // Get all permissions for the user
@@ -30,7 +30,7 @@ describe("Permission Queries", () => {
     expect(permissions).toHaveLength(1);
     expect(permissions[0]).toMatchObject({
       userId: user.id,
-      permissionId: 1,
+      permission: "admin",
       grantedBy: admin.id,
     });
   });
@@ -51,17 +51,17 @@ describe("Permission Queries", () => {
     });
 
     // Add admin permission to the user
-    await db.permissions.add(user.id, 1, admin.id);
+    await db.permissions.add(user.id, "admin", admin.id);
 
     // Verify permission exists
-    const hasPermissionBefore = await db.permissions.has(user.id, 1);
+    const hasPermissionBefore = await db.permissions.has(user.id, "admin");
     expect(hasPermissionBefore).toBe(true);
 
     // Remove the permission
-    await db.permissions.remove(user.id, 1);
+    await db.permissions.remove(user.id, "admin");
 
     // Verify permission is removed
-    const hasPermissionAfter = await db.permissions.has(user.id, 1);
+    const hasPermissionAfter = await db.permissions.has(user.id, "admin");
     expect(hasPermissionAfter).toBe(false);
 
     // Verify no permissions exist for the user
@@ -85,14 +85,14 @@ describe("Permission Queries", () => {
     });
 
     // Add multiple permissions to the user
-    await db.permissions.add(user.id, 1, admin.id); // admin permission
-    await db.permissions.add(user.id, 2, admin.id); // read permission
-    await db.permissions.add(user.id, 3, admin.id); // write permission
+    await db.permissions.add(user.id, "admin", admin.id); // admin permission
+    await db.permissions.add(user.id, "read", admin.id); // read permission
+    await db.permissions.add(user.id, "write", admin.id); // write permission
 
     // Verify all permissions exist
-    const hasAdminPermission = await db.permissions.has(user.id, 1);
-    const hasReadPermission = await db.permissions.has(user.id, 2);
-    const hasWritePermission = await db.permissions.has(user.id, 3);
+    const hasAdminPermission = await db.permissions.has(user.id, "admin");
+    const hasReadPermission = await db.permissions.has(user.id, "read");
+    const hasWritePermission = await db.permissions.has(user.id, "write");
 
     expect(hasAdminPermission).toBe(true);
     expect(hasReadPermission).toBe(true);
@@ -103,9 +103,9 @@ describe("Permission Queries", () => {
     expect(permissions).toHaveLength(3);
     expect(
       permissions
-        .map((p: typeof userPermissions.$inferSelect) => p.permissionId)
+        .map((p: typeof userPermissions.$inferSelect) => p.permission)
         .sort()
-    ).toEqual([1, 2, 3]);
+    ).toEqual(["admin", "read", "write"]);
   });
 
   it("handles non-existent permissions correctly", async () => {
@@ -118,7 +118,7 @@ describe("Permission Queries", () => {
     });
 
     // Check for non-existent permission
-    const hasPermission = await db.permissions.has(user.id, 999);
+    const hasPermission = await db.permissions.has(user.id, "admin");
     expect(hasPermission).toBe(false);
 
     // Get all permissions for the user

@@ -38,7 +38,7 @@ export const userPermissions = sqliteTable("user_permissions", {
   userId: int("user_id")
     .notNull()
     .references(() => users.id),
-  permissionId: int("permission_id").notNull(),
+  permission: text("permission").notNull(),
   createdAt: int("created_at", { mode: "timestamp" }).notNull(),
   grantedBy: int("granted_by")
     .notNull()
