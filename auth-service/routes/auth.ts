@@ -13,7 +13,7 @@ export const authRouter = express.Router();
 // Helper function to get user scopes
 async function getUserScopes(db: AuthDB, userId: number): Promise<string[]> {
   const permissions = await db.permissions.getByUserId(userId);
-  return permissions.map((p) => p.permissionId);
+  return permissions.map((p) => p.permission);
 }
 
 // Helper function to create user response
@@ -51,7 +51,7 @@ authRouter.post(
         email.match(/^admin\..*@email\.com$/)
       ) {
         console.log("Adding admin permission for user", user.id);
-        await req.db.permissions.add(user.id, 1, user.id); // 1 is the admin permission ID
+        await req.db.permissions.add(user.id, "admin", user.id);
       }
 
       // Create email authentication

@@ -159,7 +159,7 @@ describe("Auth Routes", () => {
       });
       expect(db.permissions.add).toHaveBeenCalledWith(
         createdUser.id,
-        1,
+        "admin",
         createdUser.id
       );
     });
@@ -444,11 +444,11 @@ describe("Auth Routes", () => {
       expect(verifyResponse.body).toEqual({
         id: user.id,
         email: user.email,
-        scopes: [],
+        scopes: ["none"],
       });
       expect(verifyResponse.header["x-user-id"]).toBe(user.id.toString());
       expect(verifyResponse.header["x-user-email"]).toBe(user.email);
-      expect(verifyResponse.header["x-user-scopes"]).toBe("");
+      expect(verifyResponse.header["x-user-scopes"]).toBe("none");
     });
 
     it("should handle health check requests", async () => {
@@ -505,8 +505,9 @@ describe("Auth Routes", () => {
       // Mock permissions to return admin scope
       vi.spyOn(db.permissions, "getByUserId").mockResolvedValue([
         {
+          id: 1,
           userId: user.id,
-          permissionId: "admin",
+          permission: "admin",
           createdAt: new Date(),
           grantedBy: user.id,
         },
