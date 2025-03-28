@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { Request, Response, NextFunction } from "express";
-import createError from "http-errors";
 import { createScopeValidator } from "./scopes.ts";
 import type { OpenAPIV3 } from "express-openapi-validator/dist/framework/types.ts";
 
@@ -61,7 +60,7 @@ describe("Scope Validation Middleware", () => {
         "/api/todos": {
           delete: {
             summary: "Delete all todos",
-            security: [{ admin: [] }],
+            security: [{ scopes: ["admin"] }],
             responses: {
               "200": { description: "Success" },
             },
@@ -85,7 +84,7 @@ describe("Scope Validation Middleware", () => {
         "/api/todos": {
           delete: {
             summary: "Delete all todos",
-            security: [{ admin: [], write: [] }],
+            security: [{ scopes: ["admin", "write"] }],
             responses: {
               "200": { description: "Success" },
             },
@@ -109,7 +108,11 @@ describe("Scope Validation Middleware", () => {
         "/api/todos": {
           delete: {
             summary: "Delete all todos",
-            security: [{ admin: [] }],
+            security: [
+              {
+                scopes: ["admin"],
+              },
+            ],
             responses: {
               "200": { description: "Success" },
             },
@@ -138,7 +141,7 @@ describe("Scope Validation Middleware", () => {
         "/api/todos": {
           delete: {
             summary: "Delete all todos",
-            security: [{ admin: [], write: [] }],
+            security: [{ scopes: ["admin", "write"] }],
             responses: {
               "200": { description: "Success" },
             },
@@ -163,7 +166,7 @@ describe("Scope Validation Middleware", () => {
     const apiSpec: OpenAPIV3.DocumentV3 = {
       openapi: "3.0.0",
       info: { title: "Test API", version: "1.0.0" },
-      security: [{ admin: [] }],
+      security: [{ scopes: ["admin"] }],
       paths: {
         "/api/todos": {
           delete: {
@@ -196,7 +199,7 @@ describe("Scope Validation Middleware", () => {
         "/api/todos": {
           delete: {
             summary: "Delete all todos",
-            security: [{ admin: [] }],
+            security: [{ scopes: ["admin"] }],
             responses: {
               "200": { description: "Success" },
             },
