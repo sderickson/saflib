@@ -15,8 +15,6 @@ export interface AuthDBConfig {
 }
 
 export class AuthDB {
-  db: BetterSQLite3Database<typeof schema>;
-
   users: ReturnType<typeof createUserQueries>;
   emailAuth: ReturnType<typeof createEmailAuthQueries>;
   permissions: ReturnType<typeof createPermissionQueries>;
@@ -34,10 +32,10 @@ export class AuthDB {
       }
       const sqlite = new Database(dbStorage);
 
-      this.db = drizzle(sqlite, { schema });
+      const db = drizzle(sqlite, { schema });
 
       // Run migrations
-      migrate(this.db, {
+      migrate(db, {
         migrationsFolder: config.migrationsPath || getMigrationsPath(),
       });
 
