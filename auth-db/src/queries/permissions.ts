@@ -2,15 +2,19 @@ import { eq } from "drizzle-orm";
 import { queryWrapper } from "@saflib/drizzle-sqlite3";
 import { userPermissions } from "../schema.ts";
 
+type UserPermissions = typeof userPermissions.$inferSelect;
+
 export function createPermissionQueries(db: any) {
   return {
     // Get all permissions for a user
-    getByUserId: queryWrapper(async (userId: number) => {
-      return db
-        .select()
-        .from(userPermissions)
-        .where(eq(userPermissions.userId, userId));
-    }),
+    getByUserId: queryWrapper(
+      async (userId: number): Promise<UserPermissions[]> => {
+        return db
+          .select()
+          .from(userPermissions)
+          .where(eq(userPermissions.userId, userId));
+      }
+    ),
 
     // Add a permission to a user
     add: queryWrapper(

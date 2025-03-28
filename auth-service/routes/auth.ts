@@ -3,19 +3,24 @@ import type { Request, Response } from "express";
 import passport from "passport";
 import type { IVerifyOptions } from "passport-local";
 import type { RegisterRequest, UserResponse } from "@saflib/auth-spec";
+import type { AuthDB } from "@saflib/auth-db";
 import * as argon2 from "argon2";
 import { createHandler } from "@saflib/node-express";
+import { User } from "../types.ts";
 
 export const authRouter = express.Router();
 
 // Helper function to get user scopes
-async function getUserScopes(db: any, userId: number): Promise<string[]> {
+async function getUserScopes(db: AuthDB, userId: number): Promise<string[]> {
   const permissions = await db.permissions.getByUserId(userId);
-  return permissions.map((p: any) => p.permissionId);
+  return permissions.map((p) => p.permissionId);
 }
 
 // Helper function to create user response
-async function createUserResponse(db: any, user: any): Promise<UserResponse> {
+async function createUserResponse(
+  db: AuthDB,
+  user: User
+): Promise<UserResponse> {
   const scopes = await getUserScopes(db, user.id);
   return {
     id: user.id,
@@ -45,6 +50,7 @@ authRouter.post(
         process.env.NODE_ENV === "test" &&
         email.match(/^admin\..*@email\.com$/)
       ) {
+        console.log("Adding admin permission for user", user.id);
         await req.db.permissions.add(user.id, 1, user.id); // 1 is the admin permission ID
       }
 
@@ -147,7 +153,11 @@ authRouter.get(
 
     // Get user scopes and add to headers
     const scopes = await getUserScopes(req.db, user.id);
+    if (scopes.length === 0) {
+      scopes.push("none");
+    }
     res.setHeader("X-User-Scopes", scopes.join(","));
+    console.log("Scopes", scopes);
 
     // Return user info including scopes in response body
     res.status(200).json({
