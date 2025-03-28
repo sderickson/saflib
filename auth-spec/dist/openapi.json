@@ -1,9 +1,9 @@
 {
   "openapi": "3.0.0",
   "info": {
-    "title": "SAF-2025 Auth API",
+    "title": "SAF Auth API",
     "version": "1.0.0",
-    "description": "Authentication API for SAF-2025"
+    "description": "Authentication API for SAF"
   },
   "paths": {
     "/auth/register": {
@@ -118,6 +118,12 @@
                   "format": "email"
                 },
                 "description": "The authenticated user's email"
+              },
+              "X-User-Scopes": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Comma-separated list of user's permission scopes"
               }
             },
             "content": {
@@ -168,6 +174,13 @@
           "email": {
             "type": "string",
             "format": "email"
+          },
+          "scopes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of user's permission scopes"
           }
         }
       },

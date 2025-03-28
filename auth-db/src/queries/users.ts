@@ -2,6 +2,8 @@ import { users } from "../schema.ts";
 import { AuthDatabaseError } from "../errors.ts";
 import { queryWrapper } from "@saflib/drizzle-sqlite3";
 import { eq } from "drizzle-orm";
+import { BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
+import * as schema from "../schema.ts";
 
 type NewUser = typeof users.$inferInsert;
 type SelectUser = typeof users.$inferSelect;
@@ -20,7 +22,7 @@ export class UserNotFoundError extends AuthDatabaseError {
   }
 }
 
-export function createUserQueries(db: any) {
+export function createUserQueries(db: BetterSQLite3Database<typeof schema>) {
   return {
     UserNotFoundError,
     EmailConflictError,
@@ -56,7 +58,7 @@ export function createUserQueries(db: any) {
           throw new UserNotFoundError();
         }
         return result;
-      },
+      }
     ),
 
     getById: queryWrapper(async (id: number): Promise<SelectUser> => {

@@ -1,12 +1,33 @@
 import express from "express";
-import type { Request, Response, NextFunction } from "express";
+import type { Request, Response } from "express";
 import passport from "passport";
 import type { IVerifyOptions } from "passport-local";
 import type { RegisterRequest, UserResponse } from "@saflib/auth-spec";
+import type { AuthDB } from "@saflib/auth-db";
 import * as argon2 from "argon2";
 import { createHandler } from "@saflib/node-express";
+import type { User } from "../types.ts";
 
 export const authRouter = express.Router();
+
+// Helper function to get user scopes
+async function getUserScopes(db: AuthDB, userId: number): Promise<string[]> {
+  const permissions = await db.permissions.getByUserId(userId);
+  return permissions.map((p) => p.permission);
+}
+
+// Helper function to create user response
+async function createUserResponse(
+  db: AuthDB,
+  user: User,
+): Promise<UserResponse> {
+  const scopes = await getUserScopes(db, user.id);
+  return {
+    id: user.id,
+    email: user.email,
+    scopes,
+  };
+}
 
 authRouter.post(
   "/register",
@@ -24,6 +45,14 @@ authRouter.post(
         createdAt: new Date(),
       });
 
+      // Auto-assign admin permission for test environment users with admin.*@email.com pattern
+      if (
+        process.env.ALLOW_ADMIN_SIGNUPS === "true" &&
+        email.match(/^admin\..*@email\.com$/)
+      ) {
+        await req.db.permissions.add(user.id, "admin", user.id);
+      }
+
       // Create email authentication
       await req.db.emailAuth.create({
         userId: user.id,
@@ -37,12 +66,9 @@ authRouter.post(
           return next(err);
         }
 
-        const response: UserResponse = {
-          id: user.id,
-          email: user.email,
-        };
-
-        res.status(200).json(response);
+        createUserResponse(req.db, user).then((response) => {
+          res.status(200).json(response);
+        });
       });
     } catch (err) {
       if (err instanceof req.db.users.EmailConflictError) {
@@ -62,7 +88,7 @@ authRouter.post(
       (
         err: Error | null,
         user: Express.User | false,
-        info: IVerifyOptions | undefined,
+        _info: IVerifyOptions | undefined,
       ) => {
         if (err) {
           return next(err);
@@ -77,12 +103,9 @@ authRouter.post(
             return next(err);
           }
 
-          const response: UserResponse = {
-            id: user.id,
-            email: user.email,
-          };
-
-          res.json(response);
+          createUserResponse(req.db, user).then((response) => {
+            res.json(response);
+          });
         });
       },
     )(req, res, next);
@@ -103,7 +126,7 @@ authRouter.post(
 
 authRouter.get(
   "/verify",
-  createHandler(async (req: Request, res: Response, next: NextFunction) => {
+  createHandler(async (req: Request, res: Response) => {
     // TODO: Figure out how to handle OPTIONS in caddy, or at the very least,
     // don't forward_auth OPTIONS requests.
 
@@ -127,10 +150,18 @@ authRouter.get(
     res.setHeader("X-User-ID", user.id.toString());
     res.setHeader("X-User-Email", user.email);
 
-    // Return user ID and email in the response body
+    // Get user scopes and add to headers
+    const scopes = await getUserScopes(req.db, user.id);
+    if (scopes.length === 0) {
+      scopes.push("none");
+    }
+    res.setHeader("X-User-Scopes", scopes.join(","));
+
+    // Return user info including scopes in response body
     res.status(200).json({
       id: user.id,
       email: user.email,
+      scopes,
     });
   }),
 );

@@ -1,7 +1,7 @@
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
 import * as argon2 from "argon2";
-import type { User } from "../types.ts";
+import type { User } from "./types.ts";
 import { AuthDB } from "@saflib/auth-db";
 
 export const setupPassport = (db: AuthDB) => {

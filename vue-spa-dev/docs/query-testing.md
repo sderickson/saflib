@@ -23,6 +23,66 @@ import { withVueQuery } from "@saflib/vue-spa/test-utils/requests.ts";
 const [result, app] = withVueQuery(() => yourQuery());
 ```
 
+### Important Notes About Vue Query Results
+
+When testing TanStack Query functions in Vue, remember these crucial points:
+
+1. Query and mutation results are Vue refs - always use `.value` to access their properties:
+
+```typescript
+// ❌ Wrong - will fail
+expect(result.isSuccess).toBe(true);
+expect(result.data).toEqual(expectedData);
+
+// ✅ Correct - accessing the ref values
+expect(result.isSuccess.value).toBe(true);
+expect(result.data.value).toEqual(expectedData);
+```
+
+2. Always clean up by unmounting the app after each test:
+
+```typescript
+const [result, app] = withVueQuery(() => yourQuery());
+// ... test code ...
+app.unmount(); // Don't forget this!
+```
+
+3. For mutations, prefer `mutateAsync` over `mutate` in tests to ensure the mutation completes:
+
+```typescript
+// ❌ Less reliable - might not wait for completion
+await result.mutate(data);
+
+// ✅ Better - ensures mutation completes
+await result.mutateAsync(data);
+```
+
+4. When testing mutation errors, use `expect().rejects` with `mutateAsync`:
+
+```typescript
+// ❌ Less reliable - might miss the error
+await result.mutate(data);
+expect(result.isError.value).toBe(true);
+
+// ✅ Better - ensures we catch the error
+await expect(result.mutateAsync(data)).rejects.toThrow();
+expect(result.isError.value).toBe(true);
+```
+
+5. Remember to wait for queries to complete:
+
+```typescript
+// Set up the query
+const [result, app] = withVueQuery(() => useYourQuery());
+
+// ❌ Wrong - might test before query completes
+expect(result.data.value).toEqual(expectedData);
+
+// ✅ Correct - wait for query to complete
+await waitForQueries();
+expect(result.data.value).toEqual(expectedData);
+```
+
 ## Testing Basic Queries
 
 Here's how to test a basic query function:
@@ -223,7 +283,7 @@ describe("userProfile mutations", () => {
     const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
 
     // Set up the mutation with our helper
-    const [mutation, app] = withVueQuery(
+    const [result, app] = withVueQuery(
       () => useUpdateUserProfile(),
       queryClient,
     );
@@ -233,7 +293,7 @@ describe("userProfile mutations", () => {
     const profileData = { name: "Updated Name", bio: "New bio" };
 
     // Execute the mutation
-    await mutation.mutateAsync({
+    await result.mutateAsync({
       userId,
       profileData,
     });
@@ -250,6 +310,37 @@ describe("userProfile mutations", () => {
     expect(invalidateSpy).toHaveBeenCalledWith({
       queryKey: ["userProfile", userId],
     });
+
+    // Check mutation state
+    expect(result.isSuccess.value).toBe(true);
+    expect(result.data.value).toEqual(mockResponse);
+
+    // Clean up
+    app.unmount();
+  });
+
+  it("should handle mutation errors", async () => {
+    // Mock an error response
+    const mockError = { message: "Update failed", status: 400 };
+    mockPATCH.mockResolvedValueOnce({ data: null, error: mockError });
+
+    // Set up the mutation with our helper
+    const [result, app] = withVueQuery(() => useUpdateUserProfile());
+
+    // Execute the mutation and expect it to throw
+    const userId = ref(123);
+    const profileData = { name: "Updated Name" };
+
+    await expect(
+      result.mutateAsync({
+        userId,
+        profileData,
+      }),
+    ).rejects.toThrow();
+
+    // Assert error state
+    expect(result.isError.value).toBe(true);
+    expect(result.error.value).toBeDefined();
 
     // Clean up
     app.unmount();

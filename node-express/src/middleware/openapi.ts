@@ -2,6 +2,7 @@ import * as OpenApiValidator from "express-openapi-validator";
 import type { OpenApiRequestHandler } from "express-openapi-validator/dist/framework/types.ts";
 import type { OpenAPIV3 } from "express-openapi-validator/dist/framework/types.ts";
 import type { Request } from "express";
+import { createScopeValidator } from "./scopes.ts";
 
 const validateResponses = {
   onError: (err: Error, _json: any, req: Request) => {
@@ -27,9 +28,17 @@ const validateResponses = {
 export const createOpenApiValidator = (
   apiSpec: string | OpenAPIV3.DocumentV3,
 ): OpenApiRequestHandler[] => {
-  return OpenApiValidator.middleware({
-    apiSpec,
-    validateRequests: true,
-    validateResponses,
-  });
+  // Parse spec if it's a string
+  const spec = typeof apiSpec === "string" ? require(apiSpec) : apiSpec;
+
+  return [
+    // Request/response validation
+    ...OpenApiValidator.middleware({
+      apiSpec: spec,
+      validateRequests: true,
+      validateResponses,
+    }),
+    // Scope validation
+    createScopeValidator(spec),
+  ];
 };

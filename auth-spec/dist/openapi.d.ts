@@ -88,6 +88,8 @@ export interface components {
       id: number;
       /** Format: email */
       email: string;
+      /** @description List of user's permission scopes */
+      scopes?: string[];
     };
     error: {
       /** @description Error message */
@@ -207,6 +209,8 @@ export interface operations {
           "X-User-ID"?: string;
           /** @description The authenticated user's email */
           "X-User-Email"?: string;
+          /** @description Comma-separated list of user's permission scopes */
+          "X-User-Scopes"?: string;
           [name: string]: unknown;
         };
         content: {

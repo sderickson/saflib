@@ -1,11 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import type { Mock } from "vitest";
 import request from "supertest";
 import express from "express";
 import session from "express-session";
 import passport from "passport";
 import { authRouter } from "./auth.ts";
-import { setupPassport } from "../config/passport.ts";
+import { setupPassport } from "../passport.ts";
 import * as argon2 from "argon2";
 import {
   recommendedErrorHandlers,
@@ -116,6 +115,139 @@ describe("Auth Routes", () => {
 
       expect(response.status).toBe(409);
       expect(response.body).toEqual({ message: "Email already exists" });
+    });
+
+    it("should auto-assign admin permission for test environment users with admin.*@email.com pattern", async () => {
+      const userData = {
+        email: "admin.test@email.com",
+        password: "password123",
+      };
+
+      const createdUser = {
+        id: 1,
+        email: userData.email,
+        createdAt: new Date(),
+        lastLoginAt: null,
+      };
+
+      vi.spyOn(db.users, "create").mockResolvedValue(createdUser);
+      vi.spyOn(db.emailAuth, "create").mockResolvedValue({
+        userId: createdUser.id,
+        email: createdUser.email,
+        passwordHash: Buffer.from("hashed-password"),
+        verifiedAt: null,
+        verificationToken: null,
+        verificationTokenExpiresAt: null,
+        forgotPasswordToken: null,
+        forgotPasswordTokenExpiresAt: null,
+      });
+      vi.spyOn(db.permissions, "add").mockResolvedValue(undefined);
+
+      // Set ALLOW_ADMIN_SIGNUPS to true
+      const originalEnv = process.env.ALLOW_ADMIN_SIGNUPS;
+      process.env.ALLOW_ADMIN_SIGNUPS = "true";
+
+      const response = await request(app).post("/auth/register").send(userData);
+
+      // Restore original ALLOW_ADMIN_SIGNUPS
+      process.env.ALLOW_ADMIN_SIGNUPS = originalEnv;
+
+      expect(response.status).toBe(200);
+      expect(response.body).toMatchObject({
+        email: userData.email,
+        id: createdUser.id,
+      });
+      expect(db.permissions.add).toHaveBeenCalledWith(
+        createdUser.id,
+        "admin",
+        createdUser.id,
+      );
+    });
+
+    it("should not auto-assign admin permission for non-admin email pattern", async () => {
+      const userData = {
+        email: "test@email.com",
+        password: "password123",
+      };
+
+      const createdUser = {
+        id: 1,
+        email: userData.email,
+        createdAt: new Date(),
+        lastLoginAt: null,
+      };
+
+      vi.spyOn(db.users, "create").mockResolvedValue(createdUser);
+      vi.spyOn(db.emailAuth, "create").mockResolvedValue({
+        userId: createdUser.id,
+        email: createdUser.email,
+        passwordHash: Buffer.from("hashed-password"),
+        verifiedAt: null,
+        verificationToken: null,
+        verificationTokenExpiresAt: null,
+        forgotPasswordToken: null,
+        forgotPasswordTokenExpiresAt: null,
+      });
+      vi.spyOn(db.permissions, "add").mockResolvedValue(undefined);
+
+      // Set ALLOW_ADMIN_SIGNUPS to true
+      const originalEnv = process.env.ALLOW_ADMIN_SIGNUPS;
+      process.env.ALLOW_ADMIN_SIGNUPS = "true";
+
+      const response = await request(app).post("/auth/register").send(userData);
+
+      // Restore original ALLOW_ADMIN_SIGNUPS
+      process.env.ALLOW_ADMIN_SIGNUPS = originalEnv;
+
+      expect(response.status).toBe(200);
+      expect(response.body).toMatchObject({
+        email: userData.email,
+        id: createdUser.id,
+      });
+      expect(db.permissions.add).not.toHaveBeenCalled();
+    });
+
+    it("should not auto-assign admin permission when ALLOW_ADMIN_SIGNUPS is not true", async () => {
+      const userData = {
+        email: "admin.test@email.com",
+        password: "password123",
+      };
+
+      const createdUser = {
+        id: 1,
+        email: userData.email,
+        createdAt: new Date(),
+        lastLoginAt: null,
+      };
+
+      vi.spyOn(db.users, "create").mockResolvedValue(createdUser);
+      vi.spyOn(db.emailAuth, "create").mockResolvedValue({
+        userId: createdUser.id,
+        email: createdUser.email,
+        passwordHash: Buffer.from("hashed-password"),
+        verifiedAt: null,
+        verificationToken: null,
+        verificationTokenExpiresAt: null,
+        forgotPasswordToken: null,
+        forgotPasswordTokenExpiresAt: null,
+      });
+      vi.spyOn(db.permissions, "add").mockResolvedValue(undefined);
+
+      // Set ALLOW_ADMIN_SIGNUPS to false
+      const originalEnv = process.env.ALLOW_ADMIN_SIGNUPS;
+      process.env.ALLOW_ADMIN_SIGNUPS = "false";
+
+      const response = await request(app).post("/auth/register").send(userData);
+
+      // Restore original ALLOW_ADMIN_SIGNUPS
+      process.env.ALLOW_ADMIN_SIGNUPS = originalEnv;
+
+      expect(response.status).toBe(200);
+      expect(response.body).toMatchObject({
+        email: userData.email,
+        id: createdUser.id,
+      });
+      expect(db.permissions.add).not.toHaveBeenCalled();
     });
   });
 
@@ -312,9 +444,11 @@ describe("Auth Routes", () => {
       expect(verifyResponse.body).toEqual({
         id: user.id,
         email: user.email,
+        scopes: ["none"],
       });
       expect(verifyResponse.header["x-user-id"]).toBe(user.id.toString());
       expect(verifyResponse.header["x-user-email"]).toBe(user.email);
+      expect(verifyResponse.header["x-user-scopes"]).toBe("none");
     });
 
     it("should handle health check requests", async () => {
@@ -333,6 +467,72 @@ describe("Auth Routes", () => {
 
       expect(response.status).toBe(200);
       expect(response.body).toEqual({});
+    });
+
+    it("should return user scopes when user has admin permission", async () => {
+      // Setup test user
+      const userData = {
+        email: "admin@example.com",
+        password: "password123",
+      };
+
+      const user = {
+        id: 1,
+        email: userData.email,
+        createdAt: new Date(),
+        lastLoginAt: null,
+      };
+
+      // Mock database responses
+      vi.spyOn(db.users, "getByEmail").mockResolvedValue(user);
+      vi.spyOn(db.emailAuth, "getByEmail").mockResolvedValue({
+        userId: user.id,
+        email: user.email,
+        passwordHash: Buffer.from("hashed-password"),
+        verifiedAt: null,
+        verificationToken: null,
+        verificationTokenExpiresAt: null,
+        forgotPasswordToken: null,
+        forgotPasswordTokenExpiresAt: null,
+      });
+      vi.spyOn(db.users, "getById").mockResolvedValue(user);
+      vi.spyOn(db.users, "updateLastLogin").mockResolvedValue({
+        ...user,
+        lastLoginAt: new Date(),
+      });
+      vi.spyOn(argon2, "verify").mockResolvedValue(true);
+
+      // Mock permissions to return admin scope
+      vi.spyOn(db.permissions, "getByUserId").mockResolvedValue([
+        {
+          id: 1,
+          userId: user.id,
+          permission: "admin",
+          createdAt: new Date(),
+          grantedBy: user.id,
+        },
+      ]);
+
+      // Use agent to maintain cookies between requests
+      const agent = request.agent(app);
+
+      // Login first to establish session
+      const loginResponse = await agent.post("/auth/login").send(userData);
+
+      expect(loginResponse.status).toBe(200);
+
+      // Then verify authentication
+      const verifyResponse = await agent.get("/auth/verify");
+
+      expect(verifyResponse.status).toBe(200);
+      expect(verifyResponse.body).toEqual({
+        id: user.id,
+        email: user.email,
+        scopes: ["admin"],
+      });
+      expect(verifyResponse.header["x-user-id"]).toBe(user.id.toString());
+      expect(verifyResponse.header["x-user-email"]).toBe(user.email);
+      expect(verifyResponse.header["x-user-scopes"]).toBe("admin");
     });
   });
 });

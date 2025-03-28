@@ -11,13 +11,14 @@
   },
   "dependencies": {
     "@saflib/auth-db": "*",
-    "@saflib/node-express": "*",
     "@saflib/auth-spec": "*",
-    "better-sqlite3-session-store": "^0.1.0",
+    "@saflib/node-express": "*",
     "argon2": "^0.41.1",
+    "better-sqlite3-session-store": "^0.1.0",
     "express-session": "^1.18.0",
     "passport": "^0.7.0",
-    "passport-local": "^1.0.0"
+    "passport-local": "^1.0.0",
+    "yaml": "^2.7.0"
   },
   "devDependencies": {
     "@saflib/vitest": "*",
