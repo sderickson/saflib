@@ -1,4 +1,4 @@
-import { drizzle } from "drizzle-orm/better-sqlite3";
+import { BetterSQLite3Database, drizzle } from "drizzle-orm/better-sqlite3";
 import Database from "better-sqlite3";
 import * as schema from "./schema.ts";
 import { migrate } from "drizzle-orm/better-sqlite3/migrator";
@@ -15,6 +15,8 @@ export interface AuthDBConfig {
 }
 
 export class AuthDB {
+  db: BetterSQLite3Database<typeof schema>;
+
   users: ReturnType<typeof createUserQueries>;
   emailAuth: ReturnType<typeof createEmailAuthQueries>;
   permissions: ReturnType<typeof createPermissionQueries>;
@@ -32,10 +34,10 @@ export class AuthDB {
       }
       const sqlite = new Database(dbStorage);
 
-      const db = drizzle(sqlite, { schema });
+      this.db = drizzle(sqlite, { schema });
 
       // Run migrations
-      migrate(db, {
+      migrate(this.db, {
         migrationsFolder: config.migrationsPath || getMigrationsPath(),
       });
 
@@ -45,7 +47,7 @@ export class AuthDB {
       this.permissions = createPermissionQueries(db);
     } catch (error) {
       throw new AuthDatabaseError(
-        `Failed to initialize database: ${error instanceof Error ? error.message : String(error)}`,
+        `Failed to initialize database: ${error instanceof Error ? error.message : String(error)}`
       );
     }
   }

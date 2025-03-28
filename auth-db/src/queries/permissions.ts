@@ -1,10 +1,14 @@
 import { eq } from "drizzle-orm";
 import { queryWrapper } from "@saflib/drizzle-sqlite3";
 import { userPermissions } from "../schema.ts";
+import { BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
+import * as schema from "../schema.ts";
 
 type UserPermissions = typeof userPermissions.$inferSelect;
 
-export function createPermissionQueries(db: any) {
+export function createPermissionQueries(
+  db: BetterSQLite3Database<typeof schema>
+) {
   return {
     // Get all permissions for a user
     getByUserId: queryWrapper(
@@ -13,7 +17,7 @@ export function createPermissionQueries(db: any) {
           .select()
           .from(userPermissions)
           .where(eq(userPermissions.userId, userId));
-      },
+      }
     ),
 
     // Add a permission to a user
@@ -25,7 +29,7 @@ export function createPermissionQueries(db: any) {
           createdAt: new Date(),
           grantedBy,
         });
-      },
+      }
     ),
 
     // Remove a permission from a user
@@ -34,7 +38,7 @@ export function createPermissionQueries(db: any) {
         .delete(userPermissions)
         .where(
           eq(userPermissions.userId, userId) &&
-            eq(userPermissions.permission, permission),
+            eq(userPermissions.permission, permission)
         );
     }),
 
@@ -45,7 +49,7 @@ export function createPermissionQueries(db: any) {
         .from(userPermissions)
         .where(
           eq(userPermissions.userId, userId) &&
-            eq(userPermissions.permission, permission),
+            eq(userPermissions.permission, permission)
         );
       return result.length > 0;
     }),

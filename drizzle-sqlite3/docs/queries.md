@@ -33,6 +33,8 @@ Each query file should export a factory function that takes a database instance 
 import { queryWrapper, HandledDatabaseError } from "@saflib/drizzle-sqlite3";
 import { eq } from "drizzle-orm";
 import { todos } from "../schema.ts";
+import { BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
+import * as schema from "../schema.ts";
 
 // Define specific handled errors
 export class TodoNotFoundError extends HandledDatabaseError {
@@ -42,7 +44,8 @@ export class TodoNotFoundError extends HandledDatabaseError {
 }
 
 // Export a factory function that takes a db instance
-export function createTodoQueries(db: any) {
+export function createTodoQueries(db: BetterSQLite3Database<typeof schema>) {
+  // type based on what instance.ts exports
   return {
     TodoNotFoundError,
     // Wrap database queries to standardize error handling
@@ -78,7 +81,7 @@ export class DatabaseInstance {
       this.todos = createTodoQueries(db);
     } catch (error) {
       throw new DatabaseError(
-        `Failed to initialize database: ${error instanceof Error ? error.message : String(error)}`,
+        `Failed to initialize database: ${error instanceof Error ? error.message : String(error)}`
       );
     }
   }
@@ -116,12 +119,12 @@ For one-to-one relationships (like user profiles or settings), implement an "ups
 
 ```typescript
 // In src/queries/profiles.ts
-export function createProfileQueries(db: any) {
+export function createProfileQueries(db: BetterSQLite3Database<typeof schema>) {
   return {
     upsert: queryWrapper(
       async (
         userId: number,
-        profileData: Partial<NewUserProfile>,
+        profileData: Partial<NewUserProfile>
       ): Promise<UserProfile> => {
         // Check if a profile already exists for this user
         const existingProfile = await db
@@ -154,7 +157,7 @@ export function createProfileQueries(db: any) {
 
           return result[0];
         }
-      },
+      }
     ),
   };
 }
