@@ -143,14 +143,14 @@ describe("Auth Routes", () => {
       });
       vi.spyOn(db.permissions, "add").mockResolvedValue(undefined);
 
-      // Set NODE_ENV to TEST
-      const originalEnv = process.env.NODE_ENV;
-      process.env.NODE_ENV = "test";
+      // Set ALLOW_ADMIN_SIGNUPS to true
+      const originalEnv = process.env.ALLOW_ADMIN_SIGNUPS;
+      process.env.ALLOW_ADMIN_SIGNUPS = "true";
 
       const response = await request(app).post("/auth/register").send(userData);
 
-      // Restore original NODE_ENV
-      process.env.NODE_ENV = originalEnv;
+      // Restore original ALLOW_ADMIN_SIGNUPS
+      process.env.ALLOW_ADMIN_SIGNUPS = originalEnv;
 
       expect(response.status).toBe(200);
       expect(response.body).toMatchObject({
@@ -190,14 +190,14 @@ describe("Auth Routes", () => {
       });
       vi.spyOn(db.permissions, "add").mockResolvedValue(undefined);
 
-      // Set NODE_ENV to TEST
-      const originalEnv = process.env.NODE_ENV;
-      process.env.NODE_ENV = "test";
+      // Set ALLOW_ADMIN_SIGNUPS to true
+      const originalEnv = process.env.ALLOW_ADMIN_SIGNUPS;
+      process.env.ALLOW_ADMIN_SIGNUPS = "true";
 
       const response = await request(app).post("/auth/register").send(userData);
 
-      // Restore original NODE_ENV
-      process.env.NODE_ENV = originalEnv;
+      // Restore original ALLOW_ADMIN_SIGNUPS
+      process.env.ALLOW_ADMIN_SIGNUPS = originalEnv;
 
       expect(response.status).toBe(200);
       expect(response.body).toMatchObject({
@@ -207,7 +207,7 @@ describe("Auth Routes", () => {
       expect(db.permissions.add).not.toHaveBeenCalled();
     });
 
-    it("should not auto-assign admin permission when NODE_ENV is not TEST", async () => {
+    it("should not auto-assign admin permission when ALLOW_ADMIN_SIGNUPS is not true", async () => {
       const userData = {
         email: "admin.test@email.com",
         password: "password123",
@@ -233,14 +233,14 @@ describe("Auth Routes", () => {
       });
       vi.spyOn(db.permissions, "add").mockResolvedValue(undefined);
 
-      // Set NODE_ENV to PRODUCTION
-      const originalEnv = process.env.NODE_ENV;
-      process.env.NODE_ENV = "production";
+      // Set ALLOW_ADMIN_SIGNUPS to false
+      const originalEnv = process.env.ALLOW_ADMIN_SIGNUPS;
+      process.env.ALLOW_ADMIN_SIGNUPS = "false";
 
       const response = await request(app).post("/auth/register").send(userData);
 
-      // Restore original NODE_ENV
-      process.env.NODE_ENV = originalEnv;
+      // Restore original ALLOW_ADMIN_SIGNUPS
+      process.env.ALLOW_ADMIN_SIGNUPS = originalEnv;
 
       expect(response.status).toBe(200);
       expect(response.body).toMatchObject({
