@@ -57,7 +57,7 @@ export const setupPassport = (db: AuthDB) => {
 
           // Convert the password hash to a string for argon2 verification
           const passwordHash = Buffer.from(
-            auth.passwordHash as Uint8Array
+            auth.passwordHash as Uint8Array,
           ).toString("utf-8");
 
           // Check password using argon2
@@ -73,7 +73,7 @@ export const setupPassport = (db: AuthDB) => {
         } catch (err) {
           return done(err);
         }
-      }
-    )
+      },
+    ),
   );
 };

@@ -40,7 +40,7 @@ interface PreMiddlewareOptions {
 }
 
 export const createPreMiddleware = (
-  options: PreMiddlewareOptions = {}
+  options: PreMiddlewareOptions = {},
 ): Handler[] => {
   const { apiSpec, parseAuthHeaders, disableCors, healthCheck } = options;
 

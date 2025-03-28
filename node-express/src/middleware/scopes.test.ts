@@ -129,7 +129,7 @@ describe("Scope Validation Middleware", () => {
       expect.objectContaining({
         status: 403,
         message: "Insufficient permissions. Required scopes: admin",
-      })
+      }),
     );
   });
 
@@ -158,7 +158,7 @@ describe("Scope Validation Middleware", () => {
       expect.objectContaining({
         status: 403,
         message: "Insufficient permissions. Required scopes: admin, write",
-      })
+      }),
     );
   });
 
@@ -187,7 +187,7 @@ describe("Scope Validation Middleware", () => {
       expect.objectContaining({
         status: 403,
         message: "Insufficient permissions. Required scopes: admin",
-      })
+      }),
     );
   });
 

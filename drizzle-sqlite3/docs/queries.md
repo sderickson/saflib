@@ -78,7 +78,7 @@ export class DatabaseInstance {
       this.todos = createTodoQueries(db);
     } catch (error) {
       throw new DatabaseError(
-        `Failed to initialize database: ${error instanceof Error ? error.message : String(error)}`
+        `Failed to initialize database: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   }
@@ -121,7 +121,7 @@ export function createProfileQueries(db: any) {
     upsert: queryWrapper(
       async (
         userId: number,
-        profileData: Partial<NewUserProfile>
+        profileData: Partial<NewUserProfile>,
       ): Promise<UserProfile> => {
         // Check if a profile already exists for this user
         const existingProfile = await db
@@ -154,7 +154,7 @@ export function createProfileQueries(db: any) {
 
           return result[0];
         }
-      }
+      },
     ),
   };
 }

@@ -25,7 +25,7 @@ app.use(
     secret: "test",
     resave: false,
     saveUninitialized: false,
-  })
+  }),
 );
 
 // Initialize Passport
@@ -108,7 +108,7 @@ describe("Auth Routes", () => {
       };
 
       vi.spyOn(db.users, "create").mockRejectedValue(
-        new db.users.EmailConflictError()
+        new db.users.EmailConflictError(),
       );
 
       const response = await request(app).post("/auth/register").send(userData);
@@ -160,7 +160,7 @@ describe("Auth Routes", () => {
       expect(db.permissions.add).toHaveBeenCalledWith(
         createdUser.id,
         "admin",
-        createdUser.id
+        createdUser.id,
       );
     });
 
@@ -306,7 +306,7 @@ describe("Auth Routes", () => {
       };
 
       vi.spyOn(db.users, "getByEmail").mockRejectedValue(
-        new db.users.UserNotFoundError()
+        new db.users.UserNotFoundError(),
       );
 
       const response = await request(app).post("/auth/login").send(userData);

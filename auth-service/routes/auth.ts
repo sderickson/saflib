@@ -19,7 +19,7 @@ async function getUserScopes(db: AuthDB, userId: number): Promise<string[]> {
 // Helper function to create user response
 async function createUserResponse(
   db: AuthDB,
-  user: User
+  user: User,
 ): Promise<UserResponse> {
   const scopes = await getUserScopes(db, user.id);
   return {
@@ -77,7 +77,7 @@ authRouter.post(
       }
       next(err);
     }
-  })
+  }),
 );
 
 authRouter.post(
@@ -88,7 +88,7 @@ authRouter.post(
       (
         err: Error | null,
         user: Express.User | false,
-        _info: IVerifyOptions | undefined
+        _info: IVerifyOptions | undefined,
       ) => {
         if (err) {
           return next(err);
@@ -107,9 +107,9 @@ authRouter.post(
             res.json(response);
           });
         });
-      }
+      },
     )(req, res, next);
-  })
+  }),
 );
 
 authRouter.post(
@@ -121,7 +121,7 @@ authRouter.post(
       }
       res.status(200).end();
     });
-  })
+  }),
 );
 
 authRouter.get(
@@ -163,5 +163,5 @@ authRouter.get(
       email: user.email,
       scopes,
     });
-  })
+  }),
 );

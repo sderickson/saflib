@@ -85,7 +85,7 @@ describe("Auth Middleware", () => {
       expect.objectContaining({
         status: 401,
         message: "Unauthorized",
-      })
+      }),
     );
   });
 
@@ -101,7 +101,7 @@ describe("Auth Middleware", () => {
       expect.objectContaining({
         status: 401,
         message: "Unauthorized",
-      })
+      }),
     );
   });
 
@@ -116,7 +116,7 @@ describe("Auth Middleware", () => {
       expect.objectContaining({
         status: 401,
         message: "Unauthorized",
-      })
+      }),
     );
   });
 });

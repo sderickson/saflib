@@ -13,7 +13,7 @@ export function createPermissionQueries(db: any) {
           .select()
           .from(userPermissions)
           .where(eq(userPermissions.userId, userId));
-      }
+      },
     ),
 
     // Add a permission to a user
@@ -25,7 +25,7 @@ export function createPermissionQueries(db: any) {
           createdAt: new Date(),
           grantedBy,
         });
-      }
+      },
     ),
 
     // Remove a permission from a user
@@ -34,7 +34,7 @@ export function createPermissionQueries(db: any) {
         .delete(userPermissions)
         .where(
           eq(userPermissions.userId, userId) &&
-            eq(userPermissions.permission, permission)
+            eq(userPermissions.permission, permission),
         );
     }),
 
@@ -45,7 +45,7 @@ export function createPermissionQueries(db: any) {
         .from(userPermissions)
         .where(
           eq(userPermissions.userId, userId) &&
-            eq(userPermissions.permission, permission)
+            eq(userPermissions.permission, permission),
         );
       return result.length > 0;
     }),

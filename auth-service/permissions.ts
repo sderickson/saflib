@@ -30,7 +30,7 @@ export function getPermissionScopes(permission: string): string[] {
 
 export function hasPermission(
   userPermission: string,
-  requiredPermission: string
+  requiredPermission: string,
 ): boolean {
   const userScopes = getPermissionScopes(userPermission);
   const requiredScopes = getPermissionScopes(requiredPermission);

@@ -106,7 +106,7 @@ it("should return 401 when required headers are missing", () => {
     expect.objectContaining({
       status: 401,
       message: "Unauthorized",
-    })
+    }),
   );
 });
 ```
@@ -148,7 +148,7 @@ it("should return 401 when required headers are missing", () => {
 6. **Descriptive Test Names**: Use clear, action-oriented test names that describe the expected behavior:
    ```typescript
    it(
-     "should populate auth object with user info and empty scopes when no scope header"
+     "should populate auth object with user info and empty scopes when no scope header",
    );
    it("should return 401 when user ID is missing");
    ```
@@ -175,7 +175,7 @@ it("should return 401 when required headers are missing", () => {
    expect(nextFunction).toHaveBeenCalledWith(
      expect.objectContaining({
        status: 401,
-     })
+     }),
    ); // For error cases
    ```
 
@@ -214,7 +214,7 @@ describe("Auth Middleware", () => {
     expect(nextFunction).toHaveBeenCalledWith(
       expect.objectContaining({
         status: 401,
-      })
+      }),
     );
   });
 });

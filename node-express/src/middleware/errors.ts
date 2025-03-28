@@ -17,7 +17,7 @@ export const errorHandler = (
   err: HttpError,
   req: Request,
   res: Response,
-  _: NextFunction
+  _: NextFunction,
 ): void => {
   // Log error
   const status = err.status || 500;

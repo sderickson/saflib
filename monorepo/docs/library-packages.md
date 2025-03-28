@@ -153,7 +153,7 @@ This guide outlines best practices for creating reusable library packages in the
        await expect(
          db.createUser({
            /* invalid data */
-         })
+         }),
        ).rejects.toThrow(DatabaseError);
      });
    });

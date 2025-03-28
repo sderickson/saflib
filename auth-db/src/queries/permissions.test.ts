@@ -104,7 +104,7 @@ describe("Permission Queries", () => {
     expect(
       permissions
         .map((p: typeof userPermissions.$inferSelect) => p.permission)
-        .sort()
+        .sort(),
     ).toEqual(["admin", "read", "write"]);
   });
 

@@ -213,7 +213,7 @@ describe("userProfile requests", () => {
 
     // Set up the query with our helper
     const [result, app] = withVueQuery(() =>
-      useGetUserProfile(userId, { enabled })
+      useGetUserProfile(userId, { enabled }),
     );
 
     // Wait for any potential queries
@@ -285,7 +285,7 @@ describe("userProfile mutations", () => {
     // Set up the mutation with our helper
     const [result, app] = withVueQuery(
       () => useUpdateUserProfile(),
-      queryClient
+      queryClient,
     );
 
     // Use a ref for userId
@@ -335,7 +335,7 @@ describe("userProfile mutations", () => {
       result.mutateAsync({
         userId,
         profileData,
-      })
+      }),
     ).rejects.toThrow();
 
     // Assert error state

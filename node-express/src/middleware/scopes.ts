@@ -18,7 +18,7 @@ type HttpMethod =
  * Throws 403 if user doesn't have required scopes.
  */
 export const createScopeValidator = (
-  apiSpec: OpenAPIV3.DocumentV3
+  apiSpec: OpenAPIV3.DocumentV3,
 ): Handler => {
   return (req, _res, next): void => {
     // Get the operation from the OpenAPI spec
@@ -51,7 +51,7 @@ export const createScopeValidator = (
     // Check if user has all required scopes
     const userScopes = new Set(req.auth.scopes);
     const hasAllScopes = Array.from(requiredScopes).every((scope) =>
-      userScopes.has(scope)
+      userScopes.has(scope),
     );
 
     if (!hasAllScopes) {
@@ -59,9 +59,9 @@ export const createScopeValidator = (
         createError(
           403,
           `Insufficient permissions. Required scopes: ${Array.from(
-            requiredScopes
-          ).join(", ")}`
-        )
+            requiredScopes,
+          ).join(", ")}`,
+        ),
       );
     }
 

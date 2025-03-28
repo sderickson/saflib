@@ -45,7 +45,7 @@ export class AuthDB {
       this.permissions = createPermissionQueries(db);
     } catch (error) {
       throw new AuthDatabaseError(
-        `Failed to initialize database: ${error instanceof Error ? error.message : String(error)}`
+        `Failed to initialize database: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   }

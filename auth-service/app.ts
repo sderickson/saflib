@@ -49,7 +49,7 @@ app.use(
     resave: false,
     saveUninitialized: false,
     cookie,
-  })
+  }),
 );
 
 // Initialize Passport and restore authentication state from session
