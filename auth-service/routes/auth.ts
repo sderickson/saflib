@@ -6,7 +6,7 @@ import type { RegisterRequest, UserResponse } from "@saflib/auth-spec";
 import type { AuthDB } from "@saflib/auth-db";
 import * as argon2 from "argon2";
 import { createHandler } from "@saflib/node-express";
-import { User } from "../types.ts";
+import type { User } from "../types.ts";
 
 export const authRouter = express.Router();
 
@@ -47,10 +47,9 @@ authRouter.post(
 
       // Auto-assign admin permission for test environment users with admin.*@email.com pattern
       if (
-        process.env.NODE_ENV === "test" &&
+        process.env.ALLOW_ADMIN_SIGNUPS === "true" &&
         email.match(/^admin\..*@email\.com$/)
       ) {
-        console.log("Adding admin permission for user", user.id);
         await req.db.permissions.add(user.id, "admin", user.id);
       }
 
@@ -157,7 +156,6 @@ authRouter.get(
       scopes.push("none");
     }
     res.setHeader("X-User-Scopes", scopes.join(","));
-    console.log("Scopes", scopes);
 
     // Return user info including scopes in response body
     res.status(200).json({
