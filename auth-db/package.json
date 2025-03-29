@@ -3,6 +3,9 @@
   "description": "Shared authentication database library for SAF services",
   "type": "module",
   "main": "src/index.ts",
+  "saflib": {
+    "group": "auth"
+  },
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",

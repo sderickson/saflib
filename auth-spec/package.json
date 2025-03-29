@@ -16,5 +16,8 @@
   },
   "files": [
     "dist"
-  ]
+  ],
+  "saflib": {
+    "group": "auth"
+  }
 }
