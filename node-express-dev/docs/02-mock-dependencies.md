@@ -1,4 +1,4 @@
-# Mocking Dependencies
+# Mock Dependencies
 
 Tests written for node-express services should be unit tests, so they should mock databases and 3rd party services they depend on.
 When writing tests for services or APIs that use external dependencies, you'll need to mock them properly. Here's the recommended approach using Vitest:

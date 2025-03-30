@@ -1,4 +1,4 @@
-# Writing Vue Components
+# Vue Components
 
 ## Component Organization
 

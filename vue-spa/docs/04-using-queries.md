@@ -1,4 +1,4 @@
-# Using TanStack Query in Components
+# Integrating Vue, TanStack
 
 This guide focuses on how to effectively use query and mutation functions in your Vue components. It covers common patterns for handling loading states, errors, and dependent data.
 

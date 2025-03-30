@@ -1,4 +1,4 @@
-# Form Design Patterns in Vue
+# Vue Forms
 
 This guide outlines best practices for implementing forms in Vue applications. It covers component structure, state management, and the separation of concerns between form components and their parents.
 

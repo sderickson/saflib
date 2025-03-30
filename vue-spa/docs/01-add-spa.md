@@ -1,4 +1,4 @@
-# Adding a New Single Page Application (SPA)
+# Setup
 
 This guide outlines the steps required to create a new SPA within the TaskTap architecture. Follow these steps to ensure all necessary configurations are properly set up.
 

@@ -1,4 +1,4 @@
-# Adding Queries and Mutations
+# TanStack Queries
 
 This guide focuses on how to implement query and mutation functions for TanStack Query in your application.
 

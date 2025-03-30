@@ -1,4 +1,4 @@
-# Testing TanStack Query Functions
+# Test TanStack
 
 This guide focuses on how to effectively test your TanStack Query functions, including both queries and mutations.
 

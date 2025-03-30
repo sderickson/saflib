@@ -1,4 +1,4 @@
-# Working with OpenAPI Types
+# Generated Types
 
 This guide explains how to work with and set up OpenAPI-generated types in a SAF monorepo.
 

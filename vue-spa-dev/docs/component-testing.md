@@ -1,4 +1,4 @@
-# Vue Component Testing Guide
+# Test Vue
 
 This guide outlines best practices for writing unit tests for Vue components in your project.
 
