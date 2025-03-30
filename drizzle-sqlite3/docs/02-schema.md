@@ -1,4 +1,6 @@
-# Database Schema Best Practices
+# Schema
+
+Best practices for when designing your database schema.
 
 ## Data Types
 
