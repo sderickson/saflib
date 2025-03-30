@@ -8,7 +8,22 @@ This package is part of the SAF monorepo and is installed automatically through 
 
 ## Setup
 
-To create a new Express.js service using this library:
+To create a new Express.js service using this library, follow this recommended file structure:
+
+```
+service/
+├── bin/
+│   ├── www           # Server startup script
+│   └── healthcheck   # Health check script
+├── routes/
+│   ├── index.ts      # Main router that combines all route modules
+│   ├── index.test.ts # Tests for main router
+│   ├── [feature].ts  # Individual route modules
+│   └── [feature].test.ts  # Tests for feature routes
+├── app.ts            # Main Express application setup
+├── package.json      # Service dependencies and scripts
+└── vitest.config.mts # Vitest configuration
+```
 
 1. Add the required dependencies to your service's `package.json`:
    ```json
@@ -41,11 +56,13 @@ To create a new Express.js service using this library:
    healthcheck();
    ```
 
-3. Create a `routes` directory to store your Express routers:
+3. Create a `routes` directory to store your Express routers and their tests:
    ```
    routes/
    ├── index.ts        # Main router that combines all route modules
-   └── [feature].ts    # Individual route modules
+   ├── index.test.ts   # Tests for main router
+   ├── [feature].ts    # Individual route modules
+   └── [feature].test.ts  # Tests for feature routes
    ```
 
 4. Set up your main `app.ts`:
@@ -68,7 +85,7 @@ To create a new Express.js service using this library:
        "healthcheck": "node --experimental-strip-types ./bin/healthcheck",
        "test": "vitest run",
        "test:watch": "vitest",
-       "test:coverage": "vitest run --coverage",
+       "test:coverage": "vitest run --coverage"
      }
    }
    ```
