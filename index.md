@@ -13,11 +13,11 @@ To use these packages in an existing project:
 2. Add the directory as a workspace for your root-level `package.json`. For example if you added the submodule at the root directory, you'd add `"saflib/*"` to your [`workspaces` field](https://docs.npmjs.com/cli/v11/configuring-npm/package-json#workspaces).
 3. Run `npm install` or equivalent.
 
-To use a given package, install it as a dependency in your own package, or as a dev dependency if it ends in `-dev`.
+To use a given package, install it as a dependency in your own package, or as a dev dependency if it ends in `-dev`. The value of the dependency should be `"*"` so that it gets the workspace version. At time of writing, none of these packages are published to npm, though they certainly could be.
 
 ## Kinds of Packages
 
-Packages tend to center around either **features** or **dependencies**. A **feature** package can be used to add a feature to your site (such as an auth flow or a cron service), or a set of related dependencies. In each case, they tend to require more than one package to get the job done.
+Packages tend to center around either **features** or **dependencies**. A **feature** package can be used to add a project-agnostic feature to your site (such as an auth flow or a cron service), or a set of related dependencies. In each case, they tend to require more than one package to get the job done.
 
 For example, a full authentication feature includes the following packages:
 
