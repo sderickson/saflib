@@ -35,6 +35,7 @@ import {
   mountWithPlugins,
 } from "@saflib/vue-spa-dev/components.ts";
 import YourComponent from "./YourComponent.vue";
+import { router } from "../router"; // Import your app's router
 
 withResizeObserverMock(() => {
   describe("YourComponent", () => {
@@ -53,10 +54,7 @@ withResizeObserverMock(() => {
     };
 
     const mountComponent = (props = {}) => {
-      return mountWithPlugins(YourComponent, {
-        props,
-        // Additional options as needed
-      });
+      return mountWithPlugins(YourComponent, { props }, { router });
     };
 
     beforeEach(() => {
@@ -107,7 +105,7 @@ The `mountWithPlugins` function (previously known as `mountWithVuetify`) simplif
 
 ```typescript
 import { mountWithPlugins } from "@saflib/vue-spa-dev/components.ts";
-import { router } from "@your-app/router"; // Import your app's router
+import { router } from "../router"; // Import your app's router
 
 const wrapper = mountWithPlugins(
   YourComponent,
@@ -132,6 +130,39 @@ This function:
 2. Sets up the router you provide (or creates a default one if none is provided)
 3. Mounts the component with the Vuetify plugin and router
 4. Merges any additional options you provide
+
+#### Router Usage in Tests
+
+When testing components that use Vue Router (like page components or components with router links), always provide your application's router instance:
+
+```typescript
+import { router } from "../router";
+
+const mountComponent = (props = {}) => {
+  return mountWithPlugins(YourComponent, { props }, { router });
+};
+```
+
+This is important because:
+
+1. It prevents router warnings like `[Vue Router warn]: No match found for location with path ""`
+2. It ensures router links work correctly
+3. It provides a more realistic testing environment that matches your application's setup
+4. It allows testing of navigation behavior if needed
+
+Avoid using router stubs unless absolutely necessary, as they can mask potential issues:
+
+```typescript
+// Avoid - using router stubs
+return mountWithPlugins(YourComponent, {
+  global: {
+    stubs: ["router-link"],
+  },
+});
+
+// Better - provide the actual router
+return mountWithPlugins(YourComponent, {}, { router });
+```
 
 ## Best Practices
 
