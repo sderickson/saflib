@@ -8,10 +8,16 @@ import ForgotPasswordPage from "./ForgotPasswordPage.vue";
 import { useForgotPassword } from "../requests/auth";
 import { router } from "../router";
 import { VAlert } from "vuetify/components";
+import { ref } from "vue";
 // Mock the auth requests
-vi.mock("../requests/auth", () => ({
-  useForgotPassword: vi.fn(),
-}));
+
+vi.mock("../requests/auth.ts", async (importOriginal) => {
+  const original = await importOriginal<typeof import("../requests/auth")>();
+  return {
+    ...original,
+    useForgotPassword: vi.fn(),
+  };
+});
 
 withResizeObserverMock(() => {
   describe("ForgotPasswordPage", () => {
@@ -34,7 +40,6 @@ withResizeObserverMock(() => {
     };
 
     const getErrorAlert = (wrapper: VueWrapper) => {
-      console.log("getErrorAlert", wrapper.html());
       const alerts = wrapper.findAllComponents(VAlert);
       return alerts.find((alert) => alert.props().type === "error");
     };
@@ -133,9 +138,23 @@ withResizeObserverMock(() => {
     it("should show error message after failed submission", async () => {
       // Mock failed mutation
       const mockMutate = vi.fn().mockRejectedValue(new Error("API Error"));
-      (useForgotPassword as any).mockReturnValue({
+      vi.mocked(useForgotPassword).mockReturnValue({
         mutate: mockMutate,
-        isPending: false,
+        isPending: ref(false),
+        data: ref({ success: false, message: "API Error" }),
+        error: ref(null),
+        variables: ref({ email: "valid@email.com" }),
+        isError: ref(false),
+        isSuccess: ref(true),
+        isIdle: ref(false),
+        status: ref("success"),
+        context: ref(null),
+        failureCount: ref(0),
+        failureReason: ref(null),
+        isPaused: ref(false),
+        submittedAt: ref(0),
+        mutateAsync: vi.fn(),
+        reset: vi.fn(),
       });
 
       const wrapper = mountComponent();
