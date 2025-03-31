@@ -1,6 +1,16 @@
 # Overview
 
-The focus of these docs are what's in `saflib`, which contains all the shared code across all SAF-based projects. It is a flat list of packages, spanning common dependencies and reusable features. It also stores all the documentation for both human and agent consumption.
+SAF is Scott's Application Framework - I built it for me but also I'm making this repo public for people to use and play around with as they like. SAF is a full-featured web application framework using my preferred libraries and services, though I try to use more of the former than the latter. I aim for applications built with this to be:
+
+- **Self-Contained**. The app should run with little setup or dependencies on outside services except for things that are really essential, such as dependable, trusted email services.
+- **Feature Complete**. Provide the sorts of features you'd expect as an application developer or engineering manager to have on hand such as CI/CD pipeline, common backend services like background tasks or message queues, and code health reports. It should feel mature and modern.
+- **Batteries Included**. Provides common features, services, and utilities. These might be simple libraries like common Express middleware configuration, or entire E2E services like sign-up/sign-in flows and an identity service.
+- **Easy to Update**. I want to be able to pretty quickly build a new common tool in this repo and then share it with all the applications that use this framework. Or update things to the latest libraries. That's partly on the application, though, to have thorough and well-balanced testing.
+- **Built for AI**. This is sort of my playground to experiment with and share methodologies and tools. In particular I'm organizing and documenting things so AI can be pointed at a doc or two and know what to do without having to scan the whole project.
+
+## Documentation
+
+The focus of the docs on this site are what's in `saflib`, which contains all the shared code across all SAF-based projects. It is a flat list of packages, spanning common dependencies and reusable features. It also stores all the documentation for both human and agent consumption.
 
 [This site](https://docs.saf-demo.online/) provides a quick way to review the docs in a nice format, but you can also find these docs while you are coding with SAF by searching for their markdown files. You should include them as context in your prompts, and update them based on where the documentation falls short. See [this blog post](https://scotterickson.info/blog/2025-03-27-doc-driven-ai) for more info.
 
