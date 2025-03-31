@@ -10,6 +10,22 @@ To get started:
 
 [Provide a brief description of the feature, its purpose, and how it fits into the overall product. Include the main goals and objectives of this feature.]
 
+## Files to Modify
+
+List all files that need to be modified to implement this feature. Organize them by layer:
+
+### API Specification
+
+- [path/to/file] - Brief description of changes needed
+
+### Backend
+
+- [path/to/file] - Brief description of changes needed
+
+### Frontend
+
+- [path/to/file] - Brief description of changes needed
+
 ## User Stories
 
 [List the user stories that this feature addresses. Format them as "As a [type of user], I want [goal] so that [benefit]."]
@@ -87,3 +103,14 @@ To get started:
 - [Question 1]
 - [Question 2]
 - ...
+
+## File Linking Guidelines
+
+When referencing files in the specification:
+
+1. Always use absolute paths from the repository root, e.g. `/saflib/auth-service/routes/auth.ts`
+2. Use markdown links with descriptive text, e.g. `[auth.ts](/saflib/auth-service/routes/auth.ts)`
+3. When listing files to modify, include a brief description of what needs to be changed
+4. Group files by architectural layer (API Spec, Backend, Frontend)
+5. Include any new files that need to be created
+6. Note any files that need to be deleted

@@ -27,6 +27,17 @@ Before creating a checklist, review the [doc-outline.md](./doc-outline.md) to un
 - Tanstack Query Testing: [query-testing.md](../vue-spa-dev/docs/query-testing.md)
 - API Route Testing: [testing-middleware.md](../node-express-dev/docs/01-test-routes.md)
 
+## File Linking Guidelines
+
+When creating a checklist:
+
+1. Reference files from the spec's "Files to Modify" section
+2. Use absolute paths from the repository root, e.g. `/saflib/auth-service/routes/auth.ts`
+3. Use markdown links with descriptive text, e.g. `[auth.ts](/saflib/auth-service/routes/auth.ts)`
+4. Link to both implementation files and documentation files
+5. Include file references in relevant implementation tasks
+6. Group tasks by the files they modify
+
 ## Checklist Structure
 
 Every feature checklist should follow this basic structure:
@@ -42,11 +53,13 @@ Every feature checklist should follow this basic structure:
 - [ ] Write specification
   - [ ] Make a copy of the feature-spec-template.md
   - [ ] Fill in each section
+  - [ ] List files to modify
 - [ ] **Review Point**
 
 - [ ] Update checklist
   - [ ] Update checkbox contents based on spec
   - [ ] Break down complex tasks into subtasks
+  - [ ] Add file references to tasks
 - [ ] **Review Point**
 
 - [ ] Add Documentation to plan
@@ -58,7 +71,7 @@ Every feature checklist should follow this basic structure:
 
 Implementation tasks should be organized by architectural layer, starting from the smallest level and integrating up. Each layer should include:
 
-1. Implementation tasks
+1. Implementation tasks with file references
 2. Testing tasks
 3. Documentation updates
 4. Review points
@@ -114,7 +127,7 @@ Features should be implemented following this layer order:
    - Page implementations
    - References:
      - [using-queries.md](../vue-spa/docs/04-using-queries.md)
-     - [forms.md](../vue-spa/docs/05-forms.md
+     - [forms.md](../vue-spa/docs/05-forms.md)
      - [writing-components.md](../vue-spa/docs/02-writing-components.md)
 
 ## Layer-Specific Guidelines
@@ -184,9 +197,16 @@ Features should be implemented following this layer order:
    - Document breaking changes
 
 4. **Review Points**
+
    - Add review points after each major task
    - Include specific review criteria
    - Don't skip review points
+
+5. **File References**
+   - Don't forget to link to files from the spec
+   - Use absolute paths for all file references
+   - Include file references in relevant tasks
+   - Group tasks by the files they modify
 
 ## Example Checklist
 
@@ -205,7 +225,7 @@ Here's an example of a properly structured checklist for a simple feature:
 
 - [ ] Update OpenAPI Specification
   - [ ] Review [update-spec.md](../openapi-specs/docs/03-updates.md)
-  - [ ] Add new endpoint spec
+  - [ ] Add new endpoint spec to [api-spec/openapi.yaml](/saflib/api-spec/openapi.yaml)
   - [ ] Generate types
   - [ ] **Review Point**
 
@@ -213,7 +233,7 @@ Here's an example of a properly structured checklist for a simple feature:
 
 - [ ] Implement Schema Changes
   - [ ] Review [schema.md](../drizzle-sqlite3/docs/02-schema.md)
-  - [ ] Add new table
+  - [ ] Add new table to [db/src/schema.ts](/saflib/db/src/schema.ts)
   - [ ] Add indexes
   - [ ] **Review Point**
 
@@ -221,7 +241,7 @@ Here's an example of a properly structured checklist for a simple feature:
 
 - [ ] Implement Endpoint
   - [ ] Review [adding-routes.md](../node-express/docs/02-adding-routes.md)
-  - [ ] Add route
+  - [ ] Add route to [api/routes/example.ts](/saflib/api/routes/example.ts)
   - [ ] Add middleware
   - [ ] Add tests using [testing-middleware.md](../node-express-dev/docs/03-test-middleware.md)
   - [ ] **Review Point**
@@ -231,12 +251,13 @@ Here's an example of a properly structured checklist for a simple feature:
 - [ ] Add API Integration
 
   - [ ] Review [using-queries.md](../vue-spa/docs/04-using-queries.md)
-  - [ ] Add query
+  - [ ] Add query to [frontend/src/requests/example.ts](/saflib/frontend/src/requests/example.ts)
   - [ ] Add tests using [query-testing.md](../vue-spa-dev/docs/query-testing.md)
   - [ ] **Review Point**
 
 - [ ] Implement Component
   - [ ] Review [forms.md](../vue-spa/docs/05-forms.md)
+  - [ ] Create [frontend/src/components/ExampleForm.vue](/saflib/frontend/src/components/ExampleForm.vue)
   - [ ] Add form
   - [ ] Add validation
   - [ ] Add tests using [component-testing.md](../vue-spa-dev/docs/component-testing.md)
