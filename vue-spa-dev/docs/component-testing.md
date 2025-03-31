@@ -29,45 +29,40 @@ This makes it easy to find tests and keeps them close to the code they're testin
 ### Basic Test Structure
 
 ```typescript
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect } from "vitest";
 import {
-  withResizeObserverMock,
+  useResizeObserverMock,
   mountWithPlugins,
-} from "@saflib/vue-spa-dev/components.ts";
+} from "@saflib/vue-spa-dev/components";
 import YourComponent from "./YourComponent.vue";
 import { router } from "../router"; // Import your app's router
 
-withResizeObserverMock(() => {
-  describe("YourComponent", () => {
-    // Helper functions for element selection
-    const getEmailInput = (wrapper) => {
-      const emailInput = wrapper.find("[placeholder='Email address']");
-      expect(emailInput.exists()).toBe(true);
-      return emailInput;
-    };
+useResizeObserverMock();
 
-    const getSubmitButton = (wrapper) => {
-      const button = wrapper.find("button");
-      expect(button.exists()).toBe(true);
-      expect(button.text()).toBe("Submit");
-      return button;
-    };
+describe("YourComponent", () => {
+  // Helper functions for element selection
+  const getEmailInput = (wrapper) => {
+    const emailInput = wrapper.find("[placeholder='Email address']");
+    expect(emailInput.exists()).toBe(true);
+    return emailInput;
+  };
 
-    const mountComponent = (props = {}) => {
-      return mountWithPlugins(YourComponent, { props }, { router });
-    };
+  const getSubmitButton = (wrapper) => {
+    const button = wrapper.find("button");
+    expect(button.exists()).toBe(true);
+    expect(button.text()).toBe("Submit");
+    return button;
+  };
 
-    beforeEach(() => {
-      // Clear mocks and reset state
-      vi.clearAllMocks();
-    });
+  const mountComponent = (props = {}) => {
+    return mountWithPlugins(YourComponent, { props }, { router });
+  };
 
-    // Tests go here
-    it("should render the form", () => {
-      const wrapper = mountComponent();
-      expect(getEmailInput(wrapper).exists()).toBe(true);
-      expect(getSubmitButton(wrapper).exists()).toBe(true);
-    });
+  // Tests go here
+  it("should render the form", () => {
+    const wrapper = mountComponent();
+    expect(getEmailInput(wrapper).exists()).toBe(true);
+    expect(getSubmitButton(wrapper).exists()).toBe(true);
   });
 });
 ```
@@ -376,15 +371,7 @@ export const server = setupMockServer(handlers);
 // This can lead to test interdependence and make tests harder to maintain
 ```
 
-5. Reset the server between tests:
-
-```typescript
-beforeEach(() => {
-  server.resetHandlers();
-});
-```
-
-6. Override handlers for specific test cases:
+5. Override handlers for specific test cases:
 
 ```typescript
 it("should handle error response", async () => {
@@ -398,24 +385,6 @@ it("should handle error response", async () => {
 
   // Test error handling...
 });
-```
-
-#### Element Selection with findComponent
-
-Use `findComponent` and `findAllComponents` for reliable element selection:
-
-```typescript
-const getSubmitButton = (wrapper) => {
-  const button = wrapper.findComponent(VBtn);
-  expect(button.exists()).toBe(true);
-  expect(button.text()).toBe("Submit");
-  return button;
-};
-
-const getErrorAlert = (wrapper) => {
-  const alerts = wrapper.findAllComponents(VAlert);
-  return alerts.find((alert) => alert.props().type === "error");
-};
 ```
 
 ### 8. Testing Vuetify Components
