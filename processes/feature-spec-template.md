@@ -1,5 +1,11 @@
 # Feature Specification Template
 
+To get started:
+
+1. Create a folder in `/notes` with the name of the feature, prefixed with the date, e.g. `2025-03-23-add-auth-scopes`. Use the `/notes` folder in the _root_ of the repo, not in the `saflib` folder.
+2. Make a copy of this file in that folder, call it `spec.md`
+3. Remove this "To get started" section, fill in "## Overview" onwards.
+
 ## Overview
 
 [Provide a brief description of the feature, its purpose, and how it fits into the overall product. Include the main goals and objectives of this feature.]
