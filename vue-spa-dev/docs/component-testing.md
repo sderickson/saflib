@@ -13,6 +13,19 @@ We use the following tools for testing:
 - JSDOM for browser environment simulation
 - Vuetify for UI components
 
+### Test File Location
+
+Test files should be placed adjacent to the component files they test. For example:
+
+```
+src/
+  components/
+    MyComponent.vue
+    MyComponent.test.ts
+```
+
+This makes it easy to find tests and keeps them close to the code they're testing.
+
 ### Basic Test Structure
 
 ```typescript
@@ -20,8 +33,8 @@ import { describe, it, expect, vi } from "vitest";
 import {
   withResizeObserverMock,
   mountWithPlugins,
-} from "@saflib/vue-spa/test-utils/components";
-import YourComponent from "../YourComponent.vue";
+} from "@saflib/vue-spa-dev/components.ts";
+import YourComponent from "./YourComponent.vue";
 
 withResizeObserverMock(() => {
   describe("YourComponent", () => {
@@ -71,7 +84,7 @@ Vuetify components often use the ResizeObserver API, which is not available in t
 
 ```typescript
 import { describe, it, expect } from "vitest";
-import { withResizeObserverMock } from "@saflib/vue-spa/test-utils/components";
+import { withResizeObserverMock } from "@saflib/vue-spa-dev/components.ts";
 
 withResizeObserverMock(() => {
   describe("YourComponent", () => {
@@ -93,7 +106,7 @@ Always wrap your Vuetify component tests with this helper to avoid ResizeObserve
 The `mountWithPlugins` function (previously known as `mountWithVuetify`) simplifies mounting components that use Vuetify and other plugins like Vue Router:
 
 ```typescript
-import { mountWithPlugins } from "@saflib/vue-spa/test-utils/components";
+import { mountWithPlugins } from "@saflib/vue-spa-dev/components.ts";
 import { router } from "@your-app/router"; // Import your app's router
 
 const wrapper = mountWithPlugins(
@@ -411,7 +424,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import {
   withResizeObserverMock,
   mountWithPlugins,
-} from "@saflib/vue-spa/test-utils/components";
+} from "@saflib/vue-spa-dev/components.ts";
 import LoginForm from "../LoginForm.vue";
 import { router } from "@your-app/router"; // Import your app's router
 
