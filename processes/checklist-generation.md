@@ -236,6 +236,7 @@ Here's an example of a properly structured checklist for a simple feature:
   - [ ] Review [update-spec.md](../openapi-specs/docs/03-updates.md)
   - [ ] Add new endpoint spec to [api-spec/openapi.yaml](/saflib/api-spec/openapi.yaml)
   - [ ] Generate types
+  - [ ] Run `npm run test` in the api-spec package to verify type generation
   - [ ] **Review Point**
 
 ## Database Layer
@@ -245,13 +246,14 @@ Here's an example of a properly structured checklist for a simple feature:
   - [ ] Review [schema.md](../drizzle-sqlite3/docs/02-schema.md)
   - [ ] Add new table to [db/src/schema.ts](/saflib/db/src/schema.ts)
   - [ ] Run `npm run generate` in the db package to generate migrations
+  - [ ] Run `npm run test` in the db package to verify schema changes
   - [ ] **Review Point**
 
 - [ ] Add Database Queries
   - [ ] Review [queries.md](../drizzle-sqlite3/docs/03-queries.md)
   - [ ] Add new queries to the `/queries` directory in the database package
   - [ ] Add tests using [query-testing.md](../drizzle-sqlite3-dev/docs/01-testing-gotchas.md)
-  - [ ] Run tests to verify queries
+  - [ ] Run `npm run test` in the db package to verify queries
   - [ ] **Review Point**
 
 ## API Layer
@@ -261,7 +263,7 @@ Here's an example of a properly structured checklist for a simple feature:
   - [ ] Add route to [api/routes/example.ts](/saflib/api/routes/example.ts)
   - [ ] Add middleware
   - [ ] Add tests using [testing-middleware.md](../node-express-dev/docs/03-test-middleware.md)
-  - [ ] Run tests to verify endpoint
+  - [ ] Run `npm run test` in the api package to verify endpoint
   - [ ] **Review Point**
 
 ## Frontend Layer
@@ -271,7 +273,7 @@ Here's an example of a properly structured checklist for a simple feature:
   - [ ] Review [using-queries.md](../vue-spa/docs/04-using-queries.md)
   - [ ] Add query to [frontend/src/requests/example.ts](/saflib/frontend/src/requests/example.ts)
   - [ ] Add tests using [query-testing.md](../vue-spa-dev/docs/query-testing.md)
-  - [ ] Run tests to verify query implementation
+  - [ ] Run `npm run test` in the frontend package to verify query implementation
   - [ ] **Review Point**
 
 - [ ] Implement Component
@@ -280,7 +282,7 @@ Here's an example of a properly structured checklist for a simple feature:
   - [ ] Add form
   - [ ] Add validation
   - [ ] Add tests using [component-testing.md](../vue-spa-dev/docs/component-testing.md)
-  - [ ] Run tests to verify component
+  - [ ] Run `npm run test` in the frontend package to verify component
   - [ ] **Review Point**
 
 ### Testing Phase
@@ -290,13 +292,13 @@ Here's an example of a properly structured checklist for a simple feature:
   - [ ] Create production docker images
   - [ ] Run existing e2e tests
   - [ ] Create new e2e tests
-  - [ ] Run all tests to verify e2e changes
+  - [ ] Run `npm run test` in the e2e package to verify e2e changes
   - [ ] **Review Point**
 
 - [ ] Make sure everything still works
-  - [ ] Run `npm run test`
-  - [ ] Run `npm run lint`
-  - [ ] Run `npm run format`
+  - [ ] Run `npm run test` from the root of the monorepo
+  - [ ] Run `npm run lint` from the root of the monorepo
+  - [ ] Run `npm run format` from the root of the monorepo
   - [ ] **Review Point**
 
 ### Final Documentation Review
