@@ -7,7 +7,7 @@ import type { VueWrapper } from "@vue/test-utils";
 import ForgotPasswordPage from "./ForgotPasswordPage.vue";
 import { useForgotPassword } from "../requests/auth";
 import { router } from "../router";
-
+import { VAlert } from "vuetify/components";
 // Mock the auth requests
 vi.mock("../requests/auth", () => ({
   useForgotPassword: vi.fn(),
@@ -34,8 +34,9 @@ withResizeObserverMock(() => {
     };
 
     const getErrorAlert = (wrapper: VueWrapper) => {
-      const alert = wrapper.find(".v-alert--error");
-      return alert;
+      console.log("getErrorAlert", wrapper.html());
+      const alerts = wrapper.findAllComponents(VAlert);
+      return alerts.find((alert) => alert.props().type === "error");
     };
 
     const mountComponent = () => {
@@ -130,10 +131,6 @@ withResizeObserverMock(() => {
     });
 
     it("should show error message after failed submission", async () => {
-      const wrapper = mountComponent();
-      const emailInput = getEmailInput(wrapper);
-      const submitButton = getSubmitButton(wrapper);
-
       // Mock failed mutation
       const mockMutate = vi.fn().mockRejectedValue(new Error("API Error"));
       (useForgotPassword as any).mockReturnValue({
@@ -141,14 +138,18 @@ withResizeObserverMock(() => {
         isPending: false,
       });
 
+      const wrapper = mountComponent();
+      const emailInput = getEmailInput(wrapper);
+      const submitButton = getSubmitButton(wrapper);
+
       await emailInput.setValue("valid@email.com");
       await wrapper.vm.$nextTick();
       await submitButton.trigger("click");
       await wrapper.vm.$nextTick();
 
       const errorAlert = getErrorAlert(wrapper);
-      expect(errorAlert.exists()).toBe(true);
-      expect(errorAlert.text()).toContain("An error occurred");
+      expect(errorAlert).toBeDefined();
+      expect(errorAlert?.text()).toContain("An error occurred");
       expect(mockMutate).toHaveBeenCalledWith({ email: "valid@email.com" });
     });
   });

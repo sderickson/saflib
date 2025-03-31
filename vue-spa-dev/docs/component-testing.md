@@ -186,36 +186,45 @@ This test serves two purposes:
 
 ### 2. Element Selection Strategy
 
-1. Prefer `wrapper.find()` with specific attributes:
+1. Prefer `findComponent` and `findAllComponents` over `find`:
 
    ```typescript
-   // Good - uses placeholder text that's already in the component
-   const getEmailInput = (wrapper) =>
-     wrapper.find("[placeholder='Email address']");
-
-   // Good - uses button text that's already in the component
+   // Good - using findComponent for single components
    const getSubmitButton = (wrapper) => {
-     const button = wrapper.find("button");
-     expect(button.text()).toBe("Submit");
+     const button = wrapper.findComponent({ name: "v-btn" });
+     expect(button.exists()).toBe(true);
      return button;
    };
 
-   // Avoid - using test-specific data attributes
-   wrapper.find("[data-test='email-input']");
+   // Good - using findAllComponents for multiple components
+   const getErrorAlert = (wrapper) => {
+     const alerts = wrapper.findAllComponents({ name: "v-alert" });
+     const errorAlert = alerts.find((alert) => alert.props("type") === "error");
+     expect(errorAlert?.exists()).toBe(true);
+     return errorAlert;
+   };
+
+   // Avoid - using find with selectors
+   wrapper.find(".v-alert--error");
    ```
 
 2. Selection priority (in order of preference):
 
+   - Component name + props (e.g., `findComponent({ name: "v-btn", props: { color: "error" } })`)
+   - Component name + text content
+   - Component name + context
    - Placeholder text for inputs
    - Button/element text content
-   - Component-specific classes (e.g., Vuetify classes)
-   - Element type + context
+   - Component-specific classes
    - Custom data attributes (last resort)
 
 3. Make selection helpers robust:
    ```typescript
    const getInput = (wrapper, placeholder) => {
-     const input = wrapper.find(`[placeholder='${placeholder}']`);
+     const input = wrapper.findComponent({
+       name: "v-text-field",
+       props: { placeholder },
+     });
      expect(input.exists()).toBe(true);
      return input;
    };
@@ -296,6 +305,36 @@ it("should disable submit button when form is invalid", async () => {
 ```
 
 ### 7. Mocking External Dependencies
+
+#### Mocking Timing
+
+Always set up mocks before mounting the component to ensure the setup function gets the mocked version:
+
+```typescript
+// Good - mock before mounting
+const mockMutate = vi.fn();
+vi.mock("../requests/auth", async (importOriginal) => {
+  const original = await importOriginal<typeof import("../requests/auth")>();
+  return {
+    ...original,
+    useForgotPassword: () => ({
+      mutate: mockMutate,
+      isPending: { value: false },
+    }),
+  };
+});
+
+const wrapper = mountComponent();
+
+// Avoid - mock after mounting
+const wrapper = mountComponent();
+vi.mock("../requests/auth", () => ({
+  useForgotPassword: () => ({
+    mutate: vi.fn(),
+    isPending: { value: false },
+  }),
+}));
+```
 
 #### Proper Mocking with importOriginal
 
