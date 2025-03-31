@@ -7,6 +7,7 @@ import type { AuthDB } from "@saflib/auth-db";
 import * as argon2 from "argon2";
 import { createHandler } from "@saflib/node-express";
 import type { User } from "../types.ts";
+import crypto from "crypto";
 
 export const authRouter = express.Router();
 
@@ -162,6 +163,40 @@ authRouter.get(
       id: user.id,
       email: user.email,
       scopes,
+    });
+  }),
+);
+
+authRouter.post(
+  "/forgot-password",
+  createHandler(async (req: Request, res: Response) => {
+    const { email } = req.body as { email: string };
+
+    // Find user by email
+    const user = await req.db.users.getByEmail(email);
+    if (!user) {
+      // Return success even if user doesn't exist to prevent email enumeration
+      res.status(200).json({
+        success: true,
+        message: "If the email exists, a recovery email has been sent",
+      });
+      return;
+    }
+
+    // Generate a secure random token
+    const token = crypto.randomBytes(32).toString("hex");
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes from now
+
+    // Update the user's forgot password token
+    await req.db.emailAuth.updateForgotPasswordToken(user.id, token, expiresAt);
+
+    // TODO: Send email with reset link
+    // This will be implemented in a separate task
+    req.log.info(`Password reset token for ${email}: ${token}`);
+
+    res.status(200).json({
+      success: true,
+      message: "If the email exists, a recovery email has been sent",
     });
   }),
 );
