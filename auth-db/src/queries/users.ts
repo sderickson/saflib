@@ -49,17 +49,15 @@ export function createUserQueries(db: BetterSQLite3Database<typeof schema>) {
       return db.query.users.findMany().execute();
     }),
 
-    getByEmail: queryWrapper(
-      async (email: string): Promise<SelectUser | undefined> => {
-        const result = await db.query.users.findFirst({
-          where: eq(users.email, email),
-        });
-        if (!result) {
-          throw new UserNotFoundError();
-        }
-        return result;
+    getByEmail: queryWrapper(async (email: string): Promise<SelectUser> => {
+      const result = await db.query.users.findFirst({
+        where: eq(users.email, email),
+      });
+      if (!result) {
+        throw new UserNotFoundError();
       }
-    ),
+      return result;
+    }),
 
     getById: queryWrapper(async (id: number): Promise<SelectUser> => {
       const result = await db.query.users.findFirst({
