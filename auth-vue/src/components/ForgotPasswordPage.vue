@@ -8,7 +8,7 @@ const valid = ref(null);
 const successMessage = ref("");
 const errorMessage = ref("");
 
-const { mutate: forgotPassword, isPending } = useForgotPassword();
+const { mutateAsync: forgotPassword, isPending } = useForgotPassword();
 
 const sendResetLink = async () => {
   if (!valid.value) return;

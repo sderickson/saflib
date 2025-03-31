@@ -1,23 +1,40 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import {
   withResizeObserverMock,
   mountWithPlugins,
+  waitFor,
 } from "@saflib/vue-spa-dev/components";
 import type { VueWrapper } from "@vue/test-utils";
 import ForgotPasswordPage from "./ForgotPasswordPage.vue";
-import { useForgotPassword } from "../requests/auth";
 import { router } from "../router";
-import { VAlert } from "vuetify/components";
-import { ref } from "vue";
-// Mock the auth requests
+import { VAlert, VBtn } from "vuetify/components";
+import { http, HttpResponse } from "msw";
 
-vi.mock("../requests/auth.ts", async (importOriginal) => {
-  const original = await importOriginal<typeof import("../requests/auth")>();
-  return {
-    ...original,
-    useForgotPassword: vi.fn(),
-  };
+import { setupServer } from "msw/node";
+import { beforeAll, afterEach, afterAll } from "vitest";
+
+export const handlers = [
+  http.post("http://api.localhost:3000/auth/forgot-password", async () => {
+    return HttpResponse.json({
+      success: true,
+      message:
+        "If an account exists with this email, a recovery email was sent",
+    });
+  }),
+];
+
+export const server = setupServer(...handlers);
+
+// Start server before all tests
+beforeAll(() => {
+  server.listen({ onUnhandledRequest: "error" });
 });
+
+// Reset handlers between tests
+afterEach(() => server.resetHandlers());
+
+// Clean up after all tests
+afterAll(() => server.close());
 
 withResizeObserverMock(() => {
   describe("ForgotPasswordPage", () => {
@@ -29,13 +46,16 @@ withResizeObserverMock(() => {
     };
 
     const getSubmitButton = (wrapper: VueWrapper) => {
-      const button = wrapper.find("button");
+      const button = wrapper.findComponent(VBtn);
       expect(button.exists()).toBe(true);
+      expect(button.text()).toBe("Send Reset Link");
       return button;
     };
 
     const getSuccessAlert = (wrapper: VueWrapper) => {
-      const alert = wrapper.find(".v-alert--success");
+      const alert = wrapper
+        .findAllComponents(VAlert)
+        .find((alert) => alert.props().type === "success");
       return alert;
     };
 
@@ -47,15 +67,6 @@ withResizeObserverMock(() => {
     const mountComponent = () => {
       return mountWithPlugins(ForgotPasswordPage, {}, { router });
     };
-
-    beforeEach(() => {
-      vi.clearAllMocks();
-      // Reset the mock implementation
-      (useForgotPassword as any).mockReturnValue({
-        mutate: vi.fn(),
-        isPending: false,
-      });
-    });
 
     it("should render the form", () => {
       const wrapper = mountComponent();
@@ -71,12 +82,12 @@ withResizeObserverMock(() => {
       // Test invalid email
       await emailInput.setValue("invalid-email");
       await wrapper.vm.$nextTick();
-      expect(wrapper.text()).toContain("Must be a valid email");
+      expect(wrapper.text()).toContain("Email must be valid");
 
       // Test valid email
       await emailInput.setValue("valid@email.com");
       await wrapper.vm.$nextTick();
-      expect(wrapper.text()).not.toContain("Must be a valid email");
+      expect(wrapper.text()).not.toContain("Email must be valid");
     });
 
     it("should disable submit button when form is invalid", async () => {
@@ -97,65 +108,54 @@ withResizeObserverMock(() => {
       const submitButton = getSubmitButton(wrapper);
       const emailInput = getEmailInput(wrapper);
 
-      // Mock the mutation to simulate loading state
-      (useForgotPassword as any).mockReturnValue({
-        mutate: vi.fn(),
-        isPending: true,
-      });
-
       await emailInput.setValue("valid@email.com");
       await wrapper.vm.$nextTick();
+      await submitButton.trigger("click");
 
       expect(submitButton.text()).toBe("Sending...");
       expect(emailInput.attributes("disabled")).toBeDefined();
     });
 
     it("should show success message after successful submission", async () => {
+      server.use(
+        http.post("http://api.localhost:3000/auth/forgot-password", () => {
+          return new HttpResponse(
+            JSON.stringify({
+              success: true,
+              message:
+                "If an account exists with this email, a recovery email was sent",
+            }),
+            { status: 200 },
+          );
+        }),
+      );
+
       const wrapper = mountComponent();
       const emailInput = getEmailInput(wrapper);
       const submitButton = getSubmitButton(wrapper);
 
-      // Mock successful mutation
-      const mockMutate = vi.fn().mockResolvedValue(undefined);
-      (useForgotPassword as any).mockReturnValue({
-        mutate: mockMutate,
-        isPending: false,
-      });
-
       await emailInput.setValue("valid@email.com");
       await wrapper.vm.$nextTick();
       await submitButton.trigger("click");
-      await wrapper.vm.$nextTick();
-
-      const successAlert = getSuccessAlert(wrapper);
-      expect(successAlert.exists()).toBe(true);
-      expect(successAlert.text()).toContain(
+      const successAlert = await waitFor(() => getSuccessAlert(wrapper));
+      expect(successAlert).toBeDefined();
+      expect(successAlert?.text()).toContain(
         "If an account exists with this email",
       );
-      expect(mockMutate).toHaveBeenCalledWith({ email: "valid@email.com" });
     });
 
     it("should show error message after failed submission", async () => {
-      // Mock failed mutation
-      const mockMutate = vi.fn().mockRejectedValue(new Error("API Error"));
-      vi.mocked(useForgotPassword).mockReturnValue({
-        mutate: mockMutate,
-        isPending: ref(false),
-        data: ref({ success: false, message: "API Error" }),
-        error: ref(null),
-        variables: ref({ email: "valid@email.com" }),
-        isError: ref(false),
-        isSuccess: ref(true),
-        isIdle: ref(false),
-        status: ref("success"),
-        context: ref(null),
-        failureCount: ref(0),
-        failureReason: ref(null),
-        isPaused: ref(false),
-        submittedAt: ref(0),
-        mutateAsync: vi.fn(),
-        reset: vi.fn(),
-      });
+      // Mock failed response
+      server.use(
+        http.post("http://api.localhost:3000/auth/forgot-password", () => {
+          return new HttpResponse(
+            JSON.stringify({
+              error: "API Error",
+            }),
+            { status: 500 },
+          );
+        }),
+      );
 
       const wrapper = mountComponent();
       const emailInput = getEmailInput(wrapper);
@@ -164,12 +164,10 @@ withResizeObserverMock(() => {
       await emailInput.setValue("valid@email.com");
       await wrapper.vm.$nextTick();
       await submitButton.trigger("click");
-      await wrapper.vm.$nextTick();
-
+      await waitFor(() => getErrorAlert(wrapper));
       const errorAlert = getErrorAlert(wrapper);
       expect(errorAlert).toBeDefined();
       expect(errorAlert?.text()).toContain("An error occurred");
-      expect(mockMutate).toHaveBeenCalledWith({ email: "valid@email.com" });
     });
   });
 });

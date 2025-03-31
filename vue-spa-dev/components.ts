@@ -6,6 +6,8 @@ import type { Component, Plugin, Ref } from "vue";
 import { beforeAll, afterAll, vi } from "vitest";
 import { ref } from "vue";
 import { createRouter, createMemoryHistory } from "vue-router";
+import { VueQueryPlugin } from "@tanstack/vue-query";
+
 /**
  * Creates a Vuetify instance for testing
  * @returns A Vuetify instance
@@ -98,7 +100,7 @@ export function mountWithVuetify(
   return mount(component, {
     ...options,
     global: {
-      plugins: [vuetify, router],
+      plugins: [vuetify, router, VueQueryPlugin],
       ...(options.global || {}),
     },
   });
@@ -149,4 +151,18 @@ export function createMockMutateFunctionError() {
     status: ref("error") as Ref<"error", string>,
     isError: ref(true) as Ref<true, true>,
   };
+}
+
+export async function waitFor<T>(check: () => T) {
+  let countdown = 10;
+  let result: T | null = null;
+  while (countdown > 0) {
+    result = check();
+    if (result) {
+      return result;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 1));
+    countdown--;
+  }
+  return result;
 }
