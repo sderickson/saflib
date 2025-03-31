@@ -189,6 +189,8 @@ Features should be implemented following this layer order:
    - Each layer needs its own tests
    - Include both unit and integration tests
    - Don't forget e2e tests
+   - Always run tests after making changes
+   - Run tests before committing changes
 
 3. **Documentation Gaps**
 
@@ -203,10 +205,17 @@ Features should be implemented following this layer order:
    - Don't skip review points
 
 5. **File References**
+
    - Don't forget to link to files from the spec
    - Use absolute paths for all file references
    - Include file references in relevant tasks
    - Group tasks by the files they modify
+
+6. **Test Running**
+   - Run tests after each implementation task
+   - Run tests before committing changes
+   - Run tests before review points
+   - Include test running in task checklists
 
 ## Example Checklist
 
@@ -232,9 +241,17 @@ Here's an example of a properly structured checklist for a simple feature:
 ## Database Layer
 
 - [ ] Implement Schema Changes
+
   - [ ] Review [schema.md](../drizzle-sqlite3/docs/02-schema.md)
   - [ ] Add new table to [db/src/schema.ts](/saflib/db/src/schema.ts)
-  - [ ] Add indexes
+  - [ ] Run `npm run generate` in the db package to generate migrations
+  - [ ] **Review Point**
+
+- [ ] Add Database Queries
+  - [ ] Review [queries.md](../drizzle-sqlite3/docs/03-queries.md)
+  - [ ] Add new queries to the `/queries` directory in the database package
+  - [ ] Add tests using [query-testing.md](../drizzle-sqlite3-dev/docs/01-testing-gotchas.md)
+  - [ ] Run tests to verify queries
   - [ ] **Review Point**
 
 ## API Layer
@@ -244,6 +261,7 @@ Here's an example of a properly structured checklist for a simple feature:
   - [ ] Add route to [api/routes/example.ts](/saflib/api/routes/example.ts)
   - [ ] Add middleware
   - [ ] Add tests using [testing-middleware.md](../node-express-dev/docs/03-test-middleware.md)
+  - [ ] Run tests to verify endpoint
   - [ ] **Review Point**
 
 ## Frontend Layer
@@ -253,6 +271,7 @@ Here's an example of a properly structured checklist for a simple feature:
   - [ ] Review [using-queries.md](../vue-spa/docs/04-using-queries.md)
   - [ ] Add query to [frontend/src/requests/example.ts](/saflib/frontend/src/requests/example.ts)
   - [ ] Add tests using [query-testing.md](../vue-spa-dev/docs/query-testing.md)
+  - [ ] Run tests to verify query implementation
   - [ ] **Review Point**
 
 - [ ] Implement Component
@@ -261,11 +280,24 @@ Here's an example of a properly structured checklist for a simple feature:
   - [ ] Add form
   - [ ] Add validation
   - [ ] Add tests using [component-testing.md](../vue-spa-dev/docs/component-testing.md)
+  - [ ] Run tests to verify component
   - [ ] **Review Point**
 
 ### Testing Phase
 
-[Standard testing tasks...]
+- [ ] Test end-to-end
+
+  - [ ] Create production docker images
+  - [ ] Run existing e2e tests
+  - [ ] Create new e2e tests
+  - [ ] Run all tests to verify e2e changes
+  - [ ] **Review Point**
+
+- [ ] Make sure everything still works
+  - [ ] Run `npm run test`
+  - [ ] Run `npm run lint`
+  - [ ] Run `npm run format`
+  - [ ] **Review Point**
 
 ### Final Documentation Review
 
@@ -273,5 +305,6 @@ Here's an example of a properly structured checklist for a simple feature:
   - [ ] Check platform changes in relevant docs from [doc-outline.md](./doc-outline.md)
   - [ ] Check product changes
   - [ ] Verify documentation matches implementation
+  - [ ] Run `npm run test` from the root of the monorepo
   - [ ] **Review Point**
 ```
