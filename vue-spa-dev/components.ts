@@ -52,8 +52,7 @@ function teardownResizeObserverMock() {
 }
 
 /**
- * Helper function to setup and teardown ResizeObserver mock in a describe block
- * @param callback - The test suite function
+ * Deprecated - use useResizeObserverMock instead
  */
 export function withResizeObserverMock(callback: () => void) {
   beforeAll(() => {
@@ -66,6 +65,17 @@ export function withResizeObserverMock(callback: () => void) {
     teardownResizeObserverMock();
   });
 }
+
+/**
+ * Use this instead of withResizeObserverMock - you don't have to wrap your tests in a function
+ */
+export const useResizeObserverMock = () => {
+  setupResizeObserverMock();
+
+  afterAll(() => {
+    teardownResizeObserverMock();
+  });
+};
 
 /**
  * Helper function to mount a component with Vuetify
