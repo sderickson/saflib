@@ -306,94 +306,116 @@ it("should disable submit button when form is invalid", async () => {
 
 ### 7. Mocking External Dependencies
 
-#### Mocking Timing
+#### Network Mocking with MSW
 
-Always set up mocks before mounting the component to ensure the setup function gets the mocked version:
+We use MSW (Mock Service Worker) to mock network requests at the HTTP level. This approach is more reliable than mocking query hooks or API clients directly.
+
+1. Set up the mock server in your test file:
 
 ```typescript
-// Good - mock before mounting
-const mockMutate = vi.fn();
-vi.mock("../requests/auth", async (importOriginal) => {
-  const original = await importOriginal<typeof import("../requests/auth")>();
-  return {
-    ...original,
-    useForgotPassword: () => ({
-      mutate: mockMutate,
-      isPending: { value: false },
-    }),
-  };
-});
+import { http, HttpResponse } from "msw";
+import { setupMockServer } from "@saflib/vue-spa-dev/components";
 
-const wrapper = mountComponent();
-
-// Avoid - mock after mounting
-const wrapper = mountComponent();
-vi.mock("../requests/auth", () => ({
-  useForgotPassword: () => ({
-    mutate: vi.fn(),
-    isPending: { value: false },
+export const handlers = [
+  http.post("/api/endpoint", async () => {
+    return HttpResponse.json({
+      success: true,
+      data: {
+        /* response data */
+      },
+    });
   }),
-}));
+];
+
+export const server = setupMockServer(handlers);
 ```
 
-#### Proper Mocking with importOriginal
-
-Always use the `importOriginal` pattern when mocking modules to preserve the original module's structure:
+2. Ensure your API client has a no-op fetch wrapper for MSW to work:
 
 ```typescript
-// RECOMMENDED: Use importOriginal to preserve module structure
-const mockSubmit = vi.fn();
-vi.mock("../path/to/module", async (importOriginal) => {
-  const original = await importOriginal<typeof import("../path/to/module")>();
-  return {
-    ...original, // Preserve all original exports
-    useSubmit: () => ({
-      mutate: mockSubmit,
-      isPending: { value: false },
-      isError: { value: false },
-    }),
-  };
+// client.ts
+export const client = createClient<paths>({
+  fetch: (url) => {
+    // This no-op wrapper is required for MSW to work
+    return fetch(url);
+  },
+  baseUrl,
+  credentials: "include",
 });
+```
 
-// AVOID: This approach completely replaces the module and loses original exports
-vi.mock("../path/to/module", () => ({
-  useSubmit: () => ({
-    mutate: vi.fn(),
-    isPending: { value: false },
-    isError: { value: false },
+3. Use the `waitFor` helper to handle async responses:
+
+```typescript
+import { waitFor } from "@saflib/vue-spa-dev/components";
+
+it("should show success message after API call", async () => {
+  const wrapper = mountComponent();
+
+  // Trigger the API call
+  await submitButton.trigger("click");
+
+  // Wait for the success alert to appear
+  const successAlert = await waitFor(() => getSuccessAlert(wrapper));
+  expect(successAlert).toBeDefined();
+});
+```
+
+4. Keep server setup self-contained:
+
+```typescript
+// Good - server setup in the same file
+export const handlers = [
+  http.post("/api/endpoint", async () => {
+    return HttpResponse.json({ success: true });
   }),
-}));
+];
+export const server = setupMockServer(handlers);
+
+// Avoid - sharing server setup across files
+// This can lead to test interdependence and make tests harder to maintain
 ```
 
-The `importOriginal` pattern:
-
-1. Preserves all original exports from the module
-2. Only overrides the specific functions you need to mock
-3. Prevents unexpected errors when the component uses other exports from the same module
-4. Provides better TypeScript support
-
-Example of mocking Vue Router:
-
-```typescript
-const mockPush = vi.fn();
-vi.mock("vue-router", async (importOriginal) => {
-  const original = await importOriginal<typeof import("vue-router")>();
-  return {
-    ...original,
-    useRouter: vi.fn(() => ({
-      push: mockPush,
-    })),
-  };
-});
-```
-
-Reset mocks in `beforeEach`:
+5. Reset the server between tests:
 
 ```typescript
 beforeEach(() => {
-  vi.clearAllMocks();
-  mockPush.mockReset();
+  server.resetHandlers();
 });
+```
+
+6. Override handlers for specific test cases:
+
+```typescript
+it("should handle error response", async () => {
+  server.use(
+    http.post("/api/endpoint", () => {
+      return new HttpResponse(JSON.stringify({ error: "API Error" }), {
+        status: 500,
+      });
+    }),
+  );
+
+  // Test error handling...
+});
+```
+
+#### Element Selection with findComponent
+
+Use `findComponent` and `findAllComponents` for reliable element selection:
+
+```typescript
+const getSubmitButton = (wrapper) => {
+  const button = wrapper.findComponent(VBtn);
+  expect(button.exists()).toBe(true);
+  expect(button.text()).toBe("Submit");
+  return button;
+};
+
+const getErrorAlert = (wrapper) => {
+  const alerts = wrapper.findAllComponents(VAlert);
+  return alerts.find((alert) => alert.props().type === "error");
+};
 ```
 
 ### 8. Testing Vuetify Components
