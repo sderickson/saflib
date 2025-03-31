@@ -165,4 +165,107 @@ describe("email-auth queries", () => {
       ).rejects.toThrow(EmailAuthNotFoundError);
     });
   });
+
+  describe("getByForgotPasswordToken", () => {
+    it("should get email auth by forgot password token", async () => {
+      const user = await db.users.create({
+        email: "test@example.com",
+        createdAt: new Date(),
+      });
+
+      const passwordHash = Buffer.from([1, 2, 3]);
+      const token = "forgot-password-token";
+      const now = new Date();
+      now.setMilliseconds(0); // Round to seconds
+      const expiresAt = new Date(now.getTime() + 15 * 60 * 1000); // 15 minutes from now
+
+      await db.emailAuth.create({
+        userId: user.id,
+        email: user.email,
+        passwordHash,
+        forgotPasswordToken: token,
+        forgotPasswordTokenExpiresAt: expiresAt,
+      });
+
+      const auth = await db.emailAuth.getByForgotPasswordToken(token);
+      expect(auth).toMatchObject({
+        userId: user.id,
+        email: user.email,
+        forgotPasswordToken: token,
+        forgotPasswordTokenExpiresAt: expiresAt,
+      });
+    });
+
+    it("should throw TokenNotFoundError when token not found", async () => {
+      await expect(
+        db.emailAuth.getByForgotPasswordToken("nonexistent-token"),
+      ).rejects.toThrow(db.emailAuth.TokenNotFoundError);
+    });
+  });
+
+  describe("updatePassword", () => {
+    it("should update password", async () => {
+      const user = await db.users.create({
+        email: "test@example.com",
+        createdAt: new Date(),
+      });
+
+      const passwordHash = Buffer.from([1, 2, 3]);
+      await db.emailAuth.create({
+        userId: user.id,
+        email: user.email,
+        passwordHash,
+      });
+
+      const newPasswordHash = Buffer.from([4, 5, 6]);
+      const updated = await db.emailAuth.updatePassword(
+        user.id,
+        newPasswordHash,
+      );
+      expect(updated).toMatchObject({
+        passwordHash: newPasswordHash,
+      });
+    });
+
+    it("should throw EmailAuthNotFoundError when user not found", async () => {
+      await expect(
+        db.emailAuth.updatePassword(999, Buffer.from([4, 5, 6])),
+      ).rejects.toThrow(EmailAuthNotFoundError);
+    });
+  });
+
+  describe("clearForgotPasswordToken", () => {
+    it("should clear forgot password token", async () => {
+      const user = await db.users.create({
+        email: "test@example.com",
+        createdAt: new Date(),
+      });
+
+      const passwordHash = Buffer.from([1, 2, 3]);
+      const token = "forgot-password-token";
+      const now = new Date();
+      now.setMilliseconds(0); // Round to seconds
+      const expiresAt = new Date(now.getTime() + 15 * 60 * 1000); // 15 minutes from now
+
+      await db.emailAuth.create({
+        userId: user.id,
+        email: user.email,
+        passwordHash,
+        forgotPasswordToken: token,
+        forgotPasswordTokenExpiresAt: expiresAt,
+      });
+
+      const updated = await db.emailAuth.clearForgotPasswordToken(user.id);
+      expect(updated).toMatchObject({
+        forgotPasswordToken: null,
+        forgotPasswordTokenExpiresAt: null,
+      });
+    });
+
+    it("should throw EmailAuthNotFoundError when user not found", async () => {
+      await expect(db.emailAuth.clearForgotPasswordToken(999)).rejects.toThrow(
+        EmailAuthNotFoundError,
+      );
+    });
+  });
 });
