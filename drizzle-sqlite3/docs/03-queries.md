@@ -1,4 +1,4 @@
-# Writing Queries
+# Queries
 
 Queries are the "public" interface for the database. Services should not craft their own SQL queries, they should be housed in the "queries" folder of the database library and exported for general use. This enforces the following layering:
 

@@ -1,4 +1,4 @@
-# Setting Up a Drizzle SQLite3 Library
+# Setup
 
 This guide outlines the standard structure and setup for creating a Drizzle SQLite3 library in the monorepo.
 

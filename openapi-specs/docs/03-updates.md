@@ -1,4 +1,4 @@
-# Updating API Specifications
+# Updates
 
 Your /specs/apis directory contains OpenAPI specifications. These generate types used in TypeScript on both client and server, json objects which are used by node/express to validate responses and requests, and an html file for exploring your APIs. This document goes over how to update these APIs and update these outputs.
 

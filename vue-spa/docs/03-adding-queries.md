@@ -1,4 +1,4 @@
-# Adding Queries and Mutations
+# TanStack Queries
 
 This guide focuses on how to implement query and mutation functions for TanStack Query in your application.
 
@@ -687,6 +687,4 @@ Following these patterns will help you create consistent, type-safe, and maintai
 
 For more information, refer to:
 
-- [Using Queries Guide](./using-queries.md) - How to use these functions in components
-- [Query Testing Guide](./query-testing.md) - How to test your query functions
 - [TanStack Query Documentation](https://tanstack.com/query/latest/docs/vue/overview)

@@ -1,4 +1,4 @@
-# Testing Express Middleware
+# Test Middleware
 
 This guide explains how to write effective tests for Express middleware using Vitest. We'll cover common patterns, best practices, and examples from our codebase.
 

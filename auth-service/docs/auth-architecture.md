@@ -1,6 +1,6 @@
-# SAF Authentication Architecture
+# Architecture
 
-This document describes how authentication headers flow through the SAF-2025 system, from the auth service through Caddy to other Node.js services.
+This document describes how authentication headers flow through the SAF-2025 system, from the `auth-service` package through Caddy to other Node.js services.
 
 ## Overview
 

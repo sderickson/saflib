@@ -1,4 +1,4 @@
-# Using TanStack Query in Components
+# Integrating Vue, TanStack
 
 This guide focuses on how to effectively use query and mutation functions in your Vue components. It covers common patterns for handling loading states, errors, and dependent data.
 
@@ -20,7 +20,7 @@ This guide focuses on how to effectively use query and mutation functions in you
 
 ## Basic Usage
 
-Once you've created your query functions (see [Adding Queries](./adding-queries.md)), you can use them in your components:
+Once you've created your query functions, you can use them in your components:
 
 ```vue
 <script setup lang="ts">
@@ -264,8 +264,6 @@ const saveProfile = async () => {
 ## Form Handling with Remote Data
 
 When building forms that need to sync with remote data, use the `useFormRefForRemoteRef` composable:
-
-> **Note:** For comprehensive guidance on form design patterns, including best practices for component structure and separation of concerns, see the [Form Design Patterns](./forms.md) guide.
 
 ```vue
 <script setup lang="ts">
@@ -778,6 +776,4 @@ Key takeaways:
 
 For more information, refer to:
 
-- [Adding Queries Guide](./adding-queries.md) - How to implement query functions
-- [Query Testing Guide](./query-testing.md) - How to test your queries
 - [TanStack Query Documentation](https://tanstack.com/query/latest/docs/vue/overview)

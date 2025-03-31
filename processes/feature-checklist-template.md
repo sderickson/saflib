@@ -6,20 +6,20 @@ This is a template for adding features. Whenever a new feature is added, follow 
 
 To get started:
 
-1. Create a folder in /notes with the name of the feature, prefixed with the date, e.g. 2025-03-23-auth
-2. Make a copy of this file in that folder, call it "checklist.md"
+1. Create a folder in `/notes` with the name of the feature, prefixed with the date, e.g. `2025-03-23-add-auth-scopes`
+2. Make a copy of this file in that folder, call it `checklist.md`
 3. Begin going through that checklist
 
 ### Planning Phase
 
 - [ ] Set up a new branch in the monorepo
 
-  - [ ] Checkout the main branch
+  - [ ] Checkout the `main` branch
   - [ ] Pull the latest changes
   - [ ] Create a new branch with the current date and the name of the feature, e.g. `2025-03-23-auth-library`
 
 - [ ] Write specification
-  - [ ] Make a copy of the [./feature-spec-template.md](./feature-spec-template.md) document, put it in /notes/<branch-name>/spec.md
+  - [ ] Make a copy of the [./feature-spec-template.md](./feature-spec-template.md) document, put it in `/notes/<branch-name>/spec.md`
   - [ ] Fill in each section
 - [ ] **Review Point**
 
@@ -30,9 +30,9 @@ To get started:
 
 - [ ] Add Documentation to plan
 
-  - [ ] Review what .md files are in /saflib
+  - [ ] Review what `.md` files are in /saflib
   - [ ] Add any that are relevant to the implementation. Docs should be reviewed before implementation.
-  - [ ] Note any missing platform documentation needs. If there are gaps, add a TODO to create a doc in an appropraite /saflib/\*/docs folder after implementation. Even for existing docs, have a checkbox for making any necessary updates if guidance was required.
+  - [ ] Note any missing platform documentation needs. If there are gaps, add a TODO to create a doc in an appropraite `/saflib/\*/docs` folder after implementation. Even for existing docs, have a checkbox for making any necessary updates if guidance was required.
   - [ ] **Review Point**
 
 ### Implementation Phase
@@ -73,7 +73,6 @@ Start at the lowest level and work your way up. For example, have one task for t
 
 - [ ] Test end-to-end
 
-  - [ ] Review [e2e-testing.md](../lib/playwright/docs/e2e-testing.md) (TODO!)
   - [ ] Create production docker images by running `npm run build` from `/deploy/instance`
   - [ ] Run `npm run test` in /tests/e2e and make sure existing tests still pass
   - [ ] Create test in /tests/e2e/specs for new user flow happy path
