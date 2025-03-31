@@ -626,6 +626,4 @@ Testing TanStack Query functions requires a proper setup to handle the asynchron
 
 For more information, refer to:
 
-- [Adding Queries Guide](./adding-queries.md) - How to implement query functions
-- [Using Queries Guide](./using-queries.md) - How to use queries in components
 - [TanStack Query Testing Documentation](https://tanstack.com/query/latest/docs/vue/guides/testing)

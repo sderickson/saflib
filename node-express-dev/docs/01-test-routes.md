@@ -72,7 +72,7 @@ it("should return data from file", async () => {
 });
 ```
 
-See [mocking.md](./mocking.md) for more details, especially if your mocking isn't working!
+See [mocking.md](./02-mock-dependencies.md) for more details, especially if your mocking isn't working!
 
 ## Common Issues
 

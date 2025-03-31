@@ -73,7 +73,6 @@ Start at the lowest level and work your way up. For example, have one task for t
 
 - [ ] Test end-to-end
 
-  - [ ] Review [e2e-testing.md](../lib/playwright/docs/e2e-testing.md) (TODO!)
   - [ ] Create production docker images by running `npm run build` from `/deploy/instance`
   - [ ] Run `npm run test` in /tests/e2e and make sure existing tests still pass
   - [ ] Create test in /tests/e2e/specs for new user flow happy path
