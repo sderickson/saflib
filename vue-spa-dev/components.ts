@@ -2,8 +2,9 @@ import { createVuetify } from "vuetify";
 import * as components from "vuetify/components";
 import * as directives from "vuetify/directives";
 import { mount, type ComponentMountingOptions } from "@vue/test-utils";
-import type { Component, Plugin } from "vue";
-import { beforeAll, afterAll } from "vitest";
+import type { Component, Plugin, Ref } from "vue";
+import { beforeAll, afterAll, vi } from "vitest";
+import { ref } from "vue";
 import { createRouter, createMemoryHistory } from "vue-router";
 /**
  * Creates a Vuetify instance for testing
@@ -105,3 +106,47 @@ export function mountWithVuetify(
 
 // This is the new name. Should refactor off "mountWithVuetify"
 export const mountWithPlugins = mountWithVuetify;
+
+export function createMockMutateBase() {
+  return {
+    isPending: ref(false) as Ref<false, boolean>,
+    isError: ref(false) as Ref<false, boolean>,
+    isSuccess: ref(false) as Ref<false, boolean>,
+    isIdle: ref(false) as Ref<false, boolean>,
+    isPaused: ref(false) as Ref<false, boolean>,
+    data: ref(null),
+    error: ref(null),
+    variables: ref(null),
+    context: ref(null),
+    failureCount: ref(0),
+    failureReason: ref(null),
+    submittedAt: ref(0),
+    mutate: vi.fn(),
+    mutateAsync: vi.fn(),
+    reset: vi.fn(),
+  };
+}
+
+export function createMockMutateFunctionPending() {
+  return {
+    ...createMockMutateBase(),
+    status: ref("pending") as Ref<"pending", string>,
+    isPending: ref(true) as Ref<true, true>,
+  };
+}
+
+export function createMockMutateFunctionSuccess() {
+  return {
+    ...createMockMutateBase(),
+    status: ref("success") as Ref<"success", string>,
+    isSuccess: ref(true) as Ref<true, true>,
+  };
+}
+
+export function createMockMutateFunctionError() {
+  return {
+    ...createMockMutateBase(),
+    status: ref("error") as Ref<"error", string>,
+    isError: ref(true) as Ref<true, true>,
+  };
+}
