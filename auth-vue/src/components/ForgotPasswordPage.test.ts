@@ -5,19 +5,16 @@ import {
 } from "@saflib/vue-spa-dev/components";
 import type { VueWrapper } from "@vue/test-utils";
 import ForgotPasswordPage from "./ForgotPasswordPage.vue";
-import { useForgotPassword } from "../requests/auth";
 import { router } from "../router";
 import { VAlert } from "vuetify/components";
-import { ref } from "vue";
-// Mock the auth requests
+import { client } from "../client";
 
-vi.mock("../requests/auth.ts", async (importOriginal) => {
-  const original = await importOriginal<typeof import("../requests/auth")>();
-  return {
-    ...original,
-    useForgotPassword: vi.fn(),
-  };
-});
+// Mock the client
+vi.mock("../client", () => ({
+  client: {
+    POST: vi.fn(),
+  },
+}));
 
 withResizeObserverMock(() => {
   describe("ForgotPasswordPage", () => {
@@ -51,10 +48,7 @@ withResizeObserverMock(() => {
     beforeEach(() => {
       vi.clearAllMocks();
       // Reset the mock implementation
-      (useForgotPassword as any).mockReturnValue({
-        mutate: vi.fn(),
-        isPending: false,
-      });
+      (client.POST as any).mockResolvedValue({ data: null, error: null });
     });
 
     it("should render the form", () => {
@@ -97,14 +91,14 @@ withResizeObserverMock(() => {
       const submitButton = getSubmitButton(wrapper);
       const emailInput = getEmailInput(wrapper);
 
-      // Mock the mutation to simulate loading state
-      (useForgotPassword as any).mockReturnValue({
-        mutate: vi.fn(),
-        isPending: true,
-      });
+      // Mock the client to simulate a delayed response
+      vi.mocked(client.POST).mockImplementation(
+        () => new Promise((resolve) => setTimeout(resolve, 100)),
+      );
 
       await emailInput.setValue("valid@email.com");
       await wrapper.vm.$nextTick();
+      await submitButton.trigger("click");
 
       expect(submitButton.text()).toBe("Sending...");
       expect(emailInput.attributes("disabled")).toBeDefined();
@@ -115,11 +109,13 @@ withResizeObserverMock(() => {
       const emailInput = getEmailInput(wrapper);
       const submitButton = getSubmitButton(wrapper);
 
-      // Mock successful mutation
-      const mockMutate = vi.fn().mockResolvedValue(undefined);
-      (useForgotPassword as any).mockReturnValue({
-        mutate: mockMutate,
-        isPending: false,
+      // Mock successful response
+      (client.POST as any).mockResolvedValue({
+        data: {
+          success: true,
+          message: "If an account exists with this email",
+        },
+        error: null,
       });
 
       await emailInput.setValue("valid@email.com");
@@ -132,34 +128,21 @@ withResizeObserverMock(() => {
       expect(successAlert.text()).toContain(
         "If an account exists with this email",
       );
-      expect(mockMutate).toHaveBeenCalledWith({ email: "valid@email.com" });
+      expect(client.POST).toHaveBeenCalledWith("/auth/forgot-password", {
+        body: { email: "valid@email.com" },
+      });
     });
 
     it("should show error message after failed submission", async () => {
-      // Mock failed mutation
-      const mockMutate = vi.fn().mockRejectedValue(new Error("API Error"));
-      vi.mocked(useForgotPassword).mockReturnValue({
-        mutate: mockMutate,
-        isPending: ref(false),
-        data: ref({ success: false, message: "API Error" }),
-        error: ref(null),
-        variables: ref({ email: "valid@email.com" }),
-        isError: ref(false),
-        isSuccess: ref(true),
-        isIdle: ref(false),
-        status: ref("success"),
-        context: ref(null),
-        failureCount: ref(0),
-        failureReason: ref(null),
-        isPaused: ref(false),
-        submittedAt: ref(0),
-        mutateAsync: vi.fn(),
-        reset: vi.fn(),
-      });
-
       const wrapper = mountComponent();
       const emailInput = getEmailInput(wrapper);
       const submitButton = getSubmitButton(wrapper);
+
+      // Mock error response
+      (client.POST as any).mockResolvedValue({
+        data: null,
+        error: new Error("API Error"),
+      });
 
       await emailInput.setValue("valid@email.com");
       await wrapper.vm.$nextTick();
@@ -169,7 +152,9 @@ withResizeObserverMock(() => {
       const errorAlert = getErrorAlert(wrapper);
       expect(errorAlert).toBeDefined();
       expect(errorAlert?.text()).toContain("An error occurred");
-      expect(mockMutate).toHaveBeenCalledWith({ email: "valid@email.com" });
+      expect(client.POST).toHaveBeenCalledWith("/auth/forgot-password", {
+        body: { email: "valid@email.com" },
+      });
     });
   });
 });
