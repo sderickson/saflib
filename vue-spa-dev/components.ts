@@ -2,12 +2,12 @@ import { createVuetify } from "vuetify";
 import * as components from "vuetify/components";
 import * as directives from "vuetify/directives";
 import { mount, type ComponentMountingOptions } from "@vue/test-utils";
-import type { Component, Plugin, Ref } from "vue";
-import { beforeAll, afterAll, vi } from "vitest";
-import { ref } from "vue";
+import type { Component, Plugin } from "vue";
+import { beforeAll, afterAll, afterEach } from "vitest";
 import { createRouter, createMemoryHistory } from "vue-router";
 import { VueQueryPlugin } from "@tanstack/vue-query";
-
+import { setupServer } from "msw/node";
+import { HttpHandler } from "msw";
 /**
  * Creates a Vuetify instance for testing
  * @returns A Vuetify instance
@@ -109,50 +109,7 @@ export function mountWithVuetify(
 // This is the new name. Should refactor off "mountWithVuetify"
 export const mountWithPlugins = mountWithVuetify;
 
-export function createMockMutateBase() {
-  return {
-    isPending: ref(false) as Ref<false, boolean>,
-    isError: ref(false) as Ref<false, boolean>,
-    isSuccess: ref(false) as Ref<false, boolean>,
-    isIdle: ref(false) as Ref<false, boolean>,
-    isPaused: ref(false) as Ref<false, boolean>,
-    data: ref(null),
-    error: ref(null),
-    variables: ref(null),
-    context: ref(null),
-    failureCount: ref(0),
-    failureReason: ref(null),
-    submittedAt: ref(0),
-    mutate: vi.fn(),
-    mutateAsync: vi.fn(),
-    reset: vi.fn(),
-  };
-}
-
-export function createMockMutateFunctionPending() {
-  return {
-    ...createMockMutateBase(),
-    status: ref("pending") as Ref<"pending", string>,
-    isPending: ref(true) as Ref<true, true>,
-  };
-}
-
-export function createMockMutateFunctionSuccess() {
-  return {
-    ...createMockMutateBase(),
-    status: ref("success") as Ref<"success", string>,
-    isSuccess: ref(true) as Ref<true, true>,
-  };
-}
-
-export function createMockMutateFunctionError() {
-  return {
-    ...createMockMutateBase(),
-    status: ref("error") as Ref<"error", string>,
-    isError: ref(true) as Ref<true, true>,
-  };
-}
-
+// For when you need to wait for a condition to be true, probably because of mocked networking
 export async function waitFor<T>(check: () => T) {
   let countdown = 10;
   let result: T | null = null;
@@ -165,4 +122,21 @@ export async function waitFor<T>(check: () => T) {
     countdown--;
   }
   return result;
+}
+
+export function setupMockServer(handlers: HttpHandler[]) {
+  const server = setupServer(...handlers);
+
+  // Start server before all tests
+  beforeAll(() => {
+    server.listen({ onUnhandledRequest: "error" });
+  });
+
+  // Reset handlers between tests
+  afterEach(() => server.resetHandlers());
+
+  // Clean up after all tests
+  afterAll(() => server.close());
+
+  return server;
 }

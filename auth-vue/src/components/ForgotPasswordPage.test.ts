@@ -1,17 +1,15 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect } from "vitest";
 import {
   withResizeObserverMock,
   mountWithPlugins,
   waitFor,
+  setupMockServer,
 } from "@saflib/vue-spa-dev/components";
 import type { VueWrapper } from "@vue/test-utils";
 import ForgotPasswordPage from "./ForgotPasswordPage.vue";
 import { router } from "../router";
 import { VAlert, VBtn } from "vuetify/components";
 import { http, HttpResponse } from "msw";
-
-import { setupServer } from "msw/node";
-import { beforeAll, afterEach, afterAll } from "vitest";
 
 export const handlers = [
   http.post("http://api.localhost:3000/auth/forgot-password", async () => {
@@ -23,18 +21,7 @@ export const handlers = [
   }),
 ];
 
-export const server = setupServer(...handlers);
-
-// Start server before all tests
-beforeAll(() => {
-  server.listen({ onUnhandledRequest: "error" });
-});
-
-// Reset handlers between tests
-afterEach(() => server.resetHandlers());
-
-// Clean up after all tests
-afterAll(() => server.close());
+export const server = setupMockServer(handlers);
 
 withResizeObserverMock(() => {
   describe("ForgotPasswordPage", () => {
