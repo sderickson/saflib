@@ -10,6 +10,23 @@ This guide provides a comprehensive approach to generating feature implementatio
 - Thorough documentation updates
 - Clear review points for team collaboration
 
+## Documentation References
+
+Before creating a checklist, review the [doc-outline.md](./doc-outline.md) to understand all available documentation. Each layer has specific documentation that should be referenced. Examples include, but are not limited to:
+
+### Platform Documentation
+
+- Authentication: [auth-architecture.md](../auth-service/docs/auth-architecture.md)
+- Database: [schema.md](../drizzle-sqlite3/docs/02-schema.md)
+- API: [adding-routes.md](../node-express/docs/02-adding-routes.md)
+- Frontend: [forms.md](../vue-spa/docs/05-forms.md)
+
+### Development Documentation
+
+- Vue Component Testing: [component-testing.md](../vue-spa-dev/docs/component-testing.md)
+- Tanstack Query Testing: [query-testing.md](../vue-spa-dev/docs/query-testing.md)
+- API Route Testing: [testing-middleware.md](../node-express-dev/docs/01-test-routes.md)
+
 ## Checklist Structure
 
 Every feature checklist should follow this basic structure:
@@ -33,7 +50,7 @@ Every feature checklist should follow this basic structure:
 - [ ] **Review Point**
 
 - [ ] Add Documentation to plan
-  - [ ] Review relevant docs from /saflib
+  - [ ] Review relevant docs from [doc-outline.md](./doc-outline.md)
   - [ ] Note any missing platform documentation needs
   - [ ] **Review Point**
 
@@ -64,7 +81,7 @@ Implementation tasks should be organized by architectural layer, starting from t
 ### Final Documentation Review
 
 - [ ] Review all documentation changes
-  - [ ] Check platform changes
+  - [ ] Check platform changes in relevant docs from [doc-outline.md](./doc-outline.md)
   - [ ] Check product changes
   - [ ] Verify documentation matches implementation
   - [ ] **Review Point**
@@ -77,28 +94,28 @@ Features should be implemented following this layer order:
 
    - Update OpenAPI specifications
    - Generate updated types
-   - Reference: /saflib/openapi-specs/docs/update-spec.md
+   - Reference: [update-spec.md](../openapi-specs/docs/03-updates.md)
 
 2. **Database Layer**
 
    - Schema changes
    - Query implementations
-   - Reference: /saflib/drizzle-sqlite3/docs/schema.md
+   - Reference: [schema.md](../drizzle-sqlite3/docs/02-schema.md)
 
 3. **API Layer**
 
    - Endpoint implementations
    - Middleware updates
-   - Reference: /saflib/node-express/docs/adding-routes.md
+   - Reference: [adding-routes.md](../node-express/docs/02-adding-routes.md)
 
 4. **Frontend Layer**
    - TanStack Query implementations
    - Component implementations
    - Page implementations
    - References:
-     - /saflib/vue-spa/docs/using-queries.md
-     - /saflib/vue-spa/docs/forms.md
-     - /saflib/vue-spa/docs/writing-components.md
+     - [using-queries.md](../vue-spa/docs/04-using-queries.md)
+     - [forms.md](../vue-spa/docs/05-forms.md
+     - [writing-components.md](../vue-spa/docs/02-writing-components.md)
 
 ## Layer-Specific Guidelines
 
@@ -109,6 +126,7 @@ Features should be implemented following this layer order:
 - Document error cases
 - Generate and verify types
 - Testing: Verify type generation
+- Documentation: [updates.md](../openapi-specs/docs/03-updates.md)
 
 ### Database Layer
 
@@ -116,6 +134,7 @@ Features should be implemented following this layer order:
 - Add necessary indexes
 - Implement queries
 - Testing: Unit tests for queries
+- Documentation: [schema.md](../drizzle-sqlite3/docs/02-schema.md)
 
 ### API Layer
 
@@ -123,6 +142,7 @@ Features should be implemented following this layer order:
 - Add middleware if needed
 - Add logging
 - Testing: Middleware and endpoint tests
+- Documentation: [testing-middleware.md](../node-express-dev/docs/03-test-middleware.md)
 
 ### Frontend Layer
 
@@ -130,18 +150,18 @@ Features should be implemented following this layer order:
 
    - Implement queries/mutations
    - Add error handling
-   - Testing: Query tests
+   - Testing: [query-testing.md](../vue-spa-dev/docs/query-testing.md)
 
 2. Component Layer
 
    - Implement base components
    - Add form validation
-   - Testing: Component tests
+   - Testing: [component-testing.md](../vue-spa-dev/docs/component-testing.md)
 
 3. Page Layer
    - Implement page components
    - Add loading states
-   - Testing: Page-level tests
+   - Testing: [component-testing.md](../vue-spa-dev/docs/component-testing.md)
 
 ## Common Pitfalls to Avoid
 
@@ -159,8 +179,9 @@ Features should be implemented following this layer order:
 
 3. **Documentation Gaps**
 
-   - Update all relevant documentation
+   - Update all relevant documentation from [doc-outline.md](./doc-outline.md)
    - Include both platform and product docs
+   - Document breaking changes
 
 4. **Review Points**
    - Add review points after each major task
@@ -183,6 +204,7 @@ Here's an example of a properly structured checklist for a simple feature:
 ## API Spec Layer
 
 - [ ] Update OpenAPI Specification
+  - [ ] Review [update-spec.md](../openapi-specs/docs/03-updates.md)
   - [ ] Add new endpoint spec
   - [ ] Generate types
   - [ ] **Review Point**
@@ -190,6 +212,7 @@ Here's an example of a properly structured checklist for a simple feature:
 ## Database Layer
 
 - [ ] Implement Schema Changes
+  - [ ] Review [schema.md](../drizzle-sqlite3/docs/02-schema.md)
   - [ ] Add new table
   - [ ] Add indexes
   - [ ] **Review Point**
@@ -197,23 +220,26 @@ Here's an example of a properly structured checklist for a simple feature:
 ## API Layer
 
 - [ ] Implement Endpoint
+  - [ ] Review [adding-routes.md](../node-express/docs/02-adding-routes.md)
   - [ ] Add route
   - [ ] Add middleware
-  - [ ] Add tests
+  - [ ] Add tests using [testing-middleware.md](../node-express-dev/docs/03-test-middleware.md)
   - [ ] **Review Point**
 
 ## Frontend Layer
 
 - [ ] Add API Integration
 
+  - [ ] Review [using-queries.md](../vue-spa/docs/04-using-queries.md)
   - [ ] Add query
-  - [ ] Add tests
+  - [ ] Add tests using [query-testing.md](../vue-spa-dev/docs/query-testing.md)
   - [ ] **Review Point**
 
 - [ ] Implement Component
+  - [ ] Review [forms.md](../vue-spa/docs/05-forms.md)
   - [ ] Add form
   - [ ] Add validation
-  - [ ] Add tests
+  - [ ] Add tests using [component-testing.md](../vue-spa-dev/docs/component-testing.md)
   - [ ] **Review Point**
 
 ### Testing Phase
@@ -222,5 +248,9 @@ Here's an example of a properly structured checklist for a simple feature:
 
 ### Final Documentation Review
 
-[Standard documentation review tasks...]
+- [ ] Review all documentation changes
+  - [ ] Check platform changes in relevant docs from [doc-outline.md](./doc-outline.md)
+  - [ ] Check product changes
+  - [ ] Verify documentation matches implementation
+  - [ ] **Review Point**
 ```
