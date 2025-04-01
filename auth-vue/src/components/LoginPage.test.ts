@@ -33,7 +33,7 @@ export const handlers = [
 ];
 
 describe("LoginPage", () => {
-  const globals = stubGlobals();
+  stubGlobals();
   const server = setupMockServer(handlers);
 
   // Helper functions for element selection

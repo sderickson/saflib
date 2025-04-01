@@ -29,13 +29,10 @@ class ResizeObserverMock {
 }
 
 function stubGlobalsSetup() {
-  const mocks = {
-    location: vi.stubGlobal("location", {
-      href: "http://localhost",
-    }),
-    ResizeObserver: vi.stubGlobal("ResizeObserver", ResizeObserverMock),
-  };
-  return mocks;
+  vi.stubGlobal("location", {
+    href: "http://localhost",
+  });
+  vi.stubGlobal("ResizeObserver", ResizeObserverMock);
 }
 
 function stubGlobalsTeardown() {
