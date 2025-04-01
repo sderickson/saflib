@@ -20,21 +20,24 @@ So the output of a single feature ideally includes both the feature itself, and 
 ## Prompting
 
 When starting a project, include:
-* A few sentences describing the feature.
-* Which packages you expect to be changed or created.
-* Where you want the project folder to be and what it'll be named.
-* Instructions to create a `spec.md` file there based on [this template](../feature-spec-template.md).
+
+- A few sentences describing the feature.
+- Which packages you expect to be changed or created.
+- Where you want the project folder to be and what it'll be named.
+- Instructions to create a `spec.md` file there based on [this template](../feature-spec-template.md).
 
 Review and update the spec; you'll be giving it to each agent that works on the feature so it's worth it to make sure it's accurate.
 
 Once the spec is in good shape, prompt the same agent to create a `checklist.md` file based on [this template](../feature-checklist-template.md).
 
 At this point execution is a loop, one agent for each loop:
+
 1. Begin a new chat, including a link to the spec, the checklist, a relevant doc or two, and for good measure, the exact lines you want the agent to do during that chat.
 2. Work with the agent to get the job done. If the agent doesn't do it correctly at first, try to guide them to fix what they've done. If you fix it yourself, tell the agent what you did and why.
 3. Once the given task is done, instruct the agent to update or add documentation based on the guidance you provided.
 4. Now would be a good time to do any refactoring as well.
 
 In terms of how much you do in one "loop", a good rule of thumb is:
+
 1. Changes scoped to a single package
 2. Related unit tests, also in that package

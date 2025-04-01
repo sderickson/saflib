@@ -10,9 +10,7 @@
       "post": {
         "summary": "Register New User",
         "operationId": "registerUser",
-        "tags": [
-          "auth"
-        ],
+        "tags": ["auth"],
         "requestBody": {
           "required": true,
           "content": {
@@ -51,9 +49,7 @@
       "post": {
         "summary": "Authenticate User",
         "operationId": "loginUser",
-        "tags": [
-          "auth"
-        ],
+        "tags": ["auth"],
         "requestBody": {
           "required": true,
           "content": {
@@ -92,9 +88,7 @@
       "post": {
         "summary": "Logout User",
         "operationId": "logoutUser",
-        "tags": [
-          "auth"
-        ],
+        "tags": ["auth"],
         "responses": {
           "200": {
             "description": "Successful logout"
@@ -107,9 +101,7 @@
         "summary": "Verify Authentication Status",
         "description": "Used by Caddy for forward authentication. Verifies if the user is authenticated and adds user information headers for downstream services.",
         "operationId": "verifyAuth",
-        "tags": [
-          "auth"
-        ],
+        "tags": ["auth"],
         "responses": {
           "200": {
             "description": "User is authenticated",
@@ -159,9 +151,7 @@
       "post": {
         "summary": "Request Password Reset",
         "operationId": "forgotPassword",
-        "tags": [
-          "auth"
-        ],
+        "tags": ["auth"],
         "requestBody": {
           "required": true,
           "content": {
@@ -200,9 +190,7 @@
       "post": {
         "summary": "Reset Password Using Token",
         "operationId": "resetPassword",
-        "tags": [
-          "auth"
-        ],
+        "tags": ["auth"],
         "requestBody": {
           "required": true,
           "content": {
@@ -252,10 +240,7 @@
     "schemas": {
       "RegisterRequest": {
         "type": "object",
-        "required": [
-          "email",
-          "password"
-        ],
+        "required": ["email", "password"],
         "additionalProperties": false,
         "properties": {
           "email": {
@@ -270,10 +255,7 @@
       },
       "UserResponse": {
         "type": "object",
-        "required": [
-          "id",
-          "email"
-        ],
+        "required": ["id", "email"],
         "additionalProperties": false,
         "properties": {
           "id": {
@@ -294,9 +276,7 @@
       },
       "error": {
         "type": "object",
-        "required": [
-          "error"
-        ],
+        "required": ["error"],
         "properties": {
           "error": {
             "type": "string",
@@ -306,10 +286,7 @@
       },
       "LoginRequest": {
         "type": "object",
-        "required": [
-          "email",
-          "password"
-        ],
+        "required": ["email", "password"],
         "additionalProperties": false,
         "properties": {
           "email": {
@@ -323,9 +300,7 @@
       },
       "ForgotPasswordRequest": {
         "type": "object",
-        "required": [
-          "email"
-        ],
+        "required": ["email"],
         "additionalProperties": false,
         "properties": {
           "email": {
@@ -336,10 +311,7 @@
       },
       "ForgotPasswordResponse": {
         "type": "object",
-        "required": [
-          "success",
-          "message"
-        ],
+        "required": ["success", "message"],
         "additionalProperties": false,
         "properties": {
           "success": {
@@ -353,10 +325,7 @@
       },
       "ResetPasswordRequest": {
         "type": "object",
-        "required": [
-          "token",
-          "newPassword"
-        ],
+        "required": ["token", "newPassword"],
         "additionalProperties": false,
         "properties": {
           "token": {
@@ -372,9 +341,7 @@
       },
       "ResetPasswordResponse": {
         "type": "object",
-        "required": [
-          "success"
-        ],
+        "required": ["success"],
         "additionalProperties": false,
         "properties": {
           "success": {

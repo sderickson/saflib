@@ -3,8 +3,9 @@
 This package contains cross-cutting documentation and resources. Most other packages have a specific scope, but this one captures everything those do not.
 
 Includes:
-* `eslint.config.js` - your own should import and extend this one.
-* `tsconfig.json` - ditto
+
+- `eslint.config.js` - your own should import and extend this one.
+- `tsconfig.json` - ditto
 
 As a rule of thumb, files which live at the root of your project should live here.
 
