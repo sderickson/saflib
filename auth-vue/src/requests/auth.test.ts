@@ -10,7 +10,7 @@ import {
 import { client } from "./client.ts";
 
 // Mock the client
-vi.mock("../client.ts", () => ({ client: { POST: vi.fn() } }));
+vi.mock("./client.ts", () => ({ client: { POST: vi.fn() } }));
 
 describe("auth requests", () => {
   const mockPOST = client.POST as ReturnType<typeof vi.fn>;
