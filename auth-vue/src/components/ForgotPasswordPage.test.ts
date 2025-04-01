@@ -1,8 +1,7 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import {
   stubGlobals,
   mountWithPlugins,
-  waitFor,
   setupMockServer,
 } from "@saflib/vue-spa-dev/components";
 import type { VueWrapper } from "@vue/test-utils";
@@ -12,7 +11,7 @@ import { VAlert, VBtn } from "vuetify/components";
 import { http, HttpResponse } from "msw";
 import type { ForgotPasswordResponse } from "../types.ts";
 
-export const handlers = [
+const handlers = [
   http.post("http://api.localhost:3000/auth/forgot-password", async () => {
     const response: ForgotPasswordResponse = {
       success: true,
@@ -113,8 +112,7 @@ describe("ForgotPasswordPage", () => {
     await emailInput.setValue("valid@email.com");
     await wrapper.vm.$nextTick();
     await submitButton.trigger("click");
-    const successAlert = await waitFor(() => getSuccessAlert(wrapper));
-    expect(successAlert).toBeDefined();
+    const successAlert = await vi.waitUntil(() => getSuccessAlert(wrapper));
     expect(successAlert?.text()).toContain(
       "If an account exists with this email",
     );
@@ -140,8 +138,7 @@ describe("ForgotPasswordPage", () => {
     await emailInput.setValue("valid@email.com");
     await wrapper.vm.$nextTick();
     await submitButton.trigger("click");
-    await waitFor(() => getErrorAlert(wrapper));
-    const errorAlert = getErrorAlert(wrapper);
+    const errorAlert = await vi.waitUntil(() => getErrorAlert(wrapper));
     expect(errorAlert).toBeDefined();
     expect(errorAlert?.text()).toContain("An error occurred");
   });

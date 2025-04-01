@@ -1,9 +1,5 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import {
-  stubGlobals,
-  mountWithPlugins,
-  waitFor,
-} from "@saflib/vue-spa-dev/components";
+import { describe, it, expect, vi } from "vitest";
+import { stubGlobals, mountWithPlugins } from "@saflib/vue-spa-dev/components";
 import { type VueWrapper } from "@vue/test-utils";
 import { http, HttpResponse } from "msw";
 import { setupMockServer } from "@saflib/vue-spa-dev/components";
@@ -16,7 +12,7 @@ interface LoginRequest {
 }
 
 // Set up MSW server
-export const handlers = [
+const handlers = [
   http.post("/api/auth/login", async ({ request }) => {
     const body = (await request.json()) as LoginRequest;
     return HttpResponse.json({
@@ -72,9 +68,9 @@ describe("LoginPage", () => {
   ) => {
     await getEmailInput(wrapper).setValue(email);
     await getPasswordInput(wrapper).setValue(password);
-    await wrapper.vm.$nextTick();
-    // Wait for validation to complete
-    await new Promise((resolve) => setTimeout(resolve, 0));
+    await vi.waitFor(() =>
+      expect(wrapper.text()).not.toContain("Email must be valid"),
+    );
   };
 
   it("should render the login form", () => {
@@ -151,6 +147,6 @@ describe("LoginPage", () => {
     await loginButton.trigger("click");
 
     // Wait for the API request to complete
-    await waitFor(() => location.href == "/app/");
+    await vi.waitFor(() => expect(location.href).toBe("/app/"));
   });
 });

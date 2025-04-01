@@ -72,24 +72,6 @@ export function mountWithPlugins(
   });
 }
 
-// TEST HELPERS -----------------
-
-// For when you need to wait for a condition to be true, probably because of mocked networking
-export async function waitFor<T>(check: () => T) {
-  let countdown = 10;
-  let result: T | null = null;
-  while (countdown > 0) {
-    result = check();
-    if (result) {
-      return result;
-    }
-    await new Promise((resolve) => setTimeout(resolve, 1));
-    countdown--;
-  }
-  expect(!!result).toBe(true);
-  return result;
-}
-
 // NETWORKING MOCK HELPERS -----------------
 
 export function setupMockServer(handlers: HttpHandler[]) {
