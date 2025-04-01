@@ -16,7 +16,7 @@ interface RegisterRequest {
 
 // Set up MSW server
 const handlers = [
-  http.post("/api/auth/register", async ({ request }) => {
+  http.post("http://api.localhost:3000/auth/register", async ({ request }) => {
     const body = (await request.json()) as RegisterRequest;
     return HttpResponse.json({
       success: true,
@@ -33,7 +33,7 @@ const handlers = [
 
 describe("RegisterPage", () => {
   stubGlobals();
-  const server = setupMockServer(handlers);
+  setupMockServer(handlers);
 
   // Helper functions for element selection
   const getEmailInput = (wrapper: VueWrapper) => {
@@ -72,6 +72,10 @@ describe("RegisterPage", () => {
     return registerButton!;
   };
 
+  const getErrorMessages = (wrapper: VueWrapper) => {
+    return wrapper.findAllComponents({ name: "v-messages" });
+  };
+
   const mountComponent = () => {
     return mountWithPlugins(RegisterPage, {}, { router });
   };
@@ -87,9 +91,7 @@ describe("RegisterPage", () => {
     await getEmailInput(wrapper).setValue(email);
     await getPasswordInput(wrapper).setValue(password);
     await getConfirmPasswordInput(wrapper).setValue(confirmPassword);
-    await vi.waitFor(() =>
-      expect(wrapper.text()).not.toContain("Email must be valid"),
-    );
+    await wrapper.vm.$nextTick();
   };
 
   it("should render the registration form", () => {
@@ -106,11 +108,21 @@ describe("RegisterPage", () => {
 
     await emailInput.setValue("invalid-email");
     await wrapper.vm.$nextTick();
-    expect(wrapper.text()).toContain("Email must be valid");
+    await vi.waitFor(() => {
+      const errorMessages = getErrorMessages(wrapper);
+      expect(
+        errorMessages.some((msg) => msg.text().includes("Email must be valid")),
+      ).toBe(true);
+    });
 
     await emailInput.setValue("valid@email.com");
     await wrapper.vm.$nextTick();
-    expect(wrapper.text()).not.toContain("Email must be valid");
+    await vi.waitFor(() => {
+      const errorMessages = getErrorMessages(wrapper);
+      expect(
+        errorMessages.some((msg) => msg.text().includes("Email must be valid")),
+      ).toBe(false);
+    });
   });
 
   it("should validate password requirements", async () => {
@@ -119,11 +131,25 @@ describe("RegisterPage", () => {
 
     await passwordInput.setValue("short");
     await wrapper.vm.$nextTick();
-    expect(wrapper.text()).toContain("Password must be at least");
+    await vi.waitFor(() => {
+      const errorMessages = getErrorMessages(wrapper);
+      expect(
+        errorMessages.some((msg) =>
+          msg.text().includes("Password must be at least 8 characters"),
+        ),
+      ).toBe(true);
+    });
 
     await passwordInput.setValue("validpassword123");
     await wrapper.vm.$nextTick();
-    expect(wrapper.text()).not.toContain("Password must be at least");
+    await vi.waitFor(() => {
+      const errorMessages = getErrorMessages(wrapper);
+      expect(
+        errorMessages.some((msg) =>
+          msg.text().includes("Password must be at least 8 characters"),
+        ),
+      ).toBe(false);
+    });
   });
 
   it("should validate password confirmation match", async () => {
@@ -135,11 +161,25 @@ describe("RegisterPage", () => {
       confirmPassword: "differentpassword",
     });
 
-    expect(wrapper.text()).toContain("Passwords must match");
+    await vi.waitFor(() => {
+      const errorMessages = getErrorMessages(wrapper);
+      expect(
+        errorMessages.some((msg) =>
+          msg.text().includes("Passwords must match"),
+        ),
+      ).toBe(true);
+    });
 
     await getConfirmPasswordInput(wrapper).setValue("validpassword123");
     await wrapper.vm.$nextTick();
-    expect(wrapper.text()).not.toContain("Passwords must match");
+    await vi.waitFor(() => {
+      const errorMessages = getErrorMessages(wrapper);
+      expect(
+        errorMessages.some((msg) =>
+          msg.text().includes("Passwords must match"),
+        ),
+      ).toBe(false);
+    });
   });
 
   it("should disable register button when form is invalid", async () => {
@@ -171,7 +211,9 @@ describe("RegisterPage", () => {
     await registerButton.trigger("click");
     await wrapper.vm.$nextTick();
 
-    // Wait for the API request to complete
-    await vi.waitFor(() => expect(location.href).toBe("/app/"));
+    // Wait for the API request to complete and navigation to happen
+    await vi.waitFor(() => {
+      expect(location.href).toBe("/app/");
+    });
   });
 });

@@ -3,7 +3,7 @@ import * as components from "vuetify/components";
 import * as directives from "vuetify/directives";
 import { mount, type ComponentMountingOptions } from "@vue/test-utils";
 import type { Component, Plugin } from "vue";
-import { beforeAll, afterAll, afterEach, vi, expect } from "vitest";
+import { beforeAll, afterAll, afterEach, vi } from "vitest";
 import { createRouter, createMemoryHistory } from "vue-router";
 import { VueQueryPlugin } from "@tanstack/vue-query";
 import { setupServer } from "msw/node";
