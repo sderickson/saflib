@@ -135,7 +135,7 @@ const server = setupMockServer(handlers);
 ```typescript
 it("should handle error response", async () => {
   server.use(
-    http.post("/api/endpoint", () => {
+    http.post("http://api.localhost:3000/endpoint", () => {
       return new HttpResponse(JSON.stringify({ error: "API Error" }), {
         status: 500,
       });
@@ -354,15 +354,22 @@ it("should disable submit button when form is invalid", async () => {
 
 ### 7. Network Request Testing
 
-1. Set up default handlers for successful responses:
+1. Set up default handlers for successful responses using types from your OpenAPI spec:
 
    ```typescript
+   import type { LoginRequest, UserResponse } from "./types";
+
    export const handlers = [
-     http.post("/api/endpoint", async () => {
+     http.post("http://api.localhost:3000/auth/login", async ({ request }) => {
+       const body = (await request.json()) as LoginRequest;
        return HttpResponse.json({
          success: true,
          data: {
-           /* response data */
+           token: "mock-token",
+           user: {
+             id: 1,
+             email: body.email,
+           } satisfies UserResponse,
          },
        });
      }),
@@ -374,7 +381,7 @@ it("should disable submit button when form is invalid", async () => {
    ```typescript
    it("should handle error response", async () => {
      server.use(
-       http.post("/api/endpoint", () => {
+       http.post("http://api.localhost:3000/auth/login", () => {
          return new HttpResponse(JSON.stringify({ error: "API Error" }), {
            status: 500,
          });
@@ -386,11 +393,18 @@ it("should disable submit button when form is invalid", async () => {
    ```
 
 3. Use `vi.waitFor` or `vi.waitUntil` to wait for async operations:
+
    ```typescript
    await submitButton.trigger("click");
    const successAlert = await vi.waitUntil(() => getSuccessAlert(wrapper));
    expect(successAlert?.text()).toContain("Success message");
    ```
+
+4. Type Safety:
+   - Always use types from your OpenAPI spec for request and response bodies
+   - This ensures type safety and catches API changes early
+   - Avoid creating local interfaces for API types
+   - Use `satisfies` to ensure response objects match the expected type
 
 ### 8. Testing Vuetify Components
 
@@ -493,11 +507,7 @@ import { http, HttpResponse } from "msw";
 import { setupMockServer } from "@saflib/vue-spa-dev/components";
 import LoginForm from "../LoginForm.vue";
 import { router } from "../router";
-
-interface LoginRequest {
-  email: string;
-  password: string;
-}
+import type { LoginRequest, UserResponse } from "../requests/types";
 
 // Set up MSW server
 const handlers = [
@@ -510,7 +520,7 @@ const handlers = [
         user: {
           id: 1,
           email: body.email,
-        },
+        } satisfies UserResponse,
       },
     });
   }),
@@ -613,7 +623,7 @@ describe("LoginForm", () => {
     // Create a spy for the API request
     let requestBody: LoginRequest | null = null;
     server.use(
-      http.post("/api/auth/login", async ({ request }) => {
+      http.post("http://api.localhost:3000/auth/login", async ({ request }) => {
         requestBody = (await request.json()) as LoginRequest;
         return HttpResponse.json({
           success: true,
@@ -623,7 +633,7 @@ describe("LoginForm", () => {
               id: 1,
               email: requestBody.email,
             },
-          },
+          } satisfies UserResponse,
         });
       }),
     );
