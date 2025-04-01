@@ -9,7 +9,7 @@ import ForgotPasswordPage from "./ForgotPasswordPage.vue";
 import { router } from "../router";
 import { VAlert, VBtn } from "vuetify/components";
 import { http, HttpResponse } from "msw";
-import type { ForgotPasswordResponse } from "../types.ts";
+import type { ForgotPasswordResponse } from "../requests/types.ts";
 
 const handlers = [
   http.post("http://api.localhost:3000/auth/forgot-password", async () => {

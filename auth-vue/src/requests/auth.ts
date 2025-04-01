@@ -5,7 +5,7 @@ import type {
   RegisterRequest,
   ForgotPasswordRequest,
   ResetPasswordRequest,
-} from "../types.ts";
+} from "./types.ts";
 
 export const useLogin = () => {
   return useMutation({
