@@ -36,6 +36,9 @@ function setupResizeObserverMock() {
   // We need to check if ResizeObserver exists to avoid overriding it if it's already defined
   if (typeof global.ResizeObserver === "undefined") {
     global.ResizeObserver = ResizeObserverMock;
+    global.location = {
+      href: "http://localhost",
+    } as Location;
   }
 }
 
