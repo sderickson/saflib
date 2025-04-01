@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import { emailRules } from "../rules";
+import { emailRules } from "../utils/rules";
 import { useForgotPassword } from "../requests/auth";
 
 const email = ref("");

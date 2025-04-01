@@ -5,3 +5,4 @@ export { default as RegisterPage } from "./components/RegisterPage.vue";
 export { default as ForgotPasswordPage } from "./components/ForgotPasswordPage.vue";
 export { default as LogoutPage } from "./components/LogoutPage.vue";
 export { default as ChangeForgottenPasswordPage } from "./components/ChangeForgottenPasswordPage.vue";
+export { router as defaultRouter } from "./router";

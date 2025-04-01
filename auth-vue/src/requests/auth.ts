@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/vue-query";
-import { client } from "../client.ts";
+import { client } from "./client.ts";
 import type {
   LoginRequest,
   RegisterRequest,
@@ -65,8 +65,6 @@ export const useResetPassword = () => {
       const { data, error } = await client.POST("/auth/reset-password", {
         body,
       });
-      console.log("data", data);
-      console.log("error", error);
       if (error) {
         throw error;
       }

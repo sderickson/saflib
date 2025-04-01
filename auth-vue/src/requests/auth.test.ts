@@ -7,7 +7,7 @@ import {
   useForgotPassword,
   useResetPassword,
 } from "./auth.ts";
-import { client } from "../client.ts";
+import { client } from "./client.ts";
 
 // Mock the client
 vi.mock("../client.ts", () => ({ client: { POST: vi.fn() } }));

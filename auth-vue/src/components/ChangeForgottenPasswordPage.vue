@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
-import { useRoute, useRouter } from "vue-router";
+import { useRoute } from "vue-router";
 import { useResetPassword } from "../requests/auth";
 
 const route = useRoute();
-const router = useRouter();
 const token = route.query.token as string;
 
 const temporaryPassword = ref("");
@@ -14,7 +13,7 @@ const valid = ref<boolean | null>(null);
 const successMessage = ref("");
 const errorMessage = ref("");
 
-const { mutate: resetPassword, isPending } = useResetPassword();
+const { mutateAsync: resetPassword, isPending } = useResetPassword();
 
 const passwordRules = [
   (v: string) => !!v || "Password is required",
@@ -44,8 +43,9 @@ const handleSubmit = async () => {
     successMessage.value = "Password successfully reset!";
     // Hide the form by setting valid to false
     valid.value = false;
-  } catch (error) {
-    errorMessage.value = "Failed to reset password. Please try again.";
+  } catch (error: any) {
+    errorMessage.value =
+      error?.message || "Failed to reset password. Please try again.";
   }
 };
 </script>

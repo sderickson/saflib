@@ -8,18 +8,14 @@ import { router } from "../router";
 
 // Set up MSW server
 const handlers = [
-  http.post(
-    "http://api.localhost:3000/auth/reset-password",
-    async ({ request }) => {
-      const body = await request.json();
-      return HttpResponse.json({
-        success: true,
-        data: {
-          message: "Password reset successfully",
-        },
-      });
-    },
-  ),
+  http.post("http://api.localhost:3000/auth/reset-password", async () => {
+    return HttpResponse.json({
+      success: true,
+      data: {
+        message: "Password reset successfully",
+      },
+    });
+  }),
 ];
 
 describe("ChangeForgottenPasswordPage", () => {
@@ -144,7 +140,6 @@ describe("ChangeForgottenPasswordPage", () => {
     });
 
     // Create a spy for the API request
-    let requestBody: { token: string; newPassword: string } | null = null;
     server.use(
       http.post(
         "http://api.localhost:3000/auth/reset-password",
@@ -153,7 +148,7 @@ describe("ChangeForgottenPasswordPage", () => {
             token: string;
             newPassword: string;
           };
-          requestBody = body;
+          body;
           return HttpResponse.json({
             success: true,
             data: {
