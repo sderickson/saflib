@@ -2,6 +2,7 @@
 import { ref, computed } from "vue";
 import { useRoute } from "vue-router";
 import { useResetPassword } from "../requests/auth";
+import { passwordRules } from "../utils/rules";
 
 const route = useRoute();
 const token = route.query.token as string;
@@ -14,16 +15,6 @@ const successMessage = ref("");
 const errorMessage = ref("");
 
 const { mutateAsync: resetPassword, isPending } = useResetPassword();
-
-const passwordRules = [
-  (v: string) => !!v || "Password is required",
-  (v: string) => v.length >= 8 || "Password must be at least 8 characters",
-  // (v: string) =>
-  //   /[A-Z]/.test(v) || "Password must contain at least one uppercase letter",
-  // (v: string) =>
-  //   /[a-z]/.test(v) || "Password must contain at least one lowercase letter",
-  // (v: string) => /[0-9]/.test(v) || "Password must contain at least one number",
-];
 
 const passwordsMatch = computed(
   () => newPassword.value === confirmPassword.value,
@@ -132,6 +123,12 @@ const handleSubmit = async () => {
           </router-link>
         </v-card-text>
       </v-form>
+
+      <v-card-text v-else class="text-center">
+        <router-link class="text-blue text-decoration-none" to="/login">
+          Continue to Login <v-icon icon="mdi-chevron-right"></v-icon>
+        </router-link>
+      </v-card-text>
     </v-card>
   </div>
 </template>
