@@ -19,11 +19,11 @@ const { mutate: resetPassword, isPending } = useResetPassword();
 const passwordRules = [
   (v: string) => !!v || "Password is required",
   (v: string) => v.length >= 8 || "Password must be at least 8 characters",
-  (v: string) =>
-    /[A-Z]/.test(v) || "Password must contain at least one uppercase letter",
-  (v: string) =>
-    /[a-z]/.test(v) || "Password must contain at least one lowercase letter",
-  (v: string) => /[0-9]/.test(v) || "Password must contain at least one number",
+  // (v: string) =>
+  //   /[A-Z]/.test(v) || "Password must contain at least one uppercase letter",
+  // (v: string) =>
+  //   /[a-z]/.test(v) || "Password must contain at least one lowercase letter",
+  // (v: string) => /[0-9]/.test(v) || "Password must contain at least one number",
 ];
 
 const passwordsMatch = computed(

@@ -511,7 +511,7 @@ import type { LoginRequest, UserResponse } from "../requests/types";
 
 // Set up MSW server
 const handlers = [
-  http.post("/api/auth/login", async ({ request }) => {
+  http.post("http://api.localhost:3000/auth/login", async ({ request }) => {
     const body = (await request.json()) as LoginRequest;
     return HttpResponse.json({
       success: true,

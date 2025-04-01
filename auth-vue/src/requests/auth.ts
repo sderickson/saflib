@@ -65,6 +65,8 @@ export const useResetPassword = () => {
       const { data, error } = await client.POST("/auth/reset-password", {
         body,
       });
+      console.log("data", data);
+      console.log("error", error);
       if (error) {
         throw error;
       }
