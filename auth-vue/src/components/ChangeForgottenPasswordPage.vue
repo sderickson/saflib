@@ -10,7 +10,7 @@ const token = route.query.token as string;
 const temporaryPassword = ref("");
 const newPassword = ref("");
 const confirmPassword = ref("");
-const valid = ref(null);
+const valid = ref<boolean | null>(null);
 const successMessage = ref("");
 const errorMessage = ref("");
 
@@ -41,11 +41,9 @@ const handleSubmit = async () => {
       token,
       newPassword: newPassword.value,
     });
-    successMessage.value =
-      "Password successfully reset! Redirecting to login...";
-    setTimeout(() => {
-      router.push("/login");
-    }, 2000);
+    successMessage.value = "Password successfully reset!";
+    // Hide the form by setting valid to false
+    valid.value = false;
   } catch (error) {
     errorMessage.value = "Failed to reset password. Please try again.";
   }
@@ -55,7 +53,20 @@ const handleSubmit = async () => {
 <template>
   <div class="d-flex justify-center align-center flex-column fill-height">
     <v-card class="mx-auto pa-12 pb-8" elevation="8" width="448" rounded="lg">
-      <v-form v-model="valid">
+      <v-alert
+        v-if="successMessage"
+        type="success"
+        variant="tonal"
+        class="mb-4"
+      >
+        {{ successMessage }}
+      </v-alert>
+
+      <v-alert v-if="errorMessage" type="error" variant="tonal" class="mb-4">
+        {{ errorMessage }}
+      </v-alert>
+
+      <v-form v-if="!successMessage" v-model="valid">
         <div class="text-subtitle-1 text-medium-emphasis">Reset Password</div>
 
         <div class="text-body-2 text-medium-emphasis mb-4">
@@ -97,19 +108,6 @@ const handleSubmit = async () => {
           ]"
           :disabled="isPending"
         ></v-text-field>
-
-        <v-alert
-          v-if="successMessage"
-          type="success"
-          variant="tonal"
-          class="mb-4"
-        >
-          {{ successMessage }}
-        </v-alert>
-
-        <v-alert v-if="errorMessage" type="error" variant="tonal" class="mb-4">
-          {{ errorMessage }}
-        </v-alert>
 
         <v-btn
           class="my-5"

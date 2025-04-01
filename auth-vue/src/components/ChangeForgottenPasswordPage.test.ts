@@ -133,7 +133,7 @@ describe("ChangeForgottenPasswordPage", () => {
     expect(resetButton.attributes("disabled")).toBeUndefined();
   });
 
-  it("should show success message and redirect after successful password reset", async () => {
+  it("should show success message and hide form after successful password reset", async () => {
     const wrapper = mountComponent();
     const resetButton = getResetButton(wrapper);
 
@@ -165,6 +165,7 @@ describe("ChangeForgottenPasswordPage", () => {
     );
 
     await resetButton.trigger("click");
+    await wrapper.vm.$nextTick();
 
     // Wait for success message
     const successAlert = await vi.waitUntil(() => {
@@ -173,8 +174,9 @@ describe("ChangeForgottenPasswordPage", () => {
     });
     expect(successAlert?.text()).toContain("Password successfully reset!");
 
-    // Wait for redirect
-    await vi.waitFor(() => expect(location.href).toBe("/login"));
+    // Verify form is hidden
+    const form = wrapper.findComponent({ name: "v-form" });
+    expect(form.exists()).toBe(false);
   });
 
   it("should show error message when password reset fails", async () => {
@@ -197,12 +199,16 @@ describe("ChangeForgottenPasswordPage", () => {
     );
 
     await resetButton.trigger("click");
+    await wrapper.vm.$nextTick();
 
     // Wait for error message
-    const errorAlert = await vi.waitUntil(() => {
-      const alerts = wrapper.findAllComponents({ name: "v-alert" });
-      return alerts.find((alert) => alert.props("type") === "error");
-    });
+    const errorAlert = await vi.waitUntil(
+      () => {
+        const alerts = wrapper.findAllComponents({ name: "v-alert" });
+        return alerts.find((alert) => alert.props("type") === "error");
+      },
+      { timeout: 1000 },
+    );
     expect(errorAlert?.text()).toContain("Failed to reset password");
   });
 });
