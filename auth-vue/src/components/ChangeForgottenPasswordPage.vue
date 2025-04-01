@@ -7,7 +7,6 @@ import { passwordRules } from "../utils/rules";
 const route = useRoute();
 const token = route.query.token as string;
 
-const temporaryPassword = ref("");
 const newPassword = ref("");
 const confirmPassword = ref("");
 const valid = ref<boolean | null>(null);
@@ -61,19 +60,8 @@ const handleSubmit = async () => {
         <div class="text-subtitle-1 text-medium-emphasis">Reset Password</div>
 
         <div class="text-body-2 text-medium-emphasis mb-4">
-          Please enter your temporary password and set a new password.
+          Please set a new password.
         </div>
-
-        <v-text-field
-          v-model="temporaryPassword"
-          density="compact"
-          placeholder="Temporary Password"
-          prepend-inner-icon="mdi-key-outline"
-          variant="outlined"
-          type="password"
-          :rules="[(v) => !!v || 'Temporary password is required']"
-          :disabled="isPending"
-        ></v-text-field>
 
         <v-text-field
           v-model="newPassword"

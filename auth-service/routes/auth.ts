@@ -192,7 +192,9 @@ authRouter.post(
 
       // TODO: Send email with reset link
       // This will be implemented in a separate task
-      req.log.info(`Password reset token for ${email}: ${token}`);
+      req.log.info(
+        `Password reset link: ${process.env.PROTOCOL}://${process.env.DOMAIN}/auth/reset-password?token=${token}`,
+      );
 
       res.status(200).json({
         success: true,
@@ -221,24 +223,17 @@ authRouter.post(
     };
 
     try {
-      // Find user by forgot password token
-      req.log.info(`Finding email auth for token: ${token}`);
       const emailAuth = await req.db.emailAuth.getByForgotPasswordToken(token);
-      req.log.info(`Found email auth for token: ${token}`);
-      // Check if token is expired
       if (
         !emailAuth.forgotPasswordTokenExpiresAt ||
         emailAuth.forgotPasswordTokenExpiresAt < new Date()
       ) {
-        req.log.info(`Token expired: ${token}`);
         res.status(404).json({ message: "Invalid or expired token" });
         return;
       }
 
-      // Hash the new password
       const passwordHash = await argon2.hash(newPassword);
 
-      // Update the password and clear the forgot password token
       await req.db.emailAuth.updatePassword(
         emailAuth.userId,
         Buffer.from(passwordHash),
@@ -248,7 +243,6 @@ authRouter.post(
       res.status(200).json({ success: true });
     } catch (err) {
       if (err instanceof req.db.emailAuth.TokenNotFoundError) {
-        console.error(err);
         res.status(404).json({ message: "Invalid or expired token" });
         return;
       }
