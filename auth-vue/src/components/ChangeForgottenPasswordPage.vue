@@ -24,6 +24,7 @@ const handleSubmit = async () => {
   if (!valid.value || !passwordsMatch.value) return;
 
   successMessage.value = "";
+  errorMessage.value = "";
 
   try {
     await resetPassword({
