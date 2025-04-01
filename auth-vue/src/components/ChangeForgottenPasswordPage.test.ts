@@ -8,14 +8,29 @@ import { router } from "../router";
 
 // Set up MSW server
 const handlers = [
-  http.post("http://api.localhost:3000/auth/reset-password", async () => {
-    return HttpResponse.json({
-      success: true,
-      data: {
-        message: "Password reset successfully",
-      },
-    });
-  }),
+  http.post(
+    "http://api.localhost:3000/auth/reset-password",
+    async ({ request }) => {
+      const body = (await request.json()) as {
+        token: string;
+        newPassword: string;
+      };
+      if (body.token === "valid-token") {
+        return HttpResponse.json({
+          success: true,
+          data: {
+            message: "Password reset successfully",
+          },
+        });
+      }
+      return new HttpResponse(
+        JSON.stringify({ error: "Invalid or expired token" }),
+        {
+          status: 404,
+        },
+      );
+    },
+  ),
 ];
 
 describe("ChangeForgottenPasswordPage", () => {
@@ -59,8 +74,20 @@ describe("ChangeForgottenPasswordPage", () => {
     return resetButton!;
   };
 
-  const mountComponent = () => {
-    return mountWithPlugins(ChangeForgottenPasswordPage, {}, { router });
+  const mountComponent = (token: string = "valid-token") => {
+    return mountWithPlugins(
+      ChangeForgottenPasswordPage,
+      {
+        global: {
+          mocks: {
+            $route: {
+              query: { token },
+            },
+          },
+        },
+      },
+      { router },
+    );
   };
 
   const fillPasswordForm = async (
@@ -130,7 +157,7 @@ describe("ChangeForgottenPasswordPage", () => {
   });
 
   it("should show success message and hide form after successful password reset", async () => {
-    const wrapper = mountComponent();
+    const wrapper = mountComponent("valid-token");
     const resetButton = getResetButton(wrapper);
 
     await fillPasswordForm(wrapper, {
@@ -138,26 +165,6 @@ describe("ChangeForgottenPasswordPage", () => {
       newPassword: "validpassword123",
       confirmPassword: "validpassword123",
     });
-
-    // Create a spy for the API request
-    server.use(
-      http.post(
-        "http://api.localhost:3000/auth/reset-password",
-        async ({ request }) => {
-          const body = (await request.json()) as {
-            token: string;
-            newPassword: string;
-          };
-          body;
-          return HttpResponse.json({
-            success: true,
-            data: {
-              message: "Password reset successfully",
-            },
-          });
-        },
-      ),
-    );
 
     await resetButton.trigger("click");
     await wrapper.vm.$nextTick();
@@ -172,10 +179,14 @@ describe("ChangeForgottenPasswordPage", () => {
     // Verify form is hidden
     const form = wrapper.findComponent({ name: "v-form" });
     expect(form.exists()).toBe(false);
+
+    // Verify login link is shown
+    const loginLink = wrapper.findComponent({ name: "router-link" });
+    expect(loginLink.text()).toContain("Continue to Login");
   });
 
-  it("should show error message when password reset fails", async () => {
-    const wrapper = mountComponent();
+  it("should show error message when token is invalid", async () => {
+    const wrapper = mountComponent("invalid-token");
     const resetButton = getResetButton(wrapper);
 
     await fillPasswordForm(wrapper, {
@@ -183,15 +194,6 @@ describe("ChangeForgottenPasswordPage", () => {
       newPassword: "validpassword123",
       confirmPassword: "validpassword123",
     });
-
-    // Override handler to simulate error
-    server.use(
-      http.post("http://api.localhost:3000/auth/reset-password", () => {
-        return new HttpResponse(JSON.stringify({ error: "API Error" }), {
-          status: 500,
-        });
-      }),
-    );
 
     await resetButton.trigger("click");
     await wrapper.vm.$nextTick();
@@ -204,6 +206,6 @@ describe("ChangeForgottenPasswordPage", () => {
       },
       { timeout: 1000 },
     );
-    expect(errorAlert?.text()).toContain("Failed to reset password");
+    expect(errorAlert?.text()).toContain("Invalid or expired token");
   });
 });
