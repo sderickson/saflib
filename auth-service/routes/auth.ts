@@ -177,14 +177,17 @@ authRouter.post(
       const user = await req.db.users.getByEmail(email);
 
       // Generate a secure random token
-      const token = crypto.randomBytes(32).toString("hex");
+      const token = crypto.randomBytes(8).toString("hex");
       const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes from now
 
       // Update the user's forgot password token
-      await req.db.emailAuth.updateForgotPasswordToken(
+      const result = await req.db.emailAuth.updateForgotPasswordToken(
         user.id,
         token,
         expiresAt,
+      );
+      req.log.info(
+        `Updated forgot password token for ${email}: ${JSON.stringify(result)}`,
       );
 
       // TODO: Send email with reset link
@@ -219,13 +222,15 @@ authRouter.post(
 
     try {
       // Find user by forgot password token
+      req.log.info(`Finding email auth for token: ${token}`);
       const emailAuth = await req.db.emailAuth.getByForgotPasswordToken(token);
-
+      req.log.info(`Found email auth for token: ${token}`);
       // Check if token is expired
       if (
         !emailAuth.forgotPasswordTokenExpiresAt ||
         emailAuth.forgotPasswordTokenExpiresAt < new Date()
       ) {
+        req.log.info(`Token expired: ${token}`);
         res.status(404).json({ message: "Invalid or expired token" });
         return;
       }
@@ -243,6 +248,7 @@ authRouter.post(
       res.status(200).json({ success: true });
     } catch (err) {
       if (err instanceof req.db.emailAuth.TokenNotFoundError) {
+        console.error(err);
         res.status(404).json({ message: "Invalid or expired token" });
         return;
       }
