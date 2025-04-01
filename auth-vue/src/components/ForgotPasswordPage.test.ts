@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
-  useResizeObserverMock,
+  stubGlobals,
   mountWithPlugins,
   waitFor,
   setupMockServer,
@@ -10,22 +10,23 @@ import ForgotPasswordPage from "./ForgotPasswordPage.vue";
 import { router } from "../router";
 import { VAlert, VBtn } from "vuetify/components";
 import { http, HttpResponse } from "msw";
+import type { ForgotPasswordResponse } from "../types.ts";
 
 export const handlers = [
   http.post("http://api.localhost:3000/auth/forgot-password", async () => {
-    return HttpResponse.json({
+    const response: ForgotPasswordResponse = {
       success: true,
       message:
         "If an account exists with this email, a recovery email was sent",
-    });
+    };
+    return HttpResponse.json(response);
   }),
 ];
 
-export const server = setupMockServer(handlers);
-
-useResizeObserverMock();
-
 describe("ForgotPasswordPage", () => {
+  stubGlobals();
+  const server = setupMockServer(handlers);
+
   // Helper functions for element selection
   const getEmailInput = (wrapper: VueWrapper) => {
     const emailInput = wrapper.find("[placeholder='Email address']");
@@ -105,19 +106,6 @@ describe("ForgotPasswordPage", () => {
   });
 
   it("should show success message after successful submission", async () => {
-    server.use(
-      http.post("http://api.localhost:3000/auth/forgot-password", () => {
-        return new HttpResponse(
-          JSON.stringify({
-            success: true,
-            message:
-              "If an account exists with this email, a recovery email was sent",
-          }),
-          { status: 200 },
-        );
-      }),
-    );
-
     const wrapper = mountComponent();
     const emailInput = getEmailInput(wrapper);
     const submitButton = getSubmitButton(wrapper);

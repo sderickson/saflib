@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import {
-  useResizeObserverMock,
+  stubGlobals,
   mountWithPlugins,
   waitFor,
 } from "@saflib/vue-spa-dev/components";
@@ -32,20 +32,9 @@ export const handlers = [
   }),
 ];
 
-export const server = setupMockServer(handlers);
-
 describe("LoginPage", () => {
-  useResizeObserverMock();
-
-  beforeEach(() => {
-    vi.stubGlobal("location", {
-      href: "http://localhost",
-    });
-  });
-
-  afterEach(() => {
-    vi.unstubAllGlobals();
-  });
+  const globals = stubGlobals();
+  const server = setupMockServer(handlers);
 
   // Helper functions for element selection
   const getEmailInput = (wrapper: VueWrapper) => {
@@ -136,7 +125,6 @@ describe("LoginPage", () => {
       password: testPassword,
     });
     await wrapper.vm.$nextTick();
-    // vi.mock(document.location, "href", () => "http://localhost:8080/app/");
 
     // Create a spy for the API request
     let requestBody: LoginRequest | null = null;
@@ -163,8 +151,6 @@ describe("LoginPage", () => {
     await loginButton.trigger("click");
 
     // Wait for the API request to complete
-    await waitFor(() => {
-      window.location.href = "http://localhost:8080/app/";
-    });
+    await waitFor(() => location.href == "/app/");
   });
 });
