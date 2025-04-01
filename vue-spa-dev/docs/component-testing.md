@@ -497,6 +497,33 @@ can't be done well, then just skip the tests.
    - Place the wrapper at the top level of your test file
    - This ensures ResizeObserver is properly mocked for all tests
 
+### 11. Testing Route-Dependent Components
+
+When testing components that depend on specific route configurations (URLs or query parameters), set the route before mounting the component:
+
+```typescript
+describe("ResetPasswordPage", () => {
+  it("should show success message after password reset", async () => {
+    // Set up the route with required query parameters
+    await router.push("/reset-password?token=valid-token");
+
+    const wrapper = mountComponent();
+    const resetButton = getResetButton(wrapper);
+
+    // Test the component...
+  });
+});
+```
+
+Key points:
+
+1. Use `router.push()` before mounting the component
+2. Include any required query parameters in the URL
+3. Wait for the route change to complete with `await`
+4. Mount the component after the route is set
+
+This ensures the component receives the correct route configuration during testing.
+
 ## Example Test
 
 ```typescript

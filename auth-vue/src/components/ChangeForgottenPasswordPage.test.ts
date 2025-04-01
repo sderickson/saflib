@@ -35,17 +35,7 @@ const handlers = [
 
 describe("ChangeForgottenPasswordPage", () => {
   stubGlobals();
-  const server = setupMockServer(handlers);
-
-  // Helper functions for element selection
-  const getTemporaryPasswordInput = (wrapper: VueWrapper) => {
-    const inputs = wrapper.findAllComponents({ name: "v-text-field" });
-    const input = inputs.find(
-      (input) => input.props("placeholder") === "Temporary Password",
-    );
-    expect(input?.exists()).toBe(true);
-    return input!;
-  };
+  setupMockServer(handlers);
 
   const getNewPasswordInput = (wrapper: VueWrapper) => {
     const inputs = wrapper.findAllComponents({ name: "v-text-field" });
@@ -74,35 +64,20 @@ describe("ChangeForgottenPasswordPage", () => {
     return resetButton!;
   };
 
-  const mountComponent = (token: string = "valid-token") => {
-    return mountWithPlugins(
-      ChangeForgottenPasswordPage,
-      {
-        global: {
-          mocks: {
-            $route: {
-              query: { token },
-            },
-          },
-        },
-      },
-      { router },
-    );
+  const mountComponent = () => {
+    return mountWithPlugins(ChangeForgottenPasswordPage, {}, { router });
   };
 
   const fillPasswordForm = async (
     wrapper: VueWrapper,
     {
-      temporaryPassword,
       newPassword,
       confirmPassword,
     }: {
-      temporaryPassword: string;
       newPassword: string;
       confirmPassword: string;
     },
   ) => {
-    await getTemporaryPasswordInput(wrapper).setValue(temporaryPassword);
     await getNewPasswordInput(wrapper).setValue(newPassword);
     await getConfirmPasswordInput(wrapper).setValue(confirmPassword);
     await wrapper.vm.$nextTick();
@@ -110,7 +85,6 @@ describe("ChangeForgottenPasswordPage", () => {
 
   it("should render the password reset form", () => {
     const wrapper = mountComponent();
-    expect(getTemporaryPasswordInput(wrapper).exists()).toBe(true);
     expect(getNewPasswordInput(wrapper).exists()).toBe(true);
     expect(getConfirmPasswordInput(wrapper).exists()).toBe(true);
     expect(getResetButton(wrapper).exists()).toBe(true);
@@ -123,17 +97,8 @@ describe("ChangeForgottenPasswordPage", () => {
     // Initially disabled
     expect(resetButton.attributes("disabled")).toBe("");
 
-    // Invalid - missing temporary password
-    await fillPasswordForm(wrapper, {
-      temporaryPassword: "",
-      newPassword: "validpassword123",
-      confirmPassword: "validpassword123",
-    });
-    expect(resetButton.attributes("disabled")).toBe("");
-
     // Invalid - passwords don't match
     await fillPasswordForm(wrapper, {
-      temporaryPassword: "temp123",
       newPassword: "validpassword123",
       confirmPassword: "differentpassword",
     });
@@ -141,7 +106,6 @@ describe("ChangeForgottenPasswordPage", () => {
 
     // Invalid - password too short
     await fillPasswordForm(wrapper, {
-      temporaryPassword: "temp123",
       newPassword: "short",
       confirmPassword: "short",
     });
@@ -149,7 +113,6 @@ describe("ChangeForgottenPasswordPage", () => {
 
     // Valid form
     await fillPasswordForm(wrapper, {
-      temporaryPassword: "temp123",
       newPassword: "validpassword123",
       confirmPassword: "validpassword123",
     });
@@ -157,11 +120,11 @@ describe("ChangeForgottenPasswordPage", () => {
   });
 
   it("should show success message and hide form after successful password reset", async () => {
-    const wrapper = mountComponent("valid-token");
+    await router.push("/reset-password?token=valid-token");
+    const wrapper = mountComponent();
     const resetButton = getResetButton(wrapper);
 
     await fillPasswordForm(wrapper, {
-      temporaryPassword: "temp123",
       newPassword: "validpassword123",
       confirmPassword: "validpassword123",
     });
@@ -186,11 +149,11 @@ describe("ChangeForgottenPasswordPage", () => {
   });
 
   it("should show error message when token is invalid", async () => {
-    const wrapper = mountComponent("invalid-token");
+    await router.push("/reset-password?token=invalid-token");
+    const wrapper = mountComponent();
     const resetButton = getResetButton(wrapper);
 
     await fillPasswordForm(wrapper, {
-      temporaryPassword: "temp123",
       newPassword: "validpassword123",
       confirmPassword: "validpassword123",
     });
