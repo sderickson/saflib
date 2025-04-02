@@ -250,3 +250,92 @@ authRouter.post(
     }
   }),
 );
+
+authRouter.post(
+  "/verify-email",
+  createHandler(async (req: Request, res: Response) => {
+    if (!req.isAuthenticated()) {
+      res.status(401).json({ message: "User not logged in" });
+      return;
+    }
+
+    const { token } = req.body as { token: string };
+    const user = req.user as Express.User;
+
+    try {
+      const emailAuth = await req.db.emailAuth.getByVerificationToken(token);
+
+      if (
+        !emailAuth.verificationTokenExpiresAt ||
+        emailAuth.verificationTokenExpiresAt < new Date()
+      ) {
+        res.status(400).json({ message: "Invalid or expired token" });
+        return;
+      }
+
+      if (emailAuth.userId !== user.id) {
+        res
+          .status(401)
+          .json({ message: "Token does not belong to current user" });
+        return;
+      }
+
+      await req.db.emailAuth.clearVerificationToken(emailAuth.userId);
+      const updatedUser = await createUserResponse(req.db, user);
+      res.status(200).json(updatedUser);
+    } catch (err) {
+      if (err instanceof req.db.emailAuth.TokenNotFoundError) {
+        res.status(404).json({ message: "Token not found" });
+        return;
+      }
+      throw err;
+    }
+  }),
+);
+
+authRouter.post(
+  "/resend-verification",
+  createHandler(async (req: Request, res: Response) => {
+    if (!req.isAuthenticated()) {
+      res.status(401).json({ message: "User not logged in" });
+      return;
+    }
+
+    const user = req.user as Express.User;
+
+    try {
+      const emailAuth = await req.db.emailAuth.getByUserId(user.id);
+
+      if (emailAuth.verified) {
+        res.status(200).json({
+          success: true,
+          message: "Email already verified",
+        });
+        return;
+      }
+
+      // Generate a new verification token
+      const token = crypto.randomBytes(8).toString("hex");
+      const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours from now
+
+      await req.db.emailAuth.updateVerificationToken(user.id, token, expiresAt);
+
+      // TODO: Send verification email
+      // This will be implemented in a separate task
+      req.log.info(
+        `Verification link: ${process.env.PROTOCOL}://${process.env.DOMAIN}/auth/verify-email?token=${token}`,
+      );
+
+      res.status(200).json({
+        success: true,
+        message: "Verification email sent successfully",
+      });
+    } catch (err) {
+      if (err instanceof req.db.emailAuth.EmailAuthNotFoundError) {
+        res.status(404).json({ message: "Email authentication not found" });
+        return;
+      }
+      throw err;
+    }
+  }),
+);

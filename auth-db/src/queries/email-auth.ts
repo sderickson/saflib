@@ -22,12 +22,20 @@ export class TokenNotFoundError extends AuthDatabaseError {
   }
 }
 
+export class VerificationTokenNotFoundError extends AuthDatabaseError {
+  constructor() {
+    super("Verification token not found.");
+    this.name = "VerificationTokenNotFoundError";
+  }
+}
+
 export function createEmailAuthQueries(
   db: BetterSQLite3Database<typeof schema>,
 ) {
   return {
     EmailAuthNotFoundError,
     TokenNotFoundError,
+    VerificationTokenNotFoundError,
     create: queryWrapper(
       async (auth: NewEmailAuth): Promise<SelectEmailAuth> => {
         const result = await db.insert(emailAuth).values(auth).returning();
@@ -152,6 +160,59 @@ export function createEmailAuthQueries(
           .set({
             forgotPasswordToken: null,
             forgotPasswordTokenExpiresAt: null,
+          })
+          .where(eq(emailAuth.userId, userId))
+          .returning();
+
+        if (!result.length) {
+          throw new EmailAuthNotFoundError();
+        }
+        return result[0];
+      },
+    ),
+
+    verifyEmail: queryWrapper(
+      async (userId: number): Promise<SelectEmailAuth> => {
+        const result = await db
+          .update(emailAuth)
+          .set({
+            verifiedAt: new Date(),
+            verificationToken: null,
+            verificationTokenExpiresAt: null,
+          })
+          .where(eq(emailAuth.userId, userId))
+          .returning();
+
+        if (!result.length) {
+          throw new EmailAuthNotFoundError();
+        }
+        return result[0];
+      },
+    ),
+
+    getByVerificationToken: queryWrapper(
+      async (token: string): Promise<SelectEmailAuth> => {
+        const result = await db.query.emailAuth.findFirst({
+          where: eq(emailAuth.verificationToken, token),
+        });
+        if (!result) {
+          throw new VerificationTokenNotFoundError();
+        }
+        return result;
+      },
+    ),
+
+    updateVerificationToken: queryWrapper(
+      async (
+        userId: number,
+        verificationToken: string,
+        verificationTokenExpiresAt: Date,
+      ): Promise<SelectEmailAuth> => {
+        const result = await db
+          .update(emailAuth)
+          .set({
+            verificationToken,
+            verificationTokenExpiresAt,
           })
           .where(eq(emailAuth.userId, userId))
           .returning();

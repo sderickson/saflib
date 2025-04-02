@@ -268,4 +268,114 @@ describe("email-auth queries", () => {
       );
     });
   });
+
+  describe("verifyEmail", () => {
+    it("should verify email and clear verification token", async () => {
+      const user = await db.users.create({
+        email: "test@example.com",
+        createdAt: new Date(),
+      });
+
+      const passwordHash = Buffer.from([1, 2, 3]);
+      const token = "verification-token";
+      const now = new Date();
+      now.setMilliseconds(0);
+      const expiresAt = new Date(now.getTime() + 15 * 60 * 1000); // 15 minutes from now
+
+      await db.emailAuth.create({
+        userId: user.id,
+        email: user.email,
+        passwordHash,
+        verificationToken: token,
+        verificationTokenExpiresAt: expiresAt,
+      });
+
+      const updated = await db.emailAuth.verifyEmail(user.id);
+      expect(updated).toMatchObject({
+        verifiedAt: expect.any(Date),
+        verificationToken: null,
+        verificationTokenExpiresAt: null,
+      });
+    });
+
+    it("should throw EmailAuthNotFoundError when user not found", async () => {
+      await expect(db.emailAuth.verifyEmail(999)).rejects.toThrow(
+        EmailAuthNotFoundError,
+      );
+    });
+  });
+
+  describe("getByVerificationToken", () => {
+    it("should get email auth by verification token", async () => {
+      const user = await db.users.create({
+        email: "test@example.com",
+        createdAt: new Date(),
+      });
+
+      const passwordHash = Buffer.from([1, 2, 3]);
+      const token = "verification-token";
+      const now = new Date();
+      now.setMilliseconds(0);
+      const expiresAt = new Date(now.getTime() + 15 * 60 * 1000); // 15 minutes from now
+
+      await db.emailAuth.create({
+        userId: user.id,
+        email: user.email,
+        passwordHash,
+        verificationToken: token,
+        verificationTokenExpiresAt: expiresAt,
+      });
+
+      const auth = await db.emailAuth.getByVerificationToken(token);
+      expect(auth).toMatchObject({
+        userId: user.id,
+        email: user.email,
+        verificationToken: token,
+        verificationTokenExpiresAt: expiresAt,
+      });
+    });
+
+    it("should throw VerificationTokenNotFoundError when token not found", async () => {
+      await expect(
+        db.emailAuth.getByVerificationToken("nonexistent-token"),
+      ).rejects.toThrow(db.emailAuth.VerificationTokenNotFoundError);
+    });
+  });
+
+  describe("updateVerificationToken", () => {
+    it("should update verification token", async () => {
+      const user = await db.users.create({
+        email: "test@example.com",
+        createdAt: new Date(),
+      });
+
+      const passwordHash = Buffer.from([1, 2, 3]);
+      await db.emailAuth.create({
+        userId: user.id,
+        email: user.email,
+        passwordHash,
+      });
+
+      const now = new Date();
+      now.setMilliseconds(0);
+      const token = "new-verification-token";
+      const expiresAt = new Date(now.getTime() + 15 * 60 * 1000); // 15 minutes from now
+
+      const updated = await db.emailAuth.updateVerificationToken(
+        user.id,
+        token,
+        expiresAt,
+      );
+      expect(updated).toMatchObject({
+        verificationToken: token,
+        verificationTokenExpiresAt: expiresAt,
+      });
+    });
+
+    it("should throw EmailAuthNotFoundError when user not found", async () => {
+      await expect(
+        db.emailAuth.updateVerificationToken(999, "token", new Date()),
+      ).rejects.toThrow(EmailAuthNotFoundError);
+    });
+  });
 });
