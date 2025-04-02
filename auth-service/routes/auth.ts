@@ -30,18 +30,6 @@ async function createUserResponse(
   };
 }
 
-authRouter.post(
-  "/logout",
-  createHandler(async (req, res, next) => {
-    req.logout((err) => {
-      if (err) {
-        return next(err);
-      }
-      res.status(200).end();
-    });
-  }),
-);
-
 authRouter.get(
   "/verify",
   createHandler(async (req: Request, res: Response) => {

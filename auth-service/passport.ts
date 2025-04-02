@@ -42,7 +42,6 @@ export const setupPassport = (db: AuthDB) => {
 
           let auth;
           try {
-            console.log("getting auth", email);
             auth = await db.emailAuth.getByEmail(email);
           } catch (err) {
             if (err instanceof db.emailAuth.EmailAuthNotFoundError) {
