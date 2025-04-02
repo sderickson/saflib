@@ -6,6 +6,7 @@ import { registerHandler } from "./auth-register.ts";
 import { verifyHandler } from "./auth-verify.ts";
 import { forgotPasswordHandler } from "./auth-forgot-password.ts";
 import { resetPasswordHandler } from "./auth-reset-password.ts";
+import { verifyEmailHandler } from "./auth-verify-email.ts";
 
 const router = express.Router();
 
@@ -16,4 +17,6 @@ router.get("/auth/verify", verifyHandler);
 router.post("/auth/forgot-password", forgotPasswordHandler);
 router.post("/auth/reset-password", resetPasswordHandler);
 router.post("/auth/resend-verification", resendVerificationHandler);
+router.get("/auth/verify-email", verifyEmailHandler);
+
 export { router as authRouter };
