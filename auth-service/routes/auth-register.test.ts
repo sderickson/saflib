@@ -60,7 +60,7 @@ describe("Register Route", () => {
 
     expect(response.status).toBe(409);
     expect(response.body).toEqual({
-      message: "Email already exists",
+      error: "Email already exists",
     });
   });
 });

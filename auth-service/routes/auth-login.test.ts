@@ -53,7 +53,7 @@ describe("Login Route", () => {
 
     expect(response.status).toBe(401);
     expect(response.body).toEqual({
-      message: "Invalid credentials",
+      error: "Invalid credentials",
     });
   });
 
@@ -64,7 +64,7 @@ describe("Login Route", () => {
 
     expect(response.status).toBe(401);
     expect(response.body).toEqual({
-      message: "Invalid credentials",
+      error: "Invalid credentials",
     });
   });
 });

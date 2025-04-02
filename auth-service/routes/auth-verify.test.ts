@@ -19,7 +19,7 @@ describe("Verify Route", () => {
     const response = await request(app).get("/auth/verify");
 
     expect(response.status).toBe(401);
-    expect(response.body).toEqual({ message: "Unauthorized!" });
+    expect(response.body).toEqual({ error: "Unauthorized!" });
   });
 
   it("should return user info when authenticated", async () => {

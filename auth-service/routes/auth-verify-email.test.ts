@@ -64,7 +64,8 @@ describe("Verify Email Route", () => {
 
     expect(response.status).toBe(400);
     expect(response.body).toEqual({
-      message: "Verification token is required",
+      message: "request/body must have required property 'token'",
+      status: 400,
     });
   });
 
@@ -75,7 +76,7 @@ describe("Verify Email Route", () => {
 
     expect(response.status).toBe(400);
     expect(response.body).toEqual({
-      message: "Invalid or expired verification token",
+      error: "Invalid or expired verification token",
     });
   });
 });

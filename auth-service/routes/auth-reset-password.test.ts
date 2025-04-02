@@ -68,7 +68,7 @@ describe("Reset Password Route", () => {
       .send({ token: "expired-token", newPassword: "new-password123" });
 
     expect(response.status).toBe(404);
-    expect(response.body).toEqual({ message: "Invalid or expired token" });
+    expect(response.body).toEqual({ error: "Invalid or expired token" });
   });
 
   it("should return 404 for invalid token", async () => {
@@ -77,6 +77,6 @@ describe("Reset Password Route", () => {
       .send({ token: "invalid-token", newPassword: "new-password123" });
 
     expect(response.status).toBe(404);
-    expect(response.body).toEqual({ message: "Invalid or expired token" });
+    expect(response.body).toEqual({ error: "Invalid or expired token" });
   });
 });

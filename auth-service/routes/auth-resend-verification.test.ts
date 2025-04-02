@@ -49,6 +49,7 @@ describe("Resend Verification Route", () => {
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual({
+      success: true,
       message: "Verification email sent",
     });
   });
