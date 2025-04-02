@@ -14,7 +14,7 @@ import express from "express";
 import session from "express-session";
 import passport from "passport";
 import { setupPassport } from "./passport.ts";
-import { authRouter } from "./routes/auth.ts";
+import { authRouter } from "./routes/index.ts";
 import { sessionStore } from "./session-store.ts";
 // Define properties added to Express Request objects by middleware
 declare global {
@@ -68,7 +68,7 @@ export function createApp() {
    * Routes
    * Authentication related endpoints
    */
-  app.use("/auth", authRouter);
+  app.use(authRouter);
 
   // Apply recommended error handlers
   app.use(recommendedErrorHandlers);

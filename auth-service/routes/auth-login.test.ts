@@ -44,8 +44,7 @@ describe("Login Route", () => {
       password: "password123",
     };
     vi.spyOn(argon2, "verify").mockResolvedValue(false);
-    const result = await request(app).post("/auth/register").send(userData);
-    console.log(result.body);
+    await request(app).post("/auth/register").send(userData);
 
     // Try to login with wrong password
     const response = await request(app)
