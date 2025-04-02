@@ -113,7 +113,7 @@ describe("VerifyEmailPage", () => {
     expect(successAlert?.text()).toContain("Please check your email");
 
     // Verify button is hidden
-    expect(getResendButton(wrapper)?.exists()).toBe(false);
+    expect(getResendButton(wrapper)).toBeUndefined;
   });
 
   it("should show error message when resend fails", async () => {

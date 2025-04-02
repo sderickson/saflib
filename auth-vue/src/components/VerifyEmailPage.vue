@@ -87,7 +87,7 @@ onMounted(() => {
 
       <!-- Show resend button if verification failed or no token -->
       <v-btn
-        v-if="(token && errorMessage) || !token"
+        v-if="(token && errorMessage) || (!token && !isResent)"
         class="my-5"
         color="blue"
         size="large"
