@@ -2,6 +2,7 @@ import type { RegisterRequest } from "@saflib/auth-spec";
 import * as argon2 from "argon2";
 import { createHandler } from "@saflib/node-express";
 import { createUserResponse } from "./helpers.ts";
+import { ResponseSchema, ErrorResponse } from "@saflib/auth-spec";
 
 export const registerHandler = createHandler(async (req, res) => {
   try {
@@ -37,12 +38,16 @@ export const registerHandler = createHandler(async (req, res) => {
 
       // Create and return user response
       createUserResponse(req.db, user).then((response) => {
-        res.status(200).json(response);
+        const successResponse: ResponseSchema<"registerUser", 200> = response;
+        res.status(200).json(successResponse);
       });
     });
   } catch (err) {
     if (err instanceof req.db.users.EmailConflictError) {
-      res.status(409).json({ message: "Email already exists" });
+      const errorResponse: ResponseSchema<"registerUser", 409> = {
+        error: "Email already exists",
+      };
+      res.status(409).json(errorResponse);
       return;
     }
     throw err;
