@@ -164,14 +164,7 @@ verify-email:
       content:
         application/json:
           schema:
-            type: object
-            required:
-              - token
-            properties:
-              token:
-                type: string
-                description: The verification token sent in the email
-            additionalProperties: false
+            $ref: "#/components/schemas/VerificationRequest"
     responses:
       "200":
         description: Email verified successfully
@@ -311,3 +304,13 @@ components:
       properties:
         success:
           type: boolean
+
+    VerificationRequest:
+      type: object
+      required:
+        - token
+      additionalProperties: false
+      properties:
+        token:
+          type: string
+          description: The verification token sent in the email

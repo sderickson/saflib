@@ -246,6 +246,98 @@
           }
         }
       }
+    },
+    "/auth/verify-email": {
+      "post": {
+        "summary": "Verify Email Address",
+        "operationId": "verifyEmail",
+        "tags": [
+          "auth"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerificationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Email verified successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid or expired token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "User not logged in",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Token not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/resend-verification": {
+      "post": {
+        "summary": "Resend Verification Email",
+        "operationId": "resendVerification",
+        "tags": [
+          "auth"
+        ],
+        "responses": {
+          "200": {
+            "description": "Verification email sent successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ForgotPasswordResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "User not logged in",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -379,6 +471,19 @@
         "properties": {
           "success": {
             "type": "boolean"
+          }
+        }
+      },
+      "VerificationRequest": {
+        "type": "object",
+        "required": [
+          "token"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "The verification token sent in the email"
           }
         }
       }

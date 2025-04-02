@@ -5,6 +5,7 @@ import type {
   RegisterRequest,
   ForgotPasswordRequest,
   ResetPasswordRequest,
+  VerifyEmailRequest,
 } from "./types.ts";
 
 export const useLogin = () => {
@@ -65,6 +66,32 @@ export const useResetPassword = () => {
       const { data, error } = await client.POST("/auth/reset-password", {
         body,
       });
+      if (error) {
+        throw error;
+      }
+      return data;
+    },
+  });
+};
+
+export const useVerifyEmail = () => {
+  return useMutation({
+    mutationFn: async (body: VerifyEmailRequest) => {
+      const { data, error } = await client.POST("/auth/verify-email", {
+        body,
+      });
+      if (error) {
+        throw error;
+      }
+      return data;
+    },
+  });
+};
+
+export const useResendVerification = () => {
+  return useMutation({
+    mutationFn: async () => {
+      const { data, error } = await client.POST("/auth/resend-verification");
       if (error) {
         throw error;
       }
