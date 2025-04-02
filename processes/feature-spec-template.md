@@ -12,7 +12,7 @@ To get started:
 
 ## Files to Modify
 
-List all files that need to be modified to implement this feature. Organize them by layer:
+List only the files or folders that will definitely need changes. Organize them by layer:
 
 ### API Specification
 
@@ -38,16 +38,11 @@ List all files that need to be modified to implement this feature. Organize them
 
 ### Database Schema Updates
 
-[Describe any changes needed to the database schema. Include new tables, fields, relationships, constraints, etc.]
-
-- Table/Model: [name]
-  - Fields: [list fields with types and constraints]
-  - Relationships: [describe relationships to other tables]
-- ...
+[Only if schema changes are needed. If not, remove this section.]
 
 ### API Endpoints
 
-[List and describe the API endpoints that need to be created or modified.]
+[List the API endpoints that need to be created or modified. Include only essential details.]
 
 1. [HTTP Method] [Path]
 
@@ -66,31 +61,25 @@ List all files that need to be modified to implement this feature. Organize them
 
 ### Frontend Pages
 
-[Describe the frontend pages that need to be created or modified.]
+[Describe the frontend pages that need to be created or modified. Focus on essential functionality.]
 
 1. [Page Name]
-
    - Purpose: [brief description]
-   - Features: [list key features/functionality]
-   - User interactions: [describe how users interact with it]
-   - State management: [describe state requirements]
-
-2. ...
+   - Key features: [list essential features]
+   - User interactions: [describe essential interactions]
 
 ## Implementation Considerations
 
 [List any important considerations, constraints, or challenges that should be kept in mind during implementation.]
 
-- Performance considerations
 - Security considerations
+- Performance considerations
 - Accessibility requirements
-- Compatibility issues
-- Dependencies on other features or systems
 - ...
 
 ## Future Enhancements / Out of Scope
 
-[Optional: List potential future enhancements or extensions to this feature that are out of scope for the current implementation.]
+[List potential future enhancements or extensions to this feature that are out of scope for the current implementation.]
 
 - [Future enhancement 1]
 - [Future enhancement 2]
@@ -108,9 +97,9 @@ List all files that need to be modified to implement this feature. Organize them
 
 When referencing files in the specification:
 
-1. Always use absolute paths from the repository root, e.g. `/saflib/auth-service/routes/auth.ts`
-2. Use markdown links with descriptive text, e.g. `[auth.ts](/saflib/auth-service/routes/auth.ts)`
-3. When listing files to modify, include a brief description of what needs to be changed
+1. Only list files that will definitely need changes
+2. Use absolute paths from the repository root, e.g. `/saflib/auth-service/routes/auth.ts`
+3. Use markdown links with descriptive text, e.g. `[auth.ts](/saflib/auth-service/routes/auth.ts)`
 4. Group files by architectural layer (API Spec, Backend, Frontend)
 5. Include any new files that need to be created
 6. Note any files that need to be deleted
