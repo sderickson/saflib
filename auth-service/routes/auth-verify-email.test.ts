@@ -10,6 +10,15 @@ vi.mock("argon2", () => ({
   verify: vi.fn().mockResolvedValue(true),
 }));
 
+// Mock crypto
+vi.mock("crypto", async (importOriginal) => {
+  const crypto = await importOriginal<typeof import("crypto")>();
+  return {
+    ...crypto,
+    randomBytes: vi.fn().mockReturnValue("test-token"),
+  };
+});
+
 describe("Verify Email Route", () => {
   let app: express.Express;
 
@@ -26,22 +35,18 @@ describe("Verify Email Route", () => {
       email: "test@example.com",
       password: "password123",
     };
-    const registerResponse = await request(app)
-      .post("/auth/register")
-      .send(userData);
-    expect(registerResponse.status).toBe(200);
-
-    // Get the verification token from the logs
     const agent = request.agent(app);
-    const loginResponse = await agent.post("/auth/login").send(userData);
-    expect(loginResponse.status).toBe(200);
+    const response1 = await agent.post("/auth/register").send(userData);
+    expect(response1.status).toBe(200);
+    const response3 = await agent.post("/auth/login").send(userData);
+    expect(response3.status).toBe(200);
 
-    const resendResponse = await agent.post("/auth/resend-verification");
-    expect(resendResponse.status).toBe(200);
+    // Request verification email to get a token
+    const response2 = await agent.post("/auth/resend-verification");
+    expect(response2.status).toBe(200);
 
-    // Extract token from logs (in a real app this would come from an email)
-    const logInfo = vi.mocked(console.log).mock.calls[0][0] as string;
-    const token = logInfo.split("token=")[1];
+    // Get the token from the logs (in a real app, this would be sent via email)
+    const token = "test-token"; // This would be the actual token from the email
 
     // Verify the email
     const response = await request(app).get(
