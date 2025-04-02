@@ -38,8 +38,6 @@ describe("Verify Email Route", () => {
     const agent = request.agent(app);
     const response1 = await agent.post("/auth/register").send(userData);
     expect(response1.status).toBe(200);
-    const response3 = await agent.post("/auth/login").send(userData);
-    expect(response3.status).toBe(200);
 
     // Request verification email to get a token
     const response2 = await agent.post("/auth/resend-verification");
@@ -49,9 +47,9 @@ describe("Verify Email Route", () => {
     const token = "test-token"; // This would be the actual token from the email
 
     // Verify the email
-    const response = await request(app).get(
-      `/auth/verify-email?token=${token}`,
-    );
+    const response = await request(app)
+      .post("/auth/verify-email")
+      .send({ token });
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual({
@@ -62,7 +60,7 @@ describe("Verify Email Route", () => {
   });
 
   it("should return 400 for missing token", async () => {
-    const response = await request(app).get("/auth/verify-email");
+    const response = await request(app).post("/auth/verify-email").send({});
 
     expect(response.status).toBe(400);
     expect(response.body).toEqual({
@@ -71,7 +69,9 @@ describe("Verify Email Route", () => {
   });
 
   it("should return 400 for invalid token", async () => {
-    const response = await request(app).get("/auth/verify-email?token=invalid");
+    const response = await request(app)
+      .post("/auth/verify-email")
+      .send({ token: "invalid" });
 
     expect(response.status).toBe(400);
     expect(response.body).toEqual({

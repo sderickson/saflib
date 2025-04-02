@@ -17,6 +17,6 @@ router.get("/auth/verify", verifyHandler);
 router.post("/auth/forgot-password", forgotPasswordHandler);
 router.post("/auth/reset-password", resetPasswordHandler);
 router.post("/auth/resend-verification", resendVerificationHandler);
-router.get("/auth/verify-email", verifyEmailHandler);
+router.post("/auth/verify-email", verifyEmailHandler);
 
 export { router as authRouter };

@@ -1,5 +1,5 @@
 import { createHandler } from "@saflib/node-express";
-import crypto from "crypto";
+import { randomBytes } from "crypto";
 
 export const resendVerificationHandler = createHandler(async (req, res) => {
   if (!req.user) {
@@ -8,7 +8,7 @@ export const resendVerificationHandler = createHandler(async (req, res) => {
   }
 
   // Generate new verification token
-  const verificationToken = crypto.randomBytes(32).toString("hex");
+  const verificationToken = randomBytes(32).toString("hex");
   const verificationTokenExpiresAt = new Date();
   verificationTokenExpiresAt.setMinutes(
     verificationTokenExpiresAt.getMinutes() + 15,

@@ -2,7 +2,7 @@ import { createHandler } from "@saflib/node-express";
 import { createUserResponse } from "./helpers.ts";
 
 export const verifyEmailHandler = createHandler(async (req, res) => {
-  const { token } = req.query as { token: string };
+  const { token } = req.body as { token: string };
 
   if (!token) {
     res.status(400).json({ message: "Verification token is required" });
@@ -33,7 +33,7 @@ export const verifyEmailHandler = createHandler(async (req, res) => {
 
     res.status(200).json(userResponse);
   } catch (err) {
-    if (err instanceof req.db.emailAuth.TokenNotFoundError) {
+    if (err instanceof req.db.emailAuth.VerificationTokenNotFoundError) {
       res
         .status(400)
         .json({ message: "Invalid or expired verification token" });
