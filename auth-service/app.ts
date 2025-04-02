@@ -25,7 +25,11 @@ declare global {
   }
 }
 
-export function createApp() {
+interface CreateAppOptions {
+  sessionOptions?: session.SessionOptions;
+}
+
+export function createApp(options: CreateAppOptions = {}) {
   const app = express();
   app.set("trust proxy", true);
 
@@ -43,15 +47,15 @@ export function createApp() {
     domain: `.${process.env.DOMAIN}`, // Allow cookies to be shared across subdomains
   };
 
-  app.use(
-    session({
-      store: sessionStore,
-      secret: process.env.SESSION_SECRET || "your-secret-key",
-      resave: false,
-      saveUninitialized: false,
-      cookie,
-    }),
-  );
+  const sessionOptions = {
+    store: process.env.NODE_ENV === "test" ? undefined : sessionStore,
+    secret: process.env.SESSION_SECRET || "your-secret-key",
+    resave: false,
+    saveUninitialized: false,
+    cookie: process.env.NODE_ENV === "test" ? undefined : cookie,
+  };
+
+  app.use(session(sessionOptions));
 
   // Initialize Passport and restore authentication state from session
   setupPassport(db);
