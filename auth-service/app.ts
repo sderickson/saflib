@@ -75,5 +75,3 @@ export function createApp() {
 
   return app;
 }
-
-console.log("!");

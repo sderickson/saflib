@@ -28,5 +28,3 @@ export const resendVerificationHandler = createHandler(async (req, res) => {
 
   res.status(200).json({ message: "Verification email sent" });
 });
-
-console.log("!");
