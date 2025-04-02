@@ -17,9 +17,8 @@ service/
 │   └── healthcheck   # Health check script
 ├── routes/
 │   ├── index.ts      # Main router that combines all route modules
-│   ├── index.test.ts # Tests for main router
-│   ├── [feature].ts  # Individual route modules
-│   └── [feature].test.ts  # Tests for feature routes
+│   ├── [feature].ts  # Individual route handlers
+│   └── [feature].test.ts  # Tests for individual routes
 ├── app.ts            # Main Express application setup
 ├── package.json      # Service dependencies and scripts
 └── vitest.config.mts # Vitest configuration
@@ -44,9 +43,10 @@ service/
 
    ```javascript
    #!/usr/bin/env node
-   import app from "../app.ts";
+   import { createApp } from "../app.ts";
    import { startServer } from "@saflib/node-express";
 
+   const app = createApp();
    startServer(app);
    ```
 
@@ -59,27 +59,87 @@ service/
    healthcheck();
    ```
 
-3. Create a `routes` directory to store your Express routers and their tests:
+3. Create a `routes` directory to store your Express route handlers and their tests:
 
    ```
    routes/
    ├── index.ts        # Main router that combines all route modules
-   ├── index.test.ts   # Tests for main router
-   ├── [feature].ts    # Individual route modules
-   └── [feature].test.ts  # Tests for feature routes
+   ├── [feature].ts    # Individual route handlers (e.g., auth-login.ts)
+   └── [feature].test.ts  # Tests for individual routes
    ```
 
-4. Set up your main `app.ts`:
+   Example route handler (`routes/auth-login.ts`):
+
+   ```typescript
+   import { createHandler } from "@saflib/node-express";
+   import { Request, Response, NextFunction } from "express";
+
+   export const loginHandler = createHandler(async function (
+     req: Request,
+     res: Response,
+     next: NextFunction,
+   ) {
+     // Route handler implementation
+     // Access injected services via req (e.g., req.db)
+   });
+   ```
+
+   Example route index (`routes/index.ts`):
 
    ```typescript
    import express from "express";
-   import routes from "./routes/index.ts";
+   import { loginHandler } from "./auth-login.ts";
+   // Import other route handlers...
 
-   const app = express();
-   app.use(express.json());
-   app.use("/", routes);
+   const router = express.Router();
+   router.post("/auth/login", loginHandler);
+   // Add other routes...
 
-   export default app;
+   export { router as authRouter };
+   ```
+
+4. Set up your main `app.ts` with a `createApp` function:
+
+   ```typescript
+   import { AuthDB } from "@saflib/auth-db";
+   import {
+     createPreMiddleware,
+     recommendedErrorHandlers,
+   } from "@saflib/node-express";
+   import express from "express";
+   import { authRouter } from "./routes/index.ts";
+
+   // Define properties added to Express Request objects by middleware
+   declare global {
+     namespace Express {
+       interface Request {
+         db: AuthDB;
+       }
+     }
+   }
+
+   export function createApp() {
+     const app = express();
+     app.set("trust proxy", true);
+
+     // Apply recommended middleware
+     app.use(createPreMiddleware());
+
+     // Inject database into request
+     const db = new AuthDB();
+     app.use((req, _, next) => {
+       req.db = db;
+       next();
+     });
+
+     // Add routes
+     app.use(authRouter);
+
+     // Apply recommended error handlers
+     app.use(recommendedErrorHandlers);
+
+     return app;
+   }
    ```
 
 5. Add the following scripts to your `package.json`:
