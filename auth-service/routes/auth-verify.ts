@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import { createHandler } from "@saflib/node-express";
 import { getUserScopes } from "./helpers.ts";
-import { ResponseSchema } from "@saflib/auth-spec";
+import { AuthResponse } from "@saflib/auth-spec";
 
 export const verifyHandler = createHandler(
   async (req: Request, res: Response) => {
@@ -19,7 +19,7 @@ export const verifyHandler = createHandler(
     }
 
     if (!req.isAuthenticated()) {
-      const errorResponse: ResponseSchema<"verifyAuth", 401> = {
+      const errorResponse: AuthResponse["verifyAuth"][401] = {
         error: "Unauthorized!",
       };
       res.status(401).json(errorResponse);
@@ -39,7 +39,7 @@ export const verifyHandler = createHandler(
     res.setHeader("X-User-Scopes", scopes.join(","));
 
     // Return user info including scopes in response body
-    const successResponse: ResponseSchema<"verifyAuth", 200> = {
+    const successResponse: AuthResponse["verifyAuth"][200] = {
       id: user.id,
       email: user.email,
       scopes,

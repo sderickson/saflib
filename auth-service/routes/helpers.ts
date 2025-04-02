@@ -1,6 +1,6 @@
 import { AuthDB } from "@saflib/auth-db";
 import { type User } from "../types.ts";
-import { type UserResponse } from "@saflib/auth-spec";
+import { type AuthResponse } from "@saflib/auth-spec";
 
 // Helper function to get user scopes
 export async function getUserScopes(
@@ -15,7 +15,7 @@ export async function getUserScopes(
 export async function createUserResponse(
   db: AuthDB,
   user: User,
-): Promise<UserResponse> {
+): Promise<AuthResponse["verifyAuth"][200]> {
   const scopes = await getUserScopes(db, user.id);
   return {
     id: user.id,

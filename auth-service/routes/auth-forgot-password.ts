@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import { randomBytes } from "crypto";
 import { createHandler } from "@saflib/node-express";
-import { ResponseSchema } from "@saflib/auth-spec";
+import { AuthResponse } from "@saflib/auth-spec";
 
 export const forgotPasswordHandler = createHandler(
   async (req: Request, res: Response) => {
@@ -32,7 +32,7 @@ export const forgotPasswordHandler = createHandler(
         `Password reset link: ${process.env.PROTOCOL}://${process.env.DOMAIN}/auth/reset-password?token=${token}`,
       );
 
-      const successResponse: ResponseSchema<"forgotPassword", 200> = {
+      const successResponse: AuthResponse["forgotPassword"][200] = {
         success: true,
         message: "If the email exists, a recovery email has been sent",
       };
@@ -40,7 +40,7 @@ export const forgotPasswordHandler = createHandler(
     } catch (err) {
       if (err instanceof req.db.users.UserNotFoundError) {
         // Return success even if user doesn't exist to prevent email enumeration
-        const successResponse: ResponseSchema<"forgotPassword", 200> = {
+        const successResponse: AuthResponse["forgotPassword"][200] = {
           success: true,
           message: "If the email exists, a recovery email has been sent",
         };

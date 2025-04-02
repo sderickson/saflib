@@ -2,7 +2,7 @@ import { createHandler } from "@saflib/node-express";
 import passport from "passport";
 import { type IVerifyOptions } from "passport-local";
 import { createUserResponse } from "./helpers.ts";
-import { ResponseSchema } from "@saflib/auth-spec";
+import { AuthResponse } from "@saflib/auth-spec";
 
 export const loginHandler = createHandler(async function (req, res, next) {
   passport.authenticate(
@@ -17,7 +17,7 @@ export const loginHandler = createHandler(async function (req, res, next) {
       }
 
       if (!user) {
-        const response: ResponseSchema<"loginUser", 401> = {
+        const response: AuthResponse["loginUser"][401] = {
           error: "Invalid credentials",
         };
         return res.status(401).json(response);
@@ -29,7 +29,7 @@ export const loginHandler = createHandler(async function (req, res, next) {
         }
 
         createUserResponse(req.db, user).then((response) => {
-          const successResponse: ResponseSchema<"loginUser", 200> = response;
+          const successResponse: AuthResponse["loginUser"][200] = response;
           res.json(successResponse);
         });
       });

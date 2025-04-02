@@ -1,15 +1,14 @@
 import { createHandler } from "@saflib/node-express";
 import { randomBytes } from "crypto";
-import { ResponseSchema } from "@saflib/auth-spec";
+import { AuthResponse } from "@saflib/auth-spec";
 
 export const resendVerificationHandler = createHandler(async (req, res) => {
   if (!req.user) {
     res
       .status(401)
-      .json({ error: "User must be logged in" } satisfies ResponseSchema<
-        "resendVerification",
-        401
-      >);
+      .json({
+        error: "User must be logged in",
+      } satisfies AuthResponse["resendVerification"][401]);
     return;
   }
 
@@ -32,7 +31,7 @@ export const resendVerificationHandler = createHandler(async (req, res) => {
     `Verification link: ${process.env.PROTOCOL}://${process.env.DOMAIN}/auth/verify-email?token=${verificationToken}`,
   );
 
-  const response: ResponseSchema<"resendVerification", 200> = {
+  const response: AuthResponse["resendVerification"][200] = {
     success: true,
     message: "Verification email sent",
   };

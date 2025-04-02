@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import * as argon2 from "argon2";
 import { createHandler } from "@saflib/node-express";
-import { ResponseSchema } from "@saflib/auth-spec";
+import { AuthResponse } from "@saflib/auth-spec";
 
 export const resetPasswordHandler = createHandler(
   async (req: Request, res: Response) => {
@@ -16,7 +16,7 @@ export const resetPasswordHandler = createHandler(
         !emailAuth.forgotPasswordTokenExpiresAt ||
         emailAuth.forgotPasswordTokenExpiresAt < new Date()
       ) {
-        const errorResponse: ResponseSchema<"resetPassword", 404> = {
+        const errorResponse: AuthResponse["resetPassword"][404] = {
           error: "Invalid or expired token",
         };
         res.status(404).json(errorResponse);
@@ -31,13 +31,13 @@ export const resetPasswordHandler = createHandler(
       );
       await req.db.emailAuth.clearForgotPasswordToken(emailAuth.userId);
 
-      const successResponse: ResponseSchema<"resetPassword", 200> = {
+      const successResponse: AuthResponse["resetPassword"][200] = {
         success: true,
       };
       res.status(200).json(successResponse);
     } catch (err) {
       if (err instanceof req.db.emailAuth.TokenNotFoundError) {
-        const errorResponse: ResponseSchema<"resetPassword", 404> = {
+        const errorResponse: AuthResponse["resetPassword"][404] = {
           error: "Invalid or expired token",
         };
         res.status(404).json(errorResponse);

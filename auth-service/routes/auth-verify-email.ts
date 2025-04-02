@@ -1,6 +1,6 @@
 import { createHandler } from "@saflib/node-express";
 import { createUserResponse } from "./helpers.ts";
-import { ResponseSchema } from "@saflib/auth-spec";
+import { AuthResponse } from "@saflib/auth-spec";
 
 export const verifyEmailHandler = createHandler(async (req, res) => {
   const { token } = req.body as { token: string };
@@ -14,7 +14,7 @@ export const verifyEmailHandler = createHandler(async (req, res) => {
       !emailAuth.verificationTokenExpiresAt ||
       emailAuth.verificationTokenExpiresAt < new Date()
     ) {
-      const errorResponse: ResponseSchema<"verifyEmail", 400> = {
+      const errorResponse: AuthResponse["verifyEmail"][400] = {
         error: "Invalid or expired verification token",
       };
       res.status(400).json(errorResponse);
@@ -28,11 +28,11 @@ export const verifyEmailHandler = createHandler(async (req, res) => {
     const user = await req.db.users.getById(emailAuth.userId);
     const userResponse = await createUserResponse(req.db, user);
 
-    const successResponse: ResponseSchema<"verifyEmail", 200> = userResponse;
+    const successResponse: AuthResponse["verifyEmail"][200] = userResponse;
     res.status(200).json(successResponse);
   } catch (err) {
     if (err instanceof req.db.emailAuth.VerificationTokenNotFoundError) {
-      const errorResponse: ResponseSchema<"verifyEmail", 400> = {
+      const errorResponse: AuthResponse["verifyEmail"][400] = {
         error: "Invalid or expired verification token",
       };
       res.status(400).json(errorResponse);

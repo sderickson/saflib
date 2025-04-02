@@ -1,11 +1,11 @@
 import * as argon2 from "argon2";
 import { createHandler } from "@saflib/node-express";
 import { createUserResponse } from "./helpers.ts";
-import { ResponseSchema, RequestSchema } from "@saflib/auth-spec";
+import { AuthResponse, AuthRequest } from "@saflib/auth-spec";
 
 export const registerHandler = createHandler(async (req, res) => {
   try {
-    const registerRequest: RequestSchema<"registerUser"> = req.body;
+    const registerRequest: AuthRequest["registerUser"] = req.body;
     const { email, password } = registerRequest;
 
     // Hash the password with argon2
@@ -37,13 +37,13 @@ export const registerHandler = createHandler(async (req, res) => {
 
       // Create and return user response
       createUserResponse(req.db, user).then((response) => {
-        const successResponse: ResponseSchema<"registerUser", 200> = response;
+        const successResponse: AuthResponse["registerUser"][200] = response;
         res.status(200).json(successResponse);
       });
     });
   } catch (err) {
     if (err instanceof req.db.users.EmailConflictError) {
-      const errorResponse: ResponseSchema<"registerUser", 409> = {
+      const errorResponse: AuthResponse["registerUser"][409] = {
         error: "Email already exists",
       };
       res.status(409).json(errorResponse);
