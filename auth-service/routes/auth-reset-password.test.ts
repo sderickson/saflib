@@ -3,15 +3,26 @@ import request from "supertest";
 import express from "express";
 import { createApp } from "../app.ts";
 // Mock argon2
+import passport from "passport";
 vi.mock("argon2", () => ({
   hash: vi.fn().mockResolvedValue("hashed-password"),
   verify: vi.fn().mockResolvedValue(true),
 }));
 
+vi.mock("crypto", async (importOriginal) => {
+  const crypto = await importOriginal<typeof import("crypto")>();
+  return {
+    ...crypto,
+    randomBytes: vi.fn().mockReturnValue("test-token"),
+  };
+});
+
 describe("Reset Password Route", () => {
   let app: express.Express;
 
   beforeEach(() => {
+    (passport as any)._serializers = [];
+    (passport as any)._deserializers = [];
     app = createApp();
     vi.clearAllMocks();
   });
@@ -22,13 +33,14 @@ describe("Reset Password Route", () => {
       email: "test@example.com",
       password: "password123",
     };
-    const response1 = await request(app).post("/auth/register").send(userData);
+    const agent = request.agent(app);
+    const response1 = await agent.post("/auth/register").send(userData);
     expect(response1.status).toBe(200);
 
     // Request password reset to get a token
-    const response2 = await request(app)
-      .post("/auth/forgot-password")
-      .send({ email: userData.email });
+    const response2 = await agent.post("/auth/forgot-password").send({
+      email: userData.email,
+    });
     expect(response2.status).toBe(200);
 
     // Get the token from the logs (in a real app, this would be sent via email)

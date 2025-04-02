@@ -9,11 +9,11 @@ import { resetPasswordHandler } from "./auth-reset-password.ts";
 
 const router = express.Router();
 
-router.use("/auth/login", loginHandler);
-router.use("/auth/register", registerHandler);
-router.use("/auth/logout", logoutHandler);
-router.use("/auth/verify", verifyHandler);
-router.use("/auth/forgot-password", forgotPasswordHandler);
-router.use("/auth/reset-password", resetPasswordHandler);
-router.use("/auth/resend-verification", resendVerificationHandler);
+router.post("/auth/login", loginHandler);
+router.post("/auth/register", registerHandler);
+router.post("/auth/logout", logoutHandler);
+router.get("/auth/verify", verifyHandler);
+router.post("/auth/forgot-password", forgotPasswordHandler);
+router.post("/auth/reset-password", resetPasswordHandler);
+router.post("/auth/resend-verification", resendVerificationHandler);
 export { router as authRouter };

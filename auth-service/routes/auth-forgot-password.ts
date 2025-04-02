@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import crypto from "crypto";
+import { randomBytes } from "crypto";
 import { createHandler } from "@saflib/node-express";
 
 export const forgotPasswordHandler = createHandler(
@@ -11,7 +11,8 @@ export const forgotPasswordHandler = createHandler(
       const user = await req.db.users.getByEmail(email);
 
       // Generate a secure random token
-      const token = crypto.randomBytes(8).toString("hex");
+      const token = randomBytes(8).toString("hex");
+
       const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes from now
 
       // Update the user's forgot password token

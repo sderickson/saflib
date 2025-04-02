@@ -9,14 +9,6 @@ vi.mock("argon2", () => ({
   verify: vi.fn().mockResolvedValue(true),
 }));
 
-vi.mock("crypto", async (importOriginal) => {
-  const crypto = await importOriginal<typeof import("crypto")>();
-  return {
-    ...crypto,
-    randomBytes: vi.fn().mockReturnValue("test-token"),
-  };
-});
-
 describe("Forgot Password Route", () => {
   let app: express.Express;
 
