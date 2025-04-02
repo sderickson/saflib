@@ -39,7 +39,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/error"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -80,7 +80,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/error"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -147,7 +147,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/error"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -188,7 +188,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/error"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -229,7 +229,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/error"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -239,7 +239,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/error"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -280,7 +280,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/error"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -290,7 +290,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/error"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -300,7 +300,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/error"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -321,7 +321,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ForgotPasswordResponse"
+                  "$ref": "#/components/schemas/ResendVerificationResponse"
                 }
               }
             }
@@ -331,7 +331,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/error"
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -384,15 +384,15 @@
           }
         }
       },
-      "error": {
+      "ErrorResponse": {
         "type": "object",
         "required": [
           "error"
         ],
+        "additionalProperties": false,
         "properties": {
           "error": {
-            "type": "string",
-            "description": "Error message"
+            "type": "string"
           }
         }
       },
@@ -484,6 +484,23 @@
           "token": {
             "type": "string",
             "description": "The verification token sent in the email"
+          }
+        }
+      },
+      "ResendVerificationResponse": {
+        "type": "object",
+        "required": [
+          "success",
+          "message"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string",
+            "description": "A generic message indicating that the verification email was sent"
           }
         }
       }

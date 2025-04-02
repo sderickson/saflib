@@ -22,7 +22,7 @@ register:
         content:
           application/json:
             schema:
-              $ref: "../schemas/error.yaml"
+              $ref: "#/components/schemas/ErrorResponse"
 
 login:
   post:
@@ -48,7 +48,7 @@ login:
         content:
           application/json:
             schema:
-              $ref: "../schemas/error.yaml"
+              $ref: "#/components/schemas/ErrorResponse"
 
 logout:
   post:
@@ -93,7 +93,7 @@ verify:
         content:
           application/json:
             schema:
-              $ref: "../schemas/error.yaml"
+              $ref: "#/components/schemas/ErrorResponse"
 
 forgot-password:
   post:
@@ -119,7 +119,7 @@ forgot-password:
         content:
           application/json:
             schema:
-              $ref: "../schemas/error.yaml"
+              $ref: "#/components/schemas/ErrorResponse"
 
 reset-password:
   post:
@@ -145,13 +145,13 @@ reset-password:
         content:
           application/json:
             schema:
-              $ref: "../schemas/error.yaml"
+              $ref: "#/components/schemas/ErrorResponse"
       "404":
         description: Token not found or expired
         content:
           application/json:
             schema:
-              $ref: "../schemas/error.yaml"
+              $ref: "#/components/schemas/ErrorResponse"
 
 verify-email:
   post:
@@ -177,19 +177,19 @@ verify-email:
         content:
           application/json:
             schema:
-              $ref: "../schemas/error.yaml"
+              $ref: "#/components/schemas/ErrorResponse"
       "401":
         description: User not logged in
         content:
           application/json:
             schema:
-              $ref: "../schemas/error.yaml"
+              $ref: "#/components/schemas/ErrorResponse"
       "404":
         description: Token not found
         content:
           application/json:
             schema:
-              $ref: "../schemas/error.yaml"
+              $ref: "#/components/schemas/ErrorResponse"
 
 resend-verification:
   post:
@@ -203,16 +203,24 @@ resend-verification:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ForgotPasswordResponse"
+              $ref: "#/components/schemas/ResendVerificationResponse"
       "401":
         description: User not logged in
         content:
           application/json:
             schema:
-              $ref: "../schemas/error.yaml"
+              $ref: "#/components/schemas/ErrorResponse"
 
 components:
   schemas:
+    ErrorResponse:
+      type: object
+      required:
+        - error
+      additionalProperties: false
+      properties:
+        error:
+          type: string
     RegisterRequest:
       type: object
       required:
@@ -280,6 +288,19 @@ components:
         message:
           type: string
           description: A generic message indicating that if the user exists, a recovery email was sent
+
+    ResendVerificationResponse:
+      type: object
+      required:
+        - success
+        - message
+      additionalProperties: false
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+          description: A generic message indicating that the verification email was sent
 
     ResetPasswordRequest:
       type: object

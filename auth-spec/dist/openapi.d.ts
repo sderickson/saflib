@@ -159,8 +159,7 @@ export interface components {
             /** @description List of user's permission scopes */
             scopes?: string[];
         };
-        error: {
-            /** @description Error message */
+        ErrorResponse: {
             error: string;
         };
         LoginRequest: {
@@ -189,6 +188,11 @@ export interface components {
         VerificationRequest: {
             /** @description The verification token sent in the email */
             token: string;
+        };
+        ResendVerificationResponse: {
+            success: boolean;
+            /** @description A generic message indicating that the verification email was sent */
+            message: string;
         };
     };
     responses: never;
@@ -227,7 +231,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["error"];
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
         };
@@ -260,7 +264,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["error"];
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
         };
@@ -313,7 +317,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["error"];
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
         };
@@ -346,7 +350,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["error"];
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
         };
@@ -379,7 +383,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["error"];
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description Token not found or expired */
@@ -388,7 +392,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["error"];
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
         };
@@ -421,7 +425,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["error"];
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description User not logged in */
@@ -430,7 +434,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["error"];
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
             /** @description Token not found */
@@ -439,7 +443,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["error"];
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
         };
@@ -459,7 +463,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ForgotPasswordResponse"];
+                    "application/json": components["schemas"]["ResendVerificationResponse"];
                 };
             };
             /** @description User not logged in */
@@ -468,7 +472,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["error"];
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
         };
