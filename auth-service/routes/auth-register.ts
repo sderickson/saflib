@@ -1,26 +1,10 @@
 import { Router } from "express";
-import type { RegisterRequest, UserResponse } from "@saflib/auth-spec";
+import type { RegisterRequest } from "@saflib/auth-spec";
 import * as argon2 from "argon2";
 import { createHandler } from "@saflib/node-express";
-import type { User } from "../types.ts";
+import { createUserResponse } from "./helpers.ts";
 
 export const registerRouter = Router();
-
-// Helper function to get user scopes
-async function getUserScopes(db: any, userId: number): Promise<string[]> {
-  const permissions = await db.permissions.getByUserId(userId);
-  return permissions.map((p: any) => p.permission);
-}
-
-// Helper function to create user response
-async function createUserResponse(db: any, user: User): Promise<UserResponse> {
-  const scopes = await getUserScopes(db, user.id);
-  return {
-    id: user.id,
-    email: user.email,
-    scopes,
-  };
-}
 
 registerRouter.post(
   "/register",
@@ -37,14 +21,6 @@ registerRouter.post(
         email,
         createdAt: new Date(),
       });
-
-      // Auto-assign admin permission for test environment users with admin.*@email.com pattern
-      if (
-        process.env.ALLOW_ADMIN_SIGNUPS === "true" &&
-        email.match(/^admin\..*@email\.com$/)
-      ) {
-        await req.db.permissions.add(user.id, "admin", user.id);
-      }
 
       // Create email auth record
       await req.db.emailAuth.create({

@@ -25,51 +25,53 @@ declare global {
   }
 }
 
-const app = express();
-app.set("trust proxy", true);
+export function createApp() {
+  const app = express();
+  app.set("trust proxy", true);
 
-// Initialize database
-const db = new AuthDB();
+  // Initialize database
+  const db = new AuthDB();
 
-// Apply recommended middleware
-app.use(createPreMiddleware());
+  // Apply recommended middleware
+  app.use(createPreMiddleware());
 
-// Session configuration
-const cookie = {
-  secure: process.env.PROTOCOL === "https",
-  maxAge: 24 * 60 * 60 * 1000, // 24 hours
-  sameSite: "strict" as const,
-  domain: `.${process.env.DOMAIN}`, // Allow cookies to be shared across subdomains
-};
+  // Session configuration
+  const cookie = {
+    secure: process.env.PROTOCOL === "https",
+    maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    sameSite: "strict" as const,
+    domain: `.${process.env.DOMAIN}`, // Allow cookies to be shared across subdomains
+  };
 
-app.use(
-  session({
-    store: sessionStore,
-    secret: process.env.SESSION_SECRET || "your-secret-key",
-    resave: false,
-    saveUninitialized: false,
-    cookie,
-  }),
-);
+  app.use(
+    session({
+      store: sessionStore,
+      secret: process.env.SESSION_SECRET || "your-secret-key",
+      resave: false,
+      saveUninitialized: false,
+      cookie,
+    }),
+  );
 
-// Initialize Passport and restore authentication state from session
-setupPassport(db);
-app.use(passport.initialize());
-app.use(passport.session());
+  // Initialize Passport and restore authentication state from session
+  setupPassport(db);
+  app.use(passport.initialize());
+  app.use(passport.session());
 
-// db injection
-app.use((req, _, next) => {
-  req.db = db;
-  next();
-});
+  // db injection
+  app.use((req, _, next) => {
+    req.db = db;
+    next();
+  });
 
-/**
- * Routes
- * Authentication related endpoints
- */
-app.use("/auth", authRouter);
+  /**
+   * Routes
+   * Authentication related endpoints
+   */
+  app.use("/auth", authRouter);
 
-// Apply recommended error handlers
-app.use(recommendedErrorHandlers);
+  // Apply recommended error handlers
+  app.use(recommendedErrorHandlers);
 
-export default app;
+  return app;
+}
