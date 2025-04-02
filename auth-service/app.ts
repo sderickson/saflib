@@ -16,6 +16,8 @@ import passport from "passport";
 import { setupPassport } from "./passport.ts";
 import { authRouter } from "./routes/index.ts";
 import { sessionStore } from "./session-store.ts";
+import { jsonSpec } from "@saflib/auth-spec";
+
 // Define properties added to Express Request objects by middleware
 declare global {
   namespace Express {
@@ -33,7 +35,12 @@ export function createApp() {
   const db = new AuthDB();
 
   // Apply recommended middleware
-  app.use(createPreMiddleware());
+  app.use(
+    createPreMiddleware({
+      apiSpec: jsonSpec,
+      parseAuthHeaders: false,
+    }),
+  );
 
   // Session configuration
   const cookie = {

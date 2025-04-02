@@ -4,11 +4,6 @@ import { createUserResponse } from "./helpers.ts";
 export const verifyEmailHandler = createHandler(async (req, res) => {
   const { token } = req.body as { token: string };
 
-  if (!token) {
-    res.status(400).json({ message: "Verification token is required" });
-    return;
-  }
-
   try {
     // Get the email auth record by verification token
     const emailAuth = await req.db.emailAuth.getByVerificationToken(token);

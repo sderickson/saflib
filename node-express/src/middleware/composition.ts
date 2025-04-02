@@ -55,7 +55,7 @@ export const createPreMiddleware = (
   }
 
   let authMiddleware: Handler[] = [];
-  if (parseAuthHeaders || apiSpec) {
+  if (parseAuthHeaders || (apiSpec && parseAuthHeaders !== false)) {
     authMiddleware = [auth];
   }
 
