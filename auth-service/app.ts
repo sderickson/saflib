@@ -25,11 +25,7 @@ declare global {
   }
 }
 
-interface CreateAppOptions {
-  sessionOptions?: session.SessionOptions;
-}
-
-export function createApp(options: CreateAppOptions = {}) {
+export function createApp() {
   const app = express();
   app.set("trust proxy", true);
 

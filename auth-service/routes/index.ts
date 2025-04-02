@@ -1,12 +1,17 @@
-import { registerHandler } from "./auth-register.ts";
+import express from "express";
+import { authRouter } from "./auth.ts";
 import { loginHandler } from "./auth-login.ts";
 import { logoutHandler } from "./auth-logout.ts";
-import { Router } from "express";
+import { registerHandler } from "./auth-register.ts";
 import { verifyHandler } from "./auth-verify.ts";
-const authRouter = Router();
+import { forgotPasswordHandler } from "./auth-forgot-password.ts";
 
-authRouter.use("/auth/login", loginHandler);
-authRouter.use("/auth/register", registerHandler);
-authRouter.use("/auth/logout", logoutHandler);
-authRouter.use("/auth/verify", verifyHandler);
-export { authRouter };
+const router = express.Router();
+
+router.use("/auth/login", loginHandler);
+router.use("/auth/register", registerHandler);
+router.use("/auth/logout", logoutHandler);
+router.use("/auth/verify", verifyHandler);
+router.use("/auth/forgot-password", forgotPasswordHandler);
+
+export { router as authRouter };
