@@ -1,7 +1,7 @@
 import * as argon2 from "argon2";
 import { createHandler } from "@saflib/node-express";
 import { createUserResponse } from "./helpers.ts";
-import { AuthResponse, AuthRequest } from "@saflib/auth-spec";
+import type { AuthResponse, AuthRequest } from "@saflib/auth-spec";
 
 export const registerHandler = createHandler(async (req, res) => {
   try {

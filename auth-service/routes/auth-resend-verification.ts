@@ -1,14 +1,12 @@
 import { createHandler } from "@saflib/node-express";
 import { randomBytes } from "crypto";
-import { AuthResponse } from "@saflib/auth-spec";
+import { type AuthResponse } from "@saflib/auth-spec";
 
 export const resendVerificationHandler = createHandler(async (req, res) => {
   if (!req.user) {
-    res
-      .status(401)
-      .json({
-        error: "User must be logged in",
-      } satisfies AuthResponse["resendVerification"][401]);
+    res.status(401).json({
+      error: "User must be logged in",
+    } satisfies AuthResponse["resendVerification"][401]);
     return;
   }
 

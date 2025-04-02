@@ -1,7 +1,7 @@
 import type { operations } from "./dist/openapi.d.ts";
 
 export type { paths, components, operations } from "./dist/openapi.d.ts";
-import {
+import type {
   ExtractResponseSchema,
   ExtractRequestSchema,
 } from "@saflib/openapi-specs";
