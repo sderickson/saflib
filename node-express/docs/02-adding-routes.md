@@ -5,7 +5,7 @@
 - Use `createHandler` for each route handler. It ensures errors are caught and passed to middleware, and that handlers use Promises.
 - Each route handler should be in its own file in the `/routes` folder
 - Route handlers should be combined in a central `index.ts` file that exports a router
-- For type checking, use "RequestSchema" and "ResponseSchema" from the openapi specs library when available
+- For type checking, use the appropriate request and response types from your spec library (e.g., `AuthRequest["operationId"]` and `AuthResponse["operationId"][statusCode]`)
 - Handled errors should send status code and response objects directly. Unhandled errors should be passed to `next`
 - Routes should be in charge of HTTP concerns. Keep business logic separate from route handlers when possible
 
@@ -17,13 +17,16 @@ Each route handler should be in its own file and follow this pattern:
 // routes/auth-login.ts
 import { createHandler } from "@saflib/node-express";
 import { Request, Response, NextFunction } from "express";
-import { ResponseSchema } from "@saflib/auth-spec"; // Or the appropriate spec package
+import { type AuthRequest, type AuthResponse } from "@saflib/auth-spec"; // Or the appropriate spec package
 
 export const loginHandler = createHandler(async function (
   req: Request,
   res: Response,
   next: NextFunction,
 ) {
+  // Type the request body
+  const loginRequest: AuthRequest["loginUser"] = req.body;
+
   // Access injected services via req (e.g., req.db)
 
   // Handle the request
@@ -32,7 +35,7 @@ export const loginHandler = createHandler(async function (
     const result = await req.db.someOperation();
 
     // Send typed response
-    const response: ResponseSchema<"loginUser", 200> = result;
+    const response: AuthResponse["loginUser"][200] = result;
     res.json(response);
   } catch (error) {
     // Pass unhandled errors to next
@@ -71,15 +74,18 @@ The `createHandler` function provides several benefits:
 - Makes the code cleaner by removing try/catch blocks
 - Ensures consistent error handling across all routes
 
-Example of proper error handling with typed responses:
+Example of proper error handling with typed requests and responses:
 
 ```typescript
-import { ResponseSchema } from "@saflib/auth-spec"; // Or the appropriate spec package
+import { type AuthRequest, type AuthResponse } from "@saflib/auth-spec"; // Or the appropriate spec package
 
 export const exampleHandler = createHandler(async function (req, res, next) {
+  // Type the request body
+  const request: AuthRequest["exampleOperation"] = req.body;
+
   // Handle expected errors directly with typed responses
-  if (!req.body.email) {
-    const errorResponse: ResponseSchema<"exampleOperation", 400> = {
+  if (!request.email) {
+    const errorResponse: AuthResponse["exampleOperation"][400] = {
       error: "Email is required",
     };
     return res.status(400).json(errorResponse);
@@ -88,7 +94,7 @@ export const exampleHandler = createHandler(async function (req, res, next) {
   try {
     // Business logic that might throw unexpected errors
     const result = await someAsyncOperation();
-    const successResponse: ResponseSchema<"exampleOperation", 200> = result;
+    const successResponse: AuthResponse["exampleOperation"][200] = result;
     res.json(successResponse);
   } catch (error) {
     // Pass unexpected errors to next
@@ -97,23 +103,26 @@ export const exampleHandler = createHandler(async function (req, res, next) {
 });
 ```
 
-Example of handling known database errors with typed responses:
+Example of handling known database errors with typed requests and responses:
 
 ```typescript
-import { ResponseSchema } from "@saflib/auth-spec";
+import { type AuthRequest, type AuthResponse } from "@saflib/auth-spec";
 
 export const registerHandler = createHandler(async function (req, res, next) {
+  // Type the request body
+  const registerRequest: AuthRequest["registerUser"] = req.body;
+
   try {
     const user = await req.db.users.create({
-      email: req.body.email,
-      password: req.body.password,
+      email: registerRequest.email,
+      password: registerRequest.password,
     });
-    const successResponse: ResponseSchema<"registerUser", 200> = user;
+    const successResponse: AuthResponse["registerUser"][200] = user;
     res.status(201).json(successResponse);
   } catch (error) {
     // Handle known database errors using custom error types
     if (error instanceof req.db.users.EmailConflictError) {
-      const errorResponse: ResponseSchema<"registerUser", 409> = {
+      const errorResponse: AuthResponse["registerUser"][409] = {
         error: "Email already exists",
       };
       return res.status(409).json(errorResponse);
@@ -138,8 +147,9 @@ export const registerHandler = createHandler(async function (req, res, next) {
 
 3. Use TypeScript types for request/response validation:
 
-   - Import `ResponseSchema` from your OpenAPI specs library
-   - Type all responses using `ResponseSchema<"operationId", statusCode>`
+   - Import the appropriate request and response types from your spec library (e.g., `AuthRequest` and `AuthResponse`)
+   - Type request bodies using `AuthRequest["operationId"]`
+   - Type responses using `AuthResponse["operationId"][statusCode]`
    - Use `error` field for error responses instead of `message`
    - Include `success` field in success responses when appropriate
 
