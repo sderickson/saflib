@@ -376,10 +376,11 @@ it("should disable submit button when form is invalid", async () => {
    ];
    ```
 
-2. Override handlers for specific test cases:
+2. Override handlers for specific test cases using `server.use()`:
 
    ```typescript
    it("should handle error response", async () => {
+     // Use server.use() to add or override handlers for this test
      server.use(
        http.post("http://api.localhost:3000/auth/login", () => {
          return new HttpResponse(JSON.stringify({ error: "API Error" }), {
@@ -391,6 +392,14 @@ it("should disable submit button when form is invalid", async () => {
      // Test error handling...
    });
    ```
+
+   Important notes about handler overrides:
+
+   - Use `server.use()` to add or override handlers for specific tests
+   - New handlers are prepended to the existing ones, so they take precedence
+   - You don't need to recreate the entire handlers array
+   - The original handlers remain available for other tests
+   - Each test gets a fresh set of handlers
 
 3. Use `vi.waitFor` or `vi.waitUntil` to wait for async operations:
 

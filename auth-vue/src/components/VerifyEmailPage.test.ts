@@ -40,7 +40,7 @@ const handlers = [
 
 describe("VerifyEmailPage", () => {
   stubGlobals();
-  setupMockServer(handlers);
+  const server = setupMockServer(handlers);
 
   const getResendButton = (wrapper: VueWrapper) => {
     const buttons = wrapper.findAllComponents({ name: "v-btn" });
@@ -117,17 +117,14 @@ describe("VerifyEmailPage", () => {
   });
 
   it("should show error message when resend fails", async () => {
-    // Override the resend handler for this test
-    const errorHandlers = [
-      handlers[0], // Keep the verify-email handler
+    server.use(
       http.post("http://api.localhost:3000/auth/resend-verification", () => {
         return new HttpResponse(
           JSON.stringify({ error: "Failed to send email" }),
           { status: 500 },
         );
       }),
-    ];
-    setupMockServer(errorHandlers);
+    );
 
     await router.push("/verify-email");
     const wrapper = mountComponent();
