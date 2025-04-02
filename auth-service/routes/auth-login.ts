@@ -1,6 +1,6 @@
 import { createHandler } from "@saflib/node-express";
 import passport from "passport";
-import { IVerifyOptions } from "passport-local";
+import { type IVerifyOptions } from "passport-local";
 import { createUserResponse } from "./helpers.ts";
 
 export const loginHandler = createHandler(async function (req, res, next) {

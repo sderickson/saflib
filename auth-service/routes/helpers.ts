@@ -1,6 +1,6 @@
 import { AuthDB } from "@saflib/auth-db";
-import { User } from "../types.ts";
-import { UserResponse } from "@saflib/auth-spec";
+import { type User } from "../types.ts";
+import { type UserResponse } from "@saflib/auth-spec";
 
 // Helper function to get user scopes
 export async function getUserScopes(

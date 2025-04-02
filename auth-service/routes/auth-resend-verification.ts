@@ -22,7 +22,11 @@ export const resendVerificationHandler = createHandler(async (req, res) => {
   );
 
   // Log the verification link (in production this would send an email)
-  req.log.info(`Verification link: /verify-email?token=${verificationToken}`);
+  req.log.info(
+    `Verification link: ${process.env.PROTOCOL}://${process.env.DOMAIN}/auth/verify-email?token=${verificationToken}`,
+  );
 
   res.status(200).json({ message: "Verification email sent" });
 });
+
+console.log("!");
