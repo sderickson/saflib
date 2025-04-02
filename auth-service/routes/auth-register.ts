@@ -29,9 +29,17 @@ export const registerHandler = createHandler(async (req, res) => {
       forgotPasswordTokenExpiresAt: null,
     });
 
-    // Create and return user response
-    const userResponse = await createUserResponse(req.db, user);
-    res.status(200).json(userResponse);
+    // Log in the user
+    req.logIn(user, (err) => {
+      if (err) {
+        throw err;
+      }
+
+      // Create and return user response
+      createUserResponse(req.db, user).then((response) => {
+        res.status(200).json(response);
+      });
+    });
   } catch (err) {
     if (err instanceof req.db.users.EmailConflictError) {
       res.status(409).json({ message: "Email already exists" });
