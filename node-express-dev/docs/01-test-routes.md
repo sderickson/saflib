@@ -1,105 +1,166 @@
 # Test Routes
 
-Tests for node/express routes should be fairly focused unit tests. They mock out all external dependencies, including databases and 3rd party integrations, but they should run the same middleware as the live application.
+Tests for node/express routes should be focused unit tests that use the actual database but mock expensive or external operations. They should run the same middleware as the live application.
 
 Example:
 
-```ts
-import { describe, it, expect, beforeEach, vi } from "vitest";
+````ts
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import request from "supertest";
 import express from "express";
-import yourRouter from "./users.js";
-import { preMiddleware, errorHandlers } from "../middleware.ts"; // same as what's used in app.ts
+import { createApp } from "../app.ts";
 
-// Create Express app for testing
-const app = express();
-app.use(preMiddleware);
-app.use("/examples", exampleRouter);
-app.use(errorHandlers);
+// Mock expensive operations
+vi.mock("argon2", () => ({
+  hash: vi.fn().mockResolvedValue("hashed-password"),
+  verify: vi.fn().mockResolvedValue(true),
+}));
 
-// Mock user headers for all requests
-const mockHeaders = {
-  "x-user-id": "123",
-  "x-user-email": "test@example.com",
-};
-
-describe("Example Routes", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
-  describe("GET /examples/route", () => {
-    it("should ...", async () => {
-      const response = await request(app)
-        .get("/examples/route")
-        .set(mockHeaders);
-
-      expect(response.status).toBe(200);
-      /* Test response.body */
-    });
-  });
-});
-```
-
-## Mocking Dependencies
-
-When your route depends on external modules like the filesystem or a database, you need to mock them properly:
-
-```ts
-// Import the module you want to mock BEFORE mocking it
-import * as fs from "fs";
-
-// Mock the module
-vi.mock("fs", async (importOriginal) => {
-  const originalModule = await importOriginal<typeof import("fs")>();
+// Mock random operations
+vi.mock("crypto", async (importOriginal) => {
+  const crypto = await importOriginal<typeof import("crypto")>();
   return {
-    ...originalModule,
-    readFileSync: vi.fn(),
+    ...crypto,
+    randomBytes: vi.fn().mockReturnValue("test-token"),
   };
 });
 
-// In your test
-it("should return data from file", async () => {
-  // Set up the mock implementation
-  (fs.readFileSync as any).mockReturnValue(JSON.stringify({ data: "test" }));
+describe("Login Route", () => {
+  let app: express.Express;
 
-  // Make the request
-  const response = await request(app).get("/route").set(mockHeaders);
+  beforeEach(() => {
+    app = createApp();
+    vi.clearAllMocks();
+  });
 
-  // Verify the response
-  expect(response.status).toBe(200);
-  expect(fs.readFileSync).toHaveBeenCalled();
+  it("should login a user successfully", async () => {
+    // First create a user
+    const userData = {
+      email: "test@example.com",
+      password: "password123",
+    };
+    await request(app).post("/auth/register").send(userData);
+
+    // Then try to login
+    const response = await request(app).post("/auth/login").send(userData);
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({
+      id: expect.any(Number),
+      email: userData.email,
+      scopes: [],
+    });
+  });
 });
+
+## What to Mock
+
+1. **Do Mock**:
+   - Expensive operations (e.g., password hashing with argon2)
+   - Random operations (e.g., token generation with crypto)
+   - 3rd party integrations (e.g., email sending)
+   - External services (e.g., payment processors)
+
+2. **Don't Mock**:
+   - Database operations (use the actual database)
+   - Application middleware
+   - Request/response handling
+
+Example of mocking a 3rd party service:
+
+```ts
+// Mock email service
+vi.mock("@saflib/email-service", () => ({
+  sendEmail: vi.fn().mockResolvedValue({ success: true }),
+}));
 ```
 
-See [mocking.md](./02-mock-dependencies.md) for more details, especially if your mocking isn't working!
+## Mocking Best Practices
 
-## Common Issues
+1. **Mock Hoisting**:
+   - Vitest automatically hoists `vi.mock()` calls to the top of the file
+   - You can place mocks anywhere in the file, but they will be executed first
+   - Important: Don't use variables from the global scope inside mock functions, as they won't exist yet due to hoisting
+   - Example:
+     ```ts
+     // This will work fine, even though it's not at the top
+     vi.mock("crypto", async (importOriginal) => {
+       const crypto = await importOriginal<typeof import("crypto")>();
+       return {
+         ...crypto,
+         randomBytes: vi.fn().mockReturnValue("test-token"),
+       };
+     });
 
-### OpenAPI Specification Validation
+     // This would cause an error because `someGlobal` isn't available during hoisting
+     // vi.mock("crypto", () => ({ randomBytes: () => someGlobal })); // Don't do this!
+     ```
 
-Our API middleware validates responses against the OpenAPI specification. If a route returns a status code that is not defined in the spec, the middleware will convert it to a 500 error.
+2. **Mocking Node Built-ins**:
+   - When mocking Node.js built-in modules (like `crypto`), use `importOriginal` to preserve other functionality
+   - Example:
+     ```ts
+     vi.mock("crypto", async (importOriginal) => {
+       const crypto = await importOriginal<typeof import("crypto")>();
+       return {
+         ...crypto,
+         randomBytes: vi.fn().mockReturnValue("test-token"),
+       };
+     });
+     ```
 
-**Common symptoms:**
+3. **Mocking External Dependencies**:
+   - Mock the entire module, not just specific functions
+   - Provide mock implementations for all used functions
+   - Example:
+     ```ts
+     vi.mock("@saflib/email-service", () => ({
+       sendEmail: vi.fn().mockResolvedValue({ success: true }),
+       // Mock other functions used by the module
+       validateEmail: vi.fn().mockReturnValue(true),
+     }));
+     ```
 
-- Tests expecting specific error codes (like 403, 404) receive 500 errors instead
-- Console output shows warnings like: `====== no schema defined for status code '403' in the openapi spec ======`
+4. **Mocking Database Operations**:
+   - Don't mock the database itself
+   - Instead, use the actual database with test data
+   - Clear and set up test data in `beforeEach` or `beforeAll` hooks
 
-**How to fix:**
+## Test Setup
 
-1. Check the OpenAPI specification in `specs/apis/routes/*.yaml` for the route you're testing
-2. Ensure all status codes your route can return are properly defined in the spec
-3. Run `npm run generate` from the `specs/apis` folder to generate the generated specs
+1. Create the app in `beforeEach`:
+
+   ```ts
+   beforeEach(() => {
+     app = createApp();
+     vi.clearAllMocks();
+   });
+   ```
+
+2. Use `supertest` for making requests:
+
+   ```ts
+   const response = await request(app)
+     .post("/auth/login")
+     .send({ email: "test@example.com", password: "password123" });
+   ```
+
+3. For tests requiring session state (cookies), use a `supertest` agent:
+   ```ts
+   const agent = request.agent(app);
+   await agent.post("/auth/login").send(credentials);
+   await agent.get("/protected-route");
+   ```
 
 ## Testing Checklist
 
 When adding tests for new API routes, ensure:
 
 1. **Complete coverage**: Test all success and error paths
-2. **Status code alignment**: Verify that all status codes returned by your implementation are defined in the OpenAPI spec
+2. **Database state**: Set up required database state before each test
 3. **Error handling**: Test that errors are properly caught and converted to appropriate HTTP responses
-4. **Authorization**: Test both authorized and unauthorized access scenarios
-5. **Simplify assertions**: Focus on testing the essential behavior (status codes, response structure) rather than exact response content
+4. **Session state**: Use agents when testing flows that require session state
+5. **Mocking**: Mock only expensive/external operations, not the database
 
 ## Running Tests
 
@@ -118,8 +179,10 @@ npm run test -- routes/your-route.test.ts
 
 ## Debugging Failed Tests
 
-When tests fail with unexpected status codes:
+When tests fail:
 
-1. Check the console output for OpenAPI validation warnings
-2. Compare the route implementation with the OpenAPI specification
-3. Update either the implementation or the specification to align them
+1. Check the database state before and after the test
+2. Verify that all required mocks are in place
+3. Check that session state is properly maintained when using agents
+4. Look for unhandled promise rejections or middleware errors
+````

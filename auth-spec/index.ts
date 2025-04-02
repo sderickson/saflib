@@ -1,7 +1,14 @@
-import type { components } from "./dist/openapi.d.ts";
+import type { operations } from "./dist/openapi.d.ts";
 
 export type { paths, components, operations } from "./dist/openapi.d.ts";
-// Re-export the schema types for easier access
-export type LoginRequest = components["schemas"]["LoginRequest"];
-export type RegisterRequest = components["schemas"]["RegisterRequest"];
-export type UserResponse = components["schemas"]["UserResponse"];
+import {
+  type ExtractResponseSchema,
+  type ExtractRequestSchema,
+  castJson,
+} from "@saflib/openapi-specs";
+
+export type AuthResponse = ExtractResponseSchema<operations>;
+export type AuthRequest = ExtractRequestSchema<operations>;
+
+import * as json from "./dist/openapi.json" with { type: "json" };
+export const jsonSpec = castJson(json);

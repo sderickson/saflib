@@ -1,0 +1,146 @@
+import { describe, it, expect, vi } from "vitest";
+import { stubGlobals, mountWithPlugins } from "@saflib/vue-spa-dev/components";
+import { type VueWrapper } from "@vue/test-utils";
+import { http, HttpResponse } from "msw";
+import { setupMockServer } from "@saflib/vue-spa-dev/components";
+import VerifyEmailPage from "./VerifyEmailPage.vue";
+import { router } from "../router";
+
+// Set up MSW server
+const handlers = [
+  http.post(
+    "http://api.localhost:3000/auth/verify-email",
+    async ({ request }) => {
+      const body = (await request.json()) as { token: string };
+      if (body.token === "valid-token") {
+        return HttpResponse.json({
+          success: true,
+          data: {
+            message: "Email verified successfully",
+          },
+        });
+      }
+      return new HttpResponse(
+        JSON.stringify({ error: "Invalid or expired token" }),
+        {
+          status: 404,
+        },
+      );
+    },
+  ),
+  http.post("http://api.localhost:3000/auth/resend-verification", async () => {
+    return HttpResponse.json({
+      success: true,
+      data: {
+        message: "Verification email sent",
+      },
+    });
+  }),
+];
+
+describe("VerifyEmailPage", () => {
+  stubGlobals();
+  const server = setupMockServer(handlers);
+
+  const getResendButton = (wrapper: VueWrapper) => {
+    const buttons = wrapper.findAllComponents({ name: "v-btn" });
+    return buttons.find(
+      (button) => button.text() === "Resend Verification Email",
+    );
+  };
+
+  const getContinueLink = (wrapper: VueWrapper) => {
+    return wrapper.find("a.text-blue");
+  };
+
+  const mountComponent = () => {
+    return mountWithPlugins(VerifyEmailPage, {}, { router });
+  };
+
+  it("should automatically verify email when token is present and show continue link on success", async () => {
+    await router.push("/verify-email?token=valid-token");
+    const wrapper = mountComponent();
+
+    // Wait for success message
+    const successAlert = await vi.waitUntil(() => {
+      const alerts = wrapper.findAllComponents({ name: "v-alert" });
+      return alerts.find((alert) => alert.props("type") === "success");
+    });
+    expect(successAlert?.text()).toContain("Email successfully verified!");
+
+    // Verify continue link is shown
+    const continueLink = getContinueLink(wrapper);
+    expect(continueLink.exists()).toBe(true);
+    expect(continueLink.text()).toContain("Continue to App");
+  });
+
+  it("should show error and resend button when verification fails", async () => {
+    await router.push("/verify-email?token=invalid-token");
+    const wrapper = mountComponent();
+
+    // Wait for error message
+    const errorAlert = await vi.waitUntil(() => {
+      const alerts = wrapper.findAllComponents({ name: "v-alert" });
+      return alerts.find((alert) => alert.props("type") === "error");
+    });
+    expect(errorAlert?.text()).toContain("Failed to verify email");
+
+    // Verify resend button is shown
+    const resendButton = getResendButton(wrapper);
+    expect(resendButton?.exists()).toBe(true);
+  });
+
+  it("should show resend button when no token is present", async () => {
+    await router.push("/verify-email");
+    const wrapper = mountComponent();
+    const resendButton = getResendButton(wrapper);
+    expect(resendButton?.exists()).toBe(true);
+  });
+
+  it("should show success message and hide button after resending verification email", async () => {
+    await router.push("/verify-email");
+    const wrapper = mountComponent();
+    const resendButton = getResendButton(wrapper);
+
+    await resendButton?.trigger("click");
+    await wrapper.vm.$nextTick();
+
+    // Wait for success message
+    const successAlert = await vi.waitUntil(() => {
+      const alerts = wrapper.findAllComponents({ name: "v-alert" });
+      return alerts.find((alert) => alert.props("type") === "success");
+    });
+    expect(successAlert?.text()).toContain("Please check your email");
+
+    // Verify button is hidden
+    expect(getResendButton(wrapper)).toBeUndefined;
+  });
+
+  it("should show error message when resend fails", async () => {
+    server.use(
+      http.post("http://api.localhost:3000/auth/resend-verification", () => {
+        return new HttpResponse(
+          JSON.stringify({ error: "Failed to send email" }),
+          { status: 500 },
+        );
+      }),
+    );
+
+    await router.push("/verify-email");
+    const wrapper = mountComponent();
+    const resendButton = getResendButton(wrapper);
+
+    await resendButton?.trigger("click");
+    await wrapper.vm.$nextTick();
+
+    // Wait for error message
+    const errorAlert = await vi.waitUntil(() => {
+      const alerts = wrapper.findAllComponents({ name: "v-alert" });
+      return alerts.find((alert) => alert.props("type") === "error");
+    });
+    expect(errorAlert?.text()).toContain("Failed to resend verification email");
+
+    // Verify button is still shown
+    expect(getResendButton(wrapper)?.exists()).toBe(true);
+  });
+});

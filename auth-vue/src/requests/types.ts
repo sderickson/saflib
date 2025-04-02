@@ -9,3 +9,4 @@ export type ForgotPasswordResponse =
   components["schemas"]["ForgotPasswordResponse"];
 export type ResetPasswordRequest =
   components["schemas"]["ResetPasswordRequest"];
+export type VerifyEmailRequest = components["schemas"]["VerificationRequest"];

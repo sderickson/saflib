@@ -7,6 +7,10 @@ import morgan from "morgan";
  * Format: ":date[iso] <:id> :method :url :status :response-time ms - :res[content-length]"
  */
 export const httpLogger: Handler = (() => {
+  if (process.env.NODE_ENV === "test") {
+    return (_, __, next) => next();
+  }
+
   // Define custom token for request ID
   morgan.token("id", (req) => (req as any).shortId);
 

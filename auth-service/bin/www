@@ -1,5 +1,5 @@
 #!/usr/bin/env node
 import { startServer } from "@saflib/node-express";
-import app from "../app.ts";
+import { createApp } from "../app.ts";
 
-startServer(app);
+startServer(createApp());

@@ -14,8 +14,10 @@ import express from "express";
 import session from "express-session";
 import passport from "passport";
 import { setupPassport } from "./passport.ts";
-import { authRouter } from "./routes/auth.ts";
+import { authRouter } from "./routes/index.ts";
 import { sessionStore } from "./session-store.ts";
+import { jsonSpec } from "@saflib/auth-spec";
+
 // Define properties added to Express Request objects by middleware
 declare global {
   namespace Express {
@@ -25,51 +27,58 @@ declare global {
   }
 }
 
-const app = express();
-app.set("trust proxy", true);
+export function createApp() {
+  const app = express();
+  app.set("trust proxy", true);
 
-// Initialize database
-const db = new AuthDB();
+  // Initialize database
+  const db = new AuthDB();
 
-// Apply recommended middleware
-app.use(createPreMiddleware());
+  // Apply recommended middleware
+  app.use(
+    createPreMiddleware({
+      apiSpec: jsonSpec,
+      parseAuthHeaders: false,
+    }),
+  );
 
-// Session configuration
-const cookie = {
-  secure: process.env.PROTOCOL === "https",
-  maxAge: 24 * 60 * 60 * 1000, // 24 hours
-  sameSite: "strict" as const,
-  domain: `.${process.env.DOMAIN}`, // Allow cookies to be shared across subdomains
-};
+  // Session configuration
+  const cookie = {
+    secure: process.env.PROTOCOL === "https",
+    maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    sameSite: "strict" as const,
+    domain: `.${process.env.DOMAIN}`, // Allow cookies to be shared across subdomains
+  };
 
-app.use(
-  session({
-    store: sessionStore,
+  const sessionOptions = {
+    store: process.env.NODE_ENV === "test" ? undefined : sessionStore,
     secret: process.env.SESSION_SECRET || "your-secret-key",
     resave: false,
     saveUninitialized: false,
-    cookie,
-  }),
-);
+    cookie: process.env.NODE_ENV === "test" ? undefined : cookie,
+  };
 
-// Initialize Passport and restore authentication state from session
-setupPassport(db);
-app.use(passport.initialize());
-app.use(passport.session());
+  app.use(session(sessionOptions));
 
-// db injection
-app.use((req, _, next) => {
-  req.db = db;
-  next();
-});
+  // Initialize Passport and restore authentication state from session
+  setupPassport(db);
+  app.use(passport.initialize());
+  app.use(passport.session());
 
-/**
- * Routes
- * Authentication related endpoints
- */
-app.use("/auth", authRouter);
+  // db injection
+  app.use((req, _, next) => {
+    req.db = db;
+    next();
+  });
 
-// Apply recommended error handlers
-app.use(recommendedErrorHandlers);
+  /**
+   * Routes
+   * Authentication related endpoints
+   */
+  app.use(authRouter);
 
-export default app;
+  // Apply recommended error handlers
+  app.use(recommendedErrorHandlers);
+
+  return app;
+}

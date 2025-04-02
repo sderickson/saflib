@@ -6,6 +6,8 @@ import {
   useRegister,
   useForgotPassword,
   useResetPassword,
+  useVerifyEmail,
+  useResendVerification,
 } from "./auth.ts";
 import { client } from "./client.ts";
 
@@ -195,6 +197,91 @@ describe("auth requests", () => {
           newPassword: "new-password123",
         }),
       ).rejects.toThrow("Invalid token");
+      expect(result.isError.value).toBe(true);
+
+      // Clean up
+      app.unmount();
+    });
+  });
+
+  describe("useVerifyEmail", () => {
+    it("should send verify email request", async () => {
+      // Mock the response
+      const mockResponse = {
+        id: 1,
+        email: "test@example.com",
+        verified: true,
+      };
+      mockPOST.mockResolvedValueOnce({ data: mockResponse, error: null });
+
+      // Set up the mutation
+      const [result, app] = withVueQuery(() => useVerifyEmail());
+
+      // Execute the mutation
+      await result.mutateAsync({ token: "valid-token" });
+
+      // Assert
+      expect(mockPOST).toHaveBeenCalledWith("/auth/verify-email", {
+        body: { token: "valid-token" },
+      });
+      expect(result.data.value).toEqual(mockResponse);
+
+      // Clean up
+      app.unmount();
+    });
+
+    it("should handle errors", async () => {
+      // Mock the error response
+      const mockError = new Error("Invalid token");
+      mockPOST.mockResolvedValueOnce({ data: null, error: mockError });
+
+      // Set up the mutation
+      const [result, app] = withVueQuery(() => useVerifyEmail());
+
+      // Execute and expect error
+      await expect(
+        result.mutateAsync({ token: "invalid-token" }),
+      ).rejects.toThrow("Invalid token");
+      expect(result.isError.value).toBe(true);
+
+      // Clean up
+      app.unmount();
+    });
+  });
+
+  describe("useResendVerification", () => {
+    it("should send resend verification request", async () => {
+      // Mock the response
+      const mockResponse = {
+        success: true,
+        message: "Verification email sent successfully",
+      };
+      mockPOST.mockResolvedValueOnce({ data: mockResponse, error: null });
+
+      // Set up the mutation
+      const [result, app] = withVueQuery(() => useResendVerification());
+
+      // Execute the mutation
+      await result.mutateAsync();
+
+      // Assert
+      expect(mockPOST).toHaveBeenCalledWith("/auth/resend-verification");
+      expect(result.data.value).toEqual(mockResponse);
+
+      // Clean up
+      app.unmount();
+    });
+
+    it("should handle errors", async () => {
+      // Mock the error response
+      const mockError = new Error("User not logged in");
+      mockPOST.mockResolvedValueOnce({ data: null, error: mockError });
+
+      // Set up the mutation
+      const [result, app] = withVueQuery(() => useResendVerification());
+
+      // Execute and expect error
+      await expect(result.mutateAsync()).rejects.toThrow("User not logged in");
       expect(result.isError.value).toBe(true);
 
       // Clean up
