@@ -703,4 +703,145 @@ describe("Auth Routes", () => {
       expect(db.emailAuth.clearForgotPasswordToken).not.toHaveBeenCalled();
     });
   });
+
+  describe("POST /auth/verify-email", () => {
+    it("should verify email with valid token", async () => {
+      const mockEmailAuth = {
+        email: "test@example.com",
+        userId: 1,
+        passwordHash: "hashed-password",
+        verifiedAt: null,
+        verificationToken: "valid-token",
+        verificationTokenExpiresAt: new Date(Date.now() + 1000 * 60 * 15), // 15 minutes from now
+        forgotPasswordToken: null,
+        forgotPasswordTokenExpiresAt: null,
+      };
+
+      const mockUser = {
+        id: 1,
+        email: "test@example.com",
+        createdAt: new Date(),
+        lastLoginAt: null,
+      };
+
+      vi.mocked(db.emailAuth.getByVerificationToken).mockResolvedValue(
+        mockEmailAuth,
+      );
+      vi.mocked(db.emailAuth.verifyEmail).mockResolvedValue(mockEmailAuth);
+      vi.mocked(db.users.getById).mockResolvedValue(mockUser);
+      vi.mocked(db.permissions.getByUserId).mockResolvedValue([]);
+
+      const response = await request(app)
+        .post("/auth/verify-email")
+        .query({ token: "valid-token" });
+
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual({
+        id: 1,
+        email: "test@example.com",
+        scopes: [],
+      });
+      expect(db.emailAuth.verifyEmail).toHaveBeenCalledWith(1);
+    });
+
+    it("should return 400 for missing token", async () => {
+      const response = await request(app).post("/auth/verify-email");
+
+      expect(response.status).toBe(400);
+      expect(response.body).toEqual({
+        error: "Missing or invalid verification token",
+      });
+    });
+
+    it("should return 404 for invalid token", async () => {
+      vi.mocked(db.emailAuth.getByVerificationToken).mockResolvedValue({
+        email: "test@example.com",
+        userId: 1,
+        passwordHash: "hashed-password",
+        verifiedAt: null,
+        verificationToken: null,
+        verificationTokenExpiresAt: null,
+        forgotPasswordToken: null,
+        forgotPasswordTokenExpiresAt: null,
+      });
+
+      const response = await request(app)
+        .post("/auth/verify-email")
+        .query({ token: "invalid-token" });
+
+      expect(response.status).toBe(404);
+      expect(response.body).toEqual({
+        error: "Invalid or expired verification token",
+      });
+    });
+
+    it("should return 400 for expired token", async () => {
+      const mockEmailAuth = {
+        email: "test@example.com",
+        userId: 1,
+        passwordHash: "hashed-password",
+        verifiedAt: null,
+        verificationToken: "expired-token",
+        verificationTokenExpiresAt: new Date(Date.now() - 1000), // 1 second ago
+        forgotPasswordToken: null,
+        forgotPasswordTokenExpiresAt: null,
+      };
+
+      vi.mocked(db.emailAuth.getByVerificationToken).mockResolvedValue(
+        mockEmailAuth,
+      );
+
+      const response = await request(app)
+        .post("/auth/verify-email")
+        .query({ token: "expired-token" });
+
+      expect(response.status).toBe(400);
+      expect(response.body).toEqual({
+        error: "Verification token has expired",
+      });
+    });
+  });
+
+  describe("POST /auth/resend-verification", () => {
+    it("should resend verification email for logged in user", async () => {
+      const mockEmailAuth = {
+        email: "test@example.com",
+        userId: 1,
+        passwordHash: "hashed-password",
+        verifiedAt: null,
+        verificationToken: "new-token",
+        verificationTokenExpiresAt: new Date(Date.now() + 1000 * 60 * 15),
+        forgotPasswordToken: null,
+        forgotPasswordTokenExpiresAt: null,
+      };
+
+      vi.mocked(db.emailAuth.updateVerificationToken).mockResolvedValue(
+        mockEmailAuth,
+      );
+
+      const response = await request(app)
+        .post("/auth/resend-verification")
+        .set("x-user-id", "1")
+        .set("x-user-email", "test@example.com");
+
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual({
+        message: "Verification email sent",
+      });
+      expect(db.emailAuth.updateVerificationToken).toHaveBeenCalledWith(
+        1,
+        expect.any(String),
+        expect.any(Date),
+      );
+    });
+
+    it("should return 401 for unauthenticated user", async () => {
+      const response = await request(app).post("/auth/resend-verification");
+
+      expect(response.status).toBe(401);
+      expect(response.body).toEqual({
+        error: "User must be logged in",
+      });
+    });
+  });
 });
