@@ -17,7 +17,6 @@ export function expectStatus(
   // Check if we got a 500 error but expected something else
   if (response.status === 500 && expectedStatus !== 500) {
     // Check if the error is related to OpenAPI validation
-    console.log("response.text", response.body);
     const isOpenApiValidationError =
       response.text.includes("no schema defined for status code") ||
       response.text.includes("openapi spec");
