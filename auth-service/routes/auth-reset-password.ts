@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import * as argon2 from "argon2";
 import { createHandler } from "@saflib/node-express";
-import { ResponseSchema, ErrorResponse } from "@saflib/auth-spec";
+import { ResponseSchema } from "@saflib/auth-spec";
 
 export const resetPasswordHandler = createHandler(
   async (req: Request, res: Response) => {

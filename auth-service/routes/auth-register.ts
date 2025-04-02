@@ -1,12 +1,11 @@
-import type { RegisterRequest } from "@saflib/auth-spec";
 import * as argon2 from "argon2";
 import { createHandler } from "@saflib/node-express";
 import { createUserResponse } from "./helpers.ts";
-import { ResponseSchema, ErrorResponse } from "@saflib/auth-spec";
+import { ResponseSchema, RequestSchema } from "@saflib/auth-spec";
 
 export const registerHandler = createHandler(async (req, res) => {
   try {
-    const registerRequest: RegisterRequest = req.body;
+    const registerRequest: RequestSchema<"registerUser"> = req.body;
     const { email, password } = registerRequest;
 
     // Hash the password with argon2

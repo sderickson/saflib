@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import { randomBytes } from "crypto";
 import { createHandler } from "@saflib/node-express";
-import { ResponseSchema, ErrorResponse } from "@saflib/auth-spec";
+import { ResponseSchema } from "@saflib/auth-spec";
 
 export const forgotPasswordHandler = createHandler(
   async (req: Request, res: Response) => {
