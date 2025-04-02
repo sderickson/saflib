@@ -73,7 +73,58 @@ Example of mocking a 3rd party service:
 vi.mock("@saflib/email-service", () => ({
   sendEmail: vi.fn().mockResolvedValue({ success: true }),
 }));
-````
+```
+
+## Mocking Best Practices
+
+1. **Mock Hoisting**:
+   - Vitest automatically hoists `vi.mock()` calls to the top of the file
+   - You can place mocks anywhere in the file, but they will be executed first
+   - Important: Don't use variables from the global scope inside mock functions, as they won't exist yet due to hoisting
+   - Example:
+     ```ts
+     // This will work fine, even though it's not at the top
+     vi.mock("crypto", async (importOriginal) => {
+       const crypto = await importOriginal<typeof import("crypto")>();
+       return {
+         ...crypto,
+         randomBytes: vi.fn().mockReturnValue("test-token"),
+       };
+     });
+
+     // This would cause an error because `someGlobal` isn't available during hoisting
+     // vi.mock("crypto", () => ({ randomBytes: () => someGlobal })); // Don't do this!
+     ```
+
+2. **Mocking Node Built-ins**:
+   - When mocking Node.js built-in modules (like `crypto`), use `importOriginal` to preserve other functionality
+   - Example:
+     ```ts
+     vi.mock("crypto", async (importOriginal) => {
+       const crypto = await importOriginal<typeof import("crypto")>();
+       return {
+         ...crypto,
+         randomBytes: vi.fn().mockReturnValue("test-token"),
+       };
+     });
+     ```
+
+3. **Mocking External Dependencies**:
+   - Mock the entire module, not just specific functions
+   - Provide mock implementations for all used functions
+   - Example:
+     ```ts
+     vi.mock("@saflib/email-service", () => ({
+       sendEmail: vi.fn().mockResolvedValue({ success: true }),
+       // Mock other functions used by the module
+       validateEmail: vi.fn().mockReturnValue(true),
+     }));
+     ```
+
+4. **Mocking Database Operations**:
+   - Don't mock the database itself
+   - Instead, use the actual database with test data
+   - Clear and set up test data in `beforeEach` or `beforeAll` hooks
 
 ## Test Setup
 
@@ -134,3 +185,4 @@ When tests fail:
 2. Verify that all required mocks are in place
 3. Check that session state is properly maintained when using agents
 4. Look for unhandled promise rejections or middleware errors
+````
