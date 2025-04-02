@@ -265,7 +265,7 @@ describe("auth requests", () => {
       await result.mutateAsync();
 
       // Assert
-      expect(mockPOST).toHaveBeenCalledWith("/auth/resend-verification", {});
+      expect(mockPOST).toHaveBeenCalledWith("/auth/resend-verification");
       expect(result.data.value).toEqual(mockResponse);
 
       // Clean up

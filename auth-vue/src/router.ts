@@ -5,6 +5,7 @@ import {
   ForgotPasswordPage,
   LogoutPage,
   ChangeForgottenPasswordPage,
+  VerifyEmailPage,
 } from "@saflib/auth-vue";
 
 const routes = [
@@ -14,6 +15,7 @@ const routes = [
   { path: "/forgot", component: ForgotPasswordPage },
   { path: "/logout", component: LogoutPage },
   { path: "/reset-password", component: ChangeForgottenPasswordPage },
+  { path: "/verify-email", component: VerifyEmailPage },
 ];
 
 export const router = createRouter({
