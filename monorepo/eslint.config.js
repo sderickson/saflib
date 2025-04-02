@@ -7,7 +7,7 @@ import typescriptEslint from "typescript-eslint";
 // TODO: Add linters for everything other than "clients"
 
 export const config = typescriptEslint.config(
-  { ignores: ["*.d.ts", "**/coverage", "**/dist"] },
+  { ignores: ["*.d.ts", "**/coverage", "**/dist", "**/cache"] },
   {
     extends: [
       eslint.configs.recommended,

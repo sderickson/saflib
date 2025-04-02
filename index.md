@@ -19,6 +19,7 @@ The focus of the docs on this site are what's in `saflib`, which contains all th
 To use these packages in a new project, you can create a project from [the official SAF template repo](https://github.com/sderickson/saf-template). You can also use the [SAF website repo](https://github.com/sderickson/saf-2025) as reference. The latter is what builds and serves this documentation using [VitePress](https://vitepress.dev/).
 
 To use these packages in an existing project:
+
 1. Clone [`sderickson/saflib`](https://github.com/sderickson/saflib) into your repository somewhere as a git submodule.
 2. Add the directory as a workspace for your root-level `package.json`. For example if you added the submodule at the root directory, you'd add `"saflib/*"` to your [`workspaces` field](https://docs.npmjs.com/cli/v11/configuring-npm/package-json#workspaces).
 3. Run `npm install` or equivalent.
@@ -31,15 +32,15 @@ Packages tend to center around either **features** or **dependencies**. A **feat
 
 For example, a full authentication feature includes the following packages:
 
-* `auth-vue` - frontend components using Vue and related tech
-* `auth-service` - the backend service with Dockerfile et al
-* `auth-spec` - the specification for the API they share
-* `auth-db` - the backend store which `auth-service` depends on
+- `auth-vue` - frontend components using Vue and related tech
+- `auth-service` - the backend service with Dockerfile et al
+- `auth-spec` - the specification for the API they share
+- `auth-db` - the backend store which `auth-service` depends on
 
 And a set of dependencies might be everything needed for a frontend SPA
 
-* `vue-spa` - not just Vue, but also Vite, Tanstack Query, OpenAPI fetch, and other "runtime" dependencies
-* `vue-spa-dev` - packages that go in the `devDependencies` section, such as `Vite`, `@types/*` for those above, etc.
+- `vue-spa` - not just Vue, but also Vite, Tanstack Query, OpenAPI fetch, and other "runtime" dependencies
+- `vue-spa-dev` - packages that go in the `devDependencies` section, such as `Vite`, `@types/*` for those above, etc.
 
 "Dependency" packages just come in sets of two. "Feature" packages can come in a great many packages depending on how complicated it is.
 

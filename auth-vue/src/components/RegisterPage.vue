@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, watch } from "vue";
-import { emailRules, passwordRules } from "../rules.ts";
+import { emailRules, passwordRules } from "../utils/rules.ts";
 import { useRegister } from "../requests/auth.ts";
 
 const passwordVisible = ref(false);

@@ -153,9 +153,11 @@ When adding new endpoints to your project's API specifications, follow these gui
 - Define request validation rules in the schema
 - Include examples where helpful
 - Document required vs. optional fields clearly
+- Always set `additionalProperties: false` on object schemas to ensure strict validation and prevent unexpected properties
 
 ## Common Patterns
 
 - Follow existing examples in routes/ for consistent structure
 - Include error responses with error schema
 - Use descriptive summaries and descriptions
+- Use strict schema validation with `additionalProperties: false` to prevent unexpected properties

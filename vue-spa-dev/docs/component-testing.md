@@ -13,50 +13,72 @@ We use the following tools for testing:
 - JSDOM for browser environment simulation
 - Vuetify for UI components
 
+### Test File Location
+
+Test files should be placed adjacent to the component files they test. For example:
+
+```
+src/
+  components/
+    MyComponent.vue
+    MyComponent.test.ts
+```
+
+This makes it easy to find tests and keeps them close to the code they're testing.
+
 ### Basic Test Structure
 
 ```typescript
 import { describe, it, expect, vi } from "vitest";
-import {
-  withResizeObserverMock,
-  mountWithPlugins,
-} from "@saflib/vue-spa/test-utils/components";
-import YourComponent from "../YourComponent.vue";
+import { stubGlobals, mountWithPlugins } from "@saflib/vue-spa-dev/components";
+import { type VueWrapper } from "@vue/test-utils";
+import { http, HttpResponse } from "msw";
+import { setupMockServer } from "@saflib/vue-spa-dev/components";
+import YourComponent from "./YourComponent.vue";
+import { router } from "../router"; // Import your app's router
 
-withResizeObserverMock(() => {
-  describe("YourComponent", () => {
-    // Helper functions for element selection
-    const getEmailInput = (wrapper) => {
-      const emailInput = wrapper.find("[placeholder='Email address']");
-      expect(emailInput.exists()).toBe(true);
-      return emailInput;
-    };
-
-    const getSubmitButton = (wrapper) => {
-      const button = wrapper.find("button");
-      expect(button.exists()).toBe(true);
-      expect(button.text()).toBe("Submit");
-      return button;
-    };
-
-    const mountComponent = (props = {}) => {
-      return mountWithPlugins(YourComponent, {
-        props,
-        // Additional options as needed
-      });
-    };
-
-    beforeEach(() => {
-      // Clear mocks and reset state
-      vi.clearAllMocks();
+// Set up MSW server if component makes network requests
+const handlers = [
+  http.post("/api/endpoint", async () => {
+    return HttpResponse.json({
+      success: true,
+      data: {
+        /* response data */
+      },
     });
+  }),
+];
 
-    // Tests go here
-    it("should render the form", () => {
-      const wrapper = mountComponent();
-      expect(getEmailInput(wrapper).exists()).toBe(true);
-      expect(getSubmitButton(wrapper).exists()).toBe(true);
-    });
+describe("YourComponent", () => {
+  stubGlobals();
+  const server = setupMockServer(handlers);
+
+  // Helper functions for element selection
+  const getEmailInput = (wrapper: VueWrapper) => {
+    const inputs = wrapper.findAllComponents({ name: "v-text-field" });
+    const emailInput = inputs.find(
+      (input) => input.props("placeholder") === "Email address",
+    );
+    expect(emailInput?.exists()).toBe(true);
+    return emailInput!;
+  };
+
+  const getSubmitButton = (wrapper: VueWrapper) => {
+    const buttons = wrapper.findAllComponents({ name: "v-btn" });
+    const submitButton = buttons.find((button) => button.text() === "Submit");
+    expect(submitButton?.exists()).toBe(true);
+    return submitButton!;
+  };
+
+  const mountComponent = () => {
+    return mountWithPlugins(YourComponent, {}, { router });
+  };
+
+  // Tests go here
+  it("should render the form", () => {
+    const wrapper = mountComponent();
+    expect(getEmailInput(wrapper).exists()).toBe(true);
+    expect(getSubmitButton(wrapper).exists()).toBe(true);
   });
 });
 ```
@@ -65,52 +87,89 @@ withResizeObserverMock(() => {
 
 We provide several test utilities to simplify component testing, especially with Vuetify components:
 
-#### ResizeObserver Mock
+#### Global Mocks
 
-Vuetify components often use the ResizeObserver API, which is not available in the JSDOM environment. We provide a helper function to mock this API:
+Always use `stubGlobals()` at the start of your test suite to set up necessary global mocks:
 
 ```typescript
-import { describe, it, expect } from "vitest";
-import { withResizeObserverMock } from "@saflib/vue-spa/test-utils/components";
+import { stubGlobals } from "@saflib/vue-spa-dev/components";
 
-withResizeObserverMock(() => {
-  describe("YourComponent", () => {
-    // Your tests here
-  });
+describe("YourComponent", () => {
+  stubGlobals();
+  // Your tests here
 });
 ```
 
-The `withResizeObserverMock` helper:
+This helper:
 
-1. Sets up a mock ResizeObserver implementation before your tests run
-2. Executes your test suite
-3. Cleans up the mock after your tests complete
+1. Sets up a mock ResizeObserver implementation
+2. Mocks the global `location` object
+3. Cleans up all global mocks after tests complete
 
-Always wrap your Vuetify component tests with this helper to avoid ResizeObserver errors.
+#### Network Mocking with MSW
+
+We use MSW (Mock Service Worker) to mock network requests at the HTTP level. This approach is more reliable than mocking query hooks or API clients directly.
+
+1. Set up the mock server in your test file:
+
+```typescript
+import { http, HttpResponse } from "msw";
+import { setupMockServer } from "@saflib/vue-spa-dev/components";
+
+const handlers = [
+  http.post("/api/endpoint", async () => {
+    return HttpResponse.json({
+      success: true,
+      data: {
+        /* response data */
+      },
+    });
+  }),
+];
+
+const server = setupMockServer(handlers);
+```
+
+2. Override handlers for specific test cases:
+
+```typescript
+it("should handle error response", async () => {
+  server.use(
+    http.post("http://api.localhost:3000/endpoint", () => {
+      return new HttpResponse(JSON.stringify({ error: "API Error" }), {
+        status: 500,
+      });
+    }),
+  );
+
+  // Test error handling...
+});
+```
+
+3. Use `vi.waitFor` or `vi.waitUntil` for async operations:
+
+```typescript
+it("should show success message after API call", async () => {
+  const wrapper = mountComponent();
+  await submitButton.trigger("click");
+
+  // Wait for the success alert to appear
+  const successAlert = await vi.waitUntil(() => getSuccessAlert(wrapper));
+  expect(successAlert?.text()).toContain("Success message");
+});
+```
 
 #### Mounting Components with Plugins
 
-The `mountWithPlugins` function (previously known as `mountWithVuetify`) simplifies mounting components that use Vuetify and other plugins like Vue Router:
+The `mountWithPlugins` function simplifies mounting components that use Vuetify and other plugins like Vue Router:
 
 ```typescript
-import { mountWithPlugins } from "@saflib/vue-spa/test-utils/components";
-import { router } from "@your-app/router"; // Import your app's router
+import { mountWithPlugins } from "@saflib/vue-spa-dev/components";
+import { router } from "../router";
 
-const wrapper = mountWithPlugins(
-  YourComponent,
-  {
-    props: {
-      // Component props
-    },
-    global: {
-      // Additional global options
-      stubs: ["router-link"],
-    },
-  },
-  {
-    router, // Pass your app's router instance
-  },
-);
+const mountComponent = () => {
+  return mountWithPlugins(YourComponent, {}, { router });
+};
 ```
 
 This function:
@@ -119,6 +178,20 @@ This function:
 2. Sets up the router you provide (or creates a default one if none is provided)
 3. Mounts the component with the Vuetify plugin and router
 4. Merges any additional options you provide
+
+Always provide your app's router when testing components that use routing:
+
+```typescript
+// Good - provide the actual router
+return mountWithPlugins(YourComponent, {}, { router });
+
+// Avoid - using router stubs
+return mountWithPlugins(YourComponent, {
+  global: {
+    stubs: ["router-link"],
+  },
+});
+```
 
 ## Best Practices
 
@@ -142,54 +215,52 @@ This test serves two purposes:
 
 ### 2. Element Selection Strategy
 
-1. Prefer `wrapper.find()` with specific attributes:
+1. Prefer `findComponent` and `findAllComponents` over `find`:
 
    ```typescript
-   // Good - uses placeholder text that's already in the component
-   const getEmailInput = (wrapper) =>
-     wrapper.find("[placeholder='Email address']");
-
-   // Good - uses button text that's already in the component
-   const getSubmitButton = (wrapper) => {
-     const button = wrapper.find("button");
-     expect(button.text()).toBe("Submit");
-     return button;
+   // Good - using findComponent for single components
+   const getSubmitButton = (wrapper: VueWrapper) => {
+     const buttons = wrapper.findAllComponents({ name: "v-btn" });
+     const submitButton = buttons.find((button) => button.text() === "Submit");
+     expect(submitButton?.exists()).toBe(true);
+     return submitButton!;
    };
 
-   // Avoid - using test-specific data attributes
-   wrapper.find("[data-test='email-input']");
+   // Good - using findAllComponents for multiple components
+   const getErrorAlert = (wrapper: VueWrapper) => {
+     const alerts = wrapper.findAllComponents({ name: "v-alert" });
+     const errorAlert = alerts.find((alert) => alert.props("type") === "error");
+     expect(errorAlert?.exists()).toBe(true);
+     return errorAlert;
+   };
+
+   // Avoid - using find with selectors, especially internal Vuetify classes
+   wrapper.find(".v-alert--error");
    ```
 
 2. Selection priority (in order of preference):
 
+   - Component name + props (e.g., `findComponent({ name: "v-btn", props: { color: "error" } })`)
+   - Component name + text content
+   - Component name + context
    - Placeholder text for inputs
    - Button/element text content
-   - Component-specific classes (e.g., Vuetify classes)
-   - Element type + context
+   - Component-specific classes
    - Custom data attributes (last resort)
 
 3. Make selection helpers robust:
    ```typescript
-   const getInput = (wrapper, placeholder) => {
-     const input = wrapper.find(`[placeholder='${placeholder}']`);
-     expect(input.exists()).toBe(true);
-     return input;
+   const getInput = (wrapper: VueWrapper, placeholder: string) => {
+     const inputs = wrapper.findAllComponents({ name: "v-text-field" });
+     const input = inputs.find(
+       (input) => input.props("placeholder") === placeholder,
+     );
+     expect(input?.exists()).toBe(true);
+     return input!;
    };
    ```
 
-### 3. Form Interaction Helpers
-
-Create reusable helpers for common form interactions:
-
-```typescript
-const fillForm = async (wrapper, { email, password }) => {
-  await getEmailInput(wrapper).setValue(email);
-  await getPasswordInput(wrapper).setValue(password);
-  await wrapper.vm.$nextTick();
-};
-```
-
-### 4. Async Testing
+### 3. Async Testing
 
 1. Always use `async/await` when:
 
@@ -198,7 +269,7 @@ const fillForm = async (wrapper, { email, password }) => {
    - Checking validation messages
    - After any state changes
 
-2. Use a single `$nextTick` after state changes:
+2. Use `wrapper.vm.$nextTick()` after state changes:
 
    ```typescript
    await input.setValue("value");
@@ -206,10 +277,38 @@ const fillForm = async (wrapper, { email, password }) => {
    expect(wrapper.text()).toContain("Validation message");
    ```
 
-3. Common misconceptions:
+3. Use `vi.waitFor` or `vi.waitUntil` for async operations:
+
+   ```typescript
+   // For checking conditions
+   await vi.waitFor(() => expect(location.href).toBe("/app/"));
+
+   // For finding elements
+   const successAlert = await vi.waitUntil(() => getSuccessAlert(wrapper));
+   expect(successAlert?.text()).toContain("Success message");
+   ```
+
+4. Common misconceptions:
    - Multiple `$nextTick` calls are not needed - a single call is sufficient
    - Adding more `$nextTick` calls won't fix timing issues
    - If a test is flaky, look for other causes like missing awaits on events or setValue calls
+
+### 4. Form Interaction Helpers
+
+Create reusable helpers for common form interactions:
+
+```typescript
+const fillForm = async (
+  wrapper: VueWrapper,
+  { email, password }: { email: string; password: string },
+) => {
+  await getEmailInput(wrapper).setValue(email);
+  await getPasswordInput(wrapper).setValue(password);
+  await wrapper.vm.$nextTick();
+  // Wait for validation to complete
+  await new Promise((resolve) => setTimeout(resolve, 0));
+};
+```
 
 ### 5. Validation Testing
 
@@ -220,13 +319,15 @@ it("should validate email format", async () => {
   const wrapper = mountComponent();
   const emailInput = getEmailInput(wrapper);
 
+  // Test invalid email
   await emailInput.setValue("invalid-email");
   await wrapper.vm.$nextTick();
-  expect(wrapper.text()).toContain("Must be a valid email");
+  expect(wrapper.text()).toContain("Email must be valid");
 
+  // Test valid email
   await emailInput.setValue("valid@email.com");
   await wrapper.vm.$nextTick();
-  expect(wrapper.text()).not.toContain("Must be a valid email");
+  expect(wrapper.text()).not.toContain("Email must be valid");
 });
 ```
 
@@ -240,7 +341,7 @@ it("should disable submit button when form is invalid", async () => {
   const submitButton = getSubmitButton(wrapper);
 
   // Initially disabled
-  expect(submitButton.attributes("disabled")).toBeDefined();
+  expect(submitButton.attributes("disabled")).toBe("");
 
   // After valid input
   await fillForm(wrapper, {
@@ -251,67 +352,59 @@ it("should disable submit button when form is invalid", async () => {
 });
 ```
 
-### 7. Mocking External Dependencies
+### 7. Network Request Testing
 
-#### Proper Mocking with importOriginal
+1. Set up default handlers for successful responses using types from your OpenAPI spec:
 
-Always use the `importOriginal` pattern when mocking modules to preserve the original module's structure:
+   ```typescript
+   import type { LoginRequest, UserResponse } from "./types";
 
-```typescript
-// RECOMMENDED: Use importOriginal to preserve module structure
-const mockSubmit = vi.fn();
-vi.mock("../path/to/module", async (importOriginal) => {
-  const original = await importOriginal<typeof import("../path/to/module")>();
-  return {
-    ...original, // Preserve all original exports
-    useSubmit: () => ({
-      mutate: mockSubmit,
-      isPending: { value: false },
-      isError: { value: false },
-    }),
-  };
-});
+   export const handlers = [
+     http.post("http://api.localhost:3000/auth/login", async ({ request }) => {
+       const body = (await request.json()) as LoginRequest;
+       return HttpResponse.json({
+         success: true,
+         data: {
+           token: "mock-token",
+           user: {
+             id: 1,
+             email: body.email,
+           } satisfies UserResponse,
+         },
+       });
+     }),
+   ];
+   ```
 
-// AVOID: This approach completely replaces the module and loses original exports
-vi.mock("../path/to/module", () => ({
-  useSubmit: () => ({
-    mutate: vi.fn(),
-    isPending: { value: false },
-    isError: { value: false },
-  }),
-}));
-```
+2. Override handlers for specific test cases:
 
-The `importOriginal` pattern:
+   ```typescript
+   it("should handle error response", async () => {
+     server.use(
+       http.post("http://api.localhost:3000/auth/login", () => {
+         return new HttpResponse(JSON.stringify({ error: "API Error" }), {
+           status: 500,
+         });
+       }),
+     );
 
-1. Preserves all original exports from the module
-2. Only overrides the specific functions you need to mock
-3. Prevents unexpected errors when the component uses other exports from the same module
-4. Provides better TypeScript support
+     // Test error handling...
+   });
+   ```
 
-Example of mocking Vue Router:
+3. Use `vi.waitFor` or `vi.waitUntil` to wait for async operations:
 
-```typescript
-const mockPush = vi.fn();
-vi.mock("vue-router", async (importOriginal) => {
-  const original = await importOriginal<typeof import("vue-router")>();
-  return {
-    ...original,
-    useRouter: vi.fn(() => ({
-      push: mockPush,
-    })),
-  };
-});
-```
+   ```typescript
+   await submitButton.trigger("click");
+   const successAlert = await vi.waitUntil(() => getSuccessAlert(wrapper));
+   expect(successAlert?.text()).toContain("Success message");
+   ```
 
-Reset mocks in `beforeEach`:
-
-```typescript
-beforeEach(() => {
-  vi.clearAllMocks();
-  mockPush.mockReset();
-});
-```
+4. Type Safety:
+   - Always use types from your OpenAPI spec for request and response bodies
+   - This ensures type safety and catches API changes early
+   - Avoid creating local interfaces for API types
+   - Use `satisfies` to ensure response objects match the expected type
 
 ### 8. Testing Vuetify Components
 
@@ -358,7 +451,7 @@ can't be done well, then just skip the tests.
    // Better - simulate user interaction
    await deleteButton.trigger("click");
    await wrapper.vm.$nextTick();
-   const confirmButton = wrapper.findAll(".v-card-actions .v-btn").at(-1);
+   const confirmButton = wrapper.findAllComponents({ name: "v-btn" }).at(-1);
    await confirmButton.trigger("click");
    ```
 
@@ -404,73 +497,178 @@ can't be done well, then just skip the tests.
    - Place the wrapper at the top level of your test file
    - This ensures ResizeObserver is properly mocked for all tests
 
+### 11. Testing Route-Dependent Components
+
+When testing components that depend on specific route configurations (URLs or query parameters), set the route before mounting the component:
+
+```typescript
+describe("ResetPasswordPage", () => {
+  it("should show success message after password reset", async () => {
+    // Set up the route with required query parameters
+    await router.push("/reset-password?token=valid-token");
+
+    const wrapper = mountComponent();
+    const resetButton = getResetButton(wrapper);
+
+    // Test the component...
+  });
+});
+```
+
+Key points:
+
+1. Use `router.push()` before mounting the component
+2. Include any required query parameters in the URL
+3. Wait for the route change to complete with `await`
+4. Mount the component after the route is set
+
+This ensures the component receives the correct route configuration during testing.
+
 ## Example Test
 
 ```typescript
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import {
-  withResizeObserverMock,
-  mountWithPlugins,
-} from "@saflib/vue-spa/test-utils/components";
+import { describe, it, expect, vi } from "vitest";
+import { stubGlobals, mountWithPlugins } from "@saflib/vue-spa-dev/components";
+import { type VueWrapper } from "@vue/test-utils";
+import { http, HttpResponse } from "msw";
+import { setupMockServer } from "@saflib/vue-spa-dev/components";
 import LoginForm from "../LoginForm.vue";
-import { router } from "@your-app/router"; // Import your app's router
+import { router } from "../router";
+import type { LoginRequest, UserResponse } from "../requests/types";
 
-// Mock the auth request with importOriginal pattern
-const mockSubmit = vi.fn();
-vi.mock("../../requests/auth", async (importOriginal) => {
-  const original = await importOriginal<typeof import("../../requests/auth")>();
-  return {
-    ...original, // Preserve all original exports
-    useLogin: () => ({
-      mutate: mockSubmit,
-      isPending: { value: false },
-      isError: { value: false },
-    }),
+// Set up MSW server
+const handlers = [
+  http.post("http://api.localhost:3000/auth/login", async ({ request }) => {
+    const body = (await request.json()) as LoginRequest;
+    return HttpResponse.json({
+      success: true,
+      data: {
+        token: "mock-token",
+        user: {
+          id: 1,
+          email: body.email,
+        } satisfies UserResponse,
+      },
+    });
+  }),
+];
+
+describe("LoginForm", () => {
+  stubGlobals();
+  const server = setupMockServer(handlers);
+
+  // Helper functions for element selection
+  const getEmailInput = (wrapper: VueWrapper) => {
+    const inputs = wrapper.findAllComponents({ name: "v-text-field" });
+    const emailInput = inputs.find(
+      (input) => input.props("placeholder") === "Email address",
+    );
+    expect(emailInput?.exists()).toBe(true);
+    return emailInput!;
   };
-});
 
-withResizeObserverMock(() => {
-  describe("LoginForm", () => {
-    const mountLoginForm = (props = {}) => {
-      return mountWithPlugins(
-        LoginForm,
-        { props },
-        { router }, // Pass your app's router
-      );
-    };
+  const getPasswordInput = (wrapper: VueWrapper) => {
+    const inputs = wrapper.findAllComponents({ name: "v-text-field" });
+    const passwordInput = inputs.find(
+      (input) => input.props("placeholder") === "Enter your password",
+    );
+    expect(passwordInput?.exists()).toBe(true);
+    return passwordInput!;
+  };
 
-    const getEmailInput = (wrapper) =>
-      wrapper.find("[placeholder='Email address']");
+  const getLoginButton = (wrapper: VueWrapper) => {
+    const buttons = wrapper.findAllComponents({ name: "v-btn" });
+    const loginButton = buttons.find((button) => button.text() === "Log In");
+    expect(loginButton?.exists()).toBe(true);
+    return loginButton!;
+  };
 
-    const getPasswordInput = (wrapper) =>
-      wrapper.find("[placeholder='Password']");
+  const mountComponent = () => {
+    return mountWithPlugins(LoginForm, {}, { router });
+  };
 
-    const getLoginButton = (wrapper) => wrapper.find("button");
+  const fillLoginForm = async (
+    wrapper: VueWrapper,
+    { email, password }: { email: string; password: string },
+  ) => {
+    await getEmailInput(wrapper).setValue(email);
+    await getPasswordInput(wrapper).setValue(password);
+    await vi.waitFor(() =>
+      expect(wrapper.text()).not.toContain("Email must be valid"),
+    );
+  };
 
-    const fillLoginForm = async (wrapper, email, password) => {
-      await getEmailInput(wrapper).setValue(email);
-      await getPasswordInput(wrapper).setValue(password);
-      await wrapper.vm.$nextTick();
-    };
+  it("should render the login form", () => {
+    const wrapper = mountComponent();
+    expect(getEmailInput(wrapper).exists()).toBe(true);
+    expect(getPasswordInput(wrapper).exists()).toBe(true);
+    expect(getLoginButton(wrapper).exists()).toBe(true);
+  });
 
-    beforeEach(() => {
-      vi.clearAllMocks();
+  it("should disable login button when form is invalid", async () => {
+    const wrapper = mountComponent();
+    const loginButton = getLoginButton(wrapper);
+
+    // Initially disabled
+    expect(loginButton.attributes("disabled")).toBe("");
+
+    // Invalid email
+    await fillLoginForm(wrapper, {
+      email: "invalid-email",
+      password: "password123",
     });
+    expect(loginButton.attributes("disabled")).toBe("");
 
-    it("should handle form submission", async () => {
-      const wrapper = mountLoginForm();
-
-      await fillLoginForm(wrapper, "test@example.com", "validpassword123");
-
-      const submitButton = getLoginButton(wrapper);
-      await submitButton.trigger("click");
-      await wrapper.vm.$nextTick();
-
-      expect(mockSubmit).toHaveBeenCalledWith({
-        email: "test@example.com",
-        password: "validpassword123",
-      });
+    // Valid email but short password
+    await fillLoginForm(wrapper, {
+      email: "test@example.com",
+      password: "short",
     });
+    expect(loginButton.attributes("disabled")).toBe("");
+
+    // Valid form
+    await fillLoginForm(wrapper, {
+      email: "test@example.com",
+      password: "validpassword123",
+    });
+    expect(loginButton.attributes("disabled")).toBeUndefined();
+  });
+
+  it("should call login API with correct credentials", async () => {
+    const wrapper = mountComponent();
+    const loginButton = getLoginButton(wrapper);
+
+    const testEmail = "test@example.com";
+    const testPassword = "validpassword123";
+
+    await fillLoginForm(wrapper, {
+      email: testEmail,
+      password: testPassword,
+    });
+    await wrapper.vm.$nextTick();
+
+    // Create a spy for the API request
+    let requestBody: LoginRequest | null = null;
+    server.use(
+      http.post("http://api.localhost:3000/auth/login", async ({ request }) => {
+        requestBody = (await request.json()) as LoginRequest;
+        return HttpResponse.json({
+          success: true,
+          data: {
+            token: "mock-token",
+            user: {
+              id: 1,
+              email: requestBody.email,
+            },
+          } satisfies UserResponse,
+        });
+      }),
+    );
+
+    await loginButton.trigger("click");
+
+    // Wait for the API request to complete
+    await vi.waitFor(() => expect(location.href).toBe("/app/"));
   });
 });
 ```

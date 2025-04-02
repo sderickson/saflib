@@ -2,14 +2,6 @@
 
 This is a template for adding features. Whenever a new feature is added, follow this checklist.
 
-## Steps
-
-To get started:
-
-1. Create a folder in `/notes` with the name of the feature, prefixed with the date, e.g. `2025-03-23-add-auth-scopes`
-2. Make a copy of this file in that folder, call it `checklist.md`
-3. Begin going through that checklist
-
 ### Planning Phase
 
 - [ ] Set up a new branch in the monorepo

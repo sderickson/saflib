@@ -4,6 +4,7 @@ import {
   RegisterPage,
   ForgotPasswordPage,
   LogoutPage,
+  ChangeForgottenPasswordPage,
 } from "@saflib/auth-vue";
 
 const routes = [
@@ -12,6 +13,7 @@ const routes = [
   { path: "/register", component: RegisterPage },
   { path: "/forgot", component: ForgotPasswordPage },
   { path: "/logout", component: LogoutPage },
+  { path: "/reset-password", component: ChangeForgottenPasswordPage },
 ];
 
 export const router = createRouter({

@@ -75,6 +75,40 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/auth/forgot-password": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Request Password Reset */
+    post: operations["forgotPassword"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/auth/reset-password": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Reset Password Using Token */
+    post: operations["resetPassword"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -99,6 +133,24 @@ export interface components {
       /** Format: email */
       email: string;
       password: string;
+    };
+    ForgotPasswordRequest: {
+      /** Format: email */
+      email: string;
+    };
+    ForgotPasswordResponse: {
+      success: boolean;
+      /** @description A generic message indicating that if the user exists, a recovery email was sent */
+      message: string;
+    };
+    ResetPasswordRequest: {
+      /** @description The temporary password token received via email */
+      token: string;
+      /** @description The new password to set */
+      newPassword: string;
+    };
+    ResetPasswordResponse: {
+      success: boolean;
     };
   };
   responses: never;
@@ -219,6 +271,81 @@ export interface operations {
       };
       /** @description User is not authenticated */
       401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["error"];
+        };
+      };
+    };
+  };
+  forgotPassword: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["ForgotPasswordRequest"];
+      };
+    };
+    responses: {
+      /** @description If the user exists, a recovery email was sent */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ForgotPasswordResponse"];
+        };
+      };
+      /** @description Invalid email format */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["error"];
+        };
+      };
+    };
+  };
+  resetPassword: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["ResetPasswordRequest"];
+      };
+    };
+    responses: {
+      /** @description Password successfully reset */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ResetPasswordResponse"];
+        };
+      };
+      /** @description Invalid token or password */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["error"];
+        };
+      };
+      /** @description Token not found or expired */
+      404: {
         headers: {
           [name: string]: unknown;
         };

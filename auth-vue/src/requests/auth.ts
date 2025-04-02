@@ -1,6 +1,11 @@
 import { useMutation } from "@tanstack/vue-query";
-import { client } from "../client.ts";
-import type { LoginRequest, RegisterRequest } from "../types.ts";
+import { client } from "./client.ts";
+import type {
+  LoginRequest,
+  RegisterRequest,
+  ForgotPasswordRequest,
+  ResetPasswordRequest,
+} from "./types.ts";
 
 export const useLogin = () => {
   return useMutation({
@@ -35,6 +40,34 @@ export const useRegister = () => {
         throw error;
       }
 
+      return data;
+    },
+  });
+};
+
+export const useForgotPassword = () => {
+  return useMutation({
+    mutationFn: async (body: ForgotPasswordRequest) => {
+      const { data, error } = await client.POST("/auth/forgot-password", {
+        body,
+      });
+      if (error) {
+        throw error;
+      }
+      return data;
+    },
+  });
+};
+
+export const useResetPassword = () => {
+  return useMutation({
+    mutationFn: async (body: ResetPasswordRequest) => {
+      const { data, error } = await client.POST("/auth/reset-password", {
+        body,
+      });
+      if (error) {
+        throw error;
+      }
       return data;
     },
   });

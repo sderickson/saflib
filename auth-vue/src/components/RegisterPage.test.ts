@@ -1,62 +1,83 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { mount, type VueWrapper } from "@vue/test-utils";
-import { createVuetify } from "vuetify";
-import * as components from "vuetify/components";
-import * as directives from "vuetify/directives";
+import { describe, it, expect, vi } from "vitest";
+import {
+  stubGlobals,
+  mountWithPlugins,
+  setupMockServer,
+} from "@saflib/vue-spa-dev/components";
+import { type VueWrapper } from "@vue/test-utils";
+import { http, HttpResponse } from "msw";
 import RegisterPage from "./RegisterPage.vue";
+import { router } from "../router";
 
-const mockRegister = vi.fn();
-vi.mock("../requests/auth", () => ({
-  useRegister: () => ({
-    mutate: mockRegister,
-    isPending: false,
-    isError: false,
-    error: null,
-    isSuccess: false,
-  }),
-}));
+interface RegisterRequest {
+  email: string;
+  password: string;
+}
 
-const vuetify = createVuetify({
-  components,
-  directives,
-});
-
-describe("RegisterPage", () => {
-  const mountComponent = () => {
-    return mount(RegisterPage, {
-      global: {
-        plugins: [vuetify],
-        stubs: ["router-link"],
+// Set up MSW server
+const handlers = [
+  http.post("http://api.localhost:3000/auth/register", async ({ request }) => {
+    const body = (await request.json()) as RegisterRequest;
+    return HttpResponse.json({
+      success: true,
+      data: {
+        token: "mock-token",
+        user: {
+          id: 1,
+          email: body.email,
+        },
       },
     });
-  };
+  }),
+];
+
+describe("RegisterPage", () => {
+  stubGlobals();
+  setupMockServer(handlers);
 
   // Helper functions for element selection
   const getEmailInput = (wrapper: VueWrapper) => {
-    const emailInput = wrapper.find("[placeholder='Email address']");
-    expect(emailInput.exists()).toBe(true);
-    return emailInput;
+    const inputs = wrapper.findAllComponents({ name: "v-text-field" });
+    const emailInput = inputs.find(
+      (input) => input.props("placeholder") === "Email address",
+    );
+    expect(emailInput?.exists()).toBe(true);
+    return emailInput!;
   };
 
   const getPasswordInput = (wrapper: VueWrapper) => {
-    const passwordInput = wrapper.find("[placeholder='Enter your password']");
-    expect(passwordInput.exists()).toBe(true);
-    return passwordInput;
+    const inputs = wrapper.findAllComponents({ name: "v-text-field" });
+    const passwordInput = inputs.find(
+      (input) => input.props("placeholder") === "Enter your password",
+    );
+    expect(passwordInput?.exists()).toBe(true);
+    return passwordInput!;
   };
 
   const getConfirmPasswordInput = (wrapper: VueWrapper) => {
-    const confirmPasswordInput = wrapper.find(
-      "[placeholder='Confirm your password']",
+    const inputs = wrapper.findAllComponents({ name: "v-text-field" });
+    const confirmPasswordInput = inputs.find(
+      (input) => input.props("placeholder") === "Confirm your password",
     );
-    expect(confirmPasswordInput.exists()).toBe(true);
-    return confirmPasswordInput;
+    expect(confirmPasswordInput?.exists()).toBe(true);
+    return confirmPasswordInput!;
   };
 
   const getRegisterButton = (wrapper: VueWrapper) => {
-    const button = wrapper.find("button");
-    expect(button.exists()).toBe(true);
-    expect(button.text()).toBe("Register");
-    return button;
+    const buttons = wrapper.findAllComponents({ name: "v-btn" });
+    const registerButton = buttons.find(
+      (button) => button.text() === "Register",
+    );
+    expect(registerButton?.exists()).toBe(true);
+    return registerButton!;
+  };
+
+  const getErrorMessages = (wrapper: VueWrapper) => {
+    return wrapper.findAllComponents({ name: "v-messages" });
+  };
+
+  const mountComponent = () => {
+    return mountWithPlugins(RegisterPage, {}, { router });
   };
 
   const fillForm = async (
@@ -73,11 +94,6 @@ describe("RegisterPage", () => {
     await wrapper.vm.$nextTick();
   };
 
-  beforeEach(() => {
-    vi.clearAllMocks();
-    mockRegister.mockReset();
-  });
-
   it("should render the registration form", () => {
     const wrapper = mountComponent();
     expect(getEmailInput(wrapper).exists()).toBe(true);
@@ -92,11 +108,21 @@ describe("RegisterPage", () => {
 
     await emailInput.setValue("invalid-email");
     await wrapper.vm.$nextTick();
-    expect(wrapper.text()).toContain("Email must be valid");
+    await vi.waitFor(() => {
+      const errorMessages = getErrorMessages(wrapper);
+      expect(
+        errorMessages.some((msg) => msg.text().includes("Email must be valid")),
+      ).toBe(true);
+    });
 
     await emailInput.setValue("valid@email.com");
     await wrapper.vm.$nextTick();
-    expect(wrapper.text()).not.toContain("Email must be valid");
+    await vi.waitFor(() => {
+      const errorMessages = getErrorMessages(wrapper);
+      expect(
+        errorMessages.some((msg) => msg.text().includes("Email must be valid")),
+      ).toBe(false);
+    });
   });
 
   it("should validate password requirements", async () => {
@@ -105,11 +131,25 @@ describe("RegisterPage", () => {
 
     await passwordInput.setValue("short");
     await wrapper.vm.$nextTick();
-    expect(wrapper.text()).toContain("Password must be at least");
+    await vi.waitFor(() => {
+      const errorMessages = getErrorMessages(wrapper);
+      expect(
+        errorMessages.some((msg) =>
+          msg.text().includes("Password must be at least 8 characters"),
+        ),
+      ).toBe(true);
+    });
 
     await passwordInput.setValue("validpassword123");
     await wrapper.vm.$nextTick();
-    expect(wrapper.text()).not.toContain("Password must be at least");
+    await vi.waitFor(() => {
+      const errorMessages = getErrorMessages(wrapper);
+      expect(
+        errorMessages.some((msg) =>
+          msg.text().includes("Password must be at least 8 characters"),
+        ),
+      ).toBe(false);
+    });
   });
 
   it("should validate password confirmation match", async () => {
@@ -121,11 +161,25 @@ describe("RegisterPage", () => {
       confirmPassword: "differentpassword",
     });
 
-    expect(wrapper.text()).toContain("Passwords must match");
+    await vi.waitFor(() => {
+      const errorMessages = getErrorMessages(wrapper);
+      expect(
+        errorMessages.some((msg) =>
+          msg.text().includes("Passwords must match"),
+        ),
+      ).toBe(true);
+    });
 
     await getConfirmPasswordInput(wrapper).setValue("validpassword123");
     await wrapper.vm.$nextTick();
-    expect(wrapper.text()).not.toContain("Passwords must match");
+    await vi.waitFor(() => {
+      const errorMessages = getErrorMessages(wrapper);
+      expect(
+        errorMessages.some((msg) =>
+          msg.text().includes("Passwords must match"),
+        ),
+      ).toBe(false);
+    });
   });
 
   it("should disable register button when form is invalid", async () => {
@@ -133,7 +187,7 @@ describe("RegisterPage", () => {
     const registerButton = getRegisterButton(wrapper);
 
     // Initially disabled
-    expect(registerButton.attributes("disabled")).toBeDefined();
+    expect(registerButton.attributes("disabled")).toBe("");
 
     // After valid input
     await fillForm(wrapper, {
@@ -146,6 +200,7 @@ describe("RegisterPage", () => {
 
   it("should handle successful registration", async () => {
     const wrapper = mountComponent();
+    const registerButton = getRegisterButton(wrapper);
 
     await fillForm(wrapper, {
       email: "test@example.com",
@@ -153,13 +208,12 @@ describe("RegisterPage", () => {
       confirmPassword: "validpassword123",
     });
 
-    const registerButton = getRegisterButton(wrapper);
     await registerButton.trigger("click");
     await wrapper.vm.$nextTick();
 
-    expect(mockRegister).toHaveBeenCalledWith({
-      email: "test@example.com",
-      password: "validpassword123",
+    // Wait for the API request to complete and navigation to happen
+    await vi.waitFor(() => {
+      expect(location.href).toBe("/app/");
     });
   });
 });

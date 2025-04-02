@@ -1,103 +1,145 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { type VueWrapper } from "@vue/test-utils";
-import ForgotPasswordPage from "./ForgotPasswordPage.vue";
+import { describe, it, expect, vi } from "vitest";
 import {
+  stubGlobals,
   mountWithPlugins,
-  withResizeObserverMock,
-} from "@saflib/vue-spa-dev/components.ts";
+  setupMockServer,
+} from "@saflib/vue-spa-dev/components";
+import type { VueWrapper } from "@vue/test-utils";
+import ForgotPasswordPage from "./ForgotPasswordPage.vue";
 import { router } from "../router";
-import { RouterLink } from "vue-router";
+import { VAlert, VBtn } from "vuetify/components";
+import { http, HttpResponse } from "msw";
+import type { ForgotPasswordResponse } from "../requests/types.ts";
 
-withResizeObserverMock(() => {
-  describe("ForgotPasswordPage", () => {
-    const mountComponent = () => {
-      return mountWithPlugins(ForgotPasswordPage, {}, { router });
+const handlers = [
+  http.post("http://api.localhost:3000/auth/forgot-password", async () => {
+    const response: ForgotPasswordResponse = {
+      success: true,
+      message:
+        "If an account exists with this email, a recovery email was sent",
     };
+    return HttpResponse.json(response);
+  }),
+];
 
-    // Helper functions for element selection
-    const getEmailInput = (wrapper: VueWrapper) => {
-      const input = wrapper.find("[placeholder='Email address']");
-      expect(input.exists()).toBe(true);
-      return input;
-    };
+describe("ForgotPasswordPage", () => {
+  stubGlobals();
+  const server = setupMockServer(handlers);
 
-    const getResetButton = (wrapper: VueWrapper) => {
-      const button = wrapper.find(".v-btn");
-      expect(button.exists()).toBe(true);
-      expect(button.text()).toBe("Send Reset Link");
-      return button;
-    };
+  // Helper functions for element selection
+  const getEmailInput = (wrapper: VueWrapper) => {
+    const emailInput = wrapper.find("[placeholder='Email address']");
+    expect(emailInput.exists()).toBe(true);
+    return emailInput;
+  };
 
-    const getBackToLoginLink = (wrapper: VueWrapper) => {
-      const link = wrapper.findComponent(RouterLink);
-      expect(link.exists()).toBe(true);
-      expect(link.text()).toContain("Back to Login");
-      return link;
-    };
+  const getSubmitButton = (wrapper: VueWrapper) => {
+    const button = wrapper.findComponent(VBtn);
+    expect(button.exists()).toBe(true);
+    expect(button.text()).toBe("Send Reset Link");
+    return button;
+  };
 
-    beforeEach(() => {
-      vi.clearAllMocks();
-    });
+  const getSuccessAlert = (wrapper: VueWrapper) => {
+    const alert = wrapper
+      .findAllComponents(VAlert)
+      .find((alert) => alert.props().type === "success");
+    return alert;
+  };
 
-    it("should render the forgot password form", () => {
-      const wrapper = mountComponent();
+  const getErrorAlert = (wrapper: VueWrapper) => {
+    const alerts = wrapper.findAllComponents(VAlert);
+    return alerts.find((alert) => alert.props().type === "error");
+  };
 
-      // Check that all elements are rendered
-      expect(getEmailInput(wrapper).exists()).toBe(true);
-      expect(getResetButton(wrapper).exists()).toBe(true);
-      expect(getBackToLoginLink(wrapper).exists()).toBe(true);
+  const mountComponent = () => {
+    return mountWithPlugins(ForgotPasswordPage, {}, { router });
+  };
 
-      // Check that the button is initially disabled
-      expect(getResetButton(wrapper).attributes("disabled")).toBeDefined();
-    });
+  it("should render the form", () => {
+    const wrapper = mountComponent();
+    expect(getEmailInput(wrapper).exists()).toBe(true);
+    expect(getSubmitButton(wrapper).exists()).toBe(true);
+    expect(wrapper.text()).toContain("Reset Password");
+  });
 
-    it("should validate email format", async () => {
-      const wrapper = mountComponent();
-      const emailInput = getEmailInput(wrapper);
+  it("should validate email format", async () => {
+    const wrapper = mountComponent();
+    const emailInput = getEmailInput(wrapper);
 
-      // Test invalid email
-      await emailInput.setValue("invalid-email");
-      await wrapper.vm.$nextTick();
-      expect(wrapper.text()).toContain("Email must be valid");
-      expect(getResetButton(wrapper).attributes("disabled")).toBeDefined();
+    // Test invalid email
+    await emailInput.setValue("invalid-email");
+    await wrapper.vm.$nextTick();
+    expect(wrapper.text()).toContain("Email must be valid");
 
-      // Test valid email
-      await emailInput.setValue("valid@email.com");
-      await wrapper.vm.$nextTick();
-      expect(wrapper.text()).not.toContain("Email must be valid");
-      expect(getResetButton(wrapper).attributes("disabled")).toBeUndefined();
-    });
+    // Test valid email
+    await emailInput.setValue("valid@email.com");
+    await wrapper.vm.$nextTick();
+    expect(wrapper.text()).not.toContain("Email must be valid");
+  });
 
-    it("should call sendResetLink when form is submitted", async () => {
-      const wrapper = mountComponent();
-      const emailInput = getEmailInput(wrapper);
-      const resetButton = getResetButton(wrapper);
+  it("should disable submit button when form is invalid", async () => {
+    const wrapper = mountComponent();
+    const submitButton = getSubmitButton(wrapper);
 
-      // Set up spy on console.log since that's what the current implementation uses
-      const consoleSpy = vi.spyOn(console, "log");
+    // Initially disabled
+    expect(submitButton.attributes("disabled")).toBeDefined();
 
-      // Fill form with valid data
-      await emailInput.setValue("test@example.com");
-      await wrapper.vm.$nextTick();
+    // After valid input
+    await getEmailInput(wrapper).setValue("valid@email.com");
+    await wrapper.vm.$nextTick();
+    expect(submitButton.attributes("disabled")).toBeUndefined();
+  });
 
-      // Submit form
-      await resetButton.trigger("click");
-      await wrapper.vm.$nextTick();
+  it("should show loading state during submission", async () => {
+    const wrapper = mountComponent();
+    const submitButton = getSubmitButton(wrapper);
+    const emailInput = getEmailInput(wrapper);
 
-      // Verify console.log was called with correct data
-      expect(consoleSpy).toHaveBeenCalledWith(
-        "send reset link",
-        "test@example.com",
-        { valid: true },
-      );
-    });
+    await emailInput.setValue("valid@email.com");
+    await wrapper.vm.$nextTick();
+    await submitButton.trigger("click");
 
-    it("should navigate to login page when back link is clicked", async () => {
-      const wrapper = mountComponent();
-      const backLink = getBackToLoginLink(wrapper);
+    expect(submitButton.text()).toBe("Sending...");
+    expect(emailInput.attributes("disabled")).toBeDefined();
+  });
 
-      // Verify the link points to the login page
-      expect(backLink.attributes("href")).toBe("/auth/login");
-    });
+  it("should show success message after successful submission", async () => {
+    const wrapper = mountComponent();
+    const emailInput = getEmailInput(wrapper);
+    const submitButton = getSubmitButton(wrapper);
+
+    await emailInput.setValue("valid@email.com");
+    await wrapper.vm.$nextTick();
+    await submitButton.trigger("click");
+    const successAlert = await vi.waitUntil(() => getSuccessAlert(wrapper));
+    expect(successAlert?.text()).toContain(
+      "If an account exists with this email",
+    );
+  });
+
+  it("should show error message after failed submission", async () => {
+    // Mock failed response
+    server.use(
+      http.post("http://api.localhost:3000/auth/forgot-password", () => {
+        return new HttpResponse(
+          JSON.stringify({
+            error: "API Error",
+          }),
+          { status: 500 },
+        );
+      }),
+    );
+
+    const wrapper = mountComponent();
+    const emailInput = getEmailInput(wrapper);
+    const submitButton = getSubmitButton(wrapper);
+
+    await emailInput.setValue("valid@email.com");
+    await wrapper.vm.$nextTick();
+    await submitButton.trigger("click");
+    const errorAlert = await vi.waitUntil(() => getErrorAlert(wrapper));
+    expect(errorAlert).toBeDefined();
+    expect(errorAlert?.text()).toContain("An error occurred");
   });
 });

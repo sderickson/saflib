@@ -15,16 +15,24 @@ export class EmailAuthNotFoundError extends AuthDatabaseError {
   }
 }
 
+export class TokenNotFoundError extends AuthDatabaseError {
+  constructor() {
+    super("Forgot password token not found.");
+    this.name = "TokenNotFoundError";
+  }
+}
+
 export function createEmailAuthQueries(
-  db: BetterSQLite3Database<typeof schema>
+  db: BetterSQLite3Database<typeof schema>,
 ) {
   return {
     EmailAuthNotFoundError,
+    TokenNotFoundError,
     create: queryWrapper(
       async (auth: NewEmailAuth): Promise<SelectEmailAuth> => {
         const result = await db.insert(emailAuth).values(auth).returning();
         return result[0];
-      }
+      },
     ),
 
     getByEmail: queryWrapper(
@@ -36,7 +44,7 @@ export function createEmailAuthQueries(
           throw new EmailAuthNotFoundError();
         }
         return result;
-      }
+      },
     ),
 
     updateVerification: queryWrapper(
@@ -44,7 +52,7 @@ export function createEmailAuthQueries(
         userId: number,
         verificationToken: string | null,
         verificationTokenExpiresAt: Date | null,
-        verifiedAt: Date | null
+        verifiedAt: Date | null,
       ): Promise<SelectEmailAuth> => {
         const result = await db
           .update(emailAuth)
@@ -60,14 +68,14 @@ export function createEmailAuthQueries(
           throw new EmailAuthNotFoundError();
         }
         return result[0];
-      }
+      },
     ),
 
     updateForgotPasswordToken: queryWrapper(
       async (
         userId: number,
         forgotPasswordToken: string | null,
-        forgotPasswordTokenExpiresAt: Date | null
+        forgotPasswordTokenExpiresAt: Date | null,
       ): Promise<SelectEmailAuth> => {
         const result = await db
           .update(emailAuth)
@@ -82,13 +90,13 @@ export function createEmailAuthQueries(
           throw new EmailAuthNotFoundError();
         }
         return result[0];
-      }
+      },
     ),
 
     updatePasswordHash: queryWrapper(
       async (
         userId: number,
-        passwordHash: Uint8Array
+        passwordHash: Uint8Array,
       ): Promise<SelectEmailAuth> => {
         const result = await db
           .update(emailAuth)
@@ -100,11 +108,59 @@ export function createEmailAuthQueries(
           throw new EmailAuthNotFoundError();
         }
         return result[0];
-      }
+      },
     ),
 
     deleteAll: queryWrapper(async (): Promise<void> => {
       await db.delete(emailAuth).execute();
     }),
+
+    getByForgotPasswordToken: queryWrapper(
+      async (token: string): Promise<SelectEmailAuth> => {
+        const result = await db.query.emailAuth.findFirst({
+          where: eq(emailAuth.forgotPasswordToken, token),
+        });
+        if (!result) {
+          throw new TokenNotFoundError();
+        }
+        return result;
+      },
+    ),
+
+    updatePassword: queryWrapper(
+      async (
+        userId: number,
+        passwordHash: Uint8Array,
+      ): Promise<SelectEmailAuth> => {
+        const result = await db
+          .update(emailAuth)
+          .set({ passwordHash })
+          .where(eq(emailAuth.userId, userId))
+          .returning();
+
+        if (!result.length) {
+          throw new EmailAuthNotFoundError();
+        }
+        return result[0];
+      },
+    ),
+
+    clearForgotPasswordToken: queryWrapper(
+      async (userId: number): Promise<SelectEmailAuth> => {
+        const result = await db
+          .update(emailAuth)
+          .set({
+            forgotPasswordToken: null,
+            forgotPasswordTokenExpiresAt: null,
+          })
+          .where(eq(emailAuth.userId, userId))
+          .returning();
+
+        if (!result.length) {
+          throw new EmailAuthNotFoundError();
+        }
+        return result[0];
+      },
+    ),
   };
 }

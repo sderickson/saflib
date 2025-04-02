@@ -141,7 +141,10 @@ describe("Auth Routes", () => {
         forgotPasswordToken: null,
         forgotPasswordTokenExpiresAt: null,
       });
-      vi.spyOn(db.permissions, "add").mockResolvedValue(undefined);
+      vi.spyOn(db.permissions, "add").mockResolvedValue({
+        lastInsertRowid: 1,
+        changes: 1,
+      });
 
       // Set ALLOW_ADMIN_SIGNUPS to true
       const originalEnv = process.env.ALLOW_ADMIN_SIGNUPS;
@@ -188,7 +191,10 @@ describe("Auth Routes", () => {
         forgotPasswordToken: null,
         forgotPasswordTokenExpiresAt: null,
       });
-      vi.spyOn(db.permissions, "add").mockResolvedValue(undefined);
+      vi.spyOn(db.permissions, "add").mockResolvedValue({
+        lastInsertRowid: 1,
+        changes: 1,
+      });
 
       // Set ALLOW_ADMIN_SIGNUPS to true
       const originalEnv = process.env.ALLOW_ADMIN_SIGNUPS;
@@ -231,7 +237,10 @@ describe("Auth Routes", () => {
         forgotPasswordToken: null,
         forgotPasswordTokenExpiresAt: null,
       });
-      vi.spyOn(db.permissions, "add").mockResolvedValue(undefined);
+      vi.spyOn(db.permissions, "add").mockResolvedValue({
+        lastInsertRowid: 1,
+        changes: 1,
+      });
 
       // Set ALLOW_ADMIN_SIGNUPS to false
       const originalEnv = process.env.ALLOW_ADMIN_SIGNUPS;
@@ -533,6 +542,165 @@ describe("Auth Routes", () => {
       expect(verifyResponse.header["x-user-id"]).toBe(user.id.toString());
       expect(verifyResponse.header["x-user-email"]).toBe(user.email);
       expect(verifyResponse.header["x-user-scopes"]).toBe("admin");
+    });
+  });
+
+  describe("POST /auth/forgot-password", () => {
+    it("should generate and store reset token when user exists", async () => {
+      const email = "test@example.com";
+      const user = {
+        id: 1,
+        email,
+        createdAt: new Date(),
+        lastLoginAt: null,
+      };
+
+      // Mock database responses
+      vi.spyOn(db.users, "getByEmail").mockResolvedValue(user);
+      vi.spyOn(db.emailAuth, "updateForgotPasswordToken").mockResolvedValue({
+        userId: user.id,
+        email: user.email,
+        passwordHash: Buffer.from("hashed-password"),
+        verifiedAt: null,
+        verificationToken: null,
+        verificationTokenExpiresAt: null,
+        forgotPasswordToken: "test-token",
+        forgotPasswordTokenExpiresAt: new Date(),
+      });
+
+      const response = await request(app)
+        .post("/auth/forgot-password")
+        .send({ email });
+
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual({
+        success: true,
+        message: "If the email exists, a recovery email has been sent",
+      });
+
+      expect(db.users.getByEmail).toHaveBeenCalledWith(email);
+      expect(db.emailAuth.updateForgotPasswordToken).toHaveBeenCalledWith(
+        user.id,
+        expect.any(String),
+        expect.any(Date),
+      );
+    });
+
+    it("should return success even when user doesn't exist to prevent email enumeration", async () => {
+      const email = "nonexistent@example.com";
+
+      // Mock database to return null for non-existent user
+      vi.spyOn(db.users, "getByEmail").mockRejectedValue(
+        new db.users.UserNotFoundError(),
+      );
+
+      const response = await request(app)
+        .post("/auth/forgot-password")
+        .send({ email });
+
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual({
+        success: true,
+        message: "If the email exists, a recovery email has been sent",
+      });
+
+      expect(db.users.getByEmail).toHaveBeenCalledWith(email);
+      expect(db.emailAuth.updateForgotPasswordToken).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("POST /auth/reset-password", () => {
+    it("should reset password successfully with valid token", async () => {
+      const token = "valid-token";
+      const newPassword = "new-password123";
+      const userId = 1;
+
+      const emailAuth = {
+        userId,
+        email: "test@example.com",
+        passwordHash: Buffer.from("old-hash"),
+        verifiedAt: null,
+        verificationToken: null,
+        verificationTokenExpiresAt: null,
+        forgotPasswordToken: token,
+        forgotPasswordTokenExpiresAt: new Date(Date.now() + 1000 * 60 * 15), // 15 minutes from now
+      };
+
+      vi.spyOn(db.emailAuth, "getByForgotPasswordToken").mockResolvedValue(
+        emailAuth,
+      );
+      vi.spyOn(db.emailAuth, "updatePassword").mockResolvedValue(emailAuth);
+      vi.spyOn(db.emailAuth, "clearForgotPasswordToken").mockResolvedValue(
+        emailAuth,
+      );
+
+      const response = await request(app)
+        .post("/auth/reset-password")
+        .send({ token, newPassword });
+
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual({ success: true });
+
+      expect(db.emailAuth.getByForgotPasswordToken).toHaveBeenCalledWith(token);
+      expect(db.emailAuth.updatePassword).toHaveBeenCalledWith(
+        userId,
+        expect.any(Buffer),
+      );
+      expect(db.emailAuth.clearForgotPasswordToken).toHaveBeenCalledWith(
+        userId,
+      );
+      expect(argon2.hash).toHaveBeenCalledWith(newPassword);
+    });
+
+    it("should return 404 for expired token", async () => {
+      const token = "expired-token";
+      const newPassword = "new-password123";
+
+      const emailAuth = {
+        userId: 1,
+        email: "test@example.com",
+        passwordHash: Buffer.from("old-hash"),
+        verifiedAt: null,
+        verificationToken: null,
+        verificationTokenExpiresAt: null,
+        forgotPasswordToken: token,
+        forgotPasswordTokenExpiresAt: new Date(Date.now() - 1000 * 60 * 15), // 15 minutes ago
+      };
+
+      vi.spyOn(db.emailAuth, "getByForgotPasswordToken").mockResolvedValue(
+        emailAuth,
+      );
+
+      const response = await request(app)
+        .post("/auth/reset-password")
+        .send({ token, newPassword });
+
+      expect(response.status).toBe(404);
+      expect(response.body).toEqual({ message: "Invalid or expired token" });
+
+      expect(db.emailAuth.getByForgotPasswordToken).toHaveBeenCalledWith(token);
+      expect(db.emailAuth.updatePassword).not.toHaveBeenCalled();
+      expect(db.emailAuth.clearForgotPasswordToken).not.toHaveBeenCalled();
+    });
+
+    it("should return 404 for invalid token", async () => {
+      const token = "invalid-token";
+      const newPassword = "new-password123";
+
+      vi.spyOn(db.emailAuth, "getByForgotPasswordToken").mockRejectedValue(
+        new db.emailAuth.TokenNotFoundError(),
+      );
+
+      const response = await request(app)
+        .post("/auth/reset-password")
+        .send({ token, newPassword });
+
+      expect(response.status).toBe(404);
+      expect(response.body).toEqual({ message: "Invalid or expired token" });
+
+      expect(db.emailAuth.getByForgotPasswordToken).toHaveBeenCalledWith(token);
+      expect(db.emailAuth.updatePassword).not.toHaveBeenCalled();
+      expect(db.emailAuth.clearForgotPasswordToken).not.toHaveBeenCalled();
     });
   });
 });

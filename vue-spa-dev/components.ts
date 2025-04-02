@@ -3,18 +3,21 @@ import * as components from "vuetify/components";
 import * as directives from "vuetify/directives";
 import { mount, type ComponentMountingOptions } from "@vue/test-utils";
 import type { Component, Plugin } from "vue";
-import { beforeAll, afterAll } from "vitest";
+import { beforeAll, afterAll, afterEach, vi } from "vitest";
 import { createRouter, createMemoryHistory } from "vue-router";
-/**
- * Creates a Vuetify instance for testing
- * @returns A Vuetify instance
- */
-function createTestVuetify() {
-  return createVuetify({
-    components,
-    directives,
+import { VueQueryPlugin } from "@tanstack/vue-query";
+import { setupServer } from "msw/node";
+import { HttpHandler } from "msw";
+
+// GLOBAL MOCK HELPERS -----------------
+
+export const stubGlobals = () => {
+  stubGlobalsSetup();
+
+  afterAll(() => {
+    stubGlobalsTeardown();
   });
-}
+};
 
 /**
  * Mock implementation of ResizeObserver for testing
@@ -25,67 +28,33 @@ class ResizeObserverMock {
   disconnect() {}
 }
 
-/**
- * Sets up ResizeObserver mock for tests
- * Should be called in beforeAll
- */
-function setupResizeObserverMock() {
-  // We need to check if ResizeObserver exists to avoid overriding it if it's already defined
-  if (typeof global.ResizeObserver === "undefined") {
-    global.ResizeObserver = ResizeObserverMock;
-  }
-}
-
-/**
- * Tears down ResizeObserver mock after tests
- * Should be called in afterAll
- */
-function teardownResizeObserverMock() {
-  // Only delete if it's our mock implementation
-  if (global.ResizeObserver === ResizeObserverMock) {
-    // @ts-expect-error - ResizeObserver is not defined in the test environment
-    delete global.ResizeObserver;
-  }
-}
-
-/**
- * Helper function to setup and teardown ResizeObserver mock in a describe block
- * @param callback - The test suite function
- */
-export function withResizeObserverMock(callback: () => void) {
-  beforeAll(() => {
-    setupResizeObserverMock();
+function stubGlobalsSetup() {
+  vi.stubGlobal("location", {
+    href: "http://localhost",
   });
-
-  callback();
-
-  afterAll(() => {
-    teardownResizeObserverMock();
-  });
+  vi.stubGlobal("ResizeObserver", ResizeObserverMock);
 }
 
-/**
- * Helper function to mount a component with Vuetify
- * @param component - The component to mount
- * @param options - Mount options
- * @returns The mounted component wrapper
- */
+function stubGlobalsTeardown() {
+  vi.unstubAllGlobals();
+}
 
-export const router = createRouter({
-  history: createMemoryHistory(),
-  routes: [],
-});
+// MOUNT HELPERS -----------------
 
-interface MountWithPluginsOptions {
+export interface MountWithPluginsOptions {
   router?: Plugin;
 }
 
-export function mountWithVuetify(
+export function mountWithPlugins(
   component: Component,
   options: ComponentMountingOptions<Component> = {},
   pluginOptions: MountWithPluginsOptions = {},
 ) {
-  const vuetify = createTestVuetify();
+  const vuetify = createVuetify({
+    components,
+    directives,
+  });
+
   // To suppress warnings, provide your own router
   const router =
     pluginOptions.router ||
@@ -97,11 +66,27 @@ export function mountWithVuetify(
   return mount(component, {
     ...options,
     global: {
-      plugins: [vuetify, router],
+      plugins: [vuetify, router, VueQueryPlugin],
       ...(options.global || {}),
     },
   });
 }
 
-// This is the new name. Should refactor off "mountWithVuetify"
-export const mountWithPlugins = mountWithVuetify;
+// NETWORKING MOCK HELPERS -----------------
+
+export function setupMockServer(handlers: HttpHandler[]) {
+  const server = setupServer(...handlers);
+
+  // Start server before all tests
+  beforeAll(() => {
+    server.listen({ onUnhandledRequest: "error" });
+  });
+
+  // Reset handlers between tests
+  afterEach(() => server.resetHandlers());
+
+  // Clean up after all tests
+  afterAll(() => server.close());
+
+  return server;
+}

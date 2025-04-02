@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import { emailRules, passwordRules } from "../rules.ts";
+import { emailRules, passwordRules } from "../utils/rules.ts";
 import { useLogin } from "../requests/auth.ts";
 
 const { mutate: login, isError, error, isPending } = useLogin();
@@ -45,12 +45,12 @@ const handleLogin = () => {
           class="text-subtitle-1 text-medium-emphasis d-flex align-center justify-space-between"
         >
           Password
-          <!-- <router-link
+          <router-link
             class="text-caption text-decoration-none text-blue"
             to="/forgot"
           >
             Forgot login password?
-          </router-link> -->
+          </router-link>
         </div>
 
         <v-text-field

@@ -26,6 +26,7 @@ service/
 ```
 
 1. Add the required dependencies to your service's `package.json`:
+
    ```json
    {
      "dependencies": {
@@ -40,6 +41,7 @@ service/
 2. Create a `bin` directory in your service root with two files:
 
    `bin/www`:
+
    ```javascript
    #!/usr/bin/env node
    import app from "../app.ts";
@@ -49,6 +51,7 @@ service/
    ```
 
    `bin/healthcheck`:
+
    ```javascript
    #!/usr/bin/env node
    import { healthcheck } from "@saflib/node-express";
@@ -57,6 +60,7 @@ service/
    ```
 
 3. Create a `routes` directory to store your Express routers and their tests:
+
    ```
    routes/
    ├── index.ts        # Main router that combines all route modules
@@ -66,6 +70,7 @@ service/
    ```
 
 4. Set up your main `app.ts`:
+
    ```typescript
    import express from "express";
    import routes from "./routes/index.ts";
@@ -91,4 +96,3 @@ service/
    ```
 
 The library provides common middleware and utilities that can be imported from `@saflib/node-express`. For development tools and testing utilities, import from `@saflib/node-express-dev`.
-

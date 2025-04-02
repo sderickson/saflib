@@ -7,7 +7,7 @@ import * as schema from "../schema.ts";
 type UserPermissions = typeof userPermissions.$inferSelect;
 
 export function createPermissionQueries(
-  db: BetterSQLite3Database<typeof schema>
+  db: BetterSQLite3Database<typeof schema>,
 ) {
   return {
     // Get all permissions for a user
@@ -17,7 +17,7 @@ export function createPermissionQueries(
           .select()
           .from(userPermissions)
           .where(eq(userPermissions.userId, userId));
-      }
+      },
     ),
 
     // Add a permission to a user
@@ -29,7 +29,7 @@ export function createPermissionQueries(
           createdAt: new Date(),
           grantedBy,
         });
-      }
+      },
     ),
 
     // Remove a permission from a user
@@ -38,7 +38,7 @@ export function createPermissionQueries(
         .delete(userPermissions)
         .where(
           eq(userPermissions.userId, userId) &&
-            eq(userPermissions.permission, permission)
+            eq(userPermissions.permission, permission),
         );
     }),
 
@@ -49,7 +49,7 @@ export function createPermissionQueries(
         .from(userPermissions)
         .where(
           eq(userPermissions.userId, userId) &&
-            eq(userPermissions.permission, permission)
+            eq(userPermissions.permission, permission),
         );
       return result.length > 0;
     }),

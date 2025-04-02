@@ -13,6 +13,10 @@ paths:
     $ref: "./routes/auth.yaml#/logout"
   /auth/verify:
     $ref: "./routes/auth.yaml#/verify"
+  /auth/forgot-password:
+    $ref: "./routes/auth.yaml#/forgot-password"
+  /auth/reset-password:
+    $ref: "./routes/auth.yaml#/reset-password"
 
 components:
   schemas:

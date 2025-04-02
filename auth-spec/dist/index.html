@@ -1897,6 +1897,46 @@
                       ></label
                     >
                   </li>
+                  <li
+                    tabindex="0"
+                    depth="2"
+                    data-item-id="tag/auth/operation/forgotPassword"
+                    role="menuitem"
+                    class="sc-buGIZP dPFZel"
+                  >
+                    <label class="sc-dXLCDc kzYPJk -depth2"
+                      ><span
+                        type="post"
+                        class="sc-irjSKf grbqCX operation-type post"
+                        >post</span
+                      ><span
+                        tabindex="0"
+                        width="calc(100% - 38px)"
+                        class="sc-fOHhFR kXFfzE"
+                        >Request Password Reset</span
+                      ></label
+                    >
+                  </li>
+                  <li
+                    tabindex="0"
+                    depth="2"
+                    data-item-id="tag/auth/operation/resetPassword"
+                    role="menuitem"
+                    class="sc-buGIZP dPFZel"
+                  >
+                    <label class="sc-dXLCDc kzYPJk -depth2"
+                      ><span
+                        type="post"
+                        class="sc-irjSKf grbqCX operation-type post"
+                        >post</span
+                      ><span
+                        tabindex="0"
+                        width="calc(100% - 38px)"
+                        class="sc-fOHhFR kXFfzE"
+                        >Reset Password Using Token</span
+                      ></label
+                    >
+                  </li>
                 </ul>
               </li>
             </ul>
@@ -3111,6 +3151,727 @@
               </div>
             </div>
           </div>
+          <div
+            id="tag/auth/operation/forgotPassword"
+            data-section-id="tag/auth/operation/forgotPassword"
+            class="sc-dOfePm eCkzqu"
+          >
+            <div
+              data-section-id="operation/forgotPassword"
+              id="operation/forgotPassword"
+              class="sc-kFkjun gyiXze"
+            >
+              <div class="sc-glJfXD leUrRG">
+                <h2 class="sc-jRLeyu kRxete">
+                  <a
+                    class="sc-jXuTBK jnKjlt"
+                    href="#tag/auth/operation/forgotPassword"
+                    aria-label="tag/auth/operation/forgotPassword"
+                  ></a
+                  >Request Password Reset<!-- -->
+                </h2>
+                <h5 class="sc-cOPLXt cCiGzA">
+                  Request Body schema:
+                  <span class="sc-dSrrqH bFzZBc">application/json</span>
+                  <div
+                    class="sc-cbFRR sc-hMWYck sc-dYdwQA hQswnt cngCif gpUsgs"
+                  >
+                    required
+                  </div>
+                </h5>
+                <div html="" class="sc-dZnbom sc-eStNqG ewwVxe kiTOLP"></div>
+                <table class="sc-eagvWJ fahMGi">
+                  <tbody>
+                    <tr class="last">
+                      <td
+                        kind="field"
+                        title="email"
+                        class="sc-lnQFQe sc-dUwGTt rDKIb dRrKge"
+                      >
+                        <span class="sc-gKcHA-D ibYoJt"></span
+                        ><span class="property-name">email</span>
+                        <div class="sc-cbFRR sc-hMWYck hQswnt cngCif">
+                          required
+                        </div>
+                      </td>
+                      <td class="sc-eUzcTs fjmjSR">
+                        <div>
+                          <div>
+                            <span
+                              class="sc-cbFRR sc-cQSRAa hQswnt fowkLL"
+                            ></span
+                            ><span class="sc-cbFRR sc-hglcZD hQswnt kmboKU"
+                              >string</span
+                            ><span class="sc-cbFRR sc-hglcZD hQswnt kmboKU">
+                              <!-- -->&lt;<!-- -->email<!-- -->&gt;<!-- -->
+                            </span>
+                          </div>
+                          <div>
+                            <div
+                              html=""
+                              class="sc-dZnbom sc-eStNqG ewwVxe gxENBN"
+                            ></div>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div>
+                  <h3 class="sc-fRzchz ePsDFX">Responses</h3>
+                  <div>
+                    <button class="sc-jZkJda owcub">
+                      <svg
+                        class="sc-cXrvCr jSKTTR"
+                        version="1.1"
+                        viewBox="0 0 24 24"
+                        x="0"
+                        xmlns="http://www.w3.org/2000/svg"
+                        y="0"
+                        aria-hidden="true"
+                      >
+                        <polygon
+                          points="17.3 8.3 12 13.6 6.7 8.3 5.3 9.7 12 16.4 18.7 9.7 "
+                        ></polygon></svg
+                      ><strong class="sc-dNrSaK eSFldv">200<!-- --> </strong>
+                      <div
+                        html="&lt;p&gt;If the user exists, a recovery email was sent&lt;/p&gt;
+"
+                        class="sc-dZnbom sc-eStNqG sc-ecLbSZ ewwVxe jZPdSZ dcgeal"
+                      >
+                        <p>If the user exists, a recovery email was sent</p>
+                      </div>
+                    </button>
+                  </div>
+                  <div>
+                    <button class="sc-jZkJda iesDBN">
+                      <svg
+                        class="sc-cXrvCr cPuBeZ"
+                        version="1.1"
+                        viewBox="0 0 24 24"
+                        x="0"
+                        xmlns="http://www.w3.org/2000/svg"
+                        y="0"
+                        aria-hidden="true"
+                      >
+                        <polygon
+                          points="17.3 8.3 12 13.6 6.7 8.3 5.3 9.7 12 16.4 18.7 9.7 "
+                        ></polygon></svg
+                      ><strong class="sc-dNrSaK eSFldv">400<!-- --> </strong>
+                      <div
+                        html="&lt;p&gt;Invalid email format&lt;/p&gt;
+"
+                        class="sc-dZnbom sc-eStNqG sc-ecLbSZ ewwVxe jZPdSZ dcgeal"
+                      >
+                        <p>Invalid email format</p>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div class="sc-jgmqJh sc-gIIpAQ egscYh brdjDi">
+                <div class="sc-dTdpwD ePBxvF">
+                  <button class="sc-ligLZB bgPLGr">
+                    <span type="post" class="sc-eeA-dwE kXyRAC http-verb post"
+                      >post</span
+                    ><span class="sc-ieSqsC ioopTP">/auth/forgot-password</span
+                    ><svg
+                      class="sc-cXrvCr dOdtJx"
+                      style="margin-right: -25px"
+                      version="1.1"
+                      viewBox="0 0 24 24"
+                      x="0"
+                      xmlns="http://www.w3.org/2000/svg"
+                      y="0"
+                      aria-hidden="true"
+                    >
+                      <polygon
+                        points="17.3 8.3 12 13.6 6.7 8.3 5.3 9.7 12 16.4 18.7 9.7 "
+                      ></polygon>
+                    </svg>
+                  </button>
+                  <div aria-hidden="true" class="sc-dMGIQz kCxvuD">
+                    <div class="sc-hYvJMy sxQGy">
+                      <div
+                        html=""
+                        class="sc-dZnbom sc-eStNqG ewwVxe gxENBN"
+                      ></div>
+                      <div tabindex="0" role="button">
+                        <div class="sc-lbKftx iPVodL">
+                          <span></span>/auth/forgot-password
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <h3 class="sc-jOTjWM dhJZBt">
+                    <!-- -->Request samples<!-- -->
+                  </h3>
+                  <div class="sc-bwSFLc gTnidh" data-rttabs="true">
+                    <ul class="react-tabs__tab-list" role="tablist">
+                      <li
+                        class="react-tabs__tab react-tabs__tab--selected"
+                        role="tab"
+                        id="tab:R99mq:0"
+                        aria-selected="true"
+                        aria-disabled="false"
+                        aria-controls="panel:R99mq:0"
+                        tabindex="0"
+                        data-rttab="true"
+                      >
+                        Payload
+                      </li>
+                    </ul>
+                    <div
+                      class="react-tabs__tab-panel react-tabs__tab-panel--selected"
+                      role="tabpanel"
+                      id="panel:R99mq:0"
+                      aria-labelledby="tab:R99mq:0"
+                    >
+                      <div>
+                        <div class="sc-brVvGI bVwklo">
+                          <span class="sc-fKfBHT gEDIwZ">Content type</span>
+                          <div class="sc-buNqiq cnTPdi">application/json</div>
+                        </div>
+                        <div class="sc-eTAtz eQHTDF">
+                          <div class="sc-fowSIr gzsuAn">
+                            <div class="sc-ljIkKL jwxgAi">
+                              <button>
+                                <div class="sc-fcNxSY kochun">Copy</div>
+                              </button>
+                            </div>
+                            <div class="sc-dZnbom ewwVxe sc-gozoIq hnBcqa">
+                              <div class="redoc-json">
+                                <code
+                                  ><button
+                                    class="collapser"
+                                    aria-label="collapse"
+                                  ></button
+                                  ><span class="token punctuation">{</span
+                                  ><span class="ellipsis"></span>
+                                  <ul class="obj collapsible">
+                                    <li>
+                                      <div class="hoverable">
+                                        <span class="property token string"
+                                          >"email"</span
+                                        >:
+                                        <span class="token string"
+                                          >&quot;user@example.com&quot;</span
+                                        >
+                                      </div>
+                                    </li>
+                                  </ul>
+                                  <span class="token punctuation">}</span></code
+                                >
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <h3 class="sc-jOTjWM dhJZBt">
+                    <!-- -->Response samples<!-- -->
+                  </h3>
+                  <div class="sc-bwSFLc gTnidh" data-rttabs="true">
+                    <ul class="react-tabs__tab-list" role="tablist">
+                      <li
+                        class="tab-success react-tabs__tab--selected"
+                        role="tab"
+                        id="tab:R9pmq:0"
+                        aria-selected="true"
+                        aria-disabled="false"
+                        aria-controls="panel:R9pmq:0"
+                        tabindex="0"
+                        data-rttab="true"
+                      >
+                        200
+                      </li>
+                      <li
+                        class="tab-error"
+                        role="tab"
+                        id="tab:R9pmq:1"
+                        aria-selected="false"
+                        aria-disabled="false"
+                        aria-controls="panel:R9pmq:1"
+                        data-rttab="true"
+                      >
+                        400
+                      </li>
+                    </ul>
+                    <div
+                      class="react-tabs__tab-panel react-tabs__tab-panel--selected"
+                      role="tabpanel"
+                      id="panel:R9pmq:0"
+                      aria-labelledby="tab:R9pmq:0"
+                    >
+                      <div>
+                        <div class="sc-brVvGI bVwklo">
+                          <span class="sc-fKfBHT gEDIwZ">Content type</span>
+                          <div class="sc-buNqiq cnTPdi">application/json</div>
+                        </div>
+                        <div class="sc-eTAtz eQHTDF">
+                          <div class="sc-fowSIr gzsuAn">
+                            <div class="sc-ljIkKL jwxgAi">
+                              <button>
+                                <div class="sc-fcNxSY kochun">Copy</div>
+                              </button>
+                            </div>
+                            <div class="sc-dZnbom ewwVxe sc-gozoIq hnBcqa">
+                              <div class="redoc-json">
+                                <code
+                                  ><button
+                                    class="collapser"
+                                    aria-label="collapse"
+                                  ></button
+                                  ><span class="token punctuation">{</span
+                                  ><span class="ellipsis"></span>
+                                  <ul class="obj collapsible">
+                                    <li>
+                                      <div class="hoverable">
+                                        <span class="property token string"
+                                          >"success"</span
+                                        >:
+                                        <span class="token boolean">true</span
+                                        ><span class="token punctuation"
+                                          >,</span
+                                        >
+                                      </div>
+                                    </li>
+                                    <li>
+                                      <div class="hoverable">
+                                        <span class="property token string"
+                                          >"message"</span
+                                        >:
+                                        <span class="token string"
+                                          >&quot;string&quot;</span
+                                        >
+                                      </div>
+                                    </li>
+                                  </ul>
+                                  <span class="token punctuation">}</span></code
+                                >
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div
+                      class="react-tabs__tab-panel"
+                      role="tabpanel"
+                      id="panel:R9pmq:1"
+                      aria-labelledby="tab:R9pmq:1"
+                    ></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div
+            id="tag/auth/operation/resetPassword"
+            data-section-id="tag/auth/operation/resetPassword"
+            class="sc-dOfePm eCkzqu"
+          >
+            <div
+              data-section-id="operation/resetPassword"
+              id="operation/resetPassword"
+              class="sc-kFkjun gyiXze"
+            >
+              <div class="sc-glJfXD leUrRG">
+                <h2 class="sc-jRLeyu kRxete">
+                  <a
+                    class="sc-jXuTBK jnKjlt"
+                    href="#tag/auth/operation/resetPassword"
+                    aria-label="tag/auth/operation/resetPassword"
+                  ></a
+                  >Reset Password Using Token<!-- -->
+                </h2>
+                <h5 class="sc-cOPLXt cCiGzA">
+                  Request Body schema:
+                  <span class="sc-dSrrqH bFzZBc">application/json</span>
+                  <div
+                    class="sc-cbFRR sc-hMWYck sc-dYdwQA hQswnt cngCif gpUsgs"
+                  >
+                    required
+                  </div>
+                </h5>
+                <div html="" class="sc-dZnbom sc-eStNqG ewwVxe kiTOLP"></div>
+                <table class="sc-eagvWJ fahMGi">
+                  <tbody>
+                    <tr class="">
+                      <td
+                        kind="field"
+                        title="token"
+                        class="sc-lnQFQe sc-dUwGTt rDKIb dRrKge"
+                      >
+                        <span class="sc-gKcHA-D ibYoJt"></span
+                        ><span class="property-name">token</span>
+                        <div class="sc-cbFRR sc-hMWYck hQswnt cngCif">
+                          required
+                        </div>
+                      </td>
+                      <td class="sc-eUzcTs fjmjSR">
+                        <div>
+                          <div>
+                            <span
+                              class="sc-cbFRR sc-cQSRAa hQswnt fowkLL"
+                            ></span
+                            ><span class="sc-cbFRR sc-hglcZD hQswnt kmboKU"
+                              >string</span
+                            >
+                          </div>
+                          <div>
+                            <div
+                              html="&lt;p&gt;The temporary password token received via email&lt;/p&gt;
+"
+                              class="sc-dZnbom sc-eStNqG ewwVxe gxENBN"
+                            >
+                              <p>
+                                The temporary password token received via email
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr class="last">
+                      <td
+                        kind="field"
+                        title="newPassword"
+                        class="sc-lnQFQe sc-dUwGTt rDKIb dRrKge"
+                      >
+                        <span class="sc-gKcHA-D ibYoJt"></span
+                        ><span class="property-name">newPassword</span>
+                        <div class="sc-cbFRR sc-hMWYck hQswnt cngCif">
+                          required
+                        </div>
+                      </td>
+                      <td class="sc-eUzcTs fjmjSR">
+                        <div>
+                          <div>
+                            <span
+                              class="sc-cbFRR sc-cQSRAa hQswnt fowkLL"
+                            ></span
+                            ><span class="sc-cbFRR sc-hglcZD hQswnt kmboKU"
+                              >string</span
+                            ><span>
+                              <span class="sc-cbFRR sc-eXqXva hQswnt jAwxyA">
+                                <!-- -->&gt;= 8 characters<!-- -->
+                              </span></span
+                            >
+                          </div>
+                          <div>
+                            <div
+                              html="&lt;p&gt;The new password to set&lt;/p&gt;
+"
+                              class="sc-dZnbom sc-eStNqG ewwVxe gxENBN"
+                            >
+                              <p>The new password to set</p>
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div>
+                  <h3 class="sc-fRzchz ePsDFX">Responses</h3>
+                  <div>
+                    <button class="sc-jZkJda owcub">
+                      <svg
+                        class="sc-cXrvCr jSKTTR"
+                        version="1.1"
+                        viewBox="0 0 24 24"
+                        x="0"
+                        xmlns="http://www.w3.org/2000/svg"
+                        y="0"
+                        aria-hidden="true"
+                      >
+                        <polygon
+                          points="17.3 8.3 12 13.6 6.7 8.3 5.3 9.7 12 16.4 18.7 9.7 "
+                        ></polygon></svg
+                      ><strong class="sc-dNrSaK eSFldv">200<!-- --> </strong>
+                      <div
+                        html="&lt;p&gt;Password successfully reset&lt;/p&gt;
+"
+                        class="sc-dZnbom sc-eStNqG sc-ecLbSZ ewwVxe jZPdSZ dcgeal"
+                      >
+                        <p>Password successfully reset</p>
+                      </div>
+                    </button>
+                  </div>
+                  <div>
+                    <button class="sc-jZkJda iesDBN">
+                      <svg
+                        class="sc-cXrvCr cPuBeZ"
+                        version="1.1"
+                        viewBox="0 0 24 24"
+                        x="0"
+                        xmlns="http://www.w3.org/2000/svg"
+                        y="0"
+                        aria-hidden="true"
+                      >
+                        <polygon
+                          points="17.3 8.3 12 13.6 6.7 8.3 5.3 9.7 12 16.4 18.7 9.7 "
+                        ></polygon></svg
+                      ><strong class="sc-dNrSaK eSFldv">400<!-- --> </strong>
+                      <div
+                        html="&lt;p&gt;Invalid token or password&lt;/p&gt;
+"
+                        class="sc-dZnbom sc-eStNqG sc-ecLbSZ ewwVxe jZPdSZ dcgeal"
+                      >
+                        <p>Invalid token or password</p>
+                      </div>
+                    </button>
+                  </div>
+                  <div>
+                    <button class="sc-jZkJda iesDBN">
+                      <svg
+                        class="sc-cXrvCr cPuBeZ"
+                        version="1.1"
+                        viewBox="0 0 24 24"
+                        x="0"
+                        xmlns="http://www.w3.org/2000/svg"
+                        y="0"
+                        aria-hidden="true"
+                      >
+                        <polygon
+                          points="17.3 8.3 12 13.6 6.7 8.3 5.3 9.7 12 16.4 18.7 9.7 "
+                        ></polygon></svg
+                      ><strong class="sc-dNrSaK eSFldv">404<!-- --> </strong>
+                      <div
+                        html="&lt;p&gt;Token not found or expired&lt;/p&gt;
+"
+                        class="sc-dZnbom sc-eStNqG sc-ecLbSZ ewwVxe jZPdSZ dcgeal"
+                      >
+                        <p>Token not found or expired</p>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div class="sc-jgmqJh sc-gIIpAQ egscYh brdjDi">
+                <div class="sc-dTdpwD ePBxvF">
+                  <button class="sc-ligLZB bgPLGr">
+                    <span type="post" class="sc-eeA-dwE kXyRAC http-verb post"
+                      >post</span
+                    ><span class="sc-ieSqsC ioopTP">/auth/reset-password</span
+                    ><svg
+                      class="sc-cXrvCr dOdtJx"
+                      style="margin-right: -25px"
+                      version="1.1"
+                      viewBox="0 0 24 24"
+                      x="0"
+                      xmlns="http://www.w3.org/2000/svg"
+                      y="0"
+                      aria-hidden="true"
+                    >
+                      <polygon
+                        points="17.3 8.3 12 13.6 6.7 8.3 5.3 9.7 12 16.4 18.7 9.7 "
+                      ></polygon>
+                    </svg>
+                  </button>
+                  <div aria-hidden="true" class="sc-dMGIQz kCxvuD">
+                    <div class="sc-hYvJMy sxQGy">
+                      <div
+                        html=""
+                        class="sc-dZnbom sc-eStNqG ewwVxe gxENBN"
+                      ></div>
+                      <div tabindex="0" role="button">
+                        <div class="sc-lbKftx iPVodL">
+                          <span></span>/auth/reset-password
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <h3 class="sc-jOTjWM dhJZBt">
+                    <!-- -->Request samples<!-- -->
+                  </h3>
+                  <div class="sc-bwSFLc gTnidh" data-rttabs="true">
+                    <ul class="react-tabs__tab-list" role="tablist">
+                      <li
+                        class="react-tabs__tab react-tabs__tab--selected"
+                        role="tab"
+                        id="tab:R99qq:0"
+                        aria-selected="true"
+                        aria-disabled="false"
+                        aria-controls="panel:R99qq:0"
+                        tabindex="0"
+                        data-rttab="true"
+                      >
+                        Payload
+                      </li>
+                    </ul>
+                    <div
+                      class="react-tabs__tab-panel react-tabs__tab-panel--selected"
+                      role="tabpanel"
+                      id="panel:R99qq:0"
+                      aria-labelledby="tab:R99qq:0"
+                    >
+                      <div>
+                        <div class="sc-brVvGI bVwklo">
+                          <span class="sc-fKfBHT gEDIwZ">Content type</span>
+                          <div class="sc-buNqiq cnTPdi">application/json</div>
+                        </div>
+                        <div class="sc-eTAtz eQHTDF">
+                          <div class="sc-fowSIr gzsuAn">
+                            <div class="sc-ljIkKL jwxgAi">
+                              <button>
+                                <div class="sc-fcNxSY kochun">Copy</div>
+                              </button>
+                            </div>
+                            <div class="sc-dZnbom ewwVxe sc-gozoIq hnBcqa">
+                              <div class="redoc-json">
+                                <code
+                                  ><button
+                                    class="collapser"
+                                    aria-label="collapse"
+                                  ></button
+                                  ><span class="token punctuation">{</span
+                                  ><span class="ellipsis"></span>
+                                  <ul class="obj collapsible">
+                                    <li>
+                                      <div class="hoverable">
+                                        <span class="property token string"
+                                          >"token"</span
+                                        >:
+                                        <span class="token string"
+                                          >&quot;string&quot;</span
+                                        ><span class="token punctuation"
+                                          >,</span
+                                        >
+                                      </div>
+                                    </li>
+                                    <li>
+                                      <div class="hoverable">
+                                        <span class="property token string"
+                                          >"newPassword"</span
+                                        >:
+                                        <span class="token string"
+                                          >&quot;stringst&quot;</span
+                                        >
+                                      </div>
+                                    </li>
+                                  </ul>
+                                  <span class="token punctuation">}</span></code
+                                >
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <h3 class="sc-jOTjWM dhJZBt">
+                    <!-- -->Response samples<!-- -->
+                  </h3>
+                  <div class="sc-bwSFLc gTnidh" data-rttabs="true">
+                    <ul class="react-tabs__tab-list" role="tablist">
+                      <li
+                        class="tab-success react-tabs__tab--selected"
+                        role="tab"
+                        id="tab:R9pqq:0"
+                        aria-selected="true"
+                        aria-disabled="false"
+                        aria-controls="panel:R9pqq:0"
+                        tabindex="0"
+                        data-rttab="true"
+                      >
+                        200
+                      </li>
+                      <li
+                        class="tab-error"
+                        role="tab"
+                        id="tab:R9pqq:1"
+                        aria-selected="false"
+                        aria-disabled="false"
+                        aria-controls="panel:R9pqq:1"
+                        data-rttab="true"
+                      >
+                        400
+                      </li>
+                      <li
+                        class="tab-error"
+                        role="tab"
+                        id="tab:R9pqq:2"
+                        aria-selected="false"
+                        aria-disabled="false"
+                        aria-controls="panel:R9pqq:2"
+                        data-rttab="true"
+                      >
+                        404
+                      </li>
+                    </ul>
+                    <div
+                      class="react-tabs__tab-panel react-tabs__tab-panel--selected"
+                      role="tabpanel"
+                      id="panel:R9pqq:0"
+                      aria-labelledby="tab:R9pqq:0"
+                    >
+                      <div>
+                        <div class="sc-brVvGI bVwklo">
+                          <span class="sc-fKfBHT gEDIwZ">Content type</span>
+                          <div class="sc-buNqiq cnTPdi">application/json</div>
+                        </div>
+                        <div class="sc-eTAtz eQHTDF">
+                          <div class="sc-fowSIr gzsuAn">
+                            <div class="sc-ljIkKL jwxgAi">
+                              <button>
+                                <div class="sc-fcNxSY kochun">Copy</div>
+                              </button>
+                            </div>
+                            <div class="sc-dZnbom ewwVxe sc-gozoIq hnBcqa">
+                              <div class="redoc-json">
+                                <code
+                                  ><button
+                                    class="collapser"
+                                    aria-label="collapse"
+                                  ></button
+                                  ><span class="token punctuation">{</span
+                                  ><span class="ellipsis"></span>
+                                  <ul class="obj collapsible">
+                                    <li>
+                                      <div class="hoverable">
+                                        <span class="property token string"
+                                          >"success"</span
+                                        >:
+                                        <span class="token boolean">true</span>
+                                      </div>
+                                    </li>
+                                  </ul>
+                                  <span class="token punctuation">}</span></code
+                                >
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div
+                      class="react-tabs__tab-panel"
+                      role="tabpanel"
+                      id="panel:R9pqq:1"
+                      aria-labelledby="tab:R9pqq:1"
+                    ></div>
+                    <div
+                      class="react-tabs__tab-panel"
+                      role="tabpanel"
+                      id="panel:R9pqq:2"
+                      aria-labelledby="tab:R9pqq:2"
+                    ></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
         <div class="sc-dJOOoR dKumiZ"></div>
       </div>
@@ -3245,12 +4006,96 @@
                   },
                 },
               },
+              "/auth/forgot-password": {
+                post: {
+                  summary: "Request Password Reset",
+                  operationId: "forgotPassword",
+                  tags: ["auth"],
+                  requestBody: {
+                    required: true,
+                    content: {
+                      "application/json": {
+                        schema: {
+                          $ref: "#/components/schemas/ForgotPasswordRequest",
+                        },
+                      },
+                    },
+                  },
+                  responses: {
+                    200: {
+                      description:
+                        "If the user exists, a recovery email was sent",
+                      content: {
+                        "application/json": {
+                          schema: {
+                            $ref: "#/components/schemas/ForgotPasswordResponse",
+                          },
+                        },
+                      },
+                    },
+                    400: {
+                      description: "Invalid email format",
+                      content: {
+                        "application/json": {
+                          schema: { $ref: "#/components/schemas/error" },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+              "/auth/reset-password": {
+                post: {
+                  summary: "Reset Password Using Token",
+                  operationId: "resetPassword",
+                  tags: ["auth"],
+                  requestBody: {
+                    required: true,
+                    content: {
+                      "application/json": {
+                        schema: {
+                          $ref: "#/components/schemas/ResetPasswordRequest",
+                        },
+                      },
+                    },
+                  },
+                  responses: {
+                    200: {
+                      description: "Password successfully reset",
+                      content: {
+                        "application/json": {
+                          schema: {
+                            $ref: "#/components/schemas/ResetPasswordResponse",
+                          },
+                        },
+                      },
+                    },
+                    400: {
+                      description: "Invalid token or password",
+                      content: {
+                        "application/json": {
+                          schema: { $ref: "#/components/schemas/error" },
+                        },
+                      },
+                    },
+                    404: {
+                      description: "Token not found or expired",
+                      content: {
+                        "application/json": {
+                          schema: { $ref: "#/components/schemas/error" },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
             },
             components: {
               schemas: {
                 RegisterRequest: {
                   type: "object",
                   required: ["email", "password"],
+                  additionalProperties: false,
                   properties: {
                     email: { type: "string", format: "email" },
                     password: { type: "string", minLength: 8 },
@@ -3259,6 +4104,7 @@
                 UserResponse: {
                   type: "object",
                   required: ["id", "email"],
+                  additionalProperties: false,
                   properties: {
                     id: { type: "number" },
                     email: { type: "string", format: "email" },
@@ -3279,10 +4125,53 @@
                 LoginRequest: {
                   type: "object",
                   required: ["email", "password"],
+                  additionalProperties: false,
                   properties: {
                     email: { type: "string", format: "email" },
                     password: { type: "string" },
                   },
+                },
+                ForgotPasswordRequest: {
+                  type: "object",
+                  required: ["email"],
+                  additionalProperties: false,
+                  properties: { email: { type: "string", format: "email" } },
+                },
+                ForgotPasswordResponse: {
+                  type: "object",
+                  required: ["success", "message"],
+                  additionalProperties: false,
+                  properties: {
+                    success: { type: "boolean" },
+                    message: {
+                      type: "string",
+                      description:
+                        "A generic message indicating that if the user exists, a recovery email was sent",
+                    },
+                  },
+                },
+                ResetPasswordRequest: {
+                  type: "object",
+                  required: ["token", "newPassword"],
+                  additionalProperties: false,
+                  properties: {
+                    token: {
+                      type: "string",
+                      description:
+                        "The temporary password token received via email",
+                    },
+                    newPassword: {
+                      type: "string",
+                      minLength: 8,
+                      description: "The new password to set",
+                    },
+                  },
+                },
+                ResetPasswordResponse: {
+                  type: "object",
+                  required: ["success"],
+                  additionalProperties: false,
+                  properties: { success: { type: "boolean" } },
                 },
               },
             },
@@ -3295,35 +4184,48 @@
             "tag/auth/operation/loginUser",
             "tag/auth/operation/logoutUser",
             "tag/auth/operation/verifyAuth",
+            "tag/auth/operation/forgotPassword",
+            "tag/auth/operation/resetPassword",
           ],
           index: {
             version: "2.3.9",
             fields: ["title", "description"],
             fieldVectors: [
-              ["title/0", [0, 1.784]],
+              ["title/0", [0, 2.232]],
               ["description/0", []],
-              ["title/1", [1, 1.207, 2, 1.207, 3, 0.25]],
-              ["description/1", [4, 1.949]],
-              ["title/2", [3, 0.299, 5, 0.56]],
-              ["description/2", [6, 1.949]],
-              ["title/3", [3, 0.299, 7, 1.44]],
-              ["description/3", [8, 1.949]],
-              ["title/4", [5, 0.469, 9, 0.762, 10, 1.207]],
+              ["title/1", [1, 1.567, 2, 1.567, 3, 0.539]],
+              ["description/1", [4, 2.257]],
+              ["title/2", [3, 0.633, 5, 0.909]],
+              ["description/2", [6, 2.257]],
+              ["title/3", [3, 0.633, 7, 1.841]],
+              ["description/3", [8, 2.257]],
+              ["title/4", [5, 0.774, 9, 1.089, 10, 1.567]],
               [
                 "description/4",
                 [
-                  3, 0.211, 5, 0.395, 9, 0.385, 11, 0.609, 12, 0.609, 13, 0.609,
-                  14, 0.609, 15, 0.609, 16, 0.609, 17, 0.609, 18, 0.609, 19,
-                  0.609,
+                  3, 0.365, 5, 0.524, 9, 0.431, 11, 0.431, 12, 0.62, 13, 0.62,
+                  14, 0.62, 15, 0.62, 16, 0.62, 17, 0.62, 18, 0.62, 19, 0.62,
                 ],
               ],
+              ["title/5", [20, 1.567, 21, 1.089, 22, 1.089]],
+              ["description/5", [23, 2.257]],
+              ["title/6", [11, 0.948, 21, 0.948, 22, 0.948, 24, 1.364]],
+              ["description/6", [25, 2.257]],
             ],
             invertedIndex: [
               ["add", { _index: 14, title: {}, description: { 4: {} } }],
               ["auth", { _index: 0, title: { 0: {} }, description: {} }],
+              [
+                "auth/forgot-password",
+                { _index: 23, title: {}, description: { 5: {} } },
+              ],
               ["auth/login", { _index: 6, title: {}, description: { 2: {} } }],
               ["auth/logout", { _index: 8, title: {}, description: { 3: {} } }],
               ["auth/regist", { _index: 4, title: {}, description: { 1: {} } }],
+              [
+                "auth/reset-password",
+                { _index: 25, title: {}, description: { 6: {} } },
+              ],
               [
                 "auth/verifi",
                 { _index: 19, title: {}, description: { 4: {} } },
@@ -3339,10 +4241,20 @@
               ["inform", { _index: 15, title: {}, description: { 4: {} } }],
               ["logout", { _index: 7, title: { 3: {} }, description: {} }],
               ["new", { _index: 2, title: { 1: {} }, description: {} }],
+              [
+                "password",
+                { _index: 21, title: { 5: {}, 6: {} }, description: {} },
+              ],
               ["regist", { _index: 1, title: { 1: {} }, description: {} }],
+              ["request", { _index: 20, title: { 5: {} }, description: {} }],
+              [
+                "reset",
+                { _index: 22, title: { 5: {}, 6: {} }, description: {} },
+              ],
               ["servic", { _index: 18, title: {}, description: { 4: {} } }],
               ["statu", { _index: 10, title: { 4: {} }, description: {} }],
-              ["us", { _index: 11, title: {}, description: { 4: {} } }],
+              ["token", { _index: 24, title: { 6: {} }, description: {} }],
+              ["us", { _index: 11, title: { 6: {} }, description: { 4: {} } }],
               [
                 "user",
                 {

@@ -1,8 +1,30 @@
 # Feature Specification Template
 
+To get started:
+
+1. Create a folder in `/notes` with the name of the feature, prefixed with the date, e.g. `2025-03-23-add-auth-scopes`. Use the `/notes` folder in the _root_ of the repo, not in the `saflib` folder.
+2. Make a copy of this file in that folder, call it `spec.md`
+3. Remove this "To get started" section, fill in "## Overview" onwards.
+
 ## Overview
 
 [Provide a brief description of the feature, its purpose, and how it fits into the overall product. Include the main goals and objectives of this feature.]
+
+## Files to Modify
+
+List all files that need to be modified to implement this feature. Organize them by layer:
+
+### API Specification
+
+- [path/to/file] - Brief description of changes needed
+
+### Backend
+
+- [path/to/file] - Brief description of changes needed
+
+### Frontend
+
+- [path/to/file] - Brief description of changes needed
 
 ## User Stories
 
@@ -81,3 +103,14 @@
 - [Question 1]
 - [Question 2]
 - ...
+
+## File Linking Guidelines
+
+When referencing files in the specification:
+
+1. Always use absolute paths from the repository root, e.g. `/saflib/auth-service/routes/auth.ts`
+2. Use markdown links with descriptive text, e.g. `[auth.ts](/saflib/auth-service/routes/auth.ts)`
+3. When listing files to modify, include a brief description of what needs to be changed
+4. Group files by architectural layer (API Spec, Backend, Frontend)
+5. Include any new files that need to be created
+6. Note any files that need to be deleted
