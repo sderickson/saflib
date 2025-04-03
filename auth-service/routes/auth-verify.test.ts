@@ -3,6 +3,7 @@ import request from "supertest";
 import express from "express";
 import { createApp } from "../app.ts";
 import passport from "passport";
+import { getCsrfToken } from "./helpers.ts";
 
 describe("Verify Route", () => {
   let app: express.Express;
@@ -32,10 +33,10 @@ describe("Verify Route", () => {
     const agent = request.agent(app);
     const res1 = await agent.post("/auth/register").send(userData);
     expect(res1.status).toBe(200);
-    const res2 = await agent.post("/auth/login").send(userData);
-    expect(res2.status).toBe(200);
-    // Then verify authentication
-    const response = await agent.get("/auth/verify");
+    const csrfToken = getCsrfToken(res1);
+    const response = await agent
+      .get("/auth/verify")
+      .set("x-csrf-token", csrfToken);
     expect(response.status).toBe(200);
     expect(response.body).toEqual({
       id: expect.any(Number),
@@ -72,11 +73,14 @@ describe("Verify Route", () => {
     };
     const agent = request.agent(app);
     const res1 = await agent.post("/auth/register").send(userData);
+    const csrfToken = getCsrfToken(res1);
     expect(res1.status).toBe(200);
     const res2 = await agent.post("/auth/login").send(userData);
     expect(res2.status).toBe(200);
     // Then verify authentication
-    const response = await agent.get("/auth/verify");
+    const response = await agent
+      .get("/auth/verify")
+      .set("x-csrf-token", csrfToken);
     expect(response.status).toBe(200);
     expect(response.body).toEqual({
       id: expect.any(Number),

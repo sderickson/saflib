@@ -3,6 +3,7 @@ import request from "supertest";
 import express from "express";
 import { createApp } from "../app.ts";
 import passport from "passport";
+import { getCsrfToken } from "./helpers.ts";
 
 // Mock argon2
 vi.mock("argon2", () => ({
@@ -28,6 +29,7 @@ describe("Register Route", () => {
 
     const agent = request.agent(app);
     const response = await agent.post("/auth/register").send(userData);
+    const csrfToken = getCsrfToken(response);
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual({
@@ -37,7 +39,9 @@ describe("Register Route", () => {
     });
 
     // Verify the user is logged in by checking a protected route
-    const verifyResponse = await agent.get("/auth/verify");
+    const verifyResponse = await agent
+      .get("/auth/verify")
+      .set("x-csrf-token", csrfToken);
     expect(verifyResponse.status).toBe(200);
     expect(verifyResponse.body).toEqual({
       id: expect.any(Number),

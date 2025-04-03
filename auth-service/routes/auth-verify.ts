@@ -26,6 +26,14 @@ export const verifyHandler = createHandler(
       return;
     }
 
+    if (!req.isValidCsrfToken()) {
+      const errorResponse: AuthResponse["verifyAuth"][403] = {
+        error: "CSRF token mismatch!",
+      };
+      res.status(403).json(errorResponse);
+      return;
+    }
+
     const user = req.user as Express.User;
     // Add user info to response headers for potential use by downstream services
     res.setHeader("X-User-ID", user.id.toString());

@@ -2,7 +2,7 @@ import { AuthDB } from "@saflib/auth-db";
 import { type User } from "../types.ts";
 import { type components } from "@saflib/auth-spec";
 import { vi } from "vitest";
-
+import type { Response } from "supertest";
 vi.mock("fs", async (importOriginal) => {
   const actual = await importOriginal<typeof import("fs")>();
   return {
@@ -33,4 +33,13 @@ export async function createUserResponse(
     email: user.email,
     scopes,
   };
+}
+
+export function getCsrfToken(res: Response): string {
+  const setCookies = res.headers["set-cookie"] as unknown as string[];
+  const csrfCookie = setCookies.find((cookie) =>
+    cookie.startsWith("_csrf_token="),
+  );
+  const csrfToken = csrfCookie?.split(";")[0].split("=")[1] || "";
+  return csrfToken;
 }

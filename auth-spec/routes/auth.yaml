@@ -94,6 +94,12 @@ verify:
           application/json:
             schema:
               $ref: "#/components/schemas/ErrorResponse"
+      "403":
+        description: CSRF token mismatch
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ErrorResponse"
 
 forgot-password:
   post:

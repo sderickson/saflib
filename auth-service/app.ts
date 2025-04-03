@@ -16,12 +16,15 @@ import { setupPassport } from "./passport.ts";
 import { authRouter } from "./routes/index.ts";
 import { makeSessionMiddleware } from "./session-store.ts";
 import { jsonSpec } from "@saflib/auth-spec";
+import * as cookieParser from "cookie-parser";
+import * as csrfDSC from "express-csrf-double-submit-cookie";
 
 // Define properties added to Express Request objects by middleware
 declare global {
   namespace Express {
     interface Request {
       db: AuthDB;
+      isValidCsrfToken: () => boolean;
     }
   }
 }
@@ -46,7 +49,12 @@ export function createApp() {
     }),
   );
 
+  app.use(cookieParser.default());
+
+  const csrfProtection = csrfDSC.default();
+  app.use(csrfProtection);
   app.use(makeSessionMiddleware());
+  // app.use("/auth/verify", csrfProtection.validate);
 
   // Initialize Passport and restore authentication state from session
   setupPassport(db);

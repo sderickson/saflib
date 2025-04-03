@@ -23,7 +23,6 @@ describe("Session Store", () => {
   });
 
   it("uses the existing secret if the file exists", () => {
-    console.log("test");
     vi.mocked(existsSync).mockReturnValue(true);
     vi.mocked(readFileSync).mockReturnValue(
       JSON.stringify({
