@@ -31,7 +31,10 @@ export function createApp() {
   const app = express();
   app.set("trust proxy", true);
 
-  app.set("adminEmails", new Set(process.env.ADMIN_EMAILS?.split(",") || []));
+  app.set(
+    "saf:admin emails",
+    new Set(process.env.ADMIN_EMAILS?.split(",") || []),
+  );
 
   // Initialize database
   const db = new AuthDB();
