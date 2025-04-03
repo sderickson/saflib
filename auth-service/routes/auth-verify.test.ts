@@ -8,6 +8,7 @@ describe("Verify Route", () => {
   let app: express.Express;
 
   beforeEach(() => {
+    process.env.ADMIN_EMAILS = "admin@example.com";
     (passport as any)._serializers = [];
     (passport as any)._deserializers = [];
 
@@ -62,5 +63,28 @@ describe("Verify Route", () => {
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual({});
+  });
+
+  it("should add admin scope when user email is in ADMIN_EMAILS", async () => {
+    const userData = {
+      email: "admin@example.com",
+      password: "password123",
+    };
+    const agent = request.agent(app);
+    const res1 = await agent.post("/auth/register").send(userData);
+    expect(res1.status).toBe(200);
+    const res2 = await agent.post("/auth/login").send(userData);
+    expect(res2.status).toBe(200);
+    // Then verify authentication
+    const response = await agent.get("/auth/verify");
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({
+      id: expect.any(Number),
+      email: userData.email,
+      scopes: ["admin"],
+    });
+    expect(response.header["x-user-id"]).toBeDefined();
+    expect(response.header["x-user-email"]).toBe(userData.email);
+    expect(response.header["x-user-scopes"]).toBe("admin");
   });
 });
