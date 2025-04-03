@@ -13,7 +13,7 @@ export const useLogin = () => {
     mutationFn: async (body: LoginRequest) => {
       const { data, error } = await client.POST("/auth/login", { body });
       if (error) {
-        throw error;
+        throw new Error(error.error);
       }
       return data;
     },
