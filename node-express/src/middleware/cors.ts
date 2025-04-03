@@ -1,7 +1,7 @@
 import cors from "cors";
 import { Router } from "express";
 
-const domains = ["docker.localhost", "localhost", process.env.DOMAIN];
+const domains = [process.env.DOMAIN];
 
 const subdomains = ["", "www.", "specs.api."];
 

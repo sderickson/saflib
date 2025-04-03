@@ -17,6 +17,10 @@ let currentSecretStorage: SessionSecretStorage | undefined;
 
 export const clearStorage = () => {
   currentSecretStorage = undefined;
+  if (interval) {
+    clearInterval(interval);
+    interval = undefined;
+  }
 };
 
 interface SessionSecretStorage {
