@@ -44,13 +44,19 @@ describe("auth requests", () => {
     });
 
     it("should throw error when request fails", async () => {
-      const mockError = { message: "Invalid credentials" };
+      const mockError = { error: "Invalid credentials" };
       mockPOST.mockResolvedValueOnce({ error: mockError });
 
       const [result, app] = withVueQuery(() => useLogin());
-      await expect(result.mutateAsync(validCredentials)).rejects.toEqual(
-        mockError,
-      );
+      try {
+        await result.mutateAsync(validCredentials);
+        expect(true).toBe(false); // should not reach here
+      } catch (error) {
+        expect(error).toBeInstanceOf(Error);
+        if (error instanceof Error) {
+          expect(error.message).toEqual(mockError.error);
+        }
+      }
       app.unmount();
     });
   });
