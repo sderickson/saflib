@@ -11,11 +11,10 @@ import {
   recommendedErrorHandlers,
 } from "@saflib/node-express";
 import express from "express";
-import session from "express-session";
 import passport from "passport";
 import { setupPassport } from "./passport.ts";
 import { authRouter } from "./routes/index.ts";
-import { sessionStore } from "./session-store.ts";
+import { makeSessionMiddleware } from "./session-store.ts";
 import { jsonSpec } from "@saflib/auth-spec";
 
 // Define properties added to Express Request objects by middleware
@@ -47,23 +46,7 @@ export function createApp() {
     }),
   );
 
-  // Session configuration
-  const cookie = {
-    secure: process.env.PROTOCOL === "https",
-    maxAge: 24 * 60 * 60 * 1000, // 24 hours
-    sameSite: "strict" as const,
-    domain: `.${process.env.DOMAIN}`, // Allow cookies to be shared across subdomains
-  };
-
-  const sessionOptions = {
-    store: process.env.NODE_ENV === "test" ? undefined : sessionStore,
-    secret: process.env.SESSION_SECRET || "your-secret-key",
-    resave: false,
-    saveUninitialized: false,
-    cookie: process.env.NODE_ENV === "test" ? undefined : cookie,
-  };
-
-  app.use(session(sessionOptions));
+  app.use(makeSessionMiddleware());
 
   // Initialize Passport and restore authentication state from session
   setupPassport(db);
