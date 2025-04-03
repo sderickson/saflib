@@ -33,6 +33,11 @@ export const verifyHandler = createHandler(
 
     // Get user scopes and add to headers
     const scopes = await getUserScopes(req.db, user.id);
+
+    if (req.app.get("saf:admin emails").has(user.email)) {
+      scopes.push("admin");
+    }
+
     if (scopes.length === 0) {
       scopes.push("none");
     }

@@ -1,4 +1,5 @@
 import { useMutation } from "@tanstack/vue-query";
+import { type FetchResponse } from "openapi-fetch";
 import { client } from "./client.ts";
 import type {
   LoginRequest,
@@ -8,14 +9,23 @@ import type {
   VerifyEmailRequest,
 } from "./types.ts";
 
+const handleResponse = async (
+  request: Promise<FetchResponse<any, any, any>>,
+) => {
+  const { data, error } = await request;
+  if (error) {
+    if (error.error) {
+      throw new Error(error.error);
+    }
+    throw new Error("Unknown error");
+  }
+  return data;
+};
+
 export const useLogin = () => {
   return useMutation({
     mutationFn: async (body: LoginRequest) => {
-      const { data, error } = await client.POST("/auth/login", { body });
-      if (error) {
-        throw new Error(error.error);
-      }
-      return data;
+      return handleResponse(client.POST("/auth/login", { body }));
     },
   });
 };
@@ -23,10 +33,7 @@ export const useLogin = () => {
 export const useLogout = () => {
   return useMutation({
     mutationFn: async () => {
-      const { error } = await client.POST("/auth/logout");
-      if (error) {
-        throw error;
-      }
+      return handleResponse(client.POST("/auth/logout"));
     },
   });
 };
@@ -34,14 +41,7 @@ export const useLogout = () => {
 export const useRegister = () => {
   return useMutation({
     mutationFn: async (body: RegisterRequest) => {
-      const { data, error } = await client.POST("/auth/register", {
-        body,
-      });
-      if (error) {
-        throw error;
-      }
-
-      return data;
+      return handleResponse(client.POST("/auth/register", { body }));
     },
   });
 };
@@ -49,13 +49,7 @@ export const useRegister = () => {
 export const useForgotPassword = () => {
   return useMutation({
     mutationFn: async (body: ForgotPasswordRequest) => {
-      const { data, error } = await client.POST("/auth/forgot-password", {
-        body,
-      });
-      if (error) {
-        throw error;
-      }
-      return data;
+      return handleResponse(client.POST("/auth/forgot-password", { body }));
     },
   });
 };
@@ -63,13 +57,7 @@ export const useForgotPassword = () => {
 export const useResetPassword = () => {
   return useMutation({
     mutationFn: async (body: ResetPasswordRequest) => {
-      const { data, error } = await client.POST("/auth/reset-password", {
-        body,
-      });
-      if (error) {
-        throw error;
-      }
-      return data;
+      return handleResponse(client.POST("/auth/reset-password", { body }));
     },
   });
 };
@@ -77,13 +65,7 @@ export const useResetPassword = () => {
 export const useVerifyEmail = () => {
   return useMutation({
     mutationFn: async (body: VerifyEmailRequest) => {
-      const { data, error } = await client.POST("/auth/verify-email", {
-        body,
-      });
-      if (error) {
-        throw error;
-      }
-      return data;
+      return handleResponse(client.POST("/auth/verify-email", { body }));
     },
   });
 };
@@ -91,11 +73,7 @@ export const useVerifyEmail = () => {
 export const useResendVerification = () => {
   return useMutation({
     mutationFn: async () => {
-      const { data, error } = await client.POST("/auth/resend-verification");
-      if (error) {
-        throw error;
-      }
-      return data;
+      return handleResponse(client.POST("/auth/resend-verification"));
     },
   });
 };

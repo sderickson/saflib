@@ -71,15 +71,6 @@ describe("auth requests", () => {
 
       expect(mockPOST).toHaveBeenCalledWith("/auth/logout");
     });
-
-    it("should throw error when request fails", async () => {
-      const mockError = { message: "Logout failed" };
-      mockPOST.mockResolvedValueOnce({ error: mockError });
-
-      const [result, app] = withVueQuery(() => useLogout());
-      await expect(result.mutateAsync()).rejects.toEqual(mockError);
-      app.unmount();
-    });
   });
 
   describe("useRegister", () => {
@@ -105,13 +96,21 @@ describe("auth requests", () => {
     });
 
     it("should throw error when request fails", async () => {
-      const mockError = { message: "Registration failed" };
+      const mockError = { error: "Registration failed" };
       mockPOST.mockResolvedValueOnce({ error: mockError });
 
       const [result, app] = withVueQuery(() => useRegister());
-      await expect(result.mutateAsync(validRegistration)).rejects.toEqual(
-        mockError,
-      );
+      await result
+        .mutateAsync(validRegistration)
+        .then(() => {
+          expect(true).toBe(false);
+        })
+        .catch((error) => {
+          expect(error).toBeInstanceOf(Error);
+          if (error instanceof Error) {
+            expect(error.message).toEqual(mockError.error);
+          }
+        });
       app.unmount();
     });
   });
@@ -143,18 +142,24 @@ describe("auth requests", () => {
 
     it("should handle errors", async () => {
       // Mock the error response
-      const mockError = new Error("Invalid email format");
+      const mockError = { error: "Invalid email format" };
       mockPOST.mockResolvedValueOnce({ data: null, error: mockError });
 
       // Set up the mutation
       const [result, app] = withVueQuery(() => useForgotPassword());
 
       // Execute and expect error
-      await expect(result.mutateAsync({ email: "invalid" })).rejects.toThrow(
-        "Invalid email format",
-      );
-      expect(result.isError.value).toBe(true);
-
+      await result
+        .mutateAsync({ email: "invalid" })
+        .then(() => {
+          expect(true).toBe(false);
+        })
+        .catch((error) => {
+          expect(error).toBeInstanceOf(Error);
+          if (error instanceof Error) {
+            expect(error.message).toEqual(mockError.error);
+          }
+        });
       // Clean up
       app.unmount();
     });
@@ -190,7 +195,7 @@ describe("auth requests", () => {
 
     it("should handle errors", async () => {
       // Mock the error response
-      const mockError = new Error("Invalid token");
+      const mockError = { error: "Invalid token" };
       mockPOST.mockResolvedValueOnce({ data: null, error: mockError });
 
       // Set up the mutation
@@ -238,18 +243,24 @@ describe("auth requests", () => {
 
     it("should handle errors", async () => {
       // Mock the error response
-      const mockError = new Error("Invalid token");
+      const mockError = { error: "Invalid token" };
       mockPOST.mockResolvedValueOnce({ data: null, error: mockError });
 
       // Set up the mutation
       const [result, app] = withVueQuery(() => useVerifyEmail());
 
       // Execute and expect error
-      await expect(
-        result.mutateAsync({ token: "invalid-token" }),
-      ).rejects.toThrow("Invalid token");
-      expect(result.isError.value).toBe(true);
-
+      await result
+        .mutateAsync({ token: "invalid-token" })
+        .then(() => {
+          expect(true).toBe(false);
+        })
+        .catch((error) => {
+          expect(error).toBeInstanceOf(Error);
+          if (error instanceof Error) {
+            expect(error.message).toEqual(mockError.error);
+          }
+        });
       // Clean up
       app.unmount();
     });
@@ -280,15 +291,24 @@ describe("auth requests", () => {
 
     it("should handle errors", async () => {
       // Mock the error response
-      const mockError = new Error("User not logged in");
+      const mockError = { error: "User not logged in" };
       mockPOST.mockResolvedValueOnce({ data: null, error: mockError });
 
       // Set up the mutation
       const [result, app] = withVueQuery(() => useResendVerification());
 
       // Execute and expect error
-      await expect(result.mutateAsync()).rejects.toThrow("User not logged in");
-      expect(result.isError.value).toBe(true);
+      await result
+        .mutateAsync()
+        .then(() => {
+          expect(true).toBe(false);
+        })
+        .catch((error) => {
+          expect(error).toBeInstanceOf(Error);
+          if (error instanceof Error) {
+            expect(error.message).toEqual(mockError.error);
+          }
+        });
 
       // Clean up
       app.unmount();

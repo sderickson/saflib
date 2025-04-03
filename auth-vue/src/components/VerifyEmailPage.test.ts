@@ -83,7 +83,7 @@ describe("VerifyEmailPage", () => {
       const alerts = wrapper.findAllComponents({ name: "v-alert" });
       return alerts.find((alert) => alert.props("type") === "error");
     });
-    expect(errorAlert?.text()).toContain("Failed to verify email");
+    expect(errorAlert?.text()).toContain("Invalid or expired token");
 
     // Verify resend button is shown
     const resendButton = getResendButton(wrapper);
@@ -138,7 +138,7 @@ describe("VerifyEmailPage", () => {
       const alerts = wrapper.findAllComponents({ name: "v-alert" });
       return alerts.find((alert) => alert.props("type") === "error");
     });
-    expect(errorAlert?.text()).toContain("Failed to resend verification email");
+    expect(errorAlert?.text()).toContain("Failed to send email");
 
     // Verify button is still shown
     expect(getResendButton(wrapper)?.exists()).toBe(true);
