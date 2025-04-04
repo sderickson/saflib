@@ -9,6 +9,7 @@ import { httpLogger } from "./httpLogger.ts";
 import { loggerInjector } from "./logger.ts";
 import { createOpenApiValidator } from "./openapi.ts";
 import { requestId } from "./requestId.ts";
+import helmet from "helmet";
 
 /**
  * Recommended pre-route middleware stack.
@@ -65,6 +66,7 @@ export const createPreMiddleware = (
   }
 
   return [
+    helmet(),
     healthMiddleware, // before httpLogger to avoid polluting logs
     requestId,
     httpLogger,
