@@ -243,16 +243,6 @@
                 }
               }
             }
-          },
-          "404": {
-            "description": "Token not found or expired",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
           }
         }
       }
@@ -297,16 +287,6 @@
           },
           "401": {
             "description": "User not logged in",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Token not found",
             "content": {
               "application/json": {
                 "schema": {

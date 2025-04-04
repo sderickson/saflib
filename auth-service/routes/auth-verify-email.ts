@@ -12,7 +12,8 @@ export const verifyEmailHandler = createHandler(async (req, res) => {
     // Check if token is expired
     if (
       !emailAuth.verificationTokenExpiresAt ||
-      emailAuth.verificationTokenExpiresAt < new Date()
+      emailAuth.verificationTokenExpiresAt < new Date() ||
+      emailAuth.email !== req.user?.email
     ) {
       const errorResponse: AuthResponse["verifyEmail"][400] = {
         error: "Invalid or expired verification token",
