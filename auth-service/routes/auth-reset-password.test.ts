@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import request from "supertest";
 import express from "express";
 import { createApp } from "../app.ts";
+import { testRateLimiting } from "./test-helpers.ts";
 // Mock argon2
 import passport from "passport";
 vi.mock("argon2", () => ({
@@ -78,5 +79,14 @@ describe("Reset Password Route", () => {
 
     expect(response.status).toBe(404);
     expect(response.body).toEqual({ error: "Invalid or expired token" });
+  });
+
+  it("should return 429 for too many requests", async () => {
+    await testRateLimiting(() =>
+      request(app).post("/auth/reset-password").send({
+        token: "test-token",
+        newPassword: "new-password123",
+      }),
+    );
   });
 });

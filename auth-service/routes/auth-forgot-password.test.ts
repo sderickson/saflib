@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import request from "supertest";
 import express from "express";
 import { createApp } from "../app.ts";
-
+import { testRateLimiting } from "./test-helpers.ts";
 // Mock argon2
 vi.mock("argon2", () => ({
   hash: vi.fn().mockResolvedValue("hashed-password"),
@@ -47,5 +47,13 @@ describe("Forgot Password Route", () => {
       success: true,
       message: "If the email exists, a recovery email has been sent",
     });
+  });
+
+  it("should return 429 for too many requests", async () => {
+    await testRateLimiting(() =>
+      request(app).post("/auth/forgot-password").send({
+        email: "test@example.com",
+      }),
+    );
   });
 });

@@ -3,7 +3,7 @@ import request from "supertest";
 import express from "express";
 import { createApp } from "../app.ts";
 import passport from "passport";
-import { getCsrfToken } from "./test-helpers.ts";
+import { getCsrfToken, testRateLimiting } from "./test-helpers.ts";
 
 // Mock argon2
 vi.mock("argon2", () => ({
@@ -66,5 +66,14 @@ describe("Register Route", () => {
     expect(response.body).toEqual({
       error: "Email already exists",
     });
+  });
+
+  it("should return 429 for too many requests", async () => {
+    await testRateLimiting(() =>
+      request(app).post("/auth/register").send({
+        email: "test@example.com",
+        password: "password123",
+      }),
+    );
   });
 });

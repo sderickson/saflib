@@ -3,6 +3,7 @@ import request from "supertest";
 import express from "express";
 import { createApp } from "../app.ts";
 import * as argon2 from "argon2";
+import { testRateLimiting } from "./test-helpers.ts";
 
 // Mock argon2
 vi.mock("argon2", () => ({
@@ -66,5 +67,14 @@ describe("Login Route", () => {
     expect(response.body).toEqual({
       error: "Invalid credentials",
     });
+  });
+
+  it("should return 429 for too many requests", async () => {
+    await testRateLimiting(() =>
+      request(app).post("/auth/login").send({
+        email: "test@example.com",
+        password: "password123",
+      }),
+    );
   });
 });

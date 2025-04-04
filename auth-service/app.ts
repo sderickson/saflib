@@ -13,7 +13,7 @@ import {
 import express from "express";
 import passport from "passport";
 import { setupPassport } from "./passport.ts";
-import { authRouter } from "./routes/index.ts";
+import { makeRouter } from "./routes/index.ts";
 import { makeSessionMiddleware } from "./session-store.ts";
 import { jsonSpec } from "@saflib/auth-spec";
 import * as cookieParser from "cookie-parser";
@@ -31,7 +31,7 @@ declare global {
 
 export function createApp() {
   const app = express();
-  app.set("trust proxy", true);
+  app.set("trust proxy", 1);
 
   app.set(
     "saf:admin emails",
@@ -76,7 +76,7 @@ export function createApp() {
    * Routes
    * Authentication related endpoints
    */
-  app.use(authRouter);
+  app.use(makeRouter());
 
   // Apply recommended error handlers
   app.use(recommendedErrorHandlers);

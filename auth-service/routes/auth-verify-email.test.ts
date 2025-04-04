@@ -3,6 +3,7 @@ import request from "supertest";
 import express from "express";
 import { createApp } from "../app.ts";
 import passport from "passport";
+import { testRateLimiting } from "./test-helpers.ts";
 
 // Mock argon2
 vi.mock("argon2", () => ({
@@ -78,5 +79,11 @@ describe("Verify Email Route", () => {
     expect(response.body).toEqual({
       error: "Invalid or expired verification token",
     });
+  });
+
+  it("should return 429 for too many requests", async () => {
+    await testRateLimiting(() =>
+      request(app).post("/auth/verify-email").send({ token: "test-token" }),
+    );
   });
 });

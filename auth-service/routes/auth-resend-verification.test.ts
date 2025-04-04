@@ -3,6 +3,7 @@ import request from "supertest";
 import express from "express";
 import { createApp } from "../app.ts";
 import passport from "passport";
+import { testRateLimiting } from "./test-helpers.ts";
 // Mock argon2
 vi.mock("argon2", () => ({
   hash: vi.fn().mockResolvedValue("hashed-password"),
@@ -61,5 +62,11 @@ describe("Resend Verification Route", () => {
     expect(response.body).toEqual({
       error: "User must be logged in",
     });
+  });
+
+  it("should return 429 for too many requests", async () => {
+    await testRateLimiting(() =>
+      request(app).post("/auth/resend-verification"),
+    );
   });
 });
