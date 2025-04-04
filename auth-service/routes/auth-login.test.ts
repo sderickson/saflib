@@ -1,33 +1,27 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import request from "supertest";
 import express from "express";
 import { createApp } from "../app.ts";
-import * as argon2 from "argon2";
 import { testRateLimiting } from "./test-helpers.ts";
-
-// Mock argon2
-vi.mock("argon2", () => ({
-  hash: vi.fn().mockResolvedValue("hashed-password"),
-  verify: vi.fn().mockResolvedValue(true),
-}));
 
 describe("Login Route", () => {
   let app: express.Express;
 
   beforeEach(() => {
     app = createApp();
+  });
+
+  afterEach(() => {
     vi.clearAllMocks();
   });
 
   it("should login a user successfully", async () => {
-    // First create a user
     const userData = {
       email: "test@example.com",
       password: "password123",
     };
     await request(app).post("/auth/register").send(userData);
 
-    // Then try to login
     const response = await request(app).post("/auth/login").send(userData);
 
     expect(response.status).toBe(200);
@@ -38,19 +32,17 @@ describe("Login Route", () => {
     });
   });
 
-  it("should return 401 for invalid password", async () => {
-    // First create a user
+  it("should return 401 for wrong password", async () => {
     const userData = {
       email: "test@example.com",
       password: "password123",
     };
-    vi.spyOn(argon2, "verify").mockResolvedValue(false);
     await request(app).post("/auth/register").send(userData);
 
     // Try to login with wrong password
     const response = await request(app)
       .post("/auth/login")
-      .send({ ...userData, password: "wrong-password" });
+      .send({ ...userData, password: "wrong" });
 
     expect(response.status).toBe(401);
     expect(response.body).toEqual({

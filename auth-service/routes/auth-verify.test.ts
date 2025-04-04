@@ -28,7 +28,6 @@ describe("Verify Route", () => {
   });
 
   it("should return user info when authenticated", async () => {
-    // First create and login a user
     const userData = {
       email: "test@example.com",
       password: "password123",
@@ -80,7 +79,6 @@ describe("Verify Route", () => {
     expect(res1.status).toBe(200);
     const res2 = await agent.post("/auth/login").send(userData);
     expect(res2.status).toBe(200);
-    // Then verify authentication
     const response = await agent
       .get("/auth/verify")
       .set("x-csrf-token", csrfToken);

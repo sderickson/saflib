@@ -34,12 +34,11 @@ export const verifyHandler = createHandler(
       return;
     }
 
+    // Add headers for downstream services
     const user = req.user as Express.User;
-    // Add user info to response headers for potential use by downstream services
     res.setHeader("X-User-ID", user.id.toString());
     res.setHeader("X-User-Email", user.email);
 
-    // Get user scopes and add to headers
     const scopes = await getUserScopes(req.db, user.id);
 
     if (req.app.get("saf:admin emails").has(user.email)) {
@@ -51,7 +50,6 @@ export const verifyHandler = createHandler(
     }
     res.setHeader("X-User-Scopes", scopes.join(","));
 
-    // Return user info including scopes in response body
     const successResponse: AuthResponse["verifyAuth"][200] = {
       id: user.id,
       email: user.email,

@@ -6,10 +6,8 @@ export const verifyEmailHandler = createHandler(async (req, res) => {
   const { token } = req.body as { token: string };
 
   try {
-    // Get the email auth record by verification token
     const emailAuth = await req.db.emailAuth.getByVerificationToken(token);
 
-    // Check if token is expired
     if (
       !emailAuth.verificationTokenExpiresAt ||
       emailAuth.verificationTokenExpiresAt < new Date() ||
@@ -22,10 +20,8 @@ export const verifyEmailHandler = createHandler(async (req, res) => {
       return;
     }
 
-    // Verify the email
     await req.db.emailAuth.verifyEmail(emailAuth.userId);
 
-    // Get the user and create response
     const user = await req.db.users.getById(emailAuth.userId);
     const userResponse = await createUserResponse(req.db, user);
 
@@ -39,6 +35,6 @@ export const verifyEmailHandler = createHandler(async (req, res) => {
       res.status(400).json(errorResponse);
       return;
     }
-    throw err; // Re-throw other errors to be handled by error middleware
+    throw err;
   }
 });

@@ -5,12 +5,6 @@ import { createApp } from "../app.ts";
 import passport from "passport";
 import { getCsrfToken, testRateLimiting } from "./test-helpers.ts";
 
-// Mock argon2
-vi.mock("argon2", () => ({
-  hash: vi.fn().mockResolvedValue("hashed-password"),
-  verify: vi.fn().mockResolvedValue(true),
-}));
-
 describe("Register Route", () => {
   let app: express.Express;
 
@@ -38,7 +32,6 @@ describe("Register Route", () => {
       scopes: [],
     });
 
-    // Verify the user is logged in by checking a protected route
     const verifyResponse = await agent
       .get("/auth/verify")
       .set("x-csrf-token", csrfToken);
@@ -56,10 +49,8 @@ describe("Register Route", () => {
       password: "password123",
     };
 
-    // Create the first user
     await request(app).post("/auth/register").send(userData);
 
-    // Try to create a duplicate
     const response = await request(app).post("/auth/register").send(userData);
 
     expect(response.status).toBe(409);

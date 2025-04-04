@@ -5,13 +5,6 @@ import { createApp } from "../app.ts";
 import passport from "passport";
 import { testRateLimiting } from "./test-helpers.ts";
 
-// Mock argon2
-vi.mock("argon2", () => ({
-  hash: vi.fn().mockResolvedValue("hashed-password"),
-  verify: vi.fn().mockResolvedValue(true),
-}));
-
-// Mock crypto
 vi.mock("crypto", async (importOriginal) => {
   const crypto = await importOriginal<typeof import("crypto")>();
   return {
@@ -108,6 +101,36 @@ describe("Verify Email Route", () => {
       .send({ token });
 
     expect(response.status).toBe(400);
+  });
+
+  it("should return 400 for used token", async () => {
+    const userData = {
+      email: "test@example.com",
+      password: "password123",
+    };
+
+    const agent = request.agent(app);
+    {
+      const res = await agent.post("/auth/register").send(userData);
+      expect(res.status).toBe(200);
+    }
+
+    {
+      const res = await agent.post("/auth/resend-verification");
+      expect(res.status).toBe(200);
+    }
+
+    const token = "test-token";
+
+    {
+      const res = await agent.post("/auth/verify-email").send({ token });
+      expect(res.status).toBe(200);
+    }
+
+    {
+      const res = await agent.post("/auth/verify-email").send({ token });
+      expect(res.status).toBe(400);
+    }
   });
 
   it("should return 429 for too many requests", async () => {

@@ -43,7 +43,7 @@ export const resetPasswordHandler = createHandler(
         res.status(400).json(errorResponse);
         return;
       }
-      throw err; // Re-throw other errors to be handled by error middleware
+      throw err;
     }
   },
 );
