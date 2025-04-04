@@ -16,7 +16,9 @@ export const makeRouter = () => {
   router.post("/auth/logout", logoutHandler);
 
   // rate limit after /auth/verify, because verify runs before every single API call...
-  router.use(rateLimit());
+  if (process.env.DISABLE_RATE_LIMITING !== "true") {
+    router.use(rateLimit());
+  }
   router.post("/auth/login", loginHandler);
   router.post("/auth/register", registerHandler);
   router.post("/auth/forgot-password", forgotPasswordHandler);
