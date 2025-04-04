@@ -53,13 +53,13 @@ export function createApp() {
 
   const csrfProtection = csrfDSC({
     cookie: {
-      domain: `.${process.env.DOMAIN}`,
+      domain:
+        process.env.NODE_ENV === "test" ? undefined : `.${process.env.DOMAIN}`,
       secure: process.env.PROTOCOL === "https",
     },
   });
   app.use(csrfProtection);
   app.use(makeSessionMiddleware());
-  // app.use("/auth/verify", csrfProtection.validate);
 
   // Initialize Passport and restore authentication state from session
   setupPassport(db);
