@@ -8,26 +8,15 @@ export const forgotPasswordHandler = createHandler(
     const { email } = req.body as { email: string };
 
     try {
-      // Find user by email
       const user = await req.db.users.getByEmail(email);
-
-      // Generate a secure random token
       const token = randomBytes(8).toString("hex");
-
       const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes from now
 
-      // Update the user's forgot password token
-      const result = await req.db.emailAuth.updateForgotPasswordToken(
+      await req.db.emailAuth.updateForgotPasswordToken(
         user.id,
         token,
         expiresAt,
       );
-      req.log.info(
-        `Updated forgot password token for ${email}: ${JSON.stringify(result)}`,
-      );
-
-      // TODO: Send email with reset link
-      // This will be implemented in a separate task
       req.log.info(
         `Password reset link: ${process.env.PROTOCOL}://${process.env.DOMAIN}/auth/reset-password?token=${token}`,
       );
@@ -47,7 +36,7 @@ export const forgotPasswordHandler = createHandler(
         res.status(200).json(successResponse);
         return;
       }
-      throw err; // Re-throw other errors to be handled by error middleware
+      throw err;
     }
   },
 );

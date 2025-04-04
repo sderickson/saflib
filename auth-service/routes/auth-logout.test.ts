@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import request from "supertest";
 import express from "express";
 import { createApp } from "../app.ts";
-
+import { getCsrfToken } from "./test-helpers.ts";
 describe("Logout Route", () => {
   let app: express.Express;
 
@@ -12,19 +12,30 @@ describe("Logout Route", () => {
   });
 
   it("should logout a user successfully", async () => {
-    // First create and login a user
     const userData = {
       email: "test@example.com",
       password: "password123",
     };
-    await request(app).post("/auth/register").send(userData);
-    await request(app).post("/auth/login").send(userData);
+    const agent = request.agent(app);
+    const csrfToken = getCsrfToken(
+      await agent.post("/auth/register").send(userData),
+    );
+    {
+      const res = await agent
+        .get("/auth/verify")
+        .send(userData)
+        .set("X-CSRF-TOKEN", csrfToken);
+      expect(res.status).toBe(200);
+    }
 
-    // Then try to logout
-    const response = await request(app).post("/auth/logout");
-
-    expect(response.status).toBe(200);
-    expect(response.body).toEqual({});
+    {
+      const response = await agent.post("/auth/logout");
+      expect(response.status).toBe(200);
+    }
+    {
+      const res = await agent.get("/auth/verify");
+      expect(res.status).toBe(401);
+    }
   });
 
   it("should return 200 even when not logged in", async () => {

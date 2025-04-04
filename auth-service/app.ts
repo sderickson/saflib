@@ -11,25 +11,27 @@ import {
   recommendedErrorHandlers,
 } from "@saflib/node-express";
 import express from "express";
-import session from "express-session";
 import passport from "passport";
 import { setupPassport } from "./passport.ts";
-import { authRouter } from "./routes/index.ts";
-import { sessionStore } from "./session-store.ts";
+import { makeRouter } from "./routes/index.ts";
+import { makeSessionMiddleware } from "./session-store.ts";
 import { jsonSpec } from "@saflib/auth-spec";
+import * as cookieParser from "cookie-parser";
+import { csrfDSC } from "./csrf.ts";
 
 // Define properties added to Express Request objects by middleware
 declare global {
   namespace Express {
     interface Request {
       db: AuthDB;
+      isValidCsrfToken: () => boolean;
     }
   }
 }
 
 export function createApp() {
   const app = express();
-  app.set("trust proxy", true);
+  app.set("trust proxy", 1);
 
   app.set(
     "saf:admin emails",
@@ -47,23 +49,17 @@ export function createApp() {
     }),
   );
 
-  // Session configuration
-  const cookie = {
-    secure: process.env.PROTOCOL === "https",
-    maxAge: 24 * 60 * 60 * 1000, // 24 hours
-    sameSite: "strict" as const,
-    domain: `.${process.env.DOMAIN}`, // Allow cookies to be shared across subdomains
-  };
+  app.use(cookieParser.default());
 
-  const sessionOptions = {
-    store: process.env.NODE_ENV === "test" ? undefined : sessionStore,
-    secret: process.env.SESSION_SECRET || "your-secret-key",
-    resave: false,
-    saveUninitialized: false,
-    cookie: process.env.NODE_ENV === "test" ? undefined : cookie,
-  };
-
-  app.use(session(sessionOptions));
+  const csrfProtection = csrfDSC({
+    cookie: {
+      domain:
+        process.env.NODE_ENV === "test" ? undefined : `.${process.env.DOMAIN}`,
+      secure: process.env.PROTOCOL === "https",
+    },
+  });
+  app.use(csrfProtection);
+  app.use(makeSessionMiddleware());
 
   // Initialize Passport and restore authentication state from session
   setupPassport(db);
@@ -80,7 +76,7 @@ export function createApp() {
    * Routes
    * Authentication related endpoints
    */
-  app.use(authRouter);
+  app.use(makeRouter());
 
   // Apply recommended error handlers
   app.use(recommendedErrorHandlers);

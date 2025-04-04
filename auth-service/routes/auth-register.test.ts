@@ -3,12 +3,7 @@ import request from "supertest";
 import express from "express";
 import { createApp } from "../app.ts";
 import passport from "passport";
-
-// Mock argon2
-vi.mock("argon2", () => ({
-  hash: vi.fn().mockResolvedValue("hashed-password"),
-  verify: vi.fn().mockResolvedValue(true),
-}));
+import { getCsrfToken, testRateLimiting } from "./test-helpers.ts";
 
 describe("Register Route", () => {
   let app: express.Express;
@@ -28,6 +23,7 @@ describe("Register Route", () => {
 
     const agent = request.agent(app);
     const response = await agent.post("/auth/register").send(userData);
+    const csrfToken = getCsrfToken(response);
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual({
@@ -36,8 +32,9 @@ describe("Register Route", () => {
       scopes: [],
     });
 
-    // Verify the user is logged in by checking a protected route
-    const verifyResponse = await agent.get("/auth/verify");
+    const verifyResponse = await agent
+      .get("/auth/verify")
+      .set("x-csrf-token", csrfToken);
     expect(verifyResponse.status).toBe(200);
     expect(verifyResponse.body).toEqual({
       id: expect.any(Number),
@@ -52,15 +49,22 @@ describe("Register Route", () => {
       password: "password123",
     };
 
-    // Create the first user
     await request(app).post("/auth/register").send(userData);
 
-    // Try to create a duplicate
     const response = await request(app).post("/auth/register").send(userData);
 
     expect(response.status).toBe(409);
     expect(response.body).toEqual({
       error: "Email already exists",
     });
+  });
+
+  it("should return 429 for too many requests", async () => {
+    await testRateLimiting(() =>
+      request(app).post("/auth/register").send({
+        email: "test@example.com",
+        password: "password123",
+      }),
+    );
   });
 });

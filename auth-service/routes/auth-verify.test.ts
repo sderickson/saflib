@@ -1,8 +1,9 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import request from "supertest";
 import express from "express";
 import { createApp } from "../app.ts";
 import passport from "passport";
+import { getCsrfToken } from "./test-helpers.ts";
 
 describe("Verify Route", () => {
   let app: express.Express;
@@ -13,6 +14,9 @@ describe("Verify Route", () => {
     (passport as any)._deserializers = [];
 
     app = createApp();
+  });
+
+  afterEach(() => {
     vi.clearAllMocks();
   });
 
@@ -24,7 +28,6 @@ describe("Verify Route", () => {
   });
 
   it("should return user info when authenticated", async () => {
-    // First create and login a user
     const userData = {
       email: "test@example.com",
       password: "password123",
@@ -32,10 +35,10 @@ describe("Verify Route", () => {
     const agent = request.agent(app);
     const res1 = await agent.post("/auth/register").send(userData);
     expect(res1.status).toBe(200);
-    const res2 = await agent.post("/auth/login").send(userData);
-    expect(res2.status).toBe(200);
-    // Then verify authentication
-    const response = await agent.get("/auth/verify");
+    const csrfToken = getCsrfToken(res1);
+    const response = await agent
+      .get("/auth/verify")
+      .set("x-csrf-token", csrfToken);
     expect(response.status).toBe(200);
     expect(response.body).toEqual({
       id: expect.any(Number),
@@ -72,11 +75,13 @@ describe("Verify Route", () => {
     };
     const agent = request.agent(app);
     const res1 = await agent.post("/auth/register").send(userData);
+    const csrfToken = getCsrfToken(res1);
     expect(res1.status).toBe(200);
     const res2 = await agent.post("/auth/login").send(userData);
     expect(res2.status).toBe(200);
-    // Then verify authentication
-    const response = await agent.get("/auth/verify");
+    const response = await agent
+      .get("/auth/verify")
+      .set("x-csrf-token", csrfToken);
     expect(response.status).toBe(200);
     expect(response.body).toEqual({
       id: expect.any(Number),

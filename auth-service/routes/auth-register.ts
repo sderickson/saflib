@@ -8,16 +8,13 @@ export const registerHandler = createHandler(async (req, res) => {
     const registerRequest: AuthRequest["registerUser"] = req.body;
     const { email, password } = registerRequest;
 
-    // Hash the password with argon2
     const passwordHash = await argon2.hash(password);
 
-    // Create the user
     const user = await req.db.users.create({
       email,
       createdAt: new Date(),
     });
 
-    // Create email auth record
     await req.db.emailAuth.create({
       userId: user.id,
       email,
@@ -29,13 +26,11 @@ export const registerHandler = createHandler(async (req, res) => {
       forgotPasswordTokenExpiresAt: null,
     });
 
-    // Log in the user
     req.logIn(user, (err) => {
       if (err) {
         throw err;
       }
 
-      // Create and return user response
       createUserResponse(req.db, user).then((response) => {
         const successResponse: AuthResponse["registerUser"][200] = response;
         res.status(200).json(successResponse);

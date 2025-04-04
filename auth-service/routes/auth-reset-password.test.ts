@@ -1,13 +1,10 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import request from "supertest";
 import express from "express";
 import { createApp } from "../app.ts";
+import { testRateLimiting } from "./test-helpers.ts";
 // Mock argon2
 import passport from "passport";
-vi.mock("argon2", () => ({
-  hash: vi.fn().mockResolvedValue("hashed-password"),
-  verify: vi.fn().mockResolvedValue(true),
-}));
 
 vi.mock("crypto", async (importOriginal) => {
   const crypto = await importOriginal<typeof import("crypto")>();
@@ -24,11 +21,15 @@ describe("Reset Password Route", () => {
     (passport as any)._serializers = [];
     (passport as any)._deserializers = [];
     app = createApp();
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
     vi.clearAllMocks();
   });
 
   it("should reset password successfully with valid token", async () => {
-    // First create a user
     const userData = {
       email: "test@example.com",
       password: "password123",
@@ -37,16 +38,13 @@ describe("Reset Password Route", () => {
     const response1 = await agent.post("/auth/register").send(userData);
     expect(response1.status).toBe(200);
 
-    // Request password reset to get a token
     const response2 = await agent.post("/auth/forgot-password").send({
       email: userData.email,
     });
     expect(response2.status).toBe(200);
 
-    // Get the token from the logs (in a real app, this would be sent via email)
-    const token = "test-token"; // This would be the actual token from the email
+    const token = "test-token";
 
-    // Reset password with the token
     const response = await request(app)
       .post("/auth/reset-password")
       .send({ token, newPassword: "new-password123" });
@@ -62,21 +60,56 @@ describe("Reset Password Route", () => {
     expect(loginResponse.status).toBe(200);
   });
 
-  it("should return 404 for expired token", async () => {
+  it("should return 400 for expired token", async () => {
     const response = await request(app)
       .post("/auth/reset-password")
       .send({ token: "expired-token", newPassword: "new-password123" });
 
-    expect(response.status).toBe(404);
+    expect(response.status).toBe(400);
     expect(response.body).toEqual({ error: "Invalid or expired token" });
   });
 
-  it("should return 404 for invalid token", async () => {
+  it("should return 400 for invalid token", async () => {
     const response = await request(app)
       .post("/auth/reset-password")
       .send({ token: "invalid-token", newPassword: "new-password123" });
 
-    expect(response.status).toBe(404);
+    expect(response.status).toBe(400);
     expect(response.body).toEqual({ error: "Invalid or expired token" });
+  });
+
+  it("should return 400 for expired token", async () => {
+    const userData = {
+      email: "test@example.com",
+      password: "password123",
+    };
+    const agent = request.agent(app);
+    const response1 = await agent.post("/auth/register").send(userData);
+    expect(response1.status).toBe(200);
+
+    const response2 = await agent.post("/auth/forgot-password").send({
+      email: userData.email,
+    });
+    expect(response2.status).toBe(200);
+
+    const token = "test-token";
+
+    vi.advanceTimersByTime(1000 * 60 * 30);
+
+    const response = await request(app)
+      .post("/auth/reset-password")
+      .send({ token, newPassword: "new-password123" });
+
+    expect(response.status).toBe(400);
+    expect(response.body).toEqual({ error: "Invalid or expired token" });
+  });
+
+  it("should return 429 for too many requests", async () => {
+    await testRateLimiting(() =>
+      request(app).post("/auth/reset-password").send({
+        token: "test-token",
+        newPassword: "new-password123",
+      }),
+    );
   });
 });

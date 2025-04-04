@@ -94,6 +94,12 @@ verify:
           application/json:
             schema:
               $ref: "#/components/schemas/ErrorResponse"
+      "403":
+        description: CSRF token mismatch
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ErrorResponse"
 
 forgot-password:
   post:
@@ -146,12 +152,6 @@ reset-password:
           application/json:
             schema:
               $ref: "#/components/schemas/ErrorResponse"
-      "404":
-        description: Token not found or expired
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ErrorResponse"
 
 verify-email:
   post:
@@ -180,12 +180,6 @@ verify-email:
               $ref: "#/components/schemas/ErrorResponse"
       "401":
         description: User not logged in
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ErrorResponse"
-      "404":
-        description: Token not found
         content:
           application/json:
             schema:

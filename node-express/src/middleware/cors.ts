@@ -1,7 +1,7 @@
 import cors from "cors";
 import { Router } from "express";
 
-const domains = ["docker.localhost", "localhost", process.env.DOMAIN];
+const domains = [process.env.DOMAIN];
 
 const subdomains = ["", "www.", "specs.api."];
 
@@ -13,7 +13,6 @@ const whitelist = new Set(
   ),
 );
 
-export const corsRouter = Router();
 const corsMiddleware = cors({
   origin: (origin, callback) => {
     if (!origin) return callback(null, true);
@@ -23,5 +22,13 @@ const corsMiddleware = cors({
   credentials: true,
   maxAge: 600,
 });
+
+export const corsRouter = Router();
 corsRouter.options("*", corsMiddleware);
 corsRouter.use(corsMiddleware);
+
+// Interestingly, *NOT* having this line causes the tests to fail when fake timers are used.
+// I don't know why. The router just fails to call "next" it seems.
+corsRouter.get("/_dne", (_req, res) => {
+  res.send("OK");
+});

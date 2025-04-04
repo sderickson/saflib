@@ -8,15 +8,22 @@ import { forgotPasswordHandler } from "./auth-forgot-password.ts";
 import { resetPasswordHandler } from "./auth-reset-password.ts";
 import { verifyEmailHandler } from "./auth-verify-email.ts";
 
-const router = express.Router();
+import { rateLimit } from "express-rate-limit";
 
-router.post("/auth/login", loginHandler);
-router.post("/auth/register", registerHandler);
-router.post("/auth/logout", logoutHandler);
-router.get("/auth/verify", verifyHandler);
-router.post("/auth/forgot-password", forgotPasswordHandler);
-router.post("/auth/reset-password", resetPasswordHandler);
-router.post("/auth/resend-verification", resendVerificationHandler);
-router.post("/auth/verify-email", verifyEmailHandler);
+export const makeRouter = () => {
+  const router = express.Router();
+  router.get("/auth/verify", verifyHandler);
+  router.post("/auth/logout", logoutHandler);
 
-export { router as authRouter };
+  // rate limit after /auth/verify, because verify runs before every single API call...
+  if (process.env.DISABLE_RATE_LIMITING !== "true") {
+    router.use(rateLimit());
+  }
+  router.post("/auth/login", loginHandler);
+  router.post("/auth/register", registerHandler);
+  router.post("/auth/forgot-password", forgotPasswordHandler);
+  router.post("/auth/reset-password", resetPasswordHandler);
+  router.post("/auth/resend-verification", resendVerificationHandler);
+  router.post("/auth/verify-email", verifyEmailHandler);
+  return router;
+};

@@ -3,11 +3,7 @@ import request from "supertest";
 import express from "express";
 import { createApp } from "../app.ts";
 import passport from "passport";
-// Mock argon2
-vi.mock("argon2", () => ({
-  hash: vi.fn().mockResolvedValue("hashed-password"),
-  verify: vi.fn().mockResolvedValue(true),
-}));
+import { testRateLimiting } from "./test-helpers.ts";
 
 vi.mock("crypto", async (importOriginal) => {
   const crypto = await importOriginal<typeof import("crypto")>();
@@ -28,7 +24,6 @@ describe("Resend Verification Route", () => {
   });
 
   it("should resend verification email for logged in user", async () => {
-    // First create a user
     const userData = {
       email: "test@example.com",
       password: "password123",
@@ -40,11 +35,9 @@ describe("Resend Verification Route", () => {
 
     const agent = request.agent(app);
 
-    // Login to get a session
     const loginResponse = await agent.post("/auth/login").send(userData);
     expect(loginResponse.status).toBe(200);
 
-    // Request verification email resend
     const response = await agent.post("/auth/resend-verification");
 
     expect(response.status).toBe(200);
@@ -61,5 +54,11 @@ describe("Resend Verification Route", () => {
     expect(response.body).toEqual({
       error: "User must be logged in",
     });
+  });
+
+  it("should return 429 for too many requests", async () => {
+    await testRateLimiting(() =>
+      request(app).post("/auth/resend-verification"),
+    );
   });
 });
