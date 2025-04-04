@@ -3,6 +3,16 @@ import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
 import { readFileSync, existsSync, writeFileSync } from "fs";
 import { clearStorage } from "./session-store.ts";
 
+vi.mock("fs", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("fs")>();
+  return {
+    ...actual,
+    existsSync: vi.fn(),
+    readFileSync: vi.fn(),
+    writeFileSync: vi.fn(),
+  };
+});
+
 beforeEach(() => {
   vi.useFakeTimers();
 });
