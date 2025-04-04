@@ -52,9 +52,5 @@ export const csrfDSC = (options: Options = {}) => {
  * @return {string}
  */
 function getCsrfToken(req: Request) {
-  return (
-    req.headers["x-csrf-token"] ||
-    (req.body && req.body._csrf_token) ||
-    (req.query && req.query._csrf_token)
-  );
+  return req.headers["x-csrf-token"];
 }

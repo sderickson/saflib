@@ -35,11 +35,6 @@ export function hasPermission(
   const userScopes = getPermissionScopes(userPermission);
   const requiredScopes = getPermissionScopes(requiredPermission);
 
-  // If user has wildcard scope, they have all permissions
-  if (userScopes.includes("*")) {
-    return true;
-  }
-
   // Check if user has all required scopes
   return requiredScopes.every((scope) => userScopes.includes(scope));
 }
