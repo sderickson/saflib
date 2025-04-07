@@ -15,7 +15,9 @@
     "@vue/tsconfig": "^0.7.0",
     "rollup-plugin-ignore": "^1.0.0",
     "vite-plugin-vue-devtools": "^7.0.0",
-    "vite-plugin-vuetify": "^2.0.0",
-    "vue-tsc": "^2.0.0"
+    "vite-plugin-vuetify": "^2.0.0"
+  },
+  "devDependencies": {
+    "@saflib/monorepo-dev": "*"
   }
 }

@@ -11,7 +11,7 @@
     "serve": "serve dist -p 3000",
     "generate-and-serve": "npm run generate && npm run serve"
   },
-  "devDependencies": {
+  "dependencies": {
     "@saflib/openapi-specs": "*"
   },
   "files": [

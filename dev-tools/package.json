@@ -1,0 +1,19 @@
+{
+  "name": "@saflib/dev-tools",
+  "description": "Tools for software development",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "generate-dockerfiles": "node --experimental-strip-types ./generate-dockerfiles.ts"
+  },
+  "bin": {
+    "generate-dockerfiles": "./generate-dockerfiles.ts"
+  },
+  "devDependencies": {
+    "@saflib/vitest": "*",
+    "memfs": "^4.17.0"
+  }
+}
