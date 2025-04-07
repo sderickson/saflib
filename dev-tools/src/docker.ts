@@ -1,7 +1,7 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import {
-  getAllPackageWorkspaceDependencies,
+  // getAllPackageWorkspaceDependencies,
   type MonorepoContext,
 } from "./workspace.ts";
 
@@ -10,10 +10,11 @@ export function generateDockerfiles(
   verbose: boolean = false,
 ): void {
   for (const packageName of monorepoContext.packagesWithDockerfileTemplates) {
-    const packages = getAllPackageWorkspaceDependencies(
-      packageName,
-      monorepoContext,
-    );
+    // const packages = getAllPackageWorkspaceDependencies(
+    //   packageName,
+    //   monorepoContext,
+    // );
+    const packages = monorepoContext.packages;
     packages.add(packageName);
 
     const packageRelativePaths = Array.from(packages).map((packageName) => {
