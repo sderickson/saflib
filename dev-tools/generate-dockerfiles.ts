@@ -1,6 +1,6 @@
 #!/usr/bin/env node --experimental-strip-types
-import { buildMonorepoContext, generateDockerfiles } from "./src/docker.ts";
-
+import { generateDockerfiles } from "./src/docker.ts";
+import { buildMonorepoContext } from "./src/workspace.ts";
 const args = process.argv.slice(2);
 const path = args[0];
 if (!path) {
