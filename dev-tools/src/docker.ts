@@ -24,6 +24,8 @@ export function generateDockerfiles(
       "utf-8",
     );
 
+    // bun won't successfully install unless all the monorepo packages are present
+    // see: https://github.com/oven-sh/bun/issues/5792#issuecomment-2673078285
     const imageName = dockerTemplate.match(/^FROM\s+(.+)$/m)?.[1];
     if (imageName?.includes("/bun:")) {
       packages = monorepoContext.packages;
