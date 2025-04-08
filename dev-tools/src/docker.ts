@@ -10,11 +10,24 @@ export function generateDockerfiles(
   verbose: boolean = false,
 ): void {
   for (const packageName of monorepoContext.packagesWithDockerfileTemplates) {
-    const packages = getAllPackageWorkspaceDependencies(
+    let packages = getAllPackageWorkspaceDependencies(
       packageName,
       monorepoContext,
     );
     packages.add(packageName);
+
+    const dockerTemplate = readFileSync(
+      path.join(
+        monorepoContext.monorepoPackageDirectories[packageName],
+        "Dockerfile.template",
+      ),
+      "utf-8",
+    );
+
+    const imageName = dockerTemplate.match(/^FROM\s+(.+)$/m)?.[1];
+    if (imageName?.includes("/bun:")) {
+      packages = monorepoContext.packages;
+    }
 
     const packageRelativePaths = Array.from(packages).map((packageName) => {
       const packageDirectory =
@@ -31,13 +44,6 @@ export function generateDockerfiles(
 
     const copySrcCommand = `COPY --parents ${packageRelativePaths.join(" ")} ./`;
 
-    const dockerTemplate = readFileSync(
-      path.join(
-        monorepoContext.monorepoPackageDirectories[packageName],
-        "Dockerfile.template",
-      ),
-      "utf-8",
-    );
     const dockerfileContents = dockerTemplate
       .replace("#{ copy_packages }#", copyPackageJsonCommand)
       .replace("#{ copy_src }#", copySrcCommand);
