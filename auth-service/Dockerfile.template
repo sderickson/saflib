@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:labs
-FROM node:22-slim
+FROM node:alpine
 
 # install saflib
 WORKDIR /app

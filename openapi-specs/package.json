@@ -3,7 +3,7 @@
   "description": "Shared dependencies for generating OpenAPI specs in SAF projects",
   "type": "module",
   "main": "./index.ts",
-  "dependencies": {
+  "devDependencies": {
     "@redocly/cli": "^1.0.0",
     "openapi-typescript": "^7.0.0",
     "serve": "^14.0.0"
