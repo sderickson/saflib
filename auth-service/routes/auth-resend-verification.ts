@@ -2,7 +2,7 @@ import { createHandler } from "@saflib/node-express";
 import { randomBytes } from "crypto";
 import { type AuthResponse } from "@saflib/auth-spec";
 import { EmailClient } from "@saflib/email";
-import { generateVerificationEmail } from "../email-templates/verify-email.js";
+import { generateVerificationEmail } from "../email-templates/verify-email.ts";
 
 export const resendVerificationHandler = createHandler(async (req, res) => {
   if (!req.user) {
@@ -36,7 +36,7 @@ export const resendVerificationHandler = createHandler(async (req, res) => {
   try {
     await emailClient.sendEmail({
       to: req.user.email,
-      from: `noreply@${process.env.DOMAIN}`,
+      from: process.env.SMTP_FROM,
       subject,
       html,
     });

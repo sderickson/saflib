@@ -9,6 +9,18 @@ export interface EmailOptions
     "to" | "cc" | "bcc" | "subject" | "text" | "html" | "attachments" | "from"
   > {}
 
+function getTo(options: EmailOptions): string[] {
+  if (Array.isArray(options.to)) {
+    return options.to.map((t) => (typeof t === "string" ? t : t.address));
+  } else if (typeof options.to === "string") {
+    return [options.to];
+  } else if (options.to && options.to.address) {
+    return [options.to.address];
+  } else {
+    return [];
+  }
+}
+
 // Explicitly define EmailResult interface
 export interface EmailResult {
   messageId: string;
@@ -21,30 +33,36 @@ export class EmailClient {
   private transporter: Mail;
 
   constructor() {
-    const host = process.env.SMTP_HOST;
-    const port = process.env.SMTP_PORT;
-    const user = process.env.SMTP_USER;
-    const pass = process.env.SMTP_PASS;
-    // Default secure to true if not explicitly set to 'false'
-    const secure = process.env.SMTP_SECURE !== "false";
+    let host = process.env.SMTP_HOST;
 
-    if (!host || !port) {
+    // If we're in development, pretend to succeed
+    if (process.env.NODE_ENV === "development" && !host) {
+      host = "localhost";
+    }
+
+    if (!host) {
       if (process.env.NODE_ENV === "test") {
         throw new Error(
           "@saflib/email is not mocked, but it's running in a test. Add `vi.mock('@saflib/email')` to your test file.",
         );
       }
-      throw new Error(
-        "SMTP configuration error: SMTP_HOST and SMTP_PORT must be provided.",
-      );
+      throw new Error("SMTP configuration error: SMTP_HOST must be provided.");
     }
+
+    const port = process.env.SMTP_PORT;
+    const user = process.env.SMTP_USER;
+    const pass = process.env.SMTP_PASS;
+    // Default secure to true if not explicitly set to 'false'
+    const secure = process.env.SMTP_SECURE !== "false";
+    const name = process.env.SMTP_NAME;
 
     const transportOptions: SMTPTransport.Options = {
       host,
-      port: parseInt(port, 10),
+      port: port ? parseInt(port, 10) : undefined,
       secure: secure,
       // Only add auth if user and pass are provided
       auth: user && pass ? { user, pass } : undefined,
+      name,
     };
 
     this.transporter = nodemailer.createTransport(transportOptions);
@@ -52,6 +70,18 @@ export class EmailClient {
 
   async sendEmail(options: EmailOptions): Promise<EmailResult> {
     try {
+      if (process.env.NODE_ENV === "development") {
+        console.log(
+          `Sending email in development mode: ${JSON.stringify(options)}`,
+        );
+        return {
+          messageId: "1234567890",
+          accepted: getTo(options),
+          rejected: [],
+          response: "250 2.0.0 OK",
+        };
+      }
+
       const info: SMTPTransport.SentMessageInfo =
         await this.transporter.sendMail(options);
 

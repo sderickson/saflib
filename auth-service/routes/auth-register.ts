@@ -4,7 +4,7 @@ import { createUserResponse } from "./helpers.ts";
 import type { AuthResponse, AuthRequest } from "@saflib/auth-spec";
 import { randomBytes } from "crypto";
 import { EmailClient } from "@saflib/email";
-import { generateVerificationEmail } from "../email-templates/verify-email.js";
+import { generateVerificationEmail } from "../email-templates/verify-email.ts";
 
 export const registerHandler = createHandler(async (req, res) => {
   try {
@@ -48,7 +48,7 @@ export const registerHandler = createHandler(async (req, res) => {
 
     await emailClient.sendEmail({
       to: user.email,
-      from: `noreply@${process.env.DOMAIN}`, // Use a noreply address
+      from: process.env.SMTP_FROM, // Use a noreply address
       subject,
       html,
     });

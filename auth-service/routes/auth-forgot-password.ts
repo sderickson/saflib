@@ -3,7 +3,7 @@ import { randomBytes } from "crypto";
 import { createHandler } from "@saflib/node-express";
 import { type AuthResponse } from "@saflib/auth-spec";
 import { EmailClient } from "@saflib/email";
-import { generatePasswordResetEmail } from "../email-templates/password-reset.js";
+import { generatePasswordResetEmail } from "../email-templates/password-reset.ts";
 
 export const forgotPasswordHandler = createHandler(
   async (req: Request, res: Response) => {
@@ -27,7 +27,7 @@ export const forgotPasswordHandler = createHandler(
 
       await emailClient.sendEmail({
         to: user.email,
-        from: `noreply@${process.env.DOMAIN}`, // Use a noreply address
+        from: process.env.SMTP_FROM,
         subject,
         html,
       });

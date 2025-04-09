@@ -1,4 +1,4 @@
-import { EmailContent } from "./verify-email.js";
+import type { EmailContent } from "./verify-email.ts";
 
 export function generatePasswordResetEmail(resetUrl: string): EmailContent {
   const subject = "Reset Your Password";
