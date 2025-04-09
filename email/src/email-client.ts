@@ -70,7 +70,11 @@ export class EmailClient {
 
   async sendEmail(options: EmailOptions): Promise<EmailResult> {
     try {
-      if (process.env.NODE_ENV === "development") {
+      if (
+        process.env.NODE_ENV === "development" ||
+        // Hack: Set to this for things like playwright tests
+        process.env.SMTP_HOST === "smtp.mock.com"
+      ) {
         console.log(
           `Sending email in development mode: ${JSON.stringify(options)}`,
         );
