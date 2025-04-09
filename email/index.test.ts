@@ -1,12 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { EmailClient, EmailOptions, EmailResult } from "./index.js";
-// Import nodemailer types separately IF NEEDED for type annotations outside mock scope
-// import type Mail from "nodemailer/lib/mailer";
 import type SMTPTransport from "nodemailer/lib/smtp-transport";
 import type { Address } from "nodemailer/lib/mailer"; // Import Address type
+import * as nodemailer from "nodemailer";
 
-// Mock nodemailer completely BEFORE any imports that might use it
-// The mock factory defines the structure, including the mock sendMail function
 vi.mock("nodemailer", async (importOriginal) => {
   const originalModule = await importOriginal<typeof import("nodemailer")>();
   return {
@@ -17,9 +14,6 @@ vi.mock("nodemailer", async (importOriginal) => {
     }),
   };
 });
-
-// NOW import nodemailer - Vitest ensures this imports the MOCKED version
-import * as nodemailer from "nodemailer";
 
 // Helper function to get the mock SendMail function
 // We need this because createTransport itself is a mock
@@ -67,8 +61,9 @@ describe("EmailClient", () => {
   });
 
   it("should initialize transporter calling nodemailer.createTransport", () => {
-    const client = new EmailClient(); // Constructor calls createTransport
-    expect(nodemailer.createTransport).toHaveBeenCalledTimes(1);
+    const timesCalled = vi.mocked(nodemailer.createTransport).mock.calls.length;
+    new EmailClient(); // Constructor calls createTransport
+    expect(nodemailer.createTransport).toHaveBeenCalledTimes(timesCalled + 1);
     // We can still check the arguments passed to the mocked createTransport
     expect(nodemailer.createTransport).toHaveBeenCalledWith({
       host: "mock.smtp.server",
@@ -101,7 +96,11 @@ describe("EmailClient", () => {
       accepted: expectedResult.accepted as (string | Address)[],
       rejected: expectedResult.rejected as (string | Address)[],
       response: expectedResult.response,
-      envelope: { from: emailOptions.from!, to: [emailOptions.to as string] },
+      pending: [],
+      envelope: {
+        from: emailOptions.from as string,
+        to: [emailOptions.to as string],
+      },
     };
     // Use the mockSendMail variable obtained in beforeEach
     mockSendMail.mockResolvedValue(mockResolvedInfo);
@@ -138,7 +137,7 @@ describe("EmailClient", () => {
   it("should initialize transporter with auth if credentials provided", () => {
     process.env.SMTP_USER = "testuser";
     process.env.SMTP_PASS = "testpass";
-    const client = new EmailClient();
+    new EmailClient();
     expect(nodemailer.createTransport).toHaveBeenCalledWith(
       expect.objectContaining({
         auth: { user: "testuser", pass: "testpass" },
@@ -148,7 +147,7 @@ describe("EmailClient", () => {
 
   it("should initialize transporter with secure false if SMTP_SECURE is 'false'", () => {
     process.env.SMTP_SECURE = "false";
-    const client = new EmailClient();
+    new EmailClient();
     expect(nodemailer.createTransport).toHaveBeenCalledWith(
       expect.objectContaining({
         secure: false,

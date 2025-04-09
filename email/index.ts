@@ -9,11 +9,13 @@ export interface EmailOptions
     "to" | "cc" | "bcc" | "subject" | "text" | "html" | "attachments" | "from"
   > {}
 
-// Define EmailResult by picking relevant fields from nodemailer's SentMessageInfo
-export type EmailResult = Pick<
-  SMTPTransport.SentMessageInfo,
-  "messageId" | "accepted" | "rejected" | "response"
->;
+// Explicitly define EmailResult interface
+export interface EmailResult {
+  messageId: string;
+  accepted: string[];
+  rejected: string[];
+  response: string;
+}
 
 export class EmailClient {
   private transporter: Mail;
@@ -56,7 +58,8 @@ export class EmailClient {
         response: info.response,
       };
     } catch (error) {
-      console.error("Error sending email:", error);
+      // TODO: log properly
+      // console.error("Error sending email:", error);
       // Rethrow or handle error as appropriate for the application
       throw new Error(`Failed to send email: ${error}`);
     }
