@@ -2,6 +2,9 @@ import * as argon2 from "argon2";
 import { createHandler } from "@saflib/node-express";
 import { createUserResponse } from "./helpers.ts";
 import type { AuthResponse, AuthRequest } from "@saflib/auth-spec";
+import { randomBytes } from "crypto";
+import { EmailClient } from "@saflib/email";
+import { generateVerificationEmail } from "../email-templates/verify-email.js";
 
 export const registerHandler = createHandler(async (req, res) => {
   try {
@@ -25,6 +28,39 @@ export const registerHandler = createHandler(async (req, res) => {
       forgotPasswordToken: null,
       forgotPasswordTokenExpiresAt: null,
     });
+
+    // Generate verification token and send email
+    const verificationToken = randomBytes(16).toString("hex");
+    // Set expiry to 24 hours from now
+    const verificationTokenExpiresAt = new Date(
+      Date.now() + 24 * 60 * 60 * 1000,
+    );
+
+    await req.db.emailAuth.updateVerificationToken(
+      user.id,
+      verificationToken,
+      verificationTokenExpiresAt,
+    );
+
+    const emailClient = new EmailClient();
+    const verificationUrl = `${process.env.PROTOCOL}://${process.env.DOMAIN}/auth/verify-email?token=${verificationToken}`;
+    const { subject, html } = generateVerificationEmail(verificationUrl);
+
+    try {
+      await emailClient.sendEmail({
+        to: user.email,
+        from: `noreply@${process.env.DOMAIN}`, // Use a noreply address
+        subject,
+        html,
+      });
+      req.log.info(`Verification email successfully sent to ${user.email}`);
+    } catch (emailError) {
+      req.log.error(
+        `Failed to send verification email to ${user.email}. Error: ${emailError}`,
+      );
+      // Decide if we should fail the request or just log
+      // For now, we log and continue, user can request resend
+    }
 
     req.logIn(user, (err) => {
       if (err) {
