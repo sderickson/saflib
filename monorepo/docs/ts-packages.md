@@ -46,6 +46,7 @@ Key points for the initial setup:
 - Use `exports` field to explicitly define the public API (typically just `index.ts`).
 - `type` is `module` - we're using ESM.
 - Include `@saflib/vitest` in `devDependencies` for testing configuration via the `scripts`.
+- Create the standard `vitest.config.js` file at the package root (see Testing section below for the template).
 - `private: true` assuming you aren't planning on publishing the package externally.
 - Start with empty `dependencies` (other than `@saflib/vitest`). See below for adding further dependencies.
 
