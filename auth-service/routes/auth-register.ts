@@ -44,7 +44,7 @@ export const registerHandler = createHandler(async (req, res) => {
 
     const emailClient = new EmailClient();
     const verificationUrl = `${process.env.PROTOCOL}://${process.env.DOMAIN}/auth/verify-email?token=${verificationToken}`;
-    const { subject, html } = generateVerificationEmail(verificationUrl);
+    const { subject, html } = generateVerificationEmail(verificationUrl, false);
 
     await emailClient.sendEmail({
       to: user.email,

@@ -1,6 +1,8 @@
 import { createHandler } from "@saflib/node-express";
 import { randomBytes } from "crypto";
 import { type AuthResponse } from "@saflib/auth-spec";
+import { EmailClient } from "@saflib/email";
+import { generateVerificationEmail } from "../email-templates/verify-email.js";
 
 export const resendVerificationHandler = createHandler(async (req, res) => {
   if (!req.user) {
@@ -25,6 +27,25 @@ export const resendVerificationHandler = createHandler(async (req, res) => {
   req.log.info(
     `Verification link: ${process.env.PROTOCOL}://${process.env.DOMAIN}/auth/verify-email?token=${verificationToken}`,
   );
+
+  // Send verification email
+  const emailClient = new EmailClient();
+  const verificationUrl = `${process.env.PROTOCOL}://${process.env.DOMAIN}/auth/verify-email?token=${verificationToken}`;
+  const { subject, html } = generateVerificationEmail(verificationUrl, true);
+
+  try {
+    await emailClient.sendEmail({
+      to: req.user.email,
+      from: `noreply@${process.env.DOMAIN}`,
+      subject,
+      html,
+    });
+    req.log.info(`Verification email successfully resent to ${req.user.email}`);
+  } catch (emailError) {
+    req.log.error(
+      `Failed to resend verification email to ${req.user.email}. Error: ${emailError}`,
+    );
+  }
 
   const response: AuthResponse["resendVerification"][200] = {
     success: true,

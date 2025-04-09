@@ -5,8 +5,13 @@ export interface EmailContent {
 
 export function generateVerificationEmail(
   verificationUrl: string,
+  isResend: boolean = false,
 ): EmailContent {
   const subject = "Verify Your Email Address";
+  const introText = isResend
+    ? "We received a request to verify your email address. Please click the button below to complete the verification."
+    : "Thanks for signing up! Please click the button below to verify your email address and complete your registration.";
+
   const html = `
 <!DOCTYPE html>
 <html lang="en">
@@ -24,7 +29,7 @@ export function generateVerificationEmail(
 <body>
   <div class="container">
     <h1>${subject}</h1>
-    <p>Thanks for signing up! Please click the button below to verify your email address and complete your registration.</p>
+    <p>${introText}</p>
     <p>
       <a href="${verificationUrl}" class="button" target="_blank" rel="noopener noreferrer">Verify Email</a>
     </p>
