@@ -1,0 +1,17 @@
+{
+  "name": "@saflib/email-dev",
+  "description": "Development utilities and mocks for @saflib/email",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
+  },
+  "devDependencies": {
+    "@saflib/vitest": "*"
+  }
+}
