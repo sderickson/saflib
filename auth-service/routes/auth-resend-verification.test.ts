@@ -5,6 +5,9 @@ import { createApp } from "../app.ts";
 import passport from "passport";
 import { testRateLimiting } from "./test-helpers.ts";
 
+// Mock the email package
+vi.mock("@saflib/email");
+
 vi.mock("crypto", async (importOriginal) => {
   const crypto = await importOriginal<typeof import("crypto")>();
   return {

@@ -5,6 +5,9 @@ import { createApp } from "../app.ts";
 import passport from "passport";
 import { getCsrfToken } from "./test-helpers.ts";
 
+// Mock the email package
+vi.mock("@saflib/email");
+
 describe("Verify Route", () => {
   let app: express.Express;
 

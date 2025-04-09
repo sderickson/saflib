@@ -46,21 +46,13 @@ export const registerHandler = createHandler(async (req, res) => {
     const verificationUrl = `${process.env.PROTOCOL}://${process.env.DOMAIN}/auth/verify-email?token=${verificationToken}`;
     const { subject, html } = generateVerificationEmail(verificationUrl);
 
-    try {
-      await emailClient.sendEmail({
-        to: user.email,
-        from: `noreply@${process.env.DOMAIN}`, // Use a noreply address
-        subject,
-        html,
-      });
-      req.log.info(`Verification email successfully sent to ${user.email}`);
-    } catch (emailError) {
-      req.log.error(
-        `Failed to send verification email to ${user.email}. Error: ${emailError}`,
-      );
-      // Decide if we should fail the request or just log
-      // For now, we log and continue, user can request resend
-    }
+    await emailClient.sendEmail({
+      to: user.email,
+      from: `noreply@${process.env.DOMAIN}`, // Use a noreply address
+      subject,
+      html,
+    });
+    req.log.info(`Verification email successfully sent to ${user.email}`);
 
     req.logIn(user, (err) => {
       if (err) {
