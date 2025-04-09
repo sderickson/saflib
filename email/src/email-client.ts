@@ -29,6 +29,11 @@ export class EmailClient {
     const secure = process.env.SMTP_SECURE !== "false";
 
     if (!host || !port) {
+      if (process.env.NODE_ENV === "test") {
+        throw new Error(
+          "@saflib/email is not mocked, but it's running in a test. Add `vi.mock('@saflib/email')` to your test file.",
+        );
+      }
       throw new Error(
         "SMTP configuration error: SMTP_HOST and SMTP_PORT must be provided.",
       );
