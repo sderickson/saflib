@@ -3,6 +3,7 @@ import request from "supertest";
 import express from "express";
 import { createApp } from "../app.ts";
 import { testRateLimiting } from "./test-helpers.ts";
+import { EmailClient } from "@saflib/email";
 
 vi.mock("@saflib/email");
 
@@ -10,11 +11,12 @@ describe("Forgot Password Route", () => {
   let app: express.Express;
 
   beforeEach(() => {
-    app = createApp();
     vi.clearAllMocks();
+    app = createApp();
+    vi.spyOn(EmailClient.prototype, "sendEmail");
   });
 
-  it("should generate and store reset token when user exists", async () => {
+  it("should generate and store reset token when user exists and send email", async () => {
     const userData = {
       email: "test@example.com",
       password: "password123",
@@ -33,6 +35,12 @@ describe("Forgot Password Route", () => {
       success: true,
       message: "If the email exists, a recovery email has been sent",
     });
+    expect(EmailClient.prototype.sendEmail).toHaveBeenCalledWith({
+      to: userData.email,
+      from: "noreply@undefined",
+      html: expect.any(String),
+      subject: "Reset Your Password",
+    });
   });
 
   it("should return success even when user doesn't exist to prevent email enumeration", async () => {
@@ -45,6 +53,7 @@ describe("Forgot Password Route", () => {
       success: true,
       message: "If the email exists, a recovery email has been sent",
     });
+    expect(EmailClient.prototype.sendEmail).not.toHaveBeenCalled();
   });
 
   it("should return 429 for too many requests", async () => {

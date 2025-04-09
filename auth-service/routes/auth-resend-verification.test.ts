@@ -4,7 +4,7 @@ import express from "express";
 import { createApp } from "../app.ts";
 import passport from "passport";
 import { testRateLimiting } from "./test-helpers.ts";
-
+import { EmailClient } from "@saflib/email";
 // Mock the email package
 vi.mock("@saflib/email");
 
@@ -20,10 +20,11 @@ describe("Resend Verification Route", () => {
   let app: express.Express;
 
   beforeEach(() => {
+    vi.clearAllMocks();
     (passport as any)._serializers = [];
     (passport as any)._deserializers = [];
     app = createApp();
-    vi.clearAllMocks();
+    vi.spyOn(EmailClient.prototype, "sendEmail");
   });
 
   it("should resend verification email for logged in user", async () => {
@@ -48,6 +49,12 @@ describe("Resend Verification Route", () => {
       success: true,
       message: "Verification email sent",
     });
+    expect(EmailClient.prototype.sendEmail).toHaveBeenCalledWith({
+      to: userData.email,
+      from: "noreply@undefined",
+      html: expect.any(String),
+      subject: "Verify Your Email Address",
+    });
   });
 
   it("should return 401 for unauthenticated user", async () => {
@@ -57,6 +64,7 @@ describe("Resend Verification Route", () => {
     expect(response.body).toEqual({
       error: "User must be logged in",
     });
+    expect(EmailClient.prototype.sendEmail).not.toHaveBeenCalled();
   });
 
   it("should return 429 for too many requests", async () => {
