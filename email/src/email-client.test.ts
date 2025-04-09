@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { EmailClient, EmailOptions, EmailResult } from "./index.js";
+import { EmailClient, EmailOptions, EmailResult } from "../index.ts";
 import type SMTPTransport from "nodemailer/lib/smtp-transport";
 import type { Address } from "nodemailer/lib/mailer"; // Import Address type
 import * as nodemailer from "nodemailer";
