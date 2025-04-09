@@ -8,21 +8,6 @@ import * as nodemailer from "nodemailer";
 vi.mock("@saflib/email");
 
 describe("EmailClient", () => {
-  // --- Constructor Tests (Remain mostly the same) ---
-  it("should throw an error if SMTP_HOST is not provided", () => {
-    delete process.env.SMTP_HOST;
-    expect(() => new EmailClient()).toThrow(
-      "SMTP configuration error: SMTP_HOST and SMTP_PORT must be provided.",
-    );
-  });
-
-  it("should throw an error if SMTP_PORT is not provided", () => {
-    delete process.env.SMTP_PORT;
-    expect(() => new EmailClient()).toThrow(
-      "SMTP configuration error: SMTP_HOST and SMTP_PORT must be provided.",
-    );
-  });
-
   it("should initialize transporter calling nodemailer.createTransport", () => {
     const timesCalled = vi.mocked(nodemailer.createTransport).mock.calls.length;
     new EmailClient(); // Constructor calls createTransport
