@@ -15,9 +15,9 @@ package-name/
     └── internal/  # Internal code
 ```
 
-## Package.json
+## New Packages
 
-A new TypeScript package should start with a minimal `package.json`:
+1. A new TypeScript package should start with a minimal `package.json`:
 
 ```json
 {
@@ -39,6 +39,8 @@ A new TypeScript package should start with a minimal `package.json`:
   }
 }
 ```
+
+2. Run `npm install` at the root so the new package is included in the workspace. This will ensure future "npm install" commands will work.
 
 Key points for the initial setup:
 
@@ -80,9 +82,7 @@ Avoid creating one. By default, use the root `tsconfig.json`.
     npm install package-name -w @saflib/package-name
     ```
 
-2.  When creating a new package, you need to run `npm install` once at the root level to ensure the new package is recognized in the workspace before adding dependencies to it.
-
-3.  The dependency will be added to your package's `package.json` with the resolved version range (e.g., `^1.2.3`) or `*` for workspace dependencies.
+2.  The dependency will be added to your package's `package.json` with the resolved version range (e.g., `^1.2.3`) or `*` for workspace dependencies.
 
     ```json
     {
@@ -96,7 +96,7 @@ Avoid creating one. By default, use the root `tsconfig.json`.
     }
     ```
 
-4.  The root `package-lock.json` locks the **specific** version resolved during installation (e.g., `1.2.3` even if `^1.2.3` is in `package.json`), ensuring consistency across the monorepo. **Commit the `package-lock.json` file to your repository.**
+3.  The root `package-lock.json` locks the **specific** version resolved during installation (e.g., `1.2.3` even if `^1.2.3` is in `package.json`), ensuring consistency across the monorepo. **Commit the `package-lock.json` file to your repository.**
 
 ### Workspace Dependencies Notes
 
