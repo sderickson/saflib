@@ -1,22 +1,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { EmailClient, EmailOptions, EmailResult } from "../index.ts";
+import { EmailClient, EmailOptions, EmailResult } from "@saflib/email";
 import type SMTPTransport from "nodemailer/lib/smtp-transport";
 import type { Address } from "nodemailer/lib/mailer"; // Import Address type
 import * as nodemailer from "nodemailer";
+// Explicitly mock nodemailer using the imported factory
+vi.mock("@saflib/email");
 
-vi.mock("nodemailer", async (importOriginal) => {
-  const originalModule = await importOriginal<typeof import("nodemailer")>();
-  return {
-    ...originalModule,
-    createTransport: vi.fn().mockReturnValue({
-      // Define the mock function directly within the returned object
-      sendMail: vi.fn(),
-    }),
-  };
-});
-
-// Helper function to get the mock SendMail function
-// We need this because createTransport itself is a mock
 const getMockSendMail = () => {
   // Access the mocked transport returned by the mocked createTransport
   const mockTransport = nodemailer.createTransport();
@@ -26,14 +15,9 @@ const getMockSendMail = () => {
 
 describe("EmailClient", () => {
   const originalEnv = process.env;
-  let mockSendMail: ReturnType<typeof vi.fn>; // Declare variable to hold the mock fn
 
   beforeEach(() => {
-    // Reset all mocks
     vi.clearAllMocks();
-
-    // Get a fresh reference to the mocked sendMail function for this test
-    mockSendMail = getMockSendMail();
 
     // Reset environment variables
     process.env = { ...originalEnv };
@@ -73,7 +57,7 @@ describe("EmailClient", () => {
     });
   });
 
-  // --- SendEmail Tests (Use the mockSendMail variable) ---
+  // --- SendEmail Tests ---
   it("should send an email successfully", async () => {
     const client = new EmailClient();
     const emailOptions: EmailOptions = {
@@ -92,7 +76,6 @@ describe("EmailClient", () => {
 
     const mockResolvedInfo: SMTPTransport.SentMessageInfo = {
       messageId: expectedResult.messageId,
-      // Explicitly cast to match SentMessageInfo type, even though our result is string[]
       accepted: expectedResult.accepted as (string | Address)[],
       rejected: expectedResult.rejected as (string | Address)[],
       response: expectedResult.response,
@@ -102,12 +85,13 @@ describe("EmailClient", () => {
         to: [emailOptions.to as string],
       },
     };
-    // Use the mockSendMail variable obtained in beforeEach
-    mockSendMail.mockResolvedValue(mockResolvedInfo);
+    // Get the mock function via the helper and set its behavior
+    getMockSendMail().mockResolvedValue(mockResolvedInfo);
 
     const result = await client.sendEmail(emailOptions);
 
-    expect(mockSendMail).toHaveBeenCalledWith(emailOptions);
+    // Check that the mock function was called correctly
+    expect(getMockSendMail()).toHaveBeenCalledWith(emailOptions);
     // Assert against the predefined expectedResult object property by property
     expect(result.messageId).toBe(expectedResult.messageId);
     expect(result.accepted).toEqual(expectedResult.accepted); // Use toEqual for array comparison
@@ -124,13 +108,13 @@ describe("EmailClient", () => {
       text: "Test Body Error",
     };
     const testError = new Error("SMTP Error");
-    // Use the mockSendMail variable
-    mockSendMail.mockRejectedValue(testError);
+    // Get the mock function via the helper and set its behavior
+    getMockSendMail().mockRejectedValue(testError);
 
     await expect(client.sendEmail(emailOptions)).rejects.toThrow(
       `Failed to send email: ${testError}`,
     );
-    expect(mockSendMail).toHaveBeenCalledWith(emailOptions);
+    expect(getMockSendMail()).toHaveBeenCalledWith(emailOptions);
   });
 
   // Add back other constructor tests if they were removed
