@@ -21,27 +21,17 @@ export const forgotPasswordHandler = createHandler(
       );
 
       // Send password reset email
-      try {
-        const emailClient = new EmailClient();
-        const resetUrl = `${process.env.PROTOCOL}://${process.env.DOMAIN}/auth/reset-password?token=${token}`;
-        const { subject, html } = generatePasswordResetEmail(resetUrl);
+      const emailClient = new EmailClient();
+      const resetUrl = `${process.env.PROTOCOL}://${process.env.DOMAIN}/auth/reset-password?token=${token}`;
+      const { subject, html } = generatePasswordResetEmail(resetUrl);
 
-        await emailClient.sendEmail({
-          to: user.email,
-          from: `noreply@${process.env.DOMAIN}`, // Use a noreply address
-          subject,
-          html,
-        });
-        req.log.info(`Password reset email successfully sent to ${user.email}`);
-      } catch (emailError) {
-        req.log.error(
-          `Failed to send password reset email to ${user.email}: ${emailError}`,
-        );
-        // Decide if failure to send email should block the response.
-        // For now, we continue and send success, but log the error.
-        // In a production scenario, might add to a retry queue.
-      }
-
+      await emailClient.sendEmail({
+        to: user.email,
+        from: `noreply@${process.env.DOMAIN}`, // Use a noreply address
+        subject,
+        html,
+      });
+      req.log.info(`Password reset email successfully sent to ${user.email}`);
       const successResponse: AuthResponse["forgotPassword"][200] = {
         success: true,
         message: "If the email exists, a recovery email has been sent",

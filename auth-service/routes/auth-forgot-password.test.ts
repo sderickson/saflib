@@ -4,6 +4,8 @@ import express from "express";
 import { createApp } from "../app.ts";
 import { testRateLimiting } from "./test-helpers.ts";
 
+vi.mock("@saflib/email");
+
 describe("Forgot Password Route", () => {
   let app: express.Express;
 

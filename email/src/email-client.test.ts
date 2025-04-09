@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, afterEach } from "vitest";
 import { EmailClient, EmailOptions, EmailResult } from "@saflib/email";
 import type SMTPTransport from "nodemailer/lib/smtp-transport";
 import type { Address } from "nodemailer/lib/mailer"; // Import Address type
@@ -8,21 +8,6 @@ import * as nodemailer from "nodemailer";
 vi.mock("@saflib/email");
 
 describe("EmailClient", () => {
-  const originalEnv = process.env;
-
-  beforeEach(() => {
-    vi.clearAllMocks();
-
-    // Reset environment variables
-    process.env = { ...originalEnv };
-    process.env.SMTP_HOST = "mock.smtp.server";
-    process.env.SMTP_PORT = "587";
-  });
-
-  afterEach(() => {
-    process.env = originalEnv;
-  });
-
   // --- Constructor Tests (Remain mostly the same) ---
   it("should throw an error if SMTP_HOST is not provided", () => {
     delete process.env.SMTP_HOST;
