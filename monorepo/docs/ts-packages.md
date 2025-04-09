@@ -42,13 +42,13 @@ A new TypeScript package should start with a minimal `package.json`:
 
 Key points for the initial setup:
 
+- DON'T PUT DEPENDENCIES DIRECTLY INTO `package.json`! Add them via `npm install --workspace`. See Managing Dependencies section below for details.
 - No `version` field needed (we're not publishing to npm).
 - Use `exports` field to explicitly define the public API (typically just `index.ts`).
 - `type` is `module` - we're using ESM.
 - Include `@saflib/vitest` in `devDependencies` for testing configuration via the `scripts`.
 - Create the standard `vitest.config.js` file at the package root (see Testing section below for the template).
 - `private: true` assuming you aren't planning on publishing the package externally.
-- Don't add 3rd-party dependencies directly to package.json! Add them via npm install --workspace. See Managing Dependencies section below for details.
 
 ## TypeScript Configuration
 
@@ -80,7 +80,9 @@ Avoid creating one. By default, use the root `tsconfig.json`.
     npm install package-name -w @saflib/package-name
     ```
 
-2.  The dependency will be added to your package's `package.json` with the resolved version range (e.g., `^1.2.3`) or `*` for workspace dependencies.
+2.  When creating a new package, you need to run `npm install` once at the root level to ensure the new package is recognized in the workspace before adding dependencies to it.
+
+3.  The dependency will be added to your package's `package.json` with the resolved version range (e.g., `^1.2.3`) or `*` for workspace dependencies.
 
     ```json
     {
@@ -94,7 +96,7 @@ Avoid creating one. By default, use the root `tsconfig.json`.
     }
     ```
 
-3.  The root `package-lock.json` locks the **specific** version resolved during installation (e.g., `1.2.3` even if `^1.2.3` is in `package.json`), ensuring consistency across the monorepo. **Commit the `package-lock.json` file to your repository.**
+4.  The root `package-lock.json` locks the **specific** version resolved during installation (e.g., `1.2.3` even if `^1.2.3` is in `package.json`), ensuring consistency across the monorepo. **Commit the `package-lock.json` file to your repository.**
 
 ### Workspace Dependencies Notes
 
