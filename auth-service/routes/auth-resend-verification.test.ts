@@ -51,7 +51,7 @@ describe("Resend Verification Route", () => {
     });
     expect(EmailClient.prototype.sendEmail).toHaveBeenCalledWith({
       to: userData.email,
-      from: "noreply@undefined",
+      from: "noreply@your-domain.com",
       html: expect.any(String),
       subject: "Verify Your Email Address",
     });

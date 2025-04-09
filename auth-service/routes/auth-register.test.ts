@@ -48,7 +48,7 @@ describe("Register Route", () => {
     });
 
     expect(EmailClient.prototype.sendEmail).toHaveBeenCalledWith({
-      from: "noreply@undefined",
+      from: "noreply@your-domain.com",
       html: expect.any(String),
       subject: "Verify Your Email Address",
       to: userData.email,
