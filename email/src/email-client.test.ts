@@ -2,16 +2,10 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { EmailClient, EmailOptions, EmailResult } from "@saflib/email";
 import type SMTPTransport from "nodemailer/lib/smtp-transport";
 import type { Address } from "nodemailer/lib/mailer"; // Import Address type
+import { getMockSendMail } from "./mock-helpers.ts";
 import * as nodemailer from "nodemailer";
 // Explicitly mock nodemailer using the imported factory
 vi.mock("@saflib/email");
-
-const getMockSendMail = () => {
-  // Access the mocked transport returned by the mocked createTransport
-  const mockTransport = nodemailer.createTransport();
-  // Return the mocked sendMail function from the mock transport
-  return mockTransport.sendMail as ReturnType<typeof vi.fn>;
-};
 
 describe("EmailClient", () => {
   const originalEnv = process.env;
@@ -86,12 +80,12 @@ describe("EmailClient", () => {
       },
     };
     // Get the mock function via the helper and set its behavior
-    getMockSendMail().mockResolvedValue(mockResolvedInfo);
+    getMockSendMail(nodemailer).mockResolvedValue(mockResolvedInfo);
 
     const result = await client.sendEmail(emailOptions);
 
     // Check that the mock function was called correctly
-    expect(getMockSendMail()).toHaveBeenCalledWith(emailOptions);
+    expect(getMockSendMail(nodemailer)).toHaveBeenCalledWith(emailOptions);
     // Assert against the predefined expectedResult object property by property
     expect(result.messageId).toBe(expectedResult.messageId);
     expect(result.accepted).toEqual(expectedResult.accepted); // Use toEqual for array comparison
@@ -109,12 +103,12 @@ describe("EmailClient", () => {
     };
     const testError = new Error("SMTP Error");
     // Get the mock function via the helper and set its behavior
-    getMockSendMail().mockRejectedValue(testError);
+    getMockSendMail(nodemailer).mockRejectedValue(testError);
 
     await expect(client.sendEmail(emailOptions)).rejects.toThrow(
       `Failed to send email: ${testError}`,
     );
-    expect(getMockSendMail()).toHaveBeenCalledWith(emailOptions);
+    expect(getMockSendMail(nodemailer)).toHaveBeenCalledWith(emailOptions);
   });
 
   // Add back other constructor tests if they were removed
