@@ -1,4 +1,3 @@
-console.log("email mocker called");
 import { vi } from "vitest";
 
 vi.mock("nodemailer", async (importOriginal) => {
