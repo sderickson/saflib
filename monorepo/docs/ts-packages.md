@@ -48,7 +48,7 @@ Key points for the initial setup:
 - Include `@saflib/vitest` in `devDependencies` for testing configuration via the `scripts`.
 - Create the standard `vitest.config.js` file at the package root (see Testing section below for the template).
 - `private: true` assuming you aren't planning on publishing the package externally.
-- Start with empty `dependencies` (other than `@saflib/vitest`). See below for adding further dependencies.
+- Don't add 3rd-party dependencies directly to package.json! Add them via npm install --workspace. See Managing Dependencies section below for details.
 
 ## TypeScript Configuration
 
@@ -58,7 +58,7 @@ Avoid creating one. By default, use the root `tsconfig.json`.
 
 ### Adding New Dependencies (Third-Party or Workspace)
 
-1.  **Always add dependencies from the root directory** using the `--workspace` flag (or `-w` shorthand). This ensures dependencies are correctly installed in the root `node_modules`, the appropriate `package.json` is updated, and the root `package-lock.json` is updated.
+1.  **Always add dependencies from the root directory** using the `--workspace` flag (or `-w` shorthand). This ensures dependencies are correctly installed in the root `node_modules`, the appropriate `package.json` is updated to the latest version, and the root `package-lock.json` is updated.
 
     ```bash
     # Add a production dependency to a specific workspace
