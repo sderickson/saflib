@@ -1,0 +1,21 @@
+{
+  "name": "@saflib/email",
+  "description": "Centralized package for sending emails via SMTP.",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
+  },
+  "devDependencies": {
+    "@saflib/vitest": "*",
+    "@types/nodemailer": "^6.4.17"
+  },
+  "dependencies": {
+    "nodemailer": "^6.10.0"
+  }
+}

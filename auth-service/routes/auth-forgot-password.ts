@@ -2,6 +2,8 @@ import type { Request, Response } from "express";
 import { randomBytes } from "crypto";
 import { createHandler } from "@saflib/node-express";
 import { type AuthResponse } from "@saflib/auth-spec";
+import { EmailClient } from "@saflib/email";
+import { generatePasswordResetEmail } from "../email-templates/password-reset.ts";
 
 export const forgotPasswordHandler = createHandler(
   async (req: Request, res: Response) => {
@@ -17,10 +19,19 @@ export const forgotPasswordHandler = createHandler(
         token,
         expiresAt,
       );
-      req.log.info(
-        `Password reset link: ${process.env.PROTOCOL}://${process.env.DOMAIN}/auth/reset-password?token=${token}`,
-      );
 
+      // Send password reset email
+      const emailClient = new EmailClient();
+      const resetUrl = `${process.env.PROTOCOL}://${process.env.DOMAIN}/auth/reset-password?token=${token}`;
+      const { subject, html } = generatePasswordResetEmail(resetUrl);
+
+      await emailClient.sendEmail({
+        to: user.email,
+        from: process.env.SMTP_FROM,
+        subject,
+        html,
+      });
+      req.log.info(`Password reset email successfully sent to ${user.email}`);
       const successResponse: AuthResponse["forgotPassword"][200] = {
         success: true,
         message: "If the email exists, a recovery email has been sent",

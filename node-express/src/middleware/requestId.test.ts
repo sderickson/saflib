@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { Request, Response, NextFunction } from "express";
-import { requestId } from "./requestId.js";
+import { requestId } from "./requestId.ts";
 
 describe("requestId middleware", () => {
   it("should add a request ID to the request object from header", () => {

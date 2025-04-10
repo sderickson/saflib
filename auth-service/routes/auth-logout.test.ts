@@ -2,7 +2,12 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import request from "supertest";
 import express from "express";
 import { createApp } from "../app.ts";
+import passport from "passport";
 import { getCsrfToken } from "./test-helpers.ts";
+
+// Mock the email package
+vi.mock("@saflib/email");
+
 describe("Logout Route", () => {
   let app: express.Express;
 

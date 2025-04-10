@@ -4,18 +4,23 @@ import express from "express";
 import { createApp } from "../app.ts";
 import passport from "passport";
 import { getCsrfToken, testRateLimiting } from "./test-helpers.ts";
+import { EmailClient } from "@saflib/email";
+
+// Mock the email package
+vi.mock("@saflib/email");
 
 describe("Register Route", () => {
   let app: express.Express;
 
   beforeEach(() => {
+    vi.clearAllMocks();
     (passport as any)._serializers = [];
     (passport as any)._deserializers = [];
     app = createApp();
-    vi.clearAllMocks();
+    vi.spyOn(EmailClient.prototype, "sendEmail");
   });
 
-  it("should register a new user successfully and log them in", async () => {
+  it("should register a new user successfully and log them in and send a verification email", async () => {
     const userData = {
       email: "test@example.com",
       password: "password123",
@@ -41,6 +46,13 @@ describe("Register Route", () => {
       email: userData.email,
       scopes: ["none"],
     });
+
+    expect(EmailClient.prototype.sendEmail).toHaveBeenCalledWith({
+      from: "noreply@your-domain.com",
+      html: expect.any(String),
+      subject: "Verify Your Email Address",
+      to: userData.email,
+    });
   });
 
   it("should return 409 for duplicate email", async () => {
@@ -57,6 +69,7 @@ describe("Register Route", () => {
     expect(response.body).toEqual({
       error: "Email already exists",
     });
+    expect(EmailClient.prototype.sendEmail).toHaveBeenCalledTimes(1);
   });
 
   it("should return 429 for too many requests", async () => {
