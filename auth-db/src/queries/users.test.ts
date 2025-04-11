@@ -109,6 +109,144 @@ describe("users queries", () => {
     });
   });
 
+  describe("getAllAdminView", () => {
+    it("should return specific columns sorted by createdAt descending", async () => {
+      vi.useFakeTimers();
+      const date1 = new Date();
+      date1.setMilliseconds(0);
+      vi.setSystemTime(date1);
+      const user1 = await db.users.create({
+        email: "user1@test.com",
+        createdAt: date1,
+      });
+
+      const date2 = new Date(date1.getTime() + 1000); // 1 second later
+      date2.setMilliseconds(0);
+      vi.setSystemTime(date2);
+      const user2 = await db.users.create({
+        email: "user2@test.com",
+        createdAt: date2,
+      });
+
+      const result = await db.users.getAllAdminView();
+
+      expect(result).toHaveLength(2);
+      expect(result[0]).toEqual({
+        id: user2.id,
+        email: user2.email,
+        createdAt: date2,
+        lastLoginAt: null,
+      });
+      expect(result[1]).toEqual({
+        id: user1.id,
+        email: user1.email,
+        createdAt: date1,
+        lastLoginAt: null,
+      });
+      // Check that only allowed columns are present
+      expect(Object.keys(result[0])).toEqual([
+        "id",
+        "email",
+        "createdAt",
+        "lastLoginAt",
+      ]);
+      vi.useRealTimers();
+    });
+
+    it("should return an empty array when no users exist", async () => {
+      const result = await db.users.getAllAdminView();
+      expect(result).toEqual([]);
+    });
+  });
+
+  describe("getUsersWithEmailAuth", () => {
+    it("should return users with their email auth info", async () => {
+      const now = new Date();
+      now.setMilliseconds(0);
+      const user1 = await db.users.create({
+        email: "user1@test.com",
+        createdAt: now,
+      });
+      const user2 = await db.users.create({
+        email: "user2@test.com",
+        createdAt: now,
+      });
+      const user3 = await db.users.create({
+        email: "user3@test.com",
+        createdAt: now,
+      }); // User without email auth
+
+      const hash1 = Buffer.from("hash1");
+      const auth1 = await db.emailAuth.create({
+        userId: user1.id,
+        email: user1.email,
+        passwordHash: hash1,
+      });
+      const hash2 = Buffer.from("hash2");
+      const auth2 = await db.emailAuth.create({
+        userId: user2.id,
+        email: user2.email,
+        passwordHash: hash2,
+      });
+
+      const result = await db.users.getUsersWithEmailAuth([user1.id, user2.id]);
+
+      expect(result).toHaveLength(2);
+
+      // Check user1 result
+      expect(result[0].users).toEqual(user1);
+      expect(result[0].email_auth).toMatchObject({
+        userId: auth1.userId,
+        email: auth1.email,
+      });
+      expect(result[0].email_auth?.passwordHash).toEqual(hash1);
+
+      // Check user2 result
+      expect(result[1].users).toEqual(user2);
+      expect(result[1].email_auth).toMatchObject({
+        userId: auth2.userId,
+        email: auth2.email,
+      });
+      expect(result[1].email_auth?.passwordHash).toEqual(hash2);
+    });
+
+    it("should return user data even if email auth is missing (left join)", async () => {
+      const now = new Date();
+      now.setMilliseconds(0);
+      const user1 = await db.users.create({
+        email: "user1@test.com",
+        createdAt: now,
+      });
+
+      const result = await db.users.getUsersWithEmailAuth([user1.id]);
+
+      expect(result).toHaveLength(1);
+      expect(result[0].users).toEqual(user1);
+      expect(result[0].email_auth).toBeNull();
+    });
+
+    it("should return empty array if input id list is empty", async () => {
+      const result = await db.users.getUsersWithEmailAuth([]);
+      expect(result).toEqual([]);
+    });
+
+    it("should only return users requested in the id list", async () => {
+      const now = new Date();
+      now.setMilliseconds(0);
+      const user1 = await db.users.create({
+        email: "user1@test.com",
+        createdAt: now,
+      });
+      await db.users.create({ email: "user2@test.com", createdAt: now }); // Not requested
+
+      const result = await db.users.getUsersWithEmailAuth([user1.id]);
+
+      expect(result).toHaveLength(1);
+      expect(result[0].users.id).toEqual(user1.id);
+      expect(result[0].email_auth).toBeNull(); // No email auth created for this test
+    });
+  });
+
   describe("updateLastLogin", () => {
     it("should update last login timestamp", async () => {
       vi.useFakeTimers();

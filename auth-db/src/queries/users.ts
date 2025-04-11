@@ -1,7 +1,7 @@
-import { users } from "../schema.ts";
+import { users, emailAuth } from "../schema.ts";
 import { AuthDatabaseError } from "../errors.ts";
 import { queryWrapper } from "@saflib/drizzle-sqlite3";
-import { eq } from "drizzle-orm";
+import { eq, desc, inArray } from "drizzle-orm";
 import { BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
 import * as schema from "../schema.ts";
 
@@ -49,6 +49,23 @@ export function createUserQueries(db: BetterSQLite3Database<typeof schema>) {
       return db.query.users.findMany().execute();
     }),
 
+    getAllAdminView: queryWrapper(
+      async (): Promise<
+        Pick<SelectUser, "id" | "email" | "createdAt" | "lastLoginAt">[]
+      > => {
+        return db
+          .select({
+            id: users.id,
+            email: users.email,
+            createdAt: users.createdAt,
+            lastLoginAt: users.lastLoginAt,
+          })
+          .from(users)
+          .orderBy(desc(users.createdAt))
+          .execute();
+      },
+    ),
+
     getByEmail: queryWrapper(async (email: string): Promise<SelectUser> => {
       const result = await db.query.users.findFirst({
         where: eq(users.email, email),
@@ -66,6 +83,20 @@ export function createUserQueries(db: BetterSQLite3Database<typeof schema>) {
       if (!result) {
         throw new UserNotFoundError();
       }
+      return result;
+    }),
+
+    getUsersWithEmailAuth: queryWrapper(async (ids: number[]) => {
+      if (ids.length === 0) {
+        return [];
+      }
+      const result = await db
+        .select()
+        .from(users)
+        .leftJoin(emailAuth, eq(users.id, emailAuth.userId))
+        .where(inArray(users.id, ids))
+        .execute();
+
       return result;
     }),
 
