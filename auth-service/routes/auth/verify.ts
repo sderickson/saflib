@@ -43,7 +43,9 @@ export const verifyHandler = createHandler(
       const emailAuth = await req.db.emailAuth.getByEmail(user.email);
       if (emailAuth.verifiedAt) {
         // TODO: properly give scopes based on admin role.
+        // and what scopes exist.
         scopes.push("users:read");
+        scopes.push("todos:nuke");
       }
     }
 
