@@ -25,6 +25,7 @@ export const auth: Handler = (req, _res, next): void => {
   const userScopes = req.headers["x-user-scopes"];
 
   if (!userId || !userEmail) {
+    console.log("unauthorized", userId, userEmail);
     return next(createError(401, "Unauthorized"));
   }
 

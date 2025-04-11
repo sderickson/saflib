@@ -21,9 +21,9 @@ paths:
     $ref: "./routes/auth.yaml#/verify-email"
   /auth/resend-verification:
     $ref: "./routes/auth.yaml#/resend-verification"
-  /auth/users:
+  /users:
     get:
-      $ref: "./routes/users.yaml#/get"
+      $ref: "./routes/users.yaml#/list"
 
 components:
   securitySchemes:

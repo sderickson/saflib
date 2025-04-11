@@ -8,8 +8,8 @@
 import { AuthDB } from "@saflib/auth-db";
 import { recommendedErrorHandlers } from "@saflib/node-express";
 import express from "express";
-import { makeRouter } from "./routes/auth/index.ts";
-
+import { makeAuthRouter } from "./routes/auth/index.ts";
+import { makeUsersRouter } from "./routes/users/index.ts";
 // Define properties added to Express Request objects by middleware
 declare global {
   namespace Express {
@@ -42,7 +42,8 @@ export function createApp() {
    * Routes
    * Authentication related endpoints
    */
-  app.use(makeRouter(db));
+  app.use("/auth", makeAuthRouter(db));
+  app.use("/users", makeUsersRouter());
 
   // Apply recommended error handlers
   app.use(recommendedErrorHandlers);

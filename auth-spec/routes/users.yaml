@@ -1,4 +1,4 @@
-get:
+list:
   summary: List all users
   operationId: listUsers
   tags:

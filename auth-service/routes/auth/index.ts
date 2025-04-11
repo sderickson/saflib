@@ -17,7 +17,7 @@ import { jsonSpec } from "@saflib/auth-spec";
 import * as cookieParser from "cookie-parser";
 import { csrfDSC } from "@saflib/auth-service/middleware/csrf.ts";
 
-export const makeRouter = (db: AuthDB) => {
+export const makeAuthRouter = (db: AuthDB) => {
   const router = express.Router();
 
   // Apply recommended middleware
@@ -45,18 +45,18 @@ export const makeRouter = (db: AuthDB) => {
   router.use(passport.initialize());
   router.use(passport.session());
 
-  router.get("/auth/verify", verifyHandler);
-  router.post("/auth/logout", logoutHandler);
+  router.get("/verify", verifyHandler);
+  router.post("/logout", logoutHandler);
 
-  // rate limit after /auth/verify, because verify runs before every single API call...
+  // rate limit after /verify, because verify runs before every single API call...
   if (process.env.DISABLE_RATE_LIMITING !== "true") {
     router.use(rateLimit());
   }
-  router.post("/auth/login", loginHandler);
-  router.post("/auth/register", registerHandler);
-  router.post("/auth/forgot-password", forgotPasswordHandler);
-  router.post("/auth/reset-password", resetPasswordHandler);
-  router.post("/auth/resend-verification", resendVerificationHandler);
-  router.post("/auth/verify-email", verifyEmailHandler);
+  router.post("/login", loginHandler);
+  router.post("/register", registerHandler);
+  router.post("/forgot-password", forgotPasswordHandler);
+  router.post("/reset-password", resetPasswordHandler);
+  router.post("/resend-verification", resendVerificationHandler);
+  router.post("/verify-email", verifyEmailHandler);
   return router;
 };

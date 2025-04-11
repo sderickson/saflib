@@ -328,9 +328,68 @@
           }
         }
       }
+    },
+    "/users": {
+      "get": {
+        "summary": "List all users",
+        "operationId": "listUsers",
+        "tags": [
+          "auth"
+        ],
+        "security": [
+          {
+            "scopes": [
+              "users:read"
+            ]
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of user objects",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ListUsersResponse"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - missing or invalid auth headers, or not logged in.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - user does not have admin privileges.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
+    "securitySchemes": {
+      "scopes": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-User-Scopes",
+        "description": "Comma-separated list of user scopes"
+      }
+    },
     "schemas": {
       "RegisterRequest": {
         "type": "object",
@@ -491,6 +550,50 @@
           "message": {
             "type": "string",
             "description": "A generic message indicating that the verification email was sent"
+          }
+        }
+      },
+      "ListUsersResponse": {
+        "type": "object",
+        "required": [
+          "id",
+          "email",
+          "createdAt"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Unique identifier for the user"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "User's email address"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp when the user was created (ISO 8601 format)"
+          },
+          "lastLoginAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "Timestamp of the user's last login (ISO 8601 format), or null if never logged in"
+          },
+          "verifiedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "Timestamp when the user's email was verified (ISO 8601 format), or null if not verified"
+          },
+          "permissions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of permission strings assigned to the user"
           }
         }
       }
