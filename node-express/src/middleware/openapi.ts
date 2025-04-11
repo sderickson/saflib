@@ -50,6 +50,6 @@ export const createOpenApiValidator = (
       validateResponses,
     }),
     // Scope validation
-    createScopeValidator(spec),
+    createScopeValidator(),
   ];
 };
