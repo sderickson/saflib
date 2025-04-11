@@ -1,5 +1,5 @@
-import { Request, Response } from "express";
-import { AuthResponse } from "@saflib/auth-spec";
+import type { Request, Response } from "express";
+import type { AuthResponse } from "@saflib/auth-spec";
 import { createHandler } from "@saflib/node-express";
 
 // Define types using Drizzle's inferSelect
