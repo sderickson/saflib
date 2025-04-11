@@ -3,7 +3,7 @@ import request from "supertest";
 import express from "express";
 import { createApp } from "../../app.ts";
 import passport from "passport";
-import { testRateLimiting } from "./test-helpers.ts";
+import { testRateLimiting } from "./_test-helpers.ts";
 
 // Mock the email package
 vi.mock("@saflib/email");

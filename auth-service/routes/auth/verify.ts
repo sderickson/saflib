@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import { createHandler } from "@saflib/node-express";
-import { getUserScopes } from "./helpers.ts";
+import { getUserScopes } from "./_helpers.ts";
 import { type AuthResponse } from "@saflib/auth-spec";
 
 export const verifyHandler = createHandler(
