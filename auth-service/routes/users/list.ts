@@ -1,7 +1,6 @@
 import type { Request, Response } from "express";
 import type { AuthResponse } from "@saflib/auth-spec";
 import { createHandler } from "@saflib/node-express";
-
 // Define types using Drizzle's inferSelect
 export const listUsersHandler = createHandler(
   async (req: Request, res: Response) => {
@@ -28,6 +27,10 @@ export const listUsersHandler = createHandler(
         lastLoginAt: user.lastLoginAt?.toISOString() ?? null, // Convert to ISO string if not null
         email:
           emailMap.get(user.id) ?? `Error: Email not found for user ${user.id}`,
+        verifiedAt:
+          emailAuths
+            .find((auth) => auth.userId === user.id)
+            ?.verifiedAt?.toISOString() ?? null,
       }))
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt)); // Sort by ISO string
 

@@ -36,13 +36,15 @@ export const verifyHandler = createHandler(
 
     // Add headers for downstream services
     const user = req.user as Express.User;
+    const scopes: string[] = [];
     res.setHeader("X-User-ID", user.id.toString());
     res.setHeader("X-User-Email", user.email);
-
-    const scopes = await getUserScopes(req.db, user.id);
-
     if (req.app.get("saf:admin emails").has(user.email)) {
-      scopes.push("admin");
+      const emailAuth = await req.db.emailAuth.getByEmail(user.email);
+      if (emailAuth.verifiedAt) {
+        // TODO: properly give scopes based on admin role.
+        scopes.push("users:read");
+      }
     }
 
     if (scopes.length === 0) {
