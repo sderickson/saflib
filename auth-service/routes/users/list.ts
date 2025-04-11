@@ -5,15 +5,6 @@ import { createHandler } from "@saflib/node-express";
 // Define types using Drizzle's inferSelect
 export const listUsersHandler = createHandler(
   async (req: Request, res: Response) => {
-    // Check if the user has the 'admin' scope
-    // Assumes createPreMiddleware populates req.auth from X-User-* headers
-    if (!req.auth?.scopes?.includes("admin")) {
-      res.status(403).json({
-        error: "Forbidden: Requires admin scope",
-      } satisfies AuthResponse["listUsers"][403]);
-      return;
-    }
-
     // Fetch all users
     const users = await req.db.users.getAll();
 

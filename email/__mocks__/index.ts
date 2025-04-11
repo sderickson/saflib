@@ -23,17 +23,19 @@ vi.mock("nodemailer", async (importOriginal) => {
   let id = 0;
   return {
     ...originalModule,
-    createTransport: vi.fn().mockReturnValue({
-      sendMail: vi.fn().mockImplementation((options: EmailOptions) => {
-        // always return a success response
-        return {
-          messageId: `test-message-${id++}`,
-          accepted: [options.to],
-          rejected: [],
-          response: "250 OK",
-        };
-      }),
-    }),
+    createTransport: () => {
+      return {
+        sendMail: vi.fn().mockImplementation((options: EmailOptions) => {
+          // always return a success response
+          return {
+            messageId: `test-message-${id++}`,
+            accepted: [options.to],
+            rejected: [],
+            response: "250 OK",
+          };
+        }),
+      };
+    },
   };
 });
 

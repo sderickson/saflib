@@ -1,3 +1,4 @@
+import { AuthResponse } from "@saflib/auth-spec";
 import type { Handler } from "express";
 import createError from "http-errors";
 
@@ -25,8 +26,10 @@ export const auth: Handler = (req, _res, next): void => {
   const userScopes = req.headers["x-user-scopes"];
 
   if (!userId || !userEmail) {
-    console.log("unauthorized", userId, userEmail);
-    return next(createError(401, "Unauthorized"));
+    _res.status(401).json({
+      error: "Unauthorized",
+    });
+    return;
   }
 
   // Parse scopes from header, defaulting to empty array if not present
