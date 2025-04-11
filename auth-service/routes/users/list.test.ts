@@ -34,7 +34,6 @@ describe("Login Route", () => {
         ...mockHeaders,
         "x-user-scopes": "none",
       });
-    console.log("response", response.body);
     expect(response.status).toBe(403);
     expect(response.body).toEqual({
       error: "Insufficient permissions. Missing scopes: users:read",
