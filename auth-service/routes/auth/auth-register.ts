@@ -4,7 +4,7 @@ import { createUserResponse } from "./helpers.ts";
 import type { AuthResponse, AuthRequest } from "@saflib/auth-spec";
 import { randomBytes } from "crypto";
 import { EmailClient } from "@saflib/email";
-import { generateVerificationEmail } from "../email-templates/verify-email.ts";
+import { generateVerificationEmail } from "../../email-templates/verify-email.ts";
 
 export const registerHandler = createHandler(async (req, res) => {
   try {

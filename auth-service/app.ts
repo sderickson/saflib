@@ -6,18 +6,9 @@
  */
 
 import { AuthDB } from "@saflib/auth-db";
-import {
-  createPreMiddleware,
-  recommendedErrorHandlers,
-} from "@saflib/node-express";
+import { recommendedErrorHandlers } from "@saflib/node-express";
 import express from "express";
-import passport from "passport";
-import { setupPassport } from "./passport.ts";
-import { makeRouter } from "./routes/index.ts";
-import { makeSessionMiddleware } from "./session-store.ts";
-import { jsonSpec } from "@saflib/auth-spec";
-import * as cookieParser from "cookie-parser";
-import { csrfDSC } from "./csrf.ts";
+import { makeRouter } from "./routes/auth/index.ts";
 
 // Define properties added to Express Request objects by middleware
 declare global {
@@ -41,31 +32,6 @@ export function createApp() {
   // Initialize database
   const db = new AuthDB();
 
-  // Apply recommended middleware
-  app.use(
-    createPreMiddleware({
-      apiSpec: jsonSpec,
-      parseAuthHeaders: false,
-    }),
-  );
-
-  app.use(cookieParser.default());
-
-  const csrfProtection = csrfDSC({
-    cookie: {
-      domain:
-        process.env.NODE_ENV === "test" ? undefined : `.${process.env.DOMAIN}`,
-      secure: process.env.PROTOCOL === "https",
-    },
-  });
-  app.use(csrfProtection);
-  app.use(makeSessionMiddleware());
-
-  // Initialize Passport and restore authentication state from session
-  setupPassport(db);
-  app.use(passport.initialize());
-  app.use(passport.session());
-
   // db injection
   app.use((req, _, next) => {
     req.db = db;
@@ -76,7 +42,7 @@ export function createApp() {
    * Routes
    * Authentication related endpoints
    */
-  app.use(makeRouter());
+  app.use(makeRouter(db));
 
   // Apply recommended error handlers
   app.use(recommendedErrorHandlers);

@@ -7,11 +7,44 @@ import { verifyHandler } from "./auth-verify.ts";
 import { forgotPasswordHandler } from "./auth-forgot-password.ts";
 import { resetPasswordHandler } from "./auth-reset-password.ts";
 import { verifyEmailHandler } from "./auth-verify-email.ts";
-
+import { AuthDB } from "@saflib/auth-db";
 import { rateLimit } from "express-rate-limit";
+import { createPreMiddleware } from "@saflib/node-express";
+import passport from "passport";
+import { setupPassport } from "@saflib/auth-service/middleware/passport.ts";
+import { makeSessionMiddleware } from "@saflib/auth-service/middleware/session-store.ts";
+import { jsonSpec } from "@saflib/auth-spec";
+import * as cookieParser from "cookie-parser";
+import { csrfDSC } from "@saflib/auth-service/middleware/csrf.ts";
 
-export const makeRouter = () => {
+export const makeRouter = (db: AuthDB) => {
   const router = express.Router();
+
+  // Apply recommended middleware
+  router.use(
+    createPreMiddleware({
+      apiSpec: jsonSpec,
+      parseAuthHeaders: false,
+    }),
+  );
+
+  router.use(cookieParser.default());
+
+  const csrfProtection = csrfDSC({
+    cookie: {
+      domain:
+        process.env.NODE_ENV === "test" ? undefined : `.${process.env.DOMAIN}`,
+      secure: process.env.PROTOCOL === "https",
+    },
+  });
+  router.use(csrfProtection);
+  router.use(makeSessionMiddleware());
+
+  // Initialize Passport and restore authentication state from session
+  setupPassport(db);
+  router.use(passport.initialize());
+  router.use(passport.session());
+
   router.get("/auth/verify", verifyHandler);
   router.post("/auth/logout", logoutHandler);
 

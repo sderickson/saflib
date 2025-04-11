@@ -2,7 +2,7 @@ import { createHandler } from "@saflib/node-express";
 import { randomBytes } from "crypto";
 import { type AuthResponse } from "@saflib/auth-spec";
 import { EmailClient } from "@saflib/email";
-import { generateVerificationEmail } from "../email-templates/verify-email.ts";
+import { generateVerificationEmail } from "../../email-templates/verify-email.ts";
 
 export const resendVerificationHandler = createHandler(async (req, res) => {
   if (!req.user) {
