@@ -4,7 +4,7 @@ import { type VueWrapper } from "@vue/test-utils";
 import { http, HttpResponse } from "msw";
 import { setupMockServer } from "@saflib/vue-spa-dev/components";
 import LoginPage from "./LoginPage.vue";
-import { router } from "../router";
+import { router } from "../auth-router.ts";
 
 interface LoginRequest {
   email: string;

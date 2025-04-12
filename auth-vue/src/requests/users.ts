@@ -12,7 +12,6 @@ const fetchUsers = async (): Promise<AuthResponse["listUsers"][200]> => {
 
   if (response.error) {
     // Handle potential errors based on the structure of createSafClient response
-    console.error("Failed to fetch users:", response.error);
     throw new Error(`Failed to fetch users`); // Or handle specific error types
   }
 

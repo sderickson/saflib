@@ -6,4 +6,5 @@ export { default as ForgotPasswordPage } from "./components/ForgotPasswordPage.v
 export { default as LogoutPage } from "./components/LogoutPage.vue";
 export { default as ChangeForgottenPasswordPage } from "./components/ChangeForgottenPasswordPage.vue";
 export { default as VerifyEmailPage } from "./components/VerifyEmailPage.vue";
-export { router as defaultRouter } from "./router";
+export { default as UserAdmin } from "./components/UserAdmin.vue";
+export { router as defaultRouter } from "./auth-router.ts";
