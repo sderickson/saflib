@@ -9,7 +9,7 @@ const __dirname = path.dirname(__filename);
 import { existsSync, readFileSync, writeFileSync } from "fs";
 import { randomBytes } from "crypto";
 
-const secretFile = path.join(__dirname, `data/session-secret.txt`);
+const secretFile = path.join(__dirname, `../data/session-secret.txt`);
 
 // used both for how often to rotate secrets, and how long until a cookie expires
 const sessionRotationInterval = 14 * 24 * 60 * 60 * 1000; // 14 days
@@ -83,7 +83,9 @@ export const makeSessionMiddleware = () => {
 
   const sessionDbName = `sessions-${process.env.NODE_ENV}.sqlite`;
 
-  const sessionDb = new sqlite(path.join(__dirname, `data/${sessionDbName}`));
+  const sessionDb = new sqlite(
+    path.join(__dirname, `../data/${sessionDbName}`),
+  );
   const sessionStore = new SqliteStore({
     client: sessionDb,
     expired: {

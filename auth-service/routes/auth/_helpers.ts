@@ -1,5 +1,5 @@
 import { AuthDB } from "@saflib/auth-db";
-import { type User } from "../types.ts";
+import { type User } from "../../types.ts";
 import { type components } from "@saflib/auth-spec";
 
 // Helper function to get user scopes

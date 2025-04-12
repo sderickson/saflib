@@ -64,8 +64,10 @@ export class EmailClient {
       auth: user && pass ? { user, pass } : undefined,
       name,
     };
-
     this.transporter = nodemailer.createTransport(transportOptions);
+    if (!this.transporter) {
+      throw new Error("Failed to create transporter");
+    }
   }
 
   async sendEmail(options: EmailOptions): Promise<EmailResult> {

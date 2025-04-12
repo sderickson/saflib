@@ -1,8 +1,19 @@
 import * as OpenApiValidator from "express-openapi-validator";
-import type { OpenApiRequestHandler } from "express-openapi-validator/dist/framework/types.ts";
+import type {
+  OpenApiRequestHandler,
+  OpenApiRequestMetadata,
+} from "express-openapi-validator/dist/framework/types.ts";
 import type { OpenAPIV3 } from "express-openapi-validator/dist/framework/types.ts";
 import type { Request } from "express";
 import { createScopeValidator } from "./scopes.ts";
+
+declare global {
+  namespace Express {
+    interface Request {
+      openapi?: OpenApiRequestMetadata;
+    }
+  }
+}
 
 const validateResponses = {
   onError: (err: Error, _json: any, req: Request) => {
@@ -39,6 +50,6 @@ export const createOpenApiValidator = (
       validateResponses,
     }),
     // Scope validation
-    createScopeValidator(spec),
+    createScopeValidator(),
   ];
 };

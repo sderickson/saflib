@@ -39,7 +39,7 @@ import { router } from "../router"; // Import your app's router
 
 // Set up MSW server if component makes network requests
 const handlers = [
-  http.post("/api/endpoint", async () => {
+  http.post("http://api.localhost:3000/endpoint", async () => {
     return HttpResponse.json({
       success: true,
       data: {
@@ -117,7 +117,7 @@ import { http, HttpResponse } from "msw";
 import { setupMockServer } from "@saflib/vue-spa-dev/components";
 
 const handlers = [
-  http.post("/api/endpoint", async () => {
+  http.post("http://api.localhost:3000/endpoint", async () => {
     return HttpResponse.json({
       success: true,
       data: {
@@ -356,10 +356,13 @@ it("should disable submit button when form is invalid", async () => {
 
 1. Set up default handlers for successful responses using types from your OpenAPI spec:
 
+   **Important:** When using API clients created via `createSafClient` (like those in `@saflib/auth-vue` or `@saflib/app-vue`), MSW handlers **must** use the full URL, including the host and the API prefix (e.g., `http://api.localhost:3000/auth/login`). Relative paths will not work because the client uses the full base URL.
+
    ```typescript
-   import type { LoginRequest, UserResponse } from "./types";
+   import type { LoginRequest, UserResponse } from "@saflib/auth-spec"; // Example: Import types
 
    export const handlers = [
+     // Use the full URL matching the client's request
      http.post("http://api.localhost:3000/auth/login", async ({ request }) => {
        const body = (await request.json()) as LoginRequest;
        return HttpResponse.json({
@@ -382,6 +385,7 @@ it("should disable submit button when form is invalid", async () => {
    it("should handle error response", async () => {
      // Use server.use() to add or override handlers for this test
      server.use(
+       // Ensure the URL matches the actual request URL
        http.post("http://api.localhost:3000/auth/login", () => {
          return new HttpResponse(JSON.stringify({ error: "API Error" }), {
            status: 500,

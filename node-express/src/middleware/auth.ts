@@ -1,5 +1,4 @@
 import type { Handler } from "express";
-import createError from "http-errors";
 
 // Extend Express Request type to include user property
 declare global {
@@ -19,13 +18,16 @@ declare global {
  * Expects x-user-id, x-user-email, and x-user-scopes headers to be set by authentication layer.
  * Throws 401 if required headers are missing.
  */
-export const auth: Handler = (req, _res, next): void => {
+export const auth: Handler = (req, res, next): void => {
   const userId = req.headers["x-user-id"];
   const userEmail = req.headers["x-user-email"];
   const userScopes = req.headers["x-user-scopes"];
 
   if (!userId || !userEmail) {
-    return next(createError(401, "Unauthorized"));
+    res.status(401).json({
+      error: "Unauthorized",
+    });
+    return;
   }
 
   // Parse scopes from header, defaulting to empty array if not present

@@ -21,7 +21,16 @@ paths:
     $ref: "./routes/auth.yaml#/verify-email"
   /auth/resend-verification:
     $ref: "./routes/auth.yaml#/resend-verification"
+  /users:
+    get:
+      $ref: "./routes/users.yaml#/list"
 
 components:
+  securitySchemes:
+    scopes:
+      type: apiKey
+      in: header
+      name: X-User-Scopes
+      description: Comma-separated list of user scopes
   schemas:
     $ref: "./routes/auth.yaml#/components/schemas"

@@ -1,3 +1,7 @@
+/**
+ * Not currently used. Need to figure out how to generate scopes from api specs.
+ */
+
 import { readFileSync } from "fs";
 import { join } from "path";
 import yaml from "yaml";
