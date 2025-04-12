@@ -1,5 +1,5 @@
 import { createHandler } from "@saflib/node-express";
-import { createUserResponse } from "./helpers.ts";
+import { createUserResponse } from "./_helpers.ts";
 import { type AuthResponse } from "@saflib/auth-spec";
 
 export const verifyEmailHandler = createHandler(async (req, res) => {

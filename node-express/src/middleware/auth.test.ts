@@ -17,7 +17,10 @@ describe("Auth Middleware", () => {
     };
 
     // Setup mock response
-    mockRes = {};
+    mockRes = {
+      status: vi.fn().mockReturnThis(),
+      json: vi.fn().mockReturnThis(),
+    };
 
     // Setup next function mock
     nextFunction = vi.fn();
@@ -80,13 +83,10 @@ describe("Auth Middleware", () => {
     };
 
     auth(mockReq as Request, mockRes as Response, nextFunction);
-
-    expect(nextFunction).toHaveBeenCalledWith(
-      expect.objectContaining({
-        status: 401,
-        message: "Unauthorized",
-      }),
-    );
+    expect(mockRes.status).toHaveBeenCalledWith(401);
+    expect(mockRes.json).toHaveBeenCalledWith({
+      error: "Unauthorized",
+    });
   });
 
   it("should return 401 when user email is missing", () => {
@@ -97,12 +97,10 @@ describe("Auth Middleware", () => {
 
     auth(mockReq as Request, mockRes as Response, nextFunction);
 
-    expect(nextFunction).toHaveBeenCalledWith(
-      expect.objectContaining({
-        status: 401,
-        message: "Unauthorized",
-      }),
-    );
+    expect(mockRes.status).toHaveBeenCalledWith(401);
+    expect(mockRes.json).toHaveBeenCalledWith({
+      error: "Unauthorized",
+    });
   });
 
   it("should return 401 when both user ID and email are missing", () => {
@@ -112,11 +110,9 @@ describe("Auth Middleware", () => {
 
     auth(mockReq as Request, mockRes as Response, nextFunction);
 
-    expect(nextFunction).toHaveBeenCalledWith(
-      expect.objectContaining({
-        status: 401,
-        message: "Unauthorized",
-      }),
-    );
+    expect(mockRes.status).toHaveBeenCalledWith(401);
+    expect(mockRes.json).toHaveBeenCalledWith({
+      error: "Unauthorized",
+    });
   });
 });

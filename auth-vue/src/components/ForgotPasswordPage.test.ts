@@ -6,7 +6,7 @@ import {
 } from "@saflib/vue-spa-dev/components";
 import type { VueWrapper } from "@vue/test-utils";
 import ForgotPasswordPage from "./ForgotPasswordPage.vue";
-import { router } from "../router";
+import { router } from "../auth-router.ts";
 import { VAlert, VBtn } from "vuetify/components";
 import { http, HttpResponse } from "msw";
 import type { ForgotPasswordResponse } from "../requests/types.ts";

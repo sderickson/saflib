@@ -1,7 +1,7 @@
-import { createApp } from "./app.ts";
+import { createApp } from "@saflib/auth-service/app.ts";
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
 import { readFileSync, existsSync, writeFileSync } from "fs";
-import { clearStorage } from "./session-store.ts";
+import { clearStorage } from "@saflib/auth-service/middleware/session-store.ts";
 
 vi.mock("fs", async (importOriginal) => {
   const actual = await importOriginal<typeof import("fs")>();

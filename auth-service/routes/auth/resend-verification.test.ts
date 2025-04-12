@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import request from "supertest";
 import express from "express";
-import { createApp } from "../app.ts";
+import { createApp } from "../../app.ts";
 import passport from "passport";
-import { testRateLimiting } from "./test-helpers.ts";
+import { testRateLimiting } from "./_test-helpers.ts";
 import { EmailClient } from "@saflib/email";
 // Mock the email package
 vi.mock("@saflib/email");

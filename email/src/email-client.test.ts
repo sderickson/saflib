@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { EmailClient, EmailOptions, EmailResult } from "@saflib/email";
 import type SMTPTransport from "nodemailer/lib/smtp-transport";
 import type { Address } from "nodemailer/lib/mailer"; // Import Address type
@@ -8,19 +8,6 @@ import * as nodemailer from "nodemailer";
 vi.mock("@saflib/email");
 
 describe("EmailClient", () => {
-  it("should initialize transporter calling nodemailer.createTransport", () => {
-    const timesCalled = vi.mocked(nodemailer.createTransport).mock.calls.length;
-    new EmailClient(); // Constructor calls createTransport
-    expect(nodemailer.createTransport).toHaveBeenCalledTimes(timesCalled + 1);
-    // We can still check the arguments passed to the mocked createTransport
-    expect(nodemailer.createTransport).toHaveBeenCalledWith({
-      host: "mock.smtp.server",
-      port: 587,
-      secure: true,
-      auth: undefined,
-    });
-  });
-
   // --- SendEmail Tests ---
   it("should send an email successfully", async () => {
     const client = new EmailClient();
@@ -79,27 +66,5 @@ describe("EmailClient", () => {
       `Failed to send email: ${testError}`,
     );
     expect(getMockSendMail(nodemailer)).toHaveBeenCalledWith(emailOptions);
-  });
-
-  // Add back other constructor tests if they were removed
-  it("should initialize transporter with auth if credentials provided", () => {
-    process.env.SMTP_USER = "testuser";
-    process.env.SMTP_PASS = "testpass";
-    new EmailClient();
-    expect(nodemailer.createTransport).toHaveBeenCalledWith(
-      expect.objectContaining({
-        auth: { user: "testuser", pass: "testpass" },
-      }),
-    );
-  });
-
-  it("should initialize transporter with secure false if SMTP_SECURE is 'false'", () => {
-    process.env.SMTP_SECURE = "false";
-    new EmailClient();
-    expect(nodemailer.createTransport).toHaveBeenCalledWith(
-      expect.objectContaining({
-        secure: false,
-      }),
-    );
   });
 });

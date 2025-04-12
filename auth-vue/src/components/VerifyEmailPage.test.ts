@@ -4,7 +4,7 @@ import { type VueWrapper } from "@vue/test-utils";
 import { http, HttpResponse } from "msw";
 import { setupMockServer } from "@saflib/vue-spa-dev/components";
 import VerifyEmailPage from "./VerifyEmailPage.vue";
-import { router } from "../router";
+import { router } from "../auth-router.ts";
 
 // Set up MSW server
 const handlers = [

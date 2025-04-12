@@ -143,6 +143,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/users": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List all users */
+        get: operations["listUsers"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -193,6 +210,32 @@ export interface components {
             success: boolean;
             /** @description A generic message indicating that the verification email was sent */
             message: string;
+        };
+        ListUsersResponse: {
+            /** @description Unique identifier for the user */
+            id: number;
+            /**
+             * Format: email
+             * @description User's email address
+             */
+            email: string;
+            /**
+             * Format: date-time
+             * @description Timestamp when the user was created (ISO 8601 format)
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @description Timestamp of the user's last login (ISO 8601 format), or null if never logged in
+             */
+            lastLoginAt?: string | null;
+            /**
+             * Format: date-time
+             * @description Timestamp when the user's email was verified (ISO 8601 format), or null if not verified
+             */
+            verifiedAt?: string | null;
+            /** @description List of permission strings assigned to the user */
+            permissions?: string[];
         };
     };
     responses: never;
@@ -459,6 +502,44 @@ export interface operations {
             };
             /** @description User not logged in */
             401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    listUsers: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description A list of user objects */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListUsersResponse"][];
+                };
+            };
+            /** @description Unauthorized - missing or invalid auth headers, or not logged in. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Forbidden - user does not have admin privileges. */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };

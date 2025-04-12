@@ -6,6 +6,7 @@ import type { Component, Plugin } from "vue";
 import { beforeAll, afterAll, afterEach, vi } from "vitest";
 import { createRouter, createMemoryHistory } from "vue-router";
 import { VueQueryPlugin } from "@tanstack/vue-query";
+import { QueryClient } from "@tanstack/vue-query";
 import { setupServer } from "msw/node";
 import { HttpHandler } from "msw";
 
@@ -63,10 +64,17 @@ export function mountWithPlugins(
       routes: [],
     });
 
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      mutations: { retry: false },
+      queries: { retry: false },
+    },
+  });
+
   return mount(component, {
     ...options,
     global: {
-      plugins: [vuetify, router, VueQueryPlugin],
+      plugins: [vuetify, router, [VueQueryPlugin, { queryClient }]],
       ...(options.global || {}),
     },
   });

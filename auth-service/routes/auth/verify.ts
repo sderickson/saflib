@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import { createHandler } from "@saflib/node-express";
-import { getUserScopes } from "./helpers.ts";
+import { getUserScopes } from "./_helpers.ts";
 import { type AuthResponse } from "@saflib/auth-spec";
 
 export const verifyHandler = createHandler(
@@ -36,13 +36,17 @@ export const verifyHandler = createHandler(
 
     // Add headers for downstream services
     const user = req.user as Express.User;
+    const scopes: string[] = [];
     res.setHeader("X-User-ID", user.id.toString());
     res.setHeader("X-User-Email", user.email);
-
-    const scopes = await getUserScopes(req.db, user.id);
-
     if (req.app.get("saf:admin emails").has(user.email)) {
-      scopes.push("admin");
+      const emailAuth = await req.db.emailAuth.getByEmail(user.email);
+      if (emailAuth.verifiedAt) {
+        // TODO: properly give scopes based on admin role.
+        // and what scopes exist.
+        scopes.push("users:read");
+        scopes.push("todos:nuke");
+      }
     }
 
     if (scopes.length === 0) {

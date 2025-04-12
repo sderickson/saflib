@@ -1,10 +1,10 @@
 import * as argon2 from "argon2";
 import { createHandler } from "@saflib/node-express";
-import { createUserResponse } from "./helpers.ts";
+import { createUserResponse } from "./_helpers.ts";
 import type { AuthResponse, AuthRequest } from "@saflib/auth-spec";
 import { randomBytes } from "crypto";
 import { EmailClient } from "@saflib/email";
-import { generateVerificationEmail } from "../email-templates/verify-email.ts";
+import { generateVerificationEmail } from "../../email-templates/verify-email.ts";
 
 export const registerHandler = createHandler(async (req, res) => {
   try {
