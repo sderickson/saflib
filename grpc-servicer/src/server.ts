@@ -52,9 +52,6 @@ export function startGrpcServer(services: GrpcService[]): grpc.Server {
         process.exit(1); // Exit if binding fails
         return;
       }
-      console.log(`gRPC server bound successfully on port ${boundPort}`);
-      // Start the server *after* successful binding
-      server.start();
       console.log(`gRPC server started on port ${boundPort}`);
     },
   );
