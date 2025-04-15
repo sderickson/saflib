@@ -35,7 +35,7 @@ package-name/
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "generate": "drizzle-kit generate:sqlite"
+    "generate": "drizzle-kit generate"
   },
   "dependencies": {
     "@saflib/drizzle-sqlite3": "*"
@@ -50,29 +50,31 @@ package-name/
 ### drizzle.config.ts
 
 ```typescript
-import { fileURLToPath } from "node:url";
-import { dirname } from "node:path";
+import { defineConfig } from "drizzle-kit";
+import path from "path";
+import { fileURLToPath } from "url";
 
-// Handle both ESM and CommonJS contexts
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-export function getDbPath() {
-  return "./data/database.sqlite";
-}
-
-export function getMigrationsPath() {
-  return "./migrations";
-}
-
-export default {
-  schema: "./src/schema.ts",
-  out: getMigrationsPath(),
-  driver: "better-sqlite",
-  dbCredentials: {
-    url: getDbPath(),
-  },
+const getDirname = () => {
+  const __filename = fileURLToPath(import.meta.url);
+  return path.dirname(__filename);
 };
+
+const dbName = `database-${process.env.NODE_ENV}.sqlite`;
+
+export const getDbPath = () => {
+  return path.join(getDirname(), "data", dbName);
+};
+
+export const getMigrationsPath = () => {
+  return path.join(getDirname(), "migrations");
+};
+
+export default defineConfig({
+  out: "./migrations",
+  schema: "./src/schema.ts",
+  dialect: "sqlite",
+  dbCredentials: { url: `./data/${dbName}` },
+});
 ```
 
 ### src/errors.ts
