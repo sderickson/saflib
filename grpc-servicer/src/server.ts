@@ -39,6 +39,7 @@ export function startGrpcServer(services: GrpcService[]): grpc.Server {
   });
 
   // Bind the server asynchronously
+  console.log("Binding gRPC server to port", effectivePort);
   server.bindAsync(
     `0.0.0.0:${effectivePort}`,
     grpc.ServerCredentials.createInsecure(), // Using insecure for now
