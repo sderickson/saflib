@@ -9,11 +9,13 @@ function getPackageRelativePaths(
   packages: Set<string>,
   monorepoContext: MonorepoContext,
 ): string[] {
-  return Array.from(packages).map((packageName) => {
-    const packageDirectory =
-      monorepoContext.monorepoPackageDirectories[packageName];
-    return "./" + path.relative(monorepoContext.rootDir, packageDirectory);
-  });
+  return Array.from(packages)
+    .sort()
+    .map((packageName) => {
+      const packageDirectory =
+        monorepoContext.monorepoPackageDirectories[packageName];
+      return "./" + path.relative(monorepoContext.rootDir, packageDirectory);
+    });
 }
 
 function usesBun(dockerTemplate: string): boolean {
