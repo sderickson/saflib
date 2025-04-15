@@ -12,7 +12,9 @@
 
 import http from "http";
 import type { Express } from "express";
-
+/**
+ * @deprecated use startExpressServer instead
+ */
 export const startServer = (app: Express) => {
   // Get port from environment and store in Express
 
