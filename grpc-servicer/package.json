@@ -11,8 +11,11 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@grpc/grpc-js": "^1.13.3",
+    "google-protobuf": "^3.21.4"
+  },
   "devDependencies": {
     "@saflib/vitest": "*"
   }
-} 
+}
