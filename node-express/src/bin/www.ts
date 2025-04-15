@@ -90,3 +90,6 @@ export const startServer = (app: Express) => {
     });
   });
 };
+
+// New name - above one is deprecated
+export const startExpressServer = startServer;
