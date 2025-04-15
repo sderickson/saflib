@@ -90,13 +90,10 @@ This guide outlines best practices for creating reusable library packages in the
    ```
    service-package/
    ├── package.json
-   ├── types.ts          # Public types
-   ├── errors.ts        # Public error types
-   ├── index.ts         # Main entry point
+   ├── app.ts           # Main entry point
+   ├── bin/             # start, healthcheck commands
    ├── routes/          # Route handlers
-   ├── middleware/      # Express middleware
-   ├── db.ts           # Database operations
-   └── utils.ts        # Internal utilities
+   └── middleware.ts      # Express middleware
    ```
 
 3. **Configuration Files**
@@ -104,18 +101,10 @@ This guide outlines best practices for creating reusable library packages in the
    - Keep configuration files (e.g., YAML, JSON) in a dedicated `config/` directory
    - Do not place implementation code in the `config/` directory
    - Implementation code that reads or processes config should live at the root level for services, or in `src/` for libraries
-   - This separation allows config files to be mounted as volumes in production
-   - Examples:
+   - This separation allows config files to be mounted as volumes in production for services
+   - Example:
 
    ```
-   # Library package
-   library-package/
-   ├── config/           # Configuration files only
-   │   └── settings.yaml
-   └── src/             # Implementation code
-       ├── config.ts    # Config loading/processing logic
-       └── ...
-
    # Service package
    service-package/
    ├── config/          # Configuration files only
@@ -128,7 +117,7 @@ This guide outlines best practices for creating reusable library packages in the
 
 1. **Interface Testing**
 
-   - Test the public interface thoroughly
+   - Test the public interface thoroughly; import from the package instead of using a relative path
    - Mock internal dependencies
    - Focus on behavior, not implementation
 

@@ -1,12 +1,12 @@
 # Architecture
 
-This document describes how authentication headers flow through the SAF-2025 system, from the `auth-service` package through Caddy to other Node.js services.
+This document describes how authentication headers flow through the SAF applications, from the `auth-service` package through Caddy to other Node.js services.
 
 ## Overview
 
-The authentication system uses a combination of session-based auth (for the auth service) and header-based auth (for other services). This design allows for:
+The authentication system uses a combination of cookies-session-based auth (for the auth service) and header-based auth (for other services). This design allows for:
 
-1. Secure user authentication via the auth service
+1. Secure, centralized user authentication via the auth service
 2. Stateless authentication verification for other services
 3. Fine-grained access control through scopes
 4. OpenAPI-based validation of security requirements
@@ -65,39 +65,50 @@ Node.js services receive the propagated headers and can use them for:
    req.auth = {
      userId: number;
      userEmail: string;
+     scopes: string[];
    };
    ```
 
-2. Scope validation via OpenAPI middleware (planned):
-   ```typescript
-   // Future: OpenAPI middleware will validate scopes against spec
-   // Example spec:
-   // /api/todos:
-   //   delete:
-   //     security:
-   //       - admin: []
+2. Scope validation via OpenAPI middleware:
+   ```yaml
+# openapi.yaml
+openapi: 3.0.0
+info:
+  title: Your Product's API
+  version: "1.0.0"
+  description: The API used internally by web clients.
+servers:
+  - url: http://api.docker.localhost/
+    description: Development server
+
+components:
+  securitySchemes:
+    scopes:
+      type: apiKey
+      in: header
+      name: X-User-Scopes
+      description: Comma-separated list of user scopes
+
+paths:
+  /todos:
+    delete:
+      $ref: "./routes/todos.yaml#/delete"
+
+
+# todos.yaml
+delete:
+  summary: Delete all todos
+  operationId: deleteAllTodos
+  tags:
+    - todos
+  security:
+    - scopes: ["admin"]
    ```
-
-## Security Considerations
-
-1. **Header Trust**: Services should only trust headers that come through Caddy's forward auth
-2. **Scope Validation**: Always validate scopes against the OpenAPI spec
-3. **Session Security**: Auth service uses secure session management
-4. **Header Propagation**: Caddy ensures headers are only propagated from trusted sources
 
 ## Future Enhancements
 
-1. OpenAPI middleware will be enhanced to:
-
-   - Validate required scopes against endpoint specifications
-   - Provide type-safe access to user scopes
-   - Generate TypeScript types for security requirements
-
-2. Additional security features:
-   - Rate limiting
-   - IP-based restrictions
+1. Additional security features:
    - Audit logging
-   - Token-based authentication for service-to-service communication
 
 ## Example Flow
 

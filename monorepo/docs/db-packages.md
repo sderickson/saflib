@@ -45,10 +45,3 @@ export class Database {
   }
 }
 ```
-
-## Database Access
-
-1. Always use transactions for operations that modify data
-2. Implement proper error handling and rollback mechanisms
-3. Consider implementing connection pooling for high-concurrency scenarios
-4. Document any performance considerations or limitations

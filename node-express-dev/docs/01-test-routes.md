@@ -1,6 +1,6 @@
 # Test Routes
 
-Tests for node/express routes should be focused unit tests that use the actual database but mock expensive or external operations. They should run the same middleware as the live application.
+Tests for node/express routes should be integration tests that use the actual database but mock expensive or external operations. They should run the same middleware as the live application.
 
 Example:
 
@@ -9,12 +9,6 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import request from "supertest";
 import express from "express";
 import { createApp } from "../app.ts";
-
-// Mock expensive operations
-vi.mock("argon2", () => ({
-  hash: vi.fn().mockResolvedValue("hashed-password"),
-  verify: vi.fn().mockResolvedValue(true),
-}));
 
 // Mock random operations
 vi.mock("crypto", async (importOriginal) => {
@@ -56,23 +50,19 @@ describe("Login Route", () => {
 ## What to Mock
 
 1. **Do Mock**:
-   - Expensive operations (e.g., password hashing with argon2)
    - Random operations (e.g., token generation with crypto)
-   - 3rd party integrations (e.g., email sending)
-   - External services (e.g., payment processors)
+   - 3rd party integrations and services (e.g., email sending)
 
 2. **Don't Mock**:
    - Database operations (use the actual database)
    - Application middleware
    - Request/response handling
 
-Example of mocking a 3rd party service:
+Ideally, SAF libraries should provide their own `__mocks__` with a reasonable default so dependent services can easily mock them in tests:
 
 ```ts
-// Mock email service
-vi.mock("@saflib/email-service", () => ({
-  sendEmail: vi.fn().mockResolvedValue({ success: true }),
-}));
+// Mock email service - internally mocks nodemailer so you don't have to.
+vi.mock("@saflib/email");
 ```
 
 ## Mocking Best Practices
@@ -125,6 +115,7 @@ vi.mock("@saflib/email-service", () => ({
    - Don't mock the database itself
    - Instead, use the actual database with test data
    - Clear and set up test data in `beforeEach` or `beforeAll` hooks
+   - The database library should itself run an in-memory version when `NODE_ENV` is `"test"`.
 
 ## Test Setup
 
@@ -156,11 +147,10 @@ vi.mock("@saflib/email-service", () => ({
 
 When adding tests for new API routes, ensure:
 
-1. **Complete coverage**: Test all success and error paths
+1. **High coverage**: Test success and error paths
 2. **Database state**: Set up required database state before each test
 3. **Error handling**: Test that errors are properly caught and converted to appropriate HTTP responses
-4. **Session state**: Use agents when testing flows that require session state
-5. **Mocking**: Mock only expensive/external operations, not the database
+4. **Mocking**: Mock only expensive/external operations, not the database
 
 ## Running Tests
 

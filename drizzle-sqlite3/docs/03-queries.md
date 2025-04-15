@@ -209,22 +209,3 @@ describe("Todo Queries", () => {
   });
 });
 ```
-
-## Development
-
-1. Run tests:
-
-   ```bash
-   pnpm test
-   ```
-
-2. Run tests in watch mode:
-
-   ```bash
-   pnpm test:watch
-   ```
-
-3. Run tests with coverage:
-   ```bash
-   pnpm test:coverage
-   ```

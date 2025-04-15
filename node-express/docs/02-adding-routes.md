@@ -84,21 +84,12 @@ export const exampleHandler = createHandler(async function (req, res, next) {
   const request: AuthRequest["exampleOperation"] = req.body;
 
   // Handle expected errors directly with typed responses
+  // Any unexpected errors are handled by createHandler
   if (!request.email) {
     const errorResponse: AuthResponse["exampleOperation"][400] = {
       error: "Email is required",
     };
     return res.status(400).json(errorResponse);
-  }
-
-  try {
-    // Business logic that might throw unexpected errors
-    const result = await someAsyncOperation();
-    const successResponse: AuthResponse["exampleOperation"][200] = result;
-    res.json(successResponse);
-  } catch (error) {
-    // Pass unexpected errors to next
-    next(error);
   }
 });
 ```

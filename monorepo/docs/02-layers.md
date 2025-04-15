@@ -4,7 +4,7 @@ For most web application features, the implementation is spread across the follo
 
 - `db`: Database
 - `integration`: External API integrations
-- `service`: API Servicer
+- `service`: API Servicer or Background Service
 - `spec`: OpenAPI Spec
 - `requests`: Tanstack-powered Queries and Mutations
 - `pages`: Vue 3 Page Components
