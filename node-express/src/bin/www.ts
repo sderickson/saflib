@@ -12,11 +12,12 @@
 
 import http from "http";
 import type { Express } from "express";
-
+/**
+ * @deprecated use startExpressServer instead
+ */
 export const startServer = (app: Express) => {
   // Get port from environment and store in Express
 
-  console.log("process.env.NODE_ENV", process.env.NODE_ENV);
   const port = normalizePort(process.env.PORT || "3000");
   app.set("port", port);
 
@@ -79,7 +80,7 @@ export const startServer = (app: Express) => {
     const addr = server.address();
     const bind =
       typeof addr === "string" ? "pipe " + addr : "port " + addr?.port;
-    console.log("Listening on " + bind);
+    console.log("Express server started on " + bind);
   }
 
   // Handle graceful shutdown
@@ -91,3 +92,6 @@ export const startServer = (app: Express) => {
     });
   });
 };
+
+// New name - above one is deprecated
+export const startExpressServer = startServer;
