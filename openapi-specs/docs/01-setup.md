@@ -221,6 +221,31 @@ properties:
     description: Field description
 ```
 
+4. **Referencing Shared Schemas (e.g., Error Schema):**
+   To use schemas defined in shared packages (like the standard error schema in `@saflib/openapi-specs`), create a local intermediary schema file (e.g., `schemas/error.yaml`) within your spec package:
+
+   ```yaml
+   # <your-spec-package>/schemas/error.yaml
+   error:
+     $ref: "../../../saflib/openapi-specs/schemas/error.yaml" # Adjust path as needed
+   ```
+
+   Then, reference this local intermediary file from your routes or main spec file:
+
+   ```yaml
+   # Example in routes/your-routes.yaml
+   # ...
+   responses:
+     "404":
+       description: Not Found
+       content:
+         application/json:
+           schema:
+             $ref: "../schemas/error.yaml" # Points to the local intermediary
+   ```
+
+   This pattern avoids issues with direct cross-package relative path resolution in some tools.
+
 ## Generating Specs
 
 1. Install dependencies:
