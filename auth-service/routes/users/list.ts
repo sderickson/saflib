@@ -1,15 +1,17 @@
 import type { Request, Response } from "express";
 import type { AuthResponse } from "@saflib/auth-spec";
 import { createHandler } from "@saflib/node-express";
+import { AuthDB } from "@saflib/auth-db";
 // Define types using Drizzle's inferSelect
 export const listUsersHandler = createHandler(
   async (req: Request, res: Response) => {
+    const db: AuthDB = req.app.locals.db;
     // Fetch all users
-    const users = await req.db.users.getAll();
+    const users = await db.users.getAll();
 
     // Fetch corresponding email auth entries
     const userIds = users.map((u) => u.id);
-    const emailAuths = await req.db.users.getEmailAuthByUserIds(userIds);
+    const emailAuths = await db.users.getEmailAuthByUserIds(userIds);
 
     // Create a map for quick email lookup
     const emailMap = new Map<number, string>();

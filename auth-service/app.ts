@@ -14,7 +14,6 @@ import { makeUsersRouter } from "./routes/users/index.ts";
 declare global {
   namespace Express {
     interface Request {
-      db: AuthDB;
       isValidCsrfToken: () => boolean;
     }
   }
@@ -32,11 +31,8 @@ export function createApp() {
   // Initialize database
   const db = new AuthDB();
 
-  // db injection
-  app.use((req, _, next) => {
-    req.db = db;
-    next();
-  });
+  // Store db instance in app.locals
+  app.locals.db = db;
 
   /**
    * Routes
