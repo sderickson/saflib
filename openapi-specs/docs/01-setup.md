@@ -48,15 +48,26 @@ Create an `index.ts` file with the following exports:
 
 ```typescript
 import * as json from "./dist/openapi.json" with { type: "json" };
-import type { OpenAPIV3 } from "express-openapi-validator/dist/framework/types.ts";
-import type * as types from "./dist/openapi.d.ts";
+import type { OpenAPIV3 } from "openapi-types"; // Adjusted from express-openapi-validator type
+import type { paths, operations } from "./dist/openapi.d.ts"; // Import paths and operations
+import type {
+  ExtractRequestSchema,
+  ExtractResponseSchema,
+} from "@saflib/openapi-specs"; // Import helper types (adjust path if needed)
 
 // Export the JSON spec for middleware
-export const jsonSpec = json.default as unknown as OpenAPIV3.DocumentV3;
+export const jsonSpec = json.default as unknown as OpenAPIV3.Document;
 
-// Export types for consumers
-export type { RequestSchema, ResponseSchema, types };
+// Export raw generated types (paths, operations) for advanced use cases
+export type { paths, operations };
+
+// Export easy-to-use Request/Response types derived from operations
+// Replace 'YourSpec' with the appropriate name (e.g., AuthRequest, CronResponse)
+export type YourSpecResponse = ExtractResponseSchema<operations>;
+export type YourSpecRequest = ExtractRequestSchema<operations>;
 ```
+
+This pattern uses helper types (`ExtractRequestSchema`, `ExtractResponseSchema`) to automatically generate convenient request and response types based on your defined `operationId`s, reducing boilerplate and improving type safety.
 
 ## OpenAPI Spec Structure
 
