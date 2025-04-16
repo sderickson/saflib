@@ -4,3 +4,4 @@ export {
   removeAllSimpleStreamTransports,
 } from "./src/logger.ts";
 export { generateRequestId } from "./src/request-id.ts";
+export type { Logger } from "winston";

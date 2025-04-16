@@ -1,6 +1,6 @@
 import crypto from "crypto";
 
-export function generateRequestId() {
+export function generateRequestId(): string {
   // Generate 16 random bytes
   const randomBytes = crypto.randomBytes(16);
 
