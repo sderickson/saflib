@@ -1,0 +1,14 @@
+# Shared Error Schema
+type: object
+properties:
+  code:
+    type: string
+    description: A short, machine-readable error code.
+    example: "NOT_FOUND"
+  message:
+    type: string
+    description: A human-readable description of the error.
+    example: "The requested resource could not be found."
+required:
+  - code
+  - message
