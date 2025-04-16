@@ -23,10 +23,10 @@ describe("generateDockerfiles", () => {
       "utf-8",
     );
     expect(dockerfile).toContain(
-      "COPY --parents ./package.json ./package-lock.json ./saflib/vue-spa/package.json ./saflib/auth-vue/package.json ./saflib/auth-spec/package.json ./saflib/openapi-specs/package.json ./clients/web-auth/package.json ./",
+      "COPY --parents ./package.json ./package-lock.json ./clients/web-auth/package.json ./saflib/auth-spec/package.json ./saflib/auth-vue/package.json ./saflib/openapi-specs/package.json ./saflib/vue-spa/package.json ./",
     );
     expect(dockerfile).toContain(
-      "COPY --parents ./saflib/vue-spa ./saflib/auth-vue ./saflib/auth-spec ./saflib/openapi-specs ./clients/web-auth ./",
+      "COPY --parents ./clients/web-auth ./saflib/auth-spec ./saflib/auth-vue ./saflib/openapi-specs ./saflib/vue-spa ./",
     );
   });
 });
