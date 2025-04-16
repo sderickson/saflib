@@ -7,7 +7,6 @@ export { auth } from "./middleware/auth.ts";
 export { corsRouter } from "./middleware/cors.ts";
 export { errorHandler, notFoundHandler } from "./middleware/errors.ts";
 export { createScopeValidator } from "./middleware/scopes.ts";
-export { generateRequestId } from "./request-id.ts";
 
 // validation
 export { createOpenApiValidator } from "./middleware/openapi.ts";
