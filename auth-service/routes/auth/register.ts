@@ -5,20 +5,22 @@ import type { AuthResponse, AuthRequest } from "@saflib/auth-spec";
 import { randomBytes } from "crypto";
 import { EmailClient } from "@saflib/email";
 import { generateVerificationEmail } from "../../email-templates/verify-email.ts";
+import { AuthDB } from "@saflib/auth-db";
 
 export const registerHandler = createHandler(async (req, res) => {
+  const db: AuthDB = req.app.locals.db;
   try {
     const registerRequest: AuthRequest["registerUser"] = req.body;
     const { email, password } = registerRequest;
 
     const passwordHash = await argon2.hash(password);
 
-    const user = await req.db.users.create({
+    const user = await db.users.create({
       email,
       createdAt: new Date(),
     });
 
-    await req.db.emailAuth.create({
+    await db.emailAuth.create({
       userId: user.id,
       email,
       passwordHash,
@@ -36,7 +38,7 @@ export const registerHandler = createHandler(async (req, res) => {
       Date.now() + 24 * 60 * 60 * 1000,
     );
 
-    await req.db.emailAuth.updateVerificationToken(
+    await db.emailAuth.updateVerificationToken(
       user.id,
       verificationToken,
       verificationTokenExpiresAt,
@@ -59,13 +61,13 @@ export const registerHandler = createHandler(async (req, res) => {
         throw err;
       }
 
-      createUserResponse(req.db, user).then((response) => {
+      createUserResponse(db, user).then((response) => {
         const successResponse: AuthResponse["registerUser"][200] = response;
         res.status(200).json(successResponse);
       });
     });
   } catch (err) {
-    if (err instanceof req.db.users.EmailConflictError) {
+    if (err instanceof db.users.EmailConflictError) {
       const errorResponse: AuthResponse["registerUser"][409] = {
         error: "Email already exists",
       };

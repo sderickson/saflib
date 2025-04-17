@@ -1,0 +1,14 @@
+# Shared Error Schema
+# TODO:
+# - Make it strict - no "error" property, just message
+# - Get every spec to use this
+# - Update all errors frontend and backend to use "message"
+type: object
+properties:
+  code:
+    type: string
+    description: A short, machine-readable error code, for when HTTP status codes are not sufficient.
+  message:
+    type: string
+    description: A human-readable description of the error.
+    example: "The requested resource could not be found."

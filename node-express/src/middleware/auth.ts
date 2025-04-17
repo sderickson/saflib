@@ -26,6 +26,7 @@ export const auth: Handler = (req, res, next): void => {
   if (!userId || !userEmail) {
     res.status(401).json({
       error: "Unauthorized",
+      message: "Unauthorized",
     });
     return;
   }

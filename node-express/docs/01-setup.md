@@ -109,28 +109,16 @@ service/
    import express from "express";
    import { authRouter } from "./routes/index.ts";
 
-   // Define properties added to Express Request objects by middleware
-   declare global {
-     namespace Express {
-       interface Request {
-         db: AuthDB;
-       }
-     }
-   }
-
    export function createApp() {
      const app = express();
-     app.set("trust proxy", true);
+     app.set("trust proxy", 1);
 
      // Apply recommended middleware
      app.use(createPreMiddleware());
 
-     // Inject database into request
+     // Initialize database and store in app.locals
      const db = new AuthDB();
-     app.use((req, _, next) => {
-       req.db = db;
-       next();
-     });
+     app.locals.db = db; // Store the singleton instance in app.locals
 
      // Add routes
      app.use(authRouter);
@@ -156,3 +144,28 @@ service/
    ```
 
 The library provides common middleware and utilities that can be imported from `@saflib/node-express`. For development tools and testing utilities, import from `@saflib/node-express-dev`.
+
+### Accessing Dependencies in Routes
+
+Dependencies stored in `app.locals` (like the `db` instance above) can be accessed within route handlers via `req.app.locals`:
+
+```typescript
+// Example route handler (e.g., routes/auth-login.ts)
+import { createHandler } from "@saflib/node-express";
+import { Request, Response, NextFunction } from "express";
+import { AuthDB } from "@saflib/auth-db"; // Import the DB type if needed
+
+export const loginHandler = createHandler(async function (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  // Access injected services via req.app.locals
+  const db: AuthDB = req.app.locals.db;
+
+  // Use the db instance
+  // const user = await db.users.findByCredentials(...);
+
+  // ... rest of handler logic
+});
+```

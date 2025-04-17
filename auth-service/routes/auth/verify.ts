@@ -1,10 +1,11 @@
 import type { Request, Response } from "express";
 import { createHandler } from "@saflib/node-express";
-import { getUserScopes } from "./_helpers.ts";
 import { type AuthResponse } from "@saflib/auth-spec";
+import { AuthDB } from "@saflib/auth-db";
 
 export const verifyHandler = createHandler(
   async (req: Request, res: Response) => {
+    const db: AuthDB = req.app.locals.db;
     // TODO: Figure out how to handle OPTIONS in caddy, or at the very least,
     // don't forward_auth OPTIONS requests.
 
@@ -40,7 +41,7 @@ export const verifyHandler = createHandler(
     res.setHeader("X-User-ID", user.id.toString());
     res.setHeader("X-User-Email", user.email);
     if (req.app.get("saf:admin emails").has(user.email)) {
-      const emailAuth = await req.db.emailAuth.getByEmail(user.email);
+      const emailAuth = await db.emailAuth.getByEmail(user.email);
       if (emailAuth.verifiedAt) {
         // TODO: properly give scopes based on admin role.
         // and what scopes exist.

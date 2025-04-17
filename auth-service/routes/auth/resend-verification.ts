@@ -3,8 +3,10 @@ import { randomBytes } from "crypto";
 import { type AuthResponse } from "@saflib/auth-spec";
 import { EmailClient } from "@saflib/email";
 import { generateVerificationEmail } from "../../email-templates/verify-email.ts";
+import { AuthDB } from "@saflib/auth-db";
 
 export const resendVerificationHandler = createHandler(async (req, res) => {
+  const db: AuthDB = req.app.locals.db;
   if (!req.user) {
     res.status(401).json({
       error: "User must be logged in",
@@ -18,7 +20,7 @@ export const resendVerificationHandler = createHandler(async (req, res) => {
     verificationTokenExpiresAt.getMinutes() + 15,
   );
 
-  await req.db.emailAuth.updateVerificationToken(
+  await db.emailAuth.updateVerificationToken(
     req.user.id,
     verificationToken,
     verificationTokenExpiresAt,

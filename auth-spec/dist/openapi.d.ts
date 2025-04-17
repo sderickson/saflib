@@ -176,8 +176,14 @@ export interface components {
             /** @description List of user's permission scopes */
             scopes?: string[];
         };
-        ErrorResponse: {
-            error: string;
+        error: {
+            /** @description A short, machine-readable error code, for when HTTP status codes are not sufficient. */
+            code?: string;
+            /**
+             * @description A human-readable description of the error.
+             * @example The requested resource could not be found.
+             */
+            message?: string;
         };
         LoginRequest: {
             /** Format: email */
@@ -237,6 +243,7 @@ export interface components {
             /** @description List of permission strings assigned to the user */
             permissions?: string[];
         };
+        ErrorResponse: components["schemas"]["error"];
     };
     responses: never;
     parameters: never;
@@ -274,7 +281,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
+                    "application/json": components["schemas"]["error"];
                 };
             };
         };
@@ -307,7 +314,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
+                    "application/json": components["schemas"]["error"];
                 };
             };
         };
@@ -360,7 +367,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
+                    "application/json": components["schemas"]["error"];
                 };
             };
             /** @description CSRF token mismatch */
@@ -369,7 +376,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
+                    "application/json": components["schemas"]["error"];
                 };
             };
         };
@@ -402,7 +409,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
+                    "application/json": components["schemas"]["error"];
                 };
             };
         };
@@ -435,7 +442,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
+                    "application/json": components["schemas"]["error"];
                 };
             };
         };
@@ -468,7 +475,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
+                    "application/json": components["schemas"]["error"];
                 };
             };
             /** @description User not logged in */
@@ -477,7 +484,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
+                    "application/json": components["schemas"]["error"];
                 };
             };
         };
@@ -506,7 +513,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
+                    "application/json": components["schemas"]["error"];
                 };
             };
         };
@@ -535,7 +542,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
+                    "application/json": components["schemas"]["error"];
                 };
             };
             /** @description Forbidden - user does not have admin privileges. */
@@ -544,7 +551,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
+                    "application/json": components["schemas"]["error"];
                 };
             };
         };

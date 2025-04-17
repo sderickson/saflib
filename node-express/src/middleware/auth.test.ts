@@ -86,6 +86,7 @@ describe("Auth Middleware", () => {
     expect(mockRes.status).toHaveBeenCalledWith(401);
     expect(mockRes.json).toHaveBeenCalledWith({
       error: "Unauthorized",
+      message: "Unauthorized",
     });
   });
 
@@ -100,6 +101,7 @@ describe("Auth Middleware", () => {
     expect(mockRes.status).toHaveBeenCalledWith(401);
     expect(mockRes.json).toHaveBeenCalledWith({
       error: "Unauthorized",
+      message: "Unauthorized",
     });
   });
 
@@ -113,6 +115,7 @@ describe("Auth Middleware", () => {
     expect(mockRes.status).toHaveBeenCalledWith(401);
     expect(mockRes.json).toHaveBeenCalledWith({
       error: "Unauthorized",
+      message: "Unauthorized",
     });
   });
 });
