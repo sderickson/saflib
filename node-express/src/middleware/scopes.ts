@@ -30,6 +30,11 @@ export const createScopeValidator = (): Handler => {
     }
 
     const userScopes = new Set(req.auth.scopes);
+
+    if (userScopes.has("*")) {
+      return next();
+    }
+
     const missingScopes = requiredScopes.difference(userScopes);
 
     if (missingScopes.size > 0) {

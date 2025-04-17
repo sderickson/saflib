@@ -43,10 +43,8 @@ export const verifyHandler = createHandler(
     if (req.app.get("saf:admin emails").has(user.email)) {
       const emailAuth = await db.emailAuth.getByEmail(user.email);
       if (emailAuth.verifiedAt) {
-        // TODO: properly give scopes based on admin role.
-        // and what scopes exist.
-        scopes.push("users:read");
-        scopes.push("todos:nuke");
+        scopes.push("*");
+        // TODO: set up a way to map roles -> scopes.
       }
     }
 
