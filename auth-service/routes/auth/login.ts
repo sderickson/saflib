@@ -20,7 +20,7 @@ export const loginHandler = createHandler(async function (req, res, next) {
 
       if (!user) {
         const response: AuthResponse["loginUser"][401] = {
-          error: "Invalid credentials",
+          message: "Invalid credentials",
         };
         return res.status(401).json(response);
       }

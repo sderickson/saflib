@@ -9,7 +9,7 @@ export const resendVerificationHandler = createHandler(async (req, res) => {
   const db: AuthDB = req.app.locals.db;
   if (!req.user) {
     res.status(401).json({
-      error: "User must be logged in",
+      message: "User must be logged in",
     } satisfies AuthResponse["resendVerification"][401]);
     return;
   }

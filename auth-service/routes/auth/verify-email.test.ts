@@ -76,7 +76,7 @@ describe("Verify Email Route", () => {
 
     expect(response.status).toBe(400);
     expect(response.body).toEqual({
-      error: "Invalid or expired verification token",
+      message: "Invalid or expired verification token",
     });
   });
 

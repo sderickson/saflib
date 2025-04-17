@@ -16,7 +16,7 @@ export const verifyEmailHandler = createHandler(async (req, res) => {
       emailAuth.email !== req.user?.email
     ) {
       const errorResponse: AuthResponse["verifyEmail"][400] = {
-        error: "Invalid or expired verification token",
+        message: "Invalid or expired verification token",
       };
       res.status(400).json(errorResponse);
       return;
@@ -32,7 +32,7 @@ export const verifyEmailHandler = createHandler(async (req, res) => {
   } catch (err) {
     if (err instanceof db.emailAuth.VerificationTokenNotFoundError) {
       const errorResponse: AuthResponse["verifyEmail"][400] = {
-        error: "Invalid or expired verification token",
+        message: "Invalid or expired verification token",
       };
       res.status(400).json(errorResponse);
       return;

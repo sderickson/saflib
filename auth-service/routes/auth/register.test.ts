@@ -67,7 +67,7 @@ describe("Register Route", () => {
 
     expect(response.status).toBe(409);
     expect(response.body).toEqual({
-      error: "Email already exists",
+      message: "Email already exists",
     });
     expect(EmailClient.prototype.sendEmail).toHaveBeenCalledTimes(1);
   });

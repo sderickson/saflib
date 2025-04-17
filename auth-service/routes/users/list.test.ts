@@ -59,7 +59,6 @@ describe("GET /users Route (Integration)", () => {
 
     expect(response.status).toBe(403);
     expect(response.body).toEqual({
-      error: "Insufficient permissions. Missing scopes: users:read",
       message: "Insufficient permissions. Missing scopes: users:read",
     });
   });

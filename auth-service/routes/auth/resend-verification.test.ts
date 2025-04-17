@@ -62,7 +62,7 @@ describe("Resend Verification Route", () => {
 
     expect(response.status).toBe(401);
     expect(response.body).toEqual({
-      error: "User must be logged in",
+      message: "User must be logged in",
     });
     expect(EmailClient.prototype.sendEmail).not.toHaveBeenCalled();
   });

@@ -68,7 +68,7 @@ describe("Reset Password Route", () => {
       .send({ token: "expired-token", newPassword: "new-password123" });
 
     expect(response.status).toBe(400);
-    expect(response.body).toEqual({ error: "Invalid or expired token" });
+    expect(response.body).toEqual({ message: "Invalid or expired token" });
   });
 
   it("should return 400 for invalid token", async () => {
@@ -77,7 +77,7 @@ describe("Reset Password Route", () => {
       .send({ token: "invalid-token", newPassword: "new-password123" });
 
     expect(response.status).toBe(400);
-    expect(response.body).toEqual({ error: "Invalid or expired token" });
+    expect(response.body).toEqual({ message: "Invalid or expired token" });
   });
 
   it("should return 400 for expired token", async () => {
@@ -103,7 +103,7 @@ describe("Reset Password Route", () => {
       .send({ token, newPassword: "new-password123" });
 
     expect(response.status).toBe(400);
-    expect(response.body).toEqual({ error: "Invalid or expired token" });
+    expect(response.body).toEqual({ message: "Invalid or expired token" });
   });
 
   it("should return 429 for too many requests", async () => {

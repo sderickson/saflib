@@ -38,12 +38,10 @@ export const createScopeValidator = (): Handler => {
     const missingScopes = requiredScopes.difference(userScopes);
 
     if (missingScopes.size > 0) {
-      const message = `Insufficient permissions. Missing scopes: ${Array.from(
-        missingScopes,
-      ).join(", ")}`;
       res.status(403).json({
-        error: message,
-        message,
+        message: `Insufficient permissions. Missing scopes: ${Array.from(
+          missingScopes,
+        ).join(", ")}`,
       });
       return;
     }
