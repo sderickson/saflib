@@ -37,7 +37,7 @@ export const handleClientMethod = async <
   request: Promise<T>,
 ) => {
   const result = await request;
-  if (result.error) {
+  if (result.error !== undefined) {
     // Note: The error message is logged for development, but not propagated to the UI.
     // This is because UI should not render the untranslated error message, but instead
     // give the user a message based on the HTTP status or, if that's not sufficient,
