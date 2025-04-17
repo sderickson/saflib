@@ -9,6 +9,7 @@ package-name/
 ├── package.json
 ├── drizzle.config.ts
 ├── data/              # SQLite database files
+│   └── .gitkeep       # Needed to make sure drizzle can write to the directory
 ├── migrations/        # Generated migrations
 └── src/              # Private implementation
     ├── schema.ts     # Database schema
