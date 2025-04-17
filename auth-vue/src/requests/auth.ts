@@ -6,7 +6,7 @@ import { TanstackError, handleClientMethod } from "@saflib/vue-spa";
 export const useLogin = () => {
   return useMutation<
     AuthResponse["loginUser"][200],
-    TanstackError<keyof AuthResponse["loginUser"]>,
+    TanstackError,
     AuthRequest["loginUser"]
   >({
     mutationFn: (body) => {
@@ -18,7 +18,7 @@ export const useLogin = () => {
 export const useLogout = () => {
   return useMutation<
     AuthResponse["logoutUser"][200],
-    TanstackError<keyof AuthResponse["logoutUser"]>
+    TanstackError
   >({
     mutationFn: () => {
       return handleClientMethod(client.POST("/auth/logout"));
@@ -29,7 +29,7 @@ export const useLogout = () => {
 export const useRegister = () => {
   return useMutation<
     AuthResponse["registerUser"][200],
-    TanstackError<keyof AuthResponse["registerUser"]>,
+    TanstackError,
     AuthRequest["registerUser"]
   >({
     mutationFn: (body) => {
@@ -41,7 +41,7 @@ export const useRegister = () => {
 export const useForgotPassword = () => {
   return useMutation<
     AuthResponse["forgotPassword"][200],
-    TanstackError<keyof AuthResponse["forgotPassword"]>,
+    TanstackError,
     AuthRequest["forgotPassword"]
   >({
     mutationFn: (body) => {
@@ -53,7 +53,7 @@ export const useForgotPassword = () => {
 export const useResetPassword = () => {
   return useMutation<
     AuthResponse["resetPassword"][200],
-    TanstackError<keyof AuthResponse["resetPassword"]>,
+    TanstackError,
     AuthRequest["resetPassword"]
   >({
     mutationFn: (body) => {
@@ -65,7 +65,7 @@ export const useResetPassword = () => {
 export const useVerifyEmail = () => {
   return useMutation<
     AuthResponse["verifyEmail"][200],
-    TanstackError<keyof AuthResponse["verifyEmail"]>,
+    TanstackError,
     AuthRequest["verifyEmail"]
   >({
     mutationFn: (body) => {
@@ -77,7 +77,7 @@ export const useVerifyEmail = () => {
 export const useResendVerification = () => {
   return useMutation<
     AuthResponse["resendVerification"][200],
-    TanstackError<keyof AuthResponse["resendVerification"]>
+    TanstackError
   >({
     mutationFn: async () => {
       return handleClientMethod(client.POST("/auth/resend-verification"));
