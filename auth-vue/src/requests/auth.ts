@@ -13,9 +13,9 @@ const handleResponse = async (
   request: Promise<FetchResponse<any, any, any>>,
 ) => {
   const { data, error } = await request;
-  if (error) {
-    if (error.error) {
-      throw new Error(error.error);
+  if (error !== undefined) {
+    if (error.message) {
+      throw new Error(error.message);
     }
     throw new Error("Unknown error");
   }
