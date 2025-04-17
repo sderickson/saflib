@@ -21,10 +21,10 @@ export const createSafClient = <Q extends {}>(
   });
 };
 
-export class TanstackError extends Error {
-  status: number;
+export class TanstackError<T extends number> extends Error {
+  status: T;
   code: string | undefined;
-  constructor(status: number, code?: string) {
+  constructor(status: T, code?: string) {
     super("Network error caught by Tanstack");
     this.status = status;
     this.code = code;
