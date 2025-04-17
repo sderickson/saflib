@@ -2,7 +2,6 @@ import { defineConfig } from "vitest/config";
 
 export const defaultConfig = defineConfig({
   test: {
-    isolate: false,
     environment: "node",
     include: ["**/*.test.ts"],
     coverage: {
