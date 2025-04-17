@@ -208,13 +208,7 @@ resend-verification:
 components:
   schemas:
     ErrorResponse:
-      type: object
-      required:
-        - error
-      additionalProperties: false
-      properties:
-        error:
-          type: string
+      $ref: "../../openapi-specs/schemas/error.yaml"
     RegisterRequest:
       type: object
       required:
