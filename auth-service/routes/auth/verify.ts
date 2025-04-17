@@ -21,7 +21,7 @@ export const verifyHandler = createHandler(
 
     if (!req.isAuthenticated()) {
       const errorResponse: AuthResponse["verifyAuth"][401] = {
-        error: "Unauthorized!",
+        message: "Unauthorized!",
       };
       res.status(401).json(errorResponse);
       return;
@@ -29,7 +29,7 @@ export const verifyHandler = createHandler(
 
     if (!req.isValidCsrfToken()) {
       const errorResponse: AuthResponse["verifyAuth"][403] = {
-        error: "CSRF token mismatch!",
+        message: "CSRF token mismatch!",
       };
       res.status(403).json(errorResponse);
       return;
