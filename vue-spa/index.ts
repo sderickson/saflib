@@ -1,4 +1,5 @@
 import createClient from "openapi-fetch";
+import type { FetchResponse } from "openapi-fetch";
 
 export const createSafClient = <Q extends {}>(
   subdomain: string,
@@ -18,4 +19,31 @@ export const createSafClient = <Q extends {}>(
       return fetch(request);
     },
   });
+};
+
+export class TanstackError extends Error {
+  status: number;
+  code: string | undefined;
+  constructor(status: number, code?: string) {
+    super("Network error caught by Tanstack");
+    this.status = status;
+    this.code = code;
+  }
+}
+
+export const handleClientMethod = async <
+  T extends FetchResponse<any, any, any>,
+>(
+  request: Promise<T>,
+) => {
+  const result = await request;
+  if (result.error) {
+    // Note: The error message is logged for development, but not propagated to the UI.
+    // This is because UI should not render the untranslated error message, but instead
+    // give the user a message based on the HTTP status or, if that's not sufficient,
+    // the error code.
+    console.error("Network error:", result.error);
+    throw new TanstackError(result.response.status, result.error.code);
+  }
+  return result.data;
 };
