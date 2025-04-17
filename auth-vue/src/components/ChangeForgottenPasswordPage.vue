@@ -34,8 +34,7 @@ const handleSubmit = async () => {
     // Hide the form by setting valid to false
     valid.value = false;
   } catch (error: any) {
-    errorMessage.value =
-      error?.message || "Failed to reset password. Please try again.";
+    errorMessage.value = "Failed to reset password. Please try again.";
   }
 };
 </script>

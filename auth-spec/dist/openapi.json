@@ -97,7 +97,14 @@
         ],
         "responses": {
           "200": {
-            "description": "Successful logout"
+            "description": "Successful logout",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LogoutResponse"
+                }
+              }
+            }
           }
         }
       }
@@ -463,6 +470,10 @@
             "type": "string"
           }
         }
+      },
+      "LogoutResponse": {
+        "type": "object",
+        "additionalProperties": false
       },
       "ForgotPasswordRequest": {
         "type": "object",
