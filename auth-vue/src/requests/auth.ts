@@ -1,79 +1,86 @@
 import { useMutation } from "@tanstack/vue-query";
-import { type FetchResponse } from "openapi-fetch";
 import { client } from "./client.ts";
-import type {
-  LoginRequest,
-  RegisterRequest,
-  ForgotPasswordRequest,
-  ResetPasswordRequest,
-  VerifyEmailRequest,
-} from "./types.ts";
-
-const handleResponse = async (
-  request: Promise<FetchResponse<any, any, any>>,
-) => {
-  const { data, error } = await request;
-  if (error) {
-    if (error.error) {
-      throw new Error(error.error);
-    }
-    throw new Error("Unknown error");
-  }
-  return data;
-};
+import type { AuthResponse, AuthRequest } from "./types.ts";
+import { TanstackError, handleClientMethod } from "@saflib/vue-spa";
 
 export const useLogin = () => {
-  return useMutation({
-    mutationFn: async (body: LoginRequest) => {
-      return handleResponse(client.POST("/auth/login", { body }));
+  return useMutation<
+    AuthResponse["loginUser"][200],
+    TanstackError,
+    AuthRequest["loginUser"]
+  >({
+    mutationFn: (body) => {
+      return handleClientMethod(client.POST("/auth/login", { body }));
     },
   });
 };
 
 export const useLogout = () => {
-  return useMutation({
-    mutationFn: async () => {
-      return handleResponse(client.POST("/auth/logout"));
+  return useMutation<
+    AuthResponse["logoutUser"][200],
+    TanstackError
+  >({
+    mutationFn: () => {
+      return handleClientMethod(client.POST("/auth/logout"));
     },
   });
 };
 
 export const useRegister = () => {
-  return useMutation({
-    mutationFn: async (body: RegisterRequest) => {
-      return handleResponse(client.POST("/auth/register", { body }));
+  return useMutation<
+    AuthResponse["registerUser"][200],
+    TanstackError,
+    AuthRequest["registerUser"]
+  >({
+    mutationFn: (body) => {
+      return handleClientMethod(client.POST("/auth/register", { body }));
     },
   });
 };
 
 export const useForgotPassword = () => {
-  return useMutation({
-    mutationFn: async (body: ForgotPasswordRequest) => {
-      return handleResponse(client.POST("/auth/forgot-password", { body }));
+  return useMutation<
+    AuthResponse["forgotPassword"][200],
+    TanstackError,
+    AuthRequest["forgotPassword"]
+  >({
+    mutationFn: (body) => {
+      return handleClientMethod(client.POST("/auth/forgot-password", { body }));
     },
   });
 };
 
 export const useResetPassword = () => {
-  return useMutation({
-    mutationFn: async (body: ResetPasswordRequest) => {
-      return handleResponse(client.POST("/auth/reset-password", { body }));
+  return useMutation<
+    AuthResponse["resetPassword"][200],
+    TanstackError,
+    AuthRequest["resetPassword"]
+  >({
+    mutationFn: (body) => {
+      return handleClientMethod(client.POST("/auth/reset-password", { body }));
     },
   });
 };
 
 export const useVerifyEmail = () => {
-  return useMutation({
-    mutationFn: async (body: VerifyEmailRequest) => {
-      return handleResponse(client.POST("/auth/verify-email", { body }));
+  return useMutation<
+    AuthResponse["verifyEmail"][200],
+    TanstackError,
+    AuthRequest["verifyEmail"]
+  >({
+    mutationFn: (body) => {
+      return handleClientMethod(client.POST("/auth/verify-email", { body }));
     },
   });
 };
 
 export const useResendVerification = () => {
-  return useMutation({
+  return useMutation<
+    AuthResponse["resendVerification"][200],
+    TanstackError
+  >({
     mutationFn: async () => {
-      return handleResponse(client.POST("/auth/resend-verification"));
+      return handleClientMethod(client.POST("/auth/resend-verification"));
     },
   });
 };

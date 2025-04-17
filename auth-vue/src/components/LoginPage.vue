@@ -66,13 +66,8 @@ const handleLogin = () => {
           @click:append-inner="passwordVisible = !passwordVisible"
         />
 
-        <v-alert
-          v-if="isError && error?.message"
-          type="error"
-          variant="tonal"
-          class="mb-3"
-        >
-          {{ error.message }}
+        <v-alert v-if="isError" type="error" variant="tonal" class="mb-3">
+          Invalid credentials
         </v-alert>
 
         <v-btn

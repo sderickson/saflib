@@ -59,6 +59,10 @@ logout:
     responses:
       "200":
         description: Successful logout
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LogoutResponse"
 
 verify:
   get:
@@ -235,6 +239,10 @@ components:
           format: email
         password:
           type: string
+
+    LogoutResponse:
+      type: object
+      additionalProperties: false
 
     UserResponse:
       type: object

@@ -69,7 +69,7 @@ export const registerHandler = createHandler(async (req, res) => {
   } catch (err) {
     if (err instanceof db.users.EmailConflictError) {
       const errorResponse: AuthResponse["registerUser"][409] = {
-        error: "Email already exists",
+        message: "Email already exists",
       };
       res.status(409).json(errorResponse);
       return;

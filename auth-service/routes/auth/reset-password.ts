@@ -19,7 +19,7 @@ export const resetPasswordHandler = createHandler(
         emailAuth.forgotPasswordTokenExpiresAt < new Date()
       ) {
         const errorResponse: AuthResponse["resetPassword"][400] = {
-          error: "Invalid or expired token",
+          message: "Invalid or expired token",
         };
         res.status(400).json(errorResponse);
         return;
@@ -40,7 +40,7 @@ export const resetPasswordHandler = createHandler(
     } catch (err) {
       if (err instanceof db.emailAuth.TokenNotFoundError) {
         const errorResponse: AuthResponse["resetPassword"][400] = {
-          error: "Invalid or expired token",
+          message: "Invalid or expired token",
         };
         res.status(400).json(errorResponse);
         return;

@@ -34,8 +34,7 @@ const handleVerify = async () => {
     await verifyEmail({ token });
     successMessage.value = "Email successfully verified!";
   } catch (error: any) {
-    errorMessage.value =
-      error?.message || "Failed to verify email. Please try again.";
+    errorMessage.value = "Failed to verify email. Please try again.";
   }
 };
 
@@ -47,9 +46,7 @@ const handleResend = async () => {
     await resendVerification();
     successMessage.value = "Please check your email for the verification link.";
   } catch (error: any) {
-    errorMessage.value =
-      error?.message ||
-      "Failed to resend verification email. Please try again.";
+    errorMessage.value = "Failed to send email. Please try again.";
   }
 };
 

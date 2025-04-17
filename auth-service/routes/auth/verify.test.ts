@@ -35,7 +35,7 @@ describe("Verify Route", () => {
     const response = await request(app).get("/auth/verify");
 
     expect(response.status).toBe(401);
-    expect(response.body).toEqual({ error: "Unauthorized!" });
+    expect(response.body).toEqual({ message: "Unauthorized!" });
   });
 
   it("should return user info when authenticated", async () => {
@@ -122,10 +122,10 @@ describe("Verify Route", () => {
     expect(response.body).toEqual({
       id: expect.any(Number),
       email: userData.email,
-      scopes: ["users:read", "todos:nuke"],
+      scopes: ["*"],
     });
     expect(response.header["x-user-id"]).toBeDefined();
     expect(response.header["x-user-email"]).toBe(userData.email);
-    expect(response.header["x-user-scopes"]).toBe("users:read,todos:nuke");
+    expect(response.header["x-user-scopes"]).toBe("*");
   });
 });

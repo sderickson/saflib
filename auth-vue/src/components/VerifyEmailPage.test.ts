@@ -21,7 +21,7 @@ const handlers = [
         });
       }
       return new HttpResponse(
-        JSON.stringify({ error: "Invalid or expired token" }),
+        JSON.stringify({ message: "Invalid or expired token" }),
         {
           status: 404,
         },
@@ -83,7 +83,7 @@ describe("VerifyEmailPage", () => {
       const alerts = wrapper.findAllComponents({ name: "v-alert" });
       return alerts.find((alert) => alert.props("type") === "error");
     });
-    expect(errorAlert?.text()).toContain("Invalid or expired token");
+    expect(errorAlert?.text()).toContain("Failed to verify email");
 
     // Verify resend button is shown
     const resendButton = getResendButton(wrapper);

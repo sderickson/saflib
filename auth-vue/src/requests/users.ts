@@ -10,7 +10,7 @@ const fetchUsers = async (): Promise<AuthResponse["listUsers"][200]> => {
   // Use the client from `@saflib/auth-vue` which uses `auth-spec` paths
   const response = await client.GET("/users"); // Path relative to auth service
 
-  if (response.error) {
+  if (response.error !== undefined) {
     // Handle potential errors based on the structure of createSafClient response
     throw new Error(`Failed to fetch users`); // Or handle specific error types
   }

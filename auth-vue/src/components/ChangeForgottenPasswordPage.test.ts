@@ -169,6 +169,6 @@ describe("ChangeForgottenPasswordPage", () => {
       },
       { timeout: 1000 },
     );
-    expect(errorAlert?.text()).toContain("Invalid or expired token");
+    expect(errorAlert?.text()).toContain("Failed to reset password");
   });
 });

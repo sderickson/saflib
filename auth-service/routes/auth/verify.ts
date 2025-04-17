@@ -21,7 +21,7 @@ export const verifyHandler = createHandler(
 
     if (!req.isAuthenticated()) {
       const errorResponse: AuthResponse["verifyAuth"][401] = {
-        error: "Unauthorized!",
+        message: "Unauthorized!",
       };
       res.status(401).json(errorResponse);
       return;
@@ -29,7 +29,7 @@ export const verifyHandler = createHandler(
 
     if (!req.isValidCsrfToken()) {
       const errorResponse: AuthResponse["verifyAuth"][403] = {
-        error: "CSRF token mismatch!",
+        message: "CSRF token mismatch!",
       };
       res.status(403).json(errorResponse);
       return;
@@ -43,10 +43,8 @@ export const verifyHandler = createHandler(
     if (req.app.get("saf:admin emails").has(user.email)) {
       const emailAuth = await db.emailAuth.getByEmail(user.email);
       if (emailAuth.verifiedAt) {
-        // TODO: properly give scopes based on admin role.
-        // and what scopes exist.
-        scopes.push("users:read");
-        scopes.push("todos:nuke");
+        scopes.push("*");
+        // TODO: set up a way to map roles -> scopes.
       }
     }
 
