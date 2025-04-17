@@ -9,7 +9,6 @@
 
     <v-alert v-else-if="isError" type="error" density="compact" class="mb-4">
       <p>Failed to load users:</p>
-      <pre>{{ error?.message }}</pre>
     </v-alert>
 
     <UserList v-else :users="data" />

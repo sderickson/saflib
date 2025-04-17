@@ -94,13 +94,12 @@ const confirmPasswordRules = [
           Register
         </v-btn>
 
-        <v-alert
-          v-if="isError && error?.message"
-          type="error"
-          variant="outlined"
-          class="mb-3"
-        >
-          {{ error.message }}
+        <v-alert v-if="isError" type="error" variant="outlined" class="mb-3">
+          {{
+            error?.status === 409
+              ? "Email already exists"
+              : "Failed to register"
+          }}
         </v-alert>
 
         <v-card-text class="text-center">
