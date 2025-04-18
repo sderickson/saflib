@@ -8,17 +8,19 @@ import {
   VerifyEmailPage,
 } from "@saflib/auth-vue";
 
-const routes = [
-  { path: "/", component: LoginPage },
-  { path: "/login", component: LoginPage },
-  { path: "/register", component: RegisterPage },
-  { path: "/forgot", component: ForgotPasswordPage },
-  { path: "/logout", component: LogoutPage },
-  { path: "/reset-password", component: ChangeForgottenPasswordPage },
-  { path: "/verify-email", component: VerifyEmailPage },
-];
+export const createAuthRouter = () => {
+  const routes = [
+    { path: "/", component: LoginPage },
+    { path: "/login", component: LoginPage },
+    { path: "/register", component: RegisterPage },
+    { path: "/forgot", component: ForgotPasswordPage },
+    { path: "/logout", component: LogoutPage },
+    { path: "/reset-password", component: ChangeForgottenPasswordPage },
+    { path: "/verify-email", component: VerifyEmailPage },
+  ];
 
-export const router = createRouter({
-  history: createWebHistory("/auth"),
-  routes,
-});
+  return createRouter({
+    history: createWebHistory("/auth"),
+    routes,
+  });
+};
