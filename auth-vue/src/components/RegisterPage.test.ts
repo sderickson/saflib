@@ -7,7 +7,9 @@ import {
 import { type VueWrapper } from "@vue/test-utils";
 import { http, HttpResponse } from "msw";
 import RegisterPage from "./RegisterPage.vue";
-import { router } from "../auth-router.ts";
+import { createAuthRouter } from "../auth-router.ts";
+
+const router = createAuthRouter();
 
 interface RegisterRequest {
   email: string;

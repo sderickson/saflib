@@ -1,4 +1,4 @@
-import { createWebHistory, createRouter } from "vue-router";
+import { createWebHistory, createRouter, type Router } from "vue-router";
 import {
   LoginPage,
   RegisterPage,
@@ -8,7 +8,12 @@ import {
   VerifyEmailPage,
 } from "@saflib/auth-vue";
 
+let router: Router;
+
 export const createAuthRouter = () => {
+  if (router) {
+    return router;
+  }
   const routes = [
     { path: "/", component: LoginPage },
     { path: "/login", component: LoginPage },
@@ -19,8 +24,9 @@ export const createAuthRouter = () => {
     { path: "/verify-email", component: VerifyEmailPage },
   ];
 
-  return createRouter({
+  router = createRouter({
     history: createWebHistory("/auth"),
     routes,
   });
+  return router;
 };

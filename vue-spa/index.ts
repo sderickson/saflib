@@ -47,3 +47,28 @@ export const handleClientMethod = async <
   }
   return result.data;
 };
+
+import { createApp, type Component } from "vue";
+import { createVuetify, type VuetifyOptions } from "vuetify";
+import { VueQueryPlugin } from "@tanstack/vue-query";
+import type { Router } from "vue-router";
+
+interface CreateVueAppOptions {
+  router: Router;
+  vuetifyConfig?: VuetifyOptions;
+}
+
+export const createVueApp = (
+  Application: Component,
+  { router, vuetifyConfig }: CreateVueAppOptions,
+) => {
+  const vuetify = createVuetify(vuetifyConfig);
+  const app = createApp(Application);
+  app.use(vuetify);
+  if (router) {
+    app.use(router);
+  }
+  app.use(VueQueryPlugin, { enableDevtoolsV6Plugin: true });
+  app.mount("#app");
+  return createApp(app);
+};
