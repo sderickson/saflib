@@ -1,7 +1,5 @@
 import * as nodemailer from "nodemailer";
-import type Mail from "nodemailer/lib/mailer";
-import type SMTPTransport from "nodemailer/lib/smtp-transport";
-
+import { Transporter } from "nodemailer";
 // Define EmailOptions based on nodemailer's SendMailOptions
 export interface EmailOptions
   extends Pick<
@@ -30,7 +28,7 @@ export interface EmailResult {
 }
 
 export class EmailClient {
-  private transporter: Mail;
+  private transporter: Transporter;
 
   constructor() {
     let host = process.env.SMTP_HOST;
@@ -56,15 +54,14 @@ export class EmailClient {
     const secure = process.env.SMTP_SECURE !== "false";
     const name = process.env.SMTP_NAME;
 
-    const transportOptions: SMTPTransport.Options = {
+    this.transporter = nodemailer.createTransport({
       host,
       port: port ? parseInt(port, 10) : undefined,
       secure: secure,
       // Only add auth if user and pass are provided
       auth: user && pass ? { user, pass } : undefined,
       name,
-    };
-    this.transporter = nodemailer.createTransport(transportOptions);
+    });
     if (!this.transporter) {
       throw new Error("Failed to create transporter");
     }
@@ -88,8 +85,7 @@ export class EmailClient {
         };
       }
 
-      const info: SMTPTransport.SentMessageInfo =
-        await this.transporter.sendMail(options);
+      const info = await this.transporter.sendMail(options);
 
       // Map nodemailer's result to our EmailResult interface (adjusting types)
       return {
