@@ -16,10 +16,7 @@ export const useLogin = () => {
 };
 
 export const useLogout = () => {
-  return useMutation<
-    AuthResponse["logoutUser"][200],
-    TanstackError
-  >({
+  return useMutation<AuthResponse["logoutUser"][200], TanstackError>({
     mutationFn: () => {
       return handleClientMethod(client.POST("/auth/logout"));
     },
@@ -75,10 +72,7 @@ export const useVerifyEmail = () => {
 };
 
 export const useResendVerification = () => {
-  return useMutation<
-    AuthResponse["resendVerification"][200],
-    TanstackError
-  >({
+  return useMutation<AuthResponse["resendVerification"][200], TanstackError>({
     mutationFn: async () => {
       return handleClientMethod(client.POST("/auth/resend-verification"));
     },
