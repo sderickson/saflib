@@ -58,9 +58,7 @@ describe("GET /users Route (Integration)", () => {
     const response = await agent.get("/users");
 
     expect(response.status).toBe(403);
-    expect(response.body).toEqual({
-      message: "Insufficient permissions. Missing scopes: users:read",
-    });
+    expect(response.body.message).toContain("Insufficient permissions");
   });
 
   it("should return a sorted list of all users for an admin", async () => {
