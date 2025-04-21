@@ -132,27 +132,78 @@ export class InvalidDataError extends HandledDatabaseError {
 
 ## Query Pattern Best Practices
 
-### Leveraging Drizzle Types
+### Defining Input and Output Types
 
-Prefer using Drizzle's inferred types (`$inferSelect` for fetched data, `$inferInsert` for data to be inserted) over manually defining types with `Omit` or `Partial` where possible. This keeps your types synchronized with the schema.
+Leverage Drizzle's inferred types (`$inferSelect` for selection results, `$inferInsert` for insertion data) as the base for your function inputs and outputs.
+
+However, for functions like `create` or `update`, the exact input required often differs slightly from the base `$inferInsert` or `$inferSelect` types. Create specific `Input` types using TypeScript's utility types (`Omit`, `Partial`, `Pick`, `&`) to precisely define the expected shape:
+
+- **Create Operations:** Start with `$inferInsert`. `Omit` fields automatically handled by the database (e.g., `id`, `createdAt`, `updatedAt`).
+- **Update Operations:** Often require the `id` of the record. Start with `$inferSelect` or `$inferInsert`, make relevant fields `Partial`, `Omit` fields that shouldn't be updated (e.g., `id` itself within the payload, `createdAt`, `ownerId`), and explicitly add back required identifiers using `& { id: number }`.
 
 ```typescript
-// Good: Use Drizzle's inferred types
+import * as schema from '../schema';
+
+// Base types inferred from schema
 export type User = typeof schema.users.$inferSelect;
 export type NewUser = typeof schema.users.$inferInsert;
 
+// --- Input Types ---
+
+// For creating a user: Omit DB-handled fields
+export type CreateUserInput = Omit<NewUser, 'id' | 'createdAt' | 'updatedAt'>;
+
+// For updating a user: Make fields optional, omit protected/DB fields. Require unique identifiers such as id.
+export type UpdateUserInput = Partial<Omit<User, 'ownerId' | 'createdAt' | 'updatedAt'>> & { id: number };
+
+// --- Query Functions ---
+
 export function createUserQueries(db) {
   return {
-    // no return type necessary - if you return what drizzle returns, it will be inferred
+    // Return type is inferred
     getUser: queryWrapper(async (id: number) => { ... }),
-    createUser: queryWrapper(async (data: NewUser) => { ... })
+
+    // Create: just CreateUserInput type
+    createUser: queryWrapper(async (data: CreateUserInput) => {
+        const result = await db.insert(schema.users).values({
+            ...data,
+            createdAt: new Date(),
+            updatedAt: new Date()
+        }).returning();
+        return result[0];
+     }),
+
+    // Update: just UpdateUserInput type, which includes identifier and fields to update
+    updateUser: queryWrapper(async (data: UpdateUserInput) => {
+        // Do any data validation here
+        const result = await db.update(schema.users).set({
+            ...data,
+            updatedAt: new Date(), // Update timestamp
+        }).where(eq(schema.users.id, id)).returning();
+
+        if (result.length === 0) throw new UserNotFoundError(id);
+        return result[0];
+    }),
+
+    // Delete: Takes only the id
+    deleteUser: queryWrapper(async (id: number) => { ... })
   }
 }
 ```
 
-### Simplified Inserts and Updates
+### Function Signatures
 
-When the input data object closely matches the table structure, use the spread operator (`...`) for conciseness in `insert().values()` and `update().set()`. Drizzle typically ignores extra fields.
+Design function signatures to be clear and prevent redundancy:
+
+- If an operation doesn't need record data (get, delete), pass identifying information (like `id`, `slug`, `email`, etc.) as an argument and name the function accordingly (getBySlug, deleteByEmail).
+- If there's a data payload object (e.g., `UpdateUserInput`), it should contain these identifiers, rather than requiring separate arguments.
+- For create operations, no generated identifiers are needed.
+
+This separation makes the function's purpose and requirements explicit.
+
+### Simplified Inserts and Updates using Spread
+
+Within the function implementation, when the (potentially modified) input data object aligns well with the table structure, use the spread operator (`...`) for conciseness in `insert().values()` and `update().set()`.
 
 ```typescript
 // Example: Inserting using spread
