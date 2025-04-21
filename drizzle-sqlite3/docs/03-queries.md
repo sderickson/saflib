@@ -46,9 +46,16 @@ export class TodoNotFoundError extends HandledDatabaseError {
 // Export a factory function that takes a db instance
 export function createTodoQueries(db: BetterSQLite3Database<typeof schema>) {
   // type based on what instance.ts exports
+
+  // Define input/output types using Drizzle's inference where possible
+  type Todo = typeof schema.todos.$inferSelect;
+  type NewTodo = typeof schema.todos.$inferInsert;
+
   return {
     TodoNotFoundError,
     // Wrap database queries to standardize error handling
+    // Note: Explicit return types (e.g., Promise<Todo>) on the async function
+    // are often optional, as TypeScript can infer them from Drizzle's results.
     getById: queryWrapper(async (id: string) => {
       const todo = await db.query.todos.findFirst({
         where: eq(todos.id, id),
@@ -59,6 +66,18 @@ export function createTodoQueries(db: BetterSQLite3Database<typeof schema>) {
       }
 
       return todo;
+    }),
+
+    createTodo: queryWrapper(async (data: NewTodo) => {
+      // Example using inferred insert type
+      const result = await db
+        .insert(schema.todos)
+        .values({
+          ...data,
+          createdAt: new Date(), // Add fields not in the base type
+        })
+        .returning();
+      return result[0];
     }),
   };
 }
@@ -112,6 +131,73 @@ export class InvalidDataError extends HandledDatabaseError {
 ```
 
 ## Query Pattern Best Practices
+
+### Leveraging Drizzle Types
+
+Prefer using Drizzle's inferred types (`$inferSelect` for fetched data, `$inferInsert` for data to be inserted) over manually defining types with `Omit` or `Partial` where possible. This keeps your types synchronized with the schema.
+
+```typescript
+// Good: Use Drizzle's inferred types
+export type User = typeof schema.users.$inferSelect;
+export type NewUser = typeof schema.users.$inferInsert;
+
+export function createUserQueries(db) {
+  return {
+    // no return type necessary - if you return what drizzle returns, it will be inferred
+    getUser: queryWrapper(async (id: number) => { ... }),
+    createUser: queryWrapper(async (data: NewUser) => { ... })
+  }
+}
+```
+
+### Simplified Inserts and Updates
+
+When the input data object closely matches the table structure, use the spread operator (`...`) for conciseness in `insert().values()` and `update().set()`. Drizzle typically ignores extra fields.
+
+```typescript
+// Example: Inserting using spread
+create: queryWrapper(async (data: NewUser) => {
+  const now = new Date();
+  const result = await db.insert(users).values({
+    ...data,
+    createdAt: now,
+    updatedAt: now,
+  }).returning();
+  return result[0];
+}),
+
+// Example: Updating using spread
+update: queryWrapper(async (id: number, data: Partial<User>) => {
+  const result = await db.update(users).set({
+    ...data,
+    updatedAt: new Date(),
+  }).where(eq(users.id, id)).returning();
+  return result[0];
+}),
+```
+
+### Handling Joins
+
+When querying data across multiple tables using joins (`leftJoin`, `innerJoin`, etc.), Drizzle's default `select()` returns a nested structure containing objects for each table involved (e.g., `{ tableA: {...}, tableB: {...} }`).
+
+**Recommendation:** Return this nested structure directly from your query function. Avoid manually flattening or mapping the result within the query function itself. This keeps the database query logic simple and delegates the responsibility of handling the specific data shape to the service layer or consumer.
+
+```typescript
+// Example: Get user with their profile (one-to-one)
+getUserWithProfile: queryWrapper(async (userId: number) => {
+  const result = await db
+    .select() // Selects all columns from both tables, nested
+    .from(users)
+    .leftJoin(profiles, eq(users.id, profiles.userId))
+    .where(eq(users.id, userId));
+
+  // Returns structure like: { users: User, profiles: Profile | null }[]
+  if (result.length === 0) return undefined;
+  return result[0];
+}),
+```
+
+The consuming code would then access properties like `result.users.email` or `result.profiles?.bio`.
 
 ### Upsert Pattern
 
