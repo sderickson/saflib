@@ -10,7 +10,8 @@
   - Route handlers should **handle expected errors** returned by service/database layers (e.g., "Not Found", "Validation Failed"). This typically involves checking the `error` property of the returned object (see `ReturnsError` pattern).
   - Handlers translate these expected errors into appropriate HTTP status codes and response bodies (conforming to the OpenAPI spec).
   - **Unexpected errors** (database connection issues, bugs, errors _thrown_ by services) should _not_ be caught by `try/catch` in the handler. Let them propagate; `createHandler` will catch them and pass them to the central error middleware, typically resulting in a 500 response.
-- Routes are primarily responsible for HTTP concerns: request validation (basic format), context extraction, calling service/DB layer, response formatting (mapping results/errors to HTTP status/body), and adhering to the API contract (OpenAPI spec).
+- Routes are primarily responsible for HTTP concerns: request validation (basic format), authorization checks, context extraction, calling service/DB layer, response formatting (mapping results/errors to HTTP status/body), and adhering to the API contract (OpenAPI spec).
+- Note that openapi validation and auth middleware checks happen before, so routes should assume params, body, and auth are valid. A handler need never throw a 401, but they should throw 403s.
 - Keep business logic out of route handlers; place it in separate service or database layer functions.
 
 ## Route Handler Structure
@@ -105,10 +106,6 @@ export const getCallSeriesHandler = createHandler(async (req, res) => {
   const ctx = asyncLocalStorage.getStore()!;
   const callSeriesId = parseInt(req.params.id);
 
-  if (isNaN(callSeriesId)) {
-    throw createError(400, "Invalid Call Series ID"); // Throw for invalid input format
-  }
-
   const { result: callSeries, error } =
     await ctx.db.callSeries.get(callSeriesId);
 
@@ -118,10 +115,7 @@ export const getCallSeriesHandler = createHandler(async (req, res) => {
         // Return a 404 conforming to the spec
         // Note: createError(404) could also be thrown here, letting
         // the central handler format the response, if preferred.
-        const errRes: ApiResponse["getCallSeries"][404] = {
-          message: "Not Found",
-        };
-        return res.status(404).json(errRes);
+        return res.status(404);
       default:
         // Unexpected *returned* error, escalate to central handler
         throw error satisfies never;
@@ -129,9 +123,9 @@ export const getCallSeriesHandler = createHandler(async (req, res) => {
   }
 
   // Check Authorization (Example)
-  // if (callSeries.ownerId !== req.auth?.userId) {
-  //   throw createError(403); // Throw standard HTTP errors for authZ
-  // }
+  if (callSeries.ownerId !== req.auth?.userId) {
+    throw createError(403);
+  }
 
   const response: ApiResponse["getCallSeries"][200] = {
     call_series: {
@@ -142,21 +136,6 @@ export const getCallSeriesHandler = createHandler(async (req, res) => {
 });
 ```
 
-**Handling Invalid Input:**
-
-Basic input validation (e.g., checking if an ID is a number) can happen in the handler. For more complex validation, consider using middleware (like `express-validator` or OpenAPI-based validators) before the handler runs.
-
-```typescript
-// Inside a handler:
-const count = parseInt(req.query.count as string);
-if (isNaN(count) || count < 1) {
-  // Throwing an http-errors instance is often cleanest for input validation failures
-  throw createError(400, "Invalid count parameter");
-}
-```
-
-`createHandler` ensures that errors thrown using `createError` (or any other standard Error) are caught and passed to the central Express error handling middleware, which should format them into appropriate HTTP error responses.
-
 ## Best Practices
 
 1.  **HTTP Focus:** Handlers manage HTTP request/response lifecycle.
@@ -164,7 +143,5 @@ if (isNaN(count) || count < 1) {
 3.  **Use OpenAPI Types:** Ensure handlers conform to the API contract.
     - Type request bodies, parameters, and responses using generated types.
     - Adhere to specified success and error response schemas.
-4.  **Context over `req`:** Access shared resources (DB, logger, auth info) via `asyncLocalStorage.getStore()` instead of attaching to `req`.
-5.  **Error Handling:** Handle _expected_ errors returned from services by mapping them to appropriate HTTP responses. Let _unexpected_ errors (thrown) propagate to the central error handler via `createHandler`.
-6.  **File Structure:** Follow the "one handler per file" structure within feature directories.
-7.  **Middleware:** Use middleware for cross-cutting concerns (authentication, request logging, complex validation).
+4.  **Error Handling:** Handle _expected_ errors returned from services by mapping them to appropriate HTTP responses. Let _unexpected_ errors (thrown) propagate to the central error handler via `createHandler`.
+5.  **File Structure:** Follow the "one handler per file" structure within feature directories.
