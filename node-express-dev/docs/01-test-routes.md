@@ -38,12 +38,27 @@ describe("Login Route", () => {
     // Then try to login
     const response = await request(app).post("/auth/login").send(userData);
 
+    // Assert on status directly for better error reporting
     expect(response.status).toBe(200);
+    // Assert on the structure and key fields of the success response body
     expect(response.body).toEqual({
       id: expect.any(Number),
       email: userData.email,
       scopes: [],
     });
+  });
+
+  it("should return 401 for invalid credentials", async () => {
+     const invalidData = {
+       email: "test@example.com", // Assume user exists
+       password: "wrongpassword",
+     };
+     const response = await request(app).post("/auth/login").send(invalidData);
+
+     // Assert ONLY on the status code for error responses
+     expect(response.status).toBe(401);
+     // Avoid asserting on response.body.message, as these are often for debugging
+     // and make tests brittle. The status code sufficiently indicates the error type.
   });
 });
 
@@ -143,14 +158,27 @@ vi.mock("@saflib/email");
    await agent.get("/protected-route");
    ```
 
+## Assertion Strategy
+
+1.  **Success Cases (2xx):**
+    *   Assert the correct status code using `expect(response.status).toBe(200)` (or 201, etc.).
+    *   Assert the structure and key fields of the response body using `expect(response.body).toEqual(...)` or `expect(response.body).toMatchObject(...)`. Focus on identifiers, important data fields, and presence/absence of expected properties. Avoid asserting on fields that might change frequently or are not critical to the API contract (e.g., `updatedAt` timestamps unless essential).
+
+2.  **Error Cases (4xx, 5xx):**
+    *   Assert **only** the expected status code using `expect(response.status).toBe(400)` (or 401, 403, 404, 409, etc.).
+    *   Do **not** assert on 5xx. If those happen, those should be fixed, not tested for.
+    *   **Do not** assert on the content of the error response body (e.g., `response.body.message`). These messages are primarily for debugging and can change, making tests unnecessarily brittle. The HTTP status code is the contractual way to signal the type of error in an API.
+    *   Avoid helper functions like `expectStatus` that wrap the status check, as they can obscure the exact line where a test failure occurs in test runner output. Direct status checks provide clearer stack traces.
+
 ## Testing Checklist
 
 When adding tests for new API routes, ensure:
 
-1. **High coverage**: Test success and error paths
-2. **Database state**: Set up required database state before each test
-3. **Error handling**: Test that errors are properly caught and converted to appropriate HTTP responses
-4. **Mocking**: Mock only expensive/external operations, not the database
+1.  **High coverage**: Test success and **relevant** error paths (focus on distinct error conditions signaled by status codes).
+2.  **Database state**: Set up required database state before each test.
+3.  **Error handling**: Test that errors result in the appropriate HTTP status codes.
+4.  **Assertions**: Follow the [Assertion Strategy](#assertion-strategy) - check body structure for success, only status code for errors.
+5.  **Mocking**: Mock only expensive/external operations, not the database.
 
 ## Running Tests
 
