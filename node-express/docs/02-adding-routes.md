@@ -24,7 +24,7 @@ import type { ApiRequest, ApiResponse } from "@your-org/your-spec"; // Adjust sp
 import {
   UserNotFoundError,
   InvalidCredentialsError,
-} from "@your-org/your-db-package/queries/user/errors"; // Adjust error imports
+} from "@your-org/your-db-package"; // Adjust error imports
 import createError from "http-errors"; // For creating standard HTTP errors
 
 export const loginHandler = createHandler(async (req, res) => {
@@ -98,7 +98,7 @@ The `createHandler` wrapper simplifies error handling by catching unhandled prom
 import { createHandler } from "@saflib/node-express";
 import { asyncLocalStorage } from "../../context.ts";
 import type { ApiRequest, ApiResponse } from "@your-org/your-spec";
-import { CallSeriesNotFoundError } from "@your-org/your-db-package/queries/call-series/errors";
+import { CallSeriesNotFoundError } from "@your-org/your-db-package";
 import createError from "http-errors";
 
 export const getCallSeriesHandler = createHandler(async (req, res) => {
@@ -129,7 +129,7 @@ export const getCallSeriesHandler = createHandler(async (req, res) => {
   }
 
   // Check Authorization (Example)
-  // if (callSeries.ownerId !== ctx.auth?.userId) {
+  // if (callSeries.ownerId !== req.auth?.userId) {
   //   throw createError(403); // Throw standard HTTP errors for authZ
   // }
 
