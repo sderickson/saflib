@@ -24,7 +24,8 @@ service/
 │       ├── create.ts     # Example handler for POST /feature
 │       └── ...           # Other handlers and their tests
 ├── context.ts        # Defines request context using AsyncLocalStorage
-├── app.ts            # Main Express application setup
+├── middleware.ts     # Configures shared middleware (validation, auth parsing, etc.)
+├── http.ts           # Main Express *HTTP* application setup
 ├── package.json      # Service dependencies and scripts
 └── vitest.config.mts # Vitest configuration
 ```
@@ -48,7 +49,7 @@ service/
 
    ```javascript
    #!/usr/bin/env node
-   import { createApp } from "../app.ts";
+   import { createApp } from "../http.ts";
    import { startServer } from "@saflib/node-express";
 
    const app = createApp();
@@ -83,20 +84,51 @@ service/
    export const asyncLocalStorage = new AsyncLocalStorage<RequestContext>();
    ```
 
-4. Create a `routes` directory. Inside, create an `index.ts` to combine feature routers, and subdirectories for each feature:
+4. Create a `middleware.ts` file to configure shared middleware:
+
+   `middleware.ts`:
+
+   ```typescript
+   import {
+     createPreMiddleware,
+     recommendedErrorHandlers,
+   } from "@saflib/node-express";
+   import apiSpec from "@your-org/your-spec/dist/openapi.json" with { type: "json" }; // Adjust spec import
+   // Optional: Import health check functions if needed
+
+   // Example health check function (adapt as needed)
+   const healthCheck = async () => {
+     // Check database connection, external services, etc.
+     // Example: const dbHealthy = await checkDbConnection();
+     // return dbHealthy;
+     return true; // Placeholder
+   };
+
+   export const preMiddleware = createPreMiddleware({
+     // Provide the OpenAPI spec for request/response validation
+     apiSpec: apiSpec as any, // Cast needed due to potential complex types
+     // Enable auth header parsing if using JWT/auth middleware
+     parseAuthHeaders: true,
+     // Optional: Provide custom health check logic
+     healthCheck,
+   });
+
+   // Export recommended error handlers for use in http.ts
+   export { recommendedErrorHandlers as errorHandlers };
+   ```
+
+5. Create a `routes` directory. Inside, create an `index.ts` to combine feature routers, and subdirectories for each feature:
 
    `routes/[feature]/get-by-id.ts` (Example handler):
 
    ```typescript
    import { createHandler } from "@saflib/node-express";
    import { asyncLocalStorage } from "../../context.ts";
-   // Import spec types if needed
+   import createError from "http-errors"; // For creating standard HTTP errors
 
    export const getFeatureByIdHandler = createHandler(async (req, res) => {
-     const ctx = asyncLocalStorage.getStore();
-     if (!ctx) {
-       throw new Error("Request context not found."); // Should not happen if middleware is set up
-     }
+     // Use shorthand assuming middleware guarantees context
+     const ctx = asyncLocalStorage.getStore()!;
      const { db /*, logger */ } = ctx;
      const featureId = req.params.id;
 
@@ -136,17 +168,18 @@ service/
    export default router; // Export the main application router
    ```
 
-5. Set up your main `app.ts` with a `createApp` function:
+6. Set up your main HTTP server in `http.ts` with a `createApp` function:
+
+   `http.ts`:
 
    ```typescript
    import { DatabaseInstance } from "@your-org/your-db-package"; // Adjust DB import
    import {
-     createPreMiddleware, // Includes context initialization
-     recommendedErrorHandlers,
      createContextMiddleware, // Use this helper
    } from "@saflib/node-express";
    import express from "express";
    import { asyncLocalStorage, RequestContext } from "./context.ts";
+   import { preMiddleware, errorHandlers } from "./middleware.ts"; // Import configured middleware
    import mainRouter from "./routes/index.ts"; // Import the main router
 
    export function createApp() {
@@ -168,19 +201,19 @@ service/
      );
 
      // Apply other recommended pre-route middleware
-     app.use(createPreMiddleware());
+     app.use(preMiddleware);
 
      // Add routes (using the main router)
      app.use(mainRouter);
 
      // Apply recommended error handlers (should be last)
-     app.use(recommendedErrorHandlers);
+     app.use(errorHandlers);
 
      return app;
    }
    ```
 
-6. Add the following scripts to your `package.json`:
+7. Add the following scripts to your `package.json`:
 
    ```json
    {
@@ -207,12 +240,8 @@ import { asyncLocalStorage } from "../../context.ts";
 // Import the DB type if needed for specific operations
 
 export const getFeatureByIdHandler = createHandler(async (req, res) => {
-  // Get the context for the current request
-  const ctx = asyncLocalStorage.getStore();
-  if (!ctx) {
-    // This check is mostly for type safety; middleware should ensure it exists
-    throw new Error("Request context not found.");
-  }
+  // Use shorthand assuming middleware guarantees context
+  const ctx = asyncLocalStorage.getStore()!;
 
   // Access items from the context
   const db = ctx.db;
