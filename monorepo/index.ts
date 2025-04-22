@@ -1,4 +1,4 @@
-export type OneOf<T, K extends keyof T = keyof T> = K extends keyof T
+type OneOf<T, K extends keyof T = keyof T> = K extends keyof T
   ? Pick<T, K> & Partial<Record<Exclude<keyof T, K>, never>>
   : never;
 
