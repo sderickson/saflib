@@ -19,33 +19,19 @@ Query functions should follow a consistent pattern using `useQuery` and `handleC
 
 ```typescript
 // requests/users.ts
-import { useQuery, UseQueryOptions } from "@tanstack/vue-query";
+import { useQuery } from "@tanstack/vue-query";
 import { client } from "./client";
-// Import your specific API response/request types generated from OpenAPI
 import type { AuthResponse } from "./types";
 import { Ref } from "vue";
-// Import the helper and custom error type
 import { handleClientMethod, TanstackError } from "@saflib/vue-spa";
 
 /**
  * Hook to fetch a list of users
  */
-export const useGetUsers = (
-  options?: Omit<
-    UseQueryOptions<
-      AuthResponse["listUsers"][200], // Success response type
-      TanstackError // Error type
-    >,
-    "queryKey" | "queryFn"
-  >,
-) => {
+export const useGetUsers = () => {
   return useQuery<AuthResponse["listUsers"][200], TanstackError>({
     queryKey: ["users"],
-    queryFn: () => {
-      // Use handleClientMethod to automatically handle errors and return data
-      return handleClientMethod(client.GET("/users", {}));
-    },
-    ...options,
+    queryFn: () => handleClientMethod(client.GET("/users", {})),
   });
 };
 ```
@@ -74,43 +60,26 @@ When your query needs parameters that might change reactively, use Vue's `Ref` t
 
 ```typescript
 // requests/userProfile.ts
-import { useQuery, UseQueryOptions } from "@tanstack/vue-query";
+import { useQuery } from "@tanstack/vue-query";
 import { client } from "./client";
-import type { AuthResponse } from "./types"; // Specific API types
+import type { AuthResponse } from "./types";
 import { Ref } from "vue";
 import { handleClientMethod, TanstackError } from "@saflib/vue-spa";
 
 /**
  * Hook to fetch a user's profile
  * @param userId Ref to the user ID
- * @param options Additional query options
  */
-export const useGetUserProfile = (
-  userId: Ref<number>,
-  options?: Omit<
-    UseQueryOptions<
-      AuthResponse["getUserProfile"][200], // Success response type
-      TanstackError // Error type
-    >,
-    "queryKey" | "queryFn"
-  >,
-) => {
+export const useGetUserProfile = (userId: Ref<number>) => {
   return useQuery<AuthResponse["getUserProfile"][200], TanstackError>({
-    // Include the ref directly in the queryKey
     queryKey: ["userProfile", userId],
-    queryFn: () => {
-      // Access the .value inside the queryFn
-      // IMPORTANT: Use path parameter syntax, not template literals
-      // Use handleClientMethod
-      return handleClientMethod(
+    queryFn: () =>
+      handleClientMethod(
         client.GET("/users/{userId}/profile", {
-          params: {
-            path: { userId: userId.value }, // Access .value here
-          },
+          params: { path: { userId: userId.value } },
         }),
-      );
-    },
-    ...options,
+      ),
+    enabled: !!userId.value,
   });
 };
 ```
@@ -118,11 +87,11 @@ export const useGetUserProfile = (
 ### Key Points for Queries
 
 1. Use `Ref<T>` for parameters that may change reactively.
-2. Include parameters (Refs or their `.value` depending on context) in the `queryKey` to ensure proper cache management and reactivity.
-3. Access reactive `.value` properties inside the `queryFn`, not directly in the `queryKey` definition if using computed keys (though often including the Ref directly is sufficient).
-4. **Use the `handleClientMethod` helper to wrap your API client calls.** This handles standard error checking and returns the data directly, simplifying your `queryFn`.
-5. Use specific generated types (e.g., `AuthResponse["operationId"][statusCode]`) for success data and `TanstackError` for the error type in `useQuery` generics and options for type safety. `handleClientMethod` infers the success type, but explicitly typing `useQuery` is good practice.
-6. Allow passing additional `UseQueryOptions` to customize query behavior (e.g., `enabled`, `staleTime`).
+2. Include parameters (Refs or their `.value` depending on context) in the `queryKey`.
+3. Access reactive `.value` properties inside the `queryFn`.
+4. **Use the `handleClientMethod` helper to wrap your API client calls.**
+5. Use specific generated types (e.g., `AuthResponse["operationId"][statusCode]`) for success data and `TanstackError` for the error type in `useQuery` generics.
+6. Use the `enabled` option directly within the hook if a query depends on a parameter having a value.
 
 ## Mutation Function Structure
 
@@ -132,10 +101,8 @@ Mutations use `useMutation` and `handleClientMethod`:
 // requests/userProfile.ts
 import { useMutation, useQueryClient } from "@tanstack/vue-query";
 import { client } from "./client";
-// Import your specific API response/request types
 import type { AuthRequest, AuthResponse } from "./types";
 import { Ref } from "vue";
-// Import the helper and custom error type
 import { handleClientMethod, TanstackError } from "@saflib/vue-spa";
 
 /**
@@ -145,27 +112,18 @@ export const useUpdateUserProfile = () => {
   const queryClient = useQueryClient();
 
   return useMutation<
-    AuthResponse["updateUserProfile"][200], // Success response type
-    TanstackError, // Error type
-    {
-      // Variables type (what mutationFn receives)
-      userId: Ref<number>;
-      profileData: AuthRequest["updateUserProfile"]; // Request body type
-    }
+    AuthResponse["updateUserProfile"][200],
+    TanstackError,
+    { userId: Ref<number>; profileData: AuthRequest["updateUserProfile"] }
   >({
-    mutationFn: ({ userId, profileData }) => {
-      // Use handleClientMethod
-      return handleClientMethod(
+    mutationFn: ({ userId, profileData }) =>
+      handleClientMethod(
         client.PATCH("/users/{userId}/profile", {
-          params: {
-            path: { userId: userId.value }, // Access .value here
-          },
+          params: { path: { userId: userId.value } },
           body: profileData,
         }),
-      );
-    },
-    // Automatically invalidate related queries after successful mutation
-    onSuccess: (_, { userId }) => {
+      ),
+    onSuccess: (_data, { userId }) => {
       queryClient.invalidateQueries({ queryKey: ["userProfile", userId] });
     },
   });
@@ -175,10 +133,10 @@ export const useUpdateUserProfile = () => {
 ### Key Points for Mutations
 
 1. Use `useMutation` instead of `useQuery`.
-2. Define the generic types for `useMutation`: `TData` (success response), `TError` (`TanstackError`), and `TVariables` (input parameters).
+2. Define the generic types for `useMutation`: `TData`, `TError` (`TanstackError`), and `TVariables`.
 3. Use `Ref<T>` in `TVariables` if parameters might change reactively, accessing `.value` inside `mutationFn`.
 4. Use `handleClientMethod` to wrap the API client call within `mutationFn`.
-5. Implement `onSuccess`, `onError`, or `onSettled` for side effects like cache invalidation.
+5. Implement `onSuccess`, `onError`, or `onSettled` directly within the hook for side effects like cache invalidation.
 6. Use specific generated types (e.g., `AuthResponse`, `AuthRequest`) for request bodies and responses.
 
 ## Type Safety
@@ -186,19 +144,13 @@ export const useUpdateUserProfile = () => {
 Ensure type safety by using the specific types generated from your OpenAPI schema and `TanstackError`.
 
 ```typescript
-import type { AuthRequest, AuthResponse } from "./types"; // Adjust path as needed
+import type { AuthRequest, AuthResponse } from "./types";
 import { handleClientMethod, TanstackError } from "@saflib/vue-spa";
-import { useQuery, useMutation, UseQueryOptions } from "@tanstack/vue-query";
+import { useQuery, useMutation } from "@tanstack/vue-query";
 import { Ref } from "vue";
 
 // Example Query Typing
-export const useSomeQuery = (
-  itemId: Ref<string>,
-  options?: Omit<
-    UseQueryOptions<AuthResponse["getSomeItem"][200], TanstackError>,
-    "queryKey" | "queryFn"
-  >,
-) => {
+export const useSomeQuery = (itemId: Ref<string>) => {
   return useQuery<AuthResponse["getSomeItem"][200], TanstackError>({
     queryKey: ["someItem", itemId],
     queryFn: () =>
@@ -207,16 +159,16 @@ export const useSomeQuery = (
           params: { path: { itemId: itemId.value } },
         }),
       ),
-    ...options,
+    enabled: !!itemId.value,
   });
 };
 
 // Example Mutation Typing
 export const useUpdateSomeItem = () => {
   return useMutation<
-    AuthResponse["updateSomeItem"][200], // TData
-    TanstackError, // TError
-    { itemId: string; updateData: AuthRequest["updateSomeItem"] } // TVariables
+    AuthResponse["updateSomeItem"][200],
+    TanstackError,
+    { itemId: string; updateData: AuthRequest["updateSomeItem"] }
   >({
     mutationFn: ({ itemId, updateData }) =>
       handleClientMethod(
@@ -225,7 +177,9 @@ export const useUpdateSomeItem = () => {
           body: updateData,
         }),
       ),
-    // ... other options like onSuccess
+    onSuccess: (_data, { itemId }) => {
+      console.log(`Item ${itemId} updated`);
+    },
   });
 };
 
@@ -244,7 +198,7 @@ mutation.mutate({
 // mutation.error is TanstackError | null
 ```
 
-Providing these explicit types to `useQuery` and `useMutation` enhances type checking and autocompletion.
+Providing explicit types to `useQuery` and `useMutation` enhances type checking and autocompletion.
 
 ## Error Handling
 
@@ -310,7 +264,7 @@ Query keys are crucial for caching. Follow these guidelines:
 
 ## Cache Invalidation
 
-Invalidate the cache after mutations using `queryClient.invalidateQueries`:
+Invalidate the cache after mutations using `queryClient.invalidateQueries` within the `onSuccess` callback defined directly in the hook.
 
 ```typescript
 import { useMutation, useQueryClient } from "@tanstack/vue-query";
@@ -318,14 +272,12 @@ import { handleClientMethod, TanstackError } from "@saflib/vue-spa";
 import type { AuthRequest, AuthResponse } from "./types";
 import { Ref } from "vue";
 
+export type DeleteUserResponse = AuthResponse["deleteUser"][200];
+
 export const useDeleteUser = () => {
   const queryClient = useQueryClient();
 
-  return useMutation<
-    AuthResponse["deleteUser"][204], // Example: 204 No Content
-    TanstackError,
-    { userId: number }
-  >({
+  return useMutation<DeleteUserResponse, TanstackError, { userId: number }>({
     mutationFn: ({ userId }) => {
       return handleClientMethod(
         client.DELETE("/users/{userId}", {
@@ -333,12 +285,9 @@ export const useDeleteUser = () => {
         }),
       );
     },
-    onSuccess: (_, { userId }) => {
-      // Invalidate all queries starting with 'users'
+    onSuccess: (_data, { userId }) => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
-
-      // More specific invalidation (if needed, e.g., remove specific user query)
-      // queryClient.removeQueries({ queryKey: ['users', userId] });
+      queryClient.removeQueries({ queryKey: ["users", userId] });
     },
   });
 };
@@ -360,40 +309,25 @@ export const useDeleteUser = () => {
 
 ### 1. Dependent Queries
 
-Use the `enabled` option to run a query only when its dependencies are met (e.g., user ID is available after login).
+Use the `enabled` option directly within the hook to run a query only when its dependencies are met.
 
 ```typescript
-import { useQuery, UseQueryOptions } from "@tanstack/vue-query";
+import { useQuery } from "@tanstack/vue-query";
 import { client } from "./client";
 import type { AuthResponse } from "./types";
 import { Ref, computed } from "vue";
 import { handleClientMethod, TanstackError } from "@saflib/vue-spa";
-import { useVerifyAuth } from "./auth"; // Assuming an auth hook
+import { useVerifyAuth } from "./auth";
 
-export const useUserPosts = (
-  // Assume userId might be initially undefined or null from auth state
-  userId: Ref<number | undefined>,
-  options?: Omit<
-    UseQueryOptions<AuthResponse["getUserPosts"][200], TanstackError>,
-    "queryKey" | "queryFn" | "enabled" // Exclude enabled from passed options
-  >,
-) => {
-  // Only enable the query if userId has a value
+export const useUserPosts = (userId: Ref<number | undefined>) => {
   const isEnabled = computed(() => typeof userId.value === "number");
 
   return useQuery<AuthResponse["getUserPosts"][200], TanstackError>({
-    // Query key can include potentially undefined ref, TanStack handles it
     queryKey: ["userPosts", userId],
     queryFn: () => {
-      // Ensure userId.value is valid before making the call, though `enabled` prevents execution if not.
-      // Adding a check here provides extra safety or allows returning a default/empty state.
       if (typeof userId.value !== "number") {
-        // This path shouldn't be hit if `enabled` is working correctly,
-        // but demonstrates defensive coding or returning an empty/default state.
-        // Option 1: Throw (if this state is truly exceptional)
-        // throw new Error("User ID is required but missing.");
-        // Option 2: Return a default/empty value matching the expected type structure
-        return Promise.resolve({ posts: [] }); // Adjust based on actual AuthResponse["getUserPosts"][200]
+        // This should ideally not be hit due to `enabled` check
+        return Promise.resolve({ posts: [] });
       }
       return handleClientMethod(
         client.GET("/users/{userId}/posts", {
@@ -401,9 +335,7 @@ export const useUserPosts = (
         }),
       );
     },
-    // Use the computed boolean for the enabled option
     enabled: isEnabled.value,
-    ...options, // Spread remaining options
   });
 };
 
@@ -419,16 +351,16 @@ Following these core patterns with `handleClientMethod` will help you create con
 
 1.  Use `useQuery` for data fetching, `useMutation` for data modification.
 2.  **Wrap all `openapi-fetch` client calls in `handleClientMethod`**.
-3.  Provide explicit generic types (`TData`, `TError`, `TVariables`) to `useQuery` and `useMutation` using your generated API types (e.g., `AuthResponse`, `AuthRequest`) and `TanstackError`.
+3.  Provide explicit generic types (`TData`, `TError`, `TVariables`) to `useQuery` and `useMutation` using your generated API types and `TanstackError`.
 4.  Use `Ref<T>` for reactive parameters.
 5.  Structure `queryKey` arrays logically and include reactive dependencies.
-6.  Use `queryClient.invalidateQueries` in mutation `onSuccess` callbacks for cache management.
-7.  Leverage the `enabled` option for dependent queries.
-8.  Handle errors caught by TanStack Query using the `error` state (checking `status` and `code` on the `TanstackError`).
-9.  **Always use path parameter syntax (`params.path`) for URL parameters, not template literals.**
-10. Pass an empty object `{}` as the second argument to client methods (e.g., `client.GET("/path", {})`) if no parameters are needed. `handleClientMethod` takes the _result_ of this call.
+6.  Use `queryClient.invalidateQueries` or other `queryClient` methods in mutation `onSuccess` (or `onError`/`onSettled`) callbacks defined directly within the hook for cache management.
+7.  Leverage the `enabled` option directly within hooks for dependent queries.
+8.  Handle errors caught by TanStack Query using the `error` state.
+9.  **Always use path parameter syntax (`params.path`) for URL parameters.**
+10. Pass an empty object `{}` as the second argument to client methods if no parameters are needed.
 
-For more advanced topics or further details, refer to:
+For more details, refer to:
 
 - [TanStack Query Documentation](https://tanstack.com/query/latest/docs/vue/overview)
 - Your generated API type definitions.
