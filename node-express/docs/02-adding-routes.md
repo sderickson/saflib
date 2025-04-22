@@ -2,148 +2,169 @@
 
 ## Implementation Basics
 
-- Use `createHandler` for each route handler. It ensures errors are caught and passed to middleware, and that handlers use Promises.
-- Each route handler should be in its own file in the `/routes` folder
-- Route handlers should be combined in a central `index.ts` file that exports a router
-- For type checking, use the appropriate request and response types from your spec library (e.g., `AuthRequest["operationId"]` and `AuthResponse["operationId"][statusCode]`)
-- Handled errors should send status code and response objects directly. Unhandled errors should be passed to `next`
-- Routes should be in charge of HTTP concerns. Keep business logic separate from route handlers when possible
+- Use `createHandler` for each route handler. It ensures asynchronous errors are caught and passed to the central error handling middleware.
+- Each route handler should be in its own file within a feature-specific directory (e.g., `/routes/feature-name/`). See [Setup](./01-setup.md) for the recommended structure.
+- Handlers within a feature directory should be combined using an Express `Router` in the feature's `index.ts`.
+- Use types generated from your OpenAPI specification (e.g., `@your-org/your-spec`) for request bodies, path parameters, query parameters, and response bodies to ensure conformance.
+- **Error Handling Philosophy:**
+  - Route handlers should **handle expected errors** returned by service/database layers (e.g., "Not Found", "Validation Failed"). This typically involves checking the `error` property of the returned object (see `ReturnsError` pattern).
+  - Handlers translate these expected errors into appropriate HTTP status codes and response bodies (conforming to the OpenAPI spec).
+  - **Unexpected errors** (database connection issues, bugs, errors _thrown_ by services) should _not_ be caught by `try/catch` in the handler. Let them propagate; `createHandler` will catch them and pass them to the central error middleware, typically resulting in a 500 response.
+- Routes are primarily responsible for HTTP concerns: request validation (basic format), context extraction, calling service/DB layer, response formatting (mapping results/errors to HTTP status/body), and adhering to the API contract (OpenAPI spec).
+- Keep business logic out of route handlers; place it in separate service or database layer functions.
 
 ## Route Handler Structure
 
-Each route handler should be in its own file and follow this pattern:
+Each route handler should be in its own file (e.g., `routes/auth/login.ts`) and follow this pattern:
 
 ```typescript
-// routes/auth-login.ts
 import { createHandler } from "@saflib/node-express";
-import { Request, Response, NextFunction } from "express";
-import { type AuthRequest, type AuthResponse } from "@saflib/auth-spec"; // Or the appropriate spec package
+import { asyncLocalStorage } from "../../context.ts";
+import type { ApiRequest, ApiResponse } from "@your-org/your-spec"; // Adjust spec import
+import {
+  UserNotFoundError,
+  InvalidCredentialsError,
+} from "@your-org/your-db-package/queries/user/errors"; // Adjust error imports
+import createError from "http-errors"; // For creating standard HTTP errors
 
-export const loginHandler = createHandler(async function (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) {
-  // Type the request body
-  const loginRequest: AuthRequest["loginUser"] = req.body;
+export const loginHandler = createHandler(async (req, res) => {
+  // Get context
+  const ctx = asyncLocalStorage.getStore()!;
 
-  // Access injected services via req (e.g., req.db)
+  // Validate and type the request body according to the spec
+  // Basic validation might happen here or in middleware
+  const loginRequest: ApiRequest["loginUser"] = req.body;
 
-  // Handle the request
-  try {
-    // Business logic here
-    const result = await req.db.someOperation();
+  // Call the appropriate service/DB function
+  const { result: user, error } = await ctx.db.user.authenticate(loginRequest);
 
-    // Send typed response
-    const response: AuthResponse["loginUser"][200] = result;
-    res.json(response);
-  } catch (error) {
-    // Pass unhandled errors to next
-    next(error);
+  // Handle expected errors returned by the service/DB layer
+  if (error) {
+    switch (true) {
+      case error instanceof UserNotFoundError:
+      case error instanceof InvalidCredentialsError:
+        // Send a typed 401 response conforming to the spec
+        const errRes: ApiResponse["loginUser"][401] = {
+          message: "Invalid email or password.",
+        };
+        return res.status(401).json(errRes);
+      default:
+        // If an unexpected error type was *returned* (should be rare),
+        // throw it so the central error handler catches it.
+        // This ensures all error types from the DB layer are handled.
+        throw error satisfies never;
+    }
   }
+
+  // If successful, send a typed 200 response conforming to the spec
+  const response: ApiResponse["loginUser"][200] = {
+    user: { id: user.id, email: user.email /* ... other fields */ },
+    token: "jwt.token.here", // Assuming token generation happens here or is returned by authenticate
+  };
+  res.status(200).json(response);
 });
 ```
 
 ## Route Organization
 
-Create a central router file that combines all route handlers:
+Create a router file within each feature directory (e.g., `routes/auth/index.ts`) to combine handlers for that feature:
 
 ```typescript
-// routes/index.ts
+// routes/auth/index.ts
 import express from "express";
-import { loginHandler } from "./auth-login.ts";
-import { registerHandler } from "./auth-register.ts";
-// Import other handlers...
+import { loginHandler } from "./login.ts";
+import { registerHandler } from "./register.ts";
+// Import other auth handlers...
 
 const router = express.Router();
 
-// Define routes
-router.post("/auth/login", loginHandler);
-router.post("/auth/register", registerHandler);
-// Add other routes...
+// Define routes for the auth feature
+router.post("/login", loginHandler);
+router.post("/register", registerHandler);
+// Add other auth routes...
 
 export { router as authRouter };
 ```
 
-## Error Handling
+Mount these feature routers in the main router file (`routes/index.ts`), as shown in [Setup](./01-setup.md).
 
-The `createHandler` function provides several benefits:
+## Error Handling Examples
 
-- Automatically handles Promise rejection
-- Passes errors to Express error handler
-- Makes the code cleaner by removing try/catch blocks
-- Ensures consistent error handling across all routes
+The `createHandler` wrapper simplifies error handling by catching unhandled promise rejections and thrown errors.
 
-Example of proper error handling with typed requests and responses:
+**Handling Expected Errors (Returned by Service/DB):**
 
 ```typescript
-import { type AuthRequest, type AuthResponse } from "@saflib/auth-spec"; // Or the appropriate spec package
+import { createHandler } from "@saflib/node-express";
+import { asyncLocalStorage } from "../../context.ts";
+import type { ApiRequest, ApiResponse } from "@your-org/your-spec";
+import { CallSeriesNotFoundError } from "@your-org/your-db-package/queries/call-series/errors";
+import createError from "http-errors";
 
-export const exampleHandler = createHandler(async function (req, res, next) {
-  // Type the request body
-  const request: AuthRequest["exampleOperation"] = req.body;
+export const getCallSeriesHandler = createHandler(async (req, res) => {
+  const ctx = asyncLocalStorage.getStore()!;
+  const callSeriesId = parseInt(req.params.id);
 
-  // Handle expected errors directly with typed responses
-  // Any unexpected errors are handled by createHandler
-  if (!request.email) {
-    const errorResponse: AuthResponse["exampleOperation"][400] = {
-      error: "Email is required",
-    };
-    return res.status(400).json(errorResponse);
+  if (isNaN(callSeriesId)) {
+    throw createError(400, "Invalid Call Series ID"); // Throw for invalid input format
   }
-});
-```
 
-Example of handling known database errors with typed requests and responses:
+  const { result: callSeries, error } =
+    await ctx.db.callSeries.get(callSeriesId);
 
-```typescript
-import { type AuthRequest, type AuthResponse } from "@saflib/auth-spec";
-
-export const registerHandler = createHandler(async function (req, res, next) {
-  // Type the request body
-  const registerRequest: AuthRequest["registerUser"] = req.body;
-
-  try {
-    const user = await req.db.users.create({
-      email: registerRequest.email,
-      password: registerRequest.password,
-    });
-    const successResponse: AuthResponse["registerUser"][200] = user;
-    res.status(201).json(successResponse);
-  } catch (error) {
-    // Handle known database errors using custom error types
-    if (error instanceof req.db.users.EmailConflictError) {
-      const errorResponse: AuthResponse["registerUser"][409] = {
-        error: "Email already exists",
-      };
-      return res.status(409).json(errorResponse);
+  if (error) {
+    switch (true) {
+      case error instanceof CallSeriesNotFoundError:
+        // Return a 404 conforming to the spec
+        // Note: createError(404) could also be thrown here, letting
+        // the central handler format the response, if preferred.
+        const errRes: ApiResponse["getCallSeries"][404] = {
+          message: "Not Found",
+        };
+        return res.status(404).json(errRes);
+      default:
+        // Unexpected *returned* error, escalate to central handler
+        throw error satisfies never;
     }
-
-    // Pass unexpected errors to next
-    next(error);
   }
+
+  // Check Authorization (Example)
+  // if (callSeries.ownerId !== ctx.auth?.userId) {
+  //   throw createError(403); // Throw standard HTTP errors for authZ
+  // }
+
+  const response: ApiResponse["getCallSeries"][200] = {
+    call_series: {
+      /* map db result to api spec */
+    },
+  };
+  res.status(200).json(response);
 });
 ```
+
+**Handling Invalid Input:**
+
+Basic input validation (e.g., checking if an ID is a number) can happen in the handler. For more complex validation, consider using middleware (like `express-validator` or OpenAPI-based validators) before the handler runs.
+
+```typescript
+// Inside a handler:
+const count = parseInt(req.query.count as string);
+if (isNaN(count) || count < 1) {
+  // Throwing an http-errors instance is often cleanest for input validation failures
+  throw createError(400, "Invalid count parameter");
+}
+```
+
+`createHandler` ensures that errors thrown using `createError` (or any other standard Error) are caught and passed to the central Express error handling middleware, which should format them into appropriate HTTP error responses.
 
 ## Best Practices
 
-1. Keep route handlers focused on HTTP concerns:
-
-   - Request validation
-   - Response formatting
-   - Status code selection
-   - Error handling
-
-2. Move business logic to separate service modules
-
-3. Use TypeScript types for request/response validation:
-
-   - Import the appropriate request and response types from your spec library (e.g., `AuthRequest` and `AuthResponse`)
-   - Type request bodies using `AuthRequest["operationId"]`
-   - Type responses using `AuthResponse["operationId"][statusCode]`
-   - Use `error` field for error responses instead of `message`
-   - Include `success` field in success responses when appropriate
-
-4. Keep route handlers small and focused on a single responsibility
-
-5. Use middleware for cross-cutting concerns like authentication and logging
+1.  **HTTP Focus:** Handlers manage HTTP request/response lifecycle.
+2.  **Separate Business Logic:** Place core logic in service/DB layers.
+3.  **Use OpenAPI Types:** Ensure handlers conform to the API contract.
+    - Type request bodies, parameters, and responses using generated types.
+    - Adhere to specified success and error response schemas.
+4.  **Context over `req`:** Access shared resources (DB, logger, auth info) via `asyncLocalStorage.getStore()` instead of attaching to `req`.
+5.  **Error Handling:** Handle _expected_ errors returned from services by mapping them to appropriate HTTP responses. Let _unexpected_ errors (thrown) propagate to the central error handler via `createHandler`.
+6.  **File Structure:** Follow the "one handler per file" structure within feature directories.
+7.  **Middleware:** Use middleware for cross-cutting concerns (authentication, request logging, complex validation).
