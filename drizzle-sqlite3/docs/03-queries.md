@@ -68,10 +68,10 @@ export class TodoNotFoundError extends Error {
   }
 }
 
-export class TodoCreationError extends Error {
+export class TodoConflictError extends Error {
   constructor(message: string, cause?: unknown) {
     super(message, { cause });
-    this.name = "TodoCreationError";
+    this.name = "TodoConflictError";
   }
 }
 ```
@@ -114,10 +114,10 @@ import { queryWrapper } from "@saflib/drizzle-sqlite3";
 import type { ReturnsError } from "@saflib/monorepo";
 import { todos } from "../../schema.ts";
 import type { CreateTodoInput, DbType, Todo } from "./types.ts";
-import { TodoCreationError } from "./errors.ts";
+import { TodoConflictError } from "./errors.ts";
 
 // Define the specific result type for this query
-type Result = ReturnsError<Todo, TodoCreationError>;
+type Result = ReturnsError<Todo, TodoConflictError>;
 
 // Export the factory function for this specific query
 export function createCreateTodoQuery(db: DbType) {
@@ -137,7 +137,7 @@ export function createCreateTodoQuery(db: DbType) {
         e.message.includes("UNIQUE constraint failed") // Example check
       ) {
         return {
-          error: new TodoCreationError("Todo uniqueness constraint failed", e),
+          error: new TodoConflictError("Todo uniqueness constraint failed", e),
         };
       }
       throw e; // Re-throw unexpected errors
@@ -366,26 +366,43 @@ update: queryWrapper(async (id: number, data: Partial<User>) => {
 
 ### Handling Joins
 
-When querying data across multiple tables using joins (`leftJoin`, `innerJoin`, etc.), Drizzle's default `select()` returns a nested structure containing objects for each table involved (e.g., `{ tableA: {...}, tableB: {...} }`).
+When querying data across multiple tables (e.g., fetching users and their profiles), **avoid returning nested object structures directly from the database query function.** Instead, adhere to the principle of [Flattened Data Structures](mdc:../../monorepo/docs/flattened-data.md).
 
-**Recommendation:** Return this nested structure directly from your query function. Avoid manually flattening or mapping the result within the query function itself. This keeps the database query logic simple and delegates the responsibility of handling the specific data shape to the service layer or consumer.
+**Recommendation:**
+
+1.  **Select Specific Columns:** Use `.select({...})` to pick only the necessary columns from each joined table, including foreign keys.
+2.  **Return Flat Records:** Return an array of flat records containing columns from all involved tables.
+3.  **Handle Relationships Separately:** If a consumer needs related data (e.g., all posts for a user), they should perform a separate query using the relevant foreign key retrieved from the initial query.
+
+This approach keeps database query functions focused, aligns with relational principles, promotes cacheability (especially in frontend state management), and avoids complex nested return types from the database layer.
 
 ```typescript
-// Example: Get user with their profile (one-to-one)
-getUserWithProfile: queryWrapper(async (userId: number) => {
+// Example: Get user with their profile ID (one-to-one)
+// Service layer would perform a separate query for profile details if needed.
+getUserWithProfileId: queryWrapper(async (userId: number): Promise<ReturnsError<{ user: User; profileId: number | null }, UserNotFoundError>> => {
   const result = await db
-    .select() // Selects all columns from both tables, nested
+    .select({ // Select specific columns
+      id: users.id,
+      email: users.email,
+      name: users.name,
+      // ... other user fields
+      profileId: profiles.id, // Select the related profile ID
+    })
     .from(users)
     .leftJoin(profiles, eq(users.id, profiles.userId))
     .where(eq(users.id, userId));
 
-  // Returns structure like: { users: User, profiles: Profile | null }[]
-  if (result.length === 0) return undefined;
-  return result[0];
+  if (result.length === 0) {
+    return { error: new UserNotFoundError(id) };
+  }
+
+  // Result is now a flat object, e.g., { id: 1, email: '...', name: '...', profileId: 123 }
+  const userData = result[0];
+  return { result: { user: { id: userData.id, email: userData.email, name: userData.name /* ... */ }, profileId: userData.profileId }};
 }),
 ```
 
-The consuming code would then access properties like `result.users.email` or `result.profiles?.bio`.
+The consuming code receives the user data and the `profileId`. If the full profile is needed, it makes a separate `db.profiles.getById(profileId)` call.
 
 ### Upsert Pattern
 
@@ -395,47 +412,11 @@ For one-to-one relationships (like user profiles or settings), implement an "ups
 // In src/queries/profiles.ts
 export function createProfileQueries(db: BetterSQLite3Database<typeof schema>) {
   return {
-    upsert: queryWrapper(
-      async (
-        userId: number,
-        profileData: Partial<NewUserProfile>,
-      ): Promise<ReturnsError<UserProfile, ProfileUpsertError>> => {
-        try {
-          // Drizzle doesn't have a native upsert that fits all SQLite versions easily,
-          // so we often do select-then-insert/update.
-          const existing = await db.query.userProfiles.findFirst({
-            where: eq(userProfiles.userId, userId),
-          });
-
-          let upsertResult: UserProfile[];
-          if (existing) {
-            // UPDATE
-            upsertResult = await db
-              .update(userProfiles)
-              .set({ ...profileData, updatedAt: new Date() })
-              .where(eq(userProfiles.userId, userId))
-              .returning();
-          } else {
-            // INSERT
-            upsertResult = await db
-              .insert(userProfiles)
-              .values({ userId, ...profileData, updatedAt: new Date() })
-              .returning();
-          }
-          // Assuming returning() always gives at least one row on success
-          return { result: upsertResult[0] };
-        } catch (e) {
-          // Catch specific DB errors if needed (e.g., constraint violations)
-          // and return them as { error: new ProfileUpsertError(...) }
-          // Otherwise, re-throw for queryWrapper to handle.
-          // Using a generic error here for brevity.
-          return {
-            error: new ProfileUpsertError("Upsert failed", { cause: e }),
-          };
-          // Or: throw e;
-        }
-      },
-    ),
+    // NOTE: The Upsert example needs significant changes to fit the ReturnsError pattern
+    // and the single-query-per-file structure. Consider replacing complex upserts
+    // with separate get/create/update calls handled by the service layer if the
+    // combined logic becomes too cumbersome with explicit error returns.
+    // ... rest of createProfileQueries ...
   };
 }
 ```
