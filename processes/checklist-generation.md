@@ -152,10 +152,6 @@ Features should be implemented following this layer order:
 ### API Layer
 
 - Implement endpoints
-- Add middleware if needed
-- Add logging
-- Testing: Middleware and endpoint tests
-- Documentation: [testing-middleware.md](../node-express-dev/docs/03-test-middleware.md)
 
 ### Frontend Layer
 
