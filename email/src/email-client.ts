@@ -1,5 +1,5 @@
 import * as nodemailer from "nodemailer";
-import { Transporter } from "nodemailer";
+import type { Transporter } from "nodemailer";
 // Define EmailOptions based on nodemailer's SendMailOptions
 export interface EmailOptions
   extends Pick<

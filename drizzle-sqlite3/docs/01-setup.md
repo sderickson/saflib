@@ -14,10 +14,19 @@ package-name/
 └── src/              # Private implementation
     ├── schema.ts     # Database schema
     ├── instance.ts   # Database instance management
-    ├── errors.ts     # Error handling
+    ├── errors.ts     # Base error types (optional)
     └── queries/      # Database queries
-        └── <table-name>.ts  # Table-specific queries
-        └── <table-name>.test.ts  # Table-specific tests
+        ├── index.ts      # Exports combined query objects (e.g., { users, todos })
+        ├── types.ts      # Common DB types (DbType, etc.)
+        └── <domain>/     # Directory for a specific domain (e.g., users)
+            ├── index.ts      # Exports the combined query object for the domain
+            ├── types.ts      # Domain-specific types (e.g., User, NewUser)
+            ├── errors.ts     # Domain-specific errors (e.g., UserNotFoundError)
+            ├── get-by-id.ts  # Factory for a specific query
+            ├── create.ts     # Factory for another query
+            ├── ...           # Other query files (list.ts, update.ts, etc.)
+            └── get-by-id.test.ts # Test file adjacent to query
+            └── ...           # Other test files
 ```
 
 ## Required Files
@@ -160,63 +169,131 @@ export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 ```
 
-### src/queries/users.ts
+### src/queries/users/ (Example Domain)
+
+**`types.ts`**
 
 ```typescript
-import { users } from "../schema.ts";
-import { DatabaseError } from "../errors.ts";
-import { queryWrapper } from "@saflib/drizzle-sqlite3";
-import { eq } from "drizzle-orm";
+// src/queries/users/types.ts
+import type * as schema from "../../schema.ts";
+import type { BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
 
-type NewUser = typeof users.$inferInsert;
-type SelectUser = typeof users.$inferSelect;
+export type DbType = BetterSQLite3Database<typeof schema>;
 
+export type User = typeof schema.users.$inferSelect;
+export type NewUser = typeof schema.users.$inferInsert;
+
+// Example input type
+export type CreateUserInput = Omit<NewUser, "id" | "createdAt" | "updatedAt">;
+```
+
+**`errors.ts`**
+
+```typescript
+// src/queries/users/errors.ts
+import { DatabaseError } from "../../errors.ts"; // Assuming a base error exists
+
+// Define specific error classes
 export class UserNotFoundError extends DatabaseError {
-  constructor() {
-    super("User not found");
+  constructor(id: number) {
+    super(`User with ID ${id} not found`);
     this.name = "UserNotFoundError";
   }
 }
 
 export class EmailConflictError extends DatabaseError {
-  constructor() {
-    super("Email already exists");
+  constructor(email: string) {
+    super(`Email ${email} already exists`);
     this.name = "EmailConflictError";
   }
 }
+```
 
-export function createUserQueries(db: any) {
+**`create.ts`**
+
+```typescript
+// src/queries/users/create.ts
+import { queryWrapper } from "@saflib/drizzle-sqlite3";
+import type { ReturnsError } from "@saflib/monorepo";
+import { users } from "../../schema.ts";
+import type { CreateUserInput, DbType, User } from "./types.ts";
+import { EmailConflictError } from "./errors.ts";
+
+type Result = ReturnsError<User, EmailConflictError>;
+
+export function createCreateUserQuery(db: DbType) {
+  return queryWrapper(async (data: CreateUserInput): Promise<Result> => {
+    try {
+      const now = new Date();
+      const result = await db
+        .insert(users)
+        .values({ ...data, createdAt: now, updatedAt: now })
+        .returning();
+      return { result: result[0] }; // Return success
+    } catch (e: unknown) {
+      if (
+        e instanceof Error &&
+        e.message.includes("UNIQUE constraint failed: users.email")
+      ) {
+        // Return expected constraint error
+        return { error: new EmailConflictError(data.email) };
+      }
+      throw e; // Re-throw unexpected errors
+    }
+  });
+}
+```
+
+**`get-by-id.ts`**
+
+```typescript
+// src/queries/users/get-by-id.ts
+import { queryWrapper } from "@saflib/drizzle-sqlite3";
+import type { ReturnsError } from "@saflib/monorepo";
+import { eq } from "drizzle-orm";
+import { users } from "../../schema.ts";
+import type { DbType, User } from "./types.ts";
+import { UserNotFoundError } from "./errors.ts";
+
+type Result = ReturnsError<User, UserNotFoundError>;
+
+export function createGetUserByIdQuery(db: DbType) {
+  return queryWrapper(async (id: number): Promise<Result> => {
+    const result = await db.query.users.findFirst({
+      where: eq(users.id, id),
+    });
+    if (!result) {
+      // Return expected not found error
+      return { error: new UserNotFoundError(id) };
+    }
+    return { result: result }; // Return success
+  });
+}
+```
+
+**`index.ts`**
+
+```typescript
+// src/queries/users/index.ts
+import type { DbType } from "./types.ts";
+import { createCreateUserQuery } from "./create.ts";
+import { createGetUserByIdQuery } from "./get-by-id.ts";
+
+// Export errors and types for convenience
+export * from "./errors.ts";
+export * from "./types.ts"; // Optional: depends if consumers need User/NewUser directly
+
+// Factory function aggregates individual query factories
+export function createUserQueries(db: DbType) {
   return {
+    // Expose query functions
+    create: createCreateUserQuery(db),
+    getById: createGetUserByIdQuery(db),
+    // ...other queries
+
+    // Expose error classes directly for instanceof checks
     UserNotFoundError,
     EmailConflictError,
-    create: queryWrapper(async (user: NewUser): Promise<SelectUser> => {
-      try {
-        const now = new Date();
-        const result = await db
-          .insert(users)
-          .values({ ...user, createdAt: now, updatedAt: now })
-          .returning();
-        return result[0];
-      } catch (e: unknown) {
-        if (
-          e instanceof Error &&
-          e.message.includes("UNIQUE constraint failed: users.email")
-        ) {
-          throw new EmailConflictError();
-        }
-        throw e;
-      }
-    }),
-
-    getById: queryWrapper(async (id: number): Promise<SelectUser> => {
-      const result = await db.query.users.findFirst({
-        where: eq(users.id, id),
-      });
-      if (!result) {
-        throw new UserNotFoundError();
-      }
-      return result;
-    }),
   };
 }
 ```
@@ -226,8 +303,8 @@ export function createUserQueries(db: any) {
 1. Create the package structure as shown above
 2. Write your schema in `src/schema.ts` following the schema guidelines
 3. Run `npm run generate` to create migrations
-4. Implement your queries in `src/queries/` following the query guidelines and add them to your `instance.ts`
-5. Write tests for your queries, adjacent to the query files
+4. Implement your queries in the appropriate `src/queries/<domain>/` directory, with one file per query factory. Aggregate them in the domain's `index.ts` file and initialize them in `src/instance.ts`.
+5. Write tests for your queries, adjacent to the query files (e.g., `src/queries/users/create.test.ts`).
 
 ## Testing
 
@@ -242,13 +319,58 @@ import { DatabaseInstance } from "./index.ts";
 describe("User Queries", () => {
   it("creates and retrieves a user", async () => {
     const db = new DatabaseInstance();
-    const user = await db.users.create({
+    const newUser = {
       email: "test@example.com",
       name: "Test User",
-    });
+    };
+    const createOutcome = await db.users.create(newUser);
 
-    const retrieved = await db.users.getById(user.id);
-    expect(retrieved).toEqual(user);
+    // Check if creation failed
+    if (createOutcome.error) {
+      throw createOutcome.error; // Fail test if creation unexpectedly fails
+    }
+    const createdUser = createOutcome.result;
+
+    // Retrieve the user
+    const retrieveOutcome = await db.users.getById(createdUser.id);
+
+    // Check if retrieval failed
+    if (retrieveOutcome.error) {
+      throw retrieveOutcome.error; // Fail test if retrieval unexpectedly fails
+    }
+    const retrievedUser = retrieveOutcome.result;
+
+    // Assert the retrieved user matches the created one (excluding timestamps)
+    expect(retrievedUser.id).toEqual(createdUser.id);
+    expect(retrievedUser.email).toEqual(newUser.email);
+    expect(retrievedUser.name).toEqual(newUser.name);
+  });
+
+  it("returns UserNotFoundError for non-existent user", async () => {
+    const db = new DatabaseInstance();
+    const retrieveOutcome = await db.users.getById(999);
+
+    expect(retrieveOutcome.error).toBeInstanceOf(db.users.UserNotFoundError);
+    expect(retrieveOutcome.result).toBeUndefined();
+  });
+
+  it("returns EmailConflictError for duplicate email", async () => {
+    const db = new DatabaseInstance();
+    const user1 = {
+      email: "duplicate@example.com",
+      name: "User One",
+    };
+    const user2 = {
+      email: "duplicate@example.com",
+      name: "User Two",
+    };
+
+    const create1Outcome = await db.users.create(user1);
+    expect(create1Outcome.error).toBeUndefined(); // First creation should succeed
+
+    const create2Outcome = await db.users.create(user2);
+    expect(create2Outcome.error).toBeInstanceOf(db.users.EmailConflictError);
+    expect(create2Outcome.result).toBeUndefined();
   });
 });
 ```
