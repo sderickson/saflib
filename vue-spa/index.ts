@@ -31,11 +31,23 @@ export class TanstackError extends Error {
   }
 }
 
-export const handleClientMethod = async <
-  T extends FetchResponse<any, any, any>,
->(
-  request: Promise<T>,
-) => {
+interface ClientResponse<T> {
+  status: number;
+}
+
+interface ClientResponseError {
+  code?: string;
+}
+
+interface ClientResult<T> {
+  error?: ClientResponseError;
+  data?: T;
+  response: ClientResponse<T>;
+}
+
+export const handleClientMethod = async <T>(
+  request: Promise<ClientResult<T>>,
+): Promise<T> => {
   const result = await request;
   if (result.error !== undefined) {
     // Note: The error message is logged for development, but not propagated to the UI.
@@ -44,6 +56,9 @@ export const handleClientMethod = async <
     // the error code.
     console.error("Network error:", result.error);
     throw new TanstackError(result.response.status, result.error.code);
+  }
+  if (result.data === undefined) {
+    throw new TanstackError(result.response.status, "No data returned");
   }
   return result.data;
 };
