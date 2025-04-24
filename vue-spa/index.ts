@@ -1,5 +1,4 @@
 import createClient from "openapi-fetch";
-import type { FetchResponse } from "openapi-fetch";
 
 export const createSafClient = <Q extends {}>(
   subdomain: string,
@@ -31,7 +30,7 @@ export class TanstackError extends Error {
   }
 }
 
-interface ClientResponse<T> {
+interface ClientResponse {
   status: number;
 }
 
@@ -42,7 +41,7 @@ interface ClientResponseError {
 interface ClientResult<T> {
   error?: ClientResponseError;
   data?: T;
-  response: ClientResponse<T>;
+  response: ClientResponse;
 }
 
 export const handleClientMethod = async <T>(
