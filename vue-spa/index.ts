@@ -1,4 +1,6 @@
 import createClient from "openapi-fetch";
+import AsyncPage from "./AsyncPage.vue";
+export { AsyncPage };
 
 export const createSafClient = <Q extends {}>(
   subdomain: string,
