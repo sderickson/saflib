@@ -49,7 +49,13 @@ interface ClientResult<T> {
 export const handleClientMethod = async <T>(
   request: Promise<ClientResult<T>>,
 ): Promise<T> => {
-  const result = await request;
+  console.log("request", request);
+  let result: ClientResult<T>;
+  try {
+    result = await request;
+  } catch (e) {
+    throw new TanstackError(0, "Network error");
+  }
   if (result.error !== undefined) {
     // Note: The error message is logged for development, but not propagated to the UI.
     // This is because UI should not render the untranslated error message, but instead
@@ -100,6 +106,7 @@ export const createVueApp = (
               case 403:
               case 404:
               case 500:
+              case 0: // network error
                 return false;
               default:
                 return failureCount < 3;
