@@ -250,7 +250,7 @@ export class InvalidDataError extends DatabaseError {
 
 Consumers can then reliably check the type of error returned:
 
-```typitten
+```typescript
 const { result, error } = await db.todos.getById("abc");
 
 if (error) {

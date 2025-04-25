@@ -1,6 +1,6 @@
 # Error Handling Philosophy
 
-This document outlines the standard approach to error handling within the Vendata backend services, particularly concerning database queries and service layer interactions. The primary goals are robustness, type safety, and clear communication of intent.
+This document outlines the standard approach to error handling within SAF backend services, particularly concerning database queries and service layer interactions. The primary goals are robustness, type safety, and clear communication of intent.
 
 ## Core Pattern: `ReturnsError<T, E>`
 

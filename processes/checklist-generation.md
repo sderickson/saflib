@@ -19,7 +19,6 @@ Before creating a checklist, review the [doc-outline.md](./doc-outline.md) to un
 - Authentication: [auth-architecture.md](../auth-service/docs/auth-architecture.md)
 - Database: [schema.md](../drizzle-sqlite3/docs/02-schema.md)
 - API: [adding-routes.md](../node-express/docs/02-adding-routes.md)
-- Frontend: [forms.md](../vue-spa/docs/05-forms.md)
 
 ### Development Documentation
 
@@ -126,8 +125,6 @@ Features should be implemented following this layer order:
    - Component implementations
    - Page implementations
    - References:
-     - [using-queries.md](../vue-spa/docs/04-using-queries.md)
-     - [forms.md](../vue-spa/docs/05-forms.md)
      - [writing-components.md](../vue-spa/docs/02-writing-components.md)
 
 ## Layer-Specific Guidelines
@@ -266,14 +263,12 @@ Here's an example of a properly structured checklist for a simple feature:
 
 - [ ] Add API Integration
 
-  - [ ] Review [using-queries.md](../vue-spa/docs/04-using-queries.md)
   - [ ] Add query to [frontend/src/requests/example.ts](/saflib/frontend/src/requests/example.ts)
   - [ ] Add tests using [query-testing.md](../vue-spa-dev/docs/query-testing.md)
   - [ ] Run `npm run test` in the frontend package to verify query implementation
   - [ ] **Review Point**
 
 - [ ] Implement Component
-  - [ ] Review [forms.md](../vue-spa/docs/05-forms.md)
   - [ ] Create [frontend/src/components/ExampleForm.vue](/saflib/frontend/src/components/ExampleForm.vue)
   - [ ] Add form
   - [ ] Add validation
