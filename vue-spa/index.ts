@@ -109,11 +109,9 @@ export const createVueApp = (
               case 0: // network error
                 return false;
               default:
-                console.log("retying with error", error, error.status);
                 return failureCount < 3;
             }
           }
-          console.log("retying with error", error);
           return failureCount < 3;
         },
       },
