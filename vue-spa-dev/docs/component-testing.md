@@ -359,7 +359,7 @@ it("should disable submit button when form is invalid", async () => {
    **Important:** When using API clients created via `createSafClient` (like those in `@saflib/auth-vue` or `@saflib/app-vue`), MSW handlers **must** use the full URL, including the host and the API prefix (e.g., `http://api.localhost:3000/auth/login`). Relative paths will not work because the client uses the full base URL.
 
    ```typescript
-   import type { LoginRequest, UserResponse } from "@saflib/auth-spec"; // Example: Import types
+   import type { LoginRequest, LoginResponse } from "@saflib/auth-spec";
 
    export const handlers = [
      // Use the full URL matching the client's request
@@ -367,14 +367,13 @@ it("should disable submit button when form is invalid", async () => {
        const body = (await request.json()) as LoginRequest;
        return HttpResponse.json({
          success: true,
-         data: {
-           token: "mock-token",
-           user: {
-             id: 1,
-             email: body.email,
-           } satisfies UserResponse,
+         token: "mock-token",
+         user: {
+           id: 1,
+           email: body.email, // "as LoginRequest" ensures "email" is present
+           // Add other required user fields
          },
-       });
+       } satisfies LoginResponse); // Ensures response structure is correct
      }),
    ];
    ```
@@ -382,11 +381,14 @@ it("should disable submit button when form is invalid", async () => {
 2. Override handlers for specific test cases using `server.use()`:
 
    ```typescript
+   import type { LoginResponse } from "@saflib/auth-spec"; // Import response type
+
    it("should handle error response", async () => {
      // Use server.use() to add or override handlers for this test
      server.use(
        // Ensure the URL matches the actual request URL
        http.post("http://api.localhost:3000/auth/login", () => {
+         // Return an error response (doesn't need 'satisfies' unless it has a specific error structure)
          return new HttpResponse(JSON.stringify({ error: "API Error" }), {
            status: 500,
          });
@@ -395,29 +397,48 @@ it("should disable submit button when form is invalid", async () => {
 
      // Test error handling...
    });
+
+   it("should handle specific success response", async () => {
+     // Use server.use() to override the default success handler
+     server.use(
+       http.post("http://api.localhost:3000/auth/login", async () => {
+         // You can also use the response type this way instead of "satisfies"
+         const specificResponseData: LoginResponse = {
+           token: "specific-test-token",
+           user: { id: 2, email: "specific@example.com" },
+         };
+         // Use 'satisfies' here as well for the specific override
+         return HttpResponse.json(specificResponseData);
+       }),
+     );
+
+     // Test specific success scenario...
+   });
    ```
 
    Important notes about handler overrides:
 
-   - Use `server.use()` to add or override handlers for specific tests
-   - New handlers are prepended to the existing ones, so they take precedence
-   - You don't need to recreate the entire handlers array
-   - The original handlers remain available for other tests
-   - Each test gets a fresh set of handlers
+   - Use `server.use()` to add or override handlers for specific tests.
+   - New handlers added via `server.use()` are **prepended** to the existing list, meaning they take precedence if they match the same request.
+   - You don't need to recreate the entire `handlers` array.
+   - The original handlers defined outside the test remain available for other tests or if no override matches.
+   - Handlers are reset automatically between tests by `setupMockServer`.
 
 3. Use `vi.waitFor` or `vi.waitUntil` to wait for async operations:
 
    ```typescript
    await submitButton.trigger("click");
+   // Wait for an element affected by the API response
    const successAlert = await vi.waitUntil(() => getSuccessAlert(wrapper));
-   expect(successAlert?.text()).toContain("Success message");
+   expect(successAlert?.text()).toContain("Login successful");
    ```
 
 4. Type Safety:
-   - Always use types from your OpenAPI spec for request and response bodies
-   - This ensures type safety and catches API changes early
-   - Avoid creating local interfaces for API types
-   - Use `satisfies` to ensure response objects match the expected type
+   - Always import the relevant **response type** (e.g., `LoginResponse`) from your OpenAPI specification types.
+   - Use the `satisfies` keyword on the object returned by `HttpResponse.json` in your **success handlers**. This ensures TypeScript checks that your mock response data structure perfectly matches the expected API response type.
+   - Alternatively type your response object directly (`const response: ResponseType = { ... }`)
+   - **Benefit:** This prevents runtime errors caused by mismatches between your mock data shape and what the component expects based on the API contract, as demonstrated in the refactoring example.
+   - Avoid creating local interfaces for API types; always use the generated types.
 
 ### 8. Testing Vuetify Components
 
