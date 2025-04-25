@@ -21,3 +21,15 @@ export type ExtractRequestSchema<Ops extends Record<string, any>> = {
     ? Ops[OpKey]["requestBody"]["content"]["application/json"]
     : never;
 };
+
+export type ExtractRequestPathParams<Ops extends Record<string, any>> = {
+  [OpKey in keyof Ops]: Ops[OpKey]["parameters"] extends { path: any }
+    ? Ops[OpKey]["parameters"]["path"]
+    : never;
+};
+
+export type ExtractRequestQueryParams<Ops extends Record<string, any>> = {
+  [OpKey in keyof Ops]: Ops[OpKey]["parameters"] extends { query: any }
+    ? Ops[OpKey]["parameters"]["query"]
+    : never;
+};
