@@ -58,6 +58,8 @@ const errorMessage = computed(() => {
       return "Not Found";
     case 500:
       return "Server Error";
+    case 0:
+      return "Connection Error";
     default:
       return `Failed to load data (Error ${error.status})`;
   }
