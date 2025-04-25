@@ -1,6 +1,6 @@
 import type { components, operations } from "@saflib/auth-spec";
-import type { ExtractResponseSchema } from "@saflib/openapi-specs";
-import type { ExtractRequestSchema } from "@saflib/openapi-specs";
+import type { ExtractResponseBody } from "@saflib/openapi-specs";
+import type { ExtractRequestBody } from "@saflib/openapi-specs";
 
 export type LoginRequest = components["schemas"]["LoginRequest"];
 export type RegisterRequest = components["schemas"]["RegisterRequest"];
@@ -14,5 +14,5 @@ export type ResetPasswordRequest =
 export type VerifyEmailRequest = components["schemas"]["VerificationRequest"];
 
 // Export Request/Response schema types derived from operations
-export type AuthResponse = ExtractResponseSchema<operations>;
-export type AuthRequest = ExtractRequestSchema<operations>;
+export type AuthResponse = ExtractResponseBody<operations>;
+export type AuthRequest = ExtractRequestBody<operations>;
