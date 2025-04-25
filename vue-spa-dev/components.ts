@@ -29,11 +29,25 @@ class ResizeObserverMock {
   disconnect() {}
 }
 
+const matchMediaMock = (): MediaQueryList => {
+  return {
+    matches: false,
+    media: "",
+    onchange: () => {},
+    addEventListener: () => {},
+    removeEventListener: () => {},
+    dispatchEvent: () => true,
+    addListener: () => {},
+    removeListener: () => {},
+  };
+};
+
 function stubGlobalsSetup() {
   vi.stubGlobal("location", {
     href: "http://localhost",
   });
   vi.stubGlobal("ResizeObserver", ResizeObserverMock);
+  vi.stubGlobal("matchMedia", matchMediaMock);
 }
 
 function stubGlobalsTeardown() {
