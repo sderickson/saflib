@@ -64,7 +64,11 @@ export const handleClientMethod = async <T>(
 
 import { createApp, type Component } from "vue";
 import { createVuetify, type VuetifyOptions } from "vuetify";
-import { VueQueryPlugin } from "@tanstack/vue-query";
+import {
+  QueryClient,
+  VueQueryPlugin,
+  type VueQueryPluginOptions,
+} from "@tanstack/vue-query";
 import type { Router } from "vue-router";
 
 interface CreateVueAppOptions {
@@ -82,7 +86,34 @@ export const createVueApp = (
   if (router) {
     app.use(router);
   }
-  app.use(VueQueryPlugin, { enableDevtoolsV6Plugin: true });
+
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        staleTime: 1000 * 10,
+        retry: (failureCount, error) => {
+          if (error instanceof TanstackError) {
+            switch (error.status) {
+              case 401:
+              case 403:
+              case 404:
+              case 500:
+                return false;
+              default:
+                return failureCount < 3;
+            }
+          }
+          return failureCount < 3;
+        },
+      },
+    },
+  });
+
+  const options: VueQueryPluginOptions = {
+    enableDevtoolsV6Plugin: true,
+    queryClient,
+  };
+  app.use(VueQueryPlugin, options);
   app.mount("#app");
   return createApp(app);
 };
