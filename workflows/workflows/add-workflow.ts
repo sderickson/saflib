@@ -1,17 +1,13 @@
 import { SimpleWorkflow } from "@saflib/workflows";
+import { execSync } from "child_process";
 
 export interface AddWorkflowParams {
   workflowName: string;
 }
 
-interface AddWorkflowData {}
-
-export class AddWorkflow extends SimpleWorkflow<
-  AddWorkflowParams,
-  AddWorkflowData
-> {
+export class AddWorkflow extends SimpleWorkflow<AddWorkflowParams> {
   name = "add-workflow";
-  description = "Helps create a new workflow definition.";
+  description = "Create a new workflow";
   cliArguments = [
     {
       name: "name",
@@ -20,6 +16,9 @@ export class AddWorkflow extends SimpleWorkflow<
     },
   ];
   init = async (workflowName: string) => {
+    execSync(`mkdir -p workflows`);
+    execSync(`touch workflows/index.ts`);
+    execSync(`touch workflows/${workflowName}.ts`);
     this.params = { workflowName };
     return { data: {} };
   };
@@ -31,7 +30,7 @@ export class AddWorkflow extends SimpleWorkflow<
     {
       name: "Create Workflow File",
       prompt: () =>
-        `Create the basic workflow file for '${this.getParams().workflowName}'. The file should be in the '/workflows/' directory inside this package and include the basic structure (imports, class definition, name, description, cliArguments, init, workflowPrompt, empty steps array).`,
+        `Create the basic workflow file for '${this.getParams().workflowName}'. The file should be in the '/workflows/' directory inside this package, import "SimpleWorkflow" from "@saflib/workflows", and create/export a subclass of "SimpleWorkflow" which includes all the abstract methods and properties (name, description, cliArguments, init, workflowPrompt, empty steps array). No constructor or "public" keyword should be used. And you shouldn't need to explicitly type anything.`,
     },
     {
       name: "Export Workflow",
