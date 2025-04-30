@@ -44,8 +44,8 @@ export class AddWorkflow extends SimpleWorkflow<
         `Now, ensure the new workflow '${this.getParams().workflowName}' is exported correctly. 
         1. Create or update an 'index.ts' file in the same directory as the new workflow file.
         2. Import the new workflow class into 'index.ts'.
-        3. Add an instance of the new workflow to the default exported array in 'index.ts'.
-        4. Update the package.json of the package containing the workflow (e.g., '@saflib/workflows') to include a './workflows' export pointing to this 'index.ts' file.`,
+        3. Add the new workflow *class* (not an instance) to the default exported array in 'index.ts'. Ensure the array has the correct type (e.g., \`ConcreteWorkflow[]\` from '@saflib/workflows').
+        4. If needed, update the package.json of the package containing the workflow to include a './workflows' export pointing to this 'index.ts' file.`,
     },
     {
       name: "Ensure Dependency",
