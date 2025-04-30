@@ -36,7 +36,7 @@ export class AddWorkflow extends SimpleWorkflow<
     {
       name: "Create Workflow File",
       prompt: () =>
-        `Create the basic workflow file for '${this.getParams().workflowName}'. It should be located in the appropriate directory within 'saflib/workflows/' (e.g., 'sample/' or a new directory) and include the basic structure (imports, class definition, name, description, cliArguments, init, workflowPrompt, empty steps array).`,
+        `Create the basic workflow file for '${this.getParams().workflowName}'. The file should be in the '/workflows/' directory inside this package and include the basic structure (imports, class definition, name, description, cliArguments, init, workflowPrompt, empty steps array).`,
     },
     {
       name: "Export Workflow",
@@ -51,6 +51,13 @@ export class AddWorkflow extends SimpleWorkflow<
       name: "Ensure Dependency",
       prompt: () =>
         `Verify that the package containing the new workflow (e.g., '@saflib/workflows') is listed as a dependency in the 'tools/workflows/package.json' file. If it's not present, add it and run 'npm install'.`,
+    },
+    {
+      name: "Update Workflow List",
+      prompt: () =>
+        `Finally, update 'tools/workflows/list.ts'. 
+        1. Import the workflow array exported from the package (e.g., \`import newWorkflows from '@saflib/workflows/workflows';\`). Make sure to use the correct package name.
+        2. Add the imported workflows to the \`workflowClasses\` array. You can use the spread operator (\`...newWorkflows\`) for this.`,
     },
   ];
 }
