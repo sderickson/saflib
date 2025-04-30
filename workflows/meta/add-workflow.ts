@@ -2,7 +2,6 @@ import { SimpleWorkflow } from "@saflib/workflows";
 
 export interface AddWorkflowParams {
   workflowName: string;
-  description: string;
 }
 
 interface AddWorkflowData {}
@@ -15,17 +14,13 @@ export class AddWorkflow extends SimpleWorkflow<
   description = "Helps create a new workflow definition.";
   cliArguments = [
     {
-      name: "workflowName",
+      name: "name",
       description:
         "The name of the new workflow to create (e.g., 'refactor-component')",
     },
-    {
-      name: "description",
-      description: "The description for the new workflow.",
-    },
   ];
-  init = async (workflowName: string, description: string) => {
-    this.params = { workflowName, description };
+  init = async (workflowName: string) => {
+    this.params = { workflowName };
     return { data: {} };
   };
 
@@ -58,6 +53,11 @@ export class AddWorkflow extends SimpleWorkflow<
         `Finally, update 'tools/workflows/list.ts'. 
         1. Import the workflow array exported from the package (e.g., \`import newWorkflows from '@saflib/workflows/workflows';\`). Make sure to use the correct package name.
         2. Add the imported workflows to the \`workflowClasses\` array. You can use the spread operator (\`...newWorkflows\`) for this.`,
+    },
+    {
+      name: "Verify Workflow List",
+      prompt: () =>
+        `As a final check, run the command \`npm exec saf-workflow kickoff help\` in your terminal (run from the workspace root). Ensure that your new workflow "${this.getParams().workflowName}" appears in the list.`,
     },
   ];
 }
