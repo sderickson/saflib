@@ -2,7 +2,8 @@
   "name": "@saflib/processes",
   "type": "module",
   "exports": {
-    ".": "./index.ts"
+    ".": "./index.ts",
+    "./workflows": "./workflows/index.ts"
   },
   "dependencies": {
     "@saflib/workflows": "*"
