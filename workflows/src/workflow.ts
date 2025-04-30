@@ -71,7 +71,7 @@ export abstract class SimpleWorkflow<
     this.status = "in progress";
     this.print(`The "${this.name}" workflow has been kicked off.`);
     await this.printStatus();
-    this.print(`To continue, run "npm exec saf-workflow -- next"`);
+    this.print(`To continue, run "npm exec saf-workflow next"`);
     return true;
   }
 
