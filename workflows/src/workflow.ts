@@ -18,6 +18,7 @@ export type ConcreteWorkflow = AbstractClassConstructor<
 
 export interface WorkflowMeta {
   name: string;
+  description: string;
   cliArguments: CLIArgument[];
   Workflow: ConcreteWorkflow;
 }
@@ -30,6 +31,7 @@ export abstract class SimpleWorkflow<
   data?: D;
 
   abstract readonly name: string;
+  abstract readonly description: string;
   abstract readonly cliArguments: CLIArgument[];
   abstract init: (...args: any[]) => Promise<Result<D>>;
   abstract steps: Step[];
