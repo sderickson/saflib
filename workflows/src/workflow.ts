@@ -16,6 +16,12 @@ export type ConcreteWorkflow = AbstractClassConstructor<
   SimpleWorkflow<any, any>
 >;
 
+export interface WorkflowMeta {
+  name: string;
+  cliArguments: CLIArgument[];
+  Workflow: ConcreteWorkflow;
+}
+
 export abstract class SimpleWorkflow<
   P extends Record<string, any>,
   D extends Record<string, any>,
@@ -23,7 +29,7 @@ export abstract class SimpleWorkflow<
   params?: P;
   data?: D;
 
-  abstract readonly workflowName: string;
+  abstract readonly name: string;
   abstract readonly cliArguments: CLIArgument[];
   abstract init: (...args: any[]) => Promise<Result<D>>;
   abstract steps: Step[];
@@ -61,7 +67,7 @@ export abstract class SimpleWorkflow<
       return true;
     }
     this.status = "in progress";
-    this.print(`The "${this.workflowName}" workflow has been kicked off.`);
+    this.print(`The "${this.name}" workflow has been kicked off.`);
     await this.printStatus();
     this.print(`To continue, run "npm exec saf-workflow -- next"`);
     return true;
@@ -99,7 +105,7 @@ export abstract class SimpleWorkflow<
 
   dehydrate(): WorkflowBlob {
     return {
-      workflowName: this.workflowName,
+      workflowName: this.name,
       internalState: {
         status: this.status,
         stepIndex: this.stepIndex,

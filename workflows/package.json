@@ -6,9 +6,6 @@
   "exports": {
     ".": "./index.ts"
   },
-  "bin": {
-    "saf-workflow": "./bin/workflow-cli.ts"
-  },
   "scripts": {
     "_test": "vitest run",
     "test:watch": "vitest",
