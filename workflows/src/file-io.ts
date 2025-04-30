@@ -4,7 +4,7 @@ import type { WorkflowMeta, SimpleWorkflow } from "./workflow.ts";
 import type { WorkflowBlob } from "./types.ts";
 
 export const getPlanStatusFilePath = () => {
-  return resolve(process.cwd(), "saf-plan-status.json");
+  return resolve(process.cwd(), "saf-workflow-status.json");
 };
 
 export const loadPlanStatusContents = (): string | null => {
