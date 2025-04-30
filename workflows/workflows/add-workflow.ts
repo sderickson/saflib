@@ -52,6 +52,8 @@ export default workflowClasses;
         .replaceAll("ToDo", data.pascalCaseWorkflowName),
     );
     toLog.push("Created stub file");
+
+    this.print(toLog.map((l) => `✔ ${l}`).join("\n"));
     return { data: {} };
   };
 
