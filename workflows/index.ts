@@ -2,6 +2,7 @@ import type { WorkflowMeta, ConcreteWorkflow } from "./src/workflow.ts";
 
 export * from "./src/workflow.ts";
 export * from "./src/workflow-cli.ts";
+export * from "./sample/index.ts";
 export type * from "./src/types.ts";
 
 export function concreteWorkflowToMeta(
