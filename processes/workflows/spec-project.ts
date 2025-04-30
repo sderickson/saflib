@@ -16,14 +16,14 @@ export class SpecProjectWorkflow extends SimpleWorkflow<SpecProjectWorkflowParam
     const toLog = [];
     const c = this.computed();
 
-    execSync(`mkdir -p ${c.specFilePath}`);
-    toLog.push(`✔ Created directory: ${c.specFilePath}`);
+    execSync(`mkdir -p ${c.projectDirPath}`);
+    execSync(`touch ${c.specFilePath}`);
+    toLog.push(`✔ Created directory: ${c.projectDirPath}`);
 
-    const templatePath = path.resolve(
-      import.meta.dirname,
-      "./spec.template.md",
+    const templateContent = readFileSync(
+      path.resolve(import.meta.dirname, "./spec.template.md"),
+      "utf8",
     );
-    const templateContent = readFileSync(templatePath, "utf8");
 
     writeFileSync(c.specFilePath, templateContent);
     toLog.push(`✔ Created spec file: ${c.specFilePath}`);
@@ -33,11 +33,12 @@ export class SpecProjectWorkflow extends SimpleWorkflow<SpecProjectWorkflowParam
   };
 
   computed = () => {
+    const date = new Date().toISOString().split("T")[0];
+    const projectDirName = `${date}-${this.getParams().slug}`;
+    const specFilePath = path.join(projectDirName, "spec.md");
     return {
-      specFilePath: path.join(
-        `${new Date().toISOString().split("T")[0]}-${this.getParams().slug}`,
-        "spec.md",
-      ),
+      projectDirPath: projectDirName,
+      specFilePath: specFilePath,
     };
   };
 
