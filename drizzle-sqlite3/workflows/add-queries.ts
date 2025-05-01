@@ -43,19 +43,19 @@ export class AddQueriesWorkflow extends SimpleWorkflow<AddQueriesWorkflowParams>
         `Queries for a given table should live in the path "src/queries/table-name". The "table-name" doesn't have to be the full table name. Create this folder if it doesn't exist.`,
     },
     {
-      name: "Add Index, Types, and Errors files",
+      name: "Add Index and Errors files",
       prompt: () =>
-        `If they don't already exist, add "index.ts", "errors.ts", and "types.ts" to the query folder.`,
+        `If they don't already exist, add "index.ts" and "errors.ts" to the query folder. Types should go in the root "src/queries/types.ts" file.`,
     },
     {
-      name: "Add types to types.ts",
+      name: "Add types to root types.ts",
       prompt: () =>
-        `For the queries you're adding, add types for the parameters and return values. As much as possible, these should be based on the types that drizzle provides. For example, if when creating a row, the database handles the id, createdAt, and updatedAt fields, have a "InsertTableRowParams" type that Omits those fields.`,
+        `For the queries you're adding, add types for the parameters and return values to the main "src/queries/types.ts" file. As much as possible, these should be based on the types that drizzle provides. For example, if when creating a row, the database handles the id, createdAt, and updatedAt fields, have a "InsertTableRowParams" type that Omits those fields.`,
     },
     {
       name: "Implement queries",
       prompt: () =>
-        `For each query, create a file for it. Make sure to create a "Result" type that uses one of the "types.ts" types for the first argument, and errors from "errors.ts" for the second argument. Add errors to the "errors.ts" file if needed.`,
+        `For each query, create a file for it. Make sure to create a "Result" type that uses one of the types from "../types.ts" (the root query types file) for the first argument, and errors from "./errors.ts" (the local errors file) for the second argument. Add errors to the local "errors.ts" file if needed.`,
     },
     {
       name: "Test each query",
