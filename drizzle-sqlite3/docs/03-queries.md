@@ -10,10 +10,10 @@ to handle them directly and this would lead to tight coupling.
 
 ## File Organization
 
-All queries should be organized by domain (table or logical group) within the `src/queries/` directory. Each specific query operation (get, list, create, update, delete) should reside in its **own file**. An `index.ts` file within each domain directory aggregates the individual query factories.
+All queries should be organized by domain (table or logical group) within the `queries/` directory. Each specific query operation (get, list, create, update, delete) should reside in its **own file**. An `index.ts` file within each domain directory aggregates the individual query factories.
 
 ```
-src/
+package/
 ├── queries/
 │   ├── index.ts         # Exports combined query objects (e.g., { todos, users })
 │   ├── types.ts         # Common DB types AND ALL domain-specific types
@@ -29,19 +29,20 @@ src/
 │       └── ...          # (Similar structure, NO types.ts here)
 ├── schema.ts            # Database schema
 ├── instance.ts          # Database instance and query factory initialization
-└── errors.ts            # Global/base error types (optional)
+├── package.json
+└── errors.ts            # Base error types
 ```
 
 ## Creating Database Queries with Error Handling
 
 Each query file exports a factory function that takes the database instance and returns the specific query function, wrapped for error handling. Queries return errors using the `ReturnsError<TResult, TError>` pattern.
 
-**1. Domain Types (`src/queries/types.ts`)**
+**1. Domain Types (`queries/types.ts`)**
 
-All domain-specific types (like `Todo`, `NewTodo`, `CreateTodoInput`) should reside in the main `src/queries/types.ts` file alongside the common `DbType`.
+All domain-specific types (like `Todo`, `NewTodo`, `CreateTodoInput`) should reside in the main `queries/types.ts` file alongside the common `DbType`.
 
 ```typescript
-// src/queries/types.ts
+// queries/types.ts
 import type * as schema from "../schema.ts";
 import type { BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
 
@@ -57,10 +58,10 @@ export type CreateTodoInput = Omit<NewTodo, "id" | "createdAt">;
 // ... other domain types ...
 ```
 
-**2. Domain Errors (`src/queries/todos/errors.ts`)**
+**2. Domain Errors (`queries/todos/errors.ts`)**
 
 ```typescript
-// src/queries/todos/errors.ts
+// queries/todos/errors.ts
 
 // Define specific error classes (can inherit from a base DB error or Error)
 export class TodoNotFoundError extends Error {
@@ -78,12 +79,12 @@ export class TodoConflictError extends Error {
 }
 ```
 
-**3. Individual Query File (`src/queries/todos/get-by-id.ts`)**
+**3. Individual Query File (`queries/todos/get-by-id.ts`)**
 
 Query files now import types from the root `../types.ts`.
 
 ```typescript
-// src/queries/todos/get-by-id.ts
+// queries/todos/get-by-id.ts
 import { queryWrapper } from "@saflib/drizzle-sqlite3";
 import type { ReturnsError } from "@saflib/monorepo";
 import { eq } from "drizzle-orm";
@@ -110,10 +111,10 @@ export function createGetTodoByIdQuery(db: DbType) {
 }
 ```
 
-**4. Another Query File (`src/queries/todos/create.ts`)**
+**4. Another Query File (`queries/todos/create.ts`)**
 
 ```typescript
-// src/queries/todos/create.ts
+// queries/todos/create.ts
 import { queryWrapper } from "@saflib/drizzle-sqlite3";
 import type { ReturnsError } from "@saflib/monorepo";
 import { todos } from "../../schema.ts";
@@ -143,12 +144,12 @@ export function createCreateTodoQuery(db: DbType) {
 }
 ```
 
-**5. Domain Index File (`src/queries/todos/index.ts`)**
+**5. Domain Index File (`queries/todos/index.ts`)**
 
 Domain index files no longer export types.
 
 ```typescript
-// src/queries/todos/index.ts
+// queries/todos/index.ts
 import type { DbType } from "../types.ts"; // Import from root types
 import { createGetTodoByIdQuery } from "./get-by-id.ts";
 import { createCreateTodoQuery } from "./create.ts";
@@ -168,12 +169,12 @@ export function createTodoQueries(db: DbType) {
 }
 ```
 
-**6. Main Instance Initialization (`src/instance.ts`)**
+**6. Main Instance Initialization (`instance.ts`)**
 
 No changes needed here due to type consolidation.
 
 ```typescript
-// In src/instance.ts
+// In instance.ts
 import { drizzle } from "@saflib/drizzle-sqlite3";
 import { Database } from "better-sqlite3";
 import * as schema from "./schema.ts";
@@ -223,7 +224,7 @@ These classes serve several purposes:
 Extend the base `Error` class or a custom `DatabaseError` base class:
 
 ```typescript
-// Base error (optional, could be in src/errors.ts)
+// Base error (optional, could be in errors.ts)
 export class DatabaseError extends Error {
   constructor(message: string, options?: ErrorOptions) {
     super(message, options);
@@ -272,12 +273,12 @@ if (error) {
 
 ### Defining Input and Output Types
 
-Leverage Drizzle's inferred types (`$inferSelect`, `$inferInsert`) as the base. Define all specific `Input` and domain types (like `User`, `NewUser`, `CreateUserInput`, `UpdateUserInput`) within the main **`src/queries/types.ts`** file.
+Leverage Drizzle's inferred types (`$inferSelect`, `$inferInsert`) as the base. Define all specific `Input` and domain types (like `User`, `NewUser`, `CreateUserInput`, `UpdateUserInput`) within the main **`queries/types.ts`** file.
 
 Use TypeScript's utility types (`Omit`, `Partial`, `Pick`, `&`) to precisely define the expected shape based on the operation (Create, Update).
 
 ```typescript
-// In src/queries/types.ts
+// In queries/types.ts
 import * as schema from "../schema";
 
 // ... DbType definition ...
@@ -300,7 +301,7 @@ export type UpdateUserInput = Partial<
 Query functions then import these types from `../types.ts`:
 
 ```typescript
-// In src/queries/users/create.ts
+// In queries/users/create.ts
 import type { CreateUserInput, DbType, User } from "../types.ts";
 // ... createUser function implementation ...
 ```
@@ -386,7 +387,7 @@ The consuming code receives the user data and the `profileId`. If the full profi
 For one-to-one relationships (like user profiles or settings), implement an "upsert" pattern:
 
 ```typescript
-// In src/queries/profiles.ts
+// In queries/profiles.ts
 export function createProfileQueries(db: BetterSQLite3Database<typeof schema>) {
   return {
     // NOTE: The Upsert example needs significant changes to fit the ReturnsError pattern
@@ -433,7 +434,7 @@ Tests should be in the fuzzy space between unit and integration tests; they shou
 Example test:
 
 ```typescript
-// In src/queries/todos.test.ts
+// In queries/todos.test.ts
 import { describe, it, expect } from "vitest";
 import { DatabaseInstance } from "../instance.ts";
 
