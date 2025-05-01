@@ -1,5 +1,6 @@
 import { SimpleWorkflow } from "@saflib/workflows";
 import path from "path";
+import { existsSync } from "fs";
 interface UpdateSchemaWorkflowParams {}
 
 export class UpdateSchemaWorkflow extends SimpleWorkflow<UpdateSchemaWorkflowParams> {
@@ -19,9 +20,12 @@ export class UpdateSchemaWorkflow extends SimpleWorkflow<UpdateSchemaWorkflowPar
   };
 
   computed = () => {
-    const refDoc = path.resolve(__dirname, "../docs/02-schema.md");
-    const refDocRelativePath = path.relative(process.cwd(), refDoc);
-    return { refDoc: refDocRelativePath };
+    const refDoc = path.resolve(import.meta.dirname, "../docs/02-schema.md");
+    const refDocAbsPath = path.resolve(process.cwd(), refDoc);
+    if (!existsSync(refDocAbsPath)) {
+      throw new Error(`Reference documentation not found: ${refDocAbsPath}`);
+    }
+    return { refDoc: refDocAbsPath };
   };
 
   steps = [

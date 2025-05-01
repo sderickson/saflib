@@ -43,6 +43,33 @@ Best practices for when designing your database schema.
   profileId: integer("profile_id").notNull().unique(),
   ```
 
+## Indexes
+
+- Use the array syntax within the table definition to define indexes.
+
+  ```typescript
+  import {
+    integer,
+    text,
+    index,
+    uniqueIndex,
+    sqliteTable,
+  } from "drizzle-orm/sqlite-core";
+
+  export const user = sqliteTable(
+    "user",
+    {
+      id: integer("id").primaryKey({ autoIncrement: true }),
+      name: text("name"),
+      email: text("email"),
+    },
+    (table) => [
+      index("name_idx").on(table.name),
+      uniqueIndex("email_idx").on(table.email),
+    ],
+  );
+  ```
+
 ## After Making Schema Changes
 
 After making any changes to schema files:
