@@ -114,34 +114,27 @@ import { queryWrapper } from "@saflib/drizzle-sqlite3";
 import type { ReturnsError } from "@saflib/monorepo";
 import { todos } from "../../schema.ts";
 import type { CreateTodoInput, DbType, Todo } from "./types.ts";
-import { TodoConflictError } from "./errors.ts";
+import { TodoConflictError, TodoNotFoundError } from "./errors.ts";
 
 // Define the specific result type for this query
-type Result = ReturnsError<Todo, TodoConflictError>;
+type Result = ReturnsError<Todo, TodoConflictError | TodoNotFoundError>;
 
 // Export the factory function for this specific query
 export function createCreateTodoQuery(db: DbType) {
   return queryWrapper(async (data: CreateTodoInput): Promise<Result> => {
-    try {
-      const result = await db
-        .insert(todos)
-        .values({
-          ...data,
-          createdAt: new Date(), // Add fields not handled by input type
-        })
-        .returning();
-      return { result: result[0] };
-    } catch (e) {
-      if (
-        e instanceof Error &&
-        e.message.includes("UNIQUE constraint failed") // Example check
-      ) {
-        return {
-          error: new TodoConflictError("Todo uniqueness constraint failed", e),
-        };
-      }
-      throw e; // Re-throw unexpected errors
-    }
+    // queryWrapper will handle unexpected errors.
+    // If specific mapping of DB errors (like UNIQUE constraint) to custom
+    // returned errors (like TodoConflictError) is needed, use a targeted
+    // try/catch block around the function that performs the operation.
+    const result = await db
+      .insert(todos)
+      .values({
+        ...data,
+        createdAt: new Date(),
+      })
+      .returning();
+
+    return { result: result[0] };
   });
 }
 ```
@@ -423,9 +416,9 @@ export function createProfileQueries(db: BetterSQLite3Database<typeof schema>) {
 
 ### Error Handling
 
-As shown in the examples, query functions should handle predictable errors (like "Not Found" or constraint violations) by returning `{ error: new SpecificError(...) }`. They should only `throw` truly _unexpected_ errors (e.g., database connection issues, programming errors caught during execution).
+As shown in the examples, query functions should handle predictable errors (like "Not Found") by returning `{ error: new SpecificError(...) }`. Only use `try...catch` blocks for errors that Drizzle itself throws.
 
-The `queryWrapper` can serve as a final safety net to catch these unexpected thrown errors, log them, and potentially wrap them in a generic `DatabaseError` before they propagate further (although its primary role shifts slightly away from catching _expected_ errors, which are now explicitly returned).
+Unexpected errors (e.g., database connection issues, programming errors, unhandled constraint violations) are caught by `queryWrapper` which will log and propagate them, so that the server responds with a 500 error.
 
 Consumers of the query functions **must** check the returned object for the `error` property before accessing `result`.
 
@@ -435,20 +428,17 @@ async function processTodo(id: string) {
   const { result, error } = await db.todos.getById(id);
 
   if (error) {
-    if (error instanceof db.todos.TodoNotFoundError) {
-      console.warn(`Todo ${id} not found.`);
-      // Return a specific value or throw an API-level error
-      return null;
-    } else {
-      // Handle other potential error types returned by getById
-      console.error(`Failed to get todo ${id}:`, error);
-      throw new Error("Database operation failed"); // Or re-throw error
+    switch (true) {
+      case error instanceof db.todos.TodoNotFoundError:
+        console.warn(`Todo ${id} not found.`);
+        // Return a specific value or throw an API-level error
+        return null;
+      default:
+        // Use "satisfies" to use type checking to ensure the error is handled
+        throw error satisfies Error;
     }
-  } else {
-    // Safely use result
-    console.log(`Processing todo: ${result.title}`);
-    // ...
   }
+  console.log(`Processing todo: ${result.title}`);
 }
 ```
 
