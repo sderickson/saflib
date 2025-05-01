@@ -1,9 +1,9 @@
 {
   "name": "@saflib/drizzle-sqlite3",
   "type": "module",
-  "main": "./src/index.ts",
   "exports": {
-    "./workflows": "./workflows/index.ts"
+    "./workflows": "./workflows/index.ts",
+    ".": "./src/index.ts"
   },
   "scripts": {
     "test": "vitest run",

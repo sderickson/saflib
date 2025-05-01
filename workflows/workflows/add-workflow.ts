@@ -86,7 +86,8 @@ export default workflowClasses;
         1. An adjacent 'index.ts' file should already exist, check that it does.
         2. Import the new workflow class into 'workflows/index.ts' if it's not already there.
         3. Add the new workflow *class* (not an instance) to the default exported array in 'workflows/index.ts'.
-        4. If needed, update the package.json of this package (${this.computed().packageName}) to include a './workflows' export pointing to the 'workflows/index.ts' file.`,
+        4. If needed, update the package.json of this package (${this.computed().packageName}) to include a './workflows' export pointing to the 'workflows/index.ts' file.
+        5. And! If you do include a './workflows' export, you might need to make the value of "main" be a "." export.`,
     },
     {
       name: "Ensure Dependency",
