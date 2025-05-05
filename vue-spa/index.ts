@@ -49,7 +49,6 @@ interface ClientResult<T> {
 export const handleClientMethod = async <T>(
   request: Promise<ClientResult<T>>,
 ): Promise<T> => {
-  console.log("request", request);
   let result: ClientResult<T>;
   try {
     result = await request;
@@ -61,7 +60,6 @@ export const handleClientMethod = async <T>(
     // This is because UI should not render the untranslated error message, but instead
     // give the user a message based on the HTTP status or, if that's not sufficient,
     // the error code.
-    console.error("Network error:", result.error);
     throw new TanstackError(result.response.status, result.error.code);
   }
   if (result.data === undefined) {
