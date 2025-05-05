@@ -11,22 +11,18 @@ package-name/
 ├── data/              # SQLite database files
 │   └── .gitkeep       # Needed to make sure drizzle can write to the directory
 ├── migrations/        # Generated migrations
-└── src/              # Private implementation
-    ├── schema.ts     # Database schema
-    ├── instance.ts   # Database instance management
-    ├── errors.ts     # Base error types (optional)
-    └── queries/      # Database queries
-        ├── index.ts      # Exports combined query objects (e.g., { users, todos })
-        ├── types.ts      # Common DB types (DbType, etc.)
-        └── <domain>/     # Directory for a specific domain (e.g., users)
-            ├── index.ts      # Exports the combined query object for the domain
-            ├── types.ts      # Domain-specific types (e.g., User, NewUser)
-            ├── errors.ts     # Domain-specific errors (e.g., UserNotFoundError)
-            ├── get-by-id.ts  # Factory for a specific query
-            ├── create.ts     # Factory for another query
-            ├── ...           # Other query files (list.ts, update.ts, etc.)
-            └── get-by-id.test.ts # Test file adjacent to query
-            └── ...           # Other test files
+├── schema.ts          # Database schema
+├── instance.ts        # Database instance management
+├── index.ts           # Exports the database instance
+├── errors.ts          # Errors returned by queries
+├── types.ts           # Types derived from schema
+└── queries/          # Database queries
+    ├── index.ts      # Exports combined query objects (e.g., { users, todos })
+    └── <domain>/     # Directory for a specific domain (e.g., users)
+        ├── index.ts      # Exports the combined query object for the domain
+        ├── get-by-id.ts  # Factory for a specific query
+        └── get-by-id.test.ts # Test file adjacent to query
+        └── ...           # Other test files
 ```
 
 ## Required Files
@@ -38,9 +34,7 @@ package-name/
   "name": "@saflib/your-package",
   "private": true,
   "type": "module",
-  "exports": {
-    ".": "./src/instance.ts"
-  },
+  "main": "./index.ts",
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
@@ -81,26 +75,33 @@ export const getMigrationsPath = () => {
 
 export default defineConfig({
   out: "./migrations",
-  schema: "./src/schema.ts",
+  schema: "./schema.ts",
   dialect: "sqlite",
   dbCredentials: { url: `./data/${dbName}` },
 });
 ```
 
-### src/errors.ts
+### errors.ts
 
 ```typescript
 import { HandledDatabaseError } from "@saflib/drizzle-sqlite3";
 
-export class DatabaseError extends HandledDatabaseError {
+export class UserDatabaseError extends HandledDatabaseError {
   constructor(message: string, cause?: unknown) {
     super(message, cause);
     this.name = "DatabaseError";
   }
 }
+
+export class UserNotFoundError extends UserDatabaseError {
+  constructor(id: number) {
+    super(`User with ID ${id} not found`);
+    this.name = "UserNotFoundError";
+  }
+}
 ```
 
-### src/instance.ts
+### instance.ts
 
 ```typescript
 import { drizzle } from "@saflib/drizzle-sqlite3";
@@ -151,7 +152,7 @@ export class DatabaseInstance {
 }
 ```
 
-### src/schema.ts
+### schema.ts
 
 ```typescript
 import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
@@ -169,12 +170,12 @@ export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 ```
 
-### src/queries/users/ (Example Domain)
+### queries/users/ (Example Domain)
 
 **`types.ts`**
 
 ```typescript
-// src/queries/users/types.ts
+// queries/users/types.ts
 import type * as schema from "../../schema.ts";
 import type { BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
 
@@ -190,7 +191,7 @@ export type CreateUserInput = Omit<NewUser, "id" | "createdAt" | "updatedAt">;
 **`errors.ts`**
 
 ```typescript
-// src/queries/users/errors.ts
+// queries/users/errors.ts
 import { DatabaseError } from "../../errors.ts"; // Assuming a base error exists
 
 // Define specific error classes
@@ -212,7 +213,7 @@ export class EmailConflictError extends DatabaseError {
 **`create.ts`**
 
 ```typescript
-// src/queries/users/create.ts
+// queries/users/create.ts
 import { queryWrapper } from "@saflib/drizzle-sqlite3";
 import type { ReturnsError } from "@saflib/monorepo";
 import { users } from "../../schema.ts";
@@ -247,7 +248,7 @@ export function createCreateUserQuery(db: DbType) {
 **`get-by-id.ts`**
 
 ```typescript
-// src/queries/users/get-by-id.ts
+// queries/users/get-by-id.ts
 import { queryWrapper } from "@saflib/drizzle-sqlite3";
 import type { ReturnsError } from "@saflib/monorepo";
 import { eq } from "drizzle-orm";
@@ -274,7 +275,7 @@ export function createGetUserByIdQuery(db: DbType) {
 **`index.ts`**
 
 ```typescript
-// src/queries/users/index.ts
+// queries/users/index.ts
 import type { DbType } from "./types.ts";
 import { createCreateUserQuery } from "./create.ts";
 import { createGetUserByIdQuery } from "./get-by-id.ts";
@@ -301,10 +302,10 @@ export function createUserQueries(db: DbType) {
 ## Setup Steps
 
 1. Create the package structure as shown above
-2. Write your schema in `src/schema.ts` following the schema guidelines
+2. Write your schema in `schema.ts` following the schema guidelines
 3. Run `npm run generate` to create migrations
-4. Implement your queries in the appropriate `src/queries/<domain>/` directory, with one file per query factory. Aggregate them in the domain's `index.ts` file and initialize them in `src/instance.ts`.
-5. Write tests for your queries, adjacent to the query files (e.g., `src/queries/users/create.test.ts`).
+4. Implement your queries in the appropriate `queries/<domain>/` directory, with one file per query factory. Aggregate them in the domain's `index.ts` file and initialize them in `instance.ts`.
+5. Write tests for your queries, adjacent to the query files (e.g., `queries/users/create.test.ts`).
 
 ## Testing
 

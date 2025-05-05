@@ -10,16 +10,15 @@ to handle them directly and this would lead to tight coupling.
 
 ## File Organization
 
-All queries should be organized by domain (table or logical group) within the `src/queries/` directory. Each specific query operation (get, list, create, update, delete) should reside in its **own file**. An `index.ts` file within each domain directory aggregates the individual query factories.
+All queries should be organized by domain (table or logical group) within the `queries/` directory. Each specific query operation (get, list, create, update, delete) should reside in its **own file**. An `index.ts` file within each domain directory aggregates the individual query factories.
 
 ```
-src/
+package/
 ├── queries/
 │   ├── index.ts         # Exports combined query objects (e.g., { todos, users })
-│   ├── types.ts         # Common DB types (DbType, etc.)
+│   ├── types.ts         # Common DB types AND ALL domain-specific types
 │   ├── todos/           # Domain directory for 'todos'
 │   │   ├── index.ts     # Exports the combined 'todos' query object
-│   │   ├── types.ts     # Domain-specific types (Todo, NewTodo)
 │   │   ├── errors.ts    # Domain-specific errors (TodoNotFoundError)
 │   │   ├── get-by-id.ts # Factory for the getById query
 │   │   ├── create.ts    # Factory for the create query
@@ -27,38 +26,42 @@ src/
 │   │   └── get-by-id.test.ts # Test for get-by-id.ts
 │   │   └── ...          # Other test files
 │   └── users/           # Domain directory for 'users'
-│       └── ...          # (Similar structure)
+│       └── ...          # (Similar structure, NO types.ts here)
 ├── schema.ts            # Database schema
 ├── instance.ts          # Database instance and query factory initialization
-└── errors.ts            # Global/base error types (optional)
+├── package.json
+└── errors.ts            # Base error types
 ```
 
 ## Creating Database Queries with Error Handling
 
 Each query file exports a factory function that takes the database instance and returns the specific query function, wrapped for error handling. Queries return errors using the `ReturnsError<TResult, TError>` pattern.
 
-**1. Domain Types (`src/queries/todos/types.ts`)**
+**1. Domain Types (`queries/types.ts`)**
+
+All domain-specific types (like `Todo`, `NewTodo`, `CreateTodoInput`) should reside in the main `queries/types.ts` file alongside the common `DbType`.
 
 ```typescript
-// src/queries/todos/types.ts
-import type * as schema from "../../schema.ts";
+// queries/types.ts
+import type * as schema from "../schema.ts";
 import type { BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
 
-// Re-export DB type if needed by query factories
+// Common DB type
 export type DbType = BetterSQLite3Database<typeof schema>;
 
-// Define domain-specific data types
+// --- Todos Domain --- //
 export type Todo = typeof schema.todos.$inferSelect;
 export type NewTodo = typeof schema.todos.$inferInsert;
-
-// Input types for specific operations (example)
 export type CreateTodoInput = Omit<NewTodo, "id" | "createdAt">;
+
+// --- Users Domain --- //
+// ... other domain types ...
 ```
 
-**2. Domain Errors (`src/queries/todos/errors.ts`)**
+**2. Domain Errors (`queries/todos/errors.ts`)**
 
 ```typescript
-// src/queries/todos/errors.ts
+// queries/todos/errors.ts
 
 // Define specific error classes (can inherit from a base DB error or Error)
 export class TodoNotFoundError extends Error {
@@ -76,15 +79,17 @@ export class TodoConflictError extends Error {
 }
 ```
 
-**3. Individual Query File (`src/queries/todos/get-by-id.ts`)**
+**3. Individual Query File (`queries/todos/get-by-id.ts`)**
+
+Query files now import types from the root `../types.ts`.
 
 ```typescript
-// src/queries/todos/get-by-id.ts
+// queries/todos/get-by-id.ts
 import { queryWrapper } from "@saflib/drizzle-sqlite3";
 import type { ReturnsError } from "@saflib/monorepo";
 import { eq } from "drizzle-orm";
 import { todos } from "../../schema.ts";
-import type { DbType, Todo } from "./types.ts";
+import type { DbType, Todo } from "../types.ts"; // Import from root types
 import { TodoNotFoundError } from "./errors.ts";
 
 // Define the specific result type for this query
@@ -106,58 +111,53 @@ export function createGetTodoByIdQuery(db: DbType) {
 }
 ```
 
-**4. Another Query File (`src/queries/todos/create.ts`)**
+**4. Another Query File (`queries/todos/create.ts`)**
 
 ```typescript
-// src/queries/todos/create.ts
+// queries/todos/create.ts
 import { queryWrapper } from "@saflib/drizzle-sqlite3";
 import type { ReturnsError } from "@saflib/monorepo";
 import { todos } from "../../schema.ts";
-import type { CreateTodoInput, DbType, Todo } from "./types.ts";
-import { TodoConflictError } from "./errors.ts";
+import type { CreateTodoInput, DbType, Todo } from "../types.ts"; // Import from root types
+import { TodoConflictError, TodoNotFoundError } from "./errors.ts";
 
 // Define the specific result type for this query
-type Result = ReturnsError<Todo, TodoConflictError>;
+type Result = ReturnsError<Todo, TodoConflictError | TodoNotFoundError>;
 
 // Export the factory function for this specific query
 export function createCreateTodoQuery(db: DbType) {
   return queryWrapper(async (data: CreateTodoInput): Promise<Result> => {
-    try {
-      const result = await db
-        .insert(todos)
-        .values({
-          ...data,
-          createdAt: new Date(), // Add fields not handled by input type
-        })
-        .returning();
-      return { result: result[0] };
-    } catch (e) {
-      if (
-        e instanceof Error &&
-        e.message.includes("UNIQUE constraint failed") // Example check
-      ) {
-        return {
-          error: new TodoConflictError("Todo uniqueness constraint failed", e),
-        };
-      }
-      throw e; // Re-throw unexpected errors
-    }
+    // queryWrapper will handle unexpected errors.
+    // If specific mapping of DB errors (like UNIQUE constraint) to custom
+    // returned errors (like TodoConflictError) is needed, use a targeted
+    // try/catch block around the function that performs the operation.
+    const result = await db
+      .insert(todos)
+      .values({
+        ...data,
+        createdAt: new Date(),
+      })
+      .returning();
+
+    return { result: result[0] };
   });
 }
 ```
 
-**5. Domain Index File (`src/queries/todos/index.ts`)**
+**5. Domain Index File (`queries/todos/index.ts`)**
+
+Domain index files no longer export types.
 
 ```typescript
-// src/queries/todos/index.ts
-import type { DbType } from "./types.ts";
+// queries/todos/index.ts
+import type { DbType } from "../types.ts"; // Import from root types
 import { createGetTodoByIdQuery } from "./get-by-id.ts";
 import { createCreateTodoQuery } from "./create.ts";
 // Import other query factories...
 
-// Export domain-specific errors and types for convenience
+// Export domain-specific errors for convenience
 export * from "./errors.ts";
-export * from "./types.ts";
+// NO type export here
 
 // Export a function that creates the full query object for this domain
 export function createTodoQueries(db: DbType) {
@@ -169,10 +169,12 @@ export function createTodoQueries(db: DbType) {
 }
 ```
 
-**6. Main Instance Initialization (`src/instance.ts`)**
+**6. Main Instance Initialization (`instance.ts`)**
+
+No changes needed here due to type consolidation.
 
 ```typescript
-// In src/instance.ts
+// In instance.ts
 import { drizzle } from "@saflib/drizzle-sqlite3";
 import { Database } from "better-sqlite3";
 import * as schema from "./schema.ts";
@@ -222,7 +224,7 @@ These classes serve several purposes:
 Extend the base `Error` class or a custom `DatabaseError` base class:
 
 ```typescript
-// Base error (optional, could be in src/errors.ts)
+// Base error (optional, could be in errors.ts)
 export class DatabaseError extends Error {
   constructor(message: string, options?: ErrorOptions) {
     super(message, options);
@@ -271,61 +273,37 @@ if (error) {
 
 ### Defining Input and Output Types
 
-Leverage Drizzle's inferred types (`$inferSelect` for selection results, `$inferInsert` for insertion data) as the base for your function inputs and outputs.
+Leverage Drizzle's inferred types (`$inferSelect`, `$inferInsert`) as the base. Define all specific `Input` and domain types (like `User`, `NewUser`, `CreateUserInput`, `UpdateUserInput`) within the main **`queries/types.ts`** file.
 
-However, for functions like `create` or `update`, the exact input required often differs slightly from the base `$inferInsert` or `$inferSelect` types. Create specific `Input` types using TypeScript's utility types (`Omit`, `Partial`, `Pick`, `&`) to precisely define the expected shape:
-
-- **Create Operations:** Start with `$inferInsert`. `Omit` fields automatically handled by the database (e.g., `id`, `createdAt`, `updatedAt`).
-- **Update Operations:** Often require the `id` of the record. Start with `$inferSelect` or `$inferInsert`, make relevant fields `Partial`, `Omit` fields that shouldn't be updated (e.g., `id` itself within the payload, `createdAt`, `ownerId`), and explicitly add back required identifiers using `& { id: number }`.
+Use TypeScript's utility types (`Omit`, `Partial`, `Pick`, `&`) to precisely define the expected shape based on the operation (Create, Update).
 
 ```typescript
-import * as schema from '../schema';
+// In queries/types.ts
+import * as schema from "../schema";
+
+// ... DbType definition ...
 
 // Base types inferred from schema
 export type User = typeof schema.users.$inferSelect;
 export type NewUser = typeof schema.users.$inferInsert;
 
-// --- Input Types ---
+// --- Input Types --- //
 
 // For creating a user: Omit DB-handled fields
-export type CreateUserInput = Omit<NewUser, 'id' | 'createdAt' | 'updatedAt'>;
+export type CreateUserInput = Omit<NewUser, "id" | "createdAt" | "updatedAt">;
 
 // For updating a user: Make fields optional, omit protected/DB fields. Require unique identifiers such as id.
-export type UpdateUserInput = Partial<Omit<User, 'ownerId' | 'createdAt' | 'updatedAt'>> & { id: number };
+export type UpdateUserInput = Partial<
+  Omit<User, "ownerId" | "createdAt" | "updatedAt">
+> & { id: number };
+```
 
-// --- Query Functions ---
+Query functions then import these types from `../types.ts`:
 
-export function createUserQueries(db) {
-  return {
-    // Return type is inferred
-    getUser: queryWrapper(async (id: number) => { ... }),
-
-    // Create: just CreateUserInput type
-    createUser: queryWrapper(async (data: CreateUserInput) => {
-        const result = await db.insert(schema.users).values({
-            ...data,
-            createdAt: new Date(),
-            updatedAt: new Date()
-        }).returning();
-        return result[0];
-     }),
-
-    // Update: just UpdateUserInput type, which includes identifier and fields to update
-    updateUser: queryWrapper(async (data: UpdateUserInput) => {
-        // Do any data validation here
-        const result = await db.update(schema.users).set({
-            ...data,
-            updatedAt: new Date(), // Update timestamp
-        }).where(eq(schema.users.id, id)).returning();
-
-        if (result.length === 0) throw new UserNotFoundError(id);
-        return result[0];
-    }),
-
-    // Delete: Takes only the id
-    deleteUser: queryWrapper(async (id: number) => { ... })
-  }
-}
+```typescript
+// In queries/users/create.ts
+import type { CreateUserInput, DbType, User } from "../types.ts";
+// ... createUser function implementation ...
 ```
 
 ### Function Signatures
@@ -409,7 +387,7 @@ The consuming code receives the user data and the `profileId`. If the full profi
 For one-to-one relationships (like user profiles or settings), implement an "upsert" pattern:
 
 ```typescript
-// In src/queries/profiles.ts
+// In queries/profiles.ts
 export function createProfileQueries(db: BetterSQLite3Database<typeof schema>) {
   return {
     // NOTE: The Upsert example needs significant changes to fit the ReturnsError pattern
@@ -423,9 +401,9 @@ export function createProfileQueries(db: BetterSQLite3Database<typeof schema>) {
 
 ### Error Handling
 
-As shown in the examples, query functions should handle predictable errors (like "Not Found" or constraint violations) by returning `{ error: new SpecificError(...) }`. They should only `throw` truly _unexpected_ errors (e.g., database connection issues, programming errors caught during execution).
+As shown in the examples, query functions should handle predictable errors (like "Not Found") by returning `{ error: new SpecificError(...) }`. Only use `try...catch` blocks for errors that Drizzle itself throws.
 
-The `queryWrapper` can serve as a final safety net to catch these unexpected thrown errors, log them, and potentially wrap them in a generic `DatabaseError` before they propagate further (although its primary role shifts slightly away from catching _expected_ errors, which are now explicitly returned).
+Unexpected errors (e.g., database connection issues, programming errors, unhandled constraint violations) are caught by `queryWrapper` which will log and propagate them, so that the server responds with a 500 error.
 
 Consumers of the query functions **must** check the returned object for the `error` property before accessing `result`.
 
@@ -435,20 +413,17 @@ async function processTodo(id: string) {
   const { result, error } = await db.todos.getById(id);
 
   if (error) {
-    if (error instanceof db.todos.TodoNotFoundError) {
-      console.warn(`Todo ${id} not found.`);
-      // Return a specific value or throw an API-level error
-      return null;
-    } else {
-      // Handle other potential error types returned by getById
-      console.error(`Failed to get todo ${id}:`, error);
-      throw new Error("Database operation failed"); // Or re-throw error
+    switch (true) {
+      case error instanceof db.todos.TodoNotFoundError:
+        console.warn(`Todo ${id} not found.`);
+        // Return a specific value or throw an API-level error
+        return null;
+      default:
+        // Use "satisfies" to use type checking to ensure the error is handled
+        throw error satisfies Error;
     }
-  } else {
-    // Safely use result
-    console.log(`Processing todo: ${result.title}`);
-    // ...
   }
+  console.log(`Processing todo: ${result.title}`);
 }
 ```
 
@@ -459,7 +434,7 @@ Tests should be in the fuzzy space between unit and integration tests; they shou
 Example test:
 
 ```typescript
-// In src/queries/todos.test.ts
+// In queries/todos.test.ts
 import { describe, it, expect } from "vitest";
 import { DatabaseInstance } from "../instance.ts";
 

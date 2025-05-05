@@ -25,7 +25,7 @@ export interface WorkflowMeta {
 
 export abstract class SimpleWorkflow<
   P extends Record<string, any>,
-  D extends Record<string, any>,
+  D extends Record<string, any> = {},
 > {
   params?: P;
   data?: D;
