@@ -3,12 +3,13 @@
   "type": "module",
   "exports": {
     "./workflows": "./workflows/index.ts",
-    ".": "./src/index.ts"
+    ".": "./index.ts"
   },
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "generate": "drizzle-kit generate"
   },
   "dependencies": {
     "better-sqlite3": "^11.0.0",
