@@ -19,7 +19,6 @@ export function queryWrapper<T, A extends any[]>(
       if (error instanceof HandledDatabaseError) {
         throw error;
       }
-      console.error(error);
       throw new UnhandledDatabaseError();
     }
   };
