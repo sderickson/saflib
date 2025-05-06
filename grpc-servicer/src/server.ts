@@ -6,13 +6,20 @@ interface GrpcService {
   implementation: grpc.UntypedServiceImplementation;
 }
 
+interface GrpcServerOptions {
+  interceptors?: grpc.ServerInterceptor[];
+}
+
 /**
  * Creates, configures, and starts a gRPC server, handling graceful shutdown.
  * Reads GRPC_PORT from environment variables, defaulting to 50051.
  *
  * @param services An array of service definitions and their implementations.
  */
-export function startGrpcServer(services: GrpcService[]): grpc.Server {
+export function startGrpcServer(
+  services: GrpcService[],
+  options: GrpcServerOptions = {},
+): grpc.Server {
   const port = process.env.GRPC_PORT
     ? parseInt(process.env.GRPC_PORT, 10)
     : 50051;
@@ -25,7 +32,9 @@ export function startGrpcServer(services: GrpcService[]): grpc.Server {
   const effectivePort = isNaN(port) ? 50051 : port;
 
   console.log("Initializing gRPC server...");
-  const server = new grpc.Server();
+  const server = new grpc.Server({
+    interceptors: options.interceptors || [],
+  });
 
   // Register all provided RPC service handlers
   services.forEach((serviceInfo) => {
