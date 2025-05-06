@@ -26,7 +26,15 @@ export class AddQueriesWorkflow extends SimpleWorkflow<AddQueriesWorkflowParams>
     if (!existsSync(refDocAbsPath)) {
       throw new Error(`Reference documentation not found: ${refDocAbsPath}`);
     }
-    return { refDoc: refDocAbsPath };
+    const testingGuide = path.resolve(
+      import.meta.dirname,
+      "../docs/01-testing-gotchas.md",
+    );
+    const testingGuideAbsPath = path.resolve(process.cwd(), testingGuide);
+    if (!existsSync(testingGuideAbsPath)) {
+      throw new Error(`Testing guide not found: ${testingGuideAbsPath}`);
+    }
+    return { refDoc: refDocAbsPath, testingGuide: testingGuideAbsPath };
   };
 
   steps = [
@@ -55,6 +63,10 @@ export class AddQueriesWorkflow extends SimpleWorkflow<AddQueriesWorkflowParams>
     {
       name: "Export the queries",
       prompt: () => `Export the queries from the folder's "index.ts" file.`,
+    },
+    {
+      name: "Review Docs",
+      prompt: () => `Read the testing guide: ${this.computed().testingGuide}`,
     },
     {
       name: "Test each query",
