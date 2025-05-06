@@ -28,7 +28,7 @@ export class AddQueriesWorkflow extends SimpleWorkflow<AddQueriesWorkflowParams>
     }
     const testingGuide = path.resolve(
       import.meta.dirname,
-      "../docs/01-testing-gotchas.md",
+      "../../drizzle-sqlite3-dev/docs/01-testing-guide.md",
     );
     const testingGuideAbsPath = path.resolve(process.cwd(), testingGuide);
     if (!existsSync(testingGuideAbsPath)) {
