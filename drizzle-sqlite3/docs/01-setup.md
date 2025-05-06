@@ -20,7 +20,7 @@ package-name/
     ├── index.ts       # Exports combined query objects (e.g., { users, todos })
     └── <domain>/      # Directory for a specific domain (e.g., users)
         ├── index.ts          # Exports the combined query object for the domain
-        ├── get-by-id.ts      # Factory for a specific query
+        ├── get-by-id.ts      # Query implementation
         └── get-by-id.test.ts # Test file adjacent to query
         └── ...
 ```
@@ -127,15 +127,13 @@ export type NewTodoInput = Omit<NewTodo, "createdAt" | "updatedAt">;
 **`index.ts`**
 
 ```typescript
-import { createGetByIdQuery } from "./get-by-id.ts";
-import { createCreateQuery } from "./create.ts";
+import { getById } from "./get-by-id.ts";
+import { create } from "./create.ts";
 
-export function createUserQueries(db: DbType) {
-  return {
-    getById: createGetByIdQuery(db),
-    create: createCreateQuery(db),
-  };
-}
+export const users = {
+  getById,
+  create,
+};
 ```
 
 **`get-by-id.ts`**
@@ -146,11 +144,15 @@ import type { ReturnsError } from "@saflib/monorepo";
 import { users } from "../../schema.ts";
 import type { DbType, User } from "../../types.ts";
 import { UserNotFoundError } from "../../errors.ts";
+import type { DbKey } from "@saflib/drizzle-sqlite3";
+import { mainDbManager } from "../../instances.ts";
 
 type Result = ReturnsError<User, UserNotFoundError>;
 
-export function createGetByIdQuery(db: DbType) {
-  return queryWrapper(async (id: number): Promise<Result> => {
+export const getById = queryWrapper(
+  async (dbKey: DbKey, id: number): Promise<Result> => {
+    const db = mainDbManager.get(dbKey)!;
+
     const result = await db.query.users.findFirst({
       where: (users, { eq }) => eq(users.id, id),
     });
@@ -160,6 +162,6 @@ export function createGetByIdQuery(db: DbType) {
     }
 
     return { result };
-  });
-}
+  },
+);
 ```
