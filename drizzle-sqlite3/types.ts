@@ -6,8 +6,7 @@ export type Schema = Record<string, unknown>;
 export type DbKey = symbol;
 
 export interface DbOptions {
-  dbPath?: string;
-  inMemory?: boolean;
+  onDisk?: boolean | string;
 }
 
 export type DbConnection<S extends Schema> = ReturnType<typeof drizzle<S>>;

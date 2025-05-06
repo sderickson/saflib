@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach } from "vitest";
-import { rmSync } from "node:fs";
+import { describe, it, expect } from "vitest";
+import { rmSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
 import { eq } from "drizzle-orm";
 import { DbManager } from "./instances.ts";
@@ -8,29 +8,16 @@ import type { Config } from "drizzle-kit";
 import config from "./drizzle.config.ts";
 import * as schema from "./test-schema.ts";
 import assert from "node:assert";
-// Helper to get a temporary DB path for testing file-based storage
-const getTempDbPath = (name: string) =>
-  resolve(__dirname, `test-data/temp-test-${name}.db`);
 
-// Clean up temp DB files before each test
-beforeEach(() => {
-  try {
-    rmSync(getTempDbPath("init"), { force: true });
-    rmSync(getTempDbPath("get1"), { force: true });
-    rmSync(getTempDbPath("get2"), { force: true });
-    rmSync(getTempDbPath("delete"), { force: true });
-  } catch (e) {
-    // Ignore errors if files don't exist
-  }
-});
+const getTempDbPath = (name: string) =>
+  resolve(__dirname, `data/temp-test-${name}.db`);
 
 describe("Instance Manager", () => {
-  const manager = new DbManager(schema, config);
+  const manager = new DbManager(schema, config, import.meta.url);
 
   it("should initialize an in-memory database and return a unique DbKey", () => {
-    const option: DbOptions = { inMemory: true };
-    const key1Result = manager.connect(option);
-    const key2Result = manager.connect(option);
+    const key1Result = manager.connect();
+    const key2Result = manager.connect();
 
     expect(key1Result).toBeTypeOf("symbol");
     expect(key2Result).toBeTypeOf("symbol");
@@ -43,7 +30,7 @@ describe("Instance Manager", () => {
 
   it("should initialize a file-based database and return a unique DbKey", () => {
     const dbPath = getTempDbPath("init");
-    const config: DbOptions = { dbPath };
+    const config: DbOptions = { onDisk: dbPath };
     const keyResult = manager.connect(config);
 
     expect(keyResult).toBeTypeOf("symbol");
@@ -53,21 +40,30 @@ describe("Instance Manager", () => {
     rmSync(dbPath, { force: true }); // Ensure file is deleted
   });
 
+  it("should use a default database name if no name is provided", () => {
+    const dbPath = "./data/db-test.sqlite";
+    expect(existsSync(dbPath)).toBe(false);
+    const keyResult = manager.connect({ onDisk: true });
+    expect(existsSync(dbPath)).toBe(true);
+    expect(dbPath).toContain("db-test.sqlite");
+    manager.disconnect(keyResult);
+    rmSync(dbPath, { force: true });
+    expect(existsSync(dbPath)).toBe(false);
+  });
+
   it("should throw an Error if initialization fails", () => {
     // Simulate failure by providing an invalid migrations path
     const brokenConfig: Config = {
       ...config,
       out: "./non-existent-migrations",
     };
-    const faultyManager = new DbManager(schema, brokenConfig);
+    const faultyManager = new DbManager(schema, brokenConfig, import.meta.url);
     expect(() => faultyManager.connect({})).toThrow(Error);
   });
 
   it("should get the correct DrizzleInstance using a DbKey", () => {
-    const config1: DbOptions = { dbPath: getTempDbPath("get1") };
-    const config2: DbOptions = { dbPath: getTempDbPath("get2") };
-    const key1Result = manager.connect(config1);
-    const key2Result = manager.connect(config2);
+    const key1Result = manager.connect();
+    const key2Result = manager.connect();
 
     expect(key1Result).toBeTypeOf("symbol");
     expect(key2Result).toBeTypeOf("symbol");
@@ -132,8 +128,7 @@ describe("Instance Manager", () => {
     const invalidKey: DbKey = Symbol("invalid");
     expect(manager.get(invalidKey)).toBeUndefined();
 
-    const config: DbOptions = { dbPath: getTempDbPath("delete") };
-    const keyResult = manager.connect(config);
+    const keyResult = manager.connect();
     expect(keyResult).toBeTypeOf("symbol");
     const key = keyResult as DbKey;
 
