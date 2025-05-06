@@ -26,3 +26,11 @@ export const throwError = async <T>(
   }
   return result as NonUndefined<T>; // not sure why TS thinks result might be undefined
 };
+
+// Hack so TS doesn't complain about dirname and filename
+declare global {
+  interface ImportMeta {
+    dirname: string;
+    filename: string;
+  }
+}
