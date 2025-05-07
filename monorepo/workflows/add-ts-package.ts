@@ -12,25 +12,19 @@ export class AddTsPackageWorkflow extends SimpleWorkflow<AddTsPackageWorkflowPar
   description =
     "Creates a new TypeScript package according to monorepo best practices.";
 
-  private fullPackagePath: string | undefined;
-  private actualPackageName: string | undefined;
-
   init = async (name: string, packagePath: string) => {
     this.params = {
       name, // Expected to be the full package name, e.g., @scope/pkg-name
       path: packagePath, // Expected to be the direct path to the package, e.g., libs/pkg-name
     };
 
-    this.fullPackagePath = this.params.path;
-    this.actualPackageName = this.params.name;
-
     const templatesDir = path.join(import.meta.dirname, "templates");
 
-    if (!fs.existsSync(this.fullPackagePath)) {
-      fs.mkdirSync(this.fullPackagePath, { recursive: true });
+    if (!fs.existsSync(this.params.path)) {
+      fs.mkdirSync(this.params.path, { recursive: true });
     }
 
-    const packageDirName = path.basename(this.fullPackagePath);
+    const packageDirName = path.basename(this.params.path);
 
     const filesToCopy = [
       { template: "index.ts.template", output: "index.ts" },
@@ -41,7 +35,7 @@ export class AddTsPackageWorkflow extends SimpleWorkflow<AddTsPackageWorkflowPar
 
     for (const file of filesToCopy) {
       const templatePath = path.join(templatesDir, file.template);
-      const outputPath = path.join(this.fullPackagePath, file.output);
+      const outputPath = path.join(this.params.path, file.output);
       let content = fs.readFileSync(templatePath, "utf8");
       // Replace {{PACKAGE_NAME}} in vitest.config.js.template with directory name
       content = content.replace(/\{\{PACKAGE_NAME\}\}/g, packageDirName);
@@ -50,8 +44,8 @@ export class AddTsPackageWorkflow extends SimpleWorkflow<AddTsPackageWorkflowPar
 
     return {
       data: {
-        fullPackagePath: this.fullPackagePath,
-        packageName: this.actualPackageName,
+        fullPackagePath: this.params.path,
+        packageName: this.params.name,
       },
     };
   };
@@ -77,9 +71,9 @@ export class AddTsPackageWorkflow extends SimpleWorkflow<AddTsPackageWorkflowPar
     {
       name: "Update package.json description",
       prompt: () => {
-        if (!this.fullPackagePath)
+        if (!this.params?.path)
           return "Error: Package path not available. Init might have failed.";
-        const packageJsonPath = path.join(this.fullPackagePath, "package.json");
+        const packageJsonPath = path.join(this.params.path, "package.json");
         return `The file '${packageJsonPath}' has been created. Please update the "description" field and any other fields as needed, such as dependencies on other SAF libraries.`;
       },
     },
@@ -102,15 +96,15 @@ export class AddTsPackageWorkflow extends SimpleWorkflow<AddTsPackageWorkflowPar
     {
       name: "Verify test setup",
       prompt: () => {
-        if (!this.fullPackagePath || !this.params?.name)
+        if (!this.params?.path || !this.params?.name)
           return "Error: Package path or name not available. Init might have failed.";
-        const packageDirName = path.basename(this.fullPackagePath);
+        const packageDirName = path.basename(this.params.path);
         const testFilePath = path.join(
-          this.fullPackagePath,
+          this.params.path,
           `${packageDirName}.test.ts`,
         );
-        const workspaceName = this.actualPackageName || this.params?.name;
-        return `A test file '${testFilePath}' has been created. Verify it imports from './index.ts' and tests pass. Run 'npm run test --workspace="${workspaceName}"'. You might need to 'cd ${this.fullPackagePath}' then 'npm run test'.`;
+        const workspaceName = this.params.name;
+        return `A test file '${testFilePath}' has been created. Verify it imports from './index.ts' and tests pass. Run 'npm run test --workspace="${workspaceName}"'. You might need to 'cd ${this.params.path}' then 'npm run test'.`;
       },
     },
   ];
