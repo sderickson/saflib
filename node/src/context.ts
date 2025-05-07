@@ -1,6 +1,11 @@
-import { Auth } from "@saflib/express/src/middleware/auth.ts";
 import { AsyncLocalStorage } from "async_hooks";
 import { Logger } from "winston";
+
+export interface Auth {
+  userId: number;
+  userEmail: string;
+  scopes: string[];
+}
 
 export interface SafContext {
   requestId: string;

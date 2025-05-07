@@ -1,10 +1,5 @@
 import type { Handler } from "express";
-import { safContext } from "@saflib/node";
-export interface Auth {
-  userId: number;
-  userEmail: string;
-  scopes: string[];
-}
+import { safContext, type Auth } from "@saflib/node";
 
 // Extend Express Request type to include user property
 declare global {
