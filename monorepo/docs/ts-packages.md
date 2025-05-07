@@ -10,18 +10,24 @@ A typical TypeScript package should have the following structure:
 package-name/
 ├── package.json
 ├── vitest.config.js # Standard test configuration
-├── index.ts        # Main entry point
-└── src/           # Private implementation
-    └── internal/  # Internal code
+├── index.ts        # Main entry point, exports the public API
 ```
+
+Key files:
+
+- `package.json`: Defines package metadata, dependencies, and scripts.
+- `index.ts`: The main entry point of your package. It should export all public modules and functions.
+- `vitest.config.js`: Standard configuration for Vitest.
+- Other `.ts` files: Contain the actual logic of your package. Organize these as needed, perhaps in subdirectories for larger packages. Depending on the type of package, other SAF libraries may provide guidance on how to organize the code. E.g. "express" recommends a "routes" directory structure, "grpc-servicer" recommends an "rpcs" directory structure. See those packages for more details.
+- `.test.ts` files: Placed adjacent to the code they test.
 
 ## New Packages
 
-1. A new TypeScript package should start with a minimal `package.json`:
+1. A new TypeScript package should start with a minimal `package.json`. (A workflow like `add-ts-package` can generate this for you based on a template).
 
 ```json
 {
-  "name": "@your-org/package-name",
+  "name": "@your-org/package-name", // Or just "package-name" if not scoped
   "description": "Brief description of the package",
   "private": true,
   "type": "module",
@@ -107,15 +113,16 @@ Avoid creating one. By default, use the root `tsconfig.json`.
 ## Import Rules
 
 1. Always use `.ts` extension in imports (not `.js`)
-2. Use relative imports (e.g., `./file.ts`) for files within the same package
-3. Use package names (e.g., `@your-org/package-name`) for imports from other packages
-4. Never use relative paths with `../` to import from other packages
+2. Use relative imports (e.g., `./file.ts` or `./subdir/file.ts`) for files within the same package.
+3. Use package names (e.g., `@your-org/package-name`) for imports from other packages.
+4. Never use relative paths with `../` to import from other packages.
 
 Example:
 
 ```typescript
 // Good - importing from same package
 import { Something } from "./something.ts";
+import { Another } from "./core/another.ts"; // Assuming core is a subdir in your package
 
 // Good - importing from another package
 import { OtherThing } from "@your-org/other-package"; // index.ts is implied
@@ -124,8 +131,9 @@ import { SpecificThing } from "@your-org/other-package/specific-file.ts";
 // Bad - using .js extension
 import { Something } from "./something.js";
 
-// Bad - using relative path to another package
-import { OtherThing } from "../../other-package/src/thing.ts";
+// Bad - using relative path to another package that traverses out of the current package
+// e.g. from @your-org/package-a/somefile.ts
+import { OtherThing } from "../../other-package/index.ts"; // WRONG: use "@your-org/other-package"
 ```
 
 ## Additional Guidelines
