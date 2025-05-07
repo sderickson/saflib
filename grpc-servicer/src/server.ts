@@ -1,4 +1,5 @@
 import * as grpc from "@grpc/grpc-js";
+import { UntypedServiceImplementation } from "@grpc/grpc-js";
 
 // Define an interface for the service definition and implementation pairs
 interface GrpcService {
@@ -9,6 +10,10 @@ interface GrpcService {
 interface GrpcServerOptions {
   interceptors?: grpc.ServerInterceptor[];
 }
+
+export type ServiceImplementationWrapper = (
+  impl: UntypedServiceImplementation,
+) => UntypedServiceImplementation;
 
 /**
  * Creates, configures, and starts a gRPC server, handling graceful shutdown.
