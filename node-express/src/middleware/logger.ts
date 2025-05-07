@@ -1,5 +1,5 @@
 import type { Handler } from "express";
-import { createLogger } from "@saflib/node-logger";
+import { createLogger } from "@saflib/node";
 
 export const loggerInjector: Handler = (req, _res, next) => {
   // shortId provided by ./requestId.ts

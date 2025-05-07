@@ -5,3 +5,5 @@ export {
 } from "./src/logger.ts";
 export { generateRequestId } from "./src/request-id.ts";
 export type { Logger } from "winston";
+export { safContext } from "./src/context.ts";
+export type { SafContext } from "./src/context.ts";
