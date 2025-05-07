@@ -6,6 +6,7 @@ import type {
 import type { OpenAPIV3 } from "express-openapi-validator/dist/framework/types.ts";
 import type { Request } from "express";
 import { createScopeValidator } from "./scopes.ts";
+import { safContext } from "@saflib/node";
 
 declare global {
   namespace Express {
@@ -16,9 +17,10 @@ declare global {
 }
 
 const validateResponses = {
-  onError: (err: Error, _json: any, req: Request) => {
+  onError: (err: Error, _json: any, _req: Request) => {
     // console.log("Response validation error:", err.message);
-    req.log.error(err);
+    const { log } = safContext.getStore()!;
+    log.error(err);
     if (process.env.NODE_ENV === "test") {
       console.log("======", err.message, "======");
       console.log(

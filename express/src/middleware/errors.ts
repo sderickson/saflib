@@ -1,11 +1,11 @@
 import createError, { HttpError } from "http-errors";
 import type { Request, Response, NextFunction, Handler } from "express";
-
+import { safContext } from "@saflib/node";
 /**
  * 404 Handler
  * Catches requests to undefined routes
  */
-export const notFoundHandler: Handler = (req, res, next) => {
+export const notFoundHandler: Handler = (_req, _res, next) => {
   next(createError(404));
 };
 
@@ -15,18 +15,19 @@ export const notFoundHandler: Handler = (req, res, next) => {
  */
 export const errorHandler = (
   err: HttpError,
-  req: Request,
+  _req: Request,
   res: Response,
   _: NextFunction,
 ): void => {
   // Log error
   const status = err.status || 500;
+  const { log } = safContext.getStore()!;
 
   if (status >= 500) {
-    if (!req.log || process.env.NODE_ENV === "test") {
+    if (!log || process.env.NODE_ENV === "test") {
       console.error(err.stack);
     } else {
-      req.log.error(err.stack);
+      log.error(err.stack);
     }
   }
 

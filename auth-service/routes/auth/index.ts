@@ -24,7 +24,7 @@ export const makeAuthRouter = (db: AuthDB) => {
   router.use(
     createPreMiddleware({
       apiSpec: jsonSpec,
-      parseAuthHeaders: false,
+      authRequired: false,
     }),
   );
 
