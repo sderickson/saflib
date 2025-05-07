@@ -1,12 +1,13 @@
-import { createHandler } from "@saflib/node-express";
+import { createHandler } from "@saflib/express";
 import { randomBytes } from "crypto";
 import { type AuthResponse } from "@saflib/auth-spec";
 import { EmailClient } from "@saflib/email";
 import { generateVerificationEmail } from "../../email-templates/verify-email.ts";
 import { AuthDB } from "@saflib/auth-db";
-
+import { safContext } from "@saflib/node";
 export const resendVerificationHandler = createHandler(async (req, res) => {
   const db: AuthDB = req.app.locals.db;
+  const { log } = safContext.getStore()!;
   if (!req.user) {
     res.status(401).json({
       message: "User must be logged in",
@@ -26,7 +27,7 @@ export const resendVerificationHandler = createHandler(async (req, res) => {
     verificationTokenExpiresAt,
   );
 
-  req.log.info(
+  log.info(
     `Verification link: ${process.env.PROTOCOL}://${process.env.DOMAIN}/auth/verify-email?token=${verificationToken}`,
   );
 
@@ -42,9 +43,9 @@ export const resendVerificationHandler = createHandler(async (req, res) => {
       subject,
       html,
     });
-    req.log.info(`Verification email successfully resent to ${req.user.email}`);
+    log.info(`Verification email successfully resent to ${req.user.email}`);
   } catch (emailError) {
-    req.log.error(
+    log.error(
       `Failed to resend verification email to ${req.user.email}. Error: ${emailError}`,
     );
   }

@@ -6,11 +6,9 @@ import { corsRouter } from "./cors.ts";
 import { errorHandler, notFoundHandler } from "./errors.ts";
 import { createHealthHandler, healthRouter } from "./health.ts";
 import { httpLogger } from "./httpLogger.ts";
-import { loggerInjector } from "./logger.ts";
 import { createOpenApiValidator } from "./openapi.ts";
-import { requestId } from "./requestId.ts";
 import helmet from "helmet";
-
+import { contextMiddleware } from "./context.ts";
 /**
  * Recommended pre-route middleware stack.
  * Includes:
@@ -24,18 +22,17 @@ import helmet from "helmet";
 
 export const recommendedPreMiddleware: Handler[] = [
   healthRouter, // before httpLogger to avoid polluting logs
-  requestId,
   httpLogger,
+  contextMiddleware,
   // Built-in Express middleware
   json(),
   urlencoded({ extended: false }),
-  loggerInjector,
   corsRouter,
 ];
 
 interface PreMiddlewareOptions {
   apiSpec?: OpenAPIV3.DocumentV3;
-  parseAuthHeaders?: boolean;
+  authRequired?: boolean;
   disableCors?: boolean;
   healthCheck?: () => Promise<boolean>;
 }
@@ -43,7 +40,7 @@ interface PreMiddlewareOptions {
 export const createPreMiddleware = (
   options: PreMiddlewareOptions = {},
 ): Handler[] => {
-  const { apiSpec, parseAuthHeaders, disableCors, healthCheck } = options;
+  const { apiSpec, authRequired, disableCors, healthCheck } = options;
 
   let healthMiddleware: Handler = healthRouter;
   if (healthCheck) {
@@ -56,7 +53,7 @@ export const createPreMiddleware = (
   }
 
   let authMiddleware: Handler[] = [];
-  if (parseAuthHeaders || (apiSpec && parseAuthHeaders !== false)) {
+  if (authRequired || (apiSpec && authRequired !== false)) {
     authMiddleware = [auth];
   }
 
@@ -68,12 +65,11 @@ export const createPreMiddleware = (
   return [
     helmet(),
     healthMiddleware, // before httpLogger to avoid polluting logs
-    requestId,
     httpLogger,
-    // Built-in Express middleware
     json(),
     urlencoded({ extended: false }),
-    loggerInjector,
+
+    contextMiddleware,
     ...corsMiddleware,
     ...authMiddleware,
     ...openApiValidatorMiddleware,

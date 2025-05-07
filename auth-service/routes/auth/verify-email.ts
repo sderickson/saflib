@@ -1,4 +1,4 @@
-import { createHandler } from "@saflib/node-express";
+import { createHandler } from "@saflib/express";
 import { createUserResponse } from "./_helpers.ts";
 import { type AuthResponse } from "@saflib/auth-spec";
 import { AuthDB } from "@saflib/auth-db";

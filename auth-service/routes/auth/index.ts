@@ -9,7 +9,7 @@ import { resetPasswordHandler } from "./reset-password.ts";
 import { verifyEmailHandler } from "./verify-email.ts";
 import { AuthDB } from "@saflib/auth-db";
 import { rateLimit } from "express-rate-limit";
-import { createPreMiddleware } from "@saflib/node-express";
+import { createPreMiddleware } from "@saflib/express";
 import passport from "passport";
 import { setupPassport } from "@saflib/auth-service/middleware/passport.ts";
 import { makeSessionMiddleware } from "@saflib/auth-service/middleware/session-store.ts";
@@ -24,7 +24,7 @@ export const makeAuthRouter = (db: AuthDB) => {
   router.use(
     createPreMiddleware({
       apiSpec: jsonSpec,
-      parseAuthHeaders: false,
+      authRequired: false,
     }),
   );
 

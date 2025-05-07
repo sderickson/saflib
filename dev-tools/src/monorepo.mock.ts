@@ -71,7 +71,7 @@ export const monorepoPackageMock = {
     },
   }),
   "/app/saflib/node-express/package.json": JSON.stringify({
-    name: "@saflib/node-express",
+    name: "@saflib/express",
   }),
   "/app/saflib/unused-lib/package.json": JSON.stringify({
     name: "@saflib/unused-lib",
@@ -86,7 +86,7 @@ export const monorepoPackageMock = {
     name: "@foo/api-service",
     dependencies: {
       "@foo/api-spec": "*",
-      "@saflib/node-express": "*",
+      "@saflib/express": "*",
       "@foo/main-db": "*",
     },
   }),
@@ -95,7 +95,7 @@ export const monorepoPackageMock = {
     name: "@foo/auth-service",
     dependencies: {
       "@saflib/auth-spec": "*",
-      "@saflib/node-express": "*",
+      "@saflib/express": "*",
     },
   }),
 

@@ -1,5 +1,5 @@
 {
-  "name": "@saflib/node-express",
+  "name": "@saflib/express",
   "description": "Shared Express.js utilities for SAF services",
   "type": "module",
   "main": "./src/index.ts",
@@ -9,15 +9,14 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "@saflib/node-logger": "*",
+    "@saflib/node": "*",
     "cors": "^2.0.0",
     "dotenv": "^16.0.0",
     "express": "^4.0.0",
     "express-openapi-validator": "^5.0.0",
     "helmet": "^8.1.0",
     "http-errors": "^2.0.0",
-    "morgan": "^1.0.0",
-    "winston": "^3.0.0"
+    "morgan": "^1.0.0"
   },
   "devDependencies": {
     "@saflib/node-express-dev": "*",

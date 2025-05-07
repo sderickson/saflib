@@ -108,7 +108,7 @@ service/
      // Provide the OpenAPI spec for request/response validation
      apiSpec: apiSpec as any, // Cast needed due to potential complex types
      // Enable auth header parsing if using JWT/auth middleware
-     parseAuthHeaders: true,
+     authRequired: true,
      // Optional: Provide custom health check logic
      healthCheck,
    });

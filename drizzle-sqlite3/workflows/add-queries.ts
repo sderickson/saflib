@@ -26,7 +26,15 @@ export class AddQueriesWorkflow extends SimpleWorkflow<AddQueriesWorkflowParams>
     if (!existsSync(refDocAbsPath)) {
       throw new Error(`Reference documentation not found: ${refDocAbsPath}`);
     }
-    return { refDoc: refDocAbsPath };
+    const testingGuide = path.resolve(
+      import.meta.dirname,
+      "../../drizzle-sqlite3-dev/docs/01-testing-guide.md",
+    );
+    const testingGuideAbsPath = path.resolve(process.cwd(), testingGuide);
+    if (!existsSync(testingGuideAbsPath)) {
+      throw new Error(`Testing guide not found: ${testingGuideAbsPath}`);
+    }
+    return { refDoc: refDocAbsPath, testingGuide: testingGuideAbsPath };
   };
 
   steps = [
@@ -53,9 +61,17 @@ export class AddQueriesWorkflow extends SimpleWorkflow<AddQueriesWorkflowParams>
         `For each query, create a file for it. Make sure to create a "Result" type that uses one of the types from "@your-project/db-package" (since the package you're in exports the types) for the first argument, and specific error subclasses from "@your-project/db-package/errors" (the local errors file) for the second argument. Add errors to "errors.ts" file if needed.`,
     },
     {
+      name: "Export the queries",
+      prompt: () => `Export the queries from the folder's "index.ts" file.`,
+    },
+    {
+      name: "Review Docs",
+      prompt: () => `Read the testing guide: ${this.computed().testingGuide}`,
+    },
+    {
       name: "Test each query",
       prompt: () =>
-        `Write a test file for each query adjacent to the query file, so something like "my-query.test.ts". Don't mock anything; just create a database instance (it will automatically be in memory) per test and test the queries against it. Run "npm run test" after every file is created to make sure it's working.`,
+        `Write a test file for each query adjacent to the query file, so something like "my-query.test.ts". Don't mock anything; just create a database instance (it will automatically be in memory) per test and test the queries against it. Don't import files directly, instead import the package and use the functions from there, to ensure what is tested is what is exported. Run "npm run test" after every file is created to make sure it's working.`,
     },
   ];
 }

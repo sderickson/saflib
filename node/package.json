@@ -1,6 +1,6 @@
 {
-  "name": "@saflib/node-logger",
-  "description": "Reusable Winston logger configuration",
+  "name": "@saflib/node",
+  "description": "Reusable Node.js utilities",
   "private": true,
   "type": "module",
   "exports": {
@@ -11,8 +11,13 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage"
   },
-  "dependencies": {},
+  "dependencies": {
+    "winston": "^3.0.0"
+  },
   "devDependencies": {
     "@saflib/vitest": "*"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }

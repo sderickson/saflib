@@ -6,7 +6,7 @@
  */
 
 import { AuthDB } from "@saflib/auth-db";
-import { recommendedErrorHandlers } from "@saflib/node-express";
+import { recommendedErrorHandlers } from "@saflib/express";
 import express from "express";
 import { makeAuthRouter } from "./routes/auth/index.ts";
 import { makeUsersRouter } from "./routes/users/index.ts";

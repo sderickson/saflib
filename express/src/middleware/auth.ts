@@ -1,14 +1,14 @@
 import type { Handler } from "express";
+import { safContext, type Auth } from "@saflib/node";
 
 // Extend Express Request type to include user property
 declare global {
   namespace Express {
     interface Request {
-      auth: {
-        userId: number;
-        userEmail: string;
-        scopes: string[];
-      };
+      /**
+       * @deprecated - use `{ auth } = safContext.getStore()` instead. safContext is imported from `@saflib/node`
+       */
+      auth: Auth;
     }
   }
 }
@@ -19,11 +19,9 @@ declare global {
  * Throws 401 if required headers are missing.
  */
 export const auth: Handler = (req, res, next): void => {
-  const userId = req.headers["x-user-id"];
-  const userEmail = req.headers["x-user-email"];
-  const userScopes = req.headers["x-user-scopes"];
+  const { auth } = safContext.getStore()!;
 
-  if (!userId || !userEmail) {
+  if (!auth) {
     res.status(401).json({
       error: "Unauthorized",
       message: "Unauthorized",
@@ -31,14 +29,7 @@ export const auth: Handler = (req, res, next): void => {
     return;
   }
 
-  // Parse scopes from header, defaulting to empty array if not present
-  const scopes = userScopes ? (userScopes as string).split(",") : [];
-
-  req.auth = {
-    userId: parseInt(userId as string),
-    userEmail: userEmail as string,
-    scopes,
-  };
+  req.auth = auth;
 
   return next();
 };

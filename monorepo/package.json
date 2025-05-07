@@ -1,6 +1,10 @@
 {
   "name": "@saflib/monorepo",
   "description": "Library and docs for projects which use the SAF monorepo structure and conventions",
-  "main": "./index.ts",
-  "type": "module"
+  "type": "module",
+  "exports": {
+    ".": "./index.ts",
+    "./workflows": "./workflows/index.ts",
+    "./tsconfig.json": "./tsconfig.json"
+  }
 }

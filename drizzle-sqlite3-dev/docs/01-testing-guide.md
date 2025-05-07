@@ -1,6 +1,45 @@
-# Testing Gotchas
+# Testing Guide
 
 Things to keep an eye out for when writing tests for the SQLite layer.
+
+## Database Instantiation
+
+When testing database queries, always use the package's exported database manager rather than creating database instances directly. This ensures you're testing the same code path that consumers of your package will use.
+
+### Correct Pattern
+
+```typescript
+import { mainDb } from "@your-package/dbs-main"; // Import the package
+import type { DbKey } from "@saflib/drizzle-sqlite3";
+
+describe("Your Query Tests", () => {
+  let dbKey: DbKey;
+
+  beforeEach(() => {
+    dbKey = mainDb.connect(); // Use the package's manager
+  });
+
+  afterEach(() => {
+    mainDb.disconnect(dbKey);
+  });
+
+  it("should do something", async () => {
+    const { result } = await mainDb.yourQuery(dbKey, params);
+    // ... assertions
+  });
+});
+```
+
+### Incorrect Pattern
+
+```typescript
+// ❌ Don't import from internal files
+import { yourQuery } from "./queries/your-query.ts";
+import { createTestDb } from "@saflib/drizzle-sqlite3";
+
+// ❌ Don't create database instances directly
+const db = createTestDb();
+```
 
 ## SQLite Timestamp Granularity
 

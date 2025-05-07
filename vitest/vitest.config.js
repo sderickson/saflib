@@ -19,7 +19,13 @@ export const defaultConfig = defineConfig({
     coverage: {
       provider: "v8",
       reporter: ["text", "html"],
-      exclude: ["node_modules/**", "dist/**", "**/*.test.ts", "migrations/**"],
+      exclude: [
+        "node_modules/**",
+        "dist/**",
+        "**/*.test.ts",
+        "migrations/**",
+        "vitest.config.js",
+      ],
     },
   },
 });
