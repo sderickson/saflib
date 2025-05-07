@@ -35,7 +35,7 @@ describe("getMonorepoPackageJsons", () => {
 
     // it should gather packages in sub-folders
     expect(monorepoPackageJsons["@foo/api-service"]).toBeDefined();
-    expect(monorepoPackageJsons["@saflib/node-express"]).toBeDefined();
+    expect(monorepoPackageJsons["@saflib/express"]).toBeDefined();
   });
 });
 

@@ -11,7 +11,9 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage"
   },
-  "dependencies": {},
+  "dependencies": {
+    "winston": "^3.0.0"
+  },
   "devDependencies": {
     "@saflib/vitest": "*"
   },

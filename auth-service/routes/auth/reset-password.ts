@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import * as argon2 from "argon2";
-import { createHandler } from "@saflib/node-express";
+import { createHandler } from "@saflib/express";
 import { type AuthResponse } from "@saflib/auth-spec";
 import { AuthDB } from "@saflib/auth-db";
 

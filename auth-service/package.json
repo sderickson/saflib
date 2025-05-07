@@ -14,7 +14,7 @@
     "@saflib/auth-db": "*",
     "@saflib/auth-spec": "*",
     "@saflib/email": "*",
-    "@saflib/node-express": "*",
+    "@saflib/express": "*",
     "argon2": "^0.41.1",
     "better-sqlite3-session-store": "^0.1.0",
     "cookie-parser": "^1.4.7",

@@ -1,4 +1,4 @@
-import { createHandler } from "@saflib/node-express";
+import { createHandler } from "@saflib/express";
 import passport from "passport";
 import { type IVerifyOptions } from "passport-local";
 import { createUserResponse } from "./_helpers.ts";

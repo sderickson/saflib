@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import type { AuthResponse } from "@saflib/auth-spec";
-import { createHandler } from "@saflib/node-express";
+import { createHandler } from "@saflib/express";
 import { AuthDB } from "@saflib/auth-db";
 // Define types using Drizzle's inferSelect
 export const listUsersHandler = createHandler(

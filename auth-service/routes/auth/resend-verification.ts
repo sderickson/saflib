@@ -1,4 +1,4 @@
-import { createHandler } from "@saflib/node-express";
+import { createHandler } from "@saflib/express";
 import { randomBytes } from "crypto";
 import { type AuthResponse } from "@saflib/auth-spec";
 import { EmailClient } from "@saflib/email";

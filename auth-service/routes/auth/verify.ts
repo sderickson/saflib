@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { createHandler } from "@saflib/node-express";
+import { createHandler } from "@saflib/express";
 import { type AuthResponse } from "@saflib/auth-spec";
 import { AuthDB } from "@saflib/auth-db";
 

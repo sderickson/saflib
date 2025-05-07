@@ -1,4 +1,4 @@
-import { createHandler } from "@saflib/node-express";
+import { createHandler } from "@saflib/express";
 
 export const logoutHandler = createHandler(async (req, res, next) => {
   if (!req.user) {

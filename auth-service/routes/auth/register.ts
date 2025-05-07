@@ -1,5 +1,5 @@
 import * as argon2 from "argon2";
-import { createHandler } from "@saflib/node-express";
+import { createHandler } from "@saflib/express";
 import { createUserResponse } from "./_helpers.ts";
 import type { AuthResponse, AuthRequest } from "@saflib/auth-spec";
 import { randomBytes } from "crypto";

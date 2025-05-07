@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
 import { randomBytes } from "crypto";
-import { createHandler } from "@saflib/node-express";
+import { createHandler } from "@saflib/express";
 import { type AuthResponse } from "@saflib/auth-spec";
 import { EmailClient } from "@saflib/email";
 import { generatePasswordResetEmail } from "../../email-templates/password-reset.ts";
