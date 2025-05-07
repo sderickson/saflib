@@ -1,119 +1,117 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import type { Request, Response, NextFunction } from "express";
-import { auth } from "./auth.ts";
+import { describe, it, expect, beforeEach } from "vitest";
+import type { Request, Response } from "express";
+import express from "express";
+import request from "supertest";
+import { createPreMiddleware } from "./composition.ts";
+import { errorHandler } from "./errors.ts"; // Import errorHandler for a complete setup
+import { safContext } from "@saflib/node";
 
 describe("Auth Middleware", () => {
-  let mockReq: Partial<Request>;
-  let mockRes: Partial<Response>;
-  let nextFunction: NextFunction;
+  let app: express.Express;
 
   beforeEach(() => {
-    // Reset mocks
-    vi.clearAllMocks();
+    app = express();
+    // Apply the auth middleware via createPreMiddleware
+    app.use(createPreMiddleware({ authRequired: true }));
 
-    // Setup mock request
-    mockReq = {
-      headers: {},
-    };
-
-    // Setup mock response
-    mockRes = {
-      status: vi.fn().mockReturnThis(),
-      json: vi.fn().mockReturnThis(),
-    };
-
-    // Setup next function mock
-    nextFunction = vi.fn();
+    // Add a test route that will be protected by the auth middleware
+    app.get("/test", (_req: Request, res: Response) => {
+      // If auth middleware passes, req.auth should be populated
+      const { auth } = safContext.getStore()!;
+      res.status(200).json({ authFromMiddleware: auth });
+    });
+    // Add error handler to catch errors from middleware
+    app.use(errorHandler);
   });
 
-  it("should populate auth object with user info and empty scopes when no scope header", () => {
-    mockReq.headers = {
+  it("should populate auth object with user info and empty scopes when no scope header", async () => {
+    const headers = {
       "x-user-id": "123",
       "x-user-email": "test@example.com",
     };
 
-    auth(mockReq as Request, mockRes as Response, nextFunction);
+    const response = await request(app).get("/test").set(headers);
 
-    expect(mockReq.auth).toEqual({
+    expect(response.status).toBe(200);
+    expect(response.body.authFromMiddleware).toEqual({
       userId: 123,
       userEmail: "test@example.com",
       scopes: [],
     });
-    expect(nextFunction).toHaveBeenCalledWith();
   });
 
-  it("should populate auth object with user info and scopes from header", () => {
-    mockReq.headers = {
+  it("should populate auth object with user info and scopes from header", async () => {
+    const headers = {
       "x-user-id": "123",
       "x-user-email": "test@example.com",
       "x-user-scopes": "admin,write",
     };
 
-    auth(mockReq as Request, mockRes as Response, nextFunction);
+    const response = await request(app).get("/test").set(headers);
 
-    expect(mockReq.auth).toEqual({
+    expect(response.status).toBe(200);
+    expect(response.body.authFromMiddleware).toEqual({
       userId: 123,
       userEmail: "test@example.com",
       scopes: ["admin", "write"],
     });
-    expect(nextFunction).toHaveBeenCalledWith();
   });
 
-  it("should handle empty scopes header by returning empty array", () => {
-    mockReq.headers = {
+  it("should handle empty scopes header by returning empty array", async () => {
+    const headers = {
       "x-user-id": "123",
       "x-user-email": "test@example.com",
       "x-user-scopes": "",
     };
 
-    auth(mockReq as Request, mockRes as Response, nextFunction);
+    const response = await request(app).get("/test").set(headers);
 
-    expect(mockReq.auth).toEqual({
+    expect(response.status).toBe(200);
+    expect(response.body.authFromMiddleware).toEqual({
       userId: 123,
       userEmail: "test@example.com",
       scopes: [],
     });
-    expect(nextFunction).toHaveBeenCalledWith();
   });
 
-  it("should return 401 when user ID is missing", () => {
-    mockReq.headers = {
+  it("should return 401 when user ID is missing", async () => {
+    const headers = {
       "x-user-email": "test@example.com",
       "x-user-scopes": "admin",
     };
 
-    auth(mockReq as Request, mockRes as Response, nextFunction);
-    expect(mockRes.status).toHaveBeenCalledWith(401);
-    expect(mockRes.json).toHaveBeenCalledWith({
+    const response = await request(app).get("/test").set(headers);
+    expect(response.status).toBe(401);
+    expect(response.body).toEqual({
       error: "Unauthorized",
       message: "Unauthorized",
     });
   });
 
-  it("should return 401 when user email is missing", () => {
-    mockReq.headers = {
+  it("should return 401 when user email is missing", async () => {
+    const headers = {
       "x-user-id": "123",
       "x-user-scopes": "admin",
     };
 
-    auth(mockReq as Request, mockRes as Response, nextFunction);
+    const response = await request(app).get("/test").set(headers);
 
-    expect(mockRes.status).toHaveBeenCalledWith(401);
-    expect(mockRes.json).toHaveBeenCalledWith({
+    expect(response.status).toBe(401);
+    expect(response.body).toEqual({
       error: "Unauthorized",
       message: "Unauthorized",
     });
   });
 
-  it("should return 401 when both user ID and email are missing", () => {
-    mockReq.headers = {
+  it("should return 401 when both user ID and email are missing", async () => {
+    const headers = {
       "x-user-scopes": "admin",
     };
 
-    auth(mockReq as Request, mockRes as Response, nextFunction);
+    const response = await request(app).get("/test").set(headers);
 
-    expect(mockRes.status).toHaveBeenCalledWith(401);
-    expect(mockRes.json).toHaveBeenCalledWith({
+    expect(response.status).toBe(401);
+    expect(response.body).toEqual({
       error: "Unauthorized",
       message: "Unauthorized",
     });
