@@ -87,14 +87,11 @@ export class AddTsPackageWorkflow extends SimpleWorkflow<AddTsPackageWorkflowPar
       name: "Ensure package is in root workspace",
       prompt: () => {
         if (!this.params?.path)
-          return "Error: Workflow params not available or packagePath is missing.";
+          return "Error: Workflow params not available or path is missing.";
         const directPath = this.params.path;
-        const parentDir = path.dirname(this.params.path);
-        let globSuggestion = "";
-        if (parentDir !== "." && parentDir !== this.params.path) {
-          globSuggestion = ` or a glob pattern like '${parentDir}/*'`;
-        }
-        return `Ensure the new package directory ('${directPath}'${globSuggestion}) is in the "workspaces" array in the root package.json. E.g., "workspaces": ["${directPath}"] or "workspaces": ["${parentDir}/*"]`;
+        // Assuming CWD is the monorepo root
+        const rootPackageJsonPath = path.join(process.cwd(), "package.json");
+        return `Ensure the new package path '${directPath}' is included in the "workspaces" array in '${rootPackageJsonPath}'. For example: "workspaces": ["${directPath}", "other-packages/*"]`;
       },
     },
     {
