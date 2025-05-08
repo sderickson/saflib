@@ -9,6 +9,7 @@ interface GrpcService {
 
 interface GrpcServerOptions {
   interceptors?: grpc.ServerInterceptor[];
+  port?: number;
 }
 
 export type ServiceImplementationWrapper = (
@@ -22,12 +23,14 @@ export type ServiceImplementationWrapper = (
  * @param services An array of service definitions and their implementations.
  */
 export function startGrpcServer(
-  services: GrpcService[],
+  server: grpc.Server,
   options: GrpcServerOptions = {},
 ): grpc.Server {
-  const port = process.env.GRPC_PORT
-    ? parseInt(process.env.GRPC_PORT, 10)
-    : 50051;
+  const port = options.port
+    ? options.port
+    : process.env.GRPC_PORT
+      ? parseInt(process.env.GRPC_PORT, 10)
+      : 50051;
   if (isNaN(port)) {
     console.error(
       `Invalid GRPC_PORT: ${process.env.GRPC_PORT}. Using default 50051.`,
@@ -36,21 +39,20 @@ export function startGrpcServer(
   }
   const effectivePort = isNaN(port) ? 50051 : port;
 
-  console.log("Initializing gRPC server...");
-  const server = new grpc.Server({
-    interceptors: options.interceptors || [],
-  });
+  // const server = new grpc.Server({
+  //   interceptors: options.interceptors || [],
+  // });
 
-  // Register all provided RPC service handlers
-  services.forEach((serviceInfo) => {
-    console.log(
-      `Registering gRPC service: ${Object.keys(serviceInfo.serviceDefinition)}`,
-    );
-    server.addService(
-      serviceInfo.serviceDefinition,
-      serviceInfo.implementation,
-    );
-  });
+  // // Register all provided RPC service handlers
+  // services.forEach((serviceInfo) => {
+  //   console.log(
+  //     `Registering gRPC service: ${Object.keys(serviceInfo.serviceDefinition)}`,
+  //   );
+  //   server.addService(
+  //     serviceInfo.serviceDefinition,
+  //     serviceInfo.implementation,
+  //   );
+  // });
 
   // Bind the server asynchronously
   console.log("Binding gRPC server to port", effectivePort);
