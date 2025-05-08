@@ -1,5 +1,5 @@
 import * as grpc from "@grpc/grpc-js";
-import { UntypedServiceImplementation } from "@grpc/grpc-js";
+import type { UntypedServiceImplementation } from "@grpc/grpc-js";
 
 // Define an interface for the service definition and implementation pairs
 interface GrpcService {

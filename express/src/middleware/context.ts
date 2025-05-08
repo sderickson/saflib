@@ -1,5 +1,5 @@
 import { type SafContext, safContext } from "@saflib/node";
-import { Handler } from "express";
+import type { Handler } from "express";
 import { createLogger } from "@saflib/node";
 import type { Auth } from "./auth.ts";
 
