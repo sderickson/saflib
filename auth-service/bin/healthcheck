@@ -1,4 +1,4 @@
 #!/usr/bin/env node
-import { healthcheck } from "@saflib/node-express";
+import { healthcheck } from "@saflib/express";
 
 healthcheck();
