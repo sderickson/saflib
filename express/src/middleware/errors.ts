@@ -21,7 +21,7 @@ export const errorHandler = (
 ): void => {
   // Log error
   const status = err.status || 500;
-  const { log } = safContext.getStore()!;
+  const log = safContext.getStore()?.log;
 
   if (status >= 500) {
     if (!log || process.env.NODE_ENV === "test") {
