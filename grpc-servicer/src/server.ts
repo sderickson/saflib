@@ -1,12 +1,6 @@
 import * as grpc from "@grpc/grpc-js";
 import type { UntypedServiceImplementation } from "@grpc/grpc-js";
 
-// Define an interface for the service definition and implementation pairs
-interface GrpcService {
-  serviceDefinition: grpc.ServiceDefinition<grpc.UntypedServiceImplementation>;
-  implementation: grpc.UntypedServiceImplementation;
-}
-
 interface GrpcServerOptions {
   interceptors?: grpc.ServerInterceptor[];
   port?: number;
