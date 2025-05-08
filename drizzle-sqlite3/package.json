@@ -12,8 +12,8 @@
     "generate": "drizzle-kit generate"
   },
   "dependencies": {
-    "better-sqlite3": "^11.0.0",
-    "drizzle-kit": "^0.30.5",
+    "better-sqlite3": "11.8.0",
+    "drizzle-kit": "^0.31.1",
     "drizzle-orm": "^0.41.0"
   },
   "devDependencies": {

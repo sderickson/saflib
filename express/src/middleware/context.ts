@@ -1,7 +1,7 @@
 import { type SafContext, safContext } from "@saflib/node";
-import { Handler } from "express";
+import type { Handler } from "express";
 import { createLogger } from "@saflib/node";
-import type { Auth } from "./auth.ts";
+import type { Auth } from "@saflib/node";
 
 export const contextMiddleware: Handler = (req, _res, next) => {
   let reqId = "no-request-id";
