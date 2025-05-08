@@ -14,7 +14,7 @@ const baseLogger = winston.createLogger({
     format.printf(
       (info: TransformableInfo & { timestamp?: string; reqId?: string }) => {
         const { timestamp, level, message, reqId } = info;
-        const reqIdStr = reqId ? `<${reqId}> ` : ""; // Keep reqId optional here for the base logger
+        const reqIdStr = reqId ? `<${reqId.slice(0, 8)}> ` : ""; // Keep reqId optional here for the base logger
         return `${timestamp} ${reqIdStr}[${level}]: ${message}`;
       },
     ),
