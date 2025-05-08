@@ -1,11 +1,18 @@
 # syntax=docker/dockerfile:labs
 FROM node:alpine
 
+# hopefully a temporary fix for better-sqlite3
+# remove when prebuilt binaries are available
+RUN apk add --no-cache python3
+RUN apk add --no-cache make
+RUN apk add --no-cache g++
+
 # install saflib
 WORKDIR /app
 COPY tsconfig.json ./
 
 #{ copy_packages }#
+RUN npm install better-sqlite3 # Just to separate the binary build step - remove when prebuilt binaries are available
 RUN npm install --omit=dev
 
 #{ copy_src }#
