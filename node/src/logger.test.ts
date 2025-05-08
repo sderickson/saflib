@@ -31,7 +31,7 @@ describe("Logger", () => {
   });
 
   it("should include reqId in the formatted output", () => {
-    const testReqId = "req-id-for-format";
+    const testReqId = "req-id";
     const testMessage = "Format test";
     const logger = createLogger(testReqId);
     logger.info(testMessage);
