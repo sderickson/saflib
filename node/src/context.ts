@@ -12,4 +12,4 @@ export interface SafContext {
   log: Logger;
   auth?: Auth;
 }
-export const safContext = new AsyncLocalStorage<SafContext>();
+export const safStorage = new AsyncLocalStorage<SafContext>();

@@ -5,13 +5,13 @@ import { type AuthResponse } from "@saflib/auth-spec";
 import { EmailClient } from "@saflib/email";
 import { generatePasswordResetEmail } from "../../email-templates/password-reset.ts";
 import { AuthDB } from "@saflib/auth-db";
-import { safContext } from "@saflib/node";
+import { safStorage } from "@saflib/node";
 
 export const forgotPasswordHandler = createHandler(
   async (req: Request, res: Response) => {
     const { email } = req.body as { email: string };
     const db: AuthDB = req.app.locals.db;
-    const { log } = safContext.getStore()!;
+    const { log } = safStorage.getStore()!;
 
     try {
       const user = await db.users.getByEmail(email);

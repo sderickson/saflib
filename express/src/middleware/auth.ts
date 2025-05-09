@@ -1,5 +1,5 @@
 import type { Handler } from "express";
-import { safContext, type Auth } from "@saflib/node";
+import { safStorage, type Auth } from "@saflib/node";
 
 // Extend Express Request type to include user property
 declare global {
@@ -19,7 +19,7 @@ declare global {
  * Throws 401 if required headers are missing.
  */
 export const auth: Handler = (req, res, next): void => {
-  const { auth } = safContext.getStore()!;
+  const { auth } = safStorage.getStore()!;
 
   if (!auth) {
     res.status(401).json({
