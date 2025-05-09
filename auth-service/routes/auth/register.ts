@@ -6,13 +6,13 @@ import { randomBytes } from "crypto";
 import { EmailClient } from "@saflib/email";
 import { generateVerificationEmail } from "../../email-templates/verify-email.ts";
 import { AuthDB } from "@saflib/auth-db";
-import { safContext } from "@saflib/node";
+import { safStorage } from "@saflib/node";
 export const registerHandler = createHandler(async (req, res) => {
   const db: AuthDB = req.app.locals.db;
   try {
     const registerRequest: AuthRequest["registerUser"] = req.body;
     const { email, password } = registerRequest;
-    const { log } = safContext.getStore()!;
+    const { log } = safStorage.getStore()!;
 
     const passwordHash = await argon2.hash(password);
 
