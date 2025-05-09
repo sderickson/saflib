@@ -53,7 +53,7 @@ export const createPreMiddleware = (
   }
 
   let authMiddleware: Handler[] = [];
-  if (authRequired || (apiSpec && authRequired !== false)) {
+  if (authRequired !== false) {
     authMiddleware = [auth];
   }
 
