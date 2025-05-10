@@ -4,10 +4,10 @@ import { type AuthResponse } from "@saflib/auth-spec";
 import { EmailClient } from "@saflib/email";
 import { generateVerificationEmail } from "../../email-templates/verify-email.ts";
 import { AuthDB } from "@saflib/auth-db";
-import { safStorage } from "@saflib/node";
+import { getSafContext } from "@saflib/node";
 export const resendVerificationHandler = createHandler(async (req, res) => {
   const db: AuthDB = req.app.locals.db;
-  const { log } = safStorage.getStore()!;
+  const { log } = getSafContext();
   if (!req.user) {
     res.status(401).json({
       message: "User must be logged in",

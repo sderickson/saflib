@@ -104,6 +104,7 @@ import createError from "http-errors";
 
 export const getCallSeriesHandler = createHandler(async (req, res) => {
   const ctx = asyncLocalStorage.getStore()!;
+  const { auth } = getSafContextWithAuth();
   const callSeriesId = parseInt(req.params.id);
 
   const { result: callSeries, error } =
@@ -123,7 +124,7 @@ export const getCallSeriesHandler = createHandler(async (req, res) => {
   }
 
   // Check Authorization (Example)
-  if (callSeries.ownerId !== req.auth?.userId) {
+  if (callSeries.ownerId !== auth.userId) {
     throw createError(403);
   }
 

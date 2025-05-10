@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package saflib.common.v1;
+
+message SafAuth {
+  int64 user_id = 1;
+  string user_email = 2;
+  repeated string user_scopes = 3;
+}
+
+message SafRequest {
+  string id = 1;
+}
+
+message SafError {
+  string code = 1;
+  string message = 2;
+} 

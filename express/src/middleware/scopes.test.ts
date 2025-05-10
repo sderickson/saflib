@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { Request, Response, NextFunction } from "express";
 import { createScopeValidator } from "./scopes.js";
 import type { OpenApiRequestMetadata } from "express-openapi-validator/dist/framework/types.js"; // Import the actual type
+import { SafContext, safStorage } from "@saflib/node";
 
 // Define a type for the necessary parts of OpenApiRequestMetadata
 interface MockOpenApiMetadata extends Partial<OpenApiRequestMetadata> {
@@ -40,12 +41,15 @@ describe("createScopeValidator", () => {
     pathParams: {},
     serial: 0,
   };
+  const mockContext: SafContext = {
+    log: vi.fn() as any,
+    requestId: "123",
+  };
 
   beforeEach(() => {
     // Reset mocks before each test
     mockReq = {
       openapi: { ...defaultOpenApiMetadata, schema: { security: [] } }, // Use defaults, override schema as needed
-      auth: { scopes: [], userId: defaultUserId, userEmail: defaultUserEmail },
     };
     mockRes = {
       status: vi.fn().mockReturnThis(),
@@ -53,6 +57,14 @@ describe("createScopeValidator", () => {
       send: vi.fn(),
     };
     mockNext = vi.fn();
+    vi.spyOn(safStorage, "getStore").mockReturnValue({
+      auth: {
+        scopes: [],
+        userId: defaultUserId,
+        userEmail: defaultUserEmail,
+      },
+      ...mockContext,
+    });
     scopeValidator = createScopeValidator() as any;
   });
 
@@ -82,11 +94,14 @@ describe("createScopeValidator", () => {
       ...defaultOpenApiMetadata,
       schema: { security: [{ scopes: ["admin"] }] },
     };
-    mockReq.auth = {
-      scopes: ["*"],
-      userId: defaultUserId,
-      userEmail: defaultUserEmail,
-    };
+    vi.mocked(safStorage.getStore).mockReturnValue({
+      auth: {
+        scopes: ["*"],
+        userId: defaultUserId,
+        userEmail: defaultUserEmail,
+      },
+      ...mockContext,
+    });
     scopeValidator(mockReq as Request, mockRes as Response, mockNext);
     expect(mockNext).toHaveBeenCalledTimes(1);
   });
@@ -96,11 +111,14 @@ describe("createScopeValidator", () => {
       ...defaultOpenApiMetadata,
       schema: { security: [{ scopes: ["read", "write"] }] },
     };
-    mockReq.auth = {
-      scopes: ["read", "write", "delete"],
-      userId: defaultUserId,
-      userEmail: defaultUserEmail,
-    };
+    vi.mocked(safStorage.getStore).mockReturnValue({
+      auth: {
+        scopes: ["read", "write", "delete"],
+        userId: defaultUserId,
+        userEmail: defaultUserEmail,
+      },
+      ...mockContext,
+    });
     scopeValidator(mockReq as Request, mockRes as Response, mockNext);
     expect(mockNext).toHaveBeenCalledTimes(1);
   });
@@ -110,11 +128,14 @@ describe("createScopeValidator", () => {
       ...defaultOpenApiMetadata,
       schema: { security: [{ scopes: ["read"] }, { scopes: ["write"] }] },
     };
-    mockReq.auth = {
-      scopes: ["read", "write", "admin"],
-      userId: defaultUserId,
-      userEmail: defaultUserEmail,
-    };
+    vi.mocked(safStorage.getStore).mockReturnValue({
+      auth: {
+        scopes: ["read", "write", "admin"],
+        userId: defaultUserId,
+        userEmail: defaultUserEmail,
+      },
+      ...mockContext,
+    });
     scopeValidator(mockReq as Request, mockRes as Response, mockNext);
     expect(mockNext).toHaveBeenCalledTimes(1);
   });
@@ -124,11 +145,14 @@ describe("createScopeValidator", () => {
       ...defaultOpenApiMetadata,
       schema: { security: [{ scopes: ["admin", "read"] }] },
     };
-    mockReq.auth = {
-      scopes: ["read"],
-      userId: defaultUserId,
-      userEmail: defaultUserEmail,
-    };
+    vi.mocked(safStorage.getStore).mockReturnValue({
+      auth: {
+        scopes: ["read"],
+        userId: defaultUserId,
+        userEmail: defaultUserEmail,
+      },
+      ...mockContext,
+    });
     scopeValidator(mockReq as Request, mockRes as Response, mockNext);
     expect(mockNext).not.toHaveBeenCalled();
     expect(mockRes.status).toHaveBeenCalledWith(403);
@@ -146,11 +170,14 @@ describe("createScopeValidator", () => {
         security: [{ scopes: ["admin", "read"] }, { scopes: ["write"] }],
       },
     };
-    mockReq.auth = {
-      scopes: ["read"],
-      userId: defaultUserId,
-      userEmail: defaultUserEmail,
-    };
+    vi.mocked(safStorage.getStore).mockReturnValue({
+      auth: {
+        scopes: ["read"],
+        userId: defaultUserId,
+        userEmail: defaultUserEmail,
+      },
+      ...mockContext,
+    });
     scopeValidator(mockReq as Request, mockRes as Response, mockNext);
     expect(mockNext).not.toHaveBeenCalled();
     expect(mockRes.status).toHaveBeenCalledWith(403);
@@ -166,11 +193,11 @@ describe("createScopeValidator", () => {
       ...defaultOpenApiMetadata,
       schema: { security: [{ scopes: ["read"] }] },
     };
-    delete mockReq.auth;
-    expect(() =>
-      scopeValidator(mockReq as Request, mockRes as Response, mockNext),
-    ).toThrowError();
-    expect(mockNext).not.toHaveBeenCalled();
+    vi.mocked(safStorage.getStore).mockReturnValue({
+      ...mockContext,
+    });
+    scopeValidator(mockReq as Request, mockRes as Response, mockNext);
+    expect(mockRes.status).toHaveBeenCalledWith(401);
   });
 
   it("should return 403 if user has no scopes (empty array)", () => {
@@ -178,11 +205,14 @@ describe("createScopeValidator", () => {
       ...defaultOpenApiMetadata,
       schema: { security: [{ scopes: ["read"] }] },
     };
-    mockReq.auth = {
-      scopes: [],
-      userId: defaultUserId,
-      userEmail: defaultUserEmail,
-    };
+    vi.mocked(safStorage.getStore).mockReturnValue({
+      auth: {
+        scopes: [],
+        userId: defaultUserId,
+        userEmail: defaultUserEmail,
+      },
+      ...mockContext,
+    });
     scopeValidator(mockReq as Request, mockRes as Response, mockNext);
     expect(mockNext).not.toHaveBeenCalled();
     expect(mockRes.status).toHaveBeenCalledWith(403);
@@ -198,11 +228,14 @@ describe("createScopeValidator", () => {
       ...defaultOpenApiMetadata,
       schema: { security: [{ scopes: ["admin", "read", "special"] }] },
     };
-    mockReq.auth = {
-      scopes: ["read", "user"],
-      userId: defaultUserId,
-      userEmail: defaultUserEmail,
-    };
+    vi.mocked(safStorage.getStore).mockReturnValue({
+      auth: {
+        scopes: ["read", "user"],
+        userId: defaultUserId,
+        userEmail: defaultUserEmail,
+      },
+      ...mockContext,
+    });
     scopeValidator(mockReq as Request, mockRes as Response, mockNext);
     expect(mockNext).not.toHaveBeenCalled();
     expect(mockRes.status).toHaveBeenCalledWith(403);
