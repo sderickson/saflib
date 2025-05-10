@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { Request, Response, NextFunction } from "express";
 import { createScopeValidator } from "./scopes.js";
 import type { OpenApiRequestMetadata } from "express-openapi-validator/dist/framework/types.js"; // Import the actual type
-import { Auth, SafContext, safStorage } from "@saflib/node";
+import { SafContext, safStorage } from "@saflib/node";
 
 // Define a type for the necessary parts of OpenApiRequestMetadata
 interface MockOpenApiMetadata extends Partial<OpenApiRequestMetadata> {
@@ -196,10 +196,8 @@ describe("createScopeValidator", () => {
     vi.mocked(safStorage.getStore).mockReturnValue({
       ...mockContext,
     });
-    expect(() =>
-      scopeValidator(mockReq as Request, mockRes as Response, mockNext),
-    ).toThrowError();
-    expect(mockNext).not.toHaveBeenCalled();
+    scopeValidator(mockReq as Request, mockRes as Response, mockNext);
+    expect(mockRes.status).toHaveBeenCalledWith(401);
   });
 
   it("should return 403 if user has no scopes (empty array)", () => {

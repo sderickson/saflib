@@ -4,7 +4,7 @@ import express from "express";
 import request from "supertest";
 import { createPreMiddleware } from "./composition.ts";
 import { errorHandler } from "./errors.ts"; // Import errorHandler for a complete setup
-import { safStorage } from "@saflib/node";
+import { getSafContext } from "@saflib/node";
 
 describe("Auth Middleware", () => {
   let app: express.Express;
@@ -13,7 +13,7 @@ describe("Auth Middleware", () => {
     app = express();
     app.use(createPreMiddleware({ authRequired: true }));
     app.get("/test", (_req: Request, res: Response) => {
-      const { auth } = safStorage.getStore()!;
+      const { auth } = getSafContext();
       res.status(200).json({ authFromMiddleware: auth });
     });
     app.use(errorHandler);

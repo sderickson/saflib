@@ -1,5 +1,5 @@
 import type { Handler } from "express";
-import { safStorage } from "@saflib/node";
+import { getSafContext } from "@saflib/node";
 
 /**
  * Middleware that adds user information from headers to the request object.
@@ -7,7 +7,7 @@ import { safStorage } from "@saflib/node";
  * Throws 401 if required headers are missing.
  */
 export const auth: Handler = (_req, res, next): void => {
-  const { auth } = safStorage.getStore()!;
+  const { auth } = getSafContext();
 
   if (!auth) {
     res.status(401).json({

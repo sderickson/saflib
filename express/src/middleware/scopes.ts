@@ -1,4 +1,4 @@
-import { safStorage } from "@saflib/node";
+import { getSafContext } from "@saflib/node";
 import type { Handler } from "express";
 import type { Request } from "express";
 
@@ -24,11 +24,18 @@ function getScopesFromReq(req: Request) {
  */
 export const createScopeValidator = (): Handler => {
   return (req, res, next): void => {
-    const auth = safStorage.getStore()!.auth!;
+    const { auth } = getSafContext();
     const requiredScopes = getScopesFromReq(req);
 
     if (requiredScopes.size === 0) {
       return next();
+    }
+
+    if (!auth) {
+      res.status(401).json({
+        message: "Unauthorized",
+      });
+      return;
     }
 
     const userScopes = new Set(auth.scopes);

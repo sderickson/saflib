@@ -58,11 +58,11 @@ Caddy uses forward authentication to verify requests to protected services. When
 
 Node.js services receive the propagated headers and can use them for:
 
-1. Basic authentication verification via `@saflib/node-express`'s `auth` middleware:
+1. Basic authentication verification via `@saflib/express`'s `auth` middleware and @saflib/node`'s SafContext:
 
    ```typescript
    // Extracts user info from headers
-   const auth = safStorage.getStore()!.auth!;
+   const { auth } = getSafContext();
    const userId = auth.userId;
    const userEmail = auth.userEmail;
    const scopes = auth.scopes;
