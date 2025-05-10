@@ -11,16 +11,11 @@ describe("Auth Middleware", () => {
 
   beforeEach(() => {
     app = express();
-    // Apply the auth middleware via createPreMiddleware
     app.use(createPreMiddleware({ authRequired: true }));
-
-    // Add a test route that will be protected by the auth middleware
     app.get("/test", (_req: Request, res: Response) => {
-      // If auth middleware passes, req.auth should be populated
       const { auth } = safStorage.getStore()!;
       res.status(200).json({ authFromMiddleware: auth });
     });
-    // Add error handler to catch errors from middleware
     app.use(errorHandler);
   });
 

@@ -62,66 +62,73 @@ Node.js services receive the propagated headers and can use them for:
 
    ```typescript
    // Extracts user info from headers
-   req.auth = {
-     userId: number;
-     userEmail: string;
-     scopes: string[];
-   };
+   const auth = safStorage.getStore()!.auth!;
+   const userId = auth.userId;
+   const userEmail = auth.userEmail;
+   const scopes = auth.scopes;
    ```
 
 2. Scope validation via OpenAPI middleware:
+
    ```yaml
+
+   ```
+
 # openapi.yaml
+
 openapi: 3.0.0
 info:
-  title: Your Product's API
-  version: "1.0.0"
-  description: The API used internally by web clients.
+title: Your Product's API
+version: "1.0.0"
+description: The API used internally by web clients.
 servers:
-  - url: http://api.docker.localhost/
-    description: Development server
+
+- url: http://api.docker.localhost/
+  description: Development server
 
 components:
-  securitySchemes:
-    scopes:
-      type: apiKey
-      in: header
-      name: X-User-Scopes
-      description: Comma-separated list of user scopes
+securitySchemes:
+scopes:
+type: apiKey
+in: header
+name: X-User-Scopes
+description: Comma-separated list of user scopes
 
 paths:
-  /todos:
-    delete:
-      $ref: "./routes/todos.yaml#/delete"
-
+/todos:
+delete:
+$ref: "./routes/todos.yaml#/delete"
 
 # todos.yaml
+
 delete:
-  summary: Delete all todos
-  operationId: deleteAllTodos
-  tags:
-    - todos
-  security:
-    - scopes: ["admin"]
-   ```
+summary: Delete all todos
+operationId: deleteAllTodos
+tags: - todos
+security: - scopes: ["admin"]
+
+```
 
 ## Future Enhancements
 
 1. Additional security features:
-   - Audit logging
+- Audit logging
 
 ## Example Flow
 
 1. User makes request to `/api/todos`
 2. Caddy intercepts request and calls `/auth/verify`
 3. Auth service verifies session and returns:
-   ```
-   X-User-ID: 123
-   X-User-Email: user@example.com
-   X-User-Scopes: read,write
-   ```
+```
+
+X-User-ID: 123
+X-User-Email: user@example.com
+X-User-Scopes: read,write
+
+```
 4. Caddy propagates headers to API service
 5. API service:
-   - Validates user via auth middleware
-   - Checks scopes via OpenAPI middleware
-   - Processes request if authorized
+- Validates user via auth middleware
+- Checks scopes via OpenAPI middleware
+- Processes request if authorized
+```

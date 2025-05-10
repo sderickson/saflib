@@ -1,3 +1,4 @@
+import { safStorage } from "@saflib/node";
 import type { Handler } from "express";
 import type { Request } from "express";
 
@@ -18,18 +19,19 @@ function getScopesFromReq(req: Request) {
 
 /**
  * Creates middleware that validates user scopes against OpenAPI security requirements.
- * Expects the auth middleware to have run first to populate req.auth.scopes.
+ * Expects the auth middleware to have run first so safContext is provided.
  * Throws 403 if user doesn't have required scopes.
  */
 export const createScopeValidator = (): Handler => {
   return (req, res, next): void => {
+    const auth = safStorage.getStore()!.auth!;
     const requiredScopes = getScopesFromReq(req);
 
     if (requiredScopes.size === 0) {
       return next();
     }
 
-    const userScopes = new Set(req.auth.scopes);
+    const userScopes = new Set(auth.scopes);
 
     if (userScopes.has("*")) {
       return next();
