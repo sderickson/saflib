@@ -4,12 +4,12 @@
  * source: protos/envelope.proto
  * git: https://github.com/thesayyn/protoc-gen-ts */
 import * as pb_1 from "google-protobuf";
-export class AuthContext extends pb_1.Message {
+export class SafAuth extends pb_1.Message {
     #one_of_decls: number[][] = [];
     constructor(data?: any[] | {
         user_id?: number;
         user_email?: string;
-        scopes?: string[];
+        user_scopes?: string[];
     }) {
         super();
         pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [3], this.#one_of_decls);
@@ -20,8 +20,8 @@ export class AuthContext extends pb_1.Message {
             if ("user_email" in data && data.user_email != undefined) {
                 this.user_email = data.user_email;
             }
-            if ("scopes" in data && data.scopes != undefined) {
-                this.scopes = data.scopes;
+            if ("user_scopes" in data && data.user_scopes != undefined) {
+                this.user_scopes = data.user_scopes;
             }
         }
     }
@@ -37,26 +37,26 @@ export class AuthContext extends pb_1.Message {
     set user_email(value: string) {
         pb_1.Message.setField(this, 2, value);
     }
-    get scopes() {
+    get user_scopes() {
         return pb_1.Message.getFieldWithDefault(this, 3, []) as string[];
     }
-    set scopes(value: string[]) {
+    set user_scopes(value: string[]) {
         pb_1.Message.setField(this, 3, value);
     }
     static fromObject(data: {
         user_id?: number;
         user_email?: string;
-        scopes?: string[];
-    }): AuthContext {
-        const message = new AuthContext({});
+        user_scopes?: string[];
+    }): SafAuth {
+        const message = new SafAuth({});
         if (data.user_id != null) {
             message.user_id = data.user_id;
         }
         if (data.user_email != null) {
             message.user_email = data.user_email;
         }
-        if (data.scopes != null) {
-            message.scopes = data.scopes;
+        if (data.user_scopes != null) {
+            message.user_scopes = data.user_scopes;
         }
         return message;
     }
@@ -64,7 +64,7 @@ export class AuthContext extends pb_1.Message {
         const data: {
             user_id?: number;
             user_email?: string;
-            scopes?: string[];
+            user_scopes?: string[];
         } = {};
         if (this.user_id != null) {
             data.user_id = this.user_id;
@@ -72,8 +72,8 @@ export class AuthContext extends pb_1.Message {
         if (this.user_email != null) {
             data.user_email = this.user_email;
         }
-        if (this.scopes != null) {
-            data.scopes = this.scopes;
+        if (this.user_scopes != null) {
+            data.user_scopes = this.user_scopes;
         }
         return data;
     }
@@ -85,13 +85,13 @@ export class AuthContext extends pb_1.Message {
             writer.writeInt64(1, this.user_id);
         if (this.user_email.length)
             writer.writeString(2, this.user_email);
-        if (this.scopes.length)
-            writer.writeRepeatedString(3, this.scopes);
+        if (this.user_scopes.length)
+            writer.writeRepeatedString(3, this.user_scopes);
         if (!w)
             return writer.getResultBuffer();
     }
-    static deserialize(bytes: Uint8Array | pb_1.BinaryReader): AuthContext {
-        const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes), message = new AuthContext();
+    static deserialize(bytes: Uint8Array | pb_1.BinaryReader): SafAuth {
+        const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes), message = new SafAuth();
         while (reader.nextField()) {
             if (reader.isEndGroup())
                 break;
@@ -113,11 +113,11 @@ export class AuthContext extends pb_1.Message {
     serializeBinary(): Uint8Array {
         return this.serialize();
     }
-    static deserializeBinary(bytes: Uint8Array): AuthContext {
-        return AuthContext.deserialize(bytes);
+    static deserializeBinary(bytes: Uint8Array): SafAuth {
+        return SafAuth.deserialize(bytes);
     }
 }
-export class Request extends pb_1.Message {
+export class SafRequest extends pb_1.Message {
     #one_of_decls: number[][] = [];
     constructor(data?: any[] | {
         id?: string;
@@ -138,8 +138,8 @@ export class Request extends pb_1.Message {
     }
     static fromObject(data: {
         id?: string;
-    }): Request {
-        const message = new Request({});
+    }): SafRequest {
+        const message = new SafRequest({});
         if (data.id != null) {
             message.id = data.id;
         }
@@ -163,8 +163,8 @@ export class Request extends pb_1.Message {
         if (!w)
             return writer.getResultBuffer();
     }
-    static deserialize(bytes: Uint8Array | pb_1.BinaryReader): Request {
-        const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes), message = new Request();
+    static deserialize(bytes: Uint8Array | pb_1.BinaryReader): SafRequest {
+        const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes), message = new SafRequest();
         while (reader.nextField()) {
             if (reader.isEndGroup())
                 break;
@@ -180,11 +180,11 @@ export class Request extends pb_1.Message {
     serializeBinary(): Uint8Array {
         return this.serialize();
     }
-    static deserializeBinary(bytes: Uint8Array): Request {
-        return Request.deserialize(bytes);
+    static deserializeBinary(bytes: Uint8Array): SafRequest {
+        return SafRequest.deserialize(bytes);
     }
 }
-export class Error extends pb_1.Message {
+export class SafError extends pb_1.Message {
     #one_of_decls: number[][] = [];
     constructor(data?: any[] | {
         code?: string;
@@ -216,8 +216,8 @@ export class Error extends pb_1.Message {
     static fromObject(data: {
         code?: string;
         message?: string;
-    }): Error {
-        const message = new Error({});
+    }): SafError {
+        const message = new SafError({});
         if (data.code != null) {
             message.code = data.code;
         }
@@ -250,8 +250,8 @@ export class Error extends pb_1.Message {
         if (!w)
             return writer.getResultBuffer();
     }
-    static deserialize(bytes: Uint8Array | pb_1.BinaryReader): Error {
-        const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes), message = new Error();
+    static deserialize(bytes: Uint8Array | pb_1.BinaryReader): SafError {
+        const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes), message = new SafError();
         while (reader.nextField()) {
             if (reader.isEndGroup())
                 break;
@@ -270,7 +270,7 @@ export class Error extends pb_1.Message {
     serializeBinary(): Uint8Array {
         return this.serialize();
     }
-    static deserializeBinary(bytes: Uint8Array): Error {
-        return Error.deserialize(bytes);
+    static deserializeBinary(bytes: Uint8Array): SafError {
+        return SafError.deserialize(bytes);
     }
 }

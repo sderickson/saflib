@@ -2,17 +2,17 @@ syntax = "proto3";
 
 package saflib.common.v1;
 
-message AuthContext {
+message SafAuth {
   int64 user_id = 1;
   string user_email = 2;
-  repeated string scopes = 3;
+  repeated string user_scopes = 3;
 }
 
-message Request {
+message SafRequest {
   string id = 1;
 }
 
-message Error {
+message SafError {
   string code = 1;
   string message = 2;
 } 
