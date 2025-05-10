@@ -69,45 +69,40 @@ Node.js services receive the propagated headers and can use them for:
    ```
 
 2. Scope validation via OpenAPI middleware:
-
    ```yaml
-
-   ```
-
 # openapi.yaml
-
 openapi: 3.0.0
 info:
-title: Your Product's API
-version: "1.0.0"
-description: The API used internally by web clients.
+  title: Your Product's API
+  version: "1.0.0"
+  description: The API used internally by web clients.
 servers:
-
-- url: http://api.docker.localhost/
-  description: Development server
+  - url: http://api.docker.localhost/
+    description: Development server
 
 components:
-securitySchemes:
-scopes:
-type: apiKey
-in: header
-name: X-User-Scopes
-description: Comma-separated list of user scopes
+  securitySchemes:
+    scopes:
+      type: apiKey
+      in: header
+      name: X-User-Scopes
+      description: Comma-separated list of user scopes
 
 paths:
-/todos:
-delete:
-$ref: "./routes/todos.yaml#/delete"
+  /todos:
+    delete:
+      $ref: "./routes/todos.yaml#/delete"
+
 
 # todos.yaml
-
 delete:
-summary: Delete all todos
-operationId: deleteAllTodos
-tags: - todos
-security: - scopes: ["admin"]
-
-```
+  summary: Delete all todos
+  operationId: deleteAllTodos
+  tags:
+    - todos
+  security:
+    - scopes: ["admin"]
+   ```
 
 ## Future Enhancements
 
