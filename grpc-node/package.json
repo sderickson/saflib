@@ -7,6 +7,8 @@
     ".": "./index.ts"
   },
   "dependencies": {
+    "@saflib/grpc-specs": "*",
+    "@saflib/node": "*",
     "@grpc/grpc-js": "^1.13.3",
     "google-protobuf": "^3.21.4"
   }

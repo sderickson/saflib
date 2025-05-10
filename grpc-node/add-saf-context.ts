@@ -1,0 +1,46 @@
+import type {
+  UntypedServiceImplementation,
+  UntypedHandleCall,
+} from "@grpc/grpc-js";
+import type { ServiceImplementationWrapper } from "@saflib/grpc-node";
+import { type Auth, type SafContext, safStorage } from "@saflib/node";
+import { AuthContext } from "@saflib/grpc-specs";
+import { createLogger } from "@saflib/node";
+
+export const addSafContext: ServiceImplementationWrapper = (impl) => {
+  const wrappedService: UntypedServiceImplementation = {};
+
+  for (const [methodName, methodImpl] of Object.entries(impl)) {
+    const wrappedMethod: UntypedHandleCall = (call: any, callback: any) => {
+      // Create the context for this request
+      const reqId = call.request?.request?.id || "no-request-id";
+      let auth: Auth | undefined = undefined;
+      const authFromRequest = call.request.auth;
+      if (authFromRequest instanceof AuthContext) {
+        if (
+          !authFromRequest.user_id ||
+          !authFromRequest.user_email ||
+          !authFromRequest.scopes
+        ) {
+          throw new Error("Invalid auth context");
+        }
+        auth = {
+          userId: authFromRequest.user_id,
+          userEmail: authFromRequest.user_email,
+          scopes: authFromRequest.scopes,
+        };
+      }
+      const context: SafContext = {
+        requestId: reqId,
+        log: createLogger(reqId),
+        auth,
+      };
+      // Run the original implementation within the context
+      safStorage.run(context, () => {
+        methodImpl(call, callback);
+      });
+    };
+    wrappedService[methodName] = wrappedMethod;
+  }
+  return wrappedService;
+};
