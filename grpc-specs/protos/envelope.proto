@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package saflib.common.v1;
+
+message AuthContext {
+  int64 user_id = 1;
+  string user_email = 2;
+  repeated string scopes = 3;
+}
+
+message Request {
+  string id = 1;
+}
+
+message Error {
+  string code = 1;
+  string message = 2;
+} 
