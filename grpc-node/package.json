@@ -1,5 +1,5 @@
 {
-  "name": "@saflib/grpc-servicer",
+  "name": "@saflib/grpc-node",
   "description": "Provides gRPC servicer utilities",
   "private": true,
   "type": "module",
@@ -7,6 +7,8 @@
     ".": "./index.ts"
   },
   "dependencies": {
+    "@saflib/grpc-specs": "*",
+    "@saflib/node": "*",
     "@grpc/grpc-js": "^1.13.3",
     "google-protobuf": "^3.21.4"
   }

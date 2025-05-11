@@ -58,15 +58,14 @@ Caddy uses forward authentication to verify requests to protected services. When
 
 Node.js services receive the propagated headers and can use them for:
 
-1. Basic authentication verification via `@saflib/node-express`'s `auth` middleware:
+1. Basic authentication verification via `@saflib/express`'s `auth` middleware and @saflib/node`'s SafContext:
 
    ```typescript
    // Extracts user info from headers
-   req.auth = {
-     userId: number;
-     userEmail: string;
-     scopes: string[];
-   };
+   const { auth } = getSafContext();
+   const userId = auth.userId;
+   const userEmail = auth.userEmail;
+   const scopes = auth.scopes;
    ```
 
 2. Scope validation via OpenAPI middleware:
@@ -108,20 +107,23 @@ delete:
 ## Future Enhancements
 
 1. Additional security features:
-   - Audit logging
+- Audit logging
 
 ## Example Flow
 
 1. User makes request to `/api/todos`
 2. Caddy intercepts request and calls `/auth/verify`
 3. Auth service verifies session and returns:
-   ```
-   X-User-ID: 123
-   X-User-Email: user@example.com
-   X-User-Scopes: read,write
-   ```
+```
+
+X-User-ID: 123
+X-User-Email: user@example.com
+X-User-Scopes: read,write
+
+```
 4. Caddy propagates headers to API service
 5. API service:
-   - Validates user via auth middleware
-   - Checks scopes via OpenAPI middleware
-   - Processes request if authorized
+- Validates user via auth middleware
+- Checks scopes via OpenAPI middleware
+- Processes request if authorized
+```
