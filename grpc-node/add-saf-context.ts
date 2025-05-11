@@ -6,7 +6,7 @@ import type { ServiceImplementationWrapper } from "@saflib/grpc-node";
 import { type Auth, type SafContext, safStorage } from "@saflib/node";
 import { SafAuth } from "@saflib/grpc-specs";
 import { createLogger } from "@saflib/node";
-
+import { status } from "@grpc/grpc-js";
 export const addSafContext: ServiceImplementationWrapper = (impl) => {
   const wrappedService: UntypedServiceImplementation = {};
 
@@ -36,8 +36,27 @@ export const addSafContext: ServiceImplementationWrapper = (impl) => {
         auth,
       };
       // Run the original implementation within the context
-      safStorage.run(context, () => {
-        methodImpl(call, callback);
+      return safStorage.run(context, () => {
+        try {
+          const result = methodImpl(call, callback) as any;
+          if (result instanceof Promise) {
+            return result.catch((error) => {
+              const e = error as Error;
+              context.log.error(
+                `Error in ${methodName}: ${e.message}\n${e.stack}`,
+              );
+              callback(
+                { code: status.INTERNAL, message: e.message } as any,
+                null,
+              );
+            });
+          }
+          return result;
+        } catch (error) {
+          const e = error as Error;
+          context.log.error(`Error in ${methodName}: ${e.message}\n${e.stack}`);
+          callback({ code: status.INTERNAL, message: e.message } as any, null);
+        }
       });
     };
     wrappedService[methodName] = wrappedMethod;
