@@ -1,4 +1,17 @@
-import { fromPromise, assign, setup, raise, AnyEventObject } from "xstate";
+import {
+  fromPromise,
+  assign,
+  setup,
+  raise,
+  AnyEventObject,
+  // ActorRefFrom,
+  // SnapshotFrom,
+  // EventFromLogic,
+  Values,
+  NonReducibleUnknown,
+  ActionFunction,
+  PromiseActorLogic,
+} from "xstate";
 import { existsSync, readFileSync } from "fs";
 import { basename, join } from "path";
 import { addNewLinesToString } from "../src/utils.ts";
@@ -102,29 +115,64 @@ interface ActionParam {
   event: AnyEventObject;
 }
 
-export const AddTestsWorkflow = setup({
+type AddTestsWorkflowActionFunction = ActionFunction<
+  AddTestsWorkflowContext,
+  AnyEventObject,
+  AnyEventObject,
+  LogParams,
+  {
+    src: "noop";
+    logic: PromiseActorLogic<unknown, NonReducibleUnknown, any>;
+    id: string | undefined;
+  },
+  Values<any>,
+  never,
+  never,
+  AnyEventObject
+>;
+
+const logImpl: AddTestsWorkflowActionFunction = assign(
+  ({ context }, { msg, level = "info" }: LogParams) => {
+    const statusChar = level === "info" ? "✓" : "✗";
+    print(`${statusChar} ${msg}`, context.loggedLast);
+    return { loggedLast: true };
+  },
+);
+
+const promptImpl: AddTestsWorkflowActionFunction = assign(
+  ({ context }, { msg }: { msg: string }) => {
+    print(`You are adding tests to ${context.basename}`);
+    print(msg);
+    return { loggedLast: false };
+  },
+);
+
+const actions = {
+  log: logImpl,
+  prompt: promptImpl,
+};
+
+const AddTestsWorkflowSetup = setup({
   types: {
     input: {} as {
       path: string;
     },
     context: {} as AddTestsWorkflowContext,
   },
-  actions: {
-    log: assign(({ context }, { msg, level = "info" }: LogParams) => {
-      const statusChar = level === "info" ? "✓" : "✗";
-      print(`${statusChar} ${msg}`, context.loggedLast);
-      return { loggedLast: true };
-    }),
-    prompt: assign(({ context }, { msg }: { msg: string }) => {
-      print(`You are adding tests to ${context.basename}`);
-      print(msg);
-      return { loggedLast: false };
-    }),
-  },
+  actions,
   actors: {
     noop: fromPromise(async (_) => {}),
   },
-}).createMachine({
+});
+
+// type AddTestsWorkflowMachine = ReturnType<
+//   typeof AddTestsWorkflowSetup.createMachine
+// >;
+// type AddTestsWorkflowActorRef = ActorRefFrom<AddTestsWorkflowMachine>;
+// type AddTestsWorkflowSnapshotFrom = SnapshotFrom<AddTestsWorkflowMachine>;
+// type AddTestsWorkflowEventFromLogic = EventFromLogic<AddTestsWorkflowMachine>;
+
+export const AddTestsWorkflow = AddTestsWorkflowSetup.createMachine({
   id: "add-tests",
   description: "Given a file, add tests to the file.",
   initial: "validatingTests",
