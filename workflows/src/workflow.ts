@@ -149,6 +149,11 @@ export abstract class XStateWorkflow extends Workflow {
   abstract readonly machine: AnyStateMachine;
   private input: any;
   private actor: AnyActor | undefined;
+
+  get name() {
+    return this.machine.id;
+  }
+
   init = async (...args: any[]): Promise<Result<any>> => {
     if (args.length !== this.cliArguments.length) {
       return {

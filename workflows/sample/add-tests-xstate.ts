@@ -11,6 +11,7 @@ import {
   workflowActors,
 } from "./xstate-shared.ts";
 import type { WorkflowContext } from "./xstate-shared.ts";
+import { XStateWorkflow } from "../src/workflow.ts";
 
 interface AddTestsWorkflowContext extends WorkflowContext {
   path: string;
@@ -101,3 +102,14 @@ export const AddTestsWorkflowMachine = setup({
     },
   },
 });
+
+export class AddTestsWorkflow extends XStateWorkflow {
+  machine = AddTestsWorkflowMachine;
+  description = "Given a file, add tests to the file.";
+  cliArguments = [
+    {
+      name: "path",
+      description: "The path to the file to add tests to",
+    },
+  ];
+}
