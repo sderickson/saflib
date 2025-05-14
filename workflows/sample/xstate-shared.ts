@@ -13,6 +13,12 @@ import {
   fromPromise,
 } from "xstate";
 
+export function allChildrenSettled(snapshot: any) {
+  return Object.values(snapshot.children).every(
+    (child: any) => child && child.getSnapshot().status !== "active",
+  );
+}
+
 export interface LogParams {
   msg: string;
   level?: "info" | "error";

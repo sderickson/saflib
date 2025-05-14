@@ -5,8 +5,10 @@ import type {
   WorkflowBlob,
   WorkflowStatus,
 } from "./types.ts";
+import type { AnyStateMachine, AnyActor } from "xstate";
 import { addNewLinesToString } from "./utils.ts";
-
+import { createActor, waitFor } from "xstate";
+import { allChildrenSettled } from "../sample/xstate-shared.ts";
 // The following is TS magic to describe a class constructor that implements the abstract SimpleWorkflow class.
 type AbstractClassConstructor<T extends Workflow> = new (...args: any[]) => T;
 
@@ -141,4 +143,58 @@ export abstract class SimpleWorkflow<
     this.stepIndex = blob.internalState.stepIndex;
     this.status = blob.internalState.status;
   }
+}
+
+export abstract class XStateWorkflow extends Workflow {
+  abstract readonly machine: AnyStateMachine;
+  private input: any;
+  private actor: AnyActor | undefined;
+  init = async (...args: any[]): Promise<Result<any>> => {
+    if (args.length !== this.cliArguments.length) {
+      return {
+        error: new Error(
+          `Expected ${this.cliArguments.length} arguments, got ${args.length}`,
+        ),
+      };
+    }
+    const input = {} as any;
+    for (let i = 0; i < args.length; i++) {
+      input[this.cliArguments[i].name] = args[i];
+    }
+    this.input = input;
+
+    return { data: undefined };
+  };
+
+  kickoff = async (): Promise<boolean> => {
+    const actor = createActor(this.machine, { input: this.input });
+    actor.start();
+    await waitFor(actor, allChildrenSettled);
+    this.actor = actor;
+    return actor.getSnapshot().status !== "error";
+  };
+
+  printStatus = async (): Promise<void> => {
+    if (!this.actor) {
+      throw new Error("Workflow not started");
+    }
+    this.actor.send({ type: "prompt" });
+    await waitFor(this.actor, allChildrenSettled);
+  };
+  goToNextStep = async (): Promise<void> => {
+    if (!this.actor) {
+      throw new Error("Workflow not started");
+    }
+    this.actor.send({ type: "continue" });
+    await waitFor(this.actor, allChildrenSettled);
+  };
+  dehydrate = (): WorkflowBlob => {
+    return {
+      workflowName: this.name,
+      internalState: this.actor?.getPersistedSnapshot(),
+    };
+  };
+  hydrate = (blob: WorkflowBlob): void => {
+    this.actor = createActor(this.machine, { snapshot: blob.internalState });
+  };
 }

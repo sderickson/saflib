@@ -21,7 +21,7 @@ interface AddTestsWorkflowInput {
   path: string;
 }
 
-export const AddTestsWorkflow = setup({
+export const AddTestsWorkflowMachine = setup({
   types: {
     input: {} as AddTestsWorkflowInput,
     context: {} as AddTestsWorkflowContext,

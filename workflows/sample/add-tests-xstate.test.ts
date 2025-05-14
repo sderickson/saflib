@@ -1,20 +1,15 @@
-import { AddTestsWorkflow } from "./add-tests-xstate.ts";
+import { AddTestsWorkflowMachine } from "./add-tests-xstate.ts";
 import { createActor, waitFor } from "xstate";
 import { describe, it, expect } from "vitest";
-
-export function allChildrenSettled(snapshot: any) {
-  return Object.values(snapshot.children).every(
-    (child: any) => child && child.getSnapshot().status !== "active",
-  );
-}
+import { allChildrenSettled } from "./xstate-shared.ts";
 
 describe("AddTestsWorkflow", () => {
   it("should print instructions", async () => {
-    const actor = createActor(AddTestsWorkflow, {
+    const actor = createActor(AddTestsWorkflowMachine, {
       input: { path: "sample/add-tests-xstate.ts" },
     });
     actor.start();
-    console.log("all good?");
+    console.log("all good?", actor.getSnapshot().status);
     console.log(actor.getSnapshot());
     await waitFor(actor, allChildrenSettled);
     expect(actor.getSnapshot().value).toBe("addingTests");

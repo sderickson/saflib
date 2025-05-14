@@ -25,5 +25,5 @@ export interface WorkflowBlobInternalState {
 
 export interface WorkflowBlob {
   workflowName: string;
-  internalState: WorkflowBlobInternalState;
+  internalState: any;
 }
