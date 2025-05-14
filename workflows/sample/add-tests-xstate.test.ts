@@ -11,6 +11,6 @@ describe("AddTestsWorkflow", () => {
       input: { path: "sample/add-tests-xstate.ts" },
     });
     actor.start();
-    expect(actor.getSnapshot().value).toBe("started");
+    expect(actor.getSnapshot().value).toBe("validatingTests");
   });
 });
