@@ -10,6 +10,7 @@ import {
   ActionFunction,
   PromiseActorLogic,
   MachineContext,
+  fromPromise,
 } from "xstate";
 
 export interface LogParams {
@@ -155,4 +156,8 @@ const promptImpl: WorkflowActionFunction<any, AnyEventObject, PromptParams> =
 export const workflowActionImplementations = {
   log: logImpl,
   prompt: promptImpl,
+};
+
+export const workflowActors = {
+  noop: fromPromise(async (_) => {}),
 };

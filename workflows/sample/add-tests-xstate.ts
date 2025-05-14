@@ -8,6 +8,7 @@ import {
   logError,
   prompt,
   workflowActionImplementations,
+  workflowActors,
 } from "./xstate-shared.ts";
 import type { WorkflowContext } from "./xstate-shared.ts";
 
@@ -25,12 +26,8 @@ export const AddTestsWorkflow = setup({
     input: {} as AddTestsWorkflowInput,
     context: {} as AddTestsWorkflowContext,
   },
-  actions: {
-    ...workflowActionImplementations,
-  },
-  actors: {
-    noop: fromPromise(async (_) => {}),
-  },
+  actions: workflowActionImplementations,
+  actors: workflowActors,
 }).createMachine({
   id: "add-tests",
   description: "Given a file, add tests to the file.",

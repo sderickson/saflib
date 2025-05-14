@@ -1,8 +1,9 @@
-import { fromPromise, setup } from "xstate";
+import { setup } from "xstate";
 import {
   logInfo,
   prompt,
   workflowActionImplementations,
+  workflowActors,
 } from "./xstate-shared.ts";
 
 interface ExampleWorkflowInput {
@@ -18,12 +19,8 @@ export const ExampleWorkflowMachine = setup({
     input: {} as ExampleWorkflowInput,
     context: {} as ExampleWorkflowContext,
   },
-  actors: {
-    noop: fromPromise(async (_) => {}),
-  },
-  actions: {
-    ...workflowActionImplementations,
-  },
+  actors: workflowActors,
+  actions: workflowActionImplementations,
 }).createMachine({
   id: "example",
   description: "An example workflow",
