@@ -88,6 +88,15 @@ const logError = (cb: string | ((ctx: ActionParam) => string)) => {
   return log("error", cb);
 };
 
+const prompt = (cb: string | ((ctx: ActionParam) => string)) => {
+  return {
+    type: "prompt" as const,
+    params: (event: ActionParam) => ({
+      msg: typeof cb === "function" ? cb(event) : cb,
+    }),
+  };
+};
+
 interface ActionParam {
   context: AddTestsWorkflowContext;
   event: AnyEventObject;
@@ -106,7 +115,7 @@ export const AddTestsWorkflow = setup({
       print(`${statusChar} ${msg}`, context.loggedLast);
       return { loggedLast: true };
     }),
-    printPrompt: assign(({ context }, { msg }: { msg: string }) => {
+    prompt: assign(({ context }, { msg }: { msg: string }) => {
       print(`You are adding tests to ${context.basename}`);
       print(msg);
       return { loggedLast: false };
@@ -132,19 +141,12 @@ export const AddTestsWorkflow = setup({
   states: {
     validatingTests: {
       on: {
-        continue: {
-          target: "validatingTests",
-          reenter: true,
-        },
+        continue: { reenter: true },
         prompt: {
-          actions: [
-            {
-              type: "printPrompt",
-              params: (event) => ({
-                msg: `First, run the existing tests for the package that ${event.context.basename} is in. You should be able to run "npm run test". Run the tests for that package and make sure they are passing.`,
-              }),
-            },
-          ],
+          actions: prompt(
+            ({ context }) =>
+              `First, run the existing tests for the package that ${context.basename} is in. You should be able to run "npm run test". Run the tests for that package and make sure they are passing.`,
+          ),
         },
       },
       entry: [logInfo("Successfully began workflow")],
@@ -165,14 +167,11 @@ export const AddTestsWorkflow = setup({
       },
     },
     addingTests: {
-      entry: [
-        {
-          type: "printPrompt",
-          params: ({ context }) => ({
-            msg: `Add tests to ${context.basename}. Create the test file next to the file you are testing.`,
-          }),
-        },
-      ],
+      entry: prompt(
+        ({ context }) =>
+          `Add tests to ${context.basename}. Create the test file next to the file you are testing.`,
+      ),
+
       on: {
         continue: [
           {
