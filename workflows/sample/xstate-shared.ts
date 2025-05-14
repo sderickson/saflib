@@ -8,36 +8,42 @@ export interface LogParams {
   level?: "info" | "error";
 }
 
-interface ActionParam<C> {
+interface ActionParam<C, E extends AnyEventObject> {
   context: C;
-  event: AnyEventObject;
+  event: E;
 }
 
-const log = <C>(
+const log = <C, E extends AnyEventObject>(
   level: "info" | "error",
-  cb: string | ((ctx: ActionParam<C>) => string),
+  cb: string | ((ctx: ActionParam<C, E>) => string),
 ) => {
   return {
     type: "log" as const,
-    params: (event: ActionParam<C>) => ({
+    params: (event: ActionParam<C, E>) => ({
       msg: typeof cb === "function" ? cb(event) : cb,
       level,
     }),
   };
 };
 
-export const logInfo = <C>(cb: string | ((ctx: ActionParam<C>) => string)) => {
+export const logInfo = <C, E extends AnyEventObject>(
+  cb: string | ((ctx: ActionParam<C, E>) => string),
+) => {
   return log("info", cb);
 };
 
-export const logError = <C>(cb: string | ((ctx: ActionParam<C>) => string)) => {
+export const logError = <C, E extends AnyEventObject>(
+  cb: string | ((ctx: ActionParam<C, E>) => string),
+) => {
   return log("error", cb);
 };
 
-export const prompt = <C>(cb: string | ((ctx: ActionParam<C>) => string)) => {
+export const prompt = <C, E extends AnyEventObject>(
+  cb: string | ((ctx: ActionParam<C, E>) => string),
+) => {
   return {
     type: "prompt" as const,
-    params: (event: ActionParam<C>) => ({
+    params: (event: ActionParam<C, E>) => ({
       msg: typeof cb === "function" ? cb(event) : cb,
     }),
   };

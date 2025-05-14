@@ -11,6 +11,7 @@ import {
   NonReducibleUnknown,
   ActionFunction,
   PromiseActorLogic,
+  MachineContext,
 } from "xstate";
 import { existsSync } from "fs";
 import { basename } from "path";
@@ -30,10 +31,14 @@ interface AddTestsWorkflowContext {
   loggedLast: boolean;
 }
 
-type AddTestsWorkflowActionFunction<Params extends {}> = ActionFunction<
-  AddTestsWorkflowContext,
-  AnyEventObject,
-  AnyEventObject,
+type WorkflowActionFunction<
+  C extends MachineContext,
+  E extends AnyEventObject,
+  Params,
+> = ActionFunction<
+  C,
+  E,
+  E,
   Params,
   {
     src: "noop";
@@ -43,28 +48,32 @@ type AddTestsWorkflowActionFunction<Params extends {}> = ActionFunction<
   Values<any>,
   never,
   never,
-  AnyEventObject
+  E
 >;
 
-const logImpl: AddTestsWorkflowActionFunction<LogParams> = assign(
-  ({ context }, { msg, level = "info" }) => {
-    const statusChar = level === "info" ? "✓" : "✗";
-    print(`${statusChar} ${msg}`, context.loggedLast);
-    return { loggedLast: true };
-  },
-);
+const logImpl: WorkflowActionFunction<
+  AddTestsWorkflowContext,
+  AnyEventObject,
+  LogParams
+> = assign(({ context }, { msg, level = "info" }) => {
+  const statusChar = level === "info" ? "✓" : "✗";
+  print(`${statusChar} ${msg}`, context.loggedLast);
+  return { loggedLast: true };
+});
 
 interface PromptParams {
   msg: string;
 }
 
-const promptImpl: AddTestsWorkflowActionFunction<PromptParams> = assign(
-  ({ context }, { msg }: PromptParams) => {
-    print(`You are adding tests to ${context.basename}`);
-    print(msg);
-    return { loggedLast: false };
-  },
-);
+const promptImpl: WorkflowActionFunction<
+  AddTestsWorkflowContext,
+  AnyEventObject,
+  PromptParams
+> = assign(({ context }, { msg }: PromptParams) => {
+  print(`You are adding tests to ${context.basename}`);
+  print(msg);
+  return { loggedLast: false };
+});
 
 const actions = {
   log: logImpl,
