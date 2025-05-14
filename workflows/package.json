@@ -8,14 +8,15 @@
     "./workflows": "./workflows/index.ts"
   },
   "scripts": {
-    "_test": "vitest run",
+    "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "commander": "^13.1.0"
+    "commander": "^13.1.0",
+    "xstate": "^5.19.3"
   },
   "devDependencies": {
     "@saflib/vitest": "*"
   }
-} 
+}

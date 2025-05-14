@@ -75,11 +75,15 @@ export function getMonorepoPackages(
   }
 
   for (const workspacePackageDirectory of workspacePackageDirectories) {
+    const workspacePackageJsonPath = path.join(
+      workspacePackageDirectory,
+      "package.json",
+    );
+    if (!existsSync(workspacePackageJsonPath)) {
+      continue;
+    }
     const workspacePackageJson = JSON.parse(
-      readFileSync(
-        path.join(workspacePackageDirectory, "package.json"),
-        "utf-8",
-      ),
+      readFileSync(workspacePackageJsonPath, "utf-8"),
     ) as PackageJson;
     monorepoPackageJsons[workspacePackageJson.name] = workspacePackageJson;
     monorepoPackageDirectories[workspacePackageJson.name] =
