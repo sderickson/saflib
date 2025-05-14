@@ -115,11 +115,11 @@ interface ActionParam {
   event: AnyEventObject;
 }
 
-type AddTestsWorkflowActionFunction = ActionFunction<
+type AddTestsWorkflowActionFunction<Params extends {}> = ActionFunction<
   AddTestsWorkflowContext,
   AnyEventObject,
   AnyEventObject,
-  LogParams,
+  Params,
   {
     src: "noop";
     logic: PromiseActorLogic<unknown, NonReducibleUnknown, any>;
@@ -131,16 +131,20 @@ type AddTestsWorkflowActionFunction = ActionFunction<
   AnyEventObject
 >;
 
-const logImpl: AddTestsWorkflowActionFunction = assign(
-  ({ context }, { msg, level = "info" }: LogParams) => {
+const logImpl: AddTestsWorkflowActionFunction<LogParams> = assign(
+  ({ context }, { msg, level = "info" }) => {
     const statusChar = level === "info" ? "✓" : "✗";
     print(`${statusChar} ${msg}`, context.loggedLast);
     return { loggedLast: true };
   },
 );
 
-const promptImpl: AddTestsWorkflowActionFunction = assign(
-  ({ context }, { msg }: { msg: string }) => {
+interface PromptParams {
+  msg: string;
+}
+
+const promptImpl: AddTestsWorkflowActionFunction<PromptParams> = assign(
+  ({ context }, { msg }: PromptParams) => {
     print(`You are adding tests to ${context.basename}`);
     print(msg);
     return { loggedLast: false };
