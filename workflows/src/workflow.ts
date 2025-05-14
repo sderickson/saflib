@@ -155,7 +155,7 @@ export abstract class XStateWorkflow extends Workflow {
   }
 
   init = async (...args: any[]): Promise<Result<any>> => {
-    if (args.length !== this.cliArguments.length) {
+    if (args.length !== this.cliArguments.length + 2) {
       return {
         error: new Error(
           `Expected ${this.cliArguments.length} arguments, got ${args.length}`,
@@ -163,7 +163,7 @@ export abstract class XStateWorkflow extends Workflow {
       };
     }
     const input = {} as any;
-    for (let i = 0; i < args.length; i++) {
+    for (let i = 0; i < this.cliArguments.length; i++) {
       input[this.cliArguments[i].name] = args[i];
     }
     this.input = input;

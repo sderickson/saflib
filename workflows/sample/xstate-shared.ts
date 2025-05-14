@@ -4,12 +4,12 @@ import { join } from "path";
 import { spawn, spawnSync } from "child_process";
 import {
   assign,
-  AnyEventObject,
-  Values,
-  NonReducibleUnknown,
-  ActionFunction,
-  PromiseActorLogic,
-  MachineContext,
+  type AnyEventObject,
+  type Values,
+  type NonReducibleUnknown,
+  type ActionFunction,
+  type PromiseActorLogic,
+  type MachineContext,
   fromPromise,
 } from "xstate";
 

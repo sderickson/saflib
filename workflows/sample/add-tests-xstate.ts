@@ -30,7 +30,7 @@ export const AddTestsWorkflowMachine = setup({
   actions: workflowActionImplementations,
   actors: workflowActors,
 }).createMachine({
-  id: "add-tests",
+  id: "add-tests-xstate",
   description: "Given a file, add tests to the file.",
   initial: "validatingTests",
   context: ({ input }) => {
@@ -103,7 +103,7 @@ export const AddTestsWorkflowMachine = setup({
   },
 });
 
-export class AddTestsWorkflow extends XStateWorkflow {
+export class AddTestsWorkflowXState extends XStateWorkflow {
   machine = AddTestsWorkflowMachine;
   description = "Given a file, add tests to the file.";
   cliArguments = [
