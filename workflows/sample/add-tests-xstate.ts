@@ -48,7 +48,10 @@ export const AddTestsWorkflowMachine = setup({
   states: {
     validatingTests: {
       on: {
-        continue: { reenter: true },
+        continue: {
+          reenter: true,
+          target: "validatingTests",
+        },
         prompt: {
           actions: prompt(
             ({ context }) =>

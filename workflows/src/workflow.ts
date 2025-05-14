@@ -204,5 +204,6 @@ export abstract class XStateWorkflow extends Workflow {
 
   hydrate = (blob: WorkflowBlob): void => {
     this.actor = createActor(this.machine, { snapshot: blob.internalState });
+    this.actor.start();
   };
 }
