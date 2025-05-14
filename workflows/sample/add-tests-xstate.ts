@@ -138,6 +138,7 @@ export const AddTestsWorkflow = setup({
       loggedLast: false,
     };
   },
+  entry: logInfo("Successfully began workflow"),
   states: {
     validatingTests: {
       on: {
@@ -149,7 +150,6 @@ export const AddTestsWorkflow = setup({
           ),
         },
       },
-      entry: [logInfo("Successfully began workflow")],
       invoke: {
         src: fromPromise(doTestsPass),
         onDone: {
@@ -167,19 +167,21 @@ export const AddTestsWorkflow = setup({
       },
     },
     addingTests: {
-      entry: prompt(
-        ({ context }) =>
-          `Add tests to ${context.basename}. Create the test file next to the file you are testing.`,
-      ),
-
+      entry: raise({ type: "prompt" }),
       on: {
+        prompt: {
+          actions: prompt(
+            ({ context }) =>
+              `Add tests to ${context.basename}. Create the test file next to the file you are testing.`,
+          ),
+        },
         continue: [
           {
             guard: () => !doTestsPassSync(),
-            actions: logError(
-              ({ context: c }) => `Tests failed for ${c.basename}.`,
-            ),
-            target: "addingTests",
+            actions: [
+              logError(({ context: c }) => `Tests failed for ${c.basename}.`),
+              raise({ type: "prompt" }),
+            ],
           },
           {
             actions: logInfo(
