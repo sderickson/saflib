@@ -1,4 +1,4 @@
-import { fromPromise, assign, setup } from "xstate";
+import { fromPromise, assign, setup, raise } from "xstate";
 import { existsSync, readFileSync } from "fs";
 import { basename, join } from "path";
 import { addNewLinesToString } from "../src/utils.ts";
@@ -19,7 +19,7 @@ const getCurrentPackage = () => {
   return JSON.parse(currentPackage).name;
 };
 
-const doTestsPass = async () => {
+const getTestCommandAndArgs = () => {
   let command = "npm";
   let args = ["test"];
 
@@ -28,14 +28,17 @@ const doTestsPass = async () => {
     command = "ls";
     args = [];
   }
+  return { command, args };
+};
 
+const doTestsPass = async () => {
+  const { command, args } = getTestCommandAndArgs();
   let resolve: (value: string) => void;
   let reject: (error: Error) => void;
   const promise = new Promise<string>((_resolve, _reject) => {
     resolve = _resolve;
     reject = _reject;
   });
-
   const child = spawn(command, args);
   child.on("close", (code) => {
     if (code === 0) {
@@ -48,15 +51,7 @@ const doTestsPass = async () => {
 };
 
 const doTestsPassSync = () => {
-  let command = "npm";
-  let args = ["test"];
-
-  // prevent infinite loop
-  if (getCurrentPackage() === "@saflib/workflows") {
-    command = "ls";
-    args = [];
-  }
-
+  const { command, args } = getTestCommandAndArgs();
   const { status } = spawnSync(command, args);
   return status === 0;
 };
@@ -109,6 +104,16 @@ export const AddTestsWorkflow = setup({
           target: "validatingTests",
           reenter: true,
         },
+        prompt: {
+          actions: [
+            {
+              type: "printPrompt",
+              params: ({ context }) => ({
+                msg: `First, run the existing tests for the package that ${context.basename} is in. You should be able to run "npm run test". Run the tests for that package and make sure they are passing.`,
+              }),
+            },
+          ],
+        },
       },
       entry: [
         {
@@ -116,20 +121,19 @@ export const AddTestsWorkflow = setup({
           params: () => ({ msg: "Successfully began workflow" }),
         },
       ],
-      exit: [
-        {
-          type: "log",
-          params: () => ({
-            msg: `Tests for package ${getCurrentPackage()} passed`,
-          }),
-        },
-      ],
       invoke: {
-        src: fromPromise(async () => {
-          await doTestsPass();
-        }),
+        src: fromPromise(doTestsPass),
         onDone: {
           target: "addingTests",
+          actions: [
+            {
+              type: "log",
+              params: ({ context }) => ({
+                msg: `Tests passed for ${context.basename}.`,
+              }),
+            },
+            raise({ type: "prompt" }),
+          ],
         },
         onError: {
           actions: [
@@ -138,12 +142,6 @@ export const AddTestsWorkflow = setup({
               params: ({ context }) => ({
                 msg: `Tests failed for ${context.basename}.`,
                 level: "error",
-              }),
-            },
-            {
-              type: "printPrompt",
-              params: ({ context }) => ({
-                msg: `First, run the existing tests for the package that ${context.basename} is in. You should be able to run "npm run test". Run the tests for that package and make sure they are passing.`,
               }),
             },
           ],
