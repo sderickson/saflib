@@ -191,8 +191,18 @@ export abstract class XStateWorkflow extends Workflow {
     if (!this.actor) {
       throw new Error("Workflow not started");
     }
+    if (this.actor.getSnapshot().status === "error") {
+      console.log("This workflow has errored. And could not continue.");
+      return;
+    }
+
     this.actor.send({ type: "continue" });
     await waitFor(this.actor, allChildrenSettled);
+
+    if (this.actor.getSnapshot().status === "done") {
+      console.log("\nThis workflow has been completed.\n");
+      return;
+    }
   };
 
   dehydrate = (): WorkflowBlob => {
