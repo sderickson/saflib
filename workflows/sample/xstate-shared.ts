@@ -119,6 +119,7 @@ export const doTestsPassSync = () => {
 
 export interface WorkflowContext {
   loggedLast: boolean;
+  systemPrompt?: string;
 }
 
 type WorkflowActionFunction<
@@ -154,7 +155,10 @@ interface PromptParams {
 }
 
 const promptImpl: WorkflowActionFunction<any, AnyEventObject, PromptParams> =
-  assign((_: { context: WorkflowContext }, { msg }: PromptParams) => {
+  assign(({ context }: { context: WorkflowContext }, { msg }: PromptParams) => {
+    if (context.systemPrompt) {
+      print(context.systemPrompt);
+    }
     print(msg);
     return { loggedLast: false };
   });

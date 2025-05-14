@@ -186,6 +186,7 @@ export abstract class XStateWorkflow extends Workflow {
     this.actor.send({ type: "prompt" });
     await waitFor(this.actor, allChildrenSettled);
   };
+
   goToNextStep = async (): Promise<void> => {
     if (!this.actor) {
       throw new Error("Workflow not started");
@@ -193,12 +194,14 @@ export abstract class XStateWorkflow extends Workflow {
     this.actor.send({ type: "continue" });
     await waitFor(this.actor, allChildrenSettled);
   };
+
   dehydrate = (): WorkflowBlob => {
     return {
       workflowName: this.name,
       internalState: this.actor?.getPersistedSnapshot(),
     };
   };
+
   hydrate = (blob: WorkflowBlob): void => {
     this.actor = createActor(this.machine, { snapshot: blob.internalState });
   };

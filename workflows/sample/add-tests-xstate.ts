@@ -41,6 +41,7 @@ export const AddTestsWorkflowMachine = setup({
       path: input.path,
       basename: basename(input.path),
       loggedLast: false,
+      systemPrompt: `You are adding tests to ${input.path}.`,
     };
   },
   entry: logInfo("Successfully began workflow"),
