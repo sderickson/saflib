@@ -25,9 +25,12 @@ import {
 } from "./xstate-shared.ts";
 import type { LogParams } from "./xstate-shared.ts";
 
-interface AddTestsWorkflowContext {
+interface AddTestsWorkflowContext extends WorkflowContext {
   path: string;
   basename: string;
+}
+
+interface WorkflowContext {
   loggedLast: boolean;
 }
 
@@ -51,31 +54,25 @@ type WorkflowActionFunction<
   E
 >;
 
-const logImpl: WorkflowActionFunction<
-  AddTestsWorkflowContext,
-  AnyEventObject,
-  LogParams
-> = assign(({ context }, { msg, level = "info" }) => {
-  const statusChar = level === "info" ? "✓" : "✗";
-  print(`${statusChar} ${msg}`, context.loggedLast);
-  return { loggedLast: true };
-});
+const logImpl: WorkflowActionFunction<any, AnyEventObject, LogParams> = assign(
+  ({ context }: { context: WorkflowContext }, { msg, level = "info" }) => {
+    const statusChar = level === "info" ? "✓" : "✗";
+    print(`${statusChar} ${msg}`, context.loggedLast);
+    return { loggedLast: true };
+  },
+);
 
 interface PromptParams {
   msg: string;
 }
 
-const promptImpl: WorkflowActionFunction<
-  AddTestsWorkflowContext,
-  AnyEventObject,
-  PromptParams
-> = assign(({ context }, { msg }: PromptParams) => {
-  print(`You are adding tests to ${context.basename}`);
-  print(msg);
-  return { loggedLast: false };
-});
+const promptImpl: WorkflowActionFunction<any, AnyEventObject, PromptParams> =
+  assign((_: { context: WorkflowContext }, { msg }: PromptParams) => {
+    print(msg);
+    return { loggedLast: false };
+  });
 
-const actions = {
+const workflowActionImplementations = {
   log: logImpl,
   prompt: promptImpl,
 };
@@ -87,7 +84,9 @@ const AddTestsWorkflowSetup = setup({
     },
     context: {} as AddTestsWorkflowContext,
   },
-  actions,
+  actions: {
+    ...workflowActionImplementations,
+  },
   actors: {
     noop: fromPromise(async (_) => {}),
   },
