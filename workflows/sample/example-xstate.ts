@@ -1,4 +1,4 @@
-import { fromPromise, setup } from "xstate";
+import { assign, fromPromise, setup } from "xstate";
 
 interface ExampleWorkflowContext {
   foo: string;
@@ -14,6 +14,18 @@ export const ExampleWorkflowMachine = setup({
   actors: {
     noop: fromPromise(async (_) => {}),
   },
+  actions: {
+    log: assign(
+      (
+        _,
+        { msg, level = "info" }: { msg: string; level?: "info" | "error" },
+      ) => {
+        const statusChar = level === "info" ? "✓" : "✗";
+        console.log(`${statusChar} ${msg}`);
+        return { foo: "!!!" };
+      },
+    ),
+  },
 }).createMachine({
   id: "add-tests",
   description: "Given a file, add tests to the file.",
@@ -23,7 +35,16 @@ export const ExampleWorkflowMachine = setup({
       foo: input.foo,
     };
   },
-  entry: logInfo("Successfully began workflow"),
+  entry: [
+    // logInfo("Successfully began workflow"),
+    {
+      type: "log",
+      params: (_) => ({
+        msg: "Successfully began workflow",
+        level: "info",
+      }),
+    },
+  ],
   states: {
     a: {
       on: {
