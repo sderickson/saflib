@@ -1,4 +1,4 @@
-import { fromPromise, assign, setup, raise } from "xstate";
+import { fromPromise, assign, setup, raise, AnyEventObject } from "xstate";
 import { existsSync, readFileSync } from "fs";
 import { basename, join } from "path";
 import { addNewLinesToString } from "../src/utils.ts";
@@ -56,16 +56,32 @@ const doTestsPassSync = () => {
   return status === 0;
 };
 
+interface AddTestsWorkflowContext {
+  path: string;
+  basename: string;
+  loggedLast: boolean;
+}
+
+const logInfo = (cb: string | ((ctx: ActionParam) => string)) => {
+  return {
+    type: "log" as const,
+    params: (event: ActionParam) => ({
+      msg: typeof cb === "function" ? cb(event) : cb,
+    }),
+  };
+};
+
+interface ActionParam {
+  context: AddTestsWorkflowContext;
+  event: AnyEventObject;
+}
+
 export const AddTestsWorkflow = setup({
   types: {
     input: {} as {
       path: string;
     },
-    context: {} as {
-      path: string;
-      basename: string;
-      loggedLast: boolean;
-    },
+    context: {} as AddTestsWorkflowContext,
   },
   actions: {
     log: assign(
@@ -108,42 +124,26 @@ export const AddTestsWorkflow = setup({
           actions: [
             {
               type: "printPrompt",
-              params: ({ context }) => ({
-                msg: `First, run the existing tests for the package that ${context.basename} is in. You should be able to run "npm run test". Run the tests for that package and make sure they are passing.`,
+              params: (event) => ({
+                msg: `First, run the existing tests for the package that ${event.context.basename} is in. You should be able to run "npm run test". Run the tests for that package and make sure they are passing.`,
               }),
             },
           ],
         },
       },
-      entry: [
-        {
-          type: "log",
-          params: () => ({ msg: "Successfully began workflow" }),
-        },
-      ],
+      entry: [logInfo("Successfully began workflow")],
       invoke: {
         src: fromPromise(doTestsPass),
         onDone: {
           target: "addingTests",
           actions: [
-            {
-              type: "log",
-              params: ({ context }) => ({
-                msg: `Tests passed for ${context.basename}.`,
-              }),
-            },
-            raise({ type: "prompt" }),
+            logInfo(({ context }) => `Tests passed for ${context.basename}.`),
           ],
         },
         onError: {
           actions: [
-            {
-              type: "log",
-              params: ({ context }) => ({
-                msg: `Tests failed for ${context.basename}.`,
-                level: "error",
-              }),
-            },
+            logInfo(({ context }) => `Tests failed for ${context.basename}.`),
+            raise({ type: "prompt" }),
           ],
         },
       },
