@@ -1,8 +1,9 @@
-import { fromPromise, assign, enqueueActions, setup } from "xstate";
-import { existsSync } from "fs";
-import { basename } from "path";
+import { fromPromise, assign, setup } from "xstate";
+import { existsSync, readFileSync } from "fs";
+import { basename, join } from "path";
 import { addNewLinesToString } from "../src/utils.ts";
-import { exec } from "child_process";
+import { spawn, spawnSync } from "child_process";
+
 const print = (msg: string, noNewLine = false) => {
   if (!noNewLine) {
     console.log("");
@@ -10,8 +11,24 @@ const print = (msg: string, noNewLine = false) => {
   console.log(addNewLinesToString(msg));
 };
 
+const getCurrentPackage = () => {
+  const currentPackage = readFileSync(
+    join(process.cwd(), "package.json"),
+    "utf8",
+  );
+  return JSON.parse(currentPackage).name;
+};
+
 const doTestsPass = async () => {
-  const command = `npm run test`;
+  let command = "npm";
+  let args = ["test"];
+
+  // prevent infinite loop
+  if (getCurrentPackage() === "@saflib/workflows") {
+    command = "ls";
+    args = [];
+  }
+
   let resolve: (value: string) => void;
   let reject: (error: Error) => void;
   const promise = new Promise<string>((_resolve, _reject) => {
@@ -19,14 +36,29 @@ const doTestsPass = async () => {
     reject = _reject;
   });
 
-  await exec(command, (error, stdout) => {
-    if (error) {
-      reject(error);
+  const child = spawn(command, args);
+  child.on("close", (code) => {
+    if (code === 0) {
+      resolve("Tests passed");
     } else {
-      resolve(stdout);
+      reject(new Error("Tests failed"));
     }
   });
   return promise;
+};
+
+const doTestsPassSync = () => {
+  let command = "npm";
+  let args = ["test"];
+
+  // prevent infinite loop
+  if (getCurrentPackage() === "@saflib/workflows") {
+    command = "ls";
+    args = [];
+  }
+
+  const { status } = spawnSync(command, args);
+  return status === 0;
 };
 
 export const AddTestsWorkflow = setup({
@@ -53,6 +85,9 @@ export const AddTestsWorkflow = setup({
       return { loggedLast: false };
     }),
   },
+  actors: {
+    noop: fromPromise(async (_) => {}),
+  },
 }).createMachine({
   id: "add-tests",
   description: "Given a file, add tests to the file.",
@@ -69,25 +104,92 @@ export const AddTestsWorkflow = setup({
   },
   states: {
     validatingTests: {
+      on: {
+        continue: {
+          target: "validatingTests",
+          reenter: true,
+        },
+      },
       entry: [
         {
           type: "log",
           params: () => ({ msg: "Successfully began workflow" }),
         },
+      ],
+      exit: [
         {
-          type: "printPrompt",
-          params: ({ context }) => ({
-            msg: `First, run the existing tests for the package that ${context.basename} is in. You should be able to run "npm run test". Run the tests for that package and make sure they are passing.`,
+          type: "log",
+          params: () => ({
+            msg: `Tests for package ${getCurrentPackage()} passed`,
           }),
         },
       ],
       invoke: {
         src: fromPromise(async () => {
-          const result = await doTestsPass();
-          console.log("Tests passed");
-          console.log(result);
+          await doTestsPass();
         }),
+        onDone: {
+          target: "addingTests",
+        },
+        onError: {
+          actions: [
+            {
+              type: "log",
+              params: ({ context }) => ({
+                msg: `Tests failed for ${context.basename}.`,
+                level: "error",
+              }),
+            },
+            {
+              type: "printPrompt",
+              params: ({ context }) => ({
+                msg: `First, run the existing tests for the package that ${context.basename} is in. You should be able to run "npm run test". Run the tests for that package and make sure they are passing.`,
+              }),
+            },
+          ],
+        },
       },
+    },
+    addingTests: {
+      entry: [
+        {
+          type: "printPrompt",
+          params: ({ context }) => ({
+            msg: `Add tests to ${context.basename}. Create the test file next to the file you are testing.`,
+          }),
+        },
+      ],
+      on: {
+        continue: [
+          {
+            guard: () => !doTestsPassSync(),
+            actions: [
+              {
+                type: "log",
+                params: ({ context }) => ({
+                  msg: `Tests failed for ${context.basename}.`,
+                  level: "error",
+                }),
+              },
+            ],
+            target: "addingTests",
+          },
+          {
+            actions: [
+              {
+                type: "log",
+                params: ({ context }) => ({
+                  msg: `Tests passed for ${context.basename}.`,
+                }),
+              },
+            ],
+            target: "done",
+          },
+        ],
+      },
+    },
+    done: {
+      type: "final",
     },
   },
 });
