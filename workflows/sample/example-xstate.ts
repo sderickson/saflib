@@ -4,7 +4,10 @@ import {
   prompt,
   workflowActionImplementations,
   workflowActors,
-} from "./xstate-shared.ts";
+} from "../src/xstate-shared.ts";
+
+// this file is pretty much just to make sure types are good
+// might turn this into a template
 
 interface ExampleWorkflowInput {
   bar: string;

@@ -1,4 +1,4 @@
-import { addNewLinesToString } from "../src/utils.ts";
+import { addNewLinesToString } from "./utils.ts";
 import { readFileSync } from "fs";
 import { join } from "path";
 import { spawn, spawnSync } from "child_process";

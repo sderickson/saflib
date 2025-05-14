@@ -9,8 +9,8 @@ import {
   prompt,
   workflowActionImplementations,
   workflowActors,
-} from "./xstate-shared.ts";
-import type { WorkflowContext } from "./xstate-shared.ts";
+} from "../src/xstate-shared.ts";
+import type { WorkflowContext } from "../src/xstate-shared.ts";
 import { XStateWorkflow } from "../src/workflow.ts";
 
 interface AddTestsWorkflowContext extends WorkflowContext {
