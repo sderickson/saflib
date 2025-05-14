@@ -127,6 +127,9 @@ export abstract class SimpleWorkflow<
     if (typeof blob !== "object" || blob === null) {
       throw new Error("Invalid serialized data: not an object");
     }
+    if (!blob.internalState) {
+      throw new Error("Invalid serialized data: no internal state");
+    }
     if (
       !["not started", "in progress", "completed"].includes(
         blob.internalState.status,
@@ -207,12 +210,14 @@ export abstract class XStateWorkflow extends Workflow {
   dehydrate = (): WorkflowBlob => {
     return {
       workflowName: this.name,
-      internalState: this.actor?.getPersistedSnapshot(),
+      snapshotState: this.actor?.getPersistedSnapshot(),
     };
   };
 
   hydrate = (blob: WorkflowBlob): void => {
-    this.actor = createActor(this.machine, { snapshot: blob.internalState });
+    this.actor = createActor(this.machine, {
+      snapshot: blob.snapshotState,
+    });
     this.actor.start();
   };
 }

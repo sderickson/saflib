@@ -1,3 +1,5 @@
+import { Snapshot } from "xstate";
+
 export type Result<C extends Record<string, any>> = {
   data?: C;
   error?: Error;
@@ -25,5 +27,6 @@ export interface WorkflowBlobInternalState {
 
 export interface WorkflowBlob {
   workflowName: string;
-  internalState: any;
+  internalState?: WorkflowBlobInternalState;
+  snapshotState?: Snapshot<any>;
 }
