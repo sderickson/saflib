@@ -8,13 +8,9 @@ import type {
 import { addNewLinesToString } from "./utils.ts";
 
 // The following is TS magic to describe a class constructor that implements the abstract SimpleWorkflow class.
-type AbstractClassConstructor<T extends SimpleWorkflow<any, any>> = new (
-  ...args: any[]
-) => T;
+type AbstractClassConstructor<T extends Workflow> = new (...args: any[]) => T;
 
-export type ConcreteWorkflow = AbstractClassConstructor<
-  SimpleWorkflow<any, any>
->;
+export type ConcreteWorkflow = AbstractClassConstructor<Workflow>;
 
 export interface WorkflowMeta {
   name: string;
@@ -23,16 +19,25 @@ export interface WorkflowMeta {
   Workflow: ConcreteWorkflow;
 }
 
-export abstract class SimpleWorkflow<
-  P extends Record<string, any>,
-  D extends Record<string, any> = {},
-> {
-  params?: P;
-  data?: D;
-
+export abstract class Workflow {
   abstract readonly name: string;
   abstract readonly description: string;
   abstract readonly cliArguments: CLIArgument[];
+  abstract init: (...args: any[]) => Promise<Result<any>>;
+  abstract kickoff(): Promise<boolean>;
+  abstract printStatus(): Promise<void>;
+  abstract goToNextStep(): Promise<void>;
+  abstract dehydrate(): WorkflowBlob;
+  abstract hydrate(blob: WorkflowBlob): void;
+}
+
+export abstract class SimpleWorkflow<
+  P extends Record<string, any>,
+  D extends Record<string, any> = {},
+> extends Workflow {
+  params?: P;
+  data?: D;
+
   abstract init: (...args: any[]) => Promise<Result<D>>;
   abstract steps: Step[];
   abstract workflowPrompt: () => string;

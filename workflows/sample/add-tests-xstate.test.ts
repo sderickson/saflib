@@ -14,6 +14,8 @@ describe("AddTestsWorkflow", () => {
       input: { path: "sample/add-tests-xstate.ts" },
     });
     actor.start();
+    console.log("all good?");
+    console.log(actor.getSnapshot());
     await waitFor(actor, allChildrenSettled);
     expect(actor.getSnapshot().value).toBe("addingTests");
     actor.send({ type: "continue" });
