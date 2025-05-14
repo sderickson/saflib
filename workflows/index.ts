@@ -17,3 +17,5 @@ export function concreteWorkflowToMeta(
     Workflow: workflow,
   };
 }
+
+export * from "./src/xstate.ts";

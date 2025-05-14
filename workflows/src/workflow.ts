@@ -6,9 +6,8 @@ import type {
   WorkflowStatus,
 } from "./types.ts";
 import type { AnyStateMachine, AnyActor } from "xstate";
-import { addNewLinesToString } from "./utils.ts";
+import { addNewLinesToString, allChildrenSettled } from "./utils.ts";
 import { createActor, waitFor } from "xstate";
-import { allChildrenSettled } from "./xstate-shared.ts";
 // The following is TS magic to describe a class constructor that implements the abstract SimpleWorkflow class.
 type AbstractClassConstructor<T extends Workflow> = new (...args: any[]) => T;
 

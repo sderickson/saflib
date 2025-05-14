@@ -1,3 +1,6 @@
+import { readFileSync } from "fs";
+import { join } from "path";
+
 /**
  * Given a string which may have newlines already included, add /n to each line such that no line is longer than maxLineWidth.
  */
@@ -31,3 +34,24 @@ export function kebabCaseToPascalCase(str: string) {
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join("");
 }
+
+export function allChildrenSettled(snapshot: any) {
+  return Object.values(snapshot.children).every(
+    (child: any) => child && child.getSnapshot().status !== "active",
+  );
+}
+
+export const print = (msg: string, noNewLine = false) => {
+  if (!noNewLine) {
+    console.log("");
+  }
+  console.log(addNewLinesToString(msg));
+};
+
+export const getCurrentPackage = () => {
+  const currentPackage = readFileSync(
+    join(process.cwd(), "package.json"),
+    "utf8",
+  );
+  return JSON.parse(currentPackage).name;
+};

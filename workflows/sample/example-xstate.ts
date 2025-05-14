@@ -4,7 +4,7 @@ import {
   prompt,
   workflowActionImplementations,
   workflowActors,
-} from "../src/xstate-shared.ts";
+} from "../src/xstate.ts";
 
 // this file is pretty much just to make sure types are good
 // might turn this into a template

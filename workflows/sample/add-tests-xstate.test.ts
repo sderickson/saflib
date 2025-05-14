@@ -1,7 +1,7 @@
 import { AddTestsWorkflowMachine } from "./add-tests-xstate.ts";
 import { createActor, waitFor } from "xstate";
 import { describe, it, expect } from "vitest";
-import { allChildrenSettled } from "../src/xstate-shared.ts";
+import { allChildrenSettled } from "../src/utils.ts";
 
 describe("AddTestsWorkflow", () => {
   it("should print instructions", async () => {
