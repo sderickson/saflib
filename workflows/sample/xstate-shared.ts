@@ -2,7 +2,16 @@ import { addNewLinesToString } from "../src/utils.ts";
 import { readFileSync } from "fs";
 import { join } from "path";
 import { spawn, spawnSync } from "child_process";
-import type { AnyEventObject } from "xstate";
+import {
+  assign,
+  AnyEventObject,
+  Values,
+  NonReducibleUnknown,
+  ActionFunction,
+  PromiseActorLogic,
+  MachineContext,
+} from "xstate";
+
 export interface LogParams {
   msg: string;
   level?: "info" | "error";
@@ -99,4 +108,51 @@ export const doTestsPassSync = () => {
   const { command, args } = getTestCommandAndArgs();
   const { status } = spawnSync(command, args);
   return status === 0;
+};
+
+export interface WorkflowContext {
+  loggedLast: boolean;
+}
+
+type WorkflowActionFunction<
+  C extends MachineContext,
+  E extends AnyEventObject,
+  Params,
+> = ActionFunction<
+  C,
+  E,
+  E,
+  Params,
+  {
+    src: "noop";
+    logic: PromiseActorLogic<unknown, NonReducibleUnknown, any>;
+    id: string | undefined;
+  },
+  Values<any>,
+  never,
+  never,
+  E
+>;
+
+const logImpl: WorkflowActionFunction<any, AnyEventObject, LogParams> = assign(
+  ({ context }: { context: WorkflowContext }, { msg, level = "info" }) => {
+    const statusChar = level === "info" ? "✓" : "✗";
+    print(`${statusChar} ${msg}`, context.loggedLast);
+    return { loggedLast: true };
+  },
+);
+
+interface PromptParams {
+  msg: string;
+}
+
+const promptImpl: WorkflowActionFunction<any, AnyEventObject, PromptParams> =
+  assign((_: { context: WorkflowContext }, { msg }: PromptParams) => {
+    print(msg);
+    return { loggedLast: false };
+  });
+
+export const workflowActionImplementations = {
+  log: logImpl,
+  prompt: promptImpl,
 };

@@ -1,50 +1,39 @@
-import { assign, fromPromise, setup } from "xstate";
-import { print } from "./xstate-shared.ts";
+import { fromPromise, setup } from "xstate";
+import {
+  logInfo,
+  prompt,
+  workflowActionImplementations,
+} from "./xstate-shared.ts";
+
+interface ExampleWorkflowInput {
+  bar: string;
+}
+
 interface ExampleWorkflowContext {
   foo: string;
 }
 
 export const ExampleWorkflowMachine = setup({
   types: {
-    input: {} as {
-      foo: string;
-    },
+    input: {} as ExampleWorkflowInput,
     context: {} as ExampleWorkflowContext,
   },
   actors: {
     noop: fromPromise(async (_) => {}),
   },
   actions: {
-    log: assign(
-      (
-        _,
-        { msg, level = "info" }: { msg: string; level?: "info" | "error" },
-      ) => {
-        const statusChar = level === "info" ? "✓" : "✗";
-        print(`${statusChar} ${msg}`);
-        return { foo: "!!!" };
-      },
-    ),
+    ...workflowActionImplementations,
   },
 }).createMachine({
-  id: "add-tests",
-  description: "Given a file, add tests to the file.",
+  id: "example",
+  description: "An example workflow",
   initial: "a",
   context: ({ input }) => {
     return {
-      foo: input.foo,
+      foo: input.bar,
     };
   },
-  entry: [
-    // logInfo("Successfully began workflow"),
-    {
-      type: "log",
-      params: (_) => ({
-        msg: "Successfully began workflow",
-        level: "info",
-      }),
-    },
-  ],
+  entry: [logInfo("Successfully began workflow")],
   states: {
     a: {
       on: {
@@ -53,7 +42,12 @@ export const ExampleWorkflowMachine = setup({
     },
     b: {
       on: {
-        continue: { target: "c" },
+        continue: {
+          target: "c",
+          actions: prompt(
+            ({ context }) => `Successfully went to b: ${context.foo}`,
+          ),
+        },
       },
     },
     c: {

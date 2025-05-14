@@ -1,87 +1,28 @@
-import {
-  fromPromise,
-  assign,
-  setup,
-  raise,
-  AnyEventObject,
-  // ActorRefFrom,
-  // SnapshotFrom,
-  // EventFromLogic,
-  Values,
-  NonReducibleUnknown,
-  ActionFunction,
-  PromiseActorLogic,
-  MachineContext,
-} from "xstate";
+import { fromPromise, setup, raise } from "xstate";
 import { existsSync } from "fs";
 import { basename } from "path";
 import {
-  print,
   doTestsPass,
   doTestsPassSync,
   logInfo,
   logError,
   prompt,
+  workflowActionImplementations,
 } from "./xstate-shared.ts";
-import type { LogParams } from "./xstate-shared.ts";
+import type { WorkflowContext } from "./xstate-shared.ts";
 
 interface AddTestsWorkflowContext extends WorkflowContext {
   path: string;
   basename: string;
 }
 
-interface WorkflowContext {
-  loggedLast: boolean;
+interface AddTestsWorkflowInput {
+  path: string;
 }
 
-type WorkflowActionFunction<
-  C extends MachineContext,
-  E extends AnyEventObject,
-  Params,
-> = ActionFunction<
-  C,
-  E,
-  E,
-  Params,
-  {
-    src: "noop";
-    logic: PromiseActorLogic<unknown, NonReducibleUnknown, any>;
-    id: string | undefined;
-  },
-  Values<any>,
-  never,
-  never,
-  E
->;
-
-const logImpl: WorkflowActionFunction<any, AnyEventObject, LogParams> = assign(
-  ({ context }: { context: WorkflowContext }, { msg, level = "info" }) => {
-    const statusChar = level === "info" ? "✓" : "✗";
-    print(`${statusChar} ${msg}`, context.loggedLast);
-    return { loggedLast: true };
-  },
-);
-
-interface PromptParams {
-  msg: string;
-}
-
-const promptImpl: WorkflowActionFunction<any, AnyEventObject, PromptParams> =
-  assign((_: { context: WorkflowContext }, { msg }: PromptParams) => {
-    print(msg);
-    return { loggedLast: false };
-  });
-
-const workflowActionImplementations = {
-  log: logImpl,
-  prompt: promptImpl,
-};
-
-const AddTestsWorkflowSetup = setup({
+export const AddTestsWorkflow = setup({
   types: {
-    input: {} as {
-      path: string;
-    },
+    input: {} as AddTestsWorkflowInput,
     context: {} as AddTestsWorkflowContext,
   },
   actions: {
@@ -90,16 +31,7 @@ const AddTestsWorkflowSetup = setup({
   actors: {
     noop: fromPromise(async (_) => {}),
   },
-});
-
-// type AddTestsWorkflowMachine = ReturnType<
-//   typeof AddTestsWorkflowSetup.createMachine
-// >;
-// type AddTestsWorkflowActorRef = ActorRefFrom<AddTestsWorkflowMachine>;
-// type AddTestsWorkflowSnapshotFrom = SnapshotFrom<AddTestsWorkflowMachine>;
-// type AddTestsWorkflowEventFromLogic = EventFromLogic<AddTestsWorkflowMachine>;
-
-export const AddTestsWorkflow = AddTestsWorkflowSetup.createMachine({
+}).createMachine({
   id: "add-tests",
   description: "Given a file, add tests to the file.",
   initial: "validatingTests",
