@@ -1,5 +1,5 @@
 import { assign, fromPromise, setup } from "xstate";
-
+import { print } from "./xstate-shared.ts";
 interface ExampleWorkflowContext {
   foo: string;
 }
@@ -21,7 +21,7 @@ export const ExampleWorkflowMachine = setup({
         { msg, level = "info" }: { msg: string; level?: "info" | "error" },
       ) => {
         const statusChar = level === "info" ? "✓" : "✗";
-        console.log(`${statusChar} ${msg}`);
+        print(`${statusChar} ${msg}`);
         return { foo: "!!!" };
       },
     ),
