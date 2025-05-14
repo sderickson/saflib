@@ -62,13 +62,30 @@ interface AddTestsWorkflowContext {
   loggedLast: boolean;
 }
 
-const logInfo = (cb: string | ((ctx: ActionParam) => string)) => {
+interface LogParams {
+  msg: string;
+  level?: "info" | "error";
+}
+
+const log = (
+  level: "info" | "error",
+  cb: string | ((ctx: ActionParam) => string),
+) => {
   return {
     type: "log" as const,
     params: (event: ActionParam) => ({
       msg: typeof cb === "function" ? cb(event) : cb,
+      level,
     }),
   };
+};
+
+const logInfo = (cb: string | ((ctx: ActionParam) => string)) => {
+  return log("info", cb);
+};
+
+const logError = (cb: string | ((ctx: ActionParam) => string)) => {
+  return log("error", cb);
 };
 
 interface ActionParam {
@@ -84,12 +101,11 @@ export const AddTestsWorkflow = setup({
     context: {} as AddTestsWorkflowContext,
   },
   actions: {
-    log: assign(
-      ({ context }, { msg }: { msg: string; level?: "info" | "error" }) => {
-        print(`✓ ${msg}`, context.loggedLast);
-        return { loggedLast: true };
-      },
-    ),
+    log: assign(({ context }, { msg, level = "info" }: LogParams) => {
+      const statusChar = level === "info" ? "✓" : "✗";
+      print(`${statusChar} ${msg}`, context.loggedLast);
+      return { loggedLast: true };
+    }),
     printPrompt: assign(({ context }, { msg }: { msg: string }) => {
       print(`You are adding tests to ${context.basename}`);
       print(msg);
@@ -136,13 +152,13 @@ export const AddTestsWorkflow = setup({
         src: fromPromise(doTestsPass),
         onDone: {
           target: "addingTests",
-          actions: [
-            logInfo(({ context }) => `Tests passed for ${context.basename}.`),
-          ],
+          actions: logInfo(
+            ({ context: c }) => `Tests passed for ${c.basename}.`,
+          ),
         },
         onError: {
           actions: [
-            logInfo(({ context }) => `Tests failed for ${context.basename}.`),
+            logError(({ context: c }) => `Tests failed for ${c.basename}.`),
             raise({ type: "prompt" }),
           ],
         },
@@ -161,26 +177,15 @@ export const AddTestsWorkflow = setup({
         continue: [
           {
             guard: () => !doTestsPassSync(),
-            actions: [
-              {
-                type: "log",
-                params: ({ context }) => ({
-                  msg: `Tests failed for ${context.basename}.`,
-                  level: "error",
-                }),
-              },
-            ],
+            actions: logError(
+              ({ context: c }) => `Tests failed for ${c.basename}.`,
+            ),
             target: "addingTests",
           },
           {
-            actions: [
-              {
-                type: "log",
-                params: ({ context }) => ({
-                  msg: `Tests passed for ${context.basename}.`,
-                }),
-              },
-            ],
+            actions: logInfo(
+              ({ context: c }) => `Tests passed for ${c.basename}.`,
+            ),
             target: "done",
           },
         ],
