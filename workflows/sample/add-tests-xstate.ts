@@ -14,52 +14,20 @@ import {
 } from "xstate";
 import { existsSync } from "fs";
 import { basename } from "path";
-import { print, doTestsPass, doTestsPassSync } from "./xstate-shared.ts";
+import {
+  print,
+  doTestsPass,
+  doTestsPassSync,
+  logInfo,
+  logError,
+  prompt,
+} from "./xstate-shared.ts";
+import type { LogParams } from "./xstate-shared.ts";
 
 interface AddTestsWorkflowContext {
   path: string;
   basename: string;
   loggedLast: boolean;
-}
-
-interface LogParams {
-  msg: string;
-  level?: "info" | "error";
-}
-
-const log = (
-  level: "info" | "error",
-  cb: string | ((ctx: ActionParam) => string),
-) => {
-  return {
-    type: "log" as const,
-    params: (event: ActionParam) => ({
-      msg: typeof cb === "function" ? cb(event) : cb,
-      level,
-    }),
-  };
-};
-
-const logInfo = (cb: string | ((ctx: ActionParam) => string)) => {
-  return log("info", cb);
-};
-
-const logError = (cb: string | ((ctx: ActionParam) => string)) => {
-  return log("error", cb);
-};
-
-const prompt = (cb: string | ((ctx: ActionParam) => string)) => {
-  return {
-    type: "prompt" as const,
-    params: (event: ActionParam) => ({
-      msg: typeof cb === "function" ? cb(event) : cb,
-    }),
-  };
-};
-
-interface ActionParam {
-  context: AddTestsWorkflowContext;
-  event: AnyEventObject;
 }
 
 type AddTestsWorkflowActionFunction<Params extends {}> = ActionFunction<

@@ -2,6 +2,46 @@ import { addNewLinesToString } from "../src/utils.ts";
 import { readFileSync } from "fs";
 import { join } from "path";
 import { spawn, spawnSync } from "child_process";
+import type { AnyEventObject } from "xstate";
+export interface LogParams {
+  msg: string;
+  level?: "info" | "error";
+}
+
+interface ActionParam<C> {
+  context: C;
+  event: AnyEventObject;
+}
+
+const log = <C>(
+  level: "info" | "error",
+  cb: string | ((ctx: ActionParam<C>) => string),
+) => {
+  return {
+    type: "log" as const,
+    params: (event: ActionParam<C>) => ({
+      msg: typeof cb === "function" ? cb(event) : cb,
+      level,
+    }),
+  };
+};
+
+export const logInfo = <C>(cb: string | ((ctx: ActionParam<C>) => string)) => {
+  return log("info", cb);
+};
+
+export const logError = <C>(cb: string | ((ctx: ActionParam<C>) => string)) => {
+  return log("error", cb);
+};
+
+export const prompt = <C>(cb: string | ((ctx: ActionParam<C>) => string)) => {
+  return {
+    type: "prompt" as const,
+    params: (event: ActionParam<C>) => ({
+      msg: typeof cb === "function" ? cb(event) : cb,
+    }),
+  };
+};
 
 export const print = (msg: string, noNewLine = false) => {
   if (!noNewLine) {
