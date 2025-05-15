@@ -168,11 +168,15 @@ export interface components {
             /** Format: email */
             email: string;
             password: string;
+            /** @description User's full name (optional) */
+            name?: string;
         };
         UserResponse: {
             id: number;
             /** Format: email */
             email: string;
+            /** @description User's full name (optional) */
+            name?: string;
             /** @description List of user's permission scopes */
             scopes?: string[];
         };
