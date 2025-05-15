@@ -1,50 +1,14 @@
-import { users, emailAuth } from "../schema.ts";
-import { AuthDatabaseError } from "../errors.ts";
+import { users, emailAuth } from "../../schema.ts";
+import { AuthDatabaseError } from "../../errors.ts";
 import { queryWrapper } from "@saflib/drizzle-sqlite3";
 import { eq, inArray } from "drizzle-orm";
 import { BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
-import * as schema from "../schema.ts";
-
-type NewUser = typeof users.$inferInsert;
-type SelectUser = typeof users.$inferSelect;
-type SelectEmailAuth = typeof emailAuth.$inferSelect;
-
-export class EmailConflictError extends AuthDatabaseError {
-  constructor() {
-    super("That email is taken.");
-    this.name = "EmailConflictError";
-  }
-}
-
-export class UserNotFoundError extends AuthDatabaseError {
-  constructor() {
-    super("User not found.");
-    this.name = "UserNotFoundError";
-  }
-}
+import * as schema from "../../schema.ts";
 
 export function createUserQueries(db: BetterSQLite3Database<typeof schema>) {
   return {
     UserNotFoundError,
     EmailConflictError,
-    create: queryWrapper(async (user: NewUser): Promise<SelectUser> => {
-      try {
-        const now = new Date();
-        const result = await db
-          .insert(users)
-          .values({ ...user, createdAt: now })
-          .returning();
-        return result[0];
-      } catch (e: unknown) {
-        if (
-          e instanceof Error &&
-          e.message.includes("UNIQUE constraint failed: users.email")
-        ) {
-          throw new EmailConflictError();
-        }
-        throw e;
-      }
-    }),
 
     getAll: queryWrapper(async (): Promise<SelectUser[]> => {
       return db.query.users.findMany().execute();

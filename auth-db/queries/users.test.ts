@@ -10,35 +10,6 @@ describe("users queries", () => {
     db = new AuthDB({ inMemory: true });
   });
 
-  describe("create", () => {
-    it("should create a new user", async () => {
-      const newUser = {
-        email: "test@example.com",
-        createdAt: new Date(),
-      };
-
-      const result = await db.users.create(newUser);
-
-      expect(result).toMatchObject({
-        ...newUser,
-        id: expect.any(Number),
-        createdAt: expect.any(Date),
-      });
-      expect(result.lastLoginAt).toBeNull();
-    });
-
-    it("should throw EmailConflictError for duplicate email", async () => {
-      const user = {
-        email: "test@example.com",
-        createdAt: new Date(),
-      };
-
-      await db.users.create(user);
-
-      await expect(db.users.create(user)).rejects.toThrow(EmailConflictError);
-    });
-  });
-
   describe("getAll", () => {
     it("should return all users", async () => {
       const testUsers = [

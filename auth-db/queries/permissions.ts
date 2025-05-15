@@ -1,8 +1,8 @@
 import { eq } from "drizzle-orm";
 import { queryWrapper } from "@saflib/drizzle-sqlite3";
-import { userPermissions } from "../schema.ts";
+import { userPermissions } from "../../schema.ts";
 import { BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
-import * as schema from "../schema.ts";
+import * as schema from "../../schema.ts";
 
 type UserPermissions = typeof userPermissions.$inferSelect;
 

@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { AuthDB } from "../instance.ts";
-import { userPermissions } from "../schema.ts";
+import { userPermissions } from "../../schema.ts";
 
 describe("Permission Queries", () => {
   it("can add and retrieve permissions for a user", async () => {

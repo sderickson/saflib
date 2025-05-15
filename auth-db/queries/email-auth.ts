@@ -1,33 +1,9 @@
-import { emailAuth } from "../schema.ts";
-import { AuthDatabaseError } from "../errors.ts";
+import { emailAuth } from "../../schema.ts";
+import { AuthDatabaseError } from "../../errors.ts";
 import { queryWrapper } from "@saflib/drizzle-sqlite3";
 import { eq } from "drizzle-orm";
 import { BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
-import * as schema from "../schema.ts";
-
-type NewEmailAuth = typeof emailAuth.$inferInsert;
-type SelectEmailAuth = typeof emailAuth.$inferSelect;
-
-export class EmailAuthNotFoundError extends AuthDatabaseError {
-  constructor() {
-    super("Email authentication not found.");
-    this.name = "EmailAuthNotFoundError";
-  }
-}
-
-export class TokenNotFoundError extends AuthDatabaseError {
-  constructor() {
-    super("Forgot password token not found.");
-    this.name = "TokenNotFoundError";
-  }
-}
-
-export class VerificationTokenNotFoundError extends AuthDatabaseError {
-  constructor() {
-    super("Verification token not found.");
-    this.name = "VerificationTokenNotFoundError";
-  }
-}
+import * as schema from "../../schema.ts";
 
 export function createEmailAuthQueries(
   db: BetterSQLite3Database<typeof schema>,
