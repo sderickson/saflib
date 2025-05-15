@@ -12,43 +12,6 @@ describe("email-auth queries", () => {
     await db.users.deleteAll();
   });
 
-  describe("updateForgotPasswordToken", () => {
-    it("should update forgot password token", async () => {
-      const user = await db.users.create({
-        email: "test@example.com",
-        createdAt: new Date(),
-      });
-
-      const passwordHash = Buffer.from([1, 2, 3]);
-      await db.emailAuth.create({
-        userId: user.id,
-        email: user.email,
-        passwordHash,
-      });
-
-      const now = new Date();
-      const token = "forgot-password-token";
-      const expiresAt = new Date(now.getTime() + 24 * 60 * 60 * 1000);
-      expiresAt.setMilliseconds(0);
-
-      const updated = await db.emailAuth.updateForgotPasswordToken(
-        user.id,
-        token,
-        expiresAt,
-      );
-      expect(updated).toMatchObject({
-        forgotPasswordToken: token,
-        forgotPasswordTokenExpiresAt: expiresAt,
-      });
-    });
-
-    it("should throw EmailAuthNotFoundError when user not found", async () => {
-      await expect(
-        db.emailAuth.updateForgotPasswordToken(999, "token", new Date()),
-      ).rejects.toThrow(EmailAuthNotFoundError);
-    });
-  });
-
   describe("updatePasswordHash", () => {
     it("should update password hash", async () => {
       const user = await db.users.create({

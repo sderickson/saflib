@@ -8,28 +8,6 @@ import * as schema from "../../schema.ts";
 export function createEmailAuthQueries(
   db: BetterSQLite3Database<typeof schema>,
 ) {
-  return {
-    updateForgotPasswordToken: queryWrapper(
-      async (
-        userId: number,
-        forgotPasswordToken: string | null,
-        forgotPasswordTokenExpiresAt: Date | null,
-      ): Promise<SelectEmailAuth> => {
-        const result = await db
-          .update(emailAuth)
-          .set({
-            forgotPasswordToken,
-            forgotPasswordTokenExpiresAt,
-          })
-          .where(eq(emailAuth.userId, userId))
-          .returning();
-
-        if (!result.length) {
-          throw new EmailAuthNotFoundError();
-        }
-        return result[0];
-      },
-    ),
 
     updatePasswordHash: queryWrapper(
       async (
