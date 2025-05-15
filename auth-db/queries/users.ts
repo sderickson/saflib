@@ -7,16 +7,6 @@ import * as schema from "../../schema.ts";
 
 export function createUserQueries(db: BetterSQLite3Database<typeof schema>) {
   return {
-    getByEmail: queryWrapper(async (email: string): Promise<SelectUser> => {
-      const result = await db.query.users.findFirst({
-        where: eq(users.email, email),
-      });
-      if (!result) {
-        throw new UserNotFoundError();
-      }
-      return result;
-    }),
-
     getEmailAuthByUserIds: queryWrapper(
       async (ids: number[]): Promise<SelectEmailAuth[]> => {
         if (ids.length === 0) {
