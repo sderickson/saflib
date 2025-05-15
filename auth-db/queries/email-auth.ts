@@ -11,17 +11,6 @@ export function createEmailAuthQueries(
 
 
 
-    getByVerificationToken: queryWrapper(
-      async (token: string): Promise<SelectEmailAuth> => {
-        const result = await db.query.emailAuth.findFirst({
-          where: eq(emailAuth.verificationToken, token),
-        });
-        if (!result) {
-          throw new VerificationTokenNotFoundError();
-        }
-        return result;
-      },
-    ),
 
     updateVerificationToken: queryWrapper(
       async (

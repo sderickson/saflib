@@ -12,43 +12,6 @@ describe("email-auth queries", () => {
     await db.users.deleteAll();
   });
 
-  describe("getByVerificationToken", () => {
-    it("should get email auth by verification token", async () => {
-      const user = await db.users.create({
-        email: "test@example.com",
-        createdAt: new Date(),
-      });
-
-      const passwordHash = Buffer.from([1, 2, 3]);
-      const token = "verification-token";
-      const now = new Date();
-      now.setMilliseconds(0);
-      const expiresAt = new Date(now.getTime() + 15 * 60 * 1000); // 15 minutes from now
-
-      await db.emailAuth.create({
-        userId: user.id,
-        email: user.email,
-        passwordHash,
-        verificationToken: token,
-        verificationTokenExpiresAt: expiresAt,
-      });
-
-      const auth = await db.emailAuth.getByVerificationToken(token);
-      expect(auth).toMatchObject({
-        userId: user.id,
-        email: user.email,
-        verificationToken: token,
-        verificationTokenExpiresAt: expiresAt,
-      });
-    });
-
-    it("should throw VerificationTokenNotFoundError when token not found", async () => {
-      await expect(
-        db.emailAuth.getByVerificationToken("nonexistent-token"),
-      ).rejects.toThrow(db.emailAuth.VerificationTokenNotFoundError);
-    });
-  });
-
   describe("updateVerificationToken", () => {
     it("should update verification token", async () => {
       const user = await db.users.create({

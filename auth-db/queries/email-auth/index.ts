@@ -7,3 +7,4 @@ export * from "./get-by-forgot-password-token.ts";
 export * from "./update-password.ts";
 export * from "./clear-forgot-password-token.ts";
 export * from "./verify-email.ts";
+export * from "./get-by-verification-token.ts";
