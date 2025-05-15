@@ -10,24 +10,6 @@ export function createEmailAuthQueries(
 ) {
 
 
-    updatePassword: queryWrapper(
-      async (
-        userId: number,
-        passwordHash: Uint8Array,
-      ): Promise<SelectEmailAuth> => {
-        const result = await db
-          .update(emailAuth)
-          .set({ passwordHash })
-          .where(eq(emailAuth.userId, userId))
-          .returning();
-
-        if (!result.length) {
-          throw new EmailAuthNotFoundError();
-        }
-        return result[0];
-      },
-    ),
-
     clearForgotPasswordToken: queryWrapper(
       async (userId: number): Promise<SelectEmailAuth> => {
         const result = await db
