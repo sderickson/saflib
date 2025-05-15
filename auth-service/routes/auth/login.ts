@@ -24,7 +24,7 @@ export const loginHandler = createHandler(async function (req, res, next) {
         return res.status(401).json(response);
       }
 
-      req.logIn(user, (err) => {
+      req.logIn(user, (err: Error) => {
         if (err) {
           return next(err);
         }
