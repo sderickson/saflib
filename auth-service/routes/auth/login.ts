@@ -3,10 +3,9 @@ import passport from "passport";
 import { type IVerifyOptions } from "passport-local";
 import { createUserResponse } from "./_helpers.ts";
 import { type AuthResponse } from "@saflib/auth-spec";
-import { AuthDB } from "@saflib/auth-db";
-
+import { authServiceStorage } from "../../context.ts";
 export const loginHandler = createHandler(async function (req, res, next) {
-  const db: AuthDB = req.app.locals.db;
+  const { dbKey } = authServiceStorage.getStore()!;
   passport.authenticate(
     "local",
     (
@@ -30,7 +29,7 @@ export const loginHandler = createHandler(async function (req, res, next) {
           return next(err);
         }
 
-        createUserResponse(db, user).then((response) => {
+        createUserResponse(dbKey, user).then((response) => {
           const successResponse: AuthResponse["loginUser"][200] = response;
           res.json(successResponse);
         });

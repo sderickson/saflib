@@ -1,11 +1,12 @@
 import type { Request, Response } from "express";
 import { createHandler } from "@saflib/express";
 import { type AuthResponse } from "@saflib/auth-spec";
-import { AuthDB } from "@saflib/auth-db";
+import { authDb, EmailAuthNotFoundError } from "@saflib/auth-db";
+import { authServiceStorage } from "@saflib/auth-service/context.ts";
 
 export const verifyHandler = createHandler(
   async (req: Request, res: Response) => {
-    const db: AuthDB = req.app.locals.db;
+    const { dbKey } = authServiceStorage.getStore()!;
     // TODO: Figure out how to handle OPTIONS in caddy, or at the very least,
     // don't forward_auth OPTIONS requests.
 
@@ -41,7 +42,18 @@ export const verifyHandler = createHandler(
     res.setHeader("X-User-ID", user.id.toString());
     res.setHeader("X-User-Email", user.email);
     if (req.app.get("saf:admin emails").has(user.email)) {
-      const emailAuth = await db.emailAuth.getByEmail(user.email);
+      const { result: emailAuth, error } = await authDb.emailAuth.getByEmail(
+        dbKey,
+        user.email,
+      );
+      if (error) {
+        switch (true) {
+          case error instanceof EmailAuthNotFoundError:
+            throw error;
+          default:
+            throw error satisfies never;
+        }
+      }
       if (emailAuth.verifiedAt) {
         scopes.push("*");
         // TODO: set up a way to map roles -> scopes.

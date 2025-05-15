@@ -7,7 +7,6 @@ import { verifyHandler } from "./verify.ts";
 import { forgotPasswordHandler } from "./forgot-password.ts";
 import { resetPasswordHandler } from "./reset-password.ts";
 import { verifyEmailHandler } from "./verify-email.ts";
-import { AuthDB } from "@saflib/auth-db";
 import { rateLimit } from "express-rate-limit";
 import { createPreMiddleware } from "@saflib/express";
 import passport from "passport";
@@ -17,10 +16,9 @@ import { jsonSpec } from "@saflib/auth-spec";
 import * as cookieParser from "cookie-parser";
 import { csrfDSC } from "@saflib/auth-service/middleware/csrf.ts";
 
-export const makeAuthRouter = (db: AuthDB) => {
+export const makeAuthRouter = () => {
   const router = express.Router();
 
-  // Apply recommended middleware
   router.use(
     createPreMiddleware({
       apiSpec: jsonSpec,
@@ -40,8 +38,7 @@ export const makeAuthRouter = (db: AuthDB) => {
   router.use(csrfProtection);
   router.use(makeSessionMiddleware());
 
-  // Initialize Passport and restore authentication state from session
-  setupPassport(db);
+  setupPassport();
   router.use(passport.initialize());
   router.use(passport.session());
 

@@ -2,20 +2,26 @@ import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
 import * as argon2 from "argon2";
 import type { User } from "@saflib/auth-service/types.ts";
-import { AuthDB } from "@saflib/auth-db";
+import {
+  authDb,
+  EmailAuthNotFoundError,
+  UserNotFoundError,
+} from "@saflib/auth-db";
+import { authServiceStorage } from "../context.ts";
 
-export const setupPassport = (db: AuthDB) => {
+export const setupPassport = () => {
   passport.serializeUser((user: User, done) => {
     done(null, user.id);
   });
 
   passport.deserializeUser(async (id: number, done) => {
     try {
-      const user = await db.users.getById(id);
-      if (!user) {
+      const { dbKey } = authServiceStorage.getStore()!;
+      const { result, error } = await authDb.users.getById(dbKey, id);
+      if (error instanceof UserNotFoundError) {
         return done(null, false);
       }
-      done(null, user);
+      done(null, result);
     } catch (err) {
       done(err);
     }
@@ -31,24 +37,20 @@ export const setupPassport = (db: AuthDB) => {
         try {
           // Get the user and their email auth
           let user;
-          try {
-            user = await db.users.getByEmail(email);
-          } catch (err) {
-            if (err instanceof db.users.UserNotFoundError) {
-              return done(null, false, { message: "Invalid credentials" });
-            }
-            return done(err);
+          const { dbKey } = authServiceStorage.getStore()!;
+          const { result, error } = await authDb.users.getByEmail(dbKey, email);
+          if (error instanceof UserNotFoundError) {
+            return done(null, false, { message: "Invalid credentials" });
           }
+          user = result;
 
           let auth;
-          try {
-            auth = await db.emailAuth.getByEmail(email);
-          } catch (err) {
-            if (err instanceof db.emailAuth.EmailAuthNotFoundError) {
-              return done(null, false, { message: "Invalid credentials" });
-            }
-            return done(err);
+          const { result: authResult, error: authError } =
+            await authDb.emailAuth.getByEmail(dbKey, email);
+          if (authError instanceof EmailAuthNotFoundError) {
+            return done(null, false, { message: "Invalid credentials" });
           }
+          auth = authResult;
 
           if (!auth || !user) {
             // should never happen? Shushing typescript.
@@ -67,7 +69,11 @@ export const setupPassport = (db: AuthDB) => {
           }
 
           // Update last login time
-          const updatedUser = await db.users.updateLastLogin(user.id);
+          const { result: updatedUser, error: updateError } =
+            await authDb.users.updateLastLogin(dbKey, user.id);
+          if (updateError) {
+            return done(updateError);
+          }
 
           return done(null, updatedUser);
         } catch (err) {

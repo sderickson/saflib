@@ -3,10 +3,11 @@ import { randomBytes } from "crypto";
 import { type AuthResponse } from "@saflib/auth-spec";
 import { EmailClient } from "@saflib/email";
 import { generateVerificationEmail } from "../../email-templates/verify-email.ts";
-import { AuthDB } from "@saflib/auth-db";
+import { authDb } from "@saflib/auth-db";
 import { getSafContext } from "@saflib/node";
+import { authServiceStorage } from "../../context.ts";
 export const resendVerificationHandler = createHandler(async (req, res) => {
-  const db: AuthDB = req.app.locals.db;
+  const { dbKey } = authServiceStorage.getStore()!;
   const { log } = getSafContext();
   if (!req.user) {
     res.status(401).json({
@@ -21,7 +22,8 @@ export const resendVerificationHandler = createHandler(async (req, res) => {
     verificationTokenExpiresAt.getMinutes() + 15,
   );
 
-  await db.emailAuth.updateVerificationToken(
+  await authDb.emailAuth.updateVerificationToken(
+    dbKey,
     req.user.id,
     verificationToken,
     verificationTokenExpiresAt,
