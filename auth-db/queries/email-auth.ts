@@ -10,23 +10,6 @@ export function createEmailAuthQueries(
 ) {
 
 
-    clearForgotPasswordToken: queryWrapper(
-      async (userId: number): Promise<SelectEmailAuth> => {
-        const result = await db
-          .update(emailAuth)
-          .set({
-            forgotPasswordToken: null,
-            forgotPasswordTokenExpiresAt: null,
-          })
-          .where(eq(emailAuth.userId, userId))
-          .returning();
-
-        if (!result.length) {
-          throw new EmailAuthNotFoundError();
-        }
-        return result[0];
-      },
-    ),
 
     verifyEmail: queryWrapper(
       async (userId: number): Promise<SelectEmailAuth> => {
