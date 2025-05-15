@@ -9,40 +9,6 @@ export function createEmailAuthQueries(
   db: BetterSQLite3Database<typeof schema>,
 ) {
   return {
-    EmailAuthNotFoundError,
-    TokenNotFoundError,
-    VerificationTokenNotFoundError,
-    create: queryWrapper(
-      async (auth: NewEmailAuth): Promise<SelectEmailAuth> => {
-        const result = await db.insert(emailAuth).values(auth).returning();
-        return result[0];
-      },
-    ),
-
-    updateVerification: queryWrapper(
-      async (
-        userId: number,
-        verificationToken: string | null,
-        verificationTokenExpiresAt: Date | null,
-        verifiedAt: Date | null,
-      ): Promise<SelectEmailAuth> => {
-        const result = await db
-          .update(emailAuth)
-          .set({
-            verificationToken,
-            verificationTokenExpiresAt,
-            verifiedAt,
-          })
-          .where(eq(emailAuth.userId, userId))
-          .returning();
-
-        if (!result.length) {
-          throw new EmailAuthNotFoundError();
-        }
-        return result[0];
-      },
-    ),
-
     updateForgotPasswordToken: queryWrapper(
       async (
         userId: number,

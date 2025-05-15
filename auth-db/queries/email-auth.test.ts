@@ -12,45 +12,6 @@ describe("email-auth queries", () => {
     await db.users.deleteAll();
   });
 
-  describe("updateVerification", () => {
-    it("should update verification details", async () => {
-      const user = await db.users.create({
-        email: "test@example.com",
-        createdAt: new Date(),
-      });
-
-      const passwordHash = Buffer.from([1, 2, 3]);
-      await db.emailAuth.create({
-        userId: user.id,
-        email: user.email,
-        passwordHash,
-      });
-
-      const now = new Date();
-      const token = "verification-token";
-      const expiresAt = new Date(now.getTime() + 24 * 60 * 60 * 1000);
-      expiresAt.setMilliseconds(0);
-
-      const updated = await db.emailAuth.updateVerification(
-        user.id,
-        token,
-        expiresAt,
-        null,
-      );
-      expect(updated).toMatchObject({
-        verificationToken: token,
-        verificationTokenExpiresAt: expiresAt,
-        verifiedAt: null,
-      });
-    });
-
-    it("should throw EmailAuthNotFoundError when user not found", async () => {
-      await expect(
-        db.emailAuth.updateVerification(999, "token", new Date(), null),
-      ).rejects.toThrow(EmailAuthNotFoundError);
-    });
-  });
-
   describe("updateForgotPasswordToken", () => {
     it("should update forgot password token", async () => {
       const user = await db.users.create({
