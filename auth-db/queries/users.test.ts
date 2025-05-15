@@ -10,36 +10,6 @@ describe("users queries", () => {
     db = new AuthDB({ inMemory: true });
   });
 
-  describe("getAll", () => {
-    it("should return all users", async () => {
-      const testUsers = [
-        {
-          name: "Test User 1",
-          email: "test1@example.com",
-          createdAt: new Date(),
-        },
-        {
-          name: "Test User 2",
-          email: "test2@example.com",
-          createdAt: new Date(),
-        },
-      ];
-
-      await Promise.all(testUsers.map((user) => db.users.create(user)));
-
-      const result = await db.users.getAll();
-      expect(result).toHaveLength(2);
-      expect(result.map((u) => u.email)).toEqual(
-        expect.arrayContaining(testUsers.map((u) => u.email)),
-      );
-    });
-
-    it("should return empty array when no users exist", async () => {
-      const result = await db.users.getAll();
-      expect(result).toEqual([]);
-    });
-  });
-
   describe("getByEmail", () => {
     it("should return user by email", async () => {
       const user = {
