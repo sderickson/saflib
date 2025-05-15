@@ -22,16 +22,6 @@ export function createUserQueries(db: BetterSQLite3Database<typeof schema>) {
       },
     ),
 
-    getById: queryWrapper(async (id: number): Promise<SelectUser> => {
-      const result = await db.query.users.findFirst({
-        where: eq(users.id, id),
-      });
-      if (!result) {
-        throw new UserNotFoundError();
-      }
-      return result;
-    }),
-
     updateLastLogin: queryWrapper(async (id: number): Promise<SelectUser> => {
       const now = new Date();
       const result = await db

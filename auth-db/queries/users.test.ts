@@ -10,25 +10,6 @@ describe("users queries", () => {
     db = new AuthDB({ inMemory: true });
   });
 
-  describe("getById", () => {
-    it("should return user by id", async () => {
-      const user = {
-        name: "Test User",
-        email: "test@example.com",
-        createdAt: new Date(),
-      };
-
-      const created = await db.users.create(user);
-      const result = await db.users.getById(created.id);
-
-      expect(result).toEqual(created);
-    });
-
-    it("should throw UserNotFoundError when id not found", async () => {
-      await expect(db.users.getById(999)).rejects.toThrow(UserNotFoundError);
-    });
-  });
-
   describe("getEmailAuthByUserIds", () => {
     it("should return email auth info for specified user IDs", async () => {
       const now = new Date();
