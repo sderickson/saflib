@@ -19,18 +19,6 @@ export function createEmailAuthQueries(
       },
     ),
 
-    getByEmail: queryWrapper(
-      async (email: string): Promise<SelectEmailAuth> => {
-        const result = await db.query.emailAuth.findFirst({
-          where: eq(emailAuth.email, email),
-        });
-        if (!result) {
-          throw new EmailAuthNotFoundError();
-        }
-        return result;
-      },
-    ),
-
     updateVerification: queryWrapper(
       async (
         userId: number,

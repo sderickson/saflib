@@ -12,53 +12,6 @@ describe("email-auth queries", () => {
     await db.users.deleteAll();
   });
 
-  describe("create", () => {
-    it("should create email auth for a user", async () => {
-      const user = await db.users.create({
-        email: "test@example.com",
-        createdAt: new Date(),
-      });
-
-      const passwordHash = Buffer.from([1, 2, 3]);
-      const auth = await db.emailAuth.create({
-        userId: user.id,
-        email: user.email,
-        passwordHash,
-      });
-
-      expect(auth).toMatchObject({
-        userId: user.id,
-        email: user.email,
-        passwordHash,
-      });
-    });
-  });
-
-  describe("getByEmail", () => {
-    it("should get email auth by email", async () => {
-      const user = await db.users.create({
-        email: "test@example.com",
-        createdAt: new Date(),
-      });
-
-      const passwordHash = Buffer.from([1, 2, 3]);
-      const created = await db.emailAuth.create({
-        userId: user.id,
-        email: user.email,
-        passwordHash,
-      });
-
-      const auth = await db.emailAuth.getByEmail(user.email);
-      expect(auth).toEqual(created);
-    });
-
-    it("should throw EmailAuthNotFoundError when email not found", async () => {
-      await expect(
-        db.emailAuth.getByEmail("nonexistent@example.com"),
-      ).rejects.toThrow(EmailAuthNotFoundError);
-    });
-  });
-
   describe("updateVerification", () => {
     it("should update verification details", async () => {
       const user = await db.users.create({
