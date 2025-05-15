@@ -36,6 +36,13 @@
       "when": 1743120387570,
       "tag": "0004_crazy_tempest",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1747341915390,
+      "tag": "0005_steep_thunderball",
+      "breakpoints": true
     }
   ]
 }
