@@ -3,7 +3,7 @@ import { recommendedErrorHandlers } from "@saflib/express";
 import express from "express";
 import { makeAuthRouter } from "./routes/auth/index.ts";
 import { makeUsersRouter } from "./routes/users/index.ts";
-import { DbKey } from "@saflib/drizzle-sqlite3";
+import type { DbKey } from "@saflib/drizzle-sqlite3";
 import { authServiceStorage } from "./context.ts";
 
 // Define properties added to Express Request objects by middleware

@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, assert } from "vitest";
 import { authDbManager } from "../../instances.ts";
 import { userPermissions } from "../../schema.ts";
-import { DbKey } from "@saflib/drizzle-sqlite3";
+import type { DbKey } from "@saflib/drizzle-sqlite3";
 import { authDb } from "../../index.ts";
 describe("Permission Queries", () => {
   let dbKey: DbKey;

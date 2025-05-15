@@ -1,4 +1,4 @@
-import { DbKey, queryWrapper } from "@saflib/drizzle-sqlite3";
+import { type DbKey, queryWrapper } from "@saflib/drizzle-sqlite3";
 import { UserNotFoundError } from "../../errors.ts";
 import { users } from "../../schema.ts";
 import type { SelectUser } from "../../types.ts";

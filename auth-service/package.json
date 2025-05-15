@@ -15,6 +15,7 @@
     "@saflib/auth-spec": "*",
     "@saflib/email": "*",
     "@saflib/express": "*",
+    "@saflib/monorepo": "*",
     "argon2": "^0.41.1",
     "better-sqlite3-session-store": "^0.1.0",
     "cookie-parser": "^1.4.7",

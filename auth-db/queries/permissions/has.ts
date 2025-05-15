@@ -1,7 +1,7 @@
 import { queryWrapper } from "@saflib/drizzle-sqlite3";
 import { userPermissions } from "../../schema.ts";
 import { authDbManager } from "../../instances.ts";
-import { DbKey } from "@saflib/drizzle-sqlite3";
+import type { DbKey } from "@saflib/drizzle-sqlite3";
 import { eq } from "drizzle-orm";
 
 export const has = queryWrapper(

@@ -1,7 +1,7 @@
 import { authDb } from "@saflib/auth-db";
 import { type User } from "../../types.ts";
 import { type components } from "@saflib/auth-spec";
-import { DbKey } from "@saflib/drizzle-sqlite3";
+import type { DbKey } from "@saflib/drizzle-sqlite3";
 
 // Helper function to get user scopes
 export async function getUserScopes(

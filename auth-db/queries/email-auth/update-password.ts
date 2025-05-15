@@ -1,4 +1,4 @@
-import { DbKey, queryWrapper } from "@saflib/drizzle-sqlite3";
+import { type DbKey, queryWrapper } from "@saflib/drizzle-sqlite3";
 import { emailAuth } from "../../schema.ts";
 import type { SelectEmailAuth } from "../../types.ts";
 import { EmailAuthNotFoundError } from "../../errors.ts";
