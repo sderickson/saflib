@@ -11,25 +11,6 @@ export function createEmailAuthQueries(
 
 
 
-    verifyEmail: queryWrapper(
-      async (userId: number): Promise<SelectEmailAuth> => {
-        const result = await db
-          .update(emailAuth)
-          .set({
-            verifiedAt: new Date(),
-            verificationToken: null,
-            verificationTokenExpiresAt: null,
-          })
-          .where(eq(emailAuth.userId, userId))
-          .returning();
-
-        if (!result.length) {
-          throw new EmailAuthNotFoundError();
-        }
-        return result[0];
-      },
-    ),
-
     getByVerificationToken: queryWrapper(
       async (token: string): Promise<SelectEmailAuth> => {
         const result = await db.query.emailAuth.findFirst({
