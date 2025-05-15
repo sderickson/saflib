@@ -23,6 +23,7 @@ describe("Register Route", () => {
   it("should register a new user successfully and log them in and send a verification email", async () => {
     const userData = {
       email: "test@example.com",
+      name: "Test User",
       password: "password123",
     };
 
@@ -34,6 +35,7 @@ describe("Register Route", () => {
     expect(response.body).toEqual({
       id: expect.any(Number),
       email: userData.email,
+      name: userData.name,
       scopes: [],
     });
 
@@ -44,6 +46,7 @@ describe("Register Route", () => {
     expect(verifyResponse.body).toEqual({
       id: expect.any(Number),
       email: userData.email,
+      name: userData.name,
       scopes: ["none"],
     });
 

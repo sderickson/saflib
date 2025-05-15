@@ -66,6 +66,7 @@ export const verifyHandler = createHandler(async (req, res) => {
   const successResponse: AuthResponse["verifyAuth"][200] = {
     id: user.id,
     email: user.email,
+    name: user.name ?? undefined,
     scopes,
   };
   res.status(200).json(successResponse);

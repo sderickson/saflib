@@ -11,15 +11,12 @@ export interface AuthConfig {
   sessionSecret: string;
 }
 
+import type { SelectUser as DbUser } from "@saflib/auth-db";
+
 // Extend Express.User
 declare global {
   namespace Express {
-    interface User {
-      id: number;
-      email: string;
-      createdAt: Date;
-      lastLoginAt: Date | null;
-    }
+    interface User extends DbUser {}
   }
 }
 

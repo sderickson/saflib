@@ -2,8 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import request from "supertest";
 import express from "express";
 import { createApp } from "../../app.ts";
-import passport from "passport";
-import { getCsrfToken, testRateLimiting } from "./_test-helpers.ts";
+import { testRateLimiting } from "./_test-helpers.ts";
 
 // Mock the email package
 vi.mock("@saflib/email");
@@ -22,16 +21,21 @@ describe("Login Route", () => {
   it("should login a user successfully", async () => {
     const userData = {
       email: "test@example.com",
+      name: "Test User",
       password: "password123",
     };
     await request(app).post("/auth/register").send(userData);
 
-    const response = await request(app).post("/auth/login").send(userData);
+    const response = await request(app).post("/auth/login").send({
+      email: userData.email,
+      password: userData.password,
+    });
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual({
       id: expect.any(Number),
       email: userData.email,
+      name: userData.name,
       scopes: [],
     });
   });
