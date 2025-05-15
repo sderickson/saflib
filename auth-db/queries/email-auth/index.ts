@@ -9,3 +9,4 @@ export * from "./clear-forgot-password-token.ts";
 export * from "./verify-email.ts";
 export * from "./get-by-verification-token.ts";
 export * from "./update-verification-token.ts";
+export * from "./get-by-user-ids.ts";
