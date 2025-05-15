@@ -9,23 +9,6 @@ export function createEmailAuthQueries(
   db: BetterSQLite3Database<typeof schema>,
 ) {
 
-    updatePasswordHash: queryWrapper(
-      async (
-        userId: number,
-        passwordHash: Uint8Array,
-      ): Promise<SelectEmailAuth> => {
-        const result = await db
-          .update(emailAuth)
-          .set({ passwordHash })
-          .where(eq(emailAuth.userId, userId))
-          .returning();
-
-        if (!result.length) {
-          throw new EmailAuthNotFoundError();
-        }
-        return result[0];
-      },
-    ),
 
     deleteAll: queryWrapper(async (): Promise<void> => {
       await db.delete(emailAuth).execute();
