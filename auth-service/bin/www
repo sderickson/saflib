@@ -1,5 +1,13 @@
 #!/usr/bin/env node
 import { startExpressServer } from "@saflib/express";
 import { createApp } from "../app.ts";
+import { authDb } from "@saflib/auth-db";
 
-startExpressServer(createApp());
+async function main() {
+  const dbKey = authDb.connect({ onDisk: true });
+
+  const app = createApp(dbKey);
+  startExpressServer(app);
+}
+
+main();
