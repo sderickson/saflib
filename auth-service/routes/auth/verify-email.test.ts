@@ -34,6 +34,7 @@ describe("Verify Email Route", () => {
   it("should verify email with valid token", async () => {
     const userData = {
       email: "test@example.com",
+      name: "Test User",
       password: "password123",
     };
     const agent = request.agent(app);
@@ -55,6 +56,7 @@ describe("Verify Email Route", () => {
     expect(response.body).toEqual({
       id: expect.any(Number),
       email: userData.email,
+      name: userData.name,
       scopes: [],
     });
   });

@@ -42,6 +42,7 @@ describe("Verify Route", () => {
     const userData = {
       email: "test@example.com",
       password: "password123",
+      name: "Test User",
     };
     const agent = request.agent(app);
     const res1 = await agent.post("/auth/register").send(userData);
@@ -54,6 +55,7 @@ describe("Verify Route", () => {
     expect(response.body).toEqual({
       id: expect.any(Number),
       email: userData.email,
+      name: userData.name,
       scopes: ["none"],
     });
     expect(response.header["x-user-id"]).toBeDefined();

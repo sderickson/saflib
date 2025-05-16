@@ -1,51 +1,52 @@
-import type { Request, Response } from "express";
 import * as argon2 from "argon2";
 import { createHandler } from "@saflib/express";
 import { type AuthResponse } from "@saflib/auth-spec";
-import { AuthDB } from "@saflib/auth-db";
+import { authDb, TokenNotFoundError } from "@saflib/auth-db";
+import { authServiceStorage } from "../../context.ts";
 
-export const resetPasswordHandler = createHandler(
-  async (req: Request, res: Response) => {
-    const db: AuthDB = req.app.locals.db;
-    const { token, newPassword } = req.body as {
-      token: string;
-      newPassword: string;
-    };
+export const resetPasswordHandler = createHandler(async (req, res) => {
+  const { dbKey } = authServiceStorage.getStore()!;
+  const { token, newPassword } = req.body as {
+    token: string;
+    newPassword: string;
+  };
 
-    try {
-      const emailAuth = await db.emailAuth.getByForgotPasswordToken(token);
-      if (
-        !emailAuth.forgotPasswordTokenExpiresAt ||
-        emailAuth.forgotPasswordTokenExpiresAt < new Date()
-      ) {
+  const { result: emailAuth, error } =
+    await authDb.emailAuth.getByForgotPasswordToken(dbKey, token);
+  if (error) {
+    switch (true) {
+      case error instanceof TokenNotFoundError:
         const errorResponse: AuthResponse["resetPassword"][400] = {
           message: "Invalid or expired token",
         };
         res.status(400).json(errorResponse);
         return;
-      }
-
-      const passwordHash = await argon2.hash(newPassword);
-
-      await db.emailAuth.updatePassword(
-        emailAuth.userId,
-        Buffer.from(passwordHash),
-      );
-      await db.emailAuth.clearForgotPasswordToken(emailAuth.userId);
-
-      const successResponse: AuthResponse["resetPassword"][200] = {
-        success: true,
-      };
-      res.status(200).json(successResponse);
-    } catch (err) {
-      if (err instanceof db.emailAuth.TokenNotFoundError) {
-        const errorResponse: AuthResponse["resetPassword"][400] = {
-          message: "Invalid or expired token",
-        };
-        res.status(400).json(errorResponse);
-        return;
-      }
-      throw err;
+      default:
+        throw error satisfies never;
     }
-  },
-);
+  }
+  if (
+    !emailAuth.forgotPasswordTokenExpiresAt ||
+    emailAuth.forgotPasswordTokenExpiresAt < new Date()
+  ) {
+    const errorResponse: AuthResponse["resetPassword"][400] = {
+      message: "Invalid or expired token",
+    };
+    res.status(400).json(errorResponse);
+    return;
+  }
+
+  const passwordHash = await argon2.hash(newPassword);
+
+  await authDb.emailAuth.updatePassword(
+    dbKey,
+    emailAuth.userId,
+    Buffer.from(passwordHash),
+  );
+  await authDb.emailAuth.clearForgotPasswordToken(dbKey, emailAuth.userId);
+
+  const successResponse: AuthResponse["resetPassword"][200] = {
+    success: true,
+  };
+  res.status(200).json(successResponse);
+});

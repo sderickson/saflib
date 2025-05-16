@@ -1,4 +1,9 @@
-import { createWebHistory, createRouter, type Router } from "vue-router";
+import {
+  createWebHistory,
+  createRouter,
+  type Router,
+  type RouteRecordRaw,
+} from "vue-router";
 import {
   LoginPage,
   RegisterPage,
@@ -10,11 +15,12 @@ import {
 
 let router: Router;
 
-export const createAuthRouter = () => {
+export const createAuthRouter = (additionalRoutes?: RouteRecordRaw[]) => {
   if (router) {
     return router;
   }
-  const routes = [
+  const routes: RouteRecordRaw[] = [
+    ...(additionalRoutes ?? []),
     { path: "/", component: LoginPage },
     { path: "/login", component: LoginPage },
     { path: "/register", component: RegisterPage },

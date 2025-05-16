@@ -13,8 +13,6 @@ async function registerUser(app: express.Express, userData: any) {
 // Helper function to login and get an agent
 async function getAgentWithScopes(app: express.Express, scopes: string[]) {
   const agent = request.agent(app);
-  // const res = await agent.post("/auth/login").send(userData);
-  // console.log(res.body);
   agent.set("x-user-id", "1");
   agent.set("x-user-email", "test@example.com");
   agent.set("x-user-scopes", scopes.join(","));

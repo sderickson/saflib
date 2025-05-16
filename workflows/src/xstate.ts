@@ -85,7 +85,7 @@ const logImpl: WorkflowActionFunction<any, AnyEventObject, LogParams> = assign(
 
 // prompt action
 
-export const prompt = <C, E extends AnyEventObject>(
+export const promptAgent = <C, E extends AnyEventObject>(
   cb: string | ((ctx: ActionParam<C, E>) => string),
 ) => {
   return {
@@ -123,8 +123,37 @@ const getTestCommandAndArgs = () => {
   return { command, args };
 };
 
-export const doTestsPass = async () => {
+export const doTestsPass = () => {
   const { command, args } = getTestCommandAndArgs();
+  return runCommandAsync(command, args);
+};
+
+export const doTestsPassSync = () => {
+  const { command, args } = getTestCommandAndArgs();
+  const { status } = spawnSync(command, args);
+  return status === 0;
+};
+
+// generate action
+
+export const generateMigrations = () => {
+  return runCommandAsync("npm", ["run", "generate"]);
+};
+
+// used in workflow machines
+
+export const workflowActionImplementations = {
+  log: logImpl,
+  prompt: promptImpl,
+};
+
+export const workflowActors = {
+  noop: fromPromise(async (_) => {}),
+};
+
+// utils
+
+const runCommandAsync = (command: string, args: string[]) => {
   let resolve: (value: string) => void;
   let reject: (error: Error) => void;
   const promise = new Promise<string>((_resolve, _reject) => {
@@ -140,21 +169,4 @@ export const doTestsPass = async () => {
     }
   });
   return promise;
-};
-
-export const doTestsPassSync = () => {
-  const { command, args } = getTestCommandAndArgs();
-  const { status } = spawnSync(command, args);
-  return status === 0;
-};
-
-// used in workflow machines
-
-export const workflowActionImplementations = {
-  log: logImpl,
-  prompt: promptImpl,
-};
-
-export const workflowActors = {
-  noop: fromPromise(async (_) => {}),
 };

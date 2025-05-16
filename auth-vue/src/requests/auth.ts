@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/vue-query";
+import { useMutation, useQuery } from "@tanstack/vue-query";
 import { client } from "./client.ts";
 import type { AuthResponse, AuthRequest } from "./types.ts";
 import { TanstackError, handleClientMethod } from "@saflib/vue-spa";
@@ -75,6 +75,15 @@ export const useResendVerification = () => {
   return useMutation<AuthResponse["resendVerification"][200], TanstackError>({
     mutationFn: async () => {
       return handleClientMethod(client.POST("/auth/resend-verification"));
+    },
+  });
+};
+
+export const useVerify = () => {
+  return useQuery<AuthResponse["verifyAuth"][200], TanstackError>({
+    queryKey: ["verify"],
+    queryFn: async () => {
+      return handleClientMethod(client.GET("/auth/verify"));
     },
   });
 };

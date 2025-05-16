@@ -8,7 +8,7 @@ export const createSafClient = <Q extends {}>(
   return createClient<Q>({
     baseUrl: `${document.location.protocol}//${subdomain}.${document.location.host}`,
     credentials: "include",
-    fetch: (request: Request) => {
+    fetch: (request) => {
       // this is little noop wrapper is required for msw to work
       const csrfToken = document.cookie
         .split("; ")

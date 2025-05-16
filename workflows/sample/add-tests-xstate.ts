@@ -6,7 +6,7 @@ import {
   doTestsPassSync,
   logInfo,
   logError,
-  prompt,
+  promptAgent,
   workflowActionImplementations,
   workflowActors,
 } from "../src/xstate.ts";
@@ -53,7 +53,7 @@ export const AddTestsWorkflowMachine = setup({
           target: "validatingTests",
         },
         prompt: {
-          actions: prompt(
+          actions: promptAgent(
             ({ context }) =>
               `First, run the existing tests for the package that ${context.basename} is in. You should be able to run "npm run test". Run the tests for that package and make sure they are passing.`,
           ),
@@ -79,7 +79,7 @@ export const AddTestsWorkflowMachine = setup({
       entry: raise({ type: "prompt" }),
       on: {
         prompt: {
-          actions: prompt(
+          actions: promptAgent(
             ({ context }) =>
               `Add tests to ${context.basename}. Create the test file next to the file you are testing.`,
           ),

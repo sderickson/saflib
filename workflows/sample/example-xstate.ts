@@ -1,7 +1,7 @@
 import { setup } from "xstate";
 import {
   logInfo,
-  prompt,
+  promptAgent,
   workflowActionImplementations,
   workflowActors,
 } from "../src/xstate.ts";
@@ -44,7 +44,7 @@ export const ExampleWorkflowMachine = setup({
       on: {
         continue: {
           target: "c",
-          actions: prompt(
+          actions: promptAgent(
             ({ context }) => `Successfully went to b: ${context.foo}`,
           ),
         },

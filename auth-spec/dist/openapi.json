@@ -413,6 +413,10 @@
           "password": {
             "type": "string",
             "minLength": 8
+          },
+          "name": {
+            "type": "string",
+            "description": "User's full name (optional)"
           }
         }
       },
@@ -430,6 +434,10 @@
           "email": {
             "type": "string",
             "format": "email"
+          },
+          "name": {
+            "type": "string",
+            "description": "User's full name (optional)"
           },
           "scopes": {
             "type": "array",
