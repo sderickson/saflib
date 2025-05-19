@@ -25,6 +25,7 @@
   },
   "devDependencies": {
     "@saflib/monorepo-dev": "*",
-    "@saflib/vitest": "*"
+    "@saflib/vitest": "*",
+    "@saflib/workflows": "*"
   }
 }
