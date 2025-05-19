@@ -24,7 +24,6 @@ describe("HomePage", () => {
 
   it("should render the example strings", () => {
     const wrapper = mountComponent(HomePage);
-    console.log(wrapper.text());
     expect(getExampleHeader(wrapper).exists()).toBe(true);
     expect(getExampleInput(wrapper).exists()).toBe(true);
   });
