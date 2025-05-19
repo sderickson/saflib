@@ -56,7 +56,6 @@ export const AddSpaWorkflowMachine = setup({
       invoke: {
         input: ({ context }) => context,
         src: fromPromise(async ({ input }) => {
-          console.log("input", input);
           const __filename = fileURLToPath(import.meta.url);
           const __dirname = path.dirname(__filename);
           const sourceDir = path.join(__dirname, "web-template");
