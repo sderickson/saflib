@@ -137,12 +137,15 @@ export const AddSpaPageWorkflowMachine = setup({
               newPath = path.join(targetDir, file.replace("home-page", name));
               await rename(oldPath, newPath);
             }
+            const kebabName = name + "-page";
+            const snakeName = kebabName.replace(/-/g, "_");
 
             // Update file contents
             const content = await readFile(newPath, "utf-8");
             const updatedContent = content
               .replace(/HomePage/g, pascalName)
-              .replace(/home-page/g, name);
+              .replace(/home-page/g, kebabName)
+              .replace(/home_page/g, snakeName);
             await writeFile(newPath, updatedContent);
           }
 
