@@ -7,11 +7,13 @@ import {
   logError,
   promptAgent,
   XStateWorkflow,
+  doTestsPass,
 } from "@saflib/workflows";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { exec } from "node:child_process";
 import { promisify } from "node:util";
+import { readdir, rename, readFile, writeFile } from "node:fs/promises";
 
 const execAsync = promisify(exec);
 
@@ -113,43 +115,39 @@ export const AddSpaPageWorkflowMachine = setup({
     renamePlaceholders: {
       invoke: {
         input: ({ context }) => context,
-        src: fromPromise(
-          async ({ input }: { input: AddSpaPageWorkflowContext }) => {
-            // Replace all instances of 'HomePage' and 'home-page' with the new page name in PascalCase and kebab-case, including file names
-            const { targetDir, pascalName, name } = input;
-            // Rename files
-            await execAsync(
-              'find "' +
-                targetDir +
-                '" -type f -name "*HomePage*" -exec bash -c "mv \"$0\" \"${0/HomePage/' +
-                pascalName +
-                '}\"" {} \\;',
-            );
-            await execAsync(
-              'find "' +
-                targetDir +
-                '" -type f -name "*home-page*" -exec bash -c "mv \"$0\" \"${0/home-page/' +
-                name +
-                '}\"" {} \\;',
-            );
-            // Replace in file contents
-            await execAsync(
-              'find "' +
-                targetDir +
-                '" -type f -exec sed -i "" -e "s/HomePage/' +
-                pascalName +
-                '/g" {} +',
-            );
-            await execAsync(
-              'find "' +
-                targetDir +
-                '" -type f -exec sed -i "" -e "s/home-page/' +
-                name +
-                '/g" {} +',
-            );
-            return "Renamed placeholders";
-          },
-        ),
+        src: fromPromise(async ({ input }) => {
+          const { targetDir, pascalName, name } = input;
+
+          // Get all files in the directory
+          const files = await readdir(targetDir);
+
+          // Rename files and update their contents
+          for (const file of files) {
+            const oldPath = path.join(targetDir, file);
+            let newPath = oldPath;
+
+            // Rename files containing HomePage or home-page
+            if (file.includes("HomePage")) {
+              newPath = path.join(
+                targetDir,
+                file.replace("HomePage", pascalName),
+              );
+              await rename(oldPath, newPath);
+            } else if (file.includes("home-page")) {
+              newPath = path.join(targetDir, file.replace("home-page", name));
+              await rename(oldPath, newPath);
+            }
+
+            // Update file contents
+            const content = await readFile(newPath, "utf-8");
+            const updatedContent = content
+              .replace(/HomePage/g, pascalName)
+              .replace(/home-page/g, name);
+            await writeFile(newPath, updatedContent);
+          }
+
+          return "Renamed placeholders";
+        }),
         onDone: {
           target: "runTests",
           actions: logInfo(
@@ -181,18 +179,7 @@ export const AddSpaPageWorkflowMachine = setup({
     },
     runTests: {
       invoke: {
-        input: ({ context }) => context,
-        src: fromPromise(async ({ input }) => {
-          // Run tests in the new page directory
-          const { targetDir } = input;
-          const { stdout, stderr } = await execAsync(
-            `cd "${targetDir}" && npm test`,
-          );
-          if (stderr) {
-            throw new Error(`Tests failed: ${stderr}`);
-          }
-          return stdout;
-        }),
+        src: fromPromise(doTestsPass),
         onDone: {
           target: "done",
           actions: logInfo(() => `Tests passed successfully.`),
