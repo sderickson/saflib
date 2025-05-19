@@ -77,7 +77,7 @@ export default workflowClasses;
     {
       name: "Update Workflow File",
       prompt: () =>
-        `The file '${this.computed().workflowPath}' has been created. Have the human fill in the TODOs, then review the file to get oriented. Ask questions if anything is unclear.`,
+        `The file '${this.computed().workflowPath}' has been created. Fill in the TODOs, then review the file to get oriented. Ask questions if you need more context.`,
     },
     {
       name: "Export Workflow",

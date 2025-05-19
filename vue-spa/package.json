@@ -7,7 +7,8 @@
     "./test-utils": "./test-utils.ts",
     "./tsconfig.app.json": "./tsconfig.app.json",
     "./tsconfig.json": "./tsconfig.json",
-    "./tsconfig.node.json": "./tsconfig.node.json"
+    "./tsconfig.node.json": "./tsconfig.node.json",
+    "./workflows": "./workflows/index.ts"
   },
   "dependencies": {
     "vite": "^6.0.0",
@@ -25,6 +26,7 @@
   },
   "devDependencies": {
     "@saflib/monorepo-dev": "*",
-    "@saflib/vitest": "*"
+    "@saflib/vitest": "*",
+    "@saflib/workflows": "*"
   }
 }

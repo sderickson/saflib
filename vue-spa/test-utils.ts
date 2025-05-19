@@ -17,7 +17,7 @@ export const getElementByString = (
   stringObj: ElementString,
 ) => {
   if (typeof stringObj === "string" || stringObj["v-text"]) {
-    const elements = wrapper.findAllComponents("*");
+    const elements = wrapper.findAll("*");
     const text: string =
       typeof stringObj === "string" ? stringObj : stringObj["v-text"]!;
     const element = elements.find((el) => {

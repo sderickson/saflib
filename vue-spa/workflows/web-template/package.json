@@ -1,0 +1,22 @@
+{
+  "name": "@vendata/web-template",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts",
+    "./strings": "./strings.ts"
+  },
+  "scripts": {
+    "dev": "vite",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest --coverage"
+  },
+  "dependencies": {
+    "@saflib/vue-spa": "*"
+  },
+  "devDependencies": {
+    "@saflib/vue-spa-dev": "*",
+    "@saflib/vitest": "*"
+  }
+}

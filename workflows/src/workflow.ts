@@ -176,6 +176,11 @@ export abstract class XStateWorkflow extends Workflow {
   kickoff = async (): Promise<boolean> => {
     const actor = createActor(this.machine, { input: this.input });
     actor.start();
+    const snapshot = actor.getSnapshot();
+    if (snapshot.status === "error") {
+      console.log("Actor started with error", snapshot.error);
+      return false;
+    }
     await waitFor(actor, allChildrenSettled);
     this.actor = actor;
     return actor.getSnapshot().status !== "error";
