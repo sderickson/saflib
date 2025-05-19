@@ -110,7 +110,7 @@ export const AddSpaWorkflowMachine = setup({
           actions: [
             promptAgent(
               ({ context }) =>
-                `Please update the package name and other template strings in the new SPA's package.json and other files. The new package name is ${context.packageName}.`,
+                `Please update the package name and other template strings in the new SPA's package.json and other files. The new package name is ${context.packageName}. Also update the "router.ts" file to use the new SPA's name as the base path.`,
             ),
           ],
         },
