@@ -8,11 +8,31 @@ import {
   promptAgent,
   XStateWorkflow,
 } from "@saflib/workflows";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { exec } from "node:child_process";
+import { promisify } from "node:util";
 
-interface AddSpaPageWorkflowInput {}
+const execAsync = promisify(exec);
+
+interface AddSpaPageWorkflowInput {
+  name: string; // kebab-case, e.g. "welcome-new-user"
+}
 
 interface AddSpaPageWorkflowContext extends WorkflowContext {
-  foo: string;
+  name: string; // kebab-case
+  pascalName: string; // PascalCase, e.g. WelcomeNewUserPage
+  targetDir: string;
+  sourceDir: string;
+}
+
+function toPascalCase(name: string) {
+  return (
+    name
+      .split("-")
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+      .join("") + "Page"
+  );
 }
 
 export const AddSpaPageWorkflowMachine = setup({
@@ -23,48 +43,56 @@ export const AddSpaPageWorkflowMachine = setup({
   actions: workflowActionImplementations,
   actors: workflowActors,
 }).createMachine({
-  id: "to-do",
-  description: "TODO",
-  initial: "examplePromptState",
-  context: (_) => {
+  id: "add-spa-page",
+  description:
+    "Create a new page in a SAF-powered Vue SPA, using a template and renaming placeholders.",
+  initial: "copyTemplate",
+  context: ({ input }) => {
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = path.dirname(__filename);
+    const sourceDir = path.join(
+      __dirname,
+      "web-template",
+      "pages",
+      "home-page",
+    );
+    const targetDir = path.join(process.cwd(), "pages", input.name + "-page");
     return {
-      foo: "bar",
+      name: input.name,
+      pascalName: toPascalCase(input.name),
+      targetDir,
+      sourceDir,
       loggedLast: false,
     };
   },
   entry: logInfo("Successfully began workflow"),
   states: {
-    examplePromptState: {
-      entry: raise({ type: "prompt" }),
-      on: {
-        prompt: {
-          actions: [
-            promptAgent(
-              ({ context }) =>
-                `This is a prompt state. It will not continue until the agent triggers the "continue" event. You can incorporate the context into the prompt if you need to like this: ${context.foo}`,
-            ),
-          ],
-        },
-        continue: {
-          target: "exampleAsyncWorkState",
-        },
-      },
-    },
-    exampleAsyncWorkState: {
+    copyTemplate: {
       invoke: {
         input: ({ context }) => context,
-        src: fromPromise(async ({ input }: { input: AddSpaPageWorkflowContext }) => {
-          // This promise can do async work such as calling an npm script.
-          // It should reject if the work fails.
-          return "success";
+        src: fromPromise(async ({ input }) => {
+          const { targetDir, sourceDir } = input;
+          await execAsync(`mkdir -p "${targetDir}"`);
+          const { stdout, stderr } = await execAsync(
+            `cp -r "${sourceDir}/"* "${targetDir}"`,
+          );
+          if (stderr) {
+            throw new Error(`Failed to copy template: ${stderr}`);
+          }
+          return stdout;
         }),
         onDone: {
-          target: "done",
-          actions: logInfo(() => `Work completed successfully.`), // use logInfo to communicate to the agent what is happening.
+          target: "renamePlaceholders",
+          actions: logInfo(
+            ({ context }) => `Copied template files to ${context.targetDir}`,
+          ),
         },
         onError: {
           actions: [
-            logError(() => `Work failed.`), // use logError to communicate to the agent what is happening.
+            logError(
+              ({ event }) =>
+                `Failed to copy template: ${(event.error as Error).message}`,
+            ),
             raise({ type: "prompt" }),
           ],
         },
@@ -73,18 +101,124 @@ export const AddSpaPageWorkflowMachine = setup({
         prompt: {
           actions: promptAgent(
             () =>
-              `Normally, this state will complete itself and not require agentic intervention. However, if the execution fails, the agent will be prompted with this string to fix the problem.`,
+              "Failed to copy the template files. Please check if the source directory exists and you have the necessary permissions.",
           ),
         },
         continue: {
-          // when the agent is done fixing the issue, they'll trigger the workflow tool to "continue" at which point the work will be retried.
           reenter: true,
-          target: "exampleAsyncWorkState",
+          target: "copyTemplate",
+        },
+      },
+    },
+    renamePlaceholders: {
+      invoke: {
+        input: ({ context }) => context,
+        src: fromPromise(
+          async ({ input }: { input: AddSpaPageWorkflowContext }) => {
+            // Replace all instances of 'HomePage' and 'home-page' with the new page name in PascalCase and kebab-case, including file names
+            const { targetDir, pascalName, name } = input;
+            // Rename files
+            await execAsync(
+              'find "' +
+                targetDir +
+                '" -type f -name "*HomePage*" -exec bash -c "mv \"$0\" \"${0/HomePage/' +
+                pascalName +
+                '}\"" {} \;',
+            );
+            await execAsync(
+              'find "' +
+                targetDir +
+                '" -type f -name "*home-page*" -exec bash -c "mv \"$0\" \"${0/home-page/' +
+                name +
+                '}\"" {} \;',
+            );
+            // Replace in file contents
+            await execAsync(
+              'find "' +
+                targetDir +
+                '" -type f -exec sed -i "" -e "s/HomePage/' +
+                pascalName +
+                '/g" {} +',
+            );
+            await execAsync(
+              'find "' +
+                targetDir +
+                '" -type f -exec sed -i "" -e "s/home-page/' +
+                name +
+                '/g" {} +',
+            );
+            return "Renamed placeholders";
+          },
+        ),
+        onDone: {
+          target: "runTests",
+          actions: logInfo(
+            () => `Renamed all placeholders in files and file names.`,
+          ),
+        },
+        onError: {
+          actions: [
+            logError(
+              ({ event }) =>
+                `Failed to rename placeholders: ${(event.error as Error).message}`,
+            ),
+            raise({ type: "prompt" }),
+          ],
+        },
+      },
+      on: {
+        prompt: {
+          actions: promptAgent(
+            () =>
+              "Failed to rename placeholders. Please check the file and directory permissions and naming conventions.",
+          ),
+        },
+        continue: {
+          reenter: true,
+          target: "renamePlaceholders",
+        },
+      },
+    },
+    runTests: {
+      invoke: {
+        input: ({ context }) => context,
+        src: fromPromise(async ({ input }) => {
+          // Run tests in the new page directory
+          const { targetDir } = input;
+          const { stdout, stderr } = await execAsync(
+            `cd "${targetDir}" && npm test`,
+          );
+          if (stderr) {
+            throw new Error(`Tests failed: ${stderr}`);
+          }
+          return stdout;
+        }),
+        onDone: {
+          target: "done",
+          actions: logInfo(() => `Tests passed successfully.`),
+        },
+        onError: {
+          actions: [
+            logError(
+              ({ event }) => `Tests failed: ${(event.error as Error).message}`,
+            ),
+            raise({ type: "prompt" }),
+          ],
+        },
+      },
+      on: {
+        prompt: {
+          actions: promptAgent(
+            () => "Tests failed. Please fix the issues and continue.",
+          ),
+        },
+        continue: {
+          reenter: true,
+          target: "runTests",
         },
       },
     },
     done: {
-      // there should always be a "done" state that is a final state.
       type: "final",
     },
   },
@@ -92,6 +226,13 @@ export const AddSpaPageWorkflowMachine = setup({
 
 export class AddSpaPageWorkflow extends XStateWorkflow {
   machine = AddSpaPageWorkflowMachine;
-  description = "TODO";
-  cliArguments = [];
+  description =
+    "Create a new page in a SAF-powered Vue SPA, using a template and renaming placeholders.";
+  cliArguments = [
+    {
+      name: "name",
+      description:
+        "Name of the new page in kebab-case (e.g. 'welcome-new-user')",
+    },
+  ];
 }
