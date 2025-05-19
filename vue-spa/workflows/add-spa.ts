@@ -10,6 +10,12 @@ import {
 } from "@saflib/workflows";
 import path from "node:path";
 import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { exec } from "node:child_process";
+import { promisify } from "node:util";
+
+const execAsync = promisify(exec);
+
 interface AddSpaWorkflowInput {
   name: string;
 }
@@ -47,18 +53,45 @@ export const AddSpaWorkflowMachine = setup({
   entry: logInfo("Successfully began workflow"),
   states: {
     copyTemplate: {
-      entry: raise({ type: "prompt" }),
-      on: {
-        prompt: {
+      invoke: {
+        src: fromPromise(async ({ input }) => {
+          const __filename = fileURLToPath(import.meta.url);
+          const __dirname = path.dirname(__filename);
+          const sourceDir = path.join(__dirname, "web-template");
+          const targetDir = path.join(process.cwd(), "..", "web-" + input.name);
+
+          const { stdout, stderr } = await execAsync(
+            `cp -r "${sourceDir}" "${targetDir}"`,
+          );
+          if (stderr) {
+            throw new Error(`Failed to copy template: ${stderr}`);
+          }
+          return stdout;
+        }),
+        onDone: {
+          target: "updatePackageName",
+          actions: logInfo(() => "Successfully copied template directory"),
+        },
+        onError: {
           actions: [
-            promptAgent(
-              ({ context }) =>
-                `Please copy the web-template directory from saflib/vue-spa/workflows/web-template to clients/web-${context.name} with appropriate modifications.`,
+            logError(
+              ({ event }) =>
+                `Failed to copy template: ${(event.error as Error).message}`,
             ),
+            raise({ type: "prompt" }),
           ],
         },
+      },
+      on: {
+        prompt: {
+          actions: promptAgent(
+            () =>
+              "Failed to copy the template directory. Please check if the source directory exists and you have the necessary permissions.",
+          ),
+        },
         continue: {
-          target: "updatePackageName",
+          reenter: true,
+          target: "copyTemplate",
         },
       },
     },
