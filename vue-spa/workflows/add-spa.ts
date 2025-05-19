@@ -126,7 +126,7 @@ export const AddSpaWorkflowMachine = setup({
           actions: [
             promptAgent(
               ({ context }) =>
-                `Please add ${context.packageName} as a dependency in clients/spas/package.json, then run 'npm install'.`,
+                `Please add ${context.packageName} as a dependency in clients/spas/package.json, then run 'npm install' from the root of the monorepo (not from the clients/spas directory).`,
             ),
           ],
         },
