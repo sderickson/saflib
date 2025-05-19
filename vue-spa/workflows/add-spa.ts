@@ -23,6 +23,7 @@ interface AddSpaWorkflowInput {
 interface AddSpaWorkflowContext extends WorkflowContext {
   name: string;
   packageName: string;
+  targetDir: string;
   loggedLast: boolean;
 }
 
@@ -44,9 +45,12 @@ export const AddSpaWorkflowMachine = setup({
     const thisPackageName = thisPackage.name;
     const thisPackageOrg = thisPackageName.split("/")[0];
 
+    const targetDir = path.join(process.cwd(), "..", "web-" + input.name);
+
     return {
       name: input.name,
       packageName: `${thisPackageOrg}/web-${input.name}-client`,
+      targetDir,
       loggedLast: false,
     };
   },
@@ -59,7 +63,7 @@ export const AddSpaWorkflowMachine = setup({
           const __filename = fileURLToPath(import.meta.url);
           const __dirname = path.dirname(__filename);
           const sourceDir = path.join(__dirname, "web-template");
-          const targetDir = path.join(process.cwd(), "..", "web-" + input.name);
+          const { targetDir } = input;
 
           const { stdout, stderr } = await execAsync(
             `cp -r "${sourceDir}" "${targetDir}"`,
@@ -71,7 +75,10 @@ export const AddSpaWorkflowMachine = setup({
         }),
         onDone: {
           target: "updatePackageName",
-          actions: logInfo(() => "Successfully copied template directory"),
+          actions: logInfo(
+            ({ context }) =>
+              `Successfully copied template directory to ${context.targetDir}`,
+          ),
         },
         onError: {
           actions: [

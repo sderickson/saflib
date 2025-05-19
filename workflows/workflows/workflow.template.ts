@@ -52,7 +52,8 @@ export const ToDoWorkflowMachine = setup({
     },
     exampleAsyncWorkState: {
       invoke: {
-        src: fromPromise(async () => {
+        input: ({ context }) => context,
+        src: fromPromise(async ({ input }: { input: ToDoWorkflowContext }) => {
           // This promise can do async work such as calling an npm script.
           // It should reject if the work fails.
           return "success";
