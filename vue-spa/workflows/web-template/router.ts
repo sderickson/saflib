@@ -1,4 +1,4 @@
-import HomePage from "./pages/home-page/HomePage.vue";
+import HomePage from "./pages/home-page/HomePageAsync.vue";
 import { createRouter, createWebHistory } from "vue-router";
 const routes = [{ path: "/", component: HomePage }];
 
