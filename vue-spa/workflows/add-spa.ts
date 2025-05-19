@@ -9,10 +9,13 @@ import {
   XStateWorkflow,
 } from "@saflib/workflows";
 
-interface AddSpaWorkflowInput {}
+interface AddSpaWorkflowInput {
+  name: string;
+}
 
 interface AddSpaWorkflowContext extends WorkflowContext {
-  foo: string;
+  name: string;
+  loggedLast: boolean;
 }
 
 export const AddSpaWorkflowMachine = setup({
@@ -23,67 +26,131 @@ export const AddSpaWorkflowMachine = setup({
   actions: workflowActionImplementations,
   actors: workflowActors,
 }).createMachine({
-  id: "to-do",
-  description: "TODO",
+  id: "add-spa",
+  description:
+    "Create a new SAF-powered frontend SPA using Vue, Vue-Router, and Tanstack Query",
   initial: "getOriented",
-  context: (_) => {
+  context: ({ input }) => {
     return {
-      foo: "bar",
+      name: input.name,
       loggedLast: false,
     };
   },
   entry: logInfo("Successfully began workflow"),
   states: {
-    examplePromptState: {
+    copyTemplate: {
       entry: raise({ type: "prompt" }),
       on: {
         prompt: {
           actions: [
             promptAgent(
               ({ context }) =>
-                `This is a prompt state. It will not continue until the agent triggers the "continue" event. You can incorporate the context into the prompt if you need to like this: ${context.foo}`,
+                `Please copy the web-template directory from saflib/vue-spa/workflows/web-template to clients/web-${context.name} with appropriate modifications.`,
             ),
           ],
         },
         continue: {
-          target: "exampleAsyncWorkState",
+          target: "updatePackageName",
         },
       },
     },
-    exampleAsyncWorkState: {
-      invoke: {
-        src: fromPromise(async () => {
-          // This promise can do async work such as calling an npm script.
-          // It should reject if the work fails.
-          return "success";
-        }),
-        onDone: {
-          target: "done",
-          actions: logInfo(() => `Work completed successfully.`), // use logInfo to communicate to the agent what is happening.
-        },
-        onError: {
-          actions: [
-            logError(() => `Work failed.`), // use logError to communicate to the agent what is happening.
-            raise({ type: "prompt" }),
-          ],
-        },
-      },
+    updatePackageName: {
+      entry: raise({ type: "prompt" }),
       on: {
         prompt: {
-          actions: promptAgent(
-            () =>
-              `Normally, this state will complete itself and not require agentic intervention. However, if the execution fails, the agent will be prompted with this string to fix the problem.`,
-          ),
+          actions: [
+            promptAgent(
+              ({ context }) =>
+                `Please update the package name and other template strings in the new SPA's package.json and other files.`,
+            ),
+          ],
         },
         continue: {
-          // when the agent is done fixing the issue, they'll trigger the workflow tool to "continue" at which point the work will be retried.
-          reenter: true,
-          target: "exampleAsyncWorkState",
+          target: "addDependency",
+        },
+      },
+    },
+    addDependency: {
+      entry: raise({ type: "prompt" }),
+      on: {
+        prompt: {
+          actions: [
+            promptAgent(
+              ({ context }) =>
+                `Please add the new package as a dependency in clients/spas/package.json.`,
+            ),
+          ],
+        },
+        continue: {
+          target: "createEntryPoints",
+        },
+      },
+    },
+    createEntryPoints: {
+      entry: raise({ type: "prompt" }),
+      on: {
+        prompt: {
+          actions: [
+            promptAgent(
+              ({ context }) =>
+                `Please create index.html and main.ts files in clients/spas/${context.name} similar to other SPAs already there.`,
+            ),
+          ],
+        },
+        continue: {
+          target: "updateViteConfig",
+        },
+      },
+    },
+    updateViteConfig: {
+      entry: raise({ type: "prompt" }),
+      on: {
+        prompt: {
+          actions: [
+            promptAgent(
+              ({ context }) =>
+                `Please update clients/spas/vite.config.ts to add proxy and input properties for the new SPA.`,
+            ),
+          ],
+        },
+        continue: {
+          target: "updateCaddyfile",
+        },
+      },
+    },
+    updateCaddyfile: {
+      entry: raise({ type: "prompt" }),
+      on: {
+        prompt: {
+          actions: [
+            promptAgent(
+              ({ context }) =>
+                `Please update deploy/instance/remote-assets/config/Caddyfile to add the new SPA to the serve_prod_spas snippet.`,
+            ),
+          ],
+        },
+        continue: {
+          target: "testDeployment",
+        },
+      },
+    },
+    testDeployment: {
+      entry: raise({ type: "prompt" }),
+      on: {
+        prompt: {
+          actions: [
+            promptAgent(
+              ({ context }) =>
+                `Please test the new SPA by running 'npm run build' and make sure there are no errors, then ask the user to run 'npm run prod-local' in the instance directory and have them verify the new page shows up.`,
+            ),
+          ],
+        },
+        continue: {
+          target: "done",
         },
       },
     },
     done: {
-      // there should always be a "done" state that is a final state.
       type: "final",
     },
   },
@@ -91,6 +158,12 @@ export const AddSpaWorkflowMachine = setup({
 
 export class AddSpaWorkflow extends XStateWorkflow {
   machine = AddSpaWorkflowMachine;
-  description = "TODO";
-  cliArguments = [];
+  description =
+    "Create a new SAF-powered frontend SPA using Vue, Vue-Router, and Tanstack Query";
+  cliArguments = [
+    {
+      name: "name",
+      description: "Name of the new SPA (e.g. 'admin' for web-admin)",
+    },
+  ];
 }
