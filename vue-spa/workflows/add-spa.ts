@@ -31,7 +31,7 @@ export const AddSpaWorkflowMachine = setup({
   id: "add-spa",
   description:
     "Create a new SAF-powered frontend SPA using Vue, Vue-Router, and Tanstack Query",
-  initial: "getOriented",
+  initial: "copyTemplate",
   context: ({ input }) => {
     const thisPackagePath = path.join(process.cwd(), "package.json");
     const thisPackage = JSON.parse(readFileSync(thisPackagePath, "utf8"));

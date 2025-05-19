@@ -5,7 +5,7 @@ import HomePage from "./HomePage.vue";
 import { home_page as strings } from "./HomePage.strings.ts";
 import { router } from "../../router.ts";
 import { getElementByString } from "@saflib/vue-spa/test-utils";
-import { Component } from "vue-demi";
+import type { Component } from "vue";
 
 describe("HomePage", () => {
   stubGlobals();

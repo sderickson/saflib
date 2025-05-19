@@ -25,7 +25,7 @@ export const ToDoWorkflowMachine = setup({
 }).createMachine({
   id: "to-do",
   description: "TODO",
-  initial: "getOriented",
+  initial: "examplePromptState",
   context: (_) => {
     return {
       foo: "bar",
