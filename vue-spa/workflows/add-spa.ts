@@ -46,7 +46,7 @@ export const AddSpaWorkflowMachine = setup({
 
     return {
       name: input.name,
-      packageName: `${thisPackageOrg}/${input.name}`,
+      packageName: `${thisPackageOrg}/web-${input.name}-client`,
       loggedLast: false,
     };
   },
@@ -119,7 +119,7 @@ export const AddSpaWorkflowMachine = setup({
           actions: [
             promptAgent(
               ({ context }) =>
-                `Please add ${context.packageName} as a dependency in clients/spas/package.json.`,
+                `Please add ${context.packageName} as a dependency in clients/spas/package.json, then run 'npm install'.`,
             ),
           ],
         },
