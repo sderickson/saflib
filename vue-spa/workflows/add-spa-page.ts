@@ -123,14 +123,14 @@ export const AddSpaPageWorkflowMachine = setup({
                 targetDir +
                 '" -type f -name "*HomePage*" -exec bash -c "mv \"$0\" \"${0/HomePage/' +
                 pascalName +
-                '}\"" {} \;',
+                '}\"" {} \\;',
             );
             await execAsync(
               'find "' +
                 targetDir +
                 '" -type f -name "*home-page*" -exec bash -c "mv \"$0\" \"${0/home-page/' +
                 name +
-                '}\"" {} \;',
+                '}\"" {} \\;',
             );
             // Replace in file contents
             await execAsync(
