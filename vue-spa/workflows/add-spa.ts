@@ -9,16 +9,16 @@ import {
   XStateWorkflow,
 } from "@saflib/workflows";
 
-interface ToDoWorkflowInput {}
+interface AddSpaWorkflowInput {}
 
-interface ToDoWorkflowContext extends WorkflowContext {
+interface AddSpaWorkflowContext extends WorkflowContext {
   foo: string;
 }
 
-export const ToDoWorkflowMachine = setup({
+export const AddSpaWorkflowMachine = setup({
   types: {
-    input: {} as ToDoWorkflowInput,
-    context: {} as ToDoWorkflowContext,
+    input: {} as AddSpaWorkflowInput,
+    context: {} as AddSpaWorkflowContext,
   },
   actions: workflowActionImplementations,
   actors: workflowActors,
@@ -89,8 +89,8 @@ export const ToDoWorkflowMachine = setup({
   },
 });
 
-export class ToDoWorkflow extends XStateWorkflow {
-  machine = ToDoWorkflowMachine;
+export class AddSpaWorkflow extends XStateWorkflow {
+  machine = AddSpaWorkflowMachine;
   description = "TODO";
   cliArguments = [];
 }
