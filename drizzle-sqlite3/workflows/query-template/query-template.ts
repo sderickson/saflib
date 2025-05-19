@@ -1,8 +1,11 @@
 // TODO: Uncomment and fix these imports
-// import { ReturnsError } from "@saflib/monorepo";
-// import { queryWrapper } from "../errors.js";
-// import { db } from "../db.js";
-// import type { Contact } from "../types.js";
+//import { someDb } from "@own/package";
+//import { SomeError } from "../../errors.ts";
+//import type { SomeDbType } from "../../types.ts";
+import { ReturnsError } from "@saflib/monorepo";
+
+import { queryWrapper } from "@saflib/drizzle-sqlite3";
+import type { DbKey } from "@saflib/drizzle-sqlite3";
 
 export type QueryTemplateParams = {
   // Add your query parameters here
@@ -13,9 +16,11 @@ export type QueryTemplateResult = {
 };
 
 export const queryTemplate = queryWrapper(
-  async (params: QueryTemplateParams): Promise<QueryTemplateResult> => {
-    // Implement your query here
-    return {};
+  async (
+    dbKey: DbKey,
+    params: QueryTemplateParams,
+  ): Promise<ReturnsError<QueryTemplateResult>> => {
+    // const db = mainDbManager.get(dbKey);
+    return { result: {} };
   },
 );
-@
