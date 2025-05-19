@@ -3,6 +3,9 @@
   "description": "Tools for software development",
   "private": true,
   "type": "module",
+  "exports": {
+    ".": "./index.ts"
+  },
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",

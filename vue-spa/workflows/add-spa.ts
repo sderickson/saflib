@@ -8,13 +8,15 @@ import {
   promptAgent,
   XStateWorkflow,
 } from "@saflib/workflows";
-
+import path from "node:path";
+import { readFileSync } from "node:fs";
 interface AddSpaWorkflowInput {
   name: string;
 }
 
 interface AddSpaWorkflowContext extends WorkflowContext {
   name: string;
+  packageName: string;
   loggedLast: boolean;
 }
 
@@ -31,8 +33,14 @@ export const AddSpaWorkflowMachine = setup({
     "Create a new SAF-powered frontend SPA using Vue, Vue-Router, and Tanstack Query",
   initial: "getOriented",
   context: ({ input }) => {
+    const thisPackagePath = path.join(process.cwd(), "package.json");
+    const thisPackage = JSON.parse(readFileSync(thisPackagePath, "utf8"));
+    const thisPackageName = thisPackage.name;
+    const thisPackageOrg = thisPackageName.split("/")[0];
+
     return {
       name: input.name,
+      packageName: `${thisPackageOrg}/${input.name}`,
       loggedLast: false,
     };
   },
@@ -61,7 +69,7 @@ export const AddSpaWorkflowMachine = setup({
           actions: [
             promptAgent(
               ({ context }) =>
-                `Please update the package name and other template strings in the new SPA's package.json and other files.`,
+                `Please update the package name and other template strings in the new SPA's package.json and other files. The new package name is ${context.packageName}.`,
             ),
           ],
         },
@@ -77,7 +85,7 @@ export const AddSpaWorkflowMachine = setup({
           actions: [
             promptAgent(
               ({ context }) =>
-                `Please add the new package as a dependency in clients/spas/package.json.`,
+                `Please add ${context.packageName} as a dependency in clients/spas/package.json.`,
             ),
           ],
         },
