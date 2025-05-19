@@ -181,7 +181,7 @@ export const AddSpaPageWorkflowMachine = setup({
       invoke: {
         src: fromPromise(doTestsPass),
         onDone: {
-          target: "done",
+          target: "updateRouter",
           actions: logInfo(() => `Tests passed successfully.`),
         },
         onError: {
@@ -202,6 +202,22 @@ export const AddSpaPageWorkflowMachine = setup({
         continue: {
           reenter: true,
           target: "runTests",
+        },
+      },
+    },
+    updateRouter: {
+      entry: raise({ type: "prompt" }),
+      on: {
+        prompt: {
+          actions: [
+            promptAgent(
+              ({ context }) =>
+                `Please update the router.ts file to include the new page. Add a new route for ${context.name} that uses the ${context.pascalName}Async component. The route should be at "/${context.name}".`,
+            ),
+          ],
+        },
+        continue: {
+          target: "done",
         },
       },
     },
