@@ -5,7 +5,7 @@ import { existsSync } from "fs";
 interface AddQueriesWorkflowParams {}
 
 export class AddQueriesWorkflow extends SimpleWorkflow<AddQueriesWorkflowParams> {
-  name = "add-queries";
+  name = "add-queries-old";
   description =
     "Add queries to a database built off the drizzle-sqlite3 package.";
 
