@@ -31,8 +31,9 @@ interface AddRouteWorkflowContext extends WorkflowContext {
   testingGuide: string;
   featureName: string; // e.g. "call-series"
   featureRouterPath: string; // e.g. "/<abs-path>/routes/call-series/index.ts"
-  mainRouterPath: string; // e.g. "/<abs-path>/routes/index.ts"
+  pascalFeatureName: string; // e.g. "CallSeries"
   httpAppPath: string; // e.g. "/<abs-path>/http.ts"
+  appPath: string; // e.g. "/<abs-path>/app.ts"
 }
 
 function toCamelCase(name: string) {
@@ -42,6 +43,13 @@ function toCamelCase(name: string) {
       if (index === 0) return part;
       return part.charAt(0).toUpperCase() + part.slice(1);
     })
+    .join("");
+}
+
+function toPascalCase(name: string) {
+  return name
+    .split("-")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join("");
 }
 
@@ -68,8 +76,9 @@ export const AddRouteWorkflowMachine = setup({
     );
     const featureName = path.basename(targetDir);
     const featureRouterPath = path.join(targetDir, "index.ts");
-    const mainRouterPath = path.join(process.cwd(), "routes", "index.ts");
+    const pascalFeatureName = toPascalCase(featureName);
     const httpAppPath = path.join(process.cwd(), "http.ts");
+    const appPath = path.join(process.cwd(), "app.ts");
 
     return {
       name: path.basename(input.path).split(".")[0],
@@ -80,8 +89,9 @@ export const AddRouteWorkflowMachine = setup({
       testingGuide,
       featureName,
       featureRouterPath,
-      mainRouterPath,
+      pascalFeatureName,
       httpAppPath,
+      appPath,
       loggedLast: false,
     };
   },
@@ -209,16 +219,24 @@ export const AddRouteWorkflowMachine = setup({
       invoke: {
         input: ({ context }) => context,
         src: fromPromise(async ({ input }) => {
-          const { featureRouterPath, featureName } = input;
+          const {
+            featureRouterPath,
+            featureName,
+            pascalFeatureName,
+            camelName,
+            name,
+          } = input;
           if (!existsSync(featureRouterPath)) {
             const routerContent = `import express from "express";
-import { ${input.camelName}Handler } from "./${input.name}.ts";
+import { ${camelName}Handler } from "./${name}.ts";
 
-const router = express.Router();
+export function create${pascalFeatureName}Router() {
+  const router = express.Router();
 
-router.post("/", ${input.camelName}Handler);
+  router.post("/", ${camelName}Handler);
 
-export default router;
+  return router;
+}
 `;
             await writeFile(featureRouterPath, routerContent);
             return "Created feature router";
@@ -264,75 +282,7 @@ export default router;
                 `Update the feature router at ${context.featureRouterPath} to include the new route handler.
                 1. Import the new handler from "./${context.name}.ts"
                 2. Add the route to the router using the appropriate HTTP method
-                3. Make sure to export the router as default`,
-            ),
-          ],
-        },
-        continue: {
-          target: "checkMainRouter",
-        },
-      },
-    },
-    checkMainRouter: {
-      invoke: {
-        input: ({ context }) => context,
-        src: fromPromise(async ({ input }) => {
-          const { mainRouterPath, featureName } = input;
-          if (!existsSync(mainRouterPath)) {
-            const routerContent = `import express from "express";
-import ${featureName}Router from "./${featureName}/index.ts";
-
-const router = express.Router();
-
-router.use("/${featureName}", ${featureName}Router);
-
-export default router;
-`;
-            await writeFile(mainRouterPath, routerContent);
-            return "Created main router";
-          }
-          return "Main router exists";
-        }),
-        onDone: {
-          target: "updateMainRouter",
-          actions: logInfo(
-            ({ event }) => `Main router status: ${event.output}`,
-          ),
-        },
-        onError: {
-          actions: [
-            logError(
-              ({ event }) =>
-                `Failed to check/create main router: ${(event.error as Error).message}`,
-            ),
-            raise({ type: "prompt" }),
-          ],
-        },
-      },
-      on: {
-        prompt: {
-          actions: promptAgent(
-            () =>
-              "Failed to check or create the main router. Please check file permissions.",
-          ),
-        },
-        continue: {
-          reenter: true,
-          target: "checkMainRouter",
-        },
-      },
-    },
-    updateMainRouter: {
-      entry: raise({ type: "prompt" }),
-      on: {
-        prompt: {
-          actions: [
-            promptAgent(
-              ({ context }) =>
-                `Update the main router at ${context.mainRouterPath} to include the feature router.
-                1. Import the feature router from "./${context.featureName}/index.ts"
-                2. Add the route using router.use("/${context.featureName}", ${context.featureName}Router)
-                3. Make sure to export the router as default`,
+                3. Make sure to export a create${context.pascalFeatureName}Router function that returns the router`,
             ),
           ],
         },
@@ -345,25 +295,11 @@ export default router;
       invoke: {
         input: ({ context }) => context,
         src: fromPromise(async ({ input }) => {
-          const { httpAppPath } = input;
-          if (!existsSync(httpAppPath)) {
-            const appContent = `import express from "express";
-import mainRouter from "./routes/index.ts";
-import { preMiddleware, errorHandlers } from "./middleware.ts";
-
-export function createApiApp() {
-  const app = express();
-  app.set("trust proxy", 1);
-
-  app.use(preMiddleware);
-  app.use(mainRouter);
-  app.use(errorHandlers);
-
-  return app;
-}
-`;
-            await writeFile(httpAppPath, appContent);
-            return "Created HTTP app";
+          const { httpAppPath, appPath } = input;
+          if (!existsSync(httpAppPath) && !existsSync(appPath)) {
+            throw new Error(
+              "Neither http.ts nor app.ts found in the current directory",
+            );
           }
           return "HTTP app exists";
         }),
@@ -375,7 +311,7 @@ export function createApiApp() {
           actions: [
             logError(
               ({ event }) =>
-                `Failed to check/create HTTP app: ${(event.error as Error).message}`,
+                `Failed to check HTTP app: ${(event.error as Error).message}`,
             ),
             raise({ type: "prompt" }),
           ],
@@ -385,7 +321,7 @@ export function createApiApp() {
         prompt: {
           actions: promptAgent(
             () =>
-              "Failed to check or create the HTTP app. Please check file permissions.",
+              "Neither http.ts nor app.ts found in the current directory. Please create one of these files to mount your routes.",
           ),
         },
         continue: {
@@ -401,10 +337,10 @@ export function createApiApp() {
           actions: [
             promptAgent(
               ({ context }) =>
-                `Update the HTTP app at ${context.httpAppPath} to use the main router.
-                1. Import the main router from "./routes/index.ts"
-                2. Add the router using app.use(mainRouter)
-                3. Make sure to export the createApiApp function`,
+                `Update the HTTP app to include the feature router:
+                1. Import the feature router: \`import { create${context.pascalFeatureName}Router } from "./routes/${context.featureName}/index.ts"\`
+                2. Add the router to the app: \`app.use("/${context.featureName}", create${context.pascalFeatureName}Router())\`
+                3. Make sure to add this before the error handlers`,
             ),
           ],
         },
