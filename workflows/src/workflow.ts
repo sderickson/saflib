@@ -182,6 +182,7 @@ export abstract class XStateWorkflow extends Workflow {
       return false;
     }
     await waitFor(actor, allChildrenSettled);
+    console.log("\nTo continue, run 'npm exec saf-workflow next'\n");
     this.actor = actor;
     return actor.getSnapshot().status !== "error";
   };
