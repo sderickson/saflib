@@ -25,7 +25,9 @@ interface AddTanstackQueriesWorkflowContext extends WorkflowContext {
   camelName: string; // e.g. feature
   targetDir: string; // e.g. "/<abs-path>/requests/"
   targetFile: string; // e.g. "/<abs-path>/requests/feature.ts"
+  targetTestFile: string; // e.g. "/<abs-path>/requests/feature.test.ts"
   sourceFile: string; // e.g. "/<abs-path>/workflows/query-template.ts"
+  sourceTestFile: string; // e.g. "/<abs-path>/workflows/query-template.test.ts"
   refDoc: string;
   testingGuide: string;
   packageIndexPath: string; // e.g. "/<abs-path>/index.ts"
@@ -56,7 +58,12 @@ export const AddTanstackQueriesWorkflowMachine = setup({
     const __filename = fileURLToPath(import.meta.url);
     const __dirname = path.dirname(__filename);
     const sourceFile = path.join(__dirname, "query-template.ts");
+    const sourceTestFile = path.join(__dirname, "query-template.test.ts");
     const targetFile = path.join(process.cwd(), input.path);
+    const targetTestFile = path.join(
+      process.cwd(),
+      input.path.replace(".ts", ".test.ts"),
+    );
     const targetDir = path.dirname(targetFile);
     const name = path.basename(input.path, ".ts");
     const camelName = toCamelCase(name);
@@ -71,7 +78,9 @@ export const AddTanstackQueriesWorkflowMachine = setup({
       camelName,
       targetDir,
       targetFile,
+      targetTestFile,
       sourceFile,
+      sourceTestFile,
       refDoc,
       testingGuide,
       packageIndexPath,
@@ -100,20 +109,37 @@ export const AddTanstackQueriesWorkflowMachine = setup({
       invoke: {
         input: ({ context }) => context,
         src: fromPromise(async ({ input }) => {
-          const { targetDir, sourceFile, targetFile } = input;
+          const {
+            targetDir,
+            sourceFile,
+            targetFile,
+            sourceTestFile,
+            targetTestFile,
+          } = input;
           await execAsync(`mkdir -p "${targetDir}"`);
-          const { stdout, stderr } = await execAsync(
+
+          // Copy main template
+          const { stdout: mainStdout, stderr: mainStderr } = await execAsync(
             `cp "${sourceFile}" "${targetFile}"`,
           );
-          if (stderr) {
-            throw new Error(`Failed to copy template: ${stderr}`);
+          if (mainStderr) {
+            throw new Error(`Failed to copy main template: ${mainStderr}`);
           }
-          return stdout;
+
+          // Copy test template
+          const { stdout: testStdout, stderr: testStderr } = await execAsync(
+            `cp "${sourceTestFile}" "${targetTestFile}"`,
+          );
+          if (testStderr) {
+            throw new Error(`Failed to copy test template: ${testStderr}`);
+          }
+
+          return { mainStdout, testStdout };
         }),
         onDone: {
           target: "renamePlaceholders",
           actions: logInfo(
-            ({ context }) => `Copied template file to ${context.targetFile}`,
+            ({ context }) => `Copied template files to ${context.targetDir}`,
           ),
         },
         onError: {
@@ -130,7 +156,7 @@ export const AddTanstackQueriesWorkflowMachine = setup({
         prompt: {
           actions: promptAgent(
             () =>
-              "Failed to copy the template file. Please check if the source file exists and you have the necessary permissions.",
+              "Failed to copy the template files. Please check if the source files exist and you have the necessary permissions.",
           ),
         },
         continue: {
@@ -143,20 +169,32 @@ export const AddTanstackQueriesWorkflowMachine = setup({
       invoke: {
         input: ({ context }) => context,
         src: fromPromise(async ({ input }) => {
-          const { targetFile, name, camelName } = input;
+          const { targetFile, targetTestFile, camelName, name } = input;
+
+          // Update main file
           const content = await readFile(targetFile, "utf-8");
           const updatedContent = content
-            .replace(/feature/g, name)
-            .replace(
-              /Feature/g,
-              camelName.charAt(0).toUpperCase() + camelName.slice(1),
-            );
+            .replace(/queryTemplate/g, camelName)
+            .replace(/query-template/g, name);
           await writeFile(targetFile, updatedContent);
+
+          // Update test file
+          const testContent = await readFile(targetTestFile, "utf-8");
+          const updatedTestContent = testContent
+            .replace(/queryTemplate/g, camelName)
+            .replace(
+              /useQueryTemplate/g,
+              `use${camelName.charAt(0).toUpperCase() + camelName.slice(1)}`,
+            );
+          await writeFile(targetTestFile, updatedTestContent);
+
           return "Renamed placeholders";
         }),
         onDone: {
-          target: "promptExport",
-          actions: logInfo(() => `Renamed all placeholders in the file.`),
+          target: "checkPackageIndex",
+          actions: logInfo(
+            () => `Renamed all placeholders in files and file names.`,
+          ),
         },
         onError: {
           actions: [
