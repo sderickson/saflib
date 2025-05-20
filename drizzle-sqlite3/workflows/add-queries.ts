@@ -259,7 +259,7 @@ export const AddQueriesWorkflowMachine = setup({
           actions: [
             promptAgent(
               ({ context }) =>
-                `Read the testing guide: ${context.testingGuide}`,
+                `Read the testing guide: ${context.testingGuide} and update the generated ${context.name}.test.ts file accordingly.`,
             ),
           ],
         },
