@@ -2,6 +2,28 @@
 
 A spec package contains OpenAPI specifications. These generate types used in TypeScript on both client and server, json objects which are used by node/express to validate responses and requests, and an html file for exploring your APIs. This document goes over how to update these APIs and update these outputs.
 
+## DRY Schemas with allOf
+
+**Best Practice:** When defining request bodies for create/update endpoints, use `allOf` with your main schema (e.g., `contact.yaml`) to avoid repeating all properties. This keeps your spec DRY and easier to maintain.
+
+**Example:**
+
+```yaml
+post:
+  summary: Create a new contact
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          allOf:
+            - $ref: "../schemas/contact.yaml"
+          required:
+            - relationship_to_owner
+```
+
+This approach can be used for PUT (update) as well. The backend can ignore fields it doesn't use.
+
 ## Directory Structure
 
 ```
