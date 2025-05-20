@@ -7,6 +7,7 @@ import {
   logError,
   promptAgent,
   XStateWorkflow,
+  doTestsPass,
 } from "@saflib/workflows";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -191,7 +192,7 @@ export const AddTanstackQueriesWorkflowMachine = setup({
           return "Renamed placeholders";
         }),
         onDone: {
-          target: "checkPackageIndex",
+          target: "reviewTestDocs",
           actions: logInfo(
             () => `Renamed all placeholders in files and file names.`,
           ),
@@ -219,7 +220,75 @@ export const AddTanstackQueriesWorkflowMachine = setup({
         },
       },
     },
-    promptExport: {
+    reviewTestDocs: {
+      entry: raise({ type: "prompt" }),
+      on: {
+        prompt: {
+          actions: [
+            promptAgent(
+              ({ context }) =>
+                `Read the testing guide: ${context.testingGuide}`,
+            ),
+          ],
+        },
+        continue: {
+          target: "implementTests",
+        },
+      },
+    },
+    implementTests: {
+      entry: raise({ type: "prompt" }),
+      on: {
+        prompt: {
+          actions: [
+            promptAgent(
+              ({ context }) =>
+                `Update the generated ${context.name}.test.ts file to follow the testing guide. Make sure to:
+
+                1. Use withVueQuery for setup
+                2. Set up mock server with appropriate handlers
+                3. Test both success and error cases
+                4. Test cache invalidation if mutations are present
+                5. Follow the patterns from the example tests
+                6. Always unmount the app after tests
+                7. Use proper typing for mock data and responses`,
+            ),
+          ],
+        },
+        continue: {
+          target: "runTests",
+        },
+      },
+    },
+    runTests: {
+      invoke: {
+        src: fromPromise(doTestsPass),
+        onDone: {
+          target: "checkPackageIndex",
+          actions: logInfo(() => `Tests passed successfully.`),
+        },
+        onError: {
+          actions: [
+            logError(
+              ({ event }) => `Tests failed: ${(event.error as Error).message}`,
+            ),
+            raise({ type: "prompt" }),
+          ],
+        },
+      },
+      on: {
+        prompt: {
+          actions: promptAgent(
+            () => "Tests failed. Please fix the issues and continue.",
+          ),
+        },
+        continue: {
+          reenter: true,
+          target: "runTests",
+        },
+      },
+    },
+    checkPackageIndex: {
       entry: raise({ type: "prompt" }),
       on: {
         prompt: {
