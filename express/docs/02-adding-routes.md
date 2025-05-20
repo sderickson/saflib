@@ -9,6 +9,7 @@
 - **Error Handling Philosophy:**
   - Route handlers should **handle expected errors** returned by service/database layers (e.g., "Not Found", "Validation Failed"). This typically involves checking the `error` property of the returned object (see `ReturnsError` pattern).
   - Handlers translate these expected errors into appropriate HTTP status codes and response bodies (conforming to the OpenAPI spec).
+  - **For queries that currently never return errors, use a `switch (true)` with a `throw error satisfies never;` in the `default` case. This ensures TypeScript will catch unhandled error types if the DB/service layer ever starts returning them.**
   - **Unexpected errors** (database connection issues, bugs, errors _thrown_ by services) should _not_ be caught by `try/catch` in the handler. Let them propagate; `createHandler` will catch them and pass them to the central error middleware, typically resulting in a 500 response.
 - Routes are primarily responsible for HTTP concerns: request validation (basic format), authorization checks, context extraction, calling service/DB layer, response formatting (mapping results/errors to HTTP status/body), and adhering to the API contract (OpenAPI spec).
 - Note that openapi validation and auth middleware checks happen before, so routes should assume params, body, and auth are valid. A handler need never throw a 401, but they should throw 403s.
@@ -114,11 +115,11 @@ export const getCallSeriesHandler = createHandler(async (req, res) => {
     switch (true) {
       case error instanceof CallSeriesNotFoundError:
         // Return a 404 conforming to the spec
-        // Note: createError(404) could also be thrown here, letting
-        // the central handler format the response, if preferred.
         return res.status(404);
       default:
-        // Unexpected *returned* error, escalate to central handler
+        // If an unexpected error type was *returned* (should be rare),
+        // throw it so the central error handler catches it.
+        // This ensures all error types from the DB layer are handled.
         throw error satisfies never;
     }
   }
@@ -135,6 +136,18 @@ export const getCallSeriesHandler = createHandler(async (req, res) => {
   };
   res.status(200).json(response);
 });
+```
+
+**For queries that currently never return errors:**
+
+```typescript
+const { result, error } = await mainDb.contacts.create(ctx.dbKey, input);
+if (error) {
+  switch (true) {
+    default:
+      throw error satisfies never;
+  }
+}
 ```
 
 ## Best Practices
