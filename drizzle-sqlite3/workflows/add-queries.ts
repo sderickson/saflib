@@ -22,11 +22,10 @@ interface AddQueriesWorkflowInput {
 }
 
 interface AddQueriesWorkflowContext extends WorkflowContext {
-  name: string; // kebab-case
-  path: string; // kebab-case
-  camelName: string; // camelCase, e.g. getById
-  targetDir: string;
-  sourceDir: string;
+  name: string; // e.g. "get-by-id"
+  camelName: string; // e.g. getById
+  targetDir: string; // e.g. "/<abs-path>/queries/contacts/"
+  sourceDir: string; // e.g. "/<abs-path>/query-template/"
   refDoc: string;
   testingGuide: string;
 }
@@ -65,7 +64,6 @@ export const AddQueriesWorkflowMachine = setup({
     );
     return {
       name: path.basename(input.path).split(".")[0],
-      path: input.path,
       camelName: toCamelCase(path.basename(input.path).split(".")[0]),
       targetDir,
       sourceDir,
@@ -85,7 +83,7 @@ export const AddQueriesWorkflowMachine = setup({
               ({ context }) =>
                 `Read the project spec and the reference documentation for the @saflib/drizzle-sqlite3 package. If they haven't already, ask the user for the project spec.
 
-                Also, read the guidelines for queries in the doc: ${context.refDoc}`,
+                Also, read the guidelines for queries in the doc: ${context.refDoc} and ${console.log(context)}`,
             ),
           ],
         },
@@ -145,22 +143,16 @@ export const AddQueriesWorkflowMachine = setup({
 
           // Get all files in the directory
           const files = await readdir(targetDir);
-
-          // Rename files and update their contents
           for (const file of files) {
-            const oldPath = path.join(targetDir, file);
-            let newPath = oldPath;
-
-            // Rename files containing query-template
-            if (file.includes("query-template")) {
-              newPath = path.join(
-                targetDir,
-                file.replace("query-template", name),
-              );
-              await rename(oldPath, newPath);
+            if (!file.includes("query-template")) {
+              continue;
             }
-
-            // Update file contents
+            const oldPath = path.join(targetDir, file);
+            const newPath = path.join(
+              targetDir,
+              file.replace("query-template", name),
+            );
+            await rename(oldPath, newPath);
             const content = await readFile(newPath, "utf-8");
             const updatedContent = content
               .replace(/queryTemplate/g, camelName)
