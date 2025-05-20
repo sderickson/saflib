@@ -21,5 +21,8 @@
   "devDependencies": {
     "@saflib/node-express-dev": "*",
     "@saflib/vitest": "*"
+  },
+  "exports": {
+    "./workflows": "./workflows/index.ts"
   }
 }
