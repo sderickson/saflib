@@ -23,6 +23,7 @@
     "@saflib/vitest": "*"
   },
   "exports": {
+    ".": "./src/index.ts",
     "./workflows": "./workflows/index.ts"
   }
 }
