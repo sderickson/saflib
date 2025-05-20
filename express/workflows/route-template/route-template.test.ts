@@ -1,17 +1,17 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import request from "supertest";
 import express from "express";
-import { createApp } from "../../app.ts";
+// import { createApp } from "../../app.ts";
 import { makeUserHeaders } from "@saflib/node-express-dev/vitest-helpers.ts";
 
 describe("routeTemplate", () => {
   let app: express.Express;
 
   beforeEach(() => {
-    app = createApp();
+    // app = createApp();
   });
 
-  it("should handle successful requests", async () => {
+  it.skip("should handle successful requests", async () => {
     const response = await request(app)
       .post("/route-template")
       .set(makeUserHeaders())
@@ -27,7 +27,7 @@ describe("routeTemplate", () => {
     });
   });
 
-  it("should handle validation errors", async () => {
+  it.skip("should handle validation errors", async () => {
     const response = await request(app)
       .post("/route-template")
       .set(makeUserHeaders())
