@@ -5,6 +5,7 @@ This guide focuses on how to effectively test your TanStack Query integration in
 ## Table of Contents
 
 - [Testing Setup](#testing-setup)
+- [Using OpenAPI Spec Types](#using-openapi-spec-types)
 - [Integration Test Patterns](#integration-test-patterns)
   - [Testing Query/Mutation Interactions](#testing-querymutation-interactions)
   - [Testing Cache Invalidation](#testing-cache-invalidation)
@@ -26,6 +27,51 @@ Always unmount the app after each test:
 
 ```typescript
 app.unmount();
+```
+
+## Using OpenAPI Spec Types
+
+Always use types generated from your OpenAPI spec for request/response bodies and mock data. This ensures type safety and consistency between your API and tests.
+
+```typescript
+import type {
+  GetFeatureResponse,
+  CreateFeatureBody,
+  UpdateFeatureBody,
+} from "./feature.js";
+
+// Use types for mock data
+const mockResponse: GetFeatureResponse = {
+  items: [
+    {
+      id: 1,
+      name: "Feature 1",
+      created_at: "2023-01-01T00:00:00Z",
+      updated_at: "2023-01-01T00:00:00Z",
+    },
+  ],
+};
+
+// Use types in MSW handlers
+const handlers = [
+  http.post("/api/feature", async ({ request }) => {
+    const body = (await request.json()) as CreateFeatureBody;
+    return HttpResponse.json({
+      item: {
+        ...body,
+        id: 1,
+        created_at: "2023-01-01T00:00:00Z",
+        updated_at: "2023-01-01T00:00:00Z",
+      },
+    });
+  }),
+];
+
+// Use types in mutation tests
+const newFeature: CreateFeatureBody = {
+  name: "New Feature",
+};
+await mutation.mutateAsync(newFeature);
 ```
 
 ## Integration Test Patterns
@@ -99,6 +145,7 @@ Test that after cache invalidation, queries refetch and the UI state updates acc
 
 ## Best Practices
 
+- **Use OpenAPI spec types:** Always use types generated from your OpenAPI spec for request/response bodies and mock data.
 - **Test at the integration level:** Focus on how queries and mutations interact, not just isolated query logic.
 - **Use real cache keys:** Always use the same query keys as your app to ensure cache invalidation works as expected.
 - **Check cache state:** Use `queryClient.getQueryData` to assert cache presence or absence after mutations.

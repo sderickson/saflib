@@ -3,10 +3,14 @@ import { http, HttpResponse } from "msw";
 import { setupMockServer, withVueQuery } from "@saflib/vue-spa-dev/requests.js";
 import { useQuery } from "@tanstack/vue-query";
 import { useQueryTemplate } from "./query-template.js";
-import type { QueryTemplateResponse } from "./query-template.js";
+import type {
+  GetQueryTemplateResponse,
+  CreateQueryTemplateBody,
+  UpdateQueryTemplateBody,
+} from "./query-template.js";
 
-const mockResponse: QueryTemplateResponse = {
-  // TODO: Add mock response structure
+const mockResponse: GetQueryTemplateResponse = {
+  // TODO: Add mock response structure based on OpenAPI spec
   // Example:
   // items: [
   //   {
@@ -23,15 +27,29 @@ describe("Query Template API Interactions", () => {
     http.get("http://api.localhost:3000/query-template", () => {
       return HttpResponse.json(mockResponse);
     }),
-    // TODO: Add more handlers for mutations if needed
+    // TODO: Add mutation handlers using OpenAPI spec types
     // Example:
     // http.post("http://api.localhost:3000/query-template", async ({ request }) => {
-    //   const body = await request.json();
-    //   return HttpResponse.json({
+    //   const body = (await request.json()) as CreateQueryTemplateBody;
+    //   const newItem = {
     //     ...body,
     //     id: 1,
     //     created_at: "2023-01-01T00:00:00Z",
     //     updated_at: "2023-01-01T00:00:00Z",
+    //   };
+    //   return HttpResponse.json({
+    //     item: newItem,
+    //   });
+    // }),
+    // http.put("http://api.localhost:3000/query-template/1", async ({ request }) => {
+    //   const body = (await request.json()) as UpdateQueryTemplateBody;
+    //   const updatedItem = {
+    //     ...mockResponse.items[0],
+    //     ...body,
+    //     updated_at: "2023-01-02T00:00:00Z",
+    //   };
+    //   return HttpResponse.json({
+    //     item: updatedItem,
     //   });
     // }),
   ];
@@ -45,12 +63,14 @@ describe("Query Template API Interactions", () => {
     await query.refetch();
     expect(query.data.value).toEqual(mockResponse);
 
-    // TODO: Add mutation test if needed
+    // TODO: Add mutation test using OpenAPI spec types
     // Example:
     // const [mutation] = withVueQuery(() => useCreateQueryTemplate());
-    // await mutation.mutateAsync({
+    // const newItem: CreateQueryTemplateBody = {
     //   name: "New Item",
-    // });
+    // };
+    //
+    // await mutation.mutateAsync(newItem);
     //
     // // Verify cache was invalidated
     // const cachedData = queryClient.getQueryData(["query-template"]);
