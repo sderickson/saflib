@@ -1,7 +1,8 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import request from "supertest";
 import express from "express";
-import { createApp } from "../../http.ts";
+import { createApp } from "../../app.ts";
+import { makeUserHeaders } from "@saflib/node-express-dev/vitest-helpers.ts";
 
 describe("routeTemplate", () => {
   let app: express.Express;
@@ -11,9 +12,12 @@ describe("routeTemplate", () => {
   });
 
   it("should handle successful requests", async () => {
-    const response = await request(app).post("/route-template").send({
-      // TODO: Add test request body
-    });
+    const response = await request(app)
+      .post("/route-template")
+      .set(makeUserHeaders())
+      .send({
+        // TODO: Add test request body
+      });
 
     expect(response.status).toBe(201);
     expect(response.body).toEqual({
@@ -24,9 +28,12 @@ describe("routeTemplate", () => {
   });
 
   it("should handle validation errors", async () => {
-    const response = await request(app).post("/route-template").send({
-      // TODO: Add invalid request body
-    });
+    const response = await request(app)
+      .post("/route-template")
+      .set(makeUserHeaders())
+      .send({
+        // TODO: Add invalid request body
+      });
 
     expect(response.status).toBe(400);
     // Don't assert on response.body.message
