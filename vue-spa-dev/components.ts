@@ -7,6 +7,8 @@ import { afterAll, vi } from "vitest";
 import { createRouter, createMemoryHistory } from "vue-router";
 import { VueQueryPlugin } from "@tanstack/vue-query";
 import { QueryClient } from "@tanstack/vue-query";
+import { setupMockServer } from "./requests.js";
+export { setupMockServer };
 
 // GLOBAL MOCK HELPERS -----------------
 
