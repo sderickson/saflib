@@ -4,10 +4,7 @@ import createError from "http-errors";
 import { callerServiceStorage } from "@vendata/services-api/context.ts";
 import { getSafContextWithAuth } from "@saflib/node";
 
-// TODO: Replace with actual operation name from your OpenAPI spec
-type RouteTemplateRequest = Record<string, unknown>;
-
-export const routeTemplateHandler = createHandler(async (req, res) => {
+export const routeTemplate = createHandler(async (req, res) => {
   const ctx = callerServiceStorage.getStore()!;
   const { auth } = getSafContextWithAuth();
   const data: RouteTemplateRequest = req.body || {};

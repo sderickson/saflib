@@ -228,12 +228,12 @@ export const AddRouteWorkflowMachine = setup({
           } = input;
           if (!existsSync(featureRouterPath)) {
             const routerContent = `import express from "express";
-import { ${camelName}Handler } from "./${name}.ts";
+import { ${camelName} } from "./${name}.ts";
 
 export function create${pascalFeatureName}Router() {
   const router = express.Router();
 
-  router.post("/", ${camelName}Handler);
+  router.post("/", ${camelName});
 
   return router;
 }
