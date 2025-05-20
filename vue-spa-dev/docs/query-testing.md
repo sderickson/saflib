@@ -107,33 +107,55 @@ it("should create a call series and invalidate queries", async () => {
 
 ### Testing Cache Invalidation
 
-Test that mutations properly invalidate or remove cached queries, and that subsequent queries refetch as expected.
+Test that mutations properly invalidate or remove cached queries, and that subsequent queries refetch as expected. For example, after a mutation, override the GET endpoint to return updated data and verify that the query data matches the updated response.
 
 ```typescript
 // schedule-rule.test.ts
-it("should update a schedule rule and invalidate queries", async () => {
-  const [updateMutation, app, queryClient] = withVueQuery(() =>
-    useUpdateScheduleRule(),
-  );
-  const [query] = withVueQuery(() =>
-    useQuery({
-      queryKey: ["call-series", 1],
-      queryFn: async () => ({
-        /* ... */
-      }),
-    }),
-  );
+it("should update a schedule rule and update data", async () => {
+  const [updateMutation, app] = withVueQuery(() => useUpdateScheduleRule());
+  const id = ref(1);
+  const [query] = withVueQuery(() => useQuery(getCallSeriesById(id)));
 
+  // Wait for initial fetch
   await query.refetch();
   expect(query.data.value?.call_series).toBeDefined();
 
+  // Update schedule rule
+  const updateData: UpdateScheduleRuleBody = {
+    freq: "WEEKLY",
+    byWeekday: ["TU", "TH"],
+    byHour: 10,
+    byMinute: 30,
+  };
+
+  // Override the get endpoint to return updated data
+  const updatedResponse = {
+    call_series: mockCallSeries,
+    schedule_rules: [
+      {
+        ...updateData,
+        id: 1,
+        series_id: 1,
+      },
+    ],
+    scheduled_calls: [],
+  };
+
+  // Set up the handler before the mutation
+  server.use(
+    http.get("http://api.localhost:3000/call-series/1", () => {
+      return HttpResponse.json(updatedResponse);
+    }),
+  );
+
   await updateMutation.mutateAsync({
-    /* ... */
+    params: { id: 1, ruleId: 1 },
+    body: updateData,
   });
 
-  // Cache should be invalidated
-  const cachedData = queryClient.getQueryData(["call-series", 1]);
-  expect(cachedData).toBeUndefined();
+  // Refetch after mutation
+  await query.refetch();
+  expect(query.data.value).toEqual(updatedResponse);
 
   app.unmount();
 });

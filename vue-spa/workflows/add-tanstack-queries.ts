@@ -248,7 +248,7 @@ export const AddTanstackQueriesWorkflowMachine = setup({
                 1. Use withVueQuery for setup
                 2. Set up mock server with appropriate handlers
                 3. Test both success and error cases
-                4. Test cache invalidation if mutations are present
+                4. Test cache invalidation if mutations are present by overriding the GET endpoint to return updated data and verifying that the query data matches the updated response
                 5. Follow the patterns from the example tests
                 6. Always unmount the app after tests
                 7. Use proper typing for mock data and responses`,
