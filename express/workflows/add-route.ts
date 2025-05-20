@@ -27,6 +27,7 @@ interface AddRouteWorkflowContext extends WorkflowContext {
   targetDir: string; // e.g. "/<abs-path>/routes/call-series/"
   sourceDir: string; // e.g. "/<abs-path>/route-template/"
   refDoc: string;
+  testingGuide: string;
 }
 
 function toCamelCase(name: string) {
@@ -56,12 +57,17 @@ export const AddRouteWorkflowMachine = setup({
     const sourceDir = path.join(__dirname, "route-template");
     const targetDir = path.dirname(path.join(process.cwd(), input.path));
     const refDoc = path.resolve(__dirname, "../docs/02-adding-routes.md");
+    const testingGuide = path.resolve(
+      __dirname,
+      "../../node-express-dev/docs/01-test-routes.md",
+    );
     return {
       name: path.basename(input.path).split(".")[0],
       camelName: toCamelCase(path.basename(input.path).split(".")[0]),
       targetDir,
       sourceDir,
       refDoc,
+      testingGuide,
       loggedLast: false,
     };
   },
@@ -199,6 +205,30 @@ export const AddRouteWorkflowMachine = setup({
                 4. Let unexpected errors propagate to central error handler
                 5. Follow the pattern in the reference doc
                 6. Export the handler from the folder's "index.ts" file`,
+            ),
+          ],
+        },
+        continue: {
+          target: "reviewTestDocs",
+        },
+      },
+    },
+    reviewTestDocs: {
+      entry: raise({ type: "prompt" }),
+      on: {
+        prompt: {
+          actions: [
+            promptAgent(
+              ({ context }) =>
+                `Read the testing guide: ${context.testingGuide}
+
+                Update the generated ${context.name}.test.ts file to follow these guidelines:
+                1. Use supertest for making requests
+                2. Test against the actual app with middleware
+                3. Only mock expensive/external operations
+                4. For success cases: check status and response body structure
+                5. For error cases: only check status code
+                6. Keep tests minimal and focused`,
             ),
           ],
         },

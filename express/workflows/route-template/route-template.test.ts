@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import request from "supertest";
 import express from "express";
-import { createApp } from "../../../app.ts";
+import { createApp } from "../../http.ts";
 
 describe("routeTemplate", () => {
   let app: express.Express;
