@@ -14,6 +14,7 @@ import { fileURLToPath } from "node:url";
 import { exec } from "node:child_process";
 import { promisify } from "node:util";
 import { readdir, rename, readFile, writeFile } from "node:fs/promises";
+import { existsSync } from "node:fs";
 
 const execAsync = promisify(exec);
 
@@ -28,6 +29,9 @@ interface AddQueriesWorkflowContext extends WorkflowContext {
   sourceDir: string; // e.g. "/<abs-path>/query-template/"
   refDoc: string;
   testingGuide: string;
+  featureName: string; // e.g. "contacts"
+  featureIndexPath: string; // e.g. "/<abs-path>/queries/contacts/index.ts"
+  packageIndexPath: string; // e.g. "/<abs-path>/index.ts"
 }
 
 function toCamelCase(name: string) {
@@ -62,6 +66,10 @@ export const AddQueriesWorkflowMachine = setup({
       __dirname,
       "../../drizzle-sqlite3-dev/docs/01-testing-guide.md",
     );
+    const featureName = path.basename(targetDir);
+    const featureIndexPath = path.join(targetDir, "index.ts");
+    const packageIndexPath = path.join(process.cwd(), "index.ts");
+
     return {
       name: path.basename(input.path).split(".")[0],
       camelName: toCamelCase(path.basename(input.path).split(".")[0]),
@@ -69,6 +77,9 @@ export const AddQueriesWorkflowMachine = setup({
       sourceDir,
       refDoc,
       testingGuide,
+      featureName,
+      featureIndexPath,
+      packageIndexPath,
       loggedLast: false,
     };
   },
@@ -164,7 +175,7 @@ export const AddQueriesWorkflowMachine = setup({
           return "Renamed placeholders";
         }),
         onDone: {
-          target: "addTypes",
+          target: "checkQueryCollection",
           actions: logInfo(
             () => `Renamed all placeholders in files and file names.`,
           ),
@@ -189,6 +200,131 @@ export const AddQueriesWorkflowMachine = setup({
         continue: {
           reenter: true,
           target: "renamePlaceholders",
+        },
+      },
+    },
+    checkQueryCollection: {
+      invoke: {
+        input: ({ context }) => context,
+        src: fromPromise(async ({ input }) => {
+          const { featureIndexPath, featureName, camelName, name } = input;
+          if (!existsSync(featureIndexPath)) {
+            const indexContent = `import { ${camelName} } from "./${name}.ts";
+
+export const ${featureName} = {
+  ${camelName},
+};
+`;
+            await writeFile(featureIndexPath, indexContent);
+            return "Created query collection index";
+          }
+          return "Query collection index exists";
+        }),
+        onDone: {
+          target: "updateQueryCollection",
+          actions: logInfo(
+            ({ event }) => `Query collection status: ${event.output}`,
+          ),
+        },
+        onError: {
+          actions: [
+            logError(
+              ({ event }) =>
+                `Failed to check/create query collection: ${(event.error as Error).message}`,
+            ),
+            raise({ type: "prompt" }),
+          ],
+        },
+      },
+      on: {
+        prompt: {
+          actions: promptAgent(
+            () =>
+              "Failed to check or create the query collection index. Please check file permissions.",
+          ),
+        },
+        continue: {
+          reenter: true,
+          target: "checkQueryCollection",
+        },
+      },
+    },
+    updateQueryCollection: {
+      entry: raise({ type: "prompt" }),
+      on: {
+        prompt: {
+          actions: [
+            promptAgent(
+              ({ context }) =>
+                `Update the query collection index at ${context.featureIndexPath} to include the new query:
+                1. Import the new query from "./${context.name}.ts"
+                2. Add the query to the collection object using the camelCase name
+                3. Make sure to export a ${context.featureName} object that contains all queries for this domain`,
+            ),
+          ],
+        },
+        continue: {
+          target: "checkPackageIndex",
+        },
+      },
+    },
+    checkPackageIndex: {
+      invoke: {
+        input: ({ context }) => context,
+        src: fromPromise(async ({ input }) => {
+          const { packageIndexPath } = input;
+          if (!existsSync(packageIndexPath)) {
+            throw new Error(
+              "Package index.ts not found in the current directory",
+            );
+          }
+          return "Package index exists";
+        }),
+        onDone: {
+          target: "updatePackageIndex",
+          actions: logInfo(
+            ({ event }) => `Package index status: ${event.output}`,
+          ),
+        },
+        onError: {
+          actions: [
+            logError(
+              ({ event }) =>
+                `Failed to check package index: ${(event.error as Error).message}`,
+            ),
+            raise({ type: "prompt" }),
+          ],
+        },
+      },
+      on: {
+        prompt: {
+          actions: promptAgent(
+            () =>
+              "Package index.ts not found in the current directory. Please create this file to export your queries.",
+          ),
+        },
+        continue: {
+          reenter: true,
+          target: "checkPackageIndex",
+        },
+      },
+    },
+    updatePackageIndex: {
+      entry: raise({ type: "prompt" }),
+      on: {
+        prompt: {
+          actions: [
+            promptAgent(
+              ({ context }) =>
+                `Update the package index.ts to include the query collection:
+                1. Import the query collection: \`import * as ${context.featureName} from "./queries/${context.featureName}/index.ts"\`
+                2. Add the collection to the exported object: \`export const mainDb = { ...mainDbManager.publicInterface(), ${context.featureName} }\`
+                3. Make sure to maintain any existing exports`,
+            ),
+          ],
+        },
+        continue: {
+          target: "addTypes",
         },
       },
     },
