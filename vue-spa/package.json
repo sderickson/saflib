@@ -8,7 +8,8 @@
     "./tsconfig.app.json": "./tsconfig.app.json",
     "./tsconfig.json": "./tsconfig.json",
     "./tsconfig.node.json": "./tsconfig.node.json",
-    "./workflows": "./workflows/index.ts"
+    "./workflows": "./workflows/index.ts",
+    "./tanstack": "./tanstack.ts"
   },
   "dependencies": {
     "vite": "^6.0.0",
