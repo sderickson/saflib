@@ -204,7 +204,9 @@ export const AddQueriesWorkflowMachine = setup({
           actions: [
             promptAgent(
               ({ context }) =>
-                `For the ${context.camelName} query, add types for the parameters and return values to the main "types.ts" file. As much as possible, these should be based on the types that drizzle provides. For example, if when creating a row, the database handles the id, createdAt, and updatedAt fields, have a "InsertTableRowParams" type that Omits those fields.`,
+                `For the ${context.camelName} query, add types to the main "types.ts" file. As much as possible, these should be based on the types that drizzle provides. For example, if when creating a row, the database handles the id, createdAt, and updatedAt fields, have a "InsertTableRowParams" type that Omits those fields.
+
+                Note: Do NOT create a new types.ts file. Add your types to the existing one next to the "package.json" file.`,
             ),
           ],
         },
@@ -220,7 +222,10 @@ export const AddQueriesWorkflowMachine = setup({
           actions: [
             promptAgent(
               ({ context }) =>
-                `Add any necessary error types to the "errors.ts" file for the ${context.camelName} query. Make sure to use specific error types rather than generic ones.`,
+                `Add any necessary error types to the main "errors.ts" file for the ${context.camelName} query. Make sure to:
+                1. Use simple extensions of MainDatabaseError (no custom implementation)
+                2. Do NOT create a new errors.ts file
+                3. Add your errors to the existing one (beside the "package.json" file)`,
             ),
           ],
         },
@@ -237,11 +242,13 @@ export const AddQueriesWorkflowMachine = setup({
             promptAgent(
               ({ context }) =>
                 `Implement the ${context.camelName} query. Make sure to:
-                1. Use queryWrapper from errors.ts
-                2. Use ReturnsError from @saflib/monorepo
-                3. Use the types you just created
-                4. Don't use try/catch blocks
-                5. Export the query from the folder's "index.ts" file`,
+                1. Export a queryWrapper'd function directly (no factory function)
+                2. Take a DbKey as the first parameter
+                3. Use mainDbManager.get(dbKey)! to get the db instance
+                4. Use ReturnsError from @saflib/monorepo
+                5. Use the types you just added to types.ts
+                6. Don't use try/catch blocks
+                7. Export the query from the folder's "index.ts" file`,
             ),
           ],
         },
