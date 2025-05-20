@@ -18,11 +18,12 @@ import { readdir, rename, readFile, writeFile } from "node:fs/promises";
 const execAsync = promisify(exec);
 
 interface AddQueriesWorkflowInput {
-  name: string; // kebab-case, e.g. "get-by-id"
+  path: string; // kebab-case, e.g. "get-by-id"
 }
 
 interface AddQueriesWorkflowContext extends WorkflowContext {
   name: string; // kebab-case
+  path: string; // kebab-case
   camelName: string; // camelCase, e.g. getById
   targetDir: string;
   sourceDir: string;
@@ -56,15 +57,16 @@ export const AddQueriesWorkflowMachine = setup({
     const __filename = fileURLToPath(import.meta.url);
     const __dirname = path.dirname(__filename);
     const sourceDir = path.join(__dirname, "query-template");
-    const targetDir = path.join(process.cwd(), "queries");
+    const targetDir = path.dirname(path.join(process.cwd(), input.path));
     const refDoc = path.resolve(__dirname, "../docs/03-queries.md");
     const testingGuide = path.resolve(
       __dirname,
       "../../drizzle-sqlite3-dev/docs/01-testing-guide.md",
     );
     return {
-      name: input.name,
-      camelName: toCamelCase(input.name),
+      name: path.basename(input.path).split(".")[0],
+      path: input.path,
+      camelName: toCamelCase(path.basename(input.path).split(".")[0]),
       targetDir,
       sourceDir,
       refDoc,
@@ -162,7 +164,8 @@ export const AddQueriesWorkflowMachine = setup({
             const content = await readFile(newPath, "utf-8");
             const updatedContent = content
               .replace(/queryTemplate/g, camelName)
-              .replace(/query-template/g, name);
+              .replace(/query-template/g, name)
+              .replace(/QueryTemplate/g, camelName);
             await writeFile(newPath, updatedContent);
           }
 
@@ -313,8 +316,8 @@ export class AddQueriesWorkflow extends XStateWorkflow {
     "Add a new query to a database built off the drizzle-sqlite3 package.";
   cliArguments = [
     {
-      name: "name",
-      description: "Name of the new query in kebab-case (e.g. 'get-by-id')",
+      name: "path",
+      description: "Path of the new query (e.g. 'queries/contacts/get-by-id')",
     },
   ];
 }
