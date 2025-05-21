@@ -17,9 +17,7 @@ import type { Component } from "vue";
 import { TanstackError } from "@saflib/vue-spa";
 
 interface Props<TData = unknown, TError = TanstackError> {
-  // Loader function that returns an array of vue-query results
   loader: () => UseQueryReturnType<TData, TError>[];
-  // The async component definition (e.g., from defineAsyncComponent)
   pageComponent: Component;
 }
 

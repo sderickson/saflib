@@ -5,6 +5,9 @@ import {
   type UseQueryReturnType,
   type UseMutationReturnType,
 } from "@tanstack/vue-query";
+import { setupServer } from "msw/node";
+import { HttpHandler } from "msw";
+import { beforeAll, afterAll, afterEach } from "vitest";
 
 /**
  * Helper function to test Vue Query composables in isolation
@@ -71,6 +74,25 @@ export function isMutationResult<
     "mutate" in result &&
     "mutateAsync" in result
   );
+}
+
+// NETWORKING MOCK HELPERS -----------------
+
+export function setupMockServer(handlers: HttpHandler[]) {
+  const server = setupServer(...handlers);
+
+  // Start server before all tests
+  beforeAll(() => {
+    server.listen({ onUnhandledRequest: "error" });
+  });
+
+  // Reset handlers between tests
+  afterEach(() => server.resetHandlers());
+
+  // Clean up after all tests
+  afterAll(() => server.close());
+
+  return server;
 }
 
 // Re-export types from @tanstack/vue-query for convenience

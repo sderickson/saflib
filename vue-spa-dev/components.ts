@@ -3,12 +3,12 @@ import * as components from "vuetify/components";
 import * as directives from "vuetify/directives";
 import { mount, type ComponentMountingOptions } from "@vue/test-utils";
 import type { Component, Plugin } from "vue";
-import { beforeAll, afterAll, afterEach, vi } from "vitest";
+import { afterAll, vi } from "vitest";
 import { createRouter, createMemoryHistory } from "vue-router";
 import { VueQueryPlugin } from "@tanstack/vue-query";
 import { QueryClient } from "@tanstack/vue-query";
-import { setupServer } from "msw/node";
-import { HttpHandler } from "msw";
+import { setupMockServer } from "./requests.js";
+export { setupMockServer };
 
 // GLOBAL MOCK HELPERS -----------------
 
@@ -92,23 +92,4 @@ export function mountWithPlugins(
       ...(options.global || {}),
     },
   });
-}
-
-// NETWORKING MOCK HELPERS -----------------
-
-export function setupMockServer(handlers: HttpHandler[]) {
-  const server = setupServer(...handlers);
-
-  // Start server before all tests
-  beforeAll(() => {
-    server.listen({ onUnhandledRequest: "error" });
-  });
-
-  // Reset handlers between tests
-  afterEach(() => server.resetHandlers());
-
-  // Clean up after all tests
-  afterAll(() => server.close());
-
-  return server;
 }

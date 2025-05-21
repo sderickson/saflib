@@ -38,7 +38,7 @@ export class AddTsPackageWorkflow extends SimpleWorkflow<AddTsPackageWorkflowPar
       const outputPath = path.join(this.params.path, file.output);
       let content = fs.readFileSync(templatePath, "utf8");
       // Replace {{PACKAGE_NAME}} in vitest.config.js.template with directory name
-      content = content.replace(/\{\{PACKAGE_NAME\}\}/g, packageDirName);
+      content = content.replace(/\{\{PACKAGE_NAME\}\}/g, name);
       fs.writeFileSync(outputPath, content);
     }
 

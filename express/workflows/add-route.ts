@@ -18,20 +18,22 @@ import { existsSync } from "node:fs";
 
 const execAsync = promisify(exec);
 
-interface AddQueriesWorkflowInput {
-  path: string; // kebab-case, e.g. "get-by-id"
+interface AddRouteWorkflowInput {
+  path: string; // kebab-case, e.g. "routes/call-series/create-call-series.ts"
 }
 
-interface AddQueriesWorkflowContext extends WorkflowContext {
-  name: string; // e.g. "get-by-id"
-  camelName: string; // e.g. getById
-  targetDir: string; // e.g. "/<abs-path>/queries/contacts/"
-  sourceDir: string; // e.g. "/<abs-path>/query-template/"
+interface AddRouteWorkflowContext extends WorkflowContext {
+  name: string; // e.g. "create-call-series"
+  camelName: string; // e.g. createCallSeries
+  targetDir: string; // e.g. "/<abs-path>/routes/call-series/"
+  sourceDir: string; // e.g. "/<abs-path>/route-template/"
   refDoc: string;
   testingGuide: string;
-  featureName: string; // e.g. "contacts"
-  featureIndexPath: string; // e.g. "/<abs-path>/queries/contacts/index.ts"
-  packageIndexPath: string; // e.g. "/<abs-path>/index.ts"
+  featureName: string; // e.g. "call-series"
+  featureRouterPath: string; // e.g. "/<abs-path>/routes/call-series/index.ts"
+  pascalFeatureName: string; // e.g. "CallSeries"
+  httpAppPath: string; // e.g. "/<abs-path>/http.ts"
+  appPath: string; // e.g. "/<abs-path>/app.ts"
 }
 
 function toCamelCase(name: string) {
@@ -44,31 +46,39 @@ function toCamelCase(name: string) {
     .join("");
 }
 
-export const AddQueriesWorkflowMachine = setup({
+function toPascalCase(name: string) {
+  return name
+    .split("-")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join("");
+}
+
+export const AddRouteWorkflowMachine = setup({
   types: {
-    input: {} as AddQueriesWorkflowInput,
-    context: {} as AddQueriesWorkflowContext,
+    input: {} as AddRouteWorkflowInput,
+    context: {} as AddRouteWorkflowContext,
   },
   actions: workflowActionImplementations,
   actors: workflowActors,
 }).createMachine({
-  id: "add-queries",
-  description:
-    "Add a new query to a database built off the drizzle-sqlite3 package.",
+  id: "add-route",
+  description: "Add a new route to an Express.js service.",
   initial: "getOriented",
   context: ({ input }) => {
     const __filename = fileURLToPath(import.meta.url);
     const __dirname = path.dirname(__filename);
-    const sourceDir = path.join(__dirname, "query-template");
+    const sourceDir = path.join(__dirname, "route-template");
     const targetDir = path.dirname(path.join(process.cwd(), input.path));
-    const refDoc = path.resolve(__dirname, "../docs/03-queries.md");
+    const refDoc = path.resolve(__dirname, "../docs/02-adding-routes.md");
     const testingGuide = path.resolve(
       __dirname,
-      "../../drizzle-sqlite3-dev/docs/01-testing-guide.md",
+      "../../node-express-dev/docs/01-test-routes.md",
     );
     const featureName = path.basename(targetDir);
-    const featureIndexPath = path.join(targetDir, "index.ts");
-    const packageIndexPath = path.join(process.cwd(), "index.ts");
+    const featureRouterPath = path.join(targetDir, "index.ts");
+    const pascalFeatureName = toPascalCase(featureName);
+    const httpAppPath = path.join(process.cwd(), "http.ts");
+    const appPath = path.join(process.cwd(), "app.ts");
 
     return {
       name: path.basename(input.path).split(".")[0],
@@ -78,8 +88,10 @@ export const AddQueriesWorkflowMachine = setup({
       refDoc,
       testingGuide,
       featureName,
-      featureIndexPath,
-      packageIndexPath,
+      featureRouterPath,
+      pascalFeatureName,
+      httpAppPath,
+      appPath,
       loggedLast: false,
     };
   },
@@ -92,9 +104,9 @@ export const AddQueriesWorkflowMachine = setup({
           actions: [
             promptAgent(
               ({ context }) =>
-                `Read the project spec and the reference documentation for the @saflib/drizzle-sqlite3 package. If they haven't already, ask the user for the project spec.
+                `Read the reference documentation for adding routes: ${context.refDoc}
 
-                Also, read the guidelines for queries in the doc: ${context.refDoc}`,
+                This workflow will help you add a new route handler for ${context.name}. The route will be created in ${context.targetDir}.`,
             ),
           ],
         },
@@ -155,27 +167,27 @@ export const AddQueriesWorkflowMachine = setup({
           // Get all files in the directory
           const files = await readdir(targetDir);
           for (const file of files) {
-            if (!file.includes("query-template")) {
+            if (!file.includes("route-template")) {
               continue;
             }
             const oldPath = path.join(targetDir, file);
             const newPath = path.join(
               targetDir,
-              file.replace("query-template", name),
+              file.replace("route-template", name),
             );
             await rename(oldPath, newPath);
             const content = await readFile(newPath, "utf-8");
             const updatedContent = content
-              .replace(/queryTemplate/g, camelName)
-              .replace(/query-template/g, name)
-              .replace(/QueryTemplate/g, camelName);
+              .replace(/routeTemplate/g, camelName)
+              .replace(/route-template/g, name)
+              .replace(/RouteTemplate/g, camelName);
             await writeFile(newPath, updatedContent);
           }
 
           return "Renamed placeholders";
         }),
         onDone: {
-          target: "checkQueryCollection",
+          target: "checkFeatureRouter",
           actions: logInfo(
             () => `Renamed all placeholders in files and file names.`,
           ),
@@ -203,34 +215,45 @@ export const AddQueriesWorkflowMachine = setup({
         },
       },
     },
-    checkQueryCollection: {
+    checkFeatureRouter: {
       invoke: {
         input: ({ context }) => context,
         src: fromPromise(async ({ input }) => {
-          const { featureIndexPath, featureName, camelName, name } = input;
-          if (!existsSync(featureIndexPath)) {
-            const indexContent = `import { ${camelName} } from "./${name}.ts";
+          const {
+            featureRouterPath,
+            featureName,
+            pascalFeatureName,
+            camelName,
+            name,
+          } = input;
+          if (!existsSync(featureRouterPath)) {
+            const routerContent = `import express from "express";
+import { ${camelName} } from "./${name}.ts";
 
-export const ${featureName} = {
-  ${camelName},
-};
+export function create${pascalFeatureName}Router() {
+  const router = express.Router();
+
+  router.post("/", ${camelName});
+
+  return router;
+}
 `;
-            await writeFile(featureIndexPath, indexContent);
-            return "Created query collection index";
+            await writeFile(featureRouterPath, routerContent);
+            return "Created feature router";
           }
-          return "Query collection index exists";
+          return "Feature router exists";
         }),
         onDone: {
-          target: "updateQueryCollection",
+          target: "updateFeatureRouter",
           actions: logInfo(
-            ({ event }) => `Query collection status: ${event.output}`,
+            ({ event }) => `Feature router status: ${event.output}`,
           ),
         },
         onError: {
           actions: [
             logError(
               ({ event }) =>
-                `Failed to check/create query collection: ${(event.error as Error).message}`,
+                `Failed to check/create feature router: ${(event.error as Error).message}`,
             ),
             raise({ type: "prompt" }),
           ],
@@ -240,57 +263,55 @@ export const ${featureName} = {
         prompt: {
           actions: promptAgent(
             () =>
-              "Failed to check or create the query collection index. Please check file permissions.",
+              "Failed to check or create the feature router. Please check file permissions.",
           ),
         },
         continue: {
           reenter: true,
-          target: "checkQueryCollection",
+          target: "checkFeatureRouter",
         },
       },
     },
-    updateQueryCollection: {
+    updateFeatureRouter: {
       entry: raise({ type: "prompt" }),
       on: {
         prompt: {
           actions: [
             promptAgent(
               ({ context }) =>
-                `Update the query collection index at ${context.featureIndexPath} to include the new query:
-                1. Import the new query from "./${context.name}.ts"
-                2. Add the query to the collection object using the camelCase name
-                3. Make sure to export a ${context.featureName} object that contains all queries for this domain`,
+                `Update the feature router at ${context.featureRouterPath} to include the new route handler.
+                1. Import the new handler from "./${context.name}.ts"
+                2. Add the route to the router using the appropriate HTTP method
+                3. Make sure to export a create${context.pascalFeatureName}Router function that returns the router`,
             ),
           ],
         },
         continue: {
-          target: "checkPackageIndex",
+          target: "checkHttpApp",
         },
       },
     },
-    checkPackageIndex: {
+    checkHttpApp: {
       invoke: {
         input: ({ context }) => context,
         src: fromPromise(async ({ input }) => {
-          const { packageIndexPath } = input;
-          if (!existsSync(packageIndexPath)) {
+          const { httpAppPath, appPath } = input;
+          if (!existsSync(httpAppPath) && !existsSync(appPath)) {
             throw new Error(
-              "Package index.ts not found in the current directory",
+              "Neither http.ts nor app.ts found in the current directory",
             );
           }
-          return "Package index exists";
+          return "HTTP app exists";
         }),
         onDone: {
-          target: "updatePackageIndex",
-          actions: logInfo(
-            ({ event }) => `Package index status: ${event.output}`,
-          ),
+          target: "updateHttpApp",
+          actions: logInfo(({ event }) => `HTTP app status: ${event.output}`),
         },
         onError: {
           actions: [
             logError(
               ({ event }) =>
-                `Failed to check package index: ${(event.error as Error).message}`,
+                `Failed to check HTTP app: ${(event.error as Error).message}`,
             ),
             raise({ type: "prompt" }),
           ],
@@ -300,102 +321,72 @@ export const ${featureName} = {
         prompt: {
           actions: promptAgent(
             () =>
-              "Package index.ts not found in the current directory. Please create this file to export your queries.",
+              "Neither http.ts nor app.ts found in the current directory. Please create one of these files to mount your routes.",
           ),
         },
         continue: {
           reenter: true,
-          target: "checkPackageIndex",
+          target: "checkHttpApp",
         },
       },
     },
-    updatePackageIndex: {
+    updateHttpApp: {
       entry: raise({ type: "prompt" }),
       on: {
         prompt: {
           actions: [
             promptAgent(
               ({ context }) =>
-                `Update the package index.ts to include the query collection:
-                1. Import the query collection: \`import * as ${context.featureName} from "./queries/${context.featureName}/index.ts"\`
-                2. Add the collection to the exported object: \`export const mainDb = { ...mainDbManager.publicInterface(), ${context.featureName} }\`
-                3. Make sure to maintain any existing exports`,
+                `Update the HTTP app to include the feature router:
+                1. Import the feature router: \`import { create${context.pascalFeatureName}Router } from "./routes/${context.featureName}/index.ts"\`
+                2. Add the router to the app: \`app.use("/${context.featureName}", create${context.pascalFeatureName}Router())\`
+                3. Make sure to add this before the error handlers`,
             ),
           ],
         },
         continue: {
-          target: "addTypes",
+          target: "implementRoute",
         },
       },
     },
-    addTypes: {
+    implementRoute: {
       entry: raise({ type: "prompt" }),
       on: {
         prompt: {
           actions: [
             promptAgent(
               ({ context }) =>
-                `For the ${context.camelName} query, add types to the main "types.ts" file. As much as possible, these should be based on the types that drizzle provides. For example, if when creating a row, the database handles the id, createdAt, and updatedAt fields, have a "InsertTableRowParams" type that Omits those fields.
+                `Implement the ${context.camelName} route handler. Make sure to:
+                1. Use createHandler from @saflib/express
+                2. Use types from your OpenAPI spec for request/response bodies
+                3. Handle expected errors from service/DB layers
+                4. Let unexpected errors propagate to central error handler
+                5. Follow the pattern in the reference doc
+                6. Export the handler from the folder's "index.ts" file`,
+            ),
+          ],
+        },
+        continue: {
+          target: "reviewTestDocs",
+        },
+      },
+    },
+    reviewTestDocs: {
+      entry: raise({ type: "prompt" }),
+      on: {
+        prompt: {
+          actions: [
+            promptAgent(
+              ({ context }) =>
+                `Read the testing guide: ${context.testingGuide}
 
-                Note: Do NOT create a new types.ts file. Add your types to the existing one next to the "package.json" file.`,
-            ),
-          ],
-        },
-        continue: {
-          target: "addErrors",
-        },
-      },
-    },
-    addErrors: {
-      entry: raise({ type: "prompt" }),
-      on: {
-        prompt: {
-          actions: [
-            promptAgent(
-              ({ context }) =>
-                `Add any necessary error types to the main "errors.ts" file for the ${context.camelName} query. Make sure to:
-                1. Use simple extensions of MainDatabaseError (no custom implementation)
-                2. Do NOT create a new errors.ts file
-                3. Add your errors to the existing one (beside the "package.json" file)`,
-            ),
-          ],
-        },
-        continue: {
-          target: "implementQuery",
-        },
-      },
-    },
-    implementQuery: {
-      entry: raise({ type: "prompt" }),
-      on: {
-        prompt: {
-          actions: [
-            promptAgent(
-              ({ context }) =>
-                `Implement the ${context.camelName} query. Make sure to:
-                1. Export a queryWrapper'd function directly (no factory function)
-                2. Take a DbKey as the first parameter
-                3. Use mainDbManager.get(dbKey)! to get the db instance
-                4. Use ReturnsError from @saflib/monorepo
-                5. Use the types you just added to types.ts
-                6. Don't use try/catch blocks
-                7. Export the query from the folder's "index.ts" file`,
-            ),
-          ],
-        },
-        continue: {
-          target: "reviewDocs",
-        },
-      },
-    },
-    reviewDocs: {
-      entry: raise({ type: "prompt" }),
-      on: {
-        prompt: {
-          actions: [
-            promptAgent(
-              ({ context }) =>
-                `Read the testing guide: ${context.testingGuide} and update the generated ${context.name}.test.ts file accordingly.`,
+                Update the generated ${context.name}.test.ts file to follow these guidelines:
+                1. Use supertest for making requests
+                2. Test against the actual app with middleware
+                3. Only mock expensive/external operations
+                4. For success cases: check status and response body structure
+                5. For error cases: only check status code
+                6. Keep tests minimal and focused`,
             ),
           ],
         },
@@ -438,14 +429,13 @@ export const ${featureName} = {
   },
 });
 
-export class AddQueriesWorkflow extends XStateWorkflow {
-  machine = AddQueriesWorkflowMachine;
-  description =
-    "Add a new query to a database built off the drizzle-sqlite3 package.";
+export class AddRouteWorkflow extends XStateWorkflow {
+  machine = AddRouteWorkflowMachine;
+  description = "Add a new route to an Express.js service.";
   cliArguments = [
     {
       name: "path",
-      description: "Path of the new query (e.g. 'queries/contacts/get-by-id')",
+      description: "Path of the new route (e.g. 'routes/call-series/create')",
     },
   ];
 }

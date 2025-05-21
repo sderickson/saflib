@@ -28,14 +28,12 @@ export class UpdateSpecWorkflow extends SimpleWorkflow<UpdateSpecWorkflowParams>
     {
       name: "Get Oriented",
       prompt: () =>
-        `Read the spec. Ask for it if you haven't got it already.
-
-        Also, review the documentation for updating specs: ${this.computed().refDoc}`,
+        `Read the spec. Ask for it if you haven't got it already.\n\nAlso, review the documentation for updating specs: ${this.computed().refDoc}`,
     },
     {
       name: "Update the spec",
       prompt: () =>
-        `Add common objects to the "schemas" folder, and routes to the "routes" folder. Then link them in the "openapi.yaml" file.`,
+        `Add common objects to the "schemas" folder, and routes to the "routes" folder. Then link them in the "openapi.yaml" file.\n\n**Tip:** For request bodies, use \`allOf\` with your main schema to avoid repeating properties. Example:\n\n    schema:\n      allOf:\n        - $ref: '../schemas/contact.yaml'\n      required:\n        - relationship_to_owner\n\nThis keeps your spec DRY and easier to maintain.`,
     },
     {
       name: "Generate files",

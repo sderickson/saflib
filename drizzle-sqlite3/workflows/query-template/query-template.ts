@@ -1,26 +1,24 @@
 // TODO: Uncomment and fix these imports
-//import { someDb } from "@own/package";
-//import { SomeError } from "../../errors.ts";
-//import type { SomeDbType } from "../../types.ts";
-import { ReturnsError } from "@saflib/monorepo";
+import { someDbManager } from "../../instances.ts";
+import { SomeError } from "../../errors.ts";
+import type { SomeDbType } from "../../types.ts";
+import type { ReturnsError } from "@saflib/monorepo";
 
 import { queryWrapper } from "@saflib/drizzle-sqlite3";
 import type { DbKey } from "@saflib/drizzle-sqlite3";
 
-export type QueryTemplateParams = {
-  // Add your query parameters here
-};
+type QueryTemplateError = SomeError;
 
-export type QueryTemplateResult = {
+type QueryTemplateResult = {
   // Add your query result type here
 };
 
 export const queryTemplate = queryWrapper(
   async (
     dbKey: DbKey,
-    params: QueryTemplateParams,
-  ): Promise<ReturnsError<QueryTemplateResult>> => {
-    // const db = mainDbManager.get(dbKey);
+    params: SomeDbType,
+  ): Promise<ReturnsError<QueryTemplateResult, QueryTemplateError>> => {
+    const db = someDbManager.get(dbKey);
     return { result: {} };
   },
 );

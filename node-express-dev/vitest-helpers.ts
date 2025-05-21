@@ -2,6 +2,24 @@ import { expect } from "vitest";
 import type { Response } from "supertest";
 
 /**
+ * Creates headers for a test user. These headers simulate an authenticated user
+ * making requests to the API.
+ *
+ * @param userId The user's ID (defaults to "1")
+ * @param email The user's email (defaults to "user1@example.com")
+ * @returns Headers object with x-user-id and x-user-email
+ */
+export function makeUserHeaders(
+  userId: string = "1",
+  email: string = "user1@example.com",
+): Record<string, string> {
+  return {
+    "x-user-id": userId,
+    "x-user-email": email,
+  };
+}
+
+/**
  * Helper function to check if a test response has the expected status code
  * and provides a more helpful error message if the test fails due to OpenAPI validation.
  *

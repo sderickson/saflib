@@ -2,6 +2,36 @@
 
 A spec package contains OpenAPI specifications. These generate types used in TypeScript on both client and server, json objects which are used by node/express to validate responses and requests, and an html file for exploring your APIs. This document goes over how to update these APIs and update these outputs.
 
+## DRY Schemas with Properties Reference
+
+**Best Practice:** When defining request bodies for create/update endpoints, use a direct reference to the properties from your main schema to avoid repeating all properties. This keeps your spec DRY and easier to maintain.
+
+**Example:**
+
+```yaml
+post:
+  summary: Create a new contact
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            $ref: "../schemas/contact.yaml#/properties"
+          required:
+            - relationship_to_owner
+```
+
+This approach:
+
+- Reuses all property definitions from the main schema
+- Allows you to specify different required fields for requests vs responses
+- Keeps the schema DRY by referencing properties directly
+- Works for both POST (create) and PUT (update) operations
+
+The backend can ignore fields it doesn't use, and the response schemas can still use the full schema reference which includes all required fields for responses.
+
 ## Directory Structure
 
 ```
