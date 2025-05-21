@@ -94,7 +94,7 @@ export const AddQueriesWorkflowMachine = setup({
               ({ context }) =>
                 `Read the project spec and the reference documentation for the @saflib/drizzle-sqlite3 package. If they haven't already, ask the user for the project spec.
 
-                Also, read the guidelines for queries in the doc: ${context.refDoc} and ${console.log(context)}`,
+                Also, read the guidelines for queries in the doc: ${context.refDoc}`,
             ),
           ],
         },
