@@ -322,12 +322,3 @@ export class AddSpaPageWorkflow extends XStateWorkflow {
     },
   ];
 }
-
-// Checklist for add-spa-page
-export const addSpaPageChecklist = [
-  "Update loader method: put in whatever tanstack queries are needed to render the page",
-  "Update page to check that the data is loaded when it renders, and then render some of the data",
-  "Update the page test to mock the server requests and make sure the page renders",
-  "Update the contents of the page to match the design. Do not set any style tags; only use Vuetify components and variables, even if not pixel-perfect",
-  "Update the test to make sure it tests what was added",
-];
