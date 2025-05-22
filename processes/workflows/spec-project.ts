@@ -13,11 +13,11 @@ import { readFileSync, writeFileSync } from "fs";
 import path from "path";
 
 interface SpecProjectXstateWorkflowInput {
-  slug: string;
+  name: string;
 }
 
 interface SpecProjectXstateWorkflowContext extends WorkflowContext {
-  slug: string;
+  name: string;
   projectDirPath: string;
   specFilePath: string;
   checklistFilePath: string;
@@ -38,11 +38,11 @@ export const SpecProjectXstateWorkflowMachine = setup({
   initial: "initializing",
   context: ({ input }) => {
     const date = new Date().toISOString().split("T")[0];
-    const projectDirName = `${date}-${input.slug}`;
+    const projectDirName = `${date}-${input.name}`;
     const specFilePath = path.join(projectDirName, "spec.md");
     const checklistFilePath = path.join(projectDirName, "checklist.md");
-    return {
-      slug: input.slug,
+    const context = {
+      name: input.name,
       projectDirPath: projectDirName,
       specFilePath: specFilePath,
       checklistFilePath: checklistFilePath,
@@ -50,6 +50,7 @@ export const SpecProjectXstateWorkflowMachine = setup({
       safDocOutput: "",
       safWorkflowHelpOutput: "",
     };
+    return context;
   },
   entry: logInfo("Successfully began workflow"),
   states: {
@@ -77,7 +78,7 @@ export const SpecProjectXstateWorkflowMachine = setup({
             );
             const processedChecklistContent = checklistTemplateContent.replace(
               /<PROJECT_NAME>/g,
-              context.slug,
+              context.name,
             );
             writeFileSync(context.checklistFilePath, processedChecklistContent);
 
@@ -141,7 +142,7 @@ ${context.safDocOutput}`,
           actions: [
             promptAgent(
               ({ context }) =>
-                `You are writing a product/technical specification for ${context.slug}. Ask for an overview of the project if you haven't already gotten one, then given that description, fill ${context.specFilePath} which was just created.`,
+                `You are writing a product/technical specification for ${context.name}. Ask for an overview of the project if you haven't already gotten one, then given that description, fill ${context.specFilePath} which was just created.`,
             ),
           ],
         },
