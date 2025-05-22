@@ -9,13 +9,10 @@ import {
   XStateWorkflow,
 } from "@saflib/workflows";
 
-interface UpdateImplWorkflowInput {
-  filePath: string;
-}
+interface UpdateImplWorkflowInput {}
 
 interface UpdateImplWorkflowContext extends WorkflowContext {
-  filePath: string;
-  spec?: string; // To store the loaded OpenAPI spec
+  foo: string;
 }
 
 export const UpdateImplWorkflowMachine = setup({
@@ -27,12 +24,11 @@ export const UpdateImplWorkflowMachine = setup({
   actors: workflowActors,
 }).createMachine({
   id: "update-impl",
-  description:
-    "Updates the implementation of a file based on the OpenAPI spec.",
-  initial: "loadOpenApiSpec",
-  context: ({ input }) => {
+  description: "TODO",
+  initial: "examplePromptState",
+  context: (_) => {
     return {
-      filePath: input.filePath,
+      foo: "bar",
       loggedLast: false,
     };
   },
@@ -45,7 +41,7 @@ export const UpdateImplWorkflowMachine = setup({
           actions: [
             promptAgent(
               ({ context }) =>
-                `This is a prompt state. It will not continue until the agent triggers the "continue" event. You can incorporate the context into the prompt if you need to like this: ${context.filePath}`,
+                `This is a prompt state. It will not continue until the agent triggers the "continue" event. You can incorporate the context into the prompt if you need to like this: ${context.foo}`,
             ),
           ],
         },
@@ -98,7 +94,6 @@ export const UpdateImplWorkflowMachine = setup({
 
 export class UpdateImplWorkflow extends XStateWorkflow {
   machine = UpdateImplWorkflowMachine;
-  description =
-    "Updates the implementation of a file based on the OpenAPI spec.";
+  description = "TODO";
   cliArguments = [];
 }
