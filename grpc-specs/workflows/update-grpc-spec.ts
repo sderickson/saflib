@@ -8,12 +8,11 @@ import {
   promptAgent,
   XStateWorkflow,
 } from "@saflib/workflows";
+import { execSync } from "child_process";
 
 interface UpdateGrpcSpecWorkflowInput {}
 
-interface UpdateGrpcSpecWorkflowContext extends WorkflowContext {
-  foo: string;
-}
+interface UpdateGrpcSpecWorkflowContext extends WorkflowContext {}
 
 export const UpdateGrpcSpecWorkflowMachine = setup({
   types: {
@@ -25,48 +24,71 @@ export const UpdateGrpcSpecWorkflowMachine = setup({
 }).createMachine({
   id: "update-grpc-spec",
   description: "Update gRPC specification files",
-  initial: "examplePromptState",
+  initial: "getOriented",
   context: (_) => {
     return {
-      foo: "bar",
       loggedLast: false,
     };
   },
   entry: logInfo("Successfully began workflow"),
   states: {
-    examplePromptState: {
+    getOriented: {
       entry: raise({ type: "prompt" }),
       on: {
         prompt: {
           actions: [
             promptAgent(
-              ({ context }) =>
-                `This is a prompt state. It will not continue until the agent triggers the "continue" event. You can incorporate the context into the prompt if you need to like this: ${context.foo}`,
+              () =>
+                `Read the existing proto files in the protos/ directory and read the project spec, understand what needs to be changed or added. Confirm your understanding.`,
             ),
           ],
         },
         continue: {
-          target: "exampleAsyncWorkState",
+          target: "updateProtoFiles",
         },
       },
     },
-    exampleAsyncWorkState: {
+    updateProtoFiles: {
+      entry: raise({ type: "prompt" }),
+      on: {
+        prompt: {
+          actions: [
+            promptAgent(
+              () =>
+                `Add or modify .proto files in the "protos" folder. Define your message types, services, and RPC methods according to Protocol Buffers syntax. Make sure to use the SAF common objects: SafRequest, SafAuth, and SafError.`,
+            ),
+          ],
+        },
+        continue: {
+          target: "generateTypes",
+        },
+      },
+    },
+    generateTypes: {
       invoke: {
         input: ({ context }) => context,
         src: fromPromise(
-          async ({ input }: { input: UpdateGrpcSpecWorkflowContext }) => {
-            // This promise can do async work such as calling an npm script.
-            // It should reject if the work fails.
-            return "success";
+          async ({ input: _ }: { input: UpdateGrpcSpecWorkflowContext }) => {
+            try {
+              execSync("npm run generate", {
+                stdio: "inherit",
+                cwd: process.cwd(),
+              });
+              return "success";
+            } catch (error) {
+              throw new Error(`Failed to generate TypeScript files: ${error}`);
+            }
           },
         ),
         onDone: {
           target: "done",
-          actions: logInfo(() => `Work completed successfully.`), // use logInfo to communicate to the agent what is happening.
+          actions: logInfo(
+            () => `TypeScript files generated successfully from proto files.`,
+          ),
         },
         onError: {
           actions: [
-            logError(() => `Work failed.`), // use logError to communicate to the agent what is happening.
+            logError(({ event }) => `Generation failed: ${event.error}`),
             raise({ type: "prompt" }),
           ],
         },
@@ -75,18 +97,16 @@ export const UpdateGrpcSpecWorkflowMachine = setup({
         prompt: {
           actions: promptAgent(
             () =>
-              `Normally, this state will complete itself and not require agentic intervention. However, if the execution fails, the agent will be prompted with this string to fix the problem.`,
+              `The TypeScript generation failed. This usually means there's a syntax error in one of the proto files. Please check the error message above and fix any issues in the proto files, then continue.`,
           ),
         },
         continue: {
-          // when the agent is done fixing the issue, they'll trigger the workflow tool to "continue" at which point the work will be retried.
           reenter: true,
-          target: "exampleAsyncWorkState",
+          target: "generateTypes",
         },
       },
     },
     done: {
-      // there should always be a "done" state that is a final state.
       type: "final",
     },
   },
