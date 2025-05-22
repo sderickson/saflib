@@ -9,6 +9,7 @@ export interface PackageJson {
   name: packageName;
   workspaces?: string[];
   dependencies?: Record<string, string>;
+  description?: string;
 }
 
 export interface MonorepoPackageJsons {
