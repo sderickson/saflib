@@ -1,6 +1,6 @@
-import { SpecProjectWorkflow } from "./spec-project.ts";
+import { SpecProjectXstateWorkflow } from "./spec-project.ts";
 import type { ConcreteWorkflow } from "@saflib/workflows";
 
-const workflowClasses: ConcreteWorkflow[] = [SpecProjectWorkflow];
+const workflowClasses: ConcreteWorkflow[] = [SpecProjectXstateWorkflow];
 
 export default workflowClasses;

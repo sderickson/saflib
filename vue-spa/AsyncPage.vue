@@ -15,9 +15,8 @@ import { computed } from "vue";
 import type { UseQueryReturnType } from "@tanstack/vue-query";
 import type { Component } from "vue";
 import { TanstackError } from "@saflib/vue-spa";
-
-interface Props<TData = unknown, TError = TanstackError> {
-  loader: () => UseQueryReturnType<TData, TError>[];
+interface Props {
+  loader: () => Record<string, UseQueryReturnType<any, TanstackError>>;
   pageComponent: Component;
 }
 
@@ -26,18 +25,27 @@ const props = defineProps<Props>();
 const queryResults = props.loader();
 
 const isLoading = computed(() =>
-  queryResults.some((query) => query.isLoading.value),
+  Array.isArray(queryResults)
+    ? queryResults.some((query) => query.isLoading.value)
+    : Object.values(queryResults).some((query) => query.isLoading.value),
 );
 
 const isError = computed(
-  () => !isLoading.value && queryResults.some((query) => query.isError.value),
+  () =>
+    !isLoading.value &&
+    (Array.isArray(queryResults)
+      ? queryResults.some((query) => query.isError.value)
+      : Object.values(queryResults).some((query) => query.isError.value)),
 );
 
 const firstError = computed(() => {
   if (!isError.value) {
     return null;
   }
-  return queryResults.find((query) => query.isError.value)?.error.value ?? null;
+  return Array.isArray(queryResults)
+    ? (queryResults.find((query) => query.isError.value)?.error.value ?? null)
+    : (Object.values(queryResults).find((query) => query.isError.value)?.error
+        .value ?? null);
 });
 
 const errorMessage = computed(() => {

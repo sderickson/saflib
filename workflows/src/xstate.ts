@@ -123,6 +123,11 @@ const getTestCommandAndArgs = () => {
   return { command, args };
 };
 
+export const doesTestPass = (pathString: string) => {
+  const { command, args } = getTestCommandAndArgs();
+  return runCommandAsync(command, [...args, pathString]);
+};
+
 export const doTestsPass = () => {
   const { command, args } = getTestCommandAndArgs();
   return runCommandAsync(command, args);
