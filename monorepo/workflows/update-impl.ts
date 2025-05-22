@@ -1,4 +1,4 @@
-import { fromPromise, raise, setup } from "xstate";
+import { and, fromPromise, raise, setup } from "xstate";
 import {
   workflowActionImplementations,
   workflowActors,
@@ -7,23 +7,24 @@ import {
   logError,
   promptAgent,
   XStateWorkflow,
+  doTestsPass,
+  doesTestPass,
 } from "@saflib/workflows";
 import path from "node:path";
 import { exec } from "node:child_process";
 import { promisify } from "node:util";
 import { existsSync } from "node:fs";
+import { cwd } from "node:process";
 
 const execAsync = promisify(exec);
 
 interface UpdateImplWorkflowInput {
-  targetFile: string; // Path to the implementation file to update
-  specPath: string; // Path to the spec file
+  path: string;
 }
 
 interface UpdateImplWorkflowContext extends WorkflowContext {
   targetFile: string;
   testFile: string;
-  specPath: string;
   packageDir: string;
 }
 
@@ -55,12 +56,16 @@ export const UpdateImplWorkflowMachine = setup({
   description: "Update an implementation and its test based on a project spec.",
   initial: "reviewSpec",
   context: ({ input }) => {
-    const testFile = findTestFile(input.targetFile);
-    const packageDir = findPackageDir(input.targetFile);
+    const testFile = findTestFile(input.path);
+    const packageDir = findPackageDir(input.path);
+    if (packageDir !== ".") {
+      throw new Error(
+        `You should run this workflow from the package it's part of: ${packageDir}, not ${cwd()}`,
+      );
+    }
     return {
-      targetFile: input.targetFile,
+      targetFile: input.path,
       testFile,
-      specPath: input.specPath,
       packageDir,
       loggedLast: false,
     };
@@ -74,7 +79,7 @@ export const UpdateImplWorkflowMachine = setup({
           actions: [
             promptAgent(
               ({ context }) =>
-                `Review the project spec at ${context.specPath} and the implementation file at ${context.targetFile}. If you need clarification on what needs to change, ask now. Otherwise, confirm you understand the required changes.`,
+                `Review the project spec (already given) and the implementation file at ${context.targetFile}. If you need clarification on what needs to change, ask now. Otherwise, confirm you understand the required changes.`,
             ),
           ],
         },
@@ -90,7 +95,7 @@ export const UpdateImplWorkflowMachine = setup({
           actions: [
             promptAgent(
               ({ context }) =>
-                `Update the implementation in ${context.targetFile} according to the project spec at ${context.specPath}. Make all necessary changes. If you need help, ask for clarification.`,
+                `Update the implementation in ${context.targetFile} according to the project spec. Make all necessary changes. If you need help, ask for clarification.`,
             ),
           ],
         },
@@ -118,18 +123,7 @@ export const UpdateImplWorkflowMachine = setup({
     runSpecificTest: {
       invoke: {
         input: ({ context }) => context,
-        src: fromPromise(async ({ input }) => {
-          const { testFile, packageDir } = input;
-          const relTestFile = path.relative(packageDir, testFile);
-          const { stdout, stderr } = await execAsync(
-            `npm run test ${relTestFile}`,
-            { cwd: packageDir },
-          );
-          if (stderr && !stdout.includes("Test Suites: 0 failed")) {
-            throw new Error(stderr);
-          }
-          return stdout;
-        }),
+        src: fromPromise(async ({ input }) => doesTestPass(input.testFile)),
         onDone: {
           target: "runPackageTests",
           actions: logInfo(() => `Specific test passed successfully.`),
@@ -160,16 +154,7 @@ export const UpdateImplWorkflowMachine = setup({
     runPackageTests: {
       invoke: {
         input: ({ context }) => context,
-        src: fromPromise(async ({ input }) => {
-          const { packageDir } = input;
-          const { stdout, stderr } = await execAsync(`npm run test`, {
-            cwd: packageDir,
-          });
-          if (stderr && !stdout.includes("Test Suites: 0 failed")) {
-            throw new Error(stderr);
-          }
-          return stdout;
-        }),
+        src: fromPromise(doTestsPass),
         onDone: {
           target: "done",
           actions: logInfo(() => `All package tests passed successfully.`),
@@ -187,7 +172,7 @@ export const UpdateImplWorkflowMachine = setup({
       on: {
         prompt: {
           actions: promptAgent(
-            ({ context }) =>
+            () =>
               `The package test suite failed. Please fix the issues and continue.`,
           ),
         },
@@ -209,12 +194,8 @@ export class UpdateImplWorkflow extends XStateWorkflow {
     "Update an implementation and its test based on a project spec.";
   cliArguments = [
     {
-      name: "targetFile",
+      name: "path",
       description: "Path to the implementation file to update",
-    },
-    {
-      name: "specPath",
-      description: "Path to the spec file",
     },
   ];
 }
