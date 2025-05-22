@@ -20,6 +20,9 @@ interface SpecProjectXstateWorkflowContext extends WorkflowContext {
   slug: string;
   projectDirPath: string;
   specFilePath: string;
+  checklistFilePath: string;
+  safDocOutput: string;
+  safWorkflowHelpOutput: string;
 }
 
 export const SpecProjectXstateWorkflowMachine = setup({
@@ -37,11 +40,15 @@ export const SpecProjectXstateWorkflowMachine = setup({
     const date = new Date().toISOString().split("T")[0];
     const projectDirName = `${date}-${input.slug}`;
     const specFilePath = path.join(projectDirName, "spec.md");
+    const checklistFilePath = path.join(projectDirName, "checklist.md");
     return {
       slug: input.slug,
       projectDirPath: projectDirName,
       specFilePath: specFilePath,
+      checklistFilePath: checklistFilePath,
       loggedLast: false,
+      safDocOutput: "",
+      safWorkflowHelpOutput: "",
     };
   },
   entry: logInfo("Successfully began workflow"),
@@ -58,26 +65,44 @@ export const SpecProjectXstateWorkflowMachine = setup({
             execSync(`mkdir -p ${context.projectDirPath}`);
             execSync(`touch ${context.specFilePath}`);
 
-            const templateContent = readFileSync(
+            const specTemplateContent = readFileSync(
               path.resolve(import.meta.dirname, "./spec.template.md"),
               "utf8",
             );
+            writeFileSync(context.specFilePath, specTemplateContent);
 
-            writeFileSync(context.specFilePath, templateContent);
+            const checklistTemplateContent = readFileSync(
+              path.resolve(import.meta.dirname, "./checklist.template.md"),
+              "utf8",
+            );
+            const processedChecklistContent = checklistTemplateContent.replace(
+              /<PROJECT_NAME>/g,
+              context.slug,
+            );
+            writeFileSync(context.checklistFilePath, processedChecklistContent);
+
+            const safDocOutput = execSync("npm exec saf-doc").toString();
+            return { safDocOutput };
           },
         ),
         onDone: {
-          target: "fillSpec",
-          actions: logInfo("Copied templates"),
+          target: "showSafDocOutput",
+          actions: [
+            logInfo("Copied templates and ran saf-doc."),
+            ({ event, context }) => {
+              context.safDocOutput = (
+                event.output as { safDocOutput: string }
+              ).safDocOutput;
+            },
+          ],
         },
         onError: {
           actions: [
             logError(({ event }) => `Initialization failed: ${event.error}`),
-            raise({ type: "prompt" }), // Or a specific error state
+            raise({ type: "prompt" }),
           ],
         },
       },
-      // If initialization fails and needs agent intervention
       on: {
         prompt: {
           actions: promptAgent(
@@ -88,6 +113,24 @@ export const SpecProjectXstateWorkflowMachine = setup({
         continue: {
           reenter: true,
           target: "initializing",
+        },
+      },
+    },
+    showSafDocOutput: {
+      entry: raise({ type: "prompt" }),
+      on: {
+        prompt: {
+          actions: [
+            promptAgent(
+              ({ context }) =>
+                `The following packages are available in this monorepo. You can learn more about any given package by running \`npm exec saf-doc <package-name>\`.
+
+${context.safDocOutput}`,
+            ),
+          ],
+        },
+        continue: {
+          target: "fillSpec",
         },
       },
     },
@@ -119,13 +162,60 @@ export const SpecProjectXstateWorkflowMachine = setup({
           ],
         },
         continue: {
-          // Assuming 'continue' means sign off
+          target: "promptForChecklist",
+        },
+      },
+    },
+    promptForChecklist: {
+      invoke: {
+        src: fromPromise(async () => {
+          const helpOutput = execSync(
+            "npm exec saf-workflow kickoff help",
+          ).toString();
+          return { helpOutput };
+        }),
+        onDone: {
+          actions: [
+            logInfo("Ran `npm exec saf-workflow kickoff help`."),
+            ({ event, context }) => {
+              context.safWorkflowHelpOutput = (
+                event.output as { helpOutput: string }
+              ).helpOutput;
+            },
+            raise({ type: "prompt" }),
+          ],
+        },
+        onError: {
+          actions: [
+            logError(
+              ({ event }) => `Failed to run saf-workflow help: ${event.error}`,
+            ),
+            raise({ type: "prompt" }),
+          ],
+        },
+      },
+      on: {
+        prompt: {
+          actions: [
+            promptAgent(({ context }) => {
+              const helpOutput =
+                context.safWorkflowHelpOutput ||
+                "Could not retrieve saf-workflow help output.";
+              return `The spec has been finalized. Please fill out the checklist.md located at ${context.checklistFilePath}.
+
+Here is a list of available workflow commands to help you:
+${helpOutput}
+
+Once you have filled out the checklist, please trigger the "continue" event.`;
+            }),
+          ],
+        },
+        continue: {
           target: "done",
         },
       },
     },
     done: {
-      // there should always be a "done" state that is a final state.
       type: "final",
     },
   },
