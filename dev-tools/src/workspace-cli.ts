@@ -1,12 +1,7 @@
-#!/usr/bin/env node
+#!/usr/bin/env node --experimental-strip-types --disable-warning=ExperimentalWarning
 import { Command } from "commander";
 import path from "node:path";
-import {
-  buildMonorepoContext,
-  type MonorepoContext,
-  type PackageJson,
-} from "./workspace.ts";
-import { readFileSync } from "node:fs";
+import { buildMonorepoContext, type MonorepoContext } from "./workspace.ts";
 
 function printPackageList(monorepoContext: MonorepoContext) {
   console.log("Packages in this monorepo:\n");
