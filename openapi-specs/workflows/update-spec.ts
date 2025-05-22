@@ -33,7 +33,8 @@ export class UpdateSpecWorkflow extends SimpleWorkflow<UpdateSpecWorkflowParams>
     {
       name: "Update the spec",
       prompt: () =>
-        `Add common objects to the "schemas" folder, and routes to the "routes" folder. Then link them in the "openapi.yaml" file.\n\n**Tip:** For request bodies, use \`allOf\` with your main schema to avoid repeating properties. Example:\n\n    schema:\n      allOf:\n        - $ref: '../schemas/contact.yaml'\n      required:\n        - relationship_to_owner\n\nThis keeps your spec DRY and easier to maintain.`,
+        `Add common objects to the "schemas" folder, and routes to the "routes" folder. Then link them in the "openapi.yaml" file.\n\n**Tip:** For request bodies, reference the properties from your main schema directly. Example:\n\n    schema:\n      type: object\n      properties:\n        $ref: '../schemas/your-schema.yaml#/properties'\n    # You can then specify a 'required' array separately if needed for the request,\n    # or omit it if all properties are optional for the request body.\n
+This keeps your spec DRY and easier to maintain.`,
     },
     {
       name: "Generate files",
