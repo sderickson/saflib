@@ -111,7 +111,7 @@ export const UpdateImplWorkflowMachine = setup({
           actions: [
             promptAgent(
               ({ context }) =>
-                `Update the test file at ${context.testFile} to test the new or updated functionality in ${context.targetFile}. Make sure the tests cover the new interface or function signature.`,
+                `Update the test file at ${context.testFile} to test the new or updated functionality in ${context.targetFile}. If this is a small change, just modify an existing test to cover the new or updated functionality, rather than adding a whole new test. Make sure the tests cover the new interface or function signature.`,
             ),
           ],
         },
