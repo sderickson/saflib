@@ -55,10 +55,8 @@ export const SpecProjectXstateWorkflowMachine = setup({
           }: {
             input: SpecProjectXstateWorkflowContext;
           }) => {
-            const toLog = [];
             execSync(`mkdir -p ${context.projectDirPath}`);
             execSync(`touch ${context.specFilePath}`);
-            toLog.push(`✔ Created directory: ${context.projectDirPath}`);
 
             const templateContent = readFileSync(
               path.resolve(import.meta.dirname, "./spec.template.md"),
@@ -66,19 +64,11 @@ export const SpecProjectXstateWorkflowMachine = setup({
             );
 
             writeFileSync(context.specFilePath, templateContent);
-            toLog.push(`✔ Created spec file: ${context.specFilePath}`);
-
-            // Instead of this.print, we'll log or raise an event
-            // For now, let's assume we want to log this to the agent.
-            // This might need adjustment based on how saf-workflow handles this.
-            return toLog.join("\n");
           },
         ),
         onDone: {
           target: "fillSpec",
-          actions: logInfo(
-            ({ event }) => `Initialization complete: ${event.output}`,
-          ),
+          actions: logInfo("Copied templates"),
         },
         onError: {
           actions: [
