@@ -1,5 +1,6 @@
 {
   "name": "@saflib/drizzle-sqlite3",
+  "description": "Tools, docs, and workflows for using drizzle + better-sqlite3",
   "type": "module",
   "exports": {
     "./workflows": "./workflows/index.ts",
