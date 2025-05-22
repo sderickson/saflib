@@ -130,15 +130,33 @@ export function findPackagesWithDockerfileTemplates(
   return packageList;
 }
 
-export function buildMonorepoContext(rootDir: string): MonorepoContext {
-  const rootDirResolved = path.resolve(rootDir);
+function findMonorepoRoot(startDir: string): string {
+  let currentDir = path.resolve(startDir);
+  while (true) {
+    if (existsSync(path.join(currentDir, "package-lock.json"))) {
+      return currentDir;
+    }
+    const parentDir = path.dirname(currentDir);
+    if (parentDir === currentDir) {
+      throw new Error(
+        "Could not find package-lock.json in the current directory or any parent directories.",
+      );
+    }
+    currentDir = parentDir;
+  }
+}
+
+export function buildMonorepoContext(rootDir?: string): MonorepoContext {
+  const effectiveRootDir = rootDir
+    ? path.resolve(rootDir)
+    : findMonorepoRoot(process.cwd());
   const { monorepoPackageJsons, monorepoPackageDirectories } =
-    getMonorepoPackages(rootDirResolved);
+    getMonorepoPackages(effectiveRootDir);
   const workspaceDependencyGraph =
     buildWorkspaceDependencyGraph(monorepoPackageJsons);
 
   return {
-    rootDir: rootDirResolved,
+    rootDir: effectiveRootDir,
     packages: new Set(Object.keys(monorepoPackageJsons)),
     monorepoPackageJsons,
     workspaceDependencyGraph,

@@ -17,7 +17,7 @@ async function main() {
     });
 
   let monorepoContext: MonorepoContext | undefined;
-  monorepoContext = buildMonorepoContext(process.cwd());
+  monorepoContext = buildMonorepoContext();
   assert(monorepoContext, "Failed to build monorepo context");
 
   for (const packageName of monorepoContext.packages) {
