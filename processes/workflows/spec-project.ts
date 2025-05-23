@@ -163,6 +163,22 @@ ${context.safDocOutput}`,
           ],
         },
         continue: {
+          target: "reviewChecklistGuide",
+        },
+      },
+    },
+    reviewChecklistGuide: {
+      entry: raise({ type: "prompt" }),
+      on: {
+        prompt: {
+          actions: [
+            promptAgent(
+              () =>
+                `Before creating the checklist, please review the guide on writing spec project checklists located at saflib/processes/docs/writing-spec-project-checklists.md. This will help you create a proper implementation checklist with the correct format, workflow commands, and paths. Once you've reviewed the guide, run "npm exec saf-workflow next" to continue.`,
+            ),
+          ],
+        },
+        continue: {
           target: "promptForChecklist",
         },
       },

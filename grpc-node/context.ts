@@ -7,6 +7,8 @@ import { type Auth, type SafContext, safStorage } from "@saflib/node";
 import { SafAuth } from "@saflib/grpc-specs";
 import { createLogger } from "@saflib/node";
 import { status } from "@grpc/grpc-js";
+import { AsyncLocalStorage } from "async_hooks";
+
 export const addSafContext: ServiceImplementationWrapper = (impl) => {
   const wrappedService: UntypedServiceImplementation = {};
 
@@ -63,3 +65,23 @@ export const addSafContext: ServiceImplementationWrapper = (impl) => {
   }
   return wrappedService;
 };
+
+export function makeGrpcServerContextWrapper(
+  storage: AsyncLocalStorage<any>,
+  context: any,
+) {
+  const wrapper: ServiceImplementationWrapper = (impl) => {
+    const wrappedService: UntypedServiceImplementation = {};
+
+    for (const [methodName, methodImpl] of Object.entries(impl)) {
+      const wrappedMethod: UntypedHandleCall = (call: any, callback: any) => {
+        return storage.run(context, () => {
+          return methodImpl(call, callback);
+        });
+      };
+      wrappedService[methodName] = wrappedMethod;
+    }
+    return wrappedService;
+  };
+  return wrapper;
+}

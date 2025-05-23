@@ -1,4 +1,4 @@
-# @vendata/rpcs
+# @saflib/rpcs
 
 This package contains Protocol Buffer definitions and generated TypeScript code for RPC services in the Vendata platform.
 

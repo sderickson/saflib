@@ -1,0 +1,23 @@
+{
+  "name": "{{PACKAGE_NAME}}",
+  "description": "Protocol Buffer definitions and generated TypeScript code",
+  "type": "module",
+  "private": true,
+  "exports": {
+    ".": "./index.ts"
+  },
+  "scripts": {
+    "clean": "rm -rf dist/*",
+    "generate": "npm run clean && ./generate.sh"
+  },
+  "dependencies": {
+    "@grpc/grpc-js": "*",
+    "@saflib/grpc-specs": "*",
+    "google-protobuf": "*",
+    "protoc-gen-ts": "*"
+  },
+  "devDependencies": {
+    "@types/google-protobuf": "*",
+    "@saflib/monorepo": "*"
+  }
+} 

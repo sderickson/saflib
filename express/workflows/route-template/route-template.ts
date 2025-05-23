@@ -1,7 +1,7 @@
 import { createHandler } from "@saflib/express";
-import type { ApiRequest, ApiResponseBody } from "@vendata/specs-apis";
+import type { ApiRequest, ApiResponseBody } from "@your-org/specs-apis";
 import createError from "http-errors";
-import { callerServiceStorage } from "@vendata/services-api/context.ts";
+import { callerServiceStorage } from "@your-org/services-api/context.ts";
 import { getSafContextWithAuth } from "@saflib/node";
 
 export const routeTemplate = createHandler(async (req, res) => {

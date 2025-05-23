@@ -4,7 +4,7 @@ import type {
   ApiRequest,
   ApiResponseBody,
   ApiRequestPathParams,
-} from "@vendata/specs-apis";
+} from "@your-org/specs-apis";
 import { handleClientMethod } from "@saflib/vue-spa/tanstack";
 import type { Ref } from "vue";
 

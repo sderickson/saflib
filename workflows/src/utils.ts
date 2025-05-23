@@ -8,6 +8,7 @@ export function addNewLinesToString(str: string, maxLineWidth: number = 80) {
   return str
     .split("\n")
     .map((line) => addNewLinesToLine(line, maxLineWidth))
+    .map((line) => line.trim())
     .join("\n");
 }
 
@@ -19,7 +20,7 @@ function addNewLinesToLine(str: string, maxLineWidth: number = 80) {
     const word = words.shift() ?? "";
     if ((currentLine + " " + word).length > maxLineWidth) {
       lines.push(currentLine);
-      currentLine = word;
+      currentLine = "   " + word;
     } else {
       currentLine = currentLine + " " + word;
     }

@@ -1,5 +1,5 @@
 {
-  "name": "@vendata/web-template",
+  "name": "@your-org/web-template",
   "private": true,
   "type": "module",
   "exports": {

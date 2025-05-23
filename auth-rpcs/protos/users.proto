@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package saflib.auth.v1;
+
+import "envelope.proto";
+import "google/protobuf/timestamp.proto";
+
+service Users {
+  rpc GetUserProfile(GetUserProfileRequest) returns (GetUserProfileResponse);
+}
+
+message GetUserProfileRequest {
+  saflib.common.v1.SafAuth auth = 1;
+  saflib.common.v1.SafRequest request = 2;
+  int64 user_id = 3;
+}
+
+message GetUserProfileResponse {
+  UserProfile profile = 3;
+}
+
+message UserProfile {
+  int64 user_id = 1;
+  string email = 2;
+  bool email_verified = 3;
+  string name = 4;
+  google.protobuf.Timestamp created_at = 5;
+}
