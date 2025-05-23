@@ -6,7 +6,8 @@
   "main": ".",
   "exports": {
     ".": "./index.ts",
-    "./workflows": "./workflows/index.ts"
+    "./workflows": "./workflows/index.ts",
+    "./testing": "./test-service.ts"
   },
   "dependencies": {
     "@saflib/grpc-specs": "*",
