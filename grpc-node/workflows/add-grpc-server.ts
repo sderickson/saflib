@@ -285,13 +285,7 @@ export const AddGrpcServerWorkflowMachine = setup({
           actions: [
             promptAgent(
               ({ context }) =>
-                `Update the grpc.ts file at ${context.grpcFilePath} to add the new service:
-                
-                1. Import the new service: import { Users } from "@saflib/auth-rpcs";
-                2. Add the new service to the server:
-                   - server.addService(Users.service, wrap(Users.serviceImpl));
-                
-                Look at the existing services/api/grpc.ts for examples.`,
+                `Update the grpc.ts file at ${context.grpcFilePath} to make sure everything is in place and imported correctly. The file that was generated should largely be correct but not everything can be inferred ahead of time.`,
             ),
           ],
         },
