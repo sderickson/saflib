@@ -22,6 +22,7 @@ interface AddGrpcServerWorkflowInput {}
 interface AddGrpcServerWorkflowContext extends WorkflowContext {
   serviceName: string; // e.g. "api"
   pascalServiceName: string; // e.g. "Auth"
+  rawServiceName: string; // Keep the original name for scope detection
   sourceDir: string; // template directory
   grpcFilePath: string; // path to grpc.ts file
   contextFilePath: string; // path to context.ts file
@@ -69,6 +70,7 @@ export const AddGrpcServerWorkflowMachine = setup({
     return {
       serviceName,
       pascalServiceName,
+      rawServiceName, // Keep the original name for scope detection
       sourceDir,
       grpcFilePath,
       contextFilePath,
@@ -188,12 +190,31 @@ export const AddGrpcServerWorkflowMachine = setup({
             grpcFilePath,
             serviceName,
             pascalServiceName,
+            rawServiceName,
             sourceDir,
             contextFilePath,
+            packageJsonPath,
           } = input;
 
           if (existsSync(grpcFilePath)) {
             throw new Error("grpc.ts file already exists");
+          }
+
+          // Read package.json to determine the scope
+          let serviceScope = "@vendata"; // default fallback
+          if (existsSync(packageJsonPath)) {
+            try {
+              const packageContent = await readFile(packageJsonPath, "utf-8");
+              const packageJson = JSON.parse(packageContent);
+              if (packageJson.name) {
+                const scopeMatch = packageJson.name.match(/^(@[^/]+)/);
+                if (scopeMatch) {
+                  serviceScope = scopeMatch[1];
+                }
+              }
+            } catch {
+              // If we can't read package.json, use default scope
+            }
           }
 
           // Read the context file to find the actual storage variable name
@@ -212,21 +233,24 @@ export const AddGrpcServerWorkflowMachine = setup({
           const templatePath = path.join(sourceDir, "grpc.ts");
           const template = await readFile(templatePath, "utf-8");
 
-          // Replace placeholders
+          // Replace placeholders - do specific replacements first to avoid conflicts
           const content = template
-            .replace(/SERVICE_NAME/g, serviceName)
-            .replace(/SERVICE_NAMEDb/g, `${serviceName}Db`)
-            .replace(/SERVICE_NAMEServiceStorage/g, actualStorageName)
             .replace(
               /addSERVICE_NAMEServiceContext/g,
               `add${pascalServiceName}ServiceContext`,
-            );
+            )
+            .replace(
+              /@vendata\/dbs-SERVICE_NAME/g,
+              `${serviceScope}/dbs-${serviceName}`,
+            )
+            .replace(/SERVICE_NAMEDb/g, `${serviceName}Db`)
+            .replace(/SERVICE_NAMEServiceStorage/g, actualStorageName);
 
           await writeFile(grpcFilePath, content);
           return "Created grpc.ts";
         }),
         onDone: {
-          target: "updateRunFile",
+          target: "updateGrpcFile",
           actions: logInfo(
             ({ context }) => `Created grpc.ts file at ${context.grpcFilePath}.`,
           ),
@@ -251,6 +275,28 @@ export const AddGrpcServerWorkflowMachine = setup({
         continue: {
           reenter: true,
           target: "createGrpcFile",
+        },
+      },
+    },
+    updateGrpcFile: {
+      entry: raise({ type: "prompt" }),
+      on: {
+        prompt: {
+          actions: [
+            promptAgent(
+              ({ context }) =>
+                `Update the grpc.ts file at ${context.grpcFilePath} to add the new service:
+                
+                1. Import the new service: import { Users } from "@saflib/auth-rpcs";
+                2. Add the new service to the server:
+                   - server.addService(Users.service, wrap(Users.serviceImpl));
+                
+                Look at the existing services/api/grpc.ts for examples.`,
+            ),
+          ],
+        },
+        continue: {
+          target: "updateRunFile",
         },
       },
     },
