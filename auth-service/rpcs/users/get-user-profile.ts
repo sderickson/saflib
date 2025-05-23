@@ -5,6 +5,7 @@ import { status } from "@grpc/grpc-js";
 import { getSafContext } from "@saflib/node";
 import { authServiceStorage } from "../../context.ts";
 import { authDb } from "@saflib/auth-db";
+import { GetUserProfileResponse, UserProfile } from "@saflib/auth-rpcs";
 
 // TODO: Replace with proper type annotation once types are imported
 // should be:
@@ -17,7 +18,7 @@ export const handleGetUserProfile = async (call: any, callback: any) => {
     const { dbKey } = authServiceStorage.getStore()!;
 
     // Get the user ID from the request
-    const userId = request.userId;
+    const userId = request.user_id;
     if (!userId) {
       callback({
         code: status.INVALID_ARGUMENT,
@@ -42,12 +43,17 @@ export const handleGetUserProfile = async (call: any, callback: any) => {
 
     log.info("GetUserProfile handler executed successfully", { userId });
 
-    // TODO: Replace with proper response type constructor
-    // should be:
-    // const response = new GetUserProfileResponse();
-    const response = {
-      user: emailAuth,
-    };
+    // Create proper response with UserProfile
+    const userProfile = new UserProfile({
+      user_id: emailAuth.userId,
+      email: emailAuth.email,
+      email_verified: !!emailAuth.verifiedAt,
+      name: undefined, // We don't have name in emailAuth, would need to join with users table
+    });
+
+    const response = new GetUserProfileResponse({
+      profile: userProfile,
+    });
 
     callback(null, response);
   } catch (error) {
