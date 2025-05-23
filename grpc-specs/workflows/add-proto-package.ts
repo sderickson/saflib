@@ -38,10 +38,9 @@ export class AddProtoPackageWorkflow extends SimpleWorkflow<AddProtoPackageWorkf
 
     const packageDirName = path.basename(this.params.path);
 
-    // Extract the package name without scope for use in proto package names
-    const packageNameWithoutScope = name.includes("/")
-      ? name.split("/")[1]
-      : name;
+    // Transform npm package name to proto package name
+    // @saflib/auth-rpcs -> saflib.auth.v1
+    const protoPackageName = this.transformToProtoPackageName(name);
 
     const filesToCopy = [
       { template: "package.json.template", output: "package.json" },
@@ -56,15 +55,12 @@ export class AddProtoPackageWorkflow extends SimpleWorkflow<AddProtoPackageWorkf
       const templatePath = path.join(templatesDir, file.template);
       const outputPath = path.join(this.params.path, file.output);
       let content = fs.readFileSync(templatePath, "utf8");
-      // Replace {{PACKAGE_NAME}} with the full package name or package name without scope for proto files
-      if (file.template === "example.proto.template") {
-        content = content.replace(
-          /\{\{PACKAGE_NAME\}\}/g,
-          packageNameWithoutScope,
-        );
-      } else {
-        content = content.replace(/\{\{PACKAGE_NAME\}\}/g, name);
-      }
+      // Replace template variables
+      content = content.replace(/\{\{PACKAGE_NAME\}\}/g, name);
+      content = content.replace(
+        /\{\{PROTO_PACKAGE_NAME\}\}/g,
+        protoPackageName,
+      );
       fs.writeFileSync(outputPath, content);
     }
 
@@ -76,15 +72,39 @@ export class AddProtoPackageWorkflow extends SimpleWorkflow<AddProtoPackageWorkf
       data: {
         fullPackagePath: this.params.path,
         packageName: this.params.name,
+        protoPackageName,
       },
     };
   };
+
+  private transformToProtoPackageName(npmPackageName: string): string {
+    // Extract scope and package name from @scope/package-name
+    const match = npmPackageName.match(/^@([^/]+)\/(.+)$/);
+    if (!match) {
+      throw new Error(
+        `Invalid package name format: ${npmPackageName}. Expected @scope/package-name`,
+      );
+    }
+
+    const [, scope, packageName] = match;
+
+    // Strip -rpcs suffix if present
+    let cleanPackageName = packageName;
+    if (cleanPackageName.endsWith("-rpcs")) {
+      cleanPackageName = cleanPackageName.slice(0, -5); // Remove "-rpcs"
+    }
+
+    // Remove hyphens and replace with underscores (or just remove them)
+    cleanPackageName = cleanPackageName.replace(/-/g, "");
+
+    return `${scope}.${cleanPackageName}.v1`;
+  }
 
   cliArguments = [
     {
       name: "name",
       description:
-        "The desired package name, including scope (e.g., @your-org/package-name)",
+        "The desired package name, including scope (e.g., @your-org/package-name-rpcs)",
     },
     {
       name: "path",

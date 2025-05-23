@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package {{PACKAGE_NAME}}.example.v1;
+package {{PROTO_PACKAGE_NAME}};
 
 import "envelope.proto";
 
