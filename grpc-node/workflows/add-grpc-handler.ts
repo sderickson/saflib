@@ -221,7 +221,7 @@ export const AddGrpcHandlerWorkflowMachine = setup({
           } = input;
           if (!existsSync(serviceIndexPath)) {
             const indexContent = `import type { UntypedServiceImplementation } from "@grpc/grpc-js";
-import { Unimplemented${pascalServiceName}Service } from "@vendata/rpcs";
+import { Unimplemented${pascalServiceName}Service } from "@your-org/rpcs";
 import { handle${toPascalCase(name)} } from "./${name}.ts";
 
 export const ${pascalServiceName}ServiceDefinition =
@@ -350,7 +350,7 @@ export const ${pascalServiceName}ServiceImpl: UntypedServiceImplementation = {
             promptAgent(
               ({ context }) =>
                 `Implement the ${context.camelName} gRPC handler. Make sure to:
-                1. Import the correct request/response types from @vendata/rpcs
+                1. Import the correct request/response types from @your-org/rpcs
                 2. Use the proper type annotation for the handler function
                 3. Handle the request data appropriately
                 4. Return proper response objects
