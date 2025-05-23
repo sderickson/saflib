@@ -21,7 +21,7 @@ interface AddGrpcServerWorkflowInput {}
 
 interface AddGrpcServerWorkflowContext extends WorkflowContext {
   serviceName: string; // e.g. "api"
-  camelServiceName: string; // e.g. "api"
+  pascalServiceName: string; // e.g. "Auth"
   sourceDir: string; // template directory
   grpcFilePath: string; // path to grpc.ts file
   contextFilePath: string; // path to context.ts file
@@ -29,7 +29,7 @@ interface AddGrpcServerWorkflowContext extends WorkflowContext {
   packageJsonPath: string; // path to package.json
 }
 
-function toCamelCase(name: string): string {
+function toPascalCase(name: string): string {
   return name
     .split("-")
     .map((part, index) => {
@@ -57,8 +57,9 @@ export const AddGrpcServerWorkflowMachine = setup({
     const cwd = process.cwd();
 
     // Determine service name from current directory
-    const serviceName = path.basename(cwd);
-    const camelServiceName = toCamelCase(serviceName);
+    const rawServiceName = path.basename(cwd);
+    const serviceName = rawServiceName.replace(/-service$/, ""); // Remove "-service" suffix
+    const pascalServiceName = toPascalCase(serviceName); // e.g. "auth" -> "Auth"
 
     const grpcFilePath = path.join(cwd, "grpc.ts");
     const contextFilePath = path.join(cwd, "context.ts");
@@ -67,7 +68,7 @@ export const AddGrpcServerWorkflowMachine = setup({
 
     return {
       serviceName,
-      camelServiceName,
+      pascalServiceName,
       sourceDir,
       grpcFilePath,
       contextFilePath,
@@ -110,7 +111,9 @@ export const AddGrpcServerWorkflowMachine = setup({
             return stdout;
           } catch (error) {
             // Only fail if the command actually failed (non-zero exit code)
-            throw new Error(`Failed to install dependency: ${error.message}`);
+            throw new Error(
+              `Failed to install dependency: ${(error as Error).message}`,
+            );
           }
         }),
         onDone: {
@@ -181,8 +184,13 @@ export const AddGrpcServerWorkflowMachine = setup({
       invoke: {
         input: ({ context }) => context,
         src: fromPromise(async ({ input }) => {
-          const { grpcFilePath, serviceName, sourceDir, contextFilePath } =
-            input;
+          const {
+            grpcFilePath,
+            serviceName,
+            pascalServiceName,
+            sourceDir,
+            contextFilePath,
+          } = input;
 
           if (existsSync(grpcFilePath)) {
             throw new Error("grpc.ts file already exists");
@@ -208,7 +216,11 @@ export const AddGrpcServerWorkflowMachine = setup({
           const content = template
             .replace(/SERVICE_NAME/g, serviceName)
             .replace(/SERVICE_NAMEDb/g, `${serviceName}Db`)
-            .replace(/SERVICE_NAMEServiceStorage/g, actualStorageName);
+            .replace(/SERVICE_NAMEServiceStorage/g, actualStorageName)
+            .replace(
+              /addSERVICE_NAMEServiceContext/g,
+              `add${pascalServiceName}ServiceContext`,
+            );
 
           await writeFile(grpcFilePath, content);
           return "Created grpc.ts";
