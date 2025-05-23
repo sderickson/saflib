@@ -81,7 +81,7 @@ export const UpdateGrpcSpecWorkflowMachine = setup({
           },
         ),
         onDone: {
-          target: "done",
+          target: "exportGenerated",
           actions: logInfo(
             () => `TypeScript files generated successfully from proto files.`,
           ),
@@ -103,6 +103,19 @@ export const UpdateGrpcSpecWorkflowMachine = setup({
         continue: {
           reenter: true,
           target: "generateTypes",
+        },
+      },
+    },
+    exportGenerated: {
+      entry: raise({ type: "prompt" }),
+      on: {
+        prompt: {
+          actions: promptAgent(
+            () => `If new files were created, export them from this package.`,
+          ),
+        },
+        continue: {
+          target: "done",
         },
       },
     },

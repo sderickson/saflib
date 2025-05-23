@@ -96,7 +96,7 @@ export const AddGrpcHandlerWorkflowMachine = setup({
 
                 Make sure you have:
                 1. The gRPC service proto definition updated with your new RPC method
-                2. The generated TypeScript types available in @vendata/rpcs
+                2. The generated TypeScript types exported from the package with the proto
 
                 Continue when ready.`,
             ),
