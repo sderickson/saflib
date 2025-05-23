@@ -105,13 +105,13 @@ export const AddGrpcServerWorkflowMachine = setup({
       invoke: {
         input: ({ context }) => context,
         src: fromPromise(async () => {
-          const { stdout, stderr } = await execAsync(
-            "npm install @saflib/grpc-node",
-          );
-          if (stderr && !stderr.includes("WARN")) {
-            throw new Error(`Failed to install dependency: ${stderr}`);
+          try {
+            const { stdout } = await execAsync("npm install @saflib/grpc-node");
+            return stdout;
+          } catch (error) {
+            // Only fail if the command actually failed (non-zero exit code)
+            throw new Error(`Failed to install dependency: ${error.message}`);
           }
-          return stdout;
         }),
         onDone: {
           target: "checkContext",
