@@ -100,6 +100,17 @@ export const UpdateSchemaWorkflowMachine = setup({
         },
       },
     },
+    exportTypes: {
+      entry: raise({ type: "prompt" }),
+      on: {
+        prompt: {
+          actions: promptAgent(
+            () =>
+              `If any new tables were created, make sure to add the inferred types to ./types.ts so they're exported in index.ts.`,
+          ),
+        },
+      },
+    },
     done: {
       type: "final",
     },
