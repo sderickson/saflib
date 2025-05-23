@@ -172,7 +172,8 @@ export const AddGrpcHandlerWorkflowMachine = setup({
             const updatedContent = content
               .replace(/grpcHandlerTemplate/g, camelName)
               .replace(/grpc-handler-template/g, name)
-              .replace(/GrpcHandlerTemplate/g, toPascalCase(name));
+              .replace(/GrpcHandlerTemplate/g, toPascalCase(name))
+              .replace(/GrpcService/g, toPascalCase(input.pascalServiceName));
             await writeFile(newPath, updatedContent);
           }
 

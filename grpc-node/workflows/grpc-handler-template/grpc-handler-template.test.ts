@@ -1,39 +1,47 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { handleGrpcHandlerTemplate } from "./grpc-handler-template.ts";
+import * as grpc from "@grpc/grpc-js";
+import { resolveGrpcRequest, runTestServer } from "@saflib/grpc-node/testing";
 
 describe("handleGrpcHandlerTemplate", () => {
+  let server: grpc.Server;
+  let testServerHost: string;
+  // TODO: import this from your package's grpc.ts file
+  // let client: GrpcServiceClient;
+
+  beforeEach(async () => {
+    // TODO: import this from your package's grpc.ts file
+    // server = makeGrpcServer();
+    // testServerHost = await runTestServer(server);
+    // const client = new GrpcServiceClient(
+    //   testServerHost,
+    //   grpc.credentials.createInsecure(),
+    // );
+  });
+
   it("should handle successful requests", async () => {
-    const mockCall = {
-      request: {
-        // TODO: Add test request data based on your proto definition
-      },
-    };
-
-    const mockCallback = vi.fn();
-
-    await handleGrpcHandlerTemplate(mockCall, mockCallback);
-
-    expect(mockCallback).toHaveBeenCalledWith(
-      null,
-      expect.objectContaining({
-        success: true,
-      }),
-    );
+    // const result = await resolveGrpcRequest(
+    //   client.GrpcHandlerTemplate(
+    //     new GrpcHandlerTemplateRequest({
+    //       request: {
+    //         // TODO: Add test request data based on your proto definition
+    //       },
+    //     }),
+    //   ),
+    // );
+    // expect(result.success).toEqual(true);
   });
 
   it("should handle errors gracefully", async () => {
-    const mockCall = {
-      request: {
-        // TODO: Add test request data that would cause an error
-      },
-    };
-
-    const mockCallback = vi.fn();
-
-    // TODO: Mock any dependencies that might throw errors
-
-    await handleGrpcHandlerTemplate(mockCall, mockCallback);
-
-    // TODO: Verify error handling behavior
+    // const result = await resolveGrpcRequest(
+    //   client.GrpcHandlerTemplate(
+    //     new GrpcHandlerTemplateRequest({
+    //       request: {
+    //         // TODO: Add test request data based on your proto definition
+    //       },
+    //     }),
+    //   ),
+    // );
+    // expect(result.success).toEqual(false);
   });
 });
