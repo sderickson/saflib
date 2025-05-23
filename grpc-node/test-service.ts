@@ -24,10 +24,13 @@ async function runTestServer<S extends grpc.Server>(service: S) {
 
 export { runTestServer };
 
-export async function resolveGrpcRequest(p: Promise<any>) {
+export async function resolveGrpcRequest<T extends { successful: boolean }>(
+  p: Promise<T>,
+): Promise<T> {
   if (vi.isFakeTimers()) {
     vi.advanceTimersByTime(1000);
   }
   const result = await p;
   expect(result.successful).toBe(true);
+  return result;
 }

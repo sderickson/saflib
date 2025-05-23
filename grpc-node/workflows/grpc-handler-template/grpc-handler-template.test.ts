@@ -30,18 +30,6 @@ describe("handleGrpcHandlerTemplate", () => {
     //   ),
     // );
     // expect(result.success).toEqual(true);
-  });
-
-  it("should handle errors gracefully", async () => {
-    // const result = await resolveGrpcRequest(
-    //   client.GrpcHandlerTemplate(
-    //     new GrpcHandlerTemplateRequest({
-    //       request: {
-    //         // TODO: Add test request data based on your proto definition
-    //       },
-    //     }),
-    //   ),
-    // );
-    // expect(result.success).toEqual(false);
+    expect(true).toEqual(false); // TODO: implement this test!
   });
 });
