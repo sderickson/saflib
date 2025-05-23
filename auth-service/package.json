@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@saflib/auth-db": "*",
+    "@saflib/auth-rpcs": "*",
     "@saflib/auth-spec": "*",
     "@saflib/email": "*",
     "@saflib/express": "*",
