@@ -1,97 +1,153 @@
-import { fromPromise, raise, setup } from "xstate";
-import {
-  workflowActionImplementations,
-  workflowActors,
-  logInfo,
-  type WorkflowContext,
-  logError,
-  promptAgent,
-  XStateWorkflow,
-} from "@saflib/workflows";
+import { SimpleWorkflow } from "@saflib/workflows";
+import * as fs from "node:fs";
+import * as path from "node:path";
 
-interface AddProtoPackageWorkflowInput {}
-
-interface AddProtoPackageWorkflowContext extends WorkflowContext {
-  foo: string;
+interface AddProtoPackageWorkflowParams {
+  name: string;
+  path: string; // Relative to monorepo root, e.g., "specs" or "libs"
 }
 
-export const AddProtoPackageWorkflowMachine = setup({
-  types: {
-    input: {} as AddProtoPackageWorkflowInput,
-    context: {} as AddProtoPackageWorkflowContext,
-  },
-  actions: workflowActionImplementations,
-  actors: workflowActors,
-}).createMachine({
-  id: "to-do",
-  description: "TODO",
-  initial: "examplePromptState",
-  context: (_) => {
-    return {
-      foo: "bar",
-      loggedLast: false,
-    };
-  },
-  entry: logInfo("Successfully began workflow"),
-  states: {
-    examplePromptState: {
-      entry: raise({ type: "prompt" }),
-      on: {
-        prompt: {
-          actions: [
-            promptAgent(
-              ({ context }) =>
-                `This is a prompt state. It will not continue until the agent triggers the "continue" event. You can incorporate the context into the prompt if you need to like this: ${context.foo}`,
-            ),
-          ],
-        },
-        continue: {
-          target: "exampleAsyncWorkState",
-        },
-      },
-    },
-    exampleAsyncWorkState: {
-      invoke: {
-        input: ({ context }) => context,
-        src: fromPromise(async ({ input }: { input: AddProtoPackageWorkflowContext }) => {
-          // This promise can do async work such as calling an npm script.
-          // It should reject if the work fails.
-          return "success";
-        }),
-        onDone: {
-          target: "done",
-          actions: logInfo(() => `Work completed successfully.`), // use logInfo to communicate to the agent what is happening.
-        },
-        onError: {
-          actions: [
-            logError(() => `Work failed.`), // use logError to communicate to the agent what is happening.
-            raise({ type: "prompt" }),
-          ],
-        },
-      },
-      on: {
-        prompt: {
-          actions: promptAgent(
-            () =>
-              `Normally, this state will complete itself and not require agentic intervention. However, if the execution fails, the agent will be prompted with this string to fix the problem.`,
-          ),
-        },
-        continue: {
-          // when the agent is done fixing the issue, they'll trigger the workflow tool to "continue" at which point the work will be retried.
-          reenter: true,
-          target: "exampleAsyncWorkState",
-        },
-      },
-    },
-    done: {
-      // there should always be a "done" state that is a final state.
-      type: "final",
-    },
-  },
-});
+export class AddProtoPackageWorkflow extends SimpleWorkflow<AddProtoPackageWorkflowParams> {
+  name = "add-proto-package";
+  description =
+    "Creates a new Protocol Buffer package according to monorepo best practices.";
 
-export class AddProtoPackageWorkflow extends XStateWorkflow {
-  machine = AddProtoPackageWorkflowMachine;
-  description = "TODO";
-  cliArguments = [];
+  init = async (name: string, packagePath: string) => {
+    this.params = {
+      name, // Expected to be the full package name, e.g., @scope/pkg-name
+      path: packagePath, // Expected to be the direct path to the package, e.g., specs/pkg-name
+    };
+
+    const templatesDir = path.join(import.meta.dirname, "templates");
+
+    if (!fs.existsSync(this.params.path)) {
+      fs.mkdirSync(this.params.path, { recursive: true });
+    }
+
+    // Create dist directory
+    const distDir = path.join(this.params.path, "dist");
+    if (!fs.existsSync(distDir)) {
+      fs.mkdirSync(distDir, { recursive: true });
+    }
+
+    // Create protos directory
+    const protosDir = path.join(this.params.path, "protos");
+    if (!fs.existsSync(protosDir)) {
+      fs.mkdirSync(protosDir, { recursive: true });
+    }
+
+    const packageDirName = path.basename(this.params.path);
+
+    // Extract the package name without scope for use in proto package names
+    const packageNameWithoutScope = name.includes("/")
+      ? name.split("/")[1]
+      : name;
+
+    const filesToCopy = [
+      { template: "package.json.template", output: "package.json" },
+      { template: "tsconfig.json.template", output: "tsconfig.json" },
+      { template: "index.ts.template", output: "index.ts" },
+      { template: "generate.sh.template", output: "generate.sh" },
+      { template: "README.md.template", output: "README.md" },
+      { template: "example.proto.template", output: "protos/example.proto" },
+    ];
+
+    for (const file of filesToCopy) {
+      const templatePath = path.join(templatesDir, file.template);
+      const outputPath = path.join(this.params.path, file.output);
+      let content = fs.readFileSync(templatePath, "utf8");
+      // Replace {{PACKAGE_NAME}} with the full package name or package name without scope for proto files
+      if (file.template === "example.proto.template") {
+        content = content.replace(
+          /\{\{PACKAGE_NAME\}\}/g,
+          packageNameWithoutScope,
+        );
+      } else {
+        content = content.replace(/\{\{PACKAGE_NAME\}\}/g, name);
+      }
+      fs.writeFileSync(outputPath, content);
+    }
+
+    // Make generate.sh executable
+    const generateShPath = path.join(this.params.path, "generate.sh");
+    fs.chmodSync(generateShPath, "755");
+
+    return {
+      data: {
+        fullPackagePath: this.params.path,
+        packageName: this.params.name,
+      },
+    };
+  };
+
+  cliArguments = [
+    {
+      name: "name",
+      description:
+        "The desired package name, including scope (e.g., @your-org/package-name)",
+    },
+    {
+      name: "path",
+      description:
+        "The RELATIVE path from monorepo root where the package directory (containing package.json) will be created (e.g., specs/my-rpcs)",
+    },
+  ];
+
+  workflowPrompt = () => {
+    return `You are creating a new Protocol Buffer package named '${this.params?.name}' at the path '${this.params?.path}'. Follow the steps to set up the package structure, dependencies, and proto generation configuration as per monorepo guidelines.`;
+  };
+
+  steps = [
+    {
+      name: "Update package.json description",
+      prompt: () => {
+        if (!this.params?.path)
+          return "Error: Package path not available. Init might have failed.";
+        const packageJsonPath = path.join(this.params.path, "package.json");
+        return `The file '${packageJsonPath}' has been created. Please update the "description" field to describe what this proto package contains, and any other fields as needed.`;
+      },
+    },
+    {
+      name: "Update proto definitions",
+      prompt: () => {
+        if (!this.params?.path)
+          return "Error: Package path not available. Init might have failed.";
+        const protoPath = path.join(this.params.path, "protos/example.proto");
+        return `An example proto file '${protoPath}' has been created. Please update it with your actual service definitions, or create additional .proto files as needed. Remember to import "envelope.proto" for SafAuth and SafRequest types.`;
+      },
+    },
+    {
+      name: "Ensure package is in root workspace",
+      prompt: () => {
+        if (!this.params?.path)
+          return "Error: Workflow params not available or path is missing.";
+        const directPath = this.params.path;
+        const rootPackageJsonPath = path.join(process.cwd(), "package.json");
+        return `Ensure the new package path '${directPath}' is included in the "workspaces" array in '${rootPackageJsonPath}'. For example: "workspaces": ["${directPath}", "other-packages/*"]`;
+      },
+    },
+    {
+      name: "Run npm install",
+      prompt: () =>
+        `Run 'npm install' in the monorepo root directory to link the new package, install dependencies, and update the lockfile.`,
+    },
+    {
+      name: "Generate TypeScript code",
+      prompt: () => {
+        if (!this.params?.path || !this.params?.name)
+          return "Error: Package path or name not available. Init might have failed.";
+        const workspaceName = this.params.name;
+        return `Run 'npm run generate --workspace="${workspaceName}"' to generate TypeScript code from the proto definitions. This will create files in the dist/ directory.`;
+      },
+    },
+    {
+      name: "Update index.ts exports",
+      prompt: () => {
+        if (!this.params?.path)
+          return "Error: Package path not available. Init might have failed.";
+        const indexPath = path.join(this.params.path, "index.ts");
+        return `After generation, update '${indexPath}' to export the generated TypeScript files from the dist/ directory. For example: export * from "./dist/example.ts";`;
+      },
+    },
+  ];
 }

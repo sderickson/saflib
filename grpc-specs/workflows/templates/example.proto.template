@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package {{PACKAGE_NAME}}.example.v1;
+
+import "envelope.proto";
+
+service ExampleService {
+  rpc ExampleMethod(ExampleRequest) returns (ExampleResponse);
+}
+
+message ExampleRequest {
+  saflib.common.v1.SafAuth auth = 1;
+  saflib.common.v1.SafRequest request = 2;
+  string example_field = 3;
+}
+
+message ExampleResponse {
+  bool successful = 1;
+  string message = 2;
+} 
