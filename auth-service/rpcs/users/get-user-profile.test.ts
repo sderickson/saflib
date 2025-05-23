@@ -5,7 +5,7 @@ import { resolveGrpcRequest, runTestServer } from "@saflib/grpc-node/testing";
 import { makeGrpcServer } from "../../grpc.ts";
 import { authDb } from "@saflib/auth-db";
 import type { DbKey } from "@saflib/drizzle-sqlite3";
-import { UsersClient } from "@saflib/auth-rpcs";
+import { UsersClient, GetUserProfileRequest } from "@saflib/auth-rpcs";
 
 describe("handleGetUserProfile", () => {
   let server: grpc.Server;
@@ -61,19 +61,20 @@ describe("handleGetUserProfile", () => {
 
     // Make the gRPC call
     const result = await resolveGrpcRequest(
-      client.GetUserProfile({ userId: user.id }),
+      client.GetUserProfile(new GetUserProfileRequest({ user_id: user.id })),
     );
 
     // Verify the response
-    expect(result.user).toMatchObject({
-      userId: user.id,
-      email: "test@example.com",
-    });
+    expect(result.profile).toBeDefined();
+    expect(result.profile.user_id).toBe(user.id);
+    expect(result.profile.email).toBe("test@example.com");
   });
 
   it("should return NOT_FOUND for non-existent user", async () => {
     try {
-      await resolveGrpcRequest(client.GetUserProfile({ userId: 999 }));
+      await resolveGrpcRequest(
+        client.GetUserProfile(new GetUserProfileRequest({ user_id: 999 })),
+      );
       expect.fail("Should have thrown an error");
     } catch (error: any) {
       expect(error.code).toBe(grpc.status.NOT_FOUND);
@@ -83,7 +84,9 @@ describe("handleGetUserProfile", () => {
 
   it("should return INVALID_ARGUMENT for missing userId", async () => {
     try {
-      await resolveGrpcRequest(client.GetUserProfile({}));
+      await resolveGrpcRequest(
+        client.GetUserProfile(new GetUserProfileRequest({})),
+      );
       expect.fail("Should have thrown an error");
     } catch (error: any) {
       expect(error.code).toBe(grpc.status.INVALID_ARGUMENT);
