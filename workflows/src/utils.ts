@@ -36,6 +36,16 @@ export function kebabCaseToPascalCase(str: string) {
     .join("");
 }
 
+export function kebabCaseToCamelCase(name: string) {
+  return name
+    .split("-")
+    .map((part, index) => {
+      if (index === 0) return part;
+      return part.charAt(0).toUpperCase() + part.slice(1);
+    })
+    .join("");
+}
+
 export function allChildrenSettled(snapshot: any) {
   return Object.values(snapshot.children).every(
     (child: any) => child && child.getSnapshot().status !== "active",
