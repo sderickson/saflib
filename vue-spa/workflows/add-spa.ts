@@ -62,7 +62,7 @@ export const AddSpaWorkflowMachine = setup({
         src: fromPromise(async ({ input }) => {
           const __filename = fileURLToPath(import.meta.url);
           const __dirname = path.dirname(__filename);
-          const sourceDir = path.join(__dirname, "web-template");
+          const sourceDir = path.join(__dirname, "spa-template");
           const { targetDir } = input;
           console.log("sourceDir", sourceDir);
           console.log("targetDir", targetDir);
@@ -159,8 +159,7 @@ export const AddSpaWorkflowMachine = setup({
         prompt: {
           actions: [
             promptAgent(
-              ({ context }) =>
-                `Please update clients/spas/vite.config.ts to add proxy and input properties for the new SPA.`,
+              `Please update clients/spas/vite.config.ts to add proxy and input properties for the new SPA.`,
             ),
           ],
         },
@@ -175,8 +174,7 @@ export const AddSpaWorkflowMachine = setup({
         prompt: {
           actions: [
             promptAgent(
-              ({ context }) =>
-                `Please update deploy/instance/remote-assets/config/Caddyfile to add the new SPA to the serve_prod_spas snippet.`,
+              `Please update deploy/instance/remote-assets/config/Caddyfile to add the new SPA to the serve_prod_spas snippet.`,
             ),
           ],
         },
@@ -191,8 +189,7 @@ export const AddSpaWorkflowMachine = setup({
         prompt: {
           actions: [
             promptAgent(
-              ({ context }) =>
-                `Please test the new SPA by running 'npm run build' and make sure there are no errors, then ask the user to run 'npm run prod-local' in the instance directory and have them verify the new page shows up.`,
+              `Please test the new SPA by running 'npm run build' and make sure there are no errors, then ask the user to run 'npm run prod-local' in the instance directory and have them verify the new page shows up.`,
             ),
           ],
         },

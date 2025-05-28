@@ -3,7 +3,7 @@ import { ref } from "vue";
 import { emailRules, passwordRules } from "../utils/rules.ts";
 import { useLogin } from "../requests/auth.ts";
 
-const { mutate: login, isError, error, isPending } = useLogin();
+const { mutate: login, isError, isPending } = useLogin();
 
 const email = ref("");
 const password = ref("");

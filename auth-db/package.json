@@ -11,7 +11,7 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "generate": "drizzle-kit generate",
-    "ts:check": "tsc"
+    "typecheck": "tsc"
   },
   "dependencies": {
     "@saflib/drizzle-sqlite3": "*"

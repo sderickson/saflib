@@ -1,11 +1,15 @@
 import { describe, it, expect, vi } from "vitest";
 import { EmailClient, EmailOptions, EmailResult } from "@saflib/email";
-import type SMTPTransport from "nodemailer/lib/smtp-transport";
-import type { Address } from "nodemailer/lib/mailer"; // Import Address type
+import type SMTPTransport from "nodemailer";
 import { getMockSendMail } from "./mock-helpers.ts";
 import * as nodemailer from "nodemailer";
 // Explicitly mock nodemailer using the imported factory
 vi.mock("@saflib/email");
+
+interface Address {
+  name: string;
+  address: string;
+}
 
 describe("EmailClient", () => {
   // --- SendEmail Tests ---

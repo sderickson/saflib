@@ -11,7 +11,7 @@ import {
 } from "@saflib/workflows";
 import path from "path";
 import { existsSync } from "fs";
-
+import { fileURLToPath } from "url";
 interface UpdateSchemaWorkflowInput {}
 
 interface UpdateSchemaWorkflowContext extends WorkflowContext {
@@ -30,7 +30,10 @@ export const UpdateSchemaWorkflowMachine = setup({
   description: "Update drizzle/sqlite3 schema.",
   initial: "getOriented",
   context: (_) => {
-    const refDoc = path.resolve(import.meta.dirname, "../docs/02-schema.md");
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = path.dirname(__filename);
+
+    const refDoc = path.resolve(__dirname, "../docs/02-schema.md");
     const refDocAbsPath = path.resolve(process.cwd(), refDoc);
     if (!existsSync(refDocAbsPath)) {
       throw new Error(`Reference documentation not found: ${refDocAbsPath}`);

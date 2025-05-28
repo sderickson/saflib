@@ -8,7 +8,7 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "healthcheck": "node --experimental-strip-types ./bin/healthcheck",
-    "ts:check": "tsc"
+    "typecheck": "tsc"
   },
   "dependencies": {
     "@saflib/auth-db": "*",

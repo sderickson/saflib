@@ -1,0 +1,4 @@
+{
+  "extends": "@saflib/monorepo/tsconfig.json",
+  "exclude": ["./workflows/query-template/**", "./workflows/spa-template/**", "./workflows/query-template.ts", "./workflows/page-template/**"]
+}

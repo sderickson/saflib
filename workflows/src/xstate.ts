@@ -20,7 +20,7 @@ interface ActionParam<C, E extends AnyEventObject> {
 }
 
 export interface WorkflowContext {
-  loggedLast: boolean;
+  loggedLast?: boolean;
   systemPrompt?: string;
 }
 
@@ -48,11 +48,11 @@ type WorkflowActionFunction<
 
 export interface LogParams {
   msg: string;
-  level?: "info" | "error";
+  level?: "info" | "error" | "warn";
 }
 
 const log = <C, E extends AnyEventObject>(
-  level: "info" | "error",
+  level: "info" | "error" | "warn",
   cb: string | ((ctx: ActionParam<C, E>) => string),
 ) => {
   return {
@@ -76,10 +76,16 @@ export const logError = <C, E extends AnyEventObject>(
   return log("error", cb);
 };
 
+export const logWarn = <C, E extends AnyEventObject>(
+  cb: string | ((ctx: ActionParam<C, E>) => string),
+) => {
+  return log("warn", cb);
+};
+
 const logImpl: WorkflowActionFunction<any, AnyEventObject, LogParams> = assign(
   ({ context }: { context: WorkflowContext }, { msg, level = "info" }) => {
-    const statusChar = level === "info" ? "✓" : "✗";
-    print(`${statusChar} ${msg}`, context.loggedLast);
+    const statusChar = level === "info" ? "✓" : level === "error" ? "✗" : "⚠";
+    print(`${statusChar} ${msg}`, context.loggedLast ?? false);
     return { loggedLast: true };
   },
 );
@@ -192,4 +198,34 @@ export function promptState<C extends WorkflowContext>(
       },
     },
   };
+}
+
+interface PromptAgentFactoryOptions<C extends WorkflowContext>
+  extends FactoryFunctionOptions {
+  promptForContext: ({ context }: { context: C }) => string | string;
+}
+
+export function promptAgentFactory<C extends WorkflowContext>({
+  promptForContext,
+  stateName,
+  nextStateName,
+}: PromptAgentFactoryOptions<C>) {
+  return {
+    [stateName]: {
+      entry: raise({ type: "prompt" }),
+      on: {
+        prompt: {
+          actions: [promptAgent(promptForContext)],
+        },
+        continue: {
+          target: nextStateName,
+        },
+      },
+    },
+  };
+}
+
+export interface FactoryFunctionOptions {
+  stateName: string;
+  nextStateName: string;
 }

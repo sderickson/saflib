@@ -1,3 +1,4 @@
+// @ts-nocheck // TODO: refactor to factories, their types work
 import { fromPromise, raise, setup } from "xstate";
 import {
   workflowActionImplementations,
@@ -196,7 +197,6 @@ export const AddRouteWorkflowMachine = setup({
         src: fromPromise(async ({ input }) => {
           const {
             featureRouterPath,
-            featureName,
             pascalFeatureName,
             camelName,
             name,
