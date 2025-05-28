@@ -72,15 +72,6 @@ export const AddSpaPageWorkflowMachine = setup({
       promptMessage: (context: TemplateWorkflowContext) =>
         `Please update ${context.pascalName}.vue to take the data from the loader, assert that it's loaded, then render sample the data using Vuetify components. Don't create the UX just yet; focus on making sure the data is loading properly.`,
       stateName: "useLoader",
-      nextStateName: "updatePage",
-    }),
-
-    ...updateTemplateFileFactory({
-      filePath: (context: TemplateWorkflowContext) =>
-        path.join(context.targetDir, `${context.pascalName}.vue`),
-      promptMessage: (context: TemplateWorkflowContext) =>
-        `Please update ${context.pascalName}.vue to match the design. Use Vuetify components and variables instead of custom styles, even if it means the design isn't pixel-perfect. Do NOT set any style tags.`,
-      stateName: "updatePage",
       nextStateName: "updateTests",
     }),
 
@@ -101,12 +92,12 @@ export const AddSpaPageWorkflowMachine = setup({
       nextStateName: "runTests",
     }),
 
-    // Finally, run the tests
+    // Run the tests to make sure the loader and page are basically working
     runTests: {
       invoke: {
         src: fromPromise(doTestsPass),
         onDone: {
-          target: "verifyDone",
+          target: "updatePage",
           actions: logInfo(() => `Tests passed successfully.`),
         },
         onError: {
@@ -130,6 +121,24 @@ export const AddSpaPageWorkflowMachine = setup({
         },
       },
     },
+
+    ...updateTemplateFileFactory({
+      filePath: (context: TemplateWorkflowContext) =>
+        path.join(context.targetDir, `${context.pascalName}.vue`),
+      promptMessage: (context: TemplateWorkflowContext) =>
+        `Please update ${context.pascalName}.vue to match the design. Use Vuetify components and variables instead of custom styles, even if it means the design isn't pixel-perfect. Do NOT set any style tags.`,
+      stateName: "updatePage",
+      nextStateName: "updateTests",
+    }),
+
+    ...updateTemplateFileFactory({
+      filePath: (context: TemplateWorkflowContext) =>
+        path.join(context.targetDir, `${context.pascalName}.test.ts`),
+      promptMessage: (context: TemplateWorkflowContext) =>
+        `Please update ${context.pascalName}.test.ts to verify that the page renders correctly with the new design. Update the helper methods to locate actual key elements of the page, then update the one test to check that they all exist and have the right text.`,
+      stateName: "updatePage",
+      nextStateName: "verifyDone",
+    }),
 
     verifyDone: {
       entry: raise({ type: "prompt" }),

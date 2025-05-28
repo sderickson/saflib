@@ -14,6 +14,7 @@ import type { Component } from "vue";
 import { http, HttpResponse } from "msw";
 import type { AuthResponse } from "@saflib/auth-spec"; // TODO: import the appropriate spec
 
+// TODO: update with mock responses for the actual API calls made in the loader
 const handlers = [
   http.get("http://api.localhost:3000/users", () => {
     return HttpResponse.json([] satisfies AuthResponse["listUsers"]["200"]); // TODO: enforce the correct response type
@@ -39,7 +40,7 @@ describe("TemplatePage", () => {
       component,
       {},
       {
-        // TODO: uncomment this
+        // TODO: uncomment this after you've imported the actual router
         //  router
       },
     );
@@ -59,5 +60,6 @@ describe("TemplatePage", () => {
     await vi.waitFor(() => getExampleHeader(wrapper).exists());
     expect(getExampleHeader(wrapper).exists()).toBe(true);
     expect(getExampleInput(wrapper).exists()).toBe(true);
+    // TODO: add a check for the raw, printed data from the loader
   });
 });

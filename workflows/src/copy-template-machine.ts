@@ -373,7 +373,7 @@ export function updateTemplateFileFactory<C extends WorkflowContext>({
               logError(({ context }: { context: C }) => {
                 const filePathStr =
                   typeof filePath === "string" ? filePath : filePath(context);
-                return `File ${filePathStr} was not properly updated - it still contains TODO strings. Please complete the implementation.`;
+                return `File ${filePathStr} was not properly updated - it still contains TODO strings. Please complete the implementation. If it's unclear what needs to be done, ask for help.`;
               }),
             ],
           },

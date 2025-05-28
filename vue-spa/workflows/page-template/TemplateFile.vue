@@ -10,6 +10,8 @@
 import { template_file as strings } from "./TemplateFile.strings.ts";
 import { useTemplateFileLoader } from "./TemplateFile.loader";
 
+// TODO: update this with data that was actually loaded
+// TODO: render the data raw in the template to confirm loading succeeds
 const { usersQuery } = useTemplateFileLoader();
 
 // the Async component will not render if the data is not loaded
