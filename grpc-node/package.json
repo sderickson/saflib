@@ -3,8 +3,11 @@
   "description": "Provides gRPC servicer utilities",
   "private": true,
   "type": "module",
+  "main": ".",
   "exports": {
-    ".": "./index.ts"
+    ".": "./index.ts",
+    "./workflows": "./workflows/index.ts",
+    "./testing": "./test-service.ts"
   },
   "dependencies": {
     "@saflib/grpc-specs": "*",

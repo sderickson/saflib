@@ -9,6 +9,7 @@ import {
   type PromiseActorLogic,
   type MachineContext,
   fromPromise,
+  raise,
 } from "xstate";
 
 // general types
@@ -175,3 +176,20 @@ const runCommandAsync = (command: string, args: string[]) => {
   });
   return promise;
 };
+
+export function promptState<C extends WorkflowContext>(
+  promptForContext: ({ context }: { context: C }) => string | string,
+  target: string,
+) {
+  return {
+    entry: raise({ type: "prompt" }),
+    on: {
+      prompt: {
+        actions: [promptAgent(promptForContext)],
+      },
+      continue: {
+        target,
+      },
+    },
+  };
+}

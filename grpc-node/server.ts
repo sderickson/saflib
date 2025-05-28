@@ -39,6 +39,7 @@ export async function startGrpcServer(
       if (err) {
         reject(err);
       }
+      console.log(`gRPC server bound to port ${effectivePort}`);
       resolve();
     },
   );

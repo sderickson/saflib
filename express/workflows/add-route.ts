@@ -8,6 +8,9 @@ import {
   promptAgent,
   XStateWorkflow,
   doTestsPass,
+  kebabCaseToPascalCase,
+  kebabCaseToCamelCase,
+  promptState,
 } from "@saflib/workflows";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -36,23 +39,6 @@ interface AddRouteWorkflowContext extends WorkflowContext {
   appPath: string; // e.g. "/<abs-path>/app.ts"
 }
 
-function toCamelCase(name: string) {
-  return name
-    .split("-")
-    .map((part, index) => {
-      if (index === 0) return part;
-      return part.charAt(0).toUpperCase() + part.slice(1);
-    })
-    .join("");
-}
-
-function toPascalCase(name: string) {
-  return name
-    .split("-")
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join("");
-}
-
 export const AddRouteWorkflowMachine = setup({
   types: {
     input: {} as AddRouteWorkflowInput,
@@ -76,13 +62,13 @@ export const AddRouteWorkflowMachine = setup({
     );
     const featureName = path.basename(targetDir);
     const featureRouterPath = path.join(targetDir, "index.ts");
-    const pascalFeatureName = toPascalCase(featureName);
+    const pascalFeatureName = kebabCaseToPascalCase(featureName);
     const httpAppPath = path.join(process.cwd(), "http.ts");
     const appPath = path.join(process.cwd(), "app.ts");
 
     return {
       name: path.basename(input.path).split(".")[0],
-      camelName: toCamelCase(path.basename(input.path).split(".")[0]),
+      camelName: kebabCaseToCamelCase(path.basename(input.path).split(".")[0]),
       targetDir,
       sourceDir,
       refDoc,
@@ -97,24 +83,13 @@ export const AddRouteWorkflowMachine = setup({
   },
   entry: logInfo("Successfully began workflow"),
   states: {
-    getOriented: {
-      entry: raise({ type: "prompt" }),
-      on: {
-        prompt: {
-          actions: [
-            promptAgent(
-              ({ context }) =>
-                `Read the reference documentation for adding routes: ${context.refDoc}
+    getOriented: promptState<AddRouteWorkflowContext>(
+      ({ context }) =>
+        `Read the reference documentation for adding routes: ${context.refDoc}
 
-                This workflow will help you add a new route handler for ${context.name}. The route will be created in ${context.targetDir}.`,
-            ),
-          ],
-        },
-        continue: {
-          target: "copyTemplate",
-        },
-      },
-    },
+        This workflow will help you add a new route handler for ${context.name}. The route will be created in ${context.targetDir}.`,
+      "copyTemplate",
+    ),
     copyTemplate: {
       invoke: {
         input: ({ context }) => context,
@@ -272,25 +247,14 @@ export function create${pascalFeatureName}Router() {
         },
       },
     },
-    updateFeatureRouter: {
-      entry: raise({ type: "prompt" }),
-      on: {
-        prompt: {
-          actions: [
-            promptAgent(
-              ({ context }) =>
-                `Update the feature router at ${context.featureRouterPath} to include the new route handler.
-                1. Import the new handler from "./${context.name}.ts"
-                2. Add the route to the router using the appropriate HTTP method
-                3. Make sure to export a create${context.pascalFeatureName}Router function that returns the router`,
-            ),
-          ],
-        },
-        continue: {
-          target: "checkHttpApp",
-        },
-      },
-    },
+    updateFeatureRouter: promptState<AddRouteWorkflowContext>(
+      ({ context }) =>
+        `Update the feature router at ${context.featureRouterPath} to include the new route handler.
+        1. Import the new handler from "./${context.name}.ts"
+        2. Add the route to the router using the appropriate HTTP method
+        3. Make sure to export a create${context.pascalFeatureName}Router function that returns the router`,
+      "checkHttpApp",
+    ),
     checkHttpApp: {
       invoke: {
         input: ({ context }) => context,
@@ -330,71 +294,38 @@ export function create${pascalFeatureName}Router() {
         },
       },
     },
-    updateHttpApp: {
-      entry: raise({ type: "prompt" }),
-      on: {
-        prompt: {
-          actions: [
-            promptAgent(
-              ({ context }) =>
-                `Update the HTTP app to include the feature router:
-                1. Import the feature router: \`import { create${context.pascalFeatureName}Router } from "./routes/${context.featureName}/index.ts"\`
-                2. Add the router to the app: \`app.use("/${context.featureName}", create${context.pascalFeatureName}Router())\`
-                3. Make sure to add this before the error handlers`,
-            ),
-          ],
-        },
-        continue: {
-          target: "implementRoute",
-        },
-      },
-    },
-    implementRoute: {
-      entry: raise({ type: "prompt" }),
-      on: {
-        prompt: {
-          actions: [
-            promptAgent(
-              ({ context }) =>
-                `Implement the ${context.camelName} route handler. Make sure to:
-                1. Use createHandler from @saflib/express
-                2. Use types from your OpenAPI spec for request/response bodies
+    updateHttpApp: promptState<AddRouteWorkflowContext>(
+      ({ context }) =>
+        `Update the HTTP app to include the feature router:
+        1. Import the feature router: \`import { create${context.pascalFeatureName}Router } from "./routes/${context.featureName}/index.ts"\`
+        2. Add the router to the app: \`app.use("/${context.featureName}", create${context.pascalFeatureName}Router())\`
+        3. Make sure to add this before the error handlers`,
+      "implementRoute",
+    ),
+    implementRoute: promptState<AddRouteWorkflowContext>(
+      ({ context }) =>
+        `Implement the ${context.camelName} route handler. Make sure to:
+        1. Use createHandler from @saflib/express
+        2. Use types from your OpenAPI spec for request/response bodies
                 3. Handle expected errors from service/DB layers
                 4. Let unexpected errors propagate to central error handler
                 5. Follow the pattern in the reference doc
                 6. Export the handler from the folder's "index.ts" file`,
-            ),
-          ],
-        },
-        continue: {
-          target: "reviewTestDocs",
-        },
-      },
-    },
-    reviewTestDocs: {
-      entry: raise({ type: "prompt" }),
-      on: {
-        prompt: {
-          actions: [
-            promptAgent(
-              ({ context }) =>
-                `Read the testing guide: ${context.testingGuide}
+      "reviewTestDocs",
+    ),
+    reviewTestDocs: promptState<AddRouteWorkflowContext>(
+      ({ context }) =>
+        `Read the testing guide: ${context.testingGuide}
 
-                Update the generated ${context.name}.test.ts file to follow these guidelines:
-                1. Use supertest for making requests
-                2. Test against the actual app with middleware
-                3. Only mock expensive/external operations
-                4. For success cases: check status and response body structure
-                5. For error cases: only check status code
+        Update the generated ${context.name}.test.ts file to follow these guidelines:
+        1. Use supertest for making requests
+        2. Test against the actual app with middleware
+        3. Only mock expensive/external operations
+        4. For success cases: check status and response body structure
+                      5. For error cases: only check status code
                 6. Keep tests minimal and focused`,
-            ),
-          ],
-        },
-        continue: {
-          target: "runTests",
-        },
-      },
-    },
+      "runTests",
+    ),
     runTests: {
       invoke: {
         src: fromPromise(doTestsPass),

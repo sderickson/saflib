@@ -91,10 +91,8 @@ export const AddQueriesWorkflowMachine = setup({
         prompt: {
           actions: [
             promptAgent(
-              ({ context }) =>
-                `Read the project spec and the reference documentation for the @saflib/drizzle-sqlite3 package. If they haven't already, ask the user for the project spec.
-
-                Also, read the guidelines for queries in the doc: ${context.refDoc}`,
+              () =>
+                `Read the project spec and understand the overall goal. If they haven't already, ask the user for the project spec.`,
             ),
           ],
         },
@@ -361,6 +359,28 @@ export const ${featureName} = {
           ],
         },
         continue: {
+          target: "reviewDocsForImplementation",
+        },
+      },
+    },
+    reviewDocsForImplementation: {
+      entry: raise({ type: "prompt" }),
+      on: {
+        prompt: {
+          actions: [
+            promptAgent(
+              ({ context }) =>
+                `Before implementing the query, carefully read and follow the guidelines in the documentation: ${context.refDoc}
+                
+                Pay special attention to:
+                - Query function structure and patterns
+                - Error handling approaches
+                - Type usage and conventions
+                - Database access patterns`,
+            ),
+          ],
+        },
+        continue: {
           target: "implementQuery",
         },
       },
@@ -372,7 +392,7 @@ export const ${featureName} = {
           actions: [
             promptAgent(
               ({ context }) =>
-                `Implement the ${context.camelName} query. Make sure to:
+                `Implement the ${context.camelName} query following the documentation guidelines. Make sure to:
                 1. Export a queryWrapper'd function directly (no factory function)
                 2. Take a DbKey as the first parameter
                 3. Use mainDbManager.get(dbKey)! to get the db instance
@@ -384,18 +404,40 @@ export const ${featureName} = {
           ],
         },
         continue: {
-          target: "reviewDocs",
+          target: "reviewTestingDocs",
         },
       },
     },
-    reviewDocs: {
+    reviewTestingDocs: {
       entry: raise({ type: "prompt" }),
       on: {
         prompt: {
           actions: [
             promptAgent(
               ({ context }) =>
-                `Read the testing guide: ${context.testingGuide} and update the generated ${context.name}.test.ts file accordingly.`,
+                `Before writing tests, carefully read and follow the testing guide: ${context.testingGuide}
+                
+                Pay special attention to:
+                - Database instantiation patterns
+                - SQLite timestamp granularity issues
+                - Fake timer usage
+                - Test structure and setup/teardown`,
+            ),
+          ],
+        },
+        continue: {
+          target: "updateTests",
+        },
+      },
+    },
+    updateTests: {
+      entry: raise({ type: "prompt" }),
+      on: {
+        prompt: {
+          actions: [
+            promptAgent(
+              ({ context }) =>
+                `Update the generated ${context.name}.test.ts file following the testing guide patterns. Make sure to implement proper test cases that cover both success and error scenarios.`,
             ),
           ],
         },
