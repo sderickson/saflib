@@ -282,9 +282,15 @@ export const CopyTemplateMachine = setup({
   },
 });
 
-export function useTemplateStateFactory(nextState: string) {
+export function useTemplateStateFactory({
+  stateName,
+  nextStateName,
+}: {
+  stateName: string;
+  nextStateName: string;
+}) {
   return {
-    [useTemplateStateName]: {
+    [stateName]: {
       invoke: {
         input: ({ context }: { context: TemplateWorkflowContext }) => ({
           sourceDir: context.sourceDir,
@@ -293,7 +299,7 @@ export function useTemplateStateFactory(nextState: string) {
         }),
         src: CopyTemplateMachine,
         onDone: {
-          target: nextState,
+          target: nextStateName,
           actions: logInfo(
             () => `Template files copied and renamed successfully.`,
           ),
@@ -317,14 +323,12 @@ export function useTemplateStateFactory(nextState: string) {
         },
         continue: {
           reenter: true,
-          target: useTemplateStateName,
+          target: stateName,
         },
       },
     },
   };
 }
-
-export const useTemplateStateName = "useTemplate";
 
 interface UpdateTemplateFileFactoryOptions<C extends WorkflowContext> {
   filePath: string | ((context: C) => string);

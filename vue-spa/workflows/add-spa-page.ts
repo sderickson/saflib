@@ -7,7 +7,6 @@ import {
   XStateWorkflow,
   useTemplateStateFactory,
   kebabCaseToPascalCase,
-  useTemplateStateName,
   updateTemplateFileFactory,
   type TemplateWorkflowContext,
   runTestsFactory,
@@ -16,7 +15,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 interface AddSpaPageWorkflowInput {
-  name: string; // kebab-case, e.g. "welcome-new-user" or "welcome-new-user-page" (either works)
+  name: string;
 }
 
 export const AddSpaPageWorkflowMachine = setup({
@@ -30,7 +29,7 @@ export const AddSpaPageWorkflowMachine = setup({
   id: "add-spa-page",
   description:
     "Create a new page in a SAF-powered Vue SPA, using a template and renaming placeholders.",
-  initial: useTemplateStateName,
+  initial: "copyTemplate",
   context: ({ input }) => {
     const __filename = fileURLToPath(import.meta.url);
     const __dirname = path.dirname(__filename);
@@ -41,8 +40,6 @@ export const AddSpaPageWorkflowMachine = setup({
       ? input.name
       : input.name + "-page";
     const targetDir = path.join(process.cwd(), "pages", pageName);
-    console.log("targetDir", targetDir);
-    console.log("sourceDir", sourceDir);
 
     return {
       name: pageName,
@@ -55,7 +52,10 @@ export const AddSpaPageWorkflowMachine = setup({
   entry: logInfo("Successfully began workflow"),
   states: {
     // First copy over the files
-    ...useTemplateStateFactory("updateLoader"),
+    ...useTemplateStateFactory({
+      stateName: "copyTemplate",
+      nextStateName: "updateLoader",
+    }),
 
     // Then for each file, have the agent update it
     ...updateTemplateFileFactory({
