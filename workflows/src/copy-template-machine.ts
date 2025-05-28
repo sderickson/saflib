@@ -13,6 +13,7 @@ import {
   kebabCaseToCamelCase,
   kebabCaseToSnakeCase,
 } from "./utils.ts";
+import { readFileSync } from "node:fs";
 import {
   readdir,
   copyFile,
@@ -354,20 +355,13 @@ export function updateTemplateFileFactory<C extends TemplateWorkflowContext>({
         continue: [
           {
             guard: ({ context }: { context: C }) => {
-              try {
-                const resolvedPath =
-                  typeof filePath === "string"
-                    ? path.resolve(process.cwd(), filePath)
-                    : path.resolve(process.cwd(), filePath(context));
-                const content = require("node:fs").readFileSync(
-                  resolvedPath,
-                  "utf-8",
-                );
-                const hasTodos = /\btodo\b/i.test(content);
-                return hasTodos;
-              } catch (error) {
-                return true;
-              }
+              const resolvedPath =
+                typeof filePath === "string"
+                  ? path.resolve(process.cwd(), filePath)
+                  : path.resolve(process.cwd(), filePath(context));
+              const content = readFileSync(resolvedPath, "utf-8");
+              const hasTodos = /\btodo\b/i.test(content);
+              return hasTodos;
             },
             target: stateName,
             actions: [
