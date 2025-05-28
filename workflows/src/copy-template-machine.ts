@@ -8,6 +8,11 @@ import {
   type WorkflowContext,
 } from "./xstate.ts";
 import {
+  kebabCaseToPascalCase,
+  kebabCaseToCamelCase,
+  kebabCaseToSnakeCase,
+} from "./utils.ts";
+import {
   readdir,
   copyFile,
   readFile,
@@ -33,12 +38,9 @@ export interface CopyTemplateMachineContext extends WorkflowContext {
 }
 
 function transformName(originalName: string, targetName: string): string {
-  // Handle different naming conventions
-  const pascalTargetName = targetName
-    .split("-")
-    .map((part: string) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join("");
-  const snakeTargetName = targetName.replace(/-/g, "_");
+  // Handle different naming conventions using utility functions
+  const pascalTargetName = kebabCaseToPascalCase(targetName);
+  const snakeTargetName = kebabCaseToSnakeCase(targetName);
 
   let result = originalName;
 
@@ -213,23 +215,15 @@ export const CopyTemplateMachine = setup({
           updatedContent = updatedContent.replace(/template-file/g, name);
 
           // Replace snake_case placeholders
-          const snakeName = name.replace(/-/g, "_");
+          const snakeName = kebabCaseToSnakeCase(name);
           updatedContent = updatedContent.replace(/template_file/g, snakeName);
 
           // Replace PascalCase placeholders
-          const pascalName = name
-            .split("-")
-            .map((part: string) => part.charAt(0).toUpperCase() + part.slice(1))
-            .join("");
+          const pascalName = kebabCaseToPascalCase(name);
           updatedContent = updatedContent.replace(/TemplateFile/g, pascalName);
 
           // Replace camelCase placeholders
-          const camelName = name
-            .split("-")
-            .map((part: string, index: number) =>
-              index === 0 ? part : part.charAt(0).toUpperCase() + part.slice(1),
-            )
-            .join("");
+          const camelName = kebabCaseToCamelCase(name);
           updatedContent = updatedContent.replace(/templateFile/g, camelName);
 
           // Write updated content back

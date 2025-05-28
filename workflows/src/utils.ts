@@ -46,6 +46,10 @@ export function kebabCaseToCamelCase(name: string) {
     .join("");
 }
 
+export function kebabCaseToSnakeCase(name: string) {
+  return name.replace(/-/g, "_");
+}
+
 export function allChildrenSettled(snapshot: any) {
   return Object.values(snapshot.children).every(
     (child: any) => child && child.getSnapshot().status !== "active",
