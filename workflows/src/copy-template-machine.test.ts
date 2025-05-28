@@ -1,9 +1,23 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { createActor, waitFor } from "xstate";
-import { CopyTemplateMachine } from "./copy-template-machine.ts";
+import {
+  CopyTemplateMachine,
+  updateTemplateFileFactory,
+} from "./copy-template-machine.ts";
 import { allChildrenSettled } from "./utils.ts";
 import { mkdir, writeFile, rm, readFile } from "node:fs/promises";
 import path from "node:path";
+import { setup } from "xstate";
+import {
+  workflowActionImplementations,
+  workflowActors,
+  type WorkflowContext,
+} from "./xstate.ts";
+import { writeFileSync, unlinkSync, existsSync } from "node:fs";
+
+interface TestContext extends WorkflowContext {
+  testFile: string;
+}
 
 describe("CopyTemplateMachine", () => {
   const testDir = path.join(process.cwd(), "test-temp");
@@ -99,5 +113,140 @@ export default {
       "utf-8",
     );
     expect(existingFile).toBe("existing content");
+  });
+});
+
+describe("updateTemplateFileFactory", () => {
+  const testFilePath = path.join(process.cwd(), "test-file.txt");
+
+  beforeEach(() => {
+    if (existsSync(testFilePath)) {
+      unlinkSync(testFilePath);
+    }
+  });
+
+  afterEach(() => {
+    if (existsSync(testFilePath)) {
+      unlinkSync(testFilePath);
+    }
+  });
+
+  it("should continue to next state when file has no TODOs", async () => {
+    writeFileSync(testFilePath, "This is a test file with no todos");
+
+    const testMachine = setup({
+      types: {
+        context: {} as TestContext,
+      },
+      actions: workflowActionImplementations,
+      actors: workflowActors,
+    }).createMachine({
+      id: "test",
+      initial: "testState",
+      context: {
+        testFile: testFilePath,
+        loggedLast: false,
+      },
+      states: {
+        ...updateTemplateFileFactory({
+          filePath: "test-file.txt",
+          promptMessage: "Please update the test file",
+          stateName: "testState",
+          nextStateName: "done",
+        }),
+        done: {
+          type: "final",
+        },
+      },
+    });
+
+    const actor = createActor(testMachine);
+    actor.start();
+
+    actor.send({ type: "continue" });
+    await waitFor(actor, (state) => state.matches("done"));
+
+    expect(actor.getSnapshot().value).toBe("done");
+  });
+
+  it("should stay in current state when file has TODOs", async () => {
+    writeFileSync(
+      testFilePath,
+      "This is a test file with TODO: implement this",
+    );
+
+    const testMachine = setup({
+      types: {
+        context: {} as TestContext,
+      },
+      actions: workflowActionImplementations,
+      actors: workflowActors,
+    }).createMachine({
+      id: "test",
+      initial: "testState",
+      context: {
+        testFile: testFilePath,
+        loggedLast: false,
+      },
+      states: {
+        ...updateTemplateFileFactory({
+          filePath: "test-file.txt",
+          promptMessage: "Please update the test file",
+          stateName: "testState",
+          nextStateName: "done",
+        }),
+        done: {
+          type: "final",
+        },
+      },
+    });
+
+    const actor = createActor(testMachine);
+    actor.start();
+
+    actor.send({ type: "continue" });
+
+    // Wait a bit to ensure the state machine has processed
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    expect(actor.getSnapshot().value).toBe("testState");
+  });
+
+  it("should work with function-based filePath", async () => {
+    writeFileSync(testFilePath, "This is a test file with no todos");
+
+    const testMachine = setup({
+      types: {
+        context: {} as TestContext,
+      },
+      actions: workflowActionImplementations,
+      actors: workflowActors,
+    }).createMachine({
+      id: "test",
+      initial: "testState",
+      context: {
+        testFile: testFilePath,
+        loggedLast: false,
+      },
+      states: {
+        ...updateTemplateFileFactory({
+          filePath: (context: TestContext) => context.testFile,
+          promptMessage: "Please update the test file",
+          stateName: "testState",
+          nextStateName: "done",
+        }),
+        done: {
+          type: "final",
+        },
+      },
+    });
+
+    const actor = createActor(testMachine);
+    actor.start();
+
+    actor.send({ type: "continue" });
+    await waitFor(actor, (state) => state.matches("done"));
+
+    expect(actor.getSnapshot().value).toBe("done");
   });
 });
