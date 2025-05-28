@@ -9,6 +9,7 @@ import {
   XStateWorkflow,
   doTestsPass,
   CopyTemplateMachine,
+  createCopyAndRenameTemplateState,
   kebabCaseToPascalCase,
 } from "@saflib/workflows";
 import path from "node:path";
@@ -58,43 +59,7 @@ export const AddSpaPageWorkflowMachine = setup({
   },
   entry: logInfo("Successfully began workflow"),
   states: {
-    copyAndRenameTemplate: {
-      invoke: {
-        input: ({ context }) => ({
-          sourceFolder: context.sourceDir,
-          targetFolder: context.targetDir,
-          name: context.name,
-        }),
-        src: CopyTemplateMachine,
-        onDone: {
-          target: "runTests",
-          actions: logInfo(
-            () => `Template files copied and renamed successfully.`,
-          ),
-        },
-        onError: {
-          actions: [
-            logError(
-              ({ event }) =>
-                `Failed to copy and rename template: ${(event.error as Error).message}`,
-            ),
-            raise({ type: "prompt" }),
-          ],
-        },
-      },
-      on: {
-        prompt: {
-          actions: promptAgent(
-            () =>
-              "Failed to copy and rename the template files. Please check if the source directory exists and you have the necessary permissions.",
-          ),
-        },
-        continue: {
-          reenter: true,
-          target: "copyAndRenameTemplate",
-        },
-      },
-    },
+    ...createCopyAndRenameTemplateState("runTests"),
     runTests: {
       invoke: {
         src: fromPromise(doTestsPass),

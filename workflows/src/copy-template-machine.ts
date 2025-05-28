@@ -1,10 +1,11 @@
-import { fromPromise, setup, assign } from "xstate";
+import { fromPromise, setup, assign, raise } from "xstate";
 import {
   workflowActionImplementations,
   workflowActors,
   logInfo,
   logError,
   logWarn,
+  promptAgent,
   type WorkflowContext,
 } from "./xstate.ts";
 import {
@@ -271,3 +272,45 @@ export const CopyTemplateMachine = setup({
     },
   },
 });
+
+export function createCopyAndRenameTemplateState(nextState: string) {
+  return {
+    copyAndRenameTemplate: {
+      invoke: {
+        input: ({ context }: { context: any }) => ({
+          sourceFolder: context.sourceDir,
+          targetFolder: context.targetDir,
+          name: context.name,
+        }),
+        src: CopyTemplateMachine,
+        onDone: {
+          target: nextState,
+          actions: logInfo(
+            () => `Template files copied and renamed successfully.`,
+          ),
+        },
+        onError: {
+          actions: [
+            logError(
+              ({ event }: { event: any }) =>
+                `Failed to copy and rename template: ${(event.error as Error).message}`,
+            ),
+            raise({ type: "prompt" }),
+          ],
+        },
+      },
+      on: {
+        prompt: {
+          actions: promptAgent(
+            () =>
+              "Failed to copy and rename the template files. Please check if the source directory exists and you have the necessary permissions.",
+          ),
+        },
+        continue: {
+          reenter: true,
+          target: "copyAndRenameTemplate",
+        },
+      },
+    },
+  };
+}
