@@ -8,7 +8,8 @@
   },
   "scripts": {
     "clean": "rm -rf dist/*",
-    "generate": "npm run clean && ./generate.sh"
+    "generate": "npm run clean && ./generate.sh",
+    "typecheck": "tsc"
   },
   "dependencies": {
     "@grpc/grpc-js": "*",

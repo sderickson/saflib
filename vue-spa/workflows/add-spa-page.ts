@@ -1,9 +1,8 @@
-import { raise, setup } from "xstate";
+import { setup } from "xstate";
 import {
   workflowActionImplementations,
   workflowActors,
   logInfo,
-  promptAgent,
   XStateWorkflow,
   useTemplateStateFactory,
   kebabCaseToPascalCase,

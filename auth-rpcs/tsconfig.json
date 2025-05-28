@@ -1,3 +1,7 @@
 {
+  "compilerOptions": {
+    "noUnusedLocals": false,
+    "noUnusedParameters": false
+  },
   "extends": "@saflib/monorepo/tsconfig.json"
 } 
