@@ -41,6 +41,8 @@ export const AddSpaPageWorkflowMachine = setup({
       ? input.name
       : input.name + "-page";
     const targetDir = path.join(process.cwd(), "pages", pageName);
+    console.log("targetDir", targetDir);
+    console.log("sourceDir", sourceDir);
 
     return {
       name: pageName,

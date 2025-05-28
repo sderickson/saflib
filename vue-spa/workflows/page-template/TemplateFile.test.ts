@@ -5,7 +5,7 @@ import {
   setupMockServer,
 } from "@saflib/vue-spa-dev/components";
 import { type VueWrapper } from "@vue/test-utils";
-import TemplatePageAsync from "./TemplateFileAsync.vue";
+import TemplateFileAsync from "./TemplateFileAsync.vue";
 import { template_file as strings } from "./TemplateFile.strings.ts";
 // TODO: uncomment this and point the import to the actual package router
 // import { router } from "../../router.ts";
@@ -21,7 +21,7 @@ const handlers = [
   }),
 ];
 
-describe("TemplatePage", () => {
+describe("TemplateFile", () => {
   stubGlobals();
 
   const server = setupMockServer(handlers);
@@ -55,7 +55,7 @@ describe("TemplatePage", () => {
   };
 
   it("should render the example strings", async () => {
-    const wrapper = mountComponent(TemplatePageAsync);
+    const wrapper = mountComponent(TemplateFileAsync);
     // first expectation should "waitFor" since this test includes loading code and fetching data
     await vi.waitFor(() => getExampleHeader(wrapper).exists());
     expect(getExampleHeader(wrapper).exists()).toBe(true);

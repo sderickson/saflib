@@ -89,6 +89,7 @@ export const CopyTemplateMachine = setup({
       invoke: {
         input: ({ context }) => context,
         src: fromPromise(async ({ input }) => {
+          console.log("fetchFileNames", input);
           const { sourceDir, targetDir } = input;
 
           let sourceFiles: string[] = [];
@@ -284,9 +285,9 @@ export function useTemplateStateFactory(nextState: string) {
   return {
     [useTemplateStateName]: {
       invoke: {
-        input: ({ context }: { context: any }) => ({
-          sourceFolder: context.sourceDir,
-          targetFolder: context.targetDir,
+        input: ({ context }: { context: TemplateWorkflowContext }) => ({
+          sourceDir: context.sourceDir,
+          targetDir: context.targetDir,
           name: context.name,
         }),
         src: CopyTemplateMachine,
