@@ -331,7 +331,7 @@ interface UpdateTemplateFileFactoryOptions<C extends WorkflowContext> {
   nextStateName: string;
 }
 
-export function updateTemplateFileFactory<C extends WorkflowContext>({
+export function updateTemplateFileFactory<C extends TemplateWorkflowContext>({
   filePath,
   promptMessage,
   stateName,

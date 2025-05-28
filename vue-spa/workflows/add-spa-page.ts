@@ -57,27 +57,27 @@ export const AddSpaPageWorkflowMachine = setup({
 
     // Then for each file, have the agent update it
     ...updateTemplateFileFactory({
-      filePath: (context: TemplateWorkflowContext) =>
+      filePath: (context) =>
         path.join(context.targetDir, `${context.pascalName}.loader.ts`),
-      promptMessage: (context: TemplateWorkflowContext) =>
+      promptMessage: (context) =>
         `Please update the loader method in ${context.pascalName}.loader.ts to return any necessary Tanstack queries for rendering the page.`,
       stateName: "updateLoader",
       nextStateName: "useLoader",
     }),
 
     ...updateTemplateFileFactory({
-      filePath: (context: TemplateWorkflowContext) =>
+      filePath: (context) =>
         path.join(context.targetDir, `${context.pascalName}.vue`),
-      promptMessage: (context: TemplateWorkflowContext) =>
+      promptMessage: (context) =>
         `Please update ${context.pascalName}.vue to take the data from the loader, assert that it's loaded, then render sample the data using Vuetify components. Don't create the UX just yet; focus on making sure the data is loading properly.`,
       stateName: "useLoader",
       nextStateName: "updateTests",
     }),
 
     ...updateTemplateFileFactory({
-      filePath: (context: TemplateWorkflowContext) =>
+      filePath: (context) =>
         path.join(context.targetDir, `${context.pascalName}.test.ts`),
-      promptMessage: (context: TemplateWorkflowContext) =>
+      promptMessage: (context) =>
         `Please update ${context.pascalName}.test.ts to mock the server requests and verify that the page renders correctly. Make sure to test all the functionality that was added. Remember to have the test use "getElementByString" in reusable helper methods.`,
       stateName: "updateTests",
       nextStateName: "updateRouter",
@@ -85,7 +85,7 @@ export const AddSpaPageWorkflowMachine = setup({
 
     ...updateTemplateFileFactory({
       filePath: "router.ts",
-      promptMessage: (context: TemplateWorkflowContext) =>
+      promptMessage: (context) =>
         `Please update the router.ts file to include the new page. Add a new route for ${context.name} that uses the ${context.pascalName}Async component. The route should be at "/${context.name}".`,
       stateName: "updateRouter",
       nextStateName: "runTestsOnStubbedPage",
@@ -93,32 +93,32 @@ export const AddSpaPageWorkflowMachine = setup({
 
     // Run the tests to make sure the loader and page are basically working
     ...runTestsFactory({
-      filePath: (context: TemplateWorkflowContext) =>
+      filePath: (context) =>
         path.join(context.targetDir, `${context.pascalName}.test.ts`),
       stateName: "runTestsOnStubbedPage",
       nextStateName: "updatePage",
     }),
 
     ...updateTemplateFileFactory({
-      filePath: (context: TemplateWorkflowContext) =>
+      filePath: (context) =>
         path.join(context.targetDir, `${context.pascalName}.vue`),
-      promptMessage: (context: TemplateWorkflowContext) =>
+      promptMessage: (context) =>
         `Please update ${context.pascalName}.vue to match the design. Use Vuetify components and variables instead of custom styles, even if it means the design isn't pixel-perfect. Do NOT set any style tags.`,
       stateName: "updatePage",
       nextStateName: "updateTests",
     }),
 
     ...updateTemplateFileFactory({
-      filePath: (context: TemplateWorkflowContext) =>
+      filePath: (context) =>
         path.join(context.targetDir, `${context.pascalName}.test.ts`),
-      promptMessage: (context: TemplateWorkflowContext) =>
+      promptMessage: (context) =>
         `Please update ${context.pascalName}.test.ts to verify that the page renders correctly with the new design. Update the helper methods to locate actual key elements of the page, then update the one test to check that they all exist and have the right text.`,
       stateName: "updatePage",
       nextStateName: "runTestsOnFinishedPage",
     }),
 
     ...runTestsFactory({
-      filePath: (context: TemplateWorkflowContext) =>
+      filePath: (context) =>
         path.join(context.targetDir, `${context.pascalName}.test.ts`),
       stateName: "runTestsOnFinishedPage",
       nextStateName: "verifyDone",
