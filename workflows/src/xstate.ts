@@ -20,7 +20,7 @@ interface ActionParam<C, E extends AnyEventObject> {
 }
 
 export interface WorkflowContext {
-  loggedLast: boolean;
+  loggedLast?: boolean;
   systemPrompt?: string;
 }
 
@@ -85,7 +85,7 @@ export const logWarn = <C, E extends AnyEventObject>(
 const logImpl: WorkflowActionFunction<any, AnyEventObject, LogParams> = assign(
   ({ context }: { context: WorkflowContext }, { msg, level = "info" }) => {
     const statusChar = level === "info" ? "✓" : level === "error" ? "✗" : "⚠";
-    print(`${statusChar} ${msg}`, context.loggedLast);
+    print(`${statusChar} ${msg}`, context.loggedLast ?? false);
     return { loggedLast: true };
   },
 );

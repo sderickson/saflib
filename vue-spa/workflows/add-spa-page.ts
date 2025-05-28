@@ -9,12 +9,13 @@ import {
   XStateWorkflow,
   doTestsPass,
   CopyTemplateMachine,
+  kebabCaseToPascalCase,
 } from "@saflib/workflows";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 interface AddSpaPageWorkflowInput {
-  name: string; // kebab-case, e.g. "welcome-new-user"
+  name: string; // kebab-case, e.g. "welcome-new-user" or "welcome-new-user-page" (either works)
 }
 
 interface AddSpaPageWorkflowContext extends WorkflowContext {
@@ -22,15 +23,6 @@ interface AddSpaPageWorkflowContext extends WorkflowContext {
   pascalName: string; // PascalCase, e.g. WelcomeNewUserPage
   targetDir: string;
   sourceDir: string;
-}
-
-function toPascalCase(name: string) {
-  return (
-    name
-      .split("-")
-      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-      .join("") + "Page"
-  );
 }
 
 export const AddSpaPageWorkflowMachine = setup({
@@ -58,7 +50,7 @@ export const AddSpaPageWorkflowMachine = setup({
 
     return {
       name: input.name,
-      pascalName: toPascalCase(pageName),
+      pascalName: kebabCaseToPascalCase(pageName),
       targetDir,
       sourceDir,
       loggedLast: false,
@@ -243,7 +235,7 @@ export class AddSpaPageWorkflow extends XStateWorkflow {
     {
       name: "name",
       description:
-        "Name of the new page in kebab-case (e.g. 'welcome-new-user')",
+        "Name of the new page in kebab-case (e.g. 'welcome-new-user' or 'welcome-new-user-page')",
     },
   ];
 }
