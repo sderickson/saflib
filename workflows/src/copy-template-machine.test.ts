@@ -46,8 +46,8 @@ export default {
   it("should copy and rename template files correctly", async () => {
     const actor = createActor(CopyTemplateMachine, {
       input: {
-        sourceFolder: sourceDir,
-        targetFolder: targetDir,
+        sourceDir: sourceDir,
+        targetDir: targetDir,
         name: "foo-bar",
       },
     });
@@ -81,8 +81,8 @@ export default {
 
     const actor = createActor(CopyTemplateMachine, {
       input: {
-        sourceFolder: sourceDir,
-        targetFolder: targetDir,
+        sourceDir: sourceDir,
+        targetDir: targetDir,
         name: "foo-bar",
       },
     });
