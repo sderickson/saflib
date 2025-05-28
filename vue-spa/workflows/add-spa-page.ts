@@ -1,17 +1,16 @@
-import { fromPromise, raise, setup } from "xstate";
+import { raise, setup } from "xstate";
 import {
   workflowActionImplementations,
   workflowActors,
   logInfo,
-  logError,
   promptAgent,
   XStateWorkflow,
-  doTestsPass,
   useTemplateStateFactory,
   kebabCaseToPascalCase,
   useTemplateStateName,
   updateTemplateFileFactory,
   type TemplateWorkflowContext,
+  runTestsFactory,
 } from "@saflib/workflows";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -54,7 +53,7 @@ export const AddSpaPageWorkflowMachine = setup({
   entry: logInfo("Successfully began workflow"),
   states: {
     // First copy over the files
-    ...useTemplateStateFactory("runTests"),
+    ...useTemplateStateFactory("updateLoader"),
 
     // Then for each file, have the agent update it
     ...updateTemplateFileFactory({
@@ -89,38 +88,16 @@ export const AddSpaPageWorkflowMachine = setup({
       promptMessage: (context: TemplateWorkflowContext) =>
         `Please update the router.ts file to include the new page. Add a new route for ${context.name} that uses the ${context.pascalName}Async component. The route should be at "/${context.name}".`,
       stateName: "updateRouter",
-      nextStateName: "runTests",
+      nextStateName: "runTestsOnStubbedPage",
     }),
 
     // Run the tests to make sure the loader and page are basically working
-    runTests: {
-      invoke: {
-        src: fromPromise(doTestsPass),
-        onDone: {
-          target: "updatePage",
-          actions: logInfo(() => `Tests passed successfully.`),
-        },
-        onError: {
-          actions: [
-            logError(
-              ({ event }) => `Tests failed: ${(event.error as Error).message}`,
-            ),
-            raise({ type: "prompt" }),
-          ],
-        },
-      },
-      on: {
-        prompt: {
-          actions: promptAgent(
-            () => "Tests failed. Please fix the issues and continue.",
-          ),
-        },
-        continue: {
-          reenter: true,
-          target: "runTests",
-        },
-      },
-    },
+    ...runTestsFactory({
+      filePath: (context: TemplateWorkflowContext) =>
+        path.join(context.targetDir, `${context.pascalName}.test.ts`),
+      stateName: "runTestsOnStubbedPage",
+      nextStateName: "updatePage",
+    }),
 
     ...updateTemplateFileFactory({
       filePath: (context: TemplateWorkflowContext) =>
@@ -137,6 +114,13 @@ export const AddSpaPageWorkflowMachine = setup({
       promptMessage: (context: TemplateWorkflowContext) =>
         `Please update ${context.pascalName}.test.ts to verify that the page renders correctly with the new design. Update the helper methods to locate actual key elements of the page, then update the one test to check that they all exist and have the right text.`,
       stateName: "updatePage",
+      nextStateName: "runTestsOnFinishedPage",
+    }),
+
+    ...runTestsFactory({
+      filePath: (context: TemplateWorkflowContext) =>
+        path.join(context.targetDir, `${context.pascalName}.test.ts`),
+      stateName: "runTestsOnFinishedPage",
       nextStateName: "verifyDone",
     }),
 
