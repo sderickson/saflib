@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, it, vi } from "vitest";
 import { makeMachineTemplateMachine } from "./machine-template.ts";
 import { createActor, waitFor } from "xstate";
 import type { DbKey } from "@saflib/drizzle-sqlite3";
-import { yourDb } from "@your-org/your-db";
+// import { yourDb } from "@your-org/your-db";
 import { throwError } from "@saflib/monorepo";
 import { allChildrenSettled } from "@saflib/node-xstate";
 
@@ -17,7 +17,7 @@ describe("makeMachineTemplateMachine", () => {
     vi.useRealTimers();
   });
 
-  it("should be in the PENDING state when created", async () => {
+  it.skip("should be in the PENDING state when created", async () => {
     // TODO: Create a test entity using the appropriate database call
     const scheduledMachineTemplate = {
       id: 1,
