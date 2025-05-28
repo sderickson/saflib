@@ -21,5 +21,5 @@ import UserList from "@saflib/auth-vue/src/components/UserList.vue";
 
 // Users page component
 
-const { data, isLoading, isError, error } = useUsersQuery();
+const { data, isLoading, isError } = useUsersQuery();
 </script>
