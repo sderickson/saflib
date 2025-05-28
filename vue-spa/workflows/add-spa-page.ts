@@ -3,14 +3,14 @@ import {
   workflowActionImplementations,
   workflowActors,
   logInfo,
-  type WorkflowContext,
   logError,
   promptAgent,
   XStateWorkflow,
   doTestsPass,
-  CopyTemplateMachine,
-  createCopyAndRenameTemplateState,
+  useTemplateStateFactory,
   kebabCaseToPascalCase,
+  useTemplateStateName,
+  type TemplateWorkflowContext,
 } from "@saflib/workflows";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -19,17 +19,10 @@ interface AddSpaPageWorkflowInput {
   name: string; // kebab-case, e.g. "welcome-new-user" or "welcome-new-user-page" (either works)
 }
 
-interface AddSpaPageWorkflowContext extends WorkflowContext {
-  name: string; // kebab-case
-  pascalName: string; // PascalCase, e.g. WelcomeNewUserPage
-  targetDir: string;
-  sourceDir: string;
-}
-
 export const AddSpaPageWorkflowMachine = setup({
   types: {
     input: {} as AddSpaPageWorkflowInput,
-    context: {} as AddSpaPageWorkflowContext,
+    context: {} as TemplateWorkflowContext,
   },
   actions: workflowActionImplementations,
   actors: workflowActors,
@@ -37,7 +30,7 @@ export const AddSpaPageWorkflowMachine = setup({
   id: "add-spa-page",
   description:
     "Create a new page in a SAF-powered Vue SPA, using a template and renaming placeholders.",
-  initial: "copyAndRenameTemplate",
+  initial: useTemplateStateName,
   context: ({ input }) => {
     const __filename = fileURLToPath(import.meta.url);
     const __dirname = path.dirname(__filename);
@@ -59,7 +52,7 @@ export const AddSpaPageWorkflowMachine = setup({
   },
   entry: logInfo("Successfully began workflow"),
   states: {
-    ...createCopyAndRenameTemplateState("runTests"),
+    ...useTemplateStateFactory("runTests"),
     runTests: {
       invoke: {
         src: fromPromise(doTestsPass),

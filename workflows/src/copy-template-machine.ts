@@ -24,15 +24,19 @@ import { constants } from "node:fs";
 import path from "node:path";
 
 export interface CopyTemplateMachineInput {
-  sourceFolder: string;
-  targetFolder: string;
   name: string; // kebab-case name
+  targetDir: string;
+  sourceDir: string;
 }
 
-export interface CopyTemplateMachineContext extends WorkflowContext {
-  sourceFolder: string;
-  targetFolder: string;
+export interface TemplateWorkflowContext extends WorkflowContext {
   name: string;
+  pascalName: string;
+  targetDir: string;
+  sourceDir: string;
+}
+
+export interface CopyTemplateMachineContext extends TemplateWorkflowContext {
   sourceFiles: string[];
   targetFiles: string[];
   filesToCopy: string[];
@@ -68,9 +72,10 @@ export const CopyTemplateMachine = setup({
   description: "Copy template files and rename placeholders",
   initial: "fetchFileNames",
   context: ({ input }) => ({
-    sourceFolder: input.sourceFolder,
-    targetFolder: input.targetFolder,
     name: input.name,
+    pascalName: kebabCaseToPascalCase(input.name),
+    targetDir: input.targetDir,
+    sourceDir: input.sourceDir,
     sourceFiles: [],
     targetFiles: [],
     filesToCopy: [],
@@ -82,13 +87,13 @@ export const CopyTemplateMachine = setup({
       invoke: {
         input: ({ context }) => context,
         src: fromPromise(async ({ input }) => {
-          const { sourceFolder, targetFolder } = input;
+          const { sourceDir, targetDir } = input;
 
           let sourceFiles: string[] = [];
           let targetFiles: string[] = [];
 
           try {
-            sourceFiles = await readdir(sourceFolder);
+            sourceFiles = await readdir(sourceDir);
           } catch (error) {
             throw new Error(
               `Failed to read source folder: ${(error as Error).message}`,
@@ -96,7 +101,7 @@ export const CopyTemplateMachine = setup({
           }
 
           try {
-            targetFiles = await readdir(targetFolder);
+            targetFiles = await readdir(targetDir);
           } catch (error) {
             // Target folder might not exist, that's okay
             targetFiles = [];
@@ -142,16 +147,16 @@ export const CopyTemplateMachine = setup({
       invoke: {
         input: ({ context }) => context,
         src: fromPromise(async ({ input }) => {
-          const { sourceFolder, targetFolder, name, filesToCopy } = input;
+          const { sourceDir, targetDir, name, filesToCopy } = input;
 
           if (filesToCopy.length === 0) {
             throw new Error("No files to copy");
           }
 
           const currentFile = filesToCopy[0];
-          const sourcePath = path.join(sourceFolder, currentFile);
+          const sourcePath = path.join(sourceDir, currentFile);
           const targetFileName = transformName(currentFile, name);
-          const targetPath = path.join(targetFolder, targetFileName);
+          const targetPath = path.join(targetDir, targetFileName);
 
           // Check if target file already exists
           try {
@@ -200,11 +205,11 @@ export const CopyTemplateMachine = setup({
       invoke: {
         input: ({ context }) => context,
         src: fromPromise(async ({ input }) => {
-          const { targetFolder, name, filesToCopy } = input;
+          const { targetDir, name, filesToCopy } = input;
 
           const currentFile = filesToCopy[0];
           const targetFileName = transformName(currentFile, name);
-          const targetPath = path.join(targetFolder, targetFileName);
+          const targetPath = path.join(targetDir, targetFileName);
 
           // Read file content
           const content = await readFile(targetPath, "utf-8");
@@ -273,9 +278,9 @@ export const CopyTemplateMachine = setup({
   },
 });
 
-export function createCopyAndRenameTemplateState(nextState: string) {
+export function useTemplateStateFactory(nextState: string) {
   return {
-    copyAndRenameTemplate: {
+    [useTemplateStateName]: {
       invoke: {
         input: ({ context }: { context: any }) => ({
           sourceFolder: context.sourceDir,
@@ -308,9 +313,11 @@ export function createCopyAndRenameTemplateState(nextState: string) {
         },
         continue: {
           reenter: true,
-          target: "copyAndRenameTemplate",
+          target: useTemplateStateName,
         },
       },
     },
   };
 }
+
+export const useTemplateStateName = "useTemplate";
