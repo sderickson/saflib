@@ -10,6 +10,7 @@ import {
   useTemplateStateFactory,
   kebabCaseToPascalCase,
   useTemplateStateName,
+  updateTemplateFileFactory,
   type TemplateWorkflowContext,
 } from "@saflib/workflows";
 import path from "node:path";
@@ -81,86 +82,45 @@ export const AddSpaPageWorkflowMachine = setup({
         },
       },
     },
-    updateLoader: {
-      entry: raise({ type: "prompt" }),
-      on: {
-        prompt: {
-          actions: [
-            promptAgent(
-              ({ context }) =>
-                `Please update the loader method in ${context.pascalName}.loader.ts to return any necessary Tanstack queries for rendering the page.`,
-            ),
-          ],
-        },
-        continue: {
-          target: "useLoader",
-        },
-      },
-    },
-    useLoader: {
-      entry: raise({ type: "prompt" }),
-      on: {
-        prompt: {
-          actions: [
-            promptAgent(
-              ({ context }) =>
-                `Please update ${context.pascalName}.vue to take the data from the loader, assert that it's loaded, then render sample the data using Vuetify components. Don't create the UX just yet; focus on making sure the data is loading properly.`,
-            ),
-          ],
-        },
-        continue: {
-          target: "updatePage",
-        },
-      },
-    },
-    updatePage: {
-      entry: raise({ type: "prompt" }),
-      on: {
-        prompt: {
-          actions: [
-            promptAgent(
-              ({ context }) =>
-                `Please update ${context.pascalName}.vue to match the design. Use Vuetify components and variables instead of custom styles, even if it means the design isn't pixel-perfect. Do NOT set any style tags.`,
-            ),
-          ],
-        },
-        continue: {
-          target: "updateTests",
-        },
-      },
-    },
-    updateTests: {
-      entry: raise({ type: "prompt" }),
-      on: {
-        prompt: {
-          actions: [
-            promptAgent(
-              ({ context }) =>
-                `Please update ${context.pascalName}.test.ts to mock the server requests and verify that the page renders correctly. Make sure to test all the functionality that was added. Remember to have the test use "getElementByString" in reusable helper methods.`,
-            ),
-          ],
-        },
-        continue: {
-          target: "updateRouter",
-        },
-      },
-    },
-    updateRouter: {
-      entry: raise({ type: "prompt" }),
-      on: {
-        prompt: {
-          actions: [
-            promptAgent(
-              ({ context }) =>
-                `Please update the router.ts file to include the new page. Add a new route for ${context.name} that uses the ${context.pascalName}Async component. The route should be at "/${context.name}".`,
-            ),
-          ],
-        },
-        continue: {
-          target: "verifyDone",
-        },
-      },
-    },
+    ...updateTemplateFileFactory({
+      filePath: (context: TemplateWorkflowContext) =>
+        path.join(context.targetDir, `${context.pascalName}.loader.ts`),
+      promptMessage: (context: TemplateWorkflowContext) =>
+        `Please update the loader method in ${context.pascalName}.loader.ts to return any necessary Tanstack queries for rendering the page.`,
+      stateName: "updateLoader",
+      nextStateName: "useLoader",
+    }),
+    ...updateTemplateFileFactory({
+      filePath: (context: TemplateWorkflowContext) =>
+        path.join(context.targetDir, `${context.pascalName}.vue`),
+      promptMessage: (context: TemplateWorkflowContext) =>
+        `Please update ${context.pascalName}.vue to take the data from the loader, assert that it's loaded, then render sample the data using Vuetify components. Don't create the UX just yet; focus on making sure the data is loading properly.`,
+      stateName: "useLoader",
+      nextStateName: "updatePage",
+    }),
+    ...updateTemplateFileFactory({
+      filePath: (context: TemplateWorkflowContext) =>
+        path.join(context.targetDir, `${context.pascalName}.vue`),
+      promptMessage: (context: TemplateWorkflowContext) =>
+        `Please update ${context.pascalName}.vue to match the design. Use Vuetify components and variables instead of custom styles, even if it means the design isn't pixel-perfect. Do NOT set any style tags.`,
+      stateName: "updatePage",
+      nextStateName: "updateTests",
+    }),
+    ...updateTemplateFileFactory({
+      filePath: (context: TemplateWorkflowContext) =>
+        path.join(context.targetDir, `${context.pascalName}.test.ts`),
+      promptMessage: (context: TemplateWorkflowContext) =>
+        `Please update ${context.pascalName}.test.ts to mock the server requests and verify that the page renders correctly. Make sure to test all the functionality that was added. Remember to have the test use "getElementByString" in reusable helper methods.`,
+      stateName: "updateTests",
+      nextStateName: "updateRouter",
+    }),
+    ...updateTemplateFileFactory({
+      filePath: "router.ts",
+      promptMessage: (context: TemplateWorkflowContext) =>
+        `Please update the router.ts file to include the new page. Add a new route for ${context.name} that uses the ${context.pascalName}Async component. The route should be at "/${context.name}".`,
+      stateName: "updateRouter",
+      nextStateName: "verifyDone",
+    }),
     verifyDone: {
       entry: raise({ type: "prompt" }),
       on: {

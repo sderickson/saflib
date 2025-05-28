@@ -1,5 +1,7 @@
 import { getCurrentPackage, print } from "./utils.ts";
 import { spawn, spawnSync } from "child_process";
+import { readFile } from "node:fs/promises";
+import path from "node:path";
 import {
   assign,
   type AnyEventObject,
@@ -195,6 +197,68 @@ export function promptState<C extends WorkflowContext>(
       },
       continue: {
         target,
+      },
+    },
+  };
+}
+
+interface UpdateTemplateFileFactoryOptions<C extends WorkflowContext> {
+  filePath: string | ((context: C) => string);
+  promptMessage: string | ((context: C) => string);
+  stateName: string;
+  nextStateName: string;
+}
+
+export function updateTemplateFileFactory<C extends WorkflowContext>({
+  filePath,
+  promptMessage,
+  stateName,
+  nextStateName,
+}: UpdateTemplateFileFactoryOptions<C>) {
+  return {
+    [stateName]: {
+      entry: raise({ type: "prompt" }),
+      on: {
+        prompt: {
+          actions: [
+            promptAgent(
+              typeof promptMessage === "string"
+                ? () => promptMessage
+                : ({ context }: { context: C }) => promptMessage(context),
+            ),
+          ],
+        },
+        continue: [
+          {
+            guard: ({ context }: { context: C }) => {
+              try {
+                const resolvedPath =
+                  typeof filePath === "string"
+                    ? path.resolve(process.cwd(), filePath)
+                    : path.resolve(process.cwd(), filePath(context));
+                const content = require("node:fs").readFileSync(
+                  resolvedPath,
+                  "utf-8",
+                );
+                const hasTodos = /\btodo\b/i.test(content);
+                return hasTodos;
+              } catch (error) {
+                return true;
+              }
+            },
+            target: stateName,
+            actions: [
+              logError(({ context }: { context: C }) => {
+                const filePathStr =
+                  typeof filePath === "string" ? filePath : filePath(context);
+                return `File ${filePathStr} was not properly updated - it still contains TODO strings. Please complete the implementation.`;
+              }),
+            ],
+          },
+          {
+            target: nextStateName,
+          },
+        ],
       },
     },
   };
