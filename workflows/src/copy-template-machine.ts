@@ -29,6 +29,7 @@ export interface CopyTemplateMachineInput {
   sourceDir: string;
 }
 
+// Machines which invoke this one should include this context
 export interface TemplateWorkflowContext extends WorkflowContext {
   name: string;
   pascalName: string;
@@ -36,7 +37,8 @@ export interface TemplateWorkflowContext extends WorkflowContext {
   sourceDir: string;
 }
 
-export interface CopyTemplateMachineContext extends TemplateWorkflowContext {
+// This is context specific to this machine
+interface CopyTemplateMachineContext extends TemplateWorkflowContext {
   sourceFiles: string[];
   targetFiles: string[];
   filesToCopy: string[];
