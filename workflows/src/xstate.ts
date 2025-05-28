@@ -200,6 +200,31 @@ export function promptState<C extends WorkflowContext>(
   };
 }
 
+interface PromptAgentFactoryOptions<C extends WorkflowContext>
+  extends FactoryFunctionOptions {
+  promptForContext: ({ context }: { context: C }) => string | string;
+}
+
+export function promptAgentFactory<C extends WorkflowContext>({
+  promptForContext,
+  stateName,
+  nextStateName,
+}: PromptAgentFactoryOptions<C>) {
+  return {
+    [stateName]: {
+      entry: raise({ type: "prompt" }),
+      on: {
+        prompt: {
+          actions: [promptAgent(promptForContext)],
+        },
+        continue: {
+          target: nextStateName,
+        },
+      },
+    },
+  };
+}
+
 export interface FactoryFunctionOptions {
   stateName: string;
   nextStateName: string;

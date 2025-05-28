@@ -10,6 +10,7 @@ import {
   updateTemplateFileFactory,
   type TemplateWorkflowContext,
   runTestsFactory,
+  promptAgentFactory,
 } from "@saflib/workflows";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -126,22 +127,13 @@ export const AddSpaPageWorkflowMachine = setup({
       nextStateName: "verifyDone",
     }),
 
-    verifyDone: {
-      entry: raise({ type: "prompt" }),
-      on: {
-        prompt: {
-          actions: [
-            promptAgent(
-              () =>
-                `Have the human run the website and confirm that the page looks and works as expected.`,
-            ),
-          ],
-        },
-        continue: {
-          target: "done",
-        },
-      },
-    },
+    ...promptAgentFactory({
+      stateName: "verifyDone",
+      nextStateName: "done",
+      promptForContext: () =>
+        `Have the human run the website and confirm that the page looks and works as expected.`,
+    }),
+
     done: {
       type: "final",
     },
