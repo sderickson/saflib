@@ -49,7 +49,7 @@ export const AddSpaPageWorkflowMachine = setup({
     const targetDir = path.join(process.cwd(), "pages", pageName);
 
     return {
-      name: input.name,
+      name: pageName,
       pascalName: kebabCaseToPascalCase(pageName),
       targetDir,
       sourceDir,
@@ -63,9 +63,7 @@ export const AddSpaPageWorkflowMachine = setup({
         input: ({ context }) => ({
           sourceFolder: context.sourceDir,
           targetFolder: context.targetDir,
-          name: context.name.endsWith("-page")
-            ? context.name
-            : context.name + "-page",
+          name: context.name,
         }),
         src: CopyTemplateMachine,
         onDone: {
