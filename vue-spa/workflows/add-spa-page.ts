@@ -54,7 +54,7 @@ export const AddSpaPageWorkflowMachine = setup({
     const __dirname = path.dirname(__filename);
     const sourceDir = path.join(
       __dirname,
-      "web-template",
+      "spa-template",
       "pages",
       "home-page",
     );
