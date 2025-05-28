@@ -1,7 +1,5 @@
 import { getCurrentPackage, print } from "./utils.ts";
 import { spawn, spawnSync } from "child_process";
-import { readFile } from "node:fs/promises";
-import path from "node:path";
 import {
   assign,
   type AnyEventObject,
@@ -200,4 +198,9 @@ export function promptState<C extends WorkflowContext>(
       },
     },
   };
+}
+
+export interface FactoryFunctionOptions {
+  stateName: string;
+  nextStateName: string;
 }

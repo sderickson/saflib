@@ -7,6 +7,7 @@ import {
   logWarn,
   promptAgent,
   type WorkflowContext,
+  type FactoryFunctionOptions,
 } from "./xstate.ts";
 import {
   kebabCaseToPascalCase,
@@ -330,11 +331,10 @@ export function useTemplateStateFactory({
   };
 }
 
-interface UpdateTemplateFileFactoryOptions<C extends WorkflowContext> {
+interface UpdateTemplateFileFactoryOptions<C extends WorkflowContext>
+  extends FactoryFunctionOptions {
   filePath: string | ((context: C) => string);
   promptMessage: string | ((context: C) => string);
-  stateName: string;
-  nextStateName: string;
 }
 
 export function updateTemplateFileFactory<C extends TemplateWorkflowContext>({
