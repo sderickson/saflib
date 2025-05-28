@@ -1,6 +1,7 @@
 import { SimpleWorkflow } from "@saflib/workflows";
 import path from "path";
 import { existsSync } from "fs";
+import { fileURLToPath } from "url";
 
 interface AddQueriesWorkflowParams {}
 
@@ -21,13 +22,16 @@ export class AddQueriesWorkflow extends SimpleWorkflow<AddQueriesWorkflowParams>
   };
 
   computed = () => {
-    const refDoc = path.resolve(import.meta.dirname, "../docs/03-queries.md");
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = path.dirname(__filename);
+
+    const refDoc = path.resolve(__dirname, "../docs/03-queries.md");
     const refDocAbsPath = path.resolve(process.cwd(), refDoc);
     if (!existsSync(refDocAbsPath)) {
       throw new Error(`Reference documentation not found: ${refDocAbsPath}`);
     }
     const testingGuide = path.resolve(
-      import.meta.dirname,
+      __dirname,
       "../../drizzle-sqlite3-dev/docs/01-testing-guide.md",
     );
     const testingGuideAbsPath = path.resolve(process.cwd(), testingGuide);

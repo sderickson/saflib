@@ -10,7 +10,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "generate-dockerfiles": "node --experimental-strip-types ./generate-dockerfiles.ts"
+    "generate-dockerfiles": "node --experimental-strip-types ./generate-dockerfiles.ts",
+    "typecheck": "tsc"
   },
   "bin": {
     "generate-dockerfiles": "./generate-dockerfiles.ts",

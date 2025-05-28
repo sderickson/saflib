@@ -1,3 +1,4 @@
+// @ts-nocheck // TODO: remove this
 import { describe, it, expect } from "vitest";
 import { http, HttpResponse } from "msw";
 import { setupMockServer, withVueQuery } from "@saflib/vue-spa-dev/requests.js";

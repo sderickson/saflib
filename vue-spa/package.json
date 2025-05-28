@@ -11,6 +11,9 @@
     "./workflows": "./workflows/index.ts",
     "./tanstack": "./tanstack.ts"
   },
+  "scripts": {
+    "typecheck": "tsc --project tsconfig.self.json"
+  },
   "dependencies": {
     "vite": "^6.0.0",
     "vue": "^3.0.0",

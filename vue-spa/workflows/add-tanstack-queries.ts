@@ -13,7 +13,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { exec } from "node:child_process";
 import { promisify } from "node:util";
-import { readdir, rename, readFile, writeFile } from "node:fs/promises";
+import { readFile, writeFile } from "node:fs/promises";
 
 const execAsync = promisify(exec);
 

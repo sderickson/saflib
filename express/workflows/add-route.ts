@@ -196,7 +196,6 @@ export const AddRouteWorkflowMachine = setup({
         src: fromPromise(async ({ input }) => {
           const {
             featureRouterPath,
-            featureName,
             pascalFeatureName,
             camelName,
             name,
