@@ -48,11 +48,11 @@ type WorkflowActionFunction<
 
 export interface LogParams {
   msg: string;
-  level?: "info" | "error";
+  level?: "info" | "error" | "warn";
 }
 
 const log = <C, E extends AnyEventObject>(
-  level: "info" | "error",
+  level: "info" | "error" | "warn",
   cb: string | ((ctx: ActionParam<C, E>) => string),
 ) => {
   return {
@@ -76,9 +76,15 @@ export const logError = <C, E extends AnyEventObject>(
   return log("error", cb);
 };
 
+export const logWarn = <C, E extends AnyEventObject>(
+  cb: string | ((ctx: ActionParam<C, E>) => string),
+) => {
+  return log("warn", cb);
+};
+
 const logImpl: WorkflowActionFunction<any, AnyEventObject, LogParams> = assign(
   ({ context }: { context: WorkflowContext }, { msg, level = "info" }) => {
-    const statusChar = level === "info" ? "✓" : "✗";
+    const statusChar = level === "info" ? "✓" : level === "error" ? "✗" : "⚠";
     print(`${statusChar} ${msg}`, context.loggedLast);
     return { loggedLast: true };
   },
