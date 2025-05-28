@@ -49,10 +49,16 @@ export const AddSpaPageWorkflowMachine = setup({
     const __filename = fileURLToPath(import.meta.url);
     const __dirname = path.dirname(__filename);
     const sourceDir = path.join(__dirname, "page-template");
-    const targetDir = path.join(process.cwd(), "pages", input.name + "-page");
+
+    // Only append "-page" if the name doesn't already end with "-page"
+    const pageName = input.name.endsWith("-page")
+      ? input.name
+      : input.name + "-page";
+    const targetDir = path.join(process.cwd(), "pages", pageName);
+
     return {
       name: input.name,
-      pascalName: toPascalCase(input.name),
+      pascalName: toPascalCase(pageName),
       targetDir,
       sourceDir,
       loggedLast: false,
@@ -65,7 +71,9 @@ export const AddSpaPageWorkflowMachine = setup({
         input: ({ context }) => ({
           sourceFolder: context.sourceDir,
           targetFolder: context.targetDir,
-          name: context.name + "-page",
+          name: context.name.endsWith("-page")
+            ? context.name
+            : context.name + "-page",
         }),
         src: CopyTemplateMachine,
         onDone: {
