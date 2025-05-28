@@ -8,14 +8,10 @@ import {
   promptAgent,
   XStateWorkflow,
   doTestsPass,
+  CopyTemplateMachine,
 } from "@saflib/workflows";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { exec } from "node:child_process";
-import { promisify } from "node:util";
-import { readdir, rename, readFile, writeFile } from "node:fs/promises";
-
-const execAsync = promisify(exec);
 
 interface AddSpaPageWorkflowInput {
   name: string; // kebab-case, e.g. "welcome-new-user"
@@ -48,16 +44,11 @@ export const AddSpaPageWorkflowMachine = setup({
   id: "add-spa-page",
   description:
     "Create a new page in a SAF-powered Vue SPA, using a template and renaming placeholders.",
-  initial: "copyTemplate",
+  initial: "copyAndRenameTemplate",
   context: ({ input }) => {
     const __filename = fileURLToPath(import.meta.url);
     const __dirname = path.dirname(__filename);
-    const sourceDir = path.join(
-      __dirname,
-      "spa-template",
-      "pages",
-      "home-page",
-    );
+    const sourceDir = path.join(__dirname, "page-template");
     const targetDir = path.join(process.cwd(), "pages", input.name + "-page");
     return {
       name: input.name,
@@ -69,99 +60,25 @@ export const AddSpaPageWorkflowMachine = setup({
   },
   entry: logInfo("Successfully began workflow"),
   states: {
-    copyTemplate: {
+    copyAndRenameTemplate: {
       invoke: {
-        input: ({ context }) => context,
-        src: fromPromise(async ({ input }) => {
-          const { targetDir, sourceDir } = input;
-          await execAsync(`mkdir -p "${targetDir}"`);
-          const { stdout, stderr } = await execAsync(
-            `cp -r "${sourceDir}/"* "${targetDir}"`,
-          );
-          if (stderr) {
-            throw new Error(`Failed to copy template: ${stderr}`);
-          }
-          return stdout;
+        input: ({ context }) => ({
+          sourceFolder: context.sourceDir,
+          targetFolder: context.targetDir,
+          name: context.name + "-page",
         }),
-        onDone: {
-          target: "renamePlaceholders",
-          actions: logInfo(
-            ({ context }) => `Copied template files to ${context.targetDir}`,
-          ),
-        },
-        onError: {
-          actions: [
-            logError(
-              ({ event }) =>
-                `Failed to copy template: ${(event.error as Error).message}`,
-            ),
-            raise({ type: "prompt" }),
-          ],
-        },
-      },
-      on: {
-        prompt: {
-          actions: promptAgent(
-            () =>
-              "Failed to copy the template files. Please check if the source directory exists and you have the necessary permissions.",
-          ),
-        },
-        continue: {
-          reenter: true,
-          target: "copyTemplate",
-        },
-      },
-    },
-    renamePlaceholders: {
-      invoke: {
-        input: ({ context }) => context,
-        src: fromPromise(async ({ input }) => {
-          const { targetDir, pascalName, name } = input;
-
-          // Get all files in the directory
-          const files = await readdir(targetDir);
-
-          // Rename files and update their contents
-          for (const file of files) {
-            const oldPath = path.join(targetDir, file);
-            let newPath = oldPath;
-
-            // Rename files containing HomePage or home-page
-            if (file.includes("HomePage")) {
-              newPath = path.join(
-                targetDir,
-                file.replace("HomePage", pascalName),
-              );
-              await rename(oldPath, newPath);
-            } else if (file.includes("home-page")) {
-              newPath = path.join(targetDir, file.replace("home-page", name));
-              await rename(oldPath, newPath);
-            }
-            const kebabName = name + "-page";
-            const snakeName = kebabName.replace(/-/g, "_");
-
-            // Update file contents
-            const content = await readFile(newPath, "utf-8");
-            const updatedContent = content
-              .replace(/HomePage/g, pascalName)
-              .replace(/home-page/g, kebabName)
-              .replace(/home_page/g, snakeName);
-            await writeFile(newPath, updatedContent);
-          }
-
-          return "Renamed placeholders";
-        }),
+        src: CopyTemplateMachine,
         onDone: {
           target: "runTests",
           actions: logInfo(
-            () => `Renamed all placeholders in files and file names.`,
+            () => `Template files copied and renamed successfully.`,
           ),
         },
         onError: {
           actions: [
             logError(
               ({ event }) =>
-                `Failed to rename placeholders: ${(event.error as Error).message}`,
+                `Failed to copy and rename template: ${(event.error as Error).message}`,
             ),
             raise({ type: "prompt" }),
           ],
@@ -171,12 +88,12 @@ export const AddSpaPageWorkflowMachine = setup({
         prompt: {
           actions: promptAgent(
             () =>
-              "Failed to rename placeholders. Please check the file and directory permissions and naming conventions.",
+              "Failed to copy and rename the template files. Please check if the source directory exists and you have the necessary permissions.",
           ),
         },
         continue: {
           reenter: true,
-          target: "renamePlaceholders",
+          target: "copyAndRenameTemplate",
         },
       },
     },
