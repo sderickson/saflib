@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll } from "vitest";
-import { rmSync, existsSync, mkdirSync } from "node:fs";
+import { rmSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
 import { eq } from "drizzle-orm";
 import { DbManager } from "./instances.ts";
