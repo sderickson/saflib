@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeAll } from "vitest";
 import { rmSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
 import { eq } from "drizzle-orm";
@@ -9,11 +9,19 @@ import config from "./drizzle.config.ts";
 import * as schema from "./test-schema.ts";
 import assert from "node:assert";
 
+const dbPath = "./data/db-test.sqlite";
+
 const getTempDbPath = (name: string) =>
   resolve(__dirname, `data/temp-test-${name}.db`);
 
 describe("Instance Manager", () => {
   const manager = new DbManager(schema, config, import.meta.url);
+
+  beforeAll(() => {
+    if (existsSync(dbPath)) {
+      rmSync(dbPath);
+    }
+  });
 
   it("should initialize an in-memory database and return a unique DbKey", () => {
     const key1Result = manager.connect();
@@ -41,7 +49,6 @@ describe("Instance Manager", () => {
   });
 
   it("should use a default database name if no name is provided", () => {
-    const dbPath = "./data/db-test.sqlite";
     expect(existsSync(dbPath)).toBe(false);
     const keyResult = manager.connect({ onDisk: true });
     expect(existsSync(dbPath)).toBe(true);

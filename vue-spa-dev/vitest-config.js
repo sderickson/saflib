@@ -11,6 +11,7 @@ export const defaultConfig = defineConfig({
   test: {
     environment: "jsdom",
     globals: true,
+    exclude: ["**/e2e/**"],
     coverage: {
       provider: "v8",
       reporter: ["text", "html"],

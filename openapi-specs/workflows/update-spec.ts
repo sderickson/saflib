@@ -37,6 +37,10 @@ export class UpdateSpecWorkflow extends SimpleWorkflow<UpdateSpecWorkflowParams>
 This keeps your spec DRY and easier to maintain.`,
     },
     {
+      name: "Update openapi.yaml",
+      prompt: () => `Update the openapi.yaml file to include the new routes and schemas.`,
+    },
+    {
       name: "Generate files",
       prompt: () => `Generate the files by running "npm run generate".`,
     },
