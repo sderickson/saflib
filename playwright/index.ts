@@ -18,7 +18,7 @@ type ElementString = string | ElementStringObject;
 
 export const getByString = (page: Page, stringThing: ElementString) => {
   if (typeof stringThing === "string") {
-    return page.getByText(stringThing);
+    return page.getByText(stringThing, { exact: true });
   }
   if (stringThing["v-text"]) {
     return page.getByText(stringThing["v-text"], { exact: true });
