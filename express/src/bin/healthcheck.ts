@@ -10,7 +10,6 @@ export const healthcheck = () => {
   };
 
   const request = http.get(options, (res) => {
-    console.log(`Health check status: ${res.statusCode}`);
     process.exit(res.statusCode === 200 ? 0 : 1);
   });
 

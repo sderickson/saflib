@@ -64,8 +64,6 @@ export const AddSpaWorkflowMachine = setup({
           const __dirname = path.dirname(__filename);
           const sourceDir = path.join(__dirname, "spa-template");
           const { targetDir } = input;
-          console.log("sourceDir", sourceDir);
-          console.log("targetDir", targetDir);
 
           const { stdout, stderr } = await execAsync(
             `cp -r "${sourceDir}/"* "${targetDir}"`,
