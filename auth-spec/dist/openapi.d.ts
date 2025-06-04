@@ -143,6 +143,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/auth/set-password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Change User Password */
+        post: operations["setPassword"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/users": {
         parameters: {
             query?: never;
@@ -221,6 +238,15 @@ export interface components {
             success: boolean;
             /** @description A generic message indicating that the verification email was sent */
             message: string;
+        };
+        SetPasswordRequest: {
+            /** @description The user's current password for verification */
+            currentPassword: string;
+            /** @description The new password to set */
+            newPassword: string;
+        };
+        SetPasswordResponse: {
+            success: boolean;
         };
         ListUsersResponse: {
             /** @description Unique identifier for the user */
@@ -515,6 +541,39 @@ export interface operations {
                 };
             };
             /** @description User not logged in */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+        };
+    };
+    setPassword: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetPasswordRequest"];
+            };
+        };
+        responses: {
+            /** @description Password changed successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SetPasswordResponse"];
+                };
+            };
+            /** @description User not logged in or invalid current password */
             401: {
                 headers: {
                     [name: string]: unknown;
