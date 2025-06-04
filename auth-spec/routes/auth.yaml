@@ -255,6 +255,12 @@ components:
         name:
           type: string
           description: User's full name (optional)
+        givenName:
+          type: string
+          description: User's given name (optional)
+        familyName:
+          type: string
+          description: User's family name (optional)
 
     LoginRequest:
       type: object
@@ -288,6 +294,12 @@ components:
         name:
           type: string
           description: User's full name (optional)
+        givenName:
+          type: string
+          description: User's given name (optional)
+        familyName:
+          type: string
+          description: User's family name (optional)
         scopes:
           type: array
           items:

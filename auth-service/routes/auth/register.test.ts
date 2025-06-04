@@ -24,6 +24,8 @@ describe("Register Route", () => {
     const userData = {
       email: "test@example.com",
       name: "Test User",
+      givenName: "Test",
+      familyName: "User",
       password: "password123",
     };
 
@@ -36,6 +38,8 @@ describe("Register Route", () => {
       id: expect.any(Number),
       email: userData.email,
       name: userData.name,
+      givenName: userData.givenName,
+      familyName: userData.familyName,
       scopes: [],
     });
 

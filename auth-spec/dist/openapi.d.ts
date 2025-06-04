@@ -211,6 +211,10 @@ export interface components {
             password: string;
             /** @description User's full name (optional) */
             name?: string;
+            /** @description User's given name (optional) */
+            givenName?: string;
+            /** @description User's family name (optional) */
+            familyName?: string;
         };
         UserResponse: {
             id: number;
@@ -218,6 +222,10 @@ export interface components {
             email: string;
             /** @description User's full name (optional) */
             name?: string;
+            /** @description User's given name (optional) */
+            givenName?: string;
+            /** @description User's family name (optional) */
+            familyName?: string;
             /** @description List of user's permission scopes */
             scopes?: string[];
         };
