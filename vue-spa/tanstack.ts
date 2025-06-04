@@ -66,7 +66,7 @@ export const handleClientMethod = async <T>(
     // the error code.
     throw new TanstackError(result.response.status, result.error.code);
   }
-  if (result.data === undefined) {
+  if (result.data === undefined && result.response.status !== 204) {
     throw new TanstackError(result.response.status, "No data returned");
   }
   return result.data;
