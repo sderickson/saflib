@@ -38,10 +38,8 @@ describe("Verify Email Route", () => {
       password: "password123",
     };
     const agent = request.agent(app);
-    {
-      const res = await agent.post("/auth/register").send(userData);
-      expect(res.status).toBe(200);
-    }
+    const registerRes = await agent.post("/auth/register").send(userData);
+    expect(registerRes.status).toBe(200);
 
     {
       const res = await agent.post("/auth/resend-verification");
@@ -56,6 +54,7 @@ describe("Verify Email Route", () => {
     expect(response.body).toEqual({
       id: expect.any(Number),
       email: userData.email,
+      emailVerified: true,
       name: userData.name,
       scopes: [],
     });
@@ -88,13 +87,12 @@ describe("Verify Email Route", () => {
       password: "password123",
     };
     const agent = request.agent(app);
-    {
-      const res = await agent.post("/auth/register").send(userData);
-      expect(res.status).toBe(200);
-    }
+    const registerRes = await agent.post("/auth/register").send(userData);
+    expect(registerRes.status).toBe(200);
 
     {
       const res = await agent.post("/auth/resend-verification");
+
       expect(res.status).toBe(200);
     }
 
@@ -115,13 +113,12 @@ describe("Verify Email Route", () => {
     };
 
     const agent = request.agent(app);
-    {
-      const res = await agent.post("/auth/register").send(userData);
-      expect(res.status).toBe(200);
-    }
+    const registerRes = await agent.post("/auth/register").send(userData);
+    expect(registerRes.status).toBe(200);
 
     {
       const res = await agent.post("/auth/resend-verification");
+
       expect(res.status).toBe(200);
     }
 

@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from "@tanstack/vue-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/vue-query";
 import { client } from "./client.ts";
 import type { AuthResponse, AuthRequest } from "./types.ts";
 import { TanstackError, handleClientMethod } from "@saflib/vue-spa";
@@ -59,6 +59,18 @@ export const useResetPassword = () => {
   });
 };
 
+export const useSetPassword = () => {
+  return useMutation<
+    AuthResponse["setPassword"][200],
+    TanstackError,
+    AuthRequest["setPassword"]
+  >({
+    mutationFn: (body) => {
+      return handleClientMethod(client.POST("/auth/set-password", { body }));
+    },
+  });
+};
+
 export const useVerifyEmail = () => {
   return useMutation<
     AuthResponse["verifyEmail"][200],
@@ -84,6 +96,31 @@ export const useVerify = () => {
     queryKey: ["verify"],
     queryFn: async () => {
       return handleClientMethod(client.GET("/auth/verify"));
+    },
+  });
+};
+
+export const useUpdateProfile = () => {
+  const queryClient = useQueryClient();
+  return useMutation<
+    AuthResponse["updateUserProfile"][200],
+    TanstackError,
+    AuthRequest["updateUserProfile"]
+  >({
+    mutationFn: (body) => {
+      return handleClientMethod(client.PUT("/auth/profile", { body }));
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
+    },
+  });
+};
+
+export const useGetProfile = () => {
+  return useQuery<AuthResponse["getUserProfile"][200], TanstackError>({
+    queryKey: ["profile"],
+    queryFn: async () => {
+      return handleClientMethod(client.GET("/auth/profile"));
     },
   });
 };

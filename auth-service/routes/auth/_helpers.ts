@@ -21,7 +21,10 @@ export async function createUserResponse(
   return {
     id: user.id,
     email: user.email,
+    emailVerified: user.emailVerified ?? false,
     name: user.name ?? undefined,
+    givenName: user.givenName ?? undefined,
+    familyName: user.familyName ?? undefined,
     scopes,
   };
 }

@@ -209,6 +209,32 @@ resend-verification:
             schema:
               $ref: "#/components/schemas/ErrorResponse"
 
+set-password:
+  post:
+    summary: "Change User Password"
+    operationId: setPassword
+    tags:
+      - auth
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/SetPasswordRequest"
+    responses:
+      "200":
+        description: Password changed successfully
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SetPasswordResponse"
+      "401":
+        description: User not logged in or invalid current password
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ErrorResponse"
+
 components:
   schemas:
     ErrorResponse:
@@ -229,6 +255,12 @@ components:
         name:
           type: string
           description: User's full name (optional)
+        givenName:
+          type: string
+          description: User's given name (optional)
+        familyName:
+          type: string
+          description: User's family name (optional)
 
     LoginRequest:
       type: object
@@ -259,9 +291,18 @@ components:
         email:
           type: string
           format: email
+        emailVerified:
+          type: boolean
+          description: Whether the user's email address has been verified
         name:
           type: string
           description: User's full name (optional)
+        givenName:
+          type: string
+          description: User's given name (optional)
+        familyName:
+          type: string
+          description: User's family name (optional)
         scopes:
           type: array
           items:
@@ -337,3 +378,27 @@ components:
         token:
           type: string
           description: The verification token sent in the email
+
+    SetPasswordRequest:
+      type: object
+      required:
+        - currentPassword
+        - newPassword
+      additionalProperties: false
+      properties:
+        currentPassword:
+          type: string
+          description: The user's current password for verification
+        newPassword:
+          type: string
+          minLength: 8
+          description: The new password to set
+
+    SetPasswordResponse:
+      type: object
+      required:
+        - success
+      additionalProperties: false
+      properties:
+        success:
+          type: boolean

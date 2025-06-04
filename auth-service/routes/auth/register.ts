@@ -11,7 +11,7 @@ import { authServiceStorage } from "../../context.ts";
 export const registerHandler = createHandler(async (req, res) => {
   const { dbKey } = authServiceStorage.getStore()!;
   const registerRequest: AuthRequest["registerUser"] = req.body;
-  const { email, password, name } = registerRequest;
+  const { email, password, name, givenName, familyName } = registerRequest;
   const { log } = getSafContext();
 
   const passwordHash = await argon2.hash(password);
@@ -19,6 +19,8 @@ export const registerHandler = createHandler(async (req, res) => {
   const { result: user, error } = await authDb.users.create(dbKey, {
     email,
     name,
+    givenName,
+    familyName,
   });
   if (error) {
     switch (true) {

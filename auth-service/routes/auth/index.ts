@@ -7,6 +7,9 @@ import { verifyHandler } from "./verify.ts";
 import { forgotPasswordHandler } from "./forgot-password.ts";
 import { resetPasswordHandler } from "./reset-password.ts";
 import { verifyEmailHandler } from "./verify-email.ts";
+import { setPassword } from "./set-password.ts";
+import { getProfileHandler } from "./get-profile.ts";
+import { updateProfile } from "./update-profile.ts";
 import { rateLimit } from "express-rate-limit";
 import { createPreMiddleware } from "@saflib/express";
 import passport from "passport";
@@ -44,6 +47,8 @@ export const makeAuthRouter = () => {
 
   router.get("/verify", verifyHandler);
   router.post("/logout", logoutHandler);
+  router.get("/profile", getProfileHandler);
+  router.put("/profile", updateProfile);
 
   // rate limit after /verify, because verify runs before every single API call...
   if (process.env.DISABLE_RATE_LIMITING !== "true") {
@@ -55,5 +60,6 @@ export const makeAuthRouter = () => {
   router.post("/reset-password", resetPasswordHandler);
   router.post("/resend-verification", resendVerificationHandler);
   router.post("/verify-email", verifyEmailHandler);
+  router.post("/set-password", setPassword);
   return router;
 };

@@ -24,6 +24,8 @@ describe("Register Route", () => {
     const userData = {
       email: "test@example.com",
       name: "Test User",
+      givenName: "Test",
+      familyName: "User",
       password: "password123",
     };
 
@@ -35,7 +37,10 @@ describe("Register Route", () => {
     expect(response.body).toEqual({
       id: expect.any(Number),
       email: userData.email,
+      emailVerified: false,
       name: userData.name,
+      givenName: userData.givenName,
+      familyName: userData.familyName,
       scopes: [],
     });
 

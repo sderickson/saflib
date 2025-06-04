@@ -35,6 +35,7 @@ describe("Login Route", () => {
     expect(response.body).toEqual({
       id: expect.any(Number),
       email: userData.email,
+      emailVerified: false,
       name: userData.name,
       scopes: [],
     });

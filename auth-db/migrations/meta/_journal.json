@@ -43,6 +43,13 @@
       "when": 1747341915390,
       "tag": "0005_steep_thunderball",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1749074597628,
+      "tag": "0006_easy_wolf_cub",
+      "breakpoints": true
     }
   ]
 }

@@ -143,6 +143,47 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/auth/set-password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Change User Password */
+        post: operations["setPassword"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/profile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get User Profile
+         * @description Get the profile information for the currently logged in user
+         */
+        get: operations["getUserProfile"];
+        /**
+         * Update User Profile
+         * @description Update the profile information for the currently logged in user
+         */
+        put: operations["updateUserProfile"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/users": {
         parameters: {
             query?: never;
@@ -170,13 +211,23 @@ export interface components {
             password: string;
             /** @description User's full name (optional) */
             name?: string;
+            /** @description User's given name (optional) */
+            givenName?: string;
+            /** @description User's family name (optional) */
+            familyName?: string;
         };
         UserResponse: {
             id: number;
             /** Format: email */
             email: string;
+            /** @description Whether the user's email address has been verified */
+            emailVerified?: boolean;
             /** @description User's full name (optional) */
             name?: string;
+            /** @description User's given name (optional) */
+            givenName?: string;
+            /** @description User's family name (optional) */
+            familyName?: string;
             /** @description List of user's permission scopes */
             scopes?: string[];
         };
@@ -221,6 +272,47 @@ export interface components {
             success: boolean;
             /** @description A generic message indicating that the verification email was sent */
             message: string;
+        };
+        SetPasswordRequest: {
+            /** @description The user's current password for verification */
+            currentPassword: string;
+            /** @description The new password to set */
+            newPassword: string;
+        };
+        SetPasswordResponse: {
+            success: boolean;
+        };
+        ProfileResponse: {
+            /** @description Unique identifier for the user */
+            id: number;
+            /**
+             * Format: email
+             * @description User's email address
+             */
+            email: string;
+            /** @description Whether the user's email address has been verified */
+            emailVerified?: boolean;
+            /** @description User's full name */
+            name?: string | null;
+            /** @description User's given name (first name) */
+            givenName?: string | null;
+            /** @description User's family name (last name) */
+            familyName?: string | null;
+        };
+        ProfileUpdateRequest: {
+            /**
+             * Format: email
+             * @description User's email address
+             */
+            email?: string;
+            /** @description Whether the user's email address has been verified */
+            emailVerified?: boolean;
+            /** @description User's full name */
+            name?: string | null;
+            /** @description User's given name (first name) */
+            givenName?: string | null;
+            /** @description User's family name (last name) */
+            familyName?: string | null;
         };
         ListUsersResponse: {
             /** @description Unique identifier for the user */
@@ -516,6 +608,119 @@ export interface operations {
             };
             /** @description User not logged in */
             401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+        };
+    };
+    setPassword: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetPasswordRequest"];
+            };
+        };
+        responses: {
+            /** @description Password changed successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SetPasswordResponse"];
+                };
+            };
+            /** @description User not logged in or invalid current password */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+        };
+    };
+    getUserProfile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description User profile retrieved successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProfileResponse"];
+                };
+            };
+            /** @description User not authenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+        };
+    };
+    updateUserProfile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProfileUpdateRequest"];
+            };
+        };
+        responses: {
+            /** @description User profile updated successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProfileResponse"];
+                };
+            };
+            /** @description Invalid request data */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description User not authenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Email already exists (if trying to update email to one that's already taken) */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };
