@@ -59,6 +59,18 @@ export const useResetPassword = () => {
   });
 };
 
+export const useSetPassword = () => {
+  return useMutation<
+    AuthResponse["setPassword"][200],
+    TanstackError,
+    AuthRequest["setPassword"]
+  >({
+    mutationFn: (body) => {
+      return handleClientMethod(client.POST("/auth/set-password", { body }));
+    },
+  });
+};
+
 export const useVerifyEmail = () => {
   return useMutation<
     AuthResponse["verifyEmail"][200],

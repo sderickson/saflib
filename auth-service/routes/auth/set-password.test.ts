@@ -30,7 +30,10 @@ describe("Set Password Route", () => {
     const registerResponse = await agent.post("/auth/register").send(userData);
     expect(registerResponse.status).toBe(200);
 
-    const loginResponse = await agent.post("/auth/login").send(userData);
+    const loginResponse = await agent.post("/auth/login").send({
+      email: userData.email,
+      password: userData.password,
+    });
     expect(loginResponse.status).toBe(200);
 
     // Change password
@@ -93,7 +96,10 @@ describe("Set Password Route", () => {
     const registerResponse = await agent.post("/auth/register").send(userData);
     expect(registerResponse.status).toBe(200);
 
-    const loginResponse = await agent.post("/auth/login").send(userData);
+    const loginResponse = await agent.post("/auth/login").send({
+      email: userData.email,
+      password: userData.password,
+    });
     expect(loginResponse.status).toBe(200);
 
     // Try to change password with wrong current password
@@ -116,13 +122,17 @@ describe("Set Password Route", () => {
     const userData = {
       email: "test@example.com",
       password: "password123",
+      name: "Test User",
     };
 
     const agent = request.agent(app);
     const registerResponse = await agent.post("/auth/register").send(userData);
     expect(registerResponse.status).toBe(200);
 
-    const loginResponse = await agent.post("/auth/login").send(userData);
+    const loginResponse = await agent.post("/auth/login").send({
+      email: userData.email,
+      password: userData.password,
+    });
     expect(loginResponse.status).toBe(200);
 
     // Try with missing newPassword
