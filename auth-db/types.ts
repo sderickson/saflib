@@ -9,5 +9,9 @@ export type UpdateProfileParams = Pick<
 
 export type NewEmailAuth = typeof emailAuth.$inferInsert;
 export type SelectEmailAuth = typeof emailAuth.$inferSelect;
+export type UpdateEmailParams = {
+  userId: number;
+  newEmail: string;
+};
 
 export type UserPermissions = typeof userPermissions.$inferSelect;
