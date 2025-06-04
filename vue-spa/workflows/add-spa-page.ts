@@ -98,6 +98,15 @@ export const AddSpaPageWorkflowMachine = setup({
       filePath: (context) =>
         path.join(context.targetDir, `${context.pascalName}.test.ts`),
       stateName: "runTestsOnStubbedPage",
+      nextStateName: "updateStrings",
+    }),
+
+    ...updateTemplateFileFactory({
+      filePath: (context) =>
+        path.join(context.targetDir, `${context.pascalName}.strings.ts`),
+      promptMessage: (context) =>
+        `Please update ${context.pascalName}.strings.ts to include all text from the design.`,
+      stateName: "updateStrings",
       nextStateName: "implementDesign",
     }),
 
@@ -105,7 +114,7 @@ export const AddSpaPageWorkflowMachine = setup({
       filePath: (context) =>
         path.join(context.targetDir, `${context.pascalName}.vue`),
       promptMessage: (context) =>
-        `Please update ${context.pascalName}.vue to match the design. Use Vuetify components and variables instead of custom styles, even if it means the design isn't pixel-perfect. Do NOT set any style tags.`,
+        `Please update ${context.pascalName}.vue to match the design. Use Vuetify components and variables instead of custom styles, even if it means the design isn't pixel-perfect. Do NOT set any style tags. Import and use the strings you just created.`,
       stateName: "implementDesign",
       nextStateName: "updateTestsForDesign",
     }),
@@ -114,7 +123,7 @@ export const AddSpaPageWorkflowMachine = setup({
       filePath: (context) =>
         path.join(context.targetDir, `${context.pascalName}.test.ts`),
       promptMessage: (context) =>
-        `Please update ${context.pascalName}.test.ts to verify that the page renders correctly with the new design. Update the helper methods to locate actual key elements of the page, then update the one test to check that they all exist and have the right text.`,
+        `Please update ${context.pascalName}.test.ts to verify that the page renders correctly with the new design. Update the helper methods to locate actual key elements of the page, then update the one test to check that they all exist and have the right text. Only use "getElementByString" to locate elements, using the strings from the strings file as the argument.`,
       stateName: "updateTestsForDesign",
       nextStateName: "runTestsOnFinishedPage",
     }),
