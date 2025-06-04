@@ -38,13 +38,15 @@ describe("Verify Email Route", () => {
       password: "password123",
     };
     const agent = request.agent(app);
-    {
-      const res = await agent.post("/auth/register").send(userData);
-      expect(res.status).toBe(200);
-    }
+    const registerRes = await agent.post("/auth/register").send(userData);
+    expect(registerRes.status).toBe(200);
 
     {
-      const res = await agent.post("/auth/resend-verification");
+      const res = await agent
+        .post("/auth/resend-verification")
+        .set("x-user-id", registerRes.body.id)
+        .set("x-user-email", userData.email)
+        .set("x-user-scopes", "none");
       expect(res.status).toBe(200);
     }
 
@@ -88,13 +90,15 @@ describe("Verify Email Route", () => {
       password: "password123",
     };
     const agent = request.agent(app);
-    {
-      const res = await agent.post("/auth/register").send(userData);
-      expect(res.status).toBe(200);
-    }
+    const registerRes = await agent.post("/auth/register").send(userData);
+    expect(registerRes.status).toBe(200);
 
     {
-      const res = await agent.post("/auth/resend-verification");
+      const res = await agent
+        .post("/auth/resend-verification")
+        .set("x-user-id", registerRes.body.id)
+        .set("x-user-email", userData.email)
+        .set("x-user-scopes", "none");
       expect(res.status).toBe(200);
     }
 
@@ -115,13 +119,15 @@ describe("Verify Email Route", () => {
     };
 
     const agent = request.agent(app);
-    {
-      const res = await agent.post("/auth/register").send(userData);
-      expect(res.status).toBe(200);
-    }
+    const registerRes = await agent.post("/auth/register").send(userData);
+    expect(registerRes.status).toBe(200);
 
     {
-      const res = await agent.post("/auth/resend-verification");
+      const res = await agent
+        .post("/auth/resend-verification")
+        .set("x-user-id", registerRes.body.id)
+        .set("x-user-email", userData.email)
+        .set("x-user-scopes", "none");
       expect(res.status).toBe(200);
     }
 

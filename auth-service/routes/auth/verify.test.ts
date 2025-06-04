@@ -106,7 +106,11 @@ describe("Verify Route", () => {
     }
 
     {
-      const res = await agent.post("/auth/resend-verification");
+      const res = await agent
+        .post("/auth/resend-verification")
+        .set("x-user-id", res1.body.id)
+        .set("x-user-email", userData.email)
+        .set("x-user-scopes", "none");
       expect(res.status).toBe(200);
     }
 
