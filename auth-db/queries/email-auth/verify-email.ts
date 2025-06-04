@@ -1,5 +1,5 @@
 import { type DbKey, queryWrapper } from "@saflib/drizzle-sqlite3";
-import { emailAuth } from "../../schema.ts";
+import { emailAuth, users } from "../../schema.ts";
 import type { ReturnsError } from "@saflib/monorepo";
 import { authDbManager } from "../../instances.ts";
 import { EmailAuthNotFoundError } from "../../errors.ts";
@@ -25,6 +25,15 @@ export const verifyEmail = queryWrapper(
     if (!result.length) {
       return { error: new EmailAuthNotFoundError() };
     }
+
+    await db
+      .update(users)
+      .set({
+        emailVerified: true,
+        email: result[0].email,
+      })
+      .where(eq(users.id, userId));
+
     return { result: result[0] };
   },
 );

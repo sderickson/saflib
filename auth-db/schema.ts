@@ -7,7 +7,10 @@ export const users = sqliteTable("users", {
   createdAt: int("created_at", { mode: "timestamp" }).notNull(),
   lastLoginAt: int("last_login_at", { mode: "timestamp" }),
   email: text().notNull().unique(),
+  emailVerified: int("email_verified", { mode: "boolean" }).default(false),
   name: text("name"),
+  givenName: text("given_name"),
+  familyName: text("family_name"),
 });
 
 // Email authentication
