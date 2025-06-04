@@ -8,8 +8,8 @@ import { getSafContext } from "@saflib/node";
 import { authServiceStorage } from "../../context.ts";
 export const resendVerificationHandler = createHandler(async (req, res) => {
   const { dbKey } = authServiceStorage.getStore()!;
-  const { log, auth } = getSafContext();
-  if (!auth) {
+  const { log } = getSafContext();
+  if (!req.user) {
     res.status(401).json({
       message: "User must be logged in",
     } satisfies AuthResponse["resendVerification"][401]);
@@ -24,7 +24,7 @@ export const resendVerificationHandler = createHandler(async (req, res) => {
 
   await authDb.emailAuth.updateVerificationToken(
     dbKey,
-    auth.userId,
+    req.user.id,
     verificationToken,
     verificationTokenExpiresAt,
   );
@@ -40,15 +40,15 @@ export const resendVerificationHandler = createHandler(async (req, res) => {
 
   try {
     await emailClient.sendEmail({
-      to: auth.userEmail,
+      to: req.user.email,
       from: process.env.SMTP_FROM,
       subject,
       html,
     });
-    log.info(`Verification email successfully resent to ${auth.userEmail}`);
+    log.info(`Verification email successfully resent to ${req.user.email}`);
   } catch (emailError) {
     log.error(
-      `Failed to resend verification email to ${auth.userEmail}. Error: ${emailError}`,
+      `Failed to resend verification email to ${req.user.email}. Error: ${emailError}`,
     );
   }
 

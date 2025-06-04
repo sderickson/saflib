@@ -2,14 +2,12 @@ import * as argon2 from "argon2";
 import { createHandler } from "@saflib/express";
 import type { AuthRequest, AuthResponse } from "@saflib/auth-spec";
 import { authDb, EmailAuthNotFoundError } from "@saflib/auth-db";
-import { getSafContext } from "@saflib/node";
 import { authServiceStorage } from "../../context.ts";
 
 export const setPassword = createHandler(async (req, res) => {
   const { dbKey } = authServiceStorage.getStore()!;
-  const { auth } = getSafContext();
 
-  if (!auth) {
+  if (!req.user) {
     res.status(401).json({
       message: "User must be logged in",
     } satisfies AuthResponse["setPassword"][401]);
@@ -22,7 +20,7 @@ export const setPassword = createHandler(async (req, res) => {
   // Get the user's current email auth record to verify current password
   const { result: emailAuth, error } = await authDb.emailAuth.getByEmail(
     dbKey,
-    auth.userEmail,
+    req.user.email,
   );
   if (error) {
     switch (true) {
@@ -57,7 +55,7 @@ export const setPassword = createHandler(async (req, res) => {
 
   await authDb.emailAuth.updatePassword(
     dbKey,
-    auth.userId,
+    req.user.id,
     Buffer.from(newPasswordHash),
   );
 

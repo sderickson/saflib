@@ -42,11 +42,7 @@ describe("Verify Email Route", () => {
     expect(registerRes.status).toBe(200);
 
     {
-      const res = await agent
-        .post("/auth/resend-verification")
-        .set("x-user-id", registerRes.body.id)
-        .set("x-user-email", userData.email)
-        .set("x-user-scopes", "none");
+      const res = await agent.post("/auth/resend-verification");
       expect(res.status).toBe(200);
     }
 
@@ -94,11 +90,8 @@ describe("Verify Email Route", () => {
     expect(registerRes.status).toBe(200);
 
     {
-      const res = await agent
-        .post("/auth/resend-verification")
-        .set("x-user-id", registerRes.body.id)
-        .set("x-user-email", userData.email)
-        .set("x-user-scopes", "none");
+      const res = await agent.post("/auth/resend-verification");
+
       expect(res.status).toBe(200);
     }
 
@@ -123,11 +116,8 @@ describe("Verify Email Route", () => {
     expect(registerRes.status).toBe(200);
 
     {
-      const res = await agent
-        .post("/auth/resend-verification")
-        .set("x-user-id", registerRes.body.id)
-        .set("x-user-email", userData.email)
-        .set("x-user-scopes", "none");
+      const res = await agent.post("/auth/resend-verification");
+
       expect(res.status).toBe(200);
     }
 

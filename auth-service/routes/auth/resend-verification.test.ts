@@ -42,11 +42,7 @@ describe("Resend Verification Route", () => {
     const loginResponse = await agent.post("/auth/login").send(userData);
     expect(loginResponse.status).toBe(200);
 
-    const response = await agent
-      .post("/auth/resend-verification")
-      .set("x-user-id", registerResponse.body.id)
-      .set("x-user-email", userData.email)
-      .set("x-user-scopes", "none");
+    const response = await agent.post("/auth/resend-verification");
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual({
