@@ -54,6 +54,7 @@ describe("Verify Email Route", () => {
     expect(response.body).toEqual({
       id: expect.any(Number),
       email: userData.email,
+      emailVerified: true,
       name: userData.name,
       scopes: [],
     });

@@ -64,6 +64,7 @@ describe("Update Profile Route", () => {
     expect(response.body).toEqual({
       id: expect.any(Number),
       email: userData.email,
+      emailVerified: false,
       name: updateData.name,
       givenName: updateData.givenName,
       familyName: updateData.familyName,
@@ -106,6 +107,7 @@ describe("Update Profile Route", () => {
     expect(response.body).toEqual({
       id: expect.any(Number),
       email: updateData.email,
+      emailVerified: false,
       name: userData.name,
       givenName: userData.givenName,
       familyName: userData.familyName,
@@ -137,6 +139,7 @@ describe("Update Profile Route", () => {
     // Update both name fields and email
     const updateData = {
       email: "updated@example.com",
+      emailVerified: false,
       name: "Updated Name",
       givenName: "Updated",
       familyName: "Name",
@@ -151,6 +154,7 @@ describe("Update Profile Route", () => {
     expect(response.body).toEqual({
       id: expect.any(Number),
       email: updateData.email,
+      emailVerified: false,
       name: updateData.name,
       givenName: updateData.givenName,
       familyName: updateData.familyName,
@@ -194,6 +198,7 @@ describe("Update Profile Route", () => {
     expect(response.body).toEqual({
       id: expect.any(Number),
       email: userData.email,
+      emailVerified: false,
       name: updateData.name,
       givenName: userData.givenName,
       familyName: userData.familyName,
@@ -240,6 +245,7 @@ describe("Update Profile Route", () => {
     expect(response.body).toEqual({
       id: expect.any(Number),
       email: userData.email,
+      emailVerified: false,
       name: userData.name,
       givenName: userData.givenName,
       familyName: userData.familyName,
@@ -269,6 +275,7 @@ describe("Update Profile Route", () => {
     expect(response.body).toEqual({
       id: expect.any(Number),
       email: userData.email,
+      emailVerified: true,
       name: userData.name,
       scopes: [],
     });
@@ -283,6 +290,7 @@ describe("Update Profile Route", () => {
     expect(updateResponse.body).toEqual({
       id: expect.any(Number),
       email: updateData.email,
+      emailVerified: false,
       name: userData.name,
       givenName: null,
       familyName: null,

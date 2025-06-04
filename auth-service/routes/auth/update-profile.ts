@@ -96,6 +96,7 @@ export const updateProfile = createHandler(async (req, res) => {
   const response: ProfileResponse = {
     id: updatedUser.id,
     email: updatedUser.email,
+    emailVerified: updatedUser.emailVerified ?? false,
     name: updatedUser.name,
     givenName: updatedUser.givenName,
     familyName: updatedUser.familyName,

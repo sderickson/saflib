@@ -37,6 +37,7 @@ describe("Register Route", () => {
     expect(response.body).toEqual({
       id: expect.any(Number),
       email: userData.email,
+      emailVerified: false,
       name: userData.name,
       givenName: userData.givenName,
       familyName: userData.familyName,
