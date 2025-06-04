@@ -99,3 +99,24 @@ export const useVerify = () => {
     },
   });
 };
+
+export const useUpdateProfile = () => {
+  return useMutation<
+    AuthResponse["updateUserProfile"][200],
+    TanstackError,
+    AuthRequest["updateUserProfile"]
+  >({
+    mutationFn: (body) => {
+      return handleClientMethod(client.PUT("/auth/profile", { body }));
+    },
+  });
+};
+
+export const useGetProfile = () => {
+  return useQuery<AuthResponse["getUserProfile"][200], TanstackError>({
+    queryKey: ["profile"],
+    queryFn: async () => {
+      return handleClientMethod(client.GET("/auth/profile"));
+    },
+  });
+};
