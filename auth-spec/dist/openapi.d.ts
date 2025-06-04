@@ -220,6 +220,8 @@ export interface components {
             id: number;
             /** Format: email */
             email: string;
+            /** @description Whether the user's email address has been verified */
+            emailVerified?: boolean;
             /** @description User's full name (optional) */
             name?: string;
             /** @description User's given name (optional) */
@@ -288,6 +290,8 @@ export interface components {
              * @description User's email address
              */
             email: string;
+            /** @description Whether the user's email address has been verified */
+            emailVerified?: boolean;
             /** @description User's full name */
             name?: string | null;
             /** @description User's given name (first name) */
@@ -301,6 +305,8 @@ export interface components {
              * @description User's email address
              */
             email?: string;
+            /** @description Whether the user's email address has been verified */
+            emailVerified?: boolean;
             /** @description User's full name */
             name?: string | null;
             /** @description User's given name (first name) */

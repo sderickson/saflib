@@ -72,6 +72,9 @@ components:
           type: string
           format: email
           description: User's email address
+        emailVerified:
+          type: boolean
+          description: Whether the user's email address has been verified
         name:
           type: string
           nullable: true
@@ -93,6 +96,9 @@ components:
           type: string
           format: email
           description: User's email address
+        emailVerified:
+          type: boolean
+          description: Whether the user's email address has been verified
         name:
           type: string
           nullable: true

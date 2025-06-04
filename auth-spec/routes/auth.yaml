@@ -291,6 +291,9 @@ components:
         email:
           type: string
           format: email
+        emailVerified:
+          type: boolean
+          description: Whether the user's email address has been verified
         name:
           type: string
           description: User's full name (optional)
