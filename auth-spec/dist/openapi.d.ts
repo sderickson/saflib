@@ -160,6 +160,30 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/auth/profile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get User Profile
+         * @description Get the profile information for the currently logged in user
+         */
+        get: operations["getUserProfile"];
+        /**
+         * Update User Profile
+         * @description Update the profile information for the currently logged in user
+         */
+        put: operations["updateUserProfile"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/users": {
         parameters: {
             query?: never;
@@ -247,6 +271,34 @@ export interface components {
         };
         SetPasswordResponse: {
             success: boolean;
+        };
+        ProfileResponse: {
+            /** @description Unique identifier for the user */
+            id: number;
+            /**
+             * Format: email
+             * @description User's email address
+             */
+            email: string;
+            /** @description User's full name */
+            name?: string | null;
+            /** @description User's given name (first name) */
+            givenName?: string | null;
+            /** @description User's family name (last name) */
+            familyName?: string | null;
+        };
+        ProfileUpdateRequest: {
+            /**
+             * Format: email
+             * @description User's email address
+             */
+            email?: string;
+            /** @description User's full name */
+            name?: string | null;
+            /** @description User's given name (first name) */
+            givenName?: string | null;
+            /** @description User's family name (last name) */
+            familyName?: string | null;
         };
         ListUsersResponse: {
             /** @description Unique identifier for the user */
@@ -575,6 +627,86 @@ export interface operations {
             };
             /** @description User not logged in or invalid current password */
             401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+        };
+    };
+    getUserProfile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description User profile retrieved successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProfileResponse"];
+                };
+            };
+            /** @description User not authenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+        };
+    };
+    updateUserProfile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProfileUpdateRequest"];
+            };
+        };
+        responses: {
+            /** @description User profile updated successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProfileResponse"];
+                };
+            };
+            /** @description Invalid request data */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description User not authenticated */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Email already exists (if trying to update email to one that's already taken) */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };
