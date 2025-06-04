@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from "@tanstack/vue-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/vue-query";
 import { client } from "./client.ts";
 import type { AuthResponse, AuthRequest } from "./types.ts";
 import { TanstackError, handleClientMethod } from "@saflib/vue-spa";
@@ -101,6 +101,7 @@ export const useVerify = () => {
 };
 
 export const useUpdateProfile = () => {
+  const queryClient = useQueryClient();
   return useMutation<
     AuthResponse["updateUserProfile"][200],
     TanstackError,
@@ -108,6 +109,9 @@ export const useUpdateProfile = () => {
   >({
     mutationFn: (body) => {
       return handleClientMethod(client.PUT("/auth/profile", { body }));
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
     },
   });
 };
