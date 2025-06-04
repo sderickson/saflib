@@ -47,6 +47,8 @@ export const makeAuthRouter = () => {
 
   router.get("/verify", verifyHandler);
   router.post("/logout", logoutHandler);
+  router.get("/profile", getProfileHandler);
+  router.put("/profile", updateProfile);
 
   // rate limit after /verify, because verify runs before every single API call...
   if (process.env.DISABLE_RATE_LIMITING !== "true") {
@@ -59,7 +61,5 @@ export const makeAuthRouter = () => {
   router.post("/resend-verification", resendVerificationHandler);
   router.post("/verify-email", verifyEmailHandler);
   router.post("/set-password", setPassword);
-  router.get("/profile", getProfileHandler);
-  router.put("/profile", updateProfile);
   return router;
 };

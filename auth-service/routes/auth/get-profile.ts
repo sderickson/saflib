@@ -25,6 +25,7 @@ export const getProfileHandler = createHandler(async (req, res) => {
   const response = {
     id: result.id,
     email: result.email,
+    emailVerified: result.emailVerified,
     name: result.name,
     givenName: result.givenName,
     familyName: result.familyName,
