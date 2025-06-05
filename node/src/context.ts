@@ -4,7 +4,8 @@ import { Logger } from "winston";
 export interface Auth {
   userId: number;
   userEmail: string;
-  scopes: string[];
+  userEmailVerified: boolean;
+  userScopes: string[];
 }
 
 export interface SafContext {

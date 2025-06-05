@@ -38,6 +38,7 @@ The auth service handles user authentication and session management. When a user
 - `X-User-ID`: The authenticated user's ID
 - `X-User-Email`: The authenticated user's email
 - `X-User-Scopes`: Comma-separated list of user's permission scopes
+- `X-User-Email-Verified`: The authenticated user's email is verified ('true' or 'false')
 
 ### 2. Caddy Forward Auth
 
@@ -50,8 +51,8 @@ Caddy uses forward authentication to verify requests to protected services. When
    forward_auth auth:3000 {
       uri /auth/verify
       ...
-      copy_headers X-User-ID X-User-Email X-User-Scopes
-   }
+      copy_headers X-User-ID X-User-Email X-User-Scopes X-User-Email-Verified
+    }
    ```
 
 ### 3. Node.js Services

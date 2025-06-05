@@ -88,6 +88,11 @@ verify:
             schema:
               type: string
             description: Comma-separated list of user's permission scopes
+          X-User-Email-Verified:
+            schema:
+              type: string
+              enum: ["true", "false"]
+            description: Whether the authenticated user's email is verified ('true' or 'false')
         content:
           application/json:
             schema:

@@ -39,6 +39,11 @@ export const verifyHandler = createHandler(async (req, res) => {
   const scopes: string[] = [];
   res.setHeader("X-User-ID", user.id.toString());
   res.setHeader("X-User-Email", user.email);
+  res.setHeader(
+    "X-User-Email-Verified",
+    user.emailVerified ? "true" : "false",
+  );
+
   if (req.app.get("saf:admin emails").has(user.email)) {
     const { result: emailAuth, error } = await authDb.emailAuth.getByEmail(
       dbKey,
