@@ -39,7 +39,9 @@ export async function startGrpcServer(
       if (err) {
         reject(err);
       }
-      console.log(`gRPC server bound to port ${effectivePort}`);
+      if (process.env.NODE_ENV !== "test") {
+        console.log(`gRPC server bound to port ${effectivePort}`);
+      }
       resolve();
     },
   );
@@ -47,7 +49,9 @@ export async function startGrpcServer(
 
   // Graceful shutdown handler
   const shutdown = () => {
-    console.log("Received shutdown signal, closing gRPC server...");
+    if (process.env.NODE_ENV !== "test") {
+      console.log("Received shutdown signal, closing gRPC server...");
+    }
     server.tryShutdown((error) => {
       if (error) {
         console.error("Error shutting down gRPC server:", error);
