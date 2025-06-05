@@ -59,9 +59,10 @@ describe("createScopeValidator", () => {
     mockNext = vi.fn();
     vi.spyOn(safStorage, "getStore").mockReturnValue({
       auth: {
-        scopes: [],
+        userScopes: [],
         userId: defaultUserId,
         userEmail: defaultUserEmail,
+        userEmailVerified: true,
       },
       ...mockContext,
     });
@@ -96,9 +97,10 @@ describe("createScopeValidator", () => {
     };
     vi.mocked(safStorage.getStore).mockReturnValue({
       auth: {
-        scopes: ["*"],
+        userScopes: ["*"],
         userId: defaultUserId,
         userEmail: defaultUserEmail,
+        userEmailVerified: true,
       },
       ...mockContext,
     });
@@ -113,9 +115,10 @@ describe("createScopeValidator", () => {
     };
     vi.mocked(safStorage.getStore).mockReturnValue({
       auth: {
-        scopes: ["read", "write", "delete"],
+        userScopes: ["read", "write", "delete"],
         userId: defaultUserId,
         userEmail: defaultUserEmail,
+        userEmailVerified: true,
       },
       ...mockContext,
     });
@@ -130,9 +133,10 @@ describe("createScopeValidator", () => {
     };
     vi.mocked(safStorage.getStore).mockReturnValue({
       auth: {
-        scopes: ["read", "write", "admin"],
+        userScopes: ["read", "write", "admin"],
         userId: defaultUserId,
         userEmail: defaultUserEmail,
+        userEmailVerified: true,
       },
       ...mockContext,
     });
@@ -147,9 +151,10 @@ describe("createScopeValidator", () => {
     };
     vi.mocked(safStorage.getStore).mockReturnValue({
       auth: {
-        scopes: ["read"],
+        userScopes: ["read"],
         userId: defaultUserId,
         userEmail: defaultUserEmail,
+        userEmailVerified: true,
       },
       ...mockContext,
     });
@@ -172,9 +177,10 @@ describe("createScopeValidator", () => {
     };
     vi.mocked(safStorage.getStore).mockReturnValue({
       auth: {
-        scopes: ["read"],
+        userScopes: ["read"],
         userId: defaultUserId,
         userEmail: defaultUserEmail,
+        userEmailVerified: true,
       },
       ...mockContext,
     });
@@ -207,9 +213,10 @@ describe("createScopeValidator", () => {
     };
     vi.mocked(safStorage.getStore).mockReturnValue({
       auth: {
-        scopes: [],
+        userScopes: [],
         userId: defaultUserId,
         userEmail: defaultUserEmail,
+        userEmailVerified: true,
       },
       ...mockContext,
     });
@@ -230,9 +237,10 @@ describe("createScopeValidator", () => {
     };
     vi.mocked(safStorage.getStore).mockReturnValue({
       auth: {
-        scopes: ["read", "user"],
+        userScopes: ["read", "user"],
         userId: defaultUserId,
         userEmail: defaultUserEmail,
+        userEmailVerified: true,
       },
       ...mockContext,
     });

@@ -16,6 +16,8 @@ export function makeUserHeaders(
   return {
     "x-user-id": userId,
     "x-user-email": email,
+    "x-user-email-verified": "true",
+    "x-user-scopes": "none",
   };
 }
 
