@@ -29,7 +29,8 @@ export const addSafContext: ServiceImplementationWrapper = (impl) => {
         auth = {
           userId: authFromRequest.user_id,
           userEmail: authFromRequest.user_email,
-          scopes: authFromRequest.user_scopes,
+          userScopes: authFromRequest.user_scopes,
+          userEmailVerified: false, // TODO: propagate
         };
       }
       const context: SafContext = {

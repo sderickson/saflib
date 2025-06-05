@@ -23,39 +23,7 @@ describe("Auth Middleware", () => {
     const headers = {
       "x-user-id": "123",
       "x-user-email": "test@example.com",
-    };
-
-    const response = await request(app).get("/test").set(headers);
-
-    expect(response.status).toBe(200);
-    expect(response.body.authFromMiddleware).toEqual({
-      userId: 123,
-      userEmail: "test@example.com",
-      scopes: [],
-    });
-  });
-
-  it("should populate auth object with user info and scopes from header", async () => {
-    const headers = {
-      "x-user-id": "123",
-      "x-user-email": "test@example.com",
-      "x-user-scopes": "admin,write",
-    };
-
-    const response = await request(app).get("/test").set(headers);
-
-    expect(response.status).toBe(200);
-    expect(response.body.authFromMiddleware).toEqual({
-      userId: 123,
-      userEmail: "test@example.com",
-      scopes: ["admin", "write"],
-    });
-  });
-
-  it("should handle empty scopes header by returning empty array", async () => {
-    const headers = {
-      "x-user-id": "123",
-      "x-user-email": "test@example.com",
+      "x-user-email-verified": "true",
       "x-user-scopes": "",
     };
 
@@ -65,7 +33,46 @@ describe("Auth Middleware", () => {
     expect(response.body.authFromMiddleware).toEqual({
       userId: 123,
       userEmail: "test@example.com",
-      scopes: [],
+      userScopes: [],
+      userEmailVerified: true,
+    });
+  });
+
+  it("should populate auth object with user info and scopes from header", async () => {
+    const headers = {
+      "x-user-id": "123",
+      "x-user-email": "test@example.com",
+      "x-user-scopes": "admin,write",
+      "x-user-email-verified": "true",
+    };
+
+    const response = await request(app).get("/test").set(headers);
+
+    expect(response.status).toBe(200);
+    expect(response.body.authFromMiddleware).toEqual({
+      userId: 123,
+      userEmail: "test@example.com",
+      userScopes: ["admin", "write"],
+      userEmailVerified: true,
+    });
+  });
+
+  it("should handle empty scopes header by returning empty array", async () => {
+    const headers = {
+      "x-user-id": "123",
+      "x-user-email": "test@example.com",
+      "x-user-scopes": "",
+      "x-user-email-verified": "true",
+    };
+
+    const response = await request(app).get("/test").set(headers);
+
+    expect(response.status).toBe(200);
+    expect(response.body.authFromMiddleware).toEqual({
+      userId: 123,
+      userEmail: "test@example.com",
+      userScopes: [],
+      userEmailVerified: true,
     });
   });
 
@@ -73,6 +80,7 @@ describe("Auth Middleware", () => {
     const headers = {
       "x-user-email": "test@example.com",
       "x-user-scopes": "admin",
+      "x-user-email-verified": "true",
     };
 
     const response = await request(app).get("/test").set(headers);
