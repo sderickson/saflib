@@ -1,13 +1,17 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
 import { useRoute } from "vue-router";
-import { useVerifyEmail, useResendVerification } from "../requests/auth";
+import {
+  useVerifyEmail,
+  useResendVerification,
+  useGetProfile,
+} from "../requests/auth";
+import { TanstackError } from "@saflib/vue-spa";
 
 const route = useRoute();
 const token = route.query.token as string;
 
 const successMessage = ref("");
-const errorMessage = ref("");
 
 const {
   mutateAsync: verifyEmail,
@@ -19,36 +23,53 @@ const {
   isPending: isResending,
   isSuccess: isResent,
 } = useResendVerification();
+const { data: profile, isPending: isGettingProfile } = useGetProfile();
 
-const isLoading = computed(() => isVerifying.value || isResending.value);
+const isLoading = computed(
+  () => isVerifying.value || isResending.value || isGettingProfile.value,
+);
 
-const done = computed(() => isVerified.value || isResent.value);
+const errorCase = ref<"unauthorized" | "forbidden" | "unknown" | null>(null);
 
 const handleVerify = async () => {
-  if (!token) return;
+  if (!token || !profile) return;
 
   successMessage.value = "";
-  errorMessage.value = "";
+  errorCase.value = null;
 
   try {
     await verifyEmail({ token });
     successMessage.value = "Email successfully verified!";
   } catch (error: any) {
-    errorMessage.value = "Failed to verify email. Please try again.";
+    if (error instanceof TanstackError) {
+      if (error.status === 401) {
+        errorCase.value = "unauthorized";
+      } else if (error.status === 403) {
+        errorCase.value = "forbidden";
+      } else {
+        errorCase.value = "unknown";
+      }
+    } else {
+      errorCase.value = "unknown";
+    }
   }
 };
 
 const handleResend = async () => {
+  if (!profile) return;
+
   successMessage.value = "";
-  errorMessage.value = "";
+  errorCase.value = null;
 
   try {
     await resendVerification();
     successMessage.value = "Please check your email for the verification link.";
   } catch (error: any) {
-    errorMessage.value = "Failed to send email. Please try again.";
+    errorCase.value = "unknown";
   }
 };
+
+const thisUrlEncoded = btoa(window.location.href);
 
 // Verify email automatically on load if token is present
 onMounted(() => {
@@ -60,52 +81,90 @@ onMounted(() => {
 
 <template>
   <div class="d-flex justify-center align-center flex-column fill-height">
-    <v-card class="mx-auto pa-12 pb-8" elevation="8" width="448" rounded="lg">
-      <v-alert
-        v-if="successMessage"
-        type="success"
-        variant="tonal"
-        class="mb-4"
-      >
-        {{ successMessage }}
-      </v-alert>
+    <v-card class="pa-12" elevation="8" rounded="lg" width="448">
+      <v-card-title class="mb-4">Verify Email</v-card-title>
 
-      <v-alert v-if="errorMessage" type="error" variant="tonal" class="mb-4">
-        {{ errorMessage }}
-      </v-alert>
-
-      <div v-if="!done" class="text-subtitle-1 text-medium-emphasis">
-        Verify Email
+      <div v-if="isLoading">
+        <v-progress-circular indeterminate />
       </div>
 
-      <div v-if="!done" class="text-body-2 text-medium-emphasis mb-4">
-        Please verify your email address to continue.
+      <div v-else-if="isResent">
+        <v-alert
+          type="success"
+          variant="tonal"
+          class="mb-4"
+          text="Verification email sent. Please check your email for the verification link."
+        />
       </div>
 
-      <!-- Show resend button if verification failed or no token -->
-      <v-btn
-        v-if="(token && errorMessage) || (!token && !isResent)"
-        class="my-5"
-        color="blue"
-        size="large"
-        variant="tonal"
-        block
-        :disabled="isLoading"
-        :loading="isResending"
-        @click="handleResend"
-      >
-        {{ isResending ? "Sending..." : "Resend Verification Email" }}
-      </v-btn>
-
-      <v-card-text class="text-center">
-        <a
-          v-if="token && successMessage"
-          class="text-blue text-decoration-none"
-          href="/app/"
-        >
+      <div v-else-if="isVerified">
+        <v-alert
+          v-if="successMessage"
+          type="success"
+          variant="tonal"
+          class="mb-4"
+          text="You have successfully verified your email address."
+        />
+        <a class="text-blue text-decoration-none" href="/app/">
           Continue to App <v-icon icon="mdi-chevron-right"></v-icon>
         </a>
-      </v-card-text>
+      </div>
+
+      <div v-else-if="!profile">
+        You are not logged in. Please
+        <a :href="`/auth/login?redirect=${thisUrlEncoded}`">log in</a> to
+        continue.
+      </div>
+
+      <div v-else-if="errorCase === 'unauthorized'">
+        You are not logged in. Please
+        <a :href="`/auth/login?redirect=${thisUrlEncoded}`">log in</a> to
+        continue.
+      </div>
+
+      <div v-else-if="errorCase === 'forbidden'">
+        You are not authorized to verify this email. Please
+        <a :href="`/auth/login?redirect=${thisUrlEncoded}`">log in</a> with the
+        correct account.
+      </div>
+
+      <div v-else-if="errorCase === 'unknown'">
+        <v-alert
+          type="error"
+          variant="tonal"
+          class="mb-4"
+          text="Unknown error. Please try again."
+        />
+
+        <v-btn
+          v-if="!isResent"
+          class="mt-5"
+          color="blue"
+          size="large"
+          variant="tonal"
+          block
+          :disabled="isLoading"
+          :loading="isResending"
+          @click="handleResend"
+        >
+          {{ isResending ? "Sending..." : "Resend Verification Email" }}
+        </v-btn>
+      </div>
+
+      <div v-else-if="!token">
+        <v-btn
+          class="mt-5"
+          color="blue"
+          size="large"
+          variant="tonal"
+          block
+          :disabled="isLoading"
+          :loading="isResending"
+          @click="handleResend"
+        >
+          {{ isResending ? "Sending..." : "Resend Verification Email" }}
+        </v-btn>
+      </div>
     </v-card>
   </div>
 </template>

@@ -586,6 +586,15 @@ export interface operations {
                     "application/json": components["schemas"]["error"];
                 };
             };
+            /** @description User not authorized to verify email */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
         };
     };
     resendVerification: {
