@@ -10,6 +10,9 @@ const password = ref("");
 const valid = ref(false);
 const passwordVisible = ref(false);
 
+const currentDomain = window.location.origin;
+const allowedRedirects = [`${currentDomain}/auth/verify-email`];
+
 const handleLogin = () => {
   if (!valid.value) return;
 
@@ -17,6 +20,15 @@ const handleLogin = () => {
     { email: email.value, password: password.value },
     {
       onSuccess: () => {
+        if (window.location.href.includes("redirect")) {
+          const url = atob(window.location.href.split("redirect=")[1]);
+          for (const redirect of allowedRedirects) {
+            if (url.startsWith(redirect)) {
+              window.location.href = url;
+              return;
+            }
+          }
+        }
         window.location.href = "/app/";
       },
     },
