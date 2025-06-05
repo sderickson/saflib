@@ -41,14 +41,10 @@ const handleVerify = async () => {
     await verifyEmail({ token });
     successMessage.value = "Email successfully verified!";
   } catch (error: any) {
-    console.log("error", error);
-    console.error(error);
     if (error instanceof TanstackError) {
-      console.log("error.status", error.status);
       if (error.status === 401) {
         errorCase.value = "unauthorized";
       } else if (error.status === 403) {
-        console.log("error.status", error.status);
         errorCase.value = "forbidden";
       } else {
         errorCase.value = "unknown";
@@ -89,12 +85,16 @@ onMounted(() => {
       <v-card-title class="mb-4">Verify Email</v-card-title>
 
       <div v-if="isLoading">
-        <v-skeleton type="text" height="200px" />
+        <v-progress-circular indeterminate />
       </div>
 
       <div v-else-if="isResent">
-        Verification email sent. Please check your email for the verification
-        link.
+        <v-alert
+          type="success"
+          variant="tonal"
+          class="mb-4"
+          text="Verification email sent. Please check your email for the verification link."
+        />
       </div>
 
       <div v-else-if="isVerified">
@@ -116,21 +116,6 @@ onMounted(() => {
         continue.
       </div>
 
-      <div v-else-if="!token">
-        <v-btn
-          class="mt-5"
-          color="blue"
-          size="large"
-          variant="tonal"
-          block
-          :disabled="isLoading"
-          :loading="isResending"
-          @click="handleResend"
-        >
-          {{ isResending ? "Sending..." : "Resend Verification Email" }}
-        </v-btn>
-      </div>
-
       <div v-else-if="errorCase === 'unauthorized'">
         You are not logged in. Please
         <a :href="`/auth/login?redirect=${thisUrlEncoded}`">log in</a> to
@@ -144,10 +129,30 @@ onMounted(() => {
       </div>
 
       <div v-else-if="errorCase === 'unknown'">
-        Unknown error. Please try again.
+        <v-alert
+          type="error"
+          variant="tonal"
+          class="mb-4"
+          text="Unknown error. Please try again."
+        />
 
         <v-btn
           v-if="!isResent"
+          class="mt-5"
+          color="blue"
+          size="large"
+          variant="tonal"
+          block
+          :disabled="isLoading"
+          :loading="isResending"
+          @click="handleResend"
+        >
+          {{ isResending ? "Sending..." : "Resend Verification Email" }}
+        </v-btn>
+      </div>
+
+      <div v-else-if="!token">
+        <v-btn
           class="mt-5"
           color="blue"
           size="large"
