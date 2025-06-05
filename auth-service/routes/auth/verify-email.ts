@@ -23,10 +23,23 @@ export const verifyEmailHandler = createHandler(async (req, res) => {
         throw error satisfies never;
     }
   }
+  if (!req.user?.email) {
+    const errorResponse: AuthResponse["verifyEmail"][401] = {
+      message: "Unauthorized",
+    };
+    res.status(401).json(errorResponse);
+    return;
+  }
+  if (emailAuth.email !== req.user?.email) {
+    const errorResponse: AuthResponse["verifyEmail"][403] = {
+      message: "Forbidden",
+    };
+    res.status(403).json(errorResponse);
+    return;
+  }
   if (
     !emailAuth.verificationTokenExpiresAt ||
-    emailAuth.verificationTokenExpiresAt < new Date() ||
-    emailAuth.email !== req.user?.email
+    emailAuth.verificationTokenExpiresAt < new Date()
   ) {
     const errorResponse: AuthResponse["verifyEmail"][400] = {
       message: "Invalid or expired verification token",

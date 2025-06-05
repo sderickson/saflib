@@ -188,6 +188,12 @@ verify-email:
           application/json:
             schema:
               $ref: "#/components/schemas/ErrorResponse"
+      "403":
+        description: User not authorized to verify email
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ErrorResponse"
 
 resend-verification:
   post:
