@@ -1,7 +1,7 @@
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
 import * as argon2 from "argon2";
-import type { User } from "@saflib/auth-service/types.ts";
+import type { User } from "../types.ts";
 import {
   authDb,
   EmailAuthNotFoundError,

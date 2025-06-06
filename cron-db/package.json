@@ -8,7 +8,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "generate": "drizzle-kit generate"
+    "generate": "drizzle-kit generate",
+    "typecheck": "tsc"
   },
   "dependencies": {
     "@saflib/drizzle-sqlite3": "*",
