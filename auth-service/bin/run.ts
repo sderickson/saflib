@@ -1,9 +1,5 @@
 #!/usr/bin/env node
-import { startExpressServer } from "@saflib/express";
-import { createApp } from "../app.ts";
-import { authDb } from "@saflib/auth-db";
-import { makeGrpcServer } from "../grpc.ts";
-import { startGrpcServer } from "@saflib/grpc-node";
+import { startAuthService } from "../index.ts";
 
 console.log("Env:", {
   HTTP_PORT: process.env.HTTP_PORT || 3000,
@@ -12,13 +8,8 @@ console.log("Env:", {
   PROTOCOL: process.env.PROTOCOL,
 });
 
-async function main() {
-  const dbKey = authDb.connect({ onDisk: true });
-  const grpcServer = makeGrpcServer({ dbKey });
-  startGrpcServer(grpcServer);
-
-  const app = createApp(dbKey);
-  startExpressServer(app);
-}
-
-main();
+startAuthService({
+  dbOptions: {
+    onDisk: true,
+  },
+});

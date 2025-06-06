@@ -4,6 +4,7 @@ import { migrate } from "drizzle-orm/better-sqlite3/migrator";
 import type { Config } from "drizzle-kit";
 import type { Schema, DbKey, DbOptions, DbConnection } from "./types.ts";
 import path from "path";
+import fs from "fs";
 
 export class DbManager<S extends Schema, C extends Config> {
   private instances: Map<DbKey, DbConnection<S>>;
@@ -35,6 +36,13 @@ export class DbManager<S extends Schema, C extends Config> {
         "data",
         `db-${process.env.NODE_ENV}.sqlite`,
       );
+      console.log("dbStorage", dbStorage);
+      if (options?.doNotCreate) {
+        const exists = fs.existsSync(dbStorage);
+        if (!exists) {
+          throw new Error(`Database file does not exist: ${dbStorage}`);
+        }
+      }
     } else if (options?.onDisk) {
       dbStorage = options.onDisk;
     } else {

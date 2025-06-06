@@ -2,6 +2,9 @@
   "name": "@saflib/auth-service",
   "description": "Authentication service library for SAF-2025 framework",
   "type": "module",
+  "exports": {
+    ".": "./index.ts"
+  },
   "scripts": {
     "start": "node --experimental-strip-types ./bin/run.ts",
     "test": "vitest run",
