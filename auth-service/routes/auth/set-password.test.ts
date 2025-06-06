@@ -5,9 +5,6 @@ import { createApp } from "../../http.ts";
 import passport from "passport";
 import { testRateLimiting } from "./_test-helpers.ts";
 
-// Mock the email package
-vi.mock("@saflib/email");
-
 describe("Set Password Route", () => {
   let app: express.Express;
 
@@ -155,3 +152,4 @@ describe("Set Password Route", () => {
     );
   });
 });
+

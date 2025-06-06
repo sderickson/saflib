@@ -4,9 +4,6 @@ import express from "express";
 import { createApp } from "../../http.ts";
 import { testRateLimiting } from "./_test-helpers.ts";
 
-// Mock the email package
-vi.mock("@saflib/email");
-
 describe("Login Route", () => {
   let app: express.Express;
 
@@ -79,3 +76,4 @@ describe("Login Route", () => {
     );
   });
 });
+

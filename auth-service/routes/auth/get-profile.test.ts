@@ -4,8 +4,6 @@ import express from "express";
 import { createApp } from "../../http.ts";
 import { getCsrfToken } from "./_test-helpers.ts";
 
-// Mock the email package
-vi.mock("@saflib/email");
 
 describe("Get Profile Route", () => {
   let app: express.Express;

@@ -1,8 +1,6 @@
 import { createHandler } from "@saflib/express";
 import { randomBytes } from "crypto";
 import { type AuthResponse } from "@saflib/auth-spec";
-import { EmailClient } from "@saflib/email";
-import { generateVerificationEmail } from "../../../../services/auth/email/verify-email.ts";
 import { authDb } from "@saflib/auth-db";
 import { getSafContext } from "@saflib/node";
 import { authServiceStorage } from "../../context.ts";
@@ -33,23 +31,10 @@ export const resendVerificationHandler = createHandler(async (req, res) => {
     `Verification link: ${process.env.PROTOCOL}://${process.env.DOMAIN}/auth/verify-email?token=${verificationToken}`,
   );
 
-  // Send verification email
-  const emailClient = new EmailClient();
   const verificationUrl = `${process.env.PROTOCOL}://${process.env.DOMAIN}/auth/verify-email?token=${verificationToken}`;
-  const { subject, html } = generateVerificationEmail(verificationUrl, true);
-
-  try {
-    await emailClient.sendEmail({
-      to: req.user.email,
-      from: process.env.SMTP_FROM,
-      subject,
-      html,
-    });
-    log.info(`Verification email successfully resent to ${req.user.email}`);
-  } catch (emailError) {
-    log.error(
-      `Failed to resend verification email to ${req.user.email}. Error: ${emailError}`,
-    );
+  const { callbacks } = authServiceStorage.getStore()!;
+  if (callbacks.onVerificationTokenCreated) {
+    await callbacks.onVerificationTokenCreated(req.user, verificationUrl);
   }
 
   const response: AuthResponse["resendVerification"][200] = {
