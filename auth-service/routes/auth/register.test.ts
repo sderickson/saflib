@@ -16,7 +16,7 @@ describe("Register Route", () => {
     vi.clearAllMocks();
     (passport as any)._serializers = [];
     (passport as any)._deserializers = [];
-    app = createApp();
+    app = createApp({ callbacks: {} });
     vi.spyOn(EmailClient.prototype, "sendEmail");
   });
 

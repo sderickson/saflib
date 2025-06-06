@@ -32,7 +32,7 @@ describe("GET /users Route (Integration)", () => {
     vi.useFakeTimers();
     process.env.ADMIN_EMAILS = adminEmail;
     // Create a fresh app instance with a fresh in-memory DB for each test
-    app = createApp();
+    app = createApp({ callbacks: {}});
   });
 
   afterEach(() => {

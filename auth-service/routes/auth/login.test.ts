@@ -11,7 +11,7 @@ describe("Login Route", () => {
   let app: express.Express;
 
   beforeEach(() => {
-    app = createApp();
+    app = createApp({ callbacks: {}});
   });
 
   afterEach(() => {

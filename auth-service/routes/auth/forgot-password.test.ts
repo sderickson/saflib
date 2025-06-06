@@ -12,7 +12,7 @@ describe("Forgot Password Route", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    app = createApp();
+    app = createApp({ callbacks: {}});
     vi.spyOn(EmailClient.prototype, "sendEmail");
   });
 

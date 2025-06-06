@@ -11,7 +11,7 @@ describe("Logout Route", () => {
   let app: express.Express;
 
   beforeEach(() => {
-    app = createApp();
+    app = createApp({ callbacks: {} });
     vi.clearAllMocks();
   });
 

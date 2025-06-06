@@ -3,8 +3,8 @@ import { recommendedErrorHandlers } from "@saflib/express";
 import express from "express";
 import { makeAuthRouter } from "./routes/auth/index.ts";
 import { makeUsersRouter } from "./routes/users/index.ts";
-import type { DbKey } from "@saflib/drizzle-sqlite3";
 import { authServiceStorage } from "./context.ts";
+import { AuthServerOptions } from "./types.ts";
 
 // Define properties added to Express Request objects by middleware
 declare global {
@@ -15,7 +15,8 @@ declare global {
   }
 }
 
-export function createApp(dbKey?: DbKey) {
+export function createApp(options: AuthServerOptions) {
+  let dbKey = options.dbKey;
   if (!dbKey) {
     dbKey = authDb.connect();
   }
@@ -28,7 +29,7 @@ export function createApp(dbKey?: DbKey) {
     new Set(process.env.ADMIN_EMAILS?.split(",") || []),
   );
 
-  const context = { dbKey };
+  const context = { dbKey, callbacks: options.callbacks };
   app.use((_req, _res, next) => {
     authServiceStorage.run(context, () => {
       next();

@@ -27,7 +27,7 @@ describe("Session Store", () => {
   it("should create a new secret if the file doesn't exist", () => {
     expect(vi.mocked(existsSync).mock.calls.length).toBe(0);
     expect(vi.mocked(writeFileSync).mock.calls.length).toBe(0);
-    createApp();
+    createApp({ callbacks: {} });
     expect(vi.mocked(existsSync).mock.calls.length).toBe(1);
     expect(vi.mocked(writeFileSync).mock.calls.length).toBe(1);
   });
@@ -40,7 +40,7 @@ describe("Session Store", () => {
         lastUpdated: Date.now() - 1000,
       }),
     );
-    createApp();
+    createApp({ callbacks: {} });
     expect(vi.mocked(writeFileSync).mock.calls.length).toBe(0);
     expect(vi.mocked(readFileSync).mock.calls.length).toBe(1);
   });
@@ -53,7 +53,7 @@ describe("Session Store", () => {
         lastUpdated: Date.now() - 1000 * 60 * 60 * 24 * 15,
       }),
     );
-    createApp();
+    createApp({ callbacks: {} });
     expect(vi.mocked(writeFileSync).mock.calls.length).toBe(1);
     expect(vi.mocked(readFileSync).mock.calls.length).toBe(1);
     const [_, data] = vi.mocked(writeFileSync).mock.calls[0];
@@ -70,7 +70,7 @@ describe("Session Store", () => {
         lastUpdated: Date.now() - 1000,
       }),
     );
-    createApp();
+    createApp({ callbacks: {} });
     expect(vi.mocked(writeFileSync).mock.calls.length).toBe(0);
     vi.advanceTimersByTime(1000 * 60 * 60 * 24 * 15);
     expect(vi.mocked(writeFileSync).mock.calls.length).toBe(1);

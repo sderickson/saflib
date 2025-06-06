@@ -22,7 +22,7 @@ describe("Reset Password Route", () => {
   beforeEach(() => {
     (passport as any)._serializers = [];
     (passport as any)._deserializers = [];
-    app = createApp();
+    app = createApp({ callbacks: {} });
     vi.useFakeTimers();
   });
 

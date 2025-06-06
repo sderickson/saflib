@@ -57,6 +57,11 @@ export const registerHandler = createHandler(async (req, res) => {
     verificationTokenExpiresAt,
   );
 
+  const { callbacks } = authServiceStorage.getStore()!;
+  if (callbacks.onUserCreated) {
+    await callbacks.onUserCreated(user);
+  }
+
   const emailClient = new EmailClient();
   const verificationUrl = `${process.env.PROTOCOL}://${process.env.DOMAIN}/auth/verify-email?token=${verificationToken}`;
   const { subject, html } = generateVerificationEmail(verificationUrl, false);

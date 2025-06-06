@@ -1,6 +1,6 @@
 import { queryWrapper } from "@saflib/drizzle-sqlite3";
 import { users } from "../../schema.ts";
-import type { SelectUser } from "../../types.ts";
+import type { User } from "../../types.ts";
 import { UserNotFoundError } from "../../errors.ts";
 import { eq } from "drizzle-orm";
 import type { DbKey } from "@saflib/drizzle-sqlite3";
@@ -11,7 +11,7 @@ export const updateLastLogin = queryWrapper(
   async (
     dbKey: DbKey,
     id: number,
-  ): Promise<ReturnsError<SelectUser, UserNotFoundError>> => {
+  ): Promise<ReturnsError<User, UserNotFoundError>> => {
     const db = authDbManager.get(dbKey)!;
     const now = new Date();
     const result = await db

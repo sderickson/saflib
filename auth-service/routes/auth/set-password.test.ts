@@ -15,7 +15,7 @@ describe("Set Password Route", () => {
     vi.clearAllMocks();
     (passport as any)._serializers = [];
     (passport as any)._deserializers = [];
-    app = createApp();
+    app = createApp({ callbacks: {} });
   });
 
   it("should change password successfully for logged in user", async () => {
