@@ -3,17 +3,20 @@ import request from "supertest";
 import express from "express";
 import { createApp } from "../../http.ts";
 import { testRateLimiting } from "./_test-helpers.ts";
-import { EmailClient } from "@saflib/email";
+import type { AuthServiceCallbacks } from "../../types.ts";
 
-vi.mock("@saflib/email");
+const authServiceCallbacks: AuthServiceCallbacks = {
+  onPasswordReset: async () => {},
+};
+
+const onPasswordResetSpy = vi.spyOn(authServiceCallbacks, "onPasswordReset");
 
 describe("Forgot Password Route", () => {
   let app: express.Express;
 
   beforeEach(() => {
     vi.clearAllMocks();
-    app = createApp({ callbacks: {} });
-    vi.spyOn(EmailClient.prototype, "sendEmail");
+    app = createApp({ callbacks: authServiceCallbacks });
   });
 
   it("should generate and store reset token when user exists and send email", async () => {
@@ -35,12 +38,13 @@ describe("Forgot Password Route", () => {
       success: true,
       message: "If the email exists, a recovery email has been sent",
     });
-    expect(EmailClient.prototype.sendEmail).toHaveBeenCalledWith({
-      to: userData.email,
-      from: "noreply@your-domain.com",
-      html: expect.any(String),
-      subject: "Reset Your Password",
-    });
+
+    expect(onPasswordResetSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        email: userData.email,
+      }),
+      expect.any(String),
+    );
   });
 
   it("should return success even when user doesn't exist to prevent email enumeration", async () => {
@@ -53,7 +57,7 @@ describe("Forgot Password Route", () => {
       success: true,
       message: "If the email exists, a recovery email has been sent",
     });
-    expect(EmailClient.prototype.sendEmail).not.toHaveBeenCalled();
+    expect(onPasswordResetSpy).not.toHaveBeenCalled();
   });
 
   it("should return 429 for too many requests", async () => {

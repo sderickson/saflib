@@ -29,6 +29,7 @@ export interface AuthServiceCallbacks {
     user: User,
     verificationUrl: string,
   ) => Promise<void>;
+  onPasswordReset?: (user: User, resetUrl: string) => Promise<void>;
 }
 
 export interface AuthServerOptions {
