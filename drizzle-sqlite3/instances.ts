@@ -38,8 +38,10 @@ export class DbManager<S extends Schema, C extends Config> {
       );
       if (options?.doNotCreate) {
         const exists = fs.existsSync(dbStorage);
-        if (!exists) {
+        if (!exists && process.env.CREATE_DB_ALLOWED !== "true") {
           throw new Error(`Database file does not exist: ${dbStorage}`);
+        } else if (!exists) {
+          console.warn("!!! Creating database file: ", dbStorage);
         }
       }
     } else if (options?.onDisk) {

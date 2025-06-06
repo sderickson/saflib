@@ -1,17 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import request from "supertest";
 import express from "express";
-import { createApp } from "../../app.ts";
+import { createApp } from "../../http.ts";
 import { getCsrfToken } from "./_test-helpers.ts";
-
-// Mock the email package
-vi.mock("@saflib/email");
 
 describe("Logout Route", () => {
   let app: express.Express;
 
   beforeEach(() => {
-    app = createApp();
+    app = createApp({ callbacks: {} });
     vi.clearAllMocks();
   });
 

@@ -1,7 +1,7 @@
 import { emailAuth, users, userPermissions } from "./schema.ts";
 
 export type NewUser = Omit<typeof users.$inferInsert, "createdAt">;
-export type SelectUser = typeof users.$inferSelect;
+export type User = typeof users.$inferSelect;
 export type UpdateProfileParams = Pick<
   typeof users.$inferInsert,
   "name" | "givenName" | "familyName"

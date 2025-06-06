@@ -3,16 +3,13 @@ import { createHandler } from "@saflib/express";
 import { createUserResponse } from "./_helpers.ts";
 import type { AuthResponse, AuthRequest } from "@saflib/auth-spec";
 import { randomBytes } from "crypto";
-import { EmailClient } from "@saflib/email";
-import { generateVerificationEmail } from "../../email-templates/verify-email.ts";
 import { authDb, EmailConflictError } from "@saflib/auth-db";
-import { getSafContext } from "@saflib/node";
 import { authServiceStorage } from "../../context.ts";
+
 export const registerHandler = createHandler(async (req, res) => {
   const { dbKey } = authServiceStorage.getStore()!;
   const registerRequest: AuthRequest["registerUser"] = req.body;
   const { email, password, name, givenName, familyName } = registerRequest;
-  const { log } = getSafContext();
 
   const passwordHash = await argon2.hash(password);
 
@@ -45,10 +42,8 @@ export const registerHandler = createHandler(async (req, res) => {
     forgotPasswordTokenExpiresAt: null,
   });
 
-  // Generate verification token and send email
   const verificationToken = randomBytes(16).toString("hex");
-  // Set expiry to 24 hours from now
-  const verificationTokenExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+  const verificationTokenExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours from now
 
   await authDb.emailAuth.updateVerificationToken(
     dbKey,
@@ -57,17 +52,20 @@ export const registerHandler = createHandler(async (req, res) => {
     verificationTokenExpiresAt,
   );
 
-  const emailClient = new EmailClient();
-  const verificationUrl = `${process.env.PROTOCOL}://${process.env.DOMAIN}/auth/verify-email?token=${verificationToken}`;
-  const { subject, html } = generateVerificationEmail(verificationUrl, false);
+  const promises = [];
+  const { callbacks } = authServiceStorage.getStore()!;
+  if (callbacks.onUserCreated) {
+    promises.push(callbacks.onUserCreated(user));
+  }
 
-  await emailClient.sendEmail({
-    to: user.email,
-    from: process.env.SMTP_FROM, // Use a noreply address
-    subject,
-    html,
-  });
-  log.info(`Verification email successfully sent to ${user.email}`);
+  const verificationUrl = `${process.env.PROTOCOL}://${process.env.DOMAIN}/auth/verify-email?token=${verificationToken}`;
+  if (callbacks.onVerificationTokenCreated) {
+    promises.push(
+      callbacks.onVerificationTokenCreated(user, verificationUrl, false),
+    );
+  }
+
+  await Promise.all(promises);
 
   req.logIn(user, (err) => {
     if (err) {

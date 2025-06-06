@@ -1,12 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import request from "supertest";
 import express from "express";
-import { createApp } from "../../app.ts";
+import { createApp } from "../../http.ts";
 import passport from "passport";
 import { testRateLimiting } from "./_test-helpers.ts";
-
-// Mock the email package
-vi.mock("@saflib/email");
 
 describe("Set Password Route", () => {
   let app: express.Express;
@@ -15,7 +12,7 @@ describe("Set Password Route", () => {
     vi.clearAllMocks();
     (passport as any)._serializers = [];
     (passport as any)._deserializers = [];
-    app = createApp();
+    app = createApp({ callbacks: {} });
   });
 
   it("should change password successfully for logged in user", async () => {
@@ -155,3 +152,4 @@ describe("Set Password Route", () => {
     );
   });
 });
+

@@ -1,11 +1,8 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
 import request from "supertest";
 import express from "express";
-import { createApp } from "../../app.ts";
+import { createApp } from "../../http.ts";
 import { getCsrfToken } from "./_test-helpers.ts";
-
-// Mock the email package
-vi.mock("@saflib/email");
 
 vi.mock("crypto", async (importOriginal) => {
   const crypto = await importOriginal<typeof import("crypto")>();
@@ -19,7 +16,7 @@ describe("Update Profile Route", () => {
   let app: express.Express;
 
   beforeEach(() => {
-    app = createApp();
+    app = createApp({ callbacks: {} });
   });
 
   afterEach(() => {

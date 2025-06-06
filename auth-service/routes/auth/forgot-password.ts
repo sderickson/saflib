@@ -1,15 +1,11 @@
 import { randomBytes } from "crypto";
 import { createHandler } from "@saflib/express";
 import { type AuthResponse } from "@saflib/auth-spec";
-import { EmailClient } from "@saflib/email";
-import { generatePasswordResetEmail } from "../../email-templates/password-reset.ts";
-import { getSafContext } from "@saflib/node";
 import { authDb } from "@saflib/auth-db";
 import { authServiceStorage } from "../../context.ts";
 
 export const forgotPasswordHandler = createHandler(async (req, res) => {
   const { email } = req.body as { email: string };
-  const { log } = getSafContext();
   const { dbKey } = authServiceStorage.getStore()!;
   const { result: user, error } = await authDb.users.getByEmail(dbKey, email);
   if (error) {
@@ -30,17 +26,12 @@ export const forgotPasswordHandler = createHandler(async (req, res) => {
     expiresAt,
   );
 
-  const emailClient = new EmailClient();
   const resetUrl = `${process.env.PROTOCOL}://${process.env.DOMAIN}/auth/reset-password?token=${token}`;
-  const { subject, html } = generatePasswordResetEmail(resetUrl);
+  const { callbacks } = authServiceStorage.getStore()!;
+  if (callbacks.onPasswordReset) {
+    await callbacks.onPasswordReset(user, resetUrl);
+  }
 
-  await emailClient.sendEmail({
-    to: user.email,
-    from: process.env.SMTP_FROM,
-    subject,
-    html,
-  });
-  log.info(`Password reset email successfully sent to ${user.email}`);
   const successResponse: AuthResponse["forgotPassword"][200] = {
     success: true,
     message: "If the email exists, a recovery email has been sent",
