@@ -60,7 +60,9 @@ export const registerHandler = createHandler(async (req, res) => {
 
   const verificationUrl = `${process.env.PROTOCOL}://${process.env.DOMAIN}/auth/verify-email?token=${verificationToken}`;
   if (callbacks.onVerificationTokenCreated) {
-    promises.push(callbacks.onVerificationTokenCreated(user, verificationUrl));
+    promises.push(
+      callbacks.onVerificationTokenCreated(user, verificationUrl, false),
+    );
   }
 
   await Promise.all(promises);

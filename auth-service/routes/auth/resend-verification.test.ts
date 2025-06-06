@@ -60,6 +60,7 @@ describe("Resend Verification Route", () => {
         email: userData.email,
       }),
       expect.any(String),
+      true,
     );
   });
 

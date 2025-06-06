@@ -71,6 +71,7 @@ describe("Register Route", () => {
         email: userData.email,
       }),
       expect.any(String),
+      false,
     );
   });
 

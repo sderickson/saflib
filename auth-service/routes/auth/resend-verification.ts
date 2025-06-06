@@ -34,7 +34,7 @@ export const resendVerificationHandler = createHandler(async (req, res) => {
   const verificationUrl = `${process.env.PROTOCOL}://${process.env.DOMAIN}/auth/verify-email?token=${verificationToken}`;
   const { callbacks } = authServiceStorage.getStore()!;
   if (callbacks.onVerificationTokenCreated) {
-    await callbacks.onVerificationTokenCreated(req.user, verificationUrl);
+    await callbacks.onVerificationTokenCreated(req.user, verificationUrl, true);
   }
 
   const response: AuthResponse["resendVerification"][200] = {

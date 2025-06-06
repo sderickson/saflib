@@ -28,6 +28,7 @@ export interface AuthServiceCallbacks {
   onVerificationTokenCreated?: (
     user: User,
     verificationUrl: string,
+    isResend: boolean,
   ) => Promise<void>;
   onPasswordReset?: (user: User, resetUrl: string) => Promise<void>;
 }
