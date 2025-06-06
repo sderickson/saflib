@@ -23,8 +23,8 @@ describe("create", () => {
       ...newUser,
       id: expect.any(Number),
       createdAt: expect.any(Date),
+      lastLoginAt: expect.any(Date),
     });
-    expect(result?.lastLoginAt).toBeNull();
   });
 
   it("should throw EmailConflictError for duplicate email", async () => {

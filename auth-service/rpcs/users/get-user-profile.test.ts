@@ -17,7 +17,7 @@ describe("handleGetUserProfile", () => {
     dbKey = authDb.connect();
 
     // Create the gRPC server with the test db key
-    server = makeGrpcServer({ dbKey });
+    server = makeGrpcServer({ dbKey, callbacks: {} });
     testServerHost = await runTestServer(server);
 
     // Create a gRPC client
