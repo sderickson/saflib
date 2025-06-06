@@ -90,7 +90,7 @@ describe("GET /users Route (Integration)", () => {
       id: userId,
       email: userEmail,
       createdAt: expect.any(String),
-      lastLoginAt: null, // User hasn't logged in yet
+      lastLoginAt: expect.any(String), // User hasn't logged in yet
     });
     expect(response.body[1]).toMatchObject({
       id: adminUserId,

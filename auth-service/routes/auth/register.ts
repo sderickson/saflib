@@ -52,15 +52,18 @@ export const registerHandler = createHandler(async (req, res) => {
     verificationTokenExpiresAt,
   );
 
+  const promises = [];
   const { callbacks } = authServiceStorage.getStore()!;
   if (callbacks.onUserCreated) {
-    await callbacks.onUserCreated(user);
+    promises.push(callbacks.onUserCreated(user));
   }
 
   const verificationUrl = `${process.env.PROTOCOL}://${process.env.DOMAIN}/auth/verify-email?token=${verificationToken}`;
   if (callbacks.onVerificationTokenCreated) {
-    await callbacks.onVerificationTokenCreated(user, verificationUrl);
+    promises.push(callbacks.onVerificationTokenCreated(user, verificationUrl));
   }
+
+  await Promise.all(promises);
 
   req.logIn(user, (err) => {
     if (err) {
