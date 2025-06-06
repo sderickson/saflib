@@ -1,0 +1,28 @@
+openapi: 3.0.0
+info:
+  title: Cron Service API
+  version: 1.0.0
+  description: API specification for the cron service
+
+servers:
+  - url: http://api.docker.localhost/
+    description: Development server
+
+components:
+  securitySchemes: # Enabled security schemes
+    scopes:
+      type: apiKey
+      in: header
+      name: X-User-Scopes
+      description: Comma-separated list of user scopes
+  schemas:
+    JobSettings:
+      $ref: "./schemas/job_settings.yaml"
+
+paths:
+  /cron/jobs:
+    get:
+      $ref: "./routes/cron_routes.yaml#/get"
+  /cron/jobs/settings:
+    put:
+      $ref: "./routes/cron_routes.yaml#/put"

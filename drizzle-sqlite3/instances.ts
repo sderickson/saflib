@@ -36,7 +36,6 @@ export class DbManager<S extends Schema, C extends Config> {
         "data",
         `db-${process.env.NODE_ENV}.sqlite`,
       );
-      console.log("dbStorage", dbStorage);
       if (options?.doNotCreate) {
         const exists = fs.existsSync(dbStorage);
         if (!exists) {

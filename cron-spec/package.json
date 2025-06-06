@@ -1,0 +1,22 @@
+{
+  "name": "@saflib/cron-spec",
+  "description": "Shared OpenAPI specification for the cron service",
+  "private": true,
+  "type": "module",
+  "main": "./index.ts",
+  "scripts": {
+    "generate:types": "openapi-typescript ./openapi.yaml -o dist/openapi.d.ts",
+    "generate:json": "redocly bundle openapi.yaml --ext json --output dist/openapi.json",
+    "generate:html": "redocly build-docs ./openapi.yaml --output=dist/index.html",
+    "generate": "npm run generate:types && npm run generate:json && npm run generate:html"
+  },
+  "dependencies": {
+    "@saflib/openapi-specs": "*"
+  },
+  "devDependencies": {
+    "openapi-types": "*"
+  },
+  "files": [
+    "dist"
+  ]
+}
