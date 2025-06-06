@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import request from "supertest";
 import express from "express";
-import { createApp } from "../../app.ts";
+import { createApp } from "../../http.ts";
 import { testRateLimiting } from "./_test-helpers.ts";
 import { EmailClient } from "@saflib/email";
 
@@ -12,7 +12,7 @@ describe("Forgot Password Route", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    app = createApp({ callbacks: {}});
+    app = createApp({ callbacks: {} });
     vi.spyOn(EmailClient.prototype, "sendEmail");
   });
 

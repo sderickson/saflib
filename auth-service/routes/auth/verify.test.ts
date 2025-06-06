@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import request from "supertest";
 import express from "express";
-import { createApp } from "../../app.ts";
+import { createApp } from "../../http.ts";
 import passport from "passport";
 import { getCsrfToken } from "./_test-helpers.ts";
 
@@ -24,7 +24,7 @@ describe("Verify Route", () => {
     (passport as any)._serializers = [];
     (passport as any)._deserializers = [];
 
-    app = createApp({ callbacks: {}});
+    app = createApp({ callbacks: {} });
   });
 
   afterEach(() => {

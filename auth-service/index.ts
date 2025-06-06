@@ -1,11 +1,12 @@
 import { startExpressServer } from "@saflib/express";
-import { createApp } from "./app.ts";
+import { createApp } from "./http.ts";
 import { authDb } from "@saflib/auth-db";
 import { makeGrpcServer } from "./grpc.ts";
 import { startGrpcServer } from "@saflib/grpc-node";
 import type { DbOptions } from "../drizzle-sqlite3/types.ts";
 import type { User } from "@saflib/auth-db";
 import type { AuthServiceCallbacks } from "./types.ts";
+export * from "./types.ts";
 
 interface StartAuthServiceOptions {
   dbOptions?: DbOptions;

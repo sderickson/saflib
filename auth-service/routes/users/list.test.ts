@@ -1,4 +1,4 @@
-import { createApp } from "../../app.ts";
+import { createApp } from "../../http.ts";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import request from "supertest";
 import express from "express";
@@ -32,7 +32,7 @@ describe("GET /users Route (Integration)", () => {
     vi.useFakeTimers();
     process.env.ADMIN_EMAILS = adminEmail;
     // Create a fresh app instance with a fresh in-memory DB for each test
-    app = createApp({ callbacks: {}});
+    app = createApp({ callbacks: {} });
   });
 
   afterEach(() => {

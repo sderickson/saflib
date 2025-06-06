@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import request from "supertest";
 import express from "express";
-import { createApp } from "../../app.ts";
+import { createApp } from "../../http.ts";
 import passport from "passport";
 import { testRateLimiting } from "./_test-helpers.ts";
 

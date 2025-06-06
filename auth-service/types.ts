@@ -12,7 +12,7 @@ export interface AuthConfig {
 }
 
 import type { User as DbUser } from "@saflib/auth-db";
-import { DbKey } from "@saflib/drizzle-sqlite3";
+import type { DbKey } from "@saflib/drizzle-sqlite3";
 
 // Extend Express.User
 declare global {
@@ -25,6 +25,10 @@ export type User = Express.User;
 
 export interface AuthServiceCallbacks {
   onUserCreated?: (user: User) => Promise<void>;
+  onVerificationTokenCreated?: (
+    user: User,
+    verificationUrl: string,
+  ) => Promise<void>;
 }
 
 export interface AuthServerOptions {

@@ -1,4 +1,4 @@
-import { createApp } from "../app.ts";
+import { createApp } from "../http.ts";
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
 import { readFileSync, existsSync, writeFileSync } from "fs";
 import { clearStorage } from "./session-store.ts";

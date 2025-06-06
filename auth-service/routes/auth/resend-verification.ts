@@ -2,7 +2,7 @@ import { createHandler } from "@saflib/express";
 import { randomBytes } from "crypto";
 import { type AuthResponse } from "@saflib/auth-spec";
 import { EmailClient } from "@saflib/email";
-import { generateVerificationEmail } from "../../email-templates/verify-email.ts";
+import { generateVerificationEmail } from "../../../../services/auth/email/verify-email.ts";
 import { authDb } from "@saflib/auth-db";
 import { getSafContext } from "@saflib/node";
 import { authServiceStorage } from "../../context.ts";

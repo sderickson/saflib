@@ -16,7 +16,7 @@ export const create = queryWrapper(
     try {
       const result = await db
         .insert(users)
-        .values({ ...user, createdAt: now })
+        .values({ ...user, createdAt: now, lastLoginAt: now })
         .returning();
       return {
         result: result[0],

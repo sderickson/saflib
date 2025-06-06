@@ -4,7 +4,7 @@ import express from "express";
 import { makeAuthRouter } from "./routes/auth/index.ts";
 import { makeUsersRouter } from "./routes/users/index.ts";
 import { authServiceStorage } from "./context.ts";
-import { AuthServerOptions } from "./types.ts";
+import type { AuthServerOptions } from "./types.ts";
 
 // Define properties added to Express Request objects by middleware
 declare global {

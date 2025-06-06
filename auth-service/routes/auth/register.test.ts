@@ -1,13 +1,19 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import request from "supertest";
 import express from "express";
-import { createApp } from "../../app.ts";
+import { createApp } from "../../http.ts";
 import passport from "passport";
 import { getCsrfToken, testRateLimiting } from "./_test-helpers.ts";
-import { EmailClient } from "@saflib/email";
 
-// Mock the email package
-vi.mock("@saflib/email");
+const callbacks = {
+  onUserCreated: async () => {},
+  onVerificationTokenCreated: async () => {},
+};
+const onCreateSpy = vi.spyOn(callbacks, "onUserCreated");
+const onVerificationTokenCreatedSpy = vi.spyOn(
+  callbacks,
+  "onVerificationTokenCreated",
+);
 
 describe("Register Route", () => {
   let app: express.Express;
@@ -16,11 +22,10 @@ describe("Register Route", () => {
     vi.clearAllMocks();
     (passport as any)._serializers = [];
     (passport as any)._deserializers = [];
-    app = createApp({ callbacks: {} });
-    vi.spyOn(EmailClient.prototype, "sendEmail");
+    app = createApp({ callbacks });
   });
 
-  it("should register a new user successfully and log them in and send a verification email", async () => {
+  it("should register a new user successfully and log them in, send a verification email, and call the onUserCreated callback", async () => {
     const userData = {
       email: "test@example.com",
       name: "Test User",
@@ -55,12 +60,18 @@ describe("Register Route", () => {
       scopes: ["none"],
     });
 
-    expect(EmailClient.prototype.sendEmail).toHaveBeenCalledWith({
-      from: "noreply@your-domain.com",
-      html: expect.any(String),
-      subject: "Verify Your Email Address",
-      to: userData.email,
-    });
+    expect(onCreateSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        email: userData.email,
+      }),
+    );
+
+    expect(onVerificationTokenCreatedSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        email: userData.email,
+      }),
+      expect.any(String),
+    );
   });
 
   it("should return 409 for duplicate email", async () => {
@@ -77,7 +88,6 @@ describe("Register Route", () => {
     expect(response.body).toEqual({
       message: "Email already exists",
     });
-    expect(EmailClient.prototype.sendEmail).toHaveBeenCalledTimes(1);
   });
 
   it("should return 429 for too many requests", async () => {

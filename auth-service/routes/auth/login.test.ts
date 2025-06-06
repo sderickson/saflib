@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import request from "supertest";
 import express from "express";
-import { createApp } from "../../app.ts";
+import { createApp } from "../../http.ts";
 import { testRateLimiting } from "./_test-helpers.ts";
 
 // Mock the email package
@@ -11,7 +11,7 @@ describe("Login Route", () => {
   let app: express.Express;
 
   beforeEach(() => {
-    app = createApp({ callbacks: {}});
+    app = createApp({ callbacks: {} });
   });
 
   afterEach(() => {

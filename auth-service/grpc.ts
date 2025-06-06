@@ -6,7 +6,7 @@ import {
   UsersServiceDefinition,
   UsersServiceImpl,
 } from "./rpcs/users/index.ts";
-import { AuthServerOptions } from "./types.ts";
+import type { AuthServerOptions } from "./types.ts";
 
 export function makeGrpcServer(options: AuthServerOptions): grpc.Server {
   let { dbKey } = options;
