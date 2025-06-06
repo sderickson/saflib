@@ -1,0 +1,80 @@
+# GET /cron/jobs
+get:
+  summary: List all cron jobs
+  operationId: listCronJobs
+  tags:
+    - cron
+  security:
+    - scopes: ["cron:read"]
+  responses:
+    "200":
+      description: A list of cron jobs.
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: "../schemas/job_settings.yaml"
+    "401":
+      description: Unauthorized - Invalid or missing authentication.
+      content:
+        application/json:
+          schema:
+            $ref: "../schemas/error.yaml#/error"
+    "403":
+      description: Forbidden - Insufficient permissions (requires cron:read).
+      content:
+        application/json:
+          schema:
+            $ref: "../schemas/error.yaml#/error"
+
+# PUT /cron/jobs/settings
+put:
+  summary: Update settings for a specific cron job by name
+  operationId: updateCronJobSettings
+  tags:
+    - cron
+  security:
+    - scopes: ["cron:write"]
+  requestBody:
+    description: The job name and settings to update.
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            jobName:
+              type: string
+              description: The name of the job to update.
+            enabled:
+              type: boolean
+              description: Set whether the job is enabled.
+          required:
+            - jobName
+            - enabled
+  responses:
+    "200":
+      description: Job settings updated successfully.
+      content:
+        application/json:
+          schema:
+            $ref: "../schemas/job_settings.yaml"
+    "401":
+      description: Unauthorized - Invalid or missing authentication.
+      content:
+        application/json:
+          schema:
+            $ref: "../schemas/error.yaml#/error"
+    "403":
+      description: Forbidden - Insufficient permissions (requires cron:write).
+      content:
+        application/json:
+          schema:
+            $ref: "../schemas/error.yaml#/error"
+    "404":
+      description: Job setting with the specified name not found.
+      content:
+        application/json:
+          schema:
+            $ref: "../schemas/error.yaml#/error"

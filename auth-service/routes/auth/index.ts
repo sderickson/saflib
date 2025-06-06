@@ -13,11 +13,11 @@ import { updateProfile } from "./update-profile.ts";
 import { rateLimit } from "express-rate-limit";
 import { createPreMiddleware } from "@saflib/express";
 import passport from "passport";
-import { setupPassport } from "@saflib/auth-service/middleware/passport.ts";
-import { makeSessionMiddleware } from "@saflib/auth-service/middleware/session-store.ts";
+import { setupPassport } from "../../middleware/passport.ts";
+import { makeSessionMiddleware } from "../../middleware/session-store.ts";
 import { jsonSpec } from "@saflib/auth-spec";
 import * as cookieParser from "cookie-parser";
-import { csrfDSC } from "@saflib/auth-service/middleware/csrf.ts";
+import { csrfDSC } from "../../middleware/csrf.ts";
 
 export const makeAuthRouter = () => {
   const router = express.Router();

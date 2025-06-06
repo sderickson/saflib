@@ -1,7 +1,7 @@
 import { createHandler } from "@saflib/express";
 import { type AuthResponse } from "@saflib/auth-spec";
 import { authDb, EmailAuthNotFoundError } from "@saflib/auth-db";
-import { authServiceStorage } from "@saflib/auth-service/context.ts";
+import { authServiceStorage } from "../../context.ts";
 
 export const verifyHandler = createHandler(async (req, res) => {
   const { dbKey } = authServiceStorage.getStore()!;
@@ -39,10 +39,7 @@ export const verifyHandler = createHandler(async (req, res) => {
   const scopes: string[] = [];
   res.setHeader("X-User-ID", user.id.toString());
   res.setHeader("X-User-Email", user.email);
-  res.setHeader(
-    "X-User-Email-Verified",
-    user.emailVerified ? "true" : "false",
-  );
+  res.setHeader("X-User-Email-Verified", user.emailVerified ? "true" : "false");
 
   if (req.app.get("saf:admin emails").has(user.email)) {
     const { result: emailAuth, error } = await authDb.emailAuth.getByEmail(

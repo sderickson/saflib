@@ -1,0 +1,35 @@
+type: object
+properties:
+  id:
+    type: integer
+    readOnly: true
+    description: Unique identifier for the job setting.
+  jobName:
+    type: string
+    description: The unique name of the cron job.
+  enabled:
+    type: boolean
+    description: Whether the job is enabled to run.
+  lastRunAt:
+    type: string
+    format: date-time
+    nullable: true
+    description: Timestamp of the last time the job ran.
+  lastRunStatus:
+    type: string
+    enum: ["success", "fail", "running", "timed out", null]
+    nullable: true
+    description: Status of the last job run.
+  createdAt:
+    type: string
+    format: date-time
+    readOnly: true
+    description: Timestamp when the job setting was created.
+  updatedAt:
+    type: string
+    format: date-time
+    readOnly: true
+    description: Timestamp when the job setting was last updated.
+required:
+  - jobName
+  - enabled

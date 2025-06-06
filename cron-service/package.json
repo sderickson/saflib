@@ -1,0 +1,30 @@
+{
+  "name": "@saflib/cron-service",
+  "description": "Cron service",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "scripts": {
+    "start": "node --experimental-strip-types ./bin/run.ts",
+    "dev": "node --experimental-strip-types --watch ./bin/run.ts",
+    "test-dev": "node --experimental-strip-types ./bin/test-client.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
+  },
+  "dependencies": {
+    "@saflib/grpc-node": "*",
+    "@saflib/express": "*",
+    "@saflib/node": "*",
+    "@saflib/grpc-specs": "*",
+    "@saflib/cron-db": "*",
+    "@saflib/cron-spec": "*",
+    "cron": "^4.3.0"
+  },
+  "devDependencies": {
+    "@saflib/vitest": "*",
+    "@types/cron": "^2.0.1"
+  }
+} 

@@ -201,7 +201,7 @@ export const AddGrpcServerWorkflowMachine = setup({
           }
 
           // Read package.json to determine the scope
-          let serviceScope = "@vendata"; // default fallback
+          let serviceScope = "@saflib"; // default fallback
           if (existsSync(packageJsonPath)) {
             try {
               const packageContent = await readFile(packageJsonPath, "utf-8");
@@ -240,7 +240,7 @@ export const AddGrpcServerWorkflowMachine = setup({
               `add${pascalServiceName}ServiceContext`,
             )
             .replace(
-              /@vendata\/dbs-SERVICE_NAME/g,
+              /@saflib\/dbs-SERVICE_NAME/g,
               `${serviceScope}/dbs-${serviceName}`,
             )
             .replace(/SERVICE_NAMEDb/g, `${serviceName}Db`)

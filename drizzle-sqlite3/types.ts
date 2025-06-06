@@ -7,6 +7,7 @@ export type DbKey = symbol;
 
 export interface DbOptions {
   onDisk?: boolean | string;
+  doNotCreate?: boolean;
 }
 
 export type DbConnection<S extends Schema> = ReturnType<typeof drizzle<S>>;

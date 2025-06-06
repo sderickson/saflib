@@ -1,4 +1,4 @@
-import { SERVICE_NAMEDb } from "@vendata/dbs-SERVICE_NAME";
+import { SERVICE_NAMEDb } from "@saflib/dbs-SERVICE_NAME";
 import { type DbKey } from "@saflib/drizzle-sqlite3";
 import { SERVICE_NAMEServiceStorage } from "./context.ts";
 import { addSafContext, makeGrpcServerContextWrapper } from "@saflib/grpc-node";
