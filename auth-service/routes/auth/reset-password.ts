@@ -3,9 +3,10 @@ import { createHandler } from "@saflib/express";
 import { type AuthResponse } from "@saflib/auth-spec";
 import { authDb, TokenNotFoundError } from "@saflib/auth-db";
 import { authServiceStorage } from "../../context.ts";
+import { throwError } from "@saflib/monorepo";
 
 export const resetPasswordHandler = createHandler(async (req, res) => {
-  const { dbKey } = authServiceStorage.getStore()!;
+  const { dbKey, callbacks } = authServiceStorage.getStore()!;
   const { token, newPassword } = req.body as {
     token: string;
     newPassword: string;
@@ -45,9 +46,11 @@ export const resetPasswordHandler = createHandler(async (req, res) => {
   );
   await authDb.emailAuth.clearForgotPasswordToken(dbKey, emailAuth.userId);
 
-  const { callbacks } = req.app.get("authOptions") || {};
-  if (callbacks && typeof callbacks.onPasswordUpdated === "function") {
-    await callbacks.onPasswordUpdated(req.user);
+  if (callbacks && callbacks.onPasswordUpdated) {
+    const user = await throwError(
+      authDb.users.getById(dbKey, emailAuth.userId),
+    );
+    await callbacks.onPasswordUpdated(user);
   }
 
   const successResponse: AuthResponse["resetPassword"][200] = {

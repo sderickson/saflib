@@ -16,13 +16,18 @@ vi.mock("crypto", async (importOriginal) => {
   };
 });
 
+const callbacks = {
+  onPasswordUpdated: async () => {},
+};
+const onPasswordUpdatedSpy = vi.spyOn(callbacks, "onPasswordUpdated");
+
 describe("Reset Password Route", () => {
   let app: express.Express;
 
   beforeEach(() => {
     (passport as any)._serializers = [];
     (passport as any)._deserializers = [];
-    app = createApp({ callbacks: {} });
+    app = createApp({ callbacks });
     vi.useFakeTimers();
   });
 
@@ -60,6 +65,10 @@ describe("Reset Password Route", () => {
       .send({ email: userData.email, password: "new-password123" });
 
     expect(loginResponse.status).toBe(200);
+    expect(onPasswordUpdatedSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ email: userData.email }),
+    );
+    expect(onPasswordUpdatedSpy).toHaveBeenCalledTimes(1);
   });
 
   it("should return 400 for expired token", async () => {

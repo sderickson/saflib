@@ -72,7 +72,10 @@ describe("Set Password Route", () => {
     });
     expect(oldLoginResponse.status).toBe(401);
 
-    expect(onPasswordUpdatedSpy).toHaveBeenCalled();
+    expect(onPasswordUpdatedSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ email: userData.email }),
+    );
+    expect(onPasswordUpdatedSpy).toHaveBeenCalledTimes(1);
   });
 
   it("should return 401 for unauthenticated user", async () => {
