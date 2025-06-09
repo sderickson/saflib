@@ -58,17 +58,17 @@ export function getMonorepoPackages(
   const workspacePackageDirectories: directoryPath[] = [];
 
   for (const workspace of workspaces) {
+    // should probably just use a glob library...
     if (workspace.endsWith("/**")) {
       // recursively find all workspaces
       const workspacesDir = path.join(rootDir, workspace.slice(0, -2));
       const workspacesFolders = readdirSync(workspacesDir, {
         recursive: true,
-      }) as string[];
-      for (const fileName of workspacesFolders) {
-        if (fileName.endsWith("package.json")) {
-          workspacePackageDirectories.push(
-            path.join(workspacesDir, fileName.slice(0, -13)),
-          );
+        withFileTypes: true,
+      });
+      for (const file of workspacesFolders) {
+        if (file.isFile() && file.name.endsWith("package.json")) {
+          workspacePackageDirectories.push(file.parentPath);
         }
       }
     } else if (workspace.endsWith("/*")) {
@@ -87,7 +87,6 @@ export function getMonorepoPackages(
       workspacePackageDirectories.push(path.join(rootDir, workspace));
     }
   }
-  console.log(workspacePackageDirectories);
 
   for (const workspacePackageDirectory of workspacePackageDirectories) {
     const workspacePackageJsonPath = path.join(

@@ -37,6 +37,32 @@ describe("getMonorepoPackageJsons", () => {
     expect(monorepoPackageJsons["@foo/api-service"]).toBeDefined();
     expect(monorepoPackageJsons["@saflib/express"]).toBeDefined();
   });
+
+  it("should recursively find packages with /** workspaces", () => {
+    const { monorepoPackageJsons } = getMonorepoPackages("/app");
+
+    // should find packages at different nesting levels under libs/**
+    expect(monorepoPackageJsons["@foo/utils"]).toBeDefined();
+    expect(monorepoPackageJsons["@foo/utils"].dependencies?.["lodash"]).toBe(
+      "4.17.21",
+    );
+
+    expect(monorepoPackageJsons["@foo/common"]).toBeDefined();
+    expect(
+      monorepoPackageJsons["@foo/common"].dependencies?.["@foo/utils"],
+    ).toBe("*");
+    expect(monorepoPackageJsons["@foo/common"].dependencies?.["moment"]).toBe(
+      "2.29.4",
+    );
+
+    expect(monorepoPackageJsons["@foo/validators"]).toBeDefined();
+    expect(
+      monorepoPackageJsons["@foo/validators"].dependencies?.["@foo/common"],
+    ).toBe("*");
+    expect(monorepoPackageJsons["@foo/validators"].dependencies?.["joi"]).toBe(
+      "17.9.2",
+    );
+  });
 });
 
 describe("buildWorkspaceDependencyGraph", () => {
@@ -48,6 +74,14 @@ describe("buildWorkspaceDependencyGraph", () => {
       "@saflib/vue-spa",
       "@saflib/auth-vue",
     ]);
+  });
+
+  it("should include nested package dependencies in dependency graph", () => {
+    const { monorepoPackageJsons } = getMonorepoPackages("/app");
+    const dependencyGraph = buildWorkspaceDependencyGraph(monorepoPackageJsons);
+
+    expect(dependencyGraph["@foo/common"]).toStrictEqual(["@foo/utils"]);
+    expect(dependencyGraph["@foo/validators"]).toStrictEqual(["@foo/common"]);
   });
 });
 
@@ -81,5 +115,14 @@ describe("getAllPackageWorkspaceDependencies", () => {
         "@saflib/openapi-specs",
       ]),
     );
+  });
+
+  it("should return transitive dependencies for nested packages", () => {
+    const context = buildMonorepoContext("/app");
+    const dependencies = getAllPackageWorkspaceDependencies(
+      "@foo/validators",
+      context,
+    );
+    expect(dependencies).toStrictEqual(new Set(["@foo/common", "@foo/utils"]));
   });
 });
