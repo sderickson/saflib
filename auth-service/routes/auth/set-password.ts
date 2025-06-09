@@ -5,7 +5,7 @@ import { authDb, EmailAuthNotFoundError } from "@saflib/auth-db";
 import { authServiceStorage } from "../../context.ts";
 
 export const setPassword = createHandler(async (req, res) => {
-  const { dbKey } = authServiceStorage.getStore()!;
+  const { dbKey, callbacks } = authServiceStorage.getStore()!;
 
   if (!req.user) {
     res.status(401).json({
@@ -58,6 +58,10 @@ export const setPassword = createHandler(async (req, res) => {
     req.user.id,
     Buffer.from(newPasswordHash),
   );
+
+  if (callbacks && typeof callbacks.onPasswordUpdated === "function") {
+    await callbacks.onPasswordUpdated(req.user);
+  }
 
   const response: AuthResponse["setPassword"][200] = {
     success: true,

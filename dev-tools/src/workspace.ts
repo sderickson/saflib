@@ -58,7 +58,20 @@ export function getMonorepoPackages(
   const workspacePackageDirectories: directoryPath[] = [];
 
   for (const workspace of workspaces) {
-    if (workspace.endsWith("/*")) {
+    // should probably just use a glob library...
+    if (workspace.endsWith("/**")) {
+      // recursively find all workspaces
+      const workspacesDir = path.join(rootDir, workspace.slice(0, -2));
+      const workspacesFolders = readdirSync(workspacesDir, {
+        recursive: true,
+        withFileTypes: true,
+      });
+      for (const file of workspacesFolders) {
+        if (file.isFile() && file.name.endsWith("package.json")) {
+          workspacePackageDirectories.push(file.parentPath);
+        }
+      }
+    } else if (workspace.endsWith("/*")) {
       const workspacesDir = path.join(rootDir, workspace.slice(0, -1));
       const workspacesFolders = readdirSync(workspacesDir)
         .filter((folder) => !folder.startsWith("."))

@@ -31,6 +31,7 @@ export interface AuthServiceCallbacks {
     isResend: boolean,
   ) => Promise<void>;
   onPasswordReset?: (user: User, resetUrl: string) => Promise<void>;
+  onPasswordUpdated?: (user: User) => Promise<void>;
 }
 
 export interface AuthServerOptions {

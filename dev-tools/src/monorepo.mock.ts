@@ -10,7 +10,14 @@ export const monorepoPackageMock = {
   // Root package.json
   "/app/package.json": JSON.stringify({
     name: "@foo/foo",
-    workspaces: ["clients/*", "dbs", "saflib/*", "services/*", "specs/*"],
+    workspaces: [
+      "clients/*",
+      "dbs",
+      "libs/**",
+      "saflib/*",
+      "services/*",
+      "specs/*",
+    ],
   }),
 
   // Clients
@@ -40,7 +47,29 @@ export const monorepoPackageMock = {
     },
   }),
 
-  // Lib
+  // Libs (nested packages to test /** functionality)
+  "/app/libs/utils/package.json": JSON.stringify({
+    name: "@foo/utils",
+    dependencies: {
+      lodash: "4.17.21",
+    },
+  }),
+  "/app/libs/shared/common/package.json": JSON.stringify({
+    name: "@foo/common",
+    dependencies: {
+      "@foo/utils": "*",
+      moment: "2.29.4",
+    },
+  }),
+  "/app/libs/shared/validators/package.json": JSON.stringify({
+    name: "@foo/validators",
+    dependencies: {
+      "@foo/common": "*",
+      joi: "17.9.2",
+    },
+  }),
+
+  // Lib (existing custom-lib, keeping for backwards compatibility)
   "/app/lib/custom-lib/package.json": JSON.stringify({
     name: "@foo/custom-lib",
     dependencies: {

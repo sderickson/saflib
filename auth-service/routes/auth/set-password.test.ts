@@ -5,6 +5,11 @@ import { createApp } from "../../http.ts";
 import passport from "passport";
 import { testRateLimiting } from "./_test-helpers.ts";
 
+const callbacks = {
+  onPasswordUpdated: async () => {},
+};
+const onPasswordUpdatedSpy = vi.spyOn(callbacks, "onPasswordUpdated");
+
 describe("Set Password Route", () => {
   let app: express.Express;
 
@@ -12,7 +17,7 @@ describe("Set Password Route", () => {
     vi.clearAllMocks();
     (passport as any)._serializers = [];
     (passport as any)._deserializers = [];
-    app = createApp({ callbacks: {} });
+    app = createApp({ callbacks });
   });
 
   it("should change password successfully for logged in user", async () => {
@@ -66,6 +71,11 @@ describe("Set Password Route", () => {
       password: "password123",
     });
     expect(oldLoginResponse.status).toBe(401);
+
+    expect(onPasswordUpdatedSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ email: userData.email }),
+    );
+    expect(onPasswordUpdatedSpy).toHaveBeenCalledTimes(1);
   });
 
   it("should return 401 for unauthenticated user", async () => {
