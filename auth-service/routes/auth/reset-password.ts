@@ -45,6 +45,11 @@ export const resetPasswordHandler = createHandler(async (req, res) => {
   );
   await authDb.emailAuth.clearForgotPasswordToken(dbKey, emailAuth.userId);
 
+  const { callbacks } = req.app.get("authOptions") || {};
+  if (callbacks && typeof callbacks.onPasswordUpdated === "function") {
+    await callbacks.onPasswordUpdated(req.user);
+  }
+
   const successResponse: AuthResponse["resetPassword"][200] = {
     success: true,
   };

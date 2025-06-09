@@ -59,6 +59,12 @@ export const setPassword = createHandler(async (req, res) => {
     Buffer.from(newPasswordHash),
   );
 
+  // Call onPasswordUpdated callback if defined
+  const { callbacks } = req.app.get("authOptions") || {};
+  if (callbacks && typeof callbacks.onPasswordUpdated === "function") {
+    await callbacks.onPasswordUpdated(req.user);
+  }
+
   const response: AuthResponse["setPassword"][200] = {
     success: true,
   };
