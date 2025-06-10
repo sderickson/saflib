@@ -38,11 +38,17 @@ This keeps your spec DRY and easier to maintain.`,
     },
     {
       name: "Update openapi.yaml",
-      prompt: () => `Update the openapi.yaml file to include the new routes and schemas.`,
+      prompt: () =>
+        `Update the openapi.yaml file to include the new routes and schemas.`,
     },
     {
       name: "Generate files",
       prompt: () => `Generate the files by running "npm run generate".`,
+    },
+    {
+      name: "Update index.ts",
+      prompt: () =>
+        `Update index.ts to export any new schemas that were added to the spec.`,
     },
   ];
 }
