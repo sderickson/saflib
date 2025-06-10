@@ -69,6 +69,9 @@ export class EmailClient {
 
   async sendEmail(options: EmailOptions): Promise<EmailResult> {
     try {
+      if (!options.to && !options.cc && !options.bcc) {
+        throw new Error("No recipients specified");
+      }
       if (
         process.env.NODE_ENV === "development" ||
         // Hack: Set to this for things like playwright tests
