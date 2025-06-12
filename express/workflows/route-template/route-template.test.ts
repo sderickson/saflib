@@ -11,7 +11,7 @@ describe("routeTemplate", () => {
     // app = createApp();
   });
 
-  it.skip("should handle successful requests", async () => {
+  it("should handle successful requests", async () => {
     const response = await request(app)
       .post("/route-template")
       .set(makeUserHeaders())
@@ -27,7 +27,7 @@ describe("routeTemplate", () => {
     });
   });
 
-  it.skip("should handle validation errors", async () => {
+  it("should handle validation errors", async () => {
     const response = await request(app)
       .post("/route-template")
       .set(makeUserHeaders())
