@@ -38,6 +38,8 @@ describe("handleGetUserProfile", () => {
     const userResult = await authDb.users.create(dbKey, {
       email: "test@example.com",
       name: "Test User",
+      givenName: "Test",
+      familyName: "User",
     });
 
     if ("error" in userResult) {
@@ -68,6 +70,9 @@ describe("handleGetUserProfile", () => {
     expect(result.profile.user_id).toBe(user.id);
     expect(result.profile.email).toBe("test@example.com");
     expect(result.profile.email_verified).toBe(true);
+    expect(result.profile.given_name).toBe("Test");
+    expect(result.profile.family_name).toBe("User");
+    expect(result.profile.created_at).toBeDefined();
   });
 
   it("should return NOT_FOUND for non-existent user", async () => {

@@ -10,6 +10,8 @@ export const UsersClient = vi.fn().mockImplementation(() => {
         email: "test@example.com",
         email_verified: true,
         name: "Test User",
+        given_name: "Test",
+        family_name: "User",
         created_at: {
           seconds: Date.now() / 1000,
           nanos: 0,

@@ -24,5 +24,7 @@ message UserProfile {
   string email = 2;
   bool email_verified = 3;
   string name = 4;
-  google.protobuf.Timestamp created_at = 5;
+  string given_name = 5;
+  string family_name = 6;
+  google.protobuf.Timestamp created_at = 7;
 }

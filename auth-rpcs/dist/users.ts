@@ -204,6 +204,8 @@ export class UserProfile extends pb_1.Message {
         email?: string;
         email_verified?: boolean;
         name?: string;
+        given_name?: string;
+        family_name?: string;
         created_at?: dependency_2.Timestamp;
     }) {
         super();
@@ -220,6 +222,12 @@ export class UserProfile extends pb_1.Message {
             }
             if ("name" in data && data.name != undefined) {
                 this.name = data.name;
+            }
+            if ("given_name" in data && data.given_name != undefined) {
+                this.given_name = data.given_name;
+            }
+            if ("family_name" in data && data.family_name != undefined) {
+                this.family_name = data.family_name;
             }
             if ("created_at" in data && data.created_at != undefined) {
                 this.created_at = data.created_at;
@@ -250,20 +258,34 @@ export class UserProfile extends pb_1.Message {
     set name(value: string) {
         pb_1.Message.setField(this, 4, value);
     }
+    get given_name() {
+        return pb_1.Message.getFieldWithDefault(this, 5, "") as string;
+    }
+    set given_name(value: string) {
+        pb_1.Message.setField(this, 5, value);
+    }
+    get family_name() {
+        return pb_1.Message.getFieldWithDefault(this, 6, "") as string;
+    }
+    set family_name(value: string) {
+        pb_1.Message.setField(this, 6, value);
+    }
     get created_at() {
-        return pb_1.Message.getWrapperField(this, dependency_2.Timestamp, 5) as dependency_2.Timestamp;
+        return pb_1.Message.getWrapperField(this, dependency_2.Timestamp, 7) as dependency_2.Timestamp;
     }
     set created_at(value: dependency_2.Timestamp) {
-        pb_1.Message.setWrapperField(this, 5, value);
+        pb_1.Message.setWrapperField(this, 7, value);
     }
     get has_created_at() {
-        return pb_1.Message.getField(this, 5) != null;
+        return pb_1.Message.getField(this, 7) != null;
     }
     static fromObject(data: {
         user_id?: number;
         email?: string;
         email_verified?: boolean;
         name?: string;
+        given_name?: string;
+        family_name?: string;
         created_at?: ReturnType<typeof dependency_2.Timestamp.prototype.toObject>;
     }): UserProfile {
         const message = new UserProfile({});
@@ -279,6 +301,12 @@ export class UserProfile extends pb_1.Message {
         if (data.name != null) {
             message.name = data.name;
         }
+        if (data.given_name != null) {
+            message.given_name = data.given_name;
+        }
+        if (data.family_name != null) {
+            message.family_name = data.family_name;
+        }
         if (data.created_at != null) {
             message.created_at = dependency_2.Timestamp.fromObject(data.created_at);
         }
@@ -290,6 +318,8 @@ export class UserProfile extends pb_1.Message {
             email?: string;
             email_verified?: boolean;
             name?: string;
+            given_name?: string;
+            family_name?: string;
             created_at?: ReturnType<typeof dependency_2.Timestamp.prototype.toObject>;
         } = {};
         if (this.user_id != null) {
@@ -303,6 +333,12 @@ export class UserProfile extends pb_1.Message {
         }
         if (this.name != null) {
             data.name = this.name;
+        }
+        if (this.given_name != null) {
+            data.given_name = this.given_name;
+        }
+        if (this.family_name != null) {
+            data.family_name = this.family_name;
         }
         if (this.created_at != null) {
             data.created_at = this.created_at.toObject();
@@ -321,8 +357,12 @@ export class UserProfile extends pb_1.Message {
             writer.writeBool(3, this.email_verified);
         if (this.name.length)
             writer.writeString(4, this.name);
+        if (this.given_name.length)
+            writer.writeString(5, this.given_name);
+        if (this.family_name.length)
+            writer.writeString(6, this.family_name);
         if (this.has_created_at)
-            writer.writeMessage(5, this.created_at, () => this.created_at.serialize(writer));
+            writer.writeMessage(7, this.created_at, () => this.created_at.serialize(writer));
         if (!w)
             return writer.getResultBuffer();
     }
@@ -345,6 +385,12 @@ export class UserProfile extends pb_1.Message {
                     message.name = reader.readString();
                     break;
                 case 5:
+                    message.given_name = reader.readString();
+                    break;
+                case 6:
+                    message.family_name = reader.readString();
+                    break;
+                case 7:
                     reader.readMessage(message.created_at, () => message.created_at = dependency_2.Timestamp.deserialize(reader));
                     break;
                 default: reader.skipField();
