@@ -79,7 +79,7 @@ export const AddSpaPageWorkflowMachine = setup({
     ...updateTemplateFileFactory({
       filePath: "router.ts",
       promptMessage: (context) =>
-        `Please update the router.ts file to include the new page. Add a new route for ${context.name} that uses the ${context.pascalName}Async component. The route should be at "/${context.name}".`,
+        `Please update the router.ts file to include the new page. Add a new route for ${context.name} that uses the ${context.pascalName}Async component. The route should be at "/${context.name.slice(0, -5)}".`,
       stateName: "updateRouter",
       nextStateName: "updateTests",
     }),
