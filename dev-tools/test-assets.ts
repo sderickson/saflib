@@ -1,6 +1,7 @@
 #!/usr/bin/env node --experimental-strip-types
 
 import { Command } from "commander";
+import { gatherTestAssets } from "./src/test-assets.ts";
 
 const program = new Command()
   .name("saf-test-assets")
@@ -9,9 +10,8 @@ const program = new Command()
 program
   .command("gather")
   .description("Gather test assets from the e2e and unit tests.")
-  .argument("<paths>", "Directories with nested test assets, comma separated")
-  .action(async (paths) => {
-    console.log("running with paths", paths);
+  .action(async () => {
+    gatherTestAssets();
   });
 
 program.parse(process.argv);
