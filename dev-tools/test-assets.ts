@@ -25,8 +25,9 @@ program
 program
   .command("gather")
   .description("Gather test assets from the e2e and unit tests.")
-  .action(async () => {
-    gatherTestAssets();
+  .argument("<target-dir>", "The directory to gather the test assets into.")
+  .action(async (targetDir) => {
+    await gatherTestAssets(targetDir);
   });
 
 program.parse(process.argv);
