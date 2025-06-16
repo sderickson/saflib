@@ -13,6 +13,9 @@ const program = new Command()
   .option("-c, --capture-log", "Capture the log output - but TTY is lost!")
   .action(async (options) => {
     const captureLog = options.captureLog;
+    if (!captureLog) {
+      throw new Error("Capture log is required");
+    }
     const coverageFile = "./coverage/coverage-log.txt";
 
     const child = spawn("vitest", ["run", "--coverage"], {
@@ -26,8 +29,7 @@ const program = new Command()
     let stdout = "";
     if (captureLog && child.stdout) {
       child.stdout.pipe(process.stdout);
-      process.stdout.on("data", (data) => {
-        console.log("GOT DATA", data);
+      child.stdout.on("data", (data) => {
         const chunk = data.toString();
         stdout += chunk;
       });
@@ -38,6 +40,9 @@ const program = new Command()
         if (code === 0) {
           try {
             if (captureLog) {
+              if (!stdout) {
+                throw new Error("No stdout, but capture log is enabled");
+              }
               await writeFile(coverageFile, stdout);
             }
             resolve();

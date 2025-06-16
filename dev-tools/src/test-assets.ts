@@ -10,9 +10,13 @@ interface E2eTestMetadata {
   name: string; // derived from folder name, presumed kebab-case
   repoPath: string; // relative from root
   screenshots: ScreenshotMetadata[];
+  packageName: string;
 }
 
-interface UnitTestCoverageMetadata {}
+interface UnitTestCoverageMetadata {
+  name: string; // derived from folder name, presumed kebab-case
+  packageName: string;
+}
 
 export const gatherTestAssets = async () => {
   const e2eTestsWithScreenshots = [];
