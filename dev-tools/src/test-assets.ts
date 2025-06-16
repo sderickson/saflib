@@ -109,6 +109,8 @@ export const gatherTestAssets = async (
     JSON.stringify(manifest, null, 2),
   );
 
+  writeFileSync(path.join(targetDirFull, ".gitkeep"), "");
+
   return {
     packages,
     e2eTestsWithScreenshots,
