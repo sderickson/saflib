@@ -7,46 +7,15 @@ import {
   cpSync,
   readdirSync,
   rmSync,
+  writeFileSync,
 } from "fs";
-
-interface ScreenshotMetadata {
-  name: string; // derived from folder name, presumed kebab-case
-  repoPath: string; // relative from root
-  srvPath: string; // relative from the target directory
-}
-
-interface E2eTestMetadata {
-  name: string; // derived from folder name, presumed kebab-case
-  repoPath: string; // relative from root
-  screenshots: ScreenshotMetadata[];
-  packageName: string;
-}
-
-interface OverallCoverage {
-  statements: number;
-  branches: number;
-  functions: number;
-  lines: number;
-}
-
-interface UnitTestCoverageMetadata {
-  packageName: string;
-  repoPath: string; // "coverage" folder relative from the root
-  srvPath: string; // "coverage" folder relative from the target directory
-  indexSrvPath: string; // "coverage" index.html relative from the target directory
-  overallCoverage: OverallCoverage | null;
-}
-
-interface PackageMetadata {
-  name: string;
-  repoPath: string;
-}
-
-interface TestAssetManifest {
-  packages: PackageMetadata[];
-  e2eTestsWithScreenshots: E2eTestMetadata[];
-  unitTestCoverageReports: UnitTestCoverageMetadata[];
-}
+import type {
+  E2eTestMetadata,
+  OverallCoverage,
+  PackageMetadata,
+  TestAssetManifest,
+  UnitTestCoverageMetadata,
+} from "../types.ts";
 
 export const gatherTestAssets = async (
   targetDir: string,
@@ -63,6 +32,11 @@ export const gatherTestAssets = async (
   rmSync(targetDirFull, { recursive: true, force: true });
 
   for (const pkgName in ctx.monorepoPackageDirectories) {
+    packages.push({
+      name: pkgName,
+      repoPath: ctx.monorepoPackageDirectories[pkgName],
+    });
+
     const dir = ctx.monorepoPackageDirectories[pkgName];
     if (existsSync(path.join(dir, "coverage"))) {
       const overallCoverage = parseCoverageLog(
@@ -123,6 +97,17 @@ export const gatherTestAssets = async (
       }
     }
   }
+
+  const manifest: TestAssetManifest = {
+    packages,
+    e2eTestsWithScreenshots,
+    unitTestCoverageReports,
+  };
+
+  writeFileSync(
+    path.join(targetDirFull, "manifest.json"),
+    JSON.stringify(manifest, null, 2),
+  );
 
   return {
     packages,

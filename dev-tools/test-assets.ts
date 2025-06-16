@@ -27,7 +27,10 @@ program
   .description("Gather test assets from the e2e and unit tests.")
   .argument("<target-dir>", "The directory to gather the test assets into.")
   .action(async (targetDir) => {
-    await gatherTestAssets(targetDir);
+    const result = await gatherTestAssets(targetDir);
+    console.log(
+      `Manifest results:\n- packages: ${result.packages.length}\n- e2e tests with screenshots: ${result.e2eTestsWithScreenshots.length}\n- unit test coverage reports: ${result.unitTestCoverageReports.length}`,
+    );
   });
 
 program.parse(process.argv);
