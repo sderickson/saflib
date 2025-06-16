@@ -15,10 +15,15 @@
   },
   "bin": {
     "generate-dockerfiles": "./generate-dockerfiles.ts",
-    "saf-doc": "./src/workspace-cli.ts"
+    "saf-doc": "./src/workspace-cli.ts",
+    "saf-test-assets": "./test-assets.ts"
+  },
+  "dependencies": {
+    "commander": "^13.1.0"
   },
   "devDependencies": {
     "@saflib/vitest": "*",
     "memfs": "^4.17.0"
+    
   }
 }
