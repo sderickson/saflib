@@ -16,7 +16,7 @@ for file in ./dist/*.ts; do
   sed 's/\"\.\/envelope\.ts\"/\"@saflib\/grpc-specs\"/' "$file" > "$file.tmp" && mv "$file.tmp" "$file"
 done
 
-# # Hack to skip typechecking for generated files
+# Hack to skip typechecking for generated files
 for file in ./dist/*.ts; do
   echo "// @ts-nocheck" > "$file.tmp" && cat "$file" >> "$file.tmp" && mv "$file.tmp" "$file"
 done
