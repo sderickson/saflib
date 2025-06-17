@@ -1,4 +1,4 @@
- // @ts-ignore: Needs vue setup to work
+import "vuetify/styles";
 import AsyncPage from "./AsyncPage.vue";
 export { AsyncPage };
 import { createTanstackQueryClient } from "./tanstack.ts";

@@ -10,10 +10,10 @@
     "lib": ["esnext", "dom"],
   },
   "exclude": ["node_modules", "vite.config.ts"],
-  "include": [
-    "**/*.ts",
-    "**/*.vue",
-    "assets.d.ts"
-  ]
+  // "include": [
+  //   "**/*.ts",
+  //   "**/*.vue",
+    // "assets.d.ts"
+  // ]
 }
 
