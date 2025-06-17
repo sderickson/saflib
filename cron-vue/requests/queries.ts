@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/vue-query";
 import { client } from "./client.js";
-import type { CronRequest, CronResponse } from "@vendata/specs-cron";
+import type { CronRequest, CronResponse } from "@saflib/cron-spec";
 import { TanstackError, handleClientMethod } from "@saflib/vue-spa";
 
 export function useListCronJobs() {

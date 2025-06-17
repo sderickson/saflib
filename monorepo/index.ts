@@ -11,7 +11,7 @@ type NonUndefined<T> = T extends undefined ? never : T;
 
 export const throwError = async <T>(
   promise: Promise<ReturnsError<T>>,
-  ErrorClass: new (message: string, options?: ErrorOptions) => Error = Error,
+  ErrorClass: new (message: string, options?: any) => Error = Error,
 ): Promise<NonUndefined<T>> => {
   /*
   If a Promise which returns { result, error } is unlikely to error,
