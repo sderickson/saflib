@@ -1,6 +1,4 @@
-import "vuetify/styles";
-import AsyncPage from "./AsyncPage.vue";
-export { AsyncPage };
+export { AsyncPage } from "./tricky-imports.ts";
 import { createTanstackQueryClient } from "./tanstack.ts";
 import { createApp, type Component } from "vue";
 import { createVuetify, type VuetifyOptions } from "vuetify";
