@@ -2,8 +2,15 @@
   "name": "@saflib/vitest",
   "description": "Library common testing dependencies and helpers",
   "type": "module",
+  "exports": {
+    "./vitest.config.js": "./base-vitest.config.js"
+  },
   "dependencies": {
+    "@vitest/coverage-v8": "^3.0.0",
     "vitest": "^3.0.0",
-    "@vitest/coverage-v8": "^3.0.0"
+    "commander": "^13.0.0"
+  },
+  "bin": {
+    "test-coverage": "./test-coverage.ts"
   }
 }

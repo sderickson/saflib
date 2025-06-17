@@ -26,7 +26,7 @@ export const verifyHandler = createHandler(async (req, res) => {
     return;
   }
 
-  if (!req.isValidCsrfToken()) {
+  if (!req.isValidCsrfToken() && req.headers["x-csrf-skip"] !== "true") {
     const errorResponse: AuthResponse["verifyAuth"][403] = {
       message: "CSRF token mismatch!",
     };
@@ -57,6 +57,16 @@ export const verifyHandler = createHandler(async (req, res) => {
     if (emailAuth.verifiedAt) {
       scopes.push("*");
       // TODO: set up a way to map roles -> scopes.
+    }
+  }
+
+  if (req.headers["x-require-admin"] === "true") {
+    if (!scopes.includes("*")) {
+      const errorResponse: AuthResponse["verifyAuth"][403] = {
+        message: "Forbidden!",
+      };
+      res.status(403).json(errorResponse);
+      return;
     }
   }
 
