@@ -1,5 +1,6 @@
 import session from "express-session";
 import sqlite from "better-sqlite3";
+// @ts-ignore
 import BetterSqlite3SessionStore from "better-sqlite3-session-store";
 import path from "path";
 const SqliteStore = BetterSqlite3SessionStore(session);
