@@ -4,7 +4,7 @@ import { authServiceStorage } from "../../context.ts";
 import { authDb } from "@saflib/auth-db";
 import { GetUserProfileResponse, UserProfile } from "@saflib/auth-rpcs";
 import { UnimplementedUsersService } from "@saflib/auth-rpcs";
-import { Timestamp } from "../../../auth-rpcs/dist/google/protobuf/timestamp.ts";
+import { Timestamp } from "@saflib/auth-rpcs";
 
 export const handleGetUserProfile: UnimplementedUsersService["GetUserProfile"] =
   async (call, callback) => {
