@@ -1,4 +1,4 @@
-import { Page } from "@playwright/test";
+import type { Page } from "@playwright/test";
 
 export const getUniqueId = () => {
   return Math.random().toString(36).substring(2, 15);
