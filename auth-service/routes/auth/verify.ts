@@ -60,6 +60,16 @@ export const verifyHandler = createHandler(async (req, res) => {
     }
   }
 
+  if (req.headers["x-require-admin"] === "true") {
+    if (!scopes.includes("*")) {
+      const errorResponse: AuthResponse["verifyAuth"][403] = {
+        message: "Forbidden!",
+      };
+      res.status(403).json(errorResponse);
+      return;
+    }
+  }
+
   if (scopes.length === 0) {
     scopes.push("none");
   }
