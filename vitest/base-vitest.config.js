@@ -18,7 +18,7 @@ export const defaultConfig = defineConfig({
     include: ["**/*.test.ts"],
     coverage: {
       provider: "v8",
-      reporter: ["text", "html", "json"],
+      reporter: ["text", "html"],
       exclude: [
         "node_modules/**",
         "dist/**",

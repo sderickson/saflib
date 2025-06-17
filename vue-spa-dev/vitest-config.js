@@ -14,7 +14,7 @@ export const defaultConfig = defineConfig({
     exclude: ["**/e2e/**"],
     coverage: {
       provider: "v8",
-      reporter: ["text", "html", "json"],
+      reporter: ["text", "html"],
       exclude: [
         // main and router files don't need to be unit tested
         // prefer e2e tests for those.

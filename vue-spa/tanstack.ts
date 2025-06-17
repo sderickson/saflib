@@ -10,7 +10,7 @@ export const createSafClient = <Q extends {}>(
     host = document.location.host;
   }
   return createClient<Q>({
-    baseUrl: `${protocol}//${subdomain ? `${subdomain}.` : ""}${host}`,
+    baseUrl: `${protocol}//${subdomain}.${host}`,
     credentials: "include",
     fetch: (request) => {
       // this is little noop wrapper is required for msw to work
