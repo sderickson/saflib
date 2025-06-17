@@ -1,4 +1,4 @@
-import { Snapshot } from "xstate";
+import type { Snapshot } from "xstate";
 
 export type Result<C extends Record<string, any>> = {
   data?: C;

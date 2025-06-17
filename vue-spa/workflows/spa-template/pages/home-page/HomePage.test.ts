@@ -22,7 +22,7 @@ const handlers = [
 describe("HomePage", () => {
   stubGlobals();
 
-  const server = setupMockServer(handlers);
+  setupMockServer(handlers);
   /*
     For tests which test different responses, use the following pattern:
       server.use(
