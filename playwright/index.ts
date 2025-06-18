@@ -1,4 +1,7 @@
 import type { Page } from "@playwright/test";
+export * from "./screenshots.ts";
+
+export const tightAndroidViewport = { width: 430, height: 700 };
 
 export const getUniqueId = () => {
   return Math.random().toString(36).substring(2, 15);
