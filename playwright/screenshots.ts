@@ -1,4 +1,6 @@
 import { test, type Page } from "@playwright/test";
+import { unlink } from "fs/promises";
+import { readdir } from "fs/promises";
 import path, { dirname } from "path";
 
 const countForTest: Record<string, number> = {};
@@ -7,6 +9,25 @@ interface ScreenshotOptions {
   fullPage?: boolean;
   type?: "jpeg" | "png";
 }
+
+export const cleanScreenshots = async () => {
+  const browserName = test.info().project.name;
+  const isChromium = browserName.includes("chromium");
+  if (!isChromium) {
+    return;
+  }
+  const directory = dirname(test.info().file);
+  const title = test.info().title.replace(/\s+/g, "-");
+  const files = await readdir(directory);
+  for (const file of files) {
+    if (
+      file.startsWith(title) &&
+      (file.endsWith(".png") || file.endsWith(".jpeg"))
+    ) {
+      await unlink(path.join(directory, file));
+    }
+  }
+};
 
 export const attachScreenshot = async (
   page: Page,
