@@ -8,6 +8,7 @@ const countForTest: Record<string, number> = {};
 interface ScreenshotOptions {
   fullPage?: boolean;
   type?: "jpeg" | "png";
+  suffix?: string;
 }
 
 export const cleanScreenshots = async () => {
@@ -17,13 +18,9 @@ export const cleanScreenshots = async () => {
     return;
   }
   const directory = dirname(test.info().file);
-  const title = test.info().title.replace(/\s+/g, "-");
   const files = await readdir(directory);
   for (const file of files) {
-    if (
-      file.startsWith(title) &&
-      (file.endsWith(".png") || file.endsWith(".jpeg"))
-    ) {
+    if (file.endsWith(".png") || file.endsWith(".jpeg")) {
       await unlink(path.join(directory, file));
     }
   }
@@ -40,7 +37,7 @@ export const attachScreenshot = async (
   countForTest[title] = count + 1;
   const countStr = count.toString().padStart(3, "0");
   const type = options.type ?? "png";
-  const filename = `${title}-${browserName}-${countStr}.${type}`;
+  const filename = `${countStr}${options.suffix ? `-${options.suffix}` : ""}.${type}`;
   const isChromium = browserName.includes("chromium");
 
   /*
