@@ -39,13 +39,11 @@ export const getByString = (page: Page, stringThing: ElementString) => {
   throw new Error(`Invalid string thing: ${JSON.stringify(stringThing)}`);
 };
 
-// note: only for sure works with "outlined" variant right now.
-// TODO: make it work generally.
 export const chooseVuetifySelectOption = async (
   page: Page,
   label: string,
   option: string,
 ) => {
-  await page.getByText(new RegExp(`^${label}.+${label}$`)).click();
-  await page.getByText(option).click();
+  await page.getByRole("combobox").filter({ hasText: label }).click();
+  await page.getByRole("option", { name: option }).click();
 };
