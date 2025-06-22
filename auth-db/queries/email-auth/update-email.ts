@@ -1,7 +1,7 @@
 import { type DbKey, queryWrapper } from "@saflib/drizzle-sqlite3";
 import { emailAuth, users } from "../../schema.ts";
 import type { SelectEmailAuth } from "../../types.ts";
-import { EmailAuthNotFoundError } from "../../errors.ts";
+import { EmailAuthNotFoundError, EmailTakenError } from "../../errors.ts";
 import { eq } from "drizzle-orm";
 import type { ReturnsError } from "@saflib/monorepo";
 import { authDbManager } from "../../instances.ts";
@@ -15,8 +15,24 @@ export const updateEmail = queryWrapper(
     dbKey: DbKey,
     userId: number,
     newEmail: string,
-  ): Promise<ReturnsError<UpdateEmailResult, EmailAuthNotFoundError>> => {
+  ): Promise<
+    ReturnsError<UpdateEmailResult, EmailAuthNotFoundError | EmailTakenError>
+  > => {
     const db = authDbManager.get(dbKey)!;
+
+    const existingEmailAuth = await db.query.emailAuth.findFirst({
+      where: eq(emailAuth.email, newEmail),
+    });
+    if (existingEmailAuth) {
+      return { error: new EmailTakenError() };
+    }
+
+    const existingUser = await db.query.users.findFirst({
+      where: eq(users.email, newEmail),
+    });
+    if (existingUser) {
+      return { error: new EmailTakenError() };
+    }
 
     // Update email_auth table: set new email and clear verification data
     const emailAuthResult = await db

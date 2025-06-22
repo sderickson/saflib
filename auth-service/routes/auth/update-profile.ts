@@ -6,6 +6,7 @@ import {
   authDb,
   UserNotFoundError,
   EmailAuthNotFoundError,
+  EmailTakenError,
 } from "@saflib/auth-db";
 
 type ProfileUpdateRequest = components["schemas"]["ProfileUpdateRequest"];
@@ -80,6 +81,8 @@ export const updateProfile = createHandler(async (req, res) => {
       switch (true) {
         case emailError instanceof EmailAuthNotFoundError:
           throw createError(404, "Email auth not found");
+        case emailError instanceof EmailTakenError:
+          throw createError(409, "Email already in use");
         default:
           throw emailError satisfies never;
       }

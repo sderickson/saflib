@@ -293,4 +293,34 @@ describe("Update Profile Route", () => {
       familyName: null,
     });
   });
+
+  it("should return 409 when email is already in use", async () => {
+    const userData = {
+      email: "test@example.com",
+      name: "Test User",
+      password: "password123",
+    };
+
+    const agent = request.agent(app);
+
+    const registerResponse = await agent.post("/auth/register").send(userData);
+    expect(registerResponse.status).toBe(200);
+    
+    // Register another user with the same email
+    const secondAgent = request.agent(app);
+    const anotherUserData = {
+      email: "taken@example.com",
+      name: "Taken User",
+      password: "password123",
+    };
+    const registerAnotherUserResponse = await secondAgent.post("/auth/register").send(anotherUserData);
+    expect(registerAnotherUserResponse.status).toBe(200);
+
+    // Try to update the email to the taken email
+    const updateResponse = await agent.put("/auth/profile").send({
+      email: "taken@example.com",
+    });
+
+    expect(updateResponse.status).toBe(409);
+  });
 });

@@ -15,6 +15,7 @@ interface ElementStringObject {
   "v-text"?: string;
   "data-testid"?: string;
   placeholder?: string;
+  "aria-label"?: string;
 }
 
 type ElementString = string | ElementStringObject;
@@ -23,14 +24,17 @@ export const getByString = (page: Page, stringThing: ElementString) => {
   if (typeof stringThing === "string") {
     return page.getByText(stringThing, { exact: true });
   }
-  if (stringThing["v-text"]) {
-    return page.getByText(stringThing["v-text"], { exact: true });
+  if (stringThing["aria-label"]) {
+    return page.getByLabel(stringThing["aria-label"]);
   }
   if (stringThing["data-testid"]) {
     return page.getByTestId(stringThing["data-testid"]);
   }
   if (stringThing.placeholder) {
     return page.getByPlaceholder(stringThing.placeholder, { exact: true });
+  }
+  if (stringThing["v-text"]) {
+    return page.getByText(stringThing["v-text"], { exact: true });
   }
   throw new Error(`Invalid string thing: ${JSON.stringify(stringThing)}`);
 };
