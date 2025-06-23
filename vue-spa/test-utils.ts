@@ -3,7 +3,7 @@ import { type VueWrapper } from "@vue/test-utils";
 
 interface ElementStringObject {
   placeholder?: string;
-  "v-text"?: string;
+  text?: string;
   "data-testid"?: string;
 }
 
@@ -16,10 +16,10 @@ export const getElementByString = (
   wrapper: VueWrapper,
   stringObj: ElementString,
 ) => {
-  if (typeof stringObj === "string" || stringObj["v-text"]) {
+  if (typeof stringObj === "string" || stringObj["text"]) {
     const elements = wrapper.findAll("*");
     const text: string =
-      typeof stringObj === "string" ? stringObj : stringObj["v-text"]!;
+      typeof stringObj === "string" ? stringObj : stringObj["text"]!;
     const element = elements.find((el) => {
       return el.text() === text;
     });
