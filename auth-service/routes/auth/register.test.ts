@@ -102,4 +102,13 @@ describe("Register Route", () => {
       }),
     );
   });
+
+  it("should return 400 for HTML in the body", async () => {
+    const response = await request(app).post("/auth/register").send({
+      email: "<script>alert('hello')</script>",
+      password: "password123",
+    });
+    expect(response.status).toBe(400);
+    expect(response.body).toEqual({ error: "HTML is not allowed" });
+  });
 });

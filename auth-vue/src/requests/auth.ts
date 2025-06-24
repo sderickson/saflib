@@ -124,3 +124,12 @@ export const useGetProfile = () => {
     },
   });
 };
+
+export const useGetSentEmails = () => {
+  return useQuery<AuthResponse["listSentEmails"][200], TanstackError>({
+    queryKey: ["sent-emails"],
+    queryFn: async () => {
+      return handleClientMethod(client.GET("/auth/email/sent"));
+    },
+  });
+};
