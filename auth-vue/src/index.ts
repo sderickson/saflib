@@ -2,7 +2,7 @@ export * from "./requests/auth.ts";
 export * from "./requests/types.ts";
 export * from "./requests/users.ts";
 export * from "./utils/rules.ts";
-export { default as LoginPage } from "./components/LoginPage.vue";
+export { default as LoginPage } from "../pages/login/LoginPage.vue";
 export { default as RegisterPage } from "./components/RegisterPage.vue";
 export { default as ForgotPasswordPage } from "./components/ForgotPasswordPage.vue";
 export { default as LogoutPage } from "./components/LogoutPage.vue";
