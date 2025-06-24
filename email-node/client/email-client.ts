@@ -1,9 +1,9 @@
 import * as nodemailer from "nodemailer";
 import type { Transporter } from "nodemailer";
 
-const mockingOn =
+export const mockingOn =
   process.env.NODE_ENV === "test" || process.env.MOCK_INTEGRATIONS === "true";
-const sentEmails: EmailOptions[] = [];
+export const sentEmails: EmailOptions[] = [];
 
 export interface EmailOptions
   extends Pick<
