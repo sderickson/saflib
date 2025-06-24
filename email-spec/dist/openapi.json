@@ -1,0 +1,117 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Mock Email Service API",
+    "version": "1.0.0",
+    "description": "Strictly for E2E testing, to see what emails are sent in, for example, playwright tests."
+  },
+  "servers": [
+    {
+      "url": "http://api.docker.localhost/",
+      "description": "Development server"
+    }
+  ],
+  "paths": {
+    "/email/sent": {
+      "get": {
+        "summary": "List all sent emails",
+        "operationId": "listSentEmails",
+        "tags": [
+          "email"
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of sent emails.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/sent-email"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - server is not mocking email sends",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "SentEmail": {
+        "$ref": "#/components/schemas/sent-email"
+      },
+      "sent-email": {
+        "type": "object",
+        "properties": {
+          "to": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "cc": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "bcc": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "subject": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "html": {
+            "type": "string"
+          },
+          "attachments": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "from": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "to",
+          "subject",
+          "from"
+        ]
+      },
+      "error": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "A short, machine-readable error code, for when HTTP status codes are not sufficient."
+          },
+          "message": {
+            "type": "string",
+            "description": "A human-readable description of the error.",
+            "example": "The requested resource could not be found."
+          }
+        }
+      }
+    }
+  }
+}

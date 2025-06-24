@@ -1,0 +1,19 @@
+openapi: 3.0.0
+info:
+  title: Mock Email Service API
+  version: 1.0.0
+  description: Strictly for E2E testing, to see what emails are sent in, for example, playwright tests.
+
+servers:
+  - url: http://api.docker.localhost/
+    description: Development server
+
+components:
+  schemas:
+    SentEmail:
+      $ref: "./schemas/sent-email.yaml"
+
+paths:
+  /email/sent:
+    get:
+      $ref: "./routes/email_routes.yaml#/get"
