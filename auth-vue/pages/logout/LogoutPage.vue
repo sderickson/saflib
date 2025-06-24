@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted } from "vue";
-import { useLogout } from "../../src/requests/auth.ts";
+import { useLogout } from "../../requests/auth.ts";
 
 const { mutate: logout } = useLogout();
 

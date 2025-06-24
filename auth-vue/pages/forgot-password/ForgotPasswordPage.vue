@@ -49,8 +49,8 @@
 
 <script setup lang="ts">
 import { ref } from "vue";
-import { emailRules } from "../../src/utils/rules";
-import { useForgotPassword } from "../../src/requests/auth";
+import { emailRules } from "../../utils/rules";
+import { useForgotPassword } from "../../requests/auth";
 import { forgot_password_page } from "./ForgotPasswordPage.strings";
 
 const email = ref("");

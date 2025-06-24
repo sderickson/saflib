@@ -17,6 +17,7 @@ interface ElementStringObject {
   "data-testid"?: string;
   placeholder?: string;
   "aria-label"?: string;
+  label?: string;
 }
 
 type ElementString = string | ElementStringObject;
@@ -27,6 +28,9 @@ export const getByString = (page: Page, stringThing: ElementString) => {
   }
   if (stringThing["aria-label"]) {
     return page.getByLabel(stringThing["aria-label"]);
+  }
+  if (stringThing.label) {
+    return page.getByLabel(stringThing.label);
   }
   if (stringThing["data-testid"]) {
     return page.getByTestId(stringThing["data-testid"]);

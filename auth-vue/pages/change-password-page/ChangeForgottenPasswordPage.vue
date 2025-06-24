@@ -76,8 +76,8 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
 import { useRoute } from "vue-router";
-import { useResetPassword } from "../../src/requests/auth";
-import { passwordRules } from "../../src/utils/rules";
+import { useResetPassword } from "../../requests/auth";
+import { passwordRules } from "../../utils/rules";
 import { change_forgotten_password_page } from "./ChangeForgottenPasswordPage.strings";
 
 const route = useRoute();

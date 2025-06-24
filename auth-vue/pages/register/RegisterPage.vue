@@ -93,8 +93,8 @@
 
 <script setup lang="ts">
 import { ref, watch, computed } from "vue";
-import { emailRules, passwordRules } from "../../src/utils/rules.ts";
-import { useRegister } from "../../src/requests/auth.ts";
+import { emailRules, passwordRules } from "../../utils/rules.ts";
+import { useRegister } from "../../requests/auth.ts";
 import { register_page } from "./RegisterPage.strings.ts";
 
 const props = defineProps<{

@@ -6,7 +6,7 @@ import {
 } from "@saflib/vue-spa-dev/components";
 import { type VueWrapper } from "@vue/test-utils";
 import RegisterPage from "./RegisterPage.vue";
-import { createAuthRouter } from "../../src/auth-router.ts";
+import { createAuthRouter } from "../../auth-router.ts";
 import { getElementByString } from "@saflib/vue-spa/test-utils";
 import { register_page } from "./RegisterPage.strings.ts";
 

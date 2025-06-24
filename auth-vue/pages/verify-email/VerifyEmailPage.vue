@@ -101,7 +101,7 @@ import {
   useVerifyEmail,
   useResendVerification,
   useGetProfile,
-} from "../../src/requests/auth";
+} from "../../requests/auth";
 import { TanstackError } from "@saflib/vue-spa";
 
 const route = useRoute();

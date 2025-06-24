@@ -64,8 +64,8 @@
 
 <script setup lang="ts">
 import { ref } from "vue";
-import { emailRules, passwordRules } from "../../src/utils/rules.ts";
-import { useLogin } from "../../src/requests/auth.ts";
+import { emailRules, passwordRules } from "../../utils/rules.ts";
+import { useLogin } from "../../requests/auth.ts";
 import { login_page } from "./LoginPage.strings.ts";
 
 const { mutate: login, isError, isPending } = useLogin();

@@ -16,7 +16,7 @@
 </template>
 
 <script setup lang="ts">
-import { useUsersQuery } from "@saflib/auth-vue/src/requests/users";
+import { useUsersQuery } from "../../requests/users";
 import UserList from "./UserList.vue";
 
 // Users page component
