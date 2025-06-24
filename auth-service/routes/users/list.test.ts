@@ -43,9 +43,11 @@ describe("GET /users Route (Integration)", () => {
   });
 
   it("should return 401 if user is not authenticated", async () => {
-    const response = await request(app).get("/users");
+    const response = await request(app)
+      .get("/users")
+      .set("x-user-scopes", "none");
     expect(response.status).toBe(401);
-    expect(response.body.error).toBe("Unauthorized");
+    expect(response.body.message).toBe("Unauthorized");
   });
 
   it("should return 403 if authenticated user is not an admin", async () => {

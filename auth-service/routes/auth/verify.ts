@@ -59,11 +59,11 @@ export const verifyHandler = createHandler(async (req, res) => {
         // TODO: set up a way to map roles -> scopes.
       }
     }
-    if (scopes.length === 0) {
-      scopes.push("none");
-    }
-    res.setHeader("X-User-Scopes", scopes.join(","));
   }
+  if (scopes.length === 0) {
+    scopes.push("none");
+  }
+  res.setHeader("X-User-Scopes", scopes.join(","));
 
   if (req.headers["x-require-admin"] === "true") {
     if (!scopes.includes("*")) {
