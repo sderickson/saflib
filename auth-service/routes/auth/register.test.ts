@@ -73,6 +73,9 @@ describe("Register Route", () => {
       expect.any(String),
       false,
     );
+
+    const sentEmails = await request(app).get("/auth/email/sent");
+    expect(sentEmails.body).toEqual([]);
   });
 
   it("should return 409 for duplicate email", async () => {
@@ -98,5 +101,14 @@ describe("Register Route", () => {
         password: "password123",
       }),
     );
+  });
+
+  it("should return 400 for HTML in the body", async () => {
+    const response = await request(app).post("/auth/register").send({
+      email: "<script>alert('hello')</script>",
+      password: "password123",
+    });
+    expect(response.status).toBe(400);
+    expect(response.body).toEqual({ error: "HTML is not allowed" });
   });
 });

@@ -114,7 +114,7 @@ export const AddEmailTemplateWorkflowMachine = setup({
           const pkg = JSON.parse(content);
           const deps = { ...pkg.dependencies, ...pkg.devDependencies };
 
-          if (!deps["@saflib/email"]) {
+          if (!deps["@saflib/email-node"]) {
             return "needs_email_dependency";
           }
 
@@ -158,7 +158,9 @@ export const AddEmailTemplateWorkflowMachine = setup({
       invoke: {
         src: fromPromise(async () => {
           try {
-            const { stdout } = await execAsync("npm install @saflib/email");
+            const { stdout } = await execAsync(
+              "npm install @saflib/email-node",
+            );
             return stdout;
           } catch (error) {
             throw new Error(

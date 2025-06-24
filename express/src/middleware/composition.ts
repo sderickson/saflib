@@ -9,6 +9,7 @@ import { httpLogger } from "./httpLogger.ts";
 import { createOpenApiValidator } from "./openapi.ts";
 import helmet from "helmet";
 import { contextMiddleware } from "./context.ts";
+import { blockHtml } from "./blockHtml.ts";
 /**
  * Recommended pre-route middleware stack.
  * Includes:
@@ -62,13 +63,15 @@ export const createPreMiddleware = (
     corsMiddleware = [];
   }
 
+  let sanitizeMiddleware: Handler[] = [blockHtml];
+
   return [
     helmet(),
     healthMiddleware, // before httpLogger to avoid polluting logs
     httpLogger,
     json(),
     urlencoded({ extended: false }),
-
+    ...sanitizeMiddleware,
     contextMiddleware,
     ...corsMiddleware,
     ...openApiValidatorMiddleware,

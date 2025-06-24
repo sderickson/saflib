@@ -1,0 +1,2 @@
+error:
+  $ref: "../../../saflib/openapi-specs/schemas/error.yaml"

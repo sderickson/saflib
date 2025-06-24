@@ -1,6 +1,14 @@
 import * as nodemailer from "nodemailer";
 import type { Transporter } from "nodemailer";
-// Define EmailOptions based on nodemailer's SendMailOptions
+
+export const mockingOn =
+  process.env.NODE_ENV === "test" || process.env.MOCK_INTEGRATIONS === "true";
+
+export interface SentEmail extends EmailOptions {
+  timeSent: number;
+}
+export const sentEmails: SentEmail[] = [];
+
 export interface EmailOptions
   extends Pick<
     nodemailer.SendMailOptions,
@@ -33,17 +41,11 @@ export class EmailClient {
   constructor() {
     let host = process.env.SMTP_HOST;
 
-    // If we're in development, pretend to succeed
-    if (process.env.NODE_ENV === "development" && !host) {
+    if (mockingOn && !host) {
       host = "localhost";
     }
 
     if (!host) {
-      if (process.env.NODE_ENV === "test") {
-        throw new Error(
-          "@saflib/email is not mocked, but it's running in a test. Add `vi.mock('@saflib/email')` to your test file.",
-        );
-      }
       throw new Error("SMTP configuration error: SMTP_HOST must be provided.");
     }
 
@@ -68,40 +70,29 @@ export class EmailClient {
   }
 
   async sendEmail(options: EmailOptions): Promise<EmailResult> {
-    try {
-      if (!options.to && !options.cc && !options.bcc) {
-        throw new Error("No recipients specified");
-      }
-      if (
-        process.env.NODE_ENV === "development" ||
-        // Hack: Set to this for things like playwright tests
-        process.env.SMTP_HOST === "smtp.mock.com"
-      ) {
-        console.log(
-          `Sending email in development mode: ${JSON.stringify(options)}`,
-        );
-        return {
-          messageId: "1234567890",
-          accepted: getTo(options),
-          rejected: [],
-          response: "250 2.0.0 OK",
-        };
-      }
-
-      const info = await this.transporter.sendMail(options);
-
-      // Map nodemailer's result to our EmailResult interface (adjusting types)
-      return {
-        messageId: info.messageId,
-        accepted: info.accepted as string[], // Nodemailer types might return string | Address
-        rejected: info.rejected as string[], // Nodemailer types might return string | Address
-        response: info.response,
-      };
-    } catch (error) {
-      // TODO: log properly
-      // console.error("Error sending email:", error);
-      // Rethrow or handle error as appropriate for the application
-      throw new Error(`Failed to send email: ${error}`);
+    if (!options.to && !options.cc && !options.bcc) {
+      throw new Error("No recipients specified");
     }
+    if (mockingOn) {
+      sentEmails.push({
+        ...options,
+        timeSent: Date.now(),
+      });
+      return {
+        messageId: "1234567890",
+        accepted: getTo(options),
+        rejected: [],
+        response: "250 2.0.0 OK",
+      };
+    }
+
+    const info = await this.transporter.sendMail(options);
+
+    return {
+      messageId: info.messageId,
+      accepted: info.accepted as string[],
+      rejected: info.rejected as string[],
+      response: info.response,
+    };
   }
 }

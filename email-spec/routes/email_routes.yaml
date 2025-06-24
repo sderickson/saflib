@@ -1,0 +1,21 @@
+# GET /email/sent
+get:
+  summary: List all sent emails
+  operationId: listSentEmails
+  tags:
+    - email
+  responses:
+    "200":
+      description: A list of sent emails.
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: "../schemas/sent-email.yaml"
+    "403":
+      description: Forbidden - server is not mocking email sends
+      content:
+        application/json:
+          schema:
+            $ref: "../schemas/error.yaml#/error"

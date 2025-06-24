@@ -5,6 +5,8 @@ import { makeAuthRouter } from "./routes/auth/index.ts";
 import { makeUsersRouter } from "./routes/users/index.ts";
 import { authServiceStorage } from "./context.ts";
 import type { AuthServerOptions } from "./types.ts";
+import { createEmailsRouter } from "@saflib/email-node";
+import { jsonSpec } from "@saflib/auth-spec";
 
 // Define properties added to Express Request objects by middleware
 declare global {
@@ -35,6 +37,14 @@ export function createApp(options: AuthServerOptions) {
       next();
     });
   });
+
+  app.use(
+    "/auth",
+    createEmailsRouter({
+      apiSpec: jsonSpec,
+    }),
+  );
+
   app.use("/auth", makeAuthRouter());
   app.use("/users", makeUsersRouter());
   app.use(recommendedErrorHandlers);
