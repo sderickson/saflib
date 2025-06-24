@@ -1,12 +1,22 @@
 <template>
   <v-form v-model="valid">
+    <div class="float-right">
+      <router-link class="text-blue text-decoration-none" to="/register">
+        {{ login_page.sign_up_now }} <v-icon icon="mdi-chevron-right"></v-icon>
+      </router-link>
+    </div>
+
+    <div class="mb-4 font-weight-medium">
+      {{ login_page.log_into_your_account }}
+    </div>
+
     <v-text-field
       v-model="email"
       v-bind="login_page.email"
       prepend-inner-icon="mdi-email-outline"
       :rules="emailRules"
       :disabled="isPending"
-      class="mb-4"
+      class="mb-4 float-clear"
       autofocus
     />
 
@@ -49,10 +59,6 @@
     >
       {{ login_page.log_in }}
     </v-btn>
-
-    <router-link class="text-blue text-decoration-none" to="/register">
-      {{ login_page.sign_up_now }} <v-icon icon="mdi-chevron-right"></v-icon>
-    </router-link>
   </v-form>
 </template>
 

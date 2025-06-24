@@ -1,5 +1,15 @@
 <template>
   <v-form v-model="valid">
+    <div class="float-right">
+      <router-link class="text-blue text-decoration-none" to="/login">
+        {{ register_page.already_have_account }}
+        <v-icon icon="mdi-chevron-right"></v-icon>
+      </router-link>
+    </div>
+
+    <div class="mb-4 font-weight-medium">
+      {{ register_page.create_your_account }}
+    </div>
     <div v-if="firstNameInput">
       <v-text-field
         v-model="firstName"
@@ -58,12 +68,6 @@
       prepend-inner-icon="mdi-lock-outline"
       class="mb-4"
     ></v-text-field>
-
-    <router-link class="text-blue text-decoration-none" to="/login">
-      {{ register_page.already_have_account }}
-      <v-icon icon="mdi-chevron-right"></v-icon>
-    </router-link>
-
     <v-btn
       class="my-5"
       color="primary"
