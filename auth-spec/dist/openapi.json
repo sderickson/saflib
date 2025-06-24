@@ -958,6 +958,9 @@
           },
           "from": {
             "type": "string"
+          },
+          "timeSent": {
+            "type": "number"
           }
         },
         "required": [

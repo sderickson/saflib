@@ -366,6 +366,7 @@ export interface components {
             html?: string;
             attachments?: string[];
             from: string;
+            timeSent?: number;
         };
         ErrorResponse: components["schemas"]["error"];
     };
