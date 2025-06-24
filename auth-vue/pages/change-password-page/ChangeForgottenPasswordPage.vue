@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
 import { useRoute } from "vue-router";
-import { useResetPassword } from "../requests/auth";
-import { passwordRules } from "../utils/rules";
+import { useResetPassword } from "../../src/requests/auth";
+import { passwordRules } from "../../src/utils/rules";
 
 const route = useRoute();
 const token = route.query.token as string;

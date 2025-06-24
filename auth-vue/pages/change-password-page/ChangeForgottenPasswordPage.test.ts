@@ -4,7 +4,7 @@ import { type VueWrapper } from "@vue/test-utils";
 import { http, HttpResponse } from "msw";
 import { setupMockServer } from "@saflib/vue-spa-dev/components";
 import ChangeForgottenPasswordPage from "./ChangeForgottenPasswordPage.vue";
-import { createAuthRouter } from "../auth-router.ts";
+import { createAuthRouter } from "../../src/auth-router.ts";
 
 const router = createAuthRouter();
 
