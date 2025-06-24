@@ -1,11 +1,11 @@
 import { createHandler } from "@saflib/express";
 import createError from "http-errors";
 import {
-  EmailOptions,
+  type EmailOptions,
   mockingOn,
   sentEmails,
 } from "../../client/email-client.ts";
-import { EmailResponse, SentEmail } from "@saflib/email-spec";
+import type { EmailResponse, SentEmail } from "@saflib/email-spec";
 
 export const getSentEmails = createHandler(async (_req, res) => {
   if (!mockingOn) {
