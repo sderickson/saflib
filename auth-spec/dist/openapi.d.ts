@@ -217,9 +217,9 @@ export interface components {
             familyName?: string;
         };
         UserResponse: {
-            id: number;
+            id?: number;
             /** Format: email */
-            email: string;
+            email?: string;
             /** @description Whether the user's email address has been verified */
             emailVerified?: boolean;
             /** @description User's full name (optional) */
@@ -454,6 +454,8 @@ export interface operations {
                     "X-User-Email"?: string;
                     /** @description Comma-separated list of user's permission scopes */
                     "X-User-Scopes"?: string;
+                    /** @description Whether the authenticated user's email is verified ('true' or 'false') */
+                    "X-User-Email-Verified"?: "true" | "false";
                     [name: string]: unknown;
                 };
                 content: {

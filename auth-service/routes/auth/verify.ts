@@ -18,15 +18,11 @@ export const verifyHandler = createHandler(async (req, res) => {
     return;
   }
 
-  if (!req.isAuthenticated()) {
-    const errorResponse: AuthResponse["verifyAuth"][401] = {
-      message: "Unauthorized!",
-    };
-    res.status(401).json(errorResponse);
-    return;
-  }
-
-  if (!req.isValidCsrfToken() && req.headers["x-csrf-skip"] !== "true") {
+  if (
+    req.user &&
+    !req.isValidCsrfToken() &&
+    req.headers["x-csrf-skip"] !== "true"
+  ) {
     const errorResponse: AuthResponse["verifyAuth"][403] = {
       message: "CSRF token mismatch!",
     };
@@ -37,28 +33,37 @@ export const verifyHandler = createHandler(async (req, res) => {
   // Add headers for downstream services
   const user = req.user as Express.User;
   const scopes: string[] = [];
-  res.setHeader("X-User-ID", user.id.toString());
-  res.setHeader("X-User-Email", user.email);
-  res.setHeader("X-User-Email-Verified", user.emailVerified ? "true" : "false");
-
-  if (req.app.get("saf:admin emails").has(user.email)) {
-    const { result: emailAuth, error } = await authDb.emailAuth.getByEmail(
-      dbKey,
-      user.email,
+  if (user) {
+    res.setHeader("X-User-ID", user.id.toString());
+    res.setHeader("X-User-Email", user.email);
+    res.setHeader(
+      "X-User-Email-Verified",
+      user.emailVerified ? "true" : "false",
     );
-    if (error) {
-      switch (true) {
-        case error instanceof EmailAuthNotFoundError:
-          throw error;
-        default:
-          throw error satisfies never;
+
+    if (req.app.get("saf:admin emails").has(user.email)) {
+      const { result: emailAuth, error } = await authDb.emailAuth.getByEmail(
+        dbKey,
+        user.email,
+      );
+      if (error) {
+        switch (true) {
+          case error instanceof EmailAuthNotFoundError:
+            throw error;
+          default:
+            throw error satisfies never;
+        }
+      }
+      if (emailAuth.verifiedAt) {
+        scopes.push("*");
+        // TODO: set up a way to map roles -> scopes.
       }
     }
-    if (emailAuth.verifiedAt) {
-      scopes.push("*");
-      // TODO: set up a way to map roles -> scopes.
-    }
   }
+  if (scopes.length === 0) {
+    scopes.push("none");
+  }
+  res.setHeader("X-User-Scopes", scopes.join(","));
 
   if (req.headers["x-require-admin"] === "true") {
     if (!scopes.includes("*")) {
@@ -70,10 +75,11 @@ export const verifyHandler = createHandler(async (req, res) => {
     }
   }
 
-  if (scopes.length === 0) {
-    scopes.push("none");
+  if (!user) {
+    const successResponse: AuthResponse["verifyAuth"][200] = {};
+    res.status(200).json(successResponse);
+    return;
   }
-  res.setHeader("X-User-Scopes", scopes.join(","));
 
   const successResponse: AuthResponse["verifyAuth"][200] = {
     id: user.id,

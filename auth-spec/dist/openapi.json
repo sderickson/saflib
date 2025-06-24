@@ -139,6 +139,16 @@
                   "type": "string"
                 },
                 "description": "Comma-separated list of user's permission scopes"
+              },
+              "X-User-Email-Verified": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "true",
+                    "false"
+                  ]
+                },
+                "description": "Whether the authenticated user's email is verified ('true' or 'false')"
               }
             },
             "content": {
@@ -573,10 +583,6 @@
       },
       "UserResponse": {
         "type": "object",
-        "required": [
-          "id",
-          "email"
-        ],
         "additionalProperties": false,
         "properties": {
           "id": {

@@ -12,7 +12,8 @@ export const getUniqueEmail = () => {
 };
 
 interface ElementStringObject {
-  "v-text"?: string;
+  role?: "button" | "combobox" | "option" | "heading" | "link";
+  text?: string;
   "data-testid"?: string;
   placeholder?: string;
   "aria-label"?: string;
@@ -33,8 +34,8 @@ export const getByString = (page: Page, stringThing: ElementString) => {
   if (stringThing.placeholder) {
     return page.getByPlaceholder(stringThing.placeholder, { exact: true });
   }
-  if (stringThing["v-text"]) {
-    return page.getByText(stringThing["v-text"], { exact: true });
+  if (stringThing["text"]) {
+    return page.getByText(stringThing["text"], { exact: true });
   }
   throw new Error(`Invalid string thing: ${JSON.stringify(stringThing)}`);
 };

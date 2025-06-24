@@ -28,11 +28,11 @@ describe("Verify Route", () => {
     vi.clearAllMocks();
   });
 
-  it("should return 401 when not authenticated", async () => {
+  it("should return an empty object when not authenticated", async () => {
     const response = await request(app).get("/auth/verify");
 
-    expect(response.status).toBe(401);
-    expect(response.body).toEqual({ message: "Unauthorized!" });
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({});
   });
 
   it("should return user info when authenticated", async () => {

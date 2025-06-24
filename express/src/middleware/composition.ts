@@ -71,8 +71,8 @@ export const createPreMiddleware = (
 
     contextMiddleware,
     ...corsMiddleware,
-    ...authMiddleware,
     ...openApiValidatorMiddleware,
+    ...authMiddleware,
   ];
 };
 
