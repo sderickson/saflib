@@ -4,7 +4,7 @@
 
 // To see what emails are sent, do `vi.spyOn(EmailClient.prototype, "sendEmail");`
 import { afterEach, beforeEach, vi } from "vitest";
-import { EmailOptions } from "../src/email-client.ts";
+import { EmailOptions } from "../client/email-client.ts";
 import { createTransport } from "nodemailer";
 const originalEnv = process.env;
 let id = 0;

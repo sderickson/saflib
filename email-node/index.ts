@@ -1,1 +1,1 @@
-export * from "./src/email-client.ts";
+export * from "./client/email-client.ts";
