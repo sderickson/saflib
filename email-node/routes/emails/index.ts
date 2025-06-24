@@ -4,7 +4,7 @@ import { getSentEmails } from "./get-sent-emails.ts";
 export function createEmailsRouter() {
   const router = express.Router();
 
-  router.get("/sent", getSentEmails);
+  router.get("/email/sent", getSentEmails);
 
   return router;
 }

@@ -8,7 +8,7 @@ describe("getSentEmails", () => {
 
   beforeEach(() => {
     app = express();
-    app.use("/email", createEmailsRouter());
+    app.use("/", createEmailsRouter());
   });
 
   it("should return sent emails when mocking is enabled", async () => {
