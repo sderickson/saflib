@@ -1,4 +1,13 @@
 export const register_page = {
+  first_name: {
+    label: "First name",
+  },
+  last_name: {
+    label: "Last name",
+  },
+  name: {
+    label: "Name",
+  },
   email: {
     label: "Email address",
   },

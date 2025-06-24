@@ -1,5 +1,32 @@
 <template>
   <v-form v-model="valid">
+    <div v-if="firstNameInput">
+      <v-text-field
+        v-model="firstName"
+        v-bind="register_page.first_name"
+        prepend-inner-icon="mdi-account-outline"
+        class="mb-4"
+      ></v-text-field>
+    </div>
+
+    <div v-if="lastNameInput">
+      <v-text-field
+        v-model="lastName"
+        v-bind="register_page.last_name"
+        prepend-inner-icon="mdi-account-outline"
+        class="mb-4"
+      ></v-text-field>
+    </div>
+
+    <div v-if="nameInput">
+      <v-text-field
+        v-model="name"
+        v-bind="register_page.name"
+        prepend-inner-icon="mdi-account-outline"
+        class="mb-4"
+      ></v-text-field>
+    </div>
+
     <v-text-field
       v-model="email"
       v-bind="register_page.email"
@@ -29,9 +56,14 @@
       class="mb-4"
     ></v-text-field>
 
+    <router-link class="text-blue text-decoration-none" to="/login">
+      {{ register_page.already_have_account }}
+      <v-icon icon="mdi-chevron-right"></v-icon>
+    </router-link>
+
     <v-btn
       class="my-5"
-      color="blue"
+      color="primary"
       size="large"
       variant="tonal"
       block
@@ -39,7 +71,7 @@
       :loading="isPending"
       @click="handleRegister"
     >
-      {{ register_page.register }}
+      {{ ctaText || register_page.register }}
     </v-btn>
 
     <v-alert v-if="isError" type="error" variant="outlined" class="mb-3">
@@ -49,13 +81,6 @@
           : register_page.failed_to_register
       }}
     </v-alert>
-
-    <v-card-text class="text-center">
-      <router-link class="text-blue text-decoration-none" to="/login">
-        {{ register_page.already_have_account }}
-        <v-icon icon="mdi-chevron-right"></v-icon>
-      </router-link>
-    </v-card-text>
   </v-form>
 </template>
 
@@ -65,6 +90,16 @@ import { emailRules, passwordRules } from "../../src/utils/rules.ts";
 import { useRegister } from "../../src/requests/auth.ts";
 import { register_page } from "./RegisterPage.strings.ts";
 
+defineProps<{
+  firstNameInput?: boolean;
+  lastNameInput?: boolean;
+  nameInput?: boolean;
+  ctaText?: string;
+}>();
+
+const firstName = ref("");
+const lastName = ref("");
+const name = ref("");
 const passwordVisible = ref(false);
 const email = ref("");
 const password = ref("");
@@ -92,6 +127,9 @@ const handleRegister = () => {
   register({
     email: email.value,
     password: password.value,
+    givenName: firstName.value,
+    familyName: lastName.value,
+    name: name.value,
   });
 };
 

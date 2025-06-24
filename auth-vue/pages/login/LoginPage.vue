@@ -40,7 +40,7 @@
     <v-btn
       block
       class="mb-8"
-      color="blue"
+      color="primary"
       size="large"
       variant="tonal"
       :loading="isPending"
@@ -50,11 +50,9 @@
       {{ login_page.log_in }}
     </v-btn>
 
-    <v-card-text class="text-center">
-      <router-link class="text-blue text-decoration-none" to="/register">
-        {{ login_page.sign_up_now }} <v-icon icon="mdi-chevron-right"></v-icon>
-      </router-link>
-    </v-card-text>
+    <router-link class="text-blue text-decoration-none" to="/register">
+      {{ login_page.sign_up_now }} <v-icon icon="mdi-chevron-right"></v-icon>
+    </router-link>
   </v-form>
 </template>
 
