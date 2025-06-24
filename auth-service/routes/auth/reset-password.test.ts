@@ -6,8 +6,6 @@ import { testRateLimiting } from "./_test-helpers.ts";
 // Mock argon2
 import passport from "passport";
 
-vi.mock("@saflib/email");
-
 vi.mock("crypto", async (importOriginal) => {
   const crypto = await importOriginal<typeof import("crypto")>();
   return {

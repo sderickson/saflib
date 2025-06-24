@@ -3,8 +3,6 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import request from "supertest";
 import express from "express";
 
-vi.mock("@saflib/email");
-
 // Helper function to register a user
 async function registerUser(app: express.Express, userData: any) {
   return request(app).post("/auth/register").send(userData);
