@@ -1,13 +1,7 @@
-import { describe, it, expect, vi } from "vitest";
-import {
-  stubGlobals,
-  mountWithPlugins,
-  setupMockServer,
-} from "@saflib/vue-spa-dev/components";
+import { describe, it, expect } from "vitest";
+import { stubGlobals, mountWithPlugins } from "@saflib/vue-spa-dev/components";
 import type { VueWrapper } from "@vue/test-utils";
 import ForgotPasswordPage from "./ForgotPasswordPage.vue";
-import { VAlert, VBtn } from "vuetify/components";
-import { http, HttpResponse } from "msw";
 import { createAuthRouter } from "../../src/auth-router.ts";
 import { getElementByString } from "@saflib/vue-spa/test-utils";
 import { forgot_password_page } from "./ForgotPasswordPage.strings.ts";
