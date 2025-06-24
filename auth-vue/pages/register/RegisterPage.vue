@@ -6,6 +6,7 @@
         v-bind="register_page.first_name"
         prepend-inner-icon="mdi-account-outline"
         class="mb-4"
+        :autofocus="firstInput === 'firstName'"
       ></v-text-field>
     </div>
 
@@ -15,6 +16,7 @@
         v-bind="register_page.last_name"
         prepend-inner-icon="mdi-account-outline"
         class="mb-4"
+        :autofocus="firstInput === 'lastName'"
       ></v-text-field>
     </div>
 
@@ -24,6 +26,7 @@
         v-bind="register_page.name"
         prepend-inner-icon="mdi-account-outline"
         class="mb-4"
+        :autofocus="firstInput === 'name'"
       ></v-text-field>
     </div>
 
@@ -33,7 +36,7 @@
       prepend-inner-icon="mdi-email-outline"
       :rules="emailRules"
       class="mb-4"
-      autofocus
+      :autofocus="firstInput === 'email'"
     ></v-text-field>
 
     <v-text-field
@@ -85,12 +88,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from "vue";
+import { ref, watch, computed } from "vue";
 import { emailRules, passwordRules } from "../../src/utils/rules.ts";
 import { useRegister } from "../../src/requests/auth.ts";
 import { register_page } from "./RegisterPage.strings.ts";
 
-defineProps<{
+const props = defineProps<{
   firstNameInput?: boolean;
   lastNameInput?: boolean;
   nameInput?: boolean;
@@ -113,6 +116,19 @@ const {
   error,
   isSuccess,
 } = useRegister();
+
+const firstInput = computed(() => {
+  if (props.firstNameInput) {
+    return "firstName";
+  }
+  if (props.lastNameInput) {
+    return "lastName";
+  }
+  if (props.nameInput) {
+    return "name";
+  }
+  return "email";
+});
 
 watch(
   () => isSuccess.value,
