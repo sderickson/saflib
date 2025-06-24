@@ -292,9 +292,6 @@ components:
 
     UserResponse:
       type: object
-      required:
-        - id
-        - email
       additionalProperties: false
       properties:
         id:
