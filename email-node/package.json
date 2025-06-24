@@ -18,6 +18,8 @@
     "@types/nodemailer": "^6.4.17"
   },
   "dependencies": {
+    "@saflib/email-spec": "*",
     "nodemailer": "^6.10.0"
   }
 }
+hh

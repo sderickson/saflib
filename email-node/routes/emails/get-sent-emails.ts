@@ -61,7 +61,7 @@ const convertTextFieldToString = (
     return textField;
   }
   if (!textField) {
-    return "<no text>";
+    return "";
   }
   return textField.toString();
 };
