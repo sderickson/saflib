@@ -73,6 +73,9 @@ describe("Register Route", () => {
       expect.any(String),
       false,
     );
+
+    const sentEmails = await request(app).get("/auth/email/sent");
+    expect(sentEmails.body).toEqual([]);
   });
 
   it("should return 409 for duplicate email", async () => {

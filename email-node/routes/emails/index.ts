@@ -3,11 +3,15 @@ import { getSentEmails } from "./get-sent-emails.ts";
 import { createPreMiddleware } from "@saflib/express";
 import { jsonSpec } from "@saflib/email-spec";
 
-export function createEmailsRouter() {
+export interface EmailsRouterOptions {
+  apiSpec?: any;
+}
+
+export function createEmailsRouter(options: EmailsRouterOptions = {}) {
   const router = express.Router();
 
   const preMiddleware = createPreMiddleware({
-    apiSpec: jsonSpec,
+    apiSpec: options.apiSpec || jsonSpec,
     authRequired: false,
   });
 
