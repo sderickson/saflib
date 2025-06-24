@@ -35,6 +35,7 @@ export interface components {
             html?: string;
             attachments?: string[];
             from: string;
+            timeSent?: number;
         };
         error: {
             /** @description A short, machine-readable error code, for when HTTP status codes are not sufficient. */

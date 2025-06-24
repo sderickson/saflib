@@ -24,6 +24,8 @@ properties:
       type: string
   from:
     type: string
+  timeSent:
+    type: number
 required:
   - to
   - subject

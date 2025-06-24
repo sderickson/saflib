@@ -4,8 +4,12 @@ import {
   type EmailOptions,
   mockingOn,
   sentEmails,
+  type SentEmail as NodeSentEmail,
 } from "../../client/email-client.ts";
-import type { EmailResponse, SentEmail } from "@saflib/email-spec";
+import type {
+  EmailResponse,
+  SentEmail as ApiSentEmail,
+} from "@saflib/email-spec";
 
 export const getSentEmails = createHandler(async (_req, res) => {
   if (!mockingOn) {
@@ -22,16 +26,17 @@ export const getSentEmails = createHandler(async (_req, res) => {
 });
 
 const convertEmailOptionsToApiResponse = (
-  emailOptions: EmailOptions,
-): SentEmail => {
+  sentEmail: NodeSentEmail,
+): ApiSentEmail => {
   return {
-    from: convertEmailFieldToString(emailOptions.from)[0],
-    to: convertEmailFieldToString(emailOptions.to),
-    cc: convertEmailFieldToString(emailOptions.cc),
-    bcc: convertEmailFieldToString(emailOptions.bcc),
-    subject: emailOptions.subject ?? "<no subject>",
-    text: convertTextFieldToString(emailOptions.text),
-    html: convertTextFieldToString(emailOptions.html),
+    from: convertEmailFieldToString(sentEmail.from)[0],
+    to: convertEmailFieldToString(sentEmail.to),
+    cc: convertEmailFieldToString(sentEmail.cc),
+    bcc: convertEmailFieldToString(sentEmail.bcc),
+    subject: sentEmail.subject ?? "<no subject>",
+    text: convertTextFieldToString(sentEmail.text),
+    html: convertTextFieldToString(sentEmail.html),
+    timeSent: sentEmail.timeSent,
   };
 };
 

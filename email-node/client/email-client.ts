@@ -3,7 +3,11 @@ import type { Transporter } from "nodemailer";
 
 export const mockingOn =
   process.env.NODE_ENV === "test" || process.env.MOCK_INTEGRATIONS === "true";
-export const sentEmails: EmailOptions[] = [];
+
+export interface SentEmail extends EmailOptions {
+  timeSent: number;
+}
+export const sentEmails: SentEmail[] = [];
 
 export interface EmailOptions
   extends Pick<
@@ -70,7 +74,10 @@ export class EmailClient {
       throw new Error("No recipients specified");
     }
     if (mockingOn) {
-      sentEmails.push(options);
+      sentEmails.push({
+        ...options,
+        timeSent: Date.now(),
+      });
       return {
         messageId: "1234567890",
         accepted: getTo(options),
