@@ -1,10 +1,12 @@
-import { vi } from "vitest";
-
 export * from "../index.ts";
 
-export const UsersClient = vi.fn().mockImplementation(() => {
-  return {
-    GetUserProfile: vi.fn().mockResolvedValue({
+const now = Date.now();
+
+export class UsersClient {
+  constructor(private readonly client: any) {}
+
+  GetUserProfile = async () => {
+    return {
       profile: {
         user_id: 1,
         email: "test@example.com",
@@ -13,10 +15,10 @@ export const UsersClient = vi.fn().mockImplementation(() => {
         given_name: "Test",
         family_name: "User",
         created_at: {
-          seconds: Date.now() / 1000,
+          seconds: now / 1000,
           nanos: 0,
         },
       },
-    }),
+    };
   };
-});
+}
