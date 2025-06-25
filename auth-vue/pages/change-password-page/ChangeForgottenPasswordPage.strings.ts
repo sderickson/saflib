@@ -12,4 +12,6 @@ export const change_forgotten_password_page = {
   reset_password_button: "Reset Password",
   resetting: "Resetting...",
   continue_to_login: "Continue to Login",
+  password_successfully_reset: "Password successfully reset!",
+  failed_to_reset_password: "Failed to reset password. Please try again.",
 };

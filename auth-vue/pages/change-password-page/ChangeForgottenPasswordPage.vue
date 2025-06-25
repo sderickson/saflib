@@ -106,11 +106,13 @@ const handleSubmit = async () => {
       token,
       newPassword: newPassword.value,
     });
-    successMessage.value = "Password successfully reset!";
+    successMessage.value =
+      change_forgotten_password_page.password_successfully_reset;
     // Hide the form by setting valid to false
     valid.value = false;
   } catch (error: any) {
-    errorMessage.value = "Failed to reset password. Please try again.";
+    errorMessage.value =
+      change_forgotten_password_page.failed_to_reset_password;
   }
 };
 </script>
