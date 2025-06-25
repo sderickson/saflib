@@ -102,6 +102,7 @@ const props = defineProps<{
   lastNameInput?: boolean;
   nameInput?: boolean;
   ctaText?: string;
+  redirectTo?: string;
 }>();
 
 const firstName = ref("");
@@ -138,7 +139,7 @@ watch(
   () => isSuccess.value,
   (success) => {
     if (success) {
-      window.location.href = "/app/";
+      window.location.href = props.redirectTo || "/app/";
     }
   },
 );
