@@ -3,7 +3,7 @@ export * from "../index.ts";
 const now = Date.now();
 
 export class UsersClient {
-  constructor(private readonly client: any) {}
+  constructor() {}
 
   GetUserProfile = async () => {
     return {
