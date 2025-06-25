@@ -14,7 +14,7 @@ import type {
 
 export const getSentEmails = createHandler(async (req, res) => {
   const query = req.query as EmailQuery["listSentEmails"];
-  const { userEmail } = query;
+  const { userEmail } = query ?? {};
 
   if (!mockingOn) {
     throw createError(403, "Forbidden - server is not mocking email sends");
