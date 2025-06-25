@@ -9,17 +9,28 @@ import {
 import type {
   EmailResponse,
   SentEmail as ApiSentEmail,
+  EmailQuery,
 } from "@saflib/email-spec";
 
-export const getSentEmails = createHandler(async (_req, res) => {
+export const getSentEmails = createHandler(async (req, res) => {
+  const query = req.query as EmailQuery["listSentEmails"];
+  const { userEmail } = query;
+
   if (!mockingOn) {
     throw createError(403, "Forbidden - server is not mocking email sends");
+  }
+
+  let emails = sentEmails;
+  if (userEmail) {
+    emails = emails.filter(
+      (email) => email.to === userEmail || email.from === userEmail,
+    );
   }
 
   res
     .status(200)
     .json(
-      sentEmails.map(
+      emails.map(
         convertEmailOptionsToApiResponse,
       ) satisfies EmailResponse["listSentEmails"][200],
     );
