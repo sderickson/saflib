@@ -23,9 +23,7 @@ export type ExtractRequestBody<Ops extends Record<string, any>> = {
 };
 
 export type ExtractRequestPathParams<Ops extends Record<string, any>> = {
-  [OpKey in keyof Ops]: Ops[OpKey]["parameters"] extends { path: any }
-    ? Ops[OpKey]["parameters"]["path"]
-    : never;
+  [OpKey in keyof Ops]: Ops[OpKey]["parameters"]["path"];
 };
 
 export type ExtractRequestQueryParams<Ops extends Record<string, any>> = {
