@@ -12,11 +12,12 @@ export * from "./tanstack.ts";
 interface CreateVueAppOptions {
   router: Router;
   vuetifyConfig?: VuetifyOptions;
+  callback?: (app: ReturnType<typeof createApp>) => void;
 }
 
 export const createVueApp = (
   Application: Component,
-  { router, vuetifyConfig }: CreateVueAppOptions,
+  { router, vuetifyConfig, callback }: CreateVueAppOptions,
 ) => {
   const vuetify = createVuetify(vuetifyConfig);
   const app = createApp(Application);
@@ -31,6 +32,11 @@ export const createVueApp = (
     queryClient,
   };
   app.use(VueQueryPlugin, options);
+
+  if (callback) {
+    callback(app);
+  }
+
   app.mount("#app");
   return createApp(app);
 };
