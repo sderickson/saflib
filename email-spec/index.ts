@@ -2,7 +2,7 @@ import * as json from "./dist/openapi.json" with { type: "json" };
 import type { paths, operations, components } from "./dist/openapi.d.ts";
 import {
   type ExtractRequestBody,
-  ExtractRequestQueryParams,
+  type ExtractRequestQueryParams,
   type ExtractResponseBody,
   castJson,
 } from "@saflib/openapi-specs";

@@ -809,7 +809,10 @@ export interface operations {
     };
     listSentEmails: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description The email address of the user to get sent emails to or from */
+                userEmail?: string;
+            };
             header?: never;
             path?: never;
             cookie?: never;

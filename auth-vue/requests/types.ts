@@ -1,6 +1,9 @@
 import type { components, operations } from "@saflib/auth-spec";
-import type { ExtractResponseBody } from "@saflib/openapi-specs";
-import type { ExtractRequestBody } from "@saflib/openapi-specs";
+import type {
+  ExtractRequestQueryParams,
+  ExtractResponseBody,
+  ExtractRequestBody,
+} from "@saflib/openapi-specs";
 
 export type LoginRequest = components["schemas"]["LoginRequest"];
 export type RegisterRequest = components["schemas"]["RegisterRequest"];
@@ -16,3 +19,4 @@ export type VerifyEmailRequest = components["schemas"]["VerificationRequest"];
 // Export Request/Response schema types derived from operations
 export type AuthResponse = ExtractResponseBody<operations>;
 export type AuthRequest = ExtractRequestBody<operations>;
+export type AuthQuery = ExtractRequestQueryParams<operations>;
