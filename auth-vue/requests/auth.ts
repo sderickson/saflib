@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/vue-query";
 import { client } from "./client.ts";
 import type { AuthResponse, AuthRequest } from "./types.ts";
 import { TanstackError, handleClientMethod } from "@saflib/vue-spa";
+import type { Ref } from "vue";
 
 export const useLogin = () => {
   return useMutation<
@@ -125,11 +126,15 @@ export const useGetProfile = () => {
   });
 };
 
-export const useGetSentEmails = () => {
-  return useQuery<AuthResponse["listSentEmails"][200], TanstackError>({
-    queryKey: ["sent-emails", "auth"],
+export const getSentAuthEmails = (email?: Ref<string | undefined>) => {
+  return {
+    queryKey: ["sent-emails", "auth", email],
     queryFn: async () => {
-      return handleClientMethod(client.GET("/auth/email/sent"));
+      return handleClientMethod(
+        client.GET("/auth/email/sent", {
+          params: { query: { userEmail: email?.value } },
+        }),
+      );
     },
-  });
+  };
 };

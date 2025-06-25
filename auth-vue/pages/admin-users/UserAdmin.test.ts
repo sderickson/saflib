@@ -6,7 +6,7 @@ import {
 } from "@saflib/vue-spa-dev/components";
 import { type VueWrapper } from "@vue/test-utils";
 import { http, HttpResponse } from "msw";
-import UserAdmin from "@saflib/auth-vue/src/components/UserAdmin.vue";
+import UserAdmin from "./UserAdmin.vue";
 import type { AuthResponse } from "@saflib/auth-spec";
 
 // Use the type from auth-spec

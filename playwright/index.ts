@@ -17,6 +17,7 @@ interface ElementStringObject {
   "data-testid"?: string;
   placeholder?: string;
   "aria-label"?: string;
+  label?: string;
 }
 
 type ElementString = string | ElementStringObject;
@@ -26,7 +27,10 @@ export const getByString = (page: Page, stringThing: ElementString) => {
     return page.getByText(stringThing, { exact: true });
   }
   if (stringThing["aria-label"]) {
-    return page.getByLabel(stringThing["aria-label"]);
+    return page.getByLabel(stringThing["aria-label"], { exact: true });
+  }
+  if (stringThing.label) {
+    return page.getByLabel(stringThing.label, { exact: true });
   }
   if (stringThing["data-testid"]) {
     return page.getByTestId(stringThing["data-testid"]);

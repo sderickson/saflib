@@ -5,6 +5,7 @@ interface ElementStringObject {
   placeholder?: string;
   text?: string;
   "data-testid"?: string;
+  label?: string;
 }
 
 // Store strings for Vue components in Record<string, ElementString>
@@ -23,6 +24,13 @@ export const getElementByString = (
     const element = elements.find((el) => {
       return el.text() === text;
     });
+    expect(element?.exists()).toBe(true);
+    return element!;
+  }
+
+  if (stringObj.label) {
+    const elements = wrapper.findAll("label");
+    const element = elements.find((el) => el.text() === stringObj.label);
     expect(element?.exists()).toBe(true);
     return element!;
   }
