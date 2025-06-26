@@ -12,7 +12,15 @@ export const sentEmails: SentEmail[] = [];
 export interface EmailOptions
   extends Pick<
     nodemailer.SendMailOptions,
-    "to" | "cc" | "bcc" | "subject" | "text" | "html" | "attachments" | "from"
+    | "to"
+    | "cc"
+    | "bcc"
+    | "subject"
+    | "text"
+    | "html"
+    | "attachments"
+    | "from"
+    | "replyTo"
   > {}
 
 function getTo(options: EmailOptions): string[] {
