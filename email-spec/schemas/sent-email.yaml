@@ -26,6 +26,10 @@ properties:
     type: string
   timeSent:
     type: number
+  replyTo:
+    type: array
+    items:
+      type: string
 required:
   - to
   - subject

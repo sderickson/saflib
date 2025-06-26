@@ -47,6 +47,7 @@ const convertEmailOptionsToApiResponse = (
     subject: sentEmail.subject ?? "<no subject>",
     text: convertTextFieldToString(sentEmail.text),
     html: convertTextFieldToString(sentEmail.html),
+    replyTo: convertEmailFieldToString(sentEmail.replyTo),
     timeSent: sentEmail.timeSent,
   };
 };

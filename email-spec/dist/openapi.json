@@ -103,6 +103,12 @@
           },
           "timeSent": {
             "type": "number"
+          },
+          "replyTo": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "required": [
