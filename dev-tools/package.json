@@ -17,7 +17,7 @@
   "bin": {
     "generate-dockerfiles": "./generate-dockerfiles.ts",
     "saf-doc": "./src/workspace-cli.ts",
-    "saf-test-assets": "./test-assets.ts"
+    "saf-health-assets": "./health-assets.ts"
   },
   "dependencies": {
     "commander": "^13.1.0"

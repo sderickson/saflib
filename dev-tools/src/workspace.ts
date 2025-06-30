@@ -1,16 +1,6 @@
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
-
-// for documentation purposes
-type packageName = string;
-type directoryPath = string;
-
-export interface PackageJson {
-  name: packageName;
-  workspaces?: string[];
-  dependencies?: Record<string, string>;
-  description?: string;
-}
+import type { packageName, directoryPath, PackageJson } from "../types.ts";
 
 export interface MonorepoPackageJsons {
   [key: packageName]: PackageJson;

@@ -13,13 +13,13 @@ import type {
   E2eTestMetadata,
   OverallCoverage,
   PackageMetadata,
-  TestAssetManifest,
+  HealthAssetManifest,
   UnitTestCoverageMetadata,
 } from "../types.ts";
 
-export const gatherTestAssets = async (
+export const gatherHealthAssets = async (
   targetDir: string,
-): Promise<TestAssetManifest> => {
+): Promise<HealthAssetManifest> => {
   const e2eTestsWithScreenshots: E2eTestMetadata[] = [];
   const unitTestCoverageReports: UnitTestCoverageMetadata[] = [];
 
@@ -32,9 +32,12 @@ export const gatherTestAssets = async (
   rmSync(targetDirFull, { recursive: true, force: true });
 
   for (const pkgName in ctx.monorepoPackageDirectories) {
+    const pkgJson = ctx.monorepoPackageJsons[pkgName];
+    console.log("typecheck", pkgJson.scripts?.["typecheck"]);
     packages.push({
-      name: pkgName,
+      ...pkgJson,
       repoPath: ctx.monorepoPackageDirectories[pkgName],
+      typechecked: pkgJson.scripts?.["typecheck"] !== undefined,
     });
 
     const dir = ctx.monorepoPackageDirectories[pkgName];
@@ -98,7 +101,7 @@ export const gatherTestAssets = async (
     }
   }
 
-  const manifest: TestAssetManifest = {
+  const manifest: HealthAssetManifest = {
     packages,
     e2eTestsWithScreenshots,
     unitTestCoverageReports,

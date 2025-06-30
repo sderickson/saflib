@@ -1,3 +1,15 @@
+// for documentation purposes
+export type packageName = string;
+export type directoryPath = string;
+
+export interface PackageJson {
+  name: packageName;
+  workspaces?: string[];
+  dependencies?: Record<string, string>;
+  description?: string;
+  scripts?: Record<string, string>;
+}
+
 export interface ScreenshotMetadata {
   name: string; // derived from folder name, presumed kebab-case
   repoPath: string; // relative from root
@@ -26,12 +38,12 @@ export interface UnitTestCoverageMetadata {
   overallCoverage: OverallCoverage | null;
 }
 
-export interface PackageMetadata {
-  name: string;
-  repoPath: string;
+export interface PackageMetadata extends PackageJson {
+  repoPath: directoryPath;
+  typechecked: boolean;
 }
 
-export interface TestAssetManifest {
+export interface HealthAssetManifest {
   packages: PackageMetadata[];
   e2eTestsWithScreenshots: E2eTestMetadata[];
   unitTestCoverageReports: UnitTestCoverageMetadata[];
