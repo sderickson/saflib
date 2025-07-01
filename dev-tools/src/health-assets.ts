@@ -95,6 +95,12 @@ export const gatherHealthAssets = async (
         });
         cpSync(metadata.repoPath, path.join(targetDirFull, srvPath), {
           recursive: true,
+          filter: (source, _destination) => {
+            if (source.endsWith(".spec.ts")) {
+              return false;
+            }
+            return true;
+          },
         });
       }
     }
