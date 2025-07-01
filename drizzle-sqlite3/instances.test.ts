@@ -8,8 +8,9 @@ import type { Config } from "drizzle-kit";
 import config from "./drizzle.config.ts";
 import * as schema from "./test-schema.ts";
 import assert from "node:assert";
+import path from "node:path";
 
-const dbPath = "./data/db-test.sqlite";
+const dbPath = path.join(import.meta.dirname, "./data/db-test.sqlite");
 
 const getTempDbPath = (name: string) =>
   resolve(__dirname, `data/temp-test-${name}.db`);

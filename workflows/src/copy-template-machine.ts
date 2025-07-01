@@ -91,7 +91,6 @@ export const CopyTemplateMachine = setup({
       invoke: {
         input: ({ context }) => context,
         src: fromPromise(async ({ input }) => {
-          console.log("fetchFileNames", input);
           const { sourceDir, targetDir } = input;
 
           let sourceFiles: string[] = [];
