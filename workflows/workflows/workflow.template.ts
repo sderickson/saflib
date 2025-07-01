@@ -53,6 +53,7 @@ export const ToDoWorkflowMachine = setup({
     exampleAsyncWorkState: {
       invoke: {
         input: ({ context }) => context,
+        // @ts-expect-error - TODO remove this line as part of workflow
         src: fromPromise(async ({ input }: { input: ToDoWorkflowContext }) => {
           // This promise can do async work such as calling an npm script.
           // It should reject if the work fails.

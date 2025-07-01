@@ -12,7 +12,7 @@
     "./tanstack": "./tanstack.ts"
   },
   "scripts": {
-    "typecheck": "tsc --project tsconfig.self.json"
+    "typecheck": "tsc --project tsconfig.app.json"
   },
   "dependencies": {
     "vite": "^6.0.0",

@@ -190,7 +190,6 @@ export const AddGrpcServerWorkflowMachine = setup({
             grpcFilePath,
             serviceName,
             pascalServiceName,
-            rawServiceName,
             sourceDir,
             contextFilePath,
             packageJsonPath,

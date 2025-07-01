@@ -2,8 +2,8 @@ import { describe, it, expect, beforeEach } from "vitest";
 import request from "supertest";
 import express from "express";
 import { createApp } from "../http.ts";
-import { cronDb, JobSetting } from "@saflib/cron-db";
-import { JobSettings } from "@saflib/cron-spec";
+import { cronDb, type JobSetting } from "@saflib/cron-db";
+import type { JobSettings } from "@saflib/cron-spec";
 import type { DbKey } from "@saflib/drizzle-sqlite3";
 import { mockJobs } from "../mock-jobs.ts";
 

@@ -33,7 +33,6 @@ export const gatherHealthAssets = async (
 
   for (const pkgName in ctx.monorepoPackageDirectories) {
     const pkgJson = ctx.monorepoPackageJsons[pkgName];
-    console.log("typecheck", pkgJson.scripts?.["typecheck"]);
     packages.push({
       ...pkgJson,
       repoPath: ctx.monorepoPackageDirectories[pkgName],

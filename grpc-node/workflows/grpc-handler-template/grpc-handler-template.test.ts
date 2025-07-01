@@ -1,3 +1,4 @@
+// @ts-nocheck - TODO remove this line as part of workflow
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { handleGrpcHandlerTemplate } from "./grpc-handler-template.ts";
 import * as grpc from "@grpc/grpc-js";

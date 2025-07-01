@@ -18,7 +18,8 @@ export class AddProtoPackageWorkflow extends SimpleWorkflow<AddProtoPackageWorkf
       path: packagePath, // Expected to be the direct path to the package, e.g., specs/pkg-name
     };
 
-    const templatesDir = path.join(import.meta.dirname, "templates");
+    const dirname = path.dirname(import.meta.url);
+    const templatesDir = path.join(dirname, "templates");
 
     if (!fs.existsSync(this.params.path)) {
       fs.mkdirSync(this.params.path, { recursive: true });
@@ -35,8 +36,6 @@ export class AddProtoPackageWorkflow extends SimpleWorkflow<AddProtoPackageWorkf
     if (!fs.existsSync(protosDir)) {
       fs.mkdirSync(protosDir, { recursive: true });
     }
-
-    const packageDirName = path.basename(this.params.path);
 
     // Transform npm package name to proto package name
     // @saflib/auth-rpcs -> saflib.auth.v1

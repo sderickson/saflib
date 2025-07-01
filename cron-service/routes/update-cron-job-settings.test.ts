@@ -2,9 +2,9 @@ import { describe, it, expect, beforeEach } from "vitest";
 import request from "supertest";
 import express from "express";
 import { createApp } from "../http.ts";
-import { CronRequest, CronResponse } from "@saflib/cron-spec";
+import type { CronRequest, CronResponse } from "@saflib/cron-spec";
 import { mapJobSettingToResponse } from "./_helpers.ts"; // Need helper for response check
-import { cronDb, JobSetting } from "@saflib/cron-db";
+import { cronDb } from "@saflib/cron-db";
 import type { DbKey } from "@saflib/drizzle-sqlite3";
 import { throwError } from "@saflib/monorepo";
 import { mockJobs } from "../mock-jobs.ts";
@@ -14,19 +14,11 @@ const existingJobName = Object.keys(mockJobs)[0];
 describe("PUT /jobs/settings", () => {
   let app: express.Express;
   let dbKey: DbKey;
-  let existingJob: JobSetting;
 
   beforeEach(async () => {
     // Recreate db instance for each test for isolation
     dbKey = cronDb.connect();
     app = createApp({ dbKey, jobs: mockJobs });
-
-    // Seed an initial job setting to update
-    existingJob = await cronDb.jobSettings.setEnabled(
-      dbKey,
-      existingJobName,
-      true,
-    );
   });
 
   it("should update the enabled status of an existing job and return the updated setting", async () => {

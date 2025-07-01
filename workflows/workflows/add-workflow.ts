@@ -1,7 +1,7 @@
 import { SimpleWorkflow } from "@saflib/workflows";
 import { execSync } from "child_process";
 import { writeFileSync, readFileSync, existsSync } from "fs";
-import path from "path";
+import path, { dirname } from "path";
 import { kebabCaseToPascalCase } from "../src/utils.ts";
 
 export interface AddWorkflowParams {
@@ -42,7 +42,7 @@ export default workflowClasses;
 
     execSync(`touch workflows/${workflowName}.ts`);
     const workflowTemplate = readFileSync(
-      path.join(import.meta.dirname, "workflow.template.ts"),
+      path.join(dirname(import.meta.url), "workflow.template.ts"),
       "utf8",
     );
     writeFileSync(

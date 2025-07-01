@@ -1,4 +1,4 @@
-import { JobsMap } from "./src/types.ts";
+import type { JobsMap } from "./src/types.ts";
 import { vi } from "vitest";
 
 export const mockJobHandler = vi.fn();

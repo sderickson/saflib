@@ -1,4 +1,4 @@
-import { and, fromPromise, raise, setup } from "xstate";
+import { fromPromise, raise, setup } from "xstate";
 import {
   workflowActionImplementations,
   workflowActors,
@@ -11,12 +11,8 @@ import {
   doesTestPass,
 } from "@saflib/workflows";
 import path from "node:path";
-import { exec } from "node:child_process";
-import { promisify } from "node:util";
 import { existsSync } from "node:fs";
 import { cwd } from "node:process";
-
-const execAsync = promisify(exec);
 
 interface UpdateImplWorkflowInput {
   path: string;

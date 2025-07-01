@@ -1,4 +1,4 @@
-// TODO: Uncomment and fix these imports
+// @ts-nocheck - TODO remove this line as part of workflow
 import { someDbManager } from "../../instances.ts";
 import { SomeError } from "../../errors.ts";
 import type { SomeDbType } from "../../types.ts";
