@@ -20,7 +20,7 @@
     "saf-health-assets": "./health-assets.ts"
   },
   "dependencies": {
-    "commander": "^13.1.0"
+    "commander": "^14.0.0"
   },
   "devDependencies": {
     "@saflib/vitest": "*",
