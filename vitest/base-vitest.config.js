@@ -15,6 +15,10 @@ export const defaultConfig = defineConfig({
     isolate: true,
 
     environment: "node",
+    env: {
+      TZ: "UTC",
+      NODE_OPTIONS: "--disable-warning=DEP0040",
+    },
     include: ["**/*.test.ts"],
     coverage: {
       provider: "v8",

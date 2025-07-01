@@ -15,7 +15,10 @@ export { startServer } from "./bin/www.ts";
 export { startExpressServer } from "./bin/www.ts";
 // consumers of this library automatically get env variables
 import dotenv from "dotenv";
-dotenv.config();
+if (process.env.NODE_ENV !== "test") {
+  // hush warning - TODO: better handle env anyway
+  dotenv.config();
+}
 
 // Recommended middleware bundles
 export {
