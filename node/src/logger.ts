@@ -1,6 +1,6 @@
 import winston, { type Logger, format } from "winston";
 import { type TransformableInfo } from "logform";
-import { Writable } from "stream";
+import { Writable } from "node:stream";
 
 export const consoleTransport = new winston.transports.Console({
   silent: process.env.NODE_ENV === "test",

@@ -16,7 +16,7 @@
   "dependencies": {
     "better-sqlite3": "11.8.0",
     "drizzle-kit": "^0.31.1",
-    "drizzle-orm": "^0.41.0"
+    "drizzle-orm": "^0.44.0"
   },
   "devDependencies": {
     "@saflib/drizzle-sqlite3-dev": "*",

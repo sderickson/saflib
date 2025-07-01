@@ -1,7 +1,8 @@
+// @ts-nocheck - TODO remove this line as part of workflow
 import type { ScheduledMachineTemplate } from "@your-org/your-db";
 import { fromPromise, setup, waitFor, createActor } from "xstate";
 import { throwError } from "@saflib/monorepo";
-import { yourDb } from "@your-org/your-db";
+// import { yourDb } from "@your-org/your-db";
 import { allChildrenSettled } from "@saflib/node-xstate";
 
 export const makeMachineTemplateMachine = setup({

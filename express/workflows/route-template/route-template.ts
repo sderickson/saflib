@@ -1,3 +1,4 @@
+// @ts-nocheck - TODO remove this line as part of workflow
 import { createHandler } from "@saflib/express";
 import type { ApiRequest, ApiResponseBody } from "@your-org/specs-apis";
 import createError from "http-errors";

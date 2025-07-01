@@ -4,7 +4,7 @@ import express from "express";
 import { createApp } from "../../http.ts";
 import passport from "passport";
 import { testRateLimiting } from "./_test-helpers.ts";
-import { AuthServiceCallbacks } from "../../types.ts";
+import type { AuthServiceCallbacks } from "../../types.ts";
 
 vi.mock("crypto", async (importOriginal) => {
   const crypto = await importOriginal<typeof import("crypto")>();

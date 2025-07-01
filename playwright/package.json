@@ -6,8 +6,10 @@
   "exports": {
     ".": "./index.ts"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@playwright/test": "^1.53.2"
+  },
   "devDependencies": {
     "@saflib/vitest": "*"
   }
-} 
+}

@@ -3,19 +3,16 @@ import { createActor, waitFor } from "xstate";
 import {
   CopyTemplateMachine,
   updateTemplateFileFactory,
+  type TemplateWorkflowContext,
 } from "./copy-template-machine.ts";
 import { allChildrenSettled } from "./utils.ts";
 import { mkdir, writeFile, rm, readFile } from "node:fs/promises";
 import path from "node:path";
 import { setup } from "xstate";
-import {
-  workflowActionImplementations,
-  workflowActors,
-  type WorkflowContext,
-} from "./xstate.ts";
+import { workflowActionImplementations, workflowActors } from "./xstate.ts";
 import { writeFileSync, unlinkSync, existsSync } from "node:fs";
 
-interface TestContext extends WorkflowContext {
+interface TestContext extends TemplateWorkflowContext {
   testFile: string;
 }
 
@@ -146,6 +143,10 @@ describe("updateTemplateFileFactory", () => {
       context: {
         testFile: testFilePath,
         loggedLast: false,
+        name: "test",
+        pascalName: "Test",
+        targetDir: testFilePath,
+        sourceDir: testFilePath,
       },
       states: {
         ...updateTemplateFileFactory({
@@ -187,6 +188,10 @@ describe("updateTemplateFileFactory", () => {
       context: {
         testFile: testFilePath,
         loggedLast: false,
+        name: "test",
+        pascalName: "Test",
+        targetDir: testFilePath,
+        sourceDir: testFilePath,
       },
       states: {
         ...updateTemplateFileFactory({
@@ -227,6 +232,10 @@ describe("updateTemplateFileFactory", () => {
       context: {
         testFile: testFilePath,
         loggedLast: false,
+        name: "test",
+        pascalName: "Test",
+        targetDir: testFilePath,
+        sourceDir: testFilePath,
       },
       states: {
         ...updateTemplateFileFactory({

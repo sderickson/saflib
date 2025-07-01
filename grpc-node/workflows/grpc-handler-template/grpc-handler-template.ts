@@ -1,3 +1,4 @@
+// @ts-nocheck - TODO remove this line as part of workflow
 // TODO: Import your request and response classes from your "@saflib/grpc-specs"-dependent package
 // import { GrpcHandlerTemplateRequest, GrpcHandlerTemplateResponse } from "@your-org/rpcs";
 // import { UnimplementedGrpcHandlerTemplateService } from "@your-org/rpcs";

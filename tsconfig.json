@@ -1,3 +1,5 @@
 {
-  "extends": "@saflib/monorepo/tsconfig.json"
+  "extends": [
+    "@saflib/vue-spa/tsconfig.app.json"
+  ]
 }

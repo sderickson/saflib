@@ -48,6 +48,13 @@ function stubGlobalsSetup() {
   });
   vi.stubGlobal("ResizeObserver", ResizeObserverMock);
   vi.stubGlobal("matchMedia", matchMediaMock);
+  vi.stubGlobal("visualViewport", {
+    width: 1000,
+    height: 1000,
+    addEventListener: () => {},
+    removeEventListener: () => {},
+    dispatchEvent: () => true,
+  });
 }
 
 function stubGlobalsTeardown() {

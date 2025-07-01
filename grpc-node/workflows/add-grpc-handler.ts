@@ -212,13 +212,7 @@ export const AddGrpcHandlerWorkflowMachine = setup({
       invoke: {
         input: ({ context }) => context,
         src: fromPromise(async ({ input }) => {
-          const {
-            serviceIndexPath,
-            serviceName,
-            pascalServiceName,
-            camelName,
-            name,
-          } = input;
+          const { serviceIndexPath, pascalServiceName, name } = input;
           if (!existsSync(serviceIndexPath)) {
             const indexContent = `import type { UntypedServiceImplementation } from "@grpc/grpc-js";
 import { Unimplemented${pascalServiceName}Service } from "@your-org/rpcs";

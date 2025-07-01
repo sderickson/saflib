@@ -14,7 +14,6 @@ import { fileURLToPath } from "node:url";
 import { exec } from "node:child_process";
 import { promisify } from "node:util";
 import { readdir, rename, readFile, writeFile } from "node:fs/promises";
-import { existsSync } from "node:fs";
 
 const execAsync = promisify(exec);
 

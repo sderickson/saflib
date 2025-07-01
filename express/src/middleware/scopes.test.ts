@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { Request, Response, NextFunction } from "express";
 import { createScopeValidator } from "./scopes.js";
 import type { OpenApiRequestMetadata } from "express-openapi-validator/dist/framework/types.js"; // Import the actual type
-import { SafContext, safStorage } from "@saflib/node";
+import { type SafContext, safStorage } from "@saflib/node";
 
 // Define a type for the necessary parts of OpenApiRequestMetadata
 interface MockOpenApiMetadata extends Partial<OpenApiRequestMetadata> {
