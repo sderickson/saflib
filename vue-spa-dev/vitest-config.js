@@ -27,8 +27,10 @@ export const defaultConfig = defineConfig({
         "**/__mocks__",
       ],
     },
-    deps: {
-      inline: ["vuetify"],
+    server: {
+      deps: {
+        inline: ["vuetify"],
+      },
     },
     mockReset: true,
   },
