@@ -24,7 +24,7 @@ const corsMiddleware = cors({
 });
 
 export const corsRouter = Router();
-corsRouter.options("*", corsMiddleware);
+corsRouter.options(/.*/, corsMiddleware);
 corsRouter.use(corsMiddleware);
 
 // Interestingly, *NOT* having this line causes the tests to fail when fake timers are used.
