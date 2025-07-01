@@ -8,6 +8,7 @@ import type {
 import type { AnyStateMachine, AnyActor } from "xstate";
 import { addNewLinesToString, allChildrenSettled } from "./utils.ts";
 import { createActor, waitFor } from "xstate";
+import { getSafContext } from "@saflib/node";
 // The following is TS magic to describe a class constructor that implements the abstract SimpleWorkflow class.
 type AbstractClassConstructor<T extends Workflow> = new (...args: any[]) => T;
 
@@ -66,8 +67,9 @@ export abstract class SimpleWorkflow<
   }
 
   print(message: string) {
-    console.log("");
-    console.log(addNewLinesToString(message));
+    const { log } = getSafContext();
+    log.info("");
+    log.info(addNewLinesToString(message));
   }
 
   async kickoff(): Promise<boolean> {
@@ -182,7 +184,9 @@ export abstract class XStateWorkflow extends Workflow {
       return false;
     }
     await waitFor(actor, allChildrenSettled);
-    console.log("\nTo continue, run 'npm exec saf-workflow next'\n");
+    const { log } = getSafContext();
+    log.info("");
+    log.info("To continue, run 'npm exec saf-workflow next'");
     this.actor = actor;
     return actor.getSnapshot().status !== "error";
   };
