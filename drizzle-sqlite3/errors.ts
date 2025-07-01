@@ -1,6 +1,6 @@
 // To dissuade services from catching unhandled errors and papering over them programmatically, we log the error details and throw an error with a generic message. If a service catches this error, it should be solved (and/or possibly thrown as a new Error type) in the database library, not the service layer.
 
-import { safStorage } from "@saflib/node";
+import { getSafContext } from "@saflib/node";
 
 export class UnhandledDatabaseError extends Error {
   constructor() {
@@ -21,7 +21,7 @@ export function queryWrapper<T, A extends any[]>(
       if (error instanceof HandledDatabaseError) {
         throw error;
       }
-      const ctx = safStorage.getStore();
+      const ctx = getSafContext();
       if (ctx) {
         ctx.log.error(error);
         if (error instanceof Error) {
