@@ -1,6 +1,8 @@
 import winston, { type Logger, format } from "winston";
 import { type TransformableInfo } from "logform";
 import { Writable } from "node:stream";
+import { type SafContext } from "./types.ts";
+import { testContext } from "./context.ts";
 
 export const consoleTransport = new winston.transports.Console({
   silent: process.env.NODE_ENV === "test",
@@ -70,6 +72,12 @@ let allStreamTransports: winston.transports.StreamTransportInstance[] = [];
  * by the caller, such as in the proto envelope, so that requests which span processes
  * can be correlated.
  */
-export const createLogger = (reqId: string): Logger => {
-  return baseLogger.child({ reqId });
+export const createLogger = (options?: SafContext): Logger => {
+  if (!options && process.env.NODE_ENV === "test") {
+    return baseLogger.child(testContext);
+  }
+  if (!options) {
+    throw new Error("SAF Context is required outside of unit tests");
+  }
+  return baseLogger.child(options);
 };
