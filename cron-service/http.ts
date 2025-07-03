@@ -9,6 +9,7 @@ import type { JobsMap } from "./src/types.ts";
 import type { DbOptions } from "@saflib/drizzle-sqlite3";
 
 export interface CronServiceOptions {
+  serviceName: string;
   dbOptions?: DbOptions;
   dbKey?: DbKey;
   jobs: JobsMap;
@@ -31,7 +32,12 @@ export function createApp(options: CronServiceOptions) {
       next();
     });
   });
-  app.use(createPreMiddleware({ apiSpec: jsonSpec }));
+  app.use(
+    createPreMiddleware({
+      apiSpec: jsonSpec,
+      serviceName: options.serviceName + ".cron",
+    }),
+  );
   app.use("/cron", cronRouter);
   app.use(recommendedErrorHandlers);
 

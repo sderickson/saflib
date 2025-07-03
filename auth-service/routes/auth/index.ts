@@ -19,13 +19,20 @@ import { jsonSpec } from "@saflib/auth-spec";
 import * as cookieParser from "cookie-parser";
 import { csrfDSC } from "../../middleware/csrf.ts";
 
-export const makeAuthRouter = () => {
+interface AuthRouterOptions {
+  servicePrefix?: string;
+}
+
+export const makeAuthRouter = (options: AuthRouterOptions = {}) => {
   const router = express.Router();
 
   router.use(
     createPreMiddleware({
       apiSpec: jsonSpec,
       authRequired: false,
+      serviceName: options.servicePrefix
+        ? options.servicePrefix + ".auth.http"
+        : "auth.http",
     }),
   );
 

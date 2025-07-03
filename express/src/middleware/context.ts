@@ -7,8 +7,7 @@ export const makeContextMiddleware = (serviceName: string) => {
     const operationName =
       req.openapi?.schema.operationId ??
       req.openapi?.openApiRoute ??
-      req.method + " " + req.route.path;
-    ("unknown-operation");
+      "unknown-operation";
     let reqId = "no-request-id";
     if (req.headers && req.headers["x-request-id"]) {
       reqId = req.headers["x-request-id"] as string;

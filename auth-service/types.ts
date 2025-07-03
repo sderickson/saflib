@@ -35,6 +35,7 @@ export interface AuthServiceCallbacks {
 }
 
 export interface AuthServerOptions {
+  servicePrefix?: string;
   dbKey?: DbKey;
   callbacks: AuthServiceCallbacks;
 }

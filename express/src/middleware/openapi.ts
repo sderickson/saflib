@@ -5,7 +5,6 @@ import type {
 } from "express-openapi-validator/dist/framework/types.ts";
 import type { OpenAPIV3 } from "express-openapi-validator/dist/framework/types.ts";
 import type { Request } from "express";
-import { createScopeValidator } from "./scopes.ts";
 
 declare global {
   namespace Express {
@@ -47,7 +46,5 @@ export const createOpenApiValidator = (
       validateRequests: true,
       validateResponses,
     }),
-    // Scope validation
-    createScopeValidator(),
   ];
 };

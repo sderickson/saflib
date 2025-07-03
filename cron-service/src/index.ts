@@ -44,9 +44,6 @@ async function executeJobWithHandling(
       let statusToSet: "success" | "fail" | "timed out" = "fail"; // Default to fail
 
       try {
-        log.info(
-          `Executing job: ${jobName} with timeout ${jobTimeoutSeconds}s`,
-        );
         // Set status to running *before* starting the handler/timeout race
         await cronDb.jobSettings.setLastRunStatus(dbKey, jobName, "running");
 
@@ -117,8 +114,14 @@ export const startJobs = async (
     const { error } = await cronDb.jobSettings.getByName(dbKey, jobName);
     if (error) {
       if (error instanceof JobSettingNotFoundError) {
+        logger.warn(
+          `Job setting for '${jobName}' not found in DB. Creating default (disabled).`,
+        );
         await cronDb.jobSettings.setEnabled(dbKey, jobName, false);
       } else {
+        logger.error(
+          `Failed to retrieve initial job setting for '${jobName}'. Skipping job.`,
+        );
         continue;
       }
     }
@@ -127,17 +130,21 @@ export const startJobs = async (
       cronTime: jobConfig.schedule,
       onTick: async () => {
         // Use schedulerLogger for logs before entering job-specific context
-        const { result: currentJobSetting, error } =
-          await cronDb.jobSettings.getByName(dbKey, jobName);
-        if (error) {
-          reportError(error);
-          return;
-        }
-        if (!currentJobSetting.enabled) {
-          return;
-        }
+        try {
+          const { result: currentJobSetting, error } =
+            await cronDb.jobSettings.getByName(dbKey, jobName);
+          if (error) {
+            reportError(error);
+            return;
+          }
+          if (!currentJobSetting.enabled) {
+            return;
+          }
 
-        await executeJobWithHandling(serviceName, jobName, jobConfig, dbKey);
+          await executeJobWithHandling(serviceName, jobName, jobConfig, dbKey);
+        } catch (error) {
+          reportError(error);
+        }
       },
       start: true,
     });

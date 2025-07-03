@@ -5,6 +5,7 @@
     "test": "npm run test --workspaces --if-present --parallel",
     "test:coverage": "npm run test:coverage --workspaces --if-present --parallel",
     "test:global": "vitest run",
+    "test:global:watch": "vitest",
     "typecheck": "npm run typecheck --workspaces --if-present --parallel",
     "typecheck:global": "vue-tsc -b"
   },

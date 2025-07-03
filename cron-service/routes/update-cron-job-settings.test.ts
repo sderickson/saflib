@@ -18,7 +18,7 @@ describe("PUT /jobs/settings", () => {
   beforeEach(async () => {
     // Recreate db instance for each test for isolation
     dbKey = cronDb.connect();
-    app = createApp({ dbKey, jobs: mockJobs });
+    app = createApp({ dbKey, jobs: mockJobs, serviceName: "cron" });
   });
 
   it("should update the enabled status of an existing job and return the updated setting", async () => {

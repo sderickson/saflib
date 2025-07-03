@@ -17,7 +17,7 @@ describe("GET /jobs", () => {
   beforeEach(async () => {
     // Recreate db instance for each test for isolation
     dbKey = cronDb.connect();
-    app = createApp({ dbKey, jobs: mockJobs });
+    app = createApp({ dbKey, jobs: mockJobs, serviceName: "cron" });
 
     seededSettings = []; // Reset seeded settings
 

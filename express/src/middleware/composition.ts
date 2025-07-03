@@ -10,6 +10,7 @@ import { createOpenApiValidator } from "./openapi.ts";
 import helmet from "helmet";
 import { makeContextMiddleware } from "./context.ts";
 import { blockHtml } from "./blockHtml.ts";
+import { createScopeValidator } from "./scopes.ts";
 
 interface PreMiddlewareOptions {
   serviceName: string;
@@ -58,6 +59,7 @@ export const createPreMiddleware = (
     makeContextMiddleware(serviceName),
     ...corsMiddleware,
     ...authMiddleware,
+    createScopeValidator(),
   ];
 };
 
