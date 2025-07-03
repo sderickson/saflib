@@ -21,7 +21,13 @@ const baseLogger = winston.createLogger({
   ),
 });
 
-let allStreamTransports: winston.transports.StreamTransportInstance[] = [];
+/**
+ * For production, when the application starts, it should add any transports using this function.
+ * Then all SAF-based applications will log to winston and they'll propagate.
+ */
+export const addTransport = (transport: winston.transport) => {
+  baseLogger.add(transport);
+};
 
 /**
  * Adds a simple stream transport to the base logger.
@@ -45,6 +51,9 @@ export const addSimpleStreamTransport = (fn: (message: string) => boolean) => {
   baseLogger.add(transport);
 };
 
+/**
+ * Call this at the end of a test that uses addSimpleStreamTransport.
+ */
 export const removeAllSimpleStreamTransports = () => {
   allStreamTransports.forEach((transport) => {
     baseLogger.remove(transport);
@@ -52,10 +61,17 @@ export const removeAllSimpleStreamTransports = () => {
   allStreamTransports = [];
 };
 
+let allStreamTransports: winston.transports.StreamTransportInstance[] = [];
+
 /**
- * Creates a child logger with the specified request ID.
- * @param reqId - The request ID to associate with log messages.
- * @returns A child Logger instance.
+ * Creates a child logger with the specified request ID. Any servers or processors
+ * should use this to create a unique logger for each request or job or what have you.
+ * However, if not "instantiating" the request, you should use the request ID provided
+ * by the caller, such as in the proto envelope, so that requests which span processes
+ * can be correlated.
+ *
+ * Instantiators are server-side, so things like reverse proxies, async job services,
+ * and http servers which are directly accessible by clients.
  */
 export const createLogger = (reqId: string): Logger => {
   return baseLogger.child({ reqId });
