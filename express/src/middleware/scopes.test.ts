@@ -62,7 +62,6 @@ describe("createScopeValidator", () => {
         userScopes: [],
         userId: defaultUserId,
         userEmail: defaultUserEmail,
-        userEmailVerified: true,
       },
       ...mockContext,
     });
@@ -100,7 +99,6 @@ describe("createScopeValidator", () => {
         userScopes: ["*"],
         userId: defaultUserId,
         userEmail: defaultUserEmail,
-        userEmailVerified: true,
       },
       ...mockContext,
     });
@@ -118,7 +116,6 @@ describe("createScopeValidator", () => {
         userScopes: ["read", "write", "delete"],
         userId: defaultUserId,
         userEmail: defaultUserEmail,
-        userEmailVerified: true,
       },
       ...mockContext,
     });
@@ -136,7 +133,6 @@ describe("createScopeValidator", () => {
         userScopes: ["read", "write", "admin"],
         userId: defaultUserId,
         userEmail: defaultUserEmail,
-        userEmailVerified: true,
       },
       ...mockContext,
     });
@@ -154,7 +150,6 @@ describe("createScopeValidator", () => {
         userScopes: ["read"],
         userId: defaultUserId,
         userEmail: defaultUserEmail,
-        userEmailVerified: true,
       },
       ...mockContext,
     });
@@ -180,7 +175,6 @@ describe("createScopeValidator", () => {
         userScopes: ["read"],
         userId: defaultUserId,
         userEmail: defaultUserEmail,
-        userEmailVerified: true,
       },
       ...mockContext,
     });
@@ -216,7 +210,6 @@ describe("createScopeValidator", () => {
         userScopes: [],
         userId: defaultUserId,
         userEmail: defaultUserEmail,
-        userEmailVerified: true,
       },
       ...mockContext,
     });
@@ -240,7 +233,6 @@ describe("createScopeValidator", () => {
         userScopes: ["read", "user"],
         userId: defaultUserId,
         userEmail: defaultUserEmail,
-        userEmailVerified: true,
       },
       ...mockContext,
     });

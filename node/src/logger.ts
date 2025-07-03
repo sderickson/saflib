@@ -9,8 +9,8 @@ export const consoleTransport = new winston.transports.Console({
 const baseLogger = winston.createLogger({
   transports: [consoleTransport],
   format: format.combine(
-    format.colorize({ all: true }),
     format.timestamp(),
+    format.json(),
     format.printf(
       (info: TransformableInfo & { timestamp?: string; reqId?: string }) => {
         const { timestamp, level, message, reqId } = info;
@@ -69,9 +69,6 @@ let allStreamTransports: winston.transports.StreamTransportInstance[] = [];
  * However, if not "instantiating" the request, you should use the request ID provided
  * by the caller, such as in the proto envelope, so that requests which span processes
  * can be correlated.
- *
- * Instantiators are server-side, so things like reverse proxies, async job services,
- * and http servers which are directly accessible by clients.
  */
 export const createLogger = (reqId: string): Logger => {
   return baseLogger.child({ reqId });

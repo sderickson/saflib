@@ -15,13 +15,11 @@ export const contextMiddleware: Handler = (req, _res, next) => {
   const userId = req.headers["x-user-id"];
   const userEmail = req.headers["x-user-email"];
   const userScopes = req.headers["x-user-scopes"];
-  const userEmailVerified = req.headers["x-user-email-verified"] === "true";
   const scopes = userScopes ? (userScopes as string).split(",") : [];
   if (userId && userEmail && scopes) {
     auth = {
       userId: parseInt(userId as string),
       userEmail: userEmail as string,
-      userEmailVerified,
       userScopes: scopes,
     };
   }
