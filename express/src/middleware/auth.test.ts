@@ -11,7 +11,7 @@ describe("Auth Middleware", () => {
 
   beforeEach(() => {
     app = express();
-    app.use(createPreMiddleware({ authRequired: true }));
+    app.use(createPreMiddleware({ authRequired: true, serviceName: "test" }));
     app.get("/test", (_req, res) => {
       const { auth } = getSafContext();
       res.status(200).json({ authFromMiddleware: auth });

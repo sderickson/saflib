@@ -1,6 +1,6 @@
 import { readFileSync } from "fs";
 import { join } from "path";
-import { getSafContext } from "@saflib/node";
+import { getSafReporters } from "@saflib/node";
 
 /**
  * Given a string which may have newlines already included, add /n to each line such that no line is longer than maxLineWidth.
@@ -58,7 +58,7 @@ export function allChildrenSettled(snapshot: any) {
 }
 
 export const print = (msg: string, noNewLine = false) => {
-  const { log } = getSafContext();
+  const { log } = getSafReporters();
   if (!noNewLine) {
     log.info("");
   }

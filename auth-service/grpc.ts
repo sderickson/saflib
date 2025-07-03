@@ -13,15 +13,20 @@ export function makeGrpcServer(options: AuthServerOptions): grpc.Server {
   if (!dbKey) {
     dbKey = authDb.connect();
   }
-  const addauthServiceContext = makeGrpcServerContextWrapper(
+  const addAuthServiceContext = makeGrpcServerContextWrapper(
     authServiceStorage,
     { dbKey, callbacks: options.callbacks },
   );
-  const wrap = (impl: any) => addSafContext(addauthServiceContext(impl));
 
   const server = new grpc.Server();
 
-  server.addService(UsersServiceDefinition, wrap(UsersServiceImpl));
+  server.addService(
+    UsersServiceDefinition,
+    addSafContext(
+      addAuthServiceContext(UsersServiceImpl),
+      "auth-service.grpc.users",
+    ),
+  );
 
   return server;
 }

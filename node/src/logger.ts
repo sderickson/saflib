@@ -81,3 +81,14 @@ export const createLogger = (options?: SafContext): Logger => {
   }
   return baseLogger.child(options);
 };
+
+/**
+ * Service loggers should only be used for service-level events, such as service startup.
+ */
+export const createServiceLogger = (serviceName: string): Logger => {
+  return baseLogger.child({
+    serviceName,
+    operationName: "(none)",
+    requestId: "(none)",
+  });
+};

@@ -16,7 +16,12 @@ import { status } from "@grpc/grpc-js";
 import { AsyncLocalStorage } from "async_hooks";
 import { defaultErrorReporter } from "../node/src/errors";
 
-export const addSafContext: ServiceImplementationWrapper = (
+export type SafServiceImplementationWrapper = (
+  impl: UntypedServiceImplementation,
+  serviceName: string,
+) => UntypedServiceImplementation;
+
+export const addSafContext: SafServiceImplementationWrapper = (
   impl,
   serviceName,
 ) => {

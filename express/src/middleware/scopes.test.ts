@@ -42,8 +42,9 @@ describe("createScopeValidator", () => {
     serial: 0,
   };
   const mockContext: SafContext = {
-    log: vi.fn() as any,
     requestId: "123",
+    serviceName: "test",
+    operationName: "test",
   };
 
   beforeEach(() => {

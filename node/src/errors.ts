@@ -1,4 +1,5 @@
-import { getSafContext } from "./context";
+import type { Logger } from "winston";
+import { getSafContext, safContextStorage } from "./context";
 import { getSafReporters } from "./reporters.ts";
 import type {
   ErrorCollector,
@@ -54,4 +55,39 @@ export const defaultErrorReporter: ErrorReporter = (error, options) => {
     stack: e.stack,
     ...options?.extra,
   });
+};
+
+export const makeServiceErrorReporter = (
+  serviceName: string,
+  logger: Logger,
+): ErrorReporter => {
+  return (error, options) => {
+    let e: Error;
+
+    const store = safContextStorage.getStore();
+    if (store) {
+      e = new Error("Used service error reporter in a non-service context");
+    } else if (!(error instanceof Error)) {
+      e = new Error("Thrown error was not an Error");
+    } else {
+      e = error;
+    }
+    const collectorParam: ErrorCollectorParam = {
+      error: e,
+      level: options?.level || "error",
+      extra: options?.extra || {},
+      tags: {
+        "service.name": serviceName,
+        "operation.name": "(none)",
+        "request.id": "(none)",
+      },
+    };
+
+    getErrorCollectors().forEach((collector) => collector(collectorParam));
+
+    logger.log(collectorParam.level, e.message, {
+      stack: e.stack,
+      ...options?.extra,
+    });
+  };
 };

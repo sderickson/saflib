@@ -8,7 +8,6 @@ interface GrpcServerOptions {
 
 export type ServiceImplementationWrapper = (
   impl: UntypedServiceImplementation,
-  serviceName: string,
 ) => UntypedServiceImplementation;
 
 export async function startGrpcServer(
