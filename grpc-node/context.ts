@@ -3,13 +3,23 @@ import type {
   UntypedHandleCall,
 } from "@grpc/grpc-js";
 import type { ServiceImplementationWrapper } from "@saflib/grpc-node";
-import { type Auth, type SafContext, safContextStorage } from "@saflib/node";
+import {
+  type Auth,
+  type SafContext,
+  safContextStorage,
+  type SafReporters,
+  safReportersStorage,
+} from "@saflib/node";
 import { SafAuth } from "@saflib/grpc-specs";
 import { createLogger } from "@saflib/node";
 import { status } from "@grpc/grpc-js";
 import { AsyncLocalStorage } from "async_hooks";
+import { defaultErrorReporter } from "../node/src/errors";
 
-export const addSafContext: ServiceImplementationWrapper = (impl) => {
+export const addSafContext: ServiceImplementationWrapper = (
+  impl,
+  serviceName,
+) => {
   const wrappedService: UntypedServiceImplementation = {};
 
   for (const [methodName, methodImpl] of Object.entries(impl)) {
@@ -34,31 +44,40 @@ export const addSafContext: ServiceImplementationWrapper = (impl) => {
       }
       const context: SafContext = {
         requestId: reqId,
-        log: createLogger(reqId),
+        serviceName,
+        operationName: methodName,
         auth,
+      };
+      const logger = createLogger(reqId);
+      const reporters: SafReporters = {
+        log: logger,
+        reportError: defaultErrorReporter,
       };
       // Run the original implementation within the context
       return safContextStorage.run(context, () => {
-        try {
-          const result = methodImpl(call, callback) as any;
-          if (result instanceof Promise) {
-            return result.catch((error) => {
-              const e = error as Error;
-              context.log.error(
-                `Error in ${methodName}: ${e.message}\n${e.stack}`,
-              );
-              callback(
-                { code: status.INTERNAL, message: e.message } as any,
-                null,
-              );
-            });
+        return safReportersStorage.run(reporters, () => {
+          try {
+            const result = methodImpl(call, callback) as any;
+            if (result instanceof Promise) {
+              return result.catch((error) => {
+                const e = error as Error;
+                defaultErrorReporter(e);
+                callback(
+                  { code: status.INTERNAL, message: e.message } as any,
+                  null,
+                );
+              });
+            }
+            return result;
+          } catch (error) {
+            const e = error as Error;
+            defaultErrorReporter(e);
+            callback(
+              { code: status.INTERNAL, message: e.message } as any,
+              null,
+            );
           }
-          return result;
-        } catch (error) {
-          const e = error as Error;
-          context.log.error(`Error in ${methodName}: ${e.message}\n${e.stack}`);
-          callback({ code: status.INTERNAL, message: e.message } as any, null);
-        }
+        });
       });
     };
     wrappedService[methodName] = wrappedMethod;

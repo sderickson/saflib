@@ -4,6 +4,7 @@ import { AsyncLocalStorage } from "async_hooks";
 
 export const testReporters: SafReporters = {
   log: createLogger(),
+  reportError: () => {},
 };
 
 export const safReportersStorage = new AsyncLocalStorage<SafReporters>();

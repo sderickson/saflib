@@ -39,6 +39,55 @@ export interface SafContext {
   auth?: Auth;
 }
 
+// Taken from Sentry
+export type ErrorLevels =
+  | "fatal"
+  | "error"
+  | "warning"
+  // | "log" // This one seems superfluous, and vague...
+  | "info"
+  | "debug";
+
+/*
+ * Subset of properties given to Sentry.
+ * https://docs.sentry.io/platforms/javascript/guides/node/apis/#captureException
+ *
+ * Mainly missing fields that are or should be handled automatically.
+ * - user
+ * - contexts
+ * - fingerprint
+ * - tags
+ */
+export interface ErrorReportOptions {
+  // default: error
+  level?: ErrorLevels;
+  extra?: Record<string, unknown>;
+}
+
+// The function application logic has access to for reporting errors.
+export type ErrorReporter = (
+  error: unknown, // Should be an Error, will throw an error if not
+  options?: ErrorReportOptions,
+) => void;
+
+/*
+ * Collectors take errors reported to them and propagate them to telemetry services such as Sentry.
+ */
+export interface ErrorCollectorParam {
+  error: Error;
+
+  user?: {
+    id: number;
+    ip_address?: string;
+  };
+
+  level: ErrorLevels;
+  extra: Record<string, unknown>;
+  tags: Record<string, string>;
+}
+
+export type ErrorCollector = (param: ErrorCollectorParam) => void;
+
 /**
  * Clients for reporting various sorts of telemetry. They're expected to be instantiated with a SafContext,
  * so that context is included.
@@ -48,6 +97,11 @@ export interface SafReporters {
    * The generic logger to use for this context. This is for leveled, message logs, for monitoring and debugging.
    */
   log: Logger;
+
+  /*
+   *
+   */
+  reportError: ErrorReporter;
 
   // TODO: Product Events
   // TODO: Errors
