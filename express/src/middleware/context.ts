@@ -1,4 +1,4 @@
-import { type SafContext, safStorage } from "@saflib/node";
+import { type SafContext, safContextStorage } from "@saflib/node";
 import type { Handler } from "express";
 import { createLogger } from "@saflib/node";
 import type { Auth } from "@saflib/node";
@@ -29,7 +29,7 @@ export const contextMiddleware: Handler = (req, _res, next) => {
     log,
     auth,
   };
-  safStorage.run(context, () => {
+  safContextStorage.run(context, () => {
     next();
   });
 };

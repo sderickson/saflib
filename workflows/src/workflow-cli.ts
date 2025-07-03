@@ -3,7 +3,7 @@ import type { WorkflowMeta } from "@saflib/workflows";
 import { loadWorkflow, saveWorkflow } from "./file-io.ts";
 import { addNewLinesToString } from "./utils.ts";
 import type { SafContext } from "@saflib/node";
-import { generateRequestId, safStorage } from "@saflib/node";
+import { generateRequestId, safContextStorage } from "@saflib/node";
 import winston, { format } from "winston";
 import { type TransformableInfo } from "logform";
 
@@ -91,6 +91,6 @@ export function runWorkflowCli(workflows: WorkflowMeta[]) {
     log: baseLogger,
   };
 
-  safStorage.enterWith(ctx);
+  safContextStorage.enterWith(ctx);
   program.parse(process.argv);
 }

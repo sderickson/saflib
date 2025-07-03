@@ -3,7 +3,7 @@ import type {
   UntypedHandleCall,
 } from "@grpc/grpc-js";
 import type { ServiceImplementationWrapper } from "@saflib/grpc-node";
-import { type Auth, type SafContext, safStorage } from "@saflib/node";
+import { type Auth, type SafContext, safContextStorage } from "@saflib/node";
 import { SafAuth } from "@saflib/grpc-specs";
 import { createLogger } from "@saflib/node";
 import { status } from "@grpc/grpc-js";
@@ -38,7 +38,7 @@ export const addSafContext: ServiceImplementationWrapper = (impl) => {
         auth,
       };
       // Run the original implementation within the context
-      return safStorage.run(context, () => {
+      return safContextStorage.run(context, () => {
         try {
           const result = methodImpl(call, callback) as any;
           if (result instanceof Promise) {

@@ -8,10 +8,10 @@ export const testContext: SafContext = {
   operationName: "test-operation",
 };
 
-export const safStorage = new AsyncLocalStorage<SafContext>();
+export const safContextStorage = new AsyncLocalStorage<SafContext>();
 
-export const getSafContext = () => {
-  const store = safStorage.getStore();
+export const getSafContext = (): SafContext => {
+  const store = safContextStorage.getStore();
   if (!store && process.env.NODE_ENV === "test") {
     return testContext;
   }
@@ -22,7 +22,7 @@ export const getSafContext = () => {
 };
 
 export const getSafContextWithAuth = (): SafContextWithAuth => {
-  const store = safStorage.getStore();
+  const store = safContextStorage.getStore();
   if (!store) {
     throw new Error("SafContext not found");
   }

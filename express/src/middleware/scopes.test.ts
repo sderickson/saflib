@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { Request, Response, NextFunction } from "express";
 import { createScopeValidator } from "./scopes.js";
 import type { OpenApiRequestMetadata } from "express-openapi-validator/dist/framework/types.js"; // Import the actual type
-import { type SafContext, safStorage } from "@saflib/node";
+import { type SafContext, safContextStorage } from "@saflib/node";
 
 // Define a type for the necessary parts of OpenApiRequestMetadata
 interface MockOpenApiMetadata extends Partial<OpenApiRequestMetadata> {
@@ -57,7 +57,7 @@ describe("createScopeValidator", () => {
       send: vi.fn(),
     };
     mockNext = vi.fn();
-    vi.spyOn(safStorage, "getStore").mockReturnValue({
+    vi.spyOn(safContextStorage, "getStore").mockReturnValue({
       auth: {
         userScopes: [],
         userId: defaultUserId,
@@ -94,7 +94,7 @@ describe("createScopeValidator", () => {
       ...defaultOpenApiMetadata,
       schema: { security: [{ scopes: ["admin"] }] },
     };
-    vi.mocked(safStorage.getStore).mockReturnValue({
+    vi.mocked(safContextStorage.getStore).mockReturnValue({
       auth: {
         userScopes: ["*"],
         userId: defaultUserId,
@@ -111,7 +111,7 @@ describe("createScopeValidator", () => {
       ...defaultOpenApiMetadata,
       schema: { security: [{ scopes: ["read", "write"] }] },
     };
-    vi.mocked(safStorage.getStore).mockReturnValue({
+    vi.mocked(safContextStorage.getStore).mockReturnValue({
       auth: {
         userScopes: ["read", "write", "delete"],
         userId: defaultUserId,
@@ -128,7 +128,7 @@ describe("createScopeValidator", () => {
       ...defaultOpenApiMetadata,
       schema: { security: [{ scopes: ["read"] }, { scopes: ["write"] }] },
     };
-    vi.mocked(safStorage.getStore).mockReturnValue({
+    vi.mocked(safContextStorage.getStore).mockReturnValue({
       auth: {
         userScopes: ["read", "write", "admin"],
         userId: defaultUserId,
@@ -145,7 +145,7 @@ describe("createScopeValidator", () => {
       ...defaultOpenApiMetadata,
       schema: { security: [{ scopes: ["admin", "read"] }] },
     };
-    vi.mocked(safStorage.getStore).mockReturnValue({
+    vi.mocked(safContextStorage.getStore).mockReturnValue({
       auth: {
         userScopes: ["read"],
         userId: defaultUserId,
@@ -170,7 +170,7 @@ describe("createScopeValidator", () => {
         security: [{ scopes: ["admin", "read"] }, { scopes: ["write"] }],
       },
     };
-    vi.mocked(safStorage.getStore).mockReturnValue({
+    vi.mocked(safContextStorage.getStore).mockReturnValue({
       auth: {
         userScopes: ["read"],
         userId: defaultUserId,
@@ -193,7 +193,7 @@ describe("createScopeValidator", () => {
       ...defaultOpenApiMetadata,
       schema: { security: [{ scopes: ["read"] }] },
     };
-    vi.mocked(safStorage.getStore).mockReturnValue({
+    vi.mocked(safContextStorage.getStore).mockReturnValue({
       ...mockContext,
     });
     scopeValidator(mockReq as Request, mockRes as Response, mockNext);
@@ -205,7 +205,7 @@ describe("createScopeValidator", () => {
       ...defaultOpenApiMetadata,
       schema: { security: [{ scopes: ["read"] }] },
     };
-    vi.mocked(safStorage.getStore).mockReturnValue({
+    vi.mocked(safContextStorage.getStore).mockReturnValue({
       auth: {
         userScopes: [],
         userId: defaultUserId,
@@ -228,7 +228,7 @@ describe("createScopeValidator", () => {
       ...defaultOpenApiMetadata,
       schema: { security: [{ scopes: ["admin", "read", "special"] }] },
     };
-    vi.mocked(safStorage.getStore).mockReturnValue({
+    vi.mocked(safContextStorage.getStore).mockReturnValue({
       auth: {
         userScopes: ["read", "user"],
         userId: defaultUserId,
