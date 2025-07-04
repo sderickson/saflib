@@ -65,7 +65,6 @@ async function executeJobWithHandling(
 
         // If race succeeds without error
         statusToSet = "success";
-        log.info(`Job ${jobName} finished successfully.`);
       } catch (error) {
         reportError(error);
         const isErrorInstance = error instanceof Error;

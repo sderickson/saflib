@@ -2,7 +2,7 @@ import winston, { type Logger, format } from "winston";
 import { type TransformableInfo } from "logform";
 import { Writable } from "node:stream";
 import { type SafContext } from "./types.ts";
-import { testContext } from "./context.ts";
+import { getServiceName, testContext } from "./context.ts";
 
 export const consoleTransport = new winston.transports.Console({
   silent: process.env.NODE_ENV === "test",
@@ -94,6 +94,7 @@ export const createLogger = (options?: LoggerContext): Logger => {
    * Each service has a single image, which runs subsystems based on env variables.
    */
   const snakeCaseOptions = {
+    service_name: getServiceName(),
     subsystem_name: options.subsystemName,
     operation_name: options.operationName,
     request_id: options.requestId,
