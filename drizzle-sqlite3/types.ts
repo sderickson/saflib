@@ -6,6 +6,7 @@ export type Schema = Record<string, unknown>;
 export type DbKey = symbol;
 
 export interface DbOptions {
+  name?: string;
   onDisk?: boolean | string;
   doNotCreate?: boolean;
 }

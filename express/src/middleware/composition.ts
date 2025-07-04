@@ -13,7 +13,7 @@ import { blockHtml } from "./blockHtml.ts";
 import { createScopeValidator } from "./scopes.ts";
 
 interface PreMiddlewareOptions {
-  serviceName: string;
+  subsystemName?: string;
   apiSpec?: OpenAPIV3.DocumentV3;
   authRequired?: boolean;
   disableCors?: boolean;
@@ -23,7 +23,7 @@ interface PreMiddlewareOptions {
 export const createPreMiddleware = (
   options: PreMiddlewareOptions,
 ): Handler[] => {
-  const { apiSpec, authRequired, disableCors, healthCheck, serviceName } =
+  const { apiSpec, authRequired, disableCors, healthCheck, subsystemName } =
     options;
 
   let healthMiddleware: Handler = healthRouter;
@@ -57,7 +57,7 @@ export const createPreMiddleware = (
     ...sanitizeMiddleware,
     ...corsMiddleware,
     ...openApiValidatorMiddleware,
-    makeContextMiddleware(serviceName),
+    makeContextMiddleware(subsystemName ? "http." + subsystemName : "http"),
     ...authMiddleware,
     createScopeValidator(),
   ];

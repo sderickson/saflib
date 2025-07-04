@@ -4,11 +4,12 @@ import {
   defaultErrorReporter,
   generateRequestId,
   getSafReporters,
-  makeServiceErrorReporter,
   safContextStorage,
   safReportersStorage,
+  makeSubsystemReporters,
   type SafContext,
   type SafReporters,
+  getServiceName,
 } from "@saflib/node";
 import { cronDb } from "@saflib/cron-db";
 
@@ -19,7 +20,7 @@ import { JobSettingNotFoundError } from "@saflib/cron-db";
 // --- Helper Function for Job Execution and Error Handling ---
 
 async function executeJobWithHandling(
-  serviceName: string,
+  subsystemName: string,
   jobName: string,
   jobConfig: JobConfig,
   dbKey: DbKey,
@@ -27,7 +28,8 @@ async function executeJobWithHandling(
   const reqId = generateRequestId();
   const context: SafContext = {
     requestId: reqId,
-    serviceName: serviceName + ".cron",
+    serviceName: getServiceName(),
+    subsystemName,
     operationName: jobName,
   };
   const reporters: SafReporters = {
@@ -98,7 +100,7 @@ async function executeJobWithHandling(
 
 // --- Main Job Scheduling Logic ---
 interface StartJobConfig {
-  serviceName: string;
+  subsystemName: string;
   dbKey: DbKey;
 }
 
@@ -106,23 +108,21 @@ export const startJobs = async (
   jobsToStart: JobsMap,
   config: StartJobConfig,
 ) => {
-  const logger = createLogger({
-    serviceName: config.serviceName,
-    operationName: "startJobs",
-    requestId: "",
-  });
-  const reportError = makeServiceErrorReporter(config.serviceName, logger);
-  const { serviceName, dbKey } = config;
+  const { log, reportError } = makeSubsystemReporters(
+    config.subsystemName,
+    "startJobs",
+  );
+  const { dbKey } = config;
   for (const [jobName, jobConfig] of Object.entries(jobsToStart)) {
     const { error } = await cronDb.jobSettings.getByName(dbKey, jobName);
     if (error) {
       if (error instanceof JobSettingNotFoundError) {
-        logger.warn(
+        log.warn(
           `Job setting for '${jobName}' not found in DB. Creating default (disabled).`,
         );
         await cronDb.jobSettings.setEnabled(dbKey, jobName, false);
       } else {
-        logger.error(
+        log.error(
           `Failed to retrieve initial job setting for '${jobName}'. Skipping job.`,
         );
         continue;
@@ -144,7 +144,12 @@ export const startJobs = async (
             return;
           }
 
-          await executeJobWithHandling(serviceName, jobName, jobConfig, dbKey);
+          await executeJobWithHandling(
+            config.subsystemName,
+            jobName,
+            jobConfig,
+            dbKey,
+          );
         } catch (error) {
           reportError(error);
         }

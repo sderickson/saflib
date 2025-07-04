@@ -65,6 +65,8 @@ export const removeAllSimpleStreamTransports = () => {
 
 let allStreamTransports: winston.transports.StreamTransportInstance[] = [];
 
+type LoggerContext = Omit<SafContext, "serviceName">;
+
 /**
  * Creates a child logger with the specified request ID. Any servers or processors
  * should use this to create a unique logger for each request or job or what have you.
@@ -72,7 +74,7 @@ let allStreamTransports: winston.transports.StreamTransportInstance[] = [];
  * by the caller, such as in the proto envelope, so that requests which span processes
  * can be correlated.
  */
-export const createLogger = (options?: SafContext): Logger => {
+export const createLogger = (options?: LoggerContext): Logger => {
   if (!options && process.env.NODE_ENV === "test") {
     return baseLogger.child(testContext);
   }
@@ -92,8 +94,7 @@ export const createLogger = (options?: SafContext): Logger => {
    * Each service has a single image, which runs subsystems based on env variables.
    */
   const snakeCaseOptions = {
-    server_name: options.serviceName.split(".")[0],
-    service_name: options.serviceName,
+    subsystem_name: options.subsystemName,
     operation_name: options.operationName,
     request_id: options.requestId,
   };

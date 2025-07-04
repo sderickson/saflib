@@ -9,6 +9,7 @@ import {
   safContextStorage,
   type SafReporters,
   safReportersStorage,
+  getServiceName,
 } from "@saflib/node";
 import { SafAuth } from "@saflib/grpc-specs";
 import { createLogger } from "@saflib/node";
@@ -23,7 +24,7 @@ export type SafServiceImplementationWrapper = (
 
 export const addSafContext: SafServiceImplementationWrapper = (
   impl,
-  serviceName,
+  subsystemName,
 ) => {
   const wrappedService: UntypedServiceImplementation = {};
 
@@ -49,7 +50,8 @@ export const addSafContext: SafServiceImplementationWrapper = (
       }
       const context: SafContext = {
         requestId: reqId,
-        serviceName,
+        serviceName: getServiceName(),
+        subsystemName,
         operationName: methodName,
         auth,
       };

@@ -57,8 +57,14 @@ export const defaultErrorReporter: ErrorReporter = (error, options) => {
   });
 };
 
-export const makeServiceErrorReporter = (
-  serviceName: string,
+/**
+ * During setup, subsystems should use this to create their own
+ * set of reporters. "Operation name" should be the name of the
+ * function.
+ */
+export const makeSubsystemErrorReporter = (
+  subsystemName: string,
+  operationName: string,
   logger: Logger,
 ): ErrorReporter => {
   return (error, options) => {
@@ -77,9 +83,9 @@ export const makeServiceErrorReporter = (
       level: options?.level || "error",
       extra: options?.extra || {},
       tags: {
-        "service.name": serviceName,
-        "operation.name": "(none)",
-        "request.id": "(none)",
+        "subsystem.name": subsystemName,
+        "operation.name": operationName,
+        "request.id": "none",
       },
     };
 

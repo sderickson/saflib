@@ -91,10 +91,13 @@ export function runWorkflowCli(workflows: WorkflowMeta[]) {
     ),
   });
 
+  // Currently this context is not being used...
+  // Just putting strings here for typing.
   const ctx: SafContext = {
     requestId: reqId,
-    serviceName: "workflows-cli",
+    serviceName: "workflows",
     operationName: "workflow-cli",
+    subsystemName: "workflows",
   };
 
   const reporters: SafReporters = {
