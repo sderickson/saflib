@@ -57,6 +57,9 @@ export const setServiceName = (name: string) => {
 };
 
 export const getServiceName = (): string => {
+  if (process.env.NODE_ENV === "test") {
+    return "test";
+  }
   if (!serviceName) {
     throw new Error("Service name is not set");
   }
