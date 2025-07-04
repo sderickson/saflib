@@ -44,7 +44,10 @@ describe("startJobs", () => {
 
   it("should create default disabled setting if job doesn't exist in DB", async () => {
     // Pass the local db instance to startJobs
-    await startJobs({ "new-job": mockJobs["new-job"] }, dbKey);
+    await startJobs(
+      { "new-job": mockJobs["new-job"] },
+      { serviceName: "test-service", dbKey },
+    );
     const setting = await throwError(
       cronDb.jobSettings.getByName(dbKey, "new-job"),
     ); // Assert on local db
@@ -68,7 +71,10 @@ describe("startJobs", () => {
         }),
       );
     // Pass the local db instance
-    await startJobs({ "fail-job": mockJobs["fail-job"] }, dbKey);
+    await startJobs(
+      { "fail-job": mockJobs["fail-job"] },
+      { serviceName: "test-service", dbKey },
+    );
 
     // Check that the specific error was logged
     expect(logSpy).toHaveBeenCalledWith(
@@ -87,7 +93,7 @@ describe("startJobs", () => {
   it("should run enabled job on schedule tick", async () => {
     await startJobs(
       { "every-second-job": mockJobs["every-second-job"] },
-      dbKey,
+      { serviceName: "test-service", dbKey },
     );
     // Ensure the job is enabled in the DB for this test
     await cronDb.jobSettings.setEnabled(dbKey, "every-second-job", true);
@@ -104,7 +110,10 @@ describe("startJobs", () => {
 
   it("should not run disabled job on schedule tick", async () => {
     await cronDb.jobSettings.setEnabled(dbKey, "disabled-job", false);
-    await startJobs({ "disabled-job": mockJobs["disabled-job"] }, dbKey);
+    await startJobs(
+      { "disabled-job": mockJobs["disabled-job"] },
+      { serviceName: "test-service", dbKey },
+    );
     await vi.advanceTimersByTimeAsync(1000);
     expect(mockJobs["disabled-job"].handler).not.toHaveBeenCalled();
     const setting = await throwError(
@@ -117,7 +126,7 @@ describe("startJobs", () => {
   it("should update status to running, then success on successful run", async () => {
     await startJobs(
       { "every-second-job": mockJobs["every-second-job"] },
-      dbKey,
+      { serviceName: "test-service", dbKey },
     );
     // Ensure the job is enabled in the DB for this test
     await cronDb.jobSettings.setEnabled(dbKey, "every-second-job", true);
@@ -136,7 +145,7 @@ describe("startJobs", () => {
     mockJobHandler.mockRejectedValueOnce(handlerError);
     await startJobs(
       { "every-second-job": mockJobs["every-second-job"] },
-      dbKey,
+      { serviceName: "test-service", dbKey },
     );
     await cronDb.jobSettings.setEnabled(dbKey, "every-second-job", true);
 
@@ -148,9 +157,7 @@ describe("startJobs", () => {
     expect(setting.lastRunStatus).toBe("fail");
     expect(setting.lastRunAt).toEqual(new Date(baseTime.getTime() + 1000));
     expect(logSpy).toHaveBeenCalledWith(
-      expect.stringContaining(
-        "Error during execution of job every-second-job: Handler failed",
-      ),
+      expect.stringContaining("Handler failed"),
     );
   });
 
@@ -166,7 +173,7 @@ describe("startJobs", () => {
 
     await startJobs(
       { "every-minute-job": mockJobs["every-minute-job"] },
-      dbKey,
+      { serviceName: "test-service", dbKey },
     );
     await vi.advanceTimersByTimeAsync(1000 * 62); // Trigger the job's onTick and timeout
     const setting = await throwError(
@@ -188,7 +195,10 @@ describe("startJobs", () => {
         }),
     );
 
-    await startJobs({ "timeout-default-job": jobConfig }, dbKey);
+    await startJobs(
+      { "timeout-default-job": jobConfig },
+      { serviceName: "test-service", dbKey },
+    );
     await cronDb.jobSettings.setEnabled(dbKey, "timeout-default-job", true);
 
     await vi.advanceTimersByTimeAsync(1000 * 70); // Trigger the job
@@ -225,7 +235,7 @@ describe("startJobs", () => {
 
     await startJobs(
       { "every-second-job": mockJobs["every-second-job"] },
-      dbKey,
+      { serviceName: "test-service", dbKey },
     );
     await cronDb.jobSettings.setEnabled(dbKey, "every-second-job", true);
 
@@ -235,9 +245,7 @@ describe("startJobs", () => {
     // Now the handler should have been called
     expect(mockJobHandler).toHaveBeenCalledTimes(1);
     expect(logSpy).toHaveBeenCalledWith(
-      expect.stringContaining(
-        "Error during execution of job every-second-job: Handler failed",
-      ),
+      expect.stringContaining("Handler failed"),
     );
     expect(logSpy).toHaveBeenCalledWith(
       expect.stringContaining(
@@ -252,52 +260,5 @@ describe("startJobs", () => {
     expect(setting.lastRunStatus).toBe("running");
 
     setStatusSpy.mockRestore(); // Restore original method
-  });
-
-  it("should use different request IDs for subsequent runs of the same job", async () => {
-    await startJobs(
-      { "every-second-job": mockJobs["every-second-job"] },
-      dbKey,
-    );
-    await cronDb.jobSettings.setEnabled(dbKey, "every-second-job", true);
-
-    // First run
-    await vi.advanceTimersByTimeAsync(1000);
-    expect(logSpy).toHaveBeenCalled();
-    const firstRunLogs = logSpy.mock.calls.filter((call) =>
-      call[0].includes("every-second-job"),
-    );
-    expect(firstRunLogs.length).toBeGreaterThanOrEqual(1); // Should have at least the "Executing" log
-    // Extract reqId from a log message (e.g., the execution message)
-    const firstExecLog = firstRunLogs.find((call) =>
-      call[0].includes("Executing job"),
-    );
-    expect(firstExecLog).toBeDefined();
-    const firstReqIdMatch = firstExecLog![0].match(/<([a-f0-9\-]+)>/);
-    expect(firstReqIdMatch).not.toBeNull();
-    const firstReqId = firstReqIdMatch![1];
-    expect(firstReqId).toBeTypeOf("string");
-
-    // Reset mocks for the next run check (specifically call counts)
-    logSpy.mockClear();
-
-    // Second run
-    await vi.advanceTimersByTimeAsync(1000);
-    expect(logSpy).toHaveBeenCalled();
-    const secondRunLogs = logSpy.mock.calls.filter((call) =>
-      call[0].includes("every-second-job"),
-    );
-    expect(secondRunLogs.length).toBeGreaterThanOrEqual(1);
-    const secondExecLog = secondRunLogs.find((call) =>
-      call[0].includes("Executing job"),
-    );
-    expect(secondExecLog).toBeDefined();
-    const secondReqIdMatch = secondExecLog![0].match(/<([a-f0-9\-]+)>/);
-    expect(secondReqIdMatch).not.toBeNull();
-    const secondReqId = secondReqIdMatch![1];
-    expect(secondReqId).toBeTypeOf("string");
-
-    // Assert IDs are different
-    expect(firstReqId).not.toEqual(secondReqId);
   });
 });

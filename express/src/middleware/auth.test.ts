@@ -11,7 +11,7 @@ describe("Auth Middleware", () => {
 
   beforeEach(() => {
     app = express();
-    app.use(createPreMiddleware({ authRequired: true }));
+    app.use(createPreMiddleware({ authRequired: true, serviceName: "test" }));
     app.get("/test", (_req, res) => {
       const { auth } = getSafContext();
       res.status(200).json({ authFromMiddleware: auth });
@@ -34,7 +34,6 @@ describe("Auth Middleware", () => {
       userId: 123,
       userEmail: "test@example.com",
       userScopes: [],
-      userEmailVerified: true,
     });
   });
 
@@ -53,7 +52,6 @@ describe("Auth Middleware", () => {
       userId: 123,
       userEmail: "test@example.com",
       userScopes: ["admin", "write"],
-      userEmailVerified: true,
     });
   });
 
@@ -72,7 +70,6 @@ describe("Auth Middleware", () => {
       userId: 123,
       userEmail: "test@example.com",
       userScopes: [],
-      userEmailVerified: true,
     });
   });
 

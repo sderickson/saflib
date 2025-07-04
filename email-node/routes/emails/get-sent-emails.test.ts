@@ -10,7 +10,7 @@ describe("getSentEmails", () => {
 
   beforeEach(() => {
     app = express();
-    app.use("/", createEmailsRouter());
+    app.use("/", createEmailsRouter({ serviceName: "test" }));
     app.use(recommendedErrorHandlers);
   });
 

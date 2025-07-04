@@ -20,9 +20,8 @@ if (process.env.NODE_ENV !== "test") {
   dotenv.config();
 }
 
-// Recommended middleware bundles
+// middleware bundles
 export {
-  recommendedPreMiddleware,
   recommendedErrorHandlers,
   createPreMiddleware,
 } from "./middleware/composition.ts";

@@ -8,30 +8,12 @@ import { createHealthHandler, healthRouter } from "./health.ts";
 import { httpLogger } from "./httpLogger.ts";
 import { createOpenApiValidator } from "./openapi.ts";
 import helmet from "helmet";
-import { contextMiddleware } from "./context.ts";
+import { makeContextMiddleware } from "./context.ts";
 import { blockHtml } from "./blockHtml.ts";
-/**
- * Recommended pre-route middleware stack.
- * Includes:
- * 1. Request ID generation
- * 2. HTTP request logging (Morgan)
- * 3. Body parsing (JSON + URL-encoded)
- * 4. Logger injection
- * 5. OpenAPI validation
- * 6. Health check endpoint (/health)
- */
-
-export const recommendedPreMiddleware: Handler[] = [
-  healthRouter, // before httpLogger to avoid polluting logs
-  httpLogger,
-  contextMiddleware,
-  // Built-in Express middleware
-  json(),
-  urlencoded({ extended: false }),
-  corsRouter,
-];
+import { createScopeValidator } from "./scopes.ts";
 
 interface PreMiddlewareOptions {
+  serviceName: string;
   apiSpec?: OpenAPIV3.DocumentV3;
   authRequired?: boolean;
   disableCors?: boolean;
@@ -39,9 +21,10 @@ interface PreMiddlewareOptions {
 }
 
 export const createPreMiddleware = (
-  options: PreMiddlewareOptions = {},
+  options: PreMiddlewareOptions,
 ): Handler[] => {
-  const { apiSpec, authRequired, disableCors, healthCheck } = options;
+  const { apiSpec, authRequired, disableCors, healthCheck, serviceName } =
+    options;
 
   let healthMiddleware: Handler = healthRouter;
   if (healthCheck) {
@@ -72,10 +55,11 @@ export const createPreMiddleware = (
     json(),
     urlencoded({ extended: false }),
     ...sanitizeMiddleware,
-    contextMiddleware,
     ...corsMiddleware,
     ...openApiValidatorMiddleware,
+    makeContextMiddleware(serviceName),
     ...authMiddleware,
+    createScopeValidator(),
   ];
 };
 

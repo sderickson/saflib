@@ -1,6 +1,6 @@
 // To dissuade services from catching unhandled errors and papering over them programmatically, we log the error details and throw an error with a generic message. If a service catches this error, it should be solved (and/or possibly thrown as a new Error type) in the database library, not the service layer.
 
-import { getSafContext } from "@saflib/node";
+import { getSafReporters } from "@saflib/node";
 
 export class UnhandledDatabaseError extends Error {
   constructor() {
@@ -19,20 +19,13 @@ export function queryWrapper<T, A extends any[]>(
       return await queryFunc(...args);
     } catch (error) {
       if (error instanceof HandledDatabaseError) {
+        // In this case, the calling code should handle and report the error if needed.
         throw error;
       }
-      const ctx = getSafContext();
-      if (ctx) {
-        ctx.log.error(error);
-        if (error instanceof Error) {
-          ctx.log.error(error.stack);
-        }
-      } else {
-        console.error(error);
-        if (error instanceof Error) {
-          console.error(error.stack);
-        }
-      }
+      // In this case, something unhandled happened. Report it, then throw an error
+      // without any details, lest the calling code tries to handle it.
+      const { reportError } = getSafReporters();
+      reportError(error);
       throw new UnhandledDatabaseError();
     }
   };

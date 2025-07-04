@@ -2,8 +2,13 @@ import { Command } from "commander";
 import type { WorkflowMeta } from "@saflib/workflows";
 import { loadWorkflow, saveWorkflow } from "./file-io.ts";
 import { addNewLinesToString } from "./utils.ts";
-import type { SafContext } from "@saflib/node";
-import { generateRequestId, safStorage } from "@saflib/node";
+import type { SafContext, SafReporters } from "@saflib/node";
+import {
+  generateRequestId,
+  safContextStorage,
+  safReportersStorage,
+  defaultErrorReporter,
+} from "@saflib/node";
 import winston, { format } from "winston";
 import { type TransformableInfo } from "logform";
 
@@ -88,9 +93,16 @@ export function runWorkflowCli(workflows: WorkflowMeta[]) {
 
   const ctx: SafContext = {
     requestId: reqId,
-    log: baseLogger,
+    serviceName: "workflows-cli",
+    operationName: "workflow-cli",
   };
 
-  safStorage.enterWith(ctx);
+  const reporters: SafReporters = {
+    log: baseLogger,
+    reportError: defaultErrorReporter,
+  };
+
+  safReportersStorage.enterWith(reporters);
+  safContextStorage.enterWith(ctx);
   program.parse(process.argv);
 }

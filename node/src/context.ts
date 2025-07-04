@@ -1,33 +1,17 @@
 import { AsyncLocalStorage } from "async_hooks";
-import { Logger } from "winston";
-import { createLogger } from "./logger.ts";
+import type { SafContext, SafContextWithAuth } from "./types.ts";
+import crypto from "crypto";
 
-export interface Auth {
-  userId: number;
-  userEmail: string;
-  userEmailVerified: boolean;
-  userScopes: string[];
-}
-
-export interface SafContext {
-  requestId: string;
-  log: Logger;
-  auth?: Auth;
-}
-
-export interface SafContextWithAuth extends SafContext {
-  auth: Auth;
-}
-
-const testContext: SafContext = {
-  requestId: "no-request-id",
-  log: createLogger("no-request-id"),
+export const testContext: SafContext = {
+  requestId: "test-id",
+  serviceName: "test-service",
+  operationName: "test-operation",
 };
 
-export const safStorage = new AsyncLocalStorage<SafContext>();
+export const safContextStorage = new AsyncLocalStorage<SafContext>();
 
-export const getSafContext = () => {
-  const store = safStorage.getStore();
+export const getSafContext = (): SafContext => {
+  const store = safContextStorage.getStore();
   if (!store && process.env.NODE_ENV === "test") {
     return testContext;
   }
@@ -38,7 +22,7 @@ export const getSafContext = () => {
 };
 
 export const getSafContextWithAuth = (): SafContextWithAuth => {
-  const store = safStorage.getStore();
+  const store = safContextStorage.getStore();
   if (!store) {
     throw new Error("SafContext not found");
   }
@@ -47,3 +31,21 @@ export const getSafContextWithAuth = (): SafContextWithAuth => {
   }
   return store as SafContextWithAuth;
 };
+
+export function generateRequestId(): string {
+  // Generate 16 random bytes
+  const randomBytes = crypto.randomBytes(16);
+
+  // Set version (4) and variant bits according to RFC 4122
+  randomBytes[6] = (randomBytes[6] & 0x0f) | 0x40; // version 4
+  randomBytes[8] = (randomBytes[8] & 0x3f) | 0x80; // variant 1
+
+  // Convert to hex string with proper formatting
+  return [
+    randomBytes.toString("hex", 0, 4),
+    randomBytes.toString("hex", 4, 6),
+    randomBytes.toString("hex", 6, 8),
+    randomBytes.toString("hex", 8, 10),
+    randomBytes.toString("hex", 10, 16),
+  ].join("-");
+}

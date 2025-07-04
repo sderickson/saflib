@@ -8,6 +8,7 @@ export const makeUsersRouter = () => {
   router.use(
     createPreMiddleware({
       apiSpec: jsonSpec,
+      serviceName: "auth.http.users",
     }),
   );
 
