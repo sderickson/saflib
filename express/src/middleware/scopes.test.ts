@@ -44,6 +44,7 @@ describe("createScopeValidator", () => {
   const mockContext: SafContext = {
     requestId: "123",
     serviceName: "test",
+    subsystemName: "test",
     operationName: "test",
   };
 

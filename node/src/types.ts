@@ -20,11 +20,24 @@ export interface SafContext {
   requestId: string;
 
   /*
-   * Format: "{service}.{subsystem}"
-   * e.g. api.http or api.grpc.
-   * The former name should match the docker service and npm package name, the latter should match a file in the package folder.
+   * Format: "{service}"
+   * e.g. "auth", "payment", "logging", or the name of a product.
+   * The name should match the docker service and npm package name.
    */
   serviceName: string;
+
+  /*
+   * Format: "{subsystem}"
+   * e.g. "http" or "grpc". Can be namespaced, like:
+   * - "http.email": an express router with apis that begin with /email/*
+   * - "grpc.schedule": a gRPC service called "Schedule".
+   * - "cron.clean": a set of cron jobs that regularly delete old data.
+   * - "task.campaigns": async tasks queues associated with emails, SMS, etc.
+   * - "ws.notifications": websocket for notifications.
+   *
+   * Basically, a single server or long-running "process".
+   */
+  subsystemName: string;
 
   /*
    * Format: "{method_name}"

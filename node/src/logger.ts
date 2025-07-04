@@ -2,7 +2,7 @@ import winston, { type Logger, format } from "winston";
 import { type TransformableInfo } from "logform";
 import { Writable } from "node:stream";
 import { type SafContext } from "./types.ts";
-import { testContext } from "./context.ts";
+import { getServiceName, testContext } from "./context.ts";
 
 export const consoleTransport = new winston.transports.Console({
   silent: process.env.NODE_ENV === "test",
@@ -65,6 +65,8 @@ export const removeAllSimpleStreamTransports = () => {
 
 let allStreamTransports: winston.transports.StreamTransportInstance[] = [];
 
+type LoggerContext = Omit<SafContext, "serviceName">;
+
 /**
  * Creates a child logger with the specified request ID. Any servers or processors
  * should use this to create a unique logger for each request or job or what have you.
@@ -72,23 +74,30 @@ let allStreamTransports: winston.transports.StreamTransportInstance[] = [];
  * by the caller, such as in the proto envelope, so that requests which span processes
  * can be correlated.
  */
-export const createLogger = (options?: SafContext): Logger => {
+export const createLogger = (options?: LoggerContext): Logger => {
   if (!options && process.env.NODE_ENV === "test") {
     return baseLogger.child(testContext);
   }
   if (!options) {
     throw new Error("SAF Context is required outside of unit tests");
   }
-  return baseLogger.child(options);
-};
-
-/**
- * Service loggers should only be used for service-level events, such as service startup.
- */
-export const createServiceLogger = (serviceName: string): Logger => {
-  return baseLogger.child({
-    serviceName,
-    operationName: "(none)",
-    requestId: "(none)",
-  });
+  /*
+   * I think I need to nail down my infra terminology here
+   *
+   * Host - A physical machine running some set of services.
+   * Service - A cohesive backend for a domain. Auth, Product, AI, Payment, Logging.
+   *   | Includes everything from the db layer up to the API layer.
+   * Subsystem - A distinct long-running server or thread. HTTP, GRPC, Cron, Jobs.
+   *
+   * A service may run all its subsystems on one single host, or spread them across
+   * a number of hosts, with different hosts running different subsystems.
+   * Each service has a single image, which runs subsystems based on env variables.
+   */
+  const snakeCaseOptions = {
+    service_name: getServiceName(),
+    subsystem_name: options.subsystemName,
+    operation_name: options.operationName,
+    request_id: options.requestId,
+  };
+  return baseLogger.child(snakeCaseOptions);
 };

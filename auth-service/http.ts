@@ -38,15 +38,10 @@ export function createApp(options: AuthServerOptions) {
     });
   });
 
-  const serviceName = options.servicePrefix
-    ? options.servicePrefix + ".auth"
-    : "auth";
-
   app.use(
     "/auth",
     createEmailsRouter({
       apiSpec: jsonSpec,
-      serviceName,
     }),
   );
 

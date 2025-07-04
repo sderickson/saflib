@@ -6,10 +6,11 @@ import {
   safReportersStorage,
   type Auth,
   defaultErrorReporter,
+  getServiceName,
 } from "@saflib/node";
 import type { Handler } from "express";
 
-export const makeContextMiddleware = (serviceName: string) => {
+export const makeContextMiddleware = (subsystemName: string) => {
   const contextMiddleware: Handler = (req, _res, next) => {
     const operationName =
       req.openapi?.schema.operationId ??
@@ -35,7 +36,8 @@ export const makeContextMiddleware = (serviceName: string) => {
 
     const context: SafContext = {
       requestId: reqId,
-      serviceName,
+      serviceName: getServiceName(),
+      subsystemName,
       operationName,
       auth,
     };

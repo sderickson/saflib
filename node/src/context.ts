@@ -4,8 +4,9 @@ import crypto from "crypto";
 
 export const testContext: SafContext = {
   requestId: "test-id",
-  serviceName: "test-service",
-  operationName: "test-operation",
+  serviceName: "test",
+  subsystemName: "test",
+  operationName: "test",
 };
 
 export const safContextStorage = new AsyncLocalStorage<SafContext>();
@@ -49,3 +50,18 @@ export function generateRequestId(): string {
     randomBytes.toString("hex", 10, 16),
   ].join("-");
 }
+
+let serviceName: string | undefined = undefined;
+export const setServiceName = (name: string) => {
+  serviceName = name;
+};
+
+export const getServiceName = (): string => {
+  if (process.env.NODE_ENV === "test") {
+    return "test";
+  }
+  if (!serviceName) {
+    throw new Error("Service name is not set");
+  }
+  return serviceName;
+};

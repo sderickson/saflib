@@ -5,6 +5,7 @@ import type { Config } from "drizzle-kit";
 import type { Schema, DbKey, DbOptions, DbConnection } from "./types.ts";
 import path from "path";
 import fs from "fs";
+import { makeSubsystemReporters } from "@saflib/node";
 
 export class DbManager<S extends Schema, C extends Config> {
   private instances: Map<DbKey, DbConnection<S>>;
@@ -29,6 +30,11 @@ export class DbManager<S extends Schema, C extends Config> {
    * If onDisk is a string, the database will be created at the given (absolute) path.
    */
   connect = (options?: DbOptions): DbKey => {
+    const { log, reportError } = makeSubsystemReporters(
+      options?.name ? `db.${options.name}` : "db",
+      "connect",
+    );
+    log.info("Connecting to database...");
     let dbStorage = ":memory:";
     if (options?.onDisk === true) {
       dbStorage = path.join(
@@ -39,9 +45,11 @@ export class DbManager<S extends Schema, C extends Config> {
       if (options?.doNotCreate) {
         const exists = fs.existsSync(dbStorage);
         if (!exists && process.env.CREATE_DB_ALLOWED !== "true") {
-          throw new Error(`Database file does not exist: ${dbStorage}`);
+          reportError(new Error(`Database file does not exist: ${dbStorage}`));
         } else if (!exists) {
-          console.warn("!!! Creating database file: ", dbStorage);
+          log.warn(`Creating database file: ${dbStorage}`);
+        } else {
+          log.info(`Database file found at: ${dbStorage}`);
         }
       }
     } else if (options?.onDisk) {
@@ -49,10 +57,12 @@ export class DbManager<S extends Schema, C extends Config> {
     } else {
       dbStorage = ":memory:";
     }
+    log.info(`Connecting to database: ${dbStorage}`);
     const sqlite = new Database(dbStorage);
     const db = drizzle(sqlite, { schema: this.schema });
 
     if (this.config.out) {
+      log.info("Running migrations...");
       let migrationsPath = this.config.out;
       if (migrationsPath.startsWith("./")) {
         migrationsPath = path.join(this.rootPath, migrationsPath);
