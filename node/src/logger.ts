@@ -79,7 +79,12 @@ export const createLogger = (options?: SafContext): Logger => {
   if (!options) {
     throw new Error("SAF Context is required outside of unit tests");
   }
-  return baseLogger.child(options);
+  const snakeCaseOptions = {
+    service_name: options.serviceName,
+    operation_name: options.operationName,
+    request_id: options.requestId,
+  };
+  return baseLogger.child(snakeCaseOptions);
 };
 
 /**
@@ -87,8 +92,8 @@ export const createLogger = (options?: SafContext): Logger => {
  */
 export const createServiceLogger = (serviceName: string): Logger => {
   return baseLogger.child({
-    serviceName,
-    operationName: "(none)",
-    requestId: "(none)",
+    service_name: serviceName,
+    operation_name: "(none)",
+    request_id: "(none)",
   });
 };
