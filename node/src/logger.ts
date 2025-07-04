@@ -79,21 +79,23 @@ export const createLogger = (options?: SafContext): Logger => {
   if (!options) {
     throw new Error("SAF Context is required outside of unit tests");
   }
+  /*
+   * I think I need to nail down my infra terminology here
+   *
+   * Host - A physical machine running some set of services.
+   * Service - A cohesive backend for a domain. Auth, Product, AI, Payment, Logging.
+   *   | Includes everything from the db layer up to the API layer.
+   * Subsystem - A distinct long-running server or thread. HTTP, GRPC, Cron, Jobs.
+   *
+   * A service may run all its subsystems on one single host, or spread them across
+   * a number of hosts, with different hosts running different subsystems.
+   * Each service has a single image, which runs subsystems based on env variables.
+   */
   const snakeCaseOptions = {
+    server_name: options.serviceName.split(".")[0],
     service_name: options.serviceName,
     operation_name: options.operationName,
     request_id: options.requestId,
   };
   return baseLogger.child(snakeCaseOptions);
-};
-
-/**
- * Service loggers should only be used for service-level events, such as service startup.
- */
-export const createServiceLogger = (serviceName: string): Logger => {
-  return baseLogger.child({
-    service_name: serviceName,
-    operation_name: "(none)",
-    request_id: "(none)",
-  });
 };

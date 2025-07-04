@@ -1,7 +1,6 @@
 import { CronJob } from "cron";
 import {
   createLogger,
-  createServiceLogger,
   defaultErrorReporter,
   generateRequestId,
   getSafReporters,
@@ -107,7 +106,11 @@ export const startJobs = async (
   jobsToStart: JobsMap,
   config: StartJobConfig,
 ) => {
-  const logger = createServiceLogger(config.serviceName);
+  const logger = createLogger({
+    serviceName: config.serviceName,
+    operationName: "startJobs",
+    requestId: "",
+  });
   const reportError = makeServiceErrorReporter(config.serviceName, logger);
   const { serviceName, dbKey } = config;
   for (const [jobName, jobConfig] of Object.entries(jobsToStart)) {

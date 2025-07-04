@@ -7,7 +7,8 @@
     ".": "./index.ts"
   },
   "dependencies": {
-    "winston": "^3.0.0"
+    "winston": "^3.0.0",
+    "winston-loki": "^6.1.3"
   },
   "devDependencies": {
     "@saflib/vitest": "*"
