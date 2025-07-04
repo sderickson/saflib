@@ -55,9 +55,9 @@ export const createPreMiddleware = (
     json(),
     urlencoded({ extended: false }),
     ...sanitizeMiddleware,
+    ...corsMiddleware,
     ...openApiValidatorMiddleware,
     makeContextMiddleware(serviceName),
-    ...corsMiddleware,
     ...authMiddleware,
     createScopeValidator(),
   ];

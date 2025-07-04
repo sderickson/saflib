@@ -1,6 +1,13 @@
-import { type SafContext, safContextStorage } from "@saflib/node";
+import {
+  type SafContext,
+  safContextStorage,
+  type SafReporters,
+  createLogger,
+  safReportersStorage,
+  type Auth,
+  defaultErrorReporter,
+} from "@saflib/node";
 import type { Handler } from "express";
-import type { Auth } from "@saflib/node";
 
 export const makeContextMiddleware = (serviceName: string) => {
   const contextMiddleware: Handler = (req, _res, next) => {
@@ -32,8 +39,16 @@ export const makeContextMiddleware = (serviceName: string) => {
       operationName,
       auth,
     };
+
+    const reporters: SafReporters = {
+      log: createLogger(context),
+      reportError: defaultErrorReporter,
+    };
+
     safContextStorage.run(context, () => {
-      next();
+      safReportersStorage.run(reporters, () => {
+        next();
+      });
     });
   };
   return contextMiddleware;

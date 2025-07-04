@@ -14,7 +14,7 @@ import { SafAuth } from "@saflib/grpc-specs";
 import { createLogger } from "@saflib/node";
 import { status } from "@grpc/grpc-js";
 import { AsyncLocalStorage } from "async_hooks";
-import { defaultErrorReporter } from "../node/src/errors";
+import { defaultErrorReporter } from "../node/src/errors.ts";
 
 export type SafServiceImplementationWrapper = (
   impl: UntypedServiceImplementation,

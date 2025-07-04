@@ -1,5 +1,5 @@
 import type { Logger } from "winston";
-import { getSafContext, safContextStorage } from "./context";
+import { getSafContext, safContextStorage } from "./context.ts";
 import { getSafReporters } from "./reporters.ts";
 import type {
   ErrorCollector,
