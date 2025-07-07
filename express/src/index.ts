@@ -1,5 +1,8 @@
 // middleware
-export { everyRequestLogger as httpLogger } from "./middleware/httpLogger.ts";
+export {
+  everyRequestLogger,
+  unsafeRequestLogger,
+} from "./middleware/httpLogger.ts";
 export { healthRouter, createHealthHandler } from "./middleware/health.ts";
 export { auth } from "./middleware/auth.ts";
 export { corsRouter } from "./middleware/cors.ts";
