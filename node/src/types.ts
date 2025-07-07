@@ -90,7 +90,7 @@ export interface ErrorCollectorParam {
   error: Error;
 
   user?: {
-    id: number;
+    id: string;
     ip_address?: string;
   };
 

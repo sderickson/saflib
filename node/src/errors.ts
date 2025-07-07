@@ -32,7 +32,7 @@ export const defaultErrorReporter: ErrorReporter = (error, options) => {
 
   const collectorUser: ErrorCollectorParam["user"] | undefined = ctx.auth
     ? {
-        id: ctx.auth.userId,
+        id: ctx.auth.userId.toString() || "",
       }
     : undefined;
 
@@ -43,8 +43,10 @@ export const defaultErrorReporter: ErrorReporter = (error, options) => {
     extra: options?.extra || {},
     tags: {
       "service.name": ctx.serviceName,
+      "subsystem.name": ctx.subsystemName,
       "operation.name": ctx.operationName,
       "request.id": ctx.requestId,
+      "user.id": ctx.auth?.userId?.toString() || "none",
     },
   };
 

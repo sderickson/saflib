@@ -25,7 +25,7 @@ export const errorHandler = (
   // TODO: Remove this
   const { logError } = getSafReporters();
   logError(new Error("Test error"), {
-    level: "debug",
+    level: "warning",
     extra: {
       status,
     },

@@ -152,7 +152,7 @@ export const startJobs = async (
 
           // TODO: Remove this
           logError(new Error("Test error"), {
-            level: "debug",
+            level: "warning",
             extra: {
               status: "success",
             },

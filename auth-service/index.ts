@@ -33,7 +33,7 @@ export async function startAuthService(options?: StartAuthServiceOptions) {
     log.info("Auth service startup complete.");
     // TODO: Remove this
     logError(new Error("Test error"), {
-      level: "debug",
+      level: "warning",
       extra: {
         status: "success",
       },

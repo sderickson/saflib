@@ -36,7 +36,7 @@ export function main(options: CronServiceOptions) {
     log.info("Cron service startup complete.");
     // TODO: Remove this
     logError(new Error("Test error"), {
-      level: "debug",
+      level: "warning",
       extra: {
         status: "success",
       },

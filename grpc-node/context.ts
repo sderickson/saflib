@@ -77,7 +77,7 @@ export const addSafContext: SafServiceImplementationWrapper = (
             }
             // TODO: Remove this
             reporters.logError(new Error("Test error"), {
-              level: "debug",
+              level: "warning",
               extra: {
                 status: status.OK,
               },
