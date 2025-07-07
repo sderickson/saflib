@@ -16,7 +16,7 @@ interface StartAuthServiceOptions {
 
 export async function startAuthService(options?: StartAuthServiceOptions) {
   const { log, reportError } = makeSubsystemReporters(
-    "auth",
+    "init",
     "startAuthService",
   );
   try {

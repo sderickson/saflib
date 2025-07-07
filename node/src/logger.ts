@@ -93,9 +93,10 @@ export const createLogger = (options?: LoggerContext): Logger => {
    * a number of hosts, with different hosts running different subsystems.
    * Each service has a single image, which runs subsystems based on env variables.
    */
+  const serviceName = getServiceName();
   const snakeCaseOptions = {
-    service_name: getServiceName(),
-    subsystem_name: options.subsystemName,
+    service_name: serviceName,
+    subsystem_name: serviceName + "." + options.subsystemName,
     operation_name: options.operationName,
     request_id: options.requestId,
   };

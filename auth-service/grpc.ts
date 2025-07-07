@@ -22,10 +22,7 @@ export function makeGrpcServer(options: AuthServerOptions): grpc.Server {
 
   server.addService(
     UsersServiceDefinition,
-    addSafContext(
-      addAuthServiceContext(UsersServiceImpl),
-      "auth-service.grpc.users",
-    ),
+    addSafContext(addAuthServiceContext(UsersServiceImpl), "users"),
   );
 
   return server;

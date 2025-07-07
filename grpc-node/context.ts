@@ -51,7 +51,7 @@ export const addSafContext: SafServiceImplementationWrapper = (
       const context: SafContext = {
         requestId: reqId,
         serviceName: getServiceName(),
-        subsystemName,
+        subsystemName: "grpc." + subsystemName,
         operationName: methodName,
         auth,
       };

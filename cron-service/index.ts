@@ -16,7 +16,7 @@ export interface CronServiceOptions {
 }
 
 export function main(options: CronServiceOptions) {
-  const { log, reportError } = makeSubsystemReporters("cron", "main");
+  const { log, reportError } = makeSubsystemReporters("init", "main");
   try {
     log.info("Starting cron service...");
     log.info("Connecting to cron DB...");
