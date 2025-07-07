@@ -5,7 +5,7 @@ import { auth } from "./auth.ts";
 import { corsRouter } from "./cors.ts";
 import { errorHandler, notFoundHandler } from "./errors.ts";
 import { createHealthHandler, healthRouter } from "./health.ts";
-import { httpLogger } from "./httpLogger.ts";
+import { everyRequestLogger, unsafeRequestLogger } from "./httpLogger.ts";
 import { createOpenApiValidator } from "./openapi.ts";
 import helmet from "helmet";
 import { makeContextMiddleware } from "./context.ts";
@@ -51,13 +51,14 @@ export const createPreMiddleware = (
   return [
     helmet(),
     healthMiddleware, // before httpLogger to avoid polluting logs
-    httpLogger,
+    everyRequestLogger,
     json(),
     urlencoded({ extended: false }),
     ...sanitizeMiddleware,
     ...corsMiddleware,
     ...openApiValidatorMiddleware,
     makeContextMiddleware(subsystemName ? "http." + subsystemName : "http"),
+    unsafeRequestLogger,
     ...authMiddleware,
     createScopeValidator(),
   ];
