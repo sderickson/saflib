@@ -31,6 +31,13 @@ export async function startAuthService(options?: StartAuthServiceOptions) {
     const app = createApp({ dbKey, callbacks: options?.callbacks ?? {} });
     startExpressServer(app);
     log.info("Auth service startup complete.");
+    // TODO: Remove this
+    logError(new Error("Test error"), {
+      level: "debug",
+      extra: {
+        status: "success",
+      },
+    });
   } catch (error) {
     logError(error);
   }

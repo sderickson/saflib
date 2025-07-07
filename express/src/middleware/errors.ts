@@ -1,6 +1,6 @@
 import createError, { HttpError } from "http-errors";
 import type { Request, Response, NextFunction, Handler } from "express";
-import { safReportersStorage } from "@saflib/node";
+import { getSafReporters, safReportersStorage } from "@saflib/node";
 /**
  * 404 Handler
  * Catches requests to undefined routes
@@ -21,6 +21,15 @@ export const errorHandler = (
 ): void => {
   // Log error
   const status = err.status || 500;
+
+  // TODO: Remove this
+  const { logError } = getSafReporters();
+  logError(new Error("Test error"), {
+    level: "debug",
+    extra: {
+      status,
+    },
+  });
 
   if (status >= 500) {
     if (process.env.NODE_ENV === "test") {

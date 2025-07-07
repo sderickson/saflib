@@ -75,6 +75,13 @@ export const addSafContext: SafServiceImplementationWrapper = (
                 );
               });
             }
+            // TODO: Remove this
+            reporters.logError(new Error("Test error"), {
+              level: "debug",
+              extra: {
+                status: status.OK,
+              },
+            });
             return result;
           } catch (error) {
             const e = error as Error;
