@@ -1,5 +1,5 @@
 import type { Logger } from "winston";
-import { getSafContext, safContextStorage } from "./context.ts";
+import { getSafContext, getServiceName, safContextStorage } from "./context.ts";
 import { getSafReporters } from "./reporters.ts";
 import type {
   ErrorCollector,
@@ -85,15 +85,18 @@ export const makeSubsystemErrorReporter = (
       level: options?.level || "error",
       extra: options?.extra || {},
       tags: {
+        "service.name": getServiceName(),
         "subsystem.name": subsystemName,
         "operation.name": operationName,
-        "request.id": "none",
       },
     };
 
     getErrorCollectors().forEach((collector) => collector(collectorParam));
 
-    logger.log(collectorParam.level, e.message, {
+    const winstonLevel =
+      collectorParam.level === "warning" ? "warn" : collectorParam.level;
+
+    logger.log(winstonLevel, e.message, {
       stack: e.stack,
       ...options?.extra,
     });
