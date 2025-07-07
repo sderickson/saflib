@@ -102,7 +102,7 @@ export function runWorkflowCli(workflows: WorkflowMeta[]) {
 
   const reporters: SafReporters = {
     log: baseLogger,
-    reportError: defaultErrorReporter,
+    logError: defaultErrorReporter,
   };
 
   safReportersStorage.enterWith(reporters);

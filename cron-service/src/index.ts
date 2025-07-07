@@ -34,14 +34,14 @@ async function executeJobWithHandling(
   };
   const reporters: SafReporters = {
     log: createLogger(context),
-    reportError: defaultErrorReporter,
+    logError: defaultErrorReporter,
   };
 
   await safContextStorage.run(context, async () => {
     await safReportersStorage.run(reporters, async () => {
       const jobTimeoutSeconds = jobConfig.timeoutSeconds ?? 10;
       const timeoutMs = jobTimeoutSeconds * 1000;
-      const { log, reportError } = getSafReporters();
+      const { logError } = getSafReporters();
       let statusToSet: "success" | "fail" | "timed out" = "fail"; // Default to fail
 
       try {
@@ -66,14 +66,14 @@ async function executeJobWithHandling(
         // If race succeeds without error
         statusToSet = "success";
       } catch (error) {
-        reportError(error);
+        logError(error);
         const isErrorInstance = error instanceof Error;
         const errorMessage = isErrorInstance
           ? (error as Error).message
           : String(error);
 
         if (errorMessage.includes("timed out")) {
-          reportError(new Error(errorMessage));
+          logError(new Error(errorMessage));
           statusToSet = "timed out";
         } else {
           statusToSet = "fail";
@@ -86,7 +86,7 @@ async function executeJobWithHandling(
             statusToSet,
           );
         } catch (dbError) {
-          reportError(
+          logError(
             new Error(
               `CRITICAL: Failed to set final job status to '${statusToSet}' for ${jobName}. DB Error: ${dbError instanceof Error ? dbError.message : String(dbError)}`,
             ),
@@ -107,7 +107,7 @@ export const startJobs = async (
   jobsToStart: JobsMap,
   config: StartJobConfig,
 ) => {
-  const { log, reportError } = makeSubsystemReporters(
+  const { log, logError } = makeSubsystemReporters(
     config.subsystemName,
     "startJobs",
   );
@@ -136,7 +136,7 @@ export const startJobs = async (
           const { result: currentJobSetting, error } =
             await cronDb.jobSettings.getByName(dbKey, jobName);
           if (error) {
-            reportError(error);
+            logError(error);
             return;
           }
           if (!currentJobSetting.enabled) {
@@ -150,7 +150,7 @@ export const startJobs = async (
             dbKey,
           );
         } catch (error) {
-          reportError(error);
+          logError(error);
         }
       },
       start: true,

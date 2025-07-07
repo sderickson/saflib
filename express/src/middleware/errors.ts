@@ -28,7 +28,7 @@ export const errorHandler = (
     }
     const store = safReportersStorage.getStore();
     if (store) {
-      store.reportError(err);
+      store.logError(err);
     } else {
       console.log("Error", err);
     }

@@ -114,7 +114,7 @@ export interface SafReporters {
   /*
    *
    */
-  reportError: ErrorReporter;
+  logError: ErrorReporter;
 
   // TODO: Product Events
   // TODO: Errors

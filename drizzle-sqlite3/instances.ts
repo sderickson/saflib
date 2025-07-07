@@ -30,7 +30,7 @@ export class DbManager<S extends Schema, C extends Config> {
    * If onDisk is a string, the database will be created at the given (absolute) path.
    */
   connect = (options?: DbOptions): DbKey => {
-    const { log, reportError } = makeSubsystemReporters(
+    const { log, logError } = makeSubsystemReporters(
       options?.name ? `db.${options.name}` : "db",
       "connect",
     );
@@ -45,7 +45,7 @@ export class DbManager<S extends Schema, C extends Config> {
       if (options?.doNotCreate) {
         const exists = fs.existsSync(dbStorage);
         if (!exists && process.env.CREATE_DB_ALLOWED !== "true") {
-          reportError(new Error(`Database file does not exist: ${dbStorage}`));
+          logError(new Error(`Database file does not exist: ${dbStorage}`));
         } else if (!exists) {
           log.warn(`Creating database file: ${dbStorage}`);
         } else {

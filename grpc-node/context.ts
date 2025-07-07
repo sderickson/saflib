@@ -58,7 +58,7 @@ export const addSafContext: SafServiceImplementationWrapper = (
       const logger = createLogger(context);
       const reporters: SafReporters = {
         log: logger,
-        reportError: defaultErrorReporter,
+        logError: defaultErrorReporter,
       };
       // Run the original implementation within the context
       return safContextStorage.run(context, () => {
@@ -68,7 +68,7 @@ export const addSafContext: SafServiceImplementationWrapper = (
             if (result instanceof Promise) {
               return result.catch((error) => {
                 const e = error as Error;
-                defaultErrorReporter(e);
+                reporters.logError(e);
                 callback(
                   { code: status.INTERNAL, message: e.message } as any,
                   null,
@@ -78,7 +78,7 @@ export const addSafContext: SafServiceImplementationWrapper = (
             return result;
           } catch (error) {
             const e = error as Error;
-            defaultErrorReporter(e);
+            reporters.logError(e);
             callback(
               { code: status.INTERNAL, message: e.message } as any,
               null,

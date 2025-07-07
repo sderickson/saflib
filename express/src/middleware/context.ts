@@ -44,7 +44,7 @@ export const makeContextMiddleware = (subsystemName: string) => {
 
     const reporters: SafReporters = {
       log: createLogger(context),
-      reportError: defaultErrorReporter,
+      logError: defaultErrorReporter,
     };
 
     safContextStorage.run(context, () => {
