@@ -45,8 +45,8 @@ export const defaultErrorReporter: ErrorReporter = (error, options) => {
       "service.name": ctx.serviceName,
       "subsystem.name": ctx.subsystemName,
       "operation.name": ctx.operationName,
-      "request.id": ctx.requestId,
-      "user.id": ctx.auth?.userId?.toString() || "none",
+      "request.id": ctx.requestId || "-",
+      "user.id": ctx.auth?.userId?.toString() || "-",
     },
   };
 
@@ -54,7 +54,6 @@ export const defaultErrorReporter: ErrorReporter = (error, options) => {
 
   // Logger already has SAF context incorporated.
   log.log(collectorParam.level, e.message, {
-    stack: e.stack,
     ...options?.extra,
   });
 };

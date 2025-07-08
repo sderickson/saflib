@@ -17,7 +17,7 @@ export interface SafContext {
    * and http servers which are directly accessible by clients. Generally, grpc and http servers receive
    * a request ID and should use it to correlate requests across processes.
    */
-  requestId: string;
+  requestId?: string;
 
   /*
    * Format: "{service}"
@@ -96,7 +96,7 @@ export interface ErrorCollectorParam {
 
   level: ErrorLevels;
   extra: Record<string, unknown>;
-  tags: Record<string, string>;
+  tags: Record<string, string | undefined>;
 }
 
 export type ErrorCollector = (param: ErrorCollectorParam) => void;

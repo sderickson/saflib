@@ -98,8 +98,8 @@ export const createLogger = (options?: LoggerContext): Logger => {
     service_name: serviceName,
     subsystem_name: serviceName + "." + options.subsystemName,
     operation_name: options.operationName,
-    request_id: options.requestId,
-    user_id: options.auth?.userId,
+    request_id: options.requestId || "-",
+    user_id: options.auth?.userId || "-",
   };
   return baseLogger.child(snakeCaseOptions);
 };

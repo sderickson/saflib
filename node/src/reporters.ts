@@ -27,7 +27,6 @@ export const makeSubsystemReporters = (
   const logger = createLogger({
     subsystemName,
     operationName,
-    requestId: "none",
   });
   const logError = makeSubsystemErrorReporter(
     subsystemName,
