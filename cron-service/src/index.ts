@@ -77,6 +77,8 @@ async function executeJobWithHandling(
               }),
             );
           }
+        } else {
+          logError(error);
         }
 
         // Determine the job status
