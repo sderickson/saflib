@@ -97,7 +97,6 @@ export const makeSubsystemErrorReporter = (
       collectorParam.level === "warning" ? "warn" : collectorParam.level;
 
     logger.log(winstonLevel, e.message, {
-      stack: e.stack,
       ...options?.extra,
     });
   };
