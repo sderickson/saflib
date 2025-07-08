@@ -6,7 +6,7 @@ import type { JobsMap } from "./src/types.ts";
 import type { DbKey, DbOptions } from "@saflib/drizzle-sqlite3";
 import { makeSubsystemReporters } from "@saflib/node";
 
-export type { JobsMap } from "./src/types.ts";
+export type { JobsMap, CustomLogError } from "./src/types.ts";
 
 export interface CronServiceOptions {
   subsystemName?: string;
@@ -16,7 +16,7 @@ export interface CronServiceOptions {
 }
 
 export function main(options: CronServiceOptions) {
-  const { log, reportError } = makeSubsystemReporters("init", "main");
+  const { log, logError } = makeSubsystemReporters("init", "main");
   try {
     log.info("Starting cron service...");
     log.info("Connecting to cron DB...");
@@ -35,6 +35,6 @@ export function main(options: CronServiceOptions) {
     startExpressServer(httpApp);
     log.info("Cron service startup complete.");
   } catch (error) {
-    reportError(error);
+    logError(error);
   }
 }

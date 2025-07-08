@@ -1,3 +1,12 @@
+export interface CustomLogErrorMeta {
+  jobName: string;
+}
+
+export type CustomLogError = (
+  error: Error,
+  meta: CustomLogErrorMeta,
+) => boolean;
+
 /**
  * Configuration for a single cron job.
  */
@@ -10,6 +19,8 @@ export interface JobConfig {
   enabled: boolean;
   /** Optional job execution timeout in seconds (defaults to 10 if not provided). */
   timeoutSeconds?: number;
+  /** Optional error reporter for the job. Returns true if the error was logged. */
+  customLogError?: CustomLogError;
 }
 
 /**

@@ -10,7 +10,7 @@ export const getSafReporters = (): SafReporters => {
   if (!store && process.env.NODE_ENV === "test") {
     const testReporters: SafReporters = {
       log: createLogger(),
-      reportError: () => {},
+      logError: () => {},
     };
     return testReporters;
   }
@@ -27,15 +27,14 @@ export const makeSubsystemReporters = (
   const logger = createLogger({
     subsystemName,
     operationName,
-    requestId: "none",
   });
-  const reportError = makeSubsystemErrorReporter(
+  const logError = makeSubsystemErrorReporter(
     subsystemName,
     operationName,
     logger,
   );
   return {
     log: logger,
-    reportError,
+    logError,
   };
 };

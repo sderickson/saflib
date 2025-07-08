@@ -24,8 +24,8 @@ export function queryWrapper<T, A extends any[]>(
       }
       // In this case, something unhandled happened. Report it, then throw an error
       // without any details, lest the calling code tries to handle it.
-      const { reportError } = getSafReporters();
-      reportError(error);
+      const { logError } = getSafReporters();
+      logError(error);
       throw new UnhandledDatabaseError();
     }
   };

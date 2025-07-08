@@ -1,5 +1,5 @@
 import type { Logger } from "winston";
-import { getSafContext, safContextStorage } from "./context.ts";
+import { getSafContext, getServiceName, safContextStorage } from "./context.ts";
 import { getSafReporters } from "./reporters.ts";
 import type {
   ErrorCollector,
@@ -32,7 +32,7 @@ export const defaultErrorReporter: ErrorReporter = (error, options) => {
 
   const collectorUser: ErrorCollectorParam["user"] | undefined = ctx.auth
     ? {
-        id: ctx.auth.userId,
+        id: ctx.auth.userId.toString() || "",
       }
     : undefined;
 
@@ -43,16 +43,20 @@ export const defaultErrorReporter: ErrorReporter = (error, options) => {
     extra: options?.extra || {},
     tags: {
       "service.name": ctx.serviceName,
+      "subsystem.name": ctx.subsystemName,
       "operation.name": ctx.operationName,
-      "request.id": ctx.requestId,
+      "request.id": ctx.requestId || "-",
+      "user.id": ctx.auth?.userId?.toString() || "-",
     },
   };
 
   getErrorCollectors().forEach((collector) => collector(collectorParam));
 
+  const winstonLevel =
+    collectorParam.level === "warning" ? "warn" : collectorParam.level;
+
   // Logger already has SAF context incorporated.
-  log.log(collectorParam.level, e.message, {
-    stack: e.stack,
+  log.log(winstonLevel, e.message, {
     ...options?.extra,
   });
 };
@@ -83,16 +87,18 @@ export const makeSubsystemErrorReporter = (
       level: options?.level || "error",
       extra: options?.extra || {},
       tags: {
+        "service.name": getServiceName(),
         "subsystem.name": subsystemName,
         "operation.name": operationName,
-        "request.id": "none",
       },
     };
 
     getErrorCollectors().forEach((collector) => collector(collectorParam));
 
-    logger.log(collectorParam.level, e.message, {
-      stack: e.stack,
+    const winstonLevel =
+      collectorParam.level === "warning" ? "warn" : collectorParam.level;
+
+    logger.log(winstonLevel, e.message, {
       ...options?.extra,
     });
   };

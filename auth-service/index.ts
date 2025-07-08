@@ -15,10 +15,7 @@ interface StartAuthServiceOptions {
 }
 
 export async function startAuthService(options?: StartAuthServiceOptions) {
-  const { log, reportError } = makeSubsystemReporters(
-    "init",
-    "startAuthService",
-  );
+  const { log, logError } = makeSubsystemReporters("init", "startAuthService");
   try {
     log.info("Starting auth service...");
     log.info("Connecting to auth DB...");
@@ -35,7 +32,7 @@ export async function startAuthService(options?: StartAuthServiceOptions) {
     startExpressServer(app);
     log.info("Auth service startup complete.");
   } catch (error) {
-    reportError(error);
+    logError(error);
   }
 }
 

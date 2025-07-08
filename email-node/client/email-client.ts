@@ -1,3 +1,4 @@
+import { getSafReporters } from "@saflib/node";
 import * as nodemailer from "nodemailer";
 import type { Transporter } from "nodemailer";
 
@@ -78,6 +79,8 @@ export class EmailClient {
   }
 
   async sendEmail(options: EmailOptions): Promise<EmailResult> {
+    const { log } = getSafReporters();
+
     if (!options.to && !options.cc && !options.bcc) {
       throw new Error("No recipients specified");
     }
@@ -95,6 +98,15 @@ export class EmailClient {
     }
 
     const info = await this.transporter.sendMail(options);
+
+    log.info("Email sent", {
+      from: options.from,
+      subject: options.subject,
+      messageId: info.messageId,
+      accepted: info.accepted.length,
+      rejected: info.rejected.length,
+      response: info.response,
+    });
 
     return {
       messageId: info.messageId,

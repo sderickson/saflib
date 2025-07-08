@@ -22,7 +22,7 @@ export const throwError = async <T>(
   */
   const { result, error } = await promise;
   if (error) {
-    throw new ErrorClass("Failed to update call log", { cause: error });
+    throw new ErrorClass("Unexpected error", { cause: error });
   }
   return result as NonUndefined<T>; // not sure why TS thinks result might be undefined
 };
