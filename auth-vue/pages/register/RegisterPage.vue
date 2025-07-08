@@ -105,6 +105,8 @@ const props = defineProps<{
   redirectTo?: string;
 }>();
 
+const emit = defineEmits(["signup"]);
+
 const firstName = ref("");
 const lastName = ref("");
 const name = ref("");
@@ -137,8 +139,11 @@ const firstInput = computed(() => {
 
 watch(
   () => isSuccess.value,
-  (success) => {
+  async (success) => {
     if (success) {
+      emit("signup");
+      // wait a bit to ensure events are logged
+      await new Promise((resolve) => setTimeout(resolve, 100));
       window.location.href = props.redirectTo || "/app/";
     }
   },
