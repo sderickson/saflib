@@ -66,14 +66,25 @@ async function executeJobWithHandling(
         // If race succeeds without error
         statusToSet = "success";
       } catch (error) {
-        logError(error);
+        // Log the error
         const isErrorInstance = error instanceof Error;
+        if (jobConfig.customLogError && isErrorInstance) {
+          const wasLogged = jobConfig.customLogError(error, { jobName });
+          if (!wasLogged) {
+            logError(
+              new Error(`Cron job "${jobName}" failed: ${error.message}`, {
+                cause: error,
+              }),
+            );
+          }
+        }
+
+        // Determine the job status
         const errorMessage = isErrorInstance
           ? (error as Error).message
           : String(error);
 
         if (errorMessage.includes("timed out")) {
-          logError(new Error(errorMessage));
           statusToSet = "timed out";
         } else {
           statusToSet = "fail";

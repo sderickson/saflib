@@ -52,8 +52,11 @@ export const defaultErrorReporter: ErrorReporter = (error, options) => {
 
   getErrorCollectors().forEach((collector) => collector(collectorParam));
 
+  const winstonLevel =
+    collectorParam.level === "warning" ? "warn" : collectorParam.level;
+
   // Logger already has SAF context incorporated.
-  log.log(collectorParam.level, e.message, {
+  log.log(winstonLevel, e.message, {
     ...options?.extra,
   });
 };

@@ -6,7 +6,7 @@ import type { JobsMap } from "./src/types.ts";
 import type { DbKey, DbOptions } from "@saflib/drizzle-sqlite3";
 import { makeSubsystemReporters } from "@saflib/node";
 
-export type { JobsMap } from "./src/types.ts";
+export type { JobsMap, CustomLogError } from "./src/types.ts";
 
 export interface CronServiceOptions {
   subsystemName?: string;
