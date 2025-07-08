@@ -149,14 +149,6 @@ export const startJobs = async (
             jobConfig,
             dbKey,
           );
-
-          // TODO: Remove this
-          logError(new Error("Test error"), {
-            level: "warning",
-            extra: {
-              status: "success",
-            },
-          });
         } catch (error) {
           logError(error);
         }
