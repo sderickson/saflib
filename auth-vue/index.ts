@@ -10,3 +10,19 @@ export { default as ChangeForgottenPasswordPage } from "./pages/change-password-
 export { default as VerifyEmailPage } from "./pages/verify-email/VerifyEmailPage.vue";
 export { default as UserAdmin } from "./pages/admin-users/UserAdmin.vue";
 export { createAuthRouter } from "./auth-router.ts";
+
+const currentDomain = window.location.origin;
+const allowedRedirects = [`${currentDomain}/auth/verify-email`];
+
+export const redirectAfterLogin = (defaultRedirect: string) => {
+  if (window.location.href.includes("redirect")) {
+    const url = atob(window.location.href.split("redirect=")[1]);
+    for (const redirect of allowedRedirects) {
+      if (url.startsWith(redirect)) {
+        window.location.href = url;
+        return;
+      }
+    }
+  }
+  window.location.href = defaultRedirect;
+};

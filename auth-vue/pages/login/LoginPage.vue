@@ -68,35 +68,21 @@ import { emailRules, passwordRules } from "../../utils/rules.ts";
 import { useLogin } from "../../requests/auth.ts";
 import { login_page } from "./LoginPage.strings.ts";
 
-const { mutate: login, isError, isPending } = useLogin();
+const emit = defineEmits(["login"]);
+
+const { mutateAsync: login, isError, isPending } = useLogin();
 
 const email = ref("");
 const password = ref("");
 const valid = ref(false);
 const passwordVisible = ref(false);
 
-const currentDomain = window.location.origin;
-const allowedRedirects = [`${currentDomain}/auth/verify-email`];
-
-const handleLogin = () => {
+const handleLogin = async () => {
   if (!valid.value) return;
 
-  login(
-    { email: email.value, password: password.value },
-    {
-      onSuccess: () => {
-        if (window.location.href.includes("redirect")) {
-          const url = atob(window.location.href.split("redirect=")[1]);
-          for (const redirect of allowedRedirects) {
-            if (url.startsWith(redirect)) {
-              window.location.href = url;
-              return;
-            }
-          }
-        }
-        window.location.href = "/app/";
-      },
-    },
-  );
+  try {
+    await login({ email: email.value, password: password.value });
+    emit("login");
+  } catch (error) {}
 };
 </script>
