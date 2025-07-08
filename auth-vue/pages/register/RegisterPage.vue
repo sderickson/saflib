@@ -102,7 +102,6 @@ const props = defineProps<{
   lastNameInput?: boolean;
   nameInput?: boolean;
   ctaText?: string;
-  redirectTo?: string;
 }>();
 
 const emit = defineEmits(["signup"]);
@@ -142,9 +141,6 @@ watch(
   async (success) => {
     if (success) {
       emit("signup");
-      // wait a bit to ensure events are logged
-      await new Promise((resolve) => setTimeout(resolve, 100));
-      window.location.href = props.redirectTo || "/app/";
     }
   },
 );

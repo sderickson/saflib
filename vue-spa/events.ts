@@ -13,8 +13,10 @@ export const makeProductEventLogger = <T>() => {
     onProductEvent: (listener: ProductEventListener<T>) => {
       eventListeners.push(listener);
     },
-    emitProductEvent: (event: T) => {
+    emitProductEvent: async (event: T) => {
       eventListeners.forEach((listener) => listener(event));
+      // if you are about to navigate, await the promise to increase the chance that the event is logged
+      return new Promise((resolve) => setTimeout(resolve, 100));
     },
   };
 };
