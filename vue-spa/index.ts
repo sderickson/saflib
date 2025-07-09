@@ -8,6 +8,7 @@ import {
 } from "@tanstack/vue-query";
 import type { Router } from "vue-router";
 export * from "./tanstack.ts";
+export * from "./events.ts";
 import "./assets.d.ts";
 
 interface CreateVueAppOptions {

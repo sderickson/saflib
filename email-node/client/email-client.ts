@@ -3,7 +3,9 @@ import * as nodemailer from "nodemailer";
 import type { Transporter } from "nodemailer";
 
 export const mockingOn =
-  process.env.NODE_ENV === "test" || process.env.MOCK_INTEGRATIONS === "true";
+  process.env.NODE_ENV === "test" ||
+  process.env.MOCK_INTEGRATIONS === "true" ||
+  process.env.MOCK_EMAIL === "true";
 
 export interface SentEmail extends EmailOptions {
   timeSent: number;
