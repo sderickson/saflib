@@ -7,6 +7,7 @@ import { authServiceStorage } from "./context.ts";
 import type { AuthServerOptions } from "./types.ts";
 import { createEmailsRouter } from "@saflib/email-node";
 import { jsonSpec } from "@saflib/auth-spec";
+import { metricsMiddleware } from "@saflib/express";
 
 // Define properties added to Express Request objects by middleware
 declare global {
@@ -24,6 +25,7 @@ export function createApp(options: AuthServerOptions) {
   }
 
   const app = express();
+  app.use(metricsMiddleware);
   app.set("trust proxy", 1);
 
   app.set(
