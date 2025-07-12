@@ -11,7 +11,7 @@ export const metricsMiddleware = promBundle({
       // apparently you don't return a new labels object... interesting
       labels.path = "/#404";
     }
-    if (res.statusCode === 200 && req.method === "OPTIONS") {
+    if (res.statusCode === 204 && req.method === "OPTIONS") {
       labels.path = "/#options";
     }
     return labels;
