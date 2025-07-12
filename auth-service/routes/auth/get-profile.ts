@@ -9,6 +9,7 @@ export const getProfileHandler = createHandler(async (req, res) => {
 
   if (!req.isAuthenticated() || !req.user) {
     res.status(200).json({} satisfies AuthResponse["getUserProfile"][200]);
+    return;
   }
 
   const user = req.user as Express.User;
