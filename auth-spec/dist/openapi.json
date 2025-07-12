@@ -415,16 +415,6 @@
                 }
               }
             }
-          },
-          "401": {
-            "description": "User not authenticated",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/error"
-                }
-              }
-            }
           }
         }
       },
@@ -820,10 +810,6 @@
       },
       "ProfileResponse": {
         "type": "object",
-        "required": [
-          "id",
-          "email"
-        ],
         "additionalProperties": false,
         "properties": {
           "id": {
@@ -971,6 +957,12 @@
           },
           "timeSent": {
             "type": "number"
+          },
+          "replyTo": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         },
         "required": [

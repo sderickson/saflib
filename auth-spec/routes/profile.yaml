@@ -11,12 +11,6 @@ get:
         application/json:
           schema:
             $ref: "#/components/schemas/ProfileResponse"
-    "401":
-      description: User not authenticated
-      content:
-        application/json:
-          schema:
-            $ref: "../routes/auth.yaml#/components/schemas/ErrorResponse"
 
 put:
   summary: "Update User Profile"
@@ -60,9 +54,6 @@ components:
   schemas:
     ProfileResponse:
       type: object
-      required:
-        - id
-        - email
       additionalProperties: false
       properties:
         id:

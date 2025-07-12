@@ -2,12 +2,14 @@ import { createHandler } from "@saflib/express";
 import createError from "http-errors";
 import { authServiceStorage } from "../../context.ts";
 import { authDb, UserNotFoundError } from "@saflib/auth-db";
+import type { AuthResponse } from "@saflib/auth-spec";
 
 export const getProfileHandler = createHandler(async (req, res) => {
   const { dbKey } = authServiceStorage.getStore()!;
 
   if (!req.isAuthenticated() || !req.user) {
-    throw createError(401, "User not authenticated");
+    res.status(200).json({} satisfies AuthResponse["getUserProfile"][200]);
+    return;
   }
 
   const user = req.user as Express.User;
@@ -25,11 +27,11 @@ export const getProfileHandler = createHandler(async (req, res) => {
   const response = {
     id: result.id,
     email: result.email,
-    emailVerified: result.emailVerified,
+    emailVerified: result.emailVerified ?? false,
     name: result.name,
     givenName: result.givenName,
     familyName: result.familyName,
-  };
+  } satisfies AuthResponse["getUserProfile"][200];
 
   res.status(200).json(response);
 });

@@ -301,12 +301,12 @@ export interface components {
         };
         ProfileResponse: {
             /** @description Unique identifier for the user */
-            id: number;
+            id?: number;
             /**
              * Format: email
              * @description User's email address
              */
-            email: string;
+            email?: string;
             /** @description Whether the user's email address has been verified */
             emailVerified?: boolean;
             /** @description User's full name */
@@ -367,6 +367,7 @@ export interface components {
             attachments?: string[];
             from: string;
             timeSent?: number;
+            replyTo?: string[];
         };
         ErrorResponse: components["schemas"]["error"];
     };
@@ -705,15 +706,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ProfileResponse"];
-                };
-            };
-            /** @description User not authenticated */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["error"];
                 };
             };
         };

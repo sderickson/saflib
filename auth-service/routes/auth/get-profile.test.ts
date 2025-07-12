@@ -54,9 +54,10 @@ describe("Get Profile Route", () => {
     });
   });
 
-  it("should return 401 when not authenticated", async () => {
+  it("should return empty object when not authenticated", async () => {
     const response = await request(app).get("/auth/profile");
 
-    expect(response.status).toBe(401);
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({});
   });
 });

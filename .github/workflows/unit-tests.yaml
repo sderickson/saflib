@@ -23,4 +23,4 @@ jobs:
         run: npm install @rollup/rollup-linux-x64-gnu
 
       - name: Run Unit Tests
-        run: npm run test:global
+        run: npm run test
