@@ -1,6 +1,9 @@
 import type {
   UntypedServiceImplementation,
   UntypedHandleCall,
+  handleUnaryCall,
+  ServerUnaryCall,
+  sendUnaryData,
 } from "@grpc/grpc-js";
 import type { ServiceImplementationWrapper } from "@saflib/grpc-node";
 import {
@@ -10,6 +13,7 @@ import {
   type SafReporters,
   safReportersStorage,
   getServiceName,
+  getSafReporters,
 } from "@saflib/node";
 import { SafAuth } from "@saflib/grpc-specs";
 import { createLogger } from "@saflib/node";
@@ -19,7 +23,7 @@ import { defaultErrorReporter } from "../node/src/errors.ts";
 
 export type SafServiceImplementationWrapper = (
   impl: UntypedServiceImplementation,
-  serviceName: string,
+  subsystemName: string,
 ) => UntypedServiceImplementation;
 
 export const addSafContext: SafServiceImplementationWrapper = (
@@ -29,7 +33,8 @@ export const addSafContext: SafServiceImplementationWrapper = (
   const wrappedService: UntypedServiceImplementation = {};
 
   for (const [methodName, methodImpl] of Object.entries(impl)) {
-    const wrappedMethod: UntypedHandleCall = (call: any, callback: any) => {
+    const impl = methodImpl as handleUnaryCall<any, any>;
+    const wrappedMethod: handleUnaryCall<any, any> = (call, callback) => {
       // Create the context for this request
       const reqId: string = call.request?.request?.id || "no-request-id";
       let auth: Auth | undefined = undefined;
@@ -63,27 +68,7 @@ export const addSafContext: SafServiceImplementationWrapper = (
       // Run the original implementation within the context
       return safContextStorage.run(context, () => {
         return safReportersStorage.run(reporters, () => {
-          try {
-            const result = methodImpl(call, callback) as any;
-            if (result instanceof Promise) {
-              return result.catch((error) => {
-                const e = error as Error;
-                reporters.logError(e);
-                callback(
-                  { code: status.INTERNAL, message: e.message } as any,
-                  null,
-                );
-              });
-            }
-            return result;
-          } catch (error) {
-            const e = error as Error;
-            reporters.logError(e);
-            callback(
-              { code: status.INTERNAL, message: e.message } as any,
-              null,
-            );
-          }
+          runGrpcMethod(impl, call, callback);
         });
       });
     };
@@ -91,6 +76,29 @@ export const addSafContext: SafServiceImplementationWrapper = (
   }
   return wrappedService;
 };
+
+export function runGrpcMethod(
+  methodImpl: handleUnaryCall<any, any>,
+  call: ServerUnaryCall<any, any>,
+  callback: sendUnaryData<any>,
+) {
+  const { logError } = getSafReporters();
+  try {
+    const result = methodImpl(call, callback) as any;
+    if (result instanceof Promise) {
+      return result.catch((error) => {
+        const e = error as Error;
+        logError(e);
+        callback({ code: status.INTERNAL, message: e.message } as any, null);
+      });
+    }
+    return result;
+  } catch (error) {
+    const e = error as Error;
+    logError(e);
+    callback({ code: status.INTERNAL, message: e.message } as any, null);
+  }
+}
 
 export function makeGrpcServerContextWrapper(
   storage: AsyncLocalStorage<any>,
