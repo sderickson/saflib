@@ -21,6 +21,7 @@ export const grpcMetric = makeGrpcMetric();
 export interface GrpcLabels {
   [key: string]: string | number;
   status_code: number;
+  // unfortunately, "service" is overloaded, so it's prefixed with "grpc_"
   grpc_service: string;
-  grpc_method: string;
+  method: string;
 }
