@@ -2,6 +2,7 @@ import type {
   UntypedServiceImplementation,
   UntypedHandleCall,
   handleUnaryCall,
+  ServiceDefinition,
 } from "@grpc/grpc-js";
 import type { ServiceImplementationWrapper } from "@saflib/grpc-node";
 import {
@@ -20,16 +21,19 @@ import { runGrpcMethod } from "./runner.ts";
 
 export type SafServiceImplementationWrapper = (
   impl: UntypedServiceImplementation,
-  subsystemName: string,
+  definition: ServiceDefinition,
 ) => UntypedServiceImplementation;
 
 export const addSafContext: SafServiceImplementationWrapper = (
   impl,
-  subsystemName,
+  definition,
 ) => {
   const wrappedService: UntypedServiceImplementation = {};
 
   for (const [methodName, methodImpl] of Object.entries(impl)) {
+    const serviceName = definition[methodName].path.split("/")[1];
+    const subsystemName = "grpc." + serviceName;
+
     const impl = methodImpl as handleUnaryCall<any, any>;
     const wrappedMethod: handleUnaryCall<any, any> = (call, callback) => {
       // Create the context for this request
@@ -53,7 +57,7 @@ export const addSafContext: SafServiceImplementationWrapper = (
       const context: SafContext = {
         requestId: reqId,
         serviceName: getServiceName(),
-        subsystemName: "grpc." + subsystemName,
+        subsystemName,
         operationName: methodName,
         auth,
       };
