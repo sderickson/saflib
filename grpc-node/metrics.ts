@@ -17,3 +17,10 @@ export function makeGrpcMetric() {
 }
 
 export const grpcMetric = makeGrpcMetric();
+
+export interface GrpcLabels {
+  [key: string]: string | number;
+  status_code: number;
+  grpc_service: string;
+  grpc_method: string;
+}
