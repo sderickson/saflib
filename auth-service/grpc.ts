@@ -2,10 +2,7 @@ import { authDb } from "@saflib/auth-db";
 import { authServiceStorage } from "./context.ts";
 import { addSafContext, makeGrpcServerContextWrapper } from "@saflib/grpc-node";
 import * as grpc from "@grpc/grpc-js";
-import {
-  UsersServiceDefinition,
-  UsersServiceImpl,
-} from "./rpcs/users/index.ts";
+import { UsersServiceDefinition, UsersService } from "./rpcs/users/index.ts";
 import type { AuthServerOptions } from "./types.ts";
 
 export function makeGrpcServer(options: AuthServerOptions): grpc.Server {
@@ -20,9 +17,13 @@ export function makeGrpcServer(options: AuthServerOptions): grpc.Server {
 
   const server = new grpc.Server();
 
+  // TODO: Improve the ergonomics of this. Maybe addSafService(service, )
   server.addService(
-    UsersServiceDefinition,
-    addSafContext(addAuthServiceContext(UsersServiceImpl), "users"),
+    UsersService.definition,
+    addSafContext(
+      addAuthServiceContext(new UsersService()),
+      UsersServiceDefinition,
+    ),
   );
 
   return server;
