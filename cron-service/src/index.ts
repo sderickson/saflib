@@ -12,11 +12,10 @@ import {
   getServiceName,
 } from "@saflib/node";
 import { cronDb } from "@saflib/cron-db";
-
 import type { JobConfig, JobsMap } from "./types.ts";
 import type { DbKey } from "@saflib/drizzle-sqlite3";
 import { JobSettingNotFoundError } from "@saflib/cron-db";
-
+import { cronMetric, type CronLabels } from "./metrics.ts";
 // --- Helper Function for Job Execution and Error Handling ---
 
 async function executeJobWithHandling(
@@ -44,6 +43,12 @@ async function executeJobWithHandling(
       const { logError } = getSafReporters();
       let statusToSet: "success" | "fail" | "timed out" = "fail"; // Default to fail
 
+      const labels: CronLabels = {
+        service_name: getServiceName(),
+        job_name: jobName,
+        status: "running",
+      };
+      const timer = cronMetric.startTimer(labels);
       try {
         // Set status to running *before* starting the handler/timeout race
         await cronDb.jobSettings.setLastRunStatus(dbKey, jobName, "running");
@@ -65,6 +70,7 @@ async function executeJobWithHandling(
 
         // If race succeeds without error
         statusToSet = "success";
+        labels.status = "success";
       } catch (error) {
         // Log the error
         const isErrorInstance = error instanceof Error;
@@ -88,10 +94,13 @@ async function executeJobWithHandling(
 
         if (errorMessage.includes("timed out")) {
           statusToSet = "timed out";
+          labels.status = "timeout";
         } else {
           statusToSet = "fail";
+          labels.status = "error";
         }
       } finally {
+        timer();
         try {
           await cronDb.jobSettings.setLastRunStatus(
             dbKey,
