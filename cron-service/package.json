@@ -15,16 +15,17 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "@saflib/grpc-node": "*",
-    "@saflib/express": "*",
-    "@saflib/node": "*",
-    "@saflib/grpc-specs": "*",
     "@saflib/cron-db": "*",
     "@saflib/cron-spec": "*",
+    "@saflib/express": "*",
+    "@saflib/grpc-node": "*",
+    "@saflib/grpc-specs": "*",
+    "@saflib/monorepo": "*",
+    "@saflib/node": "*",
     "cron": "^4.3.0"
   },
   "devDependencies": {
     "@saflib/vitest": "*",
     "@types/cron": "^2.0.1"
   }
-} 
+}
