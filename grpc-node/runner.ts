@@ -19,11 +19,11 @@ export function runGrpcMethod(
   originalCallback: sendUnaryData<any>,
 ) {
   const { logError } = getSafReporters();
-  const { serviceName, operationName } = getSafContext();
+  const { subsystemName, operationName } = getSafContext();
 
   const labels: GrpcLabels = {
     status_code: -1,
-    grpc_service: serviceName,
+    grpc_service: subsystemName,
     grpc_method: operationName,
   };
 
