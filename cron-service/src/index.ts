@@ -43,7 +43,11 @@ async function executeJobWithHandling(
       const { logError } = getSafReporters();
       let statusToSet: "success" | "fail" | "timed out" = "fail"; // Default to fail
 
-      const labels: CronLabels = { job_name: jobName, status: "running" };
+      const labels: CronLabels = {
+        service_name: getServiceName(),
+        job_name: jobName,
+        status: "running",
+      };
       const timer = cronMetric.startTimer(labels);
       try {
         // Set status to running *before* starting the handler/timeout race
