@@ -15,8 +15,14 @@ import { computed } from "vue";
 import type { UseQueryReturnType } from "@tanstack/vue-query";
 import type { Component } from "vue";
 import { TanstackError } from "@saflib/vue-spa";
+
+type Query = Pick<
+  UseQueryReturnType<any, TanstackError>,
+  "isLoading" | "isError" | "error"
+>;
+
 interface Props {
-  loader?: () => Record<string, UseQueryReturnType<any, TanstackError>>;
+  loader?: () => Record<string, Query>;
   pageComponent: Component;
 }
 
