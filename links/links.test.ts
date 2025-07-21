@@ -22,6 +22,12 @@ describe("linkToHref", () => {
     ).toBe("http://test.docker.localhost/?a=1&b=2");
   });
 
+  it("handles an empty subdomain", () => {
+    expect(linkToHref({ subdomain: "", path: "/" })).toBe(
+      "http://docker.localhost/",
+    );
+  });
+
   it("throws an error if a param is not found in the link", () => {
     expect(() =>
       linkToHref(
