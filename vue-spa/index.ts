@@ -42,3 +42,32 @@ export const createVueApp = (
   app.mount("#app");
   return createApp(app);
 };
+
+export type LinkProps = { href: string } | { to: string };
+
+export type Link = {
+  subdomain: string;
+  path: string;
+};
+
+export type LinkMap = Record<string, Link>;
+
+// Based on the current domain, and if we're on the same subdomain, return props
+// which will work with vuetify components such as v-list-item and b-btn
+export const linkToProps = (link: Link) => {
+  // This works for {subdomain}.docker.localhost as well as prod domains
+  const domain = document.location.hostname.split(".").slice(-2).join(".");
+  const currentSubdomain = document.location.hostname
+    .split(".")
+    .slice(0, -2)
+    .join(".");
+  const protocol = document.location.protocol;
+  if (currentSubdomain === link.subdomain) {
+    return {
+      to: link.path,
+    };
+  }
+  return {
+    href: `${protocol}//${link.subdomain}.${domain}${link.path}`, // TODO: use router-link
+  };
+};

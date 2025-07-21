@@ -7,7 +7,7 @@ export const createSafClient = <Q extends {}>(
   let host = "localhost:3000";
   if (typeof document !== "undefined") {
     protocol = document.location.protocol;
-    host = document.location.host;
+    host = document.location.host.split(".").slice(-2).join(".");
   }
   return createClient<Q>({
     baseUrl: `${protocol}//${subdomain}.${host}`,
