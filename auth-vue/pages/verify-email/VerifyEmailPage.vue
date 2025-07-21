@@ -24,7 +24,7 @@
       class="mb-4"
       :text="verify_email_page.verify_email_success"
     />
-    <a class="text-blue text-decoration-none" href="/app/">
+    <a class="text-blue text-decoration-none" :href="redirectTo">
       {{ verify_email_page.continue_to_app }}
       <v-icon icon="mdi-chevron-right"></v-icon>
     </a>
@@ -103,6 +103,10 @@ import {
   useGetProfile,
 } from "../../requests/auth";
 import { TanstackError } from "@saflib/vue-spa";
+
+defineProps<{
+  redirectTo: string;
+}>();
 
 const route = useRoute();
 const token = route.query.token as string;
