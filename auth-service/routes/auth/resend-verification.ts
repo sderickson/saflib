@@ -5,10 +5,8 @@ import { authDb } from "@saflib/auth-db";
 import { authServiceStorage } from "../../context.ts";
 import { linkToHref } from "@saflib/links";
 import { authLinks } from "@saflib/auth-links";
-import { getSafReporters } from "@saflib/node";
 
 export const resendVerificationHandler = createHandler(async (req, res) => {
-  const { log } = getSafReporters();
   const { dbKey } = authServiceStorage.getStore()!;
   if (!req.user) {
     res.status(401).json({
@@ -33,7 +31,6 @@ export const resendVerificationHandler = createHandler(async (req, res) => {
   const verificationUrl = linkToHref(authLinks.verifyEmail, {
     params: { token: verificationToken },
   });
-  log.info(`Verification URL: ${verificationUrl}`);
   const { callbacks } = authServiceStorage.getStore()!;
   if (callbacks.onVerificationTokenCreated) {
     await callbacks.onVerificationTokenCreated(req.user, verificationUrl, true);

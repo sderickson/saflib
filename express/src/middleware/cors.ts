@@ -3,7 +3,7 @@ import { Router } from "express";
 
 const domains = [process.env.DOMAIN];
 
-const subdomains = process.env.SUBDOMAINS?.split(",") ?? [];
+const subdomains = process.env.CLIENT_SUBDOMAINS?.split(",") ?? [];
 
 const protocol = process.env.PROTOCOL;
 
