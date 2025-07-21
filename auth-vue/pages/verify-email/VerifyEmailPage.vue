@@ -32,18 +32,20 @@
 
   <div v-else-if="!profile">
     {{ verify_email_page.not_logged_in }}. Please
-    <a :href="`/auth/login?redirect=${thisUrlEncoded}`">log in</a> to continue.
+    <a :href="loginLink">log in</a>
+    to continue.
   </div>
 
   <div v-else-if="errorCase === 'unauthorized'">
     {{ verify_email_page.not_logged_in }}. Please
-    <a :href="`/auth/login?redirect=${thisUrlEncoded}`">log in</a> to continue.
+    <a :href="loginLink">log in</a>
+    to continue.
   </div>
 
   <div v-else-if="errorCase === 'forbidden'">
     {{ verify_email_page.not_authorized }}. Please
-    <a :href="`/auth/login?redirect=${thisUrlEncoded}`">log in</a> with the
-    correct account.
+    <a :href="loginLink">log in</a>
+    with the correct account.
   </div>
 
   <div v-else-if="errorCase === 'unknown'">
@@ -103,6 +105,8 @@ import {
   useGetProfile,
 } from "../../requests/auth";
 import { TanstackError } from "@saflib/vue-spa";
+import { linkToHref } from "@saflib/links";
+import { authLinks } from "@saflib/auth-links";
 
 defineProps<{
   redirectTo: string;
@@ -170,6 +174,10 @@ const handleResend = async () => {
 };
 
 const thisUrlEncoded = btoa(window.location.href);
+
+const loginLink = linkToHref(authLinks.login, {
+  params: { redirect: thisUrlEncoded },
+});
 
 // Verify email automatically on load if token is present
 onMounted(() => {
