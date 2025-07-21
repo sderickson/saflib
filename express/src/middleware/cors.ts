@@ -3,13 +3,16 @@ import { Router } from "express";
 
 const domains = [process.env.DOMAIN];
 
-const subdomains = ["", "auth."]; // TODO: draw this from the env
+const subdomains = ["", "auth", "onboarding"]; // TODO: draw this from the env
 
 const protocol = process.env.PROTOCOL;
 
 const whitelist = new Set(
   domains.flatMap((domain) =>
-    subdomains.map((subdomain) => `${protocol}://${subdomain}${domain}`),
+    subdomains.map(
+      (subdomain) =>
+        `${protocol}://${subdomain === "" ? "" : subdomain + "."}${domain}`,
+    ),
   ),
 );
 
