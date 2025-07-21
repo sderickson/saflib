@@ -31,7 +31,7 @@ export const createAuthRouter = (additionalRoutes?: RouteRecordRaw[]) => {
   ];
 
   router = createRouter({
-    history: createWebHistory("/auth"),
+    history: createWebHistory(),
     routes,
   });
   return router;

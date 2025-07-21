@@ -3,6 +3,8 @@ import { randomBytes } from "crypto";
 import { type AuthResponse } from "@saflib/auth-spec";
 import { authDb } from "@saflib/auth-db";
 import { authServiceStorage } from "../../context.ts";
+import { linkToHref } from "@saflib/links";
+import { authLinks } from "@saflib/auth-links";
 
 export const resendVerificationHandler = createHandler(async (req, res) => {
   const { dbKey } = authServiceStorage.getStore()!;
@@ -26,7 +28,9 @@ export const resendVerificationHandler = createHandler(async (req, res) => {
     verificationTokenExpiresAt,
   );
 
-  const verificationUrl = `${process.env.PROTOCOL}://${process.env.DOMAIN}/auth/verify-email?token=${verificationToken}`;
+  const verificationUrl = linkToHref(authLinks.verifyEmail, {
+    params: { token: verificationToken },
+  });
   const { callbacks } = authServiceStorage.getStore()!;
   if (callbacks.onVerificationTokenCreated) {
     await callbacks.onVerificationTokenCreated(req.user, verificationUrl, true);

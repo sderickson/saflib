@@ -3,13 +3,16 @@ import { Router } from "express";
 
 const domains = [process.env.DOMAIN];
 
-const subdomains = ["", "www.", "specs.api.", "grafana."];
+const subdomains = process.env.CLIENT_SUBDOMAINS?.split(",") ?? [];
 
 const protocol = process.env.PROTOCOL;
 
 const whitelist = new Set(
   domains.flatMap((domain) =>
-    subdomains.map((subdomain) => `${protocol}://${subdomain}${domain}`),
+    subdomains.map(
+      (subdomain) =>
+        `${protocol}://${subdomain === "" ? "" : subdomain + "."}${domain}`,
+    ),
   ),
 );
 

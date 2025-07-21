@@ -3,6 +3,8 @@ import { createHandler } from "@saflib/express";
 import { type AuthResponse } from "@saflib/auth-spec";
 import { authDb } from "@saflib/auth-db";
 import { authServiceStorage } from "../../context.ts";
+import { linkToHref } from "@saflib/links";
+import { authLinks } from "@saflib/auth-links";
 
 export const forgotPasswordHandler = createHandler(async (req, res) => {
   const { email } = req.body as { email: string };
@@ -26,7 +28,9 @@ export const forgotPasswordHandler = createHandler(async (req, res) => {
     expiresAt,
   );
 
-  const resetUrl = `${process.env.PROTOCOL}://${process.env.DOMAIN}/auth/reset-password?token=${token}`;
+  const resetUrl = linkToHref(authLinks.resetPassword, {
+    params: { token },
+  });
   const { callbacks } = authServiceStorage.getStore()!;
   if (callbacks.onPasswordReset) {
     await callbacks.onPasswordReset(user, resetUrl);
