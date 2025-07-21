@@ -48,6 +48,7 @@ export type LinkProps = { href: string } | { to: string };
 export type Link = {
   subdomain: string;
   path: string;
+  params?: string[];
 };
 
 export type LinkMap = Record<string, Link>;
@@ -70,10 +71,23 @@ export const linkToProps = (link: Link) => {
   };
 };
 
-export const linkToHref = (link: Link): string => {
+export interface LinkOptions {
+  params?: Record<string, string>;
+}
+
+export const linkToHref = (link: Link, options?: LinkOptions): string => {
   const domain = document.location.hostname.split(".").slice(-2).join(".");
   const protocol = document.location.protocol;
-  return `${protocol}//${link.subdomain}.${domain}${link.path}`;
+  let path = link.path;
+  if (options?.params) {
+    for (const [param, _value] of Object.entries(options.params)) {
+      if (!link.params?.includes(param)) {
+        throw new Error(`Param ${param} not found in link ${link.path}`);
+      }
+    }
+    path = `${path}?${new URLSearchParams(options.params).toString()}`;
+  }
+  return `${protocol}//${link.subdomain}.${domain}${path}`;
 };
 
 export const navigateToLink = (link: Link) => {
