@@ -90,7 +90,7 @@ export const linkToHref = (link: Link, options?: LinkOptions): string => {
   return `${protocol}//${link.subdomain}.${domain}${path}`;
 };
 
-export const navigateToLink = (link: Link) => {
-  const href = linkToHref(link);
+export const navigateToLink = (link: Link, options?: LinkOptions) => {
+  const href = linkToHref(link, options);
   window.location.href = href;
 };
