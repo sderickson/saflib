@@ -27,9 +27,11 @@ export const authLinks = {
   resetPassword: {
     subdomain,
     path: "/reset-password",
+    params: ["token"],
   },
   verifyEmail: {
     subdomain,
     path: "/verify-email",
+    params: ["token"],
   },
 } satisfies LinkMap;

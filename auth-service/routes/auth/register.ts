@@ -5,9 +5,13 @@ import type { AuthResponse, AuthRequest } from "@saflib/auth-spec";
 import { randomBytes } from "crypto";
 import { authDb, EmailConflictError } from "@saflib/auth-db";
 import { authServiceStorage } from "../../context.ts";
+import { linkToHref } from "@saflib/links";
+import { authLinks } from "@saflib/auth-links";
+import { getSafReporters } from "@saflib/node";
 
 export const registerHandler = createHandler(async (req, res) => {
   const { dbKey } = authServiceStorage.getStore()!;
+  const { log } = getSafReporters();
   const registerRequest: AuthRequest["registerUser"] = req.body;
   const { email, password, name, givenName, familyName } = registerRequest;
 
@@ -58,7 +62,10 @@ export const registerHandler = createHandler(async (req, res) => {
     promises.push(callbacks.onUserCreated(user));
   }
 
-  const verificationUrl = `${process.env.PROTOCOL}://${process.env.DOMAIN}/auth/verify-email?token=${verificationToken}`;
+  const verificationUrl = linkToHref(authLinks.verifyEmail, {
+    params: { token: verificationToken },
+  });
+  log.info(`Verification URL: ${verificationUrl}`);
   if (callbacks.onVerificationTokenCreated) {
     promises.push(
       callbacks.onVerificationTokenCreated(user, verificationUrl, false),

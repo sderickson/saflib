@@ -38,7 +38,7 @@ export const linkToHref = (link: Link, options?: LinkOptions): string => {
     protocol = document.location.protocol;
   } else {
     domain = process.env.DOMAIN || "docker.localhost";
-    protocol = process.env.PROTOCOL || "http:";
+    protocol = (process.env.PROTOCOL || "http") + ":";
   }
 
   let path = link.path;

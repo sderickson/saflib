@@ -36,6 +36,15 @@ describe("linkToHref", () => {
       ),
     ).toThrow("Param c not found in link /");
   });
+
+  it("also works on backend with process.env", () => {
+    globalThis.document = undefined as unknown as Document;
+    process.env.DOMAIN = "some.domain";
+    process.env.PROTOCOL = "https";
+    expect(linkToHref({ subdomain: "test", path: "/" })).toBe(
+      "https://test.some.domain/",
+    );
+  });
 });
 describe("linkToProps", () => {
   it("returns href for links to other subdomains, and to for links to the same subdomain", () => {
