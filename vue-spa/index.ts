@@ -56,18 +56,27 @@ export type LinkMap = Record<string, Link>;
 // which will work with vuetify components such as v-list-item and b-btn
 export const linkToProps = (link: Link) => {
   // This works for {subdomain}.docker.localhost as well as prod domains
-  const domain = document.location.hostname.split(".").slice(-2).join(".");
   const currentSubdomain = document.location.hostname
     .split(".")
     .slice(0, -2)
     .join(".");
-  const protocol = document.location.protocol;
   if (currentSubdomain === link.subdomain) {
     return {
       to: link.path,
     };
   }
   return {
-    href: `${protocol}//${link.subdomain}.${domain}${link.path}`, // TODO: use router-link
+    href: linkToHref(link),
   };
+};
+
+export const linkToHref = (link: Link): string => {
+  const domain = document.location.hostname.split(".").slice(-2).join(".");
+  const protocol = document.location.protocol;
+  return `${protocol}//${link.subdomain}.${domain}${link.path}`;
+};
+
+export const navigateToLink = (link: Link) => {
+  const href = linkToHref(link);
+  window.location.href = href;
 };
