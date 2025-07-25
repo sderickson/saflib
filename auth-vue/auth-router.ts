@@ -13,6 +13,8 @@ import {
   VerifyEmailPage,
 } from "@saflib/auth-vue";
 
+import { authLinks } from "@saflib/auth-links";
+
 let router: Router;
 
 export const createAuthRouter = (additionalRoutes?: RouteRecordRaw[]) => {
@@ -21,13 +23,16 @@ export const createAuthRouter = (additionalRoutes?: RouteRecordRaw[]) => {
   }
   const routes: RouteRecordRaw[] = [
     ...(additionalRoutes ?? []),
-    { path: "/", component: LoginPage },
-    { path: "/login", component: LoginPage },
-    { path: "/register", component: RegisterPage },
-    { path: "/forgot", component: ForgotPasswordPage },
-    { path: "/logout", component: LogoutPage },
-    { path: "/reset-password", component: ChangeForgottenPasswordPage },
-    { path: "/verify-email", component: VerifyEmailPage },
+    { path: authLinks.home.path, component: LoginPage },
+    { path: authLinks.login.path, component: LoginPage },
+    { path: authLinks.register.path, component: RegisterPage },
+    { path: authLinks.forgot.path, component: ForgotPasswordPage },
+    { path: authLinks.logout.path, component: LogoutPage },
+    {
+      path: authLinks.resetPassword.path,
+      component: ChangeForgottenPasswordPage,
+    },
+    { path: authLinks.verifyEmail.path, component: VerifyEmailPage },
   ];
 
   router = createRouter({
