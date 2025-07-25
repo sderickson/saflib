@@ -58,10 +58,10 @@
     </v-form>
 
     <v-card-text v-else class="text-center">
-      <router-link class="text-blue text-decoration-none" to="/login">
+      <SpaLink :link="authLinks.login" class="text-blue text-decoration-none">
         {{ change_forgotten_password_page.continue_to_login }}
         <v-icon icon="mdi-chevron-right"></v-icon>
-      </router-link>
+      </SpaLink>
     </v-card-text>
   </div>
 </template>
@@ -79,6 +79,8 @@ import { useRoute } from "vue-router";
 import { useResetPassword } from "../../requests/auth";
 import { passwordRules } from "../../utils/rules";
 import { change_forgotten_password_page } from "./ChangeForgottenPasswordPage.strings";
+import { authLinks } from "@saflib/auth-links";
+import { SpaLink } from "@saflib/vue-spa";
 
 const route = useRoute();
 const token = route.query.token as string;

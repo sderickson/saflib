@@ -1,10 +1,10 @@
 <template>
   <v-form v-model="valid">
     <div class="mb-4 float-right">
-      <router-link class="text-blue text-decoration-none" to="/login">
+      <SpaLink :link="authLinks.login" class="text-blue text-decoration-none">
         {{ forgot_password_page.back_to_login }}
         <v-icon icon="mdi-chevron-right"></v-icon>
-      </router-link>
+      </SpaLink>
     </div>
     <div class="mb-4 font-weight-medium">
       {{ forgot_password_page.forgot_password }}
@@ -52,6 +52,8 @@ import { ref } from "vue";
 import { emailRules } from "../../utils/rules";
 import { useForgotPassword } from "../../requests/auth";
 import { forgot_password_page } from "./ForgotPasswordPage.strings";
+import { SpaLink } from "@saflib/vue-spa";
+import { authLinks } from "@saflib/auth-links";
 
 const email = ref("");
 const valid = ref(null);
