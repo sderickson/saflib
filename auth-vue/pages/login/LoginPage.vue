@@ -1,9 +1,12 @@
 <template>
   <v-form v-model="valid">
     <div class="float-right">
-      <router-link class="text-blue text-decoration-none" to="/register">
+      <SpaLink
+        :link="authLinks.register"
+        class="text-blue text-decoration-none"
+      >
         {{ login_page.sign_up_now }} <v-icon icon="mdi-chevron-right"></v-icon>
-      </router-link>
+      </SpaLink>
     </div>
 
     <div class="mb-4 font-weight-medium">
@@ -23,12 +26,12 @@
     <div
       class="text-subtitle-1 text-medium-emphasis d-flex align-center justify-space-between"
     >
-      <router-link
+      <SpaLink
+        :link="authLinks.forgot"
         class="text-caption text-decoration-none text-blue"
-        to="/forgot"
       >
         {{ login_page.forgot_password }}
-      </router-link>
+      </SpaLink>
     </div>
 
     <v-text-field
@@ -67,6 +70,8 @@ import { ref } from "vue";
 import { emailRules, passwordRules } from "../../utils/rules.ts";
 import { useLogin } from "../../requests/auth.ts";
 import { login_page } from "./LoginPage.strings.ts";
+import { authLinks } from "@saflib/auth-links";
+import { SpaLink } from "@saflib/vue-spa";
 
 const emit = defineEmits(["login"]);
 

@@ -1,10 +1,10 @@
 <template>
   <v-form v-model="valid">
     <div class="float-right">
-      <router-link class="text-blue text-decoration-none" to="/login">
+      <SpaLink :link="authLinks.login" class="text-blue text-decoration-none">
         {{ register_page.already_have_account }}
         <v-icon icon="mdi-chevron-right"></v-icon>
-      </router-link>
+      </SpaLink>
     </div>
 
     <div class="mb-4 font-weight-medium">
@@ -96,6 +96,8 @@ import { ref, watch, computed } from "vue";
 import { emailRules, passwordRules } from "../../utils/rules.ts";
 import { useRegister } from "../../requests/auth.ts";
 import { register_page } from "./RegisterPage.strings.ts";
+import { authLinks } from "@saflib/auth-links";
+import { SpaLink } from "@saflib/vue-spa";
 
 const props = defineProps<{
   firstNameInput?: boolean;
