@@ -21,7 +21,8 @@ paths:
     post:
       $ref: "./routes/forgot-password.yaml#/forgotPassword"
   /auth/reset-password:
-    $ref: "./routes/auth.yaml#/reset-password"
+    post:
+      $ref: "./routes/reset-password.yaml#/resetPassword"
   /auth/verify-email:
     $ref: "./routes/auth.yaml#/verify-email"
   /auth/resend-verification:

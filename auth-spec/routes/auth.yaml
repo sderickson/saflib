@@ -1,29 +1,3 @@
-reset-password:
-  post:
-    summary: "Reset Password Using Token"
-    operationId: resetPassword
-    tags:
-      - auth
-    requestBody:
-      required: true
-      content:
-        application/json:
-          schema:
-            $ref: "#/components/schemas/ResetPasswordRequest"
-    responses:
-      "200":
-        description: Password successfully reset
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ResetPasswordResponse"
-      "400":
-        description: Invalid token or password
-        content:
-          application/json:
-            schema:
-              $ref: "../schemas/error.yaml"
-
 verify-email:
   post:
     summary: "Verify Email Address"
@@ -122,30 +96,6 @@ components:
         message:
           type: string
           description: A generic message indicating that the verification email was sent
-
-    ResetPasswordRequest:
-      type: object
-      required:
-        - token
-        - newPassword
-      additionalProperties: false
-      properties:
-        token:
-          type: string
-          description: The temporary password token received via email
-        newPassword:
-          type: string
-          minLength: 8
-          description: The new password to set
-
-    ResetPasswordResponse:
-      type: object
-      required:
-        - success
-      additionalProperties: false
-      properties:
-        success:
-          type: boolean
 
     VerificationRequest:
       type: object
