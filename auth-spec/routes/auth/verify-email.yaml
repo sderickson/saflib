@@ -22,22 +22,22 @@ verifyEmail:
       content:
         application/json:
           schema:
-            $ref: "../schemas/user.yaml"
+            $ref: "../../schemas/user.yaml"
     "400":
       description: Invalid or expired token
       content:
         application/json:
           schema:
-            $ref: "../schemas/error.yaml"
+            $ref: "../../schemas/error.yaml"
     "401":
       description: User not logged in
       content:
         application/json:
           schema:
-            $ref: "../schemas/error.yaml"
+            $ref: "../../schemas/error.yaml"
     "403":
       description: User not authorized to verify email
       content:
         application/json:
           schema:
-            $ref: "../schemas/error.yaml"
+            $ref: "../../schemas/error.yaml"

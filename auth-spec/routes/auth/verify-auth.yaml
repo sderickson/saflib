@@ -29,16 +29,16 @@ verifyAuth:
       content:
         application/json:
           schema:
-            $ref: "../schemas/user.yaml"
+            $ref: "../../schemas/user.yaml"
     "401":
       description: User is not authenticated
       content:
         application/json:
           schema:
-            $ref: "../schemas/error.yaml"
+            $ref: "../../schemas/error.yaml"
     "403":
       description: CSRF token mismatch
       content:
         application/json:
           schema:
-            $ref: "../schemas/error.yaml"
+            $ref: "../../schemas/error.yaml"

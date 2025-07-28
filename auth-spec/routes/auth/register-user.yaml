@@ -35,10 +35,10 @@ registerUser:
       content:
         application/json:
           schema:
-            $ref: "../schemas/user.yaml"
+            $ref: "../../schemas/user.yaml"
     "409":
       description: Email already exists
       content:
         application/json:
           schema:
-            $ref: "../schemas/error.yaml"
+            $ref: "../../schemas/error.yaml"

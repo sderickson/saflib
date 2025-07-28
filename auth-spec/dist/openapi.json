@@ -367,7 +367,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/VerificationRequest"
+                "type": "object",
+                "required": [
+                  "token"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "token": {
+                    "type": "string",
+                    "description": "The verification token sent in the email"
+                  }
+                }
               }
             }
           }
@@ -429,7 +439,21 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ResendVerificationResponse"
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "message"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "A generic message indicating that the verification email was sent"
+                    }
+                  }
                 }
               }
             }
@@ -459,7 +483,23 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/SetPasswordRequest"
+                "type": "object",
+                "required": [
+                  "currentPassword",
+                  "newPassword"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "currentPassword": {
+                    "type": "string",
+                    "description": "The user's current password for verification"
+                  },
+                  "newPassword": {
+                    "type": "string",
+                    "minLength": 8,
+                    "description": "The new password to set"
+                  }
+                }
               }
             }
           }
@@ -470,7 +510,16 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SetPasswordResponse"
+                  "type": "object",
+                  "required": [
+                    "success"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    }
+                  }
                 }
               }
             }
@@ -621,7 +670,7 @@
         }
       }
     },
-    "/auth/email/sent": {
+    "/email/sent": {
       "get": {
         "summary": "List all sent emails",
         "operationId": "listSentEmails",
@@ -676,6 +725,12 @@
       }
     },
     "schemas": {
+      "Error": {
+        "$ref": "#/components/schemas/error"
+      },
+      "User": {
+        "$ref": "#/components/schemas/user"
+      },
       "user": {
         "type": "object",
         "additionalProperties": false,
@@ -728,67 +783,6 @@
             "type": "string",
             "description": "A human-readable description of the error.",
             "example": "The requested resource could not be found."
-          }
-        }
-      },
-      "VerificationRequest": {
-        "type": "object",
-        "required": [
-          "token"
-        ],
-        "additionalProperties": false,
-        "properties": {
-          "token": {
-            "type": "string",
-            "description": "The verification token sent in the email"
-          }
-        }
-      },
-      "ResendVerificationResponse": {
-        "type": "object",
-        "required": [
-          "success",
-          "message"
-        ],
-        "additionalProperties": false,
-        "properties": {
-          "success": {
-            "type": "boolean"
-          },
-          "message": {
-            "type": "string",
-            "description": "A generic message indicating that the verification email was sent"
-          }
-        }
-      },
-      "SetPasswordRequest": {
-        "type": "object",
-        "required": [
-          "currentPassword",
-          "newPassword"
-        ],
-        "additionalProperties": false,
-        "properties": {
-          "currentPassword": {
-            "type": "string",
-            "description": "The user's current password for verification"
-          },
-          "newPassword": {
-            "type": "string",
-            "minLength": 8,
-            "description": "The new password to set"
-          }
-        }
-      },
-      "SetPasswordResponse": {
-        "type": "object",
-        "required": [
-          "success"
-        ],
-        "additionalProperties": false,
-        "properties": {
-          "success": {
-            "type": "boolean"
           }
         }
       },

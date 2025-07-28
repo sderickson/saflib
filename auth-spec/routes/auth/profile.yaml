@@ -36,19 +36,19 @@ put:
       content:
         application/json:
           schema:
-            $ref: "../schemas/error.yaml"
+            $ref: "../../schemas/error.yaml"
     "401":
       description: User not authenticated
       content:
         application/json:
           schema:
-            $ref: "../schemas/error.yaml"
+            $ref: "../../schemas/error.yaml"
     "409":
       description: Email already exists (if trying to update email to one that's already taken)
       content:
         application/json:
           schema:
-            $ref: "../schemas/error.yaml"
+            $ref: "../../schemas/error.yaml"
 
 components:
   schemas:

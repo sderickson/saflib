@@ -25,10 +25,10 @@ loginUser:
       content:
         application/json:
           schema:
-            $ref: "../schemas/user.yaml"
+            $ref: "../../schemas/user.yaml"
     "401":
       description: Invalid credentials
       content:
         application/json:
           schema:
-            $ref: "../schemas/error.yaml"
+            $ref: "../../schemas/error.yaml"

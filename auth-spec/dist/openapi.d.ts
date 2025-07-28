@@ -201,7 +201,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/auth/email/sent": {
+    "/email/sent": {
         parameters: {
             query?: never;
             header?: never;
@@ -222,6 +222,8 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        Error: components["schemas"]["error"];
+        User: components["schemas"]["user"];
         user: {
             id?: number;
             /** Format: email */
@@ -250,24 +252,6 @@ export interface components {
              * @example The requested resource could not be found.
              */
             message?: string;
-        };
-        VerificationRequest: {
-            /** @description The verification token sent in the email */
-            token: string;
-        };
-        ResendVerificationResponse: {
-            success: boolean;
-            /** @description A generic message indicating that the verification email was sent */
-            message: string;
-        };
-        SetPasswordRequest: {
-            /** @description The user's current password for verification */
-            currentPassword: string;
-            /** @description The new password to set */
-            newPassword: string;
-        };
-        SetPasswordResponse: {
-            success: boolean;
         };
         ProfileResponse: {
             /** @description Unique identifier for the user */
@@ -593,7 +577,10 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["VerificationRequest"];
+                "application/json": {
+                    /** @description The verification token sent in the email */
+                    token: string;
+                };
             };
         };
         responses: {
@@ -650,7 +637,11 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ResendVerificationResponse"];
+                    "application/json": {
+                        success: boolean;
+                        /** @description A generic message indicating that the verification email was sent */
+                        message: string;
+                    };
                 };
             };
             /** @description User not logged in */
@@ -673,7 +664,12 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["SetPasswordRequest"];
+                "application/json": {
+                    /** @description The user's current password for verification */
+                    currentPassword: string;
+                    /** @description The new password to set */
+                    newPassword: string;
+                };
             };
         };
         responses: {
@@ -683,7 +679,9 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SetPasswordResponse"];
+                    "application/json": {
+                        success: boolean;
+                    };
                 };
             };
             /** @description User not logged in or invalid current password */
