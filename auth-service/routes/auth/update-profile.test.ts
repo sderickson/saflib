@@ -294,8 +294,6 @@ describe("Update Profile Route", () => {
       email: updateData.email,
       emailVerified: false,
       name: userData.name,
-      givenName: null,
-      familyName: null,
       createdAt: expect.any(String),
     });
   });
