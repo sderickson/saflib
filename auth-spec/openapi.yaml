@@ -18,7 +18,8 @@ paths:
     get:
       $ref: "./routes/verify-auth.yaml#/verifyAuth"
   /auth/forgot-password:
-    $ref: "./routes/auth.yaml#/forgot-password"
+    post:
+      $ref: "./routes/forgot-password.yaml#/forgotPassword"
   /auth/reset-password:
     $ref: "./routes/auth.yaml#/reset-password"
   /auth/verify-email:
