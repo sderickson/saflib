@@ -251,24 +251,6 @@ export interface components {
              */
             message?: string;
         };
-        ForgotPasswordRequest: {
-            /** Format: email */
-            email: string;
-        };
-        ForgotPasswordResponse: {
-            success: boolean;
-            /** @description A generic message indicating that if the user exists, a recovery email was sent */
-            message: string;
-        };
-        ResetPasswordRequest: {
-            /** @description The temporary password token received via email */
-            token: string;
-            /** @description The new password to set */
-            newPassword: string;
-        };
-        ResetPasswordResponse: {
-            success: boolean;
-        };
         VerificationRequest: {
             /** @description The verification token sent in the email */
             token: string;
@@ -531,7 +513,10 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ForgotPasswordRequest"];
+                "application/json": {
+                    /** Format: email */
+                    email: string;
+                };
             };
         };
         responses: {
@@ -541,7 +526,11 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ForgotPasswordResponse"];
+                    "application/json": {
+                        success: boolean;
+                        /** @description A generic message indicating that if the user exists, a recovery email was sent */
+                        message: string;
+                    };
                 };
             };
             /** @description Invalid email format */
@@ -564,7 +553,12 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ResetPasswordRequest"];
+                "application/json": {
+                    /** @description The temporary password token received via email */
+                    token: string;
+                    /** @description The new password to set */
+                    newPassword: string;
+                };
             };
         };
         responses: {
@@ -574,7 +568,9 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ResetPasswordResponse"];
+                    "application/json": {
+                        success: boolean;
+                    };
                 };
             };
             /** @description Invalid token or password */
