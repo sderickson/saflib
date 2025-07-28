@@ -1,41 +1,3 @@
-verify-email:
-  post:
-    summary: "Verify Email Address"
-    operationId: verifyEmail
-    tags:
-      - auth
-    requestBody:
-      required: true
-      content:
-        application/json:
-          schema:
-            $ref: "#/components/schemas/VerificationRequest"
-    responses:
-      "200":
-        description: Email verified successfully
-        content:
-          application/json:
-            schema:
-              $ref: "../schemas/user.yaml"
-      "400":
-        description: Invalid or expired token
-        content:
-          application/json:
-            schema:
-              $ref: "../schemas/error.yaml"
-      "401":
-        description: User not logged in
-        content:
-          application/json:
-            schema:
-              $ref: "../schemas/error.yaml"
-      "403":
-        description: User not authorized to verify email
-        content:
-          application/json:
-            schema:
-              $ref: "../schemas/error.yaml"
-
 resend-verification:
   post:
     summary: "Resend Verification Email"
@@ -96,16 +58,6 @@ components:
         message:
           type: string
           description: A generic message indicating that the verification email was sent
-
-    VerificationRequest:
-      type: object
-      required:
-        - token
-      additionalProperties: false
-      properties:
-        token:
-          type: string
-          description: The verification token sent in the email
 
     SetPasswordRequest:
       type: object

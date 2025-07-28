@@ -1,0 +1,43 @@
+verifyEmail:
+  summary: "Verify Email Address"
+  operationId: verifyEmail
+  tags:
+    - auth
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          required:
+            - token
+          additionalProperties: false
+          properties:
+            token:
+              type: string
+              description: The verification token sent in the email
+  responses:
+    "200":
+      description: Email verified successfully
+      content:
+        application/json:
+          schema:
+            $ref: "../schemas/user.yaml"
+    "400":
+      description: Invalid or expired token
+      content:
+        application/json:
+          schema:
+            $ref: "../schemas/error.yaml"
+    "401":
+      description: User not logged in
+      content:
+        application/json:
+          schema:
+            $ref: "../schemas/error.yaml"
+    "403":
+      description: User not authorized to verify email
+      content:
+        application/json:
+          schema:
+            $ref: "../schemas/error.yaml"
