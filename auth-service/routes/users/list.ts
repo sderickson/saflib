@@ -22,13 +22,13 @@ export const listUsersHandler = createHandler(async (_, res) => {
     .map((user) => ({
       id: user.id,
       createdAt: user.createdAt.toISOString(), // Convert to ISO string
-      lastLoginAt: user.lastLoginAt?.toISOString() ?? null, // Convert to ISO string if not null
+      lastLoginAt: user.lastLoginAt?.toISOString() ?? undefined, // Convert to ISO string if not null
       email:
         emailMap.get(user.id) ?? `Error: Email not found for user ${user.id}`,
       verifiedAt:
         emailAuths
           .find((auth) => auth.userId === user.id)
-          ?.verifiedAt?.toISOString() ?? null,
+          ?.verifiedAt?.toISOString() ?? undefined,
     }))
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt)); // Sort by ISO string
 

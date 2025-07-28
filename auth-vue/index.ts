@@ -1,5 +1,4 @@
 export * from "./requests/auth.ts";
-export * from "./requests/types.ts";
 export * from "./requests/users.ts";
 export * from "./utils/rules.ts";
 export { default as LoginPage } from "./pages/login/LoginPage.vue";

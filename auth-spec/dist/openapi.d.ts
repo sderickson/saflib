@@ -241,6 +241,16 @@ export interface components {
              * @description Date and time the user was created
              */
             createdAt?: string;
+            /**
+             * Format: date-time
+             * @description Date and time the user last logged in
+             */
+            lastLoginAt?: string;
+            /**
+             * Format: date-time
+             * @description Date and time the user's email was verified
+             */
+            verifiedAt?: string;
             /** @description List of user's permission scopes */
             scopes?: string[];
         };

@@ -790,6 +790,16 @@
             "format": "date-time",
             "description": "Date and time the user was created"
           },
+          "lastLoginAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Date and time the user last logged in"
+          },
+          "verifiedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Date and time the user's email was verified"
+          },
           "scopes": {
             "type": "array",
             "items": {
