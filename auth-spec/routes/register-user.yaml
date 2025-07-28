@@ -1,0 +1,44 @@
+registerUser:
+  summary: "Register New User"
+  operationId: registerUser
+  tags:
+    - auth
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          required:
+            - email
+            - password
+          additionalProperties: false
+          properties:
+            email:
+              type: string
+              format: email
+            password:
+              type: string
+              minLength: 8
+            name:
+              type: string
+              description: User's full name (optional)
+            givenName:
+              type: string
+              description: User's given name (optional)
+            familyName:
+              type: string
+              description: User's family name (optional)
+  responses:
+    "200":
+      description: User registered successfully
+      content:
+        application/json:
+          schema:
+            $ref: "../schemas/user.yaml"
+    "409":
+      description: Email already exists
+      content:
+        application/json:
+          schema:
+            $ref: "../schemas/error.yaml"
