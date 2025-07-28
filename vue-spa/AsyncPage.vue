@@ -13,10 +13,10 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import type { Component } from "vue";
-import type { LoaderQuery } from "./types.ts";
+import type { LoaderQueries } from "./types.ts";
 
 interface Props {
-  loader?: () => Record<string, LoaderQuery>;
+  loader?: () => LoaderQueries;
   pageComponent: Component;
 }
 
