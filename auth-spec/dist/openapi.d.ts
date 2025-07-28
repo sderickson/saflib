@@ -315,6 +315,11 @@ export interface components {
             givenName?: string | null;
             /** @description User's family name (last name) */
             familyName?: string | null;
+            /**
+             * Format: date-time
+             * @description Date and time the user was created
+             */
+            createdAt?: string;
         };
         ProfileUpdateRequest: {
             /**
@@ -330,6 +335,11 @@ export interface components {
             givenName?: string | null;
             /** @description User's family name (last name) */
             familyName?: string | null;
+            /**
+             * Format: date-time
+             * @description Date and time the user was created
+             */
+            createdAt?: string;
         };
         ListUsersResponse: {
             /** @description Unique identifier for the user */

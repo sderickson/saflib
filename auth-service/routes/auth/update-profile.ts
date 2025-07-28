@@ -103,6 +103,7 @@ export const updateProfile = createHandler(async (req, res) => {
     name: updatedUser.name,
     givenName: updatedUser.givenName,
     familyName: updatedUser.familyName,
+    createdAt: updatedUser.createdAt.toISOString(),
   };
 
   res.status(200).json(response);

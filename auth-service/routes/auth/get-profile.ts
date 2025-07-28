@@ -31,6 +31,7 @@ export const getProfileHandler = createHandler(async (req, res) => {
     name: result.name,
     givenName: result.givenName,
     familyName: result.familyName,
+    createdAt: result.createdAt.toISOString(),
   } satisfies AuthResponse["getUserProfile"][200];
 
   res.status(200).json(response);

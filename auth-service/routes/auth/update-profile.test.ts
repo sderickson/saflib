@@ -65,6 +65,7 @@ describe("Update Profile Route", () => {
       name: updateData.name,
       givenName: updateData.givenName,
       familyName: updateData.familyName,
+      createdAt: expect.any(String),
     });
   });
 
@@ -108,6 +109,7 @@ describe("Update Profile Route", () => {
       name: userData.name,
       givenName: userData.givenName,
       familyName: userData.familyName,
+      createdAt: expect.any(String),
     });
   });
 
@@ -155,6 +157,7 @@ describe("Update Profile Route", () => {
       name: updateData.name,
       givenName: updateData.givenName,
       familyName: updateData.familyName,
+      createdAt: expect.any(String),
     });
   });
 
@@ -199,6 +202,7 @@ describe("Update Profile Route", () => {
       name: updateData.name,
       givenName: userData.givenName,
       familyName: userData.familyName,
+      createdAt: expect.any(String),
     });
   });
 
@@ -246,6 +250,7 @@ describe("Update Profile Route", () => {
       name: userData.name,
       givenName: userData.givenName,
       familyName: userData.familyName,
+      createdAt: expect.any(String),
     });
   });
 
@@ -291,6 +296,7 @@ describe("Update Profile Route", () => {
       name: userData.name,
       givenName: null,
       familyName: null,
+      createdAt: expect.any(String),
     });
   });
 
@@ -305,7 +311,7 @@ describe("Update Profile Route", () => {
 
     const registerResponse = await agent.post("/auth/register").send(userData);
     expect(registerResponse.status).toBe(200);
-    
+
     // Register another user with the same email
     const secondAgent = request.agent(app);
     const anotherUserData = {
@@ -313,7 +319,9 @@ describe("Update Profile Route", () => {
       name: "Taken User",
       password: "password123",
     };
-    const registerAnotherUserResponse = await secondAgent.post("/auth/register").send(anotherUserData);
+    const registerAnotherUserResponse = await secondAgent
+      .post("/auth/register")
+      .send(anotherUserData);
     expect(registerAnotherUserResponse.status).toBe(200);
 
     // Try to update the email to the taken email

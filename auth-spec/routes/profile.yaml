@@ -78,6 +78,10 @@ components:
           type: string
           nullable: true
           description: User's family name (last name)
+        createdAt:
+          type: string
+          format: date-time
+          description: Date and time the user was created
 
     ProfileUpdateRequest:
       type: object
@@ -102,3 +106,7 @@ components:
           type: string
           nullable: true
           description: User's family name (last name)
+        createdAt:
+          type: string
+          format: date-time
+          description: Date and time the user was created
