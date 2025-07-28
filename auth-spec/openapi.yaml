@@ -9,7 +9,7 @@ paths:
     post:
       $ref: "./routes/register-user.yaml#/registerUser"
   /auth/login:
-    $ref: "./routes/auth.yaml#/login"
+    $ref: "./routes/login-user.yaml#/loginUser"
   /auth/logout:
     $ref: "./routes/auth.yaml#/logout"
   /auth/verify:

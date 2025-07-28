@@ -30,8 +30,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Authenticate User */
-        post: operations["loginUser"];
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -251,11 +250,6 @@ export interface components {
              */
             message?: string;
         };
-        LoginRequest: {
-            /** Format: email */
-            email: string;
-            password: string;
-        };
         LogoutResponse: Record<string, never>;
         ForgotPasswordRequest: {
             /** Format: email */
@@ -373,6 +367,11 @@ export interface components {
             timeSent?: number;
             replyTo?: string[];
         };
+        LoginRequest: {
+            /** Format: email */
+            email: string;
+            password: string;
+        };
     };
     responses: never;
     parameters: never;
@@ -416,39 +415,6 @@ export interface operations {
             };
             /** @description Email already exists */
             409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["error"];
-                };
-            };
-        };
-    };
-    loginUser: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["LoginRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful login */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["user"];
-                };
-            };
-            /** @description Invalid credentials */
-            401: {
                 headers: {
                     [name: string]: unknown;
                 };

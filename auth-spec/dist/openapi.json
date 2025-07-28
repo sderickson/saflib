@@ -75,40 +75,38 @@
       }
     },
     "/auth/login": {
-      "post": {
-        "summary": "Authenticate User",
-        "operationId": "loginUser",
-        "tags": [
-          "auth"
-        ],
-        "requestBody": {
-          "required": true,
+      "summary": "Authenticate User",
+      "operationId": "loginUser",
+      "tags": [
+        "auth"
+      ],
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/LoginRequest"
+            }
+          }
+        }
+      },
+      "responses": {
+        "200": {
+          "description": "Successful login",
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/LoginRequest"
+                "$ref": "../schemas/user.yaml"
               }
             }
           }
         },
-        "responses": {
-          "200": {
-            "description": "Successful login",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/user"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Invalid credentials",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/error"
-                }
+        "401": {
+          "description": "Invalid credentials",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "../schemas/error.yaml"
               }
             }
           }
@@ -667,23 +665,6 @@
           }
         }
       },
-      "LoginRequest": {
-        "type": "object",
-        "required": [
-          "email",
-          "password"
-        ],
-        "additionalProperties": false,
-        "properties": {
-          "email": {
-            "type": "string",
-            "format": "email"
-          },
-          "password": {
-            "type": "string"
-          }
-        }
-      },
       "LogoutResponse": {
         "type": "object",
         "additionalProperties": false
@@ -982,6 +963,23 @@
           "subject",
           "from"
         ]
+      },
+      "LoginRequest": {
+        "type": "object",
+        "required": [
+          "email",
+          "password"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "password": {
+            "type": "string"
+          }
+        }
       }
     }
   }
