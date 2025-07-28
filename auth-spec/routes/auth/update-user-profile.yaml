@@ -1,0 +1,59 @@
+updateUserProfile:
+  summary: "Update User Profile"
+  description: "Update the profile information for the currently logged in user"
+  operationId: updateUserProfile
+  tags:
+    - auth
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          additionalProperties: false
+          properties:
+            email:
+              type: string
+              format: email
+              description: User's email address
+            emailVerified:
+              type: boolean
+              description: Whether the user's email address has been verified
+            name:
+              type: string
+              nullable: true
+              description: User's full name
+            givenName:
+              type: string
+              nullable: true
+              description: User's given name (first name)
+            familyName:
+              type: string
+              nullable: true
+              description: User's family name (last name)
+  responses:
+    "200":
+      description: User profile updated successfully
+      content:
+        application/json:
+          schema:
+            $ref: "../../schemas/user.yaml"
+
+    "400":
+      description: Invalid request data
+      content:
+        application/json:
+          schema:
+            $ref: "../../schemas/error.yaml"
+    "401":
+      description: User not authenticated
+      content:
+        application/json:
+          schema:
+            $ref: "../../schemas/error.yaml"
+    "409":
+      description: Email already exists (if trying to update email to one that's already taken)
+      content:
+        application/json:
+          schema:
+            $ref: "../../schemas/error.yaml"

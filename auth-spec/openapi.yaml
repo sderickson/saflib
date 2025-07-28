@@ -34,9 +34,9 @@ paths:
       $ref: "./routes/auth/set-password.yaml#/setPassword"
   /auth/profile:
     get:
-      $ref: "./routes/auth/profile.yaml#/get"
+      $ref: "./routes/auth/get-user-profile.yaml#/getUserProfile"
     put:
-      $ref: "./routes/auth/profile.yaml#/put"
+      $ref: "./routes/auth/update-user-profile.yaml#/updateUserProfile"
   /users:
     get:
       $ref: "./routes/users/users.yaml#/list"

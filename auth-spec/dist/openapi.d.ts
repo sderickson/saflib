@@ -253,48 +253,6 @@ export interface components {
              */
             message?: string;
         };
-        ProfileResponse: {
-            /** @description Unique identifier for the user */
-            id?: number;
-            /**
-             * Format: email
-             * @description User's email address
-             */
-            email?: string;
-            /** @description Whether the user's email address has been verified */
-            emailVerified?: boolean;
-            /** @description User's full name */
-            name?: string | null;
-            /** @description User's given name (first name) */
-            givenName?: string | null;
-            /** @description User's family name (last name) */
-            familyName?: string | null;
-            /**
-             * Format: date-time
-             * @description Date and time the user was created
-             */
-            createdAt?: string;
-        };
-        ProfileUpdateRequest: {
-            /**
-             * Format: email
-             * @description User's email address
-             */
-            email?: string;
-            /** @description Whether the user's email address has been verified */
-            emailVerified?: boolean;
-            /** @description User's full name */
-            name?: string | null;
-            /** @description User's given name (first name) */
-            givenName?: string | null;
-            /** @description User's family name (last name) */
-            familyName?: string | null;
-            /**
-             * Format: date-time
-             * @description Date and time the user was created
-             */
-            createdAt?: string;
-        };
         ListUsersResponse: {
             /** @description Unique identifier for the user */
             id: number;
@@ -710,7 +668,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ProfileResponse"];
+                    "application/json": components["schemas"]["user"];
                 };
             };
         };
@@ -724,7 +682,21 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ProfileUpdateRequest"];
+                "application/json": {
+                    /**
+                     * Format: email
+                     * @description User's email address
+                     */
+                    email?: string;
+                    /** @description Whether the user's email address has been verified */
+                    emailVerified?: boolean;
+                    /** @description User's full name */
+                    name?: string | null;
+                    /** @description User's given name (first name) */
+                    givenName?: string | null;
+                    /** @description User's family name (last name) */
+                    familyName?: string | null;
+                };
             };
         };
         responses: {
@@ -734,7 +706,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ProfileResponse"];
+                    "application/json": components["schemas"]["user"];
                 };
             };
             /** @description Invalid request data */
