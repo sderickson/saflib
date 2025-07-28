@@ -1,4 +1,5 @@
 export { AsyncPage } from "./tricky-imports.ts";
+export type { LoaderQuery } from "./types.ts";
 export { default as SpaLink } from "./SpaLink.vue";
 import { createTanstackQueryClient } from "./tanstack.ts";
 import { createApp, type Component } from "vue";

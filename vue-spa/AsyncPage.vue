@@ -12,17 +12,11 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
-import type { UseQueryReturnType } from "@tanstack/vue-query";
 import type { Component } from "vue";
-import { TanstackError } from "@saflib/vue-spa";
-
-type Query = Pick<
-  UseQueryReturnType<any, TanstackError>,
-  "isLoading" | "isError" | "error"
->;
+import type { LoaderQuery } from "./types.ts";
 
 interface Props {
-  loader?: () => Record<string, Query>;
+  loader?: () => Record<string, LoaderQuery>;
   pageComponent: Component;
 }
 
