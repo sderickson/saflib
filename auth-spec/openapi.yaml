@@ -6,7 +6,8 @@ info:
 
 paths:
   /auth/register:
-    $ref: "./routes/auth.yaml#/register"
+    post:
+      $ref: "./routes/auth-register.yaml#/register/post"
   /auth/login:
     $ref: "./routes/auth.yaml#/login"
   /auth/logout:

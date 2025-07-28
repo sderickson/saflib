@@ -222,18 +222,7 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        RegisterRequest: {
-            /** Format: email */
-            email: string;
-            password: string;
-            /** @description User's full name (optional) */
-            name?: string;
-            /** @description User's given name (optional) */
-            givenName?: string;
-            /** @description User's family name (optional) */
-            familyName?: string;
-        };
-        UserResponse: {
+        user: {
             id?: number;
             /** Format: email */
             email?: string;
@@ -245,6 +234,11 @@ export interface components {
             givenName?: string;
             /** @description User's family name (optional) */
             familyName?: string;
+            /**
+             * Format: date-time
+             * @description Date and time the user was created
+             */
+            createdAt?: string;
             /** @description List of user's permission scopes */
             scopes?: string[];
         };
@@ -380,6 +374,7 @@ export interface components {
             replyTo?: string[];
         };
         ErrorResponse: components["schemas"]["error"];
+        User: components["schemas"]["user"];
     };
     responses: never;
     parameters: never;
@@ -398,7 +393,17 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["RegisterRequest"];
+                "application/json": {
+                    /** Format: email */
+                    email: string;
+                    password: string;
+                    /** @description User's full name (optional) */
+                    name?: string;
+                    /** @description User's given name (optional) */
+                    givenName?: string;
+                    /** @description User's family name (optional) */
+                    familyName?: string;
+                };
             };
         };
         responses: {
@@ -408,7 +413,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["UserResponse"];
+                    "application/json": components["schemas"]["user"];
                 };
             };
             /** @description Email already exists */
@@ -441,7 +446,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["UserResponse"];
+                    "application/json": components["schemas"]["user"];
                 };
             };
             /** @description Invalid credentials */
@@ -498,7 +503,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["UserResponse"];
+                    "application/json": components["schemas"]["user"];
                 };
             };
             /** @description User is not authenticated */
@@ -606,7 +611,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["UserResponse"];
+                    "application/json": components["schemas"]["user"];
                 };
             };
             /** @description Invalid or expired token */

@@ -18,7 +18,34 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/RegisterRequest"
+                "type": "object",
+                "required": [
+                  "email",
+                  "password"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "password": {
+                    "type": "string",
+                    "minLength": 8
+                  },
+                  "name": {
+                    "type": "string",
+                    "description": "User's full name (optional)"
+                  },
+                  "givenName": {
+                    "type": "string",
+                    "description": "User's given name (optional)"
+                  },
+                  "familyName": {
+                    "type": "string",
+                    "description": "User's family name (optional)"
+                  }
+                }
               }
             }
           }
@@ -29,7 +56,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/UserResponse"
+                  "$ref": "#/components/schemas/user"
                 }
               }
             }
@@ -70,7 +97,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/UserResponse"
+                  "$ref": "#/components/schemas/user"
                 }
               }
             }
@@ -154,7 +181,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/UserResponse"
+                  "$ref": "#/components/schemas/user"
                 }
               }
             }
@@ -287,7 +314,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/UserResponse"
+                  "$ref": "#/components/schemas/user"
                 }
               }
             }
@@ -585,37 +612,7 @@
       }
     },
     "schemas": {
-      "RegisterRequest": {
-        "type": "object",
-        "required": [
-          "email",
-          "password"
-        ],
-        "additionalProperties": false,
-        "properties": {
-          "email": {
-            "type": "string",
-            "format": "email"
-          },
-          "password": {
-            "type": "string",
-            "minLength": 8
-          },
-          "name": {
-            "type": "string",
-            "description": "User's full name (optional)"
-          },
-          "givenName": {
-            "type": "string",
-            "description": "User's given name (optional)"
-          },
-          "familyName": {
-            "type": "string",
-            "description": "User's family name (optional)"
-          }
-        }
-      },
-      "UserResponse": {
+      "user": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -641,6 +638,11 @@
           "familyName": {
             "type": "string",
             "description": "User's family name (optional)"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Date and time the user was created"
           },
           "scopes": {
             "type": "array",
@@ -983,6 +985,9 @@
       },
       "ErrorResponse": {
         "$ref": "#/components/schemas/error"
+      },
+      "User": {
+        "$ref": "#/components/schemas/user"
       }
     }
   }

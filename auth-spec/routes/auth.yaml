@@ -1,29 +1,3 @@
-register:
-  post:
-    summary: "Register New User"
-    operationId: registerUser
-    tags:
-      - auth
-    requestBody:
-      required: true
-      content:
-        application/json:
-          schema:
-            $ref: "#/components/schemas/RegisterRequest"
-    responses:
-      "200":
-        description: User registered successfully
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/UserResponse"
-      "409":
-        description: Email already exists
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ErrorResponse"
-
 login:
   post:
     summary: "Authenticate User"
@@ -42,7 +16,7 @@ login:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/UserResponse"
+              $ref: "#/components/schemas/User"
       "401":
         description: Invalid credentials
         content:
@@ -96,7 +70,7 @@ verify:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/UserResponse"
+              $ref: "#/components/schemas/User"
       "401":
         description: User is not authenticated
         content:
@@ -180,7 +154,7 @@ verify-email:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/UserResponse"
+              $ref: "#/components/schemas/User"
       "400":
         description: Invalid or expired token
         content:
@@ -250,28 +224,9 @@ components:
   schemas:
     ErrorResponse:
       $ref: "../../openapi-specs/schemas/error.yaml"
-    RegisterRequest:
-      type: object
-      required:
-        - email
-        - password
-      additionalProperties: false
-      properties:
-        email:
-          type: string
-          format: email
-        password:
-          type: string
-          minLength: 8
-        name:
-          type: string
-          description: User's full name (optional)
-        givenName:
-          type: string
-          description: User's given name (optional)
-        familyName:
-          type: string
-          description: User's family name (optional)
+
+    User:
+      $ref: "../schemas/user.yaml"
 
     LoginRequest:
       type: object
@@ -289,33 +244,6 @@ components:
     LogoutResponse:
       type: object
       additionalProperties: false
-
-    UserResponse:
-      type: object
-      additionalProperties: false
-      properties:
-        id:
-          type: number
-        email:
-          type: string
-          format: email
-        emailVerified:
-          type: boolean
-          description: Whether the user's email address has been verified
-        name:
-          type: string
-          description: User's full name (optional)
-        givenName:
-          type: string
-          description: User's given name (optional)
-        familyName:
-          type: string
-          description: User's family name (optional)
-        scopes:
-          type: array
-          items:
-            type: string
-          description: List of user's permission scopes
 
     ForgotPasswordRequest:
       type: object

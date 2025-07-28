@@ -1,0 +1,29 @@
+type: object
+additionalProperties: false
+properties:
+  id:
+    type: number
+  email:
+    type: string
+    format: email
+  emailVerified:
+    type: boolean
+    description: Whether the user's email address has been verified
+  name:
+    type: string
+    description: User's full name (optional)
+  givenName:
+    type: string
+    description: User's given name (optional)
+  familyName:
+    type: string
+    description: User's family name (optional)
+  createdAt:
+    type: string
+    format: date-time
+    description: Date and time the user was created
+  scopes:
+    type: array
+    items:
+      type: string
+    description: List of user's permission scopes
