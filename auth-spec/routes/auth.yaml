@@ -16,13 +16,13 @@ login:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/User"
+              $ref: "../schemas/user.yaml"
       "401":
         description: Invalid credentials
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ErrorResponse"
+              $ref: "../schemas/error.yaml"
 
 logout:
   post:
@@ -70,19 +70,19 @@ verify:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/User"
+              $ref: "../schemas/user.yaml"
       "401":
         description: User is not authenticated
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ErrorResponse"
+              $ref: "../schemas/error.yaml"
       "403":
         description: CSRF token mismatch
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ErrorResponse"
+              $ref: "../schemas/error.yaml"
 
 forgot-password:
   post:
@@ -108,7 +108,7 @@ forgot-password:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ErrorResponse"
+              $ref: "../schemas/error.yaml"
 
 reset-password:
   post:
@@ -134,7 +134,7 @@ reset-password:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ErrorResponse"
+              $ref: "../schemas/error.yaml"
 
 verify-email:
   post:
@@ -154,25 +154,25 @@ verify-email:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/User"
+              $ref: "../schemas/user.yaml"
       "400":
         description: Invalid or expired token
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ErrorResponse"
+              $ref: "../schemas/error.yaml"
       "401":
         description: User not logged in
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ErrorResponse"
+              $ref: "../schemas/error.yaml"
       "403":
         description: User not authorized to verify email
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ErrorResponse"
+              $ref: "../schemas/error.yaml"
 
 resend-verification:
   post:
@@ -192,7 +192,7 @@ resend-verification:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ErrorResponse"
+              $ref: "../schemas/error.yaml"
 
 set-password:
   post:
@@ -218,16 +218,10 @@ set-password:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ErrorResponse"
+              $ref: "../schemas/error.yaml"
 
 components:
   schemas:
-    ErrorResponse:
-      $ref: "../schemas/error.yaml"
-
-    User:
-      $ref: "../schemas/user.yaml"
-
     LoginRequest:
       type: object
       required:

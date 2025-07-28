@@ -982,12 +982,6 @@
           "subject",
           "from"
         ]
-      },
-      "ErrorResponse": {
-        "$ref": "#/components/schemas/error"
-      },
-      "User": {
-        "$ref": "#/components/schemas/user"
       }
     }
   }

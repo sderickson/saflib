@@ -42,4 +42,4 @@ register:
         content:
           application/json:
             schema:
-              $ref: "./auth.yaml#/components/schemas/ErrorResponse"
+              $ref: "../schemas/error.yaml"

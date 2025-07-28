@@ -19,13 +19,13 @@ list:
       content:
         application/json:
           schema:
-            $ref: "../routes/auth.yaml#/components/schemas/ErrorResponse"
+            $ref: "../schemas/error.yaml"
     "403":
       description: Forbidden - user does not have admin privileges.
       content:
         application/json:
           schema:
-            $ref: "../routes/auth.yaml#/components/schemas/ErrorResponse"
+            $ref: "../schemas/error.yaml"
 
 components:
   schemas:

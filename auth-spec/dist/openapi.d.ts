@@ -373,8 +373,6 @@ export interface components {
             timeSent?: number;
             replyTo?: string[];
         };
-        ErrorResponse: components["schemas"]["error"];
-        User: components["schemas"]["user"];
     };
     responses: never;
     parameters: never;
