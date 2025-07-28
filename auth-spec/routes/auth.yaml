@@ -223,7 +223,7 @@ set-password:
 components:
   schemas:
     ErrorResponse:
-      $ref: "../../openapi-specs/schemas/error.yaml"
+      $ref: "../schemas/error.yaml"
 
     User:
       $ref: "../schemas/user.yaml"
