@@ -540,7 +540,7 @@
     "/auth/profile": {
       "get": {
         "summary": "Get User Profile",
-        "description": "Get the profile information for the currently logged in user",
+        "description": "Get the profile information for the currently logged in user. Returns an empty object if the user is not authenticated.",
         "operationId": "getUserProfile",
         "tags": [
           "auth"
@@ -697,7 +697,7 @@
         }
       }
     },
-    "/email/sent": {
+    "/auth/email/sent": {
       "get": {
         "summary": "List all sent emails",
         "operationId": "listSentEmails",

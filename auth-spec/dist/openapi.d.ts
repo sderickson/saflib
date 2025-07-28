@@ -169,7 +169,7 @@ export interface paths {
         };
         /**
          * Get User Profile
-         * @description Get the profile information for the currently logged in user
+         * @description Get the profile information for the currently logged in user. Returns an empty object if the user is not authenticated.
          */
         get: operations["getUserProfile"];
         /**
@@ -201,7 +201,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/email/sent": {
+    "/auth/email/sent": {
         parameters: {
             query?: never;
             header?: never;

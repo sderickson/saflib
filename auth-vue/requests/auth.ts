@@ -122,7 +122,7 @@ export const getSentAuthEmails = (email?: Ref<string | undefined>) => {
     queryKey: ["sent-emails", "auth", email],
     queryFn: async () => {
       return handleClientMethod(
-        client.GET("/email/sent", {
+        client.GET("/auth/email/sent", {
           params: { query: { userEmail: email?.value } },
         }),
       );
