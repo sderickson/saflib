@@ -27,7 +27,8 @@ paths:
     post:
       $ref: "./routes/verify-email.yaml#/verifyEmail"
   /auth/resend-verification:
-    $ref: "./routes/auth.yaml#/resend-verification"
+    post:
+      $ref: "./routes/resend-verification.yaml#/resendVerification"
   /auth/set-password:
     $ref: "./routes/auth.yaml#/set-password"
   /auth/profile:

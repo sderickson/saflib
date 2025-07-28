@@ -1,0 +1,28 @@
+resendVerification:
+  summary: "Resend Verification Email"
+  operationId: resendVerification
+  tags:
+    - auth
+  responses:
+    "200":
+      description: Verification email sent successfully
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - success
+              - message
+            additionalProperties: false
+            properties:
+              success:
+                type: boolean
+              message:
+                type: string
+                description: A generic message indicating that the verification email was sent
+    "401":
+      description: User not logged in
+      content:
+        application/json:
+          schema:
+            $ref: "../schemas/error.yaml"
