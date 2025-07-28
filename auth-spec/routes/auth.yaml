@@ -1,17 +1,3 @@
-logout:
-  post:
-    summary: "Logout User"
-    operationId: logoutUser
-    tags:
-      - auth
-    responses:
-      "200":
-        description: Successful logout
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/LogoutResponse"
-
 verify:
   get:
     summary: "Verify Authentication Status"
@@ -196,10 +182,6 @@ set-password:
 
 components:
   schemas:
-    LogoutResponse:
-      type: object
-      additionalProperties: false
-
     ForgotPasswordRequest:
       type: object
       required:

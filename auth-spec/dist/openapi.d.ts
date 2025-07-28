@@ -251,7 +251,6 @@ export interface components {
              */
             message?: string;
         };
-        LogoutResponse: Record<string, never>;
         ForgotPasswordRequest: {
             /** Format: email */
             email: string;
@@ -472,7 +471,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["LogoutResponse"];
+                    "application/json": Record<string, never>;
                 };
             };
         };

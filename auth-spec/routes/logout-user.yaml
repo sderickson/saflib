@@ -1,0 +1,13 @@
+logoutUser:
+  summary: "Logout User"
+  operationId: logoutUser
+  tags:
+    - auth
+  responses:
+    "200":
+      description: Successful logout
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties: false

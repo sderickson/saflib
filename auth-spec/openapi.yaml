@@ -12,7 +12,8 @@ paths:
     post:
       $ref: "./routes/login-user.yaml#/loginUser"
   /auth/logout:
-    $ref: "./routes/auth.yaml#/logout"
+    post:
+      $ref: "./routes/logout-user.yaml#/logoutUser"
   /auth/verify:
     $ref: "./routes/auth.yaml#/verify"
   /auth/forgot-password:
