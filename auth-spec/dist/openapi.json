@@ -668,7 +668,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/ListUsersResponse"
+                    "$ref": "#/components/schemas/user"
                   }
                 }
               }
@@ -810,50 +810,6 @@
             "type": "string",
             "description": "A human-readable description of the error.",
             "example": "The requested resource could not be found."
-          }
-        }
-      },
-      "ListUsersResponse": {
-        "type": "object",
-        "required": [
-          "id",
-          "email",
-          "createdAt"
-        ],
-        "additionalProperties": false,
-        "properties": {
-          "id": {
-            "type": "integer",
-            "description": "Unique identifier for the user"
-          },
-          "email": {
-            "type": "string",
-            "format": "email",
-            "description": "User's email address"
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time",
-            "description": "Timestamp when the user was created (ISO 8601 format)"
-          },
-          "lastLoginAt": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true,
-            "description": "Timestamp of the user's last login (ISO 8601 format), or null if never logged in"
-          },
-          "verifiedAt": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true,
-            "description": "Timestamp when the user's email was verified (ISO 8601 format), or null if not verified"
-          },
-          "permissions": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "description": "List of permission strings assigned to the user"
           }
         }
       },

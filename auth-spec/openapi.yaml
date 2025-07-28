@@ -39,7 +39,7 @@ paths:
       $ref: "./routes/auth/update-user-profile.yaml#/updateUserProfile"
   /users:
     get:
-      $ref: "./routes/users/users.yaml#/list"
+      $ref: "./routes/users/users.yaml#/listUsers"
   /email/sent:
     get:
       $ref: "../email-spec/routes/email_routes.yaml#/get"

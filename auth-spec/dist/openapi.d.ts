@@ -253,32 +253,6 @@ export interface components {
              */
             message?: string;
         };
-        ListUsersResponse: {
-            /** @description Unique identifier for the user */
-            id: number;
-            /**
-             * Format: email
-             * @description User's email address
-             */
-            email: string;
-            /**
-             * Format: date-time
-             * @description Timestamp when the user was created (ISO 8601 format)
-             */
-            createdAt: string;
-            /**
-             * Format: date-time
-             * @description Timestamp of the user's last login (ISO 8601 format), or null if never logged in
-             */
-            lastLoginAt?: string | null;
-            /**
-             * Format: date-time
-             * @description Timestamp when the user's email was verified (ISO 8601 format), or null if not verified
-             */
-            verifiedAt?: string | null;
-            /** @description List of permission strings assigned to the user */
-            permissions?: string[];
-        };
         "sent-email": {
             to: string[];
             cc?: string[];
@@ -753,7 +727,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ListUsersResponse"][];
+                    "application/json": components["schemas"]["user"][];
                 };
             };
             /** @description Unauthorized - missing or invalid auth headers, or not logged in. */
