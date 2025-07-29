@@ -4,7 +4,6 @@ import express from "express";
 import { createApp } from "../../http.ts";
 import { getCsrfToken } from "./_test-helpers.ts";
 
-
 describe("Get Profile Route", () => {
   let app: express.Express;
 
@@ -51,6 +50,7 @@ describe("Get Profile Route", () => {
       name: userData.name,
       givenName: userData.givenName,
       familyName: userData.familyName,
+      createdAt: expect.any(String),
     });
   });
 

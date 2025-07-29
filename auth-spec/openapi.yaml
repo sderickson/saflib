@@ -6,31 +6,40 @@ info:
 
 paths:
   /auth/register:
-    $ref: "./routes/auth.yaml#/register"
+    post:
+      $ref: "./routes/auth/register-user.yaml#/registerUser"
   /auth/login:
-    $ref: "./routes/auth.yaml#/login"
+    post:
+      $ref: "./routes/auth/login-user.yaml#/loginUser"
   /auth/logout:
-    $ref: "./routes/auth.yaml#/logout"
+    post:
+      $ref: "./routes/auth/logout-user.yaml#/logoutUser"
   /auth/verify:
-    $ref: "./routes/auth.yaml#/verify"
+    get:
+      $ref: "./routes/auth/verify-auth.yaml#/verifyAuth"
   /auth/forgot-password:
-    $ref: "./routes/auth.yaml#/forgot-password"
+    post:
+      $ref: "./routes/auth/forgot-password.yaml#/forgotPassword"
   /auth/reset-password:
-    $ref: "./routes/auth.yaml#/reset-password"
+    post:
+      $ref: "./routes/auth/reset-password.yaml#/resetPassword"
   /auth/verify-email:
-    $ref: "./routes/auth.yaml#/verify-email"
+    post:
+      $ref: "./routes/auth/verify-email.yaml#/verifyEmail"
   /auth/resend-verification:
-    $ref: "./routes/auth.yaml#/resend-verification"
+    post:
+      $ref: "./routes/auth/resend-verification.yaml#/resendVerification"
   /auth/set-password:
-    $ref: "./routes/auth.yaml#/set-password"
+    post:
+      $ref: "./routes/auth/set-password.yaml#/setPassword"
   /auth/profile:
     get:
-      $ref: "./routes/profile.yaml#/get"
+      $ref: "./routes/auth/get-user-profile.yaml#/getUserProfile"
     put:
-      $ref: "./routes/profile.yaml#/put"
+      $ref: "./routes/auth/update-user-profile.yaml#/updateUserProfile"
   /users:
     get:
-      $ref: "./routes/users.yaml#/list"
+      $ref: "./routes/users/users.yaml#/listUsers"
   /auth/email/sent:
     get:
       $ref: "../email-spec/routes/email_routes.yaml#/get"
@@ -43,4 +52,7 @@ components:
       name: X-User-Scopes
       description: Comma-separated list of user scopes
   schemas:
-    $ref: "./routes/auth.yaml#/components/schemas"
+    Error:
+      $ref: "./schemas/error.yaml"
+    User:
+      $ref: "./schemas/user.yaml"

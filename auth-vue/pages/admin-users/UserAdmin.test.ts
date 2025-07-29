@@ -24,7 +24,7 @@ const mockUsers: User[] = [
     id: 2,
     email: "user@example.com",
     createdAt: "2023-10-25T09:00:00.000Z",
-    lastLoginAt: null,
+    lastLoginAt: undefined,
   },
 ];
 

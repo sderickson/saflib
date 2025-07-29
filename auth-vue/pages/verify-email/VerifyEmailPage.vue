@@ -102,11 +102,12 @@ import { useRoute } from "vue-router";
 import {
   useVerifyEmail,
   useResendVerification,
-  useGetProfile,
+  getProfile,
 } from "../../requests/auth";
 import { TanstackError } from "@saflib/vue-spa";
 import { linkToHref } from "@saflib/links";
 import { authLinks } from "@saflib/auth-links";
+import { useQuery } from "@tanstack/vue-query";
 
 defineProps<{
   redirectTo: string;
@@ -127,7 +128,7 @@ const {
   isPending: isResending,
   isSuccess: isResent,
 } = useResendVerification();
-const { data: profile, isPending: isGettingProfile } = useGetProfile();
+const { data: profile, isPending: isGettingProfile } = useQuery(getProfile());
 
 const isLoading = computed(
   () => isVerifying.value || isResending.value || isGettingProfile.value,

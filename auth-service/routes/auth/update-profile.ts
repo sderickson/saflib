@@ -9,8 +9,8 @@ import {
   EmailTakenError,
 } from "@saflib/auth-db";
 
-type ProfileUpdateRequest = components["schemas"]["ProfileUpdateRequest"];
-type ProfileResponse = components["schemas"]["ProfileResponse"];
+type ProfileUpdateRequest = components["schemas"]["User"];
+type ProfileResponse = components["schemas"]["User"];
 
 export const updateProfile = createHandler(async (req, res) => {
   const { dbKey } = authServiceStorage.getStore()!;
@@ -100,9 +100,10 @@ export const updateProfile = createHandler(async (req, res) => {
     id: updatedUser.id,
     email: updatedUser.email,
     emailVerified: updatedUser.emailVerified ?? false,
-    name: updatedUser.name,
-    givenName: updatedUser.givenName,
-    familyName: updatedUser.familyName,
+    name: updatedUser.name ?? undefined,
+    givenName: updatedUser.givenName ?? undefined,
+    familyName: updatedUser.familyName ?? undefined,
+    createdAt: updatedUser.createdAt.toISOString(),
   };
 
   res.status(200).json(response);

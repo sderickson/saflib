@@ -16,7 +16,7 @@ export async function getUserScopes(
 export async function createUserResponse(
   dbKey: DbKey,
   user: User,
-): Promise<components["schemas"]["UserResponse"]> {
+): Promise<components["schemas"]["User"]> {
   const scopes = await getUserScopes(dbKey, user.id);
   return {
     id: user.id,

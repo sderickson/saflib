@@ -2,12 +2,16 @@
 import { onMounted } from "vue";
 import { useLogout } from "../../requests/auth.ts";
 
+const props = defineProps<{
+  redirectTo?: string;
+}>();
+
 const { mutate: logout } = useLogout();
 
 onMounted(() => {
   logout(undefined, {
     onSuccess: async () => {
-      window.location.href = "/";
+      window.location.href = props.redirectTo || "/";
     },
   });
 });

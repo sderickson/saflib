@@ -18,7 +18,34 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/RegisterRequest"
+                "type": "object",
+                "required": [
+                  "email",
+                  "password"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "password": {
+                    "type": "string",
+                    "minLength": 8
+                  },
+                  "name": {
+                    "type": "string",
+                    "description": "User's full name (optional)"
+                  },
+                  "givenName": {
+                    "type": "string",
+                    "description": "User's given name (optional)"
+                  },
+                  "familyName": {
+                    "type": "string",
+                    "description": "User's family name (optional)"
+                  }
+                }
               }
             }
           }
@@ -29,7 +56,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/UserResponse"
+                  "$ref": "#/components/schemas/user"
                 }
               }
             }
@@ -59,7 +86,21 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/LoginRequest"
+                "type": "object",
+                "required": [
+                  "email",
+                  "password"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "password": {
+                    "type": "string"
+                  }
+                }
               }
             }
           }
@@ -70,7 +111,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/UserResponse"
+                  "$ref": "#/components/schemas/user"
                 }
               }
             }
@@ -101,7 +142,8 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/LogoutResponse"
+                  "type": "object",
+                  "additionalProperties": false
                 }
               }
             }
@@ -154,7 +196,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/UserResponse"
+                  "$ref": "#/components/schemas/user"
                 }
               }
             }
@@ -194,7 +236,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ForgotPasswordRequest"
+                "type": "object",
+                "required": [
+                  "email"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  }
+                }
               }
             }
           }
@@ -205,7 +257,21 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ForgotPasswordResponse"
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "message"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "A generic message indicating that if the user exists, a recovery email was sent"
+                    }
+                  }
                 }
               }
             }
@@ -235,7 +301,23 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ResetPasswordRequest"
+                "type": "object",
+                "required": [
+                  "token",
+                  "newPassword"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "token": {
+                    "type": "string",
+                    "description": "The temporary password token received via email"
+                  },
+                  "newPassword": {
+                    "type": "string",
+                    "minLength": 8,
+                    "description": "The new password to set"
+                  }
+                }
               }
             }
           }
@@ -246,7 +328,16 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ResetPasswordResponse"
+                  "type": "object",
+                  "required": [
+                    "success"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    }
+                  }
                 }
               }
             }
@@ -276,7 +367,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/VerificationRequest"
+                "type": "object",
+                "required": [
+                  "token"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "token": {
+                    "type": "string",
+                    "description": "The verification token sent in the email"
+                  }
+                }
               }
             }
           }
@@ -287,7 +388,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/UserResponse"
+                  "$ref": "#/components/schemas/user"
                 }
               }
             }
@@ -338,7 +439,21 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ResendVerificationResponse"
+                  "type": "object",
+                  "required": [
+                    "success",
+                    "message"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "A generic message indicating that the verification email was sent"
+                    }
+                  }
                 }
               }
             }
@@ -368,7 +483,23 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/SetPasswordRequest"
+                "type": "object",
+                "required": [
+                  "currentPassword",
+                  "newPassword"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "currentPassword": {
+                    "type": "string",
+                    "description": "The user's current password for verification"
+                  },
+                  "newPassword": {
+                    "type": "string",
+                    "minLength": 8,
+                    "description": "The new password to set"
+                  }
+                }
               }
             }
           }
@@ -379,7 +510,16 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SetPasswordResponse"
+                  "type": "object",
+                  "required": [
+                    "success"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    }
+                  }
                 }
               }
             }
@@ -400,7 +540,7 @@
     "/auth/profile": {
       "get": {
         "summary": "Get User Profile",
-        "description": "Get the profile information for the currently logged in user",
+        "description": "Get the profile information for the currently logged in user. Returns an empty object if the user is not authenticated.",
         "operationId": "getUserProfile",
         "tags": [
           "auth"
@@ -411,7 +551,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProfileResponse"
+                  "$ref": "#/components/schemas/user"
                 }
               }
             }
@@ -430,7 +570,34 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ProfileUpdateRequest"
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "description": "User's email address"
+                  },
+                  "emailVerified": {
+                    "type": "boolean",
+                    "description": "Whether the user's email address has been verified"
+                  },
+                  "name": {
+                    "type": "string",
+                    "nullable": true,
+                    "description": "User's full name"
+                  },
+                  "givenName": {
+                    "type": "string",
+                    "nullable": true,
+                    "description": "User's given name (first name)"
+                  },
+                  "familyName": {
+                    "type": "string",
+                    "nullable": true,
+                    "description": "User's family name (last name)"
+                  }
+                }
               }
             }
           }
@@ -441,7 +608,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProfileResponse"
+                  "$ref": "#/components/schemas/user"
                 }
               }
             }
@@ -501,7 +668,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/ListUsersResponse"
+                    "$ref": "#/components/schemas/user"
                   }
                 }
               }
@@ -585,37 +752,13 @@
       }
     },
     "schemas": {
-      "RegisterRequest": {
-        "type": "object",
-        "required": [
-          "email",
-          "password"
-        ],
-        "additionalProperties": false,
-        "properties": {
-          "email": {
-            "type": "string",
-            "format": "email"
-          },
-          "password": {
-            "type": "string",
-            "minLength": 8
-          },
-          "name": {
-            "type": "string",
-            "description": "User's full name (optional)"
-          },
-          "givenName": {
-            "type": "string",
-            "description": "User's given name (optional)"
-          },
-          "familyName": {
-            "type": "string",
-            "description": "User's family name (optional)"
-          }
-        }
+      "Error": {
+        "$ref": "#/components/schemas/error"
       },
-      "UserResponse": {
+      "User": {
+        "$ref": "#/components/schemas/user"
+      },
+      "user": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -642,6 +785,21 @@
             "type": "string",
             "description": "User's family name (optional)"
           },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Date and time the user was created"
+          },
+          "lastLoginAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Date and time the user last logged in"
+          },
+          "verifiedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Date and time the user's email was verified"
+          },
           "scopes": {
             "type": "array",
             "items": {
@@ -662,257 +820,6 @@
             "type": "string",
             "description": "A human-readable description of the error.",
             "example": "The requested resource could not be found."
-          }
-        }
-      },
-      "LoginRequest": {
-        "type": "object",
-        "required": [
-          "email",
-          "password"
-        ],
-        "additionalProperties": false,
-        "properties": {
-          "email": {
-            "type": "string",
-            "format": "email"
-          },
-          "password": {
-            "type": "string"
-          }
-        }
-      },
-      "LogoutResponse": {
-        "type": "object",
-        "additionalProperties": false
-      },
-      "ForgotPasswordRequest": {
-        "type": "object",
-        "required": [
-          "email"
-        ],
-        "additionalProperties": false,
-        "properties": {
-          "email": {
-            "type": "string",
-            "format": "email"
-          }
-        }
-      },
-      "ForgotPasswordResponse": {
-        "type": "object",
-        "required": [
-          "success",
-          "message"
-        ],
-        "additionalProperties": false,
-        "properties": {
-          "success": {
-            "type": "boolean"
-          },
-          "message": {
-            "type": "string",
-            "description": "A generic message indicating that if the user exists, a recovery email was sent"
-          }
-        }
-      },
-      "ResetPasswordRequest": {
-        "type": "object",
-        "required": [
-          "token",
-          "newPassword"
-        ],
-        "additionalProperties": false,
-        "properties": {
-          "token": {
-            "type": "string",
-            "description": "The temporary password token received via email"
-          },
-          "newPassword": {
-            "type": "string",
-            "minLength": 8,
-            "description": "The new password to set"
-          }
-        }
-      },
-      "ResetPasswordResponse": {
-        "type": "object",
-        "required": [
-          "success"
-        ],
-        "additionalProperties": false,
-        "properties": {
-          "success": {
-            "type": "boolean"
-          }
-        }
-      },
-      "VerificationRequest": {
-        "type": "object",
-        "required": [
-          "token"
-        ],
-        "additionalProperties": false,
-        "properties": {
-          "token": {
-            "type": "string",
-            "description": "The verification token sent in the email"
-          }
-        }
-      },
-      "ResendVerificationResponse": {
-        "type": "object",
-        "required": [
-          "success",
-          "message"
-        ],
-        "additionalProperties": false,
-        "properties": {
-          "success": {
-            "type": "boolean"
-          },
-          "message": {
-            "type": "string",
-            "description": "A generic message indicating that the verification email was sent"
-          }
-        }
-      },
-      "SetPasswordRequest": {
-        "type": "object",
-        "required": [
-          "currentPassword",
-          "newPassword"
-        ],
-        "additionalProperties": false,
-        "properties": {
-          "currentPassword": {
-            "type": "string",
-            "description": "The user's current password for verification"
-          },
-          "newPassword": {
-            "type": "string",
-            "minLength": 8,
-            "description": "The new password to set"
-          }
-        }
-      },
-      "SetPasswordResponse": {
-        "type": "object",
-        "required": [
-          "success"
-        ],
-        "additionalProperties": false,
-        "properties": {
-          "success": {
-            "type": "boolean"
-          }
-        }
-      },
-      "ProfileResponse": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "id": {
-            "type": "integer",
-            "description": "Unique identifier for the user"
-          },
-          "email": {
-            "type": "string",
-            "format": "email",
-            "description": "User's email address"
-          },
-          "emailVerified": {
-            "type": "boolean",
-            "description": "Whether the user's email address has been verified"
-          },
-          "name": {
-            "type": "string",
-            "nullable": true,
-            "description": "User's full name"
-          },
-          "givenName": {
-            "type": "string",
-            "nullable": true,
-            "description": "User's given name (first name)"
-          },
-          "familyName": {
-            "type": "string",
-            "nullable": true,
-            "description": "User's family name (last name)"
-          }
-        }
-      },
-      "ProfileUpdateRequest": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "email": {
-            "type": "string",
-            "format": "email",
-            "description": "User's email address"
-          },
-          "emailVerified": {
-            "type": "boolean",
-            "description": "Whether the user's email address has been verified"
-          },
-          "name": {
-            "type": "string",
-            "nullable": true,
-            "description": "User's full name"
-          },
-          "givenName": {
-            "type": "string",
-            "nullable": true,
-            "description": "User's given name (first name)"
-          },
-          "familyName": {
-            "type": "string",
-            "nullable": true,
-            "description": "User's family name (last name)"
-          }
-        }
-      },
-      "ListUsersResponse": {
-        "type": "object",
-        "required": [
-          "id",
-          "email",
-          "createdAt"
-        ],
-        "additionalProperties": false,
-        "properties": {
-          "id": {
-            "type": "integer",
-            "description": "Unique identifier for the user"
-          },
-          "email": {
-            "type": "string",
-            "format": "email",
-            "description": "User's email address"
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time",
-            "description": "Timestamp when the user was created (ISO 8601 format)"
-          },
-          "lastLoginAt": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true,
-            "description": "Timestamp of the user's last login (ISO 8601 format), or null if never logged in"
-          },
-          "verifiedAt": {
-            "type": "string",
-            "format": "date-time",
-            "nullable": true,
-            "description": "Timestamp when the user's email was verified (ISO 8601 format), or null if not verified"
-          },
-          "permissions": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "description": "List of permission strings assigned to the user"
           }
         }
       },
@@ -970,9 +877,6 @@
           "subject",
           "from"
         ]
-      },
-      "ErrorResponse": {
-        "$ref": "#/components/schemas/error"
       }
     }
   }

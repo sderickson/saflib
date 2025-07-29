@@ -1,6 +1,6 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/vue-query";
+import { useMutation, useQueryClient, queryOptions } from "@tanstack/vue-query";
 import { client } from "./client.ts";
-import type { AuthResponse, AuthRequest } from "./types.ts";
+import type { AuthResponse, AuthRequest } from "@saflib/auth-spec";
 import { TanstackError, handleClientMethod } from "@saflib/vue-spa";
 import type { Ref } from "vue";
 
@@ -92,15 +92,6 @@ export const useResendVerification = () => {
   });
 };
 
-export const useVerify = () => {
-  return useQuery<AuthResponse["verifyAuth"][200], TanstackError>({
-    queryKey: ["verify"],
-    queryFn: async () => {
-      return handleClientMethod(client.GET("/auth/verify"));
-    },
-  });
-};
-
 export const useUpdateProfile = () => {
   const queryClient = useQueryClient();
   return useMutation<
@@ -117,8 +108,8 @@ export const useUpdateProfile = () => {
   });
 };
 
-export const useGetProfile = () => {
-  return useQuery<AuthResponse["getUserProfile"][200], TanstackError>({
+export const getProfile = () => {
+  return queryOptions({
     queryKey: ["profile"],
     queryFn: async () => {
       return handleClientMethod(client.GET("/auth/profile"));

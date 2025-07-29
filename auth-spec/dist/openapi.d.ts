@@ -169,7 +169,7 @@ export interface paths {
         };
         /**
          * Get User Profile
-         * @description Get the profile information for the currently logged in user
+         * @description Get the profile information for the currently logged in user. Returns an empty object if the user is not authenticated.
          */
         get: operations["getUserProfile"];
         /**
@@ -222,18 +222,9 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        RegisterRequest: {
-            /** Format: email */
-            email: string;
-            password: string;
-            /** @description User's full name (optional) */
-            name?: string;
-            /** @description User's given name (optional) */
-            givenName?: string;
-            /** @description User's family name (optional) */
-            familyName?: string;
-        };
-        UserResponse: {
+        Error: components["schemas"]["error"];
+        User: components["schemas"]["user"];
+        user: {
             id?: number;
             /** Format: email */
             email?: string;
@@ -245,6 +236,21 @@ export interface components {
             givenName?: string;
             /** @description User's family name (optional) */
             familyName?: string;
+            /**
+             * Format: date-time
+             * @description Date and time the user was created
+             */
+            createdAt?: string;
+            /**
+             * Format: date-time
+             * @description Date and time the user last logged in
+             */
+            lastLoginAt?: string;
+            /**
+             * Format: date-time
+             * @description Date and time the user's email was verified
+             */
+            verifiedAt?: string;
             /** @description List of user's permission scopes */
             scopes?: string[];
         };
@@ -256,106 +262,6 @@ export interface components {
              * @example The requested resource could not be found.
              */
             message?: string;
-        };
-        LoginRequest: {
-            /** Format: email */
-            email: string;
-            password: string;
-        };
-        LogoutResponse: Record<string, never>;
-        ForgotPasswordRequest: {
-            /** Format: email */
-            email: string;
-        };
-        ForgotPasswordResponse: {
-            success: boolean;
-            /** @description A generic message indicating that if the user exists, a recovery email was sent */
-            message: string;
-        };
-        ResetPasswordRequest: {
-            /** @description The temporary password token received via email */
-            token: string;
-            /** @description The new password to set */
-            newPassword: string;
-        };
-        ResetPasswordResponse: {
-            success: boolean;
-        };
-        VerificationRequest: {
-            /** @description The verification token sent in the email */
-            token: string;
-        };
-        ResendVerificationResponse: {
-            success: boolean;
-            /** @description A generic message indicating that the verification email was sent */
-            message: string;
-        };
-        SetPasswordRequest: {
-            /** @description The user's current password for verification */
-            currentPassword: string;
-            /** @description The new password to set */
-            newPassword: string;
-        };
-        SetPasswordResponse: {
-            success: boolean;
-        };
-        ProfileResponse: {
-            /** @description Unique identifier for the user */
-            id?: number;
-            /**
-             * Format: email
-             * @description User's email address
-             */
-            email?: string;
-            /** @description Whether the user's email address has been verified */
-            emailVerified?: boolean;
-            /** @description User's full name */
-            name?: string | null;
-            /** @description User's given name (first name) */
-            givenName?: string | null;
-            /** @description User's family name (last name) */
-            familyName?: string | null;
-        };
-        ProfileUpdateRequest: {
-            /**
-             * Format: email
-             * @description User's email address
-             */
-            email?: string;
-            /** @description Whether the user's email address has been verified */
-            emailVerified?: boolean;
-            /** @description User's full name */
-            name?: string | null;
-            /** @description User's given name (first name) */
-            givenName?: string | null;
-            /** @description User's family name (last name) */
-            familyName?: string | null;
-        };
-        ListUsersResponse: {
-            /** @description Unique identifier for the user */
-            id: number;
-            /**
-             * Format: email
-             * @description User's email address
-             */
-            email: string;
-            /**
-             * Format: date-time
-             * @description Timestamp when the user was created (ISO 8601 format)
-             */
-            createdAt: string;
-            /**
-             * Format: date-time
-             * @description Timestamp of the user's last login (ISO 8601 format), or null if never logged in
-             */
-            lastLoginAt?: string | null;
-            /**
-             * Format: date-time
-             * @description Timestamp when the user's email was verified (ISO 8601 format), or null if not verified
-             */
-            verifiedAt?: string | null;
-            /** @description List of permission strings assigned to the user */
-            permissions?: string[];
         };
         "sent-email": {
             to: string[];
@@ -369,7 +275,6 @@ export interface components {
             timeSent?: number;
             replyTo?: string[];
         };
-        ErrorResponse: components["schemas"]["error"];
     };
     responses: never;
     parameters: never;
@@ -388,7 +293,17 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["RegisterRequest"];
+                "application/json": {
+                    /** Format: email */
+                    email: string;
+                    password: string;
+                    /** @description User's full name (optional) */
+                    name?: string;
+                    /** @description User's given name (optional) */
+                    givenName?: string;
+                    /** @description User's family name (optional) */
+                    familyName?: string;
+                };
             };
         };
         responses: {
@@ -398,7 +313,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["UserResponse"];
+                    "application/json": components["schemas"]["user"];
                 };
             };
             /** @description Email already exists */
@@ -421,7 +336,11 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["LoginRequest"];
+                "application/json": {
+                    /** Format: email */
+                    email: string;
+                    password: string;
+                };
             };
         };
         responses: {
@@ -431,7 +350,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["UserResponse"];
+                    "application/json": components["schemas"]["user"];
                 };
             };
             /** @description Invalid credentials */
@@ -460,7 +379,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["LogoutResponse"];
+                    "application/json": Record<string, never>;
                 };
             };
         };
@@ -488,7 +407,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["UserResponse"];
+                    "application/json": components["schemas"]["user"];
                 };
             };
             /** @description User is not authenticated */
@@ -520,7 +439,10 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ForgotPasswordRequest"];
+                "application/json": {
+                    /** Format: email */
+                    email: string;
+                };
             };
         };
         responses: {
@@ -530,7 +452,11 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ForgotPasswordResponse"];
+                    "application/json": {
+                        success: boolean;
+                        /** @description A generic message indicating that if the user exists, a recovery email was sent */
+                        message: string;
+                    };
                 };
             };
             /** @description Invalid email format */
@@ -553,7 +479,12 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ResetPasswordRequest"];
+                "application/json": {
+                    /** @description The temporary password token received via email */
+                    token: string;
+                    /** @description The new password to set */
+                    newPassword: string;
+                };
             };
         };
         responses: {
@@ -563,7 +494,9 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ResetPasswordResponse"];
+                    "application/json": {
+                        success: boolean;
+                    };
                 };
             };
             /** @description Invalid token or password */
@@ -586,7 +519,10 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["VerificationRequest"];
+                "application/json": {
+                    /** @description The verification token sent in the email */
+                    token: string;
+                };
             };
         };
         responses: {
@@ -596,7 +532,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["UserResponse"];
+                    "application/json": components["schemas"]["user"];
                 };
             };
             /** @description Invalid or expired token */
@@ -643,7 +579,11 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ResendVerificationResponse"];
+                    "application/json": {
+                        success: boolean;
+                        /** @description A generic message indicating that the verification email was sent */
+                        message: string;
+                    };
                 };
             };
             /** @description User not logged in */
@@ -666,7 +606,12 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["SetPasswordRequest"];
+                "application/json": {
+                    /** @description The user's current password for verification */
+                    currentPassword: string;
+                    /** @description The new password to set */
+                    newPassword: string;
+                };
             };
         };
         responses: {
@@ -676,7 +621,9 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SetPasswordResponse"];
+                    "application/json": {
+                        success: boolean;
+                    };
                 };
             };
             /** @description User not logged in or invalid current password */
@@ -705,7 +652,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ProfileResponse"];
+                    "application/json": components["schemas"]["user"];
                 };
             };
         };
@@ -719,7 +666,21 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ProfileUpdateRequest"];
+                "application/json": {
+                    /**
+                     * Format: email
+                     * @description User's email address
+                     */
+                    email?: string;
+                    /** @description Whether the user's email address has been verified */
+                    emailVerified?: boolean;
+                    /** @description User's full name */
+                    name?: string | null;
+                    /** @description User's given name (first name) */
+                    givenName?: string | null;
+                    /** @description User's family name (last name) */
+                    familyName?: string | null;
+                };
             };
         };
         responses: {
@@ -729,7 +690,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ProfileResponse"];
+                    "application/json": components["schemas"]["user"];
                 };
             };
             /** @description Invalid request data */
@@ -776,7 +737,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ListUsersResponse"][];
+                    "application/json": components["schemas"]["user"][];
                 };
             };
             /** @description Unauthorized - missing or invalid auth headers, or not logged in. */
