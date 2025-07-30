@@ -44,3 +44,9 @@ export const createVueApp = (
   app.mount("#app");
   return createApp(app);
 };
+
+// @ts-expect-error - vite/client is not a module
+import type { ImportMetaEnv as _ImportMetaEnv } from "vite/client";
+export const getViteEnv = () => {
+  return import.meta.env;
+};
