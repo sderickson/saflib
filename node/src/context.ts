@@ -1,6 +1,7 @@
 import { AsyncLocalStorage } from "async_hooks";
 import type { SafContext, SafContextWithAuth } from "./types.ts";
 import crypto from "crypto";
+import { typedEnv } from "../env.ts";
 
 export const testContext: SafContext = {
   requestId: "test-id",
@@ -13,7 +14,7 @@ export const safContextStorage = new AsyncLocalStorage<SafContext>();
 
 export const getSafContext = (): SafContext => {
   const store = safContextStorage.getStore();
-  if (!store && process.env.NODE_ENV === "test") {
+  if (!store && typedEnv.NODE_ENV === "test") {
     return testContext;
   }
   if (!store) {
@@ -57,7 +58,7 @@ export const setServiceName = (name: string) => {
 };
 
 export const getServiceName = (): string => {
-  if (process.env.NODE_ENV === "test") {
+  if (typedEnv.NODE_ENV === "test") {
     return "test";
   }
   if (!serviceName) {

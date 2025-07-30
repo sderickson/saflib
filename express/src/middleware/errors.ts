@@ -1,6 +1,7 @@
 import createError, { HttpError } from "http-errors";
 import type { Request, Response, NextFunction, Handler } from "express";
 import { safReportersStorage } from "@saflib/node";
+import { typedEnv } from "../../env.ts";
 /**
  * 404 Handler
  * Catches requests to undefined routes
@@ -23,7 +24,7 @@ export const errorHandler = (
   const status = err.status || 500;
 
   if (status >= 500) {
-    if (process.env.NODE_ENV === "test") {
+    if (typedEnv.NODE_ENV === "test") {
       console.error(err.stack);
     }
     const store = safReportersStorage.getStore();

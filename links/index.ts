@@ -1,4 +1,5 @@
 export type LinkProps = { href: string } | { to: string };
+import { typedEnv } from "./env.ts";
 
 export type Link = {
   subdomain: string;
@@ -37,8 +38,8 @@ export const linkToHref = (link: Link, options?: LinkOptions): string => {
     domain = document.location.hostname.split(".").slice(-2).join(".");
     protocol = document.location.protocol;
   } else {
-    domain = process.env.DOMAIN || "docker.localhost";
-    protocol = (process.env.PROTOCOL || "http") + ":";
+    domain = typedEnv.DOMAIN;
+    protocol = typedEnv.PROTOCOL + ":";
   }
 
   let path = link.path;

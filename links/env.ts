@@ -40,4 +40,10 @@ export interface CombinedEnvSchema {
   ALLOW_DB_CREATION?: "true" | "false";
 }
 
-export const typedEnv = process.env as unknown as CombinedEnvSchema;
+let typedEnv: CombinedEnvSchema;
+if (globalThis.process) {
+  typedEnv = process.env as unknown as CombinedEnvSchema;
+} else {
+  typedEnv = {} as CombinedEnvSchema;
+}
+export { typedEnv };

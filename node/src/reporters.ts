@@ -2,12 +2,13 @@ import { createLogger } from "./logger.ts";
 import type { SafReporters } from "./types.ts";
 import { AsyncLocalStorage } from "async_hooks";
 import { makeSubsystemErrorReporter } from "./errors.ts";
+import { typedEnv } from "../env.ts";
 
 export const safReportersStorage = new AsyncLocalStorage<SafReporters>();
 
 export const getSafReporters = (): SafReporters => {
   const store = safReportersStorage.getStore();
-  if (!store && process.env.NODE_ENV === "test") {
+  if (!store && typedEnv.NODE_ENV === "test") {
     const testReporters: SafReporters = {
       log: createLogger(),
       logError: () => {},

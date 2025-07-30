@@ -1,5 +1,6 @@
 import * as grpc from "@grpc/grpc-js";
 import type { UntypedServiceImplementation } from "@grpc/grpc-js";
+import { typedEnv } from "./env.ts";
 
 interface GrpcServerOptions {
   interceptors?: grpc.ServerInterceptor[];
@@ -32,7 +33,7 @@ export async function startGrpcServer(
       if (err) {
         reject(err);
       }
-      if (process.env.NODE_ENV !== "test") {
+      if (typedEnv.NODE_ENV !== "test") {
         console.log(`gRPC server bound to port ${port}`);
       }
       resolve();
@@ -42,7 +43,7 @@ export async function startGrpcServer(
 
   // Graceful shutdown handler
   const shutdown = () => {
-    if (process.env.NODE_ENV !== "test") {
+    if (typedEnv.NODE_ENV !== "test") {
       console.log("Received shutdown signal, closing gRPC server...");
     }
     server.tryShutdown((error) => {

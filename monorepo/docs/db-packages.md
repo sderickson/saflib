@@ -24,7 +24,7 @@ package-name/
 
 ## Testing Behavior
 
-When `NODE_ENV` is set to "TEST":
+When `NODE_ENV` is set to "test":
 
 1. Use in-memory storage by default
 2. Each test should start with a fresh state
@@ -37,7 +37,7 @@ export class Database {
   private db: DatabaseImpl;
 
   constructor() {
-    if (process.env.NODE_ENV === "TEST") {
+    if (process.env.NODE_ENV === "test") {
       this.db = new InMemoryDatabase();
     } else {
       this.db = new SQLiteDatabase("./data/database.sqlite");

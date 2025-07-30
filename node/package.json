@@ -7,9 +7,10 @@
     ".": "./index.ts"
   },
   "dependencies": {
+    "@saflib/env": "*",
+    "prom-client": "^15.1.3",
     "winston": "^3.0.0",
-    "winston-loki": "^6.1.3",
-    "prom-client": "^15.1.3"
+    "winston-loki": "^6.1.3"
   },
   "devDependencies": {
     "@saflib/vitest": "*"

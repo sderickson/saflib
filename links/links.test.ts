@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { linkToHref, linkToProps } from "./index.ts";
+import { typedEnv } from "./env.ts";
 beforeEach(() => {
   globalThis.document = {
     location: { hostname: "subdomain-a.docker.localhost", protocol: "http:" },
@@ -39,8 +40,8 @@ describe("linkToHref", () => {
 
   it("also works on backend with process.env", () => {
     globalThis.document = undefined as unknown as Document;
-    process.env.DOMAIN = "some.domain";
-    process.env.PROTOCOL = "https";
+    typedEnv.DOMAIN = "some.domain";
+    typedEnv.PROTOCOL = "https";
     expect(linkToHref({ subdomain: "test", path: "/" })).toBe(
       "https://test.some.domain/",
     );
