@@ -7,9 +7,6 @@
     ".": "./index.ts",
     "./workflows": "./workflows/index.ts"
   },
-  "bin": {
-    "saf-env": "./src/env-cli.ts"
-  },
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",

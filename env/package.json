@@ -1,0 +1,21 @@
+{
+  "name": "@saflib/env",
+  "description": "TODO: Add package description",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "bin": {
+    "saf-env": "./src/env-cli.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@saflib/vitest": "*"
+  }
+} 
