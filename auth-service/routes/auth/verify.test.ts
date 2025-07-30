@@ -18,7 +18,7 @@ describe("Verify Route", () => {
   let app: express.Express;
 
   beforeEach(() => {
-    typedEnv.ADMIN_EMAILS = "admin@example.com";
+    typedEnv.AUTH_SERVICE_ADMIN_EMAILS = "admin@example.com";
     (passport as any)._serializers = [];
     (passport as any)._deserializers = [];
 

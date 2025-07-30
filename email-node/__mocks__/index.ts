@@ -6,14 +6,14 @@
 import { afterEach, beforeEach, vi } from "vitest";
 import type { EmailOptions } from "../client/email-client.ts";
 import { createTransport } from "nodemailer";
-const originalEnv = process.env;
+import { typedEnv } from "../env.ts";
+const originalEnv = { ...typedEnv };
 let id = 0;
 
 beforeEach(() => {
-  process.env = { ...originalEnv };
-  process.env.SMTP_HOST = "mock.smtp.server";
-  process.env.SMTP_PORT = "587";
-  process.env.SMTP_FROM = "noreply@your-domain.com";
+  typedEnv.NODEMAILER_SMTP_HOST = "mock.smtp.server";
+  typedEnv.NODEMAILER_SMTP_PORT = "587";
+  typedEnv.NODEMAILER_SMTP_FROM = "noreply@your-domain.com";
   const transport = createTransport();
   vi.mocked(transport.sendMail).mockImplementation((options: EmailOptions) => {
     // always return a success response

@@ -7,6 +7,7 @@ import type { DbOptions } from "../drizzle-sqlite3/types.ts";
 import type { User } from "@saflib/auth-db";
 import type { AuthServiceCallbacks } from "./types.ts";
 import { makeSubsystemReporters } from "@saflib/node";
+import { typedEnv } from "./env.ts";
 export * from "./types.ts";
 
 interface StartAuthServiceOptions {
@@ -25,11 +26,15 @@ export async function startAuthService(options?: StartAuthServiceOptions) {
       dbKey,
       callbacks: options?.callbacks ?? {},
     });
-    startGrpcServer(grpcServer);
+    startGrpcServer(grpcServer, {
+      port: parseInt(typedEnv.AUTH_SERVICE_GRPC_PORT, 10),
+    });
 
     log.info("Starting express server...");
     const app = createApp({ dbKey, callbacks: options?.callbacks ?? {} });
-    startExpressServer(app);
+    startExpressServer(app, {
+      port: parseInt(typedEnv.AUTH_SERVICE_HTTP_PORT, 10),
+    });
     log.info("Auth service startup complete.");
   } catch (error) {
     logError(error);

@@ -29,14 +29,14 @@ describe("GET /users Route (Integration)", () => {
   beforeEach(() => {
     // Set ADMIN_EMAILS before creating the app for this test suite
     vi.useFakeTimers();
-    typedEnv.ADMIN_EMAILS = adminEmail;
+    typedEnv.AUTH_SERVICE_ADMIN_EMAILS = adminEmail;
     // Create a fresh app instance with a fresh in-memory DB for each test
     app = createApp({ callbacks: {} });
   });
 
   afterEach(() => {
     // Cleanup potentially set env vars
-    delete typedEnv.ADMIN_EMAILS;
+    delete typedEnv.AUTH_SERVICE_ADMIN_EMAILS;
     vi.resetAllMocks(); // Reset any potential mocks if used elsewhere
     vi.useRealTimers();
   });

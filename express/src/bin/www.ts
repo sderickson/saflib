@@ -12,13 +12,18 @@
 
 import http from "http";
 import type { Express } from "express";
+
+interface StartServerOptions {
+  port: number;
+}
+
 /**
  * @deprecated use startExpressServer instead
  */
-export const startServer = (app: Express) => {
+export const startServer = (app: Express, options: StartServerOptions) => {
   // Get port from environment and store in Express
 
-  const port = normalizePort(process.env.PORT || "3000");
+  const port = options.port;
   app.set("port", port);
 
   // Create HTTP server
@@ -28,25 +33,6 @@ export const startServer = (app: Express) => {
   server.listen(port);
   server.on("error", onError);
   server.on("listening", onListening);
-
-  /**
-   * Normalize a port into a number, string, or false.
-   */
-  function normalizePort(val: string) {
-    const port = parseInt(val, 10);
-
-    if (isNaN(port)) {
-      // named pipe
-      return val;
-    }
-
-    if (port >= 0) {
-      // port number
-      return port;
-    }
-
-    return false;
-  }
 
   /**
    * Event listener for HTTP server "error" event.

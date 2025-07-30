@@ -9,8 +9,13 @@ import config from "./drizzle.config.ts";
 import * as schema from "./test-schema.ts";
 import assert from "node:assert";
 import path from "node:path";
+import { typedEnv } from "./env.ts";
 
-const dbPath = path.join(import.meta.dirname, "./data/db-test.sqlite");
+typedEnv.DEPLOYMENT_NAME = "arbitrary-name";
+const dbPath = path.join(
+  import.meta.dirname,
+  "./data/db-arbitrary-name.sqlite",
+);
 
 const getTempDbPath = (name: string) =>
   resolve(__dirname, `data/temp-test-${name}.db`);
@@ -53,7 +58,7 @@ describe("Instance Manager", () => {
     expect(existsSync(dbPath)).toBe(false);
     const keyResult = manager.connect({ onDisk: true });
     expect(existsSync(dbPath)).toBe(true);
-    expect(dbPath).toContain("db-test.sqlite");
+    expect(dbPath).toContain("db-arbitrary-name.sqlite");
     manager.disconnect(keyResult);
     rmSync(dbPath, { force: true });
     expect(existsSync(dbPath)).toBe(false);

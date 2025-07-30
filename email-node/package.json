@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@saflib/email-spec": "*",
+    "@saflib/env": "*",
     "nodemailer": "^7.0.0"
   }
 }

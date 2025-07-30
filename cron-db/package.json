@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@saflib/drizzle-sqlite3": "*",
+    "@saflib/env": "*",
     "drizzle-kit": "*"
   },
   "devDependencies": {

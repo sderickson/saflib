@@ -6,9 +6,6 @@
  */
 
 export interface CombinedEnvSchema {
-  NODEMAILER_SMTP_HOST?: string;
-  NODEMAILER_SMTP_PORT?: string;
-  NODEMAILER_SMTP_FROM?: string;
   /**
    * Comma-separated list of client subdomains, e.g. 'www,app,auth,'. Include an empty string (such as in the example) to indicate there's a client for the root domain.
    */
@@ -41,16 +38,6 @@ export interface CombinedEnvSchema {
    * Whether to allow the creation of new databases. Useful for ensuring existing production environments don't inadvertently create new databases.
    */
   ALLOW_DB_CREATION?: "true" | "false";
-  /**
-   * Comma-separated list of emails who will get the 'admin' scope. Emails must be validated to receive this scope.
-   */
-  AUTH_SERVICE_ADMIN_EMAILS?: string;
-  AUTH_SERVICE_HTTP_PORT: string;
-  AUTH_SERVICE_GRPC_PORT: string;
-  /**
-   * Whether to disable rate limiting. Set to 'true' to disable.
-   */
-  AUTH_SERVICE_DISABLE_RATE_LIMITING?: string;
 }
 
 export const typedEnv = process.env as unknown as CombinedEnvSchema;

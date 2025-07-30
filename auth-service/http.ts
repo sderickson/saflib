@@ -29,7 +29,10 @@ export function createApp(options: AuthServerOptions) {
   app.use(metricsMiddleware);
   app.set("trust proxy", 1);
 
-  app.set("saf:admin emails", new Set(typedEnv.ADMIN_EMAILS?.split(",") || []));
+  app.set(
+    "saf:admin emails",
+    new Set(typedEnv.AUTH_SERVICE_ADMIN_EMAILS?.split(",") || []),
+  );
 
   const context = { dbKey, callbacks: options.callbacks };
   app.use((_req, _res, next) => {
