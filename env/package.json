@@ -16,6 +16,7 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "@saflib/vitest": "*"
+    "@saflib/vitest": "*",
+    "@saflib/dev-tools": "*"
   }
 } 

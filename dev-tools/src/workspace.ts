@@ -174,6 +174,12 @@ export function getAllPackageWorkspaceDependencies(
   packageName: packageName,
   monorepoContext: MonorepoContext,
 ): Set<packageName> {
+  console.log(
+    "looking at",
+    packageName,
+    monorepoContext.workspaceDependencyGraph[packageName],
+  );
+  console.log("graph", monorepoContext.workspaceDependencyGraph);
   let flattenedDependencies = new Set(
     monorepoContext.workspaceDependencyGraph[packageName],
   );
@@ -183,4 +189,15 @@ export function getAllPackageWorkspaceDependencies(
     );
   }
   return flattenedDependencies;
+}
+
+export function getCurrentPackageName(): packageName {
+  const packageJsonPath = path.join(process.cwd(), "package.json");
+  if (!existsSync(packageJsonPath)) {
+    throw new Error("package.json not found");
+  }
+  const packageJson = JSON.parse(
+    readFileSync(packageJsonPath, "utf-8"),
+  ) as PackageJson;
+  return packageJson.name;
 }

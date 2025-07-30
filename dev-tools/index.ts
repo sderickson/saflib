@@ -1,1 +1,1 @@
-export { buildMonorepoContext } from "./src/workspace.ts";
+export * from "./src/workspace.ts";
