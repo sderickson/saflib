@@ -1,11 +1,12 @@
 import cors from "cors";
 import { Router } from "express";
+import { typedEnv } from "../../env.ts";
 
-const domains = [process.env.DOMAIN];
+const domains = [typedEnv.DOMAIN];
 
-const subdomains = process.env.CLIENT_SUBDOMAINS?.split(",") ?? [];
+const subdomains = typedEnv.CLIENT_SUBDOMAINS?.split(",") ?? [];
 
-const protocol = process.env.PROTOCOL;
+const protocol = typedEnv.PROTOCOL;
 
 const whitelist = new Set(
   domains.flatMap((domain) =>

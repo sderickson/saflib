@@ -10,6 +10,7 @@
     "typecheck": "tsc"
   },
   "dependencies": {
+    "@saflib/env": "*",
     "@saflib/node": "*",
     "cors": "^2.0.0",
     "dotenv": "^17.0.0",
