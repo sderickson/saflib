@@ -14,9 +14,14 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage"
   },
-  "dependencies": {},
   "devDependencies": {
+    "@saflib/dev-tools": "*",
     "@saflib/vitest": "*",
-    "@saflib/dev-tools": "*"
+    "ya-json-schema-types": "^1.0.1"
+  },
+  "dependencies": {
+    "@types/json-schema": "^7.0.15",
+    "ajv": "^8.17.1",
+    "json-schema-to-typescript": "^15.0.4"
   }
-} 
+}

@@ -174,12 +174,6 @@ export function getAllPackageWorkspaceDependencies(
   packageName: packageName,
   monorepoContext: MonorepoContext,
 ): Set<packageName> {
-  console.log(
-    "looking at",
-    packageName,
-    monorepoContext.workspaceDependencyGraph[packageName],
-  );
-  console.log("graph", monorepoContext.workspaceDependencyGraph);
   let flattenedDependencies = new Set(
     monorepoContext.workspaceDependencyGraph[packageName],
   );

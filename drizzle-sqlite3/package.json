@@ -14,6 +14,7 @@
     "typecheck": "tsc"
   },
   "dependencies": {
+    "@saflib/node": "*",
     "better-sqlite3": "11.8.0",
     "drizzle-kit": "^0.31.1",
     "drizzle-orm": "^0.44.0"
