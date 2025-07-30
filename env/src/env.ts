@@ -7,6 +7,7 @@ import type { JSONSchema4 } from "json-schema";
 import { readFileSync } from "fs";
 import { existsSync } from "fs";
 import path from "path";
+import { compile } from "json-schema-to-typescript";
 
 type JSONSchemaStringSchema = JSONSchema4 & {
   type: "string";
@@ -84,4 +85,14 @@ export const getCombinedEnvSchema = async () => {
   });
 
   return combinedSchema;
+};
+
+export const makeEnvParserSnippet = async (schema: SimplifiedJSONSchema) => {
+  const typeSnippet = await compile(schema, "CombinedEnvSchema");
+
+  return `${typeSnippet}
+export const getTypedEnv = () => {
+  return process.env as CombinedEnvSchema;
+};
+`;
 };

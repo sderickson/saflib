@@ -1,6 +1,6 @@
 #!/usr/bin/env node --experimental-strip-types --disable-warning=ExperimentalWarning
 import { Command } from "commander";
-import { getCombinedEnvSchema } from "./env.ts";
+import { getCombinedEnvSchema, makeEnvParserSnippet } from "./env.ts";
 import { compile } from "json-schema-to-typescript";
 import { writeFileSync } from "fs";
 
@@ -31,8 +31,8 @@ program.command("print").action(async () => {
 
 program.command("generate").action(async () => {
   const combinedSchema = await getCombinedEnvSchema();
-  const combinedSchemaType = await compile(combinedSchema, "CombinedEnvSchema");
-  writeFileSync("env.ts", combinedSchemaType);
+  const typeSnippet = await makeEnvParserSnippet(combinedSchema);
+  writeFileSync("env.ts", typeSnippet);
 });
 
 program.parse(process.argv);

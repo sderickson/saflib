@@ -6,7 +6,10 @@
  */
 
 export interface CombinedEnvSchema {
-  DATABASE_URL?: string;
   DEPLOYMENT_NAME?: string;
   [k: string]: unknown;
 }
+
+export const getTypedEnv = () => {
+  return process.env as CombinedEnvSchema;
+};
