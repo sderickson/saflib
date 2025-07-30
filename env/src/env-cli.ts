@@ -1,7 +1,6 @@
 #!/usr/bin/env node --experimental-strip-types --disable-warning=ExperimentalWarning
 import { Command } from "commander";
 import { getCombinedEnvSchema, makeEnvParserSnippet } from "./env.ts";
-import { compile } from "json-schema-to-typescript";
 import { writeFileSync } from "fs";
 
 const program = new Command();

@@ -18,6 +18,7 @@ interface SimplifiedJSONSchema {
   type: "object";
   properties: Record<string, JSONSchemaStringSchema>;
   required?: string[];
+  additionalProperties: false;
 }
 
 export const getCombinedEnvSchema = async () => {
@@ -53,6 +54,7 @@ export const getCombinedEnvSchema = async () => {
     type: "object",
     properties: {},
     required: [],
+    additionalProperties: false,
   };
 
   allEnvSchemas.forEach((schema: JSONSchema4) => {
@@ -91,8 +93,6 @@ export const makeEnvParserSnippet = async (schema: SimplifiedJSONSchema) => {
   const typeSnippet = await compile(schema, "CombinedEnvSchema");
 
   return `${typeSnippet}
-export const getTypedEnv = () => {
-  return process.env as CombinedEnvSchema;
-};
+export const typedEnv = process.env as unknown as CombinedEnvSchema;
 `;
 };
