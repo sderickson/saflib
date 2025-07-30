@@ -2,6 +2,7 @@ import { createApp } from "../../http.ts";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import request from "supertest";
 import express from "express";
+import { typedEnv } from "../../env.ts";
 
 // Helper function to register a user
 async function registerUser(app: express.Express, userData: any) {
@@ -28,14 +29,14 @@ describe("GET /users Route (Integration)", () => {
   beforeEach(() => {
     // Set ADMIN_EMAILS before creating the app for this test suite
     vi.useFakeTimers();
-    process.env.ADMIN_EMAILS = adminEmail;
+    typedEnv.ADMIN_EMAILS = adminEmail;
     // Create a fresh app instance with a fresh in-memory DB for each test
     app = createApp({ callbacks: {} });
   });
 
   afterEach(() => {
     // Cleanup potentially set env vars
-    delete process.env.ADMIN_EMAILS;
+    delete typedEnv.ADMIN_EMAILS;
     vi.resetAllMocks(); // Reset any potential mocks if used elsewhere
     vi.useRealTimers();
   });

@@ -18,6 +18,7 @@ import { makeSessionMiddleware } from "../../middleware/session-store.ts";
 import { jsonSpec } from "@saflib/auth-spec";
 import * as cookieParser from "cookie-parser";
 import { csrfDSC } from "../../middleware/csrf.ts";
+import { typedEnv } from "../../env.ts";
 
 export const makeAuthRouter = () => {
   const router = express.Router();
@@ -34,9 +35,8 @@ export const makeAuthRouter = () => {
 
   const csrfProtection = csrfDSC({
     cookie: {
-      domain:
-        process.env.NODE_ENV === "test" ? undefined : `.${process.env.DOMAIN}`,
-      secure: process.env.PROTOCOL === "https",
+      domain: typedEnv.NODE_ENV === "test" ? undefined : `.${typedEnv.DOMAIN}`,
+      secure: typedEnv.PROTOCOL === "https",
     },
   });
   router.use(csrfProtection);
@@ -52,7 +52,7 @@ export const makeAuthRouter = () => {
   router.put("/profile", updateProfile);
 
   // rate limit after /verify, because verify runs before every single API call...
-  if (process.env.DISABLE_RATE_LIMITING !== "true") {
+  if (typedEnv.AUTH_SERVICE_DISABLE_RATE_LIMITING !== "true") {
     router.use(rateLimit());
   }
   router.post("/login", loginHandler);

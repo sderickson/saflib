@@ -4,6 +4,7 @@ import express from "express";
 import { createApp } from "../../http.ts";
 import passport from "passport";
 import { getCsrfToken } from "./_test-helpers.ts";
+import { typedEnv } from "../../env.ts";
 
 vi.mock("crypto", async (importOriginal) => {
   const crypto = await importOriginal<typeof import("crypto")>();
@@ -17,7 +18,7 @@ describe("Verify Route", () => {
   let app: express.Express;
 
   beforeEach(() => {
-    process.env.ADMIN_EMAILS = "admin@example.com";
+    typedEnv.ADMIN_EMAILS = "admin@example.com";
     (passport as any)._serializers = [];
     (passport as any)._deserializers = [];
 
