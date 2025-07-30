@@ -7,11 +7,13 @@ import { authDb, EmailConflictError } from "@saflib/auth-db";
 import { authServiceStorage } from "../../context.ts";
 import { linkToHref } from "@saflib/links";
 import { authLinks } from "@saflib/auth-links";
+import { getSafReporters } from "@saflib/node";
 
 export const registerHandler = createHandler(async (req, res) => {
   const { dbKey } = authServiceStorage.getStore()!;
   const registerRequest: AuthRequest["registerUser"] = req.body;
   const { email, password, name, givenName, familyName } = registerRequest;
+  const { logError } = getSafReporters();
 
   const passwordHash = await argon2.hash(password);
 
@@ -69,7 +71,12 @@ export const registerHandler = createHandler(async (req, res) => {
     );
   }
 
-  await Promise.all(promises);
+  try {
+    await Promise.all(promises);
+  } catch (err) {
+    // Don't let this error bubble up to the user
+    logError(err);
+  }
 
   req.logIn(user, (err) => {
     if (err) {
