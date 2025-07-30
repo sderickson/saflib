@@ -32,6 +32,10 @@ program.command("generate").action(async () => {
   const combinedSchema = await getCombinedEnvSchema();
   const typeSnippet = await makeEnvParserSnippet(combinedSchema);
   writeFileSync("env.ts", typeSnippet);
+  writeFileSync(
+    "env.schema.combined.json",
+    JSON.stringify(combinedSchema, null, 2),
+  );
 });
 
 program.parse(process.argv);
