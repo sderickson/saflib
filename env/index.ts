@@ -11,7 +11,7 @@ export const validateEnv = (env: any, envSchema: any) => {
   if (!valid) {
     console.error("\n\nInvalid environment variables:");
     validate.errors?.forEach((error) => {
-      console.error(`  - ${error.message}`);
+      console.error(`  - ${error.instancePath} ${error.message}`);
     });
     console.error("");
     throw new Error("Invalid environment variables");

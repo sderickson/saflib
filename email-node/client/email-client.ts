@@ -57,7 +57,9 @@ export class EmailClient {
     }
 
     if (!host) {
-      throw new Error("SMTP configuration error: SMTP_HOST must be provided.");
+      throw new Error(
+        "SMTP configuration error: NODEMAILER_SMTP_HOST must be provided.",
+      );
     }
 
     const port = typedEnv.NODEMAILER_SMTP_PORT;
