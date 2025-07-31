@@ -1,5 +1,5 @@
 export type LinkProps = { href: string } | { to: string };
-import { typedEnv } from "./env.ts";
+import { typedEnv } from "@saflib/env";
 
 export type Link = {
   subdomain: string;

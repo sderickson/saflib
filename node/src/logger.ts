@@ -3,7 +3,7 @@ import { type TransformableInfo } from "logform";
 import { Writable } from "node:stream";
 import { type SafContext } from "./types.ts";
 import { getServiceName, testContext } from "./context.ts";
-import { typedEnv } from "../env.ts";
+import { typedEnv } from "@saflib/env";
 
 export const consoleTransport = new winston.transports.Console({
   silent: typedEnv.NODE_ENV === "test",

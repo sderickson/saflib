@@ -1,7 +1,7 @@
 import createError, { HttpError } from "http-errors";
 import type { Request, Response, NextFunction, Handler } from "express";
 import { safReportersStorage } from "@saflib/node";
-import { typedEnv } from "../../env.ts";
+import { typedEnv } from "@saflib/env";
 /**
  * 404 Handler
  * Catches requests to undefined routes

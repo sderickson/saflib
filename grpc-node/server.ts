@@ -1,6 +1,6 @@
 import * as grpc from "@grpc/grpc-js";
 import type { UntypedServiceImplementation } from "@grpc/grpc-js";
-import { typedEnv } from "./env.ts";
+import { typedEnv } from "@saflib/env";
 
 interface GrpcServerOptions {
   interceptors?: grpc.ServerInterceptor[];

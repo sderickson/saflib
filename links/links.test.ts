@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { linkToHref, linkToProps } from "./index.ts";
-import { typedEnv } from "./env.ts";
+import { typedEnv } from "@saflib/env";
 beforeEach(() => {
   globalThis.document = {
     location: { hostname: "subdomain-a.docker.localhost", protocol: "http:" },

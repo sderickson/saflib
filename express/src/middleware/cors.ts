@@ -1,6 +1,6 @@
 import cors from "cors";
 import { Router } from "express";
-import { typedEnv } from "../../env.ts";
+import { typedEnv } from "@saflib/env";
 
 const domains = [typedEnv.DOMAIN];
 

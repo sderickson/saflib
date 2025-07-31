@@ -1,7 +1,7 @@
 import { AsyncLocalStorage } from "async_hooks";
 import type { SafContext, SafContextWithAuth } from "./types.ts";
 import crypto from "crypto";
-import { typedEnv } from "../env.ts";
+import { typedEnv } from "@saflib/env";
 
 export const testContext: SafContext = {
   requestId: "test-id",

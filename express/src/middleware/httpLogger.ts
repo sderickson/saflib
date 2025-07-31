@@ -1,7 +1,7 @@
 import type { Handler } from "express";
 import morgan from "morgan";
 import { getSafReporters } from "@saflib/node";
-import { typedEnv } from "../../env.ts";
+import { typedEnv } from "@saflib/env";
 
 /**
  * HTTP request logging middleware using Morgan.

@@ -2,7 +2,7 @@ import { createLogger } from "./logger.ts";
 import type { SafReporters } from "./types.ts";
 import { AsyncLocalStorage } from "async_hooks";
 import { makeSubsystemErrorReporter } from "./errors.ts";
-import { typedEnv } from "../env.ts";
+import { typedEnv } from "@saflib/env";
 
 export const safReportersStorage = new AsyncLocalStorage<SafReporters>();
 

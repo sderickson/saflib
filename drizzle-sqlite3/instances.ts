@@ -6,7 +6,7 @@ import type { Schema, DbKey, DbOptions, DbConnection } from "./types.ts";
 import path from "path";
 import fs from "fs";
 import { makeSubsystemReporters } from "@saflib/node";
-import { typedEnv } from "./env.ts";
+import { typedEnv } from "@saflib/env";
 
 export class DbManager<S extends Schema, C extends Config> {
   private instances: Map<DbKey, DbConnection<S>>;

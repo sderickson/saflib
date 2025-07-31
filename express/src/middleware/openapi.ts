@@ -5,7 +5,7 @@ import type {
 } from "express-openapi-validator/dist/framework/types.ts";
 import type { OpenAPIV3 } from "express-openapi-validator/dist/framework/types.ts";
 import type { Request } from "express";
-import { typedEnv } from "../../env.ts";
+import { typedEnv } from "@saflib/env";
 
 declare global {
   namespace Express {
