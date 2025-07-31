@@ -92,7 +92,8 @@ export const getCombinedEnvSchema = async () => {
 export const makeEnvParserSnippet = async (schema: SimplifiedJSONSchema) => {
   const typeSnippet = await compile(schema, "CombinedEnvSchema");
 
+  // In edge cases, this code can appear in browser environments, so the globalThis.process check is for that.
   return `${typeSnippet}
-export const typedEnv = process.env as unknown as CombinedEnvSchema;
+export const typedEnv = (globalThis.process ? process.env : {}) as unknown as CombinedEnvSchema;
 `;
 };
