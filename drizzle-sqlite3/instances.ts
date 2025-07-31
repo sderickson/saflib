@@ -6,6 +6,7 @@ import type { Schema, DbKey, DbOptions, DbConnection } from "./types.ts";
 import path from "path";
 import fs from "fs";
 import { makeSubsystemReporters } from "@saflib/node";
+import { typedEnv } from "@saflib/env";
 
 export class DbManager<S extends Schema, C extends Config> {
   private instances: Map<DbKey, DbConnection<S>>;
@@ -40,11 +41,11 @@ export class DbManager<S extends Schema, C extends Config> {
       dbStorage = path.join(
         this.rootPath,
         "data",
-        `db-${process.env.NODE_ENV}.sqlite`,
+        `db-${typedEnv.DEPLOYMENT_NAME}.sqlite`,
       );
       if (options?.doNotCreate) {
         const exists = fs.existsSync(dbStorage);
-        if (!exists && process.env.CREATE_DB_ALLOWED !== "true") {
+        if (!exists && typedEnv.ALLOW_DB_CREATION !== "true") {
           logError(new Error(`Database file does not exist: ${dbStorage}`));
         } else if (!exists) {
           log.warn(`Creating database file: ${dbStorage}`);

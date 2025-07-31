@@ -1,6 +1,7 @@
 import type { Handler } from "express";
 import morgan from "morgan";
 import { getSafReporters } from "@saflib/node";
+import { typedEnv } from "@saflib/env";
 
 /**
  * HTTP request logging middleware using Morgan.
@@ -8,7 +9,7 @@ import { getSafReporters } from "@saflib/node";
  * Format: ":date[iso] <:id> :method :url :status :response-time ms - :res[content-length]"
  */
 export const everyRequestLogger: Handler = (() => {
-  if (process.env.NODE_ENV === "test") {
+  if (typedEnv.NODE_ENV === "test") {
     return (_, __, next) => next();
   }
 

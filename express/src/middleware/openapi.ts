@@ -5,6 +5,7 @@ import type {
 } from "express-openapi-validator/dist/framework/types.ts";
 import type { OpenAPIV3 } from "express-openapi-validator/dist/framework/types.ts";
 import type { Request } from "express";
+import { typedEnv } from "@saflib/env";
 
 declare global {
   namespace Express {
@@ -16,7 +17,7 @@ declare global {
 
 const validateResponses = {
   onError: (err: Error, _json: any, _req: Request) => {
-    if (process.env.NODE_ENV === "test") {
+    if (typedEnv.NODE_ENV === "test") {
       console.log("======", err.message, "======");
       console.log(
         "> Please update the spec or match the implementation to the spec.",

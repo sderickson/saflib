@@ -8,6 +8,7 @@ import type { AuthServerOptions } from "./types.ts";
 import { createEmailsRouter } from "@saflib/email-node";
 import { jsonSpec } from "@saflib/auth-spec";
 import { metricsMiddleware } from "@saflib/express";
+import { typedEnv } from "./env.ts";
 
 // Define properties added to Express Request objects by middleware
 declare global {
@@ -30,7 +31,7 @@ export function createApp(options: AuthServerOptions) {
 
   app.set(
     "saf:admin emails",
-    new Set(process.env.ADMIN_EMAILS?.split(",") || []),
+    new Set(typedEnv.AUTH_SERVICE_ADMIN_EMAILS?.split(",") || []),
   );
 
   const context = { dbKey, callbacks: options.callbacks };

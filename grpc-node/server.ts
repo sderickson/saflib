@@ -1,9 +1,10 @@
 import * as grpc from "@grpc/grpc-js";
 import type { UntypedServiceImplementation } from "@grpc/grpc-js";
+import { typedEnv } from "@saflib/env";
 
 interface GrpcServerOptions {
   interceptors?: grpc.ServerInterceptor[];
-  port?: number;
+  port: number;
 }
 
 export type ServiceImplementationWrapper = (
@@ -12,19 +13,12 @@ export type ServiceImplementationWrapper = (
 
 export async function startGrpcServer(
   server: grpc.Server,
-  options: GrpcServerOptions = {},
+  options: GrpcServerOptions,
 ) {
-  const port = options.port
-    ? options.port
-    : process.env.GRPC_PORT
-      ? parseInt(process.env.GRPC_PORT, 10)
-      : 50051;
+  const port = options.port;
   if (isNaN(port)) {
-    console.error(
-      `Invalid GRPC_PORT: ${process.env.GRPC_PORT}. Using default 50051.`,
-    );
+    throw new Error(`Invalid grpc port: ${port}.`);
   }
-  const effectivePort = isNaN(port) ? 50051 : port;
 
   let resolve: () => void;
   let reject: (err: Error) => void;
@@ -33,14 +27,14 @@ export async function startGrpcServer(
     reject = rej;
   });
   server.bindAsync(
-    `0.0.0.0:${effectivePort}`,
+    `0.0.0.0:${port}`,
     grpc.ServerCredentials.createInsecure(), // Using insecure for now
     (err, _boundPort) => {
       if (err) {
         reject(err);
       }
-      if (process.env.NODE_ENV !== "test") {
-        console.log(`gRPC server bound to port ${effectivePort}`);
+      if (typedEnv.NODE_ENV !== "test") {
+        console.log(`gRPC server bound to port ${port}`);
       }
       resolve();
     },
@@ -49,7 +43,7 @@ export async function startGrpcServer(
 
   // Graceful shutdown handler
   const shutdown = () => {
-    if (process.env.NODE_ENV !== "test") {
+    if (typedEnv.NODE_ENV !== "test") {
       console.log("Received shutdown signal, closing gRPC server...");
     }
     server.tryShutdown((error) => {

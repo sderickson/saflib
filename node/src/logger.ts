@@ -3,9 +3,10 @@ import { type TransformableInfo } from "logform";
 import { Writable } from "node:stream";
 import { type SafContext } from "./types.ts";
 import { getServiceName, testContext } from "./context.ts";
+import { typedEnv } from "@saflib/env";
 
 export const consoleTransport = new winston.transports.Console({
-  silent: process.env.NODE_ENV === "test",
+  silent: typedEnv.NODE_ENV === "test",
 });
 
 const baseLogger = winston.createLogger({
@@ -75,7 +76,7 @@ type LoggerContext = Omit<SafContext, "serviceName">;
  * can be correlated.
  */
 export const createLogger = (options?: LoggerContext): Logger => {
-  if (!options && process.env.NODE_ENV === "test") {
+  if (!options && typedEnv.NODE_ENV === "test") {
     return baseLogger.child(testContext);
   }
   if (!options) {

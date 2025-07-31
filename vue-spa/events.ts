@@ -43,7 +43,7 @@ export const useClientCommon = (componentName: string): ProductEventCommon => {
   const route = useRoute();
   return {
     client: clientName,
-    view: route.name ? String(route.name) : "unnamed-route",
+    view: route && route.name ? String(route.name) : "unnamed-route",
     component: componentName,
   };
 };

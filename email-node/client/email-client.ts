@@ -2,10 +2,10 @@ import { getSafReporters } from "@saflib/node";
 import * as nodemailer from "nodemailer";
 import type { Transporter } from "nodemailer";
 
+import { typedEnv } from "../env.ts";
+
 export const mockingOn =
-  process.env.NODE_ENV === "test" ||
-  process.env.MOCK_INTEGRATIONS === "true" ||
-  process.env.MOCK_EMAIL === "true";
+  typedEnv.NODE_ENV === "test" || typedEnv.MOCK_INTEGRATIONS === "true";
 
 export interface SentEmail extends EmailOptions {
   timeSent: number;
@@ -50,22 +50,23 @@ export class EmailClient {
   private transporter: Transporter;
 
   constructor() {
-    let host = process.env.SMTP_HOST;
+    let host = typedEnv.NODEMAILER_SMTP_HOST;
 
     if (mockingOn && !host) {
       host = "localhost";
     }
 
     if (!host) {
-      throw new Error("SMTP configuration error: SMTP_HOST must be provided.");
+      throw new Error(
+        "SMTP configuration error: NODEMAILER_SMTP_HOST must be provided.",
+      );
     }
 
-    const port = process.env.SMTP_PORT;
-    const user = process.env.SMTP_USER;
-    const pass = process.env.SMTP_PASS;
+    const port = typedEnv.NODEMAILER_SMTP_PORT;
+    const user = typedEnv.NODEMAILER_SMTP_USER;
+    const pass = typedEnv.NODEMAILER_SMTP_PASS;
     // Default secure to true if not explicitly set to 'false'
-    const secure = process.env.SMTP_SECURE !== "false";
-    const name = process.env.SMTP_NAME;
+    const secure = typedEnv.NODEMAILER_SMTP_SECURE !== "false";
 
     this.transporter = nodemailer.createTransport({
       host,
@@ -73,7 +74,6 @@ export class EmailClient {
       secure: secure,
       // Only add auth if user and pass are provided
       auth: user && pass ? { user, pass } : undefined,
-      name,
     });
     if (!this.transporter) {
       throw new Error("Failed to create transporter");

@@ -1,13 +1,14 @@
 import { defineConfig } from "drizzle-kit";
 import path from "path";
 import { fileURLToPath } from "url";
+import { typedEnv } from "@saflib/env";
 
 const getDirname = () => {
   const __filename = fileURLToPath(import.meta.url);
   return path.dirname(__filename);
 };
 
-const usersDbName = `users-${process.env.NODE_ENV}.sqlite`;
+const usersDbName = `users-${typedEnv.DEPLOYMENT_NAME}.sqlite`;
 
 export const getDbPath = () => {
   return path.join(getDirname(), `data/${usersDbName}`);

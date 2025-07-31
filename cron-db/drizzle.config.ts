@@ -1,13 +1,15 @@
 import { defineConfig } from "drizzle-kit";
 import path from "path";
 import { fileURLToPath } from "url";
+import { typedEnv } from "@saflib/env";
+
 const getDirname = () => {
   const __filename = fileURLToPath(import.meta.url);
   return path.dirname(__filename);
 };
 
 // Use NODE_ENV to differentiate db files (optional, but good practice)
-const dbName = `cron-${process.env.NODE_ENV}.sqlite`;
+const dbName = `cron-${typedEnv.DEPLOYMENT_NAME}.sqlite`;
 
 export const getDbPath = () => {
   return path.join(getDirname(), `data/${dbName}`);

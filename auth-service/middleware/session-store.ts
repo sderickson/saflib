@@ -9,6 +9,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 import { existsSync, readFileSync, writeFileSync } from "fs";
 import { randomBytes } from "crypto";
+import { typedEnv } from "../env.ts";
 
 const secretFile = path.join(__dirname, `../data/session-secret.txt`);
 
@@ -82,7 +83,7 @@ export const makeSessionMiddleware = () => {
     interval = setInterval(rotateIfNeeded, 1000 * 60 * 60); // check every hour
   }
 
-  const sessionDbName = `sessions-${process.env.NODE_ENV}.sqlite`;
+  const sessionDbName = `sessions-${typedEnv.DEPLOYMENT_NAME}.sqlite`;
 
   const sessionDb = new sqlite(
     path.join(__dirname, `../data/${sessionDbName}`),
@@ -96,19 +97,19 @@ export const makeSessionMiddleware = () => {
   });
 
   const cookie = {
-    secure: process.env.PROTOCOL === "https",
+    secure: typedEnv.PROTOCOL === "https",
     maxAge: sessionRotationInterval,
     sameSite: "strict" as const,
-    domain: `.${process.env.DOMAIN}`, // Allow cookies to be shared across subdomains
+    domain: `.${typedEnv.DOMAIN}`, // Allow cookies to be shared across subdomains
     httpOnly: true,
   };
 
   const sessionOptions = {
-    store: process.env.NODE_ENV === "test" ? undefined : sessionStore,
+    store: typedEnv.NODE_ENV === "test" ? undefined : sessionStore,
     secret: upsertSessionSecret(),
     resave: false,
     saveUninitialized: false,
-    cookie: process.env.NODE_ENV === "test" ? undefined : cookie,
+    cookie: typedEnv.NODE_ENV === "test" ? undefined : cookie,
   };
 
   return session(sessionOptions);
