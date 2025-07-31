@@ -1,7 +1,7 @@
 import { defineConfig } from "drizzle-kit";
 import path from "path";
 import { fileURLToPath } from "url";
-import { typedEnv } from "./env.ts";
+import { typedEnv } from "@saflib/env";
 
 const getDirname = () => {
   const __filename = fileURLToPath(import.meta.url);

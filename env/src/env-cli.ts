@@ -28,14 +28,21 @@ program.command("print").action(async () => {
   console.log(formattedStrings.join("\n"));
 });
 
-program.command("generate").action(async () => {
-  const combinedSchema = await getCombinedEnvSchema();
-  const typeSnippet = await makeEnvParserSnippet(combinedSchema);
-  writeFileSync("env.ts", typeSnippet);
-  writeFileSync(
-    "env.schema.combined.json",
-    JSON.stringify(combinedSchema, null, 2),
-  );
-});
+program
+  .command("generate")
+  .option("-c, --combined", "Whether to export the combined schema as well.")
+  .action(async (options) => {
+    const combinedSchema = await getCombinedEnvSchema();
+    const typeSnippet = await makeEnvParserSnippet(combinedSchema);
+    writeFileSync("env.ts", typeSnippet);
+
+    // Note: to use this with npm exec, need to include "--" prior to the "--combined" option
+    if (options.combined) {
+      writeFileSync(
+        "env.schema.combined.json",
+        JSON.stringify(combinedSchema, null, 2),
+      );
+    }
+  });
 
 program.parse(process.argv);

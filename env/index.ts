@@ -18,3 +18,5 @@ export const validateEnv = (env: any, envSchema: any) => {
   }
   return valid;
 };
+
+export * from "./env.ts";
