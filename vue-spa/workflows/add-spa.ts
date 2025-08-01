@@ -172,7 +172,7 @@ export const AddSpaWorkflowMachine = setup({
         prompt: {
           actions: [
             promptAgent(
-              `Please update deploy/instance/remote-assets/config/Caddyfile to add the new SPA to the serve_prod_spas snippet.`,
+              `Please update deploy/prod/remote-assets/config/Caddyfile to add the new SPA to the serve_prod_spas snippet.`,
             ),
           ],
         },

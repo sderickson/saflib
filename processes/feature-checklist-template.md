@@ -5,7 +5,6 @@ This is a template for adding features. Whenever a new feature is added, follow 
 ### Planning Phase
 
 - [ ] Set up a new branch in the monorepo
-
   - [ ] Checkout the `main` branch
   - [ ] Pull the latest changes
   - [ ] Create a new branch with the current date and the name of the feature, e.g. `2025-03-23-auth-library`
@@ -21,7 +20,6 @@ This is a template for adding features. Whenever a new feature is added, follow 
 - [ ] **Review Point**
 
 - [ ] Add Documentation to plan
-
   - [ ] Review what `.md` files are in /saflib
   - [ ] Add any that are relevant to the implementation. Docs should be reviewed before implementation.
   - [ ] Note any missing platform documentation needs. If there are gaps, add a TODO to create a doc in an appropraite `/saflib/\*/docs` folder after implementation. Even for existing docs, have a checkbox for making any necessary updates if guidance was required.
@@ -35,7 +33,6 @@ Each implementation section should follow this pattern:
 ## {Component} Layer
 
 - [ ] Implementation Task
-
   - [ ] Write tests
   - [ ] Implement feature
   - [ ] Run tests
@@ -64,8 +61,7 @@ Start at the lowest level and work your way up. For example, have one task for t
 ### Testing Phase
 
 - [ ] Test end-to-end
-
-  - [ ] Create production docker images by running `npm run build` from `/deploy/instance`
+  - [ ] Create production docker images by running `npm run build` from `/deploy/prod`
   - [ ] Run `npm run test` in /tests/e2e and make sure existing tests still pass
   - [ ] Create test in /tests/e2e/specs for new user flow happy path
   - [ ] Run to make sure it works
