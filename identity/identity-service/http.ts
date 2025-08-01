@@ -41,13 +41,7 @@ export function createApp(options: AuthServerOptions) {
     });
   });
 
-  app.use(
-    "/auth",
-    createEmailsRouter({
-      apiSpec: jsonSpec,
-    }),
-  );
-
+  app.use("/", createEmailsRouter());
   app.use("/auth", makeAuthRouter());
   app.use("/users", makeUsersRouter());
   app.use(recommendedErrorHandlers);

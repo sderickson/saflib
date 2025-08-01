@@ -201,7 +201,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/auth/email/sent": {
+    "/email/sent": {
         parameters: {
             query?: never;
             header?: never;
