@@ -119,8 +119,8 @@ export const monorepoPackageMock = {
       "@foo/main-db": "*",
     },
   }),
-  "/app/services/auth/Dockerfile.template": DockerfileTemplate,
-  "/app/services/auth/package.json": JSON.stringify({
+  "/app/services/identity/Dockerfile.template": DockerfileTemplate,
+  "/app/services/identity/package.json": JSON.stringify({
     name: "@foo/auth-service",
     dependencies: {
       "@saflib/auth-spec": "*",
