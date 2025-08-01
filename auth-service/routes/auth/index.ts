@@ -52,7 +52,7 @@ export const makeAuthRouter = () => {
   router.put("/profile", updateProfile);
 
   // rate limit after /verify, because verify runs before every single API call...
-  if (typedEnv.AUTH_SERVICE_DISABLE_RATE_LIMITING !== "true") {
+  if (typedEnv.IDENTITY_SERVICE_DISABLE_RATE_LIMITING !== "true") {
     router.use(rateLimit());
   }
   router.post("/login", loginHandler);

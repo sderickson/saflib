@@ -31,7 +31,7 @@ export function createApp(options: AuthServerOptions) {
 
   app.set(
     "saf:admin emails",
-    new Set(typedEnv.AUTH_SERVICE_ADMIN_EMAILS?.split(",") || []),
+    new Set(typedEnv.IDENTITY_SERVICE_ADMIN_EMAILS?.split(",") || []),
   );
 
   const context = { dbKey, callbacks: options.callbacks };

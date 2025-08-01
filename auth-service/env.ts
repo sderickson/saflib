@@ -44,13 +44,13 @@ export interface CombinedEnvSchema {
   /**
    * Comma-separated list of emails who will get the 'admin' scope. Emails must be validated to receive this scope.
    */
-  AUTH_SERVICE_ADMIN_EMAILS?: string;
-  AUTH_SERVICE_HTTP_PORT: string;
-  AUTH_SERVICE_GRPC_PORT: string;
+  IDENTITY_SERVICE_ADMIN_EMAILS?: string;
+  IDENTITY_SERVICE_HTTP_PORT: string;
+  IDENTITY_SERVICE_GRPC_PORT: string;
   /**
    * Whether to disable rate limiting. Set to 'true' to disable.
    */
-  AUTH_SERVICE_DISABLE_RATE_LIMITING?: string;
+  IDENTITY_SERVICE_DISABLE_RATE_LIMITING?: string;
 }
 
 export const typedEnv = process.env as unknown as CombinedEnvSchema;

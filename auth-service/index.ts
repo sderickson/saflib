@@ -27,13 +27,13 @@ export async function startAuthService(options?: StartAuthServiceOptions) {
       callbacks: options?.callbacks ?? {},
     });
     startGrpcServer(grpcServer, {
-      port: parseInt(typedEnv.AUTH_SERVICE_GRPC_PORT, 10),
+      port: parseInt(typedEnv.IDENTITY_SERVICE_GRPC_PORT, 10),
     });
 
     log.info("Starting express server...");
     const app = createApp({ dbKey, callbacks: options?.callbacks ?? {} });
     startExpressServer(app, {
-      port: parseInt(typedEnv.AUTH_SERVICE_HTTP_PORT, 10),
+      port: parseInt(typedEnv.IDENTITY_SERVICE_HTTP_PORT, 10),
     });
     log.info("Auth service startup complete.");
   } catch (error) {
