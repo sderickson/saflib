@@ -57,14 +57,14 @@ const formatDateTime = (dateTimeString: string | null | undefined): string => {
 const handlers = [
   // Default success for listing jobs
   http.get<PathParams, never, ListCronJobsResponse>(
-    "http://api.localhost:3000/cron/jobs",
+    "http://caller.localhost:3000/cron/jobs",
     () => {
       return HttpResponse.json(mockJobs);
     },
   ),
   // Default success for updating settings
   http.put<PathParams, UpdateSettingsRequest, UpdateSettingsResponse>(
-    "http://api.localhost:3000/cron/jobs/settings",
+    "http://caller.localhost:3000/cron/jobs/settings",
     async ({ request }) => {
       const body = await request.json();
       return HttpResponse.json({
@@ -173,7 +173,7 @@ describe("CronJobsPage", () => {
 
   it("should display an error message if fetching jobs fails", async () => {
     server.use(
-      http.get("http://api.localhost:3000/cron/jobs", () => {
+      http.get("http://caller.localhost:3000/cron/jobs", () => {
         return new HttpResponse("Internal Server Error", { status: 500 });
       }),
     );
@@ -200,7 +200,7 @@ describe("CronJobsPage", () => {
     let receivedRequestBody: UpdateSettingsRequest | null = null;
     server.use(
       http.put<PathParams, UpdateSettingsRequest, UpdateSettingsResponse>(
-        "http://api.localhost:3000/cron/jobs/settings",
+        "http://caller.localhost:3000/cron/jobs/settings",
         async ({ request }) => {
           receivedRequestBody = await request.json();
           return HttpResponse.json({ jobName: jobToDisable, enabled: false });
@@ -239,7 +239,7 @@ describe("CronJobsPage", () => {
     let receivedRequestBody: UpdateSettingsRequest | null = null;
     server.use(
       http.put<PathParams, UpdateSettingsRequest, UpdateSettingsResponse>(
-        "http://api.localhost:3000/cron/jobs/settings",
+        "http://caller.localhost:3000/cron/jobs/settings",
         async ({ request }) => {
           receivedRequestBody = await request.json();
           return HttpResponse.json({ jobName: jobToEnable, enabled: true });
@@ -267,7 +267,7 @@ describe("CronJobsPage", () => {
 
   it("should display an error message if updating a job fails", async () => {
     server.use(
-      http.put("http://api.localhost:3000/cron/jobs/settings", () => {
+      http.put("http://caller.localhost:3000/cron/jobs/settings", () => {
         return new HttpResponse(null, {
           status: 400,
           statusText: "Bad Request",

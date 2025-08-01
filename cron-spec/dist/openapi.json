@@ -7,7 +7,7 @@
   },
   "servers": [
     {
-      "url": "http://api.docker.localhost/",
+      "url": "http://caller.docker.localhost/",
       "description": "Development server"
     }
   ],
