@@ -11,7 +11,7 @@ import {
   LogoutPage,
   ChangeForgottenPasswordPage,
   VerifyEmailPage,
-} from "@saflib/identity-vue";
+} from "@saflib/auth-vue";
 
 import { authLinks } from "@saflib/identity-links";
 

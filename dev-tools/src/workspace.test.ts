@@ -72,7 +72,7 @@ describe("buildWorkspaceDependencyGraph", () => {
     expect(dependencyGraph).toBeDefined();
     expect(dependencyGraph["@foo/auth-web-client"]).toStrictEqual([
       "@saflib/vue-spa",
-      "@saflib/identity-vue",
+      "@saflib/auth-vue",
     ]);
   });
 
@@ -110,7 +110,7 @@ describe("getAllPackageWorkspaceDependencies", () => {
     expect(dependencies).toStrictEqual(
       new Set([
         "@saflib/vue-spa",
-        "@saflib/identity-vue",
+        "@saflib/auth-vue",
         "@saflib/identity-spec",
         "@saflib/openapi-specs",
       ]),

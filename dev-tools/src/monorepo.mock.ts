@@ -35,7 +35,7 @@ export const monorepoPackageMock = {
     name: "@foo/auth-web-client",
     dependencies: {
       "@saflib/vue-spa": "*",
-      "@saflib/identity-vue": "*",
+      "@saflib/auth-vue": "*",
     },
   }),
 
@@ -86,7 +86,7 @@ export const monorepoPackageMock = {
     },
   }),
   "/app/saflib/auth-vue/package.json": JSON.stringify({
-    name: "@saflib/identity-vue",
+    name: "@saflib/auth-vue",
     dependencies: {
       "third-party-lib": "3.2.1",
       "@saflib/vue-spa": "*",

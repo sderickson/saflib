@@ -20,7 +20,7 @@ The authentication system uses a combination of cookies-session-based auth (for 
 - `@saflib/auth-db`
   - handles identity and permission storage
   - depended on by `@saflib/auth-service`
-- `@saflib/auth-spec`
+- `@saflib/identity-spec`
   - describes the API endpoints served by `@saflib/auth-service`
 - `@saflib/node-express`:
   - Common middleware for SAF Node.js services
@@ -70,6 +70,7 @@ Node.js services receive the propagated headers and can use them for:
    ```
 
 2. Scope validation via OpenAPI middleware:
+
    ```yaml
 
    ```

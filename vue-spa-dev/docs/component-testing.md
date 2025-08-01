@@ -239,7 +239,6 @@ This test serves two purposes:
    ```
 
 2. Selection priority (in order of preference):
-
    - Component name + props (e.g., `findComponent({ name: "v-btn", props: { color: "error" } })`)
    - Component name + text content
    - Component name + context
@@ -263,7 +262,6 @@ This test serves two purposes:
 ### 3. Async Testing
 
 1. Always use `async/await` when:
-
    - Setting input values
    - Triggering events
    - Checking validation messages
@@ -359,7 +357,7 @@ it("should disable submit button when form is invalid", async () => {
    **Important:** When using API clients created via `createSafClient` (like those in `@saflib/auth-vue` or `@saflib/app-vue`), MSW handlers **must** use the full URL, including the host and the API prefix (e.g., `http://api.localhost:3000/auth/login`). Relative paths will not work because the client uses the full base URL.
 
    ```typescript
-   import type { LoginRequest, LoginResponse } from "@saflib/auth-spec";
+   import type { LoginRequest, LoginResponse } from "@saflib/identity-spec";
 
    export const handlers = [
      // Use the full URL matching the client's request
@@ -381,7 +379,7 @@ it("should disable submit button when form is invalid", async () => {
 2. Override handlers for specific test cases using `server.use()`:
 
    ```typescript
-   import type { LoginResponse } from "@saflib/auth-spec"; // Import response type
+   import type { LoginResponse } from "@saflib/identity-spec"; // Import response type
 
    it("should handle error response", async () => {
      // Use server.use() to add or override handlers for this test
@@ -417,7 +415,6 @@ it("should disable submit button when form is invalid", async () => {
    ```
 
    Important notes about handler overrides:
-
    - Use `server.use()` to add or override handlers for specific tests.
    - New handlers added via `server.use()` are **prepended** to the existing list, meaning they take precedence if they match the same request.
    - You don't need to recreate the entire `handlers` array.
@@ -498,30 +495,25 @@ can't be done well, then just skip the tests.
 ### 10. Common Gotchas
 
 1. Vuetify Validation:
-
    - May need multiple `$nextTick` calls
    - Use `wrapper.text()` to check validation messages
    - Button states may depend on form validation
 
 2. Component Mounting:
-
    - Always use `mountWithPlugins` for Vuetify components
    - Provide your app's router when testing components that use routing
    - Consider global plugins and providers
 
 3. Async Operations:
-
    - Always use `async/await`
    - Wait for component updates with `$nextTick`
    - Test both success and error states
 
 4. Reactive Properties in Mocks:
-
    - Reactive properties from composables should be objects with a `value` property
    - Example: `isPending: { value: false }` instead of `isPending: false`
 
 5. Finding Elements in Dialogs:
-
    - Dialogs may be rendered in portals outside the component's DOM tree
    - Use `wrapper.findAll()` instead of `dialog.findAll()`
    - Identify elements by text content rather than by class names

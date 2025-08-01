@@ -4,11 +4,11 @@ This guide explains how to work with and set up OpenAPI-generated types in a SAF
 
 ## Overview
 
-The monorepo uses OpenAPI specifications housed in packages like `@saflib/auth-spec` to generate TypeScript types that are shared between the service and client implementations. This ensures type safety across the entire application.
+The monorepo uses OpenAPI specifications housed in packages like `@saflib/identity-spec` to generate TypeScript types that are shared between the service and client implementations. This ensures type safety across the entire application.
 
 ## Example Package Structure
 
-- `@saflib/auth-spec`: Contains the OpenAPI specification and generated types
+- `@saflib/identity-spec`: Contains the OpenAPI specification and generated types
 - `@saflib/auth-vue`: Consumes the generated types for client-side code
 - `@saflib/auth-node`: Consumes the generated types for server-side code (TODO)
 
@@ -45,7 +45,7 @@ export type UserResponse = components["schemas"]["UserResponse"];
 1. Import types from the spec package:
 
 ```typescript
-import type { components } from "@saflib/auth-spec";
+import type { components } from "@saflib/identity-spec";
 
 // Use schema types
 type LoginRequest = components["schemas"]["LoginRequest"];
@@ -55,7 +55,7 @@ type LoginRequest = components["schemas"]["LoginRequest"];
 
 ```typescript
 import createClient from "openapi-fetch";
-import type { paths } from "@saflib/auth-spec";
+import type { paths } from "@saflib/identity-spec";
 
 export const client = createClient<paths>({
   baseUrl: `${document.location.protocol}//api.${document.location.host}`,
@@ -66,13 +66,11 @@ export const client = createClient<paths>({
 ## Best Practices
 
 1. **Type Exports**
-
    - Always export types through the package's main entry point
    - Use type aliases for commonly used schema types
    - Keep type exports focused and minimal
 
 2. **Type Imports**
-
    - Import from the package, not directly from generated files
    - Use type imports to avoid runtime overhead
    - Prefer importing specific types over entire namespaces
@@ -85,7 +83,6 @@ export const client = createClient<paths>({
 ## Common Issues
 
 1. **Missing Types**
-
    - Ensure types are generated
    - Check package exports
    - Verify import paths
