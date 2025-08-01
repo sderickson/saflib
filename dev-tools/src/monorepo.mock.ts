@@ -110,8 +110,8 @@ export const monorepoPackageMock = {
   }),
 
   // Services
-  "/app/services/api/Dockerfile.template": DockerfileTemplate,
-  "/app/services/api/package.json": JSON.stringify({
+  "/app/services/caller/Dockerfile.template": DockerfileTemplate,
+  "/app/services/caller/package.json": JSON.stringify({
     name: "@foo/api-service",
     dependencies: {
       "@foo/api-spec": "*",
