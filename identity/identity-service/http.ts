@@ -6,7 +6,6 @@ import { makeUsersRouter } from "./routes/users/index.ts";
 import { authServiceStorage } from "./context.ts";
 import type { AuthServerOptions } from "./types.ts";
 import { createEmailsRouter } from "@saflib/email-node";
-import { jsonSpec } from "@saflib/identity-spec";
 import { metricsMiddleware } from "@saflib/express";
 import { typedEnv } from "./env.ts";
 
