@@ -6,7 +6,7 @@ import { makeUsersRouter } from "./routes/users/index.ts";
 import { authServiceStorage } from "./context.ts";
 import type { AuthServerOptions } from "./types.ts";
 import { createEmailsRouter } from "@saflib/email-node";
-import { metricsMiddleware } from "@saflib/express";
+import { metricsRouter } from "@saflib/express";
 import { typedEnv } from "./env.ts";
 
 // Define properties added to Express Request objects by middleware
@@ -25,7 +25,7 @@ export function createApp(options: AuthServerOptions) {
   }
 
   const app = express();
-  app.use(metricsMiddleware);
+  app.use(metricsRouter);
   app.set("trust proxy", 1);
 
   app.set(
