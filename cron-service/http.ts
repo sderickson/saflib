@@ -7,7 +7,7 @@ import type { DbKey } from "@saflib/drizzle-sqlite3";
 import { cronServiceStorage } from "./context.ts";
 import type { JobsMap } from "./src/types.ts";
 import type { DbOptions } from "@saflib/drizzle-sqlite3";
-import { metricsRouter } from "@saflib/express";
+import { metricsRouter, metricsMiddleware } from "@saflib/express";
 
 export interface CronServiceOptions {
   subsystemName?: string;
@@ -27,6 +27,7 @@ export function createApp(options: CronServiceOptions) {
   const app = express();
   app.set("trust proxy", 1);
   app.use(metricsRouter);
+  app.use(metricsMiddleware);
   const context = { dbKey, jobs: options.jobs };
   app.use((_req, _res, next) => {
     cronServiceStorage.run(context, () => {
