@@ -2,6 +2,8 @@ import cors from "cors";
 import { Router } from "express";
 import { typedEnv } from "@saflib/env";
 
+// TODO: See about moving CORS handling to Caddy.
+
 const domains = [typedEnv.DOMAIN];
 
 const subdomains = typedEnv.CLIENT_SUBDOMAINS?.split(",") ?? [];

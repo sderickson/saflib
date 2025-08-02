@@ -38,7 +38,7 @@ export class AddProtoPackageWorkflow extends SimpleWorkflow<AddProtoPackageWorkf
     }
 
     // Transform npm package name to proto package name
-    // @saflib/auth-rpcs -> saflib.auth.v1
+    // @saflib/identity-rpcs -> saflib.auth.v1
     const protoPackageName = this.transformToProtoPackageName(name);
 
     const filesToCopy = [

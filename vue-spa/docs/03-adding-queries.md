@@ -21,7 +21,7 @@ The recommended way to define reusable query configurations is using `queryOptio
 // requests/users.ts
 import { queryOptions } from "@tanstack/vue-query";
 import { client } from "./client";
-import type { AuthResponse } from "@saflib/auth-specs"; // Import from appropriate spec package
+import type { AuthResponse } from "@saflib/identity-specs"; // Import from appropriate spec package
 import { handleClientMethod } from "@saflib/vue-spa"; // Helper for wrapping openapi-fetch client methods
 import type { Ref } from "vue";
 

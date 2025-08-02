@@ -1,4 +1,4 @@
-import { getSafReporters } from "@saflib/node";
+import { createLogger, getSafReporters } from "@saflib/node";
 import * as nodemailer from "nodemailer";
 import type { Transporter } from "nodemailer";
 
@@ -6,6 +6,15 @@ import { typedEnv } from "../env.ts";
 
 export const mockingOn =
   typedEnv.NODE_ENV === "test" || typedEnv.MOCK_INTEGRATIONS === "true";
+
+setImmediate(() => {
+  const logger = createLogger({
+    subsystemName: "email-node",
+    operationName: "init",
+  });
+
+  logger.info("Email Integration: " + (mockingOn ? "MOCKED" : "LIVE"));
+});
 
 export interface SentEmail extends EmailOptions {
   timeSent: number;

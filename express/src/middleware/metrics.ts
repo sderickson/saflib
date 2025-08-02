@@ -1,5 +1,20 @@
 import { getServiceName } from "@saflib/node";
 import promBundle from "express-prom-bundle";
+import { Router } from "express";
+
+export const metricsRouter = Router();
+
+// block external access to /metrics, except for admins
+metricsRouter.get("/metrics", (req, res, next) => {
+  if (
+    !req.headers["x-forwarded-host"] ||
+    req.headers["x-user-scopes"] === "*"
+  ) {
+    next();
+    return;
+  }
+  res.status(403).end();
+});
 
 export const metricsMiddleware = promBundle({
   includeMethod: true,

@@ -80,7 +80,7 @@ export const monorepoPackageMock = {
   // Saflib
   "/app/saflib/.github/some-file.txt": "",
   "/app/saflib/auth-spec/package.json": JSON.stringify({
-    name: "@saflib/auth-spec",
+    name: "@saflib/identity-spec",
     dependencies: {
       "@saflib/openapi-specs": "*",
     },
@@ -90,7 +90,7 @@ export const monorepoPackageMock = {
     dependencies: {
       "third-party-lib": "3.2.1",
       "@saflib/vue-spa": "*",
-      "@saflib/auth-spec": "*",
+      "@saflib/identity-spec": "*",
     },
   }),
   "/app/saflib/openapi-specs/package.json": JSON.stringify({
@@ -110,8 +110,8 @@ export const monorepoPackageMock = {
   }),
 
   // Services
-  "/app/services/api/Dockerfile.template": DockerfileTemplate,
-  "/app/services/api/package.json": JSON.stringify({
+  "/app/services/caller/Dockerfile.template": DockerfileTemplate,
+  "/app/services/caller/package.json": JSON.stringify({
     name: "@foo/api-service",
     dependencies: {
       "@foo/api-spec": "*",
@@ -119,11 +119,11 @@ export const monorepoPackageMock = {
       "@foo/main-db": "*",
     },
   }),
-  "/app/services/auth/Dockerfile.template": DockerfileTemplate,
-  "/app/services/auth/package.json": JSON.stringify({
+  "/app/services/identity/Dockerfile.template": DockerfileTemplate,
+  "/app/services/identity/package.json": JSON.stringify({
     name: "@foo/auth-service",
     dependencies: {
-      "@saflib/auth-spec": "*",
+      "@saflib/identity-spec": "*",
       "@saflib/express": "*",
     },
   }),

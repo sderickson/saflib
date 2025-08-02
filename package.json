@@ -10,7 +10,7 @@
   "author": "Scott Erickson <sderickson@gmail.com>",
   "license": "MIT",
   "workspaces": [
-    "/*"
+    "/**"
   ],
   "devDependencies": {
     "@saflib/vue-spa": "*"

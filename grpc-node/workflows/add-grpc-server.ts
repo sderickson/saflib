@@ -308,7 +308,7 @@ export const AddGrpcServerWorkflowMachine = setup({
                    - const grpcServer = makeGrpcServer({ dbKey });
                    - startGrpcServer(grpcServer);
                 
-                Look at the existing services/api/bin/run.ts and services/cron/bin/run.ts for examples.`,
+                Look at the existing services/caller/bin/run.ts and services/cron/bin/run.ts for examples.`,
             ),
           ],
         },

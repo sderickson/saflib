@@ -4,10 +4,6 @@ info:
   version: 1.0.0
   description: Strictly for E2E testing, to see what emails are sent in, for example, playwright tests.
 
-servers:
-  - url: http://api.docker.localhost/
-    description: Development server
-
 components:
   schemas:
     SentEmail:

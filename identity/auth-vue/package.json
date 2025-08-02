@@ -1,0 +1,25 @@
+{
+  "name": "@saflib/auth-vue",
+  "description": "Shared authentication components and utilities for SAF",
+  "type": "module",
+  "exports": {
+    ".": "./index.ts",
+    "./strings": "./strings.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "vue-tsc -b"
+  },
+  "dependencies": {
+    "@saflib/vue-spa": "*",
+    "@saflib/identity-spec": "*"
+  },
+  "devDependencies": {
+    "@saflib/vue-spa-dev": "*"
+  },
+  "saflib": {
+    "group": "auth"
+  }
+}

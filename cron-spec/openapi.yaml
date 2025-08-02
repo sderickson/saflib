@@ -5,7 +5,7 @@ info:
   description: API specification for the cron service
 
 servers:
-  - url: http://api.docker.localhost/
+  - url: http://cron.docker.localhost/
     description: Development server
 
 components:
