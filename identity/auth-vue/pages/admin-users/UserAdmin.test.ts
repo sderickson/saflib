@@ -30,7 +30,7 @@ const mockUsers: User[] = [
 
 // Set up MSW handlers
 const handlers = [
-  http.get("http://caller.localhost:3000/users", () => {
+  http.get("http://identity.localhost:3000/users", () => {
     return HttpResponse.json(mockUsers);
   }),
 ];
@@ -89,7 +89,7 @@ describe("UserAdmin.vue", () => {
   it("should display error message on failed fetch", async () => {
     // Override handler for this test
     server.use(
-      http.get("http://caller.localhost:3000/users", () => {
+      http.get("http://identity.localhost:3000/users", () => {
         return new HttpResponse("Internal Server Error", { status: 500 });
       }),
     );

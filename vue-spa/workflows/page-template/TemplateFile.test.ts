@@ -16,7 +16,7 @@ import type { AuthResponse } from "@saflib/identity-spec"; // TODO: import the a
 
 // TODO: update with mock responses for the actual API calls made in the loader
 const handlers = [
-  http.get("http://caller.localhost:3000/users", () => {
+  http.get("http://identity.localhost:3000/users", () => {
     return HttpResponse.json([] satisfies AuthResponse["listUsers"]["200"]); // TODO: enforce the correct response type
   }),
 ];
@@ -29,7 +29,7 @@ describe("TemplateFile", () => {
   /*
     For tests which test different responses, use the following pattern:
       server.use(
-      http.get("http://caller.localhost:3000/users", () => {
+      http.get("http://identity.localhost:3000/users", () => {
         return HttpResponse.json(updatedResponse);
       }),
     );

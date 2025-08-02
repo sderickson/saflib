@@ -7,7 +7,7 @@
   },
   "servers": [
     {
-      "url": "http://caller.docker.localhost/",
+      "url": "http://cron.docker.localhost/",
       "description": "Development server"
     }
   ],
