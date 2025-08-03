@@ -111,7 +111,7 @@ describe("getAllPackageWorkspaceDependencies", () => {
       new Set([
         "@saflib/vue-spa",
         "@saflib/auth-vue",
-        "@saflib/auth-spec",
+        "@saflib/identity-spec",
         "@saflib/openapi-specs",
       ]),
     );

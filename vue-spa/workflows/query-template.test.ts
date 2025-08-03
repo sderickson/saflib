@@ -25,12 +25,12 @@ const mockResponse: GetQueryTemplateResponse = {
 
 describe("Query Template API Interactions", () => {
   const handlers = [
-    http.get("http://api.localhost:3000/query-template", () => {
+    http.get("http://identity.localhost:3000/query-template", () => {
       return HttpResponse.json(mockResponse);
     }),
     // TODO: Add mutation handlers using OpenAPI spec types
     // Example:
-    // http.post("http://api.localhost:3000/query-template", async ({ request }) => {
+    // http.post("http://identity.localhost:3000/query-template", async ({ request }) => {
     //   const body = (await request.json()) as CreateQueryTemplateBody;
     //   const newItem = {
     //     ...body,
@@ -42,7 +42,7 @@ describe("Query Template API Interactions", () => {
     //     item: newItem,
     //   });
     // }),
-    // http.put("http://api.localhost:3000/query-template/1", async ({ request }) => {
+    // http.put("http://identity.localhost:3000/query-template/1", async ({ request }) => {
     //   const body = (await request.json()) as UpdateQueryTemplateBody;
     //   const updatedItem = {
     //     ...mockResponse.items[0],

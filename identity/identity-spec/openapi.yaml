@@ -1,0 +1,58 @@
+openapi: 3.0.0
+info:
+  title: SAF Auth API
+  version: 1.0.0
+  description: Authentication API for SAF
+
+paths:
+  /auth/register:
+    post:
+      $ref: "./routes/auth/register-user.yaml#/registerUser"
+  /auth/login:
+    post:
+      $ref: "./routes/auth/login-user.yaml#/loginUser"
+  /auth/logout:
+    post:
+      $ref: "./routes/auth/logout-user.yaml#/logoutUser"
+  /auth/verify:
+    get:
+      $ref: "./routes/auth/verify-auth.yaml#/verifyAuth"
+  /auth/forgot-password:
+    post:
+      $ref: "./routes/auth/forgot-password.yaml#/forgotPassword"
+  /auth/reset-password:
+    post:
+      $ref: "./routes/auth/reset-password.yaml#/resetPassword"
+  /auth/verify-email:
+    post:
+      $ref: "./routes/auth/verify-email.yaml#/verifyEmail"
+  /auth/resend-verification:
+    post:
+      $ref: "./routes/auth/resend-verification.yaml#/resendVerification"
+  /auth/set-password:
+    post:
+      $ref: "./routes/auth/set-password.yaml#/setPassword"
+  /auth/profile:
+    get:
+      $ref: "./routes/auth/get-user-profile.yaml#/getUserProfile"
+    put:
+      $ref: "./routes/auth/update-user-profile.yaml#/updateUserProfile"
+  /users:
+    get:
+      $ref: "./routes/users/users.yaml#/listUsers"
+  /email/sent:
+    get:
+      $ref: "../../email-spec/routes/email_routes.yaml#/get"
+
+components:
+  securitySchemes:
+    scopes:
+      type: apiKey
+      in: header
+      name: X-User-Scopes
+      description: Comma-separated list of user scopes
+  schemas:
+    Error:
+      $ref: "./schemas/error.yaml"
+    User:
+      $ref: "./schemas/user.yaml"
