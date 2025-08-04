@@ -38,7 +38,6 @@ export interface CombinedEnvSchema {
    * Whether to allow the creation of new databases. Useful for ensuring existing production environments don't inadvertently create new databases.
    */
   ALLOW_DB_CREATION?: "true" | "false";
-  CRON_SERVICE_GRPC_PORT: string;
   CRON_SERVICE_HTTP_PORT: string;
 }
 
