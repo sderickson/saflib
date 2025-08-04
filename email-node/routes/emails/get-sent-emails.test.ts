@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from "vitest";
 import request from "supertest";
 import express from "express";
 import { createEmailsRouter } from "./index.ts";
-import { EmailClient } from "../../client/email-client.ts";
+import { emailClient } from "../../client/email-client.ts";
 import { recommendedErrorHandlers } from "@saflib/express";
 
 describe("getSentEmails", () => {
@@ -22,7 +22,6 @@ describe("getSentEmails", () => {
   });
 
   it("should return sent emails for a specific user", async () => {
-    const emailClient = new EmailClient();
     const email1 = `test${Math.random()}@test.com`;
     const email2 = `test${Math.random()}@test.com`;
     await emailClient.sendEmail({

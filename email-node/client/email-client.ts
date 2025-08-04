@@ -55,7 +55,7 @@ export interface EmailResult {
   response: string;
 }
 
-export class EmailClient {
+class EmailClient {
   private transporter: Transporter;
 
   constructor() {
@@ -127,3 +127,5 @@ export class EmailClient {
     };
   }
 }
+
+export const emailClient = new EmailClient();
