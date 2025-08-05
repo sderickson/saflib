@@ -10,6 +10,5 @@ RUN npm install --omit=dev
 
 COPY --parents ./saflib/drizzle-sqlite3 ./saflib/email-node ./saflib/email-spec ./saflib/env ./saflib/express ./saflib/grpc-node ./saflib/grpc-specs ./saflib/identity/identity-db ./saflib/identity/identity-links ./saflib/identity/identity-rpcs ./saflib/identity/identity-service ./saflib/identity/identity-spec ./saflib/links ./saflib/monorepo ./saflib/node ./saflib/openapi-specs ./
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 CMD ["npm", "run", "healthcheck"]
 WORKDIR /app/saflib/auth-service
 CMD ["npm", "start"]
