@@ -11,9 +11,7 @@ const originalEnv = { ...typedEnv };
 let id = 0;
 
 beforeEach(() => {
-  typedEnv.NODEMAILER_SMTP_HOST = "mock.smtp.server";
-  typedEnv.NODEMAILER_SMTP_PORT = "587";
-  typedEnv.NODEMAILER_SMTP_FROM = "noreply@your-domain.com";
+  typedEnv.NODEMAILER_TRANSPORT_CONFIG = "{}";
   const transport = createTransport();
   vi.mocked(transport.sendMail).mockImplementation((options: EmailOptions) => {
     // always return a success response

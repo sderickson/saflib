@@ -38,15 +38,10 @@ export interface CombinedEnvSchema {
    * Whether to allow the creation of new databases. Useful for ensuring existing production environments don't inadvertently create new databases.
    */
   ALLOW_DB_CREATION?: "true" | "false";
-  NODEMAILER_SMTP_HOST: string;
-  NODEMAILER_SMTP_PORT: string;
-  NODEMAILER_SMTP_FROM?: string;
   /**
-   * Whether to use a secure connection to the SMTP server. Set to 'true' to use a secure connection. Defaults to 'true'.
+   * JSON string
    */
-  NODEMAILER_SMTP_SECURE?: "true" | "false";
-  NODEMAILER_SMTP_USER?: string;
-  NODEMAILER_SMTP_PASS?: string;
+  NODEMAILER_TRANSPORT_CONFIG: string;
 }
 
-export const typedEnv = process.env as unknown as CombinedEnvSchema;
+export const typedEnv = (globalThis.process ? process.env : {}) as unknown as CombinedEnvSchema;

@@ -5,7 +5,8 @@ import type { Transporter } from "nodemailer";
 import { typedEnv } from "../env.ts";
 
 export const mockingOn =
-  typedEnv.NODE_ENV === "test" || typedEnv.MOCK_INTEGRATIONS === "true";
+  (typedEnv.NODE_ENV === "test" || typedEnv.MOCK_INTEGRATIONS === "true") &&
+  !typedEnv.NODEMAILER_TRANSPORT_CONFIG;
 
 setImmediate(() => {
   const logger = createLogger({
@@ -15,6 +16,8 @@ setImmediate(() => {
 
   logger.info("Email Integration: " + (mockingOn ? "MOCKED" : "LIVE"));
 });
+
+type TransporterConfig = Parameters<typeof nodemailer.createTransport>[0];
 
 export interface SentEmail extends EmailOptions {
   timeSent: number;
@@ -56,34 +59,31 @@ export interface EmailResult {
 }
 
 class EmailClient {
-  private transporter: Transporter;
+  private transporter: Transporter | undefined;
 
   constructor() {
-    let host = typedEnv.NODEMAILER_SMTP_HOST;
-
-    if (mockingOn && !host) {
-      host = "localhost";
+    if (mockingOn) {
+      return;
     }
 
-    if (!host) {
+    if (!typedEnv.NODEMAILER_TRANSPORT_CONFIG) {
       throw new Error(
-        "SMTP configuration error: NODEMAILER_SMTP_HOST must be provided.",
+        "SMTP configuration error: NODEMAILER_TRANSPORT_CONFIG must be provided.",
       );
     }
 
-    const port = typedEnv.NODEMAILER_SMTP_PORT;
-    const user = typedEnv.NODEMAILER_SMTP_USER;
-    const pass = typedEnv.NODEMAILER_SMTP_PASS;
-    // Default secure to true if not explicitly set to 'false'
-    const secure = typedEnv.NODEMAILER_SMTP_SECURE !== "false";
+    let config: TransporterConfig;
+    try {
+      config = JSON.parse(
+        typedEnv.NODEMAILER_TRANSPORT_CONFIG,
+      ) as TransporterConfig;
+    } catch (error) {
+      throw new Error(
+        "SMTP configuration error: NODEMAILER_TRANSPORT_CONFIG must be valid JSON.",
+      );
+    }
 
-    this.transporter = nodemailer.createTransport({
-      host,
-      port: port ? parseInt(port, 10) : undefined,
-      secure: secure,
-      // Only add auth if user and pass are provided
-      auth: user && pass ? { user, pass } : undefined,
-    });
+    this.transporter = nodemailer.createTransport(config);
     if (!this.transporter) {
       throw new Error("Failed to create transporter");
     }
@@ -106,6 +106,10 @@ class EmailClient {
         rejected: [],
         response: "250 2.0.0 OK",
       };
+    }
+
+    if (!this.transporter) {
+      throw new Error("Transporter not initialized");
     }
 
     const info = await this.transporter.sendMail(options);
