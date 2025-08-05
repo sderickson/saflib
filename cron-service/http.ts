@@ -17,6 +17,16 @@ export interface CronServiceOptions {
 }
 
 export function createApp(options: CronServiceOptions) {
+  const app = express();
+  app.set("trust proxy", 1);
+  app.use(metricsRouter);
+  app.use(metricsMiddleware);
+  app.use(createCronRouter(options));
+  return app;
+}
+
+export function createCronRouter(options: CronServiceOptions) {
+  const router = express.Router();
   let dbKey: DbKey;
   if (options.dbKey) {
     dbKey = options.dbKey;
@@ -24,24 +34,24 @@ export function createApp(options: CronServiceOptions) {
     dbKey = cronDb.connect(options.dbOptions);
   }
 
-  const app = express();
-  app.set("trust proxy", 1);
-  app.use(metricsRouter);
-  app.use(metricsMiddleware);
   const context = { dbKey, jobs: options.jobs };
-  app.use((_req, _res, next) => {
+
+  // for some reason, types don't like me giving middleware as extra args
+  // or an array, so I'm repeatedly calling "router.use('/cron', ...)"
+
+  router.use("/cron", (_req, _res, next) => {
     cronServiceStorage.run(context, () => {
       next();
     });
   });
-  app.use(
+  router.use(
+    "/cron",
     createPreMiddleware({
       apiSpec: jsonSpec,
       subsystemName: options.subsystemName,
     }),
   );
-  app.use("/cron", cronRouter);
-  app.use(recommendedErrorHandlers);
-
-  return app;
+  router.use("/cron", cronRouter);
+  router.use("/cron", recommendedErrorHandlers);
+  return router;
 }
