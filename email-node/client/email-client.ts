@@ -1,11 +1,12 @@
 import { createLogger, getSafReporters } from "@saflib/node";
 import * as nodemailer from "nodemailer";
-import type { TransportOptions, Transporter } from "nodemailer";
+import type { Transporter } from "nodemailer";
 
 import { typedEnv } from "../env.ts";
 
 export const mockingOn =
-  typedEnv.NODE_ENV === "test" || typedEnv.MOCK_INTEGRATIONS === "true";
+  (typedEnv.NODE_ENV === "test" || typedEnv.MOCK_INTEGRATIONS === "true") &&
+  !typedEnv.NODEMAILER_TRANSPORT_CONFIG;
 
 setImmediate(() => {
   const logger = createLogger({
