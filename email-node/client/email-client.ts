@@ -14,7 +14,7 @@ setImmediate(() => {
     operationName: "init",
   });
 
-  logger.info("Email Integration: " + (mockingOn ? "MOCKED" : "LIVE"));
+  logger.info("Email: " + (mockingOn ? "MOCKED" : "LIVE"));
 });
 
 type TransporterConfig = Parameters<typeof nodemailer.createTransport>[0];
