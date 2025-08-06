@@ -70,6 +70,7 @@ export const startServer = (app: Express, options: StartServerOptions) => {
   }
 
   // Handle graceful shutdown
+  // TODO: move server shutdown out of express server
   process.on("SIGTERM", () => {
     console.log("SIGTERM signal received: closing HTTP server");
     server.close(() => {
