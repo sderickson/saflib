@@ -38,6 +38,7 @@ export async function startAuthService(options?: StartAuthServiceOptions) {
     log.info("Auth service startup complete.");
   } catch (error) {
     logError(error);
+    console.error(error);
   }
 }
 

@@ -21,6 +21,7 @@ declare global {
 export function createApp(options: AuthServerOptions) {
   let dbKey = options.dbKey;
   if (!dbKey) {
+    console.log("connecting to db");
     dbKey = authDb.connect();
   }
 
