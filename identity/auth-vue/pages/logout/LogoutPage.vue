@@ -1,17 +1,16 @@
 <script setup lang="ts">
 import { onMounted } from "vue";
+import { defineEmits } from "vue";
 import { useLogout } from "../../requests/auth.ts";
+import { logout_page } from "./LogoutPage.strings.ts";
 
-const props = defineProps<{
-  redirectTo?: string;
-}>();
-
+const emit = defineEmits(["logout"]);
 const { mutate: logout } = useLogout();
 
 onMounted(() => {
   logout(undefined, {
     onSuccess: async () => {
-      window.location.href = props.redirectTo || "/";
+      emit("logout");
     },
   });
 });
@@ -19,7 +18,12 @@ onMounted(() => {
 
 <template>
   <div class="d-flex justify-center align-center flex-column fill-height">
-    <v-progress-circular indeterminate size="64" color="primary" class="mb-4" />
-    <div class="text-h6">Logging out...</div>
+    <v-progress-circular
+      indeterminate
+      size="64"
+      color="primary"
+      class="mt-16 mb-4"
+    />
+    <div class="text-h6">{{ logout_page.logging_out }}</div>
   </div>
 </template>
