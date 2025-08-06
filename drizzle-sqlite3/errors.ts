@@ -26,6 +26,9 @@ export function queryWrapper<T, A extends any[]>(
       // without any details, lest the calling code tries to handle it.
       const { logError } = getSafReporters();
       logError(error);
+      if (process.env.NODE_ENV === "test") {
+        console.log("UnhandledDatabaseError", error);
+      }
       throw new UnhandledDatabaseError();
     }
   };
