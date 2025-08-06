@@ -98,6 +98,7 @@ import { useRegister } from "../../requests/auth.ts";
 import { register_page } from "./RegisterPage.strings.ts";
 import { authLinks } from "@saflib/identity-links";
 import { SpaLink } from "@saflib/vue-spa";
+import type { User } from "@saflib/identity-spec";
 
 const props = defineProps<{
   firstNameInput?: boolean;
@@ -106,7 +107,9 @@ const props = defineProps<{
   ctaText?: string;
 }>();
 
-const emit = defineEmits(["signup"]);
+const emit = defineEmits<{
+  (e: "signup", user: User): void;
+}>();
 
 const firstName = ref("");
 const lastName = ref("");
@@ -123,6 +126,7 @@ const {
   isError,
   error,
   isSuccess,
+  data: newUser,
 } = useRegister();
 
 const firstInput = computed(() => {
@@ -141,8 +145,8 @@ const firstInput = computed(() => {
 watch(
   () => isSuccess.value,
   async (success) => {
-    if (success) {
-      emit("signup");
+    if (success && newUser.value) {
+      emit("signup", newUser.value);
     }
   },
 );

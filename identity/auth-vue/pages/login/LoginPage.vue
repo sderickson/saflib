@@ -72,10 +72,13 @@ import { useLogin } from "../../requests/auth.ts";
 import { login_page } from "./LoginPage.strings.ts";
 import { authLinks } from "@saflib/identity-links";
 import { SpaLink } from "@saflib/vue-spa";
+import type { User } from "@saflib/identity-spec";
 
-const emit = defineEmits(["login"]);
+const emit = defineEmits<{
+  (e: "login", user: User): void;
+}>();
 
-const { mutateAsync: login, isError, isPending } = useLogin();
+const { mutateAsync: login, isError, data: user, isPending } = useLogin();
 
 const email = ref("");
 const password = ref("");
@@ -87,7 +90,9 @@ const handleLogin = async () => {
 
   try {
     await login({ email: email.value, password: password.value });
-    emit("login");
+    if (user.value) {
+      emit("login", user.value);
+    }
   } catch (error) {}
 };
 </script>
