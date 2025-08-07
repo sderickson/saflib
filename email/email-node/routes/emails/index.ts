@@ -13,7 +13,6 @@ export function createEmailsRouter(options: EmailsRouterOptions = {}) {
   const preMiddleware = createPreMiddleware({
     apiSpec: options.apiSpec || jsonSpec,
     authRequired: false,
-    subsystemName: "emails",
   });
 
   router.use("/email", preMiddleware);

@@ -48,7 +48,6 @@ export function createCronRouter(options: CronServiceOptions) {
     "/cron",
     createPreMiddleware({
       apiSpec: jsonSpec,
-      subsystemName: options.subsystemName,
     }),
   );
   router.use("/cron", cronRouter);

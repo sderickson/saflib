@@ -19,7 +19,6 @@ import { cronMetric, type CronLabels } from "./metrics.ts";
 // --- Helper Function for Job Execution and Error Handling ---
 
 async function executeJobWithHandling(
-  subsystemName: string,
   jobName: string,
   jobConfig: JobConfig,
   dbKey: DbKey,
@@ -28,7 +27,7 @@ async function executeJobWithHandling(
   const context: SafContext = {
     requestId: reqId,
     serviceName: getServiceName(),
-    subsystemName,
+    subsystemName: "cron",
     operationName: jobName,
   };
   const reporters: SafReporters = {
@@ -121,7 +120,6 @@ async function executeJobWithHandling(
 
 // --- Main Job Scheduling Logic ---
 interface StartJobConfig {
-  subsystemName: string;
   dbKey: DbKey;
 }
 
@@ -129,10 +127,7 @@ export const startJobs = async (
   jobsToStart: JobsMap,
   config: StartJobConfig,
 ) => {
-  const { log, logError } = makeSubsystemReporters(
-    config.subsystemName,
-    "startJobs",
-  );
+  const { log, logError } = makeSubsystemReporters("cron", "startJobs");
   const { dbKey } = config;
   for (const [jobName, jobConfig] of Object.entries(jobsToStart)) {
     const { error } = await cronDb.jobSettings.getByName(dbKey, jobName);
@@ -165,12 +160,7 @@ export const startJobs = async (
             return;
           }
 
-          await executeJobWithHandling(
-            config.subsystemName,
-            jobName,
-            jobConfig,
-            dbKey,
-          );
+          await executeJobWithHandling(jobName, jobConfig, dbKey);
         } catch (error) {
           logError(error);
         }

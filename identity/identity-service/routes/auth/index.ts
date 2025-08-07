@@ -27,7 +27,6 @@ export const makeAuthRouter = () => {
     createPreMiddleware({
       apiSpec: jsonSpec,
       authRequired: false,
-      subsystemName: "auth",
     }),
   );
 

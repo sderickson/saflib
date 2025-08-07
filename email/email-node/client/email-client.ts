@@ -10,8 +10,8 @@ export const mockingOn =
 
 setImmediate(() => {
   const logger = createLogger({
-    subsystemName: "email-node",
-    operationName: "init",
+    subsystemName: "init",
+    operationName: "initEmailClient",
   });
 
   logger.info("Email: " + (mockingOn ? "MOCKED" : "LIVE"));

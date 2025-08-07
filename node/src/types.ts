@@ -6,6 +6,14 @@ export interface Auth {
   userScopes: string[];
 }
 
+export type SubsystemName =
+  | "http" // an http server, typically express
+  | "grpc" // a grpc server
+  | "cron" // a cron process running jobs in the background (no server)
+  | "init" // code that's running on startup
+  | "cli" // running as part of a CLI command
+  | "test"; // running as part of a test;
+
 /**
  * Static, serializable context about what's currently going on.
  * These should always be available in backend systems.
@@ -28,16 +36,10 @@ export interface SafContext {
 
   /*
    * Format: "{subsystem}"
-   * e.g. "http" or "grpc". Can be namespaced, like:
-   * - "http.email": an express router with apis that begin with /email/*
-   * - "grpc.schedule": a gRPC service called "Schedule".
-   * - "cron.clean": a set of cron jobs that regularly delete old data.
-   * - "task.campaigns": async tasks queues associated with emails, SMS, etc.
-   * - "ws.notifications": websocket for notifications.
    *
    * Basically, a single server or long-running "process".
    */
-  subsystemName: string;
+  subsystemName: SubsystemName;
 
   /*
    * Format: "{method_name}"

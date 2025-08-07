@@ -1,5 +1,5 @@
 import { createLogger } from "./logger.ts";
-import type { SafReporters } from "./types.ts";
+import type { SafReporters, SubsystemName } from "./types.ts";
 import { AsyncLocalStorage } from "async_hooks";
 import { makeSubsystemErrorReporter } from "./errors.ts";
 import { typedEnv } from "@saflib/env";
@@ -22,7 +22,7 @@ export const getSafReporters = (): SafReporters => {
 };
 
 export const makeSubsystemReporters = (
-  subsystemName: string,
+  subsystemName: SubsystemName,
   operationName: string,
 ): SafReporters => {
   const logger = createLogger({
