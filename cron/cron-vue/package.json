@@ -1,0 +1,16 @@
+{
+  "name": "@saflib/cron-vue",
+  "description": "Admin frontend for the cron service",
+  "private": true,
+  "type": "module",
+  "main": "./index.ts",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
+  },
+  "dependencies": {
+    "@saflib/vue-spa": "*",
+    "@saflib/cron-spec": "*"
+  }
+}

@@ -3,7 +3,7 @@ import {
   stubGlobals,
   mountWithPlugins,
   setupMockServer,
-} from "@saflib/vue-spa-dev/components";
+} from "@saflib/vue-spa/testing";
 import { type VueWrapper } from "@vue/test-utils";
 import HomePageAsync from "./HomePageAsync.vue";
 import { home_page as strings } from "./HomePage.strings.ts";

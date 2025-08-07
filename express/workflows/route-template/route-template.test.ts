@@ -3,7 +3,7 @@ import { describe, it, expect, beforeEach } from "vitest";
 import request from "supertest";
 import express from "express";
 // import { createApp } from "../../app.ts";
-import { makeUserHeaders } from "@saflib/node-express-dev/vitest-helpers.ts";
+import { makeUserHeaders } from "@saflib/express/vitest-helpers";
 
 describe("routeTemplate", () => {
   let app: express.Express;

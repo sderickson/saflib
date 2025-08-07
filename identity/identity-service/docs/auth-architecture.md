@@ -26,7 +26,7 @@ The authentication system uses a combination of cookies-session-based auth (for 
   - Common middleware for SAF Node.js services
   - Middleware for parsing authentication headers (auth.ts)
   - Middleware for enforcing api scopes (openapi.ts)
-- `@saflib/openapi-specs`:
+- `@saflib/openapi`:
   - Docs and dependencies you can use to generate your own specs with scopes
 
 ## Header Flow

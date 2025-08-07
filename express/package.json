@@ -2,7 +2,6 @@
   "name": "@saflib/express",
   "description": "Shared Express.js utilities for SAF services",
   "type": "module",
-  "main": "./src/index.ts",
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
@@ -22,11 +21,17 @@
     "morgan": "^1.0.0"
   },
   "devDependencies": {
-    "@saflib/node-express-dev": "*",
-    "@saflib/vitest": "*"
+    "@saflib/vitest": "*",
+    "@types/supertest": "^6.0.0",
+    "@types/cors": "^2.0.0",
+    "@types/express": "^5.0.0",
+    "@types/http-errors": "^2.0.0",
+    "@types/morgan": "^1.0.0",
+    "supertest": "^7.0.0"
   },
   "exports": {
     ".": "./src/index.ts",
-    "./workflows": "./workflows/index.ts"
+    "./workflows": "./workflows/index.ts",
+    "./vitest-helpers": "./vitest-helpers.ts"
   }
 }

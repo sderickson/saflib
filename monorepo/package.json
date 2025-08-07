@@ -5,6 +5,15 @@
   "exports": {
     ".": "./index.ts",
     "./workflows": "./workflows/index.ts",
-    "./tsconfig.json": "./tsconfig.json"
+    "./tsconfig.json": "./tsconfig.json",
+    "./eslint.config.js": "./eslint.config.js"
+  },
+  "devDependencies": {
+    "globals": "^16",
+    "eslint": "^9.0.0",
+    "eslint-config-prettier": "^10.0.0",
+    "eslint-plugin-vue": "^10.0.0",
+    "typescript-eslint": "^8.0.0",
+    "prettier": "^3.0.0"
   }
 }

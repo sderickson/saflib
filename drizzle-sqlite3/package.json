@@ -21,7 +21,7 @@
     "drizzle-orm": "^0.44.0"
   },
   "devDependencies": {
-    "@saflib/drizzle-sqlite3-dev": "*",
-    "@saflib/vitest": "*"
+    "@saflib/vitest": "*",
+    "@types/better-sqlite3": "^7.0.0"
   }
 }

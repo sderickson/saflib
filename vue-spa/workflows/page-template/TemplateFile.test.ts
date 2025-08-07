@@ -3,7 +3,7 @@ import {
   stubGlobals,
   mountWithPlugins,
   setupMockServer,
-} from "@saflib/vue-spa-dev/components";
+} from "@saflib/vue-spa/testing";
 import { type VueWrapper } from "@vue/test-utils";
 import TemplateFileAsync from "./TemplateFileAsync.vue";
 import { template_file as strings } from "./TemplateFile.strings.ts";

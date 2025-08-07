@@ -112,7 +112,7 @@ describe("getAllPackageWorkspaceDependencies", () => {
         "@saflib/vue-spa",
         "@saflib/auth-vue",
         "@saflib/identity-spec",
-        "@saflib/openapi-specs",
+        "@saflib/openapi",
       ]),
     );
   });

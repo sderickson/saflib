@@ -9,7 +9,9 @@
     "./tsconfig.json": "./tsconfig.json",
     "./tsconfig.node.json": "./tsconfig.node.json",
     "./workflows": "./workflows/index.ts",
-    "./tanstack": "./tanstack.ts"
+    "./tanstack": "./tanstack.ts",
+    "./testing": "./testing/index.ts",
+    "./vitest-config": "./testing/vitest-config.js"
   },
   "scripts": {
     "typecheck": "tsc --project tsconfig.app.json"
@@ -31,6 +33,12 @@
   "devDependencies": {
     "@saflib/monorepo-dev": "*",
     "@saflib/vitest": "*",
-    "@saflib/workflows": "*"
+    "@saflib/workflows": "*",
+    "@vue/test-utils": "^2.0.0",
+    "jsdom": "^26.0.0",
+    "sass-embedded": "^1.0.0",
+    "vite-plugin-vuetify": "^2.0.0",
+    "msw": "^2.0.0",
+    "vue-tsc": "^3.0.0"
   }
 }

@@ -36,9 +36,6 @@ service/
    {
      "dependencies": {
        "@saflib/node-express": "*"
-     },
-     "devDependencies": {
-       "@saflib/node-express-dev": "*"
      }
    }
    ```
