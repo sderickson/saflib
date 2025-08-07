@@ -8,7 +8,6 @@ export const makeUsersRouter = () => {
   router.use(
     createPreMiddleware({
       apiSpec: jsonSpec,
-      subsystemName: "users",
     }),
   );
 

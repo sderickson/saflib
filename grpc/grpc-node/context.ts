@@ -26,14 +26,11 @@ export type SafServiceImplementationWrapper = (
 
 export const addSafContext: SafServiceImplementationWrapper = (
   impl,
-  definition,
+  _definition,
 ) => {
   const wrappedService: UntypedServiceImplementation = {};
 
   for (const [methodName, methodImpl] of Object.entries(impl)) {
-    const serviceName = definition[methodName].path.split("/")[1];
-    const subsystemName = "grpc." + serviceName;
-
     const impl = methodImpl as handleUnaryCall<any, any>;
     const wrappedMethod: handleUnaryCall<any, any> = (call, callback) => {
       // Create the context for this request
@@ -57,7 +54,7 @@ export const addSafContext: SafServiceImplementationWrapper = (
       const context: SafContext = {
         requestId: reqId,
         serviceName: getServiceName(),
-        subsystemName,
+        subsystemName: "grpc",
         operationName: methodName,
         auth,
       };

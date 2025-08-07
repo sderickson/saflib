@@ -10,7 +10,7 @@ import {
 } from "@saflib/node";
 import type { Handler } from "express";
 
-export const makeContextMiddleware = (subsystemName: string) => {
+export const makeContextMiddleware = () => {
   const contextMiddleware: Handler = (req, _res, next) => {
     const operationName =
       req.openapi?.schema.operationId ??
@@ -37,7 +37,7 @@ export const makeContextMiddleware = (subsystemName: string) => {
     const context: SafContext = {
       requestId: reqId,
       serviceName: getServiceName(),
-      subsystemName,
+      subsystemName: "http",
       operationName,
       auth,
     };

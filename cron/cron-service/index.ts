@@ -23,7 +23,7 @@ export function main(options: CronServiceOptions) {
     log.info("Connecting to cron DB...");
     const dbKey = options.dbKey ?? cronDb.connect(options.dbOptions);
     log.info("Starting jobs...");
-    startJobs(options.jobs, { subsystemName: "cron", dbKey });
+    startJobs(options.jobs, { dbKey });
     log.info("Cron service startup complete.");
   } catch (error) {
     logError(error);

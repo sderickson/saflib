@@ -96,8 +96,8 @@ export function runWorkflowCli(workflows: WorkflowMeta[]) {
   const ctx: SafContext = {
     requestId: reqId,
     serviceName: "workflows",
-    operationName: "workflow-cli",
-    subsystemName: "workflows",
+    operationName: "N/A",
+    subsystemName: "cli",
   };
 
   const reporters: SafReporters = {

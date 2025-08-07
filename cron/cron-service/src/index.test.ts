@@ -44,10 +44,7 @@ describe("startJobs", () => {
 
   it("should create default disabled setting if job doesn't exist in DB", async () => {
     // Pass the local db instance to startJobs
-    await startJobs(
-      { "new-job": mockJobs["new-job"] },
-      { subsystemName: "test", dbKey },
-    );
+    await startJobs({ "new-job": mockJobs["new-job"] }, { dbKey });
     const setting = await throwError(
       cronDb.jobSettings.getByName(dbKey, "new-job"),
     ); // Assert on local db
@@ -71,10 +68,7 @@ describe("startJobs", () => {
         }),
       );
     // Pass the local db instance
-    await startJobs(
-      { "fail-job": mockJobs["fail-job"] },
-      { subsystemName: "test", dbKey },
-    );
+    await startJobs({ "fail-job": mockJobs["fail-job"] }, { dbKey });
 
     // Check that the specific error was logged
     expect(logSpy).toHaveBeenCalledWith(
@@ -93,7 +87,7 @@ describe("startJobs", () => {
   it("should run enabled job on schedule tick", async () => {
     await startJobs(
       { "every-second-job": mockJobs["every-second-job"] },
-      { subsystemName: "test", dbKey },
+      { dbKey },
     );
     // Ensure the job is enabled in the DB for this test
     await cronDb.jobSettings.setEnabled(dbKey, "every-second-job", true);
@@ -110,10 +104,7 @@ describe("startJobs", () => {
 
   it("should not run disabled job on schedule tick", async () => {
     await cronDb.jobSettings.setEnabled(dbKey, "disabled-job", false);
-    await startJobs(
-      { "disabled-job": mockJobs["disabled-job"] },
-      { subsystemName: "test", dbKey },
-    );
+    await startJobs({ "disabled-job": mockJobs["disabled-job"] }, { dbKey });
     await vi.advanceTimersByTimeAsync(1000);
     expect(mockJobs["disabled-job"].handler).not.toHaveBeenCalled();
     const setting = await throwError(
@@ -126,7 +117,7 @@ describe("startJobs", () => {
   it("should update status to running, then success on successful run", async () => {
     await startJobs(
       { "every-second-job": mockJobs["every-second-job"] },
-      { subsystemName: "test", dbKey },
+      { dbKey },
     );
     // Ensure the job is enabled in the DB for this test
     await cronDb.jobSettings.setEnabled(dbKey, "every-second-job", true);
@@ -145,7 +136,7 @@ describe("startJobs", () => {
     mockJobHandler.mockRejectedValueOnce(handlerError);
     await startJobs(
       { "every-second-job": mockJobs["every-second-job"] },
-      { subsystemName: "test", dbKey },
+      { dbKey },
     );
     await cronDb.jobSettings.setEnabled(dbKey, "every-second-job", true);
 
@@ -173,7 +164,7 @@ describe("startJobs", () => {
 
     await startJobs(
       { "every-minute-job": mockJobs["every-minute-job"] },
-      { subsystemName: "test", dbKey },
+      { dbKey },
     );
     await vi.advanceTimersByTimeAsync(1000 * 62); // Trigger the job's onTick and timeout
     const setting = await throwError(
@@ -195,10 +186,7 @@ describe("startJobs", () => {
         }),
     );
 
-    await startJobs(
-      { "timeout-default-job": jobConfig },
-      { subsystemName: "test", dbKey },
-    );
+    await startJobs({ "timeout-default-job": jobConfig }, { dbKey });
     await cronDb.jobSettings.setEnabled(dbKey, "timeout-default-job", true);
 
     await vi.advanceTimersByTimeAsync(1000 * 70); // Trigger the job
@@ -235,7 +223,7 @@ describe("startJobs", () => {
 
     await startJobs(
       { "every-second-job": mockJobs["every-second-job"] },
-      { subsystemName: "test", dbKey },
+      { dbKey },
     );
     await cronDb.jobSettings.setEnabled(dbKey, "every-second-job", true);
 

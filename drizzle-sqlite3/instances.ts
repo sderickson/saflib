@@ -31,10 +31,7 @@ export class DbManager<S extends Schema, C extends Config> {
    * If onDisk is a string, the database will be created at the given (absolute) path.
    */
   connect = (options?: DbOptions): DbKey => {
-    const { log } = makeSubsystemReporters(
-      options?.name ? `db.${options.name}` : "db",
-      "connect",
-    );
+    const { log } = makeSubsystemReporters("init", "db.connect");
     log.info("Connecting to database...");
     let dbStorage = ":memory:";
     if (options?.onDisk === true) {
