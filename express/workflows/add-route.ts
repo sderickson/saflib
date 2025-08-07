@@ -57,10 +57,7 @@ export const AddRouteWorkflowMachine = setup({
     const sourceDir = path.join(__dirname, "route-template");
     const targetDir = path.dirname(path.join(process.cwd(), input.path));
     const refDoc = path.resolve(__dirname, "../docs/02-adding-routes.md");
-    const testingGuide = path.resolve(
-      __dirname,
-      "../../node-express-dev/docs/01-test-routes.md",
-    );
+    const testingGuide = path.resolve(__dirname, "../docs/03-test-routes.md");
     const featureName = path.basename(targetDir);
     const featureRouterPath = path.join(targetDir, "index.ts");
     const pascalFeatureName = kebabCaseToPascalCase(featureName);
@@ -195,12 +192,8 @@ export const AddRouteWorkflowMachine = setup({
       invoke: {
         input: ({ context }) => context,
         src: fromPromise(async ({ input }) => {
-          const {
-            featureRouterPath,
-            pascalFeatureName,
-            camelName,
-            name,
-          } = input;
+          const { featureRouterPath, pascalFeatureName, camelName, name } =
+            input;
           if (!existsSync(featureRouterPath)) {
             const routerContent = `import express from "express";
 import { ${camelName} } from "./${name}.ts";
