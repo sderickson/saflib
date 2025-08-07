@@ -1,5 +1,8 @@
 import { describe, it, expect } from "vitest";
-import { stubGlobals, mountWithPlugins } from "@saflib/vue-spa-dev/components";
+import {
+  stubGlobals,
+  mountWithPlugins,
+} from "../../../../vue-spa/testing/components.ts";
 import { type VueWrapper } from "@vue/test-utils";
 import RegisterPage from "./RegisterPage.vue";
 import { createAuthRouter } from "../../auth-router.ts";

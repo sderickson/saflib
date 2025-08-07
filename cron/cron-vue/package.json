@@ -12,8 +12,5 @@
   "dependencies": {
     "@saflib/vue-spa": "*",
     "@saflib/cron-spec": "*"
-  },
-  "devDependencies": {
-    "@saflib/vue-spa-dev": "*"
   }
 }

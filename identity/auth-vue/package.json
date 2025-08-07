@@ -16,9 +16,6 @@
     "@saflib/vue-spa": "*",
     "@saflib/identity-spec": "*"
   },
-  "devDependencies": {
-    "@saflib/vue-spa-dev": "*"
-  },
   "saflib": {
     "group": "auth"
   }

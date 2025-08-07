@@ -14,10 +14,10 @@ This guide focuses on how to effectively test your TanStack Query integration in
 
 ## Testing Setup
 
-To test TanStack Query integration, set up a proper environment using the `withVueQuery` helper from `@saflib/vue-spa-dev/requests.js`. This provides a QueryClient and a Vue app context for your tests.
+To test TanStack Query integration, set up a proper environment using the `withVueQuery` helper from `@saflib/vue-spa/testing`. This provides a QueryClient and a Vue app context for your tests.
 
 ```typescript
-import { withVueQuery } from "@saflib/vue-spa-dev/requests.js";
+import { withVueQuery } from "@saflib/vue-spa/testing";
 
 const [mutation, app, queryClient] = withVueQuery(() => useCreateFeature());
 const [query] = withVueQuery(() => useQuery(getFeature()));

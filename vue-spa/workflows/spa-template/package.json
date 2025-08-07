@@ -14,9 +14,5 @@
   },
   "dependencies": {
     "@saflib/vue-spa": "*"
-  },
-  "devDependencies": {
-    "@saflib/vue-spa-dev": "*",
-    "@saflib/vitest": "*"
   }
 }

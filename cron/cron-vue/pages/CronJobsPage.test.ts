@@ -3,7 +3,7 @@ import {
   stubGlobals,
   mountWithPlugins,
   setupMockServer,
-} from "@saflib/vue-spa-dev/components";
+} from "@saflib/vue-spa/testing";
 import { type VueWrapper } from "@vue/test-utils";
 import { http, HttpResponse, type PathParams } from "msw";
 import type { CronResponse, CronRequest } from "@saflib/cron-spec"; // Assuming types are available

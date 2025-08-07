@@ -30,10 +30,10 @@ This makes it easy to find tests and keeps them close to the code they're testin
 
 ```typescript
 import { describe, it, expect, vi } from "vitest";
-import { stubGlobals, mountWithPlugins } from "@saflib/vue-spa-dev/components";
+import { stubGlobals, mountWithPlugins } from "@saflib/vue-spa/testing";
 import { type VueWrapper } from "@vue/test-utils";
 import { http, HttpResponse } from "msw";
-import { setupMockServer } from "@saflib/vue-spa-dev/components";
+import { setupMockServer } from "@saflib/vue-spa/testing";
 import YourComponent from "./YourComponent.vue";
 import { router } from "../router"; // Import your app's router
 
@@ -92,7 +92,7 @@ We provide several test utilities to simplify component testing, especially with
 Always use `stubGlobals()` at the start of your test suite to set up necessary global mocks:
 
 ```typescript
-import { stubGlobals } from "@saflib/vue-spa-dev/components";
+import { stubGlobals } from "@saflib/vue-spa/testing";
 
 describe("YourComponent", () => {
   stubGlobals();
@@ -114,7 +114,7 @@ We use MSW (Mock Service Worker) to mock network requests at the HTTP level. Thi
 
 ```typescript
 import { http, HttpResponse } from "msw";
-import { setupMockServer } from "@saflib/vue-spa-dev/components";
+import { setupMockServer } from "@saflib/vue-spa/testing";
 
 const handlers = [
   http.post("http://api.localhost:3000/endpoint", async () => {
@@ -164,7 +164,7 @@ it("should show success message after API call", async () => {
 The `mountWithPlugins` function simplifies mounting components that use Vuetify and other plugins like Vue Router:
 
 ```typescript
-import { mountWithPlugins } from "@saflib/vue-spa-dev/components";
+import { mountWithPlugins } from "@saflib/vue-spa/testing";
 import { router } from "../router";
 
 const mountComponent = () => {
@@ -554,10 +554,10 @@ This ensures the component receives the correct route configuration during testi
 
 ```typescript
 import { describe, it, expect, vi } from "vitest";
-import { stubGlobals, mountWithPlugins } from "@saflib/vue-spa-dev/components";
+import { stubGlobals, mountWithPlugins } from "@saflib/vue-spa/testing";
 import { type VueWrapper } from "@vue/test-utils";
 import { http, HttpResponse } from "msw";
-import { setupMockServer } from "@saflib/vue-spa-dev/components";
+import { setupMockServer } from "@saflib/vue-spa/testing";
 import LoginForm from "../LoginForm.vue";
 import { router } from "../router";
 import type { LoginRequest, UserResponse } from "../requests/types";

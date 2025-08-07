@@ -1,8 +1,11 @@
 import { describe, it, expect, vi } from "vitest";
-import { stubGlobals, mountWithPlugins } from "@saflib/vue-spa-dev/components";
+import {
+  stubGlobals,
+  mountWithPlugins,
+  setupMockServer,
+} from "@saflib/vue-spa/testing";
 import { type VueWrapper } from "@vue/test-utils";
 import { http, HttpResponse } from "msw";
-import { setupMockServer } from "@saflib/vue-spa-dev/components";
 import VerifyEmailPage from "./VerifyEmailPage.vue";
 import { createAuthRouter } from "../../auth-router.ts";
 
