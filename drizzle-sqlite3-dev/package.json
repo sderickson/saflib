@@ -1,8 +1,0 @@
-{
-  "name": "@saflib/drizzle-sqlite3-dev",
-  "description": "Shared testing and type dependencies and utilities for SAF drizzle-sqlite3 libraries",
-  "dependencies": {
-    "@types/better-sqlite3": "^7.0.0",
-    "@types/node": "^24.0.0"
-  }
-}

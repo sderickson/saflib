@@ -17,7 +17,6 @@
     "drizzle-kit": "*"
   },
   "devDependencies": {
-    "@saflib/drizzle-sqlite3-dev": "*",
     "@saflib/vitest": "*"
   }
 }

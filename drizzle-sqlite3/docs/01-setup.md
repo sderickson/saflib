@@ -45,7 +45,6 @@ package-name/
     "@saflib/drizzle-sqlite3": "*"
   },
   "devDependencies": {
-    "@saflib/drizzle-sqlite3-dev": "*",
     "@saflib/vitest": "*"
   }
 }
