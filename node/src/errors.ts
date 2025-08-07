@@ -59,6 +59,10 @@ export const defaultErrorReporter: ErrorReporter = (error, options) => {
   log.log(winstonLevel, e.message, {
     ...options?.extra,
   });
+
+  if (winstonLevel === "error") {
+    console.error(e.stack);
+  }
 };
 
 /**
