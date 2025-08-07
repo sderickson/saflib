@@ -13,7 +13,7 @@
     "typecheck": "tsc"
   },
   "dependencies": {
-    "@saflib/openapi-specs": "*"
+    "@saflib/openapi": "*"
   },
   "files": [
     "dist"

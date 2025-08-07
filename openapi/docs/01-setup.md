@@ -36,7 +36,7 @@ Create a `package.json` with the following structure:
     "generate": "npm run generate:types && npm run generate:json && npm run generate:html"
   },
   "devDependencies": {
-    "@saflib/openapi-specs": "*"
+    "@saflib/openapi": "*"
   },
   "files": ["dist"]
 }
@@ -53,7 +53,7 @@ import type { paths, operations } from "./dist/openapi.d.ts"; // Import paths an
 import type {
   ExtractRequestSchema,
   ExtractResponseSchema,
-} from "@saflib/openapi-specs"; // Import helper types (adjust path if needed)
+} from "@saflib/openapi"; // Import helper types (adjust path if needed)
 
 // Export the JSON spec for middleware
 export const jsonSpec = json.default as unknown as OpenAPIV3.Document;
@@ -233,7 +233,7 @@ properties:
 ```
 
 4. **Referencing Shared Schemas (e.g., Error Schema):**
-   To use schemas defined in shared packages (like the standard error schema in `@saflib/openapi-specs`), create a local intermediary schema file (e.g., `schemas/error.yaml`) within your spec package:
+   To use schemas defined in shared packages (like the standard error schema in `@saflib/openapi`), create a local intermediary schema file (e.g., `schemas/error.yaml`) within your spec package:
 
    ```yaml
    # <your-spec-package>/schemas/error.yaml

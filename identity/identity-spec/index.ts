@@ -5,7 +5,7 @@ import {
   type ExtractResponseBody,
   type ExtractRequestBody,
   castJson,
-} from "@saflib/openapi-specs";
+} from "@saflib/openapi";
 
 export type AuthResponse = ExtractResponseBody<operations>;
 export type AuthRequest = ExtractRequestBody<operations>;

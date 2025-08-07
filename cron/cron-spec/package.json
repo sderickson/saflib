@@ -11,7 +11,7 @@
     "generate": "npm run generate:types && npm run generate:json && npm run generate:html"
   },
   "dependencies": {
-    "@saflib/openapi-specs": "*"
+    "@saflib/openapi": "*"
   },
   "devDependencies": {
     "openapi-types": "*"

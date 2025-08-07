@@ -5,7 +5,7 @@ import {
   type ExtractRequestQueryParams,
   type ExtractResponseBody,
   castJson,
-} from "@saflib/openapi-specs";
+} from "@saflib/openapi";
 
 // Export the JSON spec for middleware
 export const jsonSpec = castJson(json);
