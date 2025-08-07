@@ -3,11 +3,5 @@
   "description": "Shared testing and type dependencies and utilities for SAF services",
   "type": "module",
   "dependencies": {
-    "@types/supertest": "^6.0.0",
-    "@types/cors": "^2.0.0",
-    "@types/express": "^5.0.0",
-    "@types/http-errors": "^2.0.0",
-    "@types/morgan": "^1.0.0",
-    "supertest": "^7.0.0"
   }
 }
