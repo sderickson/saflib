@@ -1,5 +1,3 @@
-import type { I18nMessages } from ".";
-
 export const makeStringToKeyMap = (
   strings: I18nMessages,
   acc: Record<string, string> = {},
@@ -7,6 +5,11 @@ export const makeStringToKeyMap = (
 ) => {
   return Object.entries(strings).reduce((acc, [key, value]) => {
     if (typeof value === "string") {
+      if (acc[value]) {
+        console.warn(
+          `Duplicate string entries for "${value}" in ${prefix + key} and ${acc[value]}`,
+        );
+      }
       acc[value] = prefix + key;
     } else if (Array.isArray(value)) {
       for (const item of value) {
@@ -18,3 +21,7 @@ export const makeStringToKeyMap = (
     return acc;
   }, acc);
 };
+
+export interface I18nMessages {
+  [key: string]: string | Array<I18nMessages> | I18nMessages;
+}

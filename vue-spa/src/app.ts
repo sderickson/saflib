@@ -1,6 +1,3 @@
-export { AsyncPage } from "./tricky-imports.ts";
-export * from "./types.ts";
-export { default as SpaLink } from "./SpaLink.vue";
 import { createTanstackQueryClient } from "./tanstack.ts";
 import { createApp, type Component } from "vue";
 import { createVuetify, type VuetifyOptions } from "vuetify";
@@ -9,26 +6,8 @@ import {
   type VueQueryPluginOptions,
 } from "@tanstack/vue-query";
 import type { Router } from "vue-router";
-export * from "./tanstack.ts";
-export * from "./events.ts";
-import "./assets.d.ts";
 import { createI18n } from "vue-i18n";
-import { makeStringToKeyMap } from "./strings.ts";
-
-type MessagesObject = Parameters<typeof createI18n>[0];
-
-const defaultMessages: MessagesObject = {
-  locale: "en",
-  messages: {
-    en: {
-      hello: "Hello, world",
-    },
-  },
-};
-
-export interface I18nMessages {
-  [key: string]: string | Array<I18nMessages> | I18nMessages;
-}
+import { makeStringToKeyMap, type I18nMessages } from "./strings.ts";
 
 interface CreateVueAppOptions {
   router: Router;
@@ -55,7 +34,7 @@ export const createVueApp = (
   };
   app.use(VueQueryPlugin, options);
 
-  let messages = defaultMessages;
+  let messages = {};
   if (i18nMessages) {
     messages = {
       locale: "en",
@@ -78,11 +57,4 @@ export const createVueApp = (
 
   app.mount("#app");
   return createApp(app);
-};
-
-// Import this here so that typescript is okay with accessing import.meta.env
-// @ts-expect-error - vite/client is not a module
-import type { ImportMetaEnv as _ImportMetaEnv } from "vite/client";
-export const getViteEnv = () => {
-  return import.meta.env;
 };
