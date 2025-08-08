@@ -4,7 +4,7 @@ import { login_page } from "./pages/login/LoginPage.strings";
 import { register_page } from "./pages/register/RegisterPage.strings";
 import { verify_email_page } from "./pages/verify-email/VerifyEmailPage.strings";
 
-export const strings = {
+export const authAppStrings = {
   change_forgotten_password_page,
   forgot_password_page,
   login_page,
