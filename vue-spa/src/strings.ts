@@ -1,3 +1,5 @@
+import { useI18n } from "vue-i18n";
+
 export const makeStringToKeyMap = (
   strings: I18nMessages,
   acc: Record<string, string> = {},
@@ -25,3 +27,13 @@ export const makeStringToKeyMap = (
 export interface I18nMessages {
   [key: string]: string | Array<I18nMessages> | I18nMessages;
 }
+
+export const makeReverseTComposable = (strings: I18nMessages) => {
+  const stringToKeyMap = makeStringToKeyMap(strings);
+  return () => {
+    const { t } = useI18n();
+    return (s: string) => {
+      return t(stringToKeyMap[s] ?? s);
+    };
+  };
+};
