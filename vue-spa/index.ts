@@ -12,16 +12,34 @@ import type { Router } from "vue-router";
 export * from "./tanstack.ts";
 export * from "./events.ts";
 import "./assets.d.ts";
+import { createI18n } from "vue-i18n";
+import { makeStringToKeyMap } from "./strings.ts";
+
+type MessagesObject = Parameters<typeof createI18n>[0];
+
+const defaultMessages: MessagesObject = {
+  locale: "en",
+  messages: {
+    en: {
+      hello: "Hello, world",
+    },
+  },
+};
+
+export interface I18nMessages {
+  [key: string]: string | Array<I18nMessages> | I18nMessages;
+}
 
 interface CreateVueAppOptions {
   router: Router;
   vuetifyConfig?: VuetifyOptions;
   callback?: (app: ReturnType<typeof createApp>) => void;
+  i18nMessages?: I18nMessages;
 }
 
 export const createVueApp = (
   Application: Component,
-  { router, vuetifyConfig, callback }: CreateVueAppOptions,
+  { router, vuetifyConfig, callback, i18nMessages }: CreateVueAppOptions,
 ) => {
   const vuetify = createVuetify(vuetifyConfig);
   const app = createApp(Application);
@@ -36,6 +54,23 @@ export const createVueApp = (
     queryClient,
   };
   app.use(VueQueryPlugin, options);
+
+  let messages = defaultMessages;
+  if (i18nMessages) {
+    messages = {
+      locale: "en",
+      messages: {
+        en: i18nMessages,
+      },
+    };
+  }
+
+  const i18n = createI18n(messages);
+  console.log(
+    "string to key map",
+    JSON.stringify(makeStringToKeyMap(i18nMessages ?? {}), null, 2),
+  );
+  app.use(i18n);
 
   if (callback) {
     callback(app);
