@@ -7,7 +7,7 @@ export const makeStringToKeyMap = (
 ) => {
   return Object.entries(strings).reduce((acc, [key, value]) => {
     if (typeof value === "string") {
-      if (acc[value]) {
+      if (acc[value] && process.env.NODE_ENV !== "test") {
         console.warn(
           `Duplicate string entries for "${value}" in ${prefix + key} and ${acc[value]}`,
         );
@@ -33,6 +33,11 @@ export const makeReverseTComposable = (strings: I18nMessages) => {
   return () => {
     const { t } = useI18n();
     return (s: string) => {
+      // in tests, simply pass back the given string
+      // this is to avoid needing to provide the above set of strings to the app on creation
+      if (process.env.NODE_ENV === "test") {
+        return s;
+      }
       return t(stringToKeyMap[s] ?? s);
     };
   };
