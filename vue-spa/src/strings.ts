@@ -14,8 +14,12 @@ export const makeStringToKeyMap = (
       }
       acc[value] = prefix + key;
     } else if (Array.isArray(value)) {
-      for (const item of value) {
-        acc = makeStringToKeyMap(item, acc, prefix + key + ".");
+      for (const i in value) {
+        if (typeof value[i] === "string") {
+          acc[value[i]] = prefix + key + "." + i;
+        } else {
+          acc = makeStringToKeyMap(value[i], acc, prefix + key + ".");
+        }
       }
     } else if (typeof value === "object") {
       acc = makeStringToKeyMap(value, acc, prefix + key + ".");
@@ -25,7 +29,7 @@ export const makeStringToKeyMap = (
 };
 
 export interface I18nMessages {
-  [key: string]: string | Array<I18nMessages> | I18nMessages;
+  [key: string]: string | string[] | I18nMessages | Array<I18nMessages>;
 }
 
 export const makeReverseTComposable = (strings: I18nMessages) => {
