@@ -7,7 +7,7 @@ import {
 } from "@tanstack/vue-query";
 import type { Router } from "vue-router";
 import { createI18n } from "vue-i18n";
-import { makeStringToKeyMap, type I18nMessages } from "./strings.ts";
+import { type I18nMessages } from "./strings.ts";
 
 interface CreateVueAppOptions {
   router: Router;
@@ -45,10 +45,6 @@ export const createVueApp = (
   }
 
   const i18n = createI18n(messages);
-  console.log(
-    "string to key map",
-    JSON.stringify(makeStringToKeyMap(i18nMessages ?? {}), null, 2),
-  );
   app.use(i18n);
 
   if (callback) {

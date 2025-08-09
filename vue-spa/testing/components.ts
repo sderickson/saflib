@@ -8,6 +8,7 @@ import { createRouter, createMemoryHistory } from "vue-router";
 import { VueQueryPlugin } from "@tanstack/vue-query";
 import { QueryClient } from "@tanstack/vue-query";
 import { createI18n } from "vue-i18n";
+import type { I18nMessages } from "../src/strings";
 
 // GLOBAL MOCK HELPERS -----------------
 
@@ -64,6 +65,7 @@ function stubGlobalsTeardown() {
 
 export interface MountWithPluginsOptions {
   router?: Plugin;
+  i18nMessages?: I18nMessages;
 }
 
 export function mountWithPlugins(
@@ -94,7 +96,7 @@ export function mountWithPlugins(
   const i18n = createI18n({
     locale: "en",
     legacy: false,
-    messages: {},
+    messages: { en: pluginOptions.i18nMessages ?? {} },
   });
 
   return mount(component, {

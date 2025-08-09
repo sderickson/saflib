@@ -32,13 +32,15 @@ export const makeReverseTComposable = (strings: I18nMessages) => {
   const stringToKeyMap = makeStringToKeyMap(strings);
   return () => {
     const { t } = useI18n();
-    return (s: string) => {
-      // in tests, simply pass back the given string
-      // this is to avoid needing to provide the above set of strings to the app on creation
-      if (process.env.NODE_ENV === "test") {
-        return s;
-      }
-      return t(stringToKeyMap[s] ?? s);
+    const lookupTKey = (s: string) => {
+      return stringToKeyMap[s] ?? s;
+    };
+    const wrappedT = (s: string) => {
+      return stringToKeyMap[s] ? t(lookupTKey(s)) : s;
+    };
+    return {
+      t: wrappedT,
+      lookupTKey,
     };
   };
 };
