@@ -11,6 +11,8 @@ import {
   createLogger,
   setServiceName,
 } from "@saflib/node";
+import { format } from "winston";
+import { type TransformableInfo } from "logform";
 
 export function runWorkflowCli(workflows: WorkflowMeta[]) {
   setServiceName("workflows");
@@ -91,6 +93,13 @@ export function runWorkflowCli(workflows: WorkflowMeta[]) {
     log: createLogger({
       subsystemName: "cli",
       operationName: "workflow-cli",
+      format: format.combine(
+        format.colorize({ all: true }),
+        format.printf((info: TransformableInfo) => {
+          const { message } = info;
+          return `${message}`;
+        }),
+      ),
     }),
     logError: defaultErrorReporter,
   };
