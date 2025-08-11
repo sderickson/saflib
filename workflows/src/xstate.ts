@@ -179,7 +179,7 @@ export const workflowActors = {
 
 // utils
 
-const runCommandAsync = (command: string, args: string[]) => {
+export const runCommandAsync = (command: string, args: string[]) => {
   let resolve: (value: string) => void;
   let reject: (error: Error) => void;
   const promise = new Promise<string>((_resolve, _reject) => {

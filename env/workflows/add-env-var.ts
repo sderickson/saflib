@@ -6,7 +6,7 @@ import {
   XStateWorkflow,
   useTemplateStateFactory,
   updateTemplateFileFactory,
-  runEnvCommandFactory,
+  runNpmCommandFactory,
   type TemplateWorkflowContext,
 } from "@saflib/workflows";
 import path from "node:path";
@@ -68,22 +68,22 @@ export const AddEnvVarWorkflowMachine = setup({
     }),
 
     // Install @saflib/env package
-    ...runEnvCommandFactory({
-      command: "install",
+    ...runNpmCommandFactory({
+      command: "install @saflib/env",
       stateName: "installSaflibEnv",
       nextStateName: "generateEnv",
     }),
 
     // Generate env.ts file
-    ...runEnvCommandFactory({
-      command: "generate",
+    ...runNpmCommandFactory({
+      command: "exec saf-env generate",
       stateName: "generateEnv",
       nextStateName: "generateAllEnv",
     }),
 
     // Generate all env files
-    ...runEnvCommandFactory({
-      command: "generate-all",
+    ...runNpmCommandFactory({
+      command: "exec saf-env generate-all",
       stateName: "generateAllEnv",
       nextStateName: "done",
     }),
