@@ -1,18 +1,27 @@
-import { fromPromise, raise, setup } from "xstate";
+import { setup } from "xstate";
 import {
   workflowActionImplementations,
   workflowActors,
   logInfo,
-  type WorkflowContext,
-  logError,
-  promptAgent,
   XStateWorkflow,
+  useTemplateStateFactory,
+  updateTemplateFileFactory,
+  runTestsFactory,
+  promptAgentFactory,
+  type TemplateWorkflowContext,
 } from "@saflib/workflows";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
-interface ToDoWorkflowInput {}
+// TODO: replace this with the actual input for your workflow
+interface ToDoWorkflowInput {
+  name: string;
+}
 
-interface ToDoWorkflowContext extends WorkflowContext {
-  foo: string;
+// TODO: Remove exampleProperty and replace it with the actual context properties your workflow needs
+interface ToDoWorkflowContext extends TemplateWorkflowContext {
+  // Add any additional context properties your workflow needs
+  exampleProperty: string;
 }
 
 export const ToDoWorkflowMachine = setup({
@@ -24,68 +33,80 @@ export const ToDoWorkflowMachine = setup({
   actors: workflowActors,
 }).createMachine({
   id: "to-do",
-  description: "TODO",
-  initial: "examplePromptState",
-  context: (_) => {
+  description: "TODO: Describe what this workflow does",
+  initial: "copyTemplate",
+  context: ({ input }) => {
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = path.dirname(__filename);
+    // TODO: create the template dir and files in there, then update sourceDir to point to it
+    const sourceDir = path.join(__dirname, "template-files");
+    // TODO: replace "output" with where the files should actually go based on the input
+    const targetDir = path.join(process.cwd(), "output");
+
     return {
-      foo: "bar",
+      name: input.name,
+      pascalName: input.name.charAt(0).toUpperCase() + input.name.slice(1),
+      sourceDir,
+      targetDir,
+      exampleProperty: "example value",
       loggedLast: false,
     };
   },
   entry: logInfo("Successfully began workflow"),
+  // TODO: update the states to match the actual workflow you're creating. It will usually involve some combination of copying template files, updating files, and running tests.
   states: {
-    examplePromptState: {
-      entry: raise({ type: "prompt" }),
-      on: {
-        prompt: {
-          actions: [
-            promptAgent(
-              ({ context }) =>
-                `This is a prompt state. It will not continue until the agent triggers the "continue" event. You can incorporate the context into the prompt if you need to like this: ${context.foo}`,
-            ),
-          ],
-        },
-        continue: {
-          target: "exampleAsyncWorkState",
-        },
-      },
-    },
-    exampleAsyncWorkState: {
-      invoke: {
-        input: ({ context }) => context,
-        // @ts-expect-error - TODO remove this line as part of workflow
-        src: fromPromise(async ({ input }: { input: ToDoWorkflowContext }) => {
-          // This promise can do async work such as calling an npm script.
-          // It should reject if the work fails.
-          return "success";
-        }),
-        onDone: {
-          target: "done",
-          actions: logInfo(() => `Work completed successfully.`), // use logInfo to communicate to the agent what is happening.
-        },
-        onError: {
-          actions: [
-            logError(() => `Work failed.`), // use logError to communicate to the agent what is happening.
-            raise({ type: "prompt" }),
-          ],
-        },
-      },
-      on: {
-        prompt: {
-          actions: promptAgent(
-            () =>
-              `Normally, this state will complete itself and not require agentic intervention. However, if the execution fails, the agent will be prompted with this string to fix the problem.`,
-          ),
-        },
-        continue: {
-          // when the agent is done fixing the issue, they'll trigger the workflow tool to "continue" at which point the work will be retried.
-          reenter: true,
-          target: "exampleAsyncWorkState",
-        },
-      },
-    },
+    // First copy over the template files
+    ...useTemplateStateFactory({
+      stateName: "copyTemplate",
+      nextStateName: "updateMainFile",
+    }),
+
+    // Update the main file with your logic
+    ...updateTemplateFileFactory<ToDoWorkflowContext>({
+      filePath: (context) => path.join(context.targetDir, `${context.name}.ts`),
+      promptMessage: (context) =>
+        `Please update ${context.name}.ts to implement the main functionality. Replace any TODO comments with actual implementation.`,
+      stateName: "updateMainFile",
+      nextStateName: "updateConfigFile",
+    }),
+
+    // Update a configuration file
+    ...updateTemplateFileFactory<ToDoWorkflowContext>({
+      filePath: (context) =>
+        path.join(context.targetDir, `${context.name}.config.ts`),
+      promptMessage: (context) =>
+        `Please update ${context.name}.config.ts with the appropriate configuration for this workflow.`,
+      stateName: "updateConfigFile",
+      nextStateName: "updateTests",
+    }),
+
+    // Update the test file
+    ...updateTemplateFileFactory<ToDoWorkflowContext>({
+      filePath: (context) =>
+        path.join(context.targetDir, `${context.name}.test.ts`),
+      promptMessage: (context) =>
+        `Please update ${context.name}.test.ts to test the functionality you implemented. Make sure to mock any external dependencies.`,
+      stateName: "updateTests",
+      nextStateName: "runTests",
+    }),
+
+    // Run the tests to make sure everything works
+    ...runTestsFactory<ToDoWorkflowContext>({
+      filePath: (context) =>
+        path.join(context.targetDir, `${context.name}.test.ts`),
+      stateName: "runTests",
+      nextStateName: "verifyDone",
+    }),
+
+    // Final verification step
+    ...promptAgentFactory<ToDoWorkflowContext>({
+      stateName: "verifyDone",
+      nextStateName: "done",
+      promptForContext: ({ context }) =>
+        `Please verify that the ${context.name} workflow is working correctly. Test the functionality manually and ensure all files are properly configured.`,
+    }),
+
     done: {
-      // there should always be a "done" state that is a final state.
       type: "final",
     },
   },
@@ -93,6 +114,12 @@ export const ToDoWorkflowMachine = setup({
 
 export class ToDoWorkflow extends XStateWorkflow {
   machine = ToDoWorkflowMachine;
-  description = "TODO";
-  cliArguments = [];
+  description = "TODO: Describe what this workflow does";
+  cliArguments = [
+    {
+      name: "name",
+      description:
+        "The name of the thing to create (e.g., 'my-component' or 'my-service')",
+    },
+  ];
 }
