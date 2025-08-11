@@ -36,7 +36,13 @@ export const copyTemplates = async (
 
     // Apply replacements
     let processedContent = templateContent;
-    for (const { from, to } of config.replacements) {
+
+    const globalReplacements = [{ from: "// @ts-nocheck", to: "" }];
+
+    for (const { from, to } of [
+      ...globalReplacements,
+      ...config.replacements,
+    ]) {
       processedContent = processedContent.split(from).join(to);
     }
 
