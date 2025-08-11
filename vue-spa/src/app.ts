@@ -37,7 +37,7 @@ export const createVueApp = (
   let messages = {};
   if (i18nMessages) {
     messages = {
-      legacy: false,
+      legacy: false, // can be removed after vue-i18n v12 or so
       locale: "en",
       messages: {
         en: i18nMessages,
