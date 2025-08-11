@@ -152,6 +152,20 @@ export const generateMigrations = () => {
   return runCommandAsync("npm", ["run", "generate"]);
 };
 
+// env commands
+
+export const installSaflibEnv = () => {
+  return runCommandAsync("npm", ["install", "@saflib/env"]);
+};
+
+export const generateEnv = () => {
+  return runCommandAsync("npm", ["exec", "saf-env", "generate"]);
+};
+
+export const generateAllEnv = () => {
+  return runCommandAsync("npm", ["exec", "saf-env", "generate-all"]);
+};
+
 // used in workflow machines
 
 export const workflowActionImplementations = {
