@@ -58,7 +58,7 @@ export const AddSpaPageWorkflowMachine = setup({
     }),
 
     // Then for each file, have the agent update it
-    ...updateTemplateFileFactory({
+    ...updateTemplateFileFactory<TemplateWorkflowContext>({
       filePath: (context) =>
         path.join(context.targetDir, `${context.pascalName}.loader.ts`),
       promptMessage: (context) =>
@@ -67,7 +67,7 @@ export const AddSpaPageWorkflowMachine = setup({
       nextStateName: "useLoader",
     }),
 
-    ...updateTemplateFileFactory({
+    ...updateTemplateFileFactory<TemplateWorkflowContext>({
       filePath: (context) =>
         path.join(context.targetDir, `${context.pascalName}.vue`),
       promptMessage: (context) =>
@@ -76,7 +76,7 @@ export const AddSpaPageWorkflowMachine = setup({
       nextStateName: "updateRouter",
     }),
 
-    ...updateTemplateFileFactory({
+    ...updateTemplateFileFactory<TemplateWorkflowContext>({
       filePath: "router.ts",
       promptMessage: (context) =>
         `Please update the router.ts file to include the new page. Add a new route for ${context.name} that uses the ${context.pascalName}Async component. The route should be at "/${context.name.slice(0, -5)}".`,
@@ -84,7 +84,7 @@ export const AddSpaPageWorkflowMachine = setup({
       nextStateName: "updateTests",
     }),
 
-    ...updateTemplateFileFactory({
+    ...updateTemplateFileFactory<TemplateWorkflowContext>({
       filePath: (context) =>
         path.join(context.targetDir, `${context.pascalName}.test.ts`),
       promptMessage: (context) =>
@@ -94,14 +94,14 @@ export const AddSpaPageWorkflowMachine = setup({
     }),
 
     // Run the tests to make sure the loader and page are basically working
-    ...runTestsFactory({
+    ...runTestsFactory<TemplateWorkflowContext>({
       filePath: (context) =>
         path.join(context.targetDir, `${context.pascalName}.test.ts`),
       stateName: "runTestsOnStubbedPage",
       nextStateName: "updateStrings",
     }),
 
-    ...updateTemplateFileFactory({
+    ...updateTemplateFileFactory<TemplateWorkflowContext>({
       filePath: (context) =>
         path.join(context.targetDir, `${context.pascalName}.strings.ts`),
       promptMessage: (context) =>
@@ -110,7 +110,7 @@ export const AddSpaPageWorkflowMachine = setup({
       nextStateName: "implementDesign",
     }),
 
-    ...updateTemplateFileFactory({
+    ...updateTemplateFileFactory<TemplateWorkflowContext>({
       filePath: (context) =>
         path.join(context.targetDir, `${context.pascalName}.vue`),
       promptMessage: (context) =>
@@ -119,7 +119,7 @@ export const AddSpaPageWorkflowMachine = setup({
       nextStateName: "updateTestsForDesign",
     }),
 
-    ...updateTemplateFileFactory({
+    ...updateTemplateFileFactory<TemplateWorkflowContext>({
       filePath: (context) =>
         path.join(context.targetDir, `${context.pascalName}.test.ts`),
       promptMessage: (context) =>
@@ -128,7 +128,7 @@ export const AddSpaPageWorkflowMachine = setup({
       nextStateName: "runTestsOnFinishedPage",
     }),
 
-    ...runTestsFactory({
+    ...runTestsFactory<TemplateWorkflowContext>({
       filePath: (context) =>
         path.join(context.targetDir, `${context.pascalName}.test.ts`),
       stateName: "runTestsOnFinishedPage",
