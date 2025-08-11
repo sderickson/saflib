@@ -18,15 +18,11 @@ interface AddWorkflowInput {
 interface AddWorkflowContext extends WorkflowContext {
   workflowName: string;
   workflowPath: string;
-  workflowIndexPath: string;
-  pascalCaseWorkflowName: string;
   packageName: string;
 }
 
 interface InitializeWorkflowInput {
   workflowName: string;
-  workflowIndexPath: string;
-  pascalCaseWorkflowName: string;
 }
 
 const initializeWorkflowActor = fromPromise(
@@ -37,12 +33,14 @@ const initializeWorkflowActor = fromPromise(
 
     const templateDir = new URL("add-workflow.templates", import.meta.url)
       .pathname;
+    const pascalCaseWorkflowName = kebabCaseToPascalCase(input.workflowName);
+    const workflowIndexPath = `workflows/index.ts`;
 
     await copyTemplates({
       sourceTargetPairs: [
         {
           source: `${templateDir}/index.ts`,
-          target: input.workflowIndexPath,
+          target: workflowIndexPath,
         },
         {
           source: `${templateDir}/workflow.template.ts`,
@@ -53,10 +51,10 @@ const initializeWorkflowActor = fromPromise(
         { from: "workflowName", to: input.workflowName },
         {
           from: "pascalCaseWorkflowName",
-          to: input.pascalCaseWorkflowName,
+          to: pascalCaseWorkflowName,
         },
         { from: "todo", to: input.workflowName },
-        { from: "ToDo", to: input.pascalCaseWorkflowName },
+        { from: "ToDo", to: pascalCaseWorkflowName },
       ],
     });
   },
@@ -80,17 +78,13 @@ export const AddWorkflowMachine = setup({
   initial: "initialize",
   context: ({ input }) => {
     const workflowName = input.name || "";
-    const pascalCaseWorkflowName = kebabCaseToPascalCase(workflowName);
     const workflowPath = `workflows/${workflowName}.ts`;
-    const workflowIndexPath = `workflows/index.ts`;
     const packageName =
       readFileSync("package.json", "utf8").match(/name": "(.+)"/)?.[1] || "";
 
     return {
       workflowName,
       workflowPath,
-      workflowIndexPath,
-      pascalCaseWorkflowName,
       packageName,
       loggedLast: false,
     };
@@ -105,8 +99,6 @@ export const AddWorkflowMachine = setup({
         src: "initializeWorkflow",
         input: ({ context }) => ({
           workflowName: context.workflowName,
-          workflowIndexPath: context.workflowIndexPath,
-          pascalCaseWorkflowName: context.pascalCaseWorkflowName,
         }),
         onDone: {
           target: "updateWorkflowFile",
