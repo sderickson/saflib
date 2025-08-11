@@ -5,6 +5,7 @@ import {
   type WorkflowContext,
   promptAgent,
   XStateWorkflow,
+  promptAgentFactory,
 } from "@saflib/workflows";
 import { getSafReporters } from "@saflib/node";
 import { copyTemplates } from "./template-copier.ts";
@@ -126,95 +127,51 @@ export const AddWorkflowMachine = setup({
         },
       },
     },
-    updateWorkflowFile: {
-      entry: raise({ type: "prompt" }),
-      on: {
-        prompt: {
-          actions: [
-            promptAgent(
-              ({ context }) =>
-                `You are creating a new workflow named '${context.workflowName}'.
+
+    ...promptAgentFactory<AddWorkflowContext>({
+      stateName: "updateWorkflowFile",
+      nextStateName: "exportWorkflow",
+      promptForContext: ({ context }) =>
+        `You are creating a new workflow named '${context.workflowName}'.
 
 The file '${context.workflowPath}' has been created. Fill in the TODOs (name and description), then review the file to get oriented. Do NOT work on the machine itself yet.`,
-            ),
-          ],
-        },
-        continue: {
-          target: "exportWorkflow",
-        },
-      },
-    },
-    exportWorkflow: {
-      entry: raise({ type: "prompt" }),
-      on: {
-        prompt: {
-          actions: [
-            promptAgent(
-              ({ context }) =>
-                `Ensure the new workflow '${context.workflowName}' is exported correctly. 
-                1. An adjacent 'index.ts' file should already exist, check that it does.
-                2. Import the new workflow class into 'workflows/index.ts' if it's not already there.
-                3. Add the new workflow *class* (not an instance) to the default exported array in 'workflows/index.ts'.
-                4. If needed, update the package.json of this package (${context.packageName}) to include a './workflows' export pointing to the 'workflows/index.ts' file.
-                5. And! If you do include a './workflows' export, you might need to make the value of "main" be a "." export.`,
-            ),
-          ],
-        },
-        continue: {
-          target: "ensureDependency",
-        },
-      },
-    },
-    ensureDependency: {
-      entry: raise({ type: "prompt" }),
-      on: {
-        prompt: {
-          actions: [
-            promptAgent(
-              ({ context }) =>
-                `Verify that '"${context.packageName}": "*"' is a dependency in the 'tools/workflows/package.json' file. If it's not present, add it and run 'npm install'.`,
-            ),
-          ],
-        },
-        continue: {
-          target: "updateWorkflowList",
-        },
-      },
-    },
-    updateWorkflowList: {
-      entry: raise({ type: "prompt" }),
-      on: {
-        prompt: {
-          actions: [
-            promptAgent(
-              ({ context }) =>
-                `Finally, update 'tools/workflows/list.ts'. 
-                1. Import the workflow array exported from the package (e.g., \`import newWorkflows from '${context.packageName}/workflows';\`). Make sure to use the correct package name.
-                2. Add the imported workflows to the \`workflowClasses\` array. You can use the spread operator (\`...newWorkflows\`) for this.`,
-            ),
-          ],
-        },
-        continue: {
-          target: "verifyWorkflowList",
-        },
-      },
-    },
-    verifyWorkflowList: {
-      entry: raise({ type: "prompt" }),
-      on: {
-        prompt: {
-          actions: [
-            promptAgent(
-              ({ context }) =>
-                `As a final check, run the command \`npm exec saf-workflow kickoff help\` in your terminal (any directory). Ensure that your new workflow "${context.workflowName}" appears in the list.`,
-            ),
-          ],
-        },
-        continue: {
-          target: "done",
-        },
-      },
-    },
+    }),
+
+    ...promptAgentFactory<AddWorkflowContext>({
+      stateName: "exportWorkflow",
+      nextStateName: "ensureDependency",
+      promptForContext: ({ context }) =>
+        `Ensure the new workflow '${context.workflowName}' is exported correctly. 
+        1. An adjacent 'index.ts' file should already exist, check that it does.
+        2. Import the new workflow class into 'workflows/index.ts' if it's not already there.
+        3. Add the new workflow *class* (not an instance) to the default exported array in 'workflows/index.ts'.
+        4. If needed, update the package.json of this package (${context.packageName}) to include a './workflows' export pointing to the 'workflows/index.ts' file.
+        5. And! If you do include a './workflows' export, you might need to make the value of "main" be a "." export.`,
+    }),
+
+    ...promptAgentFactory<AddWorkflowContext>({
+      stateName: "ensureDependency",
+      nextStateName: "updateWorkflowList",
+      promptForContext: ({ context }) =>
+        `Verify that '"${context.packageName}": "*"' is a dependency in the 'tools/workflows/package.json' file. If it's not present, add it and run 'npm install'.`,
+    }),
+
+    ...promptAgentFactory<AddWorkflowContext>({
+      stateName: "updateWorkflowList",
+      nextStateName: "verifyWorkflowList",
+      promptForContext: ({ context }) =>
+        `Finally, update 'tools/workflows/list.ts'. 
+        1. Import the workflow array exported from the package (e.g., \`import newWorkflows from '${context.packageName}/workflows';\`). Make sure to use the correct package name.
+        2. Add the imported workflows to the \`workflowClasses\` array. You can use the spread operator (\`...newWorkflows\`) for this.`,
+    }),
+
+    ...promptAgentFactory<AddWorkflowContext>({
+      stateName: "verifyWorkflowList",
+      nextStateName: "done",
+      promptForContext: ({ context }) =>
+        `As a final check, run the command \`npm exec saf-workflow kickoff help\` in your terminal (any directory). Ensure that your new workflow "${context.workflowName}" appears in the list.`,
+    }),
+
     done: {
       type: "final",
     },
