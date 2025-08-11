@@ -21,10 +21,10 @@ interface SimplifiedJSONSchema {
   additionalProperties: false;
 }
 
-export const getCombinedEnvSchema = async () => {
+export const getCombinedEnvSchema = async (targetPackageName?: string) => {
   const context = buildMonorepoContext();
 
-  const currentPackageName = getCurrentPackageName();
+  const currentPackageName = targetPackageName ?? getCurrentPackageName();
 
   const allDependencies = getAllPackageWorkspaceDependencies(
     currentPackageName,

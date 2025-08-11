@@ -1,7 +1,9 @@
 #!/usr/bin/env node --experimental-strip-types --disable-warning=ExperimentalWarning
 import { Command } from "commander";
 import { getCombinedEnvSchema, makeEnvParserSnippet } from "./env.ts";
-import { writeFileSync } from "fs";
+import { writeFileSync, existsSync } from "fs";
+import { buildMonorepoContext } from "@saflib/dev-tools";
+import path from "path";
 
 const program = new Command();
 
@@ -43,6 +45,52 @@ program
         JSON.stringify(combinedSchema, null, 2),
       );
     }
+  });
+
+program
+  .command("generate-all")
+  .description(
+    "Generate env.ts files for all packages that have existing env files",
+  )
+  .action(async () => {
+    const context = buildMonorepoContext();
+
+    for (const packageName of context.packages) {
+      const packagePath = context.monorepoPackageDirectories[packageName];
+      const envTsPath = path.join(packagePath, "env.ts");
+      const combinedSchemaPath = path.join(
+        packagePath,
+        "env.schema.combined.json",
+      );
+
+      // Only process packages that have an existing env.ts file
+      if (!existsSync(envTsPath)) {
+        continue;
+      }
+
+      console.log(`Generating env files for package: ${packageName}`);
+
+      try {
+        const combinedSchema = await getCombinedEnvSchema(packageName);
+        const typeSnippet = await makeEnvParserSnippet(combinedSchema);
+        writeFileSync(envTsPath, typeSnippet);
+
+        // If the package has a combined schema file, update it too
+        if (existsSync(combinedSchemaPath)) {
+          writeFileSync(
+            combinedSchemaPath,
+            JSON.stringify(combinedSchema, null, 2),
+          );
+          console.log(`  Updated env.schema.combined.json`);
+        }
+
+        console.log(`  Updated env.ts`);
+      } catch (error) {
+        console.error(`  Error processing package ${packageName}:`, error);
+      }
+    }
+
+    console.log("Generate-all completed!");
   });
 
 program.parse(process.argv);
