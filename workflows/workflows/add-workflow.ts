@@ -24,13 +24,73 @@ interface AddWorkflowContext extends WorkflowContext {
   packageName: string;
 }
 
+interface InitializeWorkflowInput {
+  workflowName: string;
+  workflowIndexPath: string;
+  pascalCaseWorkflowName: string;
+}
+
+interface InitializeWorkflowOutput {
+  logs: string[];
+}
+
+const initializeWorkflowActor = fromPromise(
+  async ({
+    input,
+  }: {
+    input: InitializeWorkflowInput;
+  }): Promise<InitializeWorkflowOutput> => {
+    const toLog = [];
+    execSync(`mkdir -p workflows`);
+    toLog.push("Upserted workflows directory");
+
+    if (!existsSync(input.workflowIndexPath)) {
+      execSync(`touch ${input.workflowIndexPath}`);
+      writeFileSync(
+        input.workflowIndexPath,
+        `import { ${input.pascalCaseWorkflowName}Workflow } from "./${input.workflowName}.ts";
+import type { ConcreteWorkflow } from "@saflib/workflows";
+
+const workflowClasses: ConcreteWorkflow[] = [${input.pascalCaseWorkflowName}Workflow];
+
+export default workflowClasses;
+`,
+      );
+      toLog.push("Created workflow index file");
+    }
+
+    execSync(`touch workflows/${input.workflowName}.ts`);
+    const templatePath = new URL("workflow.template.ts", import.meta.url)
+      .pathname;
+    const workflowTemplate = readFileSync(templatePath, "utf8");
+    writeFileSync(
+      `workflows/${input.workflowName}.ts`,
+      workflowTemplate
+        .replaceAll("todo", input.workflowName)
+        .replaceAll("ToDo", input.pascalCaseWorkflowName),
+    );
+    toLog.push("Created stub file");
+
+    return { logs: toLog };
+  },
+);
+
 export const AddWorkflowMachine = setup({
   types: {
     input: {} as AddWorkflowInput,
     context: {} as AddWorkflowContext,
   },
-  actions: workflowActionImplementations,
-  actors: workflowActors,
+  actions: {
+    ...workflowActionImplementations,
+    logInitializationResults: ({ event }) => {
+      const output = event.output as InitializeWorkflowOutput;
+      logInfo(`✔ ${output.logs.join("\n✔ ")}`);
+    },
+  },
+  actors: {
+    ...workflowActors,
+    initializeWorkflow: initializeWorkflowActor,
+  },
 }).createMachine({
   id: "add-workflow",
   description: "Create a new workflow",
@@ -56,47 +116,15 @@ export const AddWorkflowMachine = setup({
   states: {
     initialize: {
       invoke: {
-        input: ({ context }) => context,
-        src: fromPromise(async ({ input }: { input: AddWorkflowContext }) => {
-          const toLog = [];
-          execSync(`mkdir -p workflows`);
-          toLog.push("Upserted workflows directory");
-
-          if (!existsSync(input.workflowIndexPath)) {
-            execSync(`touch ${input.workflowIndexPath}`);
-            writeFileSync(
-              input.workflowIndexPath,
-              `import { ${input.pascalCaseWorkflowName}Workflow } from "./${input.workflowName}.ts";
-import type { ConcreteWorkflow } from "@saflib/workflows";
-
-const workflowClasses: ConcreteWorkflow[] = [${input.pascalCaseWorkflowName}Workflow];
-
-export default workflowClasses;
-`,
-            );
-            toLog.push("Created workflow index file");
-          }
-
-          execSync(`touch workflows/${input.workflowName}.ts`);
-          const templatePath = new URL("workflow.template.ts", import.meta.url)
-            .pathname;
-          const workflowTemplate = readFileSync(templatePath, "utf8");
-          writeFileSync(
-            `workflows/${input.workflowName}.ts`,
-            workflowTemplate
-              .replaceAll("todo", input.workflowName)
-              .replaceAll("ToDo", input.pascalCaseWorkflowName),
-          );
-          toLog.push("Created stub file");
-
-          return toLog;
+        src: "initializeWorkflow",
+        input: ({ context }) => ({
+          workflowName: context.workflowName,
+          workflowIndexPath: context.workflowIndexPath,
+          pascalCaseWorkflowName: context.pascalCaseWorkflowName,
         }),
         onDone: {
           target: "updateWorkflowFile",
-          actions: logInfo(
-            ({ event }) =>
-              `✔ ${(event.output as string[]).map((l: string) => l).join("\n✔ ")}`,
-          ),
+          actions: "logInitializationResults",
         },
         onError: {
           actions: [
