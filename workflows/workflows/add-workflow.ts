@@ -7,9 +7,9 @@ import {
   XStateWorkflow,
 } from "@saflib/workflows";
 import { getSafReporters } from "@saflib/node";
-import { execSync } from "child_process";
-import { writeFileSync, readFileSync, existsSync } from "fs";
+import { copyTemplates } from "./template-copier.ts";
 import { kebabCaseToPascalCase } from "../src/utils.ts";
+import { readFileSync } from "fs";
 
 interface AddWorkflowInput {
   name: string;
@@ -33,35 +33,32 @@ const initializeWorkflowActor = fromPromise(
   async ({ input }: { input: InitializeWorkflowInput }): Promise<void> => {
     const { log } = getSafReporters();
 
-    execSync(`mkdir -p workflows`);
     log.info("Upserted workflows directory");
 
-    if (!existsSync(input.workflowIndexPath)) {
-      execSync(`touch ${input.workflowIndexPath}`);
-      writeFileSync(
-        input.workflowIndexPath,
-        `import { ${input.pascalCaseWorkflowName}Workflow } from "./${input.workflowName}.ts";
-import type { ConcreteWorkflow } from "@saflib/workflows";
-
-const workflowClasses: ConcreteWorkflow[] = [${input.pascalCaseWorkflowName}Workflow];
-
-export default workflowClasses;
-`,
-      );
-      log.info("Created workflow index file");
-    }
-
-    execSync(`touch workflows/${input.workflowName}.ts`);
-    const templatePath = new URL("workflow.template.ts", import.meta.url)
+    const templateDir = new URL("add-workflow.templates", import.meta.url)
       .pathname;
-    const workflowTemplate = readFileSync(templatePath, "utf8");
-    writeFileSync(
-      `workflows/${input.workflowName}.ts`,
-      workflowTemplate
-        .replaceAll("todo", input.workflowName)
-        .replaceAll("ToDo", input.pascalCaseWorkflowName),
-    );
-    log.info("Created stub file");
+
+    await copyTemplates({
+      sourceTargetPairs: [
+        {
+          source: `${templateDir}/index.ts`,
+          target: input.workflowIndexPath,
+        },
+        {
+          source: `${templateDir}/workflow.template.ts`,
+          target: `workflows/${input.workflowName}.ts`,
+        },
+      ],
+      replacements: [
+        { from: "workflowName", to: input.workflowName },
+        {
+          from: "pascalCaseWorkflowName",
+          to: input.pascalCaseWorkflowName,
+        },
+        { from: "todo", to: input.workflowName },
+        { from: "ToDo", to: input.pascalCaseWorkflowName },
+      ],
+    });
   },
 );
 
