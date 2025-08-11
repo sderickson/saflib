@@ -62,7 +62,7 @@ export const AddEnvVarWorkflowMachine = setup({
     ...updateTemplateFileFactory<AddEnvVarWorkflowContext>({
       filePath: (context) => context.schemaPath,
       promptMessage: (context) =>
-        `Please add the environment variable '${context.variableName}' to the env.schema.json file. Add it to the properties object with an appropriate type and description.`,
+        `Please add the environment variable '${context.variableName}' to the env.schema.json file. Add it to the properties object with an appropriate type and description. If it is effectively a boolean, use the enum type with values 'true', 'false', and ''.`,
       stateName: "updateSchema",
       nextStateName: "installSaflibEnv",
     }),

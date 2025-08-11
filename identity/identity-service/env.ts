@@ -51,6 +51,10 @@ export interface CombinedEnvSchema {
    * Whether to disable rate limiting. Set to 'true' to disable.
    */
   IDENTITY_SERVICE_DISABLE_RATE_LIMITING?: string;
+  /**
+   * Whether to require email verification for user accounts. Set to 'true' to require verification, 'false' to skip verification, or leave empty for default behavior.
+   */
+  IDENTITY_SERVICE_REQUIRE_EMAIL_VERIFICATION?: "true" | "false" | "";
 }
 
 export const typedEnv = (globalThis.process ? process.env : {}) as unknown as CombinedEnvSchema;
