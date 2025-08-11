@@ -6,7 +6,7 @@ import {
 } from "@saflib/vue-spa/testing";
 import { type VueWrapper } from "@vue/test-utils";
 import TemplateFileAsync from "./TemplateFileAsync.vue";
-import { template_file as strings } from "./TemplateFile.strings.ts";
+import { TemplateFile_page as strings } from "./TemplateFile.strings.ts";
 // TODO: uncomment this and point the import to the actual package router
 // import { router } from "../../router.ts";
 import { getElementByString } from "../../src/test-utils.ts";
@@ -46,8 +46,8 @@ describe("TemplateFile", () => {
     );
   };
 
-  const getExampleHeader = (wrapper: VueWrapper) => {
-    return getElementByString(wrapper, strings.example_header);
+  const getTitle = (wrapper: VueWrapper) => {
+    return getElementByString(wrapper, strings.title);
   };
 
   const getExampleInput = (wrapper: VueWrapper) => {
@@ -57,8 +57,8 @@ describe("TemplateFile", () => {
   it("should render the example strings", async () => {
     const wrapper = mountComponent(TemplateFileAsync);
     // first expectation should "waitFor" since this test includes loading code and fetching data
-    await vi.waitFor(() => getExampleHeader(wrapper).exists());
-    expect(getExampleHeader(wrapper).exists()).toBe(true);
+    await vi.waitFor(() => getTitle(wrapper).exists());
+    expect(getTitle(wrapper).exists()).toBe(true);
     expect(getExampleInput(wrapper).exists()).toBe(true);
     // TODO: add a check for the raw, printed data from the loader
   });
