@@ -29,19 +29,12 @@ interface InitializeWorkflowInput {
   pascalCaseWorkflowName: string;
 }
 
-interface InitializeWorkflowOutput {
-  logs: string[];
-}
-
 const initializeWorkflowActor = fromPromise(
-  async ({
-    input,
-  }: {
-    input: InitializeWorkflowInput;
-  }): Promise<InitializeWorkflowOutput> => {
-    const toLog = [];
+  async ({ input }: { input: InitializeWorkflowInput }): Promise<void> => {
+    const { log } = getSafReporters();
+
     execSync(`mkdir -p workflows`);
-    toLog.push("Upserted workflows directory");
+    log.info("Upserted workflows directory");
 
     if (!existsSync(input.workflowIndexPath)) {
       execSync(`touch ${input.workflowIndexPath}`);
@@ -55,7 +48,7 @@ const workflowClasses: ConcreteWorkflow[] = [${input.pascalCaseWorkflowName}Work
 export default workflowClasses;
 `,
       );
-      toLog.push("Created workflow index file");
+      log.info("Created workflow index file");
     }
 
     execSync(`touch workflows/${input.workflowName}.ts`);
@@ -68,9 +61,7 @@ export default workflowClasses;
         .replaceAll("todo", input.workflowName)
         .replaceAll("ToDo", input.pascalCaseWorkflowName),
     );
-    toLog.push("Created stub file");
-
-    return { logs: toLog };
+    log.info("Created stub file");
   },
 );
 
@@ -81,11 +72,6 @@ export const AddWorkflowMachine = setup({
   },
   actions: {
     ...workflowActionImplementations,
-    logInitializationResults: ({ event }) => {
-      const { log } = getSafReporters();
-      const output = event.output as InitializeWorkflowOutput;
-      log.info(`✔ ${output.logs.join("\n✔ ")}`);
-    },
   },
   actors: {
     ...workflowActors,
@@ -127,7 +113,6 @@ export const AddWorkflowMachine = setup({
         }),
         onDone: {
           target: "updateWorkflowFile",
-          actions: "logInitializationResults",
         },
         onError: {
           actions: [
