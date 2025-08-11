@@ -2,6 +2,7 @@ import { fromPromise, raise } from "xstate";
 import { logInfo, logError, promptAgent, runCommandAsync } from "./xstate.ts";
 
 interface RunNpmCommandFactoryOptions {
+  // All commands here are the only ones that can be run by a workflow.
   command:
     | "install @saflib/env"
     | "exec saf-env generate"
