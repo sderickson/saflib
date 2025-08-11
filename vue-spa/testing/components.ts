@@ -7,6 +7,8 @@ import { afterAll, vi } from "vitest";
 import { createRouter, createMemoryHistory } from "vue-router";
 import { VueQueryPlugin } from "@tanstack/vue-query";
 import { QueryClient } from "@tanstack/vue-query";
+import { createI18n } from "vue-i18n";
+import type { I18nMessages } from "../src/strings";
 
 // GLOBAL MOCK HELPERS -----------------
 
@@ -63,6 +65,7 @@ function stubGlobalsTeardown() {
 
 export interface MountWithPluginsOptions {
   router?: Plugin;
+  i18nMessages?: I18nMessages;
 }
 
 export function mountWithPlugins(
@@ -90,10 +93,16 @@ export function mountWithPlugins(
     },
   });
 
+  const i18n = createI18n({
+    locale: "en",
+    legacy: false,
+    messages: { en: pluginOptions.i18nMessages ?? {} },
+  });
+
   return mount(component, {
     ...options,
     global: {
-      plugins: [vuetify, router, [VueQueryPlugin, { queryClient }]],
+      plugins: [vuetify, router, [VueQueryPlugin, { queryClient }], i18n],
       ...(options.global || {}),
     },
   });

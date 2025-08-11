@@ -69,7 +69,7 @@ import { useQuery } from "@tanstack/vue-query";
 import {
   listUsers,
   getUserProfileQueryOptions,
-} from "@saflib/web-app-client/src/requests/users.ts";
+} from "@saflib/web-app/src/requests/users.ts";
 import { ref, computed } from "vue";
 
 // Example 1: Fetching all users

@@ -9,7 +9,7 @@ import TemplateFileAsync from "./TemplateFileAsync.vue";
 import { template_file as strings } from "./TemplateFile.strings.ts";
 // TODO: uncomment this and point the import to the actual package router
 // import { router } from "../../router.ts";
-import { getElementByString } from "@saflib/vue-spa/test-utils";
+import { getElementByString } from "../../src/test-utils.ts";
 import type { Component } from "vue";
 import { http, HttpResponse } from "msw";
 import type { AuthResponse } from "@saflib/identity-spec"; // TODO: import the appropriate spec

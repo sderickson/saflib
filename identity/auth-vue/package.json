@@ -4,7 +4,8 @@
   "type": "module",
   "exports": {
     ".": "./index.ts",
-    "./strings": "./strings.ts"
+    "./strings": "./strings.ts",
+    "./i18n": "./i18n.ts"
   },
   "scripts": {
     "test": "vitest run",
