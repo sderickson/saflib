@@ -58,17 +58,17 @@ export function runTestsFactory<C extends WorkflowContext>({
   };
 }
 
-interface RunEnvCommandFactoryOptions<C extends WorkflowContext> {
+interface RunEnvCommandFactoryOptions {
   command: "install" | "generate" | "generate-all";
   stateName: string;
   nextStateName: string;
 }
 
-export function runEnvCommandFactory<C extends WorkflowContext>({
+export function runEnvCommandFactory({
   command,
   stateName,
   nextStateName,
-}: RunEnvCommandFactoryOptions<C>) {
+}: RunEnvCommandFactoryOptions) {
   const getCommand = () => {
     switch (command) {
       case "install":

@@ -68,21 +68,21 @@ export const AddEnvVarWorkflowMachine = setup({
     }),
 
     // Install @saflib/env package
-    ...runEnvCommandFactory<AddEnvVarWorkflowContext>({
+    ...runEnvCommandFactory({
       command: "install",
       stateName: "installSaflibEnv",
       nextStateName: "generateEnv",
     }),
 
     // Generate env.ts file
-    ...runEnvCommandFactory<AddEnvVarWorkflowContext>({
+    ...runEnvCommandFactory({
       command: "generate",
       stateName: "generateEnv",
       nextStateName: "generateAllEnv",
     }),
 
     // Generate all env files
-    ...runEnvCommandFactory<AddEnvVarWorkflowContext>({
+    ...runEnvCommandFactory({
       command: "generate-all",
       stateName: "generateAllEnv",
       nextStateName: "done",
