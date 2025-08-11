@@ -8,11 +8,13 @@ import {
   safContextStorage,
   safReportersStorage,
   defaultErrorReporter,
+  createLogger,
+  setServiceName,
 } from "@saflib/node";
-import winston, { format } from "winston";
-import { type TransformableInfo } from "logform";
 
 export function runWorkflowCli(workflows: WorkflowMeta[]) {
+  setServiceName("workflows");
+
   const program = new Command()
     .name("saf-workflow")
     .description(
@@ -78,21 +80,6 @@ export function runWorkflowCli(workflows: WorkflowMeta[]) {
 
   const reqId = generateRequestId();
 
-  const consoleTransport = new winston.transports.Console();
-
-  const baseLogger = winston.createLogger({
-    transports: [consoleTransport],
-    format: format.combine(
-      format.colorize({ all: true }),
-      format.printf((info: TransformableInfo) => {
-        const { message } = info;
-        return `${message}`;
-      }),
-    ),
-  });
-
-  // Currently this context is not being used...
-  // Just putting strings here for typing.
   const ctx: SafContext = {
     requestId: reqId,
     serviceName: "workflows",
@@ -101,7 +88,10 @@ export function runWorkflowCli(workflows: WorkflowMeta[]) {
   };
 
   const reporters: SafReporters = {
-    log: baseLogger,
+    log: createLogger({
+      subsystemName: "cli",
+      operationName: "workflow-cli",
+    }),
     logError: defaultErrorReporter,
   };
 

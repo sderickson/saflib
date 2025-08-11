@@ -2,12 +2,11 @@ import { fromPromise, raise, setup } from "xstate";
 import {
   workflowActionImplementations,
   workflowActors,
-  logInfo,
   type WorkflowContext,
-  logError,
   promptAgent,
   XStateWorkflow,
 } from "@saflib/workflows";
+import { getSafReporters } from "@saflib/node";
 import { execSync } from "child_process";
 import { writeFileSync, readFileSync, existsSync } from "fs";
 import { kebabCaseToPascalCase } from "../src/utils.ts";
@@ -83,8 +82,9 @@ export const AddWorkflowMachine = setup({
   actions: {
     ...workflowActionImplementations,
     logInitializationResults: ({ event }) => {
+      const { log } = getSafReporters();
       const output = event.output as InitializeWorkflowOutput;
-      logInfo(`✔ ${output.logs.join("\n✔ ")}`);
+      log.info(`✔ ${output.logs.join("\n✔ ")}`);
     },
   },
   actors: {
@@ -112,7 +112,10 @@ export const AddWorkflowMachine = setup({
       loggedLast: false,
     };
   },
-  entry: logInfo("Successfully began add-workflow"),
+  entry: () => {
+    const { log } = getSafReporters();
+    log.info("Successfully began add-workflow");
+  },
   states: {
     initialize: {
       invoke: {
@@ -128,7 +131,10 @@ export const AddWorkflowMachine = setup({
         },
         onError: {
           actions: [
-            logError(() => `Failed to initialize workflow files.`),
+            () => {
+              const { logError } = getSafReporters();
+              logError(new Error("Failed to initialize workflow files."));
+            },
             raise({ type: "prompt" }),
           ],
         },

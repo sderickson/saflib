@@ -2,12 +2,11 @@ import { fromPromise, raise, setup } from "xstate";
 import {
   workflowActionImplementations,
   workflowActors,
-  logInfo,
   type WorkflowContext,
-  logError,
   promptAgent,
   XStateWorkflow,
 } from "@saflib/workflows";
+import { getSafReporters } from "@saflib/node";
 
 interface AddEnvVarWorkflowInput {
   varName: string;
@@ -41,7 +40,10 @@ export const AddEnvVarWorkflowMachine = setup({
       loggedLast: false,
     };
   },
-  entry: logInfo("Successfully began add-env-var workflow"),
+  entry: () => {
+    const { log } = getSafReporters();
+    log.info("Successfully began add-env-var workflow");
+  },
   states: {
     promptForDetails: {
       entry: raise({ type: "prompt" }),
@@ -80,11 +82,17 @@ export const AddEnvVarWorkflowMachine = setup({
         ),
         onDone: {
           target: "addToSchema",
-          actions: logInfo(() => `Input validation passed.`),
+          actions: () => {
+            const { log } = getSafReporters();
+            log.info("Input validation passed.");
+          },
         },
         onError: {
           actions: [
-            logError(() => `Input validation failed.`),
+            () => {
+              const { logError } = getSafReporters();
+              logError(new Error("Input validation failed."));
+            },
             raise({ type: "prompt" }),
           ],
         },
@@ -114,11 +122,17 @@ export const AddEnvVarWorkflowMachine = setup({
         ),
         onDone: {
           target: "addToEnvFile",
-          actions: logInfo(() => `Environment variable added to schema.`),
+          actions: () => {
+            const { log } = getSafReporters();
+            log.info("Environment variable added to schema.");
+          },
         },
         onError: {
           actions: [
-            logError(() => `Failed to add variable to schema.`),
+            () => {
+              const { logError } = getSafReporters();
+              logError(new Error("Failed to add variable to schema."));
+            },
             raise({ type: "prompt" }),
           ],
         },
@@ -148,11 +162,17 @@ export const AddEnvVarWorkflowMachine = setup({
         ),
         onDone: {
           target: "done",
-          actions: logInfo(() => `Environment variable added to env.ts file.`),
+          actions: () => {
+            const { log } = getSafReporters();
+            log.info("Environment variable added to env.ts file.");
+          },
         },
         onError: {
           actions: [
-            logError(() => `Failed to add variable to env.ts file.`),
+            () => {
+              const { logError } = getSafReporters();
+              logError(new Error("Failed to add variable to env.ts file."));
+            },
             raise({ type: "prompt" }),
           ],
         },
