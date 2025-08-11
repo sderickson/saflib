@@ -1,65 +1,27 @@
-import { fromPromise, raise, setup } from "xstate";
+import { setup } from "xstate";
 import {
   workflowActionImplementations,
   workflowActors,
-  type WorkflowContext,
-  promptAgent,
   XStateWorkflow,
   promptAgentFactory,
+  useTemplateStateFactory,
+  type TemplateWorkflowContext,
 } from "@saflib/workflows";
 import { getSafReporters } from "@saflib/node";
-import { copyTemplates } from "./template-copier.ts";
 import { kebabCaseToPascalCase } from "../src/utils.ts";
 import { readFileSync } from "fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 interface AddWorkflowInput {
   name: string;
 }
 
-interface AddWorkflowContext extends WorkflowContext {
+interface AddWorkflowContext extends TemplateWorkflowContext {
   workflowName: string;
   workflowPath: string;
   packageName: string;
 }
-
-interface InitializeWorkflowInput {
-  workflowName: string;
-}
-
-const initializeWorkflowActor = fromPromise(
-  async ({ input }: { input: InitializeWorkflowInput }): Promise<void> => {
-    const { log } = getSafReporters();
-
-    log.info("Upserted workflows directory");
-
-    const templateDir = new URL("add-workflow.templates", import.meta.url)
-      .pathname;
-    const pascalCaseWorkflowName = kebabCaseToPascalCase(input.workflowName);
-    const workflowIndexPath = `workflows/index.ts`;
-
-    await copyTemplates({
-      sourceTargetPairs: [
-        {
-          source: `${templateDir}/index.ts`,
-          target: workflowIndexPath,
-        },
-        {
-          source: `${templateDir}/workflow.template.ts`,
-          target: `workflows/${input.workflowName}.ts`,
-        },
-      ],
-      replacements: [
-        { from: "workflowName", to: input.workflowName },
-        {
-          from: "pascalCaseWorkflowName",
-          to: pascalCaseWorkflowName,
-        },
-        { from: "todo", to: input.workflowName },
-        { from: "ToDo", to: pascalCaseWorkflowName },
-      ],
-    });
-  },
-);
 
 export const AddWorkflowMachine = setup({
   types: {
@@ -71,7 +33,6 @@ export const AddWorkflowMachine = setup({
   },
   actors: {
     ...workflowActors,
-    initializeWorkflow: initializeWorkflowActor,
   },
 }).createMachine({
   id: "add-workflow",
@@ -83,10 +44,19 @@ export const AddWorkflowMachine = setup({
     const packageName =
       readFileSync("package.json", "utf8").match(/name": "(.+)"/)?.[1] || "";
 
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = path.dirname(__filename);
+    const sourceDir = path.join(__dirname, "add-workflow.templates");
+    const targetDir = process.cwd() + "/workflows";
+
     return {
       workflowName,
       workflowPath,
       packageName,
+      name: workflowName,
+      pascalName: kebabCaseToPascalCase(workflowName),
+      sourceDir,
+      targetDir,
       loggedLast: false,
     };
   },
@@ -95,38 +65,11 @@ export const AddWorkflowMachine = setup({
     log.info("Successfully began add-workflow");
   },
   states: {
-    initialize: {
-      invoke: {
-        src: "initializeWorkflow",
-        input: ({ context }) => ({
-          workflowName: context.workflowName,
-        }),
-        onDone: {
-          target: "updateWorkflowFile",
-        },
-        onError: {
-          actions: [
-            () => {
-              const { logError } = getSafReporters();
-              logError(new Error("Failed to initialize workflow files."));
-            },
-            raise({ type: "prompt" }),
-          ],
-        },
-      },
-      on: {
-        prompt: {
-          actions: promptAgent(
-            () =>
-              `Failed to initialize the workflow files. Please check the file system and try again.`,
-          ),
-        },
-        continue: {
-          reenter: true,
-          target: "initialize",
-        },
-      },
-    },
+    // First copy over the template files
+    ...useTemplateStateFactory({
+      stateName: "initialize",
+      nextStateName: "updateWorkflowFile",
+    }),
 
     ...promptAgentFactory<AddWorkflowContext>({
       stateName: "updateWorkflowFile",
