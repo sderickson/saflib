@@ -10,11 +10,10 @@ import {
 } from "@saflib/workflows";
 import { execSync } from "child_process";
 import { writeFileSync, readFileSync, existsSync } from "fs";
-import path, { dirname } from "path";
 import { kebabCaseToPascalCase } from "../src/utils.ts";
 
 interface AddWorkflowInput {
-  workflowName: string;
+  name: string;
 }
 
 interface AddWorkflowContext extends WorkflowContext {
@@ -37,7 +36,7 @@ export const AddWorkflowMachine = setup({
   description: "Create a new workflow",
   initial: "initialize",
   context: ({ input }) => {
-    const workflowName = input.workflowName;
+    const workflowName = input.name || "";
     const pascalCaseWorkflowName = kebabCaseToPascalCase(workflowName);
     const workflowPath = `workflows/${workflowName}.ts`;
     const workflowIndexPath = `workflows/index.ts`;
@@ -79,10 +78,9 @@ export default workflowClasses;
           }
 
           execSync(`touch workflows/${input.workflowName}.ts`);
-          const workflowTemplate = readFileSync(
-            path.join(dirname(import.meta.url), "workflow.template.ts"),
-            "utf8",
-          );
+          const templatePath = new URL("workflow.template.ts", import.meta.url)
+            .pathname;
+          const workflowTemplate = readFileSync(templatePath, "utf8");
           writeFileSync(
             `workflows/${input.workflowName}.ts`,
             workflowTemplate
