@@ -37,6 +37,7 @@ export const createVueApp = (
   let messages = {};
   if (i18nMessages) {
     messages = {
+      legacy: false,
       locale: "en",
       messages: {
         en: i18nMessages,
