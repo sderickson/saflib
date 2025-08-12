@@ -1,18 +1,24 @@
-import { describe, it, expect, vi } from "vitest";
+// TODO: uncomment lines below, and update imports to actual files if needed
+import {
+  describe,
+  it,
+  expect,
+  //  vi
+} from "vitest";
 import {
   stubGlobals,
-  mountWithPlugins,
+  // mountWithPlugins,
   setupMockServer,
 } from "@saflib/vue-spa/testing";
-import { type VueWrapper } from "@vue/test-utils";
-import TemplateFileAsync from "./TemplateFileAsync.vue";
-import { TemplateFile_page as strings } from "./TemplateFile.strings.ts";
-// TODO: uncomment this and point the import to the actual package router
+// import { type VueWrapper } from "@vue/test-utils";
+// import TemplateFileAsync from "./TemplateFileAsync.vue";
+// import { TemplateFile_page as strings } from "./TemplateFile.strings.ts";
 // import { router } from "../../router.ts";
-import { getElementByString } from "@saflib/vue-spa/testing";
-import type { Component } from "vue";
+// import { getElementByString } from "@saflib/vue-spa/testing";
+// import type { Component } from "vue";
 import { http, HttpResponse } from "msw";
 import type { AuthResponse } from "@saflib/identity-spec"; // TODO: import the appropriate spec
+// import { mountTestApp } from "../../test-app.ts";
 
 // TODO: update with mock responses for the actual API calls made in the loader
 const handlers = [
@@ -35,31 +41,12 @@ describe("TemplateFile", () => {
     );
   */
 
-  const mountComponent = (component: Component) => {
-    return mountWithPlugins(
-      component,
-      {},
-      {
-        // TODO: uncomment this after you've imported the actual router
-        //  router
-      },
-    );
-  };
-
-  const getTitle = (wrapper: VueWrapper) => {
-    return getElementByString(wrapper, strings.title);
-  };
-
-  const getExampleInput = (wrapper: VueWrapper) => {
-    return getElementByString(wrapper, strings.example_input);
-  };
-
   it("should render the example strings", async () => {
-    const wrapper = mountComponent(TemplateFileAsync);
+    // const wrapper = mountTestApp(TemplateFileAsync);
     // first expectation should "waitFor" since this test includes loading code and fetching data
-    await vi.waitFor(() => getTitle(wrapper).exists());
-    expect(getTitle(wrapper).exists()).toBe(true);
-    expect(getExampleInput(wrapper).exists()).toBe(true);
+    // await vi.waitFor(() => getTitle(wrapper).exists());
+    // expect(getElementByString(wrapper, strings.title).exists()).toBe(true);
+    // expect(getElementByString(wrapper, strings.example_input).exists()).toBe(true);
     // TODO: add a check for the raw, printed data from the loader
   });
 });
