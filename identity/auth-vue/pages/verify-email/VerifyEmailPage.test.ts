@@ -65,7 +65,11 @@ describe("VerifyEmailPage", () => {
 
   it("should automatically verify email when token is present and show continue link on success", async () => {
     await router.push("/verify-email?token=valid-token");
-    const wrapper = mountTestApp(VerifyEmailPage);
+    const wrapper = mountTestApp(VerifyEmailPage, {
+      props: {
+        redirectTo: "/",
+      },
+    });
 
     // Wait for success message
     const successAlert = await vi.waitUntil(() => {
@@ -82,7 +86,11 @@ describe("VerifyEmailPage", () => {
 
   it("should show error and resend button when verification fails", async () => {
     await router.push("/verify-email?token=invalid-token");
-    const wrapper = mountTestApp(VerifyEmailPage);
+    const wrapper = mountTestApp(VerifyEmailPage, {
+      props: {
+        redirectTo: "/",
+      },
+    });
 
     // Wait for error message
     const errorAlert = await vi.waitUntil(() => {
@@ -98,7 +106,11 @@ describe("VerifyEmailPage", () => {
 
   it("should show resend button when no token is present", async () => {
     await router.push("/verify-email");
-    const wrapper = mountTestApp(VerifyEmailPage);
+    const wrapper = mountTestApp(VerifyEmailPage, {
+      props: {
+        redirectTo: "/",
+      },
+    });
     await vi.waitFor(() => {
       const resendButton = getResendButton(wrapper);
       return resendButton?.exists();
@@ -107,7 +119,11 @@ describe("VerifyEmailPage", () => {
 
   it("should show success message and hide button after resending verification email", async () => {
     await router.push("/verify-email");
-    const wrapper = mountTestApp(VerifyEmailPage);
+    const wrapper = mountTestApp(VerifyEmailPage, {
+      props: {
+        redirectTo: "/",
+      },
+    });
     await vi.waitFor(() => {
       const resendButton = getResendButton(wrapper);
       expect(resendButton?.exists()).toBe(true);
@@ -141,7 +157,11 @@ describe("VerifyEmailPage", () => {
     );
 
     await router.push("/verify-email");
-    const wrapper = mountTestApp(VerifyEmailPage);
+    const wrapper = mountTestApp(VerifyEmailPage, {
+      props: {
+        redirectTo: "/",
+      },
+    });
 
     await vi.waitFor(() => {
       const resendButton = getResendButton(wrapper);

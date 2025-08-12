@@ -43,7 +43,11 @@ export const createAuthRouter = (options: AuthRouterOptions) => {
       component: VerifyEmailPage,
       props: { redirectTo: options?.defaultRedirect },
     },
-    { path: authLinks.verifyEmailPage.path, component: VerifyEmailPageAsync },
+    {
+      path: authLinks.verifyEmailPage.path,
+      component: VerifyEmailPageAsync,
+      props: { redirectTo: options?.defaultRedirect },
+    },
   ];
 
   router = createRouter({
