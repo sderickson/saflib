@@ -1,13 +1,15 @@
-import { change_forgotten_password_page } from "./pages/change-password-page/ChangeForgottenPasswordPage.strings";
-import { forgot_password_page } from "./pages/forgot-password/ForgotPasswordPage.strings";
-import { login_page } from "./pages/login/LoginPage.strings";
-import { register_page } from "./pages/register/RegisterPage.strings";
-import { verify_email_page } from "./pages/verify-email/VerifyEmailPage.strings";
+import { change_forgotten_password_page as saflib_change_forgotten_password_page } from "./pages/change-password-page/ChangeForgottenPasswordPage.strings";
+import { forgot_password_page as saflib_forgot_password_page } from "./pages/forgot-password/ForgotPasswordPage.strings";
+import { login_page as saflib_login_page } from "./pages/login/LoginPage.strings";
+import { register_page as saflib_register_page } from "./pages/register/RegisterPage.strings";
+import { verify_email_page as saflib_verify_email_page } from "./pages/verify-email/VerifyEmailPage.strings";
+import { VerifyEmailPage_page as saflib_verify_email_page_page } from "./pages/verify-email-page/VerifyEmailPage.strings";
 
 export const authAppStrings = {
-  change_forgotten_password_page,
-  forgot_password_page,
-  login_page,
-  register_page,
-  verify_email_page,
+  saflib_change_forgotten_password_page,
+  saflib_forgot_password_page,
+  saflib_login_page,
+  saflib_register_page,
+  saflib_verify_email_page,
+  saflib_verify_email_page_page,
 };
