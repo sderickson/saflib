@@ -67,6 +67,9 @@ export const removeAllSimpleStreamTransports = () => {
 let allStreamTransports: winston.transports.StreamTransportInstance[] = [];
 
 type LoggerContext = Omit<SafContext, "serviceName">;
+interface LoggerOptions extends LoggerContext {
+  format?: winston.Logform.Format;
+}
 
 /**
  * Creates a child logger with the specified request ID. Any servers or processors
@@ -75,7 +78,7 @@ type LoggerContext = Omit<SafContext, "serviceName">;
  * by the caller, such as in the proto envelope, so that requests which span processes
  * can be correlated.
  */
-export const createLogger = (options?: LoggerContext): Logger => {
+export const createLogger = (options?: LoggerOptions): Logger => {
   if (!options && typedEnv.NODE_ENV === "test") {
     return baseLogger.child(testContext);
   }
@@ -102,5 +105,11 @@ export const createLogger = (options?: LoggerContext): Logger => {
     request_id: options.requestId || "-",
     user_id: options.auth?.userId || "-",
   };
+  if (options.format) {
+    return winston.createLogger({
+      transports: [consoleTransport],
+      format: options.format,
+    });
+  }
   return baseLogger.child(snakeCaseOptions);
 };

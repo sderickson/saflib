@@ -53,4 +53,6 @@ export interface CombinedEnvSchema {
   IDENTITY_SERVICE_DISABLE_RATE_LIMITING?: string;
 }
 
-export const typedEnv = (globalThis.process ? process.env : {}) as unknown as CombinedEnvSchema;
+export const typedEnv = (globalThis.process
+  ? process.env
+  : {}) as unknown as CombinedEnvSchema;

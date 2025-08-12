@@ -58,7 +58,7 @@ export const AddSpaPageWorkflowMachine = setup({
     }),
 
     // Then for each file, have the agent update it
-    ...updateTemplateFileFactory({
+    ...updateTemplateFileFactory<TemplateWorkflowContext>({
       filePath: (context) =>
         path.join(context.targetDir, `${context.pascalName}.loader.ts`),
       promptMessage: (context) =>
@@ -67,24 +67,31 @@ export const AddSpaPageWorkflowMachine = setup({
       nextStateName: "useLoader",
     }),
 
-    ...updateTemplateFileFactory({
+    ...updateTemplateFileFactory<TemplateWorkflowContext>({
       filePath: (context) =>
         path.join(context.targetDir, `${context.pascalName}.vue`),
       promptMessage: (context) =>
         `Please update ${context.pascalName}.vue to take the data from the loader, assert that it's loaded, then render sample the data using Vuetify components. Don't create the UX just yet; focus on making sure the data is loading properly.`,
       stateName: "useLoader",
-      nextStateName: "updateRouter",
+      nextStateName: "updateLinksPackage",
     }),
 
-    ...updateTemplateFileFactory({
+    ...promptAgentFactory<TemplateWorkflowContext>({
+      stateName: "updateLinksPackage",
+      nextStateName: "updateRouter",
+      promptForContext: () =>
+        `Find the "links" package adjacent to this package. Add the link for the new page there along with the others.`,
+    }),
+
+    ...updateTemplateFileFactory<TemplateWorkflowContext>({
       filePath: "router.ts",
       promptMessage: (context) =>
-        `Please update the router.ts file to include the new page. Add a new route for ${context.name} that uses the ${context.pascalName}Async component. The route should be at "/${context.name.slice(0, -5)}".`,
+        `Please update the router.ts file to include the new page. Add a new route for ${context.name} that uses the ${context.pascalName}Async component. Use the link from the shared links package instead of hardcoding the path.`,
       stateName: "updateRouter",
       nextStateName: "updateTests",
     }),
 
-    ...updateTemplateFileFactory({
+    ...updateTemplateFileFactory<TemplateWorkflowContext>({
       filePath: (context) =>
         path.join(context.targetDir, `${context.pascalName}.test.ts`),
       promptMessage: (context) =>
@@ -94,41 +101,48 @@ export const AddSpaPageWorkflowMachine = setup({
     }),
 
     // Run the tests to make sure the loader and page are basically working
-    ...runTestsFactory({
+    ...runTestsFactory<TemplateWorkflowContext>({
       filePath: (context) =>
         path.join(context.targetDir, `${context.pascalName}.test.ts`),
       stateName: "runTestsOnStubbedPage",
       nextStateName: "updateStrings",
     }),
 
-    ...updateTemplateFileFactory({
+    ...updateTemplateFileFactory<TemplateWorkflowContext>({
       filePath: (context) =>
         path.join(context.targetDir, `${context.pascalName}.strings.ts`),
       promptMessage: (context) =>
-        `Please update ${context.pascalName}.strings.ts to include all text from the design.`,
+        `Please update ${context.pascalName}.strings.ts to include all text from the design. Use string keys that will work well with the translation system (e.g., 'title', 'subtitle', 'description', etc.).`,
       stateName: "updateStrings",
-      nextStateName: "implementDesign",
+      nextStateName: "updateMainStrings",
     }),
 
-    ...updateTemplateFileFactory({
+    ...promptAgentFactory<TemplateWorkflowContext>({
+      stateName: "updateMainStrings",
+      nextStateName: "implementDesign",
+      promptForContext: () =>
+        `Find the strings.ts file in the root of the package. Add the strings from the file you just updated there.`,
+    }),
+
+    ...updateTemplateFileFactory<TemplateWorkflowContext>({
       filePath: (context) =>
         path.join(context.targetDir, `${context.pascalName}.vue`),
       promptMessage: (context) =>
-        `Please update ${context.pascalName}.vue to match the design. Use Vuetify components and variables instead of custom styles, even if it means the design isn't pixel-perfect. Do NOT set any style tags. Import and use the strings you just created.`,
+        `Please update ${context.pascalName}.vue to match the design and use the translation system. Import and use the "useReverseT" function from the i18n.ts file at the root of the package, and use t(strings.key) instead of strings.key for all text. Use Vuetify components and variables instead of custom styles, even if it means the design isn't pixel-perfect. Do NOT set any style tags.`,
       stateName: "implementDesign",
       nextStateName: "updateTestsForDesign",
     }),
 
-    ...updateTemplateFileFactory({
+    ...updateTemplateFileFactory<TemplateWorkflowContext>({
       filePath: (context) =>
         path.join(context.targetDir, `${context.pascalName}.test.ts`),
       promptMessage: (context) =>
-        `Please update ${context.pascalName}.test.ts to verify that the page renders correctly with the new design. Update the helper methods to locate actual key elements of the page, then update the one test to check that they all exist and have the right text. Only use "getElementByString" to locate elements, using the strings from the strings file as the argument.`,
+        `Please update ${context.pascalName}.test.ts to verify that the page renders correctly with the new design and translation system. Update the helper methods to locate actual key elements of the page, then update the one test to check that they all exist and have the right text. Only use "getElementByString" to locate elements, using the strings from the strings file as the argument.`,
       stateName: "updateTestsForDesign",
       nextStateName: "runTestsOnFinishedPage",
     }),
 
-    ...runTestsFactory({
+    ...runTestsFactory<TemplateWorkflowContext>({
       filePath: (context) =>
         path.join(context.targetDir, `${context.pascalName}.test.ts`),
       stateName: "runTestsOnFinishedPage",
