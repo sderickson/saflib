@@ -1,11 +1,9 @@
 import { useQuery } from "@tanstack/vue-query";
 import { getProfile } from "../../requests/auth";
 import { useRouter } from "vue-router";
-import { linkToHref } from "@saflib/links";
-import { onboardingLinks } from "@vendata/web-onboarding-links";
 import { watch } from "vue";
 
-export function useVerifyEmailPageLoader() {
+export function useVerifyEmailPageLoader(redirectTo: string) {
   const router = useRouter();
 
   const profileQuery = useQuery(getProfile());
@@ -15,7 +13,7 @@ export function useVerifyEmailPageLoader() {
     () => profileQuery.data.value,
     (profile) => {
       if (profile?.emailVerified) {
-        const onboardingStartUrl = linkToHref(onboardingLinks.getStarted);
+        const onboardingStartUrl = redirectTo;
         router.replace(onboardingStartUrl);
       }
     },

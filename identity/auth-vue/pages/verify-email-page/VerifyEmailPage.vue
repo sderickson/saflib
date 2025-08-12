@@ -57,8 +57,12 @@ import { useVerifyEmailPageLoader } from "./VerifyEmailPage.loader";
 import { useReverseT } from "../../i18n.ts";
 import { useResendVerification } from "../../requests/auth";
 
+const props = defineProps<{
+  redirectTo: string;
+}>();
+
 const { t } = useReverseT();
-const { profileQuery } = useVerifyEmailPageLoader();
+const { profileQuery } = useVerifyEmailPageLoader(props.redirectTo);
 
 const {
   mutateAsync: resendVerification,

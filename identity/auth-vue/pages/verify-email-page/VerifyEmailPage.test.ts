@@ -24,7 +24,11 @@ describe("VerifyEmailPage", () => {
   expect(server).toBeDefined();
 
   it("should render the page with instructions", async () => {
-    const wrapper = mountTestApp(VerifyEmailPageAsync);
+    const wrapper = mountTestApp(VerifyEmailPageAsync, {
+      props: {
+        redirectTo: "/",
+      },
+    });
 
     await vi.waitFor(() => getElementByString(wrapper, strings.title).exists());
 
