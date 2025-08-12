@@ -4,13 +4,13 @@ import { runTestServer } from "@saflib/grpc-node/testing";
 import { makeGrpcServer } from "../../grpc.ts";
 import { authDb } from "@saflib/identity-db";
 import type { DbKey } from "@saflib/drizzle-sqlite3";
-import { UsersClient, GetUserProfileRequest } from "@saflib/identity-rpcs";
+import { users } from "@saflib/identity-rpcs";
 
 describe("handleGetUserProfile", () => {
   let server: grpc.Server;
   let testServerHost: string;
   let dbKey: DbKey;
-  let client: UsersClient;
+  let client: users.UsersClient;
 
   beforeEach(async () => {
     // Create a test database connection
@@ -21,7 +21,10 @@ describe("handleGetUserProfile", () => {
     testServerHost = await runTestServer(server);
 
     // Create a gRPC client
-    client = new UsersClient(testServerHost, grpc.credentials.createInsecure());
+    client = new users.UsersClient(
+      testServerHost,
+      grpc.credentials.createInsecure(),
+    );
   });
 
   afterEach(async () => {
@@ -62,7 +65,7 @@ describe("handleGetUserProfile", () => {
 
     // Make the gRPC call
     const result = await client.GetUserProfile(
-      new GetUserProfileRequest({ user_id: user.id }),
+      new users.GetUserProfileRequest({ user_id: user.id }),
     );
 
     // Verify the response
@@ -77,7 +80,9 @@ describe("handleGetUserProfile", () => {
 
   it("should return NOT_FOUND for non-existent user", async () => {
     try {
-      await client.GetUserProfile(new GetUserProfileRequest({ user_id: 999 }));
+      await client.GetUserProfile(
+        new users.GetUserProfileRequest({ user_id: 999 }),
+      );
       expect.fail("Should have thrown an error");
     } catch (error: any) {
       expect(error.code).toBe(grpc.status.NOT_FOUND);
@@ -87,7 +92,7 @@ describe("handleGetUserProfile", () => {
 
   it("should return INVALID_ARGUMENT for missing userId", async () => {
     try {
-      await client.GetUserProfile(new GetUserProfileRequest({}));
+      await client.GetUserProfile(new users.GetUserProfileRequest({}));
       expect.fail("Should have thrown an error");
     } catch (error: any) {
       expect(error.code).toBe(grpc.status.INVALID_ARGUMENT);

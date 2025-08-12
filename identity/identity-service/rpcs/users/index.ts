@@ -1,8 +1,9 @@
-import { UnimplementedUsersService } from "@saflib/identity-rpcs";
+import { users } from "@saflib/identity-rpcs";
 import { handleGetUserProfile } from "./get-user-profile.ts";
 
-export const UsersServiceDefinition = UnimplementedUsersService.definition;
+export const UsersServiceDefinition =
+  users.UnimplementedUsersService.definition;
 
-export class UsersService extends UnimplementedUsersService {
+export class UsersService extends users.UnimplementedUsersService {
   GetUserProfile = handleGetUserProfile;
 }

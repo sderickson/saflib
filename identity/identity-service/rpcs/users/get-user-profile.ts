@@ -1,11 +1,9 @@
 import { status } from "@grpc/grpc-js";
 import { authServiceStorage } from "../../context.ts";
 import { authDb } from "@saflib/identity-db";
-import { GetUserProfileResponse, UserProfile } from "@saflib/identity-rpcs";
-import { UnimplementedUsersService } from "@saflib/identity-rpcs";
-import { Timestamp } from "@saflib/identity-rpcs";
+import { users, timestamp } from "@saflib/identity-rpcs";
 
-export const handleGetUserProfile: UnimplementedUsersService["GetUserProfile"] =
+export const handleGetUserProfile: users.UnimplementedUsersService["GetUserProfile"] =
   async (call, callback) => {
     const request = call.request;
 
@@ -37,20 +35,20 @@ export const handleGetUserProfile: UnimplementedUsersService["GetUserProfile"] =
     }
 
     // Create proper response with UserProfile
-    const userProfile = new UserProfile({
+    const userProfile = new users.UserProfile({
       user_id: emailAuth.userId,
       email: emailAuth.email,
       email_verified: !!emailAuth.verifiedAt,
       name: user.result.name ?? undefined,
       given_name: user.result.givenName ?? undefined,
       family_name: user.result.familyName ?? undefined,
-      created_at: new Timestamp({
+      created_at: new timestamp.Timestamp({
         seconds: user.result.createdAt.getTime() / 1000,
         nanos: 0,
       }),
     });
 
-    const response = new GetUserProfileResponse({
+    const response = new users.GetUserProfileResponse({
       profile: userProfile,
     });
 
