@@ -1,12 +1,12 @@
 import * as users from "./dist/users.ts";
 import * as timestamp from "./dist/google/protobuf/timestamp.ts";
-import { typedEnv } from "@saflib/env";
+import { typedEnv } from "./env.ts";
 import * as grpc from "@grpc/grpc-js";
 
 type LimitedUsersClient = Pick<users.UsersClient, "GetUserProfile">;
 
 let usersClient: LimitedUsersClient = new users.UsersClient(
-  `identity:50051`,
+  `identity:${typedEnv.IDENTITY_SERVICE_GRPC_PORT}`,
   grpc.credentials.createInsecure(),
 );
 

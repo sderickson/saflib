@@ -13,12 +13,13 @@
   },
   "dependencies": {
     "@grpc/grpc-js": "*",
+    "@saflib/env": "*",
     "@saflib/grpc-specs": "*",
     "google-protobuf": "*",
     "protoc-gen-ts": "*"
   },
   "devDependencies": {
-    "@types/google-protobuf": "*",
-    "@saflib/monorepo": "*"
+    "@saflib/monorepo": "*",
+    "@types/google-protobuf": "*"
   }
-} 
+}
