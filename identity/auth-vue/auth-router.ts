@@ -44,7 +44,7 @@ export const createAuthRouter = (options: AuthRouterOptions) => {
       props: { redirectTo: options?.defaultRedirect },
     },
     {
-      path: authLinks.verifyWallPage.path,
+      path: authLinks.verifyWall.path,
       component: VerifyEmailPageAsync,
       props: { redirectTo: options?.defaultRedirect },
     },

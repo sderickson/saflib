@@ -34,7 +34,7 @@ export const authLinks = {
     path: "/verify-email",
     params: ["token"],
   },
-  verifyWallPage: {
+  verifyWall: {
     subdomain,
     path: "/verify-wall",
   },
