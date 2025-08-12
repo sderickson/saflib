@@ -5,17 +5,10 @@ import {
   expect,
   //  vi
 } from "vitest";
-import {
-  stubGlobals,
-  // mountWithPlugins,
-  setupMockServer,
-} from "@saflib/vue-spa/testing";
-// import { type VueWrapper } from "@vue/test-utils";
+import { stubGlobals, setupMockServer } from "@saflib/vue-spa/testing";
 // import TemplateFileAsync from "./TemplateFileAsync.vue";
 // import { TemplateFile_page as strings } from "./TemplateFile.strings.ts";
-// import { router } from "../../router.ts";
 // import { getElementByString } from "@saflib/vue-spa/testing";
-// import type { Component } from "vue";
 import { http, HttpResponse } from "msw";
 import type { AuthResponse } from "@saflib/identity-spec"; // TODO: import the appropriate spec
 // import { mountTestApp } from "../../test-app.ts";

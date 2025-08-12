@@ -34,4 +34,8 @@ export const authLinks = {
     path: "/verify-email",
     params: ["token"],
   },
+  verifyEmailPage: {
+    subdomain,
+    path: "/verify-email-page",
+  },
 } satisfies LinkMap;
