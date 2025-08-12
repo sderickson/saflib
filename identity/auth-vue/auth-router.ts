@@ -12,7 +12,7 @@ import {
   ChangeForgottenPasswordPage,
   VerifyEmailPage,
 } from "@saflib/auth-vue";
-import VerifyEmailPageAsync from "./pages/verify-email-page/VerifyEmailPageAsync.vue";
+import VerifyEmailPageAsync from "./pages/verify-wall/VerifyWallPageAsync.vue";
 
 import { authLinks } from "@saflib/identity-links";
 
@@ -44,7 +44,7 @@ export const createAuthRouter = (options: AuthRouterOptions) => {
       props: { redirectTo: options?.defaultRedirect },
     },
     {
-      path: authLinks.verifyEmailPage.path,
+      path: authLinks.verifyWallPage.path,
       component: VerifyEmailPageAsync,
       props: { redirectTo: options?.defaultRedirect },
     },

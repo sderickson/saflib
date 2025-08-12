@@ -3,7 +3,7 @@ import { forgot_password_page as saflib_forgot_password_page } from "./pages/for
 import { login_page as saflib_login_page } from "./pages/login/LoginPage.strings";
 import { register_page as saflib_register_page } from "./pages/register/RegisterPage.strings";
 import { verify_email_page as saflib_verify_email_page } from "./pages/verify-email/VerifyEmailPage.strings";
-import { VerifyEmailPage_page as saflib_verify_email_page_page } from "./pages/verify-email-page/VerifyEmailPage.strings";
+import { verify_wall_page as saflib_verify_email_page_page } from "./pages/verify-wall/VerifyWallPage.strings";
 
 export const authAppStrings = {
   saflib_change_forgotten_password_page,

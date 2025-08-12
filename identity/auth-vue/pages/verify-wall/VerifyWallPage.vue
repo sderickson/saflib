@@ -52,17 +52,17 @@
 </template>
 
 <script setup lang="ts">
-import { VerifyEmailPage_page as strings } from "./VerifyEmailPage.strings.ts";
-import { useVerifyEmailPageLoader } from "./VerifyEmailPage.loader";
+import { verify_wall_page as strings } from "./VerifyWallPage.strings.ts";
+import { useVerifyWallPageLoader } from "./VerifyWallPage.loader.ts";
 import { useReverseT } from "../../i18n.ts";
-import { useResendVerification } from "../../requests/auth";
+import { useResendVerification } from "../../requests/auth.ts";
 
 const props = defineProps<{
   redirectTo: string;
 }>();
 
 const { t } = useReverseT();
-const { profileQuery } = useVerifyEmailPageLoader(props.redirectTo);
+const { profileQuery } = useVerifyWallPageLoader(props.redirectTo);
 
 const {
   mutateAsync: resendVerification,

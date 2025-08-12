@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { stubGlobals, setupMockServer } from "@saflib/vue-spa/testing";
-import VerifyEmailPageAsync from "./VerifyEmailPageAsync.vue";
-import { VerifyEmailPage_page as strings } from "./VerifyEmailPage.strings.ts";
+import VerifyWallPageAsync from "./VerifyWallPageAsync.vue";
+import { verify_wall_page as strings } from "./VerifyWallPage.strings.ts";
 import { getElementByString } from "@saflib/vue-spa/testing";
 import { http, HttpResponse } from "msw";
 import type { AuthResponse } from "@saflib/identity-spec";
@@ -17,14 +17,14 @@ const handlers = [
   }),
 ];
 
-describe("VerifyEmailPage", () => {
+describe("VerifyWallPage", () => {
   stubGlobals();
 
   const server = setupMockServer(handlers);
   expect(server).toBeDefined();
 
   it("should render the page with instructions", async () => {
-    const wrapper = mountTestApp(VerifyEmailPageAsync, {
+    const wrapper = mountTestApp(VerifyWallPageAsync, {
       props: {
         redirectTo: "/",
       },

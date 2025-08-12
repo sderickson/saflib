@@ -3,7 +3,7 @@ import { getProfile } from "../../requests/auth";
 import { useRouter } from "vue-router";
 import { watch } from "vue";
 
-export function useVerifyEmailPageLoader(redirectTo: string) {
+export function useVerifyWallPageLoader(redirectTo: string) {
   const router = useRouter();
 
   const profileQuery = useQuery(getProfile());

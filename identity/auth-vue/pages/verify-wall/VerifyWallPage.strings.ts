@@ -1,4 +1,4 @@
-export const VerifyEmailPage_page = {
+export const verify_wall_page = {
   title: "Verify Your Email",
   subtitle: "We've sent you a verification link",
   loading: "Loading...",

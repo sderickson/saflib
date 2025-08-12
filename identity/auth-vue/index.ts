@@ -7,7 +7,7 @@ export { default as ForgotPasswordPage } from "./pages/forgot-password/ForgotPas
 export { default as LogoutPage } from "./pages/logout/LogoutPage.vue";
 export { default as ChangeForgottenPasswordPage } from "./pages/change-password-page/ChangeForgottenPasswordPage.vue";
 export { default as VerifyEmailPage } from "./pages/verify-email/VerifyEmailPage.vue";
-export { default as VerifyEmailPageAsync } from "./pages/verify-email-page/VerifyEmailPageAsync.vue";
+export { default as VerifyEmailPageAsync } from "./pages/verify-wall/VerifyWallPageAsync.vue";
 export { default as UserAdmin } from "./pages/admin-users/UserAdmin.vue";
 export { createAuthRouter } from "./auth-router.ts";
 
