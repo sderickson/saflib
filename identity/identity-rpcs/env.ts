@@ -6,10 +6,6 @@
 
 export interface CombinedEnvSchema {
   /**
-   * JSON string
-   */
-  NODEMAILER_TRANSPORT_CONFIG: string;
-  /**
    * Comma-separated list of client subdomains, e.g. 'www,app,auth,'. Include an empty string (such as in the example) to indicate there's a client for the root domain.
    */
   CLIENT_SUBDOMAINS: string;
@@ -43,14 +39,6 @@ export interface CombinedEnvSchema {
   ALLOW_DB_CREATION?: "true" | "false";
   IDENTITY_SERVICE_HTTP_PORT: string;
   IDENTITY_SERVICE_GRPC_PORT: string;
-  /**
-   * Comma-separated list of emails who will get the 'admin' scope. Emails must be validated to receive this scope.
-   */
-  IDENTITY_SERVICE_ADMIN_EMAILS?: string;
-  /**
-   * Whether to disable rate limiting. Set to 'true' to disable.
-   */
-  IDENTITY_SERVICE_DISABLE_RATE_LIMITING?: string;
 }
 
 export const typedEnv = (globalThis.process ? process.env : {}) as unknown as CombinedEnvSchema;
