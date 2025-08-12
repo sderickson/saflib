@@ -96,7 +96,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from "vue";
+import { ref, computed, watch } from "vue";
 import { verify_email_page } from "./VerifyEmailPage.strings";
 import { useRoute } from "vue-router";
 import {
