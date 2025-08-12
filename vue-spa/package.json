@@ -33,7 +33,6 @@
     "vuetify": "^3.0.0"
   },
   "devDependencies": {
-    "@saflib/monorepo-dev": "*",
     "@saflib/vitest": "*",
     "@saflib/workflows": "*",
     "@vue/test-utils": "^2.0.0",
