@@ -96,7 +96,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, watch } from "vue";
 import { verify_email_page } from "./VerifyEmailPage.strings";
 import { useRoute } from "vue-router";
 import {
@@ -113,6 +113,10 @@ defineProps<{
   redirectTo: string;
 }>();
 
+const emit = defineEmits<{
+  (e: "verify"): void;
+}>();
+
 const route = useRoute();
 const token = route.query.token as string;
 
@@ -121,8 +125,13 @@ const successMessage = ref("");
 const {
   mutateAsync: verifyEmail,
   isPending: isVerifying,
-  isSuccess: isVerified,
+  isSuccess: isJustVerified,
 } = useVerifyEmail();
+
+const isVerified = computed(() => {
+  return profile.value?.emailVerified || isJustVerified.value;
+});
+
 const {
   mutateAsync: resendVerification,
   isPending: isResending,
@@ -144,6 +153,7 @@ const handleVerify = async () => {
 
   try {
     await verifyEmail({ token });
+    emit("verify");
     successMessage.value = "Email successfully verified!";
   } catch (error: any) {
     if (error instanceof TanstackError) {
@@ -181,8 +191,11 @@ const loginLink = linkToHref(authLinks.login, {
 });
 
 // Verify email automatically on load if token is present
-onMounted(() => {
-  if (token) {
+watch(isGettingProfile, () => {
+  if (profile.value?.emailVerified) {
+    successMessage.value = "Email successfully verified!";
+    emit("verify");
+  } else if (token) {
     handleVerify();
   }
 });

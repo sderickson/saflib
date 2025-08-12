@@ -1,13 +1,10 @@
 import { describe, it, expect, vi } from "vitest";
-import {
-  stubGlobals,
-  mountWithPlugins,
-  setupMockServer,
-} from "@saflib/vue-spa/testing";
+import { stubGlobals, setupMockServer } from "@saflib/vue-spa/testing";
 import { type VueWrapper } from "@vue/test-utils";
 import { http, HttpResponse } from "msw";
 import UserAdmin from "./UserAdmin.vue";
 import type { AuthResponse } from "@saflib/identity-spec";
+import { mountTestApp } from "../../test-app.ts";
 
 // Use the type from auth-spec
 type User = AuthResponse["listUsers"][200][number];
@@ -39,12 +36,6 @@ describe("UserAdmin.vue", () => {
   stubGlobals();
   const server = setupMockServer(handlers);
 
-  // Helper functions
-  const mountComponent = () => {
-    // manually unsetting router. This component does not depend on it (yet) and it shows warnings
-    return mountWithPlugins(UserAdmin, {}, { router: () => null });
-  };
-
   const getLoadingIndicator = (wrapper: VueWrapper) => {
     return wrapper.findComponent({ name: "v-progress-circular" });
   };
@@ -63,14 +54,14 @@ describe("UserAdmin.vue", () => {
   // --- Tests --- //
 
   it("should show loading indicator initially", () => {
-    const wrapper = mountComponent();
+    const wrapper = mountTestApp(UserAdmin);
     expect(getLoadingIndicator(wrapper).exists()).toBe(true);
     expect(getUserListTable(wrapper).exists()).toBe(false);
     expect(getErrorAlert(wrapper)).toBeNull();
   });
 
   it("should display user list on successful fetch", async () => {
-    const wrapper = mountComponent();
+    const wrapper = mountTestApp(UserAdmin);
 
     // Wait for loading to finish
     await vi.waitUntil(() => !getLoadingIndicator(wrapper).exists());
@@ -94,7 +85,7 @@ describe("UserAdmin.vue", () => {
       }),
     );
 
-    const wrapper = mountComponent();
+    const wrapper = mountTestApp(UserAdmin);
 
     // Wait for loading to finish
     await vi.waitUntil(() => !getLoadingIndicator(wrapper).exists());

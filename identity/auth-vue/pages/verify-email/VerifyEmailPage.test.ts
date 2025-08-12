@@ -1,15 +1,9 @@
 import { describe, it, expect, vi } from "vitest";
-import {
-  stubGlobals,
-  mountWithPlugins,
-  setupMockServer,
-} from "@saflib/vue-spa/testing";
+import { stubGlobals, setupMockServer } from "@saflib/vue-spa/testing";
 import { type VueWrapper } from "@vue/test-utils";
 import { http, HttpResponse } from "msw";
 import VerifyEmailPage from "./VerifyEmailPage.vue";
-import { createAuthRouter } from "../../auth-router.ts";
-
-const router = createAuthRouter();
+import { mountTestApp, router } from "../../test-app.ts";
 
 // Set up MSW server
 const handlers = [
@@ -69,13 +63,17 @@ describe("VerifyEmailPage", () => {
     return wrapper.find("a.text-blue");
   };
 
-  const mountComponent = () => {
-    return mountWithPlugins(VerifyEmailPage, {}, { router });
+  const mountApp = () => {
+    return mountTestApp(VerifyEmailPage, {
+      props: {
+        redirectTo: "/",
+      },
+    });
   };
 
   it("should automatically verify email when token is present and show continue link on success", async () => {
     await router.push("/verify-email?token=valid-token");
-    const wrapper = mountComponent();
+    const wrapper = mountApp();
 
     // Wait for success message
     const successAlert = await vi.waitUntil(() => {
@@ -92,7 +90,7 @@ describe("VerifyEmailPage", () => {
 
   it("should show error and resend button when verification fails", async () => {
     await router.push("/verify-email?token=invalid-token");
-    const wrapper = mountComponent();
+    const wrapper = mountApp();
 
     // Wait for error message
     const errorAlert = await vi.waitUntil(() => {
@@ -108,7 +106,7 @@ describe("VerifyEmailPage", () => {
 
   it("should show resend button when no token is present", async () => {
     await router.push("/verify-email");
-    const wrapper = mountComponent();
+    const wrapper = mountApp();
     await vi.waitFor(() => {
       const resendButton = getResendButton(wrapper);
       return resendButton?.exists();
@@ -117,7 +115,7 @@ describe("VerifyEmailPage", () => {
 
   it("should show success message and hide button after resending verification email", async () => {
     await router.push("/verify-email");
-    const wrapper = mountComponent();
+    const wrapper = mountApp();
     await vi.waitFor(() => {
       const resendButton = getResendButton(wrapper);
       expect(resendButton?.exists()).toBe(true);
@@ -151,7 +149,7 @@ describe("VerifyEmailPage", () => {
     );
 
     await router.push("/verify-email");
-    const wrapper = mountComponent();
+    const wrapper = mountApp();
 
     await vi.waitFor(() => {
       const resendButton = getResendButton(wrapper);

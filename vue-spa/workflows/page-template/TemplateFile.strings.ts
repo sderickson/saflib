@@ -1,4 +1,4 @@
-export const TemplateFile_page = {
+export const template_file_page = {
   // TODO: Replace strings with strings from the actual design
   // Use descriptive keys that work well with translation systems
   title: "Hello, TemplateFile!",

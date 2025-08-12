@@ -7,7 +7,7 @@
     {{ errorMessage }}
   </v-alert>
 
-  <component :is="props.pageComponent" v-else />
+  <component :is="props.pageComponent" v-else v-bind="props.pageProps" />
 </template>
 
 <script setup lang="ts">
@@ -18,6 +18,7 @@ import type { LoaderQueries } from "./types.ts";
 interface Props {
   loader?: () => LoaderQueries;
   pageComponent: Component;
+  pageProps?: Record<string, any>;
 }
 
 const props = defineProps<Props>();

@@ -8,7 +8,7 @@ import { type VueWrapper } from "@vue/test-utils";
 import HomePageAsync from "./HomePageAsync.vue";
 import { home_page as strings } from "./HomePage.strings.ts";
 import { router } from "../../router.ts";
-import { getElementByString } from "../../../../src/test-utils.ts";
+import { getElementByString } from "../../../../testing/string-utils.ts";
 import type { Component } from "vue";
 import { http, HttpResponse } from "msw";
 import type { AuthResponse } from "@saflib/identity-spec"; // TODO: import the appropriate spec

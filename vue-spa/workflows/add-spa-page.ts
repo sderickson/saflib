@@ -71,7 +71,7 @@ export const AddSpaPageWorkflowMachine = setup({
       filePath: (context) =>
         path.join(context.targetDir, `${context.pascalName}.vue`),
       promptMessage: (context) =>
-        `Please update ${context.pascalName}.vue to take the data from the loader, assert that it's loaded, then render sample the data using Vuetify components. Don't create the UX just yet; focus on making sure the data is loading properly.`,
+        `Please update ${context.pascalName}.vue to take the data from the loader, assert that it's loaded, then render sample the data using Vuetify components. Don't create the UX just yet; focus on making sure the data is loading properly. Do not add any sort of loading state or skeleton; that's the job of the "Async" component.`,
       stateName: "useLoader",
       nextStateName: "updateLinksPackage",
     }),

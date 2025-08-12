@@ -12,17 +12,23 @@ import {
   ChangeForgottenPasswordPage,
   VerifyEmailPage,
 } from "@saflib/auth-vue";
+import VerifyEmailPageAsync from "./pages/verify-wall/VerifyWallPageAsync.vue";
 
 import { authLinks } from "@saflib/identity-links";
 
 let router: Router;
 
-export const createAuthRouter = (additionalRoutes?: RouteRecordRaw[]) => {
+interface AuthRouterOptions {
+  additionalRoutes?: RouteRecordRaw[];
+  defaultRedirect: string;
+}
+
+export const createAuthRouter = (options: AuthRouterOptions) => {
   if (router) {
     return router;
   }
   const routes: RouteRecordRaw[] = [
-    ...(additionalRoutes ?? []),
+    ...(options?.additionalRoutes ?? []),
     { path: authLinks.home.path, component: LoginPage },
     { path: authLinks.login.path, component: LoginPage },
     { path: authLinks.register.path, component: RegisterPage },
@@ -32,7 +38,16 @@ export const createAuthRouter = (additionalRoutes?: RouteRecordRaw[]) => {
       path: authLinks.resetPassword.path,
       component: ChangeForgottenPasswordPage,
     },
-    { path: authLinks.verifyEmail.path, component: VerifyEmailPage },
+    {
+      path: authLinks.verifyEmail.path,
+      component: VerifyEmailPage,
+      props: { redirectTo: options?.defaultRedirect },
+    },
+    {
+      path: authLinks.verifyWall.path,
+      component: VerifyEmailPageAsync,
+      props: { redirectTo: options?.defaultRedirect },
+    },
   ];
 
   router = createRouter({

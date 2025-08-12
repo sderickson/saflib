@@ -1,0 +1,22 @@
+{
+  "name": "@saflib/workflows-cli",
+  "description": "Project-specific workflows using @saflib/workflows",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "saf-workflow": "./workflow-cli.ts"
+  },
+  "dependencies": {
+    "@saflib/workflows": "*",
+    "@saflib/processes": "*",
+    "@saflib/drizzle-sqlite3": "*",
+    "@saflib/openapi": "*",
+    "@saflib/monorepo": "*",
+    "@saflib/vue-spa": "*",
+    "@saflib/express": "*",
+    "@saflib/grpc-specs": "*",
+    "@saflib/grpc-node": "*",
+    "@saflib/node-xstate": "*",
+    "@saflib/email-node": "*"
+  }
+} 

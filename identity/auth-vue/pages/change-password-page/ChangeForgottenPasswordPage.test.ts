@@ -1,16 +1,10 @@
 import { describe, it, expect } from "vitest";
-import {
-  stubGlobals,
-  mountWithPlugins,
-} from "../../../../vue-spa/testing/components.ts";
+import { stubGlobals } from "@saflib/vue-spa/testing";
+import { mountTestApp } from "../../test-app.ts";
 import { type VueWrapper } from "@vue/test-utils";
 import ChangeForgottenPasswordPage from "./ChangeForgottenPasswordPage.vue";
-import { createAuthRouter } from "../../auth-router.ts";
-import { getElementByString } from "@saflib/vue-spa/test-utils";
-
+import { getElementByString } from "@saflib/vue-spa/testing";
 import { change_forgotten_password_page } from "./ChangeForgottenPasswordPage.strings";
-
-const router = createAuthRouter();
 
 describe("ChangeForgottenPasswordPage", () => {
   stubGlobals();
@@ -36,12 +30,8 @@ describe("ChangeForgottenPasswordPage", () => {
     );
   };
 
-  const mountComponent = () => {
-    return mountWithPlugins(ChangeForgottenPasswordPage, {}, { router });
-  };
-
   it("should render the password reset form", () => {
-    const wrapper = mountComponent();
+    const wrapper = mountTestApp(ChangeForgottenPasswordPage);
     expect(getNewPasswordInput(wrapper).exists()).toBe(true);
     expect(getConfirmPasswordInput(wrapper).exists()).toBe(true);
     expect(getResetButton(wrapper).exists()).toBe(true);
