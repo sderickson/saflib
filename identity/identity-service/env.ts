@@ -5,8 +5,6 @@
  */
 
 export interface CombinedEnvSchema {
-  IDENTITY_SERVICE_HTTP_PORT: string;
-  IDENTITY_SERVICE_GRPC_PORT: string;
   /**
    * JSON string
    */
@@ -43,6 +41,8 @@ export interface CombinedEnvSchema {
    * Whether to allow the creation of new databases. Useful for ensuring existing production environments don't inadvertently create new databases.
    */
   ALLOW_DB_CREATION?: "true" | "false";
+  IDENTITY_SERVICE_HTTP_PORT: string;
+  IDENTITY_SERVICE_GRPC_PORT: string;
   /**
    * Comma-separated list of emails who will get the 'admin' scope. Emails must be validated to receive this scope.
    */
@@ -53,6 +53,4 @@ export interface CombinedEnvSchema {
   IDENTITY_SERVICE_DISABLE_RATE_LIMITING?: string;
 }
 
-export const typedEnv = (globalThis.process
-  ? process.env
-  : {}) as unknown as CombinedEnvSchema;
+export const typedEnv = (globalThis.process ? process.env : {}) as unknown as CombinedEnvSchema;
