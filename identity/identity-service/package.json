@@ -14,14 +14,14 @@
     "typecheck": "tsc"
   },
   "dependencies": {
-    "@saflib/identity-db": "*",
-    "@saflib/identity-links": "*",
-    "@saflib/identity-rpcs": "*",
-    "@saflib/identity-spec": "*",
     "@saflib/email-node": "*",
     "@saflib/env": "*",
     "@saflib/express": "*",
     "@saflib/grpc-node": "*",
+    "@saflib/identity-db": "*",
+    "@saflib/identity-links": "*",
+    "@saflib/identity-rpcs": "*",
+    "@saflib/identity-spec": "*",
     "@saflib/links": "*",
     "@saflib/monorepo": "*",
     "argon2": "^0.43.0",
