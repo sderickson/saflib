@@ -6,7 +6,7 @@ import {
 import type { VueWrapper } from "@vue/test-utils";
 import ForgotPasswordPage from "./ForgotPasswordPage.vue";
 import { createAuthRouter } from "../../auth-router.ts";
-import { getElementByString } from "@saflib/vue-spa/test-utils";
+import { getElementByString } from "@saflib/vue-spa/testing";
 import { forgot_password_page } from "./ForgotPasswordPage.strings.ts";
 
 const router = createAuthRouter();

@@ -3,7 +3,7 @@ import {
   stubGlobals,
   mountWithPlugins,
 } from "../../../../vue-spa/testing/components.ts";
-import { getElementByString } from "@saflib/vue-spa/test-utils";
+import { getElementByString } from "@saflib/vue-spa/testing";
 import { type VueWrapper } from "@vue/test-utils";
 import LoginPage from "../../pages/login/LoginPage.vue";
 import { createAuthRouter } from "../../auth-router.ts";
