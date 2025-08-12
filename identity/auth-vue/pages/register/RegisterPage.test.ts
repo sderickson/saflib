@@ -1,15 +1,10 @@
 import { describe, it, expect } from "vitest";
-import {
-  stubGlobals,
-  mountWithPlugins,
-} from "../../../../vue-spa/testing/components.ts";
+import { stubGlobals } from "@saflib/vue-spa/testing";
 import { type VueWrapper } from "@vue/test-utils";
 import RegisterPage from "./RegisterPage.vue";
-import { createAuthRouter } from "../../auth-router.ts";
 import { getElementByString } from "@saflib/vue-spa/testing";
 import { register_page } from "./RegisterPage.strings.ts";
-
-const router = createAuthRouter();
+import { mountTestApp } from "../../test-app.ts";
 
 describe("RegisterPage", () => {
   stubGlobals();
@@ -31,12 +26,8 @@ describe("RegisterPage", () => {
     return getElementByString(wrapper, register_page.register);
   };
 
-  const mountComponent = () => {
-    return mountWithPlugins(RegisterPage, {}, { router });
-  };
-
   it("should render the registration form", () => {
-    const wrapper = mountComponent();
+    const wrapper = mountTestApp(RegisterPage);
     expect(getEmailInput(wrapper).exists()).toBe(true);
     expect(getPasswordInput(wrapper).exists()).toBe(true);
     expect(getConfirmPasswordInput(wrapper).exists()).toBe(true);
