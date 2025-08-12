@@ -10,7 +10,7 @@ let usersClient: LimitedUsersClient = new users.UsersClient(
   grpc.credentials.createInsecure(),
 );
 
-if (typedEnv.MOCK_INTEGRATIONS === "true" || typedEnv.NODE_ENV === "test") {
+if (typedEnv.NODE_ENV === "test") {
   usersClient = {
     GetUserProfile: async (_request: users.GetUserProfileRequest) => {
       return new users.GetUserProfileResponse({
