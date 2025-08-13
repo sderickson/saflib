@@ -31,14 +31,6 @@ type ElementString = string | ElementStringObject;
 
 export const getByString = (page: Page, stringThing: ElementString) => {
   if (typeof stringThing === "string") {
-    if (stringThing.includes("{")) {
-      console.log(
-        "converting",
-        stringThing,
-        "to",
-        convertI18NInterpolationToRegex(stringThing),
-      );
-    }
     return page.getByText(convertI18NInterpolationToRegex(stringThing), {
       exact: true,
     });
