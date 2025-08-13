@@ -5,22 +5,22 @@
 - Use `createHandler` for each route handler. It ensures asynchronous errors are caught and passed to the central error handling middleware.
 - Each route handler should be in its own file within a feature-specific directory (e.g., `/routes/feature-name/`). See [Setup](./01-setup.md) for the recommended structure.
 - Handlers within a feature directory should be combined using an Express `Router` in the feature's `index.ts`.
-- Use types generated from your OpenAPI specification (e.g., `@your-org/your-spec`) for request bodies, path parameters, query parameters, and response bodies to ensure conformance.
+- Use types generated from your OpenAPI specification (e.g., `@your-org/{service-name}-spec`) for request bodies, path parameters, query parameters, and response bodies to ensure conformance.
 - **Error Handling Philosophy:**
   - Route handlers should **handle expected errors** returned by service/database layers (e.g., "Not Found", "Validation Failed"). This typically involves checking the `error` property of the returned object (see `ReturnsError` pattern).
   - Handlers translate these expected errors into appropriate HTTP status codes and response bodies (conforming to the OpenAPI spec).
   - **For queries that currently never return errors, use a `switch (true)` with a `throw error satisfies never;` in the `default` case. This ensures TypeScript will catch unhandled error types if the DB/service layer ever starts returning them.**
   - **Unexpected errors** (database connection issues, bugs, errors _thrown_ by services) should _not_ be caught by `try/catch` in the handler. Let them propagate; `createHandler` will catch them and pass them to the central error middleware, typically resulting in a 500 response.
 - Routes are primarily responsible for HTTP concerns: request validation (basic format), authorization checks, context extraction, calling service/DB layer, response formatting (mapping results/errors to HTTP status/body), and adhering to the API contract (OpenAPI spec).
-- Note that openapi validation and auth middleware checks happen before, so routes should assume params, body, and auth are valid. A handler need never throw a 401, but they should throw 403s.
-- Keep business logic out of route handlers; place it in separate service or database layer functions.
+- Note that openapi validation and auth middleware checks happen before, so routes should assume params, body, and auth are valid. A handler need never throw a 401, but they could throw 403s.
+- Keep business logic out of route handlers; place it in separate library or database layer functions.
 
 ## Route Handler Structure
 
 Each route handler should be in its own file (e.g., `routes/auth/login.ts`) and follow this pattern:
 
 ```typescript
-import { createHandler } from "@saflib/node-express";
+import { createHandler } from "@saflib/express";
 import { asyncLocalStorage } from "../../context.ts";
 import type { ApiRequest, ApiResponse } from "@your-org/your-spec"; // Adjust spec import
 import {
@@ -45,11 +45,7 @@ export const loginHandler = createHandler(async (req, res) => {
     switch (true) {
       case error instanceof UserNotFoundError:
       case error instanceof InvalidCredentialsError:
-        // Send a typed 401 response conforming to the spec
-        const errRes: ApiResponse["loginUser"][401] = {
-          message: "Invalid email or password.",
-        };
-        return res.status(401).json(errRes);
+        throw createError(404);
       default:
         // If an unexpected error type was *returned* (should be rare),
         // throw it so the central error handler catches it.
@@ -88,7 +84,7 @@ router.post("/register", registerHandler);
 export { router as authRouter };
 ```
 
-Mount these feature routers in the main router file (`routes/index.ts`), as shown in [Setup](./01-setup.md).
+Mount these feature routers in the main app file (`http.ts`), as shown in [Setup](./01-setup.md).
 
 ## Error Handling Examples
 
@@ -97,7 +93,7 @@ The `createHandler` wrapper simplifies error handling by catching unhandled prom
 **Handling Expected Errors (Returned by Service/DB):**
 
 ```typescript
-import { createHandler } from "@saflib/node-express";
+import { createHandler } from "@saflib/express";
 import { asyncLocalStorage } from "../../context.ts";
 import type { ApiRequest, ApiResponse } from "@your-org/your-spec";
 import { CallSeriesNotFoundError } from "@your-org/your-db-package";
@@ -114,8 +110,7 @@ export const getCallSeriesHandler = createHandler(async (req, res) => {
   if (error) {
     switch (true) {
       case error instanceof CallSeriesNotFoundError:
-        // Return a 404 conforming to the spec
-        return res.status(404);
+        throw createError(404);
       default:
         // If an unexpected error type was *returned* (should be rare),
         // throw it so the central error handler catches it.
