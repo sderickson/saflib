@@ -20,11 +20,28 @@ interface ElementStringObject {
   label?: string;
 }
 
+const convertI18NInterpolationToRegex = (str: string) => {
+  if (str.includes("{")) {
+    return new RegExp(str.replace(/\{(.*?)\}/g, ".*"));
+  }
+  return str;
+};
+
 type ElementString = string | ElementStringObject;
 
 export const getByString = (page: Page, stringThing: ElementString) => {
   if (typeof stringThing === "string") {
-    return page.getByText(stringThing, { exact: true });
+    if (stringThing.includes("{")) {
+      console.log(
+        "converting",
+        stringThing,
+        "to",
+        convertI18NInterpolationToRegex(stringThing),
+      );
+    }
+    return page.getByText(convertI18NInterpolationToRegex(stringThing), {
+      exact: true,
+    });
   }
   if (stringThing["aria-label"]) {
     return page.getByLabel(stringThing["aria-label"], { exact: true });
