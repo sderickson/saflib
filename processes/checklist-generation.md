@@ -16,15 +16,15 @@ Before creating a checklist, review the [doc-outline.md](./doc-outline.md) to un
 
 ### Platform Documentation
 
-- Authentication: [auth-architecture.md](../auth-service/docs/auth-architecture.md)
+- Authentication: [auth-architecture.md](../identity/identity-service/docs/identity-architecture.md)
 - Database: [schema.md](../drizzle-sqlite3/docs/02-schema.md)
-- API: [adding-routes.md](../node-express/docs/02-adding-routes.md)
+- API: [adding-routes.md](../express/docs/02-adding-routes.md)
 
 ### Development Documentation
 
-- Vue Component Testing: [component-testing.md](../vue-spa-dev/docs/component-testing.md)
-- Tanstack Query Testing: [query-testing.md](../vue-spa-dev/docs/query-testing.md)
-- API Route Testing: [testing-middleware.md](../node-express-dev/docs/01-test-routes.md)
+- Vue Component Testing: [component-testing.md](../vue-spa/docs/04-component-testing.md)
+- Tanstack Query Testing: [query-testing.md](../vue-spa/docs/05-query-testing.md)
+- API Route Testing: [testing-middleware.md](../express/docs/03-test-routes.md)
 
 ## File Linking Guidelines
 
@@ -106,7 +106,7 @@ Features should be implemented following this layer order:
 
    - Update OpenAPI specifications
    - Generate updated types
-   - Reference: [update-spec.md](../openapi-specs/docs/03-updates.md)
+   - Reference: [update-spec.md](../openapi/docs/03-updates.md)
 
 2. **Database Layer**
 
@@ -118,7 +118,7 @@ Features should be implemented following this layer order:
 
    - Endpoint implementations
    - Middleware updates
-   - Reference: [adding-routes.md](../node-express/docs/02-adding-routes.md)
+   - Reference: [adding-routes.md](../express/docs/02-adding-routes.md)
 
 4. **Frontend Layer**
    - TanStack Query implementations
@@ -136,7 +136,7 @@ Features should be implemented following this layer order:
 - Document error cases
 - Generate and verify types
 - Testing: Verify type generation
-- Documentation: [updates.md](../openapi-specs/docs/03-updates.md)
+- Documentation: [updates.md](../openapi/docs/03-updates.md)
 
 ### Database Layer
 
@@ -156,18 +156,18 @@ Features should be implemented following this layer order:
 
    - Implement queries/mutations
    - Add error handling
-   - Testing: [query-testing.md](../vue-spa-dev/docs/query-testing.md)
+   - Testing: [query-testing.md](../vue-spa/docs/05-query-testing.md)
 
 2. Component Layer
 
    - Implement base components
    - Add form validation
-   - Testing: [component-testing.md](../vue-spa-dev/docs/component-testing.md)
+   - Testing: [component-testing.md](../vue-spa/docs/04-component-testing.md)
 
 3. Page Layer
    - Implement page components
    - Add loading states
-   - Testing: [component-testing.md](../vue-spa-dev/docs/component-testing.md)
+   - Testing: [component-testing.md](../vue-spa/docs/04-component-testing.md)
 
 ## Common Pitfalls to Avoid
 
@@ -226,7 +226,7 @@ Here's an example of a properly structured checklist for a simple feature:
 ## API Spec Layer
 
 - [ ] Update OpenAPI Specification
-  - [ ] Review [update-spec.md](../openapi-specs/docs/03-updates.md)
+  - [ ] Review [update-spec.md](../openapi/docs/03-updates.md)
   - [ ] Add new endpoint spec to [api-spec/openapi.yaml](/saflib/api-spec/openapi.yaml)
   - [ ] Generate types
   - [ ] Run `npm run test` in the api-spec package to verify type generation
@@ -245,7 +245,6 @@ Here's an example of a properly structured checklist for a simple feature:
 - [ ] Add Database Queries
   - [ ] Review [queries.md](../drizzle-sqlite3/docs/03-queries.md)
   - [ ] Add new queries to the `/queries` directory in the database package
-  - [ ] Add tests using [query-testing.md](../drizzle-sqlite3-dev/docs/01-testing-gotchas.md)
   - [ ] Run `npm run test` in the db package to verify queries
   - [ ] **Review Point**
 
@@ -272,7 +271,7 @@ Here's an example of a properly structured checklist for a simple feature:
   - [ ] Create [frontend/src/components/ExampleForm.vue](/saflib/frontend/src/components/ExampleForm.vue)
   - [ ] Add form
   - [ ] Add validation
-  - [ ] Add tests using [component-testing.md](../vue-spa-dev/docs/component-testing.md)
+  - [ ] Add tests using [component-testing.md](../vue-spa/docs/04-component-testing.md)
   - [ ] Run `npm run test` in the frontend package to verify component
   - [ ] **Review Point**
 
