@@ -17,7 +17,6 @@ package-name/
 ├── errors.ts          # Database-specific error classes
 ├── types.ts           # Consolidated types derived from schema
 └── queries/           # Database queries
-    ├── index.ts       # Exports combined query objects (e.g., { users, todos })
     └── <domain>/      # Directory for a specific domain (e.g., users)
         ├── index.ts          # Exports the combined query object for the domain
         ├── get-by-id.ts      # Query implementation

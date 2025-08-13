@@ -36,12 +36,14 @@ package/
 
 Each query file exports a queryWrapper'd function that takes a DbKey as its first parameter and returns the query result. Queries return errors using the `ReturnsError<TResult, TError>` pattern.
 
-**1. Domain Types (`queries/types.ts`)**
+## Query and Related Files
 
-All domain-specific types (like `Todo`, `NewTodo`, `CreateTodoInput`) should reside in the main `queries/types.ts` file alongside the common `DbType`.
+**1. Domain Types (`types.ts`)**
+
+All domain-specific types (like `Todo`, `NewTodo`, `CreateTodoInput`) should reside in the main `types.ts` file alongside the common `DbType`.
 
 ```typescript
-// queries/types.ts
+// types.ts
 import type * as schema from "../schema.ts";
 import type { BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
 
@@ -57,10 +59,10 @@ export type CreateTodoInput = Omit<NewTodo, "id" | "createdAt">;
 // ... other domain types ...
 ```
 
-**2. Domain Errors (`queries/errors.ts`)**
+**2. Domain Errors (`errors.ts`)**
 
 ```typescript
-// queries/errors.ts
+// errors.ts
 import { HandledDatabaseError } from "@saflib/drizzle-sqlite3";
 
 export class YourDatabaseError extends HandledDatabaseError {}
@@ -110,7 +112,7 @@ export { create } from "./create.ts";
 // ... other exports
 ```
 
-**5. Main Index File (`queries/index.ts`)**
+**5. Main Index File (`index.ts`)**
 
 ```typescript
 export type * from "./types.ts";
