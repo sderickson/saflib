@@ -8,6 +8,19 @@ interface ElementStringObject {
   label?: string;
 }
 
+const regexCharacters = ["(", ")", ".", "*", "+", "?", "^", "$", "|", "/"];
+
+const convertI18NInterpolationToRegex = (str: string) => {
+  if (str.includes("{")) {
+    let escapedStr = str;
+    for (const char of regexCharacters) {
+      escapedStr = escapedStr.replace(char, `\\${char}`);
+    }
+    return new RegExp(escapedStr.replace(/\{(.*?)\}/g, ".*"));
+  }
+  return str;
+};
+
 // Store strings for Vue components in Record<string, ElementString>
 // Then you can v-bind them to the component, and also use them in tests for reliable element selection
 // These objects can also be used in playwright tests, and eventually for i18n.
@@ -21,6 +34,19 @@ export const getElementByString = (
     const elements = wrapper.findAll("*");
     const text: string =
       typeof stringObj === "string" ? stringObj : stringObj["text"]!;
+
+    if (text.includes("{")) {
+      // handle i18n interpolation with regex
+      const r = convertI18NInterpolationToRegex(text);
+      const element = elements.find((el) => {
+        return el.text().match(r);
+      });
+      if (element) {
+        return element;
+      }
+      throw new Error(`Element not found: ${text}`);
+    }
+
     const element = elements.find((el) => {
       return el.text() === text;
     });
