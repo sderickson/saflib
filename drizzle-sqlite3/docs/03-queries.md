@@ -22,99 +22,13 @@ package/
 │       └── ...
 ```
 
-## Creating Database Queries with Error Handling
+## Query Interfaces
 
-Each query file exports a queryWrapper'd function that takes a DbKey as its first parameter and returns the query result. Queries return errors using the `ReturnsError<TResult, TError>` pattern.
+Each query file exports a queryWrapper'd function that takes a DbKey as its first parameter and returns the query result. Queries return errors using the [`ReturnsError<TResult, TError>`](https://github.com/sderickson/saflib/blob/e75a8597ae497ea8d422dab1a1e96f41792b85ba/monorepo/index.ts#L5) pattern per [best practice](../../best-practices.md#return-errors).
 
-## Query and Related Files
+Queries may take an object as a parameter with options for the query. However, these should be added judiciously. A query with inconsistent behavior (such as only sometimes returning related data, or accepting different query parameters) will be harder to isolate performance and reliability issues. Prefer instead creating separate queries.
 
-**1. Domain Types (`types.ts`)**
+Example queries:
 
-All domain-specific types (like `Todo`, `NewTodo`, `CreateTodoInput`) should reside in the main `types.ts` file alongside the common `DbType`.
-
-```typescript
-// types.ts
-import type * as schema from "../schema.ts";
-import type { BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
-
-// Common DB type
-export type DbType = BetterSQLite3Database<typeof schema>;
-
-// --- Todos Domain --- //
-export type Todo = typeof schema.todos.$inferSelect;
-export type NewTodo = typeof schema.todos.$inferInsert;
-export type CreateTodoInput = Omit<NewTodo, "id" | "createdAt">;
-
-// --- Users Domain --- //
-// ... other domain types ...
-```
-
-**2. Domain Errors (`errors.ts`)**
-
-```typescript
-// errors.ts
-import { HandledDatabaseError } from "@saflib/drizzle-sqlite3";
-
-export class YourDatabaseError extends HandledDatabaseError {}
-export class TodoNotFoundError extends YourDatabaseError {}
-export class TodoConflictError extends YourDatabaseError {}
-```
-
-**3. Individual Query File (`queries/todos/get-by-id.ts`)**
-
-Query files now import types from the root `../types.ts`.
-
-```typescript
-// queries/todos/get-by-id.ts
-import { queryWrapper } from "@saflib/drizzle-sqlite3";
-import type { ReturnsError } from "@saflib/monorepo";
-import { eq } from "drizzle-orm";
-import { todos } from "../../schema.ts";
-import type { Todo } from "../../types.ts";
-import { TodoNotFoundError } from "../../errors.ts";
-import type { DbKey } from "@saflib/drizzle-sqlite3";
-import { mainDbManager } from "../../instances.ts";
-
-type Result = ReturnsError<Todo, TodoNotFoundError>;
-
-export const getById = queryWrapper(
-  async (dbKey: DbKey, id: string): Promise<Result> => {
-    const db = mainDbManager.get(dbKey)!;
-    const todo = await db.query.todos.findFirst({
-      where: eq(todos.id, id),
-    });
-
-    if (!todo) {
-      return { error: new TodoNotFoundError() };
-    }
-
-    return { result: todo };
-  },
-);
-```
-
-**4. Domain Index File (`queries/todos/index.ts`)**
-
-```typescript
-// queries/todos/index.ts
-export { getById } from "./get-by-id.ts";
-export { create } from "./create.ts";
-// ... other exports
-```
-
-**5. Main Index File (`index.ts`)**
-
-```typescript
-export type * from "./types.ts";
-export * from "./errors.ts";
-import * as todos from "./queries/todos/index.ts";
-
-import { yourDbManager } from "./instances.ts";
-
-export const yourDb = {
-  ...yourDbManager.publicInterface(),
-  todos,
-};
-```
-
-This structure ensures each file has a single, clear responsibility, improving modularity and testability.
+- [cron-db's get all job settings query](https://github.com/sderickson/saflib/blob/e75a8597ae497ea8d422dab1a1e96f41792b85ba/cron/cron-db/queries/job-settings/get-all.ts)
+- [identity-db's get-by-email query](https://github.com/sderickson/saflib/blob/main/identity/identity-db/queries/users/get-by-email.ts)

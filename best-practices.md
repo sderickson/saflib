@@ -2,11 +2,46 @@
 
 The following are rules that should be followed for _any_ software stack that aims to enable both human and AI agents work quickly and effectively. This stack follows and serves as an example implementation of these rules.
 
+## Pass Objects
+
+As a general rule, give an object as a single parameter to a function. Even if you are adding the first and only parameter, wrap it in an object so that if more options are added later, the function signature does not need to change.
+
+## Return Errors
+
+Some languages (such as Go) expect errors to be returned by functions. Others (such as Java) let you specify what they throw. Many do neither.
+
+For those that do neither, instead of `throw`ing exceptions or errors, adopt a common interface which returns either an error **or** a result (never both, never neither). With TypeScript for example, an operation which may fail in normal operations should result in something like this:
+
+```typescript
+const { result, error } = await unsafeOperation();
+if (error) {
+  switch (true) {
+    case error instanceof ErrorClass:
+      // handle
+    default:
+      // Type check fails if not every type of error is handled
+      throw error satisfies never;
+    }
+  }
+}
+// Through the magic of typing, at this point TypeScript
+// recognizes "result" is defined.
+use(result.someValue);
+```
+
+Note that logic may still `throw` exceptions, but this should be truly exceptional. Exceptions should only be thrown in cases where, if it _actually_ happens in a test or in production, it will be fixed.
+
 ## Keep Files Small
 
 This is most applicable to parts of the codebase where there are a number of the same thing. Components, routes, database queries. Each of these should live in a single file, rather than being grouped by domain (such as all CRUD operations for a single entity in one file). If any single instance of those grows to a larger size, it should be broken up into smaller pieces, such as sub-components, library methods, or transactions which depend on smaller queries.
 
 This makes it simpler to provide the right context, and for that context to be contained. It also speeds up editing of these files as there's less surface area for the agent to work with when making changes.
+
+## Keep Code Modular
+
+Software should be broken up into packages which have a well-defined purpose, a public interface, and a list of dependencies. These packages should also not become too large in any of these regards.
+
+This has similar benefits to "Keep Files Small"; it limits the required context for humans or agents to work.
 
 ## Specify and Enforce Shared APIs, Models, and Strings
 
@@ -45,34 +80,3 @@ A solid automated test suite will include:
 - E2E tests with all external dependencies mocked and all internal dependencies fully running.
 
 Packages should be measured for how covered _their_ code is by _their_ tests. A majority of code should be tested at least, with at least one unit or integration test per file (component, endpoint, query, etc). In addition, these files should be immediately adjacent to the file they test (no separate "tests" directories).
-
-## Keep Code Modular
-
-Software should be broken up into packages which have a well-defined purpose, a public interface, and a list of dependencies. These packages should also not become too large in any of these regards.
-
-This has similar benefits to "Keep Files Small"; it limits the required context for humans or agents to work.
-
-## Return Errors
-
-Some languages (such as Go) expect errors to be returned by functions. Others (such as Java) let you specify what they throw. Many do neither.
-
-For those that do neither, instead of `throw`ing exceptions or errors, adopt a common interface which returns either an error **or** a result (never both, never neither). With TypeScript for example, an operation which may fail in normal operations should result in something like this:
-
-```typescript
-const { result, error } = await unsafeOperation();
-if (error) {
-  switch (true) {
-    case error instanceof ErrorClass:
-      // handle
-    default:
-      // Type check fails if not every type of error is handled
-      throw error satisfies never;
-    }
-  }
-}
-// Through the magic of typing, at this point TypeScript
-// recognizes "result" is defined.
-use(result.someValue);
-```
-
-Note that logic may still `throw` exceptions, but this should be truly exceptional. Exceptions should only be thrown in cases where, if it _actually_ happens in a test or in production, it will be fixed.
