@@ -1,28 +1,36 @@
-# Setup
+# Overview
 
-This guide outlines the standard structure and setup for creating a Drizzle SQLite3 library in the monorepo.
+This library provides a set of shared logic, documentation, and workflows for using a combination of [drizzle](https://orm.drizzle.team/) and [better-sqlite3](https://www.npmjs.com/package/better-sqlite3) to include [SQLite](https://sqlite.org/index.html) instances in the stack.
+
+These docs explain how consumers of `@saflib/drizzle-sqlite3` should use this library within SAF applications.
 
 ## Package Structure
 
+Each package which depends on `@saflib/drizzle-sqlite3` should have the following structure:
+
 ```
 package-name/
-├── package.json
+├── data/
+│   └── .gitkeep
 ├── drizzle.config.ts
-├── data/              # SQLite database files
-│   └── .gitkeep       # Needed to make sure drizzle can write to the directory
-├── migrations/        # Generated migrations
-├── schema.ts          # Database schema
-├── instances.ts       # Database instance management
-├── index.ts           # Exports the database interface and query objects
-├── errors.ts          # Database-specific error classes
-├── types.ts           # Consolidated types derived from schema
-└── queries/           # Database queries
-    └── <domain>/      # Directory for a specific domain (e.g., users)
-        ├── index.ts          # Exports the combined query object for the domain
-        ├── get-by-id.ts      # Query implementation
-        └── get-by-id.test.ts # Test file adjacent to query
-        └── ...
+├── errors.ts
+├── index.ts
+├── instances.ts
+├── migrations/
+├── package.json
+├── queries/
+│   └── <domain>/
+│       ├── index.ts
+│       ├── get-by-id.ts
+│       ├── get-by-id.test.ts
+│       └── ...
+├── schema.ts
+└── types.ts
 ```
+
+### Data
+
+SQLite files should be kept here. This provides a convenient mount point for containers.
 
 ## Required Files
 

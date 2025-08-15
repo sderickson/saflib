@@ -1,20 +1,20 @@
 # Overview
 
-SAF is Scott's Application Framework - I built it for me, but also I'm making this repo public for people to use and play around with. SAF is a full-featured web application framework using my preferred libraries and services.
+SAF is Scott's Application Framework - I built it for me, but also I'm making this repo public for people to use and explore as it reflects and is the source of my thinking on [my blog](https://scotterickson.info/blog). Simply put, SAF is a full-featured web application framework using my preferred libraries and services.
 
 Guiding principles:
 
-- **Self-Contained**. The app should run with little setup or dependencies on outside services except for things that are really essential, such as dependable, trusted email services.
-- **Feature Complete**. Provide the sorts of features you'd expect as an application developer or engineering manager to have on hand such as CI/CD pipeline, common backend services like background tasks or message queues, and code health reports. It should feel mature and modern.
-- **Batteries Included**. Provides common features, services, and utilities. These might be simple libraries like common Express middleware configuration, or entire E2E services like sign-up/sign-in flows and an identity service.
-- **Easy to Update**. I want to be able to pretty quickly build a new common tool in this repo and then share it with all the applications that use this framework. Or update things to the latest libraries. That's partly on the application, though, to have thorough and well-balanced testing.
-- **Built for AI**. This is sort of my playground to experiment with and share methodologies and tools. Technical decisions and workflows are being made for AI coding agents to do work conistently and cheaply.
+- **Self-Contained**. A new app should run with little setup or dependencies on outside services except essentials, such as dependable, trusted email services.
+- **Feature Complete**. The framework provides the sorts of features you'd expect to have for modern web apps such as CI/CD pipeline, common backend services like background tasks or message queues, and code health reports.
+- **Batteries Included**. Optional features, services, and utilities are included. These might be simple libraries like common Express middleware configuration, or entire E2E services like sign-up/sign-in flows and an identity service.
+- **Easy to Update**. It should be seamless to build a new tool in this repo as part of one product and then adopt it with other applications that use this framework. It should also be easy to update to new versions of this framework. This depends on the application having thorough and well-balanced testing.
+- **Built for AI**. This is my playground to experiment with and share methodologies and tools. Technical decisions and workflows are always made with AI coding agents in mind.
 
 ## Documentation
 
-The focus of the docs on this site are what's in `saflib`, which contains all the shared code across all SAF-based projects. It is a (mostly) flat list of packages, spanning common dependencies and reusable features. It also stores all the documentation for both human and agent consumption.
+The focus of the docs on this site are what's in `saflib`, which contains all the shared code across all SAF-based projects. It is a (mostly) flat list of packages, spanning common dependencies and reusable features. It also stores documentation and workflows for both human and agent consumption.
 
-[This site](https://docs.saf-demo.online/) provides a quick way to review the docs in a nice format, but you can also find these docs while you are coding with SAF by searching for their markdown files. Include them as context in your prompts, and update them based on where the documentation falls short.
+[This site](https://docs.saf-demo.online/) provides a quick way to review the docs, but these docs are also accessible when coding with SAF by searching for their markdown files. Include them as context in prompts, and update them as part of normal work.
 
 ## Setup
 
@@ -26,4 +26,4 @@ To use these packages in an existing project:
 2. Add the directory as a workspace for your root-level `package.json`. For example if you added the submodule at the root directory, you'd add `"saflib/**"` to your [`workspaces` field](https://docs.npmjs.com/cli/v11/configuring-npm/package-json#workspaces).
 3. Run `npm install` or equivalent.
 
-To use a given package, install it as a dependency in your own package. The value of the dependency should be `"*"` so that it gets the workspace version. At time of writing, none of these packages are published to npm, though they could be.
+To use a given package, install it as a dependency in your own package. The value of the dependency should be `"*"` so that it gets the workspace version. At time of writing, none of these packages are published to npm yet.
