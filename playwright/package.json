@@ -7,7 +7,8 @@
     ".": "./index.ts"
   },
   "dependencies": {
-    "@playwright/test": "^1.53.2"
+    "@playwright/test": "^1.53.2",
+    "@saflib/vue-spa": "*"
   },
   "devDependencies": {
     "@saflib/vitest": "*"

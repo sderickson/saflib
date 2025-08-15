@@ -1,5 +1,6 @@
 import type { Page } from "@playwright/test";
 export * from "./screenshots.ts";
+import { convertI18NInterpolationToRegex } from "@saflib/vue-spa/i18n-utils";
 
 export const tightAndroidViewport = { width: 430, height: 700 };
 
@@ -24,7 +25,9 @@ type ElementString = string | ElementStringObject;
 
 export const getByString = (page: Page, stringThing: ElementString) => {
   if (typeof stringThing === "string") {
-    return page.getByText(stringThing, { exact: true });
+    return page.getByText(convertI18NInterpolationToRegex(stringThing), {
+      exact: true,
+    });
   }
   if (stringThing["aria-label"]) {
     return page.getByLabel(stringThing["aria-label"], { exact: true });

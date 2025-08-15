@@ -1,5 +1,6 @@
 import { expect } from "vitest";
 import { type VueWrapper } from "@vue/test-utils";
+import { convertI18NInterpolationToRegex } from "../i18n-utils";
 
 interface ElementStringObject {
   placeholder?: string;
@@ -21,6 +22,19 @@ export const getElementByString = (
     const elements = wrapper.findAll("*");
     const text: string =
       typeof stringObj === "string" ? stringObj : stringObj["text"]!;
+
+    if (text.includes("{")) {
+      // handle i18n interpolation with regex
+      const r = convertI18NInterpolationToRegex(text);
+      const element = elements.find((el) => {
+        return el.text().match(r);
+      });
+      if (element) {
+        return element;
+      }
+      throw new Error(`Element not found: ${text}`);
+    }
+
     const element = elements.find((el) => {
       return el.text() === text;
     });
