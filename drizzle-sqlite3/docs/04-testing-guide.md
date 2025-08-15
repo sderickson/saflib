@@ -30,6 +30,8 @@ describe("such-and-such query", () => {
 });
 ```
 
+See also [this identity example](https://github.com/sderickson/saflib/blob/4871050da4a2c51be9606a58df0d87089e85fea7/identity/identity-db/queries/users/get-by-id.test.ts).
+
 ## Coverage
 
 Database queries should aim for 100% coverage. This includes error handling. For any error they return, there should be a known set of steps to reproduce that error, and those should be in a test. If there's no known way to cause a "handled" error to be returned, then that logic should be removed.

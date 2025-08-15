@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import type { DbKey } from "@saflib/drizzle-sqlite3";
 import { authDb, UserNotFoundError } from "@saflib/identity-db";
 
@@ -7,6 +7,10 @@ describe("getById", () => {
 
   beforeEach(() => {
     dbKey = authDb.connect();
+  });
+
+  afterEach(() => {
+    authDb.disconnect(dbKey);
   });
 
   it("should return user by id", async () => {
