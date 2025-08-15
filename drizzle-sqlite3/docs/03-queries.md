@@ -1,35 +1,25 @@
 # Queries
 
-Queries are the "public" interface for the database. Services should not craft their own SQL queries, they should be housed in the "queries" folder of the database library and exported for general use. This enforces the following layering:
+Queries are the bulk of the public interface for the database package. Services should not craft their own SQL queries, they should be housed in the "queries" folder of the database library and exported for general use.
 
-1. **Database Layer**: Uses `queryWrapper` to catch and classify database errors
-2. **Service Layer**: Catches specific handled errors and reports generic errors for unhandled ones
-
-This way, the database layer never exposes errors emitted by SQLite. If it did, service layers may try
-to handle them directly and this would lead to tight coupling.
+In addition, all queries should use `queryWrapper` to catch and normalize unhandled errors. This way, the database layer never exposes errors emitted by SQLite. If it did, service layers may try to handle them directly and this would lead to tight coupling.
 
 ## File Organization
 
-All queries should be organized by domain (table or logical group) within the `queries/` directory. Each specific query operation (get, list, create, update, delete) should reside in its **own file**. An `index.ts` file within each domain directory aggregates the individual query files.
+All queries should be organized by domain (table or logical group) within the `queries/` directory. Each specific query operation (get, list, create, update, delete) should reside in its own file per [best practice](../../best-practices.md#keep-files-small). An `index.ts` file within each domain directory aggregates the individual query files.
 
 ```
 package/
 ├── queries/
-│   ├── todos/           # Domain directory for 'todos'
-│   │   ├── index.ts     # Exports the todo queries
-│   │   ├── get-by-id.ts # The getById query
-│   │   ├── create.ts    # The create query
-│   │   └── ...          # Other query files (list.ts, update.ts, etc.)
-│   │   └── get-by-id.test.ts # Test for get-by-id.ts
-│   │   └── ...          # Other test files
-│   └── users/           # Domain directory for 'users'
-│       └── ...          # (Similar structure)
-├── index.ts             # Exports all domain queries and the public interface for the db
-├── schema.ts            # Database schema
-├── instance.ts          # Database instance and query factory initialization
-├── types.ts             # Common DB types AND ALL domain-specific types
-├── package.json
-└── errors.ts            # Base error types
+│   ├── todos/
+│   │   ├── index.ts
+│   │   ├── get-by-id.ts
+│   │   ├── get-by-id.test.ts
+│   │   ├── create.ts
+│   │   ├── create.test.ts
+│   │   └── ...
+│   └── users/
+│       └── ...
 ```
 
 ## Creating Database Queries with Error Handling

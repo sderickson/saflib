@@ -44,10 +44,35 @@ A solid automated test suite will include:
 - Integration (or component) tests for frontend web pages and components, where network requests are faked. Focus mainly on testing renders, not interactions.
 - E2E tests with all external dependencies mocked and all internal dependencies fully running.
 
-Packages should be measured for how covered _their_ code is by _their_ tests. A majority of code should be tested at least, with at least one unit or integration test per file (component, endpoint, query, etc).
+Packages should be measured for how covered _their_ code is by _their_ tests. A majority of code should be tested at least, with at least one unit or integration test per file (component, endpoint, query, etc). In addition, these files should be immediately adjacent to the file they test (no separate "tests" directories).
 
 ## Keep Code Modular
 
 Software should be broken up into packages which have a well-defined purpose, a public interface, and a list of dependencies. These packages should also not become too large in any of these regards.
 
 This has similar benefits to "Keep Files Small"; it limits the required context for humans or agents to work.
+
+## Return Errors
+
+Some languages (such as Go) expect errors to be returned by functions. Others (such as Java) let you specify what they throw. Many do neither.
+
+For those that do neither, instead of `throw`ing exceptions or errors, adopt a common interface which returns either an error **or** a result (never both, never neither). With TypeScript for example, an operation which may fail in normal operations should result in something like this:
+
+```typescript
+const { result, error } = await unsafeOperation();
+if (error) {
+  switch (true) {
+    case error instanceof ErrorClass:
+      // handle
+    default:
+      // Type check fails if not every type of error is handled
+      throw error satisfies never;
+    }
+  }
+}
+// Through the magic of typing, at this point TypeScript
+// recognizes "result" is defined.
+use(result.someValue);
+```
+
+Note that logic may still `throw` exceptions, but this should be truly exceptional. Exceptions should only be thrown in cases where, if it _actually_ happens in a test or in production, it will be fixed.
