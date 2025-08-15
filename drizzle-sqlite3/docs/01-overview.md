@@ -9,7 +9,7 @@ These docs explain how consumers of `@saflib/drizzle-sqlite3` should use this li
 Each package which depends on `@saflib/drizzle-sqlite3` should have the following structure:
 
 ```
-package-name/
+{service-name}-db/
 ├── data/
 │   └── .gitkeep
 ├── drizzle.config.ts
