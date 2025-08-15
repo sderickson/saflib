@@ -14,7 +14,7 @@ Anything that is shared across system boundaries, such data structures or interf
 
 This provides quick and straightforward feedback when a shared contract changes. It's easy to find what needs to adapt to the new contract, without the need for running automated tests, and is faster than even well-written and speedy unit tests.
 
-There are many solutions for APIs, such as proto or OpenAPI. These are also good places to store shared models, which can be readily used as parameters or properties for functions or components as well as the network communications they help specify. Strings (such as urls and user-facing copy) can simply be stored independently from application logic, in maps such as JSON, where they can be referenced across components and tests.
+There are many solutions for APIs and schemas, such as proto or OpenAPI. These are also good places to store shared models, which can be readily used as parameters or properties for functions or components as well as the network communications they help specify. Strings (such as urls and user-facing copy) can simply be stored independently from application logic, in maps such as JSON, where they can be referenced across components and tests.
 
 ## Mock, Fake, and Shim Service Boundaries
 
@@ -29,6 +29,22 @@ Mocks are recommended for network calls between services (such as an application
 Mocks and fake data are often found adjacent to the consumer code that depends on them, but this logic should live with the service or integration owner. In practice, consumers of the mocks and fakes will end up writing and contributing most of them, most likely, but these should be kept and managed in a central location so to reduce redundant work and updates when shared models change.
 
 Automated test are the next bulwark against breaking changes after static analysis. To test pieces of the application in isolation requires work at the integration points, and having clear expectations of who owns that work helps make sure that work gets done and is not done repeatedly.
+
+## Have Thorough Test Coverage
+
+Where possible test logic in pure functions with no dependencies.
+
+In practice, that's often not practical, at least when it comes to web applications.
+
+A solid automated test suite will include:
+
+- Pure unit tests on library or utility code.
+- Unit tests on database queries with an in-memory instance of the database.
+- Integration tests for each operation such as web and grpc endpoints, FSM states, and background jobs, with in-memory database instances and mocked external and internal service dependencies.
+- Integration (or component) tests for frontend web pages and components, where network requests are faked. Focus mainly on testing renders, not interactions.
+- E2E tests with all external dependencies mocked and all internal dependencies fully running.
+
+Packages should be measured for how covered _their_ code is by _their_ tests. A majority of code should be tested at least, with at least one unit or integration test per file (component, endpoint, query, etc).
 
 ## Keep Code Modular
 

@@ -1,6 +1,6 @@
 # Schema
 
-Best practices for when designing your database schema.
+When defining Drizzle schemas, please follow these more-specific guidelines.
 
 ## Data Types
 
@@ -25,9 +25,9 @@ Best practices for when designing your database schema.
   updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
   ```
 
-- **Currency**: Use `integer` for monetary values (store in cents)
+- **Currency**: Use `integer` for monetary values (store in cents or other lowest denomination)
   ```typescript
-  price: integer("price").notNull(), // Stored in cents
+  price: integer("price").notNull(),
   ```
 
 ## Relationships
