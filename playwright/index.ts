@@ -20,9 +20,15 @@ interface ElementStringObject {
   label?: string;
 }
 
+const regexCharacters = ["(", ")", ".", "*", "+", "?", "^", "$", "|", "/"];
+
 const convertI18NInterpolationToRegex = (str: string) => {
   if (str.includes("{")) {
-    return new RegExp(str.replace(/\{(.*?)\}/g, ".*"));
+    let escapedStr = str;
+    for (const char of regexCharacters) {
+      escapedStr = escapedStr.replace(char, `\\${char}`);
+    }
+    return new RegExp(escapedStr.replace(/\{(.*?)\}/g, ".*"));
   }
   return str;
 };
