@@ -30,7 +30,7 @@ describe("such-and-such query", () => {
 });
 ```
 
-See also [this identity example](https://github.com/sderickson/saflib/blob/4871050da4a2c51be9606a58df0d87089e85fea7/identity/identity-db/queries/users/get-by-id.test.ts).
+See also [this identity example](https://github.com/sderickson/saflib/blob/bc5eecf8253236c3a4455d7caaa3e11c2e12d389/identity/identity-db/queries/users/get-by-id.test.ts).
 
 ## Coverage
 
