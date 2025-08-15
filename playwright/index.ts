@@ -1,5 +1,6 @@
 import type { Page } from "@playwright/test";
 export * from "./screenshots.ts";
+import { convertI18NInterpolationToRegex } from "@saflib/vue-spa/i18n-utils";
 
 export const tightAndroidViewport = { width: 430, height: 700 };
 
@@ -19,19 +20,6 @@ interface ElementStringObject {
   "aria-label"?: string;
   label?: string;
 }
-
-const regexCharacters = ["(", ")", ".", "*", "+", "?", "^", "$", "|", "/"];
-
-const convertI18NInterpolationToRegex = (str: string) => {
-  if (str.includes("{")) {
-    let escapedStr = str;
-    for (const char of regexCharacters) {
-      escapedStr = escapedStr.replace(char, `\\${char}`);
-    }
-    return new RegExp(escapedStr.replace(/\{(.*?)\}/g, ".*"));
-  }
-  return str;
-};
 
 type ElementString = string | ElementStringObject;
 

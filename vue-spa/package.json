@@ -11,7 +11,8 @@
     "./workflows": "./workflows/index.ts",
     "./tanstack": "./src/tanstack.ts",
     "./testing": "./testing/index.ts",
-    "./vitest-config": "./testing/vitest-config.js"
+    "./vitest-config": "./testing/vitest-config.js",
+    "./i18n-utils": "./i18n-utils.ts"
   },
   "scripts": {
     "typecheck": "tsc --project tsconfig.app.json"
