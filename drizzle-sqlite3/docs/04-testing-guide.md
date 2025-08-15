@@ -9,7 +9,7 @@ When testing database queries, always use the package's exported database manage
 It will look like this:
 
 ```typescript
-import { mainDb, domain } from "@your-package/dbs-main";
+import { mainDb } from "@your-org/your-db-package";
 import type { DbKey } from "@saflib/drizzle-sqlite3";
 
 describe("such-and-such query", () => {
@@ -24,7 +24,7 @@ describe("such-and-such query", () => {
   });
 
   it("should do something", async () => {
-    const { result } = await domain.list(dbKey);
+    const { result } = await mainDb.someDomain.list(dbKey);
     // ... assertions
   });
 });
