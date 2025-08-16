@@ -65,6 +65,14 @@ Examples:
 - [Cron Service](https://github.com/sderickson/saflib/blob/main/cron/cron-service/http.ts)
 - [Identity Service](https://github.com/sderickson/saflib/blob/main/identity/identity-service/http.ts)
 
+### `package.json`
+
+The name of the package should be `@<org-name>/<service-name>-http`, such as `@saflib/identity-http`. This reflects that the package focuses on serving HTTP requests for the service within your organization.
+
+It should depend on a "spec" package of the same name structure that is adjacent. So `@saflib/identity-http` depends on `@saflib/identity-spec` which itself depends on `@saflib/openapi`. See [openapi](../../openapi/docs/01-overview.md) for more information.
+
+> TODO: refactor identity-http and identity-grpc out of identity-service.
+
 ### `routes/`
 
 The main source of the package. Routes should be organized into sub-folders by domain, and each of those folders should include an index.ts file which exports all queries in that folder in a single bundle which index.ts will import.

@@ -4,7 +4,9 @@ Things to keep an eye out for when writing tests for the SQLite layer.
 
 ## Database Instantiation
 
-When testing database queries, always use the package's exported database manager rather than creating database instances directly. This ensures you're testing the same code path that consumers of your package will use per [best practices](../../best-practices.md#have-thorough-test-coverage)
+When testing database queries, always use the package's exported database manager rather than creating database instances directly. This ensures you're testing the same code path that consumers of your package will use per [best practices](../../best-practices.md#have-thorough-test-coverage).
+
+> TODO: Update identity-db tests to always import from its own package per above.
 
 It will look like this:
 
