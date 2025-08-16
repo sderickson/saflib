@@ -46,13 +46,12 @@ Note: if there's context that can be shared between different subsystems, this f
 
 This exports either an express app, an express router, or both.
 
-If it's a router, it should only include middleware that's specific to that router's logic, which is everything returned by [`createPreMiddleware`](https://github.com/sderickson/saflib/blob/e75a8597ae497ea8d422dab1a1e96f41792b85ba/express/src/middleware/composition.ts#L22). At time of writing, the only middlewares not included are metrics ones.
+If it's a router, it should only include middleware that's specific to that router's logic, which is everything returned by . At time of writing, the only middlewares not included are metrics ones.
 
 An Express Router should include the following:
 
 - Create any required DB connections if not provided. They will tend to be provided in production or development, and created in testing.
 - Construct the app context and provide it to routes.
-- Use `createPreMiddleware` and include what is returned before the routes.
 - Use `recommendedErrorHandlers` and include that after the routes.
 
 An Express App will do the above and also:
@@ -60,10 +59,14 @@ An Express App will do the above and also:
 - `app.set("trust proxy", 1);` and any other required settings.
 - Use the metricsRouter and metricsMiddleware
 
+Note that this file should _not_ include calls to [`createPreMiddleware`](https://github.com/sderickson/saflib/blob/e75a8597ae497ea8d422dab1a1e96f41792b85ba/express/src/middleware/composition.ts#L22). That is the responsibility of route index files. See [Routes](./03-routes.md) for more information.
+
 Examples:
 
 - [Cron Service](https://github.com/sderickson/saflib/blob/main/cron/cron-service/http.ts)
 - [Identity Service](https://github.com/sderickson/saflib/blob/main/identity/identity-service/http.ts)
+
+> TODO: Move "createPreMiddleware" in cron service to route index file.
 
 ### `package.json`
 

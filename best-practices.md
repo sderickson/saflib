@@ -31,6 +31,8 @@ use(result.someValue);
 
 Note that logic may still `throw` exceptions, but this should be truly exceptional. Exceptions should only be thrown in cases where, if it _actually_ happens in a test or in production, it will be fixed.
 
+Errors returned should also only be those managed and created by the package. Propagating downstream errors (such as from a dependency) upstream is a form of tight coupling. Even unhandled errors should be caught at the package or service boundary and obfuscated to ensure consumers cannot depend on deeper dependencies.
+
 ## Keep Files Small
 
 This is most applicable to parts of the codebase where there are a number of the same thing. Components, routes, database queries. Each of these should live in a single file, rather than being grouped by domain (such as all CRUD operations for a single entity in one file). If any single instance of those grows to a larger size, it should be broken up into smaller pieces, such as sub-components, library methods, or transactions which depend on smaller queries.
