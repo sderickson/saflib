@@ -120,6 +120,8 @@ See [Migrations with Drizzle Kit](https://orm.drizzle.team/docs/kit-overview) fo
 
 The meat of the database package. Queries should be organized into sub-folders by domain, and each of those folders should include an `index.ts` file which exports all queries in that folder in a single bundle which `index.ts` will import.
 
+See [Queries](./03-queries.md) for more information.
+
 ### `schema.ts`
 
 Where the Drizzle schema will live. See [Drizzle schema](https://orm.drizzle.team/docs/sql-schema-declaration) and "Manage Schema" topics on the Drizzle site for more info, and [the schema doc here](./02-schema.md) for SAF-specific recommendations.

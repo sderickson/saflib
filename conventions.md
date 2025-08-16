@@ -23,3 +23,9 @@ Most packages have a core set of source files which is most of the logic contain
 | gRPCs        | `protos`        |
 
 Other files, such as exports and test configs, should be in the root directory.
+
+## Grouped Packages
+
+Sometimes packages are related to one another, such as services which are composed of multiple subsystems. These should be stored in their own directory with the name of the service or client, and each package should be prefixed with the name of the service or client.
+
+Share code should be in a package suffixed with `-common`.
