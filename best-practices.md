@@ -80,3 +80,19 @@ A solid automated test suite will include:
 - E2E tests with all external dependencies mocked and all internal dependencies fully running.
 
 Packages should be measured for how covered _their_ code is by _their_ tests. A majority of code should be tested at least, with at least one unit or integration test per file (component, endpoint, query, etc). In addition, these files should be immediately adjacent to the file they test (no separate "tests" directories).
+
+Tests should stick to testing the package, API, or user interface they are targeting as much as possible. They should avoid reaching behind and checking, for example, database entries directly. This is not a hard-and-fast rule however; here are some exceptions:
+
+- Checking product events or key metrics are recorded correctly after a user behavior or endpoint call.
+- Viewing emails sent in order to make sure they do get sent, or to get some contents such as an email verification code.
+
+## Document Technical Decisions In the Codebase
+
+There needs to be a source of truth for how to do things the right way specific to your stack, and the closer those decisions are to the code the better. To that end:
+
+- For important or non-trivial interfaces, document those functions or classes in the source code itself, such as with [JSDoc](https://jsdoc.app/).
+- For packages or modules, include documents on how to use them in the same directory. These documents should tend to be **Explanation** and **Tutorial** docs.
+- **Reference** documentation should be generated from source, such as through [Typedoc](https://github.com/TypeStrong/typedoc) or [Redoc](https://github.com/Redocly/redoc).
+- **How-To Guides** are great fodder for agentic workflows, and human-readable docs should be generated from those.
+
+The above types of docs are defined by [Diátaxis](https://diataxis.fr/).

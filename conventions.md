@@ -16,13 +16,17 @@ Most packages have a core set of source files which is most of the logic contain
 
 | Package Type | Source Dir Name |
 | ------------ | --------------- |
-| Library      | `src`           |
-| DB           | `queries`       |
-| HTTP         | `routes`        |
-| Web App      | `pages`         |
-| gRPCs        | `protos`        |
+| Library      | `src/`          |
+| DB           | `queries/`      |
+| HTTP         | `routes/`       |
+| Web App      | `pages/`        |
+| gRPCs        | `protos/`       |
 
-Other files, such as exports and test configs, should be in the root directory.
+Other files, such as exports and test configs, or consolidations of the above such as routers, should be in the root directory.
+
+## Documentation
+
+Per [best practices](./best-practices.md#document-technical-decisions-in-the-codebase), store markdown files in a `docs/` directory at the root of the package.
 
 ## Grouped Packages
 

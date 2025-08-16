@@ -1,10 +1,10 @@
-# Testing Guide
+# Testing
 
 Things to keep an eye out for when writing tests for the SQLite layer.
 
 ## Database Instantiation
 
-When testing database queries, always use the package's exported database manager rather than creating database instances directly. This ensures you're testing the same code path that consumers of your package will use.
+When testing database queries, always use the package's exported database manager rather than creating database instances directly. This ensures you're testing the same code path that consumers of your package will use per [best practices](../../best-practices.md#have-thorough-test-coverage)
 
 It will look like this:
 
@@ -34,4 +34,4 @@ See also [this identity example](https://github.com/sderickson/saflib/blob/bc5ee
 
 ## Coverage
 
-Database queries should aim for 100% coverage. This includes error handling. For any error they return, there should be a known set of steps to reproduce that error, and those should be in a test. If there's no known way to cause a "handled" error to be returned, then that logic should be removed.
+Database queries should aim for 100% coverage. This includes error handling. For any error they return, there should be a known set of steps to reproduce that error, and those should be in a test. If there's no known way to cause a "handled" error to be returned, then that logic should be removed. This ensures that all database query logic is intentional.
