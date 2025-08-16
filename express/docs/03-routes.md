@@ -14,7 +14,7 @@ An `index.ts` file within each domain directory aggregates the individual handle
 
 > TODO: Update index routers to actually handle the entire route path.
 
-## Typing
+## Typing the Interface
 
 Spec packages provide types for route requests and responses. Every handler must use these types to highlight as quickly as possible when the implementation does not match the specification.
 
@@ -27,9 +27,9 @@ Examples:
 
 > TODO: Make sure all identity routes properly type their requests, responses.
 
-## Wrapping
+## Wrapping the Handler
 
-Each handler should be wrapped with `createHandler`. It just promisify's the handler, ensuring any uncaught exceptions get passed to `next`. More functionality may be added there such as more advanced typing, instrumentation, so it's important to have this intermediary around all handlers.
+Each handler should be wrapped with [`createHandler`](https://github.com/sderickson/saflib/blob/6070cd5d0bb8d44b7114c0b7dd9b318bd9b1de4a/express/src/handler.ts). It just promisify's the handler, ensuring any uncaught exceptions get passed to `next`. More functionality may be added there such as more advanced typing, instrumentation, so it's important to have this intermediary around all handlers.
 
 ## Error Handling
 
@@ -51,153 +51,21 @@ Note that `message` is _for debugging_. The `message` is _not_ intended to be sh
 
 See for example [get-profile.ts](https://github.com/sderickson/saflib/blob/37d619bf41fe2922880dee7483b9fb9690d2ee1b/identity/identity-service/routes/auth/get-profile.ts).
 
-## Implementation Basics
+## Business Logic
 
-- **Error Handling Philosophy:**
-  - Route handlers should **handle expected errors** returned by service/database layers (e.g., "Not Found", "Validation Failed"). This typically involves checking the `error` property of the returned object (see `ReturnsError` pattern).
-  - Handlers translate these expected errors into appropriate HTTP status codes and response bodies (conforming to the OpenAPI spec).
-  - **For queries that currently never return errors, use a `switch (true)` with a `throw error satisfies never;` in the `default` case. This ensures TypeScript will catch unhandled error types if the DB/service layer ever starts returning them.**
-  - **Unexpected errors** (database connection issues, bugs, errors _thrown_ by services) should _not_ be caught by `try/catch` in the handler. Let them propagate; `createHandler` will catch them and pass them to the central error middleware, typically resulting in a 500 response.
-- Routes are primarily responsible for HTTP concerns: request validation (basic format), authorization checks, context extraction, calling service/DB layer, response formatting (mapping results/errors to HTTP status/body), and adhering to the API contract (OpenAPI spec).
-- Note that openapi validation and auth middleware checks happen before, so routes should assume params, body, and auth are valid. A handler need never throw a 401, but they could throw 403s.
-- Keep business logic out of route handlers; place it in separate library or database layer functions.
+Since a route handler is primarily responsible for HTTP concerns, it should house as little business logic as possible. Instead it should call out to:
 
-## Route Handler Structure
+- Database packages using their provided queries
+- Integration packages which interface with external dependencies
+- RPC packages which communicate with other internal services
 
-Each route handler should be in its own file (e.g., `routes/auth/login.ts`) and follow this pattern:
+For more complex behaviors whcih do not fall into one of these, consider using one of the following:
 
-```typescript
-import { createHandler } from "@saflib/express";
-import { asyncLocalStorage } from "../../context.ts";
-import type { ApiRequest, ApiResponse } from "@your-org/your-spec"; // Adjust spec import
-import {
-  UserNotFoundError,
-  InvalidCredentialsError,
-} from "@your-org/your-db-package"; // Adjust error imports
-import createError from "http-errors"; // For creating standard HTTP errors
+- Finite state machines (with `@saflib/node-xstate`) for complex, asynchronous workflows
+- Database packages with transactions for complex query behaviors
 
-export const loginHandler = createHandler(async (req, res) => {
-  // Get context
-  const ctx = asyncLocalStorage.getStore()!;
+Another special mention is transformers. Databases, 1st party services, and 3rd party services have their own models, and those need to be transformed from and into API requests and responses. These should be kept in a separate `transformers/` directory at the root of the package.
 
-  // Validate and type the request body according to the spec
-  // Basic validation might happen here or in middleware
-  const loginRequest: ApiRequest["loginUser"] = req.body;
+> TODO: Properly organize transformer logic in identity-service.
 
-  // Call the appropriate service/DB function
-  const { result: user, error } = await ctx.db.user.authenticate(loginRequest);
-
-  // Handle expected errors returned by the service/DB layer
-  if (error) {
-    switch (true) {
-      case error instanceof UserNotFoundError:
-      case error instanceof InvalidCredentialsError:
-        throw createError(404);
-      default:
-        // If an unexpected error type was *returned* (should be rare),
-        // throw it so the central error handler catches it.
-        // This ensures all error types from the DB layer are handled.
-        throw error satisfies never;
-    }
-  }
-
-  // If successful, send a typed 200 response conforming to the spec
-  const response: ApiResponse["loginUser"][200] = {
-    user: { id: user.id, email: user.email /* ... other fields */ },
-    token: "jwt.token.here", // Assuming token generation happens here or is returned by authenticate
-  };
-  res.status(200).json(response);
-});
-```
-
-## Route Organization
-
-Create a router file within each feature directory (e.g., `routes/auth/index.ts`) to combine handlers for that feature:
-
-```typescript
-// routes/auth/index.ts
-import express from "express";
-import { loginHandler } from "./login.ts";
-import { registerHandler } from "./register.ts";
-// Import other auth handlers...
-
-const router = express.Router();
-
-// Define routes for the auth feature
-router.post("/login", loginHandler);
-router.post("/register", registerHandler);
-// Add other auth routes...
-
-export { router as authRouter };
-```
-
-Mount these feature routers in the main app file (`http.ts`), as shown in [Setup](./01-setup.md).
-
-## Error Handling Examples
-
-The `createHandler` wrapper simplifies error handling by catching unhandled promise rejections and thrown errors.
-
-**Handling Expected Errors (Returned by Service/DB):**
-
-```typescript
-import { createHandler } from "@saflib/express";
-import { asyncLocalStorage } from "../../context.ts";
-import type { ApiRequest, ApiResponse } from "@your-org/your-spec";
-import { CallSeriesNotFoundError } from "@your-org/your-db-package";
-import createError from "http-errors";
-
-export const getCallSeriesHandler = createHandler(async (req, res) => {
-  const ctx = asyncLocalStorage.getStore()!;
-  const { auth } = getSafContextWithAuth();
-  const callSeriesId = parseInt(req.params.id);
-
-  const { result: callSeries, error } =
-    await ctx.db.callSeries.get(callSeriesId);
-
-  if (error) {
-    switch (true) {
-      case error instanceof CallSeriesNotFoundError:
-        throw createError(404);
-      default:
-        // If an unexpected error type was *returned* (should be rare),
-        // throw it so the central error handler catches it.
-        // This ensures all error types from the DB layer are handled.
-        throw error satisfies never;
-    }
-  }
-
-  // Check Authorization (Example)
-  if (callSeries.ownerId !== auth.userId) {
-    throw createError(403);
-  }
-
-  const response: ApiResponse["getCallSeries"][200] = {
-    call_series: {
-      /* map db result to api spec */
-    },
-  };
-  res.status(200).json(response);
-});
-```
-
-**For queries that currently never return errors:**
-
-```typescript
-const { result, error } = await mainDb.contacts.create(ctx.dbKey, input);
-if (error) {
-  switch (true) {
-    default:
-      throw error satisfies never;
-  }
-}
-```
-
-## Best Practices
-
-1.  **HTTP Focus:** Handlers manage HTTP request/response lifecycle.
-2.  **Separate Business Logic:** Place core logic in service/DB layers.
-3.  **Use OpenAPI Types:** Ensure handlers conform to the API contract.
-    - Type request bodies, parameters, and responses using generated types.
-    - Adhere to specified success and error response schemas.
-4.  **Error Handling:** Handle _expected_ errors returned from services by mapping them to appropriate HTTP responses. Let _unexpected_ errors (thrown) propagate to the central error handler via `createHandler`.
-5.  **File Structure:** Follow the "one handler per file" structure within feature directories.
+**Warning**: Currently, the largest gap in SAF is a job queue system. Once this is added, most requirements for delegating business logic in most applications should be met.
