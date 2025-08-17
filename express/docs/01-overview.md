@@ -80,4 +80,4 @@ It should depend on a "spec" package of the same name structure that is adjacent
 
 The main source of the package. Routes should be organized into sub-folders by domain, and each of those folders should include an index.ts file which exports all queries in that folder in a single bundle which index.ts will import.
 
-See [Routes](./02-routes.md) for more information.
+See [Routes](./03-routes.md) for more information.

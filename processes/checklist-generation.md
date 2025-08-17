@@ -18,13 +18,13 @@ Before creating a checklist, review the [doc-outline.md](./doc-outline.md) to un
 
 - Authentication: [auth-architecture.md](../identity/identity-service/docs/identity-architecture.md)
 - Database: [schema.md](../drizzle-sqlite3/docs/02-schema.md)
-- API: [adding-routes.md](../express/docs/02-adding-routes.md)
+- API: [routes.md](../express/docs/03-routes.md)
 
 ### Development Documentation
 
 - Vue Component Testing: [component-testing.md](../vue-spa/docs/04-component-testing.md)
 - Tanstack Query Testing: [query-testing.md](../vue-spa/docs/05-query-testing.md)
-- API Route Testing: [testing-middleware.md](../express/docs/03-test-routes.md)
+- API Route Testing: [testing-middleware.md](../express/docs/04-testing.md)
 
 ## File Linking Guidelines
 
@@ -118,7 +118,7 @@ Features should be implemented following this layer order:
 
    - Endpoint implementations
    - Middleware updates
-   - Reference: [adding-routes.md](../express/docs/02-adding-routes.md)
+   - Reference: [routes.md](../express/docs/03-routes.md)
 
 4. **Frontend Layer**
    - TanStack Query implementations
@@ -251,7 +251,7 @@ Here's an example of a properly structured checklist for a simple feature:
 ## API Layer
 
 - [ ] Implement Endpoint
-  - [ ] Review [adding-routes.md](../node-express/docs/02-adding-routes.md)
+  - [ ] Review [routes.md](../node-express/docs/03-routes.md)
   - [ ] Add route to [api/routes/example.ts](/saflib/api/routes/example.ts)
   - [ ] Add middleware
   - [ ] Add tests using [testing-middleware.md](../node-express-dev/docs/03-test-middleware.md)
