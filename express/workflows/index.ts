@@ -1,7 +1,3 @@
-/**
- * Test
- */
-
 import { AddRouteWorkflow } from "./add-route.ts";
 import type { ConcreteWorkflow } from "@saflib/workflows";
 

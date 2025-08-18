@@ -18,7 +18,9 @@
     "saf-docs": "./src/saf-docs-cli.ts"
   },
   "dependencies": {
-    "commander": "^14.0.0"
+    "commander": "^14.0.0",
+    "typedoc": "^0.28.10",
+    "typedoc-plugin-markdown": "^4.8.1"
   },
   "devDependencies": {
     "@saflib/vitest": "*",
