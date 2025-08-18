@@ -4,7 +4,7 @@
 
 # Interface: MonorepoContext
 
-Defined in: [src/workspace.ts:33](https://github.com/sderickson/saflib/blob/276478c779a27118ef6d32479e868a6087fd5f4f/dev-tools/src/workspace.ts#L33)
+Defined in: [src/workspace.ts:33](https://github.com/sderickson/saflib/blob/e0792917dc2673a0588d8b11c8bb3523abcda9b5/dev-tools/src/workspace.ts#L33)
 
 For tools which need to work across the monorepo. Use `buildMonorepoContext` to
 get an instance of this. Package names are used as keys throughout.
@@ -18,7 +18,7 @@ and pass it around.
 
 > **monorepoPackageDirectories**: [`MonorepoPackageDirectories`](MonorepoPackageDirectories.md)
 
-Defined in: [src/workspace.ts:41](https://github.com/sderickson/saflib/blob/276478c779a27118ef6d32479e868a6087fd5f4f/dev-tools/src/workspace.ts#L41)
+Defined in: [src/workspace.ts:41](https://github.com/sderickson/saflib/blob/e0792917dc2673a0588d8b11c8bb3523abcda9b5/dev-tools/src/workspace.ts#L41)
 
 ***
 
@@ -26,7 +26,7 @@ Defined in: [src/workspace.ts:41](https://github.com/sderickson/saflib/blob/2764
 
 > **monorepoPackageJsons**: [`MonorepoPackageJsons`](MonorepoPackageJsons.md)
 
-Defined in: [src/workspace.ts:39](https://github.com/sderickson/saflib/blob/276478c779a27118ef6d32479e868a6087fd5f4f/dev-tools/src/workspace.ts#L39)
+Defined in: [src/workspace.ts:39](https://github.com/sderickson/saflib/blob/e0792917dc2673a0588d8b11c8bb3523abcda9b5/dev-tools/src/workspace.ts#L39)
 
 ***
 
@@ -34,7 +34,7 @@ Defined in: [src/workspace.ts:39](https://github.com/sderickson/saflib/blob/2764
 
 > **packages**: `Set`\<`string`\>
 
-Defined in: [src/workspace.ts:38](https://github.com/sderickson/saflib/blob/276478c779a27118ef6d32479e868a6087fd5f4f/dev-tools/src/workspace.ts#L38)
+Defined in: [src/workspace.ts:38](https://github.com/sderickson/saflib/blob/e0792917dc2673a0588d8b11c8bb3523abcda9b5/dev-tools/src/workspace.ts#L38)
 
 ***
 
@@ -42,7 +42,7 @@ Defined in: [src/workspace.ts:38](https://github.com/sderickson/saflib/blob/2764
 
 > **packagesWithDockerfileTemplates**: `Set`\<`string`\>
 
-Defined in: [src/workspace.ts:45](https://github.com/sderickson/saflib/blob/276478c779a27118ef6d32479e868a6087fd5f4f/dev-tools/src/workspace.ts#L45)
+Defined in: [src/workspace.ts:45](https://github.com/sderickson/saflib/blob/e0792917dc2673a0588d8b11c8bb3523abcda9b5/dev-tools/src/workspace.ts#L45)
 
 Subset of packages for quickly finding those which produce Docker images.
 
@@ -52,7 +52,7 @@ Subset of packages for quickly finding those which produce Docker images.
 
 > **rootDir**: `string`
 
-Defined in: [src/workspace.ts:37](https://github.com/sderickson/saflib/blob/276478c779a27118ef6d32479e868a6087fd5f4f/dev-tools/src/workspace.ts#L37)
+Defined in: [src/workspace.ts:37](https://github.com/sderickson/saflib/blob/e0792917dc2673a0588d8b11c8bb3523abcda9b5/dev-tools/src/workspace.ts#L37)
 
 Absolute path.
 
@@ -62,4 +62,4 @@ Absolute path.
 
 > **workspaceDependencyGraph**: [`WorkspaceDependencyGraph`](WorkspaceDependencyGraph.md)
 
-Defined in: [src/workspace.ts:40](https://github.com/sderickson/saflib/blob/276478c779a27118ef6d32479e868a6087fd5f4f/dev-tools/src/workspace.ts#L40)
+Defined in: [src/workspace.ts:40](https://github.com/sderickson/saflib/blob/e0792917dc2673a0588d8b11c8bb3523abcda9b5/dev-tools/src/workspace.ts#L40)

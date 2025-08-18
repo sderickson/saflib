@@ -3,7 +3,9 @@
 import { execSync } from "node:child_process";
 
 import { Command } from "commander";
-import { buildMonorepoContext } from "./workspace.ts";
+import { buildMonorepoContext, getCurrentPackageName } from "./workspace.ts";
+import { mkdirSync, writeFileSync } from "node:fs";
+const monorepoContext = buildMonorepoContext();
 
 const program = new Command()
   .name("saf-docs")
@@ -24,10 +26,26 @@ program
       process.exit(1);
     }
 
-    // console.log("Generating CLI docs...");
+    console.log("Generating CLI docs...");
+    const currentPackage = getCurrentPackageName();
+    const currentPackageJson =
+      monorepoContext.monorepoPackageJsons[currentPackage];
+    const bin = currentPackageJson.bin;
+    if (bin && Object.keys(bin).length > 0) {
+      mkdirSync("docs/cli", { recursive: true });
+      for (const command of Object.keys(bin)) {
+        const result = execSync(`npm exec ${command} --help`);
+        const wrappedResult = `# ${command}\n\n\`\`\`\n${result.toString()}\n\`\`\`\n`;
+        writeFileSync(`docs/cli/${command}.md`, wrappedResult);
+      }
+      const indexMd = `# CLI Reference\n\nThis package provides commands in its package.json bin field. These are listed below:\n\n${Object.keys(
+        bin,
+      )
+        .map((command) => `- [${command}](./${command}.md)`)
+        .join("\n")}`;
+      writeFileSync("docs/cli/index.md", indexMd);
+    }
   });
-
-const monorepoContext = buildMonorepoContext();
 
 const packagesSorted = Array.from(monorepoContext.packages).sort();
 

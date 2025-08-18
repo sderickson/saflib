@@ -14,6 +14,7 @@ export interface PackageJson {
   dependencies?: Record<string, string>;
   description?: string;
   scripts?: Record<string, string>;
+  bin?: Record<string, string>;
 }
 
 export interface ScreenshotMetadata {

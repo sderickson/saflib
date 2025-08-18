@@ -6,7 +6,7 @@
 
 > **buildMonorepoContext**(`rootDir?`): [`MonorepoContext`](../interfaces/MonorepoContext.md)
 
-Defined in: [src/workspace.ts:191](https://github.com/sderickson/saflib/blob/276478c779a27118ef6d32479e868a6087fd5f4f/dev-tools/src/workspace.ts#L191)
+Defined in: [src/workspace.ts:191](https://github.com/sderickson/saflib/blob/e0792917dc2673a0588d8b11c8bb3523abcda9b5/dev-tools/src/workspace.ts#L191)
 
 Creates a MonorepoContext. If no rootdir is provided, it will find the first
 parent directory with a package-lock.json and use that as the root, effectively
