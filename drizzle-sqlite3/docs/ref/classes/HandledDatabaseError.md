@@ -1,4 +1,4 @@
-[**@saflib/drizzle-sqlite3**](../../index.md)
+[**@saflib/drizzle-sqlite3**](../index.md)
 
 ***
 
@@ -20,28 +20,9 @@ and these are not necessarily considered bugs if they occur.
 
 #### Parameters
 
-<table>
-<thead>
-<tr>
-<th>Parameter</th>
-<th>Type</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-
-`message?`
-
-</td>
-<td>
-
-`string`
-
-</td>
-</tr>
-</tbody>
-</table>
+| Parameter | Type |
+| ------ | ------ |
+| `message?` | `string` |
 
 #### Returns
 
@@ -57,40 +38,10 @@ and these are not necessarily considered bugs if they occur.
 
 #### Parameters
 
-<table>
-<thead>
-<tr>
-<th>Parameter</th>
-<th>Type</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-
-`message?`
-
-</td>
-<td>
-
-`string`
-
-</td>
-</tr>
-<tr>
-<td>
-
-`options?`
-
-</td>
-<td>
-
-`ErrorOptions`
-
-</td>
-</tr>
-</tbody>
-</table>
+| Parameter | Type |
+| ------ | ------ |
+| `message?` | `string` |
+| `options?` | `ErrorOptions` |
 
 #### Returns
 
@@ -212,40 +163,10 @@ a();
 
 #### Parameters
 
-<table>
-<thead>
-<tr>
-<th>Parameter</th>
-<th>Type</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-
-`targetObject`
-
-</td>
-<td>
-
-`object`
-
-</td>
-</tr>
-<tr>
-<td>
-
-`constructorOpt?`
-
-</td>
-<td>
-
-`Function`
-
-</td>
-</tr>
-</tbody>
-</table>
+| Parameter | Type |
+| ------ | ------ |
+| `targetObject` | `object` |
+| `constructorOpt?` | `Function` |
 
 #### Returns
 
@@ -263,40 +184,10 @@ a();
 
 #### Parameters
 
-<table>
-<thead>
-<tr>
-<th>Parameter</th>
-<th>Type</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-
-`err`
-
-</td>
-<td>
-
-`Error`
-
-</td>
-</tr>
-<tr>
-<td>
-
-`stackTraces`
-
-</td>
-<td>
-
-`CallSite`[]
-
-</td>
-</tr>
-</tbody>
-</table>
+| Parameter | Type |
+| ------ | ------ |
+| `err` | `Error` |
+| `stackTraces` | `CallSite`[] |
 
 #### Returns
 

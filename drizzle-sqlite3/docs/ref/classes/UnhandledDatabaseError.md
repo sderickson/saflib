@@ -1,4 +1,4 @@
-[**@saflib/drizzle-sqlite3**](../../index.md)
+[**@saflib/drizzle-sqlite3**](../index.md)
 
 ***
 
@@ -142,40 +142,10 @@ a();
 
 #### Parameters
 
-<table>
-<thead>
-<tr>
-<th>Parameter</th>
-<th>Type</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-
-`targetObject`
-
-</td>
-<td>
-
-`object`
-
-</td>
-</tr>
-<tr>
-<td>
-
-`constructorOpt?`
-
-</td>
-<td>
-
-`Function`
-
-</td>
-</tr>
-</tbody>
-</table>
+| Parameter | Type |
+| ------ | ------ |
+| `targetObject` | `object` |
+| `constructorOpt?` | `Function` |
 
 #### Returns
 
@@ -193,40 +163,10 @@ a();
 
 #### Parameters
 
-<table>
-<thead>
-<tr>
-<th>Parameter</th>
-<th>Type</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-
-`err`
-
-</td>
-<td>
-
-`Error`
-
-</td>
-</tr>
-<tr>
-<td>
-
-`stackTraces`
-
-</td>
-<td>
-
-`CallSite`[]
-
-</td>
-</tr>
-</tbody>
-</table>
+| Parameter | Type |
+| ------ | ------ |
+| `err` | `Error` |
+| `stackTraces` | `CallSite`[] |
 
 #### Returns
 

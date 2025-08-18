@@ -11,28 +11,9 @@ This middleware all depends on the OpenAPI spec for those routes.
 
 ## Parameters
 
-<table>
-<thead>
-<tr>
-<th>Parameter</th>
-<th>Type</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-
-`options`
-
-</td>
-<td>
-
-[`ScopedMiddlewareOptions`](../interfaces/ScopedMiddlewareOptions.md)
-
-</td>
-</tr>
-</tbody>
-</table>
+| Parameter | Type |
+| ------ | ------ |
+| `options` | [`ScopedMiddlewareOptions`](../interfaces/ScopedMiddlewareOptions.md) |
 
 ## Returns
 

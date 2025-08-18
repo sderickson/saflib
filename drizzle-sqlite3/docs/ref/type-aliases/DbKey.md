@@ -1,4 +1,4 @@
-[**@saflib/drizzle-sqlite3**](../../index.md)
+[**@saflib/drizzle-sqlite3**](../index.md)
 
 ***
 

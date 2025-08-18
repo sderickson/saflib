@@ -11,28 +11,9 @@ exceptions get passed to `next`.
 
 ## Parameters
 
-<table>
-<thead>
-<tr>
-<th>Parameter</th>
-<th>Type</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-
-`handler`
-
-</td>
-<td>
-
-(`req`, `res`, `next`) => `Promise`\<`void`\>
-
-</td>
-</tr>
-</tbody>
-</table>
+| Parameter | Type |
+| ------ | ------ |
+| `handler` | (`req`, `res`, `next`) => `Promise`\<`void`\> |
 
 ## Returns
 
@@ -40,52 +21,11 @@ exceptions get passed to `next`.
 
 ### Parameters
 
-<table>
-<thead>
-<tr>
-<th>Parameter</th>
-<th>Type</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-
-`req`
-
-</td>
-<td>
-
-`Request`
-
-</td>
-</tr>
-<tr>
-<td>
-
-`res`
-
-</td>
-<td>
-
-`Response`
-
-</td>
-</tr>
-<tr>
-<td>
-
-`next`
-
-</td>
-<td>
-
-`NextFunction`
-
-</td>
-</tr>
-</tbody>
-</table>
+| Parameter | Type |
+| ------ | ------ |
+| `req` | `Request` |
+| `res` | `Response` |
+| `next` | `NextFunction` |
 
 ### Returns
 

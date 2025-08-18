@@ -1,4 +1,4 @@
-[**@saflib/drizzle-sqlite3**](../../index.md)
+[**@saflib/drizzle-sqlite3**](../index.md)
 
 ***
 
@@ -14,29 +14,10 @@ queries can use.
 
 ## Type Parameters
 
-<table>
-<thead>
-<tr>
-<th>Type Parameter</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-
-`S` *extends* [`Schema`](../type-aliases/Schema.md)
-
-</td>
-</tr>
-<tr>
-<td>
-
-`C` *extends* `Config`
-
-</td>
-</tr>
-</tbody>
-</table>
+| Type Parameter |
+| ------ |
+| `S` *extends* [`Schema`](../type-aliases/Schema.md) |
+| `C` *extends* `Config` |
 
 ## Constructors
 
@@ -46,52 +27,11 @@ queries can use.
 
 #### Parameters
 
-<table>
-<thead>
-<tr>
-<th>Parameter</th>
-<th>Type</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-
-`schema`
-
-</td>
-<td>
-
-`S`
-
-</td>
-</tr>
-<tr>
-<td>
-
-`c`
-
-</td>
-<td>
-
-`C`
-
-</td>
-</tr>
-<tr>
-<td>
-
-`rootUrl`
-
-</td>
-<td>
-
-`string`
-
-</td>
-</tr>
-</tbody>
-</table>
+| Parameter | Type |
+| ------ | ------ |
+| `schema` | `S` |
+| `c` | `C` |
+| `rootUrl` | `string` |
 
 #### Returns
 
@@ -110,28 +50,9 @@ If onDisk is a string, the database will be created at the given (absolute) path
 
 #### Parameters
 
-<table>
-<thead>
-<tr>
-<th>Parameter</th>
-<th>Type</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-
-`options?`
-
-</td>
-<td>
-
-[`DbOptions`](../interfaces/DbOptions.md)
-
-</td>
-</tr>
-</tbody>
-</table>
+| Parameter | Type |
+| ------ | ------ |
+| `options?` | [`DbOptions`](../interfaces/DbOptions.md) |
 
 #### Returns
 
@@ -145,28 +66,9 @@ If onDisk is a string, the database will be created at the given (absolute) path
 
 #### Parameters
 
-<table>
-<thead>
-<tr>
-<th>Parameter</th>
-<th>Type</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-
-`key`
-
-</td>
-<td>
-
-`symbol`
-
-</td>
-</tr>
-</tbody>
-</table>
+| Parameter | Type |
+| ------ | ------ |
+| `key` | `symbol` |
 
 #### Returns
 
@@ -180,28 +82,9 @@ If onDisk is a string, the database will be created at the given (absolute) path
 
 #### Parameters
 
-<table>
-<thead>
-<tr>
-<th>Parameter</th>
-<th>Type</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-
-`key`
-
-</td>
-<td>
-
-`symbol`
-
-</td>
-</tr>
-</tbody>
-</table>
+| Parameter | Type |
+| ------ | ------ |
+| `key` | `symbol` |
 
 #### Returns
 
@@ -226,28 +109,9 @@ If onDisk is a string, the database will be created at the given (absolute) path
 
 ###### Parameters
 
-<table>
-<thead>
-<tr>
-<th>Parameter</th>
-<th>Type</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-
-`options?`
-
-</td>
-<td>
-
-[`DbOptions`](../interfaces/DbOptions.md)
-
-</td>
-</tr>
-</tbody>
-</table>
+| Parameter | Type |
+| ------ | ------ |
+| `options?` | [`DbOptions`](../interfaces/DbOptions.md) |
 
 ###### Returns
 
@@ -259,28 +123,9 @@ If onDisk is a string, the database will be created at the given (absolute) path
 
 ###### Parameters
 
-<table>
-<thead>
-<tr>
-<th>Parameter</th>
-<th>Type</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-
-`key`
-
-</td>
-<td>
-
-`symbol`
-
-</td>
-</tr>
-</tbody>
-</table>
+| Parameter | Type |
+| ------ | ------ |
+| `key` | `symbol` |
 
 ###### Returns
 

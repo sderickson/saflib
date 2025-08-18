@@ -48,8 +48,8 @@ program
       "--out docs/ref",
 
       // easier reading
-      "--indexFormat htmlTable",
-      "--parametersFormat htmlTable",
+      "--indexFormat table",
+      "--parametersFormat table",
 
       // Breadcrumbs are broken? The links have nothing in the square brackets
       "--hideBreadcrumbs",
