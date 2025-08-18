@@ -1,6 +1,6 @@
 # Overview
 
-SAF is Scott's Application Framework - I built it for me, but also I'm making this repo public for people to use and explore as it reflects and is the source of my thinking on [my blog](https://scotterickson.info/blog). Simply put, SAF is a full-featured web application framework using my preferred libraries and services.
+SAF is Scott's Application Framework - I built it for me, but also I'm making this repo public for people to use and explore as it reflects and is the source of my thinking on [my blog](https://scotterickson.info/blog). Simply put, SAF is a full-featured web application framework using my preferred libraries and services, and a playground for experimenting with LLM-assisted development.
 
 Guiding principles:
 
