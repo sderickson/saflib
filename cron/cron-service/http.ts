@@ -1,13 +1,11 @@
 import express from "express";
 import { cronRouter } from "./routes/index.ts";
-import { createPreMiddleware, recommendedErrorHandlers } from "@saflib/express";
+import { createErrorMiddleware, createGlobalMiddleware } from "@saflib/express";
 import { cronDb } from "@saflib/cron-db";
-import { jsonSpec } from "@saflib/cron-spec";
 import type { DbKey } from "@saflib/drizzle-sqlite3";
 import { cronServiceStorage } from "./context.ts";
 import type { JobsMap } from "./src/types.ts";
 import type { DbOptions } from "@saflib/drizzle-sqlite3";
-import { metricsRouter, metricsMiddleware } from "@saflib/express";
 
 export interface CronServiceOptions {
   subsystemName?: string;
@@ -19,8 +17,7 @@ export interface CronServiceOptions {
 export function createApp(options: CronServiceOptions) {
   const app = express();
   app.set("trust proxy", 1);
-  app.use(metricsRouter);
-  app.use(metricsMiddleware);
+  app.use(createGlobalMiddleware());
   app.use(createCronRouter(options));
   return app;
 }
@@ -44,13 +41,7 @@ export function createCronRouter(options: CronServiceOptions) {
       next();
     });
   });
-  router.use(
-    "/cron",
-    createPreMiddleware({
-      apiSpec: jsonSpec,
-    }),
-  );
-  router.use("/cron", cronRouter);
-  router.use("/cron", recommendedErrorHandlers);
+  router.use(cronRouter);
+  router.use(createErrorMiddleware());
   return router;
 }

@@ -3,7 +3,7 @@ import request from "supertest";
 import express from "express";
 import { createEmailsRouter } from "./index.ts";
 import { emailClient } from "../../client/email-client.ts";
-import { recommendedErrorHandlers } from "@saflib/express";
+import { createErrorMiddleware } from "@saflib/express";
 
 describe("getSentEmails", () => {
   let app: express.Express;
@@ -11,7 +11,7 @@ describe("getSentEmails", () => {
   beforeEach(() => {
     app = express();
     app.use("/", createEmailsRouter());
-    app.use(recommendedErrorHandlers);
+    app.use(createErrorMiddleware());
   });
 
   it("should return sent emails when mocking is enabled", async () => {

@@ -2,12 +2,20 @@
 export type packageName = string;
 export type directoryPath = string;
 
+/**
+ * Interface of package.json fields which are used in this package.
+ *
+ * See [NPM docs](https://docs.npmjs.com/cli/v10/configuring-npm/package-json)
+ * for more information.
+ */
 export interface PackageJson {
   name: packageName;
   workspaces?: string[];
   dependencies?: Record<string, string>;
   description?: string;
   scripts?: Record<string, string>;
+  bin?: Record<string, string>;
+  exports?: Record<string, string>;
 }
 
 export interface ScreenshotMetadata {

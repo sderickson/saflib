@@ -1,12 +1,11 @@
 import { authDb } from "@saflib/identity-db";
-import { recommendedErrorHandlers } from "@saflib/express";
+import { createErrorMiddleware, createGlobalMiddleware } from "@saflib/express";
 import express from "express";
 import { makeAuthRouter } from "./routes/auth/index.ts";
 import { makeUsersRouter } from "./routes/users/index.ts";
 import { authServiceStorage } from "./context.ts";
 import type { AuthServerOptions } from "./types.ts";
 import { createEmailsRouter } from "@saflib/email-node";
-import { metricsRouter, metricsMiddleware } from "@saflib/express";
 import { typedEnv } from "./env.ts";
 
 // Define properties added to Express Request objects by middleware
@@ -25,8 +24,7 @@ export function createApp(options: AuthServerOptions) {
   }
 
   const app = express();
-  app.use(metricsRouter);
-  app.use(metricsMiddleware);
+  app.use(createGlobalMiddleware());
   app.set("trust proxy", 1);
 
   app.set(
@@ -41,10 +39,10 @@ export function createApp(options: AuthServerOptions) {
     });
   });
 
-  app.use("/", createEmailsRouter());
-  app.use("/auth", makeAuthRouter());
-  app.use("/users", makeUsersRouter());
-  app.use(recommendedErrorHandlers);
+  app.use(createEmailsRouter());
+  app.use(makeAuthRouter());
+  app.use(makeUsersRouter());
+  app.use(createErrorMiddleware());
 
   return app;
 }

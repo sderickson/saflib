@@ -12,10 +12,6 @@ Middleware fall into three categories:
 
 A good rule of thumb for determining if some middleware is Scoped or Global is whether it depends on the OpenAPI spec for the specific route or not. A single Express server may serve multiple specs (such as one specifically for the service, as well as other common ones like metrics and health checks), and so there can be multiple sets of scoped middleware, though there should only be one set of global or error middleware, and no route should go through more than one set of scoped middleware.
 
-> TODO: Wrap "metrics" in "global" helper, move "cors", "blockHtml", and "helmet"... and probably a few others in there.
-
-> TODO: Rename "pre" middleware to "scoped" middleware.
-
 ## Authentication, Authorization
 
 Express applications in SAF assume authorization and authentication are handled by some separate service, and that headers passed in can be trusted to indicate under whose authority the requests are made. Specifically, it uses Caddy's [forward_auth](https://caddyserver.com/docs/caddyfile/directives/forward_auth) directive in conjunction with the identity service's [verify endpoint](https://github.com/sderickson/saflib/blob/main/identity/identity-spec/routes/auth/verify-auth.yaml), but a pattern like this could likely be set up by any reverse proxy.
@@ -63,6 +59,18 @@ The CORS middleware provides a simple guard to ensure only your site's subdomain
 **Type**: Error
 
 Logs 5xx errors and returns all intercepted errors in the [standard error format](https://github.com/sderickson/saflib/blob/37d619bf41fe2922880dee7483b9fb9690d2ee1b/openapi/schemas/error.yaml).
+
+### `express`
+
+**Type**: Global
+
+Built in Express middleware included: `json` and `urlencoded`.
+
+### `helmet`
+
+**Type**: Global
+
+Basic safety measure: the [helmet](https://www.npmjs.com/package/helmet) middleware.
 
 ### `httpLogger.ts`
 

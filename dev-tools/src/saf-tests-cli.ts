@@ -1,16 +1,18 @@
-#!/usr/bin/env node --experimental-strip-types
+#!/usr/bin/env node --experimental-strip-types --disable-warning=ExperimentalWarning
 
 import { Command } from "commander";
-import { gatherHealthAssets } from "./src/health-assets.ts";
-import { genCoverage } from "./src/gen-coverage.ts";
+import { gatherHealthAssets } from "./test-assets.ts";
+import { genCoverage } from "./test-coverage.ts";
 
 const program = new Command()
-  .name("saf-health-assets")
-  .description("Manage test assets from the e2e and unit tests.");
+  .name("saf-tests")
+  .description("Manages test assets from e2e and unit tests.");
 
 program
-  .command("gen-coverage")
-  .description("Generate coverage for the tests.")
+  .command("generate-coverage")
+  .description(
+    "Generate unit test coverage, running `vitest run --coverage` in each package with tests.",
+  )
   .action(async () => {
     await genCoverage();
   });
@@ -23,8 +25,10 @@ program
 //   });
 
 program
-  .command("gather")
-  .description("Gather test assets from the e2e and unit tests.")
+  .command("gather-assets")
+  .description(
+    "Gathers coverage and screenshot assets from unit and e2e tests respectively, creating a manifest file and depositing everything in the target dir.",
+  )
   .argument("<target-dir>", "The directory to gather the test assets into.")
   .action(async (targetDir) => {
     const result = await gatherHealthAssets(targetDir);

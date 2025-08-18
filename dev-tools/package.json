@@ -4,27 +4,26 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./index.ts",
-    "./types": "./types.ts"
+    ".": "./index.ts"
   },
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "generate-dockerfiles": "node --experimental-strip-types ./generate-dockerfiles.ts",
     "typecheck": "tsc"
   },
   "bin": {
-    "generate-dockerfiles": "./generate-dockerfiles.ts",
-    "saf-doc": "./src/workspace-cli.ts",
-    "saf-health-assets": "./health-assets.ts"
+    "saf-docker": "./src/saf-docker-cli.ts",
+    "saf-tests": "./src/saf-tests-cli.ts",
+    "saf-docs": "./src/saf-docs-cli.ts"
   },
   "dependencies": {
-    "commander": "^14.0.0"
+    "commander": "^14.0.0",
+    "typedoc": "^0.28.10",
+    "typedoc-plugin-markdown": "^4.8.1"
   },
   "devDependencies": {
     "@saflib/vitest": "*",
     "memfs": "^4.17.0"
-    
   }
 }
