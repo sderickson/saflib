@@ -15,7 +15,7 @@
     "typecheck": "tsc"
   },
   "bin": {
-    "generate-dockerfiles": "./generate-dockerfiles.ts",
+    "saf-docker": "./generate-dockerfiles.ts",
     "saf-health-assets": "./health-assets.ts",
     "saf-docs": "./src/saf-docs-cli.ts"
   },

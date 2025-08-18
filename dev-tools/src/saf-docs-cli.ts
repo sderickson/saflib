@@ -2,9 +2,6 @@
 
 import { execSync } from "node:child_process";
 
-/**
- * Creates CLI docs for packages.
- */
 import { Command } from "commander";
 import { buildMonorepoContext } from "./workspace.ts";
 
