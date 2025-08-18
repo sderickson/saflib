@@ -7,7 +7,7 @@
     ".": "./index.ts"
   },
   "scripts": {
-    "docs": "typedoc --plugin typedoc-plugin-markdown --entryFileName index --out docs/ref  --indexFormat htmlTable --hideBreadcrumbs --parametersFormat htmlTable",
+    "docs": "typedoc --plugin typedoc-plugin-markdown --entryFileName index --out docs/ref  --indexFormat htmlTable --hideBreadcrumbs --parametersFormat htmlTable --treatValidationWarningsAsErrors",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
@@ -17,7 +17,8 @@
   "bin": {
     "generate-dockerfiles": "./generate-dockerfiles.ts",
     "saf-doc": "./src/workspace-cli.ts",
-    "saf-health-assets": "./health-assets.ts"
+    "saf-health-assets": "./health-assets.ts",
+    "saf-docs": "./src/saf-docs-cli.ts"
   },
   "dependencies": {
     "commander": "^14.0.0"

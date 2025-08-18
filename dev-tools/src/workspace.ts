@@ -82,6 +82,9 @@ export function getMonorepoPackages(
         withFileTypes: true,
       });
       for (const file of workspacesFolders) {
+        if (file.parentPath.includes("node_modules")) {
+          continue;
+        }
         if (file.isFile() && file.name.endsWith("package.json")) {
           workspacePackageDirectories.push(file.parentPath);
         }

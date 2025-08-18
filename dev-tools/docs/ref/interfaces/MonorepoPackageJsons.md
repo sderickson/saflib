@@ -4,7 +4,7 @@
 
 # Interface: MonorepoPackageJsons
 
-Defined in: [src/workspace.ts:8](https://github.com/sderickson/saflib/blob/93787f8fa8958c7d8341f08515302a77bc550495/dev-tools/src/workspace.ts#L8)
+Defined in: [src/workspace.ts:8](https://github.com/sderickson/saflib/blob/276478c779a27118ef6d32479e868a6087fd5f4f/dev-tools/src/workspace.ts#L8)
 
 Raw package.json files.
 
