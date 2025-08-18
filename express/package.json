@@ -12,7 +12,6 @@
     "@saflib/env": "*",
     "@saflib/node": "*",
     "cors": "^2.0.0",
-    "dotenv": "^17.0.0",
     "express": "^5.0.0",
     "express-openapi-validator": "^5.0.0",
     "express-prom-bundle": "^8.0.0",
