@@ -13,7 +13,7 @@
 import http from "http";
 import type { Express } from "express";
 
-interface StartServerOptions {
+export interface StartServerOptions {
   port: number;
 }
 

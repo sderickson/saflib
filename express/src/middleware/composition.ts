@@ -12,7 +12,7 @@ import { makeContextMiddleware } from "./context.ts";
 import { blockHtml } from "./blockHtml.ts";
 import { createScopeValidator } from "./scopes.ts";
 
-interface PreMiddlewareOptions {
+export interface PreMiddlewareOptions {
   apiSpec?: OpenAPIV3.DocumentV3;
   authRequired?: boolean;
   disableCors?: boolean;
