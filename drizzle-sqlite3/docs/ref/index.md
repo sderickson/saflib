@@ -189,7 +189,9 @@ generic parameter for the schema.
 </td>
 <td>
 
-&hyphen;
+All queries should use this wrapper. It will catch and obfuscate unhandled
+errors, and rethrow handled errors, though really handled errors should be
+returned, not thrown.
 
 </td>
 </tr>

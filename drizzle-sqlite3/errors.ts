@@ -23,6 +23,11 @@ export class UnhandledDatabaseError extends Error {
  */
 export class HandledDatabaseError extends Error {}
 
+/**
+ * All queries should use this wrapper. It will catch and obfuscate unhandled
+ * errors, and rethrow handled errors, though really handled errors should be
+ * returned, not thrown.
+ */
 export function queryWrapper<T, A extends any[]>(
   queryFunc: (...args: A) => Promise<T>,
 ): (...args: A) => Promise<T> {

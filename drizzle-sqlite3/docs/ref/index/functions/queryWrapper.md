@@ -6,6 +6,10 @@
 
 > **queryWrapper**\<`T`, `A`\>(`queryFunc`): (...`args`) => `Promise`\<`T`\>
 
+All queries should use this wrapper. It will catch and obfuscate unhandled
+errors, and rethrow handled errors, though really handled errors should be
+returned, not thrown.
+
 ## Type Parameters
 
 <table>
