@@ -1,21 +1,16 @@
 # saf-tests
 
 ```
-Run a command from a local or remote npm package
+Usage: saf-tests [options] [command]
 
-Usage:
-npm exec -- <pkg>[@<version>] [args...]
-npm exec --package=<pkg>[@<version>] -- <cmd> [args...]
-npm exec -c '<cmd> [args...]'
-npm exec --package=foo -c '<cmd> [args...]'
+Manage test assets from the e2e and unit tests.
 
 Options:
-[--package <package-spec> [--package <package-spec> ...]] [-c|--call <call>]
-[-w|--workspace <workspace-name> [-w|--workspace <workspace-name> ...]]
-[-ws|--workspaces] [--include-workspace-root]
+  -h, --help                  display help for command
 
-alias: x
-
-Run "npm help exec" for more info
+Commands:
+  generate-coverage           Generate coverage for the tests.
+  gather-assets <target-dir>  Gather test assets from the e2e and unit tests.
+  help [command]              display help for command
 
 ```

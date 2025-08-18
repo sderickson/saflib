@@ -1,21 +1,16 @@
 # saf-docs
 
 ```
-Run a command from a local or remote npm package
+Usage: saf-docs [options] [command]
 
-Usage:
-npm exec -- <pkg>[@<version>] [args...]
-npm exec --package=<pkg>[@<version>] -- <cmd> [args...]
-npm exec -c '<cmd> [args...]'
-npm exec --package=foo -c '<cmd> [args...]'
+Lookup and generation tool for SAF documentation.
 
 Options:
-[--package <package-spec> [--package <package-spec> ...]] [-c|--call <call>]
-[-w|--workspace <workspace-name> [-w|--workspace <workspace-name> ...]]
-[-ws|--workspaces] [--include-workspace-root]
+  -h, --help      display help for command
 
-alias: x
-
-Run "npm help exec" for more info
+Commands:
+  generate        Generate docs for the current package.
+  print           List all packages in the monorepo.
+  help [command]  display help for command
 
 ```

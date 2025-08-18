@@ -6,11 +6,11 @@ import { buildMonorepoContext } from "./workspace.ts";
 
 const program = new Command()
   .name("saf-docker")
-  .description("Manage Dockerfiles for packages.");
+  .description("Helps manage Docker-related files in SAF packages.");
 
 program
   .command("generate")
-  .description("Generate Dockerfiles for packages.")
+  .description("Generate all Dockerfiles from templates across the monorepo.")
   .action(() => {
     const monorepoContext = buildMonorepoContext();
     generateDockerfiles(monorepoContext, true);

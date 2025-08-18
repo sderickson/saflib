@@ -4,18 +4,18 @@ import { execSync } from "node:child_process";
 
 import { Command } from "commander";
 import { buildMonorepoContext, getCurrentPackageName } from "./workspace.ts";
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readdirSync, unlinkSync, writeFileSync } from "node:fs";
 const monorepoContext = buildMonorepoContext();
 
 const program = new Command()
   .name("saf-docs")
-  .description("Utility for SAF documentation.");
+  .description("Lookup and generation tool for SAF documentation.");
 
 program
   .command("generate")
-  .description("Generate CLI docs for packages.")
+  .description("Generate docs for the current package.")
   .action(() => {
-    console.log("Generating typedoc...");
+    console.log("\nGenerating typedoc...");
     const command =
       "typedoc --plugin typedoc-plugin-markdown --entryFileName index --out docs/ref  --indexFormat htmlTable --hideBreadcrumbs --parametersFormat htmlTable --treatValidationWarningsAsErrors";
 
@@ -26,17 +26,21 @@ program
       process.exit(1);
     }
 
-    console.log("Generating CLI docs...");
+    console.log("\nGenerating CLI docs...");
     const currentPackage = getCurrentPackageName();
     const currentPackageJson =
       monorepoContext.monorepoPackageJsons[currentPackage];
     const bin = currentPackageJson.bin;
     if (bin && Object.keys(bin).length > 0) {
       mkdirSync("docs/cli", { recursive: true });
+      for (const file of readdirSync("docs/cli")) {
+        unlinkSync(`docs/cli/${file}`);
+      }
       for (const command of Object.keys(bin)) {
-        const result = execSync(`npm exec ${command} --help`);
+        const result = execSync(`npm exec ${command} help`);
         const wrappedResult = `# ${command}\n\n\`\`\`\n${result.toString()}\n\`\`\`\n`;
         writeFileSync(`docs/cli/${command}.md`, wrappedResult);
+        console.log(`- ${command}`);
       }
       const indexMd = `# CLI Reference\n\nThis package provides commands in its package.json bin field. These are listed below:\n\n${Object.keys(
         bin,
@@ -44,6 +48,7 @@ program
         .map((command) => `- [${command}](./${command}.md)`)
         .join("\n")}`;
       writeFileSync("docs/cli/index.md", indexMd);
+      console.log("Finished generating CLI docs at ./docs/cli");
     }
   });
 
