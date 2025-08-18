@@ -9,7 +9,7 @@ Options:
   -h, --help      display help for command
 
 Commands:
-  generate        Generate docs for the current package.
+  generate        Generate typedoc and CLI docs for the current package.
   print           List all packages in the monorepo.
   help [command]  display help for command
 

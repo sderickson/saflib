@@ -4,8 +4,6 @@
 
 # Interface: MonorepoContext
 
-Defined in: [src/workspace.ts:33](https://github.com/sderickson/saflib/blob/08b450484447b76436131d9dcb342c3f616d8732/dev-tools/src/workspace.ts#L33)
-
 For tools which need to work across the monorepo. Use `buildMonorepoContext` to
 get an instance of this. Package names are used as keys throughout.
 
@@ -18,15 +16,11 @@ and pass it around.
 
 > **monorepoPackageDirectories**: [`MonorepoPackageDirectories`](MonorepoPackageDirectories.md)
 
-Defined in: [src/workspace.ts:41](https://github.com/sderickson/saflib/blob/08b450484447b76436131d9dcb342c3f616d8732/dev-tools/src/workspace.ts#L41)
-
 ***
 
 ### monorepoPackageJsons
 
 > **monorepoPackageJsons**: [`MonorepoPackageJsons`](MonorepoPackageJsons.md)
-
-Defined in: [src/workspace.ts:39](https://github.com/sderickson/saflib/blob/08b450484447b76436131d9dcb342c3f616d8732/dev-tools/src/workspace.ts#L39)
 
 ***
 
@@ -34,15 +28,11 @@ Defined in: [src/workspace.ts:39](https://github.com/sderickson/saflib/blob/08b4
 
 > **packages**: `Set`\<`string`\>
 
-Defined in: [src/workspace.ts:38](https://github.com/sderickson/saflib/blob/08b450484447b76436131d9dcb342c3f616d8732/dev-tools/src/workspace.ts#L38)
-
 ***
 
 ### packagesWithDockerfileTemplates
 
 > **packagesWithDockerfileTemplates**: `Set`\<`string`\>
-
-Defined in: [src/workspace.ts:45](https://github.com/sderickson/saflib/blob/08b450484447b76436131d9dcb342c3f616d8732/dev-tools/src/workspace.ts#L45)
 
 Subset of packages for quickly finding those which produce Docker images.
 
@@ -52,8 +42,6 @@ Subset of packages for quickly finding those which produce Docker images.
 
 > **rootDir**: `string`
 
-Defined in: [src/workspace.ts:37](https://github.com/sderickson/saflib/blob/08b450484447b76436131d9dcb342c3f616d8732/dev-tools/src/workspace.ts#L37)
-
 Absolute path.
 
 ***
@@ -61,5 +49,3 @@ Absolute path.
 ### workspaceDependencyGraph
 
 > **workspaceDependencyGraph**: [`WorkspaceDependencyGraph`](WorkspaceDependencyGraph.md)
-
-Defined in: [src/workspace.ts:40](https://github.com/sderickson/saflib/blob/08b450484447b76436131d9dcb342c3f616d8732/dev-tools/src/workspace.ts#L40)

@@ -13,11 +13,11 @@ const program = new Command()
 
 program
   .command("generate")
-  .description("Generate docs for the current package.")
+  .description("Generate typedoc and CLI docs for the current package.")
   .action(() => {
     console.log("\nGenerating typedoc...");
     const command =
-      "typedoc --plugin typedoc-plugin-markdown --entryFileName index --out docs/ref  --indexFormat htmlTable --hideBreadcrumbs --parametersFormat htmlTable --treatValidationWarningsAsErrors";
+      "typedoc --plugin typedoc-plugin-markdown --entryFileName index --out docs/ref  --indexFormat htmlTable --hideBreadcrumbs --parametersFormat htmlTable --treatValidationWarningsAsErrors --disableSources";
 
     try {
       execSync(command, { stdio: "inherit" });
@@ -36,15 +36,17 @@ program
       for (const file of readdirSync("docs/cli")) {
         unlinkSync(`docs/cli/${file}`);
       }
-      for (const command of Object.keys(bin)) {
+
+      const sortedCommands = Object.keys(bin).sort();
+
+      for (const command of sortedCommands) {
         const result = execSync(`npm exec ${command} help`);
         const wrappedResult = `# ${command}\n\n\`\`\`\n${result.toString()}\n\`\`\`\n`;
         writeFileSync(`docs/cli/${command}.md`, wrappedResult);
         console.log(`- ${command}`);
       }
-      const indexMd = `# CLI Reference\n\nThis package provides commands in its package.json bin field. These are listed below:\n\n${Object.keys(
-        bin,
-      )
+
+      const indexMd = `# CLI Reference\n\nThis package provides commands in its package.json bin field. These are listed below:\n\n${sortedCommands
         .map((command) => `- [${command}](./${command}.md)`)
         .join("\n")}`;
       writeFileSync("docs/cli/index.md", indexMd);

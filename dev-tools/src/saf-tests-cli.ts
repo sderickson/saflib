@@ -6,11 +6,13 @@ import { genCoverage } from "./test-coverage.ts";
 
 const program = new Command()
   .name("saf-tests")
-  .description("Manage test assets from the e2e and unit tests.");
+  .description("Manages test assets from e2e and unit tests.");
 
 program
   .command("generate-coverage")
-  .description("Generate coverage for the tests.")
+  .description(
+    "Generate unit test coverage, running `vitest run --coverage` in each package with tests.",
+  )
   .action(async () => {
     await genCoverage();
   });
@@ -24,7 +26,9 @@ program
 
 program
   .command("gather-assets")
-  .description("Gather test assets from the e2e and unit tests.")
+  .description(
+    "Gathers coverage and screenshot assets from unit and e2e tests respectively, creating a manifest file and depositing everything in the target dir.",
+  )
   .argument("<target-dir>", "The directory to gather the test assets into.")
   .action(async (targetDir) => {
     const result = await gatherHealthAssets(targetDir);
