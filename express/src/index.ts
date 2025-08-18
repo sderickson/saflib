@@ -1,5 +1,5 @@
 /**
- * Main export for the library. Packages which implement express servers should import and use this package.
+ * Packages which implement express servers should import and use this package.
  *
  * @module @saflib/express
  */
@@ -36,9 +36,11 @@ if (process.env.NODE_ENV !== "test") {
 
 // middleware bundles
 export {
-  recommendedErrorHandlers,
-  createPreMiddleware,
-  type PreMiddlewareOptions,
+  createGlobalMiddleware,
+  createErrorMiddleware,
+  createScopedMiddleware,
+  type ScopedMiddlewareOptions,
+  type GlobalMiddlewareOptions,
 } from "./middleware/composition.ts";
 
 // route handler utilities

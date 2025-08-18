@@ -11,7 +11,7 @@ import { setPassword } from "./set-password.ts";
 import { getProfileHandler } from "./get-profile.ts";
 import { updateProfile } from "./update-profile.ts";
 import { rateLimit } from "express-rate-limit";
-import { createPreMiddleware } from "@saflib/express";
+import { createScopedMiddleware } from "@saflib/express";
 import passport from "passport";
 import { setupPassport } from "../../middleware/passport.ts";
 import { makeSessionMiddleware } from "../../middleware/session-store.ts";
@@ -24,7 +24,7 @@ export const makeAuthRouter = () => {
   const router = express.Router();
 
   router.use(
-    createPreMiddleware({
+    createScopedMiddleware({
       apiSpec: jsonSpec,
       authRequired: false,
     }),

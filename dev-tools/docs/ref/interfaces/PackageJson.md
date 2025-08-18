@@ -29,6 +29,12 @@ for more information.
 
 ***
 
+### exports?
+
+> `optional` **exports**: `Record`\<`string`, `string`\>
+
+***
+
 ### name
 
 > **name**: `string`

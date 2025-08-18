@@ -4,6 +4,8 @@
 
 # @saflib/dev-tools
 
+Set of utilities for workspace packages.
+
 ## Interfaces
 
 <table>

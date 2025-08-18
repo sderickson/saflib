@@ -1,3 +1,9 @@
+/**
+ * Set of utilities for workspace packages.
+ *
+ * @module @saflib/dev-tools
+ */
+
 export {
   buildMonorepoContext,
   getAllPackageWorkspaceDependencies,

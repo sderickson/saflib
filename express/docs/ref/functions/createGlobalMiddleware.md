@@ -2,9 +2,9 @@
 
 ***
 
-# Function: createPreMiddleware()
+# Function: createGlobalMiddleware()
 
-> **createPreMiddleware**(`options`): `Handler`[]
+> **createGlobalMiddleware**(`options`): `Handler`[]
 
 ## Parameters
 
@@ -24,7 +24,7 @@
 </td>
 <td>
 
-[`PreMiddlewareOptions`](../interfaces/PreMiddlewareOptions.md)
+[`GlobalMiddlewareOptions`](../interfaces/GlobalMiddlewareOptions.md)
 
 </td>
 </tr>

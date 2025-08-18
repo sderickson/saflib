@@ -4,7 +4,6 @@ import type { OpenAPIV3 } from "express-openapi-validator/dist/framework/types.t
 import { auth } from "./auth.ts";
 import { corsRouter } from "./cors.ts";
 import { errorHandler, notFoundHandler } from "./errors.ts";
-import { createHealthHandler, healthRouter } from "./health.ts";
 import { everyRequestLogger, unsafeRequestLogger } from "./httpLogger.ts";
 import { createOpenApiValidator } from "./openapi.ts";
 import helmet from "helmet";
@@ -12,22 +11,47 @@ import { makeContextMiddleware } from "./context.ts";
 import { blockHtml } from "./blockHtml.ts";
 import { createScopeValidator } from "./scopes.ts";
 
-export interface PreMiddlewareOptions {
-  apiSpec?: OpenAPIV3.DocumentV3;
-  authRequired?: boolean;
+/**
+ * Options for creating global middleware.
+ */
+
+export interface GlobalMiddlewareOptions {
   disableCors?: boolean;
-  healthCheck?: () => Promise<boolean>;
 }
 
-export const createPreMiddleware = (
-  options: PreMiddlewareOptions,
+export const createGlobalMiddleware = (
+  options: GlobalMiddlewareOptions = {},
 ): Handler[] => {
-  const { apiSpec, authRequired, disableCors, healthCheck } = options;
+  const { disableCors } = options;
 
-  let healthMiddleware: Handler = healthRouter;
-  if (healthCheck) {
-    healthMiddleware = createHealthHandler(healthCheck);
+  let corsMiddleware: Handler[] = [corsRouter];
+  if (disableCors) {
+    corsMiddleware = [];
   }
+
+  let sanitizeMiddleware: Handler[] = [blockHtml];
+  return [
+    helmet(),
+    everyRequestLogger,
+    json(),
+    urlencoded({ extended: false }),
+    ...sanitizeMiddleware,
+    ...corsMiddleware,
+  ];
+};
+
+/**
+ * Options for creating scoped middleware.
+ */
+export interface ScopedMiddlewareOptions {
+  apiSpec?: OpenAPIV3.DocumentV3;
+  authRequired?: boolean;
+}
+
+export const createScopedMiddleware = (
+  options: ScopedMiddlewareOptions,
+): Handler[] => {
+  const { apiSpec, authRequired } = options;
 
   let openApiValidatorMiddleware: Handler[] = [];
   if (apiSpec) {
@@ -39,21 +63,7 @@ export const createPreMiddleware = (
     authMiddleware = [auth];
   }
 
-  let corsMiddleware: Handler[] = [corsRouter];
-  if (disableCors) {
-    corsMiddleware = [];
-  }
-
-  let sanitizeMiddleware: Handler[] = [blockHtml];
-
   return [
-    helmet(),
-    healthMiddleware, // before httpLogger to avoid polluting logs
-    everyRequestLogger,
-    json(),
-    urlencoded({ extended: false }),
-    ...sanitizeMiddleware,
-    ...corsMiddleware,
     ...openApiValidatorMiddleware,
     makeContextMiddleware(),
     unsafeRequestLogger,
@@ -63,10 +73,17 @@ export const createPreMiddleware = (
 };
 
 /**
+ * Creates a middleware stack for error handling.
+ */
+export const createErrorMiddleware = () => {
+  return [notFoundHandler, errorHandler];
+};
+
+/**
  * Recommended error handling middleware stack.
  * Should be used after all routes.
  * Includes:
  * 1. 404 handler for undefined routes
  * 2. Error handler for all other errors
  */
-export const recommendedErrorHandlers = [notFoundHandler, errorHandler];
+// export const errorMiddleware = [notFoundHandler, errorHandler];

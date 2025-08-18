@@ -4,7 +4,7 @@
 
 # @saflib/express
 
-Main export for the library. Packages which implement express servers should import and use this package.
+Packages which implement express servers should import and use this package.
 
 ## Interfaces
 
@@ -19,12 +19,24 @@ Main export for the library. Packages which implement express servers should imp
 <tr>
 <td>
 
-[PreMiddlewareOptions](interfaces/PreMiddlewareOptions.md)
+[GlobalMiddlewareOptions](interfaces/GlobalMiddlewareOptions.md)
 
 </td>
 <td>
 
-&hyphen;
+Options for creating global middleware.
+
+</td>
+</tr>
+<tr>
+<td>
+
+[ScopedMiddlewareOptions](interfaces/ScopedMiddlewareOptions.md)
+
+</td>
+<td>
+
+Options for creating scoped middleware.
 
 </td>
 </tr>
@@ -147,22 +159,6 @@ Catches requests to undefined routes
 <tr>
 <td>
 
-[recommendedErrorHandlers](variables/recommendedErrorHandlers.md)
-
-</td>
-<td>
-
-Recommended error handling middleware stack.
-Should be used after all routes.
-Includes:
-1. 404 handler for undefined routes
-2. Error handler for all other errors
-
-</td>
-</tr>
-<tr>
-<td>
-
 [startExpressServer](variables/startExpressServer.md)
 
 </td>
@@ -199,6 +195,30 @@ They use OpenAPI operationIds to help label the request; these should always be 
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+
+[createErrorMiddleware](functions/createErrorMiddleware.md)
+
+</td>
+<td>
+
+Creates a middleware stack for error handling.
+
+</td>
+</tr>
+<tr>
+<td>
+
+[createGlobalMiddleware](functions/createGlobalMiddleware.md)
+
+</td>
+<td>
+
+&hyphen;
+
+</td>
+</tr>
 <tr>
 <td>
 
@@ -239,7 +259,7 @@ Only use this if you need to validate against a different OpenAPI spec.
 <tr>
 <td>
 
-[createPreMiddleware](functions/createPreMiddleware.md)
+[createScopedMiddleware](functions/createScopedMiddleware.md)
 
 </td>
 <td>

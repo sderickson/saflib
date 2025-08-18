@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from "vitest";
 
 import express from "express";
 import request from "supertest";
-import { createPreMiddleware } from "./composition.ts";
+import { createScopedMiddleware } from "./composition.ts";
 import { errorHandler } from "./errors.ts"; // Import errorHandler for a complete setup
 import { getSafContext } from "@saflib/node";
 
@@ -11,7 +11,7 @@ describe("Auth Middleware", () => {
 
   beforeEach(() => {
     app = express();
-    app.use(createPreMiddleware({ authRequired: true }));
+    app.use(createScopedMiddleware({ authRequired: true }));
     app.get("/test", (_req, res) => {
       const { auth } = getSafContext();
       res.status(200).json({ authFromMiddleware: auth });

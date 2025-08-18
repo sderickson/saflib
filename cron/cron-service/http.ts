@@ -1,6 +1,9 @@
 import express from "express";
 import { cronRouter } from "./routes/index.ts";
-import { createPreMiddleware, recommendedErrorHandlers } from "@saflib/express";
+import {
+  createScopedMiddleware,
+  recommendedErrorHandlers,
+} from "@saflib/express";
 import { cronDb } from "@saflib/cron-db";
 import { jsonSpec } from "@saflib/cron-spec";
 import type { DbKey } from "@saflib/drizzle-sqlite3";
@@ -46,7 +49,7 @@ export function createCronRouter(options: CronServiceOptions) {
   });
   router.use(
     "/cron",
-    createPreMiddleware({
+    createScopedMiddleware({
       apiSpec: jsonSpec,
     }),
   );
