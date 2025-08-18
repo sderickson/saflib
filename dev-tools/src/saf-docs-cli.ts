@@ -16,8 +16,31 @@ program
   .description("Generate typedoc and CLI docs for the current package.")
   .action(() => {
     console.log("\nGenerating typedoc...");
-    const command =
-      "typedoc --plugin typedoc-plugin-markdown --entryFileName index --out docs/ref  --indexFormat htmlTable --hideBreadcrumbs --parametersFormat htmlTable --treatValidationWarningsAsErrors --disableSources";
+    const command = [
+      "typedoc",
+      // for easy reading on GitHub, Vitepress
+      "--plugin typedoc-plugin-markdown",
+
+      // Default is README.md, but these docs are not the entrypoint
+      "--entryFileName index",
+
+      // nest the output in docs so as not to trample other docs
+      "--out docs/ref",
+
+      // easier reading
+      "--indexFormat htmlTable",
+      "--parametersFormat htmlTable",
+
+      // Breadcrumbs are broken? The links have nothing in the square brackets
+      "--hideBreadcrumbs",
+
+      // It's nice that typedoc identifies forgotten exports. Use it to enforce!
+      "--treatValidationWarningsAsErrors",
+
+      // Since I'm committing these to the repo, sources will create a bunch of
+      // noise with their GitHub-links-with-shas.
+      "--disableSources",
+    ].join(" ");
 
     try {
       execSync(command, { stdio: "inherit" });
