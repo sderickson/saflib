@@ -4,11 +4,10 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./index.ts",
-    "./types": "./types.ts"
+    ".": "./index.ts"
   },
   "scripts": {
-    "docs": "typedoc --plugin typedoc-plugin-markdown types.ts index.ts --entryFileName index --out docs/ref",
+    "docs": "typedoc --plugin typedoc-plugin-markdown --entryFileName index --out docs/ref  --indexFormat htmlTable --hideBreadcrumbs --parametersFormat htmlTable",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",

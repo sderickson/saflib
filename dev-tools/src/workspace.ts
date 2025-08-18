@@ -2,27 +2,52 @@ import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
 import type { packageName, directoryPath, PackageJson } from "../types.ts";
 
+/**
+ * Raw package.json files.
+ */
 export interface MonorepoPackageJsons {
   [key: packageName]: PackageJson;
 }
 
+/**
+ * Absolute paths.
+ */
 export interface MonorepoPackageDirectories {
   [key: packageName]: directoryPath;
 }
 
+/**
+ * Lists of direct "@saflib/*" dependencies.
+ */
 export interface WorkspaceDependencyGraph {
   [key: packageName]: packageName[];
 }
 
+/**
+ * For tools which need to work across the monorepo. Use `buildMonorepoContext` to
+ * get an instance of this. Package names are used as keys throughout.
+ *
+ * Often used by other functions, on the assumption the consumer will create it once
+ * and pass it around.
+ */
 export interface MonorepoContext {
+  /**
+   * Absolute path.
+   */
   rootDir: string;
   packages: Set<packageName>;
   monorepoPackageJsons: MonorepoPackageJsons;
   workspaceDependencyGraph: WorkspaceDependencyGraph;
   monorepoPackageDirectories: MonorepoPackageDirectories;
+  /**
+   * Subset of packages for quickly finding those which produce Docker images.
+   */
   packagesWithDockerfileTemplates: Set<packageName>;
 }
 
+/**
+ * Not for public use. Helper function for `buildMonorepoContext`.
+ */
 export function getMonorepoPackages(
   rootDir: string,
 ): Pick<
@@ -100,6 +125,9 @@ export function getMonorepoPackages(
   };
 }
 
+/**
+ * Not for public use.
+ */
 export function buildWorkspaceDependencyGraph(
   monorepoPackageJsons: MonorepoPackageJsons,
 ): WorkspaceDependencyGraph {
@@ -114,6 +142,9 @@ export function buildWorkspaceDependencyGraph(
   return dependencyGraph;
 }
 
+/**
+ * Not for public use.
+ */
 export function findPackagesWithDockerfileTemplates(
   monorepoPackageDirectories: MonorepoPackageDirectories,
 ): string[] {
@@ -149,6 +180,11 @@ function findMonorepoRoot(startDir: string): string {
   }
 }
 
+/**
+ * Creates a MonorepoContext. If no rootdir is provided, it will find the first
+ * parent directory with a package-lock.json and use that as the root, effectively
+ * returning "this" package's monorepo context.
+ */
 export function buildMonorepoContext(rootDir?: string): MonorepoContext {
   const effectiveRootDir = rootDir
     ? path.resolve(rootDir)
@@ -170,6 +206,9 @@ export function buildMonorepoContext(rootDir?: string): MonorepoContext {
   };
 }
 
+/**
+ * Returns all direct and transitive "@saflib/*" dependencies for a given package.
+ */
 export function getAllPackageWorkspaceDependencies(
   packageName: packageName,
   monorepoContext: MonorepoContext,
@@ -185,6 +224,9 @@ export function getAllPackageWorkspaceDependencies(
   return flattenedDependencies;
 }
 
+/**
+ * Finds the name of the package for the current working directory.
+ */
 export function getCurrentPackageName(): packageName {
   const packageJsonPath = path.join(process.cwd(), "package.json");
   if (!existsSync(packageJsonPath)) {
