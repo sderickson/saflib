@@ -10,15 +10,19 @@ import helmet from "helmet";
 import { makeContextMiddleware } from "./context.ts";
 import { blockHtml } from "./blockHtml.ts";
 import { createScopeValidator } from "./scopes.ts";
+import { metricsMiddleware } from "./metrics.ts";
 
 /**
  * Options for creating global middleware.
  */
-
 export interface GlobalMiddlewareOptions {
   disableCors?: boolean;
 }
 
+/**
+ * Middleware which should be put at the top of the middleware stack, and run
+ * for every request.
+ */
 export const createGlobalMiddleware = (
   options: GlobalMiddlewareOptions = {},
 ): Handler[] => {
@@ -31,6 +35,7 @@ export const createGlobalMiddleware = (
 
   let sanitizeMiddleware: Handler[] = [blockHtml];
   return [
+    metricsMiddleware,
     helmet(),
     everyRequestLogger,
     json(),
@@ -48,6 +53,10 @@ export interface ScopedMiddlewareOptions {
   authRequired?: boolean;
 }
 
+/**
+ * Middleware which should only be applied to a subset of routes in an express server.
+ * This middleware all depends on the OpenAPI spec for those routes.
+ */
 export const createScopedMiddleware = (
   options: ScopedMiddlewareOptions,
 ): Handler[] => {
@@ -73,17 +82,8 @@ export const createScopedMiddleware = (
 };
 
 /**
- * Creates a middleware stack for error handling.
+ * Middleware which should be placed after all routes.
  */
 export const createErrorMiddleware = () => {
   return [notFoundHandler, errorHandler];
 };
-
-/**
- * Recommended error handling middleware stack.
- * Should be used after all routes.
- * Includes:
- * 1. 404 handler for undefined routes
- * 2. Error handler for all other errors
- */
-// export const errorMiddleware = [notFoundHandler, errorHandler];

@@ -2,9 +2,11 @@
 
 ***
 
-# ~~Function: startServer()~~
+# Function: startExpressServer()
 
-> **startServer**(`app`, `options`): `void`
+> **startExpressServer**(`app`, `options`): `void`
+
+Given an Express app and options, starts the server and sets it up for graceful shutdown.
 
 ## Parameters
 
@@ -46,7 +48,3 @@
 ## Returns
 
 `void`
-
-## Deprecated
-
-use startExpressServer instead

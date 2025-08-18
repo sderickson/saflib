@@ -4,6 +4,8 @@
 
 # Interface: StartServerOptions
 
+Options when starting an Express server.
+
 ## Properties
 
 ### port

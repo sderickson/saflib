@@ -6,6 +6,6 @@
 
 > **createErrorMiddleware**(): (`Handler` \| (`err`, `_req`, `res`, `_`) => `void`)[]
 
-Creates a middleware stack for error handling.
+Middleware which should be placed after all routes.
 
 ## Returns

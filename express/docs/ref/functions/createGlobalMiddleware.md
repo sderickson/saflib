@@ -6,6 +6,9 @@
 
 > **createGlobalMiddleware**(`options`): `Handler`[]
 
+Middleware which should be put at the top of the middleware stack, and run
+for every request.
+
 ## Parameters
 
 <table>

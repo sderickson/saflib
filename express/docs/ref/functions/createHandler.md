@@ -6,6 +6,9 @@
 
 > **createHandler**(`handler`): (`req`, `res`, `next`) => `void`
 
+Wrapper for Express handlers. Promisifies the handler, ensuring any uncaught
+exceptions get passed to `next`.
+
 ## Parameters
 
 <table>

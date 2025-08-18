@@ -13,14 +13,20 @@
 import http from "http";
 import type { Express } from "express";
 
+/**
+ * Options when starting an Express server.
+ */
 export interface StartServerOptions {
   port: number;
 }
 
 /**
- * @deprecated use startExpressServer instead
+ * Given an Express app and options, starts the server and sets it up for graceful shutdown.
  */
-export const startServer = (app: Express, options: StartServerOptions) => {
+export const startExpressServer = (
+  app: Express,
+  options: StartServerOptions,
+) => {
   // Get port from environment and store in Express
 
   const port = options.port;
@@ -79,6 +85,3 @@ export const startServer = (app: Express, options: StartServerOptions) => {
     });
   });
 };
-
-// New name - above one is deprecated
-export const startExpressServer = startServer;
