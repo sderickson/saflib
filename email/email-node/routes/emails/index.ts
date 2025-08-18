@@ -10,12 +10,12 @@ export interface EmailsRouterOptions {
 export function createEmailsRouter(options: EmailsRouterOptions = {}) {
   const router = express.Router();
 
-  const preMiddleware = createScopedMiddleware({
+  const scopedMiddleware = createScopedMiddleware({
     apiSpec: options.apiSpec || jsonSpec,
     authRequired: false,
   });
 
-  router.use("/email", preMiddleware);
+  router.use("/email", scopedMiddleware);
   router.get("/email/sent", getSentEmails);
 
   return router;

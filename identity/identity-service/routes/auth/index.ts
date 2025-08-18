@@ -24,13 +24,14 @@ export const makeAuthRouter = () => {
   const router = express.Router();
 
   router.use(
+    "/auth",
     createScopedMiddleware({
       apiSpec: jsonSpec,
       authRequired: false,
     }),
   );
 
-  router.use(cookieParser.default());
+  router.use("/auth", cookieParser.default());
 
   const csrfProtection = csrfDSC({
     cookie: {
@@ -38,28 +39,28 @@ export const makeAuthRouter = () => {
       secure: typedEnv.PROTOCOL === "https",
     },
   });
-  router.use(csrfProtection);
-  router.use(makeSessionMiddleware());
+  router.use("/auth", csrfProtection);
+  router.use("/auth", makeSessionMiddleware());
 
   setupPassport();
-  router.use(passport.initialize());
-  router.use(passport.session());
+  router.use("/auth", passport.initialize());
+  router.use("/auth", passport.session());
 
-  router.get("/verify", verifyHandler);
-  router.post("/logout", logoutHandler);
-  router.get("/profile", getProfileHandler);
-  router.put("/profile", updateProfile);
+  router.get("/auth/verify", verifyHandler);
+  router.post("/auth/logout", logoutHandler);
+  router.get("/auth/profile", getProfileHandler);
+  router.put("/auth/profile", updateProfile);
 
   // rate limit after /verify, because verify runs before every single API call...
   if (typedEnv.IDENTITY_SERVICE_DISABLE_RATE_LIMITING !== "true") {
-    router.use(rateLimit());
+    router.use("/auth", rateLimit());
   }
-  router.post("/login", loginHandler);
-  router.post("/register", registerHandler);
-  router.post("/forgot-password", forgotPasswordHandler);
-  router.post("/reset-password", resetPasswordHandler);
-  router.post("/resend-verification", resendVerificationHandler);
-  router.post("/verify-email", verifyEmailHandler);
-  router.post("/set-password", setPassword);
+  router.post("/auth/login", loginHandler);
+  router.post("/auth/register", registerHandler);
+  router.post("/auth/forgot-password", forgotPasswordHandler);
+  router.post("/auth/reset-password", resetPasswordHandler);
+  router.post("/auth/resend-verification", resendVerificationHandler);
+  router.post("/auth/verify-email", verifyEmailHandler);
+  router.post("/auth/set-password", setPassword);
   return router;
 };

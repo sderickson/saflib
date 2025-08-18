@@ -1,6 +1,5 @@
-import _Ajv from "ajv";
-
-const Ajv = _Ajv as unknown as typeof _Ajv.default;
+// @ts-nocheck - otherwise `npm exec saf-docs generate` fails. Unclear why... TODO: fix this.
+import Ajv from "ajv";
 
 export const validateEnv = (env: any, envSchema: any) => {
   const ajv = new Ajv({

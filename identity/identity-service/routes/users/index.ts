@@ -6,11 +6,12 @@ import { createScopedMiddleware } from "@saflib/express";
 export const makeUsersRouter = () => {
   const router = express.Router();
   router.use(
+    "/users",
     createScopedMiddleware({
       apiSpec: jsonSpec,
     }),
   );
 
-  router.get("/", listUsersHandler);
+  router.get("/users", listUsersHandler);
   return router;
 };
