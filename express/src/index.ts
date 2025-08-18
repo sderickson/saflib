@@ -1,4 +1,10 @@
-// middleware
+/**
+ * Main export for the library. Packages which implement express servers should import and use this package.
+ *
+ * @module @saflib/express
+ */
+
+// Middleware
 export {
   everyRequestLogger,
   unsafeRequestLogger,

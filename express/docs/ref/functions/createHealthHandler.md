@@ -1,4 +1,4 @@
-[**@saflib/express**](../../index.md)
+[**@saflib/express**](../index.md)
 
 ***
 

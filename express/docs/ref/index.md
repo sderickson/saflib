@@ -4,6 +4,8 @@
 
 # @saflib/express
 
+Main export for the library. Packages which implement express servers should import and use this package.
+
 ## Interfaces
 
 <table>
@@ -17,7 +19,7 @@
 <tr>
 <td>
 
-[PreMiddlewareOptions](index/interfaces/PreMiddlewareOptions.md)
+[PreMiddlewareOptions](interfaces/PreMiddlewareOptions.md)
 
 </td>
 <td>
@@ -29,7 +31,7 @@
 <tr>
 <td>
 
-[StartServerOptions](index/interfaces/StartServerOptions.md)
+[StartServerOptions](interfaces/StartServerOptions.md)
 
 </td>
 <td>
@@ -54,7 +56,7 @@
 <tr>
 <td>
 
-[auth](index/variables/auth.md)
+[auth](variables/auth.md)
 
 </td>
 <td>
@@ -68,7 +70,7 @@ Throws 401 if required headers are missing.
 <tr>
 <td>
 
-[corsRouter](index/variables/corsRouter.md)
+[corsRouter](variables/corsRouter.md)
 
 </td>
 <td>
@@ -80,7 +82,7 @@ Throws 401 if required headers are missing.
 <tr>
 <td>
 
-[everyRequestLogger](index/variables/everyRequestLogger.md)
+[everyRequestLogger](variables/everyRequestLogger.md)
 
 </td>
 <td>
@@ -94,7 +96,7 @@ Format: ":date[iso] <:id> :method :url :status :response-time ms - :res[content-
 <tr>
 <td>
 
-[healthRouter](index/variables/healthRouter.md)
+[healthRouter](variables/healthRouter.md)
 
 </td>
 <td>
@@ -108,7 +110,7 @@ readiness/liveness probes
 <tr>
 <td>
 
-[metricsMiddleware](index/variables/metricsMiddleware.md)
+[metricsMiddleware](variables/metricsMiddleware.md)
 
 </td>
 <td>
@@ -120,7 +122,7 @@ readiness/liveness probes
 <tr>
 <td>
 
-[metricsRouter](index/variables/metricsRouter.md)
+[metricsRouter](variables/metricsRouter.md)
 
 </td>
 <td>
@@ -132,7 +134,7 @@ readiness/liveness probes
 <tr>
 <td>
 
-[notFoundHandler](index/variables/notFoundHandler.md)
+[notFoundHandler](variables/notFoundHandler.md)
 
 </td>
 <td>
@@ -145,7 +147,7 @@ Catches requests to undefined routes
 <tr>
 <td>
 
-[recommendedErrorHandlers](index/variables/recommendedErrorHandlers.md)
+[recommendedErrorHandlers](variables/recommendedErrorHandlers.md)
 
 </td>
 <td>
@@ -161,7 +163,7 @@ Includes:
 <tr>
 <td>
 
-[startExpressServer](index/variables/startExpressServer.md)
+[startExpressServer](variables/startExpressServer.md)
 
 </td>
 <td>
@@ -173,7 +175,7 @@ Includes:
 <tr>
 <td>
 
-[unsafeRequestLogger](index/variables/unsafeRequestLogger.md)
+[unsafeRequestLogger](variables/unsafeRequestLogger.md)
 
 </td>
 <td>
@@ -200,7 +202,7 @@ They use OpenAPI operationIds to help label the request; these should always be 
 <tr>
 <td>
 
-[createHandler](index/functions/createHandler.md)
+[createHandler](functions/createHandler.md)
 
 </td>
 <td>
@@ -212,7 +214,7 @@ They use OpenAPI operationIds to help label the request; these should always be 
 <tr>
 <td>
 
-[createHealthHandler](index/functions/createHealthHandler.md)
+[createHealthHandler](functions/createHealthHandler.md)
 
 </td>
 <td>
@@ -224,7 +226,7 @@ They use OpenAPI operationIds to help label the request; these should always be 
 <tr>
 <td>
 
-[createOpenApiValidator](index/functions/createOpenApiValidator.md)
+[createOpenApiValidator](functions/createOpenApiValidator.md)
 
 </td>
 <td>
@@ -237,7 +239,7 @@ Only use this if you need to validate against a different OpenAPI spec.
 <tr>
 <td>
 
-[createPreMiddleware](index/functions/createPreMiddleware.md)
+[createPreMiddleware](functions/createPreMiddleware.md)
 
 </td>
 <td>
@@ -249,7 +251,7 @@ Only use this if you need to validate against a different OpenAPI spec.
 <tr>
 <td>
 
-[createScopeValidator](index/functions/createScopeValidator.md)
+[createScopeValidator](functions/createScopeValidator.md)
 
 </td>
 <td>
@@ -263,7 +265,7 @@ Throws 403 if user doesn't have required scopes.
 <tr>
 <td>
 
-[errorHandler](index/functions/errorHandler.md)
+[errorHandler](functions/errorHandler.md)
 
 </td>
 <td>
@@ -276,7 +278,7 @@ Central error handling middleware that logs errors and returns standardized erro
 <tr>
 <td>
 
-[healthcheck](index/functions/healthcheck.md)
+[healthcheck](functions/healthcheck.md)
 
 </td>
 <td>
@@ -288,7 +290,7 @@ Central error handling middleware that logs errors and returns standardized erro
 <tr>
 <td>
 
-[~~startServer~~](index/functions/startServer.md)
+[~~startServer~~](functions/startServer.md)
 
 </td>
 <td>

@@ -15,9 +15,29 @@ program
   .command("generate")
   .description("Generate typedoc and CLI docs for the current package.")
   .action(() => {
+    const currentPackage = getCurrentPackageName();
+    const currentPackageJson =
+      monorepoContext.monorepoPackageJsons[currentPackage];
+
+    const entrypoints = currentPackageJson.exports;
+    if (!entrypoints) {
+      throw new Error(
+        "No exports found in package.json; use `exports` field not `main`.",
+      );
+    }
+    const entrypointCommands = Object.values(entrypoints)
+      .filter((entrypoint) => !entrypoint.includes("./workflows"))
+      .map((entrypoint) => {
+        return `--entryPoints ${entrypoint}`;
+      });
+
     console.log("\nGenerating typedoc...");
     const command = [
       "typedoc",
+
+      // for each entrypoint, add the entrypoint command
+      ...entrypointCommands,
+
       // for easy reading on GitHub, Vitepress
       "--plugin typedoc-plugin-markdown",
 
@@ -50,9 +70,6 @@ program
     }
 
     console.log("\nGenerating CLI docs...");
-    const currentPackage = getCurrentPackageName();
-    const currentPackageJson =
-      monorepoContext.monorepoPackageJsons[currentPackage];
     const bin = currentPackageJson.bin;
     if (bin && Object.keys(bin).length > 0) {
       mkdirSync("docs/cli", { recursive: true });
