@@ -1,4 +1,6 @@
-import Ajv from "ajv";
+import _Ajv from "ajv";
+
+const Ajv = _Ajv as unknown as typeof _Ajv.default;
 
 export const validateEnv = (env: any, envSchema: any) => {
   const ajv = new Ajv({

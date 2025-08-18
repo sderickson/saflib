@@ -1,7 +1,14 @@
-// To dissuade services from catching unhandled errors and papering over them programmatically, we log the error details and throw an error with a generic message. If a service catches this error, it should be solved (and/or possibly thrown as a new Error type) in the database library, not the service layer.
-
 import { getSafReporters } from "@saflib/node";
 
+/**
+ * A subclass of `Error` which is used to indicate that an error was *not* caught
+ * and handled by the database library. The cause of the error is not propagated,
+ * since consumers of the database libary should not have access to underlying
+ * SQL issues.
+ *
+ * When there is an UnhandledDatabaseError, the database library should be updated
+ * to handle it. Any occurence should be considered a bug.
+ */
 export class UnhandledDatabaseError extends Error {
   constructor() {
     super("A database library did not catch and handle an error. Check logs.");
@@ -9,6 +16,11 @@ export class UnhandledDatabaseError extends Error {
   }
 }
 
+/**
+ * A subclass of `Error` which is used to indicate that an error was caught and
+ * handled by the database library. Database packages should subclass this error,
+ * and these are not necessarily considered bugs if they occur.
+ */
 export class HandledDatabaseError extends Error {}
 
 export function queryWrapper<T, A extends any[]>(

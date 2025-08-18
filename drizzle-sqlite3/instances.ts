@@ -8,6 +8,15 @@ import fs from "fs";
 import { makeSubsystemReporters } from "@saflib/node";
 import { typedEnv } from "@saflib/env";
 
+/**
+ * A class which mainly manages "connections" to the sqlite3 database and drizzle
+ * ORM. Any package which depends on this will create a single instance given the
+ * database schema and config, export the public interface, and be used by queries
+ * to access the drizzle ORM. This way the package which depends on
+ * `@saflib/drizzle-sqlite3` has full access to its database, but packages
+ * which depend on *it* only have access to an opaque key which only database
+ * queries can use.
+ */
 export class DbManager<S extends Schema, C extends Config> {
   private instances: Map<DbKey, DbConnection<S>>;
   private config: C;
