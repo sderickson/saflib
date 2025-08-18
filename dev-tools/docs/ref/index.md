@@ -6,5 +6,5 @@
 
 ## Modules
 
-- [index](index/reference.md)
-- [types](types/reference.md)
+- [index](index/index.md)
+- [types](types/index.md)

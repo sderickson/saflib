@@ -1,8 +1,8 @@
-[**@saflib/dev-tools**](../reference.md)
+[**@saflib/dev-tools**](../index.md)
 
 ***
 
-[@saflib/dev-tools](../reference.md) / types
+[@saflib/dev-tools](../index.md) / types
 
 # types
 
