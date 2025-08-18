@@ -1,14 +1,16 @@
-import { describe, it, expect, beforeEach } from "vitest";
-import { authDbManager } from "../../instances.ts";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import type { DbKey } from "@saflib/drizzle-sqlite3";
-import { authDb } from "../../index.ts";
-import { UserNotFoundError } from "../../errors.ts";
+import { authDb, UserNotFoundError } from "@saflib/identity-db";
 
 describe("getById", () => {
   let dbKey: DbKey;
 
   beforeEach(() => {
-    dbKey = authDbManager.connect();
+    dbKey = authDb.connect();
+  });
+
+  afterEach(() => {
+    authDb.disconnect(dbKey);
   });
 
   it("should return user by id", async () => {
@@ -24,7 +26,7 @@ describe("getById", () => {
     expect(fetched).toEqual(created);
   });
 
-  it("should throw UserNotFoundError when id not found", async () => {
+  it("should return UserNotFoundError when id not found", async () => {
     const { error } = await authDb.users.getById(dbKey, 999);
     expect(error).toBeInstanceOf(UserNotFoundError);
   });

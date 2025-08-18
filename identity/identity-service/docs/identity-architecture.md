@@ -22,7 +22,7 @@ The authentication system uses a combination of cookies-session-based auth (for 
   - depended on by `@saflib/auth-service`
 - `@saflib/identity-spec`
   - describes the API endpoints served by `@saflib/auth-service`
-- `@saflib/node-express`:
+- `@saflib/express`:
   - Common middleware for SAF Node.js services
   - Middleware for parsing authentication headers (auth.ts)
   - Middleware for enforcing api scopes (openapi.ts)

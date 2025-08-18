@@ -1,4 +1,4 @@
-# Test Routes
+# Testing
 
 Tests for node/express routes should be integration tests that use the actual database but mock expensive or external operations. They should run the same middleware as the live application.
 

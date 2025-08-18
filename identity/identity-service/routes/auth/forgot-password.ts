@@ -1,23 +1,31 @@
 import { randomBytes } from "crypto";
 import { createHandler } from "@saflib/express";
-import { type AuthResponse } from "@saflib/identity-spec";
-import { authDb } from "@saflib/identity-db";
+import type { AuthResponse, AuthRequest } from "@saflib/identity-spec";
+import { authDb, UserNotFoundError } from "@saflib/identity-db";
 import { authServiceStorage } from "../../context.ts";
 import { linkToHref } from "@saflib/links";
 import { authLinks } from "@saflib/identity-links";
 
 export const forgotPasswordHandler = createHandler(async (req, res) => {
-  const { email } = req.body as { email: string };
-  const { dbKey } = authServiceStorage.getStore()!;
+  const { email } = req.body as AuthRequest["forgotPassword"];
+  const { dbKey, callbacks } = authServiceStorage.getStore()!;
   const { result: user, error } = await authDb.users.getByEmail(dbKey, email);
+
+  const commonResponse: AuthResponse["forgotPassword"][200] = {
+    success: true,
+    message: "If the email exists, a recovery email has been sent",
+  };
+
   if (error) {
-    const successResponse: AuthResponse["forgotPassword"][200] = {
-      success: true,
-      message: "If the email exists, a recovery email has been sent",
-    };
-    res.status(200).json(successResponse);
-    return;
+    switch (true) {
+      case error instanceof UserNotFoundError:
+        res.status(200).json(commonResponse);
+        return;
+      default:
+        throw error satisfies never;
+    }
   }
+
   const token = randomBytes(8).toString("hex");
   const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes from now
 
@@ -31,14 +39,10 @@ export const forgotPasswordHandler = createHandler(async (req, res) => {
   const resetUrl = linkToHref(authLinks.resetPassword, {
     params: { token },
   });
-  const { callbacks } = authServiceStorage.getStore()!;
+
   if (callbacks.onPasswordReset) {
     await callbacks.onPasswordReset(user, resetUrl);
   }
 
-  const successResponse: AuthResponse["forgotPassword"][200] = {
-    success: true,
-    message: "If the email exists, a recovery email has been sent",
-  };
-  res.status(200).json(successResponse);
+  res.status(200).json(commonResponse);
 });

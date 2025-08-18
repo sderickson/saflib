@@ -1,4 +1,4 @@
-# Setup
+# Overview
 
 This guide explains how to set up a new OpenAPI spec package in the SAF monorepo.
 
