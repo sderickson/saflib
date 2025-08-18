@@ -8,6 +8,7 @@
     "./types": "./types.ts"
   },
   "scripts": {
+    "docs": "typedoc --plugin typedoc-plugin-markdown types.ts index.ts --entryFileName reference",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
