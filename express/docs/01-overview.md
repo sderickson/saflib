@@ -66,8 +66,6 @@ Examples:
 - [Cron Service](https://github.com/sderickson/saflib/blob/main/cron/cron-service/http.ts)
 - [Identity Service](https://github.com/sderickson/saflib/blob/main/identity/identity-service/http.ts)
 
-> TODO: Move "createPreMiddleware" in cron service to route index file.
-
 ### `package.json`
 
 The name of the package should be `@<org-name>/<service-name>-http`, such as `@saflib/identity-http`. This reflects that the package focuses on serving HTTP requests for the service within your organization.

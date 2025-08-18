@@ -10,7 +10,7 @@ Route handlers should be organized in directories by their route prefix. For exa
 
 Each handler (e.g. get, list, create, update, delete) should reside in its own file per [best practice](../../best-practices.md#keep-files-small).
 
-An `index.ts` file within each domain directory aggregates the individual handlers into an [Express Router](https://expressjs.com/en/5x/api.html#router). This router should include a response from [`createPreMiddleware`](https://github.com/sderickson/saflib/blob/e75a8597ae497ea8d422dab1a1e96f41792b85ba/express/src/middleware/composition.ts#L22), scoped to the route prefix. The router should handle the entire route path and be able to slot into an Express app without any further path qualification.
+An `index.ts` file within each domain directory aggregates the individual handlers into an [Express Router](https://expressjs.com/en/5x/api.html#router). This router should include a response from [`createScopedMiddleware`](http://docs.saf-demo.online/express/docs/ref/functions/createScopedMiddleware.html), scoped to the route prefix. The router should handle the entire route path and be able to slot into an Express app without any further path qualification.
 
 > TODO: Update index routers to actually handle the entire route path.
 
