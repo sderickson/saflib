@@ -24,3 +24,5 @@ export {
 
 // route handler utilities
 export { createHandler } from "./handler.ts";
+
+export { makeUserHeaders } from "./vitest-helpers.ts";
