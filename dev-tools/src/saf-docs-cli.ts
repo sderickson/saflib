@@ -6,6 +6,7 @@ import { execSync } from "node:child_process";
  * Creates CLI docs for packages.
  */
 import { Command } from "commander";
+import { buildMonorepoContext } from "./workspace.ts";
 
 const program = new Command()
   .name("saf-docs")
@@ -28,5 +29,34 @@ program
 
     // console.log("Generating CLI docs...");
   });
+
+const monorepoContext = buildMonorepoContext();
+
+const packagesSorted = Array.from(monorepoContext.packages).sort();
+
+const printProgram = program
+  .command("print")
+  .description("List all packages in the monorepo.")
+  .action(() => {
+    printProgram.outputHelp();
+  });
+
+packagesSorted.forEach((packageName) => {
+  printProgram
+    .command(packageName)
+    .description(
+      monorepoContext.monorepoPackageJsons[packageName].description ||
+        "<Missing description>",
+    )
+    .action(() => {
+      console.log(
+        JSON.stringify(
+          monorepoContext.monorepoPackageJsons[packageName],
+          null,
+          2,
+        ),
+      );
+    });
+});
 
 program.parse(process.argv);

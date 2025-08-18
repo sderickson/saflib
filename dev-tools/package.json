@@ -16,7 +16,6 @@
   },
   "bin": {
     "generate-dockerfiles": "./generate-dockerfiles.ts",
-    "saf-doc": "./src/workspace-cli.ts",
     "saf-health-assets": "./health-assets.ts",
     "saf-docs": "./src/saf-docs-cli.ts"
   },
