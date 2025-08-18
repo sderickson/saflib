@@ -1,8 +1,8 @@
 #!/usr/bin/env node --experimental-strip-types --disable-warning=ExperimentalWarning
 
 import { Command } from "commander";
-import { generateDockerfiles } from "./src/docker.ts";
-import { buildMonorepoContext } from "./src/workspace.ts";
+import { generateDockerfiles } from "./docker.ts";
+import { buildMonorepoContext } from "./workspace.ts";
 
 const program = new Command()
   .name("saf-docker")

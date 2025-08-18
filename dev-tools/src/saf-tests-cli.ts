@@ -1,15 +1,15 @@
 #!/usr/bin/env node --experimental-strip-types
 
 import { Command } from "commander";
-import { gatherHealthAssets } from "./src/health-assets.ts";
-import { genCoverage } from "./src/gen-coverage.ts";
+import { gatherHealthAssets } from "./test-assets.ts";
+import { genCoverage } from "./test-coverage.ts";
 
 const program = new Command()
-  .name("saf-health-assets")
+  .name("saf-tests")
   .description("Manage test assets from the e2e and unit tests.");
 
 program
-  .command("gen-coverage")
+  .command("generate-coverage")
   .description("Generate coverage for the tests.")
   .action(async () => {
     await genCoverage();
@@ -23,7 +23,7 @@ program
 //   });
 
 program
-  .command("gather")
+  .command("gather-assets")
   .description("Gather test assets from the e2e and unit tests.")
   .argument("<target-dir>", "The directory to gather the test assets into.")
   .action(async (targetDir) => {

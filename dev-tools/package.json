@@ -7,16 +7,14 @@
     ".": "./index.ts"
   },
   "scripts": {
-    "docs": "typedoc --plugin typedoc-plugin-markdown --entryFileName index --out docs/ref  --indexFormat htmlTable --hideBreadcrumbs --parametersFormat htmlTable --treatValidationWarningsAsErrors",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "generate-dockerfiles": "node --experimental-strip-types ./generate-dockerfiles.ts",
     "typecheck": "tsc"
   },
   "bin": {
-    "saf-docker": "./generate-dockerfiles.ts",
-    "saf-health-assets": "./health-assets.ts",
+    "saf-docker": "./src/saf-docker-cli.ts",
+    "saf-tests": "./src/saf-tests-cli.ts",
     "saf-docs": "./src/saf-docs-cli.ts"
   },
   "dependencies": {
@@ -25,6 +23,5 @@
   "devDependencies": {
     "@saflib/vitest": "*",
     "memfs": "^4.17.0"
-    
   }
 }
