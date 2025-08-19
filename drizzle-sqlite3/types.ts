@@ -55,3 +55,16 @@ export type TransactionCallback<S extends Schema> = Parameters<
 export type DbTransaction<S extends Schema> = Parameters<
   TransactionCallback<S>
 >[0];
+
+/**
+ * To be used with "Equal" to check explicit table interfaces match Drizzle's inferred interfaces.
+ */
+export type Expect<T extends true> = T;
+
+/**
+ * To be used with "Expect" to check explicit table interfaces match Drizzle's inferred interfaces.
+ */
+export type Equal<X, Y> =
+  (<T>() => T extends X ? 1 : 2) extends <T>() => T extends Y ? 1 : 2
+    ? true
+    : false;

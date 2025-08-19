@@ -1,11 +1,14 @@
 import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
+import type { Expect, Equal } from "@saflib/drizzle-sqlite3";
+
+const lastRunStatusEnum = ["success", "fail", "running", "timed out"] as const;
 
 export interface JobSetting {
   id: number;
   jobName: string;
   enabled: boolean;
   lastRunAt: Date | null;
-  lastRunStatus: "success" | "fail" | "running" | "timed out" | null;
+  lastRunStatus: (typeof lastRunStatusEnum)[number] | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -16,18 +19,12 @@ export const jobSettings = sqliteTable("job_settings", {
   enabled: integer("enabled", { mode: "boolean" }).notNull(), // Store boolean as integer 0/1
   lastRunAt: integer("last_run_at", { mode: "timestamp" }), // Nullable timestamp
   lastRunStatus: text("last_run_status", {
-    enum: ["success", "fail", "running", "timed out"],
+    enum: lastRunStatusEnum,
   }), // Nullable status enum
   createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
   updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
 });
 
-type Expect<T extends true> = T;
-type Equal<X, Y> =
-  (<T>() => T extends X ? 1 : 2) extends <T>() => T extends Y ? 1 : 2
-    ? true
-    : false;
-
-export type JobSettingTest = Expect<
+export type JobSettingTest1 = Expect<
   Equal<JobSetting, typeof jobSettings.$inferSelect>
 >;

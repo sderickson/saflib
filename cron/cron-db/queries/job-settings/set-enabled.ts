@@ -1,6 +1,6 @@
 // import { queryWrapper } from "@saflib/drizzle-sqlite3";
 import { jobSettings } from "../../schema.ts";
-import type { JobSetting, NewJobSetting } from "../../types.ts";
+import type { JobSetting } from "../../types.ts";
 import type { DbKey } from "@saflib/drizzle-sqlite3";
 import { cronDbManager } from "../../instances.ts";
 
@@ -11,7 +11,7 @@ export const setEnabled = async (
 ): Promise<JobSetting> => {
   const db = cronDbManager.get(dbKey)!;
   const now = new Date();
-  const values: NewJobSetting = {
+  const values = {
     jobName,
     enabled,
     createdAt: now,

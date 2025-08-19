@@ -24,7 +24,6 @@
 | [CronDbTransaction](type-aliases/CronDbTransaction.md) | - |
 | [CronDbType](type-aliases/CronDbType.md) | - |
 | [LastRunStatus](type-aliases/LastRunStatus.md) | - |
-| [NewJobSetting](type-aliases/NewJobSetting.md) | - |
 
 ## Variables
 

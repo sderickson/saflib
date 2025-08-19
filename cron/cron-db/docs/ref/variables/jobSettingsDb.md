@@ -26,7 +26,7 @@ Queries for getting info on cron jobs, and updating them.
 
 ### getByName()
 
-> **getByName**: (`dbKey`, `jobName`) => `Promise`\<`Result`\>
+> **getByName**: (`dbKey`, `jobName`) => `Promise`\<`GetByNameResult`\>
 
 #### Parameters
 
@@ -37,7 +37,7 @@ Queries for getting info on cron jobs, and updating them.
 
 #### Returns
 
-`Promise`\<`Result`\>
+`Promise`\<`GetByNameResult`\>
 
 ### setEnabled()
 
