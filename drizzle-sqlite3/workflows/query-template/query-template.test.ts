@@ -2,7 +2,7 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import type { DbKey } from "@saflib/drizzle-sqlite3";
 // TODO: Uncomment and fix this import
-import { someDb, someQueryDb } from "@own/package";
+// import { someDb, someQueryDb } from "@own/package";
 
 describe("queryTemplate", () => {
   let dbKey: DbKey;
