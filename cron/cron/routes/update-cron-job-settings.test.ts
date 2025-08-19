@@ -4,7 +4,7 @@ import express from "express";
 import { createApp } from "../http.ts";
 import type { CronRequest, CronResponse } from "@saflib/cron-spec";
 import { mapJobSettingToResponse } from "./_helpers.ts"; // Need helper for response check
-import { cronDb } from "@saflib/cron-db";
+import { cronDb, jobSettingsDb } from "@saflib/cron-db";
 import type { DbKey } from "@saflib/drizzle-sqlite3";
 import { throwError } from "@saflib/monorepo";
 import { mockJobs } from "../mock-jobs.ts";
@@ -38,7 +38,7 @@ describe("PUT /jobs/settings", () => {
 
     // Fetch the updated setting directly from db to create the expected response
     const updatedSetting = await throwError(
-      cronDb.jobSettings.getByName(dbKey, existingJobName),
+      jobSettingsDb.getByName(dbKey, existingJobName),
     );
 
     const expectedBody: CronResponse["updateCronJobSettings"][200] =

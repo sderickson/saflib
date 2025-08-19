@@ -4,7 +4,7 @@ import {
   removeAllSimpleStreamTransports,
 } from "@saflib/node";
 import { startJobs } from "./index.ts";
-import { cronDb } from "@saflib/cron-db";
+import { cronDb, jobSettingsDb } from "@saflib/cron-db";
 import type { DbKey } from "@saflib/drizzle-sqlite3";
 import { throwError } from "@saflib/monorepo";
 import {
@@ -46,7 +46,7 @@ describe("startJobs", () => {
     // Pass the local db instance to startJobs
     await startJobs({ "new-job": mockJobs["new-job"] }, { dbKey });
     const setting = await throwError(
-      cronDb.jobSettings.getByName(dbKey, "new-job"),
+      jobSettingsDb.getByName(dbKey, "new-job"),
     ); // Assert on local db
     expect(setting).toBeDefined();
     expect(setting.enabled).toBe(false);
@@ -61,7 +61,7 @@ describe("startJobs", () => {
   it("should skip scheduling if initial fetch fails unexpectedly", async () => {
     // Spy on the local db instance
     const getByNameSpy = vi
-      .spyOn(cronDb.jobSettings, "getByName")
+      .spyOn(jobSettingsDb, "getByName")
       .mockReturnValue(
         Promise.resolve({
           error: new Error("Unexpected error...."),
@@ -90,25 +90,25 @@ describe("startJobs", () => {
       { dbKey },
     );
     // Ensure the job is enabled in the DB for this test
-    await cronDb.jobSettings.setEnabled(dbKey, "every-second-job", true);
+    await jobSettingsDb.setEnabled(dbKey, "every-second-job", true);
 
     expect(mockJobHandler).not.toHaveBeenCalled();
     await vi.advanceTimersByTimeAsync(1000);
     expect(mockJobHandler).toHaveBeenCalledTimes(1);
     const setting = await throwError(
-      cronDb.jobSettings.getByName(dbKey, "every-second-job"),
+      jobSettingsDb.getByName(dbKey, "every-second-job"),
     );
     expect(setting.lastRunStatus).toBe("success");
     expect(setting.lastRunAt).toEqual(new Date(baseTime.getTime() + 1000));
   });
 
   it("should not run disabled job on schedule tick", async () => {
-    await cronDb.jobSettings.setEnabled(dbKey, "disabled-job", false);
+    await jobSettingsDb.setEnabled(dbKey, "disabled-job", false);
     await startJobs({ "disabled-job": mockJobs["disabled-job"] }, { dbKey });
     await vi.advanceTimersByTimeAsync(1000);
     expect(mockJobs["disabled-job"].handler).not.toHaveBeenCalled();
     const setting = await throwError(
-      cronDb.jobSettings.getByName(dbKey, "disabled-job"),
+      jobSettingsDb.getByName(dbKey, "disabled-job"),
     );
     expect(setting.enabled).toBe(false);
     expect(setting.lastRunStatus).toBeNull();
@@ -120,12 +120,12 @@ describe("startJobs", () => {
       { dbKey },
     );
     // Ensure the job is enabled in the DB for this test
-    await cronDb.jobSettings.setEnabled(dbKey, "every-second-job", true);
+    await jobSettingsDb.setEnabled(dbKey, "every-second-job", true);
 
     await vi.advanceTimersByTimeAsync(1000);
     expect(mockJobHandler).toHaveBeenCalledTimes(1);
     const setting = await throwError(
-      cronDb.jobSettings.getByName(dbKey, "every-second-job"),
+      jobSettingsDb.getByName(dbKey, "every-second-job"),
     );
     expect(setting.lastRunStatus).toBe("success");
     expect(setting.lastRunAt).toEqual(new Date(baseTime.getTime() + 1000));
@@ -138,12 +138,12 @@ describe("startJobs", () => {
       { "every-second-job": mockJobs["every-second-job"] },
       { dbKey },
     );
-    await cronDb.jobSettings.setEnabled(dbKey, "every-second-job", true);
+    await jobSettingsDb.setEnabled(dbKey, "every-second-job", true);
 
     await vi.advanceTimersByTimeAsync(1000);
     expect(mockJobHandler).toHaveBeenCalledTimes(1);
     const setting = await throwError(
-      cronDb.jobSettings.getByName(dbKey, "every-second-job"),
+      jobSettingsDb.getByName(dbKey, "every-second-job"),
     );
     expect(setting.lastRunStatus).toBe("fail");
     expect(setting.lastRunAt).toEqual(new Date(baseTime.getTime() + 1000));
@@ -160,7 +160,7 @@ describe("startJobs", () => {
         }),
     );
 
-    await cronDb.jobSettings.setEnabled(dbKey, "every-minute-job", true);
+    await jobSettingsDb.setEnabled(dbKey, "every-minute-job", true);
 
     await startJobs(
       { "every-minute-job": mockJobs["every-minute-job"] },
@@ -168,7 +168,7 @@ describe("startJobs", () => {
     );
     await vi.advanceTimersByTimeAsync(1000 * 62); // Trigger the job's onTick and timeout
     const setting = await throwError(
-      cronDb.jobSettings.getByName(dbKey, "every-minute-job"),
+      jobSettingsDb.getByName(dbKey, "every-minute-job"),
     );
     expect(setting.lastRunStatus).toBe("timed out"); // Check the final status
     expect(logSpy).toHaveBeenCalledWith(
@@ -187,12 +187,12 @@ describe("startJobs", () => {
     );
 
     await startJobs({ "timeout-default-job": jobConfig }, { dbKey });
-    await cronDb.jobSettings.setEnabled(dbKey, "timeout-default-job", true);
+    await jobSettingsDb.setEnabled(dbKey, "timeout-default-job", true);
 
     await vi.advanceTimersByTimeAsync(1000 * 70); // Trigger the job
 
     const setting = await throwError(
-      cronDb.jobSettings.getByName(dbKey, "timeout-default-job"),
+      jobSettingsDb.getByName(dbKey, "timeout-default-job"),
     );
     expect(setting.lastRunStatus).toBe("timed out");
     expect(logSpy).toHaveBeenCalledWith(
@@ -206,10 +206,10 @@ describe("startJobs", () => {
     const dbError = new Error("DB Write Failed");
 
     // Store the original method before spying
-    const originalSetStatus = cronDb.jobSettings.setLastRunStatus;
+    const originalSetStatus = jobSettingsDb.setLastRunStatus;
 
     const setStatusSpy = vi
-      .spyOn(cronDb.jobSettings, "setLastRunStatus")
+      .spyOn(jobSettingsDb, "setLastRunStatus")
       .mockImplementation(async (dbKey, name, status) => {
         if (status === "fail") {
           // Throw the specific error for the 'fail' case
@@ -225,7 +225,7 @@ describe("startJobs", () => {
       { "every-second-job": mockJobs["every-second-job"] },
       { dbKey },
     );
-    await cronDb.jobSettings.setEnabled(dbKey, "every-second-job", true);
+    await jobSettingsDb.setEnabled(dbKey, "every-second-job", true);
 
     // Advance time and wait for potential async operations triggered by the tick
     await vi.advanceTimersByTimeAsync(1000);
@@ -243,7 +243,7 @@ describe("startJobs", () => {
 
     // Check the DB status - should be 'running' as the 'fail' update threw
     const setting = await throwError(
-      cronDb.jobSettings.getByName(dbKey, "every-second-job"),
+      jobSettingsDb.getByName(dbKey, "every-second-job"),
     );
     expect(setting.lastRunStatus).toBe("running");
 

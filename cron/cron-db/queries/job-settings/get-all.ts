@@ -4,7 +4,7 @@ import type { DbKey } from "@saflib/drizzle-sqlite3";
 import { cronDbManager } from "../../instances.ts";
 import type { ReturnsError } from "@saflib/monorepo";
 
-export type GetAllResult = ReturnsError<JobSetting[]>;
+export type GetAllResult = ReturnsError<JobSetting[], never>;
 
 export const getAll = queryWrapper(
   async (dbKey: DbKey): Promise<GetAllResult> => {

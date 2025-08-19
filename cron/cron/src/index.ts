@@ -11,7 +11,7 @@ import {
   type SafReporters,
   getServiceName,
 } from "@saflib/node";
-import { cronDb } from "@saflib/cron-db";
+import { jobSettingsDb } from "@saflib/cron-db";
 import type { JobConfig, JobsMap } from "./types.ts";
 import type { DbKey } from "@saflib/drizzle-sqlite3";
 import { JobSettingNotFoundError } from "@saflib/cron-db";
@@ -37,7 +37,7 @@ async function executeJobWithHandling(
 
   await safContextStorage.run(context, async () => {
     await safReportersStorage.run(reporters, async () => {
-      const jobTimeoutSeconds = jobConfig.timeoutSeconds ?? 10;
+      const jobTimeoutSeconds = 10;
       const timeoutMs = jobTimeoutSeconds * 1000;
       const { logError } = getSafReporters();
       let statusToSet: "success" | "fail" | "timed out" = "fail"; // Default to fail
@@ -50,7 +50,7 @@ async function executeJobWithHandling(
       const timer = cronMetric.startTimer(labels);
       try {
         // Set status to running *before* starting the handler/timeout race
-        await cronDb.jobSettings.setLastRunStatus(dbKey, jobName, "running");
+        await jobSettingsDb.setLastRunStatus(dbKey, jobName, "running");
 
         const timeoutPromise = new Promise((_, reject) =>
           setTimeout(
@@ -72,19 +72,8 @@ async function executeJobWithHandling(
         labels.status = "success";
       } catch (error) {
         // Log the error
-        const isErrorInstance = error instanceof Error;
-        if (jobConfig.customLogError && isErrorInstance) {
-          const wasLogged = jobConfig.customLogError(error, { jobName });
-          if (!wasLogged) {
-            logError(
-              new Error(`Cron job "${jobName}" failed: ${error.message}`, {
-                cause: error,
-              }),
-            );
-          }
-        } else {
-          logError(error);
-        }
+        const isErrorInstance = error instanceof Error;        
+        logError(error);
 
         // Determine the job status
         const errorMessage = isErrorInstance
@@ -101,7 +90,7 @@ async function executeJobWithHandling(
       } finally {
         timer();
         try {
-          await cronDb.jobSettings.setLastRunStatus(
+          await jobSettingsDb.setLastRunStatus(
             dbKey,
             jobName,
             statusToSet,
@@ -130,13 +119,13 @@ export const startJobs = async (
   const { log, logError } = makeSubsystemReporters("cron", "startJobs");
   const { dbKey } = config;
   for (const [jobName, jobConfig] of Object.entries(jobsToStart)) {
-    const { error } = await cronDb.jobSettings.getByName(dbKey, jobName);
+    const { error } = await jobSettingsDb.getByName(dbKey, jobName);
     if (error) {
       if (error instanceof JobSettingNotFoundError) {
         log.warn(
           `Job setting for '${jobName}' not found in DB. Creating default (disabled).`,
         );
-        await cronDb.jobSettings.setEnabled(dbKey, jobName, false);
+        await jobSettingsDb.setEnabled(dbKey, jobName, false);
       } else {
         log.error(
           `Failed to retrieve initial job setting for '${jobName}'. Skipping job.`,
@@ -151,7 +140,7 @@ export const startJobs = async (
         // Use schedulerLogger for logs before entering job-specific context
         try {
           const { result: currentJobSetting, error } =
-            await cronDb.jobSettings.getByName(dbKey, jobName);
+              await jobSettingsDb.getByName(dbKey, jobName);
           if (error) {
             logError(error);
             return;

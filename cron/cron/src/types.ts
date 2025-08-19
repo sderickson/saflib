@@ -21,12 +21,6 @@ export interface JobConfig {
   schedule: string;
   /** The async function to execute when the job runs. */
   handler: (reqId: string) => Promise<any>;
-  /** Default enabled state (primarily for initial setup, DB state overrides). */
-  enabled: boolean;
-  /** Optional job execution timeout in seconds (defaults to 10 if not provided). */
-  timeoutSeconds?: number;
-  /** Optional error reporter for the job. Returns true if the error was logged. */
-  customLogError?: CustomLogError;
 }
 
 /**
