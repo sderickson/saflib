@@ -22,4 +22,4 @@ To view sent emails for Playwright tests, render the page provided by [@saflib/e
 
 For development of the email packages.
 
-- []
+- [@saflib/email-spec](../../email-spec/docs/ref/index.md)
