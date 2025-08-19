@@ -146,13 +146,14 @@ program
     const envSchemaPath = join(currentPackageDir, "env.schema.json");
     if (existsSync(envSchemaPath)) {
       console.log("\nGenerating env.md...");
+      mkdirSync("docs/env", { recursive: true });
       const envSchema = JSON.parse(readFileSync(envSchemaPath, "utf8"));
 
       const envTable = makeMdTableFromEnvSchema(envSchema);
 
       const envMd = `# Environment Variables\n\nThis package uses environment variables. The schema for these variables is as follows:\n\n${envTable}\n`;
-      writeFileSync("docs/env.md", envMd);
-      console.log("Finished generating env.md at ./docs/env.md");
+      writeFileSync("docs/env/index.md", envMd);
+      console.log("Finished generating env.md at ./docs/env/index.md");
     }
   });
 
