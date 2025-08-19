@@ -6,7 +6,7 @@ Set of packages for sending emails and some developer tools around email sends. 
 
 This just adds some niceties around Nodemailer so it integrates well with the rest of SAF.
 
-- [Specified env variable](./env.md) inherited by any package which depends on `@saflib/email`.
+- [Specified env variable](./env/index.md) inherited by any package which depends on `@saflib/email`.
 - Automatic mocking when run in a test environment or when `MOCK_INTEGRATION` is "true".
 - Backend and frontend for accessing mock emails in E2E tests.
 
