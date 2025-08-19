@@ -6,11 +6,11 @@ import { setLastRunStatus } from "./set-last-run-status.ts";
 /**
  * Queries for getting info on cron jobs, and updating them.
  */
-const jobSettings = {
+const jobSettingsDb = {
   getAll,
   getByName,
   setEnabled,
   setLastRunStatus,
 };
 
-export { jobSettings };
+export { jobSettingsDb };

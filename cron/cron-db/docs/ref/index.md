@@ -31,4 +31,4 @@
 | Variable | Description |
 | ------ | ------ |
 | [cronDb](variables/cronDb.md) | - |
-| [jobSettings](variables/jobSettings.md) | Queries for getting info on cron jobs, and updating them. |
+| [jobSettingsDb](variables/jobSettingsDb.md) | Queries for getting info on cron jobs, and updating them. |

@@ -2,9 +2,9 @@
 
 ***
 
-# Variable: jobSettings
+# Variable: jobSettingsDb
 
-> `const` **jobSettings**: `object`
+> `const` **jobSettingsDb**: `object`
 
 Queries for getting info on cron jobs, and updating them.
 

@@ -22,12 +22,12 @@ export const jobSettings = sqliteTable("job_settings", {
   updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
 });
 
-// type Expect<T extends true> = T;
-// type Equal<X, Y> =
-//   (<T>() => T extends X ? 1 : 2) extends <T>() => T extends Y ? 1 : 2
-//     ? true
-//     : false;
+type Expect<T extends true> = T;
+type Equal<X, Y> =
+  (<T>() => T extends X ? 1 : 2) extends <T>() => T extends Y ? 1 : 2
+    ? true
+    : false;
 
-// export type JobSettingTest = Expect<
-//   Equal<JobSetting, typeof jobSettings.$inferSelect>
-// >;
+export type JobSettingTest = Expect<
+  Equal<JobSetting, typeof jobSettings.$inferSelect>
+>;

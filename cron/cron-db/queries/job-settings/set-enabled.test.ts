@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeAll, afterAll } from "vitest";
 import type { DbKey } from "@saflib/drizzle-sqlite3";
-import { cronDb, jobSettings } from "@saflib/cron-db";
+import { cronDb, jobSettingsDb } from "@saflib/cron-db";
 
 describe("setEnabledByName", () => {
   let dbKey: DbKey;
@@ -18,7 +18,7 @@ describe("setEnabledByName", () => {
 
   it("should create a new job setting if it doesn't exist", async () => {
     const jobName = "test-job-set-new";
-    const job = await jobSettings.setEnabled(dbKey, jobName, true);
+    const job = await jobSettingsDb.setEnabled(dbKey, jobName, true);
     expect(job.jobName).toBe(jobName);
     expect(job.enabled).toBe(true);
     expect(job.createdAt).toBeInstanceOf(Date);
@@ -27,10 +27,10 @@ describe("setEnabledByName", () => {
 
   it("should update an existing job setting", async () => {
     const jobName = "test-job-set-update";
-    const initialJob = await jobSettings.setEnabled(dbKey, jobName, true);
+    const initialJob = await jobSettingsDb.setEnabled(dbKey, jobName, true);
     // Advance time by more than a second to ensure timestamp difference
     vi.advanceTimersByTime(1100);
-    const updatedJob = await jobSettings.setEnabled(dbKey, jobName, false);
+    const updatedJob = await jobSettingsDb.setEnabled(dbKey, jobName, false);
     expect(updatedJob.jobName).toBe(jobName);
     expect(updatedJob.enabled).toBe(false);
     expect(updatedJob.id).toBe(initialJob.id);
