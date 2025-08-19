@@ -11,3 +11,15 @@ This just adds some niceties around Nodemailer so it integrates well with the re
 - Backend and frontend for accessing mock emails in E2E tests.
 
 I've only ever tested this using SMTP, so your mileage may vary with other sorts of transports.
+
+## Related Packages
+
+### Public
+
+To view sent emails for Playwright tests, render the page provided by [@saflib/email-vue](../../email-vue/docs/overview.md).
+
+### Private
+
+For development of the email packages.
+
+- []
