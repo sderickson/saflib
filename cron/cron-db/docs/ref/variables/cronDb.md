@@ -47,7 +47,7 @@ If onDisk is a string, the database will be created at the given (absolute) path
 
 #### jobSettings.getAll()
 
-> **getAll**: (`dbKey`) => `Promise`\<`object`[]\>
+> **getAll**: (`dbKey`) => `Promise`\<[`JobSetting`](../@saflib/namespaces/schema/interfaces/JobSetting.md)[]\>
 
 ##### Parameters
 
@@ -57,7 +57,7 @@ If onDisk is a string, the database will be created at the given (absolute) path
 
 ##### Returns
 
-`Promise`\<`object`[]\>
+`Promise`\<[`JobSetting`](../@saflib/namespaces/schema/interfaces/JobSetting.md)[]\>
 
 #### jobSettings.getByName()
 
@@ -76,7 +76,7 @@ If onDisk is a string, the database will be created at the given (absolute) path
 
 #### jobSettings.setEnabled()
 
-> **setEnabled**: (`dbKey`, `jobName`, `enabled`) => `Promise`\<\{ `createdAt`: `Date`; `enabled`: `boolean`; `id`: `number`; `jobName`: `string`; `lastRunAt`: `null` \| `Date`; `lastRunStatus`: `null` \| `"success"` \| `"fail"` \| `"running"` \| `"timed out"`; `updatedAt`: `Date`; \}\>
+> **setEnabled**: (`dbKey`, `jobName`, `enabled`) => `Promise`\<[`JobSetting`](../@saflib/namespaces/schema/interfaces/JobSetting.md)\>
 
 ##### Parameters
 
@@ -88,7 +88,7 @@ If onDisk is a string, the database will be created at the given (absolute) path
 
 ##### Returns
 
-`Promise`\<\{ `createdAt`: `Date`; `enabled`: `boolean`; `id`: `number`; `jobName`: `string`; `lastRunAt`: `null` \| `Date`; `lastRunStatus`: `null` \| `"success"` \| `"fail"` \| `"running"` \| `"timed out"`; `updatedAt`: `Date`; \}\>
+`Promise`\<[`JobSetting`](../@saflib/namespaces/schema/interfaces/JobSetting.md)\>
 
 #### jobSettings.setLastRunStatus()
 

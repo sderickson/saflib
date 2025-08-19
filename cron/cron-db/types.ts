@@ -11,7 +11,8 @@ export type CronDbType = BetterSQLite3Database<Schema>;
 export type CronDbTransaction = DbTransaction<Schema>;
 
 // --- Job Settings --- //
-export type JobSetting = typeof schema.jobSettings.$inferSelect;
-export type NewJobSetting = typeof schema.jobSettings.$inferInsert;
+export type { JobSetting } from "./schema.ts";
+// export type JobSetting = Omit<typeof schema.jobSettings.$inferSelect, "">;
+export type NewJobSetting = Omit<typeof schema.jobSettings.$inferInsert, "">;
 
 export type LastRunStatus = "success" | "fail" | "running" | "timed out";

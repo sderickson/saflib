@@ -4,6 +4,12 @@
 
 # schema
 
+## Interfaces
+
+| Interface | Description |
+| ------ | ------ |
+| [JobSetting](interfaces/JobSetting.md) | - |
+
 ## Variables
 
 | Variable | Description |

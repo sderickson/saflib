@@ -4,4 +4,4 @@
 
 # Type Alias: NewJobSetting
 
-> **NewJobSetting** = *typeof* `schema.jobSettings.$inferInsert`
+> **NewJobSetting** = `Omit`\<*typeof* `schema.jobSettings.$inferInsert`, `""`\>

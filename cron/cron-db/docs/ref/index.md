@@ -23,7 +23,6 @@
 | ------ | ------ |
 | [CronDbTransaction](type-aliases/CronDbTransaction.md) | - |
 | [CronDbType](type-aliases/CronDbType.md) | - |
-| [JobSetting](type-aliases/JobSetting.md) | - |
 | [LastRunStatus](type-aliases/LastRunStatus.md) | - |
 | [NewJobSetting](type-aliases/NewJobSetting.md) | - |
 | [Schema](type-aliases/Schema.md) | - |
@@ -33,3 +32,9 @@
 | Variable | Description |
 | ------ | ------ |
 | [cronDb](variables/cronDb.md) | - |
+
+## References
+
+### JobSetting
+
+Re-exports [JobSetting](@saflib/namespaces/schema/interfaces/JobSetting.md)
