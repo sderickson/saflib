@@ -1,10 +1,9 @@
-export type * from "./types.ts";
-import * as jobSettings from "./queries/job-settings/index.ts";
 export * from "./errors.ts";
 
+export * from "./queries/job-settings/index.ts";
 import { cronDbManager } from "./instances.ts";
 
-export const cronDb = {
-  ...cronDbManager.publicInterface(),
-  jobSettings,
-};
+/**
+ * For managing connections to the cron database.
+ */
+export const cronDb = cronDbManager.publicInterface();

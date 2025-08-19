@@ -6,15 +6,21 @@ import {
   castJson,
 } from "@saflib/openapi";
 
-// Export the JSON spec for middleware
+/**
+ * For validating Express requests and responses.
+ */
 export const jsonSpec = castJson(json);
 
-// Export generated types for consumers
-export type { paths, operations, components };
+export type { paths };
 
-// Export common component schemas for convenience
 export type JobSettings = components["schemas"]["JobSettings"];
 
-// Export Request/Response schema types derived from operations
-export type CronResponse = ExtractResponseBody<operations>;
-export type CronRequest = ExtractRequestBody<operations>;
+/**
+ * For typing Express responses for cron API routes.
+ */
+export type CronResponseBody = ExtractResponseBody<operations>;
+
+/**
+ * For typing Express requests for cron API routes.
+ */
+export type CronRequestBody = ExtractRequestBody<operations>;

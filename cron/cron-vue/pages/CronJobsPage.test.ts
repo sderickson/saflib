@@ -6,12 +6,12 @@ import {
 } from "@saflib/vue-spa/testing";
 import { type VueWrapper } from "@vue/test-utils";
 import { http, HttpResponse, type PathParams } from "msw";
-import type { CronResponse, CronRequest } from "@saflib/cron-spec"; // Assuming types are available
+import type { CronResponseBody, CronRequestBody } from "@saflib/cron-spec"; // Assuming types are available
 import CronJobsPage from "./CronJobsPage.vue";
 import { router } from "./test_router";
-type ListCronJobsResponse = CronResponse["listCronJobs"][200];
-type UpdateSettingsResponse = CronResponse["updateCronJobSettings"][200];
-type UpdateSettingsRequest = CronRequest["updateCronJobSettings"];
+type ListCronJobsResponse = CronResponseBody["listCronJobs"][200];
+type UpdateSettingsResponse = CronResponseBody["updateCronJobSettings"][200];
+type UpdateSettingsRequest = CronRequestBody["updateCronJobSettings"];
 
 // Mock data based on job_settings.yaml and component usage
 const mockJobs: ListCronJobsResponse = [

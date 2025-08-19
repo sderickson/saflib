@@ -1,0 +1,25 @@
+{
+  "name": "@saflib/cron",
+  "description": "Cron service",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
+  },
+  "dependencies": {
+    "@saflib/cron-db": "*",
+    "@saflib/cron-spec": "*",
+    "@saflib/monorepo": "*",
+    "@saflib/node": "*",
+    "cron": "^4.3.0"
+  },
+  "devDependencies": {
+    "@saflib/vitest": "*",
+    "@types/cron": "^2.0.1"
+  }
+}

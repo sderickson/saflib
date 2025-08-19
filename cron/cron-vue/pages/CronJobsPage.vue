@@ -70,8 +70,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, defineProps } from "vue";
 import { useListCronJobs, useUpdateCronJobSettings } from "../requests/queries";
+
+const { subdomain } = defineProps<{
+  subdomain: string;
+}>();
 
 const updatingJobId = ref<string | null>(null);
 
@@ -89,13 +93,13 @@ const {
   data: jobs,
   isLoading: isLoadingJobs,
   error: jobsError,
-} = useListCronJobs();
+} = useListCronJobs(subdomain);
 
 const {
   mutate: updateSettings,
   isPending: isUpdating,
   error: updateError,
-} = useUpdateCronJobSettings();
+} = useUpdateCronJobSettings(subdomain);
 
 const toggleJobStatus = (jobName: string, enabled: boolean) => {
   updatingJobId.value = jobName;

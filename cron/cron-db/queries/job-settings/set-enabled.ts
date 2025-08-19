@@ -1,18 +1,20 @@
 import { queryWrapper } from "@saflib/drizzle-sqlite3";
-import { jobSettings } from "../../schema.ts";
-import type { JobSetting, NewJobSetting } from "../../types.ts";
+import { jobSettings, type JobSetting } from "../../schema.ts";
 import type { DbKey } from "@saflib/drizzle-sqlite3";
 import { cronDbManager } from "../../instances.ts";
+import type { ReturnsError } from "@saflib/monorepo";
+
+export type SetEnabledResult = ReturnsError<JobSetting, never>;
 
 export const setEnabled = queryWrapper(
   async (
     dbKey: DbKey,
     jobName: string,
     enabled: boolean,
-  ): Promise<JobSetting> => {
+  ): Promise<SetEnabledResult> => {
     const db = cronDbManager.get(dbKey)!;
     const now = new Date();
-    const values: NewJobSetting = {
+    const values = {
       jobName,
       enabled,
       createdAt: now,
@@ -31,6 +33,6 @@ export const setEnabled = queryWrapper(
       })
       .returning();
 
-    return result[0];
+    return { result: result[0] };
   },
 );

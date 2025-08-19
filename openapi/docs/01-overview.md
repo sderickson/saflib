@@ -62,7 +62,7 @@ export const jsonSpec = json.default as unknown as OpenAPIV3.Document;
 export type { paths, operations };
 
 // Export easy-to-use Request/Response types derived from operations
-// Replace 'YourSpec' with the appropriate name (e.g., AuthRequest, CronResponse)
+// Replace 'YourSpec' with the appropriate name (e.g., AuthRequest, CronResponseBody)
 export type YourSpecResponse = ExtractResponseSchema<operations>;
 export type YourSpecRequest = ExtractRequestSchema<operations>;
 ```

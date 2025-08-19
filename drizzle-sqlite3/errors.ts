@@ -28,19 +28,16 @@ export class HandledDatabaseError extends Error {}
  * errors, and rethrow handled errors, though really handled errors should be
  * returned, not thrown.
  */
-export function queryWrapper<T, A extends any[]>(
-  queryFunc: (...args: A) => Promise<T>,
-): (...args: A) => Promise<T> {
-  return async (...args: A) => {
+export function queryWrapper<F extends (...args: any[]) => Promise<any>>(
+  queryFunc: F,
+): F {
+  return (async (...args: any[]) => {
     try {
       return await queryFunc(...args);
     } catch (error) {
       if (error instanceof HandledDatabaseError) {
-        // In this case, the calling code should handle and report the error if needed.
         throw error;
       }
-      // In this case, something unhandled happened. Report it, then throw an error
-      // without any details, lest the calling code tries to handle it.
       const { logError } = getSafReporters();
       logError(error);
       if (process.env.NODE_ENV === "test") {
@@ -48,5 +45,5 @@ export function queryWrapper<T, A extends any[]>(
       }
       throw new UnhandledDatabaseError();
     }
-  };
+  }) as F;
 }
