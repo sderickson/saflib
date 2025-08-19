@@ -7,6 +7,10 @@ export interface EmailsRouterOptions {
   apiSpec?: any;
 }
 
+/**
+ * Creates an Express router that can be used to access sent emails. Only used
+ * for E2E testing.
+ */
 export function createEmailsRouter(options: EmailsRouterOptions = {}) {
   const router = express.Router();
 

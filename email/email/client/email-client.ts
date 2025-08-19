@@ -4,6 +4,10 @@ import type { Transporter } from "nodemailer";
 
 import { typedEnv } from "../env.ts";
 
+/**
+ * Whether the email client is currently being mocked, and emails are being saved
+ * to `sentEmails`.
+ */
 export const mockingOn =
   (typedEnv.NODE_ENV === "test" || typedEnv.MOCK_INTEGRATIONS === "true") &&
   !typedEnv.NODEMAILER_TRANSPORT_CONFIG;
@@ -19,11 +23,22 @@ setImmediate(() => {
 
 type TransporterConfig = Parameters<typeof nodemailer.createTransport>[0];
 
+/**
+ * A record of an email that was sent. Only used for mocking.
+ */
 export interface SentEmail extends EmailOptions {
   timeSent: number;
 }
+
+/**
+ * An array of emails that were sent by this service. Only used for mocking.
+ */
 export const sentEmails: SentEmail[] = [];
 
+/**
+ * Accepted options when sending an email. A subset of what nodemailer accepts.
+ * See [Nodemailer docs](https://nodemailer.com/message/) for more details.
+ */
 export interface EmailOptions
   extends Pick<
     nodemailer.SendMailOptions,
@@ -50,7 +65,11 @@ function getTo(options: EmailOptions): string[] {
   }
 }
 
-// Explicitly define EmailResult interface
+/**
+ * Result of sending an email. This seems to be what is returned by nodemailer when
+ * the transport is SMTP. These types may not be correct if configured to use some
+ * other transport.
+ */
 export interface EmailResult {
   messageId: string;
   accepted: string[];
@@ -132,4 +151,9 @@ class EmailClient {
   }
 }
 
+/**
+ * Global instance of the email client. Since the config is loaded by the
+ * environment, and services shouldn't try to set up multiple SMTP connections,
+ * this can be a singleton.
+ */
 export const emailClient = new EmailClient();
