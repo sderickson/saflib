@@ -4,7 +4,7 @@ import type { Transporter } from "nodemailer";
 
 import { typedEnv } from "../env.ts";
 
-export const mockingOn =
+const mockingOn =
   (typedEnv.NODE_ENV === "test" || typedEnv.MOCK_INTEGRATIONS === "true") &&
   !typedEnv.NODEMAILER_TRANSPORT_CONFIG;
 
@@ -19,11 +19,18 @@ setImmediate(() => {
 
 type TransporterConfig = Parameters<typeof nodemailer.createTransport>[0];
 
+/**
+ * A record of an email that was sent. Only used for mocking.
+ */
 export interface SentEmail extends EmailOptions {
   timeSent: number;
 }
 export const sentEmails: SentEmail[] = [];
 
+/**
+ * Accepted options when sending an email. A subset of what nodemailer accepts.
+ * See [Nodemailer docs](https://nodemailer.com/message/) for more details.
+ */
 export interface EmailOptions
   extends Pick<
     nodemailer.SendMailOptions,
@@ -50,7 +57,10 @@ function getTo(options: EmailOptions): string[] {
   }
 }
 
-// Explicitly define EmailResult interface
+/**
+ * Result of sending an email. This *ought* to be based on types provided by nodemailer.
+ * However, they don't seem to export SMTPTransport types...
+ */
 export interface EmailResult {
   messageId: string;
   accepted: string[];
@@ -132,4 +142,9 @@ class EmailClient {
   }
 }
 
+/**
+ * Global instance of the email client. Since the config is loaded by the
+ * environment, and services shouldn't try to set up multiple SMTP connections,
+ * this can be a singleton.
+ */
 export const emailClient = new EmailClient();
