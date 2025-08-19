@@ -1,6 +1,9 @@
 # Overview
 
-This library enables services to schedule code to run using a cron-like interface. It's built on [the cron NPM package](https://www.npmjs.com/package/cron).
+This library enables services to schedule functions to run regularly using a cron-like interface. It's built on [the cron NPM package](https://www.npmjs.com/package/cron). It and related packages provide:
+
+* Logging and metrics
+* Admin page, with the ability to enable/disable cron jobs dynamically
 
 ## Package Structure
 
