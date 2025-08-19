@@ -7,17 +7,13 @@ import type { ReturnsError } from "@saflib/monorepo";
 import { queryWrapper } from "@saflib/drizzle-sqlite3";
 import type { DbKey } from "@saflib/drizzle-sqlite3";
 
-type QueryTemplateError = SomeError;
-
-type QueryTemplateResult = {
-  // Add your query result type here
-};
+export type QueryTemplateError = SomeError;
 
 export const queryTemplate = queryWrapper(
   async (
     dbKey: DbKey,
     params: SomeDbType,
-  ): Promise<ReturnsError<QueryTemplateResult, QueryTemplateError>> => {
+  ): Promise<ReturnsError<SomeDbType, QueryTemplateError>> => {
     const db = someDbManager.get(dbKey);
     return { result: {} };
   },
