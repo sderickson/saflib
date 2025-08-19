@@ -21,6 +21,7 @@ Most packages have a core set of source files which is most of the logic contain
 | HTTP         | `routes/`       |
 | Web App      | `pages/`        |
 | gRPCs        | `protos/`       |
+| Cron         | `jobs/`         |
 
 Other files, such as exports and test configs, or consolidations of the above such as routers, should be in the root directory.
 
