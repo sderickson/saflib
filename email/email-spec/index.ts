@@ -7,16 +7,27 @@ import {
   castJson,
 } from "@saflib/openapi";
 
-// Export the JSON spec for middleware
+/**
+ * For validating Express requests and responses.
+ */
+
 export const jsonSpec = castJson(json);
 
-// Export generated types for consumers
-export type { paths, operations, components };
+export type { paths };
 
-// Export common component schemas for convenience
 export type SentEmail = components["schemas"]["SentEmail"];
 
-// Export Request/Response schema types derived from operations
-export type EmailResponse = ExtractResponseBody<operations>;
-export type EmailRequest = ExtractRequestBody<operations>;
-export type EmailQuery = ExtractRequestQueryParams<operations>;
+/**
+ * For typing Express responses for email API routes.
+ */
+export type EmailResponseBody = ExtractResponseBody<operations>;
+
+/**
+ * For typing Express requests for email API routes.
+ */
+export type EmailRequestBody = ExtractRequestBody<operations>;
+
+/**
+ * For typing Express query params for email API routes.
+ */
+export type EmailRequestQuery = ExtractRequestQueryParams<operations>;
