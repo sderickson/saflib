@@ -4,7 +4,11 @@ import type { Transporter } from "nodemailer";
 
 import { typedEnv } from "../env.ts";
 
-const mockingOn =
+/**
+ * Whether the email client is currently being mocked, and emails are being saved
+ * to `sentEmails`.
+ */
+export const mockingOn =
   (typedEnv.NODE_ENV === "test" || typedEnv.MOCK_INTEGRATIONS === "true") &&
   !typedEnv.NODEMAILER_TRANSPORT_CONFIG;
 
@@ -25,6 +29,10 @@ type TransporterConfig = Parameters<typeof nodemailer.createTransport>[0];
 export interface SentEmail extends EmailOptions {
   timeSent: number;
 }
+
+/**
+ * An array of emails that were sent by this service. Only used for mocking.
+ */
 export const sentEmails: SentEmail[] = [];
 
 /**

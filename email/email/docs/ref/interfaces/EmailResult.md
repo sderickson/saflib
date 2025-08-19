@@ -4,6 +4,9 @@
 
 # Interface: EmailResult
 
+Result of sending an email. This *ought* to be based on types provided by nodemailer.
+However, they don't seem to export SMTPTransport types...
+
 ## Properties
 
 ### accepted

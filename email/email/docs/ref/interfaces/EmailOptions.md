@@ -4,6 +4,9 @@
 
 # Interface: EmailOptions
 
+Accepted options when sending an email. A subset of what nodemailer accepts.
+See [Nodemailer docs](https://nodemailer.com/message/) for more details.
+
 ## Extends
 
 - `Pick`\<`nodemailer.SendMailOptions`, `"to"` \| `"cc"` \| `"bcc"` \| `"subject"` \| `"text"` \| `"html"` \| `"attachments"` \| `"from"` \| `"replyTo"`\>

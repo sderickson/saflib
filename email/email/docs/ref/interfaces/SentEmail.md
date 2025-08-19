@@ -4,6 +4,8 @@
 
 # Interface: SentEmail
 
+A record of an email that was sent. Only used for mocking.
+
 ## Extends
 
 - [`EmailOptions`](EmailOptions.md)
