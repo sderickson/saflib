@@ -1,3 +1,3 @@
-import LastMockEmailPage from "./pages/last-mock-email-page/LastMockEmailPage.vue";
+import LastMockEmailPageAsync from "./pages/last-mock-email-page/LastMockEmailPageAsync.vue";
 
-export { LastMockEmailPage };
+export { LastMockEmailPageAsync };
