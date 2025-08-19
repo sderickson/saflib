@@ -4,6 +4,12 @@
 
 # @saflib/cron-db
 
+## Namespaces
+
+| Namespace | Description |
+| ------ | ------ |
+| [CronDb](@saflib/namespaces/CronDb/index.md) | - |
+
 ## Classes
 
 | Class | Description |

@@ -7,3 +7,5 @@ import { cronDbManager } from "./instances.ts";
 export { jobSettingsDb };
 
 export const cronDb = { ...cronDbManager.publicInterface() };
+
+export namespace CronDb {}

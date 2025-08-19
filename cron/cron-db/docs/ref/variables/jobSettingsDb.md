@@ -57,7 +57,7 @@ Queries for getting info on cron jobs, and updating them.
 
 ### setLastRunStatus()
 
-> **setLastRunStatus**: (`dbKey`, `jobName`, `status`) => `Promise`\<`Result`\>
+> **setLastRunStatus**: (`dbKey`, `jobName`, `status`) => `Promise`\<`SetLastRunStatusResult`\>
 
 #### Parameters
 
@@ -69,4 +69,4 @@ Queries for getting info on cron jobs, and updating them.
 
 #### Returns
 
-`Promise`\<`Result`\>
+`Promise`\<`SetLastRunStatusResult`\>

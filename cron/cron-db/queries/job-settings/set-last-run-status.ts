@@ -6,14 +6,20 @@ import { JobSettingNotFoundError } from "../../errors.ts";
 import type { DbKey } from "@saflib/drizzle-sqlite3";
 import { cronDbManager } from "../../instances.ts";
 import type { ReturnsError } from "@saflib/monorepo";
-type Result = ReturnsError<JobSetting, JobSettingNotFoundError>;
+
+export namespace CronDb {
+  export type SetLastRunStatusResult = ReturnsError<
+    JobSetting,
+    JobSettingNotFoundError
+  >;
+}
 
 export const setLastRunStatus = queryWrapper(
   async (
     dbKey: DbKey,
     jobName: string,
     status: LastRunStatus,
-  ): Promise<Result> => {
+  ): Promise<CronDb.SetLastRunStatusResult> => {
     const db = cronDbManager.get(dbKey)!;
 
     const now = new Date();

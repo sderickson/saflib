@@ -7,10 +7,15 @@ import type { DbKey } from "@saflib/drizzle-sqlite3";
 import { cronDbManager } from "../../instances.ts";
 import type { ReturnsError } from "@saflib/monorepo";
 
-export type GetByNameResult = ReturnsError<JobSetting, JobSettingNotFoundError>;
+export namespace CronDb {
+  export type GetByNameResult = ReturnsError<
+    JobSetting,
+    JobSettingNotFoundError
+  >;
+}
 
 export const getByName = queryWrapper(
-  async (dbKey: DbKey, jobName: string): Promise<GetByNameResult> => {
+  async (dbKey: DbKey, jobName: string): Promise<CronDb.GetByNameResult> => {
     const db = cronDbManager.get(dbKey)!;
     const result = await db.query.jobSettings.findFirst({
       where: eq(jobSettings.jobName, jobName),
