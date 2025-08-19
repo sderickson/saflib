@@ -3,7 +3,9 @@
   "description": "Db and queries for the cron service",
   "private": true,
   "type": "module",
-  "main": "./index.ts",
+  "exports": {
+    ".": "./index.ts"
+  },
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
