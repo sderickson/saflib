@@ -14,7 +14,7 @@
     "typecheck": "tsc"
   },
   "dependencies": {
-    "@saflib/email-node": "*",
+    "@saflib/email": "*",
     "@saflib/env": "*",
     "@saflib/express": "*",
     "@saflib/grpc-node": "*",

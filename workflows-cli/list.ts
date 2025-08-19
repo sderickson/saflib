@@ -10,7 +10,7 @@ import expressWorkflows from "@saflib/express/workflows";
 import grpcSpecsWorkflows from "@saflib/grpc-specs/workflows";
 import grpcNodeWorkflows from "@saflib/grpc-node/workflows";
 import nodeXstateWorkflows from "@saflib/node-xstate/workflows";
-import emailWorkflows from "@saflib/email-node/workflows";
+import emailWorkflows from "@saflib/email/workflows";
 import { concreteWorkflowToMeta } from "@saflib/workflows";
 
 const workflowClasses: ConcreteWorkflow[] = [

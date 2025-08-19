@@ -1,5 +1,5 @@
 {
-  "name": "@saflib/email-node",
+  "name": "@saflib/email",
   "description": "Centralized package for sending emails via SMTP.",
   "private": true,
   "type": "module",

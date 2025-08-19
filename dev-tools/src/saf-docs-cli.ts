@@ -69,9 +69,9 @@ program
       process.exit(1);
     }
 
-    console.log("\nGenerating CLI docs...");
     const bin = currentPackageJson.bin;
     if (bin && Object.keys(bin).length > 0) {
+      console.log("\nGenerating CLI docs...");
       mkdirSync("docs/cli", { recursive: true });
       for (const file of readdirSync("docs/cli")) {
         unlinkSync(`docs/cli/${file}`);

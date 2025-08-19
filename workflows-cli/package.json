@@ -17,6 +17,6 @@
     "@saflib/grpc-specs": "*",
     "@saflib/grpc-node": "*",
     "@saflib/node-xstate": "*",
-    "@saflib/email-node": "*"
+    "@saflib/email": "*"
   }
 } 
