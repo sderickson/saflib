@@ -1,6 +1,6 @@
 {
-  "name": "@saflib/cron-vue",
-  "description": "Admin frontend for the cron service",
+  "name": "@saflib/email-vue",
+  "description": "Admin frontend for the email service",
   "private": true,
   "type": "module",
   "main": "./index.ts",
