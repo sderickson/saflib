@@ -7,13 +7,13 @@ import {
   type SentEmail as NodeSentEmail,
 } from "../../client/email-client.ts";
 import type {
-  EmailResponse,
+  EmailResponseBody,
   SentEmail as ApiSentEmail,
-  EmailQuery,
+  EmailRequestQuery,
 } from "@saflib/email-spec";
 
 export const getSentEmails = createHandler(async (req, res) => {
-  const query = req.query as EmailQuery["listSentEmails"];
+  const query = req.query as EmailRequestQuery["listSentEmails"];
   const { userEmail } = query ?? {};
 
   if (!mockingOn) {
@@ -32,7 +32,7 @@ export const getSentEmails = createHandler(async (req, res) => {
     .json(
       emails.map(
         convertEmailOptionsToApiResponse,
-      ) satisfies EmailResponse["listSentEmails"][200],
+      ) satisfies EmailResponseBody["listSentEmails"][200],
     );
 });
 

@@ -3,7 +3,7 @@ import { stubGlobals, setupMockServer } from "@saflib/vue-spa/testing";
 import LastMockEmailPageAsync from "./LastMockEmailPageAsync.vue";
 import type { Component } from "vue";
 import { http, HttpResponse } from "msw";
-import type { EmailResponse } from "@saflib/email-spec";
+import type { EmailResponseBody } from "@saflib/email-spec";
 import { last_mock_email_page as strings } from "./LastMockEmailPage.strings.ts";
 import { getElementByString } from "@saflib/vue-spa/testing";
 import type { VueWrapper } from "@vue/test-utils";
@@ -11,7 +11,7 @@ import type { AuthResponse } from "@saflib/identity-spec";
 import { mountTestApp } from "../test-app.ts";
 import { router } from "../test_router.ts";
 
-const mockEmails: EmailResponse["listSentEmails"][200] = [
+const mockEmails: EmailResponseBody["listSentEmails"][200] = [
   {
     to: ["test@example.com"],
     subject: "Test Email",
