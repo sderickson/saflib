@@ -66,8 +66,9 @@ function getTo(options: EmailOptions): string[] {
 }
 
 /**
- * Result of sending an email. This *ought* to be based on types provided by nodemailer.
- * However, they don't seem to export SMTPTransport types...
+ * Result of sending an email. This seems to be what is returned by nodemailer when
+ * the transport is SMTP. These types may not be correct if configured to use some
+ * other transport.
  */
 export interface EmailResult {
   messageId: string;
