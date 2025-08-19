@@ -4,4 +4,4 @@
 
 # Type Alias: CronDbType
 
-> **CronDbType** = `BetterSQLite3Database`\<[`Schema`](Schema.md)\>
+> **CronDbType** = `BetterSQLite3Database`\<`Schema`\>

@@ -1,8 +1,7 @@
 import type { DbTransaction } from "@saflib/drizzle-sqlite3";
 import * as schema from "./schema.ts";
 
-export type Schema = typeof schema;
-export { schema };
+type Schema = typeof schema;
 
 import { BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
 

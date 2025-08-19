@@ -1,4 +1,4 @@
-[**@saflib/cron-db**](../../../../index.md)
+[**@saflib/cron-db**](../index.md)
 
 ***
 

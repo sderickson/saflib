@@ -4,4 +4,4 @@
 
 # Type Alias: CronDbTransaction
 
-> **CronDbTransaction** = `DbTransaction`\<[`Schema`](Schema.md)\>
+> **CronDbTransaction** = `DbTransaction`\<`Schema`\>

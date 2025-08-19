@@ -2,83 +2,48 @@
 
 ***
 
-# Variable: cronDb
+# Variable: jobSettings
 
-> `const` **cronDb**: `object`
+> `const` **jobSettings**: `object`
+
+Queries for getting info on cron jobs, and updating them.
 
 ## Type declaration
 
-### connect()
-
-> **connect**: (`options?`) => `symbol`
-
-Creates a "connection" to a database.
-
-If onDisk is true, the database will be created on disk, in a "data" folder, with the name of the current environment.
-If onDisk is a string, the database will be created at the given (absolute) path.
-
-#### Parameters
-
-| Parameter | Type |
-| ------ | ------ |
-| `options?` | `DbOptions` |
-
-#### Returns
-
-`symbol`
-
-### disconnect()
-
-> **disconnect**: (`key`) => `boolean`
-
-#### Parameters
-
-| Parameter | Type |
-| ------ | ------ |
-| `key` | `symbol` |
-
-#### Returns
-
-`boolean`
-
-### jobSettings
-
-> **jobSettings**: `object`
-
-#### jobSettings.getAll()
+### getAll()
 
 > **getAll**: (`dbKey`) => `Promise`\<[`JobSetting`](../interfaces/JobSetting.md)[]\>
 
-##### Parameters
+#### Parameters
 
 | Parameter | Type |
 | ------ | ------ |
 | `dbKey` | `symbol` |
 
-##### Returns
+#### Returns
 
 `Promise`\<[`JobSetting`](../interfaces/JobSetting.md)[]\>
 
-#### jobSettings.getByName()
+### getByName()
 
 > **getByName**: (`dbKey`, `jobName`) => `Promise`\<`Result`\>
 
-##### Parameters
+#### Parameters
 
 | Parameter | Type |
 | ------ | ------ |
 | `dbKey` | `symbol` |
 | `jobName` | `string` |
 
-##### Returns
+#### Returns
 
 `Promise`\<`Result`\>
 
-#### jobSettings.setEnabled()
+### setEnabled()
 
 > **setEnabled**: (`dbKey`, `jobName`, `enabled`) => `Promise`\<[`JobSetting`](../interfaces/JobSetting.md)\>
 
-##### Parameters
+#### Parameters
 
 | Parameter | Type |
 | ------ | ------ |
@@ -86,15 +51,15 @@ If onDisk is a string, the database will be created at the given (absolute) path
 | `jobName` | `string` |
 | `enabled` | `boolean` |
 
-##### Returns
+#### Returns
 
 `Promise`\<[`JobSetting`](../interfaces/JobSetting.md)\>
 
-#### jobSettings.setLastRunStatus()
+### setLastRunStatus()
 
 > **setLastRunStatus**: (`dbKey`, `jobName`, `status`) => `Promise`\<`Result`\>
 
-##### Parameters
+#### Parameters
 
 | Parameter | Type |
 | ------ | ------ |
@@ -102,6 +67,6 @@ If onDisk is a string, the database will be created at the given (absolute) path
 | `jobName` | `string` |
 | `status` | [`LastRunStatus`](../type-aliases/LastRunStatus.md) |
 
-##### Returns
+#### Returns
 
 `Promise`\<`Result`\>
