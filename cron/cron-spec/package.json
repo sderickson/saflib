@@ -3,7 +3,9 @@
   "description": "Shared OpenAPI specification for the cron service",
   "private": true,
   "type": "module",
-  "main": "./index.ts",
+  "exports": {
+    ".": "./index.ts"
+  },
   "scripts": {
     "generate:types": "openapi-typescript ./openapi.yaml -o dist/openapi.d.ts",
     "generate:json": "redocly bundle openapi.yaml --ext json --output dist/openapi.json",
