@@ -35,9 +35,12 @@ each group. These index.ts files should export `JobsMap` instances
 which `cron.ts` will import and merge together. Each job file will
 export the handler.
 
-## Reference
+## Related Packages
 
-Technically, these packages shouldn't be imported by anything but the `@saflib/cron`
-package, but they're included here to aid development of the cron packages.
+### Public
 
-* [DB Reference](../../cron-db/docs/ref/index.md)
+To manage cron jobs, render the page provided by [`@saflib/cron-vue`](../../cron-vue/docs/overview.md)
+
+### Private
+
+* [@saflib/cron-db](../../cron-db/docs/ref/index.md)

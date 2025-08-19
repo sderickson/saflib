@@ -6,6 +6,8 @@
 
 > `const` **cronDb**: `object`
 
+For managing connections to the cron database.
+
 ## Type declaration
 
 ### connect()

@@ -4,4 +4,4 @@
 
 # Type Alias: GetAllResult
 
-> **GetAllResult** = `ReturnsError`\<[`JobSetting`](../interfaces/JobSetting.md)[]\>
+> **GetAllResult** = `ReturnsError`\<[`JobSetting`](../interfaces/JobSetting.md)[], `never`\>
