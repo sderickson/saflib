@@ -4,32 +4,27 @@
 
 # @saflib/cron-db
 
-## Namespaces
-
-| Namespace | Description |
-| ------ | ------ |
-| [CronDb](@saflib/namespaces/CronDb/index.md) | - |
-
 ## Classes
 
 | Class | Description |
 | ------ | ------ |
-| [CronDatabaseError](classes/CronDatabaseError.md) | - |
-| [JobSettingNotFoundError](classes/JobSettingNotFoundError.md) | - |
+| [CronDatabaseError](classes/CronDatabaseError.md) | Superclass for all handled cron db errors |
+| [JobSettingNotFoundError](classes/JobSettingNotFoundError.md) | Superclass for all handled cron db errors |
 
 ## Interfaces
 
 | Interface | Description |
 | ------ | ------ |
-| [JobSetting](interfaces/JobSetting.md) | - |
+| [JobSetting](interfaces/JobSetting.md) | The current state and settings of a cron job. |
 
 ## Type Aliases
 
 | Type Alias | Description |
 | ------ | ------ |
-| [CronDbTransaction](type-aliases/CronDbTransaction.md) | - |
-| [CronDbType](type-aliases/CronDbType.md) | - |
-| [LastRunStatus](type-aliases/LastRunStatus.md) | - |
+| [GetAllResult](type-aliases/GetAllResult.md) | - |
+| [GetByNameResult](type-aliases/GetByNameResult.md) | - |
+| [SetEnabledResult](type-aliases/SetEnabledResult.md) | - |
+| [SetLastRunStatusResult](type-aliases/SetLastRunStatusResult.md) | - |
 
 ## Variables
 

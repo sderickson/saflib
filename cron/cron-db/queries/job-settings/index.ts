@@ -1,12 +1,8 @@
-import { getAll } from "./get-all.ts";
-import { getByName } from "./get-by-name.ts";
-import { setEnabled } from "./set-enabled.ts";
-import { setLastRunStatus } from "./set-last-run-status.ts";
-
-export type { CronDb } from "./get-all.ts";
-export type { CronDb } from "./get-by-name.ts";
-export type { CronDb } from "./set-enabled.ts";
-export type { CronDb } from "./set-last-run-status.ts";
+import { getAll, type GetAllResult } from "./get-all.ts";
+import { getByName, type GetByNameResult } from "./get-by-name.ts";
+import { setEnabled, type SetEnabledResult } from "./set-enabled.ts";
+import { setLastRunStatus, type SetLastRunStatusResult } from "./set-last-run-status.ts";
+import type { JobSetting } from "../../schema.ts";
 
 /**
  * Queries for getting info on cron jobs, and updating them.
@@ -18,4 +14,11 @@ const jobSettingsDb = {
   setLastRunStatus,
 };
 
-export { jobSettingsDb };
+export {
+  jobSettingsDb,
+  type GetAllResult,
+  type GetByNameResult,
+  type SetEnabledResult,
+  type SetLastRunStatusResult,
+  type JobSetting,
+};

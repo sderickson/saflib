@@ -4,6 +4,8 @@
 
 # Interface: JobSetting
 
+The current state and settings of a cron job.
+
 ## Properties
 
 ### createdAt

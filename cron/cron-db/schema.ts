@@ -3,6 +3,11 @@ import type { Expect, Equal } from "@saflib/drizzle-sqlite3";
 
 const lastRunStatusEnum = ["success", "fail", "running", "timed out"] as const;
 
+export type LastRunStatus = (typeof lastRunStatusEnum)[number];
+
+/**
+ * The current state and settings of a cron job.
+ */
 export interface JobSetting {
   id: number;
   jobName: string;

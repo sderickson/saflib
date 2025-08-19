@@ -12,7 +12,7 @@ Queries for getting info on cron jobs, and updating them.
 
 ### getAll()
 
-> **getAll**: (`dbKey`) => `Promise`\<[`JobSetting`](../interfaces/JobSetting.md)[]\>
+> **getAll**: (`dbKey`) => `Promise`\<[`GetAllResult`](../type-aliases/GetAllResult.md)\>
 
 #### Parameters
 
@@ -22,11 +22,11 @@ Queries for getting info on cron jobs, and updating them.
 
 #### Returns
 
-`Promise`\<[`JobSetting`](../interfaces/JobSetting.md)[]\>
+`Promise`\<[`GetAllResult`](../type-aliases/GetAllResult.md)\>
 
 ### getByName()
 
-> **getByName**: (`dbKey`, `jobName`) => `Promise`\<`GetByNameResult`\>
+> **getByName**: (`dbKey`, `jobName`) => `Promise`\<[`GetByNameResult`](../type-aliases/GetByNameResult.md)\>
 
 #### Parameters
 
@@ -37,11 +37,11 @@ Queries for getting info on cron jobs, and updating them.
 
 #### Returns
 
-`Promise`\<`GetByNameResult`\>
+`Promise`\<[`GetByNameResult`](../type-aliases/GetByNameResult.md)\>
 
 ### setEnabled()
 
-> **setEnabled**: (`dbKey`, `jobName`, `enabled`) => `Promise`\<[`JobSetting`](../interfaces/JobSetting.md)\>
+> **setEnabled**: (`dbKey`, `jobName`, `enabled`) => `Promise`\<[`SetEnabledResult`](../type-aliases/SetEnabledResult.md)\>
 
 #### Parameters
 
@@ -53,11 +53,11 @@ Queries for getting info on cron jobs, and updating them.
 
 #### Returns
 
-`Promise`\<[`JobSetting`](../interfaces/JobSetting.md)\>
+`Promise`\<[`SetEnabledResult`](../type-aliases/SetEnabledResult.md)\>
 
 ### setLastRunStatus()
 
-> **setLastRunStatus**: (`dbKey`, `jobName`, `status`) => `Promise`\<`SetLastRunStatusResult`\>
+> **setLastRunStatus**: (`dbKey`, `jobName`, `status`) => `Promise`\<[`SetLastRunStatusResult`](../type-aliases/SetLastRunStatusResult.md)\>
 
 #### Parameters
 
@@ -65,8 +65,8 @@ Queries for getting info on cron jobs, and updating them.
 | ------ | ------ |
 | `dbKey` | `symbol` |
 | `jobName` | `string` |
-| `status` | [`LastRunStatus`](../type-aliases/LastRunStatus.md) |
+| `status` | `"success"` \| `"fail"` \| `"running"` \| `"timed out"` |
 
 #### Returns
 
-`Promise`\<`SetLastRunStatusResult`\>
+`Promise`\<[`SetLastRunStatusResult`](../type-aliases/SetLastRunStatusResult.md)\>

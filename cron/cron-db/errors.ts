@@ -1,15 +1,8 @@
 import { HandledDatabaseError } from "@saflib/drizzle-sqlite3";
 
-export class CronDatabaseError extends HandledDatabaseError {
-  constructor(message: string) {
-    super(message);
-    this.name = "CronDatabaseError";
-  }
-}
+/**
+ * Superclass for all handled cron db errors
+ */
+export class CronDatabaseError extends HandledDatabaseError {}
 
-export class JobSettingNotFoundError extends CronDatabaseError {
-  constructor(jobName: string) {
-    super(`Job setting for job name '${jobName}' not found`);
-    this.name = "JobSettingNotFoundError";
-  }
-}
+export class JobSettingNotFoundError extends CronDatabaseError {}
