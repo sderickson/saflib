@@ -1,5 +1,5 @@
 {
-  "name": "@saflib/cron-service",
+  "name": "@saflib/cron",
   "description": "Cron service",
   "private": true,
   "type": "module",

@@ -1,8 +1,8 @@
-**@saflib/cron-service**
+**@saflib/cron**
 
 ***
 
-# @saflib/cron-service
+# @saflib/cron
 
 ## Interfaces
 
@@ -24,4 +24,4 @@
 | Function | Description |
 | ------ | ------ |
 | [createCronRouter](functions/createCronRouter.md) | Creates a router that your own Express app can include, in order to serve cron API endpoints. These provide runtime information and the ability do enable/disable cron jobs. They are only accessible to admin users. |
-| [runCron](functions/runCron.md) | Runs the cron jobs until the process is killed. |
+| [runCron](functions/runCron.md) | Runs the cron jobs until the process is killed. Returns a DB key you can provide to the cron router to share the same connection. |

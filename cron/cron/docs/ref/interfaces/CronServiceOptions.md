@@ -1,4 +1,4 @@
-[**@saflib/cron-service**](../index.md)
+[**@saflib/cron**](../index.md)
 
 ***
 
