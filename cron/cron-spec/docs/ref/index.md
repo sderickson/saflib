@@ -14,12 +14,12 @@
 
 | Type Alias | Description |
 | ------ | ------ |
-| [CronRequestBodyBody](type-aliases/CronRequestBodyBody.md) | For typing Express requests for cron API routes. |
-| [CronResponseBodyBody](type-aliases/CronResponseBodyBody.md) | For typing Express responses for cron API routes. |
+| [CronRequestBody](type-aliases/CronRequestBody.md) | For typing Express requests for cron API routes. |
+| [CronResponseBody](type-aliases/CronResponseBody.md) | For typing Express responses for cron API routes. |
 | [JobSettings](type-aliases/JobSettings.md) | - |
 
 ## Variables
 
 | Variable | Description |
 | ------ | ------ |
-| [jsonSpec](variables/jsonSpec.md) | - |
+| [jsonSpec](variables/jsonSpec.md) | For validating Express requests and responses. |

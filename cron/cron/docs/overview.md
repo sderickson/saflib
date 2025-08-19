@@ -46,3 +46,4 @@ To manage cron jobs, render the page provided by [`@saflib/cron-vue`](../../cron
 For development of the cron packages.
 
 * [@saflib/cron-db](../../cron-db/docs/ref/index.md)
+* [@saflib/cron-spec](../../cron-spec/docs/ref/index.md)

@@ -2,8 +2,8 @@
 
 ***
 
-# Type Alias: CronRequestBodyBody
+# Type Alias: CronRequestBody
 
-> **CronRequestBodyBody** = `ExtractRequestBody`\<`operations`\>
+> **CronRequestBody** = `ExtractRequestBody`\<`operations`\>
 
 For typing Express requests for cron API routes.

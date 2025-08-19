@@ -6,13 +6,13 @@ import {
   castJson,
 } from "@saflib/openapi";
 
-// Export the JSON spec for middleware
+/**
+ * For validating Express requests and responses.
+ */
 export const jsonSpec = castJson(json);
 
-// Export generated types for consumers
 export type { paths };
 
-// Export common component schemas for convenience
 export type JobSettings = components["schemas"]["JobSettings"];
 
 /**
