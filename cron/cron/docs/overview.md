@@ -28,6 +28,13 @@ Each package which depends on `@saflib/cron` should have the following structure
 
 Exports cron jobs and runner. It should export all jobs into one large `JobsMap` instance, and a function which runs `runCron` with those same jobs (typically called `run<ServiceName>Cron`). The reason to export a function runner is those jobs may require context which that function should provide.
 
+### `jobs/`
+
+Jobs should be organized into directories, with an index.ts file for
+each group. These index.ts files should export `JobsMap` instances
+which `cron.ts` will import and merge together. Each job file will
+export the handler.
+
 ## Reference
 
 Technically, these packages shouldn't be imported by anything but the `@saflib/cron`
