@@ -1,3 +1,3 @@
-import CronJobsPage from "./pages/CronJobsPage.vue";
+import LastMockEmailPage from "./pages/last-mock-email-page/LastMockEmailPage.vue";
 
-export { CronJobsPage };
+export { LastMockEmailPage };

@@ -1,6 +1,6 @@
 {
   "name": "@saflib/email-vue",
-  "description": "Admin frontend for the email service",
+  "description": "Test frontend for the email service",
   "private": true,
   "type": "module",
   "main": "./index.ts",
