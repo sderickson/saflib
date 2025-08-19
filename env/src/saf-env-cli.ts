@@ -2,7 +2,7 @@
 import { Command } from "commander";
 import { getCombinedEnvSchema, makeEnvParserSnippet } from "./env.ts";
 import { writeFileSync, existsSync } from "fs";
-import { buildMonorepoContext } from "@saflib/dev-tools";
+import { buildMonorepoContext, getCurrentPackageName } from "@saflib/dev-tools";
 import path from "path";
 
 const program = new Command();
@@ -32,10 +32,17 @@ program.command("print").action(async () => {
 
 program
   .command("generate")
+  .description(
+    "Generate env.ts. Pass --combined to also generate env.schema.combined.json.",
+  )
   .option("-c, --combined", "Whether to export the combined schema as well.")
   .action(async (options) => {
+    const currentPackageName = getCurrentPackageName();
     const combinedSchema = await getCombinedEnvSchema();
-    const typeSnippet = await makeEnvParserSnippet(combinedSchema);
+    const typeSnippet = await makeEnvParserSnippet(
+      combinedSchema,
+      currentPackageName,
+    );
     writeFileSync("env.ts", typeSnippet);
 
     // Note: to use this with npm exec, need to include "--" prior to the "--combined" option
@@ -72,7 +79,10 @@ program
 
       try {
         const combinedSchema = await getCombinedEnvSchema(packageName);
-        const typeSnippet = await makeEnvParserSnippet(combinedSchema);
+        const typeSnippet = await makeEnvParserSnippet(
+          combinedSchema,
+          packageName,
+        );
         writeFileSync(envTsPath, typeSnippet);
 
         // If the package has a combined schema file, update it too
