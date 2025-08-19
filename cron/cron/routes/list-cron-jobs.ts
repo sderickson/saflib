@@ -1,5 +1,5 @@
 import { createHandler } from "@saflib/express";
-import type { CronResponse } from "@saflib/cron-spec";
+import type { CronResponseBody } from "@saflib/cron-spec";
 import { jobSettingsDb } from "@saflib/cron-db";
 import { mapJobSettingToResponse } from "./_helpers.ts";
 import { cronServiceStorage } from "../context.ts";
@@ -13,7 +13,7 @@ export const listCronJobsHandler = createHandler(async function (_req, res) {
         throw error satisfies never;
     }
   }
-  const response: CronResponse["listCronJobs"][200] = jobs.map(
+  const response: CronResponseBody["listCronJobs"][200] = jobs.map(
     mapJobSettingToResponse,
   );
   res.status(200).json(response);

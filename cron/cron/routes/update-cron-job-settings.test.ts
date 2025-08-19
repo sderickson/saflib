@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from "vitest";
 import request from "supertest";
 import express from "express";
 import { createApp } from "../http.ts";
-import type { CronRequest, CronResponse } from "@saflib/cron-spec";
+import type { CronRequestBody, CronResponseBody } from "@saflib/cron-spec";
 import { mapJobSettingToResponse } from "./_helpers.ts"; // Need helper for response check
 import { cronDb, jobSettingsDb } from "@saflib/cron-db";
 import type { DbKey } from "@saflib/drizzle-sqlite3";
@@ -22,7 +22,7 @@ describe("PUT /jobs/settings", () => {
   });
 
   it("should update the enabled status of an existing job and return the updated setting", async () => {
-    const updatePayload: CronRequest["updateCronJobSettings"] = {
+    const updatePayload: CronRequestBody["updateCronJobSettings"] = {
       jobName: existingJobName,
       enabled: false,
     };
@@ -41,7 +41,7 @@ describe("PUT /jobs/settings", () => {
       jobSettingsDb.getByName(dbKey, existingJobName),
     );
 
-    const expectedBody: CronResponse["updateCronJobSettings"][200] =
+    const expectedBody: CronResponseBody["updateCronJobSettings"][200] =
       mapJobSettingToResponse(updatedSetting);
 
     expect(response.body).toEqual(expectedBody);
@@ -49,7 +49,7 @@ describe("PUT /jobs/settings", () => {
   });
 
   it("should return 404 if the job name does not exist", async () => {
-    const updatePayload: CronRequest["updateCronJobSettings"] = {
+    const updatePayload: CronRequestBody["updateCronJobSettings"] = {
       jobName: "non-existent-job",
       enabled: true,
     };
