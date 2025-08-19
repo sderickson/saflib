@@ -7,10 +7,21 @@ import { cronServiceStorage } from "./context.ts";
 import type { JobsMap } from "./src/types.ts";
 import type { DbOptions } from "@saflib/drizzle-sqlite3";
 
+/**
+ * Options to be passed when starting a cron service.
+ */
 export interface CronServiceOptions {
-  subsystemName?: string;
+  /**
+   * Options to be passed to the cron DB, if dbKey is not provided.
+   */
   dbOptions?: DbOptions;
+  /**
+   * Key to be used to connect to the cron DB.
+   */
   dbKey?: DbKey;
+  /**
+   * Map of job names to their configurations.
+   */
   jobs: JobsMap;
 }
 
@@ -22,6 +33,12 @@ export function createApp(options: CronServiceOptions) {
   return app;
 }
 
+/**
+ * Creates a router that your own Express app can include, in
+ * order to serve cron API endpoints. These provide runtime
+ * information and the ability do enable/disable cron jobs.
+ * They are only accessible to admin users.
+ */
 export function createCronRouter(options: CronServiceOptions) {
   const router = express.Router();
   let dbKey: DbKey;

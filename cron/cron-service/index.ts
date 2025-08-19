@@ -1,22 +1,24 @@
 import { startJobs } from "./src/index.ts";
 import { cronDb } from "@saflib/cron-db";
 import { createCronRouter } from "./http.ts";
-import type { JobsMap } from "./src/types.ts";
-import type { DbKey, DbOptions } from "@saflib/drizzle-sqlite3";
 import { makeSubsystemReporters } from "@saflib/node";
+import type { CronServiceOptions } from "./http.ts";
+
+export type { CronServiceOptions };
 
 export { createCronRouter };
 
-export type { JobsMap, CustomLogError } from "./src/types.ts";
+export type {
+  JobsMap,
+  CustomLogError,
+  JobConfig,
+  CustomLogErrorMeta,
+} from "./src/types.ts";
 
-export interface CronServiceOptions {
-  subsystemName?: string;
-  dbOptions?: DbOptions;
-  dbKey?: DbKey;
-  jobs: JobsMap;
-}
-
-export function main(options: CronServiceOptions) {
+/**
+ * Runs the cron jobs until the process is killed.
+ */
+export function runCron(options: CronServiceOptions) {
   const { log, logError } = makeSubsystemReporters("init", "main");
   try {
     log.info("Starting cron service...");

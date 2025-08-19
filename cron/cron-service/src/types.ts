@@ -1,7 +1,13 @@
+/**
+ * Data passed to the error callback.
+ */
 export interface CustomLogErrorMeta {
   jobName: string;
 }
 
+/**
+ * Callback for handling when a job throws an error.
+ */
 export type CustomLogError = (
   error: Error,
   meta: CustomLogErrorMeta,
