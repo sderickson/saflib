@@ -2,6 +2,9 @@ import type { LinkMap } from "@saflib/links";
 
 const subdomain = "auth";
 
+/**
+ * Links to pages in the auth client.
+ */
 export const authLinks = {
   home: {
     subdomain,

@@ -5,6 +5,9 @@ import * as grpc from "@grpc/grpc-js";
 import { UsersServiceDefinition, UsersService } from "./rpcs/users/index.ts";
 import type { IdentityServerOptions } from "../identity-common/types.ts";
 
+/**
+ * Starts the gRPC server for the identity service.
+ */
 export function makeGrpcServer(options: IdentityServerOptions): grpc.Server {
   let { dbKey } = options;
   if (!dbKey) {

@@ -4,6 +4,9 @@
 
 # Interface: IdentityServiceCallbacks
 
+Callbacks for events which occur in the identity service.
+This is the main way to hook into the identity service.
+
 ## Properties
 
 ### onPasswordReset()?

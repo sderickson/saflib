@@ -5,4 +5,7 @@ export * from "./errors.ts";
 
 import { identityDbManager } from "./instances.ts";
 
+/**
+ * For managing connections to the identity database.
+ */
 export const identityDb = identityDbManager.publicInterface();

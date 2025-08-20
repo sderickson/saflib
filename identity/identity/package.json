@@ -21,7 +21,7 @@
     "@saflib/identity-db": "*",
     "@saflib/identity-grpc": "*",
     "@saflib/identity-http": "*",
-    "@saflib/identity-links": "*",
+    "@saflib/auth-links": "*",
     "@saflib/identity-rpcs": "*",
     "@saflib/identity-spec": "*",
     "@saflib/links": "*",

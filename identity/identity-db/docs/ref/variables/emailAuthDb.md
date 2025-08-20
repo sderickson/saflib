@@ -6,6 +6,9 @@
 
 > `const` **emailAuthDb**: `object`
 
+Database queries for the email_auth table. The email_auth table contains email authentication information
+for the users.
+
 ## Type declaration
 
 ### clearForgotPasswordToken()

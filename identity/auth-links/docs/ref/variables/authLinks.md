@@ -1,10 +1,12 @@
-[**@saflib/identity-links**](../index.md)
+[**@saflib/auth-links**](../index.md)
 
 ***
 
 # Variable: authLinks
 
 > `const` **authLinks**: `object`
+
+Links to pages in the auth client.
 
 ## Type declaration
 

@@ -6,6 +6,8 @@
 
 > `const` **identityDb**: `object`
 
+For managing connections to the identity database.
+
 ## Type declaration
 
 ### connect()

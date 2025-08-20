@@ -20,7 +20,7 @@
     "@saflib/grpc": "*",
     "@saflib/identity-common": "*",
     "@saflib/identity-db": "*",
-    "@saflib/identity-links": "*",
+    "@saflib/auth-links": "*",
     "@saflib/identity-rpcs": "*",
     "@saflib/identity-spec": "*",
     "@saflib/links": "*",

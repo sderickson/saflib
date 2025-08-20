@@ -4,6 +4,8 @@
 
 # Interface: IdentityServerOptions
 
+Options for the identity service.
+
 ## Properties
 
 ### callbacks

@@ -1,5 +1,5 @@
 {
-  "name": "@saflib/identity-links",
+  "name": "@saflib/auth-links",
   "description": "Links for @saflib/auth-vue",
   "private": true,
   "type": "module",

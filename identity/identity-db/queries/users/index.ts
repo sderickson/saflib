@@ -5,6 +5,10 @@ import { getByEmail } from "./get-by-email.ts";
 import { updateProfile } from "./update-profile.ts";
 import { updateLastLogin } from "./update-last-login.ts";
 
+/**
+ * Database queries for the users table. The users table contains profile information about the users,
+ * similar to the OIDC Standard Claims.
+ */
 export const usersDb = {
   create,
   getAll,

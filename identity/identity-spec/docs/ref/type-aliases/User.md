@@ -4,4 +4,6 @@
 
 # Type Alias: User
 
-> **User** = [`components`](../interfaces/components.md)\[`"schemas"`\]\[`"User"`\]
+> **User** = `components`\[`"schemas"`\]\[`"User"`\]
+
+The User type from the OpenAPI specification.

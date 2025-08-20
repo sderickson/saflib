@@ -1,5 +1,5 @@
 import { createHandler } from "@saflib/express";
-import { type AuthResponse } from "@saflib/identity-spec";
+import { type AuthResponseBody } from "@saflib/identity-spec";
 import { emailAuthDb, EmailAuthNotFoundError } from "@saflib/identity-db";
 import { authServiceStorage } from "@saflib/identity-common";
 
@@ -23,7 +23,7 @@ export const verifyHandler = createHandler(async (req, res) => {
     !req.isValidCsrfToken() &&
     req.headers["x-csrf-skip"] !== "true"
   ) {
-    const errorResponse: AuthResponse["verifyAuth"][403] = {
+    const errorResponse: AuthResponseBody["verifyAuth"][403] = {
       message: "CSRF token mismatch!",
     };
     res.status(403).json(errorResponse);
@@ -67,7 +67,7 @@ export const verifyHandler = createHandler(async (req, res) => {
 
   if (req.headers["x-require-admin"] === "true") {
     if (!scopes.includes("*")) {
-      const errorResponse: AuthResponse["verifyAuth"][403] = {
+      const errorResponse: AuthResponseBody["verifyAuth"][403] = {
         message: "Forbidden!",
       };
       res.status(403).json(errorResponse);
@@ -76,12 +76,12 @@ export const verifyHandler = createHandler(async (req, res) => {
   }
 
   if (!user) {
-    const successResponse: AuthResponse["verifyAuth"][200] = {};
+    const successResponse: AuthResponseBody["verifyAuth"][200] = {};
     res.status(200).json(successResponse);
     return;
   }
 
-  const successResponse: AuthResponse["verifyAuth"][200] = {
+  const successResponse: AuthResponseBody["verifyAuth"][200] = {
     id: user.id,
     email: user.email,
     name: user.name ?? undefined,

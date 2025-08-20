@@ -14,7 +14,7 @@ import {
 } from "@saflib/auth-vue";
 import VerifyEmailPageAsync from "./pages/verify-wall/VerifyWallPageAsync.vue";
 
-import { authLinks } from "@saflib/identity-links";
+import { authLinks } from "@saflib/auth-links";
 
 let router: Router;
 

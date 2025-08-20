@@ -96,7 +96,7 @@ import { ref, watch, computed } from "vue";
 import { emailRules, passwordRules } from "../../utils/rules.ts";
 import { useRegister } from "../../requests/auth.ts";
 import { register_page } from "./RegisterPage.strings.ts";
-import { authLinks } from "@saflib/identity-links";
+import { authLinks } from "@saflib/auth-links";
 import { SpaLink } from "@saflib/vue-spa";
 import type { User } from "@saflib/identity-spec";
 

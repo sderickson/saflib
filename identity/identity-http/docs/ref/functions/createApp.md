@@ -6,6 +6,8 @@
 
 > **createApp**(`options`): `Express`
 
+Starts the HTTP server for the identity service.
+
 ## Parameters
 
 | Parameter | Type |

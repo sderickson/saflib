@@ -6,6 +6,8 @@
 
 > **makeGrpcServer**(`options`): `Server`
 
+Starts the gRPC server for the identity service.
+
 ## Parameters
 
 | Parameter | Type |

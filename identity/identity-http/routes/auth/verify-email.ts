@@ -1,6 +1,6 @@
 import { createHandler } from "@saflib/express";
 import { createUserResponse } from "./_helpers.ts";
-import { type AuthResponse } from "@saflib/identity-spec";
+import { type AuthResponseBody } from "@saflib/identity-spec";
 import { emailAuthDb, usersDb } from "@saflib/identity-db";
 import { VerificationTokenNotFoundError } from "@saflib/identity-db";
 import { authServiceStorage } from "@saflib/identity-common";
@@ -17,7 +17,7 @@ export const verifyEmailHandler = createHandler(async (req, res) => {
   if (error) {
     switch (true) {
       case error instanceof VerificationTokenNotFoundError:
-        const errorResponse: AuthResponse["verifyEmail"][400] = {
+        const errorResponse: AuthResponseBody["verifyEmail"][400] = {
           message: "Invalid or expired verification token",
         };
         res.status(400).json(errorResponse);
@@ -27,14 +27,14 @@ export const verifyEmailHandler = createHandler(async (req, res) => {
     }
   }
   if (!req.user?.email) {
-    const errorResponse: AuthResponse["verifyEmail"][401] = {
+    const errorResponse: AuthResponseBody["verifyEmail"][401] = {
       message: "Unauthorized",
     };
     res.status(401).json(errorResponse);
     return;
   }
   if (emailAuth.email !== req.user?.email) {
-    const errorResponse: AuthResponse["verifyEmail"][403] = {
+    const errorResponse: AuthResponseBody["verifyEmail"][403] = {
       message: "Forbidden",
     };
     res.status(403).json(errorResponse);
@@ -44,7 +44,7 @@ export const verifyEmailHandler = createHandler(async (req, res) => {
     !emailAuth.verificationTokenExpiresAt ||
     emailAuth.verificationTokenExpiresAt < new Date()
   ) {
-    const errorResponse: AuthResponse["verifyEmail"][400] = {
+    const errorResponse: AuthResponseBody["verifyEmail"][400] = {
       message: "Invalid or expired verification token",
     };
     res.status(400).json(errorResponse);
@@ -56,6 +56,6 @@ export const verifyEmailHandler = createHandler(async (req, res) => {
   const user = await throwError(usersDb.getById(dbKey, emailAuth.userId));
   const userResponse = await createUserResponse(dbKey, user);
 
-  const successResponse: AuthResponse["verifyEmail"][200] = userResponse;
+  const successResponse: AuthResponseBody["verifyEmail"][200] = userResponse;
   res.status(200).json(successResponse);
 });

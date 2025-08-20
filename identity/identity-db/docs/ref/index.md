@@ -32,6 +32,6 @@
 
 | Variable | Description |
 | ------ | ------ |
-| [emailAuthDb](variables/emailAuthDb.md) | - |
-| [identityDb](variables/identityDb.md) | - |
-| [usersDb](variables/usersDb.md) | - |
+| [emailAuthDb](variables/emailAuthDb.md) | Database queries for the email_auth table. The email_auth table contains email authentication information for the users. |
+| [identityDb](variables/identityDb.md) | For managing connections to the identity database. |
+| [usersDb](variables/usersDb.md) | Database queries for the users table. The users table contains profile information about the users, similar to the OIDC Standard Claims. |

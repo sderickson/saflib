@@ -20,4 +20,4 @@
 
 | Function | Description |
 | ------ | ------ |
-| [createApp](functions/createApp.md) | - |
+| [createApp](functions/createApp.md) | Starts the HTTP server for the identity service. |

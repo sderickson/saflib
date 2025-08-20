@@ -1,17 +1,17 @@
 import { randomBytes } from "crypto";
 import { createHandler } from "@saflib/express";
-import type { AuthResponse, AuthRequest } from "@saflib/identity-spec";
+import type { AuthResponseBody, AuthRequestBody } from "@saflib/identity-spec";
 import { usersDb, UserNotFoundError, emailAuthDb } from "@saflib/identity-db";
 import { authServiceStorage } from "@saflib/identity-common";
 import { linkToHref } from "@saflib/links";
-import { authLinks } from "@saflib/identity-links";
+import { authLinks } from "@saflib/auth-links";
 
 export const forgotPasswordHandler = createHandler(async (req, res) => {
-  const { email } = req.body as AuthRequest["forgotPassword"];
+  const { email } = req.body as AuthRequestBody["forgotPassword"];
   const { dbKey, callbacks } = authServiceStorage.getStore()!;
   const { result: user, error } = await usersDb.getByEmail(dbKey, email);
 
-  const commonResponse: AuthResponse["forgotPassword"][200] = {
+  const commonResponse: AuthResponseBody["forgotPassword"][200] = {
     success: true,
     message: "If the email exists, a recovery email has been sent",
   };

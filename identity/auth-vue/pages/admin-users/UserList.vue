@@ -35,9 +35,9 @@
 </template>
 
 <script setup lang="ts">
-import type { AuthResponse } from "@saflib/identity-spec";
+import type { AuthResponseBody } from "@saflib/identity-spec";
 
-type User = AuthResponse["listUsers"][200][number];
+type User = AuthResponseBody["listUsers"][200][number];
 
 defineProps<{
   users: User[] | null | undefined;

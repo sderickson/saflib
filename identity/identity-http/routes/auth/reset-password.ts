@@ -1,6 +1,6 @@
 import * as argon2 from "argon2";
 import { createHandler } from "@saflib/express";
-import { type AuthResponse } from "@saflib/identity-spec";
+import { type AuthResponseBody } from "@saflib/identity-spec";
 import { emailAuthDb, TokenNotFoundError, usersDb } from "@saflib/identity-db";
 import { authServiceStorage } from "@saflib/identity-common";
 import { throwError } from "@saflib/monorepo";
@@ -17,7 +17,7 @@ export const resetPasswordHandler = createHandler(async (req, res) => {
   if (error) {
     switch (true) {
       case error instanceof TokenNotFoundError:
-        const errorResponse: AuthResponse["resetPassword"][400] = {
+        const errorResponse: AuthResponseBody["resetPassword"][400] = {
           message: "Invalid or expired token",
         };
         res.status(400).json(errorResponse);
@@ -30,7 +30,7 @@ export const resetPasswordHandler = createHandler(async (req, res) => {
     !emailAuth.forgotPasswordTokenExpiresAt ||
     emailAuth.forgotPasswordTokenExpiresAt < new Date()
   ) {
-    const errorResponse: AuthResponse["resetPassword"][400] = {
+    const errorResponse: AuthResponseBody["resetPassword"][400] = {
       message: "Invalid or expired token",
     };
     res.status(400).json(errorResponse);
@@ -51,7 +51,7 @@ export const resetPasswordHandler = createHandler(async (req, res) => {
     await callbacks.onPasswordUpdated(user);
   }
 
-  const successResponse: AuthResponse["resetPassword"][200] = {
+  const successResponse: AuthResponseBody["resetPassword"][200] = {
     success: true,
   };
   res.status(200).json(successResponse);

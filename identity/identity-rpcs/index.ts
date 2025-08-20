@@ -3,8 +3,14 @@ import * as timestamp from "./dist/google/protobuf/timestamp.ts";
 import { typedEnv } from "./env.ts";
 import * as grpc from "@grpc/grpc-js";
 
-type LimitedUsersClient = Pick<users.UsersClient, "GetUserProfile">;
+/**
+ * A stripped down type of the UsersClient, for easier mocking.
+ */
+export type LimitedUsersClient = Pick<users.UsersClient, "GetUserProfile">;
 
+/**
+ * The global UsersClient for the identity service.
+ */
 let usersClient: LimitedUsersClient = new users.UsersClient(
   `identity:${typedEnv.IDENTITY_SERVICE_GRPC_PORT}`,
   grpc.credentials.createInsecure(),

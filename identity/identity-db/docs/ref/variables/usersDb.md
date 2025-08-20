@@ -6,6 +6,9 @@
 
 > `const` **usersDb**: `object`
 
+Database queries for the users table. The users table contains profile information about the users,
+similar to the OIDC Standard Claims.
+
 ## Type declaration
 
 ### create()

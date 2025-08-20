@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import * as grpc from "@grpc/grpc-js";
 import { runTestServer } from "@saflib/grpc/testing";
 import { makeGrpcServer } from "../../grpc.ts";
-import { identityDb } from "@saflib/identity-db";
+import { emailAuthDb, identityDb, usersDb } from "@saflib/identity-db";
 import type { DbKey } from "@saflib/drizzle-sqlite3";
 import { users } from "@saflib/identity-rpcs";
 
@@ -38,7 +38,7 @@ describe("handleGetUserProfile", () => {
 
   it("should handle successful requests", async () => {
     // Create a test user first
-    const userResult = await identityDb.users.create(dbKey, {
+    const userResult = await usersDb.create(dbKey, {
       email: "test@example.com",
       name: "Test User",
       givenName: "Test",
@@ -52,7 +52,7 @@ describe("handleGetUserProfile", () => {
     const user = userResult.result;
 
     // Create a test email auth record
-    await identityDb.emailAuth.create(dbKey, {
+    await emailAuthDb.create(dbKey, {
       userId: user.id,
       email: "test@example.com",
       verifiedAt: new Date(),

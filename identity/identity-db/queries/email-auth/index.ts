@@ -11,6 +11,10 @@ import { updateVerificationToken } from "./update-verification-token.ts";
 import { getEmailAuthByUserIds } from "./get-by-user-ids.ts";
 import { updateEmail, type UpdateEmailResult } from "./update-email.ts";
 
+/**
+ * Database queries for the email_auth table. The email_auth table contains email authentication information
+ * for the users.
+ */
 export const emailAuthDb = {
   create,
   getByEmail,

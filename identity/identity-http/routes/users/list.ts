@@ -1,4 +1,4 @@
-import type { AuthResponse } from "@saflib/identity-spec";
+import type { AuthResponseBody } from "@saflib/identity-spec";
 import { createHandler } from "@saflib/express";
 import { emailAuthDb, usersDb } from "@saflib/identity-db";
 import { authServiceStorage } from "@saflib/identity-common";
@@ -29,5 +29,5 @@ export const listUsersHandler = createHandler(async (_, res) => {
     }))
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt)); // Sort by ISO string
 
-  res.json(responseBody satisfies AuthResponse["listUsers"]["200"]);
+  res.json(responseBody satisfies AuthResponseBody["listUsers"]["200"]);
 });

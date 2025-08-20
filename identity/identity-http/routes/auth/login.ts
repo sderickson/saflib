@@ -2,7 +2,7 @@ import { createHandler } from "@saflib/express";
 import passport from "passport";
 import { type IVerifyOptions } from "passport-local";
 import { createUserResponse } from "./_helpers.ts";
-import { type AuthResponse } from "@saflib/identity-spec";
+import { type AuthResponseBody } from "@saflib/identity-spec";
 import { authServiceStorage } from "@saflib/identity-common";
 export const loginHandler = createHandler(async function (req, res, next) {
   const { dbKey } = authServiceStorage.getStore()!;
@@ -18,7 +18,7 @@ export const loginHandler = createHandler(async function (req, res, next) {
       }
 
       if (!user) {
-        const response: AuthResponse["loginUser"][401] = {
+        const response: AuthResponseBody["loginUser"][401] = {
           message: "Invalid credentials",
         };
         return res.status(401).json(response);
@@ -30,7 +30,7 @@ export const loginHandler = createHandler(async function (req, res, next) {
         }
 
         createUserResponse(dbKey, user).then((response) => {
-          const successResponse: AuthResponse["loginUser"][200] = response;
+          const successResponse: AuthResponseBody["loginUser"][200] = response;
           res.json(successResponse);
         });
       });

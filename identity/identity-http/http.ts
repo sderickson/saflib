@@ -19,6 +19,9 @@ declare global {
   }
 }
 
+/**
+ * Starts the HTTP server for the identity service.
+ */
 export function createApp(options: IdentityServerOptions) {
   let dbKey = options.dbKey;
   if (!dbKey) {

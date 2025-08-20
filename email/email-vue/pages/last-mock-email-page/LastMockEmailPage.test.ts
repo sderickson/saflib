@@ -7,7 +7,7 @@ import type { EmailResponseBody } from "@saflib/email-spec";
 import { last_mock_email_page as strings } from "./LastMockEmailPage.strings.ts";
 import { getElementByString } from "@saflib/vue-spa/testing";
 import type { VueWrapper } from "@vue/test-utils";
-import type { AuthResponse } from "@saflib/identity-spec";
+import type { AuthResponseBody } from "@saflib/identity-spec";
 import { mountTestApp } from "../test-app.ts";
 import { router } from "../test_router.ts";
 
@@ -32,7 +32,7 @@ const mockEmails: EmailResponseBody["listSentEmails"][200] = [
   },
 ];
 
-const mockProfile: AuthResponse["getUserProfile"][200] = {
+const mockProfile: AuthResponseBody["getUserProfile"][200] = {
   id: 1,
   email: "test@example.com",
 };
