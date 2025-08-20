@@ -1,4 +1,4 @@
-# @saflib/rpcs
+# Overview
 
 This package contains Protocol Buffer definitions and generated TypeScript code for RPC services using SAF.
 
