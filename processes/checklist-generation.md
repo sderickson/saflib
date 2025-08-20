@@ -16,7 +16,7 @@ Before creating a checklist, review the [doc-outline.md](./doc-outline.md) to un
 
 ### Platform Documentation
 
-- Authentication: [auth-architecture.md](../identity/identity-service/docs/identity-architecture.md)
+- Identity: [overview.md](../identity/identity/docs/01-overview.md)
 - Database: [schema.md](../drizzle-sqlite3/docs/02-schema.md)
 - API: [routes.md](../express/docs/03-routes.md)
 
@@ -44,7 +44,6 @@ Every feature checklist should follow this basic structure:
 ### Planning Phase
 
 - [ ] Set up a new branch in the monorepo
-
   - [ ] Checkout the `main` branch
   - [ ] Pull the latest changes
   - [ ] Create a new branch with the current date and feature name
@@ -78,7 +77,6 @@ Implementation tasks should be organized by architectural layer, starting from t
 ### Testing Phase
 
 - [ ] Test end-to-end
-
   - [ ] Create production docker images
   - [ ] Run existing e2e tests
   - [ ] Create new e2e tests
@@ -103,19 +101,16 @@ Implementation tasks should be organized by architectural layer, starting from t
 Features should be implemented following this layer order:
 
 1. **API Spec Layer**
-
    - Update OpenAPI specifications
    - Generate updated types
    - Reference: [update-spec.md](../openapi/docs/03-updates.md)
 
 2. **Database Layer**
-
    - Schema changes
    - Query implementations
    - Reference: [schema.md](../drizzle-sqlite3/docs/02-schema.md)
 
 3. **API Layer**
-
    - Endpoint implementations
    - Middleware updates
    - Reference: [routes.md](../express/docs/03-routes.md)
@@ -153,13 +148,11 @@ Features should be implemented following this layer order:
 ### Frontend Layer
 
 1. TanStack Query Layer
-
    - Implement queries/mutations
    - Add error handling
    - Testing: [query-testing.md](../vue-spa/docs/05-query-testing.md)
 
 2. Component Layer
-
    - Implement base components
    - Add form validation
    - Testing: [component-testing.md](../vue-spa/docs/04-component-testing.md)
@@ -172,13 +165,11 @@ Features should be implemented following this layer order:
 ## Common Pitfalls to Avoid
 
 1. **Missing Layers**
-
    - Don't skip the API spec layer
    - Don't implement frontend before backend
    - Don't implement components before queries
 
 2. **Incomplete Testing**
-
    - Each layer needs its own tests
    - Include both unit and integration tests
    - Don't forget e2e tests
@@ -186,19 +177,16 @@ Features should be implemented following this layer order:
    - Run tests before committing changes
 
 3. **Documentation Gaps**
-
    - Update all relevant documentation from [doc-outline.md](./doc-outline.md)
    - Include both platform and product docs
    - Document breaking changes
 
 4. **Review Points**
-
    - Add review points after each major task
    - Include specific review criteria
    - Don't skip review points
 
 5. **File References**
-
    - Don't forget to link to files from the spec
    - Use absolute paths for all file references
    - Include file references in relevant tasks
@@ -235,7 +223,6 @@ Here's an example of a properly structured checklist for a simple feature:
 ## Database Layer
 
 - [ ] Implement Schema Changes
-
   - [ ] Review [schema.md](../drizzle-sqlite3/docs/02-schema.md)
   - [ ] Add new table to [db/src/schema.ts](/saflib/db/src/schema.ts)
   - [ ] Run `npm run generate` in the db package to generate migrations
@@ -261,7 +248,6 @@ Here's an example of a properly structured checklist for a simple feature:
 ## Frontend Layer
 
 - [ ] Add API Integration
-
   - [ ] Add query to [frontend/src/requests/example.ts](/saflib/frontend/src/requests/example.ts)
   - [ ] Add tests using [query-testing.md](../vue-spa-dev/docs/query-testing.md)
   - [ ] Run `npm run test` in the frontend package to verify query implementation
@@ -278,7 +264,6 @@ Here's an example of a properly structured checklist for a simple feature:
 ### Testing Phase
 
 - [ ] Test end-to-end
-
   - [ ] Create production docker images
   - [ ] Run existing e2e tests
   - [ ] Create new e2e tests
