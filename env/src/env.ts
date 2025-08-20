@@ -87,7 +87,19 @@ export const getCombinedEnvSchema = async (targetPackageName?: string) => {
     }
   });
 
-  return combinedSchema;
+  const sortedRequired = Array.from(new Set(combinedSchema.required)).sort();
+  const sortedSchema: SimplifiedJSONSchema = {
+    type: "object",
+    properties: {},
+    required: sortedRequired,
+    additionalProperties: false,
+  };
+  const sortedProperties = Object.keys(combinedSchema.properties).sort();
+  sortedProperties.forEach((property) => {
+    sortedSchema.properties[property] = combinedSchema.properties[property];
+  });
+
+  return sortedSchema;
 };
 
 export function kebabCaseToPascalCase(str: string) {

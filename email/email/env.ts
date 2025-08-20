@@ -5,6 +5,10 @@
 
 export interface EmailEnvSchema {
   /**
+   * Whether to allow the creation of new databases. Useful for ensuring existing production environments don't inadvertently create new databases.
+   */
+  ALLOW_DB_CREATION?: "true" | "false";
+  /**
    * Comma-separated list of client subdomains, e.g. 'www,app,auth,'. Include an empty string (such as in the example) to indicate there's a client for the root domain.
    */
   CLIENT_SUBDOMAINS: string;
@@ -17,6 +21,18 @@ export interface EmailEnvSchema {
    */
   DOMAIN: string;
   /**
+   * Whether to mock 3rd party integrations. Set to 'true' to mock. And integration packages should respect this setting.
+   */
+  MOCK_INTEGRATIONS?: "true" | "false";
+  /**
+   * JSON string which can be passed into nodemailer.createTransport. See https://nodemailer.com/usage for more details.
+   */
+  NODEMAILER_TRANSPORT_CONFIG: string;
+  /**
+   * The environment of the deployment. Generally should avoid using this, consider its use deprecated, prefer instead more specific environment variables.
+   */
+  NODE_ENV: "development" | "production" | "test";
+  /**
    * The protocol of the deployment, e.g. 'https'
    */
   PROTOCOL: "https" | "http";
@@ -24,22 +40,6 @@ export interface EmailEnvSchema {
    * The timezone of the deployment, e.g. 'America/New_York'. Must be UTC.
    */
   TZ: "UTC";
-  /**
-   * The environment of the deployment. Generally should avoid using this, consider its use deprecated, prefer instead more specific environment variables.
-   */
-  NODE_ENV: "development" | "production" | "test";
-  /**
-   * Whether to mock 3rd party integrations. Set to 'true' to mock. And integration packages should respect this setting.
-   */
-  MOCK_INTEGRATIONS?: "true" | "false";
-  /**
-   * Whether to allow the creation of new databases. Useful for ensuring existing production environments don't inadvertently create new databases.
-   */
-  ALLOW_DB_CREATION?: "true" | "false";
-  /**
-   * JSON string which can be passed into nodemailer.createTransport. See https://nodemailer.com/usage for more details.
-   */
-  NODEMAILER_TRANSPORT_CONFIG: string;
 }
 
 /**
