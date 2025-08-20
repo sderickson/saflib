@@ -1,6 +1,6 @@
 [**@saflib/identity**](../index.md)
 
----
+***
 
 # Interface: StartIdentityServiceOptions
 
@@ -12,7 +12,7 @@ Options for starting the auth service, including both HTTP and gRPC servers.
 
 > `optional` **callbacks**: [`IdentityServiceCallbacks`](IdentityServiceCallbacks.md)
 
----
+***
 
 ### dbOptions?
 

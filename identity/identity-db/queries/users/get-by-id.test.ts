@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import type { DbKey } from "@saflib/drizzle-sqlite3";
-import { identityDb, UserNotFoundError } from "@saflib/identity-db";
+import { identityDb, usersDb, UserNotFoundError } from "@saflib/identity-db";
 
 describe("getById", () => {
   let dbKey: DbKey;
@@ -20,17 +20,14 @@ describe("getById", () => {
       createdAt: new Date(),
     };
 
-    const { result: created } = await identityDb.users.create(dbKey, user);
-    const { result: fetched } = await identityDb.users.getById(
-      dbKey,
-      created!.id,
-    );
+    const { result: created } = await usersDb.create(dbKey, user);
+    const { result: fetched } = await usersDb.getById(dbKey, created!.id);
 
     expect(fetched).toEqual(created);
   });
 
   it("should return UserNotFoundError when id not found", async () => {
-    const { error } = await identityDb.users.getById(dbKey, 999);
+    const { error } = await usersDb.getById(dbKey, 999);
     expect(error).toBeInstanceOf(UserNotFoundError);
   });
 });

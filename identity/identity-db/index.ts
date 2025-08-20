@@ -1,12 +1,9 @@
 export type * from "./types.ts";
-import * as users from "./queries/users/index.ts";
-import * as emailAuth from "./queries/email-auth/index.ts";
+import { usersDb } from "./queries/users/index.ts";
+import { emailAuthDb } from "./queries/email-auth/index.ts";
 export * from "./errors.ts";
 
 import { identityDbManager } from "./instances.ts";
 
-export const identityDb = {
-  ...identityDbManager.publicInterface(),
-  users,
-  emailAuth,
-};
+export const identityDb = identityDbManager.publicInterface();
+export { usersDb, emailAuthDb };

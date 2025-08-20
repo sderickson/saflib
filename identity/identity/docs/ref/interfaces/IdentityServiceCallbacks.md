@@ -1,6 +1,6 @@
 [**@saflib/identity**](../index.md)
 
----
+***
 
 # Interface: IdentityServiceCallbacks
 
@@ -14,24 +14,24 @@ Callbacks for events which occur in the auth service.
 
 #### Parameters
 
-| Parameter            | Type                                                                                                                                                                                                                                |
-| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `user`               | \{ `createdAt`: `Date`; `email`: `string`; `emailVerified`: `null` \| `boolean`; `familyName`: `null` \| `string`; `givenName`: `null` \| `string`; `id`: `number`; `lastLoginAt`: `null` \| `Date`; `name`: `null` \| `string`; \} |
-| `user.createdAt`     | `Date`                                                                                                                                                                                                                              |
-| `user.email`         | `string`                                                                                                                                                                                                                            |
-| `user.emailVerified` | `null` \| `boolean`                                                                                                                                                                                                                 |
-| `user.familyName`    | `null` \| `string`                                                                                                                                                                                                                  |
-| `user.givenName`     | `null` \| `string`                                                                                                                                                                                                                  |
-| `user.id`            | `number`                                                                                                                                                                                                                            |
-| `user.lastLoginAt`   | `null` \| `Date`                                                                                                                                                                                                                    |
-| `user.name`          | `null` \| `string`                                                                                                                                                                                                                  |
-| `resetUrl`           | `string`                                                                                                                                                                                                                            |
+| Parameter | Type |
+| ------ | ------ |
+| `user` | \{ `createdAt`: `Date`; `email`: `string`; `emailVerified`: `null` \| `boolean`; `familyName`: `null` \| `string`; `givenName`: `null` \| `string`; `id`: `number`; `lastLoginAt`: `null` \| `Date`; `name`: `null` \| `string`; \} |
+| `user.createdAt` | `Date` |
+| `user.email` | `string` |
+| `user.emailVerified` | `null` \| `boolean` |
+| `user.familyName` | `null` \| `string` |
+| `user.givenName` | `null` \| `string` |
+| `user.id` | `number` |
+| `user.lastLoginAt` | `null` \| `Date` |
+| `user.name` | `null` \| `string` |
+| `resetUrl` | `string` |
 
 #### Returns
 
 `Promise`\<`void`\>
 
----
+***
 
 ### onPasswordUpdated()?
 
@@ -39,23 +39,23 @@ Callbacks for events which occur in the auth service.
 
 #### Parameters
 
-| Parameter            | Type                                                                                                                                                                                                                                |
-| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `user`               | \{ `createdAt`: `Date`; `email`: `string`; `emailVerified`: `null` \| `boolean`; `familyName`: `null` \| `string`; `givenName`: `null` \| `string`; `id`: `number`; `lastLoginAt`: `null` \| `Date`; `name`: `null` \| `string`; \} |
-| `user.createdAt`     | `Date`                                                                                                                                                                                                                              |
-| `user.email`         | `string`                                                                                                                                                                                                                            |
-| `user.emailVerified` | `null` \| `boolean`                                                                                                                                                                                                                 |
-| `user.familyName`    | `null` \| `string`                                                                                                                                                                                                                  |
-| `user.givenName`     | `null` \| `string`                                                                                                                                                                                                                  |
-| `user.id`            | `number`                                                                                                                                                                                                                            |
-| `user.lastLoginAt`   | `null` \| `Date`                                                                                                                                                                                                                    |
-| `user.name`          | `null` \| `string`                                                                                                                                                                                                                  |
+| Parameter | Type |
+| ------ | ------ |
+| `user` | \{ `createdAt`: `Date`; `email`: `string`; `emailVerified`: `null` \| `boolean`; `familyName`: `null` \| `string`; `givenName`: `null` \| `string`; `id`: `number`; `lastLoginAt`: `null` \| `Date`; `name`: `null` \| `string`; \} |
+| `user.createdAt` | `Date` |
+| `user.email` | `string` |
+| `user.emailVerified` | `null` \| `boolean` |
+| `user.familyName` | `null` \| `string` |
+| `user.givenName` | `null` \| `string` |
+| `user.id` | `number` |
+| `user.lastLoginAt` | `null` \| `Date` |
+| `user.name` | `null` \| `string` |
 
 #### Returns
 
 `Promise`\<`void`\>
 
----
+***
 
 ### onUserCreated()?
 
@@ -63,23 +63,23 @@ Callbacks for events which occur in the auth service.
 
 #### Parameters
 
-| Parameter            | Type                                                                                                                                                                                                                                |
-| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `user`               | \{ `createdAt`: `Date`; `email`: `string`; `emailVerified`: `null` \| `boolean`; `familyName`: `null` \| `string`; `givenName`: `null` \| `string`; `id`: `number`; `lastLoginAt`: `null` \| `Date`; `name`: `null` \| `string`; \} |
-| `user.createdAt`     | `Date`                                                                                                                                                                                                                              |
-| `user.email`         | `string`                                                                                                                                                                                                                            |
-| `user.emailVerified` | `null` \| `boolean`                                                                                                                                                                                                                 |
-| `user.familyName`    | `null` \| `string`                                                                                                                                                                                                                  |
-| `user.givenName`     | `null` \| `string`                                                                                                                                                                                                                  |
-| `user.id`            | `number`                                                                                                                                                                                                                            |
-| `user.lastLoginAt`   | `null` \| `Date`                                                                                                                                                                                                                    |
-| `user.name`          | `null` \| `string`                                                                                                                                                                                                                  |
+| Parameter | Type |
+| ------ | ------ |
+| `user` | \{ `createdAt`: `Date`; `email`: `string`; `emailVerified`: `null` \| `boolean`; `familyName`: `null` \| `string`; `givenName`: `null` \| `string`; `id`: `number`; `lastLoginAt`: `null` \| `Date`; `name`: `null` \| `string`; \} |
+| `user.createdAt` | `Date` |
+| `user.email` | `string` |
+| `user.emailVerified` | `null` \| `boolean` |
+| `user.familyName` | `null` \| `string` |
+| `user.givenName` | `null` \| `string` |
+| `user.id` | `number` |
+| `user.lastLoginAt` | `null` \| `Date` |
+| `user.name` | `null` \| `string` |
 
 #### Returns
 
 `Promise`\<`void`\>
 
----
+***
 
 ### onVerificationTokenCreated()?
 
@@ -87,19 +87,19 @@ Callbacks for events which occur in the auth service.
 
 #### Parameters
 
-| Parameter            | Type                                                                                                                                                                                                                                |
-| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `user`               | \{ `createdAt`: `Date`; `email`: `string`; `emailVerified`: `null` \| `boolean`; `familyName`: `null` \| `string`; `givenName`: `null` \| `string`; `id`: `number`; `lastLoginAt`: `null` \| `Date`; `name`: `null` \| `string`; \} |
-| `user.createdAt`     | `Date`                                                                                                                                                                                                                              |
-| `user.email`         | `string`                                                                                                                                                                                                                            |
-| `user.emailVerified` | `null` \| `boolean`                                                                                                                                                                                                                 |
-| `user.familyName`    | `null` \| `string`                                                                                                                                                                                                                  |
-| `user.givenName`     | `null` \| `string`                                                                                                                                                                                                                  |
-| `user.id`            | `number`                                                                                                                                                                                                                            |
-| `user.lastLoginAt`   | `null` \| `Date`                                                                                                                                                                                                                    |
-| `user.name`          | `null` \| `string`                                                                                                                                                                                                                  |
-| `verificationUrl`    | `string`                                                                                                                                                                                                                            |
-| `isResend`           | `boolean`                                                                                                                                                                                                                           |
+| Parameter | Type |
+| ------ | ------ |
+| `user` | \{ `createdAt`: `Date`; `email`: `string`; `emailVerified`: `null` \| `boolean`; `familyName`: `null` \| `string`; `givenName`: `null` \| `string`; `id`: `number`; `lastLoginAt`: `null` \| `Date`; `name`: `null` \| `string`; \} |
+| `user.createdAt` | `Date` |
+| `user.email` | `string` |
+| `user.emailVerified` | `null` \| `boolean` |
+| `user.familyName` | `null` \| `string` |
+| `user.givenName` | `null` \| `string` |
+| `user.id` | `number` |
+| `user.lastLoginAt` | `null` \| `Date` |
+| `user.name` | `null` \| `string` |
+| `verificationUrl` | `string` |
+| `isResend` | `boolean` |
 
 #### Returns
 
