@@ -12,11 +12,8 @@
     "typecheck": "tsc"
   },
   "dependencies": {
-    "@grpc/grpc-js": "*",
     "@saflib/env": "*",
-    "@saflib/grpc-specs": "*",
-    "google-protobuf": "*",
-    "protoc-gen-ts": "*"
+    "@saflib/grpc-specs": "*"
   },
   "devDependencies": {
     "@saflib/monorepo": "*",

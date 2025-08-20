@@ -14,35 +14,16 @@
     "typecheck": "tsc"
   },
   "dependencies": {
-    "@saflib/email": "*",
-    "@saflib/env": "*",
-    "@saflib/express": "*",
-    "@saflib/grpc": "*",
+    "@saflib/auth-links": "*",
     "@saflib/identity-db": "*",
     "@saflib/identity-grpc": "*",
     "@saflib/identity-http": "*",
-    "@saflib/auth-links": "*",
     "@saflib/identity-rpcs": "*",
-    "@saflib/identity-spec": "*",
-    "@saflib/links": "*",
-    "@saflib/monorepo": "*",
-    "argon2": "^0.43.1",
-    "better-sqlite3-session-store": "^0.1.0",
-    "cookie-parser": "^1.4.7",
-    "express-rate-limit": "^7.5.0",
-    "express-session": "^1.18.0",
-    "passport": "^0.7.0",
-    "passport-local": "^1.0.0",
-    "yaml": "^2.7.0"
+    "@saflib/identity-spec": "*"
   },
   "devDependencies": {
     "@saflib/monorepo": "*",
-    "@saflib/vitest": "*",
-    "@types/argon2": "^0.14.1",
-    "@types/cookie-parser": "^1.4.8",
-    "@types/express-session": "^1.18.0",
-    "@types/passport": "^1.0.16",
-    "@types/passport-local": "^1.0.38"
+    "@saflib/vitest": "*"
   },
   "saflib": {
     "group": "auth"
