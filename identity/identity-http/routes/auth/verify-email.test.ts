@@ -53,7 +53,6 @@ describe("Verify Email Route", () => {
       email: userData.email,
       emailVerified: true,
       name: userData.name,
-      scopes: [],
     });
   });
 

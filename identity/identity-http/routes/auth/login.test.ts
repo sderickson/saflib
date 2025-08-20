@@ -34,7 +34,6 @@ describe("Login Route", () => {
       email: userData.email,
       emailVerified: false,
       name: userData.name,
-      scopes: [],
     });
   });
 
@@ -76,4 +75,3 @@ describe("Login Route", () => {
     );
   });
 });
-

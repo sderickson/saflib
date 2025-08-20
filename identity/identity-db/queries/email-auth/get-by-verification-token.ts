@@ -1,6 +1,6 @@
 import { type DbKey, queryWrapper } from "@saflib/drizzle-sqlite3";
 import type { SelectEmailAuth } from "../../types.ts";
-import { emailAuth } from "../../schema.ts";
+import { emailAuth } from "../../schemas/index.ts";
 import type { ReturnsError } from "@saflib/monorepo";
 import { identityDbManager } from "../../instances.ts";
 import { VerificationTokenNotFoundError } from "../../errors.ts";

@@ -20,7 +20,7 @@ export const getMigrationsPath = () => {
 
 export default defineConfig({
   out: "./migrations",
-  schema: "./schema.ts",
+  schema: "./schemas/index.ts",
   dialect: "sqlite",
   dbCredentials: {
     url: `./data/${usersDbName}`,

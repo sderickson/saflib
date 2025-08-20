@@ -1,5 +1,5 @@
 import { queryWrapper } from "@saflib/drizzle-sqlite3";
-import { users } from "../../schema.ts";
+import { users } from "../../schemas/index.ts";
 import type { User } from "../../types.ts";
 import { UserNotFoundError } from "../../errors.ts";
 import { eq } from "drizzle-orm";

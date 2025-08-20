@@ -1,6 +1,6 @@
 // TODO: Uncomment and fix these imports
 import { queryWrapper } from "@saflib/drizzle-sqlite3";
-import { users } from "../../schema.ts";
+import { users } from "../../schemas/index.ts";
 import { identityDbManager } from "../../instances.ts";
 import type { DbKey } from "@saflib/drizzle-sqlite3";
 import type { User, UpdateProfileParams } from "../../types.ts";

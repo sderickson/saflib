@@ -4,7 +4,7 @@ import express from "express";
 import { createApp } from "../../http.ts";
 import passport from "passport";
 import { testRateLimiting } from "./_test-helpers.ts";
-import type { AuthServiceCallbacks } from "../../types.ts";
+import type { IdentityServiceCallbacks } from "@saflib/identity-common";
 
 vi.mock("crypto", async (importOriginal) => {
   const crypto = await importOriginal<typeof import("crypto")>();
@@ -14,12 +14,12 @@ vi.mock("crypto", async (importOriginal) => {
   };
 });
 
-const authServiceCallbacks: AuthServiceCallbacks = {
+const identityServiceCallbacks: IdentityServiceCallbacks = {
   onVerificationTokenCreated: async () => {},
 };
 
 const onVerificationTokenCreatedSpy = vi.spyOn(
-  authServiceCallbacks,
+  identityServiceCallbacks,
   "onVerificationTokenCreated",
 );
 
@@ -30,7 +30,7 @@ describe("Resend Verification Route", () => {
     vi.clearAllMocks();
     (passport as any)._serializers = [];
     (passport as any)._deserializers = [];
-    app = createApp({ callbacks: authServiceCallbacks });
+    app = createApp({ callbacks: identityServiceCallbacks });
   });
 
   it("should resend verification email for logged in user", async () => {

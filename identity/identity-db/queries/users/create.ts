@@ -3,7 +3,7 @@ import type { User } from "../../types.ts";
 import type { NewUser } from "../../types.ts";
 import { identityDbManager } from "../../instances.ts";
 import { EmailConflictError } from "../../errors.ts";
-import { users } from "../../schema.ts";
+import { users } from "../../schemas/index.ts";
 import type { ReturnsError } from "@saflib/monorepo";
 
 export const create = queryWrapper(

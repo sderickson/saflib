@@ -279,7 +279,6 @@ describe("Update Profile Route", () => {
       email: userData.email,
       emailVerified: true,
       name: userData.name,
-      scopes: [],
     });
 
     const updateData = {

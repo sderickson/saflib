@@ -3,20 +3,23 @@ import request from "supertest";
 import express from "express";
 import { createApp } from "../../http.ts";
 import { testRateLimiting } from "./_test-helpers.ts";
-import type { AuthServiceCallbacks } from "../../types.ts";
+import type { IdentityServiceCallbacks } from "@saflib/identity-common";
 
-const authServiceCallbacks: AuthServiceCallbacks = {
+const identityServiceCallbacks: IdentityServiceCallbacks = {
   onPasswordReset: async () => {},
 };
 
-const onPasswordResetSpy = vi.spyOn(authServiceCallbacks, "onPasswordReset");
+const onPasswordResetSpy = vi.spyOn(
+  identityServiceCallbacks,
+  "onPasswordReset",
+);
 
 describe("Forgot Password Route", () => {
   let app: express.Express;
 
   beforeEach(() => {
     vi.clearAllMocks();
-    app = createApp({ callbacks: authServiceCallbacks });
+    app = createApp({ callbacks: identityServiceCallbacks });
   });
 
   it("should generate and store reset token when user exists and send email", async () => {

@@ -1,6 +1,6 @@
 import { type DbKey, queryWrapper } from "@saflib/drizzle-sqlite3";
 import { UserNotFoundError } from "../../errors.ts";
-import { users } from "../../schema.ts";
+import { users } from "../../schemas/index.ts";
 import type { User } from "../../types.ts";
 import { identityDbManager } from "../../instances.ts";
 import { eq } from "drizzle-orm";

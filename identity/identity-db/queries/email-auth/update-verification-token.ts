@@ -1,6 +1,6 @@
 import { queryWrapper } from "@saflib/drizzle-sqlite3";
 import type { SelectEmailAuth } from "../../types.ts";
-import { emailAuth } from "../../schema.ts";
+import { emailAuth } from "../../schemas/index.ts";
 import { EmailAuthNotFoundError } from "../../errors.ts";
 import { eq } from "drizzle-orm";
 import { identityDbManager } from "../../instances.ts";

@@ -46,7 +46,6 @@ describe("Register Route", () => {
       name: userData.name,
       givenName: userData.givenName,
       familyName: userData.familyName,
-      scopes: [],
     });
 
     const verifyResponse = await agent
