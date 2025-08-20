@@ -3,9 +3,10 @@ import { Strategy as LocalStrategy } from "passport-local";
 import * as argon2 from "argon2";
 import type { User } from "../types.ts";
 import {
-  identityDb,
   EmailAuthNotFoundError,
+  emailAuthDb,
   UserNotFoundError,
+  usersDb,
 } from "@saflib/identity-db";
 import { authServiceStorage } from "@saflib/identity-common";
 
@@ -17,7 +18,7 @@ export const setupPassport = () => {
   passport.deserializeUser(async (id: number, done) => {
     try {
       const { dbKey } = authServiceStorage.getStore()!;
-      const { result, error } = await identityDb.users.getById(dbKey, id);
+      const { result, error } = await usersDb.getById(dbKey, id);
       if (error instanceof UserNotFoundError) {
         return done(null, false);
       }
@@ -38,10 +39,7 @@ export const setupPassport = () => {
           // Get the user and their email auth
           let user;
           const { dbKey } = authServiceStorage.getStore()!;
-          const { result, error } = await identityDb.users.getByEmail(
-            dbKey,
-            email,
-          );
+          const { result, error } = await usersDb.getByEmail(dbKey, email);
           if (error instanceof UserNotFoundError) {
             return done(null, false, { message: "Invalid credentials" });
           }
@@ -49,7 +47,7 @@ export const setupPassport = () => {
 
           let auth;
           const { result: authResult, error: authError } =
-            await identityDb.emailAuth.getByEmail(dbKey, email);
+            await emailAuthDb.getByEmail(dbKey, email);
           if (authError instanceof EmailAuthNotFoundError) {
             return done(null, false, { message: "Invalid credentials" });
           }
@@ -73,7 +71,7 @@ export const setupPassport = () => {
 
           // Update last login time
           const { result: updatedUser, error: updateError } =
-            await identityDb.users.updateLastLogin(dbKey, user.id);
+            await usersDb.updateLastLogin(dbKey, user.id);
           if (updateError) {
             return done(updateError);
           }

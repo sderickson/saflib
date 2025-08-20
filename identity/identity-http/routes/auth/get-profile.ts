@@ -1,7 +1,7 @@
 import { createHandler } from "@saflib/express";
 import createError from "http-errors";
 import { authServiceStorage } from "@saflib/identity-common";
-import { identityDb, UserNotFoundError } from "@saflib/identity-db";
+import { UserNotFoundError, usersDb } from "@saflib/identity-db";
 import type { AuthResponse } from "@saflib/identity-spec";
 
 export const getProfileHandler = createHandler(async (req, res) => {
@@ -13,7 +13,7 @@ export const getProfileHandler = createHandler(async (req, res) => {
   }
 
   const user = req.user as Express.User;
-  const { result, error } = await identityDb.users.getById(dbKey, user.id);
+  const { result, error } = await usersDb.getById(dbKey, user.id);
 
   if (error) {
     switch (true) {

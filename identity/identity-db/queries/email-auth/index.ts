@@ -9,7 +9,7 @@ import { verifyEmail } from "./verify-email.ts";
 import { getByVerificationToken } from "./get-by-verification-token.ts";
 import { updateVerificationToken } from "./update-verification-token.ts";
 import { getEmailAuthByUserIds } from "./get-by-user-ids.ts";
-import { updateEmail } from "./update-email.ts";
+import { updateEmail, type UpdateEmailResult } from "./update-email.ts";
 
 export const emailAuthDb = {
   create,
@@ -25,3 +25,4 @@ export const emailAuthDb = {
   getEmailAuthByUserIds,
   updateEmail,
 };
+export type { UpdateEmailResult };

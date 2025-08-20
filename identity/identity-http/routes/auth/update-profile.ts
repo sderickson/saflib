@@ -3,10 +3,11 @@ import type { components } from "@saflib/identity-spec";
 import createError from "http-errors";
 import { authServiceStorage } from "@saflib/identity-common";
 import {
-  identityDb,
   UserNotFoundError,
   EmailAuthNotFoundError,
   EmailTakenError,
+  emailAuthDb,
+  usersDb,
 } from "@saflib/identity-db";
 
 type ProfileUpdateRequest = components["schemas"]["User"];
@@ -24,8 +25,10 @@ export const updateProfile = createHandler(async (req, res) => {
   const currentUserId = user.id;
 
   // Get current user data to check if email is actually changing
-  const { result: currentUser, error: getUserError } =
-    await identityDb.users.getById(dbKey, currentUserId);
+  const { result: currentUser, error: getUserError } = await usersDb.getById(
+    dbKey,
+    currentUserId,
+  );
   if (getUserError) {
     switch (true) {
       case getUserError instanceof UserNotFoundError:
@@ -54,7 +57,7 @@ export const updateProfile = createHandler(async (req, res) => {
       Object.entries(nameFields).filter(([_, value]) => value !== undefined),
     );
 
-    const { result, error } = await identityDb.users.updateProfile(
+    const { result, error } = await usersDb.updateProfile(
       dbKey,
       currentUserId,
       profileParams,
@@ -72,7 +75,7 @@ export const updateProfile = createHandler(async (req, res) => {
 
   // Handle email update if provided and different from current email
   if (data.email && data.email !== currentUser.email) {
-    const { error: emailError } = await identityDb.emailAuth.updateEmail(
+    const { error: emailError } = await emailAuthDb.updateEmail(
       dbKey,
       currentUserId,
       data.email,

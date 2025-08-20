@@ -3,7 +3,7 @@ import { createHandler } from "@saflib/express";
 import { createUserResponse } from "./_helpers.ts";
 import type { AuthResponse, AuthRequest } from "@saflib/identity-spec";
 import { randomBytes } from "crypto";
-import { identityDb, EmailConflictError } from "@saflib/identity-db";
+import { usersDb, emailAuthDb, EmailConflictError } from "@saflib/identity-db";
 import { authServiceStorage } from "@saflib/identity-common";
 import { linkToHref } from "@saflib/links";
 import { authLinks } from "@saflib/identity-links";
@@ -17,7 +17,7 @@ export const registerHandler = createHandler(async (req, res) => {
 
   const passwordHash = await argon2.hash(password);
 
-  const { result: user, error } = await identityDb.users.create(dbKey, {
+  const { result: user, error } = await usersDb.create(dbKey, {
     email,
     name,
     givenName,
@@ -35,7 +35,7 @@ export const registerHandler = createHandler(async (req, res) => {
     }
   }
 
-  await identityDb.emailAuth.create(dbKey, {
+  await emailAuthDb.create(dbKey, {
     userId: user.id,
     email,
     passwordHash,
@@ -49,7 +49,7 @@ export const registerHandler = createHandler(async (req, res) => {
   const verificationToken = randomBytes(16).toString("hex");
   const verificationTokenExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours from now
 
-  await identityDb.emailAuth.updateVerificationToken(
+  await emailAuthDb.updateVerificationToken(
     dbKey,
     user.id,
     verificationToken,

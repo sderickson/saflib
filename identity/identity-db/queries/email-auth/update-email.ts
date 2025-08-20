@@ -6,7 +6,7 @@ import { eq } from "drizzle-orm";
 import type { ReturnsError } from "@saflib/monorepo";
 import { identityDbManager } from "../../instances.ts";
 
-type UpdateEmailResult = {
+export type UpdateEmailResult = {
   emailAuth: SelectEmailAuth;
 };
 

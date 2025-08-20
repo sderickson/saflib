@@ -1,6 +1,6 @@
 import { createHandler } from "@saflib/express";
 import { type AuthResponse } from "@saflib/identity-spec";
-import { identityDb, EmailAuthNotFoundError } from "@saflib/identity-db";
+import { emailAuthDb, EmailAuthNotFoundError } from "@saflib/identity-db";
 import { authServiceStorage } from "@saflib/identity-common";
 
 export const verifyHandler = createHandler(async (req, res) => {
@@ -42,8 +42,10 @@ export const verifyHandler = createHandler(async (req, res) => {
     );
 
     if (req.app.get("saf:admin emails").has(user.email)) {
-      const { result: emailAuth, error } =
-        await identityDb.emailAuth.getByEmail(dbKey, user.email);
+      const { result: emailAuth, error } = await emailAuthDb.getByEmail(
+        dbKey,
+        user.email,
+      );
       if (error) {
         switch (true) {
           case error instanceof EmailAuthNotFoundError:
