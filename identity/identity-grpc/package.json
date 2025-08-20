@@ -1,0 +1,28 @@
+{
+  "name": "@saflib/identity-grpc",
+  "description": "gRPC server for identity service",
+  "type": "module",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc"
+  },
+  "dependencies": {
+    "@saflib/grpc": "*",
+    "@saflib/identity-common": "*",
+    "@saflib/identity-db": "*",
+    "@saflib/identity-rpcs": "*",
+    "@saflib/monorepo": "*"
+  },
+  "devDependencies": {
+    "@saflib/monorepo": "*",
+    "@saflib/vitest": "*"
+  },
+  "saflib": {
+    "group": "auth"
+  }
+}

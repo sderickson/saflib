@@ -1,0 +1,23 @@
+{
+  "name": "@saflib/identity-common",
+  "description": "Shared authentication code for identity service",
+  "type": "module",
+  "main": "index.ts",
+  "saflib": {
+    "group": "auth"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "generate": "drizzle-kit generate",
+    "typecheck": "tsc"
+  },
+  "dependencies": {
+    "@saflib/drizzle-sqlite3": "*"
+  },
+  "devDependencies": {
+    "@saflib/vitest": "*",
+    "@saflib/monorepo": "*"
+  }
+}
