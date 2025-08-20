@@ -1,5 +1,5 @@
 {
-  "name": "@saflib/identity-service",
+  "name": "@saflib/identity",
   "description": "Authentication service library for SAF-2025 framework",
   "type": "module",
   "exports": {
