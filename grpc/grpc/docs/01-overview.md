@@ -2,6 +2,16 @@
 
 To make calls between themselves, SAF services use gRPC, for efficiency and backwards compatibility. Use `@saflib/grpc` to run gRPC service implementations.
 
+## Package Status
+
+I haven't used gRPCs nearly as much as other packages in SAF, so gRPC packages are underdeveloped. I have an idea where to take them, but it will take some time and experimentation to get there.
+
+TODOs:
+
+- Figure out how to share generate.sh between packages.
+- Nail down what rpc requests and responses should look like, particularly around errors.
+- Figure out how to do integration tests without running a grpc server.
+
 ## Package Structure
 
 Each package which depends on `@saflib/grpc` should have the following structure:
@@ -48,4 +58,4 @@ Each service should have an `index.ts` file which exports the service definition
 
 ### Public
 
-To specify the gRPC services a service provides, use `@saflib/grpc-specs`.
+To specify the gRPC services a service provides, use [`@saflib/grpc-specs`](../../grpc-specs/docs/overview.md).
