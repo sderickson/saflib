@@ -17,7 +17,7 @@
     "@saflib/email": "*",
     "@saflib/env": "*",
     "@saflib/express": "*",
-    "@saflib/grpc-node": "*",
+    "@saflib/grpc": "*",
     "@saflib/identity-db": "*",
     "@saflib/identity-links": "*",
     "@saflib/identity-rpcs": "*",

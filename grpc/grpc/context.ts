@@ -4,7 +4,7 @@ import type {
   handleUnaryCall,
   ServiceDefinition,
 } from "@grpc/grpc-js";
-import type { ServiceImplementationWrapper } from "@saflib/grpc-node";
+import type { ServiceImplementationWrapper } from "@saflib/grpc";
 import {
   type Auth,
   type SafContext,

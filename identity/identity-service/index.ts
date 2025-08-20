@@ -2,7 +2,7 @@ import { startExpressServer } from "@saflib/express";
 import { createApp } from "./http.ts";
 import { authDb } from "@saflib/identity-db";
 import { makeGrpcServer } from "./grpc.ts";
-import { startGrpcServer } from "@saflib/grpc-node";
+import { startGrpcServer } from "@saflib/grpc";
 import type { DbOptions } from "@saflib/drizzle-sqlite3";
 import type { User } from "@saflib/identity-db";
 import type { AuthServiceCallbacks } from "./types.ts";

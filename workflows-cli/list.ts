@@ -8,7 +8,7 @@ import monorepoWorkflows from "@saflib/monorepo/workflows";
 import vueSpaWorkflows from "@saflib/vue-spa/workflows";
 import expressWorkflows from "@saflib/express/workflows";
 import grpcSpecsWorkflows from "@saflib/grpc-specs/workflows";
-import grpcNodeWorkflows from "@saflib/grpc-node/workflows";
+import grpcNodeWorkflows from "@saflib/grpc/workflows";
 import nodeXstateWorkflows from "@saflib/node-xstate/workflows";
 import emailWorkflows from "@saflib/email/workflows";
 import { concreteWorkflowToMeta } from "@saflib/workflows";
