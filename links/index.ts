@@ -15,17 +15,12 @@ export type Link = {
 export type LinkMap = Record<string, Link>;
 
 /**
- * See linkToProps.
- */
-export type LinkProps = { href: string } | { to: string };
-
-/**
  * Given a Link object, return props which will work with vuetify components such as v-list-item and b-btn.
  * What is returned is based on the current domain; if the link is to the same subdomain, this returns a "to" prop,
  * otherwise it returns an "href" prop. That way a link will use vue-router wherever possible, to avoid full page
  * reloads.
  */
-export const linkToProps = (link: Link): LinkProps => {
+export const linkToProps = (link: Link) => {
   const currentSubdomain = document.location.hostname
     .split(".")
     .slice(0, -2)
