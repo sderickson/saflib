@@ -1,5 +1,5 @@
 import { createHandler } from "@saflib/express";
-import type { components } from "@saflib/identity-spec";
+import type { User } from "@saflib/identity-spec";
 import createError from "http-errors";
 import { authServiceStorage } from "@saflib/identity-common";
 import {
@@ -10,8 +10,8 @@ import {
   usersDb,
 } from "@saflib/identity-db";
 
-type ProfileUpdateRequest = components["schemas"]["User"];
-type ProfileResponse = components["schemas"]["User"];
+type ProfileUpdateRequest = User;
+type ProfileResponse = User;
 
 export const updateProfile = createHandler(async (req, res) => {
   const { dbKey } = authServiceStorage.getStore()!;
