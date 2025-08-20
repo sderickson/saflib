@@ -108,6 +108,7 @@ These packages assume the `identity` subdomain is the HTTP server, and the `auth
 
 Used only for internal development of the identity service.
 
+- [`@saflib/identity-common`](../../identity-common/docs/ref/index.md) - shared code for the identity service.
 - [`@saflib/identity-db`](../../identity-db/docs/ref/index.md) - the database for the identity service.
 - [`@saflib/identity-grpc`](../../identity-grpc/docs/ref/index.md) - the gRPC server for the identity service.
 - [`@saflib/identity-http`](../../identity-http/docs/ref/index.md) - the HTTP server for the identity service.
