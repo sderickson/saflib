@@ -36,3 +36,7 @@ This only ensures type safety; to ensure env variables passed in at runtime are 
 To do this, go to whichever package is doing the validating (likely a `service` package) and run `npm exec saf-env generate -- --combined`. This will produce an `env.schema.combined.json` file which, like `env.ts`, will include the schemas of all the dependencies as well as anything defined by the package itself. That package can then `validateSchema` at the beginning of the runtime to enforce the schema.
 
 The `generate` commands will update combined schemas that already exist. Use the `--combined` option just for generating them the first time.
+
+## Core Env Variables
+
+Some variables are so common throughout SAF, that this package provides them itself, so all packages have them available. See [Environmental Variables](./env/index.md) for the entire list.
