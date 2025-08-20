@@ -1,18 +1,31 @@
-export type LinkProps = { href: string } | { to: string };
 import { typedEnv } from "@saflib/env";
 
+/**
+ * A link to a page on a website, independent of the domain or protocol.
+ */
 export type Link = {
   subdomain: string;
   path: string;
   params?: string[];
 };
 
+/**
+ * A collection of links, keyed by a name.
+ */
 export type LinkMap = Record<string, Link>;
 
-// Based on the current domain, and if we're on the same subdomain, return props
-// which will work with vuetify components such as v-list-item and b-btn
-export const linkToProps = (link: Link) => {
-  // This works for {subdomain}.docker.localhost as well as prod domains
+/**
+ * See linkToProps.
+ */
+export type LinkProps = { href: string } | { to: string };
+
+/**
+ * Given a Link object, return props which will work with vuetify components such as v-list-item and b-btn.
+ * What is returned is based on the current domain; if the link is to the same subdomain, this returns a "to" prop,
+ * otherwise it returns an "href" prop. That way a link will use vue-router wherever possible, to avoid full page
+ * reloads.
+ */
+export const linkToProps = (link: Link): LinkProps => {
   const currentSubdomain = document.location.hostname
     .split(".")
     .slice(0, -2)
@@ -27,10 +40,17 @@ export const linkToProps = (link: Link) => {
   };
 };
 
+/**
+ * Options for creating a fully-qualified url.
+ */
 export interface LinkOptions {
   params?: Record<string, string>;
 }
 
+/**
+ * Given a Link object, return a fully-qualified url. Any provided params must
+ * be specified in the Link object.
+ */
 export const linkToHref = (link: Link, options?: LinkOptions): string => {
   let domain = "";
   let protocol = "";
@@ -55,6 +75,11 @@ export const linkToHref = (link: Link, options?: LinkOptions): string => {
   return `${protocol}//${link.subdomain ? `${link.subdomain}.` : ""}${domain}${path}`;
 };
 
+/**
+ * Simple utility to do a full page redirect to a link.
+ *
+ * TODO: This should use vue-router instead of window.location.href where possible.
+ */
 export const navigateToLink = (link: Link, options?: LinkOptions) => {
   const href = linkToHref(link, options);
   window.location.href = href;
