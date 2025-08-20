@@ -20,6 +20,9 @@ export interface IdentityRpcsEnvSchema {
    * The root domain of the deployment, e.g. 'saf.com'.
    */
   DOMAIN: string;
+  /**
+   * The port on which the gRPC server will listen, or the client will connect.
+   */
   IDENTITY_SERVICE_GRPC_PORT: string;
   /**
    * Whether to mock 3rd party integrations. Set to 'true' to mock. And integration packages should respect this setting.

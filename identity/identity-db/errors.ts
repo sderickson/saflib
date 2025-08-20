@@ -1,9 +1,9 @@
 import { HandledDatabaseError } from "@saflib/drizzle-sqlite3";
 
-export class AuthDatabaseError extends HandledDatabaseError {}
-export class EmailAuthNotFoundError extends AuthDatabaseError {}
-export class EmailTakenError extends AuthDatabaseError {}
-export class TokenNotFoundError extends AuthDatabaseError {}
-export class VerificationTokenNotFoundError extends AuthDatabaseError {}
-export class EmailConflictError extends AuthDatabaseError {}
-export class UserNotFoundError extends AuthDatabaseError {}
+export class IdentityDatabaseError extends HandledDatabaseError {}
+export class EmailAuthNotFoundError extends IdentityDatabaseError {}
+export class EmailTakenError extends IdentityDatabaseError {}
+export class TokenNotFoundError extends IdentityDatabaseError {}
+export class VerificationTokenNotFoundError extends IdentityDatabaseError {}
+export class EmailConflictError extends IdentityDatabaseError {}
+export class UserNotFoundError extends IdentityDatabaseError {}

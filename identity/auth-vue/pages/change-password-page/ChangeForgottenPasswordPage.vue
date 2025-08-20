@@ -79,7 +79,7 @@ import { useRoute } from "vue-router";
 import { useResetPassword } from "../../requests/auth";
 import { passwordRules } from "../../utils/rules";
 import { change_forgotten_password_page } from "./ChangeForgottenPasswordPage.strings";
-import { authLinks } from "@saflib/identity-links";
+import { authLinks } from "@saflib/auth-links";
 import { SpaLink } from "@saflib/vue-spa";
 
 const route = useRoute();

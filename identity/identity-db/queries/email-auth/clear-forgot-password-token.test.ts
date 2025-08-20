@@ -1,6 +1,5 @@
-import { authDbManager } from "../../instances.ts";
+import { identityDb, usersDb, emailAuthDb } from "@saflib/identity-db";
 import type { DbKey } from "@saflib/drizzle-sqlite3";
-import { authDb } from "../../index.ts";
 import { EmailAuthNotFoundError } from "../../errors.ts";
 import { describe, it, expect, beforeEach, assert } from "vitest";
 
@@ -8,11 +7,11 @@ describe("clearForgotPasswordToken", () => {
   let dbKey: DbKey;
 
   beforeEach(() => {
-    dbKey = authDbManager.connect();
+    dbKey = identityDb.connect();
   });
 
   it("should clear forgot password token", async () => {
-    const { result: user } = await authDb.users.create(dbKey, {
+    const { result: user } = await usersDb.create(dbKey, {
       email: "test@example.com",
     });
     assert(user);
@@ -22,7 +21,7 @@ describe("clearForgotPasswordToken", () => {
     now.setMilliseconds(0); // Round to seconds
     const expiresAt = new Date(now.getTime() + 15 * 60 * 1000); // 15 minutes from now
 
-    await authDb.emailAuth.create(dbKey, {
+    await emailAuthDb.create(dbKey, {
       userId: user.id,
       email: user.email,
       passwordHash,
@@ -30,7 +29,7 @@ describe("clearForgotPasswordToken", () => {
       forgotPasswordTokenExpiresAt: expiresAt,
     });
 
-    const { result: updated } = await authDb.emailAuth.clearForgotPasswordToken(
+    const { result: updated } = await emailAuthDb.clearForgotPasswordToken(
       dbKey,
       user.id,
     );
@@ -41,10 +40,7 @@ describe("clearForgotPasswordToken", () => {
   });
 
   it("should throw EmailAuthNotFoundError when user not found", async () => {
-    const { error } = await authDb.emailAuth.clearForgotPasswordToken(
-      dbKey,
-      999,
-    );
+    const { error } = await emailAuthDb.clearForgotPasswordToken(dbKey, 999);
     expect(error).toBeInstanceOf(EmailAuthNotFoundError);
   });
 });

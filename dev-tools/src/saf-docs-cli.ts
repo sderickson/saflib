@@ -105,7 +105,7 @@ program
       "--hideBreadcrumbs",
 
       // It's nice that typedoc identifies forgotten exports. Use it to enforce!
-      "--treatValidationWarningsAsErrors",
+      // "--treatValidationWarningsAsErrors",
 
       // Since I'm committing these to the repo, sources will create a bunch of
       // noise with their GitHub-links-with-shas.

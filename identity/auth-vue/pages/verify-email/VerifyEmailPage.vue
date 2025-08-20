@@ -106,7 +106,7 @@ import {
 } from "../../requests/auth";
 import { TanstackError } from "@saflib/vue-spa";
 import { linkToHref } from "@saflib/links";
-import { authLinks } from "@saflib/identity-links";
+import { authLinks } from "@saflib/auth-links";
 import { useQuery } from "@tanstack/vue-query";
 
 defineProps<{

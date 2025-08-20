@@ -1,0 +1,31 @@
+{
+  "name": "@saflib/identity",
+  "description": "Authentication service library for SAF-2025 framework",
+  "type": "module",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "scripts": {
+    "start": "node --experimental-strip-types ./bin/run.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "healthcheck": "node --experimental-strip-types ./bin/healthcheck",
+    "typecheck": "tsc"
+  },
+  "dependencies": {
+    "@saflib/auth-links": "*",
+    "@saflib/identity-db": "*",
+    "@saflib/identity-grpc": "*",
+    "@saflib/identity-http": "*",
+    "@saflib/identity-rpcs": "*",
+    "@saflib/identity-spec": "*"
+  },
+  "devDependencies": {
+    "@saflib/monorepo": "*",
+    "@saflib/vitest": "*"
+  },
+  "saflib": {
+    "group": "auth"
+  }
+}

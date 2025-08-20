@@ -10,13 +10,13 @@ import { stubGlobals, setupMockServer } from "@saflib/vue-spa/testing";
 // import { TemplateFile_page as strings } from "./TemplateFile.strings.ts";
 // import { getElementByString } from "@saflib/vue-spa/testing";
 import { http, HttpResponse } from "msw";
-import type { AuthResponse } from "@saflib/identity-spec"; // TODO: import the appropriate spec
+import type { AuthResponseBody } from "@saflib/identity-spec"; // TODO: import the appropriate spec
 // import { mountTestApp } from "../../test-app.ts";
 
 // TODO: update with mock responses for the actual API calls made in the loader
 const handlers = [
   http.get("http://identity.localhost:3000/users", () => {
-    return HttpResponse.json([] satisfies AuthResponse["listUsers"]["200"]); // TODO: enforce the correct response type
+    return HttpResponse.json([] satisfies AuthResponseBody["listUsers"]["200"]); // TODO: enforce the correct response type
   }),
 ];
 

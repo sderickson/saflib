@@ -11,11 +11,11 @@ import { router } from "../../router.ts";
 import { getElementByString } from "../../../../testing/string-utils.ts";
 import type { Component } from "vue";
 import { http, HttpResponse } from "msw";
-import type { AuthResponse } from "@saflib/identity-spec"; // TODO: import the appropriate spec
+import type { AuthResponseBody } from "@saflib/identity-spec"; // TODO: import the appropriate spec
 
 const handlers = [
   http.get("http://identity.localhost:3000/users", () => {
-    return HttpResponse.json([] satisfies AuthResponse["listUsers"]["200"]); // TODO: enforce the correct response type
+    return HttpResponse.json([] satisfies AuthResponseBody["listUsers"]["200"]); // TODO: enforce the correct response type
   }),
 ];
 

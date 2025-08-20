@@ -1,12 +1,12 @@
-import { authDbManager } from "../../instances.ts";
+import { identityDbManager } from "../../instances.ts";
 import { describe, it, expect, beforeEach } from "vitest";
-import { authDb } from "../../index.ts";
+import { usersDb } from "@saflib/identity-db";
 import type { DbKey } from "@saflib/drizzle-sqlite3";
 describe("getAll", () => {
   let dbKey: DbKey;
 
   beforeEach(() => {
-    dbKey = authDbManager.connect();
+    dbKey = identityDbManager.connect();
   });
 
   it("should return all users", async () => {
@@ -23,11 +23,9 @@ describe("getAll", () => {
       },
     ];
 
-    await Promise.all(
-      testUsers.map((user) => authDb.users.create(dbKey, user)),
-    );
+    await Promise.all(testUsers.map((user) => usersDb.create(dbKey, user)));
 
-    const result = await authDb.users.getAll(dbKey);
+    const result = await usersDb.getAll(dbKey);
     expect(result).toHaveLength(2);
     expect(result.map((u) => u.email)).toEqual(
       expect.arrayContaining(testUsers.map((u) => u.email)),
@@ -35,7 +33,7 @@ describe("getAll", () => {
   });
 
   it("should return empty array when no users exist", async () => {
-    const result = await authDb.users.getAll(dbKey);
+    const result = await usersDb.getAll(dbKey);
     expect(result).toEqual([]);
   });
 });

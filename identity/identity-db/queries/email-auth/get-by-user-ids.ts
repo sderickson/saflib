@@ -1,8 +1,8 @@
 import { queryWrapper } from "@saflib/drizzle-sqlite3";
 import type { SelectEmailAuth } from "../../types.ts";
-import { emailAuth } from "../../schema.ts";
+import { emailAuth } from "../../schemas/index.ts";
 import { inArray } from "drizzle-orm";
-import { authDbManager } from "../../instances.ts";
+import { identityDbManager } from "../../instances.ts";
 import type { DbKey } from "@saflib/drizzle-sqlite3";
 
 export const getEmailAuthByUserIds = queryWrapper(
@@ -10,7 +10,7 @@ export const getEmailAuthByUserIds = queryWrapper(
     if (ids.length === 0) {
       return [];
     }
-    const db = authDbManager.get(dbKey)!;
+    const db = identityDbManager.get(dbKey)!;
     const result = await db
       .select()
       .from(emailAuth)

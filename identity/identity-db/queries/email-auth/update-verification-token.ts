@@ -1,9 +1,9 @@
 import { queryWrapper } from "@saflib/drizzle-sqlite3";
 import type { SelectEmailAuth } from "../../types.ts";
-import { emailAuth } from "../../schema.ts";
+import { emailAuth } from "../../schemas/index.ts";
 import { EmailAuthNotFoundError } from "../../errors.ts";
 import { eq } from "drizzle-orm";
-import { authDbManager } from "../../instances.ts";
+import { identityDbManager } from "../../instances.ts";
 import type { DbKey } from "@saflib/drizzle-sqlite3";
 import type { ReturnsError } from "@saflib/monorepo";
 export const updateVerificationToken = queryWrapper(
@@ -13,7 +13,7 @@ export const updateVerificationToken = queryWrapper(
     verificationToken: string,
     verificationTokenExpiresAt: Date,
   ): Promise<ReturnsError<SelectEmailAuth, EmailAuthNotFoundError>> => {
-    const db = authDbManager.get(dbKey)!;
+    const db = identityDbManager.get(dbKey)!;
     const result = await db
       .update(emailAuth)
       .set({
