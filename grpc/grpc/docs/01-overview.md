@@ -37,7 +37,7 @@ Each package which depends on `@saflib/grpc` should have the following structure
 
 This file contains the [AsyncLocalStorage](https://nodejs.org/api/async_context.html#asynclocalstorageenterwithstore) used by rpcs the gRPC service.
 
-See [@saflib/express](../express/docs/01-overview.md#contextts) for more details.
+See [@saflib/express](../../../express/docs/01-overview.md#contextts) for more details.
 
 ### `grpc.ts`
 
