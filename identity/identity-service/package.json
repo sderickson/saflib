@@ -19,6 +19,8 @@
     "@saflib/express": "*",
     "@saflib/grpc": "*",
     "@saflib/identity-db": "*",
+    "@saflib/identity-grpc": "*",
+    "@saflib/identity-http": "*",
     "@saflib/identity-links": "*",
     "@saflib/identity-rpcs": "*",
     "@saflib/identity-spec": "*",

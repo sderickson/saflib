@@ -4,7 +4,7 @@ import type { SelectEmailAuth } from "../../types.ts";
 import { EmailAuthNotFoundError } from "../../errors.ts";
 import { eq } from "drizzle-orm";
 import type { ReturnsError } from "@saflib/monorepo";
-import { authDbManager } from "../../instances.ts";
+import { identityDbManager } from "../../instances.ts";
 
 export const updatePassword = queryWrapper(
   async (
@@ -12,7 +12,7 @@ export const updatePassword = queryWrapper(
     userId: number,
     passwordHash: Uint8Array,
   ): Promise<ReturnsError<SelectEmailAuth, EmailAuthNotFoundError>> => {
-    const db = authDbManager.get(dbKey)!;
+    const db = identityDbManager.get(dbKey)!;
     const result = await db
       .update(emailAuth)
       .set({ passwordHash })

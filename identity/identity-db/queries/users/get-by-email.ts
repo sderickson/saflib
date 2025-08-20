@@ -2,7 +2,7 @@ import { type DbKey, queryWrapper } from "@saflib/drizzle-sqlite3";
 import { UserNotFoundError } from "../../errors.ts";
 import { users } from "../../schema.ts";
 import type { User } from "../../types.ts";
-import { authDbManager } from "../../instances.ts";
+import { identityDbManager } from "../../instances.ts";
 import { eq } from "drizzle-orm";
 import type { ReturnsError } from "@saflib/monorepo";
 
@@ -11,7 +11,7 @@ export const getByEmail = queryWrapper(
     dbKey: DbKey,
     email: string,
   ): Promise<ReturnsError<User, UserNotFoundError>> => {
-    const db = authDbManager.get(dbKey)!;
+    const db = identityDbManager.get(dbKey)!;
     const result = await db.query.users.findFirst({
       where: eq(users.email, email),
     });

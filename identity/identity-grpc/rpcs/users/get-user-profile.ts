@@ -1,6 +1,6 @@
 import { status } from "@grpc/grpc-js";
 import { authServiceStorage } from "@saflib/identity-common";
-import { authDb } from "@saflib/identity-db";
+import { identityDb } from "@saflib/identity-db";
 import { users, timestamp } from "@saflib/identity-rpcs";
 
 export const handleGetUserProfile: users.UnimplementedUsersService["GetUserProfile"] =
@@ -21,8 +21,8 @@ export const handleGetUserProfile: users.UnimplementedUsersService["GetUserProfi
 
     // Get email auth by user ID
     const [emailAuths, user] = await Promise.all([
-      authDb.emailAuth.getEmailAuthByUserIds(dbKey, [userId]),
-      authDb.users.getById(dbKey, userId),
+      identityDb.emailAuth.getEmailAuthByUserIds(dbKey, [userId]),
+      identityDb.users.getById(dbKey, userId),
     ]);
     const emailAuth = emailAuths[0];
 

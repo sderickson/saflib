@@ -1,14 +1,14 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { authDbManager } from "../../instances.ts";
+import { identityDbManager } from "../../instances.ts";
 import type { DbKey } from "@saflib/drizzle-sqlite3";
-import { authDb } from "../../index.ts";
+import { identityDb } from "../../index.ts";
 import { UserNotFoundError } from "../../errors.ts";
 
 describe("updateProfile", () => {
   let dbKey: DbKey;
 
   beforeEach(() => {
-    dbKey = authDbManager.connect();
+    dbKey = identityDbManager.connect();
   });
 
   it("should update user profile fields successfully", async () => {
@@ -18,7 +18,7 @@ describe("updateProfile", () => {
       createdAt: new Date(),
     };
 
-    const { result: created } = await authDb.users.create(dbKey, user);
+    const { result: created } = await identityDb.users.create(dbKey, user);
 
     const updateParams = {
       name: "Updated Name",
@@ -26,7 +26,7 @@ describe("updateProfile", () => {
       familyName: "Doe",
     };
 
-    const { result: updated } = await authDb.users.updateProfile(
+    const { result: updated } = await identityDb.users.updateProfile(
       dbKey,
       created!.id,
       updateParams,
@@ -46,13 +46,13 @@ describe("updateProfile", () => {
       createdAt: new Date(),
     };
 
-    const { result: created } = await authDb.users.create(dbKey, user);
+    const { result: created } = await identityDb.users.create(dbKey, user);
 
     const updateParams = {
       givenName: "Jane",
     };
 
-    const { result: updated } = await authDb.users.updateProfile(
+    const { result: updated } = await identityDb.users.updateProfile(
       dbKey,
       created!.id,
       updateParams,
@@ -69,7 +69,7 @@ describe("updateProfile", () => {
       name: "Updated Name",
     };
 
-    const { error } = await authDb.users.updateProfile(
+    const { error } = await identityDb.users.updateProfile(
       dbKey,
       999,
       updateParams,

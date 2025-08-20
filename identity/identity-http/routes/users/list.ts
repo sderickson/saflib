@@ -1,14 +1,14 @@
 import type { AuthResponse } from "@saflib/identity-spec";
 import { createHandler } from "@saflib/express";
-import { authDb } from "@saflib/identity-db";
+import { identityDb } from "@saflib/identity-db";
 import { authServiceStorage } from "@saflib/identity-common";
 // Define types using Drizzle's inferSelect
 export const listUsersHandler = createHandler(async (_, res) => {
   const { dbKey } = authServiceStorage.getStore()!;
-  const users = await authDb.users.getAll(dbKey);
+  const users = await identityDb.users.getAll(dbKey);
 
   const userIds = users.map((u) => u.id);
-  const emailAuths = await authDb.emailAuth.getEmailAuthByUserIds(
+  const emailAuths = await identityDb.emailAuth.getEmailAuthByUserIds(
     dbKey,
     userIds,
   );

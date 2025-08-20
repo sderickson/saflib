@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-import { startAuthService } from "../index.ts";
+import { startIdentityService } from "../index.ts";
 
-startAuthService({
+startIdentityService({
   dbOptions: {
     onDisk: true,
   },

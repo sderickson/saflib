@@ -1,8 +1,0 @@
-# Permissions configuration for auth-service
-# This file defines the available permissions and their descriptions
-
-permissions:
-  admin:
-    description: "Full system access with all privileges"
-    scopes:
-      - "*" # Wildcard scope indicating all permissions

@@ -1,7 +1,7 @@
 import { randomBytes } from "crypto";
 import { createHandler } from "@saflib/express";
 import type { AuthResponse, AuthRequest } from "@saflib/identity-spec";
-import { authDb, UserNotFoundError } from "@saflib/identity-db";
+import { identityDb, UserNotFoundError } from "@saflib/identity-db";
 import { authServiceStorage } from "@saflib/identity-common";
 import { linkToHref } from "@saflib/links";
 import { authLinks } from "@saflib/identity-links";
@@ -9,7 +9,10 @@ import { authLinks } from "@saflib/identity-links";
 export const forgotPasswordHandler = createHandler(async (req, res) => {
   const { email } = req.body as AuthRequest["forgotPassword"];
   const { dbKey, callbacks } = authServiceStorage.getStore()!;
-  const { result: user, error } = await authDb.users.getByEmail(dbKey, email);
+  const { result: user, error } = await identityDb.users.getByEmail(
+    dbKey,
+    email,
+  );
 
   const commonResponse: AuthResponse["forgotPassword"][200] = {
     success: true,
@@ -29,7 +32,7 @@ export const forgotPasswordHandler = createHandler(async (req, res) => {
   const token = randomBytes(8).toString("hex");
   const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes from now
 
-  await authDb.emailAuth.updateForgotPasswordToken(
+  await identityDb.emailAuth.updateForgotPasswordToken(
     dbKey,
     user.id,
     token,

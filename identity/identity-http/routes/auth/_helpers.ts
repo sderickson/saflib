@@ -1,4 +1,4 @@
-import { authDb } from "@saflib/identity-db";
+import { identityDb } from "@saflib/identity-db";
 import { type User } from "../../types.ts";
 import { type components } from "@saflib/identity-spec";
 import type { DbKey } from "@saflib/drizzle-sqlite3";
@@ -8,7 +8,7 @@ export async function getUserScopes(
   dbKey: DbKey,
   userId: number,
 ): Promise<string[]> {
-  const permissions = await authDb.permissions.getByUserId(dbKey, userId);
+  const permissions = await identityDb.permissions.getByUserId(dbKey, userId);
   return permissions.map((p) => p.permission);
 }
 

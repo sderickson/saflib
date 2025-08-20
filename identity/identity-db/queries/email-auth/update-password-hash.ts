@@ -1,6 +1,6 @@
 import { queryWrapper } from "@saflib/drizzle-sqlite3";
 import { emailAuth } from "../../schema.ts";
-import { authDbManager } from "../../instances.ts";
+import { identityDbManager } from "../../instances.ts";
 import type { DbKey } from "@saflib/drizzle-sqlite3";
 import type { SelectEmailAuth } from "../../types.ts";
 import { EmailAuthNotFoundError } from "../../errors.ts";
@@ -13,7 +13,7 @@ export const updatePasswordHash = queryWrapper(
     userId: number,
     passwordHash: Uint8Array,
   ): Promise<ReturnsError<SelectEmailAuth, EmailAuthNotFoundError>> => {
-    const db = authDbManager.get(dbKey)!;
+    const db = identityDbManager.get(dbKey)!;
     const result = await db
       .update(emailAuth)
       .set({ passwordHash })

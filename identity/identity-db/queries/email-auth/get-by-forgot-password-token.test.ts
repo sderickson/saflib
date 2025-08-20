@@ -1,6 +1,6 @@
-import { authDbManager } from "../../instances.ts";
+import { identityDbManager } from "../../instances.ts";
 import type { DbKey } from "@saflib/drizzle-sqlite3";
-import { authDb } from "../../index.ts";
+import { identityDb } from "../../index.ts";
 import { TokenNotFoundError } from "../../errors.ts";
 import { describe, it, expect, beforeEach, assert } from "vitest";
 
@@ -8,11 +8,11 @@ describe("getByForgotPasswordToken", () => {
   let dbKey: DbKey;
 
   beforeEach(() => {
-    dbKey = authDbManager.connect();
+    dbKey = identityDbManager.connect();
   });
 
   it("should get email auth by forgot password token", async () => {
-    const { result: user } = await authDb.users.create(dbKey, {
+    const { result: user } = await identityDb.users.create(dbKey, {
       email: "test@example.com",
     });
     assert(user);
@@ -23,7 +23,7 @@ describe("getByForgotPasswordToken", () => {
     now.setMilliseconds(0); // Round to seconds
     const expiresAt = new Date(now.getTime() + 15 * 60 * 1000); // 15 minutes from now
 
-    await authDb.emailAuth.create(dbKey, {
+    await identityDb.emailAuth.create(dbKey, {
       userId: user.id,
       email: user.email,
       passwordHash,
@@ -31,10 +31,8 @@ describe("getByForgotPasswordToken", () => {
       forgotPasswordTokenExpiresAt: expiresAt,
     });
 
-    const { result: auth } = await authDb.emailAuth.getByForgotPasswordToken(
-      dbKey,
-      token,
-    );
+    const { result: auth } =
+      await identityDb.emailAuth.getByForgotPasswordToken(dbKey, token);
     expect(auth).toMatchObject({
       userId: user.id,
       email: user.email,
@@ -44,7 +42,7 @@ describe("getByForgotPasswordToken", () => {
   });
 
   it("should throw TokenNotFoundError when token not found", async () => {
-    const { error } = await authDb.emailAuth.getByForgotPasswordToken(
+    const { error } = await identityDb.emailAuth.getByForgotPasswordToken(
       dbKey,
       "nonexistent-token",
     );

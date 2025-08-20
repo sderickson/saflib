@@ -1,7 +1,10 @@
 import { createHandler } from "@saflib/express";
 import { createUserResponse } from "./_helpers.ts";
 import { type AuthResponse } from "@saflib/identity-spec";
-import { authDb, VerificationTokenNotFoundError } from "@saflib/identity-db";
+import {
+  identityDb,
+  VerificationTokenNotFoundError,
+} from "@saflib/identity-db";
 import { authServiceStorage } from "@saflib/identity-common";
 import { throwError } from "@saflib/monorepo";
 
@@ -10,7 +13,7 @@ export const verifyEmailHandler = createHandler(async (req, res) => {
   const { dbKey } = authServiceStorage.getStore()!;
 
   const { result: emailAuth, error } =
-    await authDb.emailAuth.getByVerificationToken(dbKey, token);
+    await identityDb.emailAuth.getByVerificationToken(dbKey, token);
   if (error) {
     switch (true) {
       case error instanceof VerificationTokenNotFoundError:
@@ -48,9 +51,11 @@ export const verifyEmailHandler = createHandler(async (req, res) => {
     return;
   }
 
-  await authDb.emailAuth.verifyEmail(dbKey, emailAuth.userId);
+  await identityDb.emailAuth.verifyEmail(dbKey, emailAuth.userId);
 
-  const user = await throwError(authDb.users.getById(dbKey, emailAuth.userId));
+  const user = await throwError(
+    identityDb.users.getById(dbKey, emailAuth.userId),
+  );
   const userResponse = await createUserResponse(dbKey, user);
 
   const successResponse: AuthResponse["verifyEmail"][200] = userResponse;

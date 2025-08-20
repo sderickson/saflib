@@ -3,7 +3,7 @@ import type { components } from "@saflib/identity-spec";
 import createError from "http-errors";
 import { authServiceStorage } from "@saflib/identity-common";
 import {
-  authDb,
+  identityDb,
   UserNotFoundError,
   EmailAuthNotFoundError,
   EmailTakenError,
@@ -25,7 +25,7 @@ export const updateProfile = createHandler(async (req, res) => {
 
   // Get current user data to check if email is actually changing
   const { result: currentUser, error: getUserError } =
-    await authDb.users.getById(dbKey, currentUserId);
+    await identityDb.users.getById(dbKey, currentUserId);
   if (getUserError) {
     switch (true) {
       case getUserError instanceof UserNotFoundError:
@@ -54,7 +54,7 @@ export const updateProfile = createHandler(async (req, res) => {
       Object.entries(nameFields).filter(([_, value]) => value !== undefined),
     );
 
-    const { result, error } = await authDb.users.updateProfile(
+    const { result, error } = await identityDb.users.updateProfile(
       dbKey,
       currentUserId,
       profileParams,
@@ -72,7 +72,7 @@ export const updateProfile = createHandler(async (req, res) => {
 
   // Handle email update if provided and different from current email
   if (data.email && data.email !== currentUser.email) {
-    const { error: emailError } = await authDb.emailAuth.updateEmail(
+    const { error: emailError } = await identityDb.emailAuth.updateEmail(
       dbKey,
       currentUserId,
       data.email,

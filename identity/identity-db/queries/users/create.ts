@@ -1,7 +1,7 @@
 import { type DbKey, queryWrapper } from "@saflib/drizzle-sqlite3";
 import type { User } from "../../types.ts";
 import type { NewUser } from "../../types.ts";
-import { authDbManager } from "../../instances.ts";
+import { identityDbManager } from "../../instances.ts";
 import { EmailConflictError } from "../../errors.ts";
 import { users } from "../../schema.ts";
 import type { ReturnsError } from "@saflib/monorepo";
@@ -11,7 +11,7 @@ export const create = queryWrapper(
     dbKey: DbKey,
     user: NewUser,
   ): Promise<ReturnsError<User, EmailConflictError>> => {
-    const db = authDbManager.get(dbKey)!;
+    const db = identityDbManager.get(dbKey)!;
     const now = new Date();
     try {
       const result = await db

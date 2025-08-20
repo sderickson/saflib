@@ -1,11 +1,11 @@
-import { authDb } from "@saflib/identity-db";
+import { identityDb } from "@saflib/identity-db";
 import { createErrorMiddleware, createGlobalMiddleware } from "@saflib/express";
 import express from "express";
 import { makeAuthRouter } from "./routes/auth/index.ts";
 import { makeUsersRouter } from "./routes/users/index.ts";
 import {
   authServiceStorage,
-  type AuthServerOptions,
+  type IdentityServerOptions,
 } from "@saflib/identity-common";
 import { createEmailsRouter } from "@saflib/email";
 import { typedEnv } from "./env.ts";
@@ -19,10 +19,10 @@ declare global {
   }
 }
 
-export function createApp(options: AuthServerOptions) {
+export function createApp(options: IdentityServerOptions) {
   let dbKey = options.dbKey;
   if (!dbKey) {
-    dbKey = authDb.connect();
+    dbKey = identityDb.connect();
   }
 
   const app = express();

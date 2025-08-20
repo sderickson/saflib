@@ -1,6 +1,6 @@
-import { authDbManager } from "../../instances.ts";
+import { identityDbManager } from "../../instances.ts";
 import type { DbKey } from "@saflib/drizzle-sqlite3";
-import { authDb } from "../../index.ts";
+import { identityDb } from "../../index.ts";
 import { EmailAuthNotFoundError } from "../../errors.ts";
 import { describe, it, expect, beforeEach, assert } from "vitest";
 
@@ -8,11 +8,11 @@ describe("verifyEmail", () => {
   let dbKey: DbKey;
 
   beforeEach(() => {
-    dbKey = authDbManager.connect();
+    dbKey = identityDbManager.connect();
   });
 
   it("should verify email and clear verification token", async () => {
-    const { result: user } = await authDb.users.create(dbKey, {
+    const { result: user } = await identityDb.users.create(dbKey, {
       email: "test@example.com",
     });
     assert(user);
@@ -23,7 +23,7 @@ describe("verifyEmail", () => {
     now.setMilliseconds(0);
     const expiresAt = new Date(now.getTime() + 15 * 60 * 1000); // 15 minutes from now
 
-    await authDb.emailAuth.create(dbKey, {
+    await identityDb.emailAuth.create(dbKey, {
       userId: user.id,
       email: user.email,
       passwordHash,
@@ -31,7 +31,7 @@ describe("verifyEmail", () => {
       verificationTokenExpiresAt: expiresAt,
     });
 
-    const { result: updated } = await authDb.emailAuth.verifyEmail(
+    const { result: updated } = await identityDb.emailAuth.verifyEmail(
       dbKey,
       user.id,
     );
@@ -43,7 +43,7 @@ describe("verifyEmail", () => {
   });
 
   it("should throw EmailAuthNotFoundError when user not found", async () => {
-    const { error } = await authDb.emailAuth.verifyEmail(dbKey, 999);
+    const { error } = await identityDb.emailAuth.verifyEmail(dbKey, 999);
     expect(error).toBeInstanceOf(EmailAuthNotFoundError);
   });
 });

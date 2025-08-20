@@ -1,6 +1,6 @@
-import { authDbManager } from "../../instances.ts";
+import { identityDbManager } from "../../instances.ts";
 import type { DbKey } from "@saflib/drizzle-sqlite3";
-import { authDb } from "../../index.ts";
+import { identityDb } from "../../index.ts";
 import { VerificationTokenNotFoundError } from "../../errors.ts";
 import { describe, it, expect, beforeEach, assert } from "vitest";
 
@@ -8,11 +8,11 @@ describe("getByVerificationToken", () => {
   let dbKey: DbKey;
 
   beforeEach(() => {
-    dbKey = authDbManager.connect();
+    dbKey = identityDbManager.connect();
   });
 
   it("should get email auth by verification token", async () => {
-    const { result: user } = await authDb.users.create(dbKey, {
+    const { result: user } = await identityDb.users.create(dbKey, {
       email: "test@example.com",
     });
     assert(user);
@@ -22,7 +22,7 @@ describe("getByVerificationToken", () => {
     now.setMilliseconds(0);
     const expiresAt = new Date(now.getTime() + 15 * 60 * 1000); // 15 minutes from now
 
-    await authDb.emailAuth.create(dbKey, {
+    await identityDb.emailAuth.create(dbKey, {
       userId: user.id,
       email: user.email,
       passwordHash,
@@ -30,7 +30,7 @@ describe("getByVerificationToken", () => {
       verificationTokenExpiresAt: expiresAt,
     });
 
-    const { result: auth } = await authDb.emailAuth.getByVerificationToken(
+    const { result: auth } = await identityDb.emailAuth.getByVerificationToken(
       dbKey,
       token,
     );
@@ -43,7 +43,7 @@ describe("getByVerificationToken", () => {
   });
 
   it("should throw VerificationTokenNotFoundError when token not found", async () => {
-    const { error } = await authDb.emailAuth.getByVerificationToken(
+    const { error } = await identityDb.emailAuth.getByVerificationToken(
       dbKey,
       "nonexistent-token",
     );

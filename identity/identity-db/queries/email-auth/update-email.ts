@@ -4,7 +4,7 @@ import type { SelectEmailAuth } from "../../types.ts";
 import { EmailAuthNotFoundError, EmailTakenError } from "../../errors.ts";
 import { eq } from "drizzle-orm";
 import type { ReturnsError } from "@saflib/monorepo";
-import { authDbManager } from "../../instances.ts";
+import { identityDbManager } from "../../instances.ts";
 
 type UpdateEmailResult = {
   emailAuth: SelectEmailAuth;
@@ -18,7 +18,7 @@ export const updateEmail = queryWrapper(
   ): Promise<
     ReturnsError<UpdateEmailResult, EmailAuthNotFoundError | EmailTakenError>
   > => {
-    const db = authDbManager.get(dbKey)!;
+    const db = identityDbManager.get(dbKey)!;
 
     const existingEmailAuth = await db.query.emailAuth.findFirst({
       where: eq(emailAuth.email, newEmail),

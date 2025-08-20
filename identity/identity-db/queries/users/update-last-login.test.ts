@@ -1,14 +1,14 @@
 import { vi, describe, it, expect, beforeEach } from "vitest";
-import { authDbManager } from "../../instances.ts";
+import { identityDbManager } from "../../instances.ts";
 import type { DbKey } from "@saflib/drizzle-sqlite3";
-import { authDb } from "../../index.ts";
+import { identityDb } from "../../index.ts";
 import { UserNotFoundError } from "../../errors.ts";
 
 describe("updateLastLogin", () => {
   let dbKey: DbKey;
 
   beforeEach(() => {
-    dbKey = authDbManager.connect();
+    dbKey = identityDbManager.connect();
   });
 
   it("should update last login timestamp", async () => {
@@ -19,10 +19,13 @@ describe("updateLastLogin", () => {
       createdAt: new Date(),
     };
 
-    const { result: created } = await authDb.users.create(dbKey, user);
+    const { result: created } = await identityDb.users.create(dbKey, user);
     const now = new Date();
     vi.setSystemTime(now.setDate(now.getDate() + 1));
-    const { result } = await authDb.users.updateLastLogin(dbKey, created!.id);
+    const { result } = await identityDb.users.updateLastLogin(
+      dbKey,
+      created!.id,
+    );
     expect(result).toBeDefined();
     expect(result?.lastLoginAt).toBeInstanceOf(Date);
     expect(result?.lastLoginAt?.getTime()).toBeGreaterThan(
@@ -32,7 +35,7 @@ describe("updateLastLogin", () => {
   });
 
   it("should throw UserNotFoundError when id not found", async () => {
-    const { error } = await authDb.users.updateLastLogin(dbKey, 999);
+    const { error } = await identityDb.users.updateLastLogin(dbKey, 999);
     expect(error).toBeInstanceOf(UserNotFoundError);
   });
 });

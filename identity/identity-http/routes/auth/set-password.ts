@@ -1,7 +1,7 @@
 import * as argon2 from "argon2";
 import { createHandler } from "@saflib/express";
 import type { AuthRequest, AuthResponse } from "@saflib/identity-spec";
-import { authDb, EmailAuthNotFoundError } from "@saflib/identity-db";
+import { identityDb, EmailAuthNotFoundError } from "@saflib/identity-db";
 import { authServiceStorage } from "@saflib/identity-common";
 
 export const setPassword = createHandler(async (req, res) => {
@@ -18,7 +18,7 @@ export const setPassword = createHandler(async (req, res) => {
   const { currentPassword, newPassword } = data;
 
   // Get the user's current email auth record to verify current password
-  const { result: emailAuth, error } = await authDb.emailAuth.getByEmail(
+  const { result: emailAuth, error } = await identityDb.emailAuth.getByEmail(
     dbKey,
     req.user.email,
   );
@@ -53,7 +53,7 @@ export const setPassword = createHandler(async (req, res) => {
   // Hash the new password and update it
   const newPasswordHash = await argon2.hash(newPassword);
 
-  await authDb.emailAuth.updatePassword(
+  await identityDb.emailAuth.updatePassword(
     dbKey,
     req.user.id,
     Buffer.from(newPasswordHash),

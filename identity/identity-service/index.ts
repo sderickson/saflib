@@ -1,26 +1,41 @@
 import { startExpressServer } from "@saflib/express";
-import { createApp } from "./http.ts";
-import { authDb } from "@saflib/identity-db";
-import { makeGrpcServer } from "./grpc.ts";
+import { createApp } from "@saflib/identity-http";
+import { identityDb } from "@saflib/identity-db";
+import { makeGrpcServer } from "@saflib/identity-grpc";
 import { startGrpcServer } from "@saflib/grpc";
 import type { DbOptions } from "@saflib/drizzle-sqlite3";
 import type { User } from "@saflib/identity-db";
-import type { AuthServiceCallbacks } from "./types.ts";
+import type { IdentityServiceCallbacks } from "@saflib/identity-common";
 import { makeSubsystemReporters } from "@saflib/node";
-import { typedEnv } from "./env.ts";
-export * from "./types.ts";
+import { typedEnv } from "@saflib/identity-http";
 
-interface StartAuthServiceOptions {
+/**
+ * Callbacks for events which occur in the auth service.
+ */
+export type { IdentityServiceCallbacks };
+
+/**
+ * Options for starting the auth service, including both HTTP and gRPC servers.
+ */
+export interface StartIdentityServiceOptions {
   dbOptions?: DbOptions;
-  callbacks?: AuthServiceCallbacks;
+  callbacks?: IdentityServiceCallbacks;
 }
 
-export async function startAuthService(options?: StartAuthServiceOptions) {
-  const { log, logError } = makeSubsystemReporters("init", "startAuthService");
+/**
+ * Start the auth service, including both HTTP and gRPC servers.
+ */
+export async function startIdentityService(
+  options?: StartIdentityServiceOptions,
+) {
+  const { log, logError } = makeSubsystemReporters(
+    "init",
+    "startIdentityService",
+  );
   try {
-    log.info("Starting auth service...");
-    log.info("Connecting to auth DB...");
-    const dbKey = authDb.connect(options?.dbOptions);
+    log.info("Starting identity service...");
+    log.info("Connecting to identity DB...");
+    const dbKey = identityDb.connect(options?.dbOptions);
     log.info("Starting gRPC server...");
     const grpcServer = makeGrpcServer({
       dbKey,
@@ -35,11 +50,14 @@ export async function startAuthService(options?: StartAuthServiceOptions) {
     startExpressServer(app, {
       port: parseInt(typedEnv.IDENTITY_SERVICE_HTTP_PORT, 10),
     });
-    log.info("Auth service startup complete.");
+    log.info("Identity service startup complete.");
   } catch (error) {
     logError(error);
     console.error(error);
   }
 }
 
+/**
+ * The underlying user model, provided to callbacks.
+ */
 export type { User };

@@ -1,14 +1,14 @@
 import type { DbKey } from "@saflib/drizzle-sqlite3";
-import { authDbManager } from "../../instances.ts";
+import { identityDbManager } from "../../instances.ts";
 import { describe, it, expect, beforeEach } from "vitest";
 import { EmailConflictError } from "../../errors.ts";
-import { authDb } from "../../index.ts";
+import { identityDb } from "../../index.ts";
 
 describe("create", () => {
   let dbKey: DbKey;
 
   beforeEach(() => {
-    dbKey = authDbManager.connect();
+    dbKey = identityDbManager.connect();
   });
 
   it("should create a new user", async () => {
@@ -17,7 +17,7 @@ describe("create", () => {
       createdAt: new Date(),
     };
 
-    const { result } = await authDb.users.create(dbKey, newUser);
+    const { result } = await identityDb.users.create(dbKey, newUser);
 
     expect(result).toMatchObject({
       ...newUser,
@@ -32,8 +32,8 @@ describe("create", () => {
       email: "test@example.com",
     };
 
-    await authDb.users.create(dbKey, user);
-    const { error } = await authDb.users.create(dbKey, user);
+    await identityDb.users.create(dbKey, user);
+    const { error } = await identityDb.users.create(dbKey, user);
 
     expect(error).toBeInstanceOf(EmailConflictError);
   });

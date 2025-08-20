@@ -1,7 +1,7 @@
 import type { User } from "@saflib/identity-db";
 import type { DbKey } from "@saflib/drizzle-sqlite3";
 
-export interface AuthServiceCallbacks {
+export interface IdentityServiceCallbacks {
   onUserCreated?: (user: User) => Promise<void>;
   onVerificationTokenCreated?: (
     user: User,
@@ -12,7 +12,7 @@ export interface AuthServiceCallbacks {
   onPasswordUpdated?: (user: User) => Promise<void>;
 }
 
-export interface AuthServerOptions {
+export interface IdentityServerOptions {
   dbKey?: DbKey;
-  callbacks: AuthServiceCallbacks;
+  callbacks: IdentityServiceCallbacks;
 }

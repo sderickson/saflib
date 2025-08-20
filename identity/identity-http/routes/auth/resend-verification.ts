@@ -1,7 +1,7 @@
 import { createHandler } from "@saflib/express";
 import { randomBytes } from "crypto";
 import { type AuthResponse } from "@saflib/identity-spec";
-import { authDb } from "@saflib/identity-db";
+import { identityDb } from "@saflib/identity-db";
 import { authServiceStorage } from "@saflib/identity-common";
 import { linkToHref } from "@saflib/links";
 import { authLinks } from "@saflib/identity-links";
@@ -21,7 +21,7 @@ export const resendVerificationHandler = createHandler(async (req, res) => {
     verificationTokenExpiresAt.getMinutes() + 15,
   );
 
-  await authDb.emailAuth.updateVerificationToken(
+  await identityDb.emailAuth.updateVerificationToken(
     dbKey,
     req.user.id,
     verificationToken,

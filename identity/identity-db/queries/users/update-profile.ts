@@ -1,7 +1,7 @@
 // TODO: Uncomment and fix these imports
 import { queryWrapper } from "@saflib/drizzle-sqlite3";
 import { users } from "../../schema.ts";
-import { authDbManager } from "../../instances.ts";
+import { identityDbManager } from "../../instances.ts";
 import type { DbKey } from "@saflib/drizzle-sqlite3";
 import type { User, UpdateProfileParams } from "../../types.ts";
 import { UserNotFoundError } from "../../errors.ts";
@@ -14,7 +14,7 @@ export const updateProfile = queryWrapper(
     userId: number,
     params: UpdateProfileParams,
   ): Promise<ReturnsError<User, UserNotFoundError>> => {
-    const db = authDbManager.get(dbKey)!;
+    const db = identityDbManager.get(dbKey)!;
     const result = await db
       .update(users)
       .set(params)

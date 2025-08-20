@@ -1,14 +1,14 @@
-import { authDb } from "@saflib/identity-db";
+import { identityDb } from "@saflib/identity-db";
 import { authServiceStorage } from "@saflib/identity-common";
 import { addSafContext, makeGrpcServerContextWrapper } from "@saflib/grpc";
 import * as grpc from "@grpc/grpc-js";
 import { UsersServiceDefinition, UsersService } from "./rpcs/users/index.ts";
-import type { AuthServerOptions } from "../identity-common/types.ts";
+import type { IdentityServerOptions } from "../identity-common/types.ts";
 
-export function makeGrpcServer(options: AuthServerOptions): grpc.Server {
+export function makeGrpcServer(options: IdentityServerOptions): grpc.Server {
   let { dbKey } = options;
   if (!dbKey) {
-    dbKey = authDb.connect();
+    dbKey = identityDb.connect();
   }
   const addAuthServiceContext = makeGrpcServerContextWrapper(
     authServiceStorage,

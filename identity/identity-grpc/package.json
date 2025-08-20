@@ -3,7 +3,7 @@
   "description": "gRPC server for identity service",
   "type": "module",
   "exports": {
-    ".": "./index.ts"
+    ".": "./grpc.ts"
   },
   "scripts": {
     "test": "vitest run",
