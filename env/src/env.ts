@@ -67,10 +67,11 @@ export const getCombinedEnvSchema = async (targetPackageName?: string) => {
     const simplifiedSchema = schema as SimplifiedJSONSchema;
     Object.entries(simplifiedSchema.properties).forEach(([key, value]) => {
       if (combinedSchema.properties[key] !== undefined) {
-        if (
-          JSON.stringify(combinedSchema.properties[key]) !==
-          JSON.stringify(value)
-        ) {
+        const withSourceStripped = {
+          ...combinedSchema.properties[key],
+          source: undefined,
+        };
+        if (JSON.stringify(withSourceStripped) !== JSON.stringify(value)) {
           throw new Error(`Property ${key} is defined in multiple schemas`);
         }
         return;
