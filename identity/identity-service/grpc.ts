@@ -1,6 +1,6 @@
 import { authDb } from "@saflib/identity-db";
 import { authServiceStorage } from "./context.ts";
-import { addSafContext, makeGrpcServerContextWrapper } from "@saflib/grpc-node";
+import { addSafContext, makeGrpcServerContextWrapper } from "@saflib/grpc";
 import * as grpc from "@grpc/grpc-js";
 import { UsersServiceDefinition, UsersService } from "./rpcs/users/index.ts";
 import type { AuthServerOptions } from "./types.ts";

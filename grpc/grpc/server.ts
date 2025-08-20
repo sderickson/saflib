@@ -2,15 +2,24 @@ import * as grpc from "@grpc/grpc-js";
 import type { UntypedServiceImplementation } from "@grpc/grpc-js";
 import { typedEnv } from "@saflib/env";
 
-interface GrpcServerOptions {
+/**
+ * Options when starting a gRPC server.
+ */
+export interface GrpcServerOptions {
   interceptors?: grpc.ServerInterceptor[];
   port: number;
 }
 
+/**
+ * Helper type for a function which wraps a gRPC service.
+ */
 export type ServiceImplementationWrapper = (
   impl: UntypedServiceImplementation,
 ) => UntypedServiceImplementation;
 
+/**
+ * Start a gRPC server with options, shutting it down on SIGTERM and SIGINT.
+ */
 export async function startGrpcServer(
   server: grpc.Server,
   options: GrpcServerOptions,

@@ -2,7 +2,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { handleGrpcHandlerTemplate } from "./grpc-handler-template.ts";
 import * as grpc from "@grpc/grpc-js";
-import { resolveGrpcRequest, runTestServer } from "@saflib/grpc-node/testing";
+import { resolveGrpcRequest, runTestServer } from "@saflib/grpc/testing";
 
 describe("handleGrpcHandlerTemplate", () => {
   let server: grpc.Server;

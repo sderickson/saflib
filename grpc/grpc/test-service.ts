@@ -1,5 +1,5 @@
 import * as grpc from "@grpc/grpc-js";
-import { startGrpcServer } from "@saflib/grpc-node";
+import { startGrpcServer } from "@saflib/grpc";
 import { expect, vi } from "vitest";
 let port = Math.floor(Math.random() * 10000) + 50000;
 

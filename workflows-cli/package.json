@@ -15,7 +15,7 @@
     "@saflib/vue-spa": "*",
     "@saflib/express": "*",
     "@saflib/grpc-specs": "*",
-    "@saflib/grpc-node": "*",
+    "@saflib/grpc": "*",
     "@saflib/node-xstate": "*",
     "@saflib/email": "*"
   }

@@ -1,5 +1,5 @@
 {
-  "name": "@saflib/grpc-node",
+  "name": "@saflib/grpc",
   "description": "Provides gRPC servicer utilities",
   "private": true,
   "type": "module",

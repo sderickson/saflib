@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import * as grpc from "@grpc/grpc-js";
-import { runTestServer } from "@saflib/grpc-node/testing";
+import { runTestServer } from "@saflib/grpc/testing";
 import { makeGrpcServer } from "../../grpc.ts";
 import { authDb } from "@saflib/identity-db";
 import type { DbKey } from "@saflib/drizzle-sqlite3";

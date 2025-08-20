@@ -4,7 +4,7 @@ import type {
   handleUnaryCall,
   ServiceDefinition,
 } from "@grpc/grpc-js";
-import type { ServiceImplementationWrapper } from "@saflib/grpc-node";
+import type { ServiceImplementationWrapper } from "./server.ts";
 import {
   type Auth,
   type SafContext,
@@ -19,14 +19,12 @@ import { AsyncLocalStorage } from "async_hooks";
 import { defaultErrorReporter } from "@saflib/node";
 import { runGrpcMethod } from "./runner.ts";
 
-export type SafServiceImplementationWrapper = (
+/**
+ * Takes a gRPC service and wraps it to provide SafContext and SafReporters for each request.
+ */
+export const addSafContext = (
   impl: UntypedServiceImplementation,
-  definition: ServiceDefinition,
-) => UntypedServiceImplementation;
-
-export const addSafContext: SafServiceImplementationWrapper = (
-  impl,
-  _definition,
+  _definition: ServiceDefinition,
 ) => {
   const wrappedService: UntypedServiceImplementation = {};
 
@@ -75,6 +73,10 @@ export const addSafContext: SafServiceImplementationWrapper = (
   return wrappedService;
 };
 
+/**
+ * Takes a storage and context and returns a function which will wrap a gRPC service implementation and provide the given storage/context for each request.
+ * It returns a wrapper function so it can be used for each service added to the gRPC server, which presumably all need the same context and storage.
+ */
 export function makeGrpcServerContextWrapper(
   storage: AsyncLocalStorage<any>,
   context: any,

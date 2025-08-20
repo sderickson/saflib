@@ -91,7 +91,7 @@ export const AddGrpcServerWorkflowMachine = setup({
                 `This workflow will add a gRPC server to the existing Express.js service "${context.serviceName}".
                 
                 Steps:
-                1. Install @saflib/grpc-node dependency
+                1. Install @saflib/grpc dependency
                 2. Create grpc.ts file with makeGrpcServer function
                 3. Update bin/run.ts to start the gRPC server
                 
@@ -109,7 +109,7 @@ export const AddGrpcServerWorkflowMachine = setup({
         input: ({ context }) => context,
         src: fromPromise(async () => {
           try {
-            const { stdout } = await execAsync("npm install @saflib/grpc-node");
+            const { stdout } = await execAsync("npm install @saflib/grpc");
             return stdout;
           } catch (error) {
             // Only fail if the command actually failed (non-zero exit code)
@@ -120,7 +120,7 @@ export const AddGrpcServerWorkflowMachine = setup({
         }),
         onDone: {
           target: "checkContext",
-          actions: logInfo(() => `Installed @saflib/grpc-node dependency.`),
+          actions: logInfo(() => `Installed @saflib/grpc dependency.`),
         },
         onError: {
           actions: [
@@ -136,7 +136,7 @@ export const AddGrpcServerWorkflowMachine = setup({
         prompt: {
           actions: promptAgent(
             () =>
-              "Failed to install @saflib/grpc-node. Please check npm is available and try again.",
+              "Failed to install @saflib/grpc. Please check npm is available and try again.",
           ),
         },
         continue: {
@@ -303,7 +303,7 @@ export const AddGrpcServerWorkflowMachine = setup({
                 `Update the bin/run.ts file at ${context.runFilePath} to start the gRPC server:
                 
                 1. Import the makeGrpcServer function: import { makeGrpcServer } from "../grpc.ts";
-                2. Import startGrpcServer: import { startGrpcServer } from "@saflib/grpc-node";
+                2. Import startGrpcServer: import { startGrpcServer } from "@saflib/grpc";
                 3. In the main function, add:
                    - const grpcServer = makeGrpcServer({ dbKey });
                    - startGrpcServer(grpcServer);
