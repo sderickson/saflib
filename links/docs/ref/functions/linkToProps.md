@@ -4,7 +4,7 @@
 
 # Function: linkToProps()
 
-> **linkToProps**(`link`): [`LinkProps`](../type-aliases/LinkProps.md)
+> **linkToProps**(`link`): \{ `href?`: `undefined`; `to`: `string`; \} \| \{ `href`: `string`; `to?`: `undefined`; \}
 
 Given a Link object, return props which will work with vuetify components such as v-list-item and b-btn.
 What is returned is based on the current domain; if the link is to the same subdomain, this returns a "to" prop,
@@ -19,4 +19,4 @@ reloads.
 
 ## Returns
 
-[`LinkProps`](../type-aliases/LinkProps.md)
+\{ `href?`: `undefined`; `to`: `string`; \} \| \{ `href`: `string`; `to?`: `undefined`; \}

@@ -16,7 +16,6 @@
 | ------ | ------ |
 | [Link](type-aliases/Link.md) | A link to a page on a website, independent of the domain or protocol. |
 | [LinkMap](type-aliases/LinkMap.md) | A collection of links, keyed by a name. |
-| [LinkProps](type-aliases/LinkProps.md) | See linkToProps. |
 
 ## Functions
 
