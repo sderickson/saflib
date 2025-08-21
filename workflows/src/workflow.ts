@@ -262,6 +262,6 @@ export abstract class XStateWorkflow extends Workflow {
     if (!this.actor) {
       return [];
     }
-    return this.actor.getSnapshot().output;
+    return this.actor.getSnapshot().output.checklist;
   };
 }

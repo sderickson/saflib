@@ -1,5 +1,5 @@
 import { Command } from "commander";
-import type { WorkflowMeta } from "@saflib/workflows";
+import type { ChecklistItem, WorkflowMeta } from "@saflib/workflows";
 import { loadWorkflow, saveWorkflow } from "./file-io.ts";
 import { addNewLinesToString } from "./utils.ts";
 import type { SafContext, SafReporters } from "@saflib/node";
@@ -97,6 +97,18 @@ export function runWorkflowCli(workflows: WorkflowMeta[]) {
       return new Workflow() instanceof XStateWorkflow;
     });
 
+  const printChecklistRecursively = (
+    checklist: ChecklistItem[],
+    prefix = "",
+  ) => {
+    checklist.forEach((item) => {
+      console.log(`${prefix}* ${item.description}`);
+      if (item.subitems) {
+        printChecklistRecursively(item.subitems, `${prefix}  `);
+      }
+    });
+  };
+
   supportedWorkflows.forEach(
     ({ Workflow, name, description, cliArguments }) => {
       let chain = checklistProgram.command(name).description(description);
@@ -112,10 +124,10 @@ export function runWorkflowCli(workflows: WorkflowMeta[]) {
         while (!workflow.done()) {
           await workflow.goToNextStep();
         }
-        console.log(
-          "Checklist",
-          JSON.stringify(workflow.getChecklist(), null, 2),
-        );
+
+        console.log(`\nChecklist for ${name}:\n`);
+        printChecklistRecursively(workflow.getChecklist());
+        console.log();
       });
     },
   );
