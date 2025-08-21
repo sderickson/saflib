@@ -52,7 +52,10 @@ export function runWorkflowCli(workflows: WorkflowMeta[]) {
         while (!workflow.done()) {
           await workflow.goToNextStep();
         }
-        console.log("Dry run complete", workflow.getChecklist());
+        console.log(
+          "Dry run complete",
+          JSON.stringify(workflow.getChecklist(), null, 2),
+        );
         return;
       }
       saveWorkflow(workflow);

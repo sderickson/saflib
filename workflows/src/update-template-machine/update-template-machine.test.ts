@@ -39,6 +39,7 @@ describe("updateTemplateFileFactory", () => {
       id: "test",
       initial: "testState",
       context: {
+        checklist: [],
         testFile: testFilePath,
         loggedLast: false,
         name: "test",
@@ -84,6 +85,7 @@ describe("updateTemplateFileFactory", () => {
       id: "test",
       initial: "testState",
       context: {
+        checklist: [],
         testFile: testFilePath,
         loggedLast: false,
         name: "test",
@@ -128,6 +130,7 @@ describe("updateTemplateFileFactory", () => {
       id: "test",
       initial: "testState",
       context: {
+        checklist: [],
         testFile: testFilePath,
         loggedLast: false,
         name: "test",

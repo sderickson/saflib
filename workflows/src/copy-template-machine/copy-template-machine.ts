@@ -6,14 +6,13 @@ import {
   logError,
   logWarn,
   promptAgent,
-  type WorkflowInput,
 } from "../xstate.ts";
 import { kebabCaseToPascalCase } from "../utils.ts";
 import type {
   CopyTemplateMachineContext,
   CopyTemplateMachineInput,
 } from "./types.ts";
-import type { TemplateWorkflowContext } from "../types.ts";
+import type { ChecklistItem, TemplateWorkflowContext } from "../types.ts";
 import { fetchFileNames } from "./fetch-file-names.ts";
 import { copyNextFile } from "./copy-next-file.ts";
 import { renameNextFile } from "./rename-next-file.ts";
@@ -22,6 +21,9 @@ export const CopyTemplateMachine = setup({
   types: {
     input: {} as CopyTemplateMachineInput,
     context: {} as CopyTemplateMachineContext,
+    output: {} as {
+      checklist: ChecklistItem[];
+    },
   },
   actions: {
     ...workflowActionImplementations,
@@ -95,10 +97,17 @@ export const CopyTemplateMachine = setup({
           },
           {
             target: "rename",
-            actions: logInfo(
-              ({ event }) =>
-                `Copied file to ${(event.output as { skipped: boolean; fileName: string }).fileName}`,
-            ),
+            actions: [
+              logInfo(({ event }) => `Copied file to ${event.output.fileName}`),
+              assign({
+                checklist: ({ context, event }) => [
+                  ...context.checklist,
+                  {
+                    description: `Create ${event.output.fileName}`,
+                  },
+                ],
+              }),
+            ],
           },
         ],
         onError: {
@@ -117,8 +126,7 @@ export const CopyTemplateMachine = setup({
         onDone: {
           target: "popFile",
           actions: logInfo(
-            ({ event }) =>
-              `Renamed placeholders in ${(event.output as { fileName: string }).fileName}`,
+            ({ event }) => `Renamed placeholders in ${event.output.fileName}`,
           ),
         },
         onError: {
@@ -153,6 +161,11 @@ export const CopyTemplateMachine = setup({
       entry: logError("Template copy workflow failed"),
     },
   },
+  output: ({ context }) => {
+    return {
+      checklist: context.checklist,
+    };
+  },
 });
 
 export function copyTemplateStateFactory({
@@ -174,9 +187,21 @@ export function copyTemplateStateFactory({
         src: CopyTemplateMachine,
         onDone: {
           target: nextStateName,
-          actions: logInfo(
-            () => `Template files copied and renamed successfully.`,
-          ),
+          actions: [
+            logInfo(() => `Template files copied and renamed successfully.`),
+            assign({
+              checklist: ({ context, event }) => {
+                const result = [
+                  ...context.checklist,
+                  {
+                    description: `Copy template files and rename placeholders.`,
+                    subitems: event.output.checklist,
+                  },
+                ];
+                return result;
+              },
+            }),
+          ],
         },
         onError: {
           actions: [
