@@ -10,6 +10,7 @@ import {
   defaultErrorReporter,
   createLogger,
   setServiceName,
+  createSilentLogger,
 } from "@saflib/node";
 import { format } from "winston";
 import { type TransformableInfo } from "logform";
@@ -54,7 +55,7 @@ export function runWorkflowCli(workflows: WorkflowMeta[]) {
         }
         console.log(
           "Dry run complete",
-          JSON.stringify(workflow.getChecklist(), null, 2),
+          // JSON.stringify(workflow.getChecklist(), null, 2),
         );
         return;
       }
@@ -102,18 +103,22 @@ export function runWorkflowCli(workflows: WorkflowMeta[]) {
     subsystemName: "cli",
   };
 
+  const dryRun = process.argv.includes("--dry-run");
+
   const reporters: SafReporters = {
-    log: createLogger({
-      subsystemName: "cli",
-      operationName: "workflow-cli",
-      format: format.combine(
-        format.colorize({ all: true }),
-        format.printf((info: TransformableInfo) => {
-          const { message } = info;
-          return `${message}`;
+    log: dryRun
+      ? createSilentLogger()
+      : createLogger({
+          subsystemName: "cli",
+          operationName: "workflow-cli",
+          format: format.combine(
+            format.colorize({ all: true }),
+            format.printf((info: TransformableInfo) => {
+              const { message } = info;
+              return `${message}`;
+            }),
+          ),
         }),
-      ),
-    }),
     logError: defaultErrorReporter,
   };
 

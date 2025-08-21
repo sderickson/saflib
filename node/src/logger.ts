@@ -113,3 +113,9 @@ export const createLogger = (options?: LoggerOptions): Logger => {
   }
   return baseLogger.child(snakeCaseOptions);
 };
+
+export const createSilentLogger = (): Logger => {
+  return winston.createLogger({
+    transports: [new winston.transports.Console({ silent: true })],
+  });
+};
