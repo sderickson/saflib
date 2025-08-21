@@ -47,6 +47,7 @@ export const AddSpaPageWorkflowMachine = setup({
       targetDir,
       sourceDir,
       loggedLast: false,
+      checklist: [],
     };
   },
   entry: logInfo("Successfully began workflow"),

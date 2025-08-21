@@ -19,9 +19,21 @@ interface ActionParam<C, E extends AnyEventObject> {
   event: E;
 }
 
+export interface ChecklistItem {
+  name: string;
+  description: string;
+  subitems?: ChecklistItem[];
+}
+
+export interface WorkflowInput {
+  dryRun?: boolean;
+}
+
 export interface WorkflowContext {
+  checklist: ChecklistItem[];
   loggedLast?: boolean;
   systemPrompt?: string;
+  dryRun?: boolean;
 }
 
 type WorkflowActionFunction<

@@ -37,6 +37,9 @@ export function updateTemplateFileFactory<C extends TemplateWorkflowContext>({
         continue: [
           {
             guard: ({ context }: { context: C }) => {
+              if (context.dryRun) {
+                return false;
+              }
               const resolvedPath =
                 typeof filePath === "string"
                   ? path.resolve(process.cwd(), filePath)

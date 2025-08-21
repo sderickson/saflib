@@ -34,10 +34,12 @@ export function runWorkflowCli(workflows: WorkflowMeta[]) {
     );
   workflows.forEach(({ Workflow, name, description, cliArguments }) => {
     let chain = kickoffProgram.command(name).description(description);
+    chain.option("--dry-run", "Dry run the workflow");
     cliArguments.forEach((arg) => {
       chain = chain.argument(arg.name, arg.description, arg.defaultValue);
     });
     chain.action(async (...args) => {
+      console.log("args", args);
       const workflow = new Workflow();
       const result = await workflow.init(...args);
       if (result.error) {

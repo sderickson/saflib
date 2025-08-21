@@ -9,7 +9,7 @@ import { kebabCaseToCamelCase } from "../utils.ts";
 
 export const renameNextFile = fromPromise(
   async ({ input }: { input: CopyTemplateMachineContext }) => {
-    const { targetDir, name, filesToCopy } = input;
+    const { targetDir, name, filesToCopy, dryRun } = input;
 
     const currentFile = filesToCopy[0];
     const targetFileName = transformName(currentFile, name);
@@ -35,6 +35,11 @@ export const renameNextFile = fromPromise(
     // Replace camelCase placeholders
     const camelName = kebabCaseToCamelCase(name);
     updatedContent = updatedContent.replace(/templateFile/g, camelName);
+
+    if (dryRun) {
+      console.log("Dry run rename file", targetFileName);
+      return { fileName: targetFileName };
+    }
 
     // Write updated content back
     await writeFile(targetPath, updatedContent);

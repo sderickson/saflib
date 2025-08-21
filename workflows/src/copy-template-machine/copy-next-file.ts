@@ -8,7 +8,7 @@ import { transformName } from "./utils.ts";
 
 export const copyNextFile = fromPromise(
   async ({ input }: { input: CopyTemplateMachineContext }) => {
-    const { sourceDir, targetDir, name, filesToCopy } = input;
+    const { sourceDir, targetDir, name, filesToCopy, dryRun } = input;
 
     if (filesToCopy.length === 0) {
       throw new Error("No files to copy");
@@ -18,6 +18,11 @@ export const copyNextFile = fromPromise(
     const sourcePath = path.join(sourceDir, currentFile);
     const targetFileName = transformName(currentFile, name);
     const targetPath = path.join(targetDir, targetFileName);
+
+    if (dryRun) {
+      console.log("Dry run copy file", targetFileName);
+      return { skipped: false, fileName: targetFileName };
+    }
 
     // Check if target file already exists
     try {

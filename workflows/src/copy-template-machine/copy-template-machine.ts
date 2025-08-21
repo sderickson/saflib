@@ -6,6 +6,7 @@ import {
   logError,
   logWarn,
   promptAgent,
+  type WorkflowInput,
 } from "../xstate.ts";
 import { kebabCaseToPascalCase } from "../utils.ts";
 import type {
@@ -22,7 +23,9 @@ export const CopyTemplateMachine = setup({
     input: {} as CopyTemplateMachineInput,
     context: {} as CopyTemplateMachineContext,
   },
-  actions: workflowActionImplementations,
+  actions: {
+    ...workflowActionImplementations,
+  },
   actors: {
     fetchFileNames,
     copyNextFile,
@@ -45,6 +48,8 @@ export const CopyTemplateMachine = setup({
     targetFiles: [],
     filesToCopy: [],
     loggedLast: false,
+    checklist: [],
+    dryRun: input.dryRun,
   }),
   entry: logInfo("Starting template copy workflow"),
   states: {
@@ -160,10 +165,17 @@ export function copyTemplateStateFactory({
   return {
     [stateName]: {
       invoke: {
-        input: ({ context }: { context: TemplateWorkflowContext }) => ({
+        input: ({
+          context,
+          input,
+        }: {
+          context: TemplateWorkflowContext;
+          input: WorkflowInput;
+        }) => ({
           sourceDir: context.sourceDir,
           targetDir: context.targetDir,
           name: context.name,
+          dryRun: input.dryRun,
         }),
         src: CopyTemplateMachine,
         onDone: {

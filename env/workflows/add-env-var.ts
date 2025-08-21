@@ -1,5 +1,6 @@
 import { setup } from "xstate";
 import {
+  type WorkflowInput,
   workflowActionImplementations,
   workflowActors,
   logInfo,
@@ -12,7 +13,7 @@ import {
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-interface AddEnvVarWorkflowInput {
+interface AddEnvVarWorkflowInput extends WorkflowInput {
   name: string;
 }
 
@@ -26,7 +27,12 @@ export const AddEnvVarWorkflowMachine = setup({
     input: {} as AddEnvVarWorkflowInput,
     context: {} as AddEnvVarWorkflowContext,
   },
-  actions: workflowActionImplementations,
+  actions: {
+    addChecklistItem: (arg1, arg2) => {
+      console.log({ arg1, arg2 });
+    },
+    ...workflowActionImplementations,
+  },
   actors: workflowActors,
 }).createMachine({
   id: "add-env-var",
@@ -34,6 +40,7 @@ export const AddEnvVarWorkflowMachine = setup({
     "Add a new environment variable to the schema and generate the corresponding TypeScript types",
   initial: "copyTemplate",
   context: ({ input }) => {
+    console.log("input", input);
     const __filename = fileURLToPath(import.meta.url);
     const __dirname = path.dirname(__filename);
     const sourceDir = path.join(__dirname, "add-env-vars");
@@ -48,6 +55,8 @@ export const AddEnvVarWorkflowMachine = setup({
       targetDir,
       schemaPath: path.join(targetDir, "env.schema.json"),
       loggedLast: false,
+      checklist: [],
+      dryRun: input.dryRun,
     };
   },
   entry: logInfo("Successfully began add-env-var workflow"),

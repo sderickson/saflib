@@ -159,7 +159,7 @@ export abstract class XStateWorkflow extends Workflow {
   }
 
   init = async (...args: any[]): Promise<Result<any>> => {
-    if (args.length !== this.cliArguments.length + 2) {
+    if (args.length !== this.cliArguments.length + 3) {
       return {
         error: new Error(
           `Expected ${this.cliArguments.length} arguments, got ${args.length}`,
@@ -170,7 +170,10 @@ export abstract class XStateWorkflow extends Workflow {
     for (let i = 0; i < this.cliArguments.length; i++) {
       input[this.cliArguments[i].name] = args[i];
     }
+    const options = args[this.cliArguments.length] as { dryRun?: boolean };
+    input.dryRun = options.dryRun;
     this.input = input;
+    console.log("input", input);
 
     return { data: undefined };
   };
