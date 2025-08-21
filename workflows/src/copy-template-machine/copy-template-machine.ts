@@ -1,4 +1,4 @@
-import { fromPromise, setup, assign, raise } from "xstate";
+import { setup, assign, raise } from "xstate";
 import {
   workflowActionImplementations,
   workflowActors,
@@ -9,57 +9,17 @@ import {
   type WorkflowContext,
   type FactoryFunctionOptions,
 } from "../xstate.ts";
-import {
-  kebabCaseToPascalCase,
-  kebabCaseToCamelCase,
-  kebabCaseToSnakeCase,
-} from "../utils.ts";
+import { kebabCaseToPascalCase } from "../utils.ts";
 import { readFileSync } from "node:fs";
-import {
-  readdir,
-  copyFile,
-  readFile,
-  writeFile,
-  access,
-} from "node:fs/promises";
-import { constants } from "node:fs";
 import path from "node:path";
-
-export interface CopyTemplateMachineInput {
-  name: string; // kebab-case name
-  targetDir: string;
-  sourceDir: string;
-}
-
-// Machines which invoke this one should include this context
-export interface TemplateWorkflowContext extends WorkflowContext {
-  name: string;
-  pascalName: string;
-  targetDir: string;
-  sourceDir: string;
-}
-
-// This is context specific to this machine
-interface CopyTemplateMachineContext extends TemplateWorkflowContext {
-  sourceFiles: string[];
-  targetFiles: string[];
-  filesToCopy: string[];
-}
-
-function transformName(originalName: string, targetName: string): string {
-  // Handle different naming conventions using utility functions
-  const pascalTargetName = kebabCaseToPascalCase(targetName);
-  const snakeTargetName = kebabCaseToSnakeCase(targetName);
-
-  let result = originalName;
-
-  // Replace all variations
-  result = result.replace(/template-file/g, targetName);
-  result = result.replace(/template_file/g, snakeTargetName);
-  result = result.replace(/TemplateFile/g, pascalTargetName);
-
-  return result;
-}
+import type {
+  CopyTemplateMachineContext,
+  CopyTemplateMachineInput,
+  TemplateWorkflowContext,
+} from "./types.ts";
+import { fetchFileNames } from "./fetch-file-names.ts";
+import { copyNextFile } from "./copy-next-file.ts";
+import { renameNextFile } from "./rename-next-file.ts";
 
 export const CopyTemplateMachine = setup({
   types: {
@@ -68,96 +28,9 @@ export const CopyTemplateMachine = setup({
   },
   actions: workflowActionImplementations,
   actors: {
-    fetchFileNames: fromPromise(
-      async ({ input }: { input: CopyTemplateMachineContext }) => {
-        const { sourceDir, targetDir } = input;
-
-        let sourceFiles: string[] = [];
-        let targetFiles: string[] = [];
-
-        try {
-          sourceFiles = await readdir(sourceDir);
-        } catch (error) {
-          throw new Error(
-            `Failed to read source folder: ${(error as Error).message}`,
-          );
-        }
-
-        try {
-          targetFiles = await readdir(targetDir);
-        } catch (error) {
-          // Target folder might not exist, that's okay
-          targetFiles = [];
-        }
-
-        return { sourceFiles, targetFiles };
-      },
-    ),
-    copyNextFile: fromPromise(
-      async ({ input }: { input: CopyTemplateMachineContext }) => {
-        const { sourceDir, targetDir, name, filesToCopy } = input;
-
-        if (filesToCopy.length === 0) {
-          throw new Error("No files to copy");
-        }
-
-        const currentFile = filesToCopy[0];
-        const sourcePath = path.join(sourceDir, currentFile);
-        const targetFileName = transformName(currentFile, name);
-        const targetPath = path.join(targetDir, targetFileName);
-
-        // Check if target file already exists
-        try {
-          await access(targetPath, constants.F_OK);
-          return { skipped: true, fileName: targetFileName };
-        } catch {
-          // File doesn't exist, proceed with copy
-        }
-
-        // Ensure target directory exists
-        await import("node:fs/promises").then((fs) =>
-          fs.mkdir(path.dirname(targetPath), { recursive: true }),
-        );
-
-        await copyFile(sourcePath, targetPath);
-        return { skipped: false, fileName: targetFileName };
-      },
-    ),
-    renameNextFile: fromPromise(
-      async ({ input }: { input: CopyTemplateMachineContext }) => {
-        const { targetDir, name, filesToCopy } = input;
-
-        const currentFile = filesToCopy[0];
-        const targetFileName = transformName(currentFile, name);
-        const targetPath = path.join(targetDir, targetFileName);
-
-        // Read file content
-        const content = await readFile(targetPath, "utf-8");
-
-        // Replace content placeholders
-        let updatedContent = content;
-
-        // Replace kebab-case placeholders
-        updatedContent = updatedContent.replace(/template-file/g, name);
-
-        // Replace snake_case placeholders
-        const snakeName = kebabCaseToSnakeCase(name);
-        updatedContent = updatedContent.replace(/template_file/g, snakeName);
-
-        // Replace PascalCase placeholders
-        const pascalName = kebabCaseToPascalCase(name);
-        updatedContent = updatedContent.replace(/TemplateFile/g, pascalName);
-
-        // Replace camelCase placeholders
-        const camelName = kebabCaseToCamelCase(name);
-        updatedContent = updatedContent.replace(/templateFile/g, camelName);
-
-        // Write updated content back
-        await writeFile(targetPath, updatedContent);
-
-        return { fileName: targetFileName };
-      },
-    ),
+    fetchFileNames,
+    copyNextFile,
+    renameNextFile,
     ...workflowActors,
   },
   guards: {
