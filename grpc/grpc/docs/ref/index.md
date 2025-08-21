@@ -8,5 +8,5 @@
 
 | Module | Description |
 | ------ | ------ |
-| [index](index/index.md) | - |
-| [test-service](test-service/index.md) | - |
+| [@saflib/grpc](@saflib/grpc/index.md) | Utilities for running gRPC servers. |
+| [@saflib/grpc/testing](@saflib/grpc/testing/index.md) | Utilities for testing gRPC services. |

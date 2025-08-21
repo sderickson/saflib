@@ -1,8 +1,10 @@
-[**@saflib/grpc**](../index.md)
+[**@saflib/grpc**](../../index.md)
 
 ***
 
-# index
+# @saflib/grpc
+
+Utilities for running gRPC servers.
 
 ## Interfaces
 

@@ -1,4 +1,4 @@
-[**@saflib/grpc**](../../index.md)
+[**@saflib/grpc**](../../../index.md)
 
 ***
 
