@@ -11,7 +11,7 @@ import {
   LogoutPage,
   ChangeForgottenPasswordPage,
   VerifyEmailPage,
-} from "@saflib/auth-vue";
+} from "@saflib/auth";
 import VerifyEmailPageAsync from "./pages/verify-wall/VerifyWallPageAsync.vue";
 
 import { authLinks } from "@saflib/auth-links";

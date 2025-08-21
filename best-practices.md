@@ -4,46 +4,66 @@ The following are rules that should be followed for _any_ software stack that ai
 
 ## Pass Objects
 
-As a general rule, give an object as a single parameter to a function. Even if you are adding the first and only parameter, wrap it in an object so that if more options are added later, the function signature does not need to change.
+For complex function signatures, arguments should be passed in objects. Even if you are adding the first and only parameter, wrap it in an object so that if more options are added later, the function signature does not need to change.
+
+**Benefits:**
+
+- Arguments passed into functions are more explicit and easier to understand without investigating the function signature or documentation.
+- The interface for the object is a single source of truth for what the function accepts.
+- Adding further arguments does not require changing calls to the function.
+
+This saves time and effort when reading and modifying code.
 
 ## Return Errors
 
 Some languages (such as Go) expect errors to be returned by functions. Others (such as Java) let you specify what they throw. Many do neither.
 
-For those that do neither, instead of `throw`ing exceptions or errors, adopt a common interface which returns either an error **or** a result (never both, never neither). With TypeScript for example, an operation which may fail in normal operations should result in something like this:
+For those that do neither, instead of `throw`ing or `raise`ing exceptions or errors, adopt a common interface which returns either an error **or** a result (never both, never neither). With TypeScript for example, an operation which may fail in normal operations should result in something like this:
 
 ```typescript
 const { result, error } = await unsafeOperation();
 if (error) {
   switch (true) {
     case error instanceof ErrorClass:
-      // handle
+      return res.status(errorCode);
     default:
-      // Type check fails if not every type of error is handled
       throw error satisfies never;
     }
   }
 }
-// Through the magic of typing, at this point TypeScript
-// recognizes "result" is defined.
+
+// At this point, TypeScript knows that result is defined.
 use(result.someValue);
 ```
 
-Note that logic may still `throw` exceptions, but this should be truly exceptional. Exceptions should only be thrown in cases where, if it _actually_ happens in a test or in production, it will be fixed.
+Note that logic may still `throw` exceptions, but this should be truly exceptional. Exceptions should only be thrown in cases where, if it _actually_ happens in a test or in production, it will be considered an issue to be fixed.
 
 Errors returned should also only be those managed and created by the package. Propagating downstream errors (such as from a dependency) upstream is a form of tight coupling. Even unhandled errors should be caught at the package or service boundary and obfuscated to ensure consumers cannot depend on deeper dependencies.
+
+**Benefits:**
+
+- There's a clear delination between errors that are expected and those that are not.
+- Expected errors are typed, and TypeScript nudges the developer to handle them.
+- If a function starts returning a new error type, consumers can be notified by using the `throw error satisfies never` pattern.
+- By masking dependency exceptions, libraries protect against an entire category of unseen dependencies.
 
 ## Keep Files Small
 
 This is most applicable to parts of the codebase where there are a number of the same thing. Components, routes, database queries. Each of these should live in a single file, rather than being grouped by domain (such as all CRUD operations for a single entity in one file). If any single instance of those grows to a larger size, it should be broken up into smaller pieces, such as sub-components, library methods, or transactions which depend on smaller queries.
 
-This makes it simpler to provide the right context, and for that context to be contained. It also speeds up editing of these files as there's less surface area for the agent to work with when making changes.
+**Benefits:**
+
+- Less context necessary for agents, less scrolling necessary for humans
+- Edits are faster as there's less surface area for the agent to work with when making changes.
 
 ## Keep Code Modular
 
 Software should be broken up into packages which have a well-defined purpose, a public interface, and a list of dependencies. These packages should also not become too large in any of these regards.
 
-This has similar benefits to "Keep Files Small"; it limits the required context for humans or agents to work.
+**Benefits:**
+
+- Similar to "Keep Files Small"; it limits the required context for humans or agents to work.
+- Edits are faster as there's less surface area for the agent to work with when making changes, especially when changes don't necessitate a change to the package interface.
 
 ## Specify and Enforce Shared APIs, Models, and Strings
 
@@ -53,6 +73,11 @@ This provides quick and straightforward feedback when a shared contract changes.
 
 There are many solutions for APIs and schemas, such as proto or OpenAPI. These are also good places to store shared models, which can be readily used as parameters or properties for functions or components as well as the network communications they help specify. Strings (such as urls and user-facing copy) can simply be stored independently from application logic, in maps such as JSON, where they can be referenced across components and tests.
 
+**Benefits:**
+
+- Quick feedback when a shared contract changes which would break dependent code, showing how much work there is to do and where to do it.
+- Shared strings reduce the likelihood of typos and inconsistencies, shifting fixes left. This is particularly useful for tests which check that a given string exists in a UI, or needs to navigate to a given page.
+
 ## Mock, Fake, and Shim Service Boundaries
 
 Mocks are code that behaves basically as the actual service would, responding and changing based on unsafe operations. Fakes are simply data which is returned, but does not handle unsafe network calls. Shims sit between the service and the consumer to limit access to what is needed.
@@ -60,6 +85,11 @@ Mocks are code that behaves basically as the actual service would, responding an
 Any non-trivial app will reach a point where it depends on separate services, either first or third party, and those should provide mocks and fakes as appropriate. This allows services to write unit or integration tests which don't depend on a live or fully-featured service. If the service is a large one with many features where the consumer only needs a subset, a shim will help manage how much of the service is truly depended on, and reduce the surface area to mock or provide fakes for.
 
 Mocks are recommended for network calls between services (such as an application server making a grpc call to an identity server) or to external services (such as to a payment processor or LLM). Fakes are recommended for frontend applications, to ensure components render correctly given a set of network responses. Interactions with frontend that depend on network calls are better covered through E2E tests such as with playwright.
+
+**Benefits:**
+
+- Providing mocks and fakes for all dependencies ensures any component can be unit tested or E2E tested with confidence.
+- Shims help control how tightly coupled any given code is to a specific service, making it easier to swap out later if necessary or desirable.
 
 ### Ownership of Mocks, Fakes, Shims
 
@@ -92,7 +122,7 @@ Tests should stick to testing the package, API, or user interface they are targe
 
 There needs to be a source of truth for how to do things the right way specific to your stack, and the closer those decisions are to the code the better. To that end:
 
-- For important or non-trivial interfaces, document those functions or classes in the source code itself, such as with [JSDoc](https://jsdoc.app/).
+- For important or non-trivial interfaces, document those functions or classes in the source code itself, such as with [JSDoc](https://jsdoc.app/), especially if they're part of a package interface.
 - For packages or modules, include documents on how to use them in the same directory. These documents should tend to be **Explanation** and **Tutorial** docs.
 - **Reference** documentation should be generated from source, such as through [Typedoc](https://github.com/TypeStrong/typedoc) or [Redoc](https://github.com/Redocly/redoc).
 - **How-To Guides** are great fodder for agentic workflows, and human-readable docs should be generated from those.

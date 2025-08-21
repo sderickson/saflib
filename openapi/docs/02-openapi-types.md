@@ -9,7 +9,7 @@ The monorepo uses OpenAPI specifications housed in packages like `@saflib/identi
 ## Example Package Structure
 
 - `@saflib/identity-spec`: Contains the OpenAPI specification and generated types
-- `@saflib/auth-vue`: Consumes the generated types for client-side code
+- `@saflib/auth`: Consumes the generated types for client-side code
 - `@saflib/auth-node`: Consumes the generated types for server-side code (TODO)
 
 ## Generation

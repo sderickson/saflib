@@ -8,7 +8,7 @@
 
 | Interface | Description |
 | ------ | ------ |
-| [IdentityServiceCallbacks](interfaces/IdentityServiceCallbacks.md) | Callbacks for events which occur in the auth service. |
+| [IdentityServiceCallbacks](interfaces/IdentityServiceCallbacks.md) | Callbacks for events which occur in the identity service. This is the main way to hook into the identity service. |
 | [StartIdentityServiceOptions](interfaces/StartIdentityServiceOptions.md) | Options for starting the auth service, including both HTTP and gRPC servers. |
 
 ## Type Aliases

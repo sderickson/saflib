@@ -354,7 +354,7 @@ it("should disable submit button when form is invalid", async () => {
 
 1. Set up default handlers for successful responses using types from your OpenAPI spec:
 
-   **Important:** When using API clients created via `createSafClient` (like those in `@saflib/auth-vue` or `@saflib/app-vue`), MSW handlers **must** use the full URL, including the host and the API prefix (e.g., `http://api.localhost:3000/auth/login`). Relative paths will not work because the client uses the full base URL.
+   **Important:** When using API clients created via `createSafClient` (like those in `@saflib/auth` or `@saflib/app-vue`), MSW handlers **must** use the full URL, including the host and the API prefix (e.g., `http://api.localhost:3000/auth/login`). Relative paths will not work because the client uses the full base URL.
 
    ```typescript
    import type { LoginRequest, LoginResponse } from "@saflib/identity-spec";

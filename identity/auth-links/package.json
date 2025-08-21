@@ -1,6 +1,6 @@
 {
   "name": "@saflib/auth-links",
-  "description": "Links for @saflib/auth-vue",
+  "description": "Links for @saflib/auth",
   "private": true,
   "type": "module",
   "exports": {

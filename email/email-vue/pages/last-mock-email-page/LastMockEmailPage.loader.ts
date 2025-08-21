@@ -1,4 +1,4 @@
-import { getProfile } from "@saflib/auth-vue";
+import { getProfile } from "@saflib/auth";
 import { computed, type Ref } from "vue";
 import { useQuery } from "@tanstack/vue-query";
 import { useRoute } from "vue-router";

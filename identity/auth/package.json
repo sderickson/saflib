@@ -1,5 +1,5 @@
 {
-  "name": "@saflib/auth-vue",
+  "name": "@saflib/auth",
   "description": "Shared authentication components and utilities for SAF",
   "type": "module",
   "exports": {

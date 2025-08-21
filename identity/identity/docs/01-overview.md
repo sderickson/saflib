@@ -82,7 +82,7 @@ header_up X-Require-Admin true # Only users signed in and validated with an emai
 
 ## Auth Client
 
-`identity` is a service, `auth` is a client. You can use the `@saflib/auth-vue` package to build a client for the auth service which covers all the basic authentication flows:
+`identity` is a service, `auth` is a client. You can use the `@saflib/auth` package to build a client for the auth service which covers all the basic authentication flows:
 
 - Login
 - Logout
@@ -100,8 +100,8 @@ These packages assume the `identity` subdomain is the HTTP server, and the `auth
 
 ### Public Packages
 
-- `@saflib/auth-vue` - the complete frontend for authentication flows.
-- [`@saflib/auth-links`](../../auth-links/docs/ref/index.md) - links to pages in `@saflib/auth-vue`. Useful for tests and redirects from servers or other clients.
+- `@saflib/auth` - the complete frontend for authentication flows.
+- [`@saflib/auth-links`](../../auth-links/docs/ref/index.md) - links to pages in `@saflib/auth`. Useful for tests and redirects from servers or other clients.
 - [`@saflib/identity-rpcs`](../../identity-rpcs/docs/ref/index.md) - gRPC client for making requests to the identity service.
 
 ### Private Packages
