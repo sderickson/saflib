@@ -67,7 +67,99 @@ export const CopyTemplateMachine = setup({
     context: {} as CopyTemplateMachineContext,
   },
   actions: workflowActionImplementations,
-  actors: workflowActors,
+  actors: {
+    fetchFileNames: fromPromise(
+      async ({ input }: { input: CopyTemplateMachineContext }) => {
+        const { sourceDir, targetDir } = input;
+
+        let sourceFiles: string[] = [];
+        let targetFiles: string[] = [];
+
+        try {
+          sourceFiles = await readdir(sourceDir);
+        } catch (error) {
+          throw new Error(
+            `Failed to read source folder: ${(error as Error).message}`,
+          );
+        }
+
+        try {
+          targetFiles = await readdir(targetDir);
+        } catch (error) {
+          // Target folder might not exist, that's okay
+          targetFiles = [];
+        }
+
+        return { sourceFiles, targetFiles };
+      },
+    ),
+    copyNextFile: fromPromise(
+      async ({ input }: { input: CopyTemplateMachineContext }) => {
+        const { sourceDir, targetDir, name, filesToCopy } = input;
+
+        if (filesToCopy.length === 0) {
+          throw new Error("No files to copy");
+        }
+
+        const currentFile = filesToCopy[0];
+        const sourcePath = path.join(sourceDir, currentFile);
+        const targetFileName = transformName(currentFile, name);
+        const targetPath = path.join(targetDir, targetFileName);
+
+        // Check if target file already exists
+        try {
+          await access(targetPath, constants.F_OK);
+          return { skipped: true, fileName: targetFileName };
+        } catch {
+          // File doesn't exist, proceed with copy
+        }
+
+        // Ensure target directory exists
+        await import("node:fs/promises").then((fs) =>
+          fs.mkdir(path.dirname(targetPath), { recursive: true }),
+        );
+
+        await copyFile(sourcePath, targetPath);
+        return { skipped: false, fileName: targetFileName };
+      },
+    ),
+    renameNextFile: fromPromise(
+      async ({ input }: { input: CopyTemplateMachineContext }) => {
+        const { targetDir, name, filesToCopy } = input;
+
+        const currentFile = filesToCopy[0];
+        const targetFileName = transformName(currentFile, name);
+        const targetPath = path.join(targetDir, targetFileName);
+
+        // Read file content
+        const content = await readFile(targetPath, "utf-8");
+
+        // Replace content placeholders
+        let updatedContent = content;
+
+        // Replace kebab-case placeholders
+        updatedContent = updatedContent.replace(/template-file/g, name);
+
+        // Replace snake_case placeholders
+        const snakeName = kebabCaseToSnakeCase(name);
+        updatedContent = updatedContent.replace(/template_file/g, snakeName);
+
+        // Replace PascalCase placeholders
+        const pascalName = kebabCaseToPascalCase(name);
+        updatedContent = updatedContent.replace(/TemplateFile/g, pascalName);
+
+        // Replace camelCase placeholders
+        const camelName = kebabCaseToCamelCase(name);
+        updatedContent = updatedContent.replace(/templateFile/g, camelName);
+
+        // Write updated content back
+        await writeFile(targetPath, updatedContent);
+
+        return { fileName: targetFileName };
+      },
+    ),
+    ...workflowActors,
+  },
   guards: {
     hasMoreFiles: ({ context }) => context.filesToCopy.length > 0,
   },
@@ -90,47 +182,14 @@ export const CopyTemplateMachine = setup({
     fetchFileNames: {
       invoke: {
         input: ({ context }) => context,
-        src: fromPromise(async ({ input }) => {
-          const { sourceDir, targetDir } = input;
-
-          let sourceFiles: string[] = [];
-          let targetFiles: string[] = [];
-
-          try {
-            sourceFiles = await readdir(sourceDir);
-          } catch (error) {
-            throw new Error(
-              `Failed to read source folder: ${(error as Error).message}`,
-            );
-          }
-
-          try {
-            targetFiles = await readdir(targetDir);
-          } catch (error) {
-            // Target folder might not exist, that's okay
-            targetFiles = [];
-          }
-
-          return { sourceFiles, targetFiles };
-        }),
+        src: "fetchFileNames",
         onDone: {
           target: "copy",
           actions: [
             assign(({ event }) => ({
-              sourceFiles: (
-                event.output as { sourceFiles: string[]; targetFiles: string[] }
-              ).sourceFiles,
-              targetFiles: (
-                event.output as { sourceFiles: string[]; targetFiles: string[] }
-              ).targetFiles,
-              filesToCopy: [
-                ...(
-                  event.output as {
-                    sourceFiles: string[];
-                    targetFiles: string[];
-                  }
-                ).sourceFiles,
-              ],
+              sourceFiles: event.output.sourceFiles,
+              targetFiles: event.output.targetFiles,
+              filesToCopy: event.output.sourceFiles,
             })),
             logInfo(
               ({ context }) =>
@@ -150,42 +209,14 @@ export const CopyTemplateMachine = setup({
     copy: {
       invoke: {
         input: ({ context }) => context,
-        src: fromPromise(async ({ input }) => {
-          const { sourceDir, targetDir, name, filesToCopy } = input;
-
-          if (filesToCopy.length === 0) {
-            throw new Error("No files to copy");
-          }
-
-          const currentFile = filesToCopy[0];
-          const sourcePath = path.join(sourceDir, currentFile);
-          const targetFileName = transformName(currentFile, name);
-          const targetPath = path.join(targetDir, targetFileName);
-
-          // Check if target file already exists
-          try {
-            await access(targetPath, constants.F_OK);
-            return { skipped: true, fileName: targetFileName };
-          } catch {
-            // File doesn't exist, proceed with copy
-          }
-
-          // Ensure target directory exists
-          await import("node:fs/promises").then((fs) =>
-            fs.mkdir(path.dirname(targetPath), { recursive: true }),
-          );
-
-          await copyFile(sourcePath, targetPath);
-          return { skipped: false, fileName: targetFileName };
-        }),
+        src: "copyNextFile",
         onDone: [
           {
-            guard: ({ event }) =>
-              (event.output as { skipped: boolean; fileName: string }).skipped,
+            guard: ({ event }) => event.output.skipped,
             target: "popFile",
             actions: logWarn(
               ({ event }) =>
-                `File ${(event.output as { skipped: boolean; fileName: string }).fileName} already exists, skipping`,
+                `File ${event.output.fileName} already exists, skipping`,
             ),
           },
           {
@@ -208,39 +239,7 @@ export const CopyTemplateMachine = setup({
     rename: {
       invoke: {
         input: ({ context }) => context,
-        src: fromPromise(async ({ input }) => {
-          const { targetDir, name, filesToCopy } = input;
-
-          const currentFile = filesToCopy[0];
-          const targetFileName = transformName(currentFile, name);
-          const targetPath = path.join(targetDir, targetFileName);
-
-          // Read file content
-          const content = await readFile(targetPath, "utf-8");
-
-          // Replace content placeholders
-          let updatedContent = content;
-
-          // Replace kebab-case placeholders
-          updatedContent = updatedContent.replace(/template-file/g, name);
-
-          // Replace snake_case placeholders
-          const snakeName = kebabCaseToSnakeCase(name);
-          updatedContent = updatedContent.replace(/template_file/g, snakeName);
-
-          // Replace PascalCase placeholders
-          const pascalName = kebabCaseToPascalCase(name);
-          updatedContent = updatedContent.replace(/TemplateFile/g, pascalName);
-
-          // Replace camelCase placeholders
-          const camelName = kebabCaseToCamelCase(name);
-          updatedContent = updatedContent.replace(/templateFile/g, camelName);
-
-          // Write updated content back
-          await writeFile(targetPath, updatedContent);
-
-          return { fileName: targetFileName };
-        }),
+        src: "renameNextFile",
         onDone: {
           target: "popFile",
           actions: logInfo(
