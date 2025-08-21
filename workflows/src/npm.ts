@@ -40,7 +40,6 @@ export function runNpmCommandFactory({
         src: fromPromise(
           async ({ input }: { input: WorkflowInput }): Promise<string> => {
             if (input.dryRun) {
-              console.log("Dry run npm command", command);
               return "Dry run";
             }
             return await getCommand()();

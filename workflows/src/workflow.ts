@@ -160,6 +160,10 @@ export abstract class SimpleWorkflow<
   };
 }
 
+interface XStateWorkflowOptions {
+  dryRun?: boolean;
+}
+
 export abstract class XStateWorkflow extends Workflow {
   abstract readonly machine: AnyStateMachine;
   private input: any;
@@ -169,8 +173,11 @@ export abstract class XStateWorkflow extends Workflow {
     return this.machine.id;
   }
 
-  init = async (...args: any[]): Promise<Result<any>> => {
-    if (args.length !== this.cliArguments.length + 2) {
+  init = async (
+    options: XStateWorkflowOptions,
+    ...args: string[]
+  ): Promise<Result<any>> => {
+    if (args.length !== this.cliArguments.length) {
       return {
         error: new Error(
           `Expected ${this.cliArguments.length} arguments, got ${args.length}`,
@@ -181,10 +188,8 @@ export abstract class XStateWorkflow extends Workflow {
     for (let i = 0; i < this.cliArguments.length; i++) {
       input[this.cliArguments[i].name] = args[i];
     }
-    const options = args[this.cliArguments.length] as { dryRun?: boolean };
     input.dryRun = options.dryRun;
     this.input = input;
-    console.log("input", input);
 
     return { data: undefined };
   };
@@ -214,11 +219,12 @@ export abstract class XStateWorkflow extends Workflow {
   };
 
   goToNextStep = async (): Promise<void> => {
+    const { log } = getSafReporters();
     if (!this.actor) {
       throw new Error("Workflow not started");
     }
     if (this.actor.getSnapshot().status === "error") {
-      console.log("This workflow has errored. And could not continue.");
+      log.error("This workflow has errored. And could not continue.");
       return;
     }
 
@@ -226,7 +232,7 @@ export abstract class XStateWorkflow extends Workflow {
     await waitFor(this.actor, allChildrenSettled);
 
     if (this.actor.getSnapshot().status === "done") {
-      console.log("\nThis workflow has been completed.\n");
+      log.info("\nThis workflow has been completed.\n");
       return;
     }
   };

@@ -35,30 +35,20 @@ export function runWorkflowCli(workflows: WorkflowMeta[]) {
     );
   workflows.forEach(({ Workflow, name, description, cliArguments }) => {
     let chain = kickoffProgram.command(name).description(description);
-    chain.option("--dry-run", "Dry run the workflow");
     cliArguments.forEach((arg) => {
       chain = chain.argument(arg.name, arg.description, arg.defaultValue);
     });
     chain.action(async (...args) => {
-      const options = args[args.length - 2] as { dryRun?: boolean };
-      const dryRun = options.dryRun;
       const workflow = new Workflow();
-      const result = await workflow.init(...args);
+      const result = await workflow.init(
+        { dryRun: false },
+        ...args.slice(0, cliArguments.length),
+      );
       if (result.error) {
         console.error(result.error.message);
         process.exit(1);
       }
       await workflow.kickoff();
-      if (dryRun) {
-        while (!workflow.done()) {
-          await workflow.goToNextStep();
-        }
-        console.log(
-          "Dry run complete",
-          // JSON.stringify(workflow.getChecklist(), null, 2),
-        );
-        return;
-      }
       saveWorkflow(workflow);
     });
   });
@@ -94,6 +84,31 @@ export function runWorkflowCli(workflows: WorkflowMeta[]) {
       saveWorkflow(workflow);
     });
 
+  const checklistProgram = program
+    .command("checklist")
+    .description(addNewLinesToString("Show the checklist for a workflow."));
+
+  workflows.forEach(({ Workflow, name, description, cliArguments }) => {
+    let chain = checklistProgram.command(name).description(description);
+    chain.action(async () => {
+      const workflow = new Workflow();
+      const exampleArgs = cliArguments.map((arg) => arg.exampleValue);
+      const result = await workflow.init({ dryRun: true }, ...exampleArgs);
+      if (result.error) {
+        console.error(result.error.message);
+        process.exit(1);
+      }
+      await workflow.kickoff();
+      while (!workflow.done()) {
+        await workflow.goToNextStep();
+      }
+      console.log(
+        "Checklist",
+        JSON.stringify(workflow.getChecklist(), null, 2),
+      );
+    });
+  });
+
   const reqId = generateRequestId();
 
   const ctx: SafContext = {
@@ -103,7 +118,7 @@ export function runWorkflowCli(workflows: WorkflowMeta[]) {
     subsystemName: "cli",
   };
 
-  const dryRun = process.argv.includes("--dry-run");
+  const dryRun = process.argv.includes("checklist");
 
   const reporters: SafReporters = {
     log: dryRun

@@ -20,7 +20,6 @@ export const copyNextFile = fromPromise(
     const targetPath = path.join(targetDir, targetFileName);
 
     if (dryRun) {
-      console.log("Dry run copy file", targetFileName);
       return { skipped: false, fileName: targetFileName };
     }
 

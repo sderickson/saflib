@@ -15,6 +15,7 @@ export interface CLIArgument {
   name: string;
   description?: string;
   defaultValue?: string;
+  exampleValue?: string;
 }
 
 export type WorkflowStatus = "not started" | "in progress" | "completed";

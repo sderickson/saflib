@@ -116,6 +116,7 @@ export class AddEnvVarWorkflow extends XStateWorkflow {
       name: "name",
       description:
         "The name of the environment variable (in all upper case, e.g., 'API_KEY' or 'DATABASE_URL')",
+      exampleValue: "EXAMPLE_ENV_VAR",
     },
   ];
 }

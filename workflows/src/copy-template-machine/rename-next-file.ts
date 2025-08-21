@@ -37,7 +37,6 @@ export const renameNextFile = fromPromise(
     updatedContent = updatedContent.replace(/templateFile/g, camelName);
 
     if (dryRun) {
-      console.log("Dry run rename file", targetFileName);
       return { fileName: targetFileName };
     }
 
