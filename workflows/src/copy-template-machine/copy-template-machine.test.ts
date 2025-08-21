@@ -3,13 +3,13 @@ import { createActor, waitFor } from "xstate";
 import {
   CopyTemplateMachine,
   updateTemplateFileFactory,
-  type TemplateWorkflowContext,
 } from "./copy-template-machine.ts";
-import { allChildrenSettled } from "./utils.ts";
+import type { TemplateWorkflowContext } from "./types.ts";
+import { allChildrenSettled } from "../utils.ts";
 import { mkdir, writeFile, rm, readFile } from "node:fs/promises";
 import path from "node:path";
 import { setup } from "xstate";
-import { workflowActionImplementations, workflowActors } from "./xstate.ts";
+import { workflowActionImplementations, workflowActors } from "../xstate.ts";
 import { writeFileSync, unlinkSync, existsSync } from "node:fs";
 
 interface TestContext extends TemplateWorkflowContext {
