@@ -5,3 +5,5 @@
 # Variable: metricHistogramDefaultBuckets
 
 > `const` **metricHistogramDefaultBuckets**: `number`[]
+
+For Prometheus metrics.
