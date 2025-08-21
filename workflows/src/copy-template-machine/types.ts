@@ -1,15 +1,7 @@
-import type { WorkflowContext } from "../xstate.ts";
+import type { TemplateWorkflowContext } from "../types.ts";
 
 export interface CopyTemplateMachineInput {
   name: string; // kebab-case name
-  targetDir: string;
-  sourceDir: string;
-}
-
-// Machines which invoke this one should include this context
-export interface TemplateWorkflowContext extends WorkflowContext {
-  name: string;
-  pascalName: string;
   targetDir: string;
   sourceDir: string;
 }
