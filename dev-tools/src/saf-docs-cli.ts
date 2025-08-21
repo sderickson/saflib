@@ -77,6 +77,8 @@ program
     }
     const entrypointCommands = Object.values(entrypoints)
       .filter((entrypoint) => !entrypoint.includes("./workflows"))
+      .filter((entrypoint) => !entrypoint.includes("./eslint.config.js"))
+      .filter((entrypoint) => !entrypoint.includes("./tsconfig.json"))
       .map((entrypoint) => {
         return `--entryPoints ${entrypoint}`;
       });
@@ -105,7 +107,7 @@ program
       "--hideBreadcrumbs",
 
       // It's nice that typedoc identifies forgotten exports. Use it to enforce!
-      // "--treatValidationWarningsAsErrors",
+      "--treatValidationWarningsAsErrors",
 
       // Since I'm committing these to the repo, sources will create a bunch of
       // noise with their GitHub-links-with-shas.

@@ -20,7 +20,7 @@ Each package which depends on `@saflib/express` should have the following struct
 │   │   └── ...
 │   ├── {feature-2}/
 │   └── ...
-├── package.json
+└── package.json
 ```
 
 ## Files and Directories Explained
