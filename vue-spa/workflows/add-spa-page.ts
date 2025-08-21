@@ -4,7 +4,7 @@ import {
   workflowActors,
   logInfo,
   XStateWorkflow,
-  useTemplateStateFactory,
+  copyTemplateStateFactory,
   kebabCaseToPascalCase,
   updateTemplateFileFactory,
   type TemplateWorkflowContext,
@@ -52,7 +52,7 @@ export const AddSpaPageWorkflowMachine = setup({
   entry: logInfo("Successfully began workflow"),
   states: {
     // First copy over the files
-    ...useTemplateStateFactory({
+    ...copyTemplateStateFactory({
       stateName: "copyTemplate",
       nextStateName: "updateLoader",
     }),

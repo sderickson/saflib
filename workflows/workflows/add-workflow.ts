@@ -4,7 +4,7 @@ import {
   workflowActors,
   XStateWorkflow,
   promptAgentFactory,
-  useTemplateStateFactory,
+  copyTemplateStateFactory,
   type TemplateWorkflowContext,
 } from "@saflib/workflows";
 import { getSafReporters } from "@saflib/node";
@@ -66,7 +66,7 @@ export const AddWorkflowMachine = setup({
   },
   states: {
     // First copy over the template files
-    ...useTemplateStateFactory({
+    ...copyTemplateStateFactory({
       stateName: "initialize",
       nextStateName: "updateWorkflowFile",
     }),

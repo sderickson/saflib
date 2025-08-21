@@ -4,7 +4,7 @@ import {
   workflowActors,
   logInfo,
   XStateWorkflow,
-  useTemplateStateFactory,
+  copyTemplateStateFactory,
   updateTemplateFileFactory,
   runTestsFactory,
   promptAgentFactory,
@@ -56,7 +56,7 @@ export const ToDoWorkflowMachine = setup({
   // TODO: update the states to match the actual workflow you're creating. It will usually involve some combination of copying template files, updating files, and running tests.
   states: {
     // First copy over the template files
-    ...useTemplateStateFactory({
+    ...copyTemplateStateFactory({
       stateName: "copyTemplate",
       nextStateName: "updateMainFile",
     }),

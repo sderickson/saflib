@@ -154,7 +154,7 @@ export const CopyTemplateMachine = setup({
   },
 });
 
-export function useTemplateStateFactory({
+export function copyTemplateStateFactory({
   stateName,
   nextStateName,
 }: {

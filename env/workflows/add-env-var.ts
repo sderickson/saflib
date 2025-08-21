@@ -4,7 +4,7 @@ import {
   workflowActors,
   logInfo,
   XStateWorkflow,
-  useTemplateStateFactory,
+  copyTemplateStateFactory,
   updateTemplateFileFactory,
   runNpmCommandFactory,
   type TemplateWorkflowContext,
@@ -53,7 +53,7 @@ export const AddEnvVarWorkflowMachine = setup({
   entry: logInfo("Successfully began add-env-var workflow"),
   states: {
     // Copy over the template schema file
-    ...useTemplateStateFactory({
+    ...copyTemplateStateFactory({
       stateName: "copyTemplate",
       nextStateName: "updateSchema",
     }),
