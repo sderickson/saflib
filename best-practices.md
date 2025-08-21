@@ -1,10 +1,27 @@
 # Best Practices
 
-The following are rules that should be followed for _any_ software stack that aims to enable both human and AI agents work quickly and effectively. SAF is how I develop and exemplify these rules.
+The following are rules that should be followed for _any_ software stack that aims to enable both human and AI agents work quickly and effectively, given that what is good for one tends to be good for the other. SAF is how I develop and exemplify these rules. Other documentation in this repository will reference these rules when they are applied.
+
+## Embrace Type Safety at Every Layer
+
+Many of the following rules depend on the stack having a type system. Any stack that does not provide a way to type and enforce _every_ interface in the stack (including APIs and environment variables) will be fundamentally hampered, as static analysis provides an immediate and reliable feedback loop which is critical for rapid and reliable development.
 
 ## Pass Objects
 
 For complex function signatures, arguments should be passed in as objects. Even if you are adding the first and only parameter to start, wrap it in an object so that if more options are added later, the function signature does not need to change.
+
+```typescript
+// Bad
+function createUser(
+  name: string,
+  email: string,
+  age: number,
+  isAdmin: boolean,
+) {}
+
+// Good
+function createUser({ name, email, age, isAdmin }: CreateUserParams) {}
+```
 
 **Benefits:**
 
@@ -39,10 +56,19 @@ The types of Errors returned should be created, managed, and exported by the pac
 
 **Benefits:**
 
-- There's a clear delination between expected and unexpected errors.
+- There's a clear delineation between expected and unexpected errors.
 - Expected errors are typed, and TypeScript nudges the developer to handle them.
 - If a function starts returning a new error type, consumers can be forced to handle it by using the `throw error satisfies never` pattern.
 - By masking dependency exceptions, libraries protect against an entire category of nasty coupling.
+
+## Name Well
+
+Give functions, types, parameters, and returned objects concise, clear, and consistent names. Shared semantic meaning can help, but mostly this comes down to practicing good writing and communication.
+
+**Benefits:**
+
+- Like with Pass Objects, this reduces the context window size and need to navigate around the codebase.
+- If a name is vague and also undocumented, its purpose or value may be unclear and used counter to the original intent.
 
 ## Keep Files Small
 
@@ -68,12 +94,15 @@ Anything that is shared across system boundaries, such data structures or interf
 
 This provides quick and straightforward feedback when a shared contract changes. It's easy to find what needs to adapt to the new contract, without the need for running automated tests, and is faster than even well-written and speedy unit tests.
 
-Assets to unify in one package and share with other packages include:
+Assets to be owned by one package, shared with other packages, and enforced by static analysis across all usages include:
 
 - URLs to product pages
 - Strings
 - Product events
 - HTTP/gRPC request and response objects
+- Business models
+- Environment variables
+- Configuration objects
 
 Ideally, there are tests which ensure all assets for a given file (such as strings for a frontend component) are used _by_ that file, to ensure dead assets are removed and other packages which depend on them are updated.
 
@@ -115,7 +144,7 @@ A solid automated test suite will include:
 
 Packages should be measured for how covered _their_ code is by _their_ tests. A majority of code should be tested at least, with at least one unit or integration test per file (component, endpoint, query, etc). These files should be immediately adjacent to the file they test (no separate "tests" directories).
 
-Tests should stick to testing the package, API, or user interface they are targeting as much as possible. They should avoid reaching behind and checking, for example, database entries directly. This is not a hard-and-fast rule however; here are some exceptions:
+Tests should stick to testing the package, API, or user interface they are targeting as much as possible. They should avoid reaching behind and checking, for example, database entries directly, because the tests should focus on the interface and not its dependencies. This is not a hard-and-fast rule however; here are some exceptions:
 
 - Checking product events or key metrics are recorded correctly after a user behavior or endpoint call, to ensure analytics and monitoring don't break.
 - Viewing emails sent in order to make sure they do get sent, or to get some contents such as an email verification code, which are necessary for the test to continue.
