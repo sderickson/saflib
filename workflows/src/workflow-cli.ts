@@ -39,7 +39,8 @@ export function runWorkflowCli(workflows: WorkflowMeta[]) {
       chain = chain.argument(arg.name, arg.description, arg.defaultValue);
     });
     chain.action(async (...args) => {
-      console.log("args", args);
+      const options = args[args.length - 2] as { dryRun?: boolean };
+      const dryRun = options.dryRun;
       const workflow = new Workflow();
       const result = await workflow.init(...args);
       if (result.error) {
@@ -47,6 +48,12 @@ export function runWorkflowCli(workflows: WorkflowMeta[]) {
         process.exit(1);
       }
       await workflow.kickoff();
+      if (dryRun) {
+        while (!workflow.done()) {
+          await workflow.goToNextStep();
+        }
+        return;
+      }
       saveWorkflow(workflow);
     });
   });

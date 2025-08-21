@@ -165,17 +165,11 @@ export function copyTemplateStateFactory({
   return {
     [stateName]: {
       invoke: {
-        input: ({
-          context,
-          input,
-        }: {
-          context: TemplateWorkflowContext;
-          input: WorkflowInput;
-        }) => ({
+        input: ({ context }: { context: TemplateWorkflowContext }) => ({
           sourceDir: context.sourceDir,
           targetDir: context.targetDir,
           name: context.name,
-          dryRun: input.dryRun,
+          dryRun: context.dryRun,
         }),
         src: CopyTemplateMachine,
         onDone: {

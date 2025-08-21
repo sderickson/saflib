@@ -40,7 +40,6 @@ export const AddEnvVarWorkflowMachine = setup({
     "Add a new environment variable to the schema and generate the corresponding TypeScript types",
   initial: "copyTemplate",
   context: ({ input }) => {
-    console.log("input", input);
     const __filename = fileURLToPath(import.meta.url);
     const __dirname = path.dirname(__filename);
     const sourceDir = path.join(__dirname, "add-env-vars");

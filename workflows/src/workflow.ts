@@ -31,6 +31,7 @@ export abstract class Workflow {
   abstract goToNextStep(): Promise<void>;
   abstract dehydrate(): WorkflowBlob;
   abstract hydrate(blob: WorkflowBlob): void;
+  abstract done(): boolean;
 }
 
 export abstract class SimpleWorkflow<
@@ -147,6 +148,10 @@ export abstract class SimpleWorkflow<
     this.stepIndex = blob.internalState.stepIndex;
     this.status = blob.internalState.status;
   }
+
+  done = (): boolean => {
+    return this.status === "completed";
+  };
 }
 
 export abstract class XStateWorkflow extends Workflow {
@@ -159,7 +164,7 @@ export abstract class XStateWorkflow extends Workflow {
   }
 
   init = async (...args: any[]): Promise<Result<any>> => {
-    if (args.length !== this.cliArguments.length + 3) {
+    if (args.length !== this.cliArguments.length + 2) {
       return {
         error: new Error(
           `Expected ${this.cliArguments.length} arguments, got ${args.length}`,
@@ -232,5 +237,12 @@ export abstract class XStateWorkflow extends Workflow {
       snapshot: blob.snapshotState,
     });
     this.actor.start();
+  };
+
+  done = (): boolean => {
+    if (!this.actor) {
+      return false;
+    }
+    return this.actor.getSnapshot().status === "done";
   };
 }
