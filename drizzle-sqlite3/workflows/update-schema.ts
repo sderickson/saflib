@@ -41,6 +41,7 @@ export const UpdateSchemaWorkflowMachine = setup({
     return {
       docPath: refDocAbsPath,
       loggedLast: false,
+      checklist: [],
       systemPrompt: `You are updating the schema of a database built off the @saflib/drizzle-sqlite3 package. This includes following best practices and generating migration files.`,
     };
   },

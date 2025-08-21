@@ -14,6 +14,7 @@ import {
 } from "@saflib/node";
 import { format } from "winston";
 import { type TransformableInfo } from "logform";
+import { XStateWorkflow } from "./workflow.ts";
 
 export function runWorkflowCli(workflows: WorkflowMeta[]) {
   setServiceName("workflows");
@@ -88,26 +89,36 @@ export function runWorkflowCli(workflows: WorkflowMeta[]) {
     .command("checklist")
     .description(addNewLinesToString("Show the checklist for a workflow."));
 
-  workflows.forEach(({ Workflow, name, description, cliArguments }) => {
-    let chain = checklistProgram.command(name).description(description);
-    chain.action(async () => {
-      const workflow = new Workflow();
-      const exampleArgs = cliArguments.map((arg) => arg.exampleValue);
-      const result = await workflow.init({ dryRun: true }, ...exampleArgs);
-      if (result.error) {
-        console.error(result.error.message);
-        process.exit(1);
-      }
-      await workflow.kickoff();
-      while (!workflow.done()) {
-        await workflow.goToNextStep();
-      }
-      console.log(
-        "Checklist",
-        JSON.stringify(workflow.getChecklist(), null, 2),
-      );
+  const supportedWorkflows = workflows
+    .filter(({ cliArguments }) =>
+      cliArguments.every((arg) => arg.exampleValue !== undefined),
+    )
+    .filter(({ Workflow }) => {
+      return new Workflow() instanceof XStateWorkflow;
     });
-  });
+
+  supportedWorkflows.forEach(
+    ({ Workflow, name, description, cliArguments }) => {
+      let chain = checklistProgram.command(name).description(description);
+      chain.action(async () => {
+        const workflow = new Workflow();
+        const exampleArgs = cliArguments.map((arg) => arg.exampleValue);
+        const result = await workflow.init({ dryRun: true }, ...exampleArgs);
+        if (result.error) {
+          console.error(result.error.message);
+          process.exit(1);
+        }
+        await workflow.kickoff();
+        while (!workflow.done()) {
+          await workflow.goToNextStep();
+        }
+        console.log(
+          "Checklist",
+          JSON.stringify(workflow.getChecklist(), null, 2),
+        );
+      });
+    },
+  );
 
   const reqId = generateRequestId();
 
