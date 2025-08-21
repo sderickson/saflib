@@ -5,6 +5,7 @@ import {
   promptAgent,
   runCommandAsync,
   type WorkflowInput,
+  type WorkflowContext,
 } from "./xstate.ts";
 
 interface RunNpmCommandFactoryOptions {
@@ -35,6 +36,7 @@ export function runNpmCommandFactory({
   return {
     [stateName]: {
       invoke: {
+        input: ({ context }: { context: WorkflowContext }) => context,
         src: fromPromise(
           async ({ input }: { input: WorkflowInput }): Promise<string> => {
             if (input.dryRun) {
