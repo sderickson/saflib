@@ -8,12 +8,12 @@ import {
   promptAgent,
   type WorkflowContext,
   type FactoryFunctionOptions,
-} from "./xstate.ts";
+} from "../xstate.ts";
 import {
   kebabCaseToPascalCase,
   kebabCaseToCamelCase,
   kebabCaseToSnakeCase,
-} from "./utils.ts";
+} from "../utils.ts";
 import { readFileSync } from "node:fs";
 import {
   readdir,

@@ -20,7 +20,7 @@ export function concreteWorkflowToMeta(
 }
 
 export * from "./src/xstate.ts";
-export * from "./src/copy-template-machine.ts";
+export * from "./src/copy-template-machine/copy-template-machine.ts";
 export * from "./src/test-runner.ts";
 export * from "./src/chain.ts";
 export * from "./src/npm.ts";
