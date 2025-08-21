@@ -90,9 +90,7 @@ Software should be broken up into packages which have a well-defined purpose, a 
 
 ## Specify and Enforce Shared APIs, Models, and Strings
 
-Anything that is shared across system boundaries, such data structures or interfaces, should have a clear, independent source of truth, and that source of truth should be enforced by every consumer, ideally by static analysis or type checking.
-
-This provides quick and straightforward feedback when a shared contract changes. It's easy to find what needs to adapt to the new contract, without the need for running automated tests, and is faster than even well-written and speedy unit tests.
+Anything that is shared across system boundaries should have a clear, independent source of truth, and that source of truth should be enforced by every consumer, ideally by static analysis or type checking.
 
 Assets to be owned by one package, shared with other packages, and enforced by static analysis across all usages include:
 
@@ -104,12 +102,13 @@ Assets to be owned by one package, shared with other packages, and enforced by s
 - Environment variables
 - Configuration objects
 
-Ideally, there are tests which ensure all assets for a given file (such as strings for a frontend component) are used _by_ that file, to ensure dead assets are removed and other packages which depend on them are updated.
+For serialized data, prefer flattened data stuctures with identifiers for related data rather than nested objects.
 
 **Benefits:**
 
 - Quick feedback when a shared contract changes which would break dependent code, showing how much work there is to do and where to do it.
 - Shared strings reduce the likelihood of typos and inconsistencies, shifting fixes left. This is particularly useful for tests which check that a given string exists in a UI, or needs to navigate to a given page.
+- Flattened data structures allows for passing only the data that is needed, and avoids coupling those structures to how it was transported (e.g. through one or several API calls).
 
 ## Build and Maintain Fakes, Stubs, and Adapters for Service Boundaries
 
