@@ -1,4 +1,4 @@
-import { fromPromise, raise } from "xstate";
+import { assign, fromPromise, raise } from "xstate";
 import {
   logInfo,
   logError,
@@ -60,6 +60,14 @@ export function runNpmCommandFactory({
           ],
         },
       },
+      entry: assign({
+        checklist: ({ context }: { context: WorkflowContext }) => [
+          ...context.checklist,
+          {
+            description: `Run npm ${command}`,
+          },
+        ],
+      }),
       on: {
         prompt: {
           actions: promptAgent(

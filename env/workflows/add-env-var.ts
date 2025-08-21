@@ -100,6 +100,11 @@ export const AddEnvVarWorkflowMachine = setup({
       type: "final",
     },
   },
+  output: ({ context }) => {
+    return {
+      checklist: context.checklist,
+    };
+  },
 });
 
 export class AddEnvVarWorkflow extends XStateWorkflow {

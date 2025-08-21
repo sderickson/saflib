@@ -1,5 +1,6 @@
 import type {
   CLIArgument,
+  ChecklistItem,
   Result,
   Step,
   WorkflowBlob,
@@ -32,6 +33,7 @@ export abstract class Workflow {
   abstract dehydrate(): WorkflowBlob;
   abstract hydrate(blob: WorkflowBlob): void;
   abstract done(): boolean;
+  abstract getChecklist(): ChecklistItem[];
 }
 
 export abstract class SimpleWorkflow<
@@ -152,6 +154,10 @@ export abstract class SimpleWorkflow<
   done = (): boolean => {
     return this.status === "completed";
   };
+
+  getChecklist = (): ChecklistItem[] => {
+    return [];
+  };
 }
 
 export abstract class XStateWorkflow extends Workflow {
@@ -244,5 +250,12 @@ export abstract class XStateWorkflow extends Workflow {
       return false;
     }
     return this.actor.getSnapshot().status === "done";
+  };
+
+  getChecklist = (): ChecklistItem[] => {
+    if (!this.actor) {
+      return [];
+    }
+    return this.actor.getSnapshot().output;
   };
 }

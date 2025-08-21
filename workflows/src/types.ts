@@ -38,3 +38,8 @@ export interface TemplateWorkflowContext extends WorkflowContext {
   targetDir: string;
   sourceDir: string;
 }
+
+export interface ChecklistItem {
+  description: string;
+  subitems?: ChecklistItem[];
+}

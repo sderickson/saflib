@@ -11,18 +11,13 @@ import {
   fromPromise,
   raise,
 } from "xstate";
+import type { ChecklistItem } from "./types.ts";
 
 // general types
 
 interface ActionParam<C, E extends AnyEventObject> {
   context: C;
   event: E;
-}
-
-export interface ChecklistItem {
-  name: string;
-  description: string;
-  subitems?: ChecklistItem[];
 }
 
 export interface WorkflowInput {
