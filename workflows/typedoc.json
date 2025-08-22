@@ -9,8 +9,6 @@
     "RunTestsFactoryOptions",
     "UpdateTemplateFileFactoryOptions",
     "XStateWorkflowOptions",
-    "ActionParam",
-    "CopyTemplateMachineInput",
-    "CopyTemplateMachineContext"
+    "ActionParam"
   ]
 }

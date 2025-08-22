@@ -6,13 +6,18 @@ import {
   logError,
   logWarn,
   promptAgent,
+  type ComposerFunctionOptions,
 } from "../xstate.ts";
 import { getGitHubUrl, kebabCaseToPascalCase } from "../utils.ts";
 import type {
   CopyTemplateMachineContext,
   CopyTemplateMachineInput,
 } from "./types.ts";
-import type { ChecklistItem, TemplateWorkflowContext } from "../types.ts";
+import type {
+  ChecklistItem,
+  TemplateWorkflowContext,
+  XStateMachineStates,
+} from "../types.ts";
 import { fetchFileNames } from "./fetch-file-names.ts";
 import { copyNextFile } from "./copy-next-file.ts";
 import { renameNextFile } from "./rename-next-file.ts";
@@ -153,13 +158,16 @@ export const CopyTemplateMachine = setup({
   },
 });
 
-export function copyTemplateStateComposer({
-  stateName,
-  nextStateName,
-}: {
-  stateName: string;
-  nextStateName: string;
-}) {
+/**
+ * Composer for copying template files to a target directory. Also replaces every
+ * instance "template-file", "template_file", "TemplateFile", and "templateFile"
+ * with the name of the thing being created, passed in via the CLI or other interface.
+ * To use this composer, the machine context must extend TemplateWorkflowContext.
+ */
+export function copyTemplateStateComposer(
+  options: ComposerFunctionOptions,
+): XStateMachineStates {
+  const { stateName, nextStateName } = options;
   return {
     [stateName]: {
       invoke: {

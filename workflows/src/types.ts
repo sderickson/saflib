@@ -88,3 +88,10 @@ export interface ChecklistItem {
   description: string;
   subitems?: ChecklistItem[];
 }
+
+/**
+ * State objects which can be passed into [XStateMachine Actor Definitions](https://stately.ai/docs/state-machine-actors). These are typed simply here because I'll be damned if I can figure out how to use the XState library's provided generics.
+ */
+export interface XStateMachineStates {
+  [key: string]: object;
+}

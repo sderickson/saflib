@@ -4,16 +4,19 @@
 
 # Function: copyTemplateStateComposer()
 
-> **copyTemplateStateComposer**(`__namedParameters`): `object`
+> **copyTemplateStateComposer**(`options`): [`XStateMachineStates`](../interfaces/XStateMachineStates.md)
+
+Composer for copying template files to a target directory. Also replaces every
+instance "template-file", "template_file", "TemplateFile", and "templateFile"
+with the name of the thing being created, passed in via the CLI or other interface.
+To use this composer, the machine context must extend TemplateWorkflowContext.
 
 ## Parameters
 
 | Parameter | Type |
 | ------ | ------ |
-| `__namedParameters` | \{ `nextStateName`: `string`; `stateName`: `string`; \} |
-| `__namedParameters.nextStateName` | `string` |
-| `__namedParameters.stateName` | `string` |
+| `options` | [`ComposerFunctionOptions`](../interfaces/ComposerFunctionOptions.md) |
 
 ## Returns
 
-`object`
+[`XStateMachineStates`](../interfaces/XStateMachineStates.md)

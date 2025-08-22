@@ -28,6 +28,7 @@
 | [WorkflowInput](interfaces/WorkflowInput.md) | Inputs every workflow machine receives. |
 | [WorkflowMeta](interfaces/WorkflowMeta.md) | Wrapper around a ConcreteWorkflow class. Honestly might not be necessary and could likely be removed. |
 | [WorkflowOutput](interfaces/WorkflowOutput.md) | Outputs every workflow machine returns. |
+| [XStateMachineStates](interfaces/XStateMachineStates.md) | State objects which can be passed into [XStateMachine Actor Definitions](https://stately.ai/docs/state-machine-actors). These are typed simply here because I'll be damned if I can figure out how to use XState's provided generics. |
 
 ## Type Aliases
 
@@ -53,7 +54,7 @@
 | [allChildrenSettled](functions/allChildrenSettled.md) | - |
 | [concreteWorkflowToMeta](functions/concreteWorkflowToMeta.md) | - |
 | [contextFromInput](functions/contextFromInput.md) | - |
-| [copyTemplateStateComposer](functions/copyTemplateStateComposer.md) | - |
+| [copyTemplateStateComposer](functions/copyTemplateStateComposer.md) | Composer for copying template files to a target directory. Also replaces every instance "template-file", "template_file", "TemplateFile", and "templateFile" with the name of the thing being created, passed in via the CLI or other interface. To use this composer, the machine context must extend TemplateWorkflowContext. |
 | [createChain](functions/createChain.md) | Creates a chain of XState machine states from an array of factory functions. |
 | [doesTestPass](functions/doesTestPass.md) | - |
 | [doTestsPass](functions/doTestsPass.md) | - |
