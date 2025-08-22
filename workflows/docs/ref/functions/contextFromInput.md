@@ -6,6 +6,8 @@
 
 > **contextFromInput**(`input`): [`WorkflowContext`](../interfaces/WorkflowContext.md)
 
+Helper function to create initial `WorkflowContext` from `WorkflowInput`.
+
 ## Parameters
 
 | Parameter | Type |

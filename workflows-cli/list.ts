@@ -12,7 +12,7 @@ import grpcNodeWorkflows from "@saflib/grpc/workflows";
 import nodeXstateWorkflows from "@saflib/node-xstate/workflows";
 import emailWorkflows from "@saflib/email/workflows";
 import envWorkflows from "@saflib/env/workflows";
-import { concreteWorkflowToMeta } from "@saflib/workflows";
+import { getPackageName } from "@saflib/workflows";
 
 const workflowClasses: ConcreteWorkflow[] = [
   ...metaWorkflows,
@@ -28,6 +28,22 @@ const workflowClasses: ConcreteWorkflow[] = [
   ...emailWorkflows,
   ...envWorkflows,
 ];
+
+function concreteWorkflowToMeta(workflow: ConcreteWorkflow): WorkflowMeta {
+  const stubWorkflow = new workflow();
+  if (!stubWorkflow.sourceUrl) {
+    throw new Error(
+      `Workflow ${stubWorkflow.name} must have a sourceUrl property.`,
+    );
+  }
+  return {
+    name: stubWorkflow.name,
+    description: stubWorkflow.description,
+    cliArguments: stubWorkflow.cliArguments,
+    packageName: getPackageName(stubWorkflow.sourceUrl),
+    Workflow: workflow,
+  };
+}
 
 export const workflows: WorkflowMeta[] = workflowClasses.map(
   concreteWorkflowToMeta,

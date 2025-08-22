@@ -347,6 +347,9 @@ export function getPackageName(rootUrl: string) {
   }
 }
 
+/**
+ * Helper function to create initial `WorkflowContext` from `WorkflowInput`.
+ */
 export function contextFromInput(input: WorkflowInput): WorkflowContext {
   return {
     checklist: [],
@@ -355,6 +358,9 @@ export function contextFromInput(input: WorkflowInput): WorkflowContext {
   };
 }
 
+/**
+ * Helper function to create `WorkflowOutput` from `WorkflowContext`.
+ */
 export function outputFromContext({
   context,
 }: {

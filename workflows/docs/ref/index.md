@@ -48,27 +48,20 @@
 
 | Function | Description |
 | ------ | ------ |
-| [addNewLinesToString](functions/addNewLinesToString.md) | Given a string which may have newlines already included, add /n to each line such that no line is longer than maxLineWidth. |
-| [allChildrenSettled](functions/allChildrenSettled.md) | - |
-| [concreteWorkflowToMeta](functions/concreteWorkflowToMeta.md) | - |
-| [contextFromInput](functions/contextFromInput.md) | - |
+| [contextFromInput](functions/contextFromInput.md) | Helper function to create initial `WorkflowContext` from `WorkflowInput`. |
 | [copyTemplateStateComposer](functions/copyTemplateStateComposer.md) | Composer for copying template files to a target directory. Also replaces every instance "template-file", "template_file", "TemplateFile", and "templateFile" with the name of the thing being created, passed in via the CLI or other interface. To use this composer, the machine context must extend TemplateWorkflowContext. |
 | [createChain](functions/createChain.md) | Creates a chain of XState machine states from an array of factory functions. |
 | [doesTestPass](functions/doesTestPass.md) | - |
 | [doTestsPass](functions/doTestsPass.md) | - |
 | [doTestsPassSync](functions/doTestsPassSync.md) | - |
 | [generateMigrations](functions/generateMigrations.md) | - |
-| [getCurrentPackage](functions/getCurrentPackage.md) | - |
-| [getGitHubUrl](functions/getGitHubUrl.md) | - |
 | [getPackageName](functions/getPackageName.md) | - |
 | [kebabCaseToCamelCase](functions/kebabCaseToCamelCase.md) | - |
 | [kebabCaseToPascalCase](functions/kebabCaseToPascalCase.md) | - |
-| [kebabCaseToSnakeCase](functions/kebabCaseToSnakeCase.md) | - |
 | [logError](functions/logError.md) | - |
 | [logInfo](functions/logInfo.md) | - |
 | [logWarn](functions/logWarn.md) | - |
-| [outputFromContext](functions/outputFromContext.md) | - |
-| [print](functions/print.md) | - |
+| [outputFromContext](functions/outputFromContext.md) | Helper function to create `WorkflowOutput` from `WorkflowContext`. |
 | [promptAgent](functions/promptAgent.md) | - |
 | [promptAgentFactory](functions/promptAgentFactory.md) | - |
 | [promptState](functions/promptState.md) | - |

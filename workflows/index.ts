@@ -1,31 +1,7 @@
-import {
-  getPackageName,
-  type WorkflowMeta,
-  type ConcreteWorkflow,
-} from "./src/workflow.ts";
-
 export * from "./src/workflow.ts";
 export * from "./src/saf-workflow-cli/index.ts";
 export type * from "./src/types.ts";
-export * from "./src/utils.ts";
-
-export function concreteWorkflowToMeta(
-  workflow: ConcreteWorkflow,
-): WorkflowMeta {
-  const stubWorkflow = new workflow();
-  if (!stubWorkflow.sourceUrl) {
-    throw new Error(
-      `Workflow ${stubWorkflow.name} must have a sourceUrl property.`,
-    );
-  }
-  return {
-    name: stubWorkflow.name,
-    description: stubWorkflow.description,
-    cliArguments: stubWorkflow.cliArguments,
-    packageName: getPackageName(stubWorkflow.sourceUrl),
-    Workflow: workflow,
-  };
-}
+export { kebabCaseToPascalCase, kebabCaseToCamelCase } from "./src/utils.ts";
 
 export * from "./src/xstate.ts";
 export { copyTemplateStateComposer } from "./src/copy-template-machine/copy-template-machine.ts";
