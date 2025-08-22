@@ -53,7 +53,7 @@ export function runNpmCommandFactory({
         checklist: ({ context }: { context: WorkflowContext }) => [
           ...context.checklist,
           {
-            description: `Run npm ${command}`,
+            description: `Run \`npm ${command}\``,
           },
         ],
       }),
