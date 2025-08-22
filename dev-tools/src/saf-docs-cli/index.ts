@@ -12,7 +12,9 @@ const program = new Command()
 program
   .command("generate")
   .description("Generate typedoc and CLI docs for the current package.")
-  .action(generateCommand);
+  .action(() => {
+    generateCommand(monorepoContext);
+  });
 
 const packagesSorted = Array.from(monorepoContext.packages).sort();
 
