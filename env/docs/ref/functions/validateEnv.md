@@ -4,7 +4,7 @@
 
 # Function: validateEnv()
 
-> **validateEnv**(`env`, `envSchema`): `any`
+> **validateEnv**(`env`, `envSchema`): `boolean`
 
 Given `process.env` and a schema, validate the environment variables. Throws an error if the environment variables are invalid. Run this when your service starts to ensure `typedEnv` conforms to the schema.
 
@@ -17,4 +17,4 @@ Given `process.env` and a schema, validate the environment variables. Throws an 
 
 ## Returns
 
-`any`
+`boolean`
