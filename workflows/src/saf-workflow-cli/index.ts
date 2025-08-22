@@ -1,23 +1,12 @@
 import { Command } from "commander";
 import type { ChecklistItem, WorkflowMeta } from "@saflib/workflows";
-import { loadWorkflow, saveWorkflow } from "./file-io.ts";
-import { addNewLinesToString } from "./utils.ts";
-import type { SafContext, SafReporters } from "@saflib/node";
-import {
-  generateRequestId,
-  safContextStorage,
-  safReportersStorage,
-  defaultErrorReporter,
-  createLogger,
-  setServiceName,
-  createSilentLogger,
-} from "@saflib/node";
-import { format } from "winston";
-import { type TransformableInfo } from "logform";
-import { XStateWorkflow } from "./workflow.ts";
+import { loadWorkflow, saveWorkflow } from "../file-io.ts";
+import { addNewLinesToString } from "../utils.ts";
+import { XStateWorkflow } from "../workflow.ts";
+import { setupContext } from "./context.ts";
 
 export function runWorkflowCli(workflows: WorkflowMeta[]) {
-  setServiceName("workflows");
+  setupContext({ silentLogging: process.argv.includes("checklist") });
 
   const program = new Command()
     .name("saf-workflow")
@@ -144,35 +133,5 @@ export function runWorkflowCli(workflows: WorkflowMeta[]) {
     },
   );
 
-  const reqId = generateRequestId();
-
-  const ctx: SafContext = {
-    requestId: reqId,
-    serviceName: "workflows",
-    operationName: "N/A",
-    subsystemName: "cli",
-  };
-
-  const dryRun = process.argv.includes("checklist");
-
-  const reporters: SafReporters = {
-    log: dryRun
-      ? createSilentLogger()
-      : createLogger({
-          subsystemName: "cli",
-          operationName: "workflow-cli",
-          format: format.combine(
-            format.colorize({ all: true }),
-            format.printf((info: TransformableInfo) => {
-              const { message } = info;
-              return `${message}`;
-            }),
-          ),
-        }),
-    logError: defaultErrorReporter,
-  };
-
-  safReportersStorage.enterWith(reporters);
-  safContextStorage.enterWith(ctx);
   program.parse(process.argv);
 }
