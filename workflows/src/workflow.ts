@@ -328,7 +328,11 @@ export function contextFromInput(input: WorkflowInput): WorkflowContext {
   };
 }
 
-export function outputFromContext(context: WorkflowContext): WorkflowOutput {
+export function outputFromContext({
+  context,
+}: {
+  context: WorkflowContext;
+}): WorkflowOutput {
   return {
     checklist: context.checklist,
   };
