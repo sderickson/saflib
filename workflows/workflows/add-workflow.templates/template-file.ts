@@ -37,7 +37,6 @@ export const ToDoWorkflowMachine = setup({
 }).createMachine({
   // TODO: replace "to-do" with the actual name of the workflow
   id: "to-do",
-  description: "TODO: Describe what this workflow does",
 
   // TODO: Only keep "copyTemplate" if this workflow actually copies over template files
   // Otherwise, remove the template states and update this to the actual initial state

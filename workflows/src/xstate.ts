@@ -226,7 +226,21 @@ export function promptAgentFactory<C extends WorkflowContext>({
       entry: raise({ type: "prompt" }),
       on: {
         prompt: {
-          actions: [promptAgent(promptForContext)],
+          actions: [
+            promptAgent(promptForContext),
+            assign({
+              checklist: ({ context }) => {
+                return [
+                  ...context.checklist,
+                  {
+                    description: promptForContext({
+                      context: context as C,
+                    }).split("\n")[0],
+                  },
+                ];
+              },
+            }),
+          ],
         },
         continue: {
           target: nextStateName,

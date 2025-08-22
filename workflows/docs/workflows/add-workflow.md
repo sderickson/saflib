@@ -21,8 +21,13 @@ To run this workflow automatically, tell the agent to:
 When run, the workflow will:
 
 * Copy template files and rename placeholders.
-  * Create index.ts from [template](https://github.com/sderickson/saflib/blob/main/workflows/workflows/add-workflow.templates/index.ts)
-  * Create example-workflow.ts from [template](https://github.com/sderickson/saflib/blob/main/workflows/workflows/add-workflow.templates/example-workflow.ts)
+  * Upsert **index.ts** from [template](https://github.com/sderickson/saflib/blob/main/workflows/workflows/add-workflow.templates/index.ts)
+  * Upsert **example-workflow.ts** from [template](https://github.com/sderickson/saflib/blob/main/workflows/workflows/add-workflow.templates/template-file.ts)
+* Add name, description, and cliArguments to the newly created workflows/example-workflow.ts.
+* Export **example-workflow** from **@your/target-package**. 
+* Add `@your/target-package` as a dependency of `@saflib/workflows-cli`.
+* Add `@your/target-package` to `@saflib/workflows-cli`'s list of workflows. 
+* Check that the new workflow appears in the saf-workflow CLI tool.
 
 
 ## Help Docs
@@ -30,7 +35,8 @@ When run, the workflow will:
 ```bash
 Usage: saf-workflow kickoff add-workflow [options] <name>
 
-Create a new workflow
+Create a new workflow and adds it to the CLI tool. Does not currently implement
+the workflow.
 
 Arguments:
   name        The name of the new workflow to create (e.g.,

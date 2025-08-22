@@ -95,15 +95,13 @@ export const CopyTemplateMachine = setup({
               logInfo(({ event }) => `Copied file to ${event.output.fileName}`),
               assign({
                 checklist: ({ context, event }) => {
-                  const fullPath = path.join(
-                    context.sourceDir,
-                    event.output.fileName,
-                  );
+                  const filesToCopy = context.filesToCopy;
+                  const fullPath = path.join(context.sourceDir, filesToCopy[0]);
                   const githubPath = getGitHubUrl(fullPath);
                   return [
                     ...context.checklist,
                     {
-                      description: `Create ${event.output.fileName} from [template](${githubPath})`,
+                      description: `Upsert **${event.output.fileName}** from [template](${githubPath})`,
                     },
                   ];
                 },
