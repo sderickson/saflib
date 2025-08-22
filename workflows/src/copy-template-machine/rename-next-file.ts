@@ -15,32 +15,25 @@ export const renameNextFile = fromPromise(
     const targetFileName = transformName(currentFile, name);
     const targetPath = path.join(targetDir, targetFileName);
 
-    // Read file content
-    const content = await readFile(targetPath, "utf-8");
-
-    // Replace content placeholders
-    let updatedContent = content;
-
-    // Replace kebab-case placeholders
-    updatedContent = updatedContent.replace(/template-file/g, name);
-
-    // Replace snake_case placeholders
-    const snakeName = kebabCaseToSnakeCase(name);
-    updatedContent = updatedContent.replace(/template_file/g, snakeName);
-
-    // Replace PascalCase placeholders
-    const pascalName = kebabCaseToPascalCase(name);
-    updatedContent = updatedContent.replace(/TemplateFile/g, pascalName);
-
-    // Replace camelCase placeholders
-    const camelName = kebabCaseToCamelCase(name);
-    updatedContent = updatedContent.replace(/templateFile/g, camelName);
-
     if (dryRun) {
       return { fileName: targetFileName };
     }
 
-    // Write updated content back
+    const content = await readFile(targetPath, "utf-8");
+
+    let updatedContent = content;
+
+    updatedContent = updatedContent.replace(/template-file/g, name);
+
+    const snakeName = kebabCaseToSnakeCase(name);
+    updatedContent = updatedContent.replace(/template_file/g, snakeName);
+
+    const pascalName = kebabCaseToPascalCase(name);
+    updatedContent = updatedContent.replace(/TemplateFile/g, pascalName);
+
+    const camelName = kebabCaseToCamelCase(name);
+    updatedContent = updatedContent.replace(/templateFile/g, camelName);
+
     await writeFile(targetPath, updatedContent);
 
     return { fileName: targetFileName };

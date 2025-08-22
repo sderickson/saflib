@@ -1,0 +1,14 @@
+{
+  "intentionallyNotExported": [
+    "AbstractClassConstructor",
+    "WorkflowActionFunction",
+    "PromptParams",
+    "FactoryTuple",
+    "PromptAgentFactoryOptions",
+    "RunNpmCommandFactoryOptions",
+    "RunTestsFactoryOptions",
+    "UpdateTemplateFileFactoryOptions",
+    "XStateWorkflowOptions",
+    "ActionParam"
+  ]
+}

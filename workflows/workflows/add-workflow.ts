@@ -8,6 +8,7 @@ import {
   type TemplateWorkflowContext,
   contextFromInput,
   type WorkflowInput,
+  outputFromContext,
 } from "@saflib/workflows";
 import { getSafReporters } from "@saflib/node";
 import { kebabCaseToPascalCase } from "../src/utils.ts";
@@ -121,6 +122,8 @@ The file '${context.workflowPath}' has been created. Fill in the TODOs (name and
       type: "final",
     },
   },
+
+  output: outputFromContext,
 });
 
 export class AddWorkflow extends XStateWorkflow {
@@ -131,6 +134,7 @@ export class AddWorkflow extends XStateWorkflow {
       name: "name",
       description:
         "The name of the new workflow to create (e.g., 'refactor-component')",
+      exampleValue: "example-workflow",
     },
   ];
   sourceUrl = import.meta.url;
