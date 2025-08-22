@@ -4,8 +4,8 @@ import type { ComposerFunctionOptions } from "./xstate.ts";
 
 describe("createChain", () => {
   it("should create a chain with proper initial state and state transitions", () => {
-    // Mock factory functions
-    const mockFactory1 = ({
+    // Mock composer functions
+    const mockComposer1 = ({
       stateName,
       nextStateName,
       message,
@@ -20,7 +20,7 @@ describe("createChain", () => {
       },
     });
 
-    const mockFactory2 = ({
+    const mockComposer2 = ({
       stateName,
       nextStateName,
       value,
@@ -36,8 +36,8 @@ describe("createChain", () => {
     });
 
     const result = createChain([
-      [mockFactory1, { message: "first step" }],
-      [mockFactory2, { value: 42 }],
+      [mockComposer1, { message: "first step" }],
+      [mockComposer2, { value: 42 }],
     ]);
 
     expect(result.initial).toBe("step1");
@@ -51,14 +51,14 @@ describe("createChain", () => {
     expect(result.states.step2.on.next.target).toBe("done");
   });
 
-  it("should throw error for empty factory array", () => {
+  it("should throw error for empty composer array", () => {
     expect(() => createChain([])).toThrow(
-      "At least one factory function is required",
+      "At least one composer function is required",
     );
   });
 
-  it("should work with a single factory", () => {
-    const singleFactory = ({
+  it("should work with a single composer", () => {
+    const singleComposer = ({
       stateName,
       nextStateName,
     }: ComposerFunctionOptions) => ({
@@ -72,7 +72,7 @@ describe("createChain", () => {
       },
     });
 
-    const result = createChain([[singleFactory, {}]]);
+    const result = createChain([[singleComposer, {}]]);
 
     expect(result.initial).toBe("step1");
     expect(result.states.step1.on.finish.target).toBe("done");

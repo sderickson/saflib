@@ -9,8 +9,8 @@ when XStateWorkflow is fully adopted.
 
 ## Extended by
 
-- [`SimpleWorkflow`](SimpleWorkflow.md)
 - [`XStateWorkflow`](XStateWorkflow.md)
+- [`SimpleWorkflow`](SimpleWorkflow.md)
 
 ## Constructors
 

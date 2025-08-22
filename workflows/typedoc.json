@@ -3,7 +3,6 @@
     "AbstractClassConstructor",
     "WorkflowActionFunction",
     "PromptParams",
-    "FactoryTuple",
     "PromptAgentFactoryOptions",
     "RunNpmCommandFactoryOptions",
     "RunTestsFactoryOptions",
