@@ -34,14 +34,13 @@
 
 | Type Alias | Description |
 | ------ | ------ |
-| [ConcreteWorkflow](type-aliases/ConcreteWorkflow.md) | - |
+| [ConcreteWorkflow](type-aliases/ConcreteWorkflow.md) | Some subclass of Workflow which implements all abstract methods and properties. |
 | [~~WorkflowStatus~~](type-aliases/WorkflowStatus.md) | - |
 
 ## Variables
 
 | Variable | Description |
 | ------ | ------ |
-| [sampleWorkflows](variables/sampleWorkflows.md) | - |
 | [workflowActionImplementations](variables/workflowActionImplementations.md) | - |
 | [workflowActors](variables/workflowActors.md) | - |
 

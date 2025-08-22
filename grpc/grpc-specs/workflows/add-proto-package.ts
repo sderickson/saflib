@@ -68,7 +68,7 @@ export class AddProtoPackageWorkflow extends SimpleWorkflow<AddProtoPackageWorkf
     fs.chmodSync(generateShPath, "755");
 
     return {
-      data: {
+      result: {
         fullPackagePath: this.params.path,
         packageName: this.params.name,
         protoPackageName,

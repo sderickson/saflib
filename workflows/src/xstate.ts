@@ -204,13 +204,17 @@ export const generateMigrations = () => {
   return runCommandAsync("npm", ["run", "generate"]);
 };
 
-// used in workflow machines
-
+/**
+ * Common actions for workflow machines.
+ */
 export const workflowActionImplementations = {
   log: logImpl,
   prompt: promptImpl,
 };
 
+/**
+ * Common actors for workflow machines.
+ */
 export const workflowActors = {
   noop: fromPromise(async (_) => {}),
 };

@@ -20,6 +20,9 @@ import type { ReturnsError } from "@saflib/monorepo";
 // The following is TS magic to describe a class constructor that implements the abstract SimpleWorkflow class.
 type AbstractClassConstructor<T extends Workflow> = new (...args: any[]) => T;
 
+/**
+ * Some subclass of Workflow which implements all abstract methods and properties.
+ */
 export type ConcreteWorkflow = AbstractClassConstructor<Workflow>;
 
 /**

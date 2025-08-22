@@ -44,7 +44,7 @@ export class AddTsPackageWorkflow extends SimpleWorkflow<AddTsPackageWorkflowPar
     }
 
     return {
-      data: {
+      result: {
         fullPackagePath: this.params.path,
         packageName: this.params.name,
       },
