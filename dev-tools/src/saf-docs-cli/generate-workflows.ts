@@ -10,7 +10,7 @@ export function generateWorkflowDocs() {
   if (workflowNames.length === 0) {
     return;
   }
-  console.log("Generating workflow docs...");
+  console.log("\nGenerating workflow docs...");
   const currentDir = process.cwd();
   const workflowsDir = `${currentDir}/docs/workflows`;
   mkdirSync(workflowsDir, { recursive: true });
@@ -38,16 +38,27 @@ ${workflowDocs.map(({ name, path }) => `- [${name}](${path})`).join("\n")}`;
 }
 
 const getWorkflowDoc = (workflowName: string) => {
-  const workflow = execSync(
+  const workflowHelp = execSync(
     `npm exec saf-workflow kickoff help ${workflowName}`,
   );
-  const command = workflow
+  const command = workflowHelp
     .toString()
     .split("\n")[0]
     .replace("Usage: ", "npm exec ")
     .replace("[options] ", "");
+
   const checklist = execSync(`npm exec saf-workflow checklist ${workflowName}`);
+
+  const sourceUrl = execSync(`npm exec saf-workflow source ${workflowName}`)
+    .toString()
+    .trim();
+  const sourceName = sourceUrl.split("/").pop();
+
   return `# ${workflowName}
+
+## Source
+
+[${sourceName}](${sourceUrl})
 
 ## Usage
 
@@ -70,7 +81,7 @@ ${checklist.toString()}
 ## Help Docs
 
 \`\`\`bash
-${workflow.toString()}
+${workflowHelp.toString()}
 \`\`\`
 `;
 };

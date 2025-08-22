@@ -1,5 +1,9 @@
 # add-env-var
 
+## Source
+
+[add-env-var.ts](https://github.com/sderickson/saflib/blob/main/env/workflows/add-env-var.ts)
+
 ## Usage
 
 ```bash
