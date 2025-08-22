@@ -21,6 +21,7 @@ export class AddTestsWorkflow extends SimpleWorkflow<
       description: "The path to the file to add tests to",
     },
   ];
+  sourceUrl = import.meta.url;
   init = async (path: string) => {
     this.params = { path };
     if (!existsSync(this.getParams().path)) {

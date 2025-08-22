@@ -11,6 +11,7 @@ export class AddTsPackageWorkflow extends SimpleWorkflow<AddTsPackageWorkflowPar
   name = "add-ts-package";
   description =
     "Creates a new TypeScript package according to monorepo best practices.";
+  sourceUrl = import.meta.url;
 
   init = async (name: string, packagePath: string) => {
     this.params = {

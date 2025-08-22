@@ -27,6 +27,7 @@ export class SplitFileWorkflow extends SimpleWorkflow<
         "Name of the thing to split the file by, like 'route' or 'query'",
     },
   ];
+  sourceUrl = import.meta.url;
   init = async (path: string, item: string) => {
     this.params = { path, item };
     this.targetAbsPath();

@@ -7,12 +7,14 @@ import {
   logError,
   promptAgent,
   XStateWorkflow,
+  contextFromInput,
+  type WorkflowInput,
 } from "@saflib/workflows";
 import { execSync } from "child_process";
 import { readFileSync, writeFileSync } from "fs";
 import path from "path";
 
-interface SpecProjectXstateWorkflowInput {
+interface SpecProjectXstateWorkflowInput extends WorkflowInput {
   name: string;
 }
 
@@ -46,9 +48,9 @@ export const SpecProjectXstateWorkflowMachine = setup({
       projectDirPath: projectDirName,
       specFilePath: specFilePath,
       checklistFilePath: checklistFilePath,
-      loggedLast: false,
       safDocOutput: "",
       safWorkflowHelpOutput: "",
+      ...contextFromInput(input),
     };
     return context;
   },
@@ -248,4 +250,5 @@ export class SpecProjectXstateWorkflow extends XStateWorkflow {
         "kebab-case name of project to use in folder and git branch names and alike",
     },
   ];
+  sourceUrl = import.meta.url;
 }

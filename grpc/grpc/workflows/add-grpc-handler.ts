@@ -8,6 +8,8 @@ import {
   promptAgent,
   XStateWorkflow,
   doTestsPass,
+  contextFromInput,
+  type WorkflowInput,
 } from "@saflib/workflows";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -18,7 +20,7 @@ import { existsSync } from "node:fs";
 
 const execAsync = promisify(exec);
 
-interface AddGrpcHandlerWorkflowInput {
+interface AddGrpcHandlerWorkflowInput extends WorkflowInput {
   path: string; // kebab-case, e.g. "rpcs/user-reports/schedule-reports.ts"
 }
 
@@ -80,7 +82,7 @@ export const AddGrpcHandlerWorkflowMachine = setup({
       pascalServiceName,
       serviceIndexPath,
       grpcServerPath,
-      loggedLast: false,
+      ...contextFromInput(input),
     };
   },
   entry: logInfo("Successfully began workflow"),
@@ -424,4 +426,5 @@ export class AddGrpcHandlerWorkflow extends XStateWorkflow {
         "Path of the new handler (e.g. 'rpcs/user-reports/schedule-reports')",
     },
   ];
+  sourceUrl = import.meta.url;
 }

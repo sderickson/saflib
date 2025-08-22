@@ -7,6 +7,8 @@ import {
   logError,
   promptAgent,
   XStateWorkflow,
+  contextFromInput,
+  type WorkflowInput,
 } from "@saflib/workflows";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -17,7 +19,7 @@ import { existsSync } from "node:fs";
 
 const execAsync = promisify(exec);
 
-interface AddGrpcServerWorkflowInput {}
+interface AddGrpcServerWorkflowInput extends WorkflowInput {}
 
 interface AddGrpcServerWorkflowContext extends WorkflowContext {
   serviceName: string; // e.g. "api"
@@ -51,7 +53,7 @@ export const AddGrpcServerWorkflowMachine = setup({
   id: "add-grpc-server",
   description: "Add a gRPC server to an existing Express.js service.",
   initial: "getOriented",
-  context: (_) => {
+  context: ({ input }) => {
     const __filename = fileURLToPath(import.meta.url);
     const __dirname = path.dirname(__filename);
     const sourceDir = path.join(__dirname, "grpc-server-template");
@@ -76,7 +78,7 @@ export const AddGrpcServerWorkflowMachine = setup({
       contextFilePath,
       runFilePath,
       packageJsonPath,
-      loggedLast: false,
+      ...contextFromInput(input),
     };
   },
   entry: logInfo("Successfully began add-grpc-server workflow"),
@@ -339,4 +341,5 @@ export class AddGrpcServerWorkflow extends XStateWorkflow {
   machine = AddGrpcServerWorkflowMachine;
   description = "Add a gRPC server to an existing Express.js service.";
   cliArguments = [];
+  sourceUrl = import.meta.url;
 }

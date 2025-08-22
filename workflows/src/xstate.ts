@@ -11,6 +11,7 @@ import {
   fromPromise,
   raise,
 } from "xstate";
+import type { ChecklistItem } from "./types.ts";
 
 // general types
 
@@ -19,9 +20,19 @@ interface ActionParam<C, E extends AnyEventObject> {
   event: E;
 }
 
+export interface WorkflowInput {
+  dryRun?: boolean;
+}
+
+export interface WorkflowOutput {
+  checklist: ChecklistItem[];
+}
+
 export interface WorkflowContext {
+  checklist: ChecklistItem[];
   loggedLast?: boolean;
   systemPrompt?: string;
+  dryRun?: boolean;
 }
 
 type WorkflowActionFunction<

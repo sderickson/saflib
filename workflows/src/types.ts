@@ -1,4 +1,5 @@
 import type { Snapshot } from "xstate";
+import type { WorkflowContext } from "./xstate.ts";
 
 export type Result<C extends Record<string, any>> = {
   data?: C;
@@ -14,6 +15,7 @@ export interface CLIArgument {
   name: string;
   description?: string;
   defaultValue?: string;
+  exampleValue?: string;
 }
 
 export type WorkflowStatus = "not started" | "in progress" | "completed";
@@ -29,4 +31,16 @@ export interface WorkflowBlob {
   workflowName: string;
   internalState?: WorkflowBlobInternalState;
   snapshotState?: Snapshot<any>;
+}
+
+export interface TemplateWorkflowContext extends WorkflowContext {
+  name: string;
+  pascalName: string;
+  targetDir: string;
+  sourceDir: string;
+}
+
+export interface ChecklistItem {
+  description: string;
+  subitems?: ChecklistItem[];
 }

@@ -4,17 +4,20 @@ import {
   workflowActors,
   logInfo,
   XStateWorkflow,
-  useTemplateStateFactory,
+  copyTemplateStateFactory,
   updateTemplateFileFactory,
   runTestsFactory,
   promptAgentFactory,
   type TemplateWorkflowContext,
+  contextFromInput,
+  type WorkflowInput,
+  outputFromContext,
 } from "@saflib/workflows";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 // TODO: replace this with the actual input for your workflow
-interface ToDoWorkflowInput {
+interface ToDoWorkflowInput extends WorkflowInput {
   name: string;
 }
 
@@ -32,36 +35,45 @@ export const ToDoWorkflowMachine = setup({
   actions: workflowActionImplementations,
   actors: workflowActors,
 }).createMachine({
+  // TODO: replace "to-do" with the actual name of the workflow
   id: "to-do",
   description: "TODO: Describe what this workflow does",
+
+  // TODO: Only keep "copyTemplate" if this workflow actually copies over template files
+  // Otherwise, remove the template states and update this to the actual initial state
   initial: "copyTemplate",
+
   context: ({ input }) => {
     const __filename = fileURLToPath(import.meta.url);
     const __dirname = path.dirname(__filename);
-    // TODO: create the template dir and files in there, then update sourceDir to point to it
+    // TODO: create the template-files dir and add template files
+    // Include TODOs like this file does.
     const sourceDir = path.join(__dirname, "template-files");
+
     // TODO: replace "output" with where the files should actually go based on the input
+    // This will probably be based on the inputs, such as the name of what is being created
     const targetDir = path.join(process.cwd(), "output");
 
+    // TODO: Update to include the actual context properties from ToDoWorkflowContext
     return {
       name: input.name,
       pascalName: input.name.charAt(0).toUpperCase() + input.name.slice(1),
       sourceDir,
       targetDir,
       exampleProperty: "example value",
-      loggedLast: false,
+      ...contextFromInput(input),
     };
   },
+
   entry: logInfo("Successfully began workflow"),
+
   // TODO: update the states to match the actual workflow you're creating. It will usually involve some combination of copying template files, updating files, and running tests.
   states: {
-    // First copy over the template files
-    ...useTemplateStateFactory({
+    ...copyTemplateStateFactory({
       stateName: "copyTemplate",
       nextStateName: "updateMainFile",
     }),
 
-    // Update the main file with your logic
     ...updateTemplateFileFactory<ToDoWorkflowContext>({
       filePath: (context) => path.join(context.targetDir, `${context.name}.ts`),
       promptMessage: (context) =>
@@ -70,7 +82,6 @@ export const ToDoWorkflowMachine = setup({
       nextStateName: "updateConfigFile",
     }),
 
-    // Update a configuration file
     ...updateTemplateFileFactory<ToDoWorkflowContext>({
       filePath: (context) =>
         path.join(context.targetDir, `${context.name}.config.ts`),
@@ -80,7 +91,6 @@ export const ToDoWorkflowMachine = setup({
       nextStateName: "updateTests",
     }),
 
-    // Update the test file
     ...updateTemplateFileFactory<ToDoWorkflowContext>({
       filePath: (context) =>
         path.join(context.targetDir, `${context.name}.test.ts`),
@@ -90,7 +100,6 @@ export const ToDoWorkflowMachine = setup({
       nextStateName: "runTests",
     }),
 
-    // Run the tests to make sure everything works
     ...runTestsFactory<ToDoWorkflowContext>({
       filePath: (context) =>
         path.join(context.targetDir, `${context.name}.test.ts`),
@@ -98,7 +107,6 @@ export const ToDoWorkflowMachine = setup({
       nextStateName: "verifyDone",
     }),
 
-    // Final verification step
     ...promptAgentFactory<ToDoWorkflowContext>({
       stateName: "verifyDone",
       nextStateName: "done",
@@ -110,11 +118,14 @@ export const ToDoWorkflowMachine = setup({
       type: "final",
     },
   },
+  output: outputFromContext,
 });
 
 export class ToDoWorkflow extends XStateWorkflow {
   machine = ToDoWorkflowMachine;
   description = "TODO: Describe what this workflow does";
+
+  // TODO: Update to match the inputs described in ToDoWorkflowInput
   cliArguments = [
     {
       name: "name",
@@ -122,4 +133,5 @@ export class ToDoWorkflow extends XStateWorkflow {
         "The name of the thing to create (e.g., 'my-component' or 'my-service')",
     },
   ];
+  sourceUrl = import.meta.url;
 }

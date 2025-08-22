@@ -8,6 +8,8 @@ import {
   promptAgent,
   XStateWorkflow,
   doTestsPass,
+  contextFromInput,
+  type WorkflowInput,
 } from "@saflib/workflows";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -17,7 +19,7 @@ import { readFile, writeFile } from "node:fs/promises";
 
 const execAsync = promisify(exec);
 
-interface AddTanstackQueriesWorkflowInput {
+interface AddTanstackQueriesWorkflowInput extends WorkflowInput {
   path: string; // e.g. "requests/feature.ts"
 }
 
@@ -85,7 +87,7 @@ export const AddTanstackQueriesWorkflowMachine = setup({
       refDoc,
       testingGuide,
       packageIndexPath,
-      loggedLast: false,
+      ...contextFromInput(input),
     };
   },
   entry: logInfo("Successfully began workflow"),
@@ -320,4 +322,5 @@ export class AddTanstackQueriesWorkflow extends XStateWorkflow {
       description: "Path of the new queries file (e.g. 'requests/feature.ts')",
     },
   ];
+  sourceUrl = import.meta.url;
 }

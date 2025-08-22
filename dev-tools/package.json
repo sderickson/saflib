@@ -16,7 +16,7 @@
   "bin": {
     "saf-docker": "./src/saf-docker-cli.ts",
     "saf-tests": "./src/saf-tests-cli.ts",
-    "saf-docs": "./src/saf-docs-cli.ts"
+    "saf-docs": "./src/saf-docs-cli/index.ts"
   },
   "dependencies": {
     "commander": "^14.0.0",

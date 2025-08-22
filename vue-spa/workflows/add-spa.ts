@@ -7,6 +7,8 @@ import {
   logError,
   promptAgent,
   XStateWorkflow,
+  contextFromInput,
+  type WorkflowInput,
 } from "@saflib/workflows";
 import path from "node:path";
 import { readFileSync } from "node:fs";
@@ -16,7 +18,7 @@ import { promisify } from "node:util";
 
 const execAsync = promisify(exec);
 
-interface AddSpaWorkflowInput {
+interface AddSpaWorkflowInput extends WorkflowInput {
   name: string;
 }
 
@@ -24,7 +26,6 @@ interface AddSpaWorkflowContext extends WorkflowContext {
   name: string;
   packageName: string;
   targetDir: string;
-  loggedLast: boolean;
 }
 
 export const AddSpaWorkflowMachine = setup({
@@ -51,7 +52,7 @@ export const AddSpaWorkflowMachine = setup({
       name: input.name,
       packageName: `${thisPackageOrg}/web-${input.name}-client`,
       targetDir,
-      loggedLast: false,
+      ...contextFromInput(input),
     };
   },
   entry: logInfo("Successfully began workflow"),
@@ -212,4 +213,5 @@ export class AddSpaWorkflow extends XStateWorkflow {
       description: "Name of the new SPA (e.g. 'admin' for web-admin)",
     },
   ];
+  sourceUrl = import.meta.url;
 }

@@ -1,18 +1,21 @@
 import { setup } from "xstate";
 import {
+  type WorkflowInput,
   workflowActionImplementations,
   workflowActors,
   logInfo,
   XStateWorkflow,
-  useTemplateStateFactory,
+  copyTemplateStateFactory,
   updateTemplateFileFactory,
   runNpmCommandFactory,
   type TemplateWorkflowContext,
+  contextFromInput,
+  outputFromContext,
 } from "@saflib/workflows";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-interface AddEnvVarWorkflowInput {
+interface AddEnvVarWorkflowInput extends WorkflowInput {
   name: string;
 }
 
@@ -26,7 +29,9 @@ export const AddEnvVarWorkflowMachine = setup({
     input: {} as AddEnvVarWorkflowInput,
     context: {} as AddEnvVarWorkflowContext,
   },
-  actions: workflowActionImplementations,
+  actions: {
+    ...workflowActionImplementations,
+  },
   actors: workflowActors,
 }).createMachine({
   id: "add-env-var",
@@ -47,18 +52,16 @@ export const AddEnvVarWorkflowMachine = setup({
       sourceDir,
       targetDir,
       schemaPath: path.join(targetDir, "env.schema.json"),
-      loggedLast: false,
+      ...contextFromInput(input),
     };
   },
   entry: logInfo("Successfully began add-env-var workflow"),
   states: {
-    // Copy over the template schema file
-    ...useTemplateStateFactory({
+    ...copyTemplateStateFactory({
       stateName: "copyTemplate",
       nextStateName: "updateSchema",
     }),
 
-    // Update the schema file to add the new variable
     ...updateTemplateFileFactory<AddEnvVarWorkflowContext>({
       filePath: (context) => context.schemaPath,
       promptMessage: (context) =>
@@ -67,21 +70,18 @@ export const AddEnvVarWorkflowMachine = setup({
       nextStateName: "installSaflibEnv",
     }),
 
-    // Install @saflib/env package
     ...runNpmCommandFactory({
       command: "install @saflib/env",
       stateName: "installSaflibEnv",
       nextStateName: "generateEnv",
     }),
 
-    // Generate env.ts file
     ...runNpmCommandFactory({
       command: "exec saf-env generate",
       stateName: "generateEnv",
       nextStateName: "generateAllEnv",
     }),
 
-    // Generate all env files
     ...runNpmCommandFactory({
       command: "exec saf-env generate-all",
       stateName: "generateAllEnv",
@@ -92,9 +92,11 @@ export const AddEnvVarWorkflowMachine = setup({
       type: "final",
     },
   },
+  output: outputFromContext,
 });
 
 export class AddEnvVarWorkflow extends XStateWorkflow {
+  sourceUrl = import.meta.url;
   machine = AddEnvVarWorkflowMachine;
   description =
     "Add a new environment variable to the schema and generate the corresponding TypeScript types";
@@ -103,6 +105,7 @@ export class AddEnvVarWorkflow extends XStateWorkflow {
       name: "name",
       description:
         "The name of the environment variable (in all upper case, e.g., 'API_KEY' or 'DATABASE_URL')",
+      exampleValue: "EXAMPLE_ENV_VAR",
     },
   ];
 }

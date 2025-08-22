@@ -1,5 +1,6 @@
 import type {
   CLIArgument,
+  ChecklistItem,
   Result,
   Step,
   WorkflowBlob,
@@ -9,6 +10,13 @@ import type { AnyStateMachine, AnyActor } from "xstate";
 import { addNewLinesToString, allChildrenSettled } from "./utils.ts";
 import { createActor, waitFor } from "xstate";
 import { getSafReporters } from "@saflib/node";
+import path from "node:path";
+import { existsSync, readFileSync } from "node:fs";
+import type {
+  WorkflowContext,
+  WorkflowInput,
+  WorkflowOutput,
+} from "./xstate.ts";
 // The following is TS magic to describe a class constructor that implements the abstract SimpleWorkflow class.
 type AbstractClassConstructor<T extends Workflow> = new (...args: any[]) => T;
 
@@ -19,18 +27,24 @@ export interface WorkflowMeta {
   description: string;
   cliArguments: CLIArgument[];
   Workflow: ConcreteWorkflow;
+  packageName: string;
 }
 
 export abstract class Workflow {
   abstract readonly name: string;
   abstract readonly description: string;
   abstract readonly cliArguments: CLIArgument[];
+  abstract readonly sourceUrl: string;
   abstract init: (...args: any[]) => Promise<Result<any>>;
   abstract kickoff(): Promise<boolean>;
   abstract printStatus(): Promise<void>;
+  abstract getCurrentStateName(): string;
   abstract goToNextStep(): Promise<void>;
   abstract dehydrate(): WorkflowBlob;
   abstract hydrate(blob: WorkflowBlob): void;
+  abstract done(): boolean;
+  abstract getChecklist(): ChecklistItem[];
+  abstract getError(): Error | undefined;
 }
 
 export abstract class SimpleWorkflow<
@@ -147,6 +161,27 @@ export abstract class SimpleWorkflow<
     this.stepIndex = blob.internalState.stepIndex;
     this.status = blob.internalState.status;
   }
+
+  done = (): boolean => {
+    return this.status === "completed";
+  };
+
+  getChecklist = (): ChecklistItem[] => {
+    return [];
+  };
+
+  getCurrentStateName = (): string => {
+    const currentStep = this.steps[this.stepIndex];
+    return currentStep.name;
+  };
+
+  getError = (): Error | undefined => {
+    return undefined;
+  };
+}
+
+interface XStateWorkflowOptions {
+  dryRun?: boolean;
 }
 
 export abstract class XStateWorkflow extends Workflow {
@@ -158,8 +193,11 @@ export abstract class XStateWorkflow extends Workflow {
     return this.machine.id;
   }
 
-  init = async (...args: any[]): Promise<Result<any>> => {
-    if (args.length !== this.cliArguments.length + 2) {
+  init = async (
+    options: XStateWorkflowOptions,
+    ...args: string[]
+  ): Promise<Result<any>> => {
+    if (args.length !== this.cliArguments.length) {
       return {
         error: new Error(
           `Expected ${this.cliArguments.length} arguments, got ${args.length}`,
@@ -170,6 +208,7 @@ export abstract class XStateWorkflow extends Workflow {
     for (let i = 0; i < this.cliArguments.length; i++) {
       input[this.cliArguments[i].name] = args[i];
     }
+    input.dryRun = options.dryRun;
     this.input = input;
 
     return { data: undefined };
@@ -200,11 +239,12 @@ export abstract class XStateWorkflow extends Workflow {
   };
 
   goToNextStep = async (): Promise<void> => {
+    const { log } = getSafReporters();
     if (!this.actor) {
       throw new Error("Workflow not started");
     }
     if (this.actor.getSnapshot().status === "error") {
-      console.log("This workflow has errored. And could not continue.");
+      log.error("This workflow has errored. And could not continue.");
       return;
     }
 
@@ -212,7 +252,7 @@ export abstract class XStateWorkflow extends Workflow {
     await waitFor(this.actor, allChildrenSettled);
 
     if (this.actor.getSnapshot().status === "done") {
-      console.log("\nThis workflow has been completed.\n");
+      log.info("\nThis workflow has been completed.\n");
       return;
     }
   };
@@ -229,5 +269,71 @@ export abstract class XStateWorkflow extends Workflow {
       snapshot: blob.snapshotState,
     });
     this.actor.start();
+  };
+
+  done = (): boolean => {
+    if (!this.actor) {
+      return false;
+    }
+    return this.actor.getSnapshot().status === "done";
+  };
+
+  getChecklist = (): ChecklistItem[] => {
+    if (!this.actor) {
+      return [];
+    }
+    return this.actor.getSnapshot().output.checklist;
+  };
+
+  getCurrentStateName = (): string => {
+    if (!this.actor) {
+      return "not started";
+    }
+    return this.actor.getSnapshot().value;
+  };
+
+  getError = (): Error | undefined => {
+    if (!this.actor) {
+      return undefined;
+    }
+    return this.actor.getSnapshot().error;
+  };
+}
+
+export function getPackageName(rootUrl: string) {
+  if (!rootUrl.startsWith("file://")) {
+    throw new Error("Root URL should be import.meta.url");
+  }
+  const rootPath = path.dirname(rootUrl.replace("file://", ""));
+  let currentDir = rootPath;
+  while (true) {
+    const packageJsonPath = path.join(currentDir, "package.json");
+    if (existsSync(packageJsonPath)) {
+      const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf8"));
+      return packageJson.name;
+    }
+    const parentDir = path.dirname(currentDir);
+    if (parentDir === currentDir) {
+      throw new Error("package.json not found");
+    }
+    currentDir = parentDir;
+  }
+}
+
+export function contextFromInput(input: WorkflowInput): WorkflowContext {
+  return {
+    checklist: [],
+    loggedLast: false,
+    dryRun: input.dryRun,
+  };
+}
+
+export function outputFromContext({
+  context,
+}: {
+  context: WorkflowContext;
+}): WorkflowOutput {
+  return {
+    checklist: context.checklist,
   };
 }

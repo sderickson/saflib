@@ -9,12 +9,14 @@ import {
   XStateWorkflow,
   doTestsPass,
   doesTestPass,
+  contextFromInput,
+  type WorkflowInput,
 } from "@saflib/workflows";
 import path from "node:path";
 import { existsSync } from "node:fs";
 import { cwd } from "node:process";
 
-interface UpdateImplWorkflowInput {
+interface UpdateImplWorkflowInput extends WorkflowInput {
   path: string;
 }
 
@@ -63,7 +65,7 @@ export const UpdateImplWorkflowMachine = setup({
       targetFile: input.path,
       testFile,
       packageDir,
-      loggedLast: false,
+      ...contextFromInput(input),
     };
   },
   entry: logInfo("Successfully began workflow"),
@@ -194,4 +196,5 @@ export class UpdateImplWorkflow extends XStateWorkflow {
       description: "Path to the implementation file to update",
     },
   ];
+  sourceUrl = import.meta.url;
 }

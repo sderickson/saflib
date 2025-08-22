@@ -4,7 +4,7 @@ import Ajv from "ajv";
 /**
  * Given `process.env` and a schema, validate the environment variables. Throws an error if the environment variables are invalid. Run this when your service starts to ensure `typedEnv` conforms to the schema.
  */
-export const validateEnv = (env: any, envSchema: any) => {
+export const validateEnv = (env: any, envSchema: any): boolean => {
   const ajv = new Ajv({
     allErrors: true,
   });

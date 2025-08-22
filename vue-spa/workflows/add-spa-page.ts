@@ -4,17 +4,19 @@ import {
   workflowActors,
   logInfo,
   XStateWorkflow,
-  useTemplateStateFactory,
+  copyTemplateStateFactory,
   kebabCaseToPascalCase,
   updateTemplateFileFactory,
   type TemplateWorkflowContext,
   runTestsFactory,
   promptAgentFactory,
+  contextFromInput,
+  type WorkflowInput,
 } from "@saflib/workflows";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-interface AddSpaPageWorkflowInput {
+interface AddSpaPageWorkflowInput extends WorkflowInput {
   name: string;
 }
 
@@ -46,13 +48,13 @@ export const AddSpaPageWorkflowMachine = setup({
       pascalName: kebabCaseToPascalCase(pageName),
       targetDir,
       sourceDir,
-      loggedLast: false,
+      ...contextFromInput(input),
     };
   },
   entry: logInfo("Successfully began workflow"),
   states: {
     // First copy over the files
-    ...useTemplateStateFactory({
+    ...copyTemplateStateFactory({
       stateName: "copyTemplate",
       nextStateName: "updateLoader",
     }),
@@ -173,4 +175,5 @@ export class AddSpaPageWorkflow extends XStateWorkflow {
         "Name of the new page in kebab-case (e.g. 'welcome-new-user' or 'welcome-new-user-page')",
     },
   ];
+  sourceUrl = import.meta.url;
 }

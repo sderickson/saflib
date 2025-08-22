@@ -1,5 +1,11 @@
-import { fromPromise, raise } from "xstate";
-import { logInfo, logError, promptAgent, runCommandAsync } from "./xstate.ts";
+import { assign, fromPromise } from "xstate";
+import {
+  logInfo,
+  promptAgent,
+  runCommandAsync,
+  type WorkflowInput,
+  type WorkflowContext,
+} from "./xstate.ts";
 
 interface RunNpmCommandFactoryOptions {
   // All commands here are the only ones that can be run by a workflow.
@@ -29,23 +35,28 @@ export function runNpmCommandFactory({
   return {
     [stateName]: {
       invoke: {
-        src: fromPromise(async () => {
-          return await getCommand()();
-        }),
+        input: ({ context }: { context: WorkflowContext }) => context,
+        src: fromPromise(
+          async ({ input }: { input: WorkflowInput }): Promise<string> => {
+            if (input.dryRun) {
+              return "Dry run";
+            }
+            return await getCommand()();
+          },
+        ),
         onDone: {
           target: nextStateName,
           actions: logInfo(() => getSuccessMessage()),
         },
-        onError: {
-          actions: [
-            logError(
-              ({ event }) =>
-                `Command failed: ${(event.error as Error).message}`,
-            ),
-            raise({ type: "prompt" }),
-          ],
-        },
       },
+      entry: assign({
+        checklist: ({ context }: { context: WorkflowContext }) => [
+          ...context.checklist,
+          {
+            description: `Run \`npm ${command}\``,
+          },
+        ],
+      }),
       on: {
         prompt: {
           actions: promptAgent(

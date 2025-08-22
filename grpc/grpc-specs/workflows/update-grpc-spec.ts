@@ -7,10 +7,12 @@ import {
   logError,
   promptAgent,
   XStateWorkflow,
+  contextFromInput,
+  type WorkflowInput,
 } from "@saflib/workflows";
 import { execSync } from "child_process";
 
-interface UpdateGrpcSpecWorkflowInput {}
+interface UpdateGrpcSpecWorkflowInput extends WorkflowInput {}
 
 interface UpdateGrpcSpecWorkflowContext extends WorkflowContext {}
 
@@ -25,9 +27,9 @@ export const UpdateGrpcSpecWorkflowMachine = setup({
   id: "update-grpc-spec",
   description: "Update gRPC specification files",
   initial: "getOriented",
-  context: (_) => {
+  context: ({ input }) => {
     return {
-      loggedLast: false,
+      ...contextFromInput(input),
     };
   },
   entry: logInfo("Successfully began workflow"),
@@ -129,4 +131,5 @@ export class UpdateGrpcSpecWorkflow extends XStateWorkflow {
   machine = UpdateGrpcSpecWorkflowMachine;
   description = "Update gRPC specification files";
   cliArguments = [];
+  sourceUrl = import.meta.url;
 }
