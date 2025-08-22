@@ -16,6 +16,8 @@ import type { ChecklistItem, TemplateWorkflowContext } from "../types.ts";
 import { fetchFileNames } from "./fetch-file-names.ts";
 import { copyNextFile } from "./copy-next-file.ts";
 import { renameNextFile } from "./rename-next-file.ts";
+import path from "node:path";
+import { existsSync, readFileSync } from "node:fs";
 
 export const CopyTemplateMachine = setup({
   types: {
@@ -93,12 +95,41 @@ export const CopyTemplateMachine = setup({
             actions: [
               logInfo(({ event }) => `Copied file to ${event.output.fileName}`),
               assign({
-                checklist: ({ context, event }) => [
-                  ...context.checklist,
-                  {
-                    description: `Create ${event.output.fileName}`,
-                  },
-                ],
+                checklist: ({ context, event }) => {
+                  const fullPath = path.join(
+                    context.sourceDir,
+                    event.output.fileName,
+                  );
+                  let currentDir = context.sourceDir;
+                  while (currentDir !== "/") {
+                    const packageJsonPath = path.join(
+                      currentDir,
+                      "package.json",
+                    );
+                    if (!existsSync(packageJsonPath)) {
+                      currentDir = path.dirname(currentDir);
+                      continue;
+                    }
+                    const packageJson = JSON.parse(
+                      readFileSync(packageJsonPath, "utf-8"),
+                    );
+                    if (packageJson.name === "@saflib/saflib") {
+                      break;
+                    }
+                    currentDir = path.dirname(currentDir);
+                  }
+                  const relativePath = fullPath.replace(currentDir, "");
+                  const githubPath =
+                    "https://github.com/sderickson/saflib/blob/main" +
+                    relativePath;
+
+                  return [
+                    ...context.checklist,
+                    {
+                      description: `Create ${event.output.fileName} from [template](${githubPath})`,
+                    },
+                  ];
+                },
               }),
             ],
           },
