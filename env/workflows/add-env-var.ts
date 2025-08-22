@@ -10,6 +10,7 @@ import {
   runNpmCommandFactory,
   type TemplateWorkflowContext,
   contextFromInput,
+  outputFromContext,
 } from "@saflib/workflows";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -91,11 +92,7 @@ export const AddEnvVarWorkflowMachine = setup({
       type: "final",
     },
   },
-  output: ({ context }) => {
-    return {
-      checklist: context.checklist,
-    };
-  },
+  output: outputFromContext,
 });
 
 export class AddEnvVarWorkflow extends XStateWorkflow {

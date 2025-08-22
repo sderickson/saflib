@@ -24,6 +24,10 @@ export interface WorkflowInput {
   dryRun?: boolean;
 }
 
+export interface WorkflowOutput {
+  checklist: ChecklistItem[];
+}
+
 export interface WorkflowContext {
   checklist: ChecklistItem[];
   loggedLast?: boolean;

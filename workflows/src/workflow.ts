@@ -12,7 +12,11 @@ import { createActor, waitFor } from "xstate";
 import { getSafReporters } from "@saflib/node";
 import path from "node:path";
 import { existsSync, readFileSync } from "node:fs";
-import type { WorkflowContext, WorkflowInput } from "./xstate.ts";
+import type {
+  WorkflowContext,
+  WorkflowInput,
+  WorkflowOutput,
+} from "./xstate.ts";
 // The following is TS magic to describe a class constructor that implements the abstract SimpleWorkflow class.
 type AbstractClassConstructor<T extends Workflow> = new (...args: any[]) => T;
 
@@ -321,5 +325,11 @@ export function contextFromInput(input: WorkflowInput): WorkflowContext {
     checklist: [],
     loggedLast: false,
     dryRun: input.dryRun,
+  };
+}
+
+export function outputFromContext(context: WorkflowContext): WorkflowOutput {
+  return {
+    checklist: context.checklist,
   };
 }

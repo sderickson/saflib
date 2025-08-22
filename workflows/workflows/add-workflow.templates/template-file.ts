@@ -11,6 +11,7 @@ import {
   type TemplateWorkflowContext,
   contextFromInput,
   type WorkflowInput,
+  outputFromContext,
 } from "@saflib/workflows";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -117,6 +118,7 @@ export const ToDoWorkflowMachine = setup({
       type: "final",
     },
   },
+  output: outputFromContext,
 });
 
 export class ToDoWorkflow extends XStateWorkflow {
