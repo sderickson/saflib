@@ -10,7 +10,6 @@ import {
   doTestsPass,
   contextFromInput,
   type WorkflowInput,
-  getPackageName,
 } from "@saflib/workflows";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -493,5 +492,5 @@ export class AddQueriesWorkflow extends XStateWorkflow {
       description: "Path of the new query (e.g. 'queries/contacts/get-by-id')",
     },
   ];
-  packageName = getPackageName(import.meta.url);
+  sourceUrl = import.meta.url;
 }

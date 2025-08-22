@@ -8,7 +8,6 @@ import {
   promptAgent,
   XStateWorkflow,
   doTestsPass,
-  getPackageName,
   contextFromInput,
   type WorkflowInput,
 } from "@saflib/workflows";
@@ -323,5 +322,5 @@ export class AddTanstackQueriesWorkflow extends XStateWorkflow {
       description: "Path of the new queries file (e.g. 'requests/feature.ts')",
     },
   ];
-  packageName = getPackageName(import.meta.url);
+  sourceUrl = import.meta.url;
 }

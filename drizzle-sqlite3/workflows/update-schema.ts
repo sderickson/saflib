@@ -8,7 +8,6 @@ import {
   logError,
   promptAgent,
   XStateWorkflow,
-  getPackageName,
   contextFromInput,
   type WorkflowInput,
 } from "@saflib/workflows";
@@ -127,5 +126,5 @@ export class UpdateSchemaWorkflow extends XStateWorkflow {
   machine = UpdateSchemaWorkflowMachine;
   description = "Update drizzle/sqlite3 schema.";
   cliArguments = [];
-  packageName = getPackageName(import.meta.url);
+  sourceUrl = import.meta.url;
 }

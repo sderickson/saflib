@@ -8,7 +8,6 @@ import {
   promptAgent,
   XStateWorkflow,
   doTestsPass,
-  getPackageName,
   contextFromInput,
   type WorkflowInput,
 } from "@saflib/workflows";
@@ -427,5 +426,5 @@ export class AddGrpcHandlerWorkflow extends XStateWorkflow {
         "Path of the new handler (e.g. 'rpcs/user-reports/schedule-reports')",
     },
   ];
-  packageName = getPackageName(import.meta.url);
+  sourceUrl = import.meta.url;
 }

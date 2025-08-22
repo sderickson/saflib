@@ -1,7 +1,7 @@
 import { existsSync } from "fs";
 import { basename } from "path";
 
-import { getPackageName, SimpleWorkflow } from "@saflib/workflows";
+import { SimpleWorkflow } from "@saflib/workflows";
 
 export interface AddTestsWorkflowParams {
   path: string;
@@ -21,7 +21,7 @@ export class AddTestsWorkflow extends SimpleWorkflow<
       description: "The path to the file to add tests to",
     },
   ];
-  packageName = getPackageName(import.meta.url);
+  sourceUrl = import.meta.url;
   init = async (path: string) => {
     this.params = { path };
     if (!existsSync(this.getParams().path)) {

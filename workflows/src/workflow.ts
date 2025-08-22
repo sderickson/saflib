@@ -30,7 +30,7 @@ export abstract class Workflow {
   abstract readonly name: string;
   abstract readonly description: string;
   abstract readonly cliArguments: CLIArgument[];
-  abstract readonly packageName: string;
+  abstract readonly sourceUrl: string;
   abstract init: (...args: any[]) => Promise<Result<any>>;
   abstract kickoff(): Promise<boolean>;
   abstract printStatus(): Promise<void>;

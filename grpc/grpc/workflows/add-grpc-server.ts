@@ -7,7 +7,6 @@ import {
   logError,
   promptAgent,
   XStateWorkflow,
-  getPackageName,
   contextFromInput,
   type WorkflowInput,
 } from "@saflib/workflows";
@@ -342,5 +341,5 @@ export class AddGrpcServerWorkflow extends XStateWorkflow {
   machine = AddGrpcServerWorkflowMachine;
   description = "Add a gRPC server to an existing Express.js service.";
   cliArguments = [];
-  packageName = getPackageName(import.meta.url);
+  sourceUrl = import.meta.url;
 }

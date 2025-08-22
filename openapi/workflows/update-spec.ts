@@ -1,11 +1,11 @@
-import { getPackageName, SimpleWorkflow } from "@saflib/workflows";
+import { SimpleWorkflow } from "@saflib/workflows";
 import { resolve } from "path";
 interface UpdateSpecWorkflowParams {}
 
 export class UpdateSpecWorkflow extends SimpleWorkflow<UpdateSpecWorkflowParams> {
   name = "update-spec";
   description = "Update the OpenAPI spec for the project.";
-  packageName = getPackageName(import.meta.url);
+  sourceUrl = import.meta.url;
   init = async () => {
     this.params = {};
     return { data: {} };

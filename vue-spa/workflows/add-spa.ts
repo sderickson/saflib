@@ -7,7 +7,6 @@ import {
   logError,
   promptAgent,
   XStateWorkflow,
-  getPackageName,
   contextFromInput,
   type WorkflowInput,
 } from "@saflib/workflows";
@@ -214,5 +213,5 @@ export class AddSpaWorkflow extends XStateWorkflow {
       description: "Name of the new SPA (e.g. 'admin' for web-admin)",
     },
   ];
-  packageName = getPackageName(import.meta.url);
+  sourceUrl = import.meta.url;
 }

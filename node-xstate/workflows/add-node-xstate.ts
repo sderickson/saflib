@@ -8,7 +8,6 @@ import {
   promptAgent,
   XStateWorkflow,
   doTestsPass,
-  getPackageName,
   contextFromInput,
   type WorkflowInput,
 } from "@saflib/workflows";
@@ -304,5 +303,5 @@ export class AddNodeXstateWorkflow extends XStateWorkflow {
       description: "Name of the machine (e.g. 'user-reports')",
     },
   ];
-  packageName = getPackageName(import.meta.url);
+  sourceUrl = import.meta.url;
 }

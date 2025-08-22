@@ -7,7 +7,6 @@ import {
   logError,
   promptAgent,
   XStateWorkflow,
-  getPackageName,
   contextFromInput,
   type WorkflowInput,
 } from "@saflib/workflows";
@@ -331,5 +330,5 @@ export class AddEmailTemplateWorkflow extends XStateWorkflow {
         "Path of the new email template (e.g. './email-templates/weekly-report.ts')",
     },
   ];
-  packageName = getPackageName(import.meta.url);
+  sourceUrl = import.meta.url;
 }

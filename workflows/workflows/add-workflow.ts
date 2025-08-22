@@ -6,7 +6,6 @@ import {
   promptAgentFactory,
   copyTemplateStateFactory,
   type TemplateWorkflowContext,
-  getPackageName,
   contextFromInput,
   type WorkflowInput,
 } from "@saflib/workflows";
@@ -134,5 +133,5 @@ export class AddWorkflow extends XStateWorkflow {
         "The name of the new workflow to create (e.g., 'refactor-component')",
     },
   ];
-  packageName = getPackageName(import.meta.url);
+  sourceUrl = import.meta.url;
 }

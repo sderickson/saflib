@@ -5,8 +5,8 @@ import { generateEnvDocs } from "./generate-env.ts";
 import { generateWorkflowDocs } from "./generate-workflows.ts";
 
 export const generateCommand = (monorepoContext: MonorepoContext) => {
-  // generateTypeDoc(monorepoContext);
-  // generateCliDocs(monorepoContext);
-  // generateEnvDocs(monorepoContext);
+  generateTypeDoc(monorepoContext);
+  generateCliDocs(monorepoContext);
+  generateEnvDocs(monorepoContext);
   generateWorkflowDocs();
 };

@@ -10,7 +10,6 @@ import {
   type TemplateWorkflowContext,
   runTestsFactory,
   promptAgentFactory,
-  getPackageName,
   contextFromInput,
   type WorkflowInput,
 } from "@saflib/workflows";
@@ -176,5 +175,5 @@ export class AddSpaPageWorkflow extends XStateWorkflow {
         "Name of the new page in kebab-case (e.g. 'welcome-new-user' or 'welcome-new-user-page')",
     },
   ];
-  packageName = getPackageName(import.meta.url);
+  sourceUrl = import.meta.url;
 }

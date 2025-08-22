@@ -9,7 +9,6 @@ import {
   runTestsFactory,
   promptAgentFactory,
   type TemplateWorkflowContext,
-  getPackageName,
   contextFromInput,
   type WorkflowInput,
 } from "@saflib/workflows";
@@ -132,5 +131,5 @@ export class ToDoWorkflow extends XStateWorkflow {
         "The name of the thing to create (e.g., 'my-component' or 'my-service')",
     },
   ];
-  packageName = getPackageName(import.meta.url);
+  sourceUrl = import.meta.url;
 }

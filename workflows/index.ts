@@ -1,4 +1,8 @@
-import type { WorkflowMeta, ConcreteWorkflow } from "./src/workflow.ts";
+import {
+  getPackageName,
+  type WorkflowMeta,
+  type ConcreteWorkflow,
+} from "./src/workflow.ts";
 
 export * from "./src/workflow.ts";
 export * from "./src/saf-workflow-cli/index.ts";
@@ -15,7 +19,7 @@ export function concreteWorkflowToMeta(
     name: stubWorkflow.name,
     description: stubWorkflow.description,
     cliArguments: stubWorkflow.cliArguments,
-    packageName: stubWorkflow.packageName,
+    packageName: getPackageName(stubWorkflow.sourceUrl),
     Workflow: workflow,
   };
 }

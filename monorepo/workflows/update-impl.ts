@@ -9,7 +9,6 @@ import {
   XStateWorkflow,
   doTestsPass,
   doesTestPass,
-  getPackageName,
   contextFromInput,
   type WorkflowInput,
 } from "@saflib/workflows";
@@ -197,5 +196,5 @@ export class UpdateImplWorkflow extends XStateWorkflow {
       description: "Path to the implementation file to update",
     },
   ];
-  packageName = getPackageName(import.meta.url);
+  sourceUrl = import.meta.url;
 }

@@ -30,7 +30,7 @@ export const addChecklistCommand = (
 };
 
 export const printChecklist = async (workflowMeta: WorkflowMeta) => {
-  const { Workflow, cliArguments, name } = workflowMeta;
+  const { Workflow, cliArguments } = workflowMeta;
   const workflow = new Workflow();
   const exampleArgs = cliArguments.map((arg) => arg.exampleValue);
   const result = await workflow.init({ dryRun: true }, ...exampleArgs);

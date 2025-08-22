@@ -1,4 +1,4 @@
-import { getPackageName, SimpleWorkflow } from "@saflib/workflows";
+import { SimpleWorkflow } from "@saflib/workflows";
 import * as fs from "node:fs";
 import * as path from "node:path";
 
@@ -11,7 +11,7 @@ export class AddProtoPackageWorkflow extends SimpleWorkflow<AddProtoPackageWorkf
   name = "add-proto-package";
   description =
     "Creates a new Protocol Buffer package according to monorepo best practices.";
-  packageName = getPackageName(import.meta.url);
+  sourceUrl = import.meta.url;
   init = async (name: string, packagePath: string) => {
     this.params = {
       name, // Expected to be the full package name, e.g., @scope/pkg-name

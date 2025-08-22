@@ -7,7 +7,6 @@ import {
   logError,
   promptAgent,
   XStateWorkflow,
-  getPackageName,
   contextFromInput,
   type WorkflowInput,
 } from "@saflib/workflows";
@@ -132,5 +131,5 @@ export class UpdateGrpcSpecWorkflow extends XStateWorkflow {
   machine = UpdateGrpcSpecWorkflowMachine;
   description = "Update gRPC specification files";
   cliArguments = [];
-  packageName = getPackageName(import.meta.url);
+  sourceUrl = import.meta.url;
 }

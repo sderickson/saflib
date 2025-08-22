@@ -7,7 +7,6 @@ import {
   logError,
   promptAgent,
   XStateWorkflow,
-  getPackageName,
   contextFromInput,
   type WorkflowInput,
 } from "@saflib/workflows";
@@ -251,5 +250,5 @@ export class SpecProjectXstateWorkflow extends XStateWorkflow {
         "kebab-case name of project to use in folder and git branch names and alike",
     },
   ];
-  packageName = getPackageName(import.meta.url);
+  sourceUrl = import.meta.url;
 }
