@@ -327,6 +327,10 @@ export abstract class XStateWorkflow extends Workflow {
   };
 }
 
+/**
+ * Utility function to get the package name from the root URL.
+ * @deprecated - to be made irrelevant through updating workflow
+ */
 export function getPackageName(rootUrl: string) {
   if (!rootUrl.startsWith("file://")) {
     throw new Error("Root URL should be import.meta.url");

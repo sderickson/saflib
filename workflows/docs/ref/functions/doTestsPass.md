@@ -12,4 +12,4 @@
 
 ## Deprecated
 
-- to be replaced with runTestsFactory
+- to be replaced with runTestsComposer

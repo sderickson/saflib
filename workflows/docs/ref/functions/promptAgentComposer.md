@@ -2,9 +2,9 @@
 
 ***
 
-# Function: promptAgentFactory()
+# Function: promptAgentComposer()
 
-> **promptAgentFactory**\<`C`\>(`__namedParameters`): `object`
+> **promptAgentComposer**\<`C`\>(`__namedParameters`): `object`
 
 ## Type Parameters
 
@@ -16,7 +16,7 @@
 
 | Parameter | Type |
 | ------ | ------ |
-| `__namedParameters` | `PromptAgentFactoryOptions`\<`C`\> |
+| `__namedParameters` | `PromptAgentComposerOptions`\<`C`\> |
 
 ## Returns
 

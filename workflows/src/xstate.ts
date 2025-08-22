@@ -183,7 +183,7 @@ const getTestCommandAndArgs = () => {
 };
 
 /**
- * @deprecated - to be replaced with runTestsFactory
+ * @deprecated - to be replaced with runTestsComposer
  */
 export const doesTestPass = (pathString: string) => {
   const { command, args } = getTestCommandAndArgs();
@@ -191,7 +191,7 @@ export const doesTestPass = (pathString: string) => {
 };
 
 /**
- * @deprecated - to be replaced with runTestsFactory
+ * @deprecated - to be replaced with runTestsComposer
  */
 export const doTestsPass = () => {
   const { command, args } = getTestCommandAndArgs();

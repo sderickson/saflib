@@ -52,15 +52,15 @@
 | [copyTemplateStateComposer](functions/copyTemplateStateComposer.md) | Composer for copying template files to a target directory. Also replaces every instance "template-file", "template_file", "TemplateFile", and "templateFile" with the name of the thing being created, passed in via the CLI or other interface. To use this composer, the machine context must extend TemplateWorkflowContext. |
 | [~~doesTestPass~~](functions/doesTestPass.md) | - |
 | [~~doTestsPass~~](functions/doTestsPass.md) | - |
-| [generateMigrations](functions/generateMigrations.md) | - |
-| [getPackageName](functions/getPackageName.md) | - |
+| [~~generateMigrations~~](functions/generateMigrations.md) | - |
+| [~~getPackageName~~](functions/getPackageName.md) | Utility function to get the package name from the root URL. |
 | [kebabCaseToCamelCase](functions/kebabCaseToCamelCase.md) | - |
 | [kebabCaseToPascalCase](functions/kebabCaseToPascalCase.md) | - |
 | [logError](functions/logError.md) | - |
 | [logInfo](functions/logInfo.md) | - |
 | [outputFromContext](functions/outputFromContext.md) | Helper function to create `WorkflowOutput` from `WorkflowContext`. |
 | [promptAgent](functions/promptAgent.md) | - |
-| [promptAgentFactory](functions/promptAgentFactory.md) | - |
+| [promptAgentComposer](functions/promptAgentComposer.md) | - |
 | [promptState](functions/promptState.md) | - |
 | [runNpmCommandComposer](functions/runNpmCommandComposer.md) | - |
 | [runTestsFactory](functions/runTestsFactory.md) | - |
