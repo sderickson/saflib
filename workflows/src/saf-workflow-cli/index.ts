@@ -1,10 +1,11 @@
 import { Command } from "commander";
-import type { ChecklistItem, WorkflowMeta } from "@saflib/workflows";
+import type { WorkflowMeta } from "@saflib/workflows";
 import { loadWorkflow, saveWorkflow } from "../file-io.ts";
 import { addNewLinesToString } from "../utils.ts";
 import { XStateWorkflow } from "../workflow.ts";
 import { setupContext } from "./context.ts";
 import { kickoffWorkflow } from "./kickoff.ts";
+import { printChecklist } from "./checklist.ts";
 
 export function runWorkflowCli(workflows: WorkflowMeta[]) {
   setupContext({ silentLogging: process.argv.includes("checklist") });
@@ -77,52 +78,14 @@ export function runWorkflowCli(workflows: WorkflowMeta[]) {
       return new Workflow() instanceof XStateWorkflow;
     });
 
-  const printChecklistRecursively = (
-    checklist: ChecklistItem[],
-    prefix = "",
-  ) => {
-    checklist.forEach((item) => {
-      console.log(`${prefix}* ${item.description}`);
-      if (item.subitems) {
-        printChecklistRecursively(item.subitems, `${prefix}  `);
-      }
+  supportedWorkflows.forEach((workflowMeta) => {
+    let chain = checklistProgram
+      .command(workflowMeta.name)
+      .description(workflowMeta.description);
+    chain.action(async () => {
+      await printChecklist(workflowMeta);
     });
-  };
-
-  supportedWorkflows.forEach(
-    ({ Workflow, name, description, cliArguments }) => {
-      let chain = checklistProgram.command(name).description(description);
-      chain.action(async () => {
-        const workflow = new Workflow();
-        const exampleArgs = cliArguments.map((arg) => arg.exampleValue);
-        const result = await workflow.init({ dryRun: true }, ...exampleArgs);
-        if (result.error) {
-          console.error(result.error.message);
-          process.exit(1);
-        }
-        await workflow.kickoff();
-        let lastStateName = workflow.getCurrentStateName();
-
-        while (!workflow.done()) {
-          await workflow.goToNextStep();
-          const error = workflow.getError();
-          if (error) {
-            console.error("Workflow errored", error);
-            process.exit(1);
-          }
-          const currentStateName = workflow.getCurrentStateName();
-          if (currentStateName === lastStateName) {
-            throw new Error("Workflow is stuck");
-          }
-          lastStateName = currentStateName;
-        }
-
-        console.log(`\nChecklist for ${name}:\n`);
-        printChecklistRecursively(workflow.getChecklist());
-        console.log();
-      });
-    },
-  );
+  });
 
   program.parse(process.argv);
 }
