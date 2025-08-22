@@ -8,6 +8,9 @@ import {
   promptAgent,
   XStateWorkflow,
   doTestsPass,
+  contextFromInput,
+  type WorkflowInput,
+  getPackageName,
 } from "@saflib/workflows";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -18,7 +21,7 @@ import { existsSync } from "node:fs";
 
 const execAsync = promisify(exec);
 
-interface AddQueriesWorkflowInput {
+interface AddQueriesWorkflowInput extends WorkflowInput {
   path: string; // kebab-case, e.g. "get-by-id"
 }
 
@@ -80,7 +83,7 @@ export const AddQueriesWorkflowMachine = setup({
       featureName,
       featureIndexPath,
       packageIndexPath,
-      loggedLast: false,
+      ...contextFromInput(input),
     };
   },
   entry: logInfo("Successfully began workflow"),
@@ -490,4 +493,5 @@ export class AddQueriesWorkflow extends XStateWorkflow {
       description: "Path of the new query (e.g. 'queries/contacts/get-by-id')",
     },
   ];
+  packageName = getPackageName(import.meta.url);
 }

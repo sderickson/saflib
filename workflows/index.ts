@@ -15,6 +15,7 @@ export function concreteWorkflowToMeta(
     name: stubWorkflow.name,
     description: stubWorkflow.description,
     cliArguments: stubWorkflow.cliArguments,
+    packageName: stubWorkflow.packageName,
     Workflow: workflow,
   };
 }

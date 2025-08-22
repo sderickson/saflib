@@ -8,11 +8,14 @@ import {
   logError,
   promptAgent,
   XStateWorkflow,
+  getPackageName,
+  contextFromInput,
+  type WorkflowInput,
 } from "@saflib/workflows";
 import path from "path";
 import { existsSync } from "fs";
 import { fileURLToPath } from "url";
-interface UpdateSchemaWorkflowInput {}
+interface UpdateSchemaWorkflowInput extends WorkflowInput {}
 
 interface UpdateSchemaWorkflowContext extends WorkflowContext {
   docPath: string;
@@ -29,7 +32,7 @@ export const UpdateSchemaWorkflowMachine = setup({
   id: "update-schema",
   description: "Update drizzle/sqlite3 schema.",
   initial: "getOriented",
-  context: (_) => {
+  context: ({ input }) => {
     const __filename = fileURLToPath(import.meta.url);
     const __dirname = path.dirname(__filename);
 
@@ -40,8 +43,7 @@ export const UpdateSchemaWorkflowMachine = setup({
     }
     return {
       docPath: refDocAbsPath,
-      loggedLast: false,
-      checklist: [],
+      ...contextFromInput(input),
       systemPrompt: `You are updating the schema of a database built off the @saflib/drizzle-sqlite3 package. This includes following best practices and generating migration files.`,
     };
   },
@@ -125,4 +127,5 @@ export class UpdateSchemaWorkflow extends XStateWorkflow {
   machine = UpdateSchemaWorkflowMachine;
   description = "Update drizzle/sqlite3 schema.";
   cliArguments = [];
+  packageName = getPackageName(import.meta.url);
 }

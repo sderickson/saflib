@@ -1,4 +1,4 @@
-import { SimpleWorkflow } from "@saflib/workflows";
+import { getPackageName, SimpleWorkflow } from "@saflib/workflows";
 import * as fs from "node:fs";
 import * as path from "node:path";
 
@@ -11,6 +11,7 @@ export class AddTsPackageWorkflow extends SimpleWorkflow<AddTsPackageWorkflowPar
   name = "add-ts-package";
   description =
     "Creates a new TypeScript package according to monorepo best practices.";
+  packageName = getPackageName(import.meta.url);
 
   init = async (name: string, packagePath: string) => {
     this.params = {

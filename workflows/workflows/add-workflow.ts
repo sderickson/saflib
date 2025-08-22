@@ -6,6 +6,9 @@ import {
   promptAgentFactory,
   copyTemplateStateFactory,
   type TemplateWorkflowContext,
+  getPackageName,
+  contextFromInput,
+  type WorkflowInput,
 } from "@saflib/workflows";
 import { getSafReporters } from "@saflib/node";
 import { kebabCaseToPascalCase } from "../src/utils.ts";
@@ -13,7 +16,7 @@ import { readFileSync } from "fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-interface AddWorkflowInput {
+interface AddWorkflowInput extends WorkflowInput {
   name: string;
 }
 
@@ -57,7 +60,7 @@ export const AddWorkflowMachine = setup({
       pascalName: kebabCaseToPascalCase(workflowName),
       sourceDir,
       targetDir,
-      loggedLast: false,
+      ...contextFromInput(input),
     };
   },
   entry: () => {
@@ -131,4 +134,5 @@ export class AddWorkflow extends XStateWorkflow {
         "The name of the new workflow to create (e.g., 'refactor-component')",
     },
   ];
+  packageName = getPackageName(import.meta.url);
 }

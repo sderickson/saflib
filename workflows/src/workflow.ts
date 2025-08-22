@@ -10,6 +10,9 @@ import type { AnyStateMachine, AnyActor } from "xstate";
 import { addNewLinesToString, allChildrenSettled } from "./utils.ts";
 import { createActor, waitFor } from "xstate";
 import { getSafReporters } from "@saflib/node";
+import path from "node:path";
+import { existsSync, readFileSync } from "node:fs";
+import type { WorkflowContext, WorkflowInput } from "./xstate.ts";
 // The following is TS magic to describe a class constructor that implements the abstract SimpleWorkflow class.
 type AbstractClassConstructor<T extends Workflow> = new (...args: any[]) => T;
 
@@ -20,12 +23,14 @@ export interface WorkflowMeta {
   description: string;
   cliArguments: CLIArgument[];
   Workflow: ConcreteWorkflow;
+  packageName: string;
 }
 
 export abstract class Workflow {
   abstract readonly name: string;
   abstract readonly description: string;
   abstract readonly cliArguments: CLIArgument[];
+  abstract readonly packageName: string;
   abstract init: (...args: any[]) => Promise<Result<any>>;
   abstract kickoff(): Promise<boolean>;
   abstract printStatus(): Promise<void>;
@@ -288,5 +293,33 @@ export abstract class XStateWorkflow extends Workflow {
       return undefined;
     }
     return this.actor.getSnapshot().error;
+  };
+}
+
+export function getPackageName(rootUrl: string) {
+  if (!rootUrl.startsWith("file://")) {
+    throw new Error("Root URL should be import.meta.url");
+  }
+  const rootPath = path.dirname(rootUrl.replace("file://", ""));
+  let currentDir = rootPath;
+  while (true) {
+    const packageJsonPath = path.join(currentDir, "package.json");
+    if (existsSync(packageJsonPath)) {
+      const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf8"));
+      return packageJson.name;
+    }
+    const parentDir = path.dirname(currentDir);
+    if (parentDir === currentDir) {
+      throw new Error("package.json not found");
+    }
+    currentDir = parentDir;
+  }
+}
+
+export function contextFromInput(input: WorkflowInput): WorkflowContext {
+  return {
+    checklist: [],
+    loggedLast: false,
+    dryRun: input.dryRun,
   };
 }

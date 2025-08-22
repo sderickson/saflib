@@ -7,6 +7,9 @@ import {
   logError,
   promptAgent,
   XStateWorkflow,
+  getPackageName,
+  contextFromInput,
+  type WorkflowInput,
 } from "@saflib/workflows";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -17,7 +20,7 @@ import { existsSync } from "node:fs";
 
 const execAsync = promisify(exec);
 
-interface AddEmailTemplateWorkflowInput {
+interface AddEmailTemplateWorkflowInput extends WorkflowInput {
   path: string; // kebab-case, e.g. "./email-templates/weekly-report.ts"
 }
 
@@ -70,7 +73,7 @@ export const AddEmailTemplateWorkflowMachine = setup({
       targetFilePath,
       sourceDir,
       packageJsonPath,
-      loggedLast: false,
+      ...contextFromInput(input),
     };
   },
   entry: logInfo("Successfully began workflow"),
@@ -328,4 +331,5 @@ export class AddEmailTemplateWorkflow extends XStateWorkflow {
         "Path of the new email template (e.g. './email-templates/weekly-report.ts')",
     },
   ];
+  packageName = getPackageName(import.meta.url);
 }

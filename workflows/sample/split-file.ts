@@ -1,7 +1,7 @@
 import { existsSync } from "fs";
 import { basename } from "path";
 
-import { SimpleWorkflow } from "@saflib/workflows";
+import { getPackageName, SimpleWorkflow } from "@saflib/workflows";
 
 export interface SplitFileWorkflowParams {
   path: string;
@@ -27,6 +27,7 @@ export class SplitFileWorkflow extends SimpleWorkflow<
         "Name of the thing to split the file by, like 'route' or 'query'",
     },
   ];
+  packageName = getPackageName(import.meta.url);
   init = async (path: string, item: string) => {
     this.params = { path, item };
     this.targetAbsPath();

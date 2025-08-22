@@ -10,11 +10,14 @@ import {
   type TemplateWorkflowContext,
   runTestsFactory,
   promptAgentFactory,
+  getPackageName,
+  contextFromInput,
+  type WorkflowInput,
 } from "@saflib/workflows";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-interface AddSpaPageWorkflowInput {
+interface AddSpaPageWorkflowInput extends WorkflowInput {
   name: string;
 }
 
@@ -46,8 +49,7 @@ export const AddSpaPageWorkflowMachine = setup({
       pascalName: kebabCaseToPascalCase(pageName),
       targetDir,
       sourceDir,
-      loggedLast: false,
-      checklist: [],
+      ...contextFromInput(input),
     };
   },
   entry: logInfo("Successfully began workflow"),
@@ -174,4 +176,5 @@ export class AddSpaPageWorkflow extends XStateWorkflow {
         "Name of the new page in kebab-case (e.g. 'welcome-new-user' or 'welcome-new-user-page')",
     },
   ];
+  packageName = getPackageName(import.meta.url);
 }

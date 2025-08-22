@@ -9,6 +9,8 @@ import {
   updateTemplateFileFactory,
   runNpmCommandFactory,
   type TemplateWorkflowContext,
+  getPackageName,
+  contextFromInput,
 } from "@saflib/workflows";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -53,9 +55,7 @@ export const AddEnvVarWorkflowMachine = setup({
       sourceDir,
       targetDir,
       schemaPath: path.join(targetDir, "env.schema.json"),
-      loggedLast: false,
-      checklist: [],
-      dryRun: input.dryRun,
+      ...contextFromInput(input),
     };
   },
   entry: logInfo("Successfully began add-env-var workflow"),
@@ -108,6 +108,7 @@ export const AddEnvVarWorkflowMachine = setup({
 });
 
 export class AddEnvVarWorkflow extends XStateWorkflow {
+  packageName = getPackageName(import.meta.url);
   machine = AddEnvVarWorkflowMachine;
   description =
     "Add a new environment variable to the schema and generate the corresponding TypeScript types";

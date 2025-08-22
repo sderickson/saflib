@@ -1,7 +1,6 @@
-import { assign, fromPromise, raise } from "xstate";
+import { assign, fromPromise } from "xstate";
 import {
   logInfo,
-  logError,
   promptAgent,
   runCommandAsync,
   type WorkflowInput,

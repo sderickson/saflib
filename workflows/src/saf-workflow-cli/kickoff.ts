@@ -1,5 +1,5 @@
 import { saveWorkflow } from "../file-io.ts";
-import { Workflow, type WorkflowMeta } from "../workflow.ts";
+import { type WorkflowMeta } from "../workflow.ts";
 
 export const kickoffWorkflow = async (
   workflowMeta: WorkflowMeta,

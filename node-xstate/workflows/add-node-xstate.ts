@@ -8,6 +8,9 @@ import {
   promptAgent,
   XStateWorkflow,
   doTestsPass,
+  getPackageName,
+  contextFromInput,
+  type WorkflowInput,
 } from "@saflib/workflows";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -17,7 +20,7 @@ import { readdir, rename, readFile, writeFile } from "node:fs/promises";
 
 const execAsync = promisify(exec);
 
-interface AddNodeXstateWorkflowInput {
+interface AddNodeXstateWorkflowInput extends WorkflowInput {
   name: string; // e.g. "user-reports"
 }
 
@@ -69,7 +72,7 @@ export const AddNodeXstateWorkflowMachine = setup({
       pascalName: toPascalCase(input.name),
       targetDir,
       sourceDir,
-      loggedLast: false,
+      ...contextFromInput(input),
     };
   },
   entry: logInfo("Successfully began workflow"),
@@ -301,4 +304,5 @@ export class AddNodeXstateWorkflow extends XStateWorkflow {
       description: "Name of the machine (e.g. 'user-reports')",
     },
   ];
+  packageName = getPackageName(import.meta.url);
 }

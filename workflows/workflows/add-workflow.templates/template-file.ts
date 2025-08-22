@@ -9,12 +9,15 @@ import {
   runTestsFactory,
   promptAgentFactory,
   type TemplateWorkflowContext,
+  getPackageName,
+  contextFromInput,
+  type WorkflowInput,
 } from "@saflib/workflows";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 // TODO: replace this with the actual input for your workflow
-interface ToDoWorkflowInput {
+interface ToDoWorkflowInput extends WorkflowInput {
   name: string;
 }
 
@@ -49,7 +52,7 @@ export const ToDoWorkflowMachine = setup({
       sourceDir,
       targetDir,
       exampleProperty: "example value",
-      loggedLast: false,
+      ...contextFromInput(input),
     };
   },
   entry: logInfo("Successfully began workflow"),
@@ -122,4 +125,5 @@ export class ToDoWorkflow extends XStateWorkflow {
         "The name of the thing to create (e.g., 'my-component' or 'my-service')",
     },
   ];
+  packageName = getPackageName(import.meta.url);
 }
