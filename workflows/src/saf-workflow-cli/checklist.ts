@@ -55,9 +55,7 @@ export const printChecklist = async (workflowMeta: WorkflowMeta) => {
     lastStateName = currentStateName;
   }
 
-  console.log(`\nChecklist for ${name}:\n`);
   printChecklistRecursively(workflow.getChecklist());
-  console.log();
 };
 
 const printChecklistRecursively = (checklist: ChecklistItem[], prefix = "") => {
