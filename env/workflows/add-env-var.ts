@@ -1,7 +1,7 @@
 import { setup } from "xstate";
 import {
   type WorkflowInput,
-  workflowActionImplementations,
+  workflowActions,
   workflowActors,
   logInfo,
   XStateWorkflow,
@@ -30,7 +30,7 @@ export const AddEnvVarWorkflowMachine = setup({
     context: {} as AddEnvVarWorkflowContext,
   },
   actions: {
-    ...workflowActionImplementations,
+    ...workflowActions,
   },
   actors: workflowActors,
 }).createMachine({

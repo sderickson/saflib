@@ -1,6 +1,6 @@
 import { fromPromise, raise, setup } from "xstate";
 import {
-  workflowActionImplementations,
+  workflowActions,
   workflowActors,
   logInfo,
   type WorkflowContext,
@@ -51,7 +51,7 @@ export const AddQueriesWorkflowMachine = setup({
     input: {} as AddQueriesWorkflowInput,
     context: {} as AddQueriesWorkflowContext,
   },
-  actions: workflowActionImplementations,
+  actions: workflowActions,
   actors: workflowActors,
 }).createMachine({
   id: "add-queries",

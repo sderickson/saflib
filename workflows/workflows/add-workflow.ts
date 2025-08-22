@@ -1,6 +1,6 @@
 import { setup } from "xstate";
 import {
-  workflowActionImplementations,
+  workflowActions,
   workflowActors,
   XStateWorkflow,
   promptAgentFactory,
@@ -32,7 +32,7 @@ export const AddWorkflowMachine = setup({
     context: {} as AddWorkflowContext,
   },
   actions: {
-    ...workflowActionImplementations,
+    ...workflowActions,
   },
   actors: {
     ...workflowActors,

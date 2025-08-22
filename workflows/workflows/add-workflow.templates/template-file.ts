@@ -1,6 +1,6 @@
 import { setup } from "xstate";
 import {
-  workflowActionImplementations,
+  workflowActions,
   workflowActors,
   logInfo,
   XStateWorkflow,
@@ -32,7 +32,7 @@ export const ToDoWorkflowMachine = setup({
     input: {} as ToDoWorkflowInput,
     context: {} as ToDoWorkflowContext,
   },
-  actions: workflowActionImplementations,
+  actions: workflowActions,
   actors: workflowActors,
 }).createMachine({
   // TODO: replace "to-do" with the actual name of the workflow

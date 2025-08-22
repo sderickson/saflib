@@ -1,6 +1,6 @@
 import { setup, assign } from "xstate";
 import {
-  workflowActionImplementations,
+  workflowActions,
   workflowActors,
   logInfo,
   logError,
@@ -32,7 +32,7 @@ export const CopyTemplateMachine = setup({
     },
   },
   actions: {
-    ...workflowActionImplementations,
+    ...workflowActions,
   },
   actors: {
     fetchFileNames,

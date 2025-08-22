@@ -1,6 +1,6 @@
 import { fromPromise, raise, setup } from "xstate";
 import {
-  workflowActionImplementations,
+  workflowActions,
   workflowActors,
   logInfo,
   type WorkflowContext,
@@ -47,7 +47,7 @@ export const UpdateImplWorkflowMachine = setup({
     input: {} as UpdateImplWorkflowInput,
     context: {} as UpdateImplWorkflowContext,
   },
-  actions: workflowActionImplementations,
+  actions: workflowActions,
   actors: workflowActors,
 }).createMachine({
   id: "update-impl",

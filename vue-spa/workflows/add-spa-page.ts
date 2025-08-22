@@ -1,6 +1,6 @@
 import { setup } from "xstate";
 import {
-  workflowActionImplementations,
+  workflowActions,
   workflowActors,
   logInfo,
   XStateWorkflow,
@@ -25,7 +25,7 @@ export const AddSpaPageWorkflowMachine = setup({
     input: {} as AddSpaPageWorkflowInput,
     context: {} as TemplateWorkflowContext,
   },
-  actions: workflowActionImplementations,
+  actions: workflowActions,
   actors: workflowActors,
 }).createMachine({
   id: "add-spa-page",

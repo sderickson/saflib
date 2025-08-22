@@ -1,6 +1,6 @@
 import { fromPromise, raise, setup } from "xstate";
 import {
-  workflowActionImplementations,
+  workflowActions,
   workflowActors,
   logInfo,
   type WorkflowContext,
@@ -49,7 +49,7 @@ export const AddEmailTemplateWorkflowMachine = setup({
     input: {} as AddEmailTemplateWorkflowInput,
     context: {} as AddEmailTemplateWorkflowContext,
   },
-  actions: workflowActionImplementations,
+  actions: workflowActions,
   actors: workflowActors,
 }).createMachine({
   id: "add-email-template",

@@ -1,10 +1,10 @@
 [**@saflib/workflows**](../index.md)
 
-***
+---
 
-# Variable: workflowActionImplementations
+# Variable: workflowActions
 
-> `const` **workflowActionImplementations**: `object`
+> `const` **workflowActions**: `object`
 
 ## Type declaration
 

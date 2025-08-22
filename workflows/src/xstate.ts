@@ -207,7 +207,7 @@ export const generateMigrations = () => {
 /**
  * Common actions for workflow machines.
  */
-export const workflowActionImplementations = {
+export const workflowActions = {
   log: logImpl,
   prompt: promptImpl,
 };
