@@ -1,5 +1,33 @@
+import type { Command } from "commander";
 import type { ChecklistItem } from "../types.ts";
-import type { WorkflowMeta } from "../workflow.ts";
+import { XStateWorkflow, type WorkflowMeta } from "../workflow.ts";
+import { addNewLinesToString } from "../utils.ts";
+
+export const addChecklistCommand = (
+  program: Command,
+  workflows: WorkflowMeta[],
+) => {
+  const checklistProgram = program
+    .command("checklist")
+    .description(addNewLinesToString("Show the checklist for a workflow."));
+
+  const supportedWorkflows = workflows
+    .filter(({ cliArguments }) =>
+      cliArguments.every((arg) => arg.exampleValue !== undefined),
+    )
+    .filter(({ Workflow }) => {
+      return new Workflow() instanceof XStateWorkflow;
+    });
+
+  supportedWorkflows.forEach((workflowMeta) => {
+    let chain = checklistProgram
+      .command(workflowMeta.name)
+      .description(workflowMeta.description);
+    chain.action(async () => {
+      await printChecklist(workflowMeta);
+    });
+  });
+};
 
 export const printChecklist = async (workflowMeta: WorkflowMeta) => {
   const { Workflow, cliArguments, name } = workflowMeta;
