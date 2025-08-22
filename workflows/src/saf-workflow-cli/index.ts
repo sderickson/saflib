@@ -6,6 +6,7 @@ import { addKickoffCommand } from "./kickoff.ts";
 import { addChecklistCommand } from "./checklist.ts";
 import { addStatusCommand } from "./status.ts";
 import { addNextCommand } from "./next.ts";
+import { addListCommand } from "./list.ts";
 
 export function runWorkflowCli(workflows: WorkflowMeta[]) {
   setupContext({ silentLogging: process.argv.includes("checklist") });
@@ -22,6 +23,7 @@ export function runWorkflowCli(workflows: WorkflowMeta[]) {
   addStatusCommand(program, workflows);
   addNextCommand(program, workflows);
   addChecklistCommand(program, workflows);
+  addListCommand(program, workflows);
 
   program.parse(process.argv);
 }
