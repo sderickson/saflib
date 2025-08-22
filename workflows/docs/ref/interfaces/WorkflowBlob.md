@@ -2,22 +2,26 @@
 
 ***
 
-# Interface: WorkflowBlob
+# ~~Interface: WorkflowBlob~~
+
+## Deprecated
+
+with SimpleWorkflows
 
 ## Properties
 
-### internalState?
+### ~~internalState?~~
 
 > `optional` **internalState**: [`WorkflowBlobInternalState`](WorkflowBlobInternalState.md)
 
 ***
 
-### snapshotState?
+### ~~snapshotState?~~
 
 > `optional` **snapshotState**: `Snapshot`\<`any`\>
 
 ***
 
-### workflowName
+### ~~workflowName~~
 
 > **workflowName**: `string`

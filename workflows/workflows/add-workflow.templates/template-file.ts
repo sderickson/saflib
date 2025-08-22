@@ -4,8 +4,8 @@ import {
   workflowActors,
   logInfo,
   XStateWorkflow,
-  copyTemplateStateFactory,
-  updateTemplateFileFactory,
+  copyTemplateStateComposer,
+  updateTemplateFileComposer,
   runTestsFactory,
   promptAgentFactory,
   type TemplateWorkflowContext,
@@ -68,12 +68,12 @@ export const ToDoWorkflowMachine = setup({
 
   // TODO: update the states to match the actual workflow you're creating. It will usually involve some combination of copying template files, updating files, and running tests.
   states: {
-    ...copyTemplateStateFactory({
+    ...copyTemplateStateComposer({
       stateName: "copyTemplate",
       nextStateName: "updateMainFile",
     }),
 
-    ...updateTemplateFileFactory<ToDoWorkflowContext>({
+    ...updateTemplateFileComposer<ToDoWorkflowContext>({
       filePath: (context) => path.join(context.targetDir, `${context.name}.ts`),
       promptMessage: (context) =>
         `Please update ${context.name}.ts to implement the main functionality. Replace any TODO comments with actual implementation.`,
@@ -81,7 +81,7 @@ export const ToDoWorkflowMachine = setup({
       nextStateName: "updateConfigFile",
     }),
 
-    ...updateTemplateFileFactory<ToDoWorkflowContext>({
+    ...updateTemplateFileComposer<ToDoWorkflowContext>({
       filePath: (context) =>
         path.join(context.targetDir, `${context.name}.config.ts`),
       promptMessage: (context) =>
@@ -90,7 +90,7 @@ export const ToDoWorkflowMachine = setup({
       nextStateName: "updateTests",
     }),
 
-    ...updateTemplateFileFactory<ToDoWorkflowContext>({
+    ...updateTemplateFileComposer<ToDoWorkflowContext>({
       filePath: (context) =>
         path.join(context.targetDir, `${context.name}.test.ts`),
       promptMessage: (context) =>

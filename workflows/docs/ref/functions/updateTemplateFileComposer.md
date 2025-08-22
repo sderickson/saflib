@@ -2,9 +2,9 @@
 
 ***
 
-# Function: updateTemplateFileFactory()
+# Function: updateTemplateFileComposer()
 
-> **updateTemplateFileFactory**\<`C`\>(`__namedParameters`): `object`
+> **updateTemplateFileComposer**\<`C`\>(`__namedParameters`): `object`
 
 ## Type Parameters
 

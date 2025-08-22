@@ -2,9 +2,9 @@
 
 ***
 
-# Function: copyTemplateStateFactory()
+# Function: copyTemplateStateComposer()
 
-> **copyTemplateStateFactory**(`__namedParameters`): `object`
+> **copyTemplateStateComposer**(`__namedParameters`): `object`
 
 ## Parameters
 

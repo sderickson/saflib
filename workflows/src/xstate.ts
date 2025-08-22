@@ -20,18 +20,56 @@ interface ActionParam<C, E extends AnyEventObject> {
   event: E;
 }
 
+/**
+ * Inputs every workflow machine receives.
+ */
 export interface WorkflowInput {
+  /**
+   * Flag to skip all execution of the workflow. Used mainly to get a checklist.
+   */
   dryRun?: boolean;
 }
 
+/**
+ * Outputs every workflow machine returns.
+ */
 export interface WorkflowOutput {
+  /**
+   * Short descriptions of every step taken in the workflow. Can be used
+   * either to generate a sample checklist for a workflow, or a summary
+   * of the work done by a completed workflow. Workflows build these recursively.
+   */
   checklist: ChecklistItem[];
 }
 
+/**
+ * Context shared across all workflow machines.
+ */
 export interface WorkflowContext {
+  /**
+   * Short descriptions of every step taken in the workflow. Can be used
+   * either to generate a sample checklist for a workflow, or a summary
+   * of the work done by a completed workflow. Workflows build these recursively.
+   */
   checklist: ChecklistItem[];
+
+  /**
+   * Flag for if the last thing printed was a log message. This is just
+   * to space logs and prompts out from each other.
+   */
   loggedLast?: boolean;
+
+  /**
+   * Optional prompt to be printed above every step prompt. Use to remind the
+   * agent what the workflow is for, especially if it's a long one.
+   */
   systemPrompt?: string;
+
+  /**
+   * Flag to skip all execution of the workflow. Use to return before doing things
+   * like file operations. This is necessary to get a checklist from a workflow
+   * without actually operating it.
+   */
   dryRun?: boolean;
 }
 
@@ -57,6 +95,9 @@ type WorkflowActionFunction<
 
 // log action
 
+/**
+ * Params for the log action.
+ */
 export interface LogParams {
   msg: string;
   level?: "info" | "error" | "warn";
@@ -212,7 +253,7 @@ export function promptState<C extends WorkflowContext>(
 }
 
 interface PromptAgentFactoryOptions<C extends WorkflowContext>
-  extends FactoryFunctionOptions {
+  extends ComposerFunctionOptions {
   promptForContext: ({ context }: { context: C }) => string | string;
 }
 
@@ -250,7 +291,12 @@ export function promptAgentFactory<C extends WorkflowContext>({
   };
 }
 
-export interface FactoryFunctionOptions {
+/**
+ * Options for all composer functions. These functions return
+ * an object which can be spread into an XState "states" object,
+ * for easily composing a workflow machine from common steps.
+ */
+export interface ComposerFunctionOptions {
   stateName: string;
   nextStateName: string;
 }

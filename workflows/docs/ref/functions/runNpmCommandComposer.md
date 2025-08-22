@@ -2,9 +2,9 @@
 
 ***
 
-# Function: runNpmCommandFactory()
+# Function: runNpmCommandComposer()
 
-> **runNpmCommandFactory**(`__namedParameters`): `object`
+> **runNpmCommandComposer**(`__namedParameters`): `object`
 
 ## Parameters
 

@@ -7,7 +7,6 @@ export interface CopyTemplateMachineInput extends WorkflowInput {
   sourceDir: string;
 }
 
-// This is context specific to this machine
 export interface CopyTemplateMachineContext extends TemplateWorkflowContext {
   sourceFiles: string[];
   targetFiles: string[];

@@ -5,9 +5,9 @@ import {
   workflowActors,
   logInfo,
   XStateWorkflow,
-  copyTemplateStateFactory,
-  updateTemplateFileFactory,
-  runNpmCommandFactory,
+  copyTemplateStateComposer,
+  updateTemplateFileComposer,
+  runNpmCommandComposer,
   type TemplateWorkflowContext,
   contextFromInput,
   outputFromContext,
@@ -55,12 +55,12 @@ export const AddEnvVarWorkflowMachine = setup({
   },
   entry: logInfo("Successfully began add-env-var workflow"),
   states: {
-    ...copyTemplateStateFactory({
+    ...copyTemplateStateComposer({
       stateName: "copyTemplate",
       nextStateName: "updateSchema",
     }),
 
-    ...updateTemplateFileFactory<AddEnvVarWorkflowContext>({
+    ...updateTemplateFileComposer<AddEnvVarWorkflowContext>({
       filePath: (context) => context.schemaPath,
       promptMessage: (context) =>
         `Please add the environment variable '${context.variableName}' to the env.schema.json file. Add it to the properties object with an appropriate type and description. If it is effectively a boolean, use the enum type with values 'true', 'false', and ''.`,
@@ -68,19 +68,19 @@ export const AddEnvVarWorkflowMachine = setup({
       nextStateName: "installSaflibEnv",
     }),
 
-    ...runNpmCommandFactory({
+    ...runNpmCommandComposer({
       command: "install @saflib/env",
       stateName: "installSaflibEnv",
       nextStateName: "generateEnv",
     }),
 
-    ...runNpmCommandFactory({
+    ...runNpmCommandComposer({
       command: "exec saf-env generate",
       stateName: "generateEnv",
       nextStateName: "generateAllEnv",
     }),
 
-    ...runNpmCommandFactory({
+    ...runNpmCommandComposer({
       command: "exec saf-env generate-all",
       stateName: "generateAllEnv",
       nextStateName: "done",

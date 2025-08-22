@@ -2,28 +2,32 @@
 
 ***
 
-# Interface: WorkflowBlobInternalState
+# ~~Interface: WorkflowBlobInternalState~~
+
+## Deprecated
+
+with SimpleWorkflows
 
 ## Properties
 
-### data
+### ~~data~~
 
 > **data**: `Record`\<`string`, `any`\>
 
 ***
 
-### params
+### ~~params~~
 
 > **params**: `Record`\<`string`, `any`\>
 
 ***
 
-### status
+### ~~status~~
 
 > **status**: [`WorkflowStatus`](../type-aliases/WorkflowStatus.md)
 
 ***
 
-### stepIndex
+### ~~stepIndex~~
 
 > **stepIndex**: `number`

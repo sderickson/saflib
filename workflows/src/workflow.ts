@@ -22,6 +22,10 @@ type AbstractClassConstructor<T extends Workflow> = new (...args: any[]) => T;
 
 export type ConcreteWorkflow = AbstractClassConstructor<Workflow>;
 
+/**
+ * Wrapper around a ConcreteWorkflow class. Honestly might not be necessary
+ * and could likely be removed.
+ */
 export interface WorkflowMeta {
   name: string;
   description: string;
@@ -30,6 +34,10 @@ export interface WorkflowMeta {
   packageName: string;
 }
 
+/**
+ * Abstract superclass for SimpleWorkflow and XStateWorkflow. To be removed
+ * when XStateWorkflow is fully adopted.
+ */
 export abstract class Workflow {
   abstract readonly name: string;
   abstract readonly description: string;
@@ -47,6 +55,12 @@ export abstract class Workflow {
   abstract getError(): Error | undefined;
 }
 
+/**
+ * First iteration of workflows. Opted to try using XState instead for plenty
+ * of built in FSM features and tooling.
+ *
+ * @deprecated Use XStateWorkflow instead.
+ */
 export abstract class SimpleWorkflow<
   P extends Record<string, any>,
   D extends Record<string, any> = {},
@@ -184,6 +198,16 @@ interface XStateWorkflowOptions {
   dryRun?: boolean;
 }
 
+/**
+ * Abstract superclass for XStateWorkflows.
+ *
+ * To use, subclass it with:
+ *
+ * * machine - the XState machine for the workflow.
+ * * sourceUrl - import.meta.url
+ * * description - to show up in the CLI tool
+ * * cliArguments - to show up in the CLI tool
+ */
 export abstract class XStateWorkflow extends Workflow {
   abstract readonly machine: AnyStateMachine;
   private input: any;

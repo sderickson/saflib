@@ -9,7 +9,7 @@
 Creates a chain of XState machine states from an array of factory functions.
 
 This helper simplifies creating sequential workflows by automatically handling
-state naming and transitions. Instead of manually specifying stateName and 
+state naming and transitions. Instead of manually specifying stateName and
 nextStateName for each factory, this function generates them automatically.
 
 ## Type Parameters
@@ -50,7 +50,7 @@ states: {
   ...updateTemplateFileFactory({
     filePath: "loader.ts",
     promptMessage: "Update the loader",
-    stateName: "updateLoader", 
+    stateName: "updateLoader",
     nextStateName: "runTests",
   }),
   ...runTestsFactory({
@@ -64,9 +64,9 @@ states: {
 // You can use this concise approach:
 const { initial, states } = createChain([
   [useTemplateStateFactory, {}],
-  [updateTemplateFileFactory, { 
-    filePath: "loader.ts", 
-    promptMessage: "Update the loader" 
+  [updateTemplateFileFactory, {
+    filePath: "loader.ts",
+    promptMessage: "Update the loader"
   }],
   [runTestsFactory, { filePath: "test.ts" }],
 ]);

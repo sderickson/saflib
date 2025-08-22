@@ -4,6 +4,9 @@
 
 # Interface: WorkflowMeta
 
+Wrapper around a ConcreteWorkflow class. Honestly might not be necessary
+and could likely be removed.
+
 ## Properties
 
 ### cliArguments

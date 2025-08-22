@@ -4,7 +4,7 @@ import {
   workflowActors,
   XStateWorkflow,
   promptAgentFactory,
-  copyTemplateStateFactory,
+  copyTemplateStateComposer,
   type TemplateWorkflowContext,
   contextFromInput,
   type WorkflowInput,
@@ -69,7 +69,7 @@ export const AddWorkflowMachine = setup({
   },
   states: {
     // First copy over the template files
-    ...copyTemplateStateFactory({
+    ...copyTemplateStateComposer({
       stateName: "initialize",
       nextStateName: "updateWorkflowFile",
     }),

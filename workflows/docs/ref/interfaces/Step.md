@@ -2,17 +2,21 @@
 
 ***
 
-# Interface: Step
+# ~~Interface: Step~~
+
+## Deprecated
+
+with SimpleWorkflows
 
 ## Properties
 
-### name
+### ~~name~~
 
 > **name**: `string`
 
 ***
 
-### prompt()
+### ~~prompt()~~
 
 > **prompt**: () => `string`
 

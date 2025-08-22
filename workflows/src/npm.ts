@@ -17,7 +17,7 @@ interface RunNpmCommandFactoryOptions {
   nextStateName: string;
 }
 
-export function runNpmCommandFactory({
+export function runNpmCommandComposer({
   command,
   stateName,
   nextStateName,

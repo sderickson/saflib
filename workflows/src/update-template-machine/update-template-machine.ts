@@ -2,7 +2,7 @@ import { assign, raise } from "xstate";
 import {
   logError,
   promptAgent,
-  type FactoryFunctionOptions,
+  type ComposerFunctionOptions,
 } from "../xstate.ts";
 import { readFileSync } from "node:fs";
 import path from "node:path";
@@ -10,12 +10,12 @@ import type { WorkflowContext } from "../xstate.ts";
 import type { TemplateWorkflowContext } from "../types.ts";
 
 interface UpdateTemplateFileFactoryOptions<C extends WorkflowContext>
-  extends FactoryFunctionOptions {
+  extends ComposerFunctionOptions {
   filePath: string | ((context: C) => string);
   promptMessage: string | ((context: C) => string);
 }
 
-export function updateTemplateFileFactory<C extends TemplateWorkflowContext>({
+export function updateTemplateFileComposer<C extends TemplateWorkflowContext>({
   filePath,
   promptMessage,
   stateName,

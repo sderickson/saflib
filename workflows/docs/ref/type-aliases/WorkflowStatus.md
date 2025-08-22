@@ -2,6 +2,10 @@
 
 ***
 
-# Type Alias: WorkflowStatus
+# ~~Type Alias: WorkflowStatus~~
 
 > **WorkflowStatus** = `"not started"` \| `"in progress"` \| `"completed"`
+
+## Deprecated
+
+with SimpleWorkflows

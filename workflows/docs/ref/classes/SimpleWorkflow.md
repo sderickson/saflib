@@ -2,7 +2,14 @@
 
 ***
 
-# Abstract Class: SimpleWorkflow\<P, D\>
+# ~~Abstract Class: SimpleWorkflow\<P, D\>~~
+
+First iteration of workflows. Opted to try using XState instead for plenty
+of built in FSM features and tooling.
+
+## Deprecated
+
+Use XStateWorkflow instead.
 
 ## Extends
 
@@ -31,7 +38,7 @@
 
 ## Properties
 
-### cliArguments
+### ~~cliArguments~~
 
 > `abstract` `readonly` **cliArguments**: [`CLIArgument`](../interfaces/CLIArgument.md)[]
 
@@ -41,13 +48,13 @@
 
 ***
 
-### data?
+### ~~data?~~
 
 > `optional` **data**: `D`
 
 ***
 
-### description
+### ~~description~~
 
 > `abstract` `readonly` **description**: `string`
 
@@ -57,7 +64,7 @@
 
 ***
 
-### init()
+### ~~init()~~
 
 > `abstract` **init**: (...`args`) => `Promise`\<[`Result`](../type-aliases/Result.md)\<`D`\>\>
 
@@ -77,7 +84,7 @@
 
 ***
 
-### name
+### ~~name~~
 
 > `abstract` `readonly` **name**: `string`
 
@@ -87,13 +94,13 @@
 
 ***
 
-### params?
+### ~~params?~~
 
 > `optional` **params**: `P`
 
 ***
 
-### sourceUrl
+### ~~sourceUrl~~
 
 > `abstract` `readonly` **sourceUrl**: `string`
 
@@ -103,13 +110,13 @@
 
 ***
 
-### steps
+### ~~steps~~
 
 > `abstract` **steps**: [`Step`](../interfaces/Step.md)[]
 
 ***
 
-### workflowPrompt()
+### ~~workflowPrompt()~~
 
 > `abstract` **workflowPrompt**: () => `string`
 
@@ -119,7 +126,7 @@
 
 ## Methods
 
-### dehydrate()
+### ~~dehydrate()~~
 
 > **dehydrate**(): [`WorkflowBlob`](../interfaces/WorkflowBlob.md)
 
@@ -133,7 +140,7 @@
 
 ***
 
-### done()
+### ~~done()~~
 
 > **done**(): `boolean`
 
@@ -147,7 +154,7 @@
 
 ***
 
-### getChecklist()
+### ~~getChecklist()~~
 
 > **getChecklist**(): [`ChecklistItem`](../interfaces/ChecklistItem.md)[]
 
@@ -161,7 +168,7 @@
 
 ***
 
-### getCurrentStateName()
+### ~~getCurrentStateName()~~
 
 > **getCurrentStateName**(): `string`
 
@@ -175,7 +182,7 @@
 
 ***
 
-### getData()
+### ~~getData()~~
 
 > **getData**(): `D`
 
@@ -185,7 +192,7 @@
 
 ***
 
-### getError()
+### ~~getError()~~
 
 > **getError**(): `undefined` \| `Error`
 
@@ -199,7 +206,7 @@
 
 ***
 
-### getParams()
+### ~~getParams()~~
 
 > **getParams**(): `P`
 
@@ -209,7 +216,7 @@
 
 ***
 
-### goToNextStep()
+### ~~goToNextStep()~~
 
 > **goToNextStep**(): `Promise`\<`void`\>
 
@@ -223,7 +230,7 @@
 
 ***
 
-### hydrate()
+### ~~hydrate()~~
 
 > **hydrate**(`blob`): `void`
 
@@ -243,7 +250,7 @@
 
 ***
 
-### kickoff()
+### ~~kickoff()~~
 
 > **kickoff**(): `Promise`\<`boolean`\>
 
@@ -257,7 +264,7 @@
 
 ***
 
-### print()
+### ~~print()~~
 
 > **print**(`message`): `void`
 
@@ -273,7 +280,7 @@
 
 ***
 
-### printStatus()
+### ~~printStatus()~~
 
 > **printStatus**(): `Promise`\<`void`\>
 
@@ -287,7 +294,7 @@
 
 ***
 
-### setData()
+### ~~setData()~~
 
 > **setData**(`data`): `void`
 

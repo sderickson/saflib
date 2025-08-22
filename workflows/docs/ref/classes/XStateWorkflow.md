@@ -4,6 +4,15 @@
 
 # Abstract Class: XStateWorkflow
 
+Abstract superclass for XStateWorkflows.
+
+To use, subclass it with:
+
+* machine - the XState machine for the workflow.
+* sourceUrl - import.meta.url
+* description - to show up in the CLI tool
+* cliArguments - to show up in the CLI tool
+
 ## Extends
 
 - [`Workflow`](Workflow.md)

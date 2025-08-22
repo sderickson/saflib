@@ -1,21 +1,21 @@
-import type { FactoryFunctionOptions } from "./xstate.ts";
+import type { ComposerFunctionOptions } from "./xstate.ts";
 
 type FactoryFunction<T extends Record<string, any>> = (
-  options: T & FactoryFunctionOptions,
+  options: T & ComposerFunctionOptions,
 ) => Record<string, any>;
 
 type FactoryTuple<T extends Record<string, any>> = [
   FactoryFunction<T>,
-  Omit<T, keyof FactoryFunctionOptions>,
+  Omit<T, keyof ComposerFunctionOptions>,
 ];
 
 /**
  * Creates a chain of XState machine states from an array of factory functions.
- * 
+ *
  * This helper simplifies creating sequential workflows by automatically handling
- * state naming and transitions. Instead of manually specifying stateName and 
+ * state naming and transitions. Instead of manually specifying stateName and
  * nextStateName for each factory, this function generates them automatically.
- * 
+ *
  * @example
  * // Instead of this verbose approach:
  * states: {
@@ -26,7 +26,7 @@ type FactoryTuple<T extends Record<string, any>> = [
  *   ...updateTemplateFileFactory({
  *     filePath: "loader.ts",
  *     promptMessage: "Update the loader",
- *     stateName: "updateLoader", 
+ *     stateName: "updateLoader",
  *     nextStateName: "runTests",
  *   }),
  *   ...runTestsFactory({
@@ -36,17 +36,17 @@ type FactoryTuple<T extends Record<string, any>> = [
  *   }),
  *   done: { type: "final" }
  * }
- * 
+ *
  * // You can use this concise approach:
  * const { initial, states } = createChain([
  *   [useTemplateStateFactory, {}],
- *   [updateTemplateFileFactory, { 
- *     filePath: "loader.ts", 
- *     promptMessage: "Update the loader" 
+ *   [updateTemplateFileFactory, {
+ *     filePath: "loader.ts",
+ *     promptMessage: "Update the loader"
  *   }],
  *   [runTestsFactory, { filePath: "test.ts" }],
  * ]);
- * 
+ *
  * @param factories Array of tuples, each containing a factory function and its options
  * @returns Object with initial state name and states object
  */
@@ -87,4 +87,4 @@ export function createChain<T extends readonly FactoryTuple<any>[]>(
     initial: `step1`,
     states,
   };
-} 
+}

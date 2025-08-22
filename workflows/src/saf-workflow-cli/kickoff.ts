@@ -19,7 +19,7 @@ export const addKickoffCommand = (
       .command(workflowMeta.name)
       .description(workflowMeta.description);
     workflowMeta.cliArguments.forEach((arg) => {
-      chain = chain.argument(arg.name, arg.description, arg.defaultValue);
+      chain = chain.argument(arg.name, arg.description);
     });
     chain.action(async (...args) => await kickoffWorkflow(workflowMeta, args));
   });

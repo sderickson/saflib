@@ -153,7 +153,7 @@ export const CopyTemplateMachine = setup({
   },
 });
 
-export function copyTemplateStateFactory({
+export function copyTemplateStateComposer({
   stateName,
   nextStateName,
 }: {

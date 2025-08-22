@@ -4,6 +4,8 @@
 
 # Interface: LogParams
 
+Params for the log action.
+
 ## Properties
 
 ### level?

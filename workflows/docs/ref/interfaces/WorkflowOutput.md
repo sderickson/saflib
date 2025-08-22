@@ -4,6 +4,8 @@
 
 # Interface: WorkflowOutput
 
+Outputs every workflow machine returns.
+
 ## Properties
 
 ### checklist

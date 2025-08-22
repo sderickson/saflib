@@ -4,6 +4,9 @@
 
 # Abstract Class: Workflow
 
+Abstract superclass for SimpleWorkflow and XStateWorkflow. To be removed
+when XStateWorkflow is fully adopted.
+
 ## Extended by
 
 - [`SimpleWorkflow`](SimpleWorkflow.md)
