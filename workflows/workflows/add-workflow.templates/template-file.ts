@@ -7,7 +7,7 @@ import {
   copyTemplateStateComposer,
   updateTemplateFileComposer,
   runTestsFactory,
-  promptAgentFactory,
+  promptAgentComposer,
   type TemplateWorkflowContext,
   contextFromInput,
   type WorkflowInput,
@@ -106,7 +106,7 @@ export const ToDoWorkflowMachine = setup({
       nextStateName: "verifyDone",
     }),
 
-    ...promptAgentFactory<ToDoWorkflowContext>({
+    ...promptAgentComposer<ToDoWorkflowContext>({
       stateName: "verifyDone",
       nextStateName: "done",
       promptForContext: ({ context }) =>

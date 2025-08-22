@@ -3,7 +3,7 @@ import {
   workflowActions,
   workflowActors,
   XStateWorkflow,
-  promptAgentFactory,
+  promptAgentComposer,
   copyTemplateStateComposer,
   type TemplateWorkflowContext,
   contextFromInput,
@@ -74,7 +74,7 @@ export const AddWorkflowMachine = setup({
       nextStateName: "updateWorkflowFile",
     }),
 
-    ...promptAgentFactory<AddWorkflowContext>({
+    ...promptAgentComposer<AddWorkflowContext>({
       stateName: "updateWorkflowFile",
       nextStateName: "exportWorkflow",
       promptForContext: ({ context }) =>
@@ -83,7 +83,7 @@ export const AddWorkflowMachine = setup({
       Don't worry about the other TODOs for now; currently we're just making sure the stub workflow is properly installed into the CLI tool.`,
     }),
 
-    ...promptAgentFactory<AddWorkflowContext>({
+    ...promptAgentComposer<AddWorkflowContext>({
       stateName: "exportWorkflow",
       nextStateName: "ensureDependency",
       promptForContext: ({ context }) =>
@@ -95,7 +95,7 @@ export const AddWorkflowMachine = setup({
     }),
 
     // TODO: Change to use runNpmCommandFactory
-    ...promptAgentFactory<AddWorkflowContext>({
+    ...promptAgentComposer<AddWorkflowContext>({
       stateName: "ensureDependency",
       nextStateName: "updateWorkflowList",
       promptForContext: ({ context }) =>
@@ -104,7 +104,7 @@ export const AddWorkflowMachine = setup({
        If it's not a dependency in \`'saflib/workflows-cli/package.json'\`, go to that directory and run \`npm install ${context.packageName}\`.`,
     }),
 
-    ...promptAgentFactory<AddWorkflowContext>({
+    ...promptAgentComposer<AddWorkflowContext>({
       stateName: "updateWorkflowList",
       nextStateName: "verifyWorkflowList",
       promptForContext: ({ context }) =>
@@ -114,7 +114,7 @@ export const AddWorkflowMachine = setup({
     }),
 
     // TODO: Automate this; doesn't need to be a prompt
-    ...promptAgentFactory<AddWorkflowContext>({
+    ...promptAgentComposer<AddWorkflowContext>({
       stateName: "verifyWorkflowList",
       nextStateName: "done",
       promptForContext: ({ context }) =>

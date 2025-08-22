@@ -182,11 +182,17 @@ const getTestCommandAndArgs = () => {
   return { command, args };
 };
 
+/**
+ * @deprecated - to be replaced with runTestsFactory
+ */
 export const doesTestPass = (pathString: string) => {
   const { command, args } = getTestCommandAndArgs();
   return runCommandAsync(command, [...args, pathString]);
 };
 
+/**
+ * @deprecated - to be replaced with runTestsFactory
+ */
 export const doTestsPass = () => {
   const { command, args } = getTestCommandAndArgs();
   return runCommandAsync(command, args);
@@ -198,8 +204,9 @@ export const doTestsPassSync = () => {
   return status === 0;
 };
 
-// generate action
-
+/**
+ * @deprecated - to be replaced with generateMigrationsComposer
+ */
 export const generateMigrations = () => {
   return runCommandAsync("npm", ["run", "generate"]);
 };
@@ -259,16 +266,16 @@ export function promptState<C extends WorkflowContext>(
   };
 }
 
-interface PromptAgentFactoryOptions<C extends WorkflowContext>
+interface PromptAgentComposerOptions<C extends WorkflowContext>
   extends ComposerFunctionOptions {
   promptForContext: ({ context }: { context: C }) => string | string;
 }
 
-export function promptAgentFactory<C extends WorkflowContext>({
+export function promptAgentComposer<C extends WorkflowContext>({
   promptForContext,
   stateName,
   nextStateName,
-}: PromptAgentFactoryOptions<C>) {
+}: PromptAgentComposerOptions<C>) {
   return {
     [stateName]: {
       entry: raise({ type: "prompt" }),

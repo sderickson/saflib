@@ -2,10 +2,14 @@
 
 ***
 
-# Function: doTestsPass()
+# ~~Function: doTestsPass()~~
 
 > **doTestsPass**(): `Promise`\<`string`\>
 
 ## Returns
 
 `Promise`\<`string`\>
+
+## Deprecated
+
+- to be replaced with runTestsFactory

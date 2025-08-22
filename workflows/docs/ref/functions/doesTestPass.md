@@ -2,7 +2,7 @@
 
 ***
 
-# Function: doesTestPass()
+# ~~Function: doesTestPass()~~
 
 > **doesTestPass**(`pathString`): `Promise`\<`string`\>
 
@@ -15,3 +15,7 @@
 ## Returns
 
 `Promise`\<`string`\>
+
+## Deprecated
+
+- to be replaced with runTestsFactory

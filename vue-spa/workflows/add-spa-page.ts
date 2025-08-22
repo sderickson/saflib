@@ -9,7 +9,7 @@ import {
   updateTemplateFileComposer,
   type TemplateWorkflowContext,
   runTestsFactory,
-  promptAgentFactory,
+  promptAgentComposer,
   contextFromInput,
   type WorkflowInput,
 } from "@saflib/workflows";
@@ -78,7 +78,7 @@ export const AddSpaPageWorkflowMachine = setup({
       nextStateName: "updateLinksPackage",
     }),
 
-    ...promptAgentFactory<TemplateWorkflowContext>({
+    ...promptAgentComposer<TemplateWorkflowContext>({
       stateName: "updateLinksPackage",
       nextStateName: "updateRouter",
       promptForContext: () =>
@@ -119,7 +119,7 @@ export const AddSpaPageWorkflowMachine = setup({
       nextStateName: "updateMainStrings",
     }),
 
-    ...promptAgentFactory<TemplateWorkflowContext>({
+    ...promptAgentComposer<TemplateWorkflowContext>({
       stateName: "updateMainStrings",
       nextStateName: "implementDesign",
       promptForContext: () =>
@@ -151,7 +151,7 @@ export const AddSpaPageWorkflowMachine = setup({
       nextStateName: "verifyDone",
     }),
 
-    ...promptAgentFactory({
+    ...promptAgentComposer({
       stateName: "verifyDone",
       nextStateName: "done",
       promptForContext: () =>

@@ -50,21 +50,18 @@
 | ------ | ------ |
 | [contextFromInput](functions/contextFromInput.md) | Helper function to create initial `WorkflowContext` from `WorkflowInput`. |
 | [copyTemplateStateComposer](functions/copyTemplateStateComposer.md) | Composer for copying template files to a target directory. Also replaces every instance "template-file", "template_file", "TemplateFile", and "templateFile" with the name of the thing being created, passed in via the CLI or other interface. To use this composer, the machine context must extend TemplateWorkflowContext. |
-| [doesTestPass](functions/doesTestPass.md) | - |
-| [doTestsPass](functions/doTestsPass.md) | - |
-| [doTestsPassSync](functions/doTestsPassSync.md) | - |
+| [~~doesTestPass~~](functions/doesTestPass.md) | - |
+| [~~doTestsPass~~](functions/doTestsPass.md) | - |
 | [generateMigrations](functions/generateMigrations.md) | - |
 | [getPackageName](functions/getPackageName.md) | - |
 | [kebabCaseToCamelCase](functions/kebabCaseToCamelCase.md) | - |
 | [kebabCaseToPascalCase](functions/kebabCaseToPascalCase.md) | - |
 | [logError](functions/logError.md) | - |
 | [logInfo](functions/logInfo.md) | - |
-| [logWarn](functions/logWarn.md) | - |
 | [outputFromContext](functions/outputFromContext.md) | Helper function to create `WorkflowOutput` from `WorkflowContext`. |
 | [promptAgent](functions/promptAgent.md) | - |
 | [promptAgentFactory](functions/promptAgentFactory.md) | - |
 | [promptState](functions/promptState.md) | - |
-| [runCommandAsync](functions/runCommandAsync.md) | - |
 | [runNpmCommandComposer](functions/runNpmCommandComposer.md) | - |
 | [runTestsFactory](functions/runTestsFactory.md) | - |
 | [runWorkflowCli](functions/runWorkflowCli.md) | - |
