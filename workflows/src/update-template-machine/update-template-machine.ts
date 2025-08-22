@@ -1,4 +1,4 @@
-import { raise } from "xstate";
+import { assign, raise } from "xstate";
 import {
   logError,
   promptAgent,
@@ -6,8 +6,8 @@ import {
 } from "../xstate.ts";
 import { readFileSync } from "node:fs";
 import path from "node:path";
-import type { TemplateWorkflowContext } from "../types.ts";
 import type { WorkflowContext } from "../xstate.ts";
+import type { TemplateWorkflowContext } from "../types.ts";
 
 interface UpdateTemplateFileFactoryOptions<C extends WorkflowContext>
   extends FactoryFunctionOptions {
@@ -59,6 +59,19 @@ export function updateTemplateFileFactory<C extends TemplateWorkflowContext>({
           },
           {
             target: nextStateName,
+            actions: [
+              assign({
+                checklist: ({ context }) => {
+                  const castC = context as C; // Unclear how to avoid this cast
+                  return [
+                    ...context.checklist,
+                    {
+                      description: `Update ${typeof filePath === "string" ? filePath : filePath(castC).split("/").pop()} to remove TODOs`,
+                    },
+                  ];
+                },
+              }),
+            ],
           },
         ],
       },
