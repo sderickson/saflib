@@ -49,15 +49,6 @@ export function runNpmCommandFactory({
           target: nextStateName,
           actions: logInfo(() => getSuccessMessage()),
         },
-        onError: {
-          actions: [
-            logError(
-              ({ event }) =>
-                `Command failed: ${(event.error as Error).message}`,
-            ),
-            raise({ type: "prompt" }),
-          ],
-        },
       },
       entry: assign({
         checklist: ({ context }: { context: WorkflowContext }) => [

@@ -29,11 +29,13 @@ export abstract class Workflow {
   abstract init: (...args: any[]) => Promise<Result<any>>;
   abstract kickoff(): Promise<boolean>;
   abstract printStatus(): Promise<void>;
+  abstract getCurrentStateName(): string;
   abstract goToNextStep(): Promise<void>;
   abstract dehydrate(): WorkflowBlob;
   abstract hydrate(blob: WorkflowBlob): void;
   abstract done(): boolean;
   abstract getChecklist(): ChecklistItem[];
+  abstract getError(): Error | undefined;
 }
 
 export abstract class SimpleWorkflow<
@@ -158,6 +160,15 @@ export abstract class SimpleWorkflow<
   getChecklist = (): ChecklistItem[] => {
     return [];
   };
+
+  getCurrentStateName = (): string => {
+    const currentStep = this.steps[this.stepIndex];
+    return currentStep.name;
+  };
+
+  getError = (): Error | undefined => {
+    return undefined;
+  };
 }
 
 interface XStateWorkflowOptions {
@@ -263,5 +274,19 @@ export abstract class XStateWorkflow extends Workflow {
       return [];
     }
     return this.actor.getSnapshot().output.checklist;
+  };
+
+  getCurrentStateName = (): string => {
+    if (!this.actor) {
+      return "not started";
+    }
+    return this.actor.getSnapshot().value;
+  };
+
+  getError = (): Error | undefined => {
+    if (!this.actor) {
+      return undefined;
+    }
+    return this.actor.getSnapshot().error;
   };
 }

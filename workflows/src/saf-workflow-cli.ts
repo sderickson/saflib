@@ -121,8 +121,20 @@ export function runWorkflowCli(workflows: WorkflowMeta[]) {
           process.exit(1);
         }
         await workflow.kickoff();
+        let lastStateName = workflow.getCurrentStateName();
+
         while (!workflow.done()) {
           await workflow.goToNextStep();
+          const error = workflow.getError();
+          if (error) {
+            console.error("Workflow errored", error);
+            process.exit(1);
+          }
+          const currentStateName = workflow.getCurrentStateName();
+          if (currentStateName === lastStateName) {
+            throw new Error("Workflow is stuck");
+          }
+          lastStateName = currentStateName;
         }
 
         console.log(`\nChecklist for ${name}:\n`);

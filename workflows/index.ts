@@ -1,7 +1,7 @@
 import type { WorkflowMeta, ConcreteWorkflow } from "./src/workflow.ts";
 
 export * from "./src/workflow.ts";
-export * from "./src/workflow-cli.ts";
+export * from "./src/saf-workflow-cli.ts";
 import sampleWorkflows from "./sample/index.ts";
 export { sampleWorkflows };
 export type * from "./src/types.ts";

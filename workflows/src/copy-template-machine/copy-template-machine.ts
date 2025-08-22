@@ -1,4 +1,4 @@
-import { setup, assign, raise } from "xstate";
+import { setup, assign } from "xstate";
 import {
   workflowActionImplementations,
   workflowActors,
@@ -73,13 +73,6 @@ export const CopyTemplateMachine = setup({
             ),
           ],
         },
-        onError: {
-          target: "error",
-          actions: logError(
-            ({ event }) =>
-              `Failed to fetch file names: ${(event.error as Error).message}`,
-          ),
-        },
       },
     },
     copy: {
@@ -110,13 +103,6 @@ export const CopyTemplateMachine = setup({
             ],
           },
         ],
-        onError: {
-          target: "error",
-          actions: logError(
-            ({ event }) =>
-              `Failed to copy file: ${(event.error as Error).message}`,
-          ),
-        },
       },
     },
     rename: {
@@ -127,13 +113,6 @@ export const CopyTemplateMachine = setup({
           target: "popFile",
           actions: logInfo(
             ({ event }) => `Renamed placeholders in ${event.output.fileName}`,
-          ),
-        },
-        onError: {
-          target: "error",
-          actions: logError(
-            ({ event }) =>
-              `Failed to rename placeholders: ${(event.error as Error).message}`,
           ),
         },
       },
@@ -201,15 +180,6 @@ export function copyTemplateStateFactory({
                 return result;
               },
             }),
-          ],
-        },
-        onError: {
-          actions: [
-            logError(
-              ({ event }: { event: any }) =>
-                `Failed to copy and rename template: ${(event.error as Error).message}`,
-            ),
-            raise({ type: "prompt" }),
           ],
         },
       },
