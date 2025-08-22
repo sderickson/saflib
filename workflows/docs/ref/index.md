@@ -54,8 +54,6 @@
 | [~~doTestsPass~~](functions/doTestsPass.md) | - |
 | [~~generateMigrations~~](functions/generateMigrations.md) | - |
 | [~~getPackageName~~](functions/getPackageName.md) | Utility function to get the package name from the root URL. |
-| [kebabCaseToCamelCase](functions/kebabCaseToCamelCase.md) | - |
-| [kebabCaseToPascalCase](functions/kebabCaseToPascalCase.md) | - |
 | [logError](functions/logError.md) | - |
 | [logInfo](functions/logInfo.md) | - |
 | [outputFromContext](functions/outputFromContext.md) | Helper function to create `WorkflowOutput` from `WorkflowContext`. |

@@ -8,7 +8,8 @@ import {
   promptAgent,
   type ComposerFunctionOptions,
 } from "../xstate.ts";
-import { getGitHubUrl, kebabCaseToPascalCase } from "../utils.ts";
+import { kebabCaseToPascalCase } from "@saflib/utils";
+import { getGitHubUrl } from "@saflib/dev-tools";
 import type {
   CopyTemplateMachineContext,
   CopyTemplateMachineInput,
@@ -22,7 +23,6 @@ import { fetchFileNames } from "./fetch-file-names.ts";
 import { copyNextFile } from "./copy-next-file.ts";
 import { renameNextFile } from "./rename-next-file.ts";
 import path from "node:path";
-
 export const CopyTemplateMachine = setup({
   types: {
     input: {} as CopyTemplateMachineInput,

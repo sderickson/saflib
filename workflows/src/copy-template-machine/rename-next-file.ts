@@ -3,9 +3,11 @@ import type { CopyTemplateMachineContext } from "./types.ts";
 import { readFile, writeFile } from "node:fs/promises";
 import { transformName } from "./utils.ts";
 import path from "node:path";
-import { kebabCaseToSnakeCase } from "../utils.ts";
-import { kebabCaseToPascalCase } from "../utils.ts";
-import { kebabCaseToCamelCase } from "../utils.ts";
+import {
+  kebabCaseToSnakeCase,
+  kebabCaseToPascalCase,
+  kebabCaseToCamelCase,
+} from "@saflib/utils";
 
 export const renameNextFile = fromPromise(
   async ({ input }: { input: CopyTemplateMachineContext }) => {

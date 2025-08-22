@@ -11,7 +11,7 @@ import {
   outputFromContext,
 } from "@saflib/workflows";
 import { getSafReporters } from "@saflib/node";
-import { kebabCaseToPascalCase } from "../src/utils.ts";
+import { kebabCaseToPascalCase } from "@saflib/utils";
 import { readFileSync } from "fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";

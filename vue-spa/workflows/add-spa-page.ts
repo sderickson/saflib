@@ -5,7 +5,6 @@ import {
   logInfo,
   XStateWorkflow,
   copyTemplateStateComposer,
-  kebabCaseToPascalCase,
   updateTemplateFileComposer,
   type TemplateWorkflowContext,
   runTestsFactory,
@@ -13,6 +12,7 @@ import {
   contextFromInput,
   type WorkflowInput,
 } from "@saflib/workflows";
+import { kebabCaseToPascalCase } from "@saflib/utils";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 

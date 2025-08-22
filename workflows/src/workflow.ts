@@ -6,11 +6,12 @@ import type {
   WorkflowStatus,
 } from "./types.ts";
 import type { AnyStateMachine, AnyActor } from "xstate";
-import { addNewLinesToString, allChildrenSettled } from "./utils.ts";
+import { addNewLinesToString } from "@saflib/utils";
 import { createActor, waitFor } from "xstate";
 import { getSafReporters } from "@saflib/node";
 import path from "node:path";
 import { existsSync, readFileSync } from "node:fs";
+import { allChildrenSettled } from "./utils.ts";
 import type {
   WorkflowContext,
   WorkflowInput,

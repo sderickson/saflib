@@ -1,6 +1,6 @@
 import { Command } from "commander";
 import type { WorkflowMeta } from "@saflib/workflows";
-import { addNewLinesToString } from "../utils.ts";
+import { addNewLinesToString } from "@saflib/utils";
 import { setupContext } from "./context.ts";
 import { addKickoffCommand } from "./kickoff.ts";
 import { addChecklistCommand } from "./checklist.ts";

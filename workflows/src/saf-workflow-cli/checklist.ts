@@ -1,7 +1,7 @@
 import type { Command } from "commander";
 import type { ChecklistItem } from "../types.ts";
 import { XStateWorkflow, type WorkflowMeta } from "../workflow.ts";
-import { addNewLinesToString } from "../utils.ts";
+import { addNewLinesToString } from "@saflib/utils";
 
 export const addChecklistCommand = (
   program: Command,

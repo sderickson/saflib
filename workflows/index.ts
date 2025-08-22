@@ -10,7 +10,6 @@ export {
 } from "./src/workflow.ts";
 export * from "./src/saf-workflow-cli/index.ts";
 export type * from "./src/types.ts";
-export { kebabCaseToPascalCase, kebabCaseToCamelCase } from "./src/utils.ts";
 
 export {
   workflowActions,

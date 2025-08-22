@@ -9,8 +9,6 @@ import {
   promptAgent,
   XStateWorkflow,
   doTestsPass,
-  kebabCaseToPascalCase,
-  kebabCaseToCamelCase,
   promptState,
 } from "@saflib/workflows";
 import path from "node:path";
@@ -19,6 +17,7 @@ import { exec } from "node:child_process";
 import { promisify } from "node:util";
 import { readdir, rename, readFile, writeFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
+import { kebabCaseToPascalCase, kebabCaseToCamelCase } from "@saflib/utils";
 
 const execAsync = promisify(exec);
 

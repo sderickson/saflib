@@ -1,6 +1,6 @@
 import type { Command } from "commander";
 import { saveWorkflow } from "../file-io.ts";
-import { addNewLinesToString } from "../utils.ts";
+import { addNewLinesToString } from "@saflib/utils";
 import { type WorkflowMeta } from "../workflow.ts";
 
 export const addKickoffCommand = (

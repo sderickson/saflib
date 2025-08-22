@@ -1,4 +1,4 @@
-import { getCurrentPackage, print } from "./utils.ts";
+import { print } from "./utils.ts";
 import { spawn, spawnSync } from "child_process";
 import {
   assign,
@@ -12,6 +12,7 @@ import {
   raise,
 } from "xstate";
 import type { ChecklistItem } from "./types.ts";
+import { getCurrentPackage } from "@saflib/dev-tools";
 
 // general types
 
