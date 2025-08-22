@@ -1,10 +1,12 @@
 [**@saflib/workflows**](../index.md)
 
----
+***
 
 # Variable: workflowActions
 
 > `const` **workflowActions**: `object`
+
+Common actions for workflow machines.
 
 ## Type declaration
 
