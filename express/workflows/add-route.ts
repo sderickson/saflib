@@ -362,4 +362,5 @@ export class AddRouteWorkflow extends XStateWorkflow {
       description: "Path of the new route (e.g. 'routes/call-series/create')",
     },
   ];
+  sourceUrl = import.meta.url;
 }

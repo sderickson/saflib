@@ -15,6 +15,11 @@ export function concreteWorkflowToMeta(
   workflow: ConcreteWorkflow,
 ): WorkflowMeta {
   const stubWorkflow = new workflow();
+  if (!stubWorkflow.sourceUrl) {
+    throw new Error(
+      `Workflow ${stubWorkflow.name} must have a sourceUrl property.`,
+    );
+  }
   return {
     name: stubWorkflow.name,
     description: stubWorkflow.description,
