@@ -22,7 +22,7 @@ Creating, generating, and working through tasks is great, but I believe that's p
 
 In terms of improving LLMs, it's unclear how much better they'll get as a technology in the near term. I'm willing to bet, though, that regardless of how good they get in the next decade or so, they still need to be held accountable.
 
-## SAF: Workflow Testbed
+## The Solution: a CLI Tool for Workflows
 
 Automated workflows are a product of SAF, and its core feature. I built SAF initially for a SaaS business, and to experiment with LLMs first-hand to form opinions. At first I tried simply writing down documents ([with the help of LLMs](https://scotterickson.info/blog/2025-03-27-doc-driven-ai)) and feeding them back to them as context for future prompts. This worked up to a point, until I found the agent would largely ignore the checklists I gave them, and wouldn't consistently follow the documentation I provided.
 
@@ -31,7 +31,7 @@ To solve this, I built a simple [workflow tool](https://scotterickson.info/blog/
 1. Prints out a prompt and exits
 2. Runs a command and continues if successful, otherwise prints out an error and exits
 
-When it exits, it saves the machine state to disk so that when it's run again, it can pick up where it left off. This way the agent can run the workflow command, get a prompt, do the work, then run the workflow command again to get the next prompt until the machine is done.
+When it exits, it saves the machine state to disk so that when it's run again, it can pick up where it left off. This way the agent can run the workflow command, get a prompt, do the work, then run the workflow command again to get the next prompt until the machine is done. See [this blog post](https://scotterickson.info/blog/2025-05-10-workflow-first-iteration) for more details.
 
 Any routine work can become a workflow with this tool, such as adding a route to a server, a page to a website, a table to a database, a deployment to a project, or a package to a monorepo. Because it's built on XState, workflows can also invoke other workflows.
 
@@ -48,9 +48,14 @@ You can see what workflows there are and what they look like by finding "Workflo
 Here are some examples:
 
 - [Adding a schema for an environment variable](./env/docs/workflows/add-env-var.md)
+- (more to come)
 
 ## Trying Out Workflows
 
 Unfortunately, it's not very self-service. I still need to update [saf-template](https://github.com/sderickson/saf-template) to be able to use all modern workflows. Once that's done you'll be able to clone it and use the workflow tool with whichever coding agent (Cursor, Claude Code, Roo Code, etc.) you want.
 
-If you're interested in collaborating on these, however, please feel free to reach out at [sderickson@gmail.com](mailto:sderickson@gmail.com)! You can also star or watch the [saflib](https://github.com/sderickson/saflib) and [saf-template](https://github.com/sderickson/saf-template) repos to keep track of developments.
+If you're interested in collaborating on these, however, please feel free to reach out at [sderickson@gmail.com](mailto:sderickson@gmail.com)! You can also star or watch any of the following:
+
+- [saflib repo](https://github.com/sderickson/saflib) repo
+- [saf-template repo](https://github.com/sderickson/saf-template) repo
+- [SAF Project Board](https://github.com/users/sderickson/projects/2/views/3)
