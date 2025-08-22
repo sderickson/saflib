@@ -30,9 +30,6 @@ export const AddEnvVarWorkflowMachine = setup({
     context: {} as AddEnvVarWorkflowContext,
   },
   actions: {
-    addChecklistItem: (arg1, arg2) => {
-      console.log({ arg1, arg2 });
-    },
     ...workflowActionImplementations,
   },
   actors: workflowActors,
@@ -60,13 +57,11 @@ export const AddEnvVarWorkflowMachine = setup({
   },
   entry: logInfo("Successfully began add-env-var workflow"),
   states: {
-    // Copy over the template schema file
     ...copyTemplateStateFactory({
       stateName: "copyTemplate",
       nextStateName: "updateSchema",
     }),
 
-    // Update the schema file to add the new variable
     ...updateTemplateFileFactory<AddEnvVarWorkflowContext>({
       filePath: (context) => context.schemaPath,
       promptMessage: (context) =>
@@ -75,21 +70,18 @@ export const AddEnvVarWorkflowMachine = setup({
       nextStateName: "installSaflibEnv",
     }),
 
-    // Install @saflib/env package
     ...runNpmCommandFactory({
       command: "install @saflib/env",
       stateName: "installSaflibEnv",
       nextStateName: "generateEnv",
     }),
 
-    // Generate env.ts file
     ...runNpmCommandFactory({
       command: "exec saf-env generate",
       stateName: "generateEnv",
       nextStateName: "generateAllEnv",
     }),
 
-    // Generate all env files
     ...runNpmCommandFactory({
       command: "exec saf-env generate-all",
       stateName: "generateAllEnv",
