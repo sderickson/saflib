@@ -4,6 +4,7 @@ import { loadWorkflow, saveWorkflow } from "../file-io.ts";
 import { addNewLinesToString } from "../utils.ts";
 import { XStateWorkflow } from "../workflow.ts";
 import { setupContext } from "./context.ts";
+import { kickoffWorkflow } from "./kickoff.ts";
 
 export function runWorkflowCli(workflows: WorkflowMeta[]) {
   setupContext({ silentLogging: process.argv.includes("checklist") });
@@ -23,24 +24,14 @@ export function runWorkflowCli(workflows: WorkflowMeta[]) {
         "Kick off a workflow. Takes a workflow name and then any arguments for the workflow. Names should be kebab-case, and paths should be ./relative/to/package/root.ts. All commands should be run in a folder with a package.json; the package the workflow is acting on. Example:\n\nnpm exec saf-workflow kickoff add-tests ./path/to/file.ts",
       ),
     );
-  workflows.forEach(({ Workflow, name, description, cliArguments }) => {
-    let chain = kickoffProgram.command(name).description(description);
-    cliArguments.forEach((arg) => {
+  workflows.forEach((workflowMeta) => {
+    let chain = kickoffProgram
+      .command(workflowMeta.name)
+      .description(workflowMeta.description);
+    workflowMeta.cliArguments.forEach((arg) => {
       chain = chain.argument(arg.name, arg.description, arg.defaultValue);
     });
-    chain.action(async (...args) => {
-      const workflow = new Workflow();
-      const result = await workflow.init(
-        { dryRun: false },
-        ...args.slice(0, cliArguments.length),
-      );
-      if (result.error) {
-        console.error(result.error.message);
-        process.exit(1);
-      }
-      await workflow.kickoff();
-      saveWorkflow(workflow);
-    });
+    chain.action(async (...args) => await kickoffWorkflow(workflowMeta, args));
   });
 
   program
