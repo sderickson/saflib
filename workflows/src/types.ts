@@ -1,11 +1,6 @@
 import type { Snapshot } from "xstate";
 import type { WorkflowContext } from "./xstate.ts";
 
-export type Result<C extends Record<string, any>> = {
-  data?: C;
-  error?: Error;
-};
-
 /**
  * @deprecated with SimpleWorkflows
  */

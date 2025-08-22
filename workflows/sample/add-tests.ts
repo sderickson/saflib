@@ -27,7 +27,7 @@ export class AddTestsWorkflow extends SimpleWorkflow<
     if (!existsSync(this.getParams().path)) {
       throw new Error(`File does not exist: ${this.getParams().path}`);
     }
-    return { data: {} };
+    return { result: {} };
   };
 
   workflowPrompt = () => `You are adding tests to ${this.getParams().path}.`;

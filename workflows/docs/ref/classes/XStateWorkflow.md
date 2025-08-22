@@ -191,7 +191,7 @@ To use, subclass it with:
 
 ### init()
 
-> **init**(`options`, ...`args`): `Promise`\<[`Result`](../type-aliases/Result.md)\<`any`\>\>
+> **init**(`options`, ...`args`): `Promise`\<`ReturnsError`\<`any`\>\>
 
 #### Parameters
 
@@ -202,7 +202,7 @@ To use, subclass it with:
 
 #### Returns
 
-`Promise`\<[`Result`](../type-aliases/Result.md)\<`any`\>\>
+`Promise`\<`ReturnsError`\<`any`\>\>
 
 #### Overrides
 

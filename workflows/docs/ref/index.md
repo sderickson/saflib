@@ -28,14 +28,13 @@
 | [WorkflowInput](interfaces/WorkflowInput.md) | Inputs every workflow machine receives. |
 | [WorkflowMeta](interfaces/WorkflowMeta.md) | Wrapper around a ConcreteWorkflow class. Honestly might not be necessary and could likely be removed. |
 | [WorkflowOutput](interfaces/WorkflowOutput.md) | Outputs every workflow machine returns. |
-| [XStateMachineStates](interfaces/XStateMachineStates.md) | State objects which can be passed into [XStateMachine Actor Definitions](https://stately.ai/docs/state-machine-actors). These are typed simply here because I'll be damned if I can figure out how to use XState's provided generics. |
+| [XStateMachineStates](interfaces/XStateMachineStates.md) | State objects which can be passed into [XStateMachine Actor Definitions](https://stately.ai/docs/state-machine-actors). These are typed simply here because I'll be damned if I can figure out how to use the XState library's provided generics. |
 
 ## Type Aliases
 
 | Type Alias | Description |
 | ------ | ------ |
 | [ConcreteWorkflow](type-aliases/ConcreteWorkflow.md) | - |
-| [Result](type-aliases/Result.md) | - |
 | [~~WorkflowStatus~~](type-aliases/WorkflowStatus.md) | - |
 
 ## Variables

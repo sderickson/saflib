@@ -1,7 +1,6 @@
 import type {
   CLIArgument,
   ChecklistItem,
-  Result,
   Step,
   WorkflowBlob,
   WorkflowStatus,
@@ -17,6 +16,7 @@ import type {
   WorkflowInput,
   WorkflowOutput,
 } from "./xstate.ts";
+import type { ReturnsError } from "@saflib/monorepo";
 // The following is TS magic to describe a class constructor that implements the abstract SimpleWorkflow class.
 type AbstractClassConstructor<T extends Workflow> = new (...args: any[]) => T;
 
@@ -43,7 +43,7 @@ export abstract class Workflow {
   abstract readonly description: string;
   abstract readonly cliArguments: CLIArgument[];
   abstract readonly sourceUrl: string;
-  abstract init: (...args: any[]) => Promise<Result<any>>;
+  abstract init: (...args: any[]) => Promise<ReturnsError<any>>;
   abstract kickoff(): Promise<boolean>;
   abstract printStatus(): Promise<void>;
   abstract getCurrentStateName(): string;
@@ -68,7 +68,7 @@ export abstract class SimpleWorkflow<
   params?: P;
   data?: D;
 
-  abstract init: (...args: any[]) => Promise<Result<D>>;
+  abstract init: (...args: any[]) => Promise<ReturnsError<D>>;
   abstract steps: Step[];
   abstract workflowPrompt: () => string;
   private stepIndex = 0;
@@ -220,7 +220,7 @@ export abstract class XStateWorkflow extends Workflow {
   init = async (
     options: XStateWorkflowOptions,
     ...args: string[]
-  ): Promise<Result<any>> => {
+  ): Promise<ReturnsError<any>> => {
     if (args.length !== this.cliArguments.length) {
       return {
         error: new Error(
@@ -235,7 +235,7 @@ export abstract class XStateWorkflow extends Workflow {
     input.dryRun = options.dryRun;
     this.input = input;
 
-    return { data: undefined };
+    return { result: undefined };
   };
 
   kickoff = async (): Promise<boolean> => {

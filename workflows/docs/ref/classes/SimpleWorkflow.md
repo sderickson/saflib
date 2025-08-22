@@ -66,7 +66,7 @@ Use XStateWorkflow instead.
 
 ### ~~init()~~
 
-> `abstract` **init**: (...`args`) => `Promise`\<[`Result`](../type-aliases/Result.md)\<`D`\>\>
+> `abstract` **init**: (...`args`) => `Promise`\<`ReturnsError`\<`D`\>\>
 
 #### Parameters
 
@@ -76,7 +76,7 @@ Use XStateWorkflow instead.
 
 #### Returns
 
-`Promise`\<[`Result`](../type-aliases/Result.md)\<`D`\>\>
+`Promise`\<`ReturnsError`\<`D`\>\>
 
 #### Overrides
 

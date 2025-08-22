@@ -38,7 +38,7 @@ when XStateWorkflow is fully adopted.
 
 ### init()
 
-> `abstract` **init**: (...`args`) => `Promise`\<[`Result`](../type-aliases/Result.md)\<`any`\>\>
+> `abstract` **init**: (...`args`) => `Promise`\<`ReturnsError`\<`any`\>\>
 
 #### Parameters
 
@@ -48,7 +48,7 @@ when XStateWorkflow is fully adopted.
 
 #### Returns
 
-`Promise`\<[`Result`](../type-aliases/Result.md)\<`any`\>\>
+`Promise`\<`ReturnsError`\<`any`\>\>
 
 ***
 

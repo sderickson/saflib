@@ -31,7 +31,7 @@ export class SplitFileWorkflow extends SimpleWorkflow<
   init = async (path: string, item: string) => {
     this.params = { path, item };
     this.targetAbsPath();
-    return { data: {} };
+    return { result: {} };
   };
 
   targetAbsPath = () => {
