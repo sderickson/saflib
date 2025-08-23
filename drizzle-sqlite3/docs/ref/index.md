@@ -25,6 +25,8 @@
 | [DbConnection](type-aliases/DbConnection.md) | The result of calling `drizzle`, typed to the schema you connected to. |
 | [DbKey](type-aliases/DbKey.md) | A symbol returned when connecting to the database. This key should be provided to any queries used by the consumer of the package. This is the only way a database consumer may interact with the database. |
 | [DbTransaction](type-aliases/DbTransaction.md) | Convenience type; the `tx` object passed to the drizzle transaction callback, with a generic parameter for the schema. |
+| [Equal](type-aliases/Equal.md) | To be used with "Expect" to check explicit table interfaces match Drizzle's inferred interfaces. |
+| [Expect](type-aliases/Expect.md) | To be used with "Equal" to check explicit table interfaces match Drizzle's inferred interfaces. |
 | [Schema](type-aliases/Schema.md) | Currently this package expects the schema to be an object where some values are the result of `sqliteTable` calls. Organize your schema in this fashion when creating your DbManager and such. |
 | [TransactionCallback](type-aliases/TransactionCallback.md) | Convenience type; the first parameter of the `transaction` method, with a generic parameter for the schema. |
 

@@ -16,7 +16,8 @@ export interface RunNpmCommandFactoryOptions extends ComposerFunctionOptions {
   command:
     | "install @saflib/env"
     | "exec saf-env generate"
-    | "exec saf-env generate-all";
+    | "exec saf-env generate-all"
+    | "run generate";
   stateName: string;
   nextStateName: string;
 }
