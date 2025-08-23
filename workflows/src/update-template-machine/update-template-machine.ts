@@ -12,7 +12,7 @@ import type { TemplateWorkflowContext } from "../types.ts";
 /**
  * Options for the updateTemplateFileComposer function.
  */
-interface UpdateTemplateFileComposerOptions<C extends WorkflowContext>
+export interface UpdateTemplateFileComposerOptions<C extends WorkflowContext>
   extends ComposerFunctionOptions {
   /**
    * Path to the file to update. Can be a string or a function that returns a string.

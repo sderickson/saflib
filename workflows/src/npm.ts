@@ -5,9 +5,13 @@ import {
   runCommandAsync,
   type WorkflowInput,
   type WorkflowContext,
+  type ComposerFunctionOptions,
 } from "./xstate.ts";
 
-interface RunNpmCommandFactoryOptions {
+/**
+ * Options for the runNpmCommandComposer function.
+ */
+export interface RunNpmCommandFactoryOptions extends ComposerFunctionOptions {
   // All commands here are the only ones that can be run by a workflow.
   command:
     | "install @saflib/env"
@@ -17,6 +21,9 @@ interface RunNpmCommandFactoryOptions {
   nextStateName: string;
 }
 
+/**
+ * Composer for running npm commands.
+ */
 export function runNpmCommandComposer({
   command,
   stateName,

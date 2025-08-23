@@ -6,6 +6,8 @@
 
 > **logError**\<`C`, `E`\>(`cb`): `object`
 
+Action builder for logging error messages.
+
 ## Type Parameters
 
 | Type Parameter |

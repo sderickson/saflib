@@ -6,6 +6,8 @@
 
 > **promptAgent**\<`C`, `E`\>(`cb`): `object`
 
+Action builder for prompting the agent.
+
 ## Type Parameters
 
 | Type Parameter |

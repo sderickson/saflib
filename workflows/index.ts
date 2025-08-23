@@ -38,6 +38,10 @@ export {
 
 export { copyTemplateStateComposer } from "./src/copy-template-machine/copy-template-machine.ts";
 
-export * from "./src/update-template-machine/update-template-machine.ts";
+export {
+  type UpdateTemplateFileComposerOptions,
+  updateTemplateFileComposer,
+} from "./src/update-template-machine/update-template-machine.ts";
+
 export * from "./src/test-runner.ts";
 export * from "./src/npm.ts";

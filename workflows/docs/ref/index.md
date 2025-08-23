@@ -20,7 +20,9 @@
 | [CLIArgument](interfaces/CLIArgument.md) | Required argument for the workflow, in a format the CLI tool (commander) can use. |
 | [ComposerFunctionOptions](interfaces/ComposerFunctionOptions.md) | Options for all composer functions. These functions return an object which can be spread into an XState "states" object, for easily composing a workflow machine from common steps. |
 | [LogParams](interfaces/LogParams.md) | Params for the log action. |
+| [RunNpmCommandFactoryOptions](interfaces/RunNpmCommandFactoryOptions.md) | Options for the runNpmCommandComposer function. |
 | [TemplateWorkflowContext](interfaces/TemplateWorkflowContext.md) | There are at least two machines which work on templates: creating and updating. These share some common context properties in addition to WorkflowContext properties. |
+| [UpdateTemplateFileComposerOptions](interfaces/UpdateTemplateFileComposerOptions.md) | Options for the updateTemplateFileComposer function. |
 | [WorkflowContext](interfaces/WorkflowContext.md) | Context shared across all workflow machines. |
 | [WorkflowInput](interfaces/WorkflowInput.md) | Inputs every workflow machine receives. |
 | [WorkflowMeta](interfaces/WorkflowMeta.md) | Wrapper around a ConcreteWorkflow class. Honestly might not be necessary and could likely be removed. |
@@ -50,13 +52,13 @@
 | [~~doTestsPass~~](functions/doTestsPass.md) | - |
 | [~~generateMigrations~~](functions/generateMigrations.md) | - |
 | [~~getPackageName~~](functions/getPackageName.md) | Utility function to get the package name from the root URL. |
-| [logError](functions/logError.md) | - |
-| [logInfo](functions/logInfo.md) | - |
+| [logError](functions/logError.md) | Action builder for logging error messages. |
+| [logInfo](functions/logInfo.md) | Action builder for logging info messages. |
 | [outputFromContext](functions/outputFromContext.md) | Helper function to create `WorkflowOutput` from `WorkflowContext`. |
-| [promptAgent](functions/promptAgent.md) | - |
-| [promptAgentComposer](functions/promptAgentComposer.md) | - |
-| [promptState](functions/promptState.md) | - |
-| [runNpmCommandComposer](functions/runNpmCommandComposer.md) | - |
+| [promptAgent](functions/promptAgent.md) | Action builder for prompting the agent. |
+| [promptAgentComposer](functions/promptAgentComposer.md) | Composer for prompting the agent. During normal execution, once a prompt is printed, the workflow will stop so it can be continued later. |
+| [~~promptState~~](functions/promptState.md) | - |
+| [runNpmCommandComposer](functions/runNpmCommandComposer.md) | Composer for running npm commands. |
 | [runTestsFactory](functions/runTestsFactory.md) | - |
 | [runWorkflowCli](functions/runWorkflowCli.md) | - |
-| [updateTemplateFileComposer](functions/updateTemplateFileComposer.md) | - |
+| [updateTemplateFileComposer](functions/updateTemplateFileComposer.md) | Composer for updating files copied by states from copyTemplateStateComposer. Use this to provide specific instructions on how to update each file. In addition to prompting the agent to make changes, this will block the agent from continuing until all "todo" strings are gone from the file. |

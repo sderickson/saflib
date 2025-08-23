@@ -6,6 +6,8 @@
 
 > **logInfo**\<`C`, `E`\>(`cb`): `object`
 
+Action builder for logging info messages.
+
 ## Type Parameters
 
 | Type Parameter |

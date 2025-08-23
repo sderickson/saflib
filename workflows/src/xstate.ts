@@ -117,18 +117,27 @@ const log = <C, E extends AnyEventObject>(
   };
 };
 
+/**
+ * Action builder for logging info messages.
+ */
 export const logInfo = <C, E extends AnyEventObject>(
   cb: string | ((ctx: ActionParam<C, E>) => string),
 ) => {
   return log("info", cb);
 };
 
+/**
+ * Action builder for logging error messages.
+ */
 export const logError = <C, E extends AnyEventObject>(
   cb: string | ((ctx: ActionParam<C, E>) => string),
 ) => {
   return log("error", cb);
 };
 
+/**
+ * Action builder for logging warning messages.
+ */
 export const logWarn = <C, E extends AnyEventObject>(
   cb: string | ((ctx: ActionParam<C, E>) => string),
 ) => {
@@ -143,8 +152,9 @@ const logImpl: WorkflowActionFunction<any, AnyEventObject, LogParams> = assign(
   },
 );
 
-// prompt action
-
+/**
+ * Action builder for prompting the agent.
+ */
 export const promptAgent = <C, E extends AnyEventObject>(
   cb: string | ((ctx: ActionParam<C, E>) => string),
 ) => {
@@ -250,6 +260,9 @@ export const runCommandAsync = (command: string, args: string[]) => {
   return promise;
 };
 
+/**
+ * @deprecated - use promptAgentComposer instead
+ */
 export function promptState<C extends WorkflowContext>(
   promptForContext: ({ context }: { context: C }) => string | string,
   target: string,
@@ -272,6 +285,10 @@ interface PromptAgentComposerOptions<C extends WorkflowContext>
   promptForContext: ({ context }: { context: C }) => string | string;
 }
 
+/**
+ * Composer for prompting the agent. During normal execution, once a prompt
+ * is printed, the workflow will stop so it can be continued later.
+ */
 export function promptAgentComposer<C extends WorkflowContext>({
   promptForContext,
   stateName,

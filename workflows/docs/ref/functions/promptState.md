@@ -2,7 +2,7 @@
 
 ***
 
-# Function: promptState()
+# ~~Function: promptState()~~
 
 > **promptState**\<`C`\>(`promptForContext`, `target`): `object`
 
@@ -23,11 +23,11 @@
 
 `object`
 
-### entry
+### ~~entry~~
 
 > **entry**: `ActionFunction`\<`MachineContext`, `EventObject`, `EventObject`, `NonReducibleUnknown`, `never`, `never`, `never`, `never`, `never`\>
 
-### on
+### ~~on~~
 
 > **on**: `object`
 
@@ -46,3 +46,7 @@
 #### on.prompt.actions
 
 > **actions**: `object`[]
+
+## Deprecated
+
+- use promptAgentComposer instead

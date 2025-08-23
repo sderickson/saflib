@@ -4,7 +4,6 @@
     "WorkflowActionFunction",
     "PromptParams",
     "PromptAgentComposerOptions",
-    "RunNpmCommandFactoryOptions",
     "RunTestsFactoryOptions",
     "XStateWorkflowOptions",
     "ActionParam",
