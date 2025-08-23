@@ -4,7 +4,7 @@ import type { DbKey } from "@saflib/drizzle-sqlite3";
 // TODO: Uncomment and fix this import
 // import { someDb, someQueryDb } from "@own/package";
 
-describe("queryTemplate", () => {
+describe("templateFile", () => {
   let dbKey: DbKey;
 
   beforeEach(() => {
@@ -16,7 +16,7 @@ describe("queryTemplate", () => {
   });
 
   it.skip("should execute successfully", async () => {
-    const { result } = await someQueryDb.queryTemplate(dbKey, {});
+    const { result } = await someQueryDb.templateFile(dbKey, {});
     expect(result).toBeDefined();
   });
 });

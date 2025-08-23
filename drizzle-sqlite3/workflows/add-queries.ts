@@ -1,34 +1,27 @@
-import { fromPromise, raise, setup } from "xstate";
+import { setup } from "xstate";
 import {
   workflowActions,
   workflowActors,
   logInfo,
-  type WorkflowContext,
-  logError,
-  promptAgent,
+  promptAgentComposer,
+  runTestsComposer,
   XStateWorkflow,
-  doTestsPass,
   contextFromInput,
   type WorkflowInput,
+  outputFromContext,
+  copyTemplateStateComposer,
+  updateTemplateFileComposer,
+  type TemplateWorkflowContext,
 } from "@saflib/workflows";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { exec } from "node:child_process";
-import { promisify } from "node:util";
-import { readdir, rename, readFile, writeFile } from "node:fs/promises";
-import { existsSync } from "node:fs";
-
-const execAsync = promisify(exec);
 
 interface AddQueriesWorkflowInput extends WorkflowInput {
   path: string; // kebab-case, e.g. "get-by-id"
 }
 
-interface AddQueriesWorkflowContext extends WorkflowContext {
-  name: string; // e.g. "get-by-id"
+interface AddQueriesWorkflowContext extends TemplateWorkflowContext {
   camelName: string; // e.g. getById
-  targetDir: string; // e.g. "/<abs-path>/queries/contacts/"
-  sourceDir: string; // e.g. "/<abs-path>/query-template/"
   refDoc: string;
   testingGuide: string;
   featureName: string; // e.g. "contacts"
@@ -43,6 +36,13 @@ function toCamelCase(name: string) {
       if (index === 0) return part;
       return part.charAt(0).toUpperCase() + part.slice(1);
     })
+    .join("");
+}
+
+function toPascalCase(name: string) {
+  return name
+    .split("-")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join("");
 }
 
@@ -69,12 +69,16 @@ export const AddQueriesWorkflowMachine = setup({
       "../../drizzle-sqlite3-dev/docs/01-testing-guide.md",
     );
     const featureName = path.basename(targetDir);
-    const featureIndexPath = path.join(targetDir, "index.ts");
+    const featureIndexPath = path
+      .join(targetDir, "index.ts")
+      .replace(process.cwd(), "");
     const packageIndexPath = path.join(process.cwd(), "index.ts");
+    const name = path.basename(input.path).split(".")[0];
 
     return {
-      name: path.basename(input.path).split(".")[0],
-      camelName: toCamelCase(path.basename(input.path).split(".")[0]),
+      name,
+      pascalName: toPascalCase(name),
+      camelName: toCamelCase(name),
       targetDir,
       sourceDir,
       refDoc,
@@ -87,399 +91,119 @@ export const AddQueriesWorkflowMachine = setup({
   },
   entry: logInfo("Successfully began workflow"),
   states: {
-    getOriented: {
-      entry: raise({ type: "prompt" }),
-      on: {
-        prompt: {
-          actions: [
-            promptAgent(
-              () =>
-                `Read the project spec and understand the overall goal. If they haven't already, ask the user for the project spec.`,
-            ),
-          ],
-        },
-        continue: {
-          target: "copyTemplate",
-        },
-      },
-    },
-    copyTemplate: {
-      invoke: {
-        input: ({ context }) => context,
-        src: fromPromise(async ({ input }) => {
-          const { targetDir, sourceDir } = input;
-          await execAsync(`mkdir -p "${targetDir}"`);
-          const { stdout, stderr } = await execAsync(
-            `cp -r "${sourceDir}/"* "${targetDir}"`,
-          );
-          if (stderr) {
-            throw new Error(`Failed to copy template: ${stderr}`);
-          }
-          return stdout;
-        }),
-        onDone: {
-          target: "renamePlaceholders",
-          actions: logInfo(
-            ({ context }) => `Copied template files to ${context.targetDir}`,
-          ),
-        },
-        onError: {
-          actions: [
-            logError(
-              ({ event }) =>
-                `Failed to copy template: ${(event.error as Error).message}`,
-            ),
-            raise({ type: "prompt" }),
-          ],
-        },
-      },
-      on: {
-        prompt: {
-          actions: promptAgent(
-            () =>
-              "Failed to copy the template files. Please check if the source directory exists and you have the necessary permissions.",
-          ),
-        },
-        continue: {
-          reenter: true,
-          target: "copyTemplate",
-        },
-      },
-    },
-    renamePlaceholders: {
-      invoke: {
-        input: ({ context }) => context,
-        src: fromPromise(async ({ input }) => {
-          const { targetDir, camelName, name } = input;
+    ...promptAgentComposer<AddQueriesWorkflowContext>({
+      promptForContext: ({ context }) =>
+        `Read the project spec and understand the overall goal for ${context.name}.`,
+      stateName: "getOriented",
+      nextStateName: "copyTemplate",
+    }),
 
-          // Get all files in the directory
-          const files = await readdir(targetDir);
-          for (const file of files) {
-            if (!file.includes("query-template")) {
-              continue;
-            }
-            const oldPath = path.join(targetDir, file);
-            const newPath = path.join(
-              targetDir,
-              file.replace("query-template", name),
-            );
-            await rename(oldPath, newPath);
-            const content = await readFile(newPath, "utf-8");
-            const updatedContent = content
-              .replace(/queryTemplate/g, camelName)
-              .replace(/query-template/g, name)
-              .replace(/QueryTemplate/g, camelName);
-            await writeFile(newPath, updatedContent);
-          }
+    ...copyTemplateStateComposer({
+      stateName: "copyTemplate",
+      nextStateName: "checkQueryCollection",
+    }),
 
-          return "Renamed placeholders";
-        }),
-        onDone: {
-          target: "checkQueryCollection",
-          actions: logInfo(
-            () => `Renamed all placeholders in files and file names.`,
-          ),
-        },
-        onError: {
-          actions: [
-            logError(
-              ({ event }) =>
-                `Failed to rename placeholders: ${(event.error as Error).message}`,
-            ),
-            raise({ type: "prompt" }),
-          ],
-        },
-      },
-      on: {
-        prompt: {
-          actions: promptAgent(
-            () =>
-              "Failed to rename placeholders. Please check the file and directory permissions and naming conventions.",
-          ),
-        },
-        continue: {
-          reenter: true,
-          target: "renamePlaceholders",
-        },
-      },
-    },
-    checkQueryCollection: {
-      invoke: {
-        input: ({ context }) => context,
-        src: fromPromise(async ({ input }) => {
-          const { featureIndexPath, featureName, camelName, name } = input;
-          if (!existsSync(featureIndexPath)) {
-            const indexContent = `import { ${camelName} } from "./${name}.ts";
+    ...promptAgentComposer<AddQueriesWorkflowContext>({
+      promptForContext: ({ context }) =>
+        `Check if \`${context.featureIndexPath}\` exists. If it doesn't exist, create it.`,
+      stateName: "checkQueryCollection",
+      nextStateName: "updateQueryCollection",
+    }),
 
-export const ${featureName} = {
-  ${camelName},
-};
-`;
-            await writeFile(featureIndexPath, indexContent);
-            return "Created query collection index";
-          }
-          return "Query collection index exists";
-        }),
-        onDone: {
-          target: "updateQueryCollection",
-          actions: logInfo(
-            ({ event }) => `Query collection status: ${event.output}`,
-          ),
-        },
-        onError: {
-          actions: [
-            logError(
-              ({ event }) =>
-                `Failed to check/create query collection: ${(event.error as Error).message}`,
-            ),
-            raise({ type: "prompt" }),
-          ],
-        },
-      },
-      on: {
-        prompt: {
-          actions: promptAgent(
-            () =>
-              "Failed to check or create the query collection index. Please check file permissions.",
-          ),
-        },
-        continue: {
-          reenter: true,
-          target: "checkQueryCollection",
-        },
-      },
-    },
-    updateQueryCollection: {
-      entry: raise({ type: "prompt" }),
-      on: {
-        prompt: {
-          actions: [
-            promptAgent(
-              ({ context }) =>
-                `Update the query collection index at ${context.featureIndexPath} to include the new query:
-                1. Import the new query from "./${context.name}.ts"
-                2. Add the query to the collection object using the camelCase name
-                3. Make sure to export a ${context.featureName} object that contains all queries for this domain`,
-            ),
-          ],
-        },
-        continue: {
-          target: "checkPackageIndex",
-        },
-      },
-    },
-    checkPackageIndex: {
-      invoke: {
-        input: ({ context }) => context,
-        src: fromPromise(async ({ input }) => {
-          const { packageIndexPath } = input;
-          if (!existsSync(packageIndexPath)) {
-            throw new Error(
-              "Package index.ts not found in the current directory",
-            );
-          }
-          return "Package index exists";
-        }),
-        onDone: {
-          target: "updatePackageIndex",
-          actions: logInfo(
-            ({ event }) => `Package index status: ${event.output}`,
-          ),
-        },
-        onError: {
-          actions: [
-            logError(
-              ({ event }) =>
-                `Failed to check package index: ${(event.error as Error).message}`,
-            ),
-            raise({ type: "prompt" }),
-          ],
-        },
-      },
-      on: {
-        prompt: {
-          actions: promptAgent(
-            () =>
-              "Package index.ts not found in the current directory. Please create this file to export your queries.",
-          ),
-        },
-        continue: {
-          reenter: true,
-          target: "checkPackageIndex",
-        },
-      },
-    },
-    updatePackageIndex: {
-      entry: raise({ type: "prompt" }),
-      on: {
-        prompt: {
-          actions: [
-            promptAgent(
-              ({ context }) =>
-                `Update the package index.ts to include the query collection:
-                1. Import the query collection: \`import * as ${context.featureName} from "./queries/${context.featureName}/index.ts"\`
-                2. Add the collection to the exported object: \`export const mainDb = { ...mainDbManager.publicInterface(), ${context.featureName} }\`
-                3. Make sure to maintain any existing exports`,
-            ),
-          ],
-        },
-        continue: {
-          target: "addTypes",
-        },
-      },
-    },
-    addTypes: {
-      entry: raise({ type: "prompt" }),
-      on: {
-        prompt: {
-          actions: [
-            promptAgent(
-              ({ context }) =>
-                `For the ${context.camelName} query, add types to the main "types.ts" file. As much as possible, these should be based on the types that drizzle provides. For example, if when creating a row, the database handles the id, createdAt, and updatedAt fields, have a "InsertTableRowParams" type that Omits those fields.
+    ...promptAgentComposer<AddQueriesWorkflowContext>({
+      promptForContext: ({ context }) =>
+        `Update \`${context.featureIndexPath}\` to include the new query.
+        1. Import the new query from \`./${context.name}.ts\`
+        2. Add the query to the collection object using the camelCase name
+        3. Make sure to export a \`${context.featureName}\` object that contains all queries for this domain`,
+      stateName: "updateQueryCollection",
+      nextStateName: "updatePackageIndex",
+    }),
 
-                Note: Do NOT create a new types.ts file. Add your types to the existing one next to the "package.json" file.`,
-            ),
-          ],
-        },
-        continue: {
-          target: "addErrors",
-        },
-      },
-    },
-    addErrors: {
-      entry: raise({ type: "prompt" }),
-      on: {
-        prompt: {
-          actions: [
-            promptAgent(
-              ({ context }) =>
-                `Add any necessary error types to the main "errors.ts" file for the ${context.camelName} query. Make sure to:
-                1. Use simple extensions of MainDatabaseError (no custom implementation)
-                2. Do NOT create a new errors.ts file
-                3. Add your errors to the existing one (beside the "package.json" file)`,
-            ),
-          ],
-        },
-        continue: {
-          target: "reviewDocsForImplementation",
-        },
-      },
-    },
-    reviewDocsForImplementation: {
-      entry: raise({ type: "prompt" }),
-      on: {
-        prompt: {
-          actions: [
-            promptAgent(
-              ({ context }) =>
-                `Before implementing the query, carefully read and follow the guidelines in the documentation: ${context.refDoc}
-                
-                Pay special attention to:
-                - Query function structure and patterns
-                - Error handling approaches
-                - Type usage and conventions
-                - Database access patterns`,
-            ),
-          ],
-        },
-        continue: {
-          target: "implementQuery",
-        },
-      },
-    },
-    implementQuery: {
-      entry: raise({ type: "prompt" }),
-      on: {
-        prompt: {
-          actions: [
-            promptAgent(
-              ({ context }) =>
-                `Implement the ${context.camelName} query following the documentation guidelines. Make sure to:
-                1. Export a queryWrapper'd function directly (no factory function)
-                2. Take a DbKey as the first parameter
-                3. Use mainDbManager.get(dbKey)! to get the db instance
-                4. Use ReturnsError from @saflib/monorepo
-                5. Use the types you just added to types.ts
-                6. Don't use try/catch blocks
-                7. Export the query from the folder's "index.ts" file`,
-            ),
-          ],
-        },
-        continue: {
-          target: "reviewTestingDocs",
-        },
-      },
-    },
-    reviewTestingDocs: {
-      entry: raise({ type: "prompt" }),
-      on: {
-        prompt: {
-          actions: [
-            promptAgent(
-              ({ context }) =>
-                `Before writing tests, carefully read and follow the testing guide: ${context.testingGuide}
-                
-                Pay special attention to:
-                - Database instantiation patterns
-                - SQLite timestamp granularity issues
-                - Fake timer usage
-                - Test structure and setup/teardown`,
-            ),
-          ],
-        },
-        continue: {
-          target: "updateTests",
-        },
-      },
-    },
-    updateTests: {
-      entry: raise({ type: "prompt" }),
-      on: {
-        prompt: {
-          actions: [
-            promptAgent(
-              ({ context }) =>
-                `Update the generated ${context.name}.test.ts file following the testing guide patterns. Make sure to implement proper test cases that cover both success and error scenarios.`,
-            ),
-          ],
-        },
-        continue: {
-          target: "runTests",
-        },
-      },
-    },
-    runTests: {
-      invoke: {
-        src: fromPromise(doTestsPass),
-        onDone: {
-          target: "done",
-          actions: logInfo(() => `Tests passed successfully.`),
-        },
-        onError: {
-          actions: [
-            logError(
-              ({ event }) => `Tests failed: ${(event.error as Error).message}`,
-            ),
-            raise({ type: "prompt" }),
-          ],
-        },
-      },
-      on: {
-        prompt: {
-          actions: promptAgent(
-            () => "Tests failed. Please fix the issues and continue.",
-          ),
-        },
-        continue: {
-          reenter: true,
-          target: "runTests",
-        },
-      },
-    },
+    ...promptAgentComposer<AddQueriesWorkflowContext>({
+      promptForContext: ({ context }) =>
+        `Update the package's \`index.ts\` to export the query collection if it doesn't already.
+      
+      Do it like so:
+
+      \`\`\`ts
+      export * from "./queries/${context.featureName}/index.ts";
+      \`\`\`
+      `,
+      stateName: "updatePackageIndex",
+      nextStateName: "addTypes",
+    }),
+
+    ...promptAgentComposer<AddQueriesWorkflowContext>({
+      promptForContext: ({ context }) =>
+        `Add any new parameter or result types needed for \`${context.camelName}\` to the main \`types.ts\` file.
+
+        As much as possible, these should be based on the types that drizzle provides. For example, if when creating a row, the database handles the id, createdAt, and updatedAt fields, have a "InsertTableRowParams" type that Omits those fields.
+
+        Note: Do NOT create a new \`types.ts\` file. Add your types to the existing one next to the \`package.json\` file.`,
+      stateName: "addTypes",
+      nextStateName: "addErrors",
+    }),
+
+    ...promptAgentComposer<AddQueriesWorkflowContext>({
+      promptForContext: () =>
+        `Add any error types the query will return to the main \`errors.ts\` file.
+      Make sure to:
+        1. Use simple extensions of the superclass for this package (which extends \`HandledDatabaseError\`)
+        2. Do NOT create a new \`errors.ts\` file
+        3. Add your errors to the existing one (beside the \`package.json\` file)`,
+      stateName: "addErrors",
+      nextStateName: "reviewDocsForImplementation",
+    }),
+
+    ...promptAgentComposer<AddQueriesWorkflowContext>({
+      promptForContext: ({ context }) =>
+        `Review the guidelines for implementing database queries. 
+      
+      ${context.refDoc}`,
+      stateName: "reviewDocsForImplementation",
+      nextStateName: "implementQuery",
+    }),
+
+    ...updateTemplateFileComposer<AddQueriesWorkflowContext>({
+      filePath: (context) => path.join(context.targetDir, `${context.name}.ts`),
+      promptMessage: (context) =>
+        `Implement the \`${context.camelName}\` query following the documentation guidelines.`,
+      stateName: "implementQuery",
+      nextStateName: "reviewTestingDocs",
+    }),
+
+    ...promptAgentComposer<AddQueriesWorkflowContext>({
+      promptForContext: ({ context }) =>
+        `Review the guidelines for writing tests for database queries.
+      
+      ${context.testingGuide}`,
+      stateName: "reviewTestingDocs",
+      nextStateName: "updateTests",
+    }),
+
+    ...updateTemplateFileComposer<AddQueriesWorkflowContext>({
+      filePath: (context) =>
+        path.join(context.targetDir, `${context.name}.test.ts`),
+      promptMessage: (context) => `Implement \`${context.name}.test.ts\`.
+      
+      Aim for 100% coverage; there should be a known way to achieve every handled error.`,
+      stateName: "updateTests",
+      nextStateName: "runTests",
+    }),
+
+    ...runTestsComposer<AddQueriesWorkflowContext>({
+      filePath: (context) =>
+        path.join(context.targetDir, `${context.name}.test.ts`),
+      stateName: "runTests",
+      nextStateName: "done",
+    }),
+
     done: {
       type: "final",
     },
   },
+  output: outputFromContext,
 });
 
 export class AddQueriesWorkflow extends XStateWorkflow {
@@ -490,6 +214,7 @@ export class AddQueriesWorkflow extends XStateWorkflow {
     {
       name: "path",
       description: "Path of the new query (e.g. 'queries/contacts/get-by-id')",
+      exampleValue: "queries/example-table/example-query",
     },
   ];
   sourceUrl = import.meta.url;

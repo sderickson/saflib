@@ -52,7 +52,7 @@ export const printChecklist = async (workflowMeta: WorkflowMeta) => {
     }
     const currentStateName = workflow.getCurrentStateName();
     if (currentStateName === lastStateName) {
-      throw new Error("Workflow is stuck");
+      throw new Error(`Workflow is stuck on state ${currentStateName}.`);
     }
     lastStateName = currentStateName;
   }
