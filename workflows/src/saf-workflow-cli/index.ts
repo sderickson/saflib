@@ -9,6 +9,16 @@ import { addNextCommand } from "./next.ts";
 import { addListCommand } from "./list.ts";
 import { addSourceCommand } from "./source.ts";
 
+/**
+ * Uses Commander.js to run a CLI for running workflows.
+ *
+ * The @saflib/workflows package can't run the CLI because other packages
+ * depend on it to make workflows. So a separate package needs to depend on
+ * those packages which depend on @saflib/workflows. This export allows
+ * a separate package to actually compose and expose the CLI.
+ *
+ * This also means you can customize which workflows are actually available.
+ */
 export function runWorkflowCli(workflows: WorkflowMeta[]) {
   setupContext({ silentLogging: process.argv.includes("checklist") });
 

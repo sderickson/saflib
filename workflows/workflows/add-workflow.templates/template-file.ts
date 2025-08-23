@@ -6,7 +6,7 @@ import {
   XStateWorkflow,
   copyTemplateStateComposer,
   updateTemplateFileComposer,
-  runTestsFactory,
+  runTestsComposer,
   promptAgentComposer,
   type TemplateWorkflowContext,
   contextFromInput,
@@ -99,7 +99,7 @@ export const ToDoWorkflowMachine = setup({
       nextStateName: "runTests",
     }),
 
-    ...runTestsFactory<ToDoWorkflowContext>({
+    ...runTestsComposer<ToDoWorkflowContext>({
       filePath: (context) =>
         path.join(context.targetDir, `${context.name}.test.ts`),
       stateName: "runTests",

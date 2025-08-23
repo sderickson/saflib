@@ -5,19 +5,25 @@ import {
   promptAgent,
   doesTestPass,
   type WorkflowContext,
+  type ComposerFunctionOptions,
 } from "./xstate.ts";
 
-interface RunTestsFactoryOptions<C extends WorkflowContext> {
+/**
+ * Options for the runTestsComposer function.
+ */
+export interface RunTestsComposerOptions<C extends WorkflowContext>
+  extends ComposerFunctionOptions {
   filePath: string | ((context: C) => string);
-  stateName: string;
-  nextStateName: string;
 }
 
-export function runTestsFactory<C extends WorkflowContext>({
+/**
+ * Composer for running tests. Takes a specific file path to test.
+ */
+export function runTestsComposer<C extends WorkflowContext>({
   filePath,
   stateName,
   nextStateName,
-}: RunTestsFactoryOptions<C>) {
+}: RunTestsComposerOptions<C>) {
   return {
     [stateName]: {
       invoke: {

@@ -21,6 +21,7 @@
 | [ComposerFunctionOptions](interfaces/ComposerFunctionOptions.md) | Options for all composer functions. These functions return an object which can be spread into an XState "states" object, for easily composing a workflow machine from common steps. |
 | [LogParams](interfaces/LogParams.md) | Params for the log action. |
 | [RunNpmCommandFactoryOptions](interfaces/RunNpmCommandFactoryOptions.md) | Options for the runNpmCommandComposer function. |
+| [RunTestsComposerOptions](interfaces/RunTestsComposerOptions.md) | Options for the runTestsComposer function. |
 | [TemplateWorkflowContext](interfaces/TemplateWorkflowContext.md) | There are at least two machines which work on templates: creating and updating. These share some common context properties in addition to WorkflowContext properties. |
 | [UpdateTemplateFileComposerOptions](interfaces/UpdateTemplateFileComposerOptions.md) | Options for the updateTemplateFileComposer function. |
 | [WorkflowContext](interfaces/WorkflowContext.md) | Context shared across all workflow machines. |
@@ -59,6 +60,6 @@
 | [promptAgentComposer](functions/promptAgentComposer.md) | Composer for prompting the agent. During normal execution, once a prompt is printed, the workflow will stop so it can be continued later. |
 | [~~promptState~~](functions/promptState.md) | - |
 | [runNpmCommandComposer](functions/runNpmCommandComposer.md) | Composer for running npm commands. |
-| [runTestsFactory](functions/runTestsFactory.md) | - |
-| [runWorkflowCli](functions/runWorkflowCli.md) | - |
+| [runTestsComposer](functions/runTestsComposer.md) | Composer for running tests. Takes a specific file path to test. |
+| [runWorkflowCli](functions/runWorkflowCli.md) | Uses Commander.js to run a CLI for running workflows. |
 | [updateTemplateFileComposer](functions/updateTemplateFileComposer.md) | Composer for updating files copied by states from copyTemplateStateComposer. Use this to provide specific instructions on how to update each file. In addition to prompting the agent to make changes, this will block the agent from continuing until all "todo" strings are gone from the file. |

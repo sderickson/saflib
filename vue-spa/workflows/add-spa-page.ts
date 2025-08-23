@@ -7,7 +7,7 @@ import {
   copyTemplateStateComposer,
   updateTemplateFileComposer,
   type TemplateWorkflowContext,
-  runTestsFactory,
+  runTestsComposer,
   promptAgentComposer,
   contextFromInput,
   type WorkflowInput,
@@ -103,7 +103,7 @@ export const AddSpaPageWorkflowMachine = setup({
     }),
 
     // Run the tests to make sure the loader and page are basically working
-    ...runTestsFactory<TemplateWorkflowContext>({
+    ...runTestsComposer<TemplateWorkflowContext>({
       filePath: (context) =>
         path.join(context.targetDir, `${context.pascalName}.test.ts`),
       stateName: "runTestsOnStubbedPage",
@@ -144,7 +144,7 @@ export const AddSpaPageWorkflowMachine = setup({
       nextStateName: "runTestsOnFinishedPage",
     }),
 
-    ...runTestsFactory<TemplateWorkflowContext>({
+    ...runTestsComposer<TemplateWorkflowContext>({
       filePath: (context) =>
         path.join(context.targetDir, `${context.pascalName}.test.ts`),
       stateName: "runTestsOnFinishedPage",
