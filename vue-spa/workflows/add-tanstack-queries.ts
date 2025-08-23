@@ -1,6 +1,6 @@
 import { fromPromise, raise, setup } from "xstate";
 import {
-  workflowActionImplementations,
+  workflowActions,
   workflowActors,
   logInfo,
   type WorkflowContext,
@@ -51,7 +51,7 @@ export const AddTanstackQueriesWorkflowMachine = setup({
     input: {} as AddTanstackQueriesWorkflowInput,
     context: {} as AddTanstackQueriesWorkflowContext,
   },
-  actions: workflowActionImplementations,
+  actions: workflowActions,
   actors: workflowActors,
 }).createMachine({
   id: "add-tanstack-queries",

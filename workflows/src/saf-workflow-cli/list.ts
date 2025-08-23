@@ -1,6 +1,7 @@
 import type { Command } from "commander";
 import type { WorkflowMeta } from "../workflow.ts";
-import { addNewLinesToString, getCurrentPackage } from "../utils.ts";
+import { addNewLinesToString } from "@saflib/utils";
+import { getCurrentPackage } from "@saflib/dev-tools";
 
 export const addListCommand = (program: Command, workflows: WorkflowMeta[]) => {
   program

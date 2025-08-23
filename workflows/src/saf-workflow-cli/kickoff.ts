@@ -1,6 +1,6 @@
 import type { Command } from "commander";
 import { saveWorkflow } from "../file-io.ts";
-import { addNewLinesToString } from "../utils.ts";
+import { addNewLinesToString } from "@saflib/utils";
 import { type WorkflowMeta } from "../workflow.ts";
 
 export const addKickoffCommand = (
@@ -19,7 +19,7 @@ export const addKickoffCommand = (
       .command(workflowMeta.name)
       .description(workflowMeta.description);
     workflowMeta.cliArguments.forEach((arg) => {
-      chain = chain.argument(arg.name, arg.description, arg.defaultValue);
+      chain = chain.argument(arg.name, arg.description);
     });
     chain.action(async (...args) => await kickoffWorkflow(workflowMeta, args));
   });

@@ -1,6 +1,6 @@
 import { fromPromise, raise, setup } from "xstate";
 import {
-  workflowActionImplementations,
+  workflowActions,
   workflowActors,
   logInfo,
   type WorkflowContext,
@@ -47,7 +47,7 @@ export const AddGrpcServerWorkflowMachine = setup({
     input: {} as AddGrpcServerWorkflowInput,
     context: {} as AddGrpcServerWorkflowContext,
   },
-  actions: workflowActionImplementations,
+  actions: workflowActions,
   actors: workflowActors,
 }).createMachine({
   id: "add-grpc-server",

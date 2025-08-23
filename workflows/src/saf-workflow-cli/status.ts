@@ -1,6 +1,6 @@
 import type { Command } from "commander";
 import type { WorkflowMeta } from "../workflow.ts";
-import { addNewLinesToString } from "../utils.ts";
+import { addNewLinesToString } from "@saflib/utils";
 import { loadWorkflow } from "../file-io.ts";
 
 export const addStatusCommand = (

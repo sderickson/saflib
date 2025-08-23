@@ -2,25 +2,42 @@ import { assign, raise } from "xstate";
 import {
   logError,
   promptAgent,
-  type FactoryFunctionOptions,
+  type ComposerFunctionOptions,
 } from "../xstate.ts";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import type { WorkflowContext } from "../xstate.ts";
 import type { TemplateWorkflowContext } from "../types.ts";
 
-interface UpdateTemplateFileFactoryOptions<C extends WorkflowContext>
-  extends FactoryFunctionOptions {
+/**
+ * Options for the updateTemplateFileComposer function.
+ */
+export interface UpdateTemplateFileComposerOptions<C extends WorkflowContext>
+  extends ComposerFunctionOptions {
+  /**
+   * Path to the file to update. Can be a string or a function that returns a string.
+   * The string is expected to be resolved
+   */
   filePath: string | ((context: C) => string);
+
+  /**
+   * Message to prompt the agent with.
+   */
   promptMessage: string | ((context: C) => string);
 }
 
-export function updateTemplateFileFactory<C extends TemplateWorkflowContext>({
+/**
+ * Composer for updating files copied by states from copyTemplateStateComposer.
+ * Use this to provide specific instructions on how to update each file. In
+ * addition to prompting the agent to make changes, this will block the agent
+ * from continuing until all "todo" strings are gone from the file.
+ */
+export function updateTemplateFileComposer<C extends TemplateWorkflowContext>({
   filePath,
   promptMessage,
   stateName,
   nextStateName,
-}: UpdateTemplateFileFactoryOptions<C>) {
+}: UpdateTemplateFileComposerOptions<C>) {
   return {
     [stateName]: {
       entry: raise({ type: "prompt" }),

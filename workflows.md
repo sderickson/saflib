@@ -47,7 +47,8 @@ You can see what workflows there are and what they look like by finding "Workflo
 
 Here are some examples:
 
-- [Adding a schema for an environment variable](./env/docs/workflows/add-env-var.md)
+- [Add a schema for an environment variable](./env/docs/workflows/add-env-var.md)
+- [Add a workflow](./workflows/docs/workflows/add-workflow.md) (the meta-workflow!)
 - (more to come)
 
 ## Trying Out Workflows

@@ -1,13 +1,13 @@
 import { setup } from "xstate";
 import {
-  workflowActionImplementations,
+  workflowActions,
   workflowActors,
   logInfo,
   XStateWorkflow,
-  copyTemplateStateFactory,
-  updateTemplateFileFactory,
-  runTestsFactory,
-  promptAgentFactory,
+  copyTemplateStateComposer,
+  updateTemplateFileComposer,
+  runTestsComposer,
+  promptAgentComposer,
   type TemplateWorkflowContext,
   contextFromInput,
   type WorkflowInput,
@@ -32,12 +32,11 @@ export const ToDoWorkflowMachine = setup({
     input: {} as ToDoWorkflowInput,
     context: {} as ToDoWorkflowContext,
   },
-  actions: workflowActionImplementations,
+  actions: workflowActions,
   actors: workflowActors,
 }).createMachine({
   // TODO: replace "to-do" with the actual name of the workflow
   id: "to-do",
-  description: "TODO: Describe what this workflow does",
 
   // TODO: Only keep "copyTemplate" if this workflow actually copies over template files
   // Otherwise, remove the template states and update this to the actual initial state
@@ -69,12 +68,12 @@ export const ToDoWorkflowMachine = setup({
 
   // TODO: update the states to match the actual workflow you're creating. It will usually involve some combination of copying template files, updating files, and running tests.
   states: {
-    ...copyTemplateStateFactory({
+    ...copyTemplateStateComposer({
       stateName: "copyTemplate",
       nextStateName: "updateMainFile",
     }),
 
-    ...updateTemplateFileFactory<ToDoWorkflowContext>({
+    ...updateTemplateFileComposer<ToDoWorkflowContext>({
       filePath: (context) => path.join(context.targetDir, `${context.name}.ts`),
       promptMessage: (context) =>
         `Please update ${context.name}.ts to implement the main functionality. Replace any TODO comments with actual implementation.`,
@@ -82,7 +81,7 @@ export const ToDoWorkflowMachine = setup({
       nextStateName: "updateConfigFile",
     }),
 
-    ...updateTemplateFileFactory<ToDoWorkflowContext>({
+    ...updateTemplateFileComposer<ToDoWorkflowContext>({
       filePath: (context) =>
         path.join(context.targetDir, `${context.name}.config.ts`),
       promptMessage: (context) =>
@@ -91,7 +90,7 @@ export const ToDoWorkflowMachine = setup({
       nextStateName: "updateTests",
     }),
 
-    ...updateTemplateFileFactory<ToDoWorkflowContext>({
+    ...updateTemplateFileComposer<ToDoWorkflowContext>({
       filePath: (context) =>
         path.join(context.targetDir, `${context.name}.test.ts`),
       promptMessage: (context) =>
@@ -100,14 +99,14 @@ export const ToDoWorkflowMachine = setup({
       nextStateName: "runTests",
     }),
 
-    ...runTestsFactory<ToDoWorkflowContext>({
+    ...runTestsComposer<ToDoWorkflowContext>({
       filePath: (context) =>
         path.join(context.targetDir, `${context.name}.test.ts`),
       stateName: "runTests",
       nextStateName: "verifyDone",
     }),
 
-    ...promptAgentFactory<ToDoWorkflowContext>({
+    ...promptAgentComposer<ToDoWorkflowContext>({
       stateName: "verifyDone",
       nextStateName: "done",
       promptForContext: ({ context }) =>

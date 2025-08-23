@@ -1,27 +1,35 @@
 import type {
   CLIArgument,
   ChecklistItem,
-  Result,
   Step,
   WorkflowBlob,
   WorkflowStatus,
 } from "./types.ts";
 import type { AnyStateMachine, AnyActor } from "xstate";
-import { addNewLinesToString, allChildrenSettled } from "./utils.ts";
+import { addNewLinesToString } from "@saflib/utils";
 import { createActor, waitFor } from "xstate";
 import { getSafReporters } from "@saflib/node";
 import path from "node:path";
 import { existsSync, readFileSync } from "node:fs";
+import { allChildrenSettled } from "./utils.ts";
 import type {
   WorkflowContext,
   WorkflowInput,
   WorkflowOutput,
 } from "./xstate.ts";
+import type { ReturnsError } from "@saflib/monorepo";
 // The following is TS magic to describe a class constructor that implements the abstract SimpleWorkflow class.
 type AbstractClassConstructor<T extends Workflow> = new (...args: any[]) => T;
 
+/**
+ * Some subclass of Workflow which implements all abstract methods and properties.
+ */
 export type ConcreteWorkflow = AbstractClassConstructor<Workflow>;
 
+/**
+ * Wrapper around a ConcreteWorkflow class. Honestly might not be necessary
+ * and could likely be removed.
+ */
 export interface WorkflowMeta {
   name: string;
   description: string;
@@ -30,12 +38,16 @@ export interface WorkflowMeta {
   packageName: string;
 }
 
+/**
+ * Abstract superclass for SimpleWorkflow and XStateWorkflow. To be removed
+ * when XStateWorkflow is fully adopted.
+ */
 export abstract class Workflow {
   abstract readonly name: string;
   abstract readonly description: string;
   abstract readonly cliArguments: CLIArgument[];
   abstract readonly sourceUrl: string;
-  abstract init: (...args: any[]) => Promise<Result<any>>;
+  abstract init: (...args: any[]) => Promise<ReturnsError<any>>;
   abstract kickoff(): Promise<boolean>;
   abstract printStatus(): Promise<void>;
   abstract getCurrentStateName(): string;
@@ -47,6 +59,12 @@ export abstract class Workflow {
   abstract getError(): Error | undefined;
 }
 
+/**
+ * First iteration of workflows. Opted to try using XState instead for plenty
+ * of built in FSM features and tooling.
+ *
+ * @deprecated Use XStateWorkflow instead.
+ */
 export abstract class SimpleWorkflow<
   P extends Record<string, any>,
   D extends Record<string, any> = {},
@@ -54,7 +72,7 @@ export abstract class SimpleWorkflow<
   params?: P;
   data?: D;
 
-  abstract init: (...args: any[]) => Promise<Result<D>>;
+  abstract init: (...args: any[]) => Promise<ReturnsError<D>>;
   abstract steps: Step[];
   abstract workflowPrompt: () => string;
   private stepIndex = 0;
@@ -184,6 +202,16 @@ interface XStateWorkflowOptions {
   dryRun?: boolean;
 }
 
+/**
+ * Abstract superclass for XStateWorkflows.
+ *
+ * To use, subclass it with:
+ *
+ * * machine - the XState machine for the workflow.
+ * * sourceUrl - import.meta.url
+ * * description - to show up in the CLI tool
+ * * cliArguments - to show up in the CLI tool
+ */
 export abstract class XStateWorkflow extends Workflow {
   abstract readonly machine: AnyStateMachine;
   private input: any;
@@ -196,7 +224,7 @@ export abstract class XStateWorkflow extends Workflow {
   init = async (
     options: XStateWorkflowOptions,
     ...args: string[]
-  ): Promise<Result<any>> => {
+  ): Promise<ReturnsError<any>> => {
     if (args.length !== this.cliArguments.length) {
       return {
         error: new Error(
@@ -211,7 +239,7 @@ export abstract class XStateWorkflow extends Workflow {
     input.dryRun = options.dryRun;
     this.input = input;
 
-    return { data: undefined };
+    return { result: undefined };
   };
 
   kickoff = async (): Promise<boolean> => {
@@ -300,6 +328,10 @@ export abstract class XStateWorkflow extends Workflow {
   };
 }
 
+/**
+ * Utility function to get the package name from the root URL.
+ * @deprecated - to be made irrelevant through updating workflow
+ */
 export function getPackageName(rootUrl: string) {
   if (!rootUrl.startsWith("file://")) {
     throw new Error("Root URL should be import.meta.url");
@@ -320,6 +352,9 @@ export function getPackageName(rootUrl: string) {
   }
 }
 
+/**
+ * Helper function to create initial `WorkflowContext` from `WorkflowInput`.
+ */
 export function contextFromInput(input: WorkflowInput): WorkflowContext {
   return {
     checklist: [],
@@ -328,6 +363,9 @@ export function contextFromInput(input: WorkflowInput): WorkflowContext {
   };
 }
 
+/**
+ * Helper function to create `WorkflowOutput` from `WorkflowContext`.
+ */
 export function outputFromContext({
   context,
 }: {

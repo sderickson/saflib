@@ -1,23 +1,28 @@
 import { setup, assign } from "xstate";
 import {
-  workflowActionImplementations,
+  workflowActions,
   workflowActors,
   logInfo,
   logError,
   logWarn,
   promptAgent,
+  type ComposerFunctionOptions,
 } from "../xstate.ts";
-import { getGitHubUrl, kebabCaseToPascalCase } from "../utils.ts";
+import { kebabCaseToPascalCase } from "@saflib/utils";
+import { getGitHubUrl } from "@saflib/dev-tools";
 import type {
   CopyTemplateMachineContext,
   CopyTemplateMachineInput,
 } from "./types.ts";
-import type { ChecklistItem, TemplateWorkflowContext } from "../types.ts";
+import type {
+  ChecklistItem,
+  TemplateWorkflowContext,
+  XStateMachineStates,
+} from "../types.ts";
 import { fetchFileNames } from "./fetch-file-names.ts";
 import { copyNextFile } from "./copy-next-file.ts";
 import { renameNextFile } from "./rename-next-file.ts";
 import path from "node:path";
-
 export const CopyTemplateMachine = setup({
   types: {
     input: {} as CopyTemplateMachineInput,
@@ -27,7 +32,7 @@ export const CopyTemplateMachine = setup({
     },
   },
   actions: {
-    ...workflowActionImplementations,
+    ...workflowActions,
   },
   actors: {
     fetchFileNames,
@@ -95,15 +100,13 @@ export const CopyTemplateMachine = setup({
               logInfo(({ event }) => `Copied file to ${event.output.fileName}`),
               assign({
                 checklist: ({ context, event }) => {
-                  const fullPath = path.join(
-                    context.sourceDir,
-                    event.output.fileName,
-                  );
+                  const filesToCopy = context.filesToCopy;
+                  const fullPath = path.join(context.sourceDir, filesToCopy[0]);
                   const githubPath = getGitHubUrl(fullPath);
                   return [
                     ...context.checklist,
                     {
-                      description: `Create ${event.output.fileName} from [template](${githubPath})`,
+                      description: `Upsert **${event.output.fileName}** from [template](${githubPath})`,
                     },
                   ];
                 },
@@ -155,13 +158,16 @@ export const CopyTemplateMachine = setup({
   },
 });
 
-export function copyTemplateStateFactory({
-  stateName,
-  nextStateName,
-}: {
-  stateName: string;
-  nextStateName: string;
-}) {
+/**
+ * Composer for copying template files to a target directory. Also replaces every
+ * instance "template-file", "template_file", "TemplateFile", and "templateFile"
+ * with the name of the thing being created, passed in via the CLI or other interface.
+ * To use this composer, the machine context must extend TemplateWorkflowContext.
+ */
+export function copyTemplateStateComposer(
+  options: ComposerFunctionOptions,
+): XStateMachineStates {
+  const { stateName, nextStateName } = options;
   return {
     [stateName]: {
       invoke: {

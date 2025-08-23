@@ -1,0 +1,12 @@
+{
+  "intentionallyNotExported": [
+    "AbstractClassConstructor",
+    "WorkflowActionFunction",
+    "PromptParams",
+    "PromptAgentComposerOptions",
+    "XStateWorkflowOptions",
+    "ActionParam",
+    "Step",
+    "WorkflowBlob"
+  ]
+}

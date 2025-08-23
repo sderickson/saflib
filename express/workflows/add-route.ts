@@ -1,7 +1,7 @@
 // @ts-nocheck // TODO: refactor to factories, their types work
 import { fromPromise, raise, setup } from "xstate";
 import {
-  workflowActionImplementations,
+  workflowActions,
   workflowActors,
   logInfo,
   type WorkflowContext,
@@ -9,8 +9,6 @@ import {
   promptAgent,
   XStateWorkflow,
   doTestsPass,
-  kebabCaseToPascalCase,
-  kebabCaseToCamelCase,
   promptState,
 } from "@saflib/workflows";
 import path from "node:path";
@@ -19,6 +17,7 @@ import { exec } from "node:child_process";
 import { promisify } from "node:util";
 import { readdir, rename, readFile, writeFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
+import { kebabCaseToPascalCase, kebabCaseToCamelCase } from "@saflib/utils";
 
 const execAsync = promisify(exec);
 
@@ -45,7 +44,7 @@ export const AddRouteWorkflowMachine = setup({
     input: {} as AddRouteWorkflowInput,
     context: {} as AddRouteWorkflowContext,
   },
-  actions: workflowActionImplementations,
+  actions: workflowActions,
   actors: workflowActors,
 }).createMachine({
   id: "add-route",

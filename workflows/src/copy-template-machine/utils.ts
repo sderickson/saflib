@@ -1,4 +1,4 @@
-import { kebabCaseToPascalCase, kebabCaseToSnakeCase } from "../utils.ts";
+import { kebabCaseToPascalCase, kebabCaseToSnakeCase } from "@saflib/utils";
 
 export function transformName(
   originalName: string,

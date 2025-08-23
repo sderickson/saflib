@@ -1,7 +1,7 @@
 import type { Command } from "commander";
 import type { ChecklistItem } from "../types.ts";
 import { XStateWorkflow, type WorkflowMeta } from "../workflow.ts";
-import { addNewLinesToString } from "../utils.ts";
+import { addNewLinesToString } from "@saflib/utils";
 
 export const addChecklistCommand = (
   program: Command,
@@ -32,7 +32,9 @@ export const addChecklistCommand = (
 export const printChecklist = async (workflowMeta: WorkflowMeta) => {
   const { Workflow, cliArguments } = workflowMeta;
   const workflow = new Workflow();
-  const exampleArgs = cliArguments.map((arg) => arg.exampleValue);
+  const exampleArgs = cliArguments.map(
+    (arg) => arg.exampleValue || "example-value-missing",
+  );
   const result = await workflow.init({ dryRun: true }, ...exampleArgs);
   if (result.error) {
     console.error(result.error.message);

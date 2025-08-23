@@ -8,7 +8,7 @@ export class UpdateSpecWorkflow extends SimpleWorkflow<UpdateSpecWorkflowParams>
   sourceUrl = import.meta.url;
   init = async () => {
     this.params = {};
-    return { data: {} };
+    return { result: {} };
   };
 
   cliArguments = [];

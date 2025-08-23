@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { createActor, waitFor } from "xstate";
-import { updateTemplateFileFactory } from "./update-template-machine.ts";
+import { updateTemplateFileComposer } from "./update-template-machine.ts";
 import path from "node:path";
 import { setup } from "xstate";
-import { workflowActionImplementations, workflowActors } from "../xstate.ts";
+import { workflowActions, workflowActors } from "../xstate.ts";
 import { writeFileSync, unlinkSync, existsSync } from "node:fs";
 import type { TemplateWorkflowContext } from "../types.ts";
 
@@ -33,7 +33,7 @@ describe("updateTemplateFileFactory", () => {
       types: {
         context: {} as TestContext,
       },
-      actions: workflowActionImplementations,
+      actions: workflowActions,
       actors: workflowActors,
     }).createMachine({
       id: "test",
@@ -48,7 +48,7 @@ describe("updateTemplateFileFactory", () => {
         sourceDir: testFilePath,
       },
       states: {
-        ...updateTemplateFileFactory({
+        ...updateTemplateFileComposer({
           filePath: "test-file.txt",
           promptMessage: "Please update the test file",
           stateName: "testState",
@@ -79,7 +79,7 @@ describe("updateTemplateFileFactory", () => {
       types: {
         context: {} as TestContext,
       },
-      actions: workflowActionImplementations,
+      actions: workflowActions,
       actors: workflowActors,
     }).createMachine({
       id: "test",
@@ -94,7 +94,7 @@ describe("updateTemplateFileFactory", () => {
         sourceDir: testFilePath,
       },
       states: {
-        ...updateTemplateFileFactory({
+        ...updateTemplateFileComposer({
           filePath: "test-file.txt",
           promptMessage: "Please update the test file",
           stateName: "testState",
@@ -124,7 +124,7 @@ describe("updateTemplateFileFactory", () => {
       types: {
         context: {} as TestContext,
       },
-      actions: workflowActionImplementations,
+      actions: workflowActions,
       actors: workflowActors,
     }).createMachine({
       id: "test",
@@ -139,7 +139,7 @@ describe("updateTemplateFileFactory", () => {
         sourceDir: testFilePath,
       },
       states: {
-        ...updateTemplateFileFactory({
+        ...updateTemplateFileComposer({
           filePath: (context: TestContext) => context.testFile,
           promptMessage: "Please update the test file",
           stateName: "testState",

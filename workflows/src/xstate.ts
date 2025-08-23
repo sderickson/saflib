@@ -1,4 +1,4 @@
-import { getCurrentPackage, print } from "./utils.ts";
+import { print } from "./utils.ts";
 import { spawn, spawnSync } from "child_process";
 import {
   assign,
@@ -12,6 +12,7 @@ import {
   raise,
 } from "xstate";
 import type { ChecklistItem } from "./types.ts";
+import { getCurrentPackage } from "@saflib/dev-tools";
 
 // general types
 
@@ -20,18 +21,56 @@ interface ActionParam<C, E extends AnyEventObject> {
   event: E;
 }
 
+/**
+ * Inputs every workflow machine receives.
+ */
 export interface WorkflowInput {
+  /**
+   * Flag to skip all execution of the workflow. Used mainly to get a checklist.
+   */
   dryRun?: boolean;
 }
 
+/**
+ * Outputs every workflow machine returns.
+ */
 export interface WorkflowOutput {
+  /**
+   * Short descriptions of every step taken in the workflow. Can be used
+   * either to generate a sample checklist for a workflow, or a summary
+   * of the work done by a completed workflow. Workflows build these recursively.
+   */
   checklist: ChecklistItem[];
 }
 
+/**
+ * Context shared across all workflow machines.
+ */
 export interface WorkflowContext {
+  /**
+   * Short descriptions of every step taken in the workflow. Can be used
+   * either to generate a sample checklist for a workflow, or a summary
+   * of the work done by a completed workflow. Workflows build these recursively.
+   */
   checklist: ChecklistItem[];
+
+  /**
+   * Flag for if the last thing printed was a log message. This is just
+   * to space logs and prompts out from each other.
+   */
   loggedLast?: boolean;
+
+  /**
+   * Optional prompt to be printed above every step prompt. Use to remind the
+   * agent what the workflow is for, especially if it's a long one.
+   */
   systemPrompt?: string;
+
+  /**
+   * Flag to skip all execution of the workflow. Use to return before doing things
+   * like file operations. This is necessary to get a checklist from a workflow
+   * without actually operating it.
+   */
   dryRun?: boolean;
 }
 
@@ -57,6 +96,9 @@ type WorkflowActionFunction<
 
 // log action
 
+/**
+ * Params for the log action.
+ */
 export interface LogParams {
   msg: string;
   level?: "info" | "error" | "warn";
@@ -75,18 +117,27 @@ const log = <C, E extends AnyEventObject>(
   };
 };
 
+/**
+ * Action builder for logging info messages.
+ */
 export const logInfo = <C, E extends AnyEventObject>(
   cb: string | ((ctx: ActionParam<C, E>) => string),
 ) => {
   return log("info", cb);
 };
 
+/**
+ * Action builder for logging error messages.
+ */
 export const logError = <C, E extends AnyEventObject>(
   cb: string | ((ctx: ActionParam<C, E>) => string),
 ) => {
   return log("error", cb);
 };
 
+/**
+ * Action builder for logging warning messages.
+ */
 export const logWarn = <C, E extends AnyEventObject>(
   cb: string | ((ctx: ActionParam<C, E>) => string),
 ) => {
@@ -101,8 +152,9 @@ const logImpl: WorkflowActionFunction<any, AnyEventObject, LogParams> = assign(
   },
 );
 
-// prompt action
-
+/**
+ * Action builder for prompting the agent.
+ */
 export const promptAgent = <C, E extends AnyEventObject>(
   cb: string | ((ctx: ActionParam<C, E>) => string),
 ) => {
@@ -141,11 +193,17 @@ const getTestCommandAndArgs = () => {
   return { command, args };
 };
 
+/**
+ * @deprecated - to be replaced with runTestsComposer
+ */
 export const doesTestPass = (pathString: string) => {
   const { command, args } = getTestCommandAndArgs();
   return runCommandAsync(command, [...args, pathString]);
 };
 
+/**
+ * @deprecated - to be replaced with runTestsComposer
+ */
 export const doTestsPass = () => {
   const { command, args } = getTestCommandAndArgs();
   return runCommandAsync(command, args);
@@ -157,19 +215,27 @@ export const doTestsPassSync = () => {
   return status === 0;
 };
 
-// generate action
-
+/**
+ * @deprecated - to be replaced with generateMigrationsComposer
+ */
 export const generateMigrations = () => {
   return runCommandAsync("npm", ["run", "generate"]);
 };
 
-// used in workflow machines
-
-export const workflowActionImplementations = {
+/**
+ * Common actions for workflow machines.
+ */
+export const workflowActions = {
   log: logImpl,
   prompt: promptImpl,
 };
 
+/**
+ * Common actors for workflow machines.
+ *
+ * Currently none are intended for use. Types fail if I don't include
+ * at least one actor. Probably should figure out how to better type this.
+ */
 export const workflowActors = {
   noop: fromPromise(async (_) => {}),
 };
@@ -194,6 +260,9 @@ export const runCommandAsync = (command: string, args: string[]) => {
   return promise;
 };
 
+/**
+ * @deprecated - use promptAgentComposer instead
+ */
 export function promptState<C extends WorkflowContext>(
   promptForContext: ({ context }: { context: C }) => string | string,
   target: string,
@@ -211,22 +280,40 @@ export function promptState<C extends WorkflowContext>(
   };
 }
 
-interface PromptAgentFactoryOptions<C extends WorkflowContext>
-  extends FactoryFunctionOptions {
+interface PromptAgentComposerOptions<C extends WorkflowContext>
+  extends ComposerFunctionOptions {
   promptForContext: ({ context }: { context: C }) => string | string;
 }
 
-export function promptAgentFactory<C extends WorkflowContext>({
+/**
+ * Composer for prompting the agent. During normal execution, once a prompt
+ * is printed, the workflow will stop so it can be continued later.
+ */
+export function promptAgentComposer<C extends WorkflowContext>({
   promptForContext,
   stateName,
   nextStateName,
-}: PromptAgentFactoryOptions<C>) {
+}: PromptAgentComposerOptions<C>) {
   return {
     [stateName]: {
       entry: raise({ type: "prompt" }),
       on: {
         prompt: {
-          actions: [promptAgent(promptForContext)],
+          actions: [
+            promptAgent(promptForContext),
+            assign({
+              checklist: ({ context }) => {
+                return [
+                  ...context.checklist,
+                  {
+                    description: promptForContext({
+                      context: context as C,
+                    }).split("\n")[0],
+                  },
+                ];
+              },
+            }),
+          ],
         },
         continue: {
           target: nextStateName,
@@ -236,7 +323,12 @@ export function promptAgentFactory<C extends WorkflowContext>({
   };
 }
 
-export interface FactoryFunctionOptions {
+/**
+ * Options for all composer functions. These functions return
+ * an object which can be spread into an XState "states" object,
+ * for easily composing a workflow machine from common steps.
+ */
+export interface ComposerFunctionOptions {
   stateName: string;
   nextStateName: string;
 }

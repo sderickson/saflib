@@ -1,6 +1,7 @@
 import type { Command } from "commander";
 import { type WorkflowMeta } from "../workflow.ts";
-import { addNewLinesToString, getGitHubUrl } from "../utils.ts";
+import { addNewLinesToString } from "@saflib/utils";
+import { getGitHubUrl } from "@saflib/dev-tools";
 
 export const addSourceCommand = (
   program: Command,

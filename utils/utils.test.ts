@@ -3,7 +3,7 @@ import {
   kebabCaseToPascalCase,
   kebabCaseToCamelCase,
   kebabCaseToSnakeCase,
-} from "./utils.ts";
+} from "./index.ts";
 
 describe("Naming convention utilities", () => {
   it("should convert kebab-case to PascalCase", () => {
