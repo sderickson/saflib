@@ -13,7 +13,7 @@ for E2E testing.
 
 | Parameter | Type |
 | ------ | ------ |
-| `options` | `EmailsRouterOptions` |
+| `options` | [`EmailsRouterOptions`](../interfaces/EmailsRouterOptions.md) |
 
 ## Returns
 

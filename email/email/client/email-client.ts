@@ -77,7 +77,10 @@ export interface EmailResult {
   response: string;
 }
 
-class EmailClient {
+/**
+ * A simplified client for sending emails, wrapping around nodemailer (or a mock in during tests).
+ */
+export class EmailClient {
   private transporter: Transporter | undefined;
 
   constructor() {

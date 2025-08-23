@@ -15,6 +15,7 @@ export interface RunNpmCommandFactoryOptions extends ComposerFunctionOptions {
   // All commands here are the only ones that can be run by a workflow.
   command:
     | "install @saflib/env"
+    | "install @saflib/email"
     | "exec saf-env generate"
     | "exec saf-env generate-all"
     | "run generate";
