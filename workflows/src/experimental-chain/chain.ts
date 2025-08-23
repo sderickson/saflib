@@ -3,7 +3,7 @@
  * the more verbose approach to work fine.
  */
 
-import type { ComposerFunctionOptions } from "./xstate.ts";
+import type { ComposerFunctionOptions } from "../xstate.ts";
 
 type ComposerFunction<T extends Record<string, any>> = (
   options: T & ComposerFunctionOptions,

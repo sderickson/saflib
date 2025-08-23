@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { createChain } from "./chain.ts";
-import type { ComposerFunctionOptions } from "./xstate.ts";
+import type { ComposerFunctionOptions } from "../xstate.ts";
 
 describe("createChain", () => {
   it("should create a chain with proper initial state and state transitions", () => {

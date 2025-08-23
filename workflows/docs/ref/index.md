@@ -20,10 +20,7 @@
 | [CLIArgument](interfaces/CLIArgument.md) | Required argument for the workflow, in a format the CLI tool (commander) can use. |
 | [ComposerFunctionOptions](interfaces/ComposerFunctionOptions.md) | Options for all composer functions. These functions return an object which can be spread into an XState "states" object, for easily composing a workflow machine from common steps. |
 | [LogParams](interfaces/LogParams.md) | Params for the log action. |
-| [~~Step~~](interfaces/Step.md) | - |
 | [TemplateWorkflowContext](interfaces/TemplateWorkflowContext.md) | There are at least two machines which work on templates: creating and updating. These share some common context properties in addition to WorkflowContext properties. |
-| [~~WorkflowBlob~~](interfaces/WorkflowBlob.md) | - |
-| [~~WorkflowBlobInternalState~~](interfaces/WorkflowBlobInternalState.md) | - |
 | [WorkflowContext](interfaces/WorkflowContext.md) | Context shared across all workflow machines. |
 | [WorkflowInput](interfaces/WorkflowInput.md) | Inputs every workflow machine receives. |
 | [WorkflowMeta](interfaces/WorkflowMeta.md) | Wrapper around a ConcreteWorkflow class. Honestly might not be necessary and could likely be removed. |
@@ -35,7 +32,6 @@
 | Type Alias | Description |
 | ------ | ------ |
 | [ConcreteWorkflow](type-aliases/ConcreteWorkflow.md) | Some subclass of Workflow which implements all abstract methods and properties. |
-| [~~WorkflowStatus~~](type-aliases/WorkflowStatus.md) | - |
 
 ## Variables
 

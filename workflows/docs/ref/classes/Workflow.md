@@ -66,11 +66,11 @@ when XStateWorkflow is fully adopted.
 
 ### dehydrate()
 
-> `abstract` **dehydrate**(): [`WorkflowBlob`](../interfaces/WorkflowBlob.md)
+> `abstract` **dehydrate**(): `WorkflowBlob`
 
 #### Returns
 
-[`WorkflowBlob`](../interfaces/WorkflowBlob.md)
+`WorkflowBlob`
 
 ***
 
@@ -132,7 +132,7 @@ when XStateWorkflow is fully adopted.
 
 | Parameter | Type |
 | ------ | ------ |
-| `blob` | [`WorkflowBlob`](../interfaces/WorkflowBlob.md) |
+| `blob` | `WorkflowBlob` |
 
 #### Returns
 

@@ -112,7 +112,7 @@ Use XStateWorkflow instead.
 
 ### ~~steps~~
 
-> `abstract` **steps**: [`Step`](../interfaces/Step.md)[]
+> `abstract` **steps**: `Step`[]
 
 ***
 
@@ -128,11 +128,11 @@ Use XStateWorkflow instead.
 
 ### ~~dehydrate()~~
 
-> **dehydrate**(): [`WorkflowBlob`](../interfaces/WorkflowBlob.md)
+> **dehydrate**(): `WorkflowBlob`
 
 #### Returns
 
-[`WorkflowBlob`](../interfaces/WorkflowBlob.md)
+`WorkflowBlob`
 
 #### Overrides
 
@@ -238,7 +238,7 @@ Use XStateWorkflow instead.
 
 | Parameter | Type |
 | ------ | ------ |
-| `blob` | [`WorkflowBlob`](../interfaces/WorkflowBlob.md) |
+| `blob` | `WorkflowBlob` |
 
 #### Returns
 

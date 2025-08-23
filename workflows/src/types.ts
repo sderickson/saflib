@@ -27,9 +27,6 @@ export interface CLIArgument {
  */
 export type WorkflowStatus = "not started" | "in progress" | "completed";
 
-/**
- * @deprecated with SimpleWorkflows
- */
 export interface WorkflowBlobInternalState {
   status: WorkflowStatus;
   stepIndex: number;
@@ -37,9 +34,6 @@ export interface WorkflowBlobInternalState {
   params: Record<string, any>;
 }
 
-/**
- * @deprecated with SimpleWorkflows
- */
 export interface WorkflowBlob {
   workflowName: string;
   internalState?: WorkflowBlobInternalState;

@@ -87,11 +87,11 @@ To use, subclass it with:
 
 ### dehydrate()
 
-> **dehydrate**(): [`WorkflowBlob`](../interfaces/WorkflowBlob.md)
+> **dehydrate**(): `WorkflowBlob`
 
 #### Returns
 
-[`WorkflowBlob`](../interfaces/WorkflowBlob.md)
+`WorkflowBlob`
 
 #### Overrides
 
@@ -177,7 +177,7 @@ To use, subclass it with:
 
 | Parameter | Type |
 | ------ | ------ |
-| `blob` | [`WorkflowBlob`](../interfaces/WorkflowBlob.md) |
+| `blob` | `WorkflowBlob` |
 
 #### Returns
 

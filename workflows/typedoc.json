@@ -6,8 +6,9 @@
     "PromptAgentComposerOptions",
     "RunNpmCommandFactoryOptions",
     "RunTestsFactoryOptions",
-    "UpdateTemplateFileFactoryOptions",
     "XStateWorkflowOptions",
-    "ActionParam"
+    "ActionParam",
+    "Step",
+    "WorkflowBlob"
   ]
 }
