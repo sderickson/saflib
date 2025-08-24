@@ -64,7 +64,9 @@ export const defaultErrorReporter: ErrorReporter = (error, options) => {
     ...options?.extra,
   });
 
-  if (winstonLevel === "error") {
+  // Errors and fatals should always be fixed. If they show up in logs,
+  // during tests, output them so they (hopefully) get addressed.
+  if (winstonLevel === "error" || winstonLevel === "fatal") {
     console.error(e.stack);
   }
 };

@@ -45,9 +45,7 @@ describe("startJobs", () => {
   it("should create default disabled setting if job doesn't exist in DB", async () => {
     // Pass the local db instance to startJobs
     await startJobs({ "new-job": mockJobs["new-job"] }, { dbKey });
-    const setting = await throwError(
-      jobSettingsDb.getByName(dbKey, "new-job"),
-    ); // Assert on local db
+    const setting = await throwError(jobSettingsDb.getByName(dbKey, "new-job")); // Assert on local db
     expect(setting).toBeDefined();
     expect(setting.enabled).toBe(false);
     // Check for the warning log
@@ -60,13 +58,11 @@ describe("startJobs", () => {
 
   it("should skip scheduling if initial fetch fails unexpectedly", async () => {
     // Spy on the local db instance
-    const getByNameSpy = vi
-      .spyOn(jobSettingsDb, "getByName")
-      .mockReturnValue(
-        Promise.resolve({
-          error: new Error("Unexpected error...."),
-        }),
-      );
+    const getByNameSpy = vi.spyOn(jobSettingsDb, "getByName").mockReturnValue(
+      Promise.resolve({
+        error: new Error("Unexpected error...."),
+      }),
+    );
     // Pass the local db instance
     await startJobs({ "fail-job": mockJobs["fail-job"] }, { dbKey });
 
@@ -166,13 +162,13 @@ describe("startJobs", () => {
       { "every-minute-job": mockJobs["every-minute-job"] },
       { dbKey },
     );
-    await vi.advanceTimersByTimeAsync(1000 * 62); // Trigger the job's onTick and timeout
+    await vi.advanceTimersByTimeAsync(1000 * 72); // Trigger the job's onTick and timeout
     const setting = await throwError(
       jobSettingsDb.getByName(dbKey, "every-minute-job"),
     );
     expect(setting.lastRunStatus).toBe("timed out"); // Check the final status
     expect(logSpy).toHaveBeenCalledWith(
-      expect.stringContaining("timed out after 2 seconds"),
+      expect.stringContaining("timed out after 10 seconds"),
     );
   });
 

@@ -9,16 +9,17 @@ import { typedEnv } from "@saflib/env";
  */
 export const safReportersStorage = new AsyncLocalStorage<SafReporters>();
 
+const testReporters: SafReporters = {
+  log: createLogger(),
+  logError: () => {},
+};
+
 /**
  * Convenience method for getting the SafReporters from the storage. Errors if not found.
  */
 export const getSafReporters = (): SafReporters => {
   const store = safReportersStorage.getStore();
   if (!store && typedEnv.NODE_ENV === "test") {
-    const testReporters: SafReporters = {
-      log: createLogger(),
-      logError: () => {},
-    };
     return testReporters;
   }
   if (!store) {
