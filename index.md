@@ -1,6 +1,10 @@
 # Overview
 
-SAF is Scott's Application Framework - I built it for me, but also I'm making this repo public for people to use and explore as it reflects and is the source of my thinking on [my blog](https://scotterickson.info/blog). Simply put, SAF is a full-featured web application framework using my preferred libraries and services, and a playground for experimenting with LLM-assisted development.
+SAF stands for Scott's Application Framework. I've built it to:
+
+1. Build my own production-ready web apps
+2. Experiment with LLM-assisted development
+3. Share what I learn
 
 Guiding principles:
 
@@ -12,7 +16,7 @@ Guiding principles:
 
 ## Documentation
 
-The focus of the docs on this site are what's in `saflib`, which contains all the shared code across all SAF-based projects. It is a (mostly) flat list of packages, spanning common dependencies and reusable features. It also stores documentation and workflows for both human and agent consumption.
+The focus of the docs on this site are what's in `saflib`, which contains all the shared code across all SAF-based projects. It is a broad collection of packages, spanning common dependencies and reusable features. It also has documentation and workflows for both human and agent consumption.
 
 [This site](https://docs.saf-demo.online/) provides a quick way to review the docs, but these docs are also accessible when coding with SAF by searching for their markdown files. Include them as context in prompts, and update them as part of normal work.
 
