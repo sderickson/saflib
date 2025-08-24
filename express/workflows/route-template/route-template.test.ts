@@ -5,7 +5,7 @@ import express from "express";
 // import { createApp } from "../../app.ts";
 import { makeUserHeaders } from "@saflib/express";
 
-describe("routeTemplate", () => {
+describe("templateFile", () => {
   let app: express.Express;
 
   beforeEach(() => {
@@ -14,7 +14,7 @@ describe("routeTemplate", () => {
 
   it("should handle successful requests", async () => {
     const response = await request(app)
-      .post("/route-template")
+      .post("/template-file")
       .set(makeUserHeaders())
       .send({
         // TODO: Add test request body
@@ -30,7 +30,7 @@ describe("routeTemplate", () => {
 
   it("should handle validation errors", async () => {
     const response = await request(app)
-      .post("/route-template")
+      .post("/template-file")
       .set(makeUserHeaders())
       .send({
         // TODO: Add invalid request body

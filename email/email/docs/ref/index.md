@@ -4,12 +4,19 @@
 
 # @saflib/email
 
+## Classes
+
+| Class | Description |
+| ------ | ------ |
+| [EmailClient](classes/EmailClient.md) | A simplified client for sending emails, wrapping around nodemailer (or a mock in during tests). |
+
 ## Interfaces
 
 | Interface | Description |
 | ------ | ------ |
 | [EmailOptions](interfaces/EmailOptions.md) | Accepted options when sending an email. A subset of what nodemailer accepts. See [Nodemailer docs](https://nodemailer.com/message/) for more details. |
 | [EmailResult](interfaces/EmailResult.md) | Result of sending an email. This seems to be what is returned by nodemailer when the transport is SMTP. These types may not be correct if configured to use some other transport. |
+| [EmailsRouterOptions](interfaces/EmailsRouterOptions.md) | - |
 | [SentEmail](interfaces/SentEmail.md) | A record of an email that was sent. Only used for mocking. |
 
 ## Variables

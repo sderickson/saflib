@@ -5,10 +5,10 @@ import createError from "http-errors";
 import { callerServiceStorage } from "@your-org/services-api/context.ts";
 import { getSafContextWithAuth } from "@saflib/node";
 
-export const routeTemplate = createHandler(async (req, res) => {
+export const templateFile = createHandler(async (req, res) => {
   const ctx = callerServiceStorage.getStore()!;
   const { auth } = getSafContextWithAuth();
-  const data: RouteTemplateRequest = req.body || {};
+  const data: TemplateFileRequest = req.body || {};
 
   // TODO: Call your service/DB function here
   // const { result, error } = await yourService.someFunction(ctx.dbKey, {
@@ -26,7 +26,7 @@ export const routeTemplate = createHandler(async (req, res) => {
   // }
 
   // TODO: Map result to API response
-  // const response: ApiResponseBody["routeTemplate"][201] = {
+  // const response: ApiResponseBody["templateFile"][201] = {
   //   // Map service result to API response
   // };
 

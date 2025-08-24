@@ -1,112 +1,126 @@
-import { SimpleWorkflow } from "@saflib/workflows";
-import * as fs from "node:fs";
-import * as path from "node:path";
+import { setup } from "xstate";
+import {
+  workflowActions,
+  workflowActors,
+  logInfo,
+  promptAgentComposer,
+  runNpmCommandComposer,
+  XStateWorkflow,
+  contextFromInput,
+  type WorkflowInput,
+  outputFromContext,
+  copyTemplateStateComposer,
+  updateTemplateFileComposer,
+  type TemplateWorkflowContext,
+} from "@saflib/workflows";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
-interface AddTsPackageWorkflowParams {
+interface AddTsPackageWorkflowInput extends WorkflowInput {
   name: string;
   path: string; // Relative to monorepo root, e.g., "packages" or "libs"
 }
 
-export class AddTsPackageWorkflow extends SimpleWorkflow<AddTsPackageWorkflowParams> {
-  name = "add-ts-package";
-  description =
-    "Creates a new TypeScript package according to monorepo best practices.";
-  sourceUrl = import.meta.url;
+interface AddTsPackageWorkflowContext extends TemplateWorkflowContext {
+  packageName: string; // e.g. "@your-org/package-name"
+  packageDirName: string; // e.g. "package-name"
+  path: string; // Relative path from monorepo root
+}
 
-  init = async (name: string, packagePath: string) => {
-    this.params = {
-      name, // Expected to be the full package name, e.g., @scope/pkg-name
-      path: packagePath, // Expected to be the direct path to the package, e.g., libs/pkg-name
-    };
-
-    const templatesDir = path.join(import.meta.dirname, "templates");
-
-    if (!fs.existsSync(this.params.path)) {
-      fs.mkdirSync(this.params.path, { recursive: true });
-    }
-
-    const packageDirName = path.basename(this.params.path);
-
-    const filesToCopy = [
-      { template: "index.ts.template", output: "index.ts" },
-      { template: "vitest.config.js.template", output: "vitest.config.js" },
-      { template: "package.json.template", output: "package.json" },
-      { template: "test.ts.template", output: `${packageDirName}.test.ts` },
-    ];
-
-    for (const file of filesToCopy) {
-      const templatePath = path.join(templatesDir, file.template);
-      const outputPath = path.join(this.params.path, file.output);
-      let content = fs.readFileSync(templatePath, "utf8");
-      // Replace {{PACKAGE_NAME}} in vitest.config.js.template with directory name
-      content = content.replace(/\{\{PACKAGE_NAME\}\}/g, name);
-      fs.writeFileSync(outputPath, content);
-    }
+export const AddTsPackageWorkflowMachine = setup({
+  types: {
+    input: {} as AddTsPackageWorkflowInput,
+    context: {} as AddTsPackageWorkflowContext,
+  },
+  actions: workflowActions,
+  actors: workflowActors,
+}).createMachine({
+  id: "add-ts-package",
+  description:
+    "Creates a new TypeScript package according to monorepo best practices.",
+  initial: "copyTemplate",
+  context: ({ input }) => {
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = path.dirname(__filename);
+    const sourceDir = path.join(__dirname, "templates");
+    const targetDir = path.join(process.cwd(), input.path);
+    const packageDirName = path.basename(input.path);
 
     return {
-      result: {
-        fullPackagePath: this.params.path,
-        packageName: this.params.name,
-      },
+      name: packageDirName,
+      pascalName:
+        packageDirName.charAt(0).toUpperCase() + packageDirName.slice(1),
+      targetDir,
+      sourceDir,
+      packageName: input.name,
+      packageDirName,
+      path: input.path,
+      ...contextFromInput(input),
     };
-  };
+  },
+  entry: logInfo("Successfully began workflow"),
+  states: {
+    ...copyTemplateStateComposer({
+      stateName: "copyTemplate",
+      nextStateName: "updatePackageJson",
+    }),
 
+    ...updateTemplateFileComposer<AddTsPackageWorkflowContext>({
+      filePath: (context) => path.join(context.targetDir, "package.json"),
+      promptMessage: (context) =>
+        `The file '${path.join(context.path, "package.json")}' has been created. Please update the "description" field and any other fields as needed, such as dependencies on other SAF libraries.`,
+      stateName: "updatePackageJson",
+      nextStateName: "updateRootWorkspace",
+    }),
+
+    ...promptAgentComposer<AddTsPackageWorkflowContext>({
+      promptForContext: ({ context }) =>
+        `Ensure the new package path '${context.path}' is included in the "workspaces" array in the root \`package.json\`.
+      
+      For example: \`"workspaces": ["${context.path}", "other-packages/*"]\``,
+      stateName: "updateRootWorkspace",
+      nextStateName: "runNpmInstall",
+    }),
+
+    ...runNpmCommandComposer({
+      command: "install",
+      stateName: "runNpmInstall",
+      nextStateName: "verifyTestSetup",
+    }),
+
+    ...promptAgentComposer<AddTsPackageWorkflowContext>({
+      promptForContext: ({ context }) =>
+        `Run the package tests and make sure they pass.
+      
+      A test file \`${path.join(context.path, `${context.packageDirName}.test.ts`)}\` has been created. Run \`npm run test --workspace="${context.packageName}"\`. You might need to \`cd ${context.path}\` then \`npm run test\`.`,
+      stateName: "verifyTestSetup",
+      nextStateName: "done",
+    }),
+
+    done: {
+      type: "final",
+    },
+  },
+  output: outputFromContext,
+});
+
+export class AddTsPackageWorkflow extends XStateWorkflow {
+  machine = AddTsPackageWorkflowMachine;
+  description =
+    "Creates a new TypeScript package according to monorepo best practices.";
   cliArguments = [
     {
       name: "name",
       description:
         "The desired package name, including scope (e.g., @your-org/package-name)",
+      exampleValue: "@example-org/example-package",
     },
     {
       name: "path",
       description:
         "The RELATIVE path from monorepo root where the package directory (containing package.json) will be created (e.g., packages/my-lib or saflib/node)",
+      exampleValue: "packages/my-lib",
     },
   ];
-
-  workflowPrompt = () => {
-    return `You are creating a new TypeScript package named '${this.params?.name}' at the path '${this.params?.path}'. Follow the steps to set up the package structure, dependencies, and testing configuration as per monorepo guidelines.`;
-  };
-
-  steps = [
-    {
-      name: "Update package.json description",
-      prompt: () => {
-        if (!this.params?.path)
-          return "Error: Package path not available. Init might have failed.";
-        const packageJsonPath = path.join(this.params.path, "package.json");
-        return `The file '${packageJsonPath}' has been created. Please update the "description" field and any other fields as needed, such as dependencies on other SAF libraries.`;
-      },
-    },
-    {
-      name: "Ensure package is in root workspace",
-      prompt: () => {
-        if (!this.params?.path)
-          return "Error: Workflow params not available or path is missing.";
-        const directPath = this.params.path;
-        // Assuming CWD is the monorepo root
-        const rootPackageJsonPath = path.join(process.cwd(), "package.json");
-        return `Ensure the new package path '${directPath}' is included in the "workspaces" array in '${rootPackageJsonPath}'. For example: "workspaces": ["${directPath}", "other-packages/*"]`;
-      },
-    },
-    {
-      name: "Run npm install",
-      prompt: () =>
-        `Run 'npm install' in the monorepo root directory to link the new package, install dependencies, and update the lockfile.`,
-    },
-    {
-      name: "Verify test setup",
-      prompt: () => {
-        if (!this.params?.path || !this.params?.name)
-          return "Error: Package path or name not available. Init might have failed.";
-        const packageDirName = path.basename(this.params.path);
-        const testFilePath = path.join(
-          this.params.path,
-          `${packageDirName}.test.ts`,
-        );
-        const workspaceName = this.params.name;
-        return `A test file '${testFilePath}' has been created. Verify it imports from './index.ts' and tests pass. Run 'npm run test --workspace="${workspaceName}"'. You might need to 'cd ${this.params.path}' then 'npm run test'.`;
-      },
-    },
-  ];
+  sourceUrl = import.meta.url;
 }

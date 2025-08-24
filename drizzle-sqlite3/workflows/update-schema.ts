@@ -1,19 +1,20 @@
-import { fromPromise, raise, setup } from "xstate";
+import { setup } from "xstate";
 import {
   workflowActions,
   workflowActors,
   logInfo,
   type WorkflowContext,
-  generateMigrations,
-  logError,
-  promptAgent,
+  promptAgentComposer,
+  runNpmCommandComposer,
   XStateWorkflow,
   contextFromInput,
   type WorkflowInput,
+  outputFromContext,
 } from "@saflib/workflows";
 import path from "path";
 import { existsSync } from "fs";
-import { fileURLToPath } from "url";
+import { directoryFromMetaUrl } from "@saflib/dev-tools";
+
 interface UpdateSchemaWorkflowInput extends WorkflowInput {}
 
 interface UpdateSchemaWorkflowContext extends WorkflowContext {
@@ -29,13 +30,12 @@ export const UpdateSchemaWorkflowMachine = setup({
   actors: workflowActors,
 }).createMachine({
   id: "update-schema",
-  description: "Update drizzle/sqlite3 schema.",
   initial: "getOriented",
   context: ({ input }) => {
-    const __filename = fileURLToPath(import.meta.url);
-    const __dirname = path.dirname(__filename);
-
-    const refDoc = path.resolve(__dirname, "../docs/02-schema.md");
+    const refDoc = path.resolve(
+      directoryFromMetaUrl(import.meta.url),
+      "../docs/02-schema.md",
+    );
     const refDocAbsPath = path.resolve(process.cwd(), refDoc);
     if (!existsSync(refDocAbsPath)) {
       throw new Error(`Reference documentation not found: ${refDocAbsPath}`);
@@ -48,83 +48,46 @@ export const UpdateSchemaWorkflowMachine = setup({
   },
   entry: logInfo("Successfully began workflow"),
   states: {
-    getOriented: {
-      entry: raise({ type: "prompt" }),
-      on: {
-        prompt: {
-          actions: [
-            promptAgent(
-              ({ context }) =>
-                `First, read the project spec and also the reference documentation for the @saflib/drizzle-sqlite3 package. If they haven't already, ask the user for the project spec.\n\nAlso, read the guidelines for tables and columns in the doc: ${context.docPath}`,
-            ),
-          ],
-        },
-        continue: {
-          target: "changingSchema",
-        },
-      },
-    },
-    changingSchema: {
-      entry: raise({ type: "prompt" }),
-      on: {
-        prompt: {
-          actions: promptAgent(
-            () =>
-              `Find the "schema.ts" file in this folder and update it based on the spec.`,
-          ),
-        },
-        continue: {
-          target: "generatingMigrations",
-        },
-      },
-    },
-    generatingMigrations: {
-      on: {
-        continue: {
-          reenter: true,
-          target: "generatingMigrations",
-        },
-        prompt: {
-          actions: promptAgent(
-            () =>
-              `The migrations failed to generate. Please run "npm run generate" and make sure it succeeds. Check package.json to make sure the command is set up correctly.`,
-          ),
-        },
-      },
-      invoke: {
-        src: fromPromise(generateMigrations),
-        onDone: {
-          target: "done",
-          actions: logInfo(() => `Migrations generated successfully.`),
-        },
-        onError: {
-          actions: [
-            logError(() => `Migrations failed to generate.`),
-            raise({ type: "prompt" }),
-          ],
-        },
-      },
-    },
-    exportTypes: {
-      entry: raise({ type: "prompt" }),
-      on: {
-        prompt: {
-          actions: promptAgent(
-            () =>
-              `If any new tables were created, make sure to add the inferred types to ./types.ts so they're exported in index.ts.`,
-          ),
-        },
-      },
-    },
+    ...promptAgentComposer<UpdateSchemaWorkflowContext>({
+      promptForContext: ({ context }) =>
+        `Review the project spect, and read the guidelines for tables and columns in the schema doc.
+
+* Schema doc: ${context.docPath}
+* Project spec: The user should have already provided this. Ask for it if they haven't.`,
+      stateName: "getOriented",
+      nextStateName: "changingSchema",
+    }),
+
+    ...promptAgentComposer<UpdateSchemaWorkflowContext>({
+      promptForContext: () =>
+        `Find the right schema file in this folder and update it based on the spec.`,
+      stateName: "changingSchema",
+      nextStateName: "generatingMigrations",
+    }),
+
+    ...runNpmCommandComposer({
+      command: "run generate",
+      stateName: "generatingMigrations",
+      nextStateName: "exportTypes",
+    }),
+
+    ...promptAgentComposer<UpdateSchemaWorkflowContext>({
+      promptForContext: () =>
+        `If any new tables were created, make sure to add the inferred types to \`./types.ts\` so they're exported in \`./index.ts\`.`,
+      stateName: "exportTypes",
+      nextStateName: "done",
+    }),
+
     done: {
       type: "final",
     },
   },
+  output: outputFromContext,
 });
 
 export class UpdateSchemaWorkflow extends XStateWorkflow {
   machine = UpdateSchemaWorkflowMachine;
-  description = "Update drizzle/sqlite3 schema.";
+  description = "Update a drizzle/sqlite3 schema.";
   cliArguments = [];
   sourceUrl = import.meta.url;
 }
