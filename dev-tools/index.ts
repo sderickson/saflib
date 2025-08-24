@@ -13,5 +13,9 @@ export {
   type WorkspaceDependencyGraph,
   type MonorepoContext,
 } from "./src/workspace.ts";
-export { getCurrentPackage, getGitHubUrl } from "./src/utils.ts";
+export {
+  getCurrentPackage,
+  getGitHubUrl,
+  getTopWorkflowDir,
+} from "./src/utils.ts";
 export { type PackageJson } from "./types.ts";

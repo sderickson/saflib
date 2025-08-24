@@ -9,8 +9,8 @@ export const getCurrentPackage = () => {
   return JSON.parse(currentPackage).name;
 };
 
-export const getGitHubUrl = (absolutePath: string) => {
-  let currentDir = absolutePath;
+export const getSaflibAbsoluteDir = () => {
+  let currentDir = process.cwd();
   while (currentDir !== "/") {
     const packageJsonPath = path.join(currentDir, "package.json");
     if (!existsSync(packageJsonPath)) {
@@ -23,6 +23,29 @@ export const getGitHubUrl = (absolutePath: string) => {
     }
     currentDir = path.dirname(currentDir);
   }
-  const relativePath = absolutePath.replace(currentDir, "");
+  return currentDir;
+};
+
+export const getTopWorkflowDir = () => {
+  let currentDir = process.cwd();
+  let lastWorkspaceDir = "";
+  while (currentDir !== "/") {
+    const packageJsonPath = path.join(currentDir, "package.json");
+    if (!existsSync(packageJsonPath)) {
+      currentDir = path.dirname(currentDir);
+      continue;
+    }
+    const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf-8"));
+    if (packageJson.workspaces) {
+      lastWorkspaceDir = currentDir;
+    }
+    currentDir = path.dirname(currentDir);
+  }
+  return lastWorkspaceDir;
+};
+
+export const getGitHubUrl = (absolutePath: string) => {
+  const saflibDir = getSaflibAbsoluteDir();
+  const relativePath = absolutePath.replace(saflibDir, "");
   return "https://github.com/sderickson/saflib/blob/main" + relativePath;
 };
