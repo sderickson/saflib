@@ -1,6 +1,5 @@
 import winston, { type Logger, format } from "winston";
 import { type TransformableInfo } from "logform";
-import { Writable } from "node:stream";
 import { type SafContext } from "./types.ts";
 import { getServiceName, testContext } from "./context.ts";
 import { typedEnv } from "@saflib/env";
@@ -32,40 +31,6 @@ const baseLogger = winston.createLogger({
 export const addTransport = (transport: winston.transport) => {
   baseLogger.add(transport);
 };
-
-/**
- * Adds a simple stream transport to the base logger.
- * This is mainly used for testing; e.g. pass in a vi.fn().
- * Call `removeAllSimpleStreamTransports()` when done to clean up.
- * @param fn - A function that takes a log message and returns a boolean.
- */
-export const addSimpleStreamTransport = (fn: (message: string) => boolean) => {
-  const memoryStream = new Writable({
-    write: (chunk, _, callback) => {
-      const logObject = chunk.toString();
-      fn(logObject);
-      callback();
-    },
-  });
-
-  const transport = new winston.transports.Stream({
-    stream: memoryStream,
-  } as winston.transports.StreamTransportOptions);
-  allStreamTransports.push(transport);
-  baseLogger.add(transport);
-};
-
-/**
- * Call this at the end of a test that uses addSimpleStreamTransport.
- */
-export const removeAllSimpleStreamTransports = () => {
-  allStreamTransports.forEach((transport) => {
-    baseLogger.remove(transport);
-  });
-  allStreamTransports = [];
-};
-
-let allStreamTransports: winston.transports.StreamTransportInstance[] = [];
 
 /**
  * Context to give for a logger, which doesn't include properties that are global.

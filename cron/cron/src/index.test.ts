@@ -7,10 +7,7 @@ import {
   afterEach,
   type MockInstance,
 } from "vitest";
-import {
-  removeAllSimpleStreamTransports,
-  addErrorCollector,
-} from "@saflib/node";
+import { addErrorCollector } from "@saflib/node";
 import { startJobs } from "./index.ts";
 import { cronDb, jobSettingsDb } from "@saflib/cron-db";
 import type { DbKey } from "@saflib/drizzle-sqlite3";
@@ -40,8 +37,6 @@ describe("startJobs", () => {
     dbKey = cronDb.connect();
     vi.clearAllMocks();
     mockJobHandler.mockResolvedValue("Success");
-    // logSpy = vi.fn();
-    // addSimpleStreamTransport(logSpy);
     const reporters = getSafReporters();
     warnSpy = vi.spyOn(reporters.log, "warn");
     errorSpy = vi.spyOn(reporters.log, "error");
@@ -50,7 +45,6 @@ describe("startJobs", () => {
 
   afterEach(() => {
     vi.useRealTimers();
-    removeAllSimpleStreamTransports();
     vi.clearAllMocks(); // Ensure logSpy mocks are cleared too
   });
 
