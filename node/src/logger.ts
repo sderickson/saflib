@@ -7,7 +7,7 @@ import { typedEnv } from "@saflib/env";
 
 type WinstonLogger = Logger;
 
-export const consoleTransport = new winston.transports.Console({
+const consoleTransport = new winston.transports.Console({
   silent: typedEnv.NODE_ENV === "test",
 });
 
@@ -27,8 +27,7 @@ const baseLogger = winston.createLogger({
 });
 
 /**
- * For production, when the application starts, it should add any transports using this function.
- * Then all SAF-based applications will log to winston and they'll propagate.
+ * For production, when the application starts, it should add any transports using this function. Then all SAF-based applications will log to winston and they'll propagate to loggers such as Loki.
  */
 export const addTransport = (transport: winston.transport) => {
   baseLogger.add(transport);
@@ -68,6 +67,9 @@ export const removeAllSimpleStreamTransports = () => {
 
 let allStreamTransports: winston.transports.StreamTransportInstance[] = [];
 
+/**
+ * Context to give for a logger, which doesn't include properties that are global.
+ */
 export type LoggerContext = Omit<SafContext, "serviceName">;
 export interface LoggerOptions extends LoggerContext {
   format?: winston.Logform.Format;
@@ -116,6 +118,9 @@ export const createLogger = (options?: LoggerOptions): WinstonLogger => {
   return baseLogger.child(snakeCaseOptions);
 };
 
+/**
+ * Create a logger that doesn't print anything.
+ */
 export const createSilentLogger = (): WinstonLogger => {
   return winston.createLogger({
     transports: [new winston.transports.Console({ silent: true })],

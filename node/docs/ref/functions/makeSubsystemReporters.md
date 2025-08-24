@@ -6,6 +6,8 @@
 
 > **makeSubsystemReporters**(`subsystemName`, `operationName`): [`SafReporters`](../interfaces/SafReporters.md)
 
+Creates a new SafReporters object for a given subsystem and operation.
+
 ## Parameters
 
 | Parameter | Type |

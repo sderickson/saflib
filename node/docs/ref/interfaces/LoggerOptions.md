@@ -4,6 +4,8 @@
 
 # Interface: LoggerOptions
 
+Context to give for a logger, which doesn't include properties that are global.
+
 ## Extends
 
 - [`LoggerContext`](../type-aliases/LoggerContext.md)
