@@ -24,7 +24,6 @@ interface AddTsPackageWorkflowInput extends WorkflowInput {
 interface AddTsPackageWorkflowContext extends TemplateWorkflowContext {
   packageName: string; // e.g. "@your-org/package-name"
   packageDirName: string; // e.g. "package-name"
-  rootPackageJsonPath: string; // path to root package.json
   path: string; // Relative path from monorepo root
 }
 
@@ -46,7 +45,6 @@ export const AddTsPackageWorkflowMachine = setup({
     const sourceDir = path.join(__dirname, "templates");
     const targetDir = path.join(process.cwd(), input.path);
     const packageDirName = path.basename(input.path);
-    const rootPackageJsonPath = path.join(process.cwd(), "package.json");
 
     return {
       name: packageDirName,
@@ -56,7 +54,6 @@ export const AddTsPackageWorkflowMachine = setup({
       sourceDir,
       packageName: input.name,
       packageDirName,
-      rootPackageJsonPath,
       path: input.path,
       ...contextFromInput(input),
     };
@@ -78,7 +75,9 @@ export const AddTsPackageWorkflowMachine = setup({
 
     ...promptAgentComposer<AddTsPackageWorkflowContext>({
       promptForContext: ({ context }) =>
-        `Ensure the new package path '${context.path}' is included in the "workspaces" array in '${context.rootPackageJsonPath}'. For example: "workspaces": ["${context.path}", "other-packages/*"]`,
+        `Ensure the new package path '${context.path}' is included in the "workspaces" array in the root \`package.json\`.
+      
+      For example: \`"workspaces": ["${context.path}", "other-packages/*"]\``,
       stateName: "updateRootWorkspace",
       nextStateName: "runNpmInstall",
     }),
@@ -91,7 +90,9 @@ export const AddTsPackageWorkflowMachine = setup({
 
     ...promptAgentComposer<AddTsPackageWorkflowContext>({
       promptForContext: ({ context }) =>
-        `A test file '${path.join(context.path, `${context.packageDirName}.test.ts`)}' has been created. Verify it imports from './index.ts' and tests pass. Run 'npm run test --workspace="${context.packageName}"'. You might need to 'cd ${context.path}' then 'npm run test'.`,
+        `Run the package tests and make sure they pass.
+      
+      A test file \`${path.join(context.path, `${context.packageDirName}.test.ts`)}\` has been created. Run \`npm run test --workspace="${context.packageName}"\`. You might need to \`cd ${context.path}\` then \`npm run test\`.`,
       stateName: "verifyTestSetup",
       nextStateName: "done",
     }),

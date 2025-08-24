@@ -26,9 +26,9 @@ When run, the workflow will:
   * Upsert **test.ts** from [template](https://github.com/sderickson/saflib/blob/main/monorepo/workflows/templates/test.ts)
   * Upsert **vitest.config.js** from [template](https://github.com/sderickson/saflib/blob/main/monorepo/workflows/templates/vitest.config.js)
 * Update package.json to remove TODOs
-* Ensure the new package path 'packages/my-lib' is included in the "workspaces" array in '/Users/scotterickson/src/saf-2025/saflib/monorepo/package.json'. For example: "workspaces": ["packages/my-lib", "other-packages/*"]
+* Ensure the new package path 'packages/my-lib' is included in the "workspaces" array in the root `package.json`.
 * Run `npm install`
-* A test file 'packages/my-lib/my-lib.test.ts' has been created. Verify it imports from './index.ts' and tests pass. Run 'npm run test --workspace="@example-org/example-package"'. You might need to 'cd packages/my-lib' then 'npm run test'.
+* Run the package tests and make sure they pass.
 
 
 ## Help Docs
