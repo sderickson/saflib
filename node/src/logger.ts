@@ -5,6 +5,8 @@ import { type SafContext } from "./types.ts";
 import { getServiceName, testContext } from "./context.ts";
 import { typedEnv } from "@saflib/env";
 
+type WinstonLogger = Logger;
+
 export const consoleTransport = new winston.transports.Console({
   silent: typedEnv.NODE_ENV === "test",
 });
@@ -66,8 +68,8 @@ export const removeAllSimpleStreamTransports = () => {
 
 let allStreamTransports: winston.transports.StreamTransportInstance[] = [];
 
-type LoggerContext = Omit<SafContext, "serviceName">;
-interface LoggerOptions extends LoggerContext {
+export type LoggerContext = Omit<SafContext, "serviceName">;
+export interface LoggerOptions extends LoggerContext {
   format?: winston.Logform.Format;
 }
 
@@ -78,7 +80,7 @@ interface LoggerOptions extends LoggerContext {
  * by the caller, such as in the proto envelope, so that requests which span processes
  * can be correlated.
  */
-export const createLogger = (options?: LoggerOptions): Logger => {
+export const createLogger = (options?: LoggerOptions): WinstonLogger => {
   if (!options && typedEnv.NODE_ENV === "test") {
     return baseLogger.child(testContext);
   }
@@ -114,7 +116,7 @@ export const createLogger = (options?: LoggerOptions): Logger => {
   return baseLogger.child(snakeCaseOptions);
 };
 
-export const createSilentLogger = (): Logger => {
+export const createSilentLogger = (): WinstonLogger => {
   return winston.createLogger({
     transports: [new winston.transports.Console({ silent: true })],
   });
