@@ -4,6 +4,8 @@
 
 # Interface: ErrorCollectorParam
 
+Parameters provided to error collectors.
+
 ## Properties
 
 ### error

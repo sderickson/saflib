@@ -3,6 +3,9 @@ import type { SafContext, SafContextWithAuth } from "./types.ts";
 import crypto from "crypto";
 import { typedEnv } from "@saflib/env";
 
+/**
+ * Context provided during testing.
+ */
 export const testContext: SafContext = {
   requestId: "test-id",
   serviceName: "test",
@@ -10,8 +13,15 @@ export const testContext: SafContext = {
   operationName: "test",
 };
 
+/**
+ * Storage for SafContext.
+ */
 export const safContextStorage = new AsyncLocalStorage<SafContext>();
 
+/**
+ * Convenience function for getting SafContext store. Errors if not found,
+ * returns testContext if in test mode.
+ */
 export const getSafContext = (): SafContext => {
   const store = safContextStorage.getStore();
   if (!store && typedEnv.NODE_ENV === "test") {
@@ -23,6 +33,10 @@ export const getSafContext = (): SafContext => {
   return store;
 };
 
+/**
+ * Convenience function for getting SafContext store with auth. Errors if either
+ * the store is not found, or auth is not included.
+ */
 export const getSafContextWithAuth = (): SafContextWithAuth => {
   const store = safContextStorage.getStore();
   if (!store) {
@@ -34,6 +48,10 @@ export const getSafContextWithAuth = (): SafContextWithAuth => {
   return store as SafContextWithAuth;
 };
 
+/**
+ * Generates a request ID. Only necessary for "requests" which are not initiated by proxy servers,
+ * such as for cron or async jobs.
+ */
 export function generateRequestId(): string {
   // Generate 16 random bytes
   const randomBytes = crypto.randomBytes(16);
@@ -53,10 +71,18 @@ export function generateRequestId(): string {
 }
 
 let serviceName: string | undefined = undefined;
+
+/**
+ * Sets the service name. Should be called as soon as the process starts. This is
+ * provided in SafContext and to instrumentation.
+ */
 export const setServiceName = (name: string) => {
   serviceName = name;
 };
 
+/**
+ * Getter for service name.
+ */
 export const getServiceName = (): string => {
   if (typedEnv.NODE_ENV === "test") {
     return "test";

@@ -6,6 +6,8 @@
 
 > **ErrorCollector** = (`param`) => `void`
 
+Collectors take errors reported to them and propagate them to telemetry services such as Sentry.
+
 ## Parameters
 
 | Parameter | Type |

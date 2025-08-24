@@ -6,6 +6,8 @@
 
 > **getServiceName**(): `string`
 
+Getter for service name.
+
 ## Returns
 
 `string`

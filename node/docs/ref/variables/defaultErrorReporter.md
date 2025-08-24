@@ -6,7 +6,8 @@
 
 > `const` **defaultErrorReporter**: [`ErrorReporter`](../type-aliases/ErrorReporter.md)
 
-Default behavior when an exception is reported:
+Default ErrorReporter; call addErrorCollector with this to use it.
+
 - Add tags based on SafContext
 - Set default level to error
 - Ensure the "error" is an Error

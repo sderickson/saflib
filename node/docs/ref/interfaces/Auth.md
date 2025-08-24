@@ -4,6 +4,8 @@
 
 # Interface: Auth
 
+Auth object passed in with every authenticated request.
+
 ## Properties
 
 ### userEmail

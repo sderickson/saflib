@@ -6,6 +6,8 @@
 
 > **ErrorReporter** = (`error`, `options?`) => `void`
 
+The function that application logic has access to for reporting errors.
+
 ## Parameters
 
 | Parameter | Type |

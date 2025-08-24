@@ -9,16 +9,20 @@ import type {
 
 const errorCollectors: ErrorCollector[] = [];
 
+/**
+ * Adds a callback for when errors are reported by the application.
+ */
 export const addErrorCollector = (collector: ErrorCollector) => {
   errorCollectors.push(collector);
 };
 
-export const getErrorCollectors = () => {
+const getErrorCollectors = () => {
   return errorCollectors.slice();
 };
 
 /**
- * Default behavior when an exception is reported:
+ * Default ErrorReporter; call addErrorCollector with this to use it.
+ *
  * - Add tags based on SafContext
  * - Set default level to error
  * - Ensure the "error" is an Error
