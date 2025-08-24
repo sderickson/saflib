@@ -13,7 +13,7 @@ import {
 } from "@saflib/workflows";
 import path from "path";
 import { existsSync } from "fs";
-import { fileURLToPath } from "url";
+import { directoryFromMetaUrl } from "@saflib/dev-tools";
 
 interface UpdateSchemaWorkflowInput extends WorkflowInput {}
 
@@ -32,10 +32,10 @@ export const UpdateSchemaWorkflowMachine = setup({
   id: "update-schema",
   initial: "getOriented",
   context: ({ input }) => {
-    const __filename = fileURLToPath(import.meta.url);
-    const __dirname = path.dirname(__filename);
-
-    const refDoc = path.resolve(__dirname, "../docs/02-schema.md");
+    const refDoc = path.resolve(
+      directoryFromMetaUrl(import.meta.url),
+      "../docs/02-schema.md",
+    );
     const refDocAbsPath = path.resolve(process.cwd(), refDoc);
     if (!existsSync(refDocAbsPath)) {
       throw new Error(`Reference documentation not found: ${refDocAbsPath}`);
