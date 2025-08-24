@@ -1,5 +1,5 @@
 {
-  "name": "{{PACKAGE_NAME}}",
+  "name": "template-file",
   "description": "TODO: Add package description",
   "private": true,
   "type": "module",
