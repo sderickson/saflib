@@ -72,7 +72,7 @@ async function executeJobWithHandling(
         labels.status = "success";
       } catch (error) {
         // Log the error
-        const isErrorInstance = error instanceof Error;        
+        const isErrorInstance = error instanceof Error;
         logError(error);
 
         // Determine the job status
@@ -90,11 +90,7 @@ async function executeJobWithHandling(
       } finally {
         timer();
         try {
-          await jobSettingsDb.setLastRunStatus(
-            dbKey,
-            jobName,
-            statusToSet,
-          );
+          await jobSettingsDb.setLastRunStatus(dbKey, jobName, statusToSet);
         } catch (dbError) {
           logError(
             new Error(
@@ -140,7 +136,7 @@ export const startJobs = async (
         // Use schedulerLogger for logs before entering job-specific context
         try {
           const { result: currentJobSetting, error } =
-              await jobSettingsDb.getByName(dbKey, jobName);
+            await jobSettingsDb.getByName(dbKey, jobName);
           if (error) {
             logError(error);
             return;
