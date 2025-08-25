@@ -15,7 +15,7 @@ For backend processes, when one begins I set up the machine to store snapshots i
 
 I'm going to keep messing around with XState. It _does_ provide a bunch of features I like, and as I go I'll add more shared, opinionated code in this package. Some areas that could use filling in:
 
-- Helper that provides SAF context
+- Helpers that provide SAF context and capture metrics
 - Various variables and functions for integrating with a drizzle table which has some set of expected columns
 - Guidance and workflows for organizing a machine into multiple files
 - Guidance and workflows for testing a machine
