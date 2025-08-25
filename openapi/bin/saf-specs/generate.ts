@@ -13,6 +13,7 @@ export const addGenerateCommand = (program: Command) => {
     )
     .option("-f, --file <file>", "OpenAPI spec file path", "./openapi.yaml")
     .option("-o, --output <dir>", "Output directory", "./dist")
+    .option("-h, --html", "Also generate HTML documentation")
     .action(async (options) => {
       const { log, logError } = getSafReporters();
 
@@ -30,10 +31,12 @@ export const addGenerateCommand = (program: Command) => {
           { stdio: "inherit" },
         );
 
-        log.info("Generating HTML documentation...");
-        execSync(`redocly build-docs ${file} --output=${output}/index.html`, {
-          stdio: "inherit",
-        });
+        if (options.html) {
+          log.info("Generating HTML documentation...");
+          execSync(`redocly build-docs ${file} --output=${output}/index.html`, {
+            stdio: "inherit",
+          });
+        }
 
         log.info("✅ OpenAPI generation completed successfully!");
       } catch (err) {
