@@ -1,6 +1,6 @@
 {
   "name": "@saflib/auth",
-  "description": "Shared authentication components and utilities for SAF",
+  "description": "The auth client. Sign up, sign in, and other authentication flows.",
   "type": "module",
   "exports": {
     ".": "./index.ts",

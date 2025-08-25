@@ -1,6 +1,6 @@
 {
   "name": "@saflib/xstate",
-  "description": "TODO: Add package description",
+  "description": "Shared logic and workflows for XState",
   "private": true,
   "type": "module",
   "exports": {

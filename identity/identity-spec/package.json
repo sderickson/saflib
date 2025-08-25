@@ -1,6 +1,6 @@
 {
   "name": "@saflib/identity-spec",
-  "description": "API specifications for SAF authentication",
+  "description": "API specs for identity service",
   "type": "module",
   "exports": {
     ".": "./index.ts"

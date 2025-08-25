@@ -1,6 +1,6 @@
 {
   "name": "@saflib/identity-common",
-  "description": "Shared authentication code for identity service",
+  "description": "Shared code for the identity service",
   "type": "module",
   "exports": {
     ".": "./index.ts"
