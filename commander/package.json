@@ -12,10 +12,11 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "@saflib/node": "*",
+    "commander": "^14.0.0",
     "winston": "^3.11.0"
   },
   "devDependencies": {
-    "@saflib/vitest": "*"
+    "@saflib/vitest": "*",
+    "@saflib/node": "*"
   }
-} 
+}

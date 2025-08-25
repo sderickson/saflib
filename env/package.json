@@ -15,16 +15,15 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage"
   },
+  "dependencies": {
+    "@types/ajv": "^0.0.5",
+    "ajv": "^8.17.1"
+  },
   "devDependencies": {
+    "@saflib/commander": "*",
     "@saflib/dev-tools": "*",
     "@saflib/vitest": "*",
     "@types/json-schema": "^7.0.15",
     "json-schema-to-typescript": "^15.0.4"
-  },
-  "dependencies": {
-    "@saflib/commander": "*",
-    "@types/ajv": "^0.0.5",
-    "ajv": "^8.17.1",
-    "commander": "^14.0.0"
   }
 }
