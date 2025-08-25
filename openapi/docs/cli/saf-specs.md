@@ -3,7 +3,7 @@
 ```
 Usage: saf-specs [options] [command]
 
-Generate and manage OpenAPI specifications
+Manage and generate files from OpenAPI specifications
 
 Options:
   -h, --help          display help for command

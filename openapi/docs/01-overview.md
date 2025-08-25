@@ -45,7 +45,17 @@ Packages using `@saflib/openapi` can generate:
 
 ### `dist/`
 
-Generated files. These are checked into the repo; they don't necessarily need to be though. Some work will need to be done to ensure they're generated when needed, though, such as during deploys and CI.
+Generated files. These are checked into the repo, per [best-practices](../../best-practices.md#check-in-generated-files).
+
+```bash
+npm run saf-specs generate
+```
+
+To generate HTML docs as well, run
+
+```bash
+npm run saf-specs generate -- --html
+```
 
 ### `events/`
 
@@ -100,7 +110,7 @@ Examples:
 - [`@saflib/identity` index file](https://github.com/sderickson/saflib/blob/main/identity/identity-spec/index.ts)
 - [`@saflib/cron` index file](https://github.com/sderickson/saflib/blob/main/cron/cron-spec/index.ts)
 
-## Usage
+## Using Generated Files
 
 See other packages for how they are used:
 

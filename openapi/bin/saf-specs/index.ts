@@ -5,7 +5,7 @@ import { addGenerateCommand } from "./generate.ts";
 
 const program = new Command()
   .name("saf-specs")
-  .description("Generate and manage OpenAPI specifications");
+  .description("Manage and generate files from OpenAPI specifications");
 
 addGenerateCommand(program);
 
