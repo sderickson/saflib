@@ -3,6 +3,7 @@
 import { Command } from "commander";
 import { generateDockerfiles } from "./docker.ts";
 import { buildMonorepoContext } from "./workspace.ts";
+import { setupContext } from "@saflib/commander";
 
 const program = new Command()
   .name("saf-docker")
@@ -16,4 +17,6 @@ program
     generateDockerfiles(monorepoContext, true);
   });
 
-program.parse(process.argv);
+setupContext({ serviceName: "saf-docker" }, () => {
+  program.parse(process.argv);
+});

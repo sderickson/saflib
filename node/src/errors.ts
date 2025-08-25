@@ -6,19 +6,24 @@ import type {
   ErrorCollectorParam,
   ErrorReporter,
 } from "./types.ts";
+import { typedEnv } from "@saflib/env";
 
 const errorCollectors: ErrorCollector[] = [];
 
+/**
+ * Adds a callback for when errors are reported by the application.
+ */
 export const addErrorCollector = (collector: ErrorCollector) => {
   errorCollectors.push(collector);
 };
 
-export const getErrorCollectors = () => {
+const getErrorCollectors = () => {
   return errorCollectors.slice();
 };
 
 /**
- * Default behavior when an exception is reported:
+ * Default ErrorReporter; call addErrorCollector with this to use it.
+ *
  * - Add tags based on SafContext
  * - Set default level to error
  * - Ensure the "error" is an Error
@@ -60,7 +65,15 @@ export const defaultErrorReporter: ErrorReporter = (error, options) => {
     ...options?.extra,
   });
 
-  if (winstonLevel === "error") {
+  // Errors and fatals should always be fixed. If they show up in logs,
+  // during tests, output them so they (hopefully) get addressed.
+  if (
+    (winstonLevel === "error" || winstonLevel === "fatal") &&
+    // If we're in test mode and error collectors are registered, assume the
+    // test is asserting whether or not errors are being logged and silence to manage noise.
+    // If there are no error collectors, log to console for easier debugging.
+    !(typedEnv.NODE_ENV === "test" && getErrorCollectors().length > 0)
+  ) {
     console.error(e.stack);
   }
 };

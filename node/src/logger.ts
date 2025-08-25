@@ -1,11 +1,12 @@
 import winston, { type Logger, format } from "winston";
 import { type TransformableInfo } from "logform";
-import { Writable } from "node:stream";
 import { type SafContext } from "./types.ts";
 import { getServiceName, testContext } from "./context.ts";
 import { typedEnv } from "@saflib/env";
 
-export const consoleTransport = new winston.transports.Console({
+type WinstonLogger = Logger;
+
+const consoleTransport = new winston.transports.Console({
   silent: typedEnv.NODE_ENV === "test",
 });
 
@@ -25,49 +26,17 @@ const baseLogger = winston.createLogger({
 });
 
 /**
- * For production, when the application starts, it should add any transports using this function.
- * Then all SAF-based applications will log to winston and they'll propagate.
+ * For production, when the application starts, it should add any transports using this function. Then all SAF-based applications will log to winston and they'll propagate to loggers such as Loki.
  */
 export const addTransport = (transport: winston.transport) => {
   baseLogger.add(transport);
 };
 
 /**
- * Adds a simple stream transport to the base logger.
- * This is mainly used for testing; e.g. pass in a vi.fn().
- * Call `removeAllSimpleStreamTransports()` when done to clean up.
- * @param fn - A function that takes a log message and returns a boolean.
+ * Context to give for a logger, which doesn't include properties that are global.
  */
-export const addSimpleStreamTransport = (fn: (message: string) => boolean) => {
-  const memoryStream = new Writable({
-    write: (chunk, _, callback) => {
-      const logObject = chunk.toString();
-      fn(logObject);
-      callback();
-    },
-  });
-
-  const transport = new winston.transports.Stream({
-    stream: memoryStream,
-  } as winston.transports.StreamTransportOptions);
-  allStreamTransports.push(transport);
-  baseLogger.add(transport);
-};
-
-/**
- * Call this at the end of a test that uses addSimpleStreamTransport.
- */
-export const removeAllSimpleStreamTransports = () => {
-  allStreamTransports.forEach((transport) => {
-    baseLogger.remove(transport);
-  });
-  allStreamTransports = [];
-};
-
-let allStreamTransports: winston.transports.StreamTransportInstance[] = [];
-
-type LoggerContext = Omit<SafContext, "serviceName">;
-interface LoggerOptions extends LoggerContext {
+export type LoggerContext = Omit<SafContext, "serviceName">;
+export interface LoggerOptions extends LoggerContext {
   format?: winston.Logform.Format;
 }
 
@@ -78,7 +47,7 @@ interface LoggerOptions extends LoggerContext {
  * by the caller, such as in the proto envelope, so that requests which span processes
  * can be correlated.
  */
-export const createLogger = (options?: LoggerOptions): Logger => {
+export const createLogger = (options?: LoggerOptions): WinstonLogger => {
   if (!options && typedEnv.NODE_ENV === "test") {
     return baseLogger.child(testContext);
   }
@@ -114,7 +83,10 @@ export const createLogger = (options?: LoggerOptions): Logger => {
   return baseLogger.child(snakeCaseOptions);
 };
 
-export const createSilentLogger = (): Logger => {
+/**
+ * Create a logger that doesn't print anything.
+ */
+export const createSilentLogger = (): WinstonLogger => {
   return winston.createLogger({
     transports: [new winston.transports.Console({ silent: true })],
   });

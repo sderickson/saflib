@@ -20,7 +20,11 @@ describe("getByName", () => {
 
   it("should return the full job setting for an existing job", async () => {
     const jobName = "test-job-get-by-name";
-    const createdJob = await jobSettingsDb.setEnabled(dbKey, jobName, true); // Use setEnabledByName to create the job
+    const { result: createdJob } = await jobSettingsDb.setEnabled(
+      dbKey,
+      jobName,
+      true,
+    ); // Use setEnabledByName to create the job
 
     const retrievedJob = await throwError(
       jobSettingsDb.getByName(dbKey, jobName),

@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { onMounted } from "vue";
-import { defineEmits } from "vue";
 import { useLogout } from "../../requests/auth.ts";
 import { logout_page } from "./LogoutPage.strings.ts";
 

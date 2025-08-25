@@ -70,7 +70,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, defineProps } from "vue";
+import { ref } from "vue";
 import { useListCronJobs, useUpdateCronJobSettings } from "../requests/queries";
 
 const { subdomain } = defineProps<{

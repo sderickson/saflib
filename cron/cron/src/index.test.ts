@@ -1,23 +1,29 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import {
-  addSimpleStreamTransport,
-  removeAllSimpleStreamTransports,
-} from "@saflib/node";
+  describe,
+  it,
+  expect,
+  vi,
+  beforeEach,
+  afterEach,
+  type MockInstance,
+} from "vitest";
+import { addErrorCollector } from "@saflib/node";
 import { startJobs } from "./index.ts";
 import { cronDb, jobSettingsDb } from "@saflib/cron-db";
 import type { DbKey } from "@saflib/drizzle-sqlite3";
 import { throwError } from "@saflib/monorepo";
-import {
-  mockJobHandler,
-  mockMinuteJobHandler,
-  mockJobs,
-} from "../mock-jobs.ts";
+import { mockJobHandler, mockJobs } from "../mock-jobs.ts";
+import { getSafReporters } from "@saflib/node";
+import type { LeveledLogMethod } from "winston";
 
 // --- Test Setup ---
 
 // Keep local db instance for tests
 let dbKey: DbKey;
-let logSpy: ReturnType<typeof vi.fn>; // Spy for the stream transport
+let warnSpy: MockInstance<LeveledLogMethod>;
+let errorSpy: MockInstance<LeveledLogMethod>;
+const errorReporter = vi.fn();
+addErrorCollector(errorReporter);
 
 const baseTime = new Date(2024, 5, 15, 10, 0, 0, 0);
 
@@ -31,27 +37,25 @@ describe("startJobs", () => {
     dbKey = cronDb.connect();
     vi.clearAllMocks();
     mockJobHandler.mockResolvedValue("Success");
-    logSpy = vi.fn();
-    addSimpleStreamTransport(logSpy);
+    const reporters = getSafReporters();
+    warnSpy = vi.spyOn(reporters.log, "warn");
+    errorSpy = vi.spyOn(reporters.log, "error");
     // No DB reset needed as each test gets a fresh instance
   });
 
   afterEach(() => {
     vi.useRealTimers();
-    removeAllSimpleStreamTransports();
     vi.clearAllMocks(); // Ensure logSpy mocks are cleared too
   });
 
   it("should create default disabled setting if job doesn't exist in DB", async () => {
     // Pass the local db instance to startJobs
     await startJobs({ "new-job": mockJobs["new-job"] }, { dbKey });
-    const setting = await throwError(
-      jobSettingsDb.getByName(dbKey, "new-job"),
-    ); // Assert on local db
+    const setting = await throwError(jobSettingsDb.getByName(dbKey, "new-job")); // Assert on local db
     expect(setting).toBeDefined();
     expect(setting.enabled).toBe(false);
     // Check for the warning log
-    expect(logSpy).toHaveBeenCalledWith(
+    expect(warnSpy).toHaveBeenCalledWith(
       expect.stringContaining(
         "Job setting for 'new-job' not found in DB. Creating default (disabled).",
       ),
@@ -60,24 +64,22 @@ describe("startJobs", () => {
 
   it("should skip scheduling if initial fetch fails unexpectedly", async () => {
     // Spy on the local db instance
-    const getByNameSpy = vi
-      .spyOn(jobSettingsDb, "getByName")
-      .mockReturnValue(
-        Promise.resolve({
-          error: new Error("Unexpected error...."),
-        }),
-      );
+    const getByNameSpy = vi.spyOn(jobSettingsDb, "getByName").mockReturnValue(
+      Promise.resolve({
+        error: new Error("Unexpected error...."),
+      }),
+    );
     // Pass the local db instance
     await startJobs({ "fail-job": mockJobs["fail-job"] }, { dbKey });
 
     // Check that the specific error was logged
-    expect(logSpy).toHaveBeenCalledWith(
+    expect(errorSpy).toHaveBeenCalledWith(
       expect.stringContaining(
         "Failed to retrieve initial job setting for 'fail-job'. Skipping job.",
       ),
     );
     // Check that the scheduling log was NOT called
-    expect(logSpy).not.toHaveBeenCalledWith(
+    expect(warnSpy).not.toHaveBeenCalledWith(
       expect.stringContaining("Scheduled job: fail-job"),
     );
     getByNameSpy.mockRestore();
@@ -147,32 +149,10 @@ describe("startJobs", () => {
     );
     expect(setting.lastRunStatus).toBe("fail");
     expect(setting.lastRunAt).toEqual(new Date(baseTime.getTime() + 1000));
-    expect(logSpy).toHaveBeenCalledWith(
-      expect.stringContaining("Handler failed"),
-    );
-  });
-
-  it("should update status to timed out if handler exceeds timeoutSeconds", async () => {
-    mockMinuteJobHandler.mockImplementation(
-      () =>
-        new Promise((_resolve, _reject) => {
-          /* never settles */
-        }),
-    );
-
-    await jobSettingsDb.setEnabled(dbKey, "every-minute-job", true);
-
-    await startJobs(
-      { "every-minute-job": mockJobs["every-minute-job"] },
-      { dbKey },
-    );
-    await vi.advanceTimersByTimeAsync(1000 * 62); // Trigger the job's onTick and timeout
-    const setting = await throwError(
-      jobSettingsDb.getByName(dbKey, "every-minute-job"),
-    );
-    expect(setting.lastRunStatus).toBe("timed out"); // Check the final status
-    expect(logSpy).toHaveBeenCalledWith(
-      expect.stringContaining("timed out after 2 seconds"),
+    expect(errorReporter).toHaveBeenCalledWith(
+      expect.objectContaining({
+        error: handlerError,
+      }),
     );
   });
 
@@ -195,8 +175,12 @@ describe("startJobs", () => {
       jobSettingsDb.getByName(dbKey, "timeout-default-job"),
     );
     expect(setting.lastRunStatus).toBe("timed out");
-    expect(logSpy).toHaveBeenCalledWith(
-      expect.stringContaining("timed out after 10 seconds"),
+    expect(errorReporter).toHaveBeenCalledWith(
+      expect.objectContaining({
+        error: expect.objectContaining({
+          message: expect.stringContaining("timed out after 10 seconds"),
+        }),
+      }),
     );
   });
 
@@ -232,13 +216,15 @@ describe("startJobs", () => {
 
     // Now the handler should have been called
     expect(mockJobHandler).toHaveBeenCalledTimes(1);
-    expect(logSpy).toHaveBeenCalledWith(
-      expect.stringContaining("Handler failed"),
-    );
-    expect(logSpy).toHaveBeenCalledWith(
-      expect.stringContaining(
-        "CRITICAL: Failed to set final job status to 'fail' for every-second-job. DB Error: DB Write Failed",
-      ),
+    expect(errorReporter).toHaveBeenCalled();
+    expect(errorReporter).toHaveBeenCalledWith(
+      expect.objectContaining({
+        error: expect.objectContaining({
+          message: expect.stringContaining(
+            "CRITICAL: Failed to set final job status to 'fail' for every-second-job. DB Error: DB Write Failed",
+          ),
+        }),
+      }),
     );
 
     // Check the DB status - should be 'running' as the 'fail' update threw

@@ -1,9 +1,10 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import {
   HandledDatabaseError,
   UnhandledDatabaseError,
   queryWrapper,
 } from "./errors.ts";
+import { addErrorCollector } from "@saflib/node";
 
 class TestDatabaseError extends HandledDatabaseError {
   constructor(message: string) {
@@ -13,6 +14,9 @@ class TestDatabaseError extends HandledDatabaseError {
 }
 
 describe("Error handling", () => {
+  const errorReporter = vi.fn();
+  addErrorCollector(errorReporter);
+
   describe("HandledDatabaseError", () => {
     it("should create a handled error with correct name and message", () => {
       const error = new TestDatabaseError("Test error message");
@@ -38,12 +42,13 @@ describe("Error handling", () => {
       await expect(wrappedQuery()).resolves.toBe("success");
     });
 
-    it("should pass through handled errors", async () => {
+    // Handled errors should be returned, not thrown
+    it("should wrap handled errors", async () => {
       const testError = new TestDatabaseError("Test error");
       const wrappedQuery = queryWrapper(async () => {
         throw testError;
       });
-      await expect(wrappedQuery()).rejects.toThrow(testError);
+      await expect(wrappedQuery()).rejects.toThrow(UnhandledDatabaseError);
     });
 
     it("should wrap unhandled errors", async () => {

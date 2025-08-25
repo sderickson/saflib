@@ -1,7 +1,7 @@
 import { Command } from "commander";
 import type { WorkflowMeta } from "@saflib/workflows";
 import { addNewLinesToString } from "@saflib/utils";
-import { setupContext } from "./context.ts";
+import { setupContext } from "@saflib/commander";
 import { addKickoffCommand } from "./kickoff.ts";
 import { addChecklistCommand } from "./checklist.ts";
 import { addStatusCommand } from "./status.ts";
@@ -20,8 +20,6 @@ import { addSourceCommand } from "./source.ts";
  * This also means you can customize which workflows are actually available.
  */
 export function runWorkflowCli(workflows: WorkflowMeta[]) {
-  setupContext({ silentLogging: process.argv.includes("checklist") });
-
   const program = new Command()
     .name("saf-workflow")
     .description(
@@ -37,5 +35,13 @@ export function runWorkflowCli(workflows: WorkflowMeta[]) {
   addListCommand(program, workflows);
   addSourceCommand(program, workflows);
 
-  program.parse(process.argv);
+  setupContext(
+    {
+      serviceName: "workflows",
+      silentLogging: process.argv.includes("checklist"),
+    },
+    () => {
+      program.parse(process.argv);
+    },
+  );
 }

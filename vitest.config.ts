@@ -7,6 +7,6 @@ export default defineConfig({
       NODE_OPTIONS: "--disable-warning=DEP0040",
     },
 
-    projects: ["*/vitest.config.{ts,js,mts,mjs}"],
+    projects: ["*/**/vitest.config.{ts,js,mts,mjs}"],
   },
 });

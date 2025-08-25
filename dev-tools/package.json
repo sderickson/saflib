@@ -18,13 +18,11 @@
     "saf-tests": "./src/saf-tests-cli.ts",
     "saf-docs": "./src/saf-docs-cli/index.ts"
   },
-  "dependencies": {
-    "commander": "^14.0.0",
-    "typedoc": "^0.28.10",
-    "typedoc-plugin-markdown": "^4.8.1"
-  },
   "devDependencies": {
+    "@saflib/commander": "*",
     "@saflib/vitest": "*",
+    "typedoc": "^0.28.10",
+    "typedoc-plugin-markdown": "^4.8.1",
     "memfs": "^4.17.0"
   }
 }

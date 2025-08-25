@@ -4,6 +4,7 @@ import { getCombinedEnvSchema, makeEnvParserSnippet } from "./env.ts";
 import { writeFileSync, existsSync } from "fs";
 import { buildMonorepoContext, getCurrentPackageName } from "@saflib/dev-tools";
 import path from "path";
+import { setupContext } from "@saflib/commander";
 
 const program = new Command();
 
@@ -103,4 +104,6 @@ program
     console.log("Generate-all completed!");
   });
 
-program.parse(process.argv);
+setupContext({ serviceName: "saf-env" }, () => {
+  program.parse(process.argv);
+});

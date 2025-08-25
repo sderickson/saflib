@@ -14,12 +14,12 @@
     "typecheck": "tsc"
   },
   "dependencies": {
+    "@saflib/auth-links": "*",
     "@saflib/email": "*",
     "@saflib/env": "*",
     "@saflib/express": "*",
     "@saflib/identity-common": "*",
     "@saflib/identity-db": "*",
-    "@saflib/auth-links": "*",
     "@saflib/identity-spec": "*",
     "@saflib/links": "*",
     "@saflib/monorepo": "*",
@@ -28,6 +28,7 @@
     "cookie-parser": "^1.4.7",
     "express-rate-limit": "^7.5.0",
     "express-session": "^1.18.0",
+    "nodemailer": "^7.0.5",
     "passport": "^0.7.0",
     "passport-local": "^1.0.0"
   },

@@ -3,6 +3,9 @@ import LokiTransport from "winston-loki";
 import { addTransport } from "./logger.ts";
 import { getServiceName } from "./context.ts";
 
+/**
+ * Adds a transport to the logger that sends logs to Loki. TODO: use env variables.
+ */
 export const addLokiTransport = () => {
   const serviceName = getServiceName();
   if (!serviceName) {
