@@ -60,7 +60,7 @@ export function getMonorepoPackages(
   // root package
   const packageJsonPath = path.join(rootDir, "package.json");
   if (!existsSync(packageJsonPath)) {
-    throw new Error("package.json not found");
+    throw new Error(`package.json not found at ${packageJsonPath}`);
   }
   const rootPackageJson = JSON.parse(
     readFileSync(packageJsonPath, "utf-8"),

@@ -35,14 +35,8 @@ export function queryWrapper<F extends (...args: any[]) => Promise<any>>(
     try {
       return await queryFunc(...args);
     } catch (error) {
-      if (error instanceof HandledDatabaseError) {
-        throw error;
-      }
       const { logError } = getSafReporters();
       logError(error);
-      if (process.env.NODE_ENV === "test") {
-        console.log("UnhandledDatabaseError", error);
-      }
       throw new UnhandledDatabaseError();
     }
   }) as F;

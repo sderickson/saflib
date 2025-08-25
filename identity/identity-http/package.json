@@ -14,12 +14,12 @@
     "typecheck": "tsc"
   },
   "dependencies": {
+    "@saflib/auth-links": "*",
     "@saflib/email": "*",
     "@saflib/env": "*",
     "@saflib/express": "*",
     "@saflib/identity-common": "*",
     "@saflib/identity-db": "*",
-    "@saflib/auth-links": "*",
     "@saflib/identity-spec": "*",
     "@saflib/links": "*",
     "@saflib/monorepo": "*",

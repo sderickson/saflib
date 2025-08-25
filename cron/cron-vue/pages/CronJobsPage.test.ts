@@ -57,14 +57,14 @@ const formatDateTime = (dateTimeString: string | null | undefined): string => {
 const handlers = [
   // Default success for listing jobs
   http.get<PathParams, never, ListCronJobsResponse>(
-    "http://caller.localhost:3000/cron/jobs",
+    "http://test.localhost:3000/cron/jobs",
     () => {
       return HttpResponse.json(mockJobs);
     },
   ),
   // Default success for updating settings
   http.put<PathParams, UpdateSettingsRequest, UpdateSettingsResponse>(
-    "http://caller.localhost:3000/cron/jobs/settings",
+    "http://test.localhost:3000/cron/jobs/settings",
     async ({ request }) => {
       const body = await request.json();
       return HttpResponse.json({
@@ -81,7 +81,16 @@ describe("CronJobsPage", () => {
 
   // --- Helper Functions ---
   const mountComponent = async (waitForData = true) => {
-    const wrapper = mountWithPlugins(CronJobsPage, {}, { router });
+    router.push("/cron/jobs?subdomain=test");
+    const wrapper = mountWithPlugins(
+      CronJobsPage,
+      {
+        propsData: {
+          subdomain: "test",
+        },
+      },
+      { router },
+    );
     if (waitForData) {
       // Wait for the initial data fetch to complete
       await vi.waitFor(() => {
@@ -125,7 +134,15 @@ describe("CronJobsPage", () => {
   // --- Tests ---
 
   it("should render the title and loading indicator initially", async () => {
-    const wrapper = mountWithPlugins(CronJobsPage, {}, { router }); // Mount without waiting
+    const wrapper = mountWithPlugins(
+      CronJobsPage,
+      {
+        propsData: {
+          subdomain: "test",
+        },
+      },
+      { router },
+    ); // Mount without waiting
     expect(wrapper.find("h1").text()).toBe("Cron Jobs");
     expect(getLoadingIndicator(wrapper).exists()).toBe(true);
     expect(getTable(wrapper).exists()).toBe(false);
@@ -173,7 +190,7 @@ describe("CronJobsPage", () => {
 
   it("should display an error message if fetching jobs fails", async () => {
     server.use(
-      http.get("http://caller.localhost:3000/cron/jobs", () => {
+      http.get("http://test.localhost:3000/cron/jobs", () => {
         return new HttpResponse("Internal Server Error", { status: 500 });
       }),
     );
@@ -200,7 +217,7 @@ describe("CronJobsPage", () => {
     let receivedRequestBody: UpdateSettingsRequest | null = null;
     server.use(
       http.put<PathParams, UpdateSettingsRequest, UpdateSettingsResponse>(
-        "http://caller.localhost:3000/cron/jobs/settings",
+        "http://test.localhost:3000/cron/jobs/settings",
         async ({ request }) => {
           receivedRequestBody = await request.json();
           return HttpResponse.json({ jobName: jobToDisable, enabled: false });
@@ -239,7 +256,7 @@ describe("CronJobsPage", () => {
     let receivedRequestBody: UpdateSettingsRequest | null = null;
     server.use(
       http.put<PathParams, UpdateSettingsRequest, UpdateSettingsResponse>(
-        "http://caller.localhost:3000/cron/jobs/settings",
+        "http://test.localhost:3000/cron/jobs/settings",
         async ({ request }) => {
           receivedRequestBody = await request.json();
           return HttpResponse.json({ jobName: jobToEnable, enabled: true });
@@ -267,7 +284,7 @@ describe("CronJobsPage", () => {
 
   it("should display an error message if updating a job fails", async () => {
     server.use(
-      http.put("http://caller.localhost:3000/cron/jobs/settings", () => {
+      http.put("http://test.localhost:3000/cron/jobs/settings", () => {
         return new HttpResponse(null, {
           status: 400,
           statusText: "Bad Request",

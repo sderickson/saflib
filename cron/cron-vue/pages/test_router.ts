@@ -3,5 +3,8 @@ import CronJobsPage from "./CronJobsPage.vue";
 
 export const router = createRouter({
   history: createWebHistory(),
-  routes: [{ path: "", component: CronJobsPage }],
+  routes: [
+    { path: "/cron/jobs", component: CronJobsPage },
+    { path: "/", redirect: "/cron/jobs" },
+  ],
 });
