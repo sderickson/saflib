@@ -42,7 +42,7 @@ paths:
       $ref: "./routes/users/users.yaml#/listUsers"
   /email/sent:
     get:
-      $ref: "../../email-spec/routes/email_routes.yaml#/get"
+      $ref: "../../email/email-spec/routes/email_routes.yaml#/get"
 
 components:
   securitySchemes:

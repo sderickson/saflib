@@ -1,6 +1,7 @@
 #!/usr/bin/env node --experimental-strip-types --disable-warning=ExperimentalWarning
 import { Command } from "commander";
 import { setupContext } from "@saflib/commander";
+import { addGenerateCommand } from "./generate.ts";
 
 const program = new Command()
   .name("saf-specs")
@@ -8,6 +9,8 @@ const program = new Command()
   .action(() => {
     program.help();
   });
+
+addGenerateCommand(program);
 
 setupContext(
   {
