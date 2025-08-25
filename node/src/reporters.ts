@@ -9,17 +9,20 @@ import { typedEnv } from "@saflib/env";
  */
 export const safReportersStorage = new AsyncLocalStorage<SafReporters>();
 
-export const testReporters: SafReporters = {
-  log: createLogger(),
-  logError: defaultErrorReporter,
-};
+const testReporters: SafReporters | undefined =
+  typedEnv.NODE_ENV === "test"
+    ? {
+        log: createLogger(),
+        logError: defaultErrorReporter,
+      }
+    : undefined;
 
 /**
  * Convenience method for getting the SafReporters from the storage. Errors if not found.
  */
 export const getSafReporters = (): SafReporters => {
   const store = safReportersStorage.getStore();
-  if (!store && typedEnv.NODE_ENV === "test") {
+  if (!store && typedEnv.NODE_ENV === "test" && testReporters) {
     return testReporters;
   }
   if (!store) {
@@ -35,7 +38,7 @@ export const makeSubsystemReporters = (
   subsystemName: SubsystemName,
   operationName: string,
 ): SafReporters => {
-  if (typedEnv.NODE_ENV === "test") {
+  if (typedEnv.NODE_ENV === "test" && testReporters) {
     return testReporters;
   }
 

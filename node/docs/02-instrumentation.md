@@ -21,7 +21,7 @@ Context is information about what is currently running, in what environment. Any
 - Affect behavior of the operation, mainly through the `auth` field
 - Add context to instrumentation, which is basically every other field
 
-See [`SafContext`](./ref/interfaces/SafContext.md) for more details.
+See [`SafContext`](./ref/interfaces/SafContext.md) for more details (storage: [`safContextStorage`](./ref/variables/safContextStorage.md)).
 
 ### Reporters
 
@@ -32,9 +32,9 @@ The main functions to use are:
 - [`log`](./ref/interfaces/SafReporters.md#log) - a [Winston](https://github.com/winstonjs/winston/tree/2.x) logger which applications can add transports to.
 - [`logError`](./ref/interfaces/SafReporters.md#logerror) - a convenience function for logging `Error` objects. It logs to both `log` and any `ErrorReporter` callbacks (so errors appear both in logging systems like Loki and error reporting services like Sentry).
 
-See [`SafReporters`](./ref/interfaces/SafReporters.md) for more details.
+See [`SafReporters`](./ref/interfaces/SafReporters.md) for more details (storage: [`safReportersStorage`](./ref/variables/safReportersStorage.md)).
 
-## Using Inside Applications
+## Use in Applications
 
 The main functions to use inside HTTP handlers, gRPC handlers, cron jobs, and alike are:
 
@@ -42,15 +42,15 @@ The main functions to use inside HTTP handlers, gRPC handlers, cron jobs, and al
 - [`getSafContextWithAuth`](./ref/functions/getSafContextWithAuth.md)
 - [`getSafReporters`](./ref/functions/getSafReporters.md)
 
-Use these for _all_ logging and auth purposes. They will error if the application has not provided them, and what they return is typed to be what you should expect. These are mainly to avoid existence-check boilerplate, otherwise you could also just use [`SafContext`](./ref/interfaces/SafContext.md) and [`SafReporters`](./ref/interfaces/SafReporters.md)'s [`getStore`](https://nodejs.org/api/async_context.html#asynclocalstoragegetstore) methods directly.
+Use these for _all_ logging and auth purposes. They will error if the application has not provided them, and what they return is typed to be what you should expect. These are mainly to avoid existence-check boilerplate, otherwise you could also just use [`safContextStorage`](./ref/variables/safContextStorage.md) and [`safReportersStorage`](./ref/variables/safReportersStorage.md)'s [`getStore`](https://nodejs.org/api/async_context.html#asynclocalstoragegetstore) methods directly.
 
-### Testing Applications that Use Logging
+### Logging and Testing
 
 By design, these helper functions will error if context and reporters have not been provided by the application, but the application may not be in the mix if you're testing smaller pieces in isolation. So these functions will return stubs if and only if the `NODE_ENV` environment variable is `test`. It will also log errors to console so they show up in test output.
 
-If you want to check that certain logs are being made in tests, you can use `getSafReporters` to get the universal loggers and spy on them.
+If you want to check that certain logs are being made in tests, you can use `getSafReporters` to get the universal loggers and spy on them. See [`@saflib/cron`'s unit tests for example](https://github.com/sderickson/saflib/blob/main/cron/cron/src/index.test.ts).
 
-## Setting Up For Applications
+## Integrate Logging
 
 When you set up a new service, you will need to integrate logging with your chosen collectors or external services and do some other setup.
 
@@ -60,3 +60,19 @@ When you set up a new service, you will need to integrate logging with your chos
 - [`collectSystemMetrics`](./ref/functions/collectSystemMetrics.md) - opts into [`prom-client`](https://github.com/siimon/prom-client?tab=readme-ov-file#default-metrics)'s default metrics, which are a superset of Prometheus's recommended metrics.
 
 Call all these before initializing any servers or other long-running processes, and start with `setServiceName` since any `log` calls will fail without one.
+
+If you have some service-specific context (which is likely, especially for shared clients to databases and other services), you should put those in a sibling `{service-name}-common` package and provide them to each of your subsystems. Some, such as `@saflib/grpc`, provide helpers for this.
+
+## Provide Context and Reporters
+
+It's the job of subsystem libraries such as `@saflib/express` and `@saflib/grpc` to provide context and reporters for each operation. They can do this preferably with the [`safContextStorage`](./ref/variables/safContextStorage.md) and [`safReportersStorage`](./ref/variables/safReportersStorage.md)'s [`run`](https://nodejs.org/api/async_context.html#asynclocalstoragerunstore-callback-args) method.
+
+They should use the following functions and variables:
+
+- [`createLogger`](./ref/functions/createLogger.md) to create a Winston logger. Provide `subsystemName` and `operationName`. To do this, a logger will have to be created for each "request" or "run".
+- [`generateRequestId`](./ref/functions/generateRequestId.md). Only needed if not provided by the caller, which it should be if the operation does not originate from the subsystem itself such as for cron jobs.
+- [`safContextStorage`](./ref/variables/safContextStorage.md) and [`safReportersStorage`](./ref/variables/safReportersStorage.md) to provide a context. Use `run` method ideally, or `enterWith` if necessary.
+- [`defaultErrorReporter`](./ref/variables/defaultErrorReporter.md) for a standard error reporter.
+- [`makeSubsystemReporters`](./ref/functions/makeSubsystemReporters.md) when you want to log outside of an operation, such as when initializing a subsystem.
+
+See examples throughout [`@saflib`](https://github.com/search?q=repo%3Asderickson%2Fsaflib%20safReportersStorage.run&type=code).

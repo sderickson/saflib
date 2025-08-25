@@ -41,7 +41,6 @@
 | ------ | ------ |
 | [addErrorCollector](functions/addErrorCollector.md) | Adds a callback for when errors are reported by the application. |
 | [addLokiTransport](functions/addLokiTransport.md) | Adds a transport to the logger that sends logs to Loki. TODO: use env variables. |
-| [addSimpleStreamTransport](functions/addSimpleStreamTransport.md) | Adds a simple stream transport to the base logger. This is mainly used for testing; e.g. pass in a vi.fn(). Call `removeAllSimpleStreamTransports()` when done to clean up. |
 | [addTransport](functions/addTransport.md) | For production, when the application starts, it should add any transports using this function. Then all SAF-based applications will log to winston and they'll propagate to loggers such as Loki. |
 | [collectSystemMetrics](functions/collectSystemMetrics.md) | Call when the application starts. Calls [prom-client](https://www.npmjs.com/package/prom-client)'s collectDefaultMetrics function under the hood. |
 | [createLogger](functions/createLogger.md) | Creates a child logger with the specified request ID. Any servers or processors should use this to create a unique logger for each request or job or what have you. However, if not "instantiating" the request, you should use the request ID provided by the caller, such as in the proto envelope, so that requests which span processes can be correlated. |
@@ -53,5 +52,4 @@
 | [getServiceName](functions/getServiceName.md) | Getter for service name. |
 | [makeSubsystemErrorReporter](functions/makeSubsystemErrorReporter.md) | During setup, subsystems should use this to create their own set of reporters. "Operation name" should be the name of the function. |
 | [makeSubsystemReporters](functions/makeSubsystemReporters.md) | Creates a new SafReporters object for a given subsystem and operation. |
-| [removeAllSimpleStreamTransports](functions/removeAllSimpleStreamTransports.md) | Call this at the end of a test that uses addSimpleStreamTransport. |
 | [setServiceName](functions/setServiceName.md) | Sets the service name. Should be called as soon as the process starts. This is provided in SafContext and to instrumentation. |
