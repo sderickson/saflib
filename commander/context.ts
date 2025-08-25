@@ -11,22 +11,19 @@ import {
 import { format } from "winston";
 import { type TransformableInfo } from "logform";
 
-import type { SubsystemName } from "@saflib/node";
-
 export interface SetupContextOptions {
   silentLogging?: boolean;
-  serviceName?: string;
-  operationName?: string;
-  subsystemName?: SubsystemName;
+  serviceName: string;
 }
 
-export const setupContext = (options: SetupContextOptions = {}) => {
-  const {
-    silentLogging = false,
-    serviceName = "cli",
-    operationName = process.argv[2],
-    subsystemName = "cli" as SubsystemName,
-  } = options;
+export const setupContext = (
+  options: SetupContextOptions,
+  callback: () => void,
+) => {
+  const { silentLogging = false, serviceName } = options;
+
+  const operationName = process.argv[2];
+  const subsystemName = "cli";
 
   setServiceName(serviceName);
 
@@ -55,6 +52,7 @@ export const setupContext = (options: SetupContextOptions = {}) => {
     logError: defaultErrorReporter,
   };
 
-  safReportersStorage.enterWith(reporters);
-  safContextStorage.enterWith(ctx);
+  safReportersStorage.run(reporters, () => {
+    safContextStorage.run(ctx, callback);
+  });
 };

@@ -16,43 +16,59 @@ describe("setupContext", () => {
   });
 
   test("sets up context with default values", () => {
-    setupContext();
-
-    const context = getSafContext();
-    expect(context.serviceName).toBe("cli");
-    expect(context.subsystemName).toBe("cli");
-    expect(context.operationName).toBe(process.argv[2]);
-    expect(context.requestId).toBeDefined();
+    setupContext(
+      {
+        serviceName: "cli",
+      },
+      () => {
+        const context = getSafContext();
+        expect(context.serviceName).toBe("cli");
+        expect(context.subsystemName).toBe("cli");
+        expect(context.operationName).toBe(process.argv[2]);
+        expect(context.requestId).toBeDefined();
+      },
+    );
   });
 
   test("sets up context with custom values", () => {
-    setupContext({
-      serviceName: "test-service",
-      operationName: "test-operation",
-      subsystemName: "test",
-      silentLogging: true,
-    });
-
-    const context = getSafContext();
-    expect(context.serviceName).toBe("test-service");
-    expect(context.subsystemName).toBe("test");
-    expect(context.operationName).toBe("test-operation");
-    expect(context.requestId).toBeDefined();
+    setupContext(
+      {
+        serviceName: "test-service",
+      },
+      () => {
+        const context = getSafContext();
+        expect(context.serviceName).toBe("test-service");
+        expect(context.subsystemName).toBe("cli");
+        expect(context.operationName).toBe(process.argv[2]);
+        expect(context.requestId).toBeDefined();
+      },
+    );
   });
 
   test("sets up reporters", () => {
-    setupContext();
-
-    const reporters = getSafReporters();
-    expect(reporters.log).toBeDefined();
-    expect(reporters.logError).toBeDefined();
+    setupContext(
+      {
+        serviceName: "cli",
+      },
+      () => {
+        const reporters = getSafReporters();
+        expect(reporters.log).toBeDefined();
+        expect(reporters.logError).toBeDefined();
+      },
+    );
   });
 
   test("uses silent logging when specified", () => {
-    setupContext({ silentLogging: true });
-
-    const reporters = getSafReporters();
-    expect(reporters.log).toBeDefined();
-    expect(reporters.logError).toBeDefined();
+    setupContext(
+      {
+        serviceName: "cli",
+        silentLogging: true,
+      },
+      () => {
+        const reporters = getSafReporters();
+        expect(reporters.log).toBeDefined();
+        expect(reporters.logError).toBeDefined();
+      },
+    );
   });
 });
