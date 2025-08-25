@@ -102,7 +102,7 @@ export const AddCommandWorkflowMachine = setup({
       stateName: "verifyDone",
       nextStateName: "done",
       promptForContext: ({ context }) =>
-        `Run the command \`npm exec ${context.name} help\` to verify that the command is working correctly.
+        `Run the command \`npm exec ${context.name}\` to verify that the command is working correctly.
       
       Run \`npm exec ${context.name}\` and it should display help information without errors.`,
     }),
