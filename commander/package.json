@@ -4,8 +4,7 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./index.ts",
-    "./workflows": "./workflows/index.ts"
+    ".": "./index.ts"
   },
   "scripts": {
     "test": "vitest run",
