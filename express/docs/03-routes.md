@@ -25,7 +25,7 @@ Examples:
 - [forgot-password.ts](https://github.com/sderickson/saflib/blob/37d619bf41fe2922880dee7483b9fb9690d2ee1b/identity/identity-service/routes/auth/forgot-password.ts)
 - [resend-verification.ts](https://github.com/sderickson/saflib/blob/2025-08-13-update-docs/identity/identity-service/routes/auth/resend-verification.ts).
 
-> TODO: Make sure all identity routes properly type their requests, responses.
+For more information on generating types from the spec, see [@saflib/openapi](../../openapi/docs/01-overview.md).
 
 ## Wrapping the Handler
 
