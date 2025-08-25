@@ -3,6 +3,7 @@
 import { Command } from "commander";
 import { gatherHealthAssets } from "./test-assets.ts";
 import { genCoverage } from "./test-coverage.ts";
+import { setupContext } from "@saflib/commander";
 
 const program = new Command()
   .name("saf-tests")
@@ -17,13 +18,6 @@ program
     await genCoverage();
   });
 
-// program
-//   .command("gen-screenshots")
-//   .description("Generate screenshots for the tests.")
-//   .action(async () => {
-//     await runScreenshots();
-//   });
-
 program
   .command("gather-assets")
   .description(
@@ -37,4 +31,6 @@ program
     );
   });
 
-program.parse(process.argv);
+setupContext({ serviceName: "saf-tests" }, () => {
+  program.parse(process.argv);
+});
