@@ -95,7 +95,7 @@ export const AddCommandWorkflowMachine = setup({
       stateName: "addToIndex",
       nextStateName: "testCommand",
       promptForContext: ({ context }) =>
-        `Add the new command to the main index.ts file.
+        `Add the new command to the adjacent index.ts file.
       
       Import the command function:
       import { ${context.commandFunctionName} } from "./${context.name}.ts";
@@ -108,7 +108,9 @@ export const AddCommandWorkflowMachine = setup({
       stateName: "testCommand",
       nextStateName: "done",
       promptForContext: ({ context }) =>
-        `Test the new command by running:
+        `Test the new command.
+
+      Run the following command:
       
       npm exec ${context.cliName} ${context.name}
       
