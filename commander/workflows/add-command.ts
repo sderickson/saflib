@@ -6,26 +6,24 @@ import {
   XStateWorkflow,
   copyTemplateStateComposer,
   updateTemplateComposer,
-  runTestsComposer,
   promptAgentComposer,
   type TemplateWorkflowContext,
   contextFromInput,
   type WorkflowInput,
   outputFromContext,
 } from "@saflib/workflows";
-import path from "node:path";
+import path, { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { kebabCaseToPascalCase } from "@saflib/utils";
 
 interface AddCommandWorkflowInput extends WorkflowInput {
-  name: string;
-  cliName?: string;
+  path: string;
 }
 
 interface AddCommandWorkflowContext extends TemplateWorkflowContext {
-  commandName: string;
   cliName: string;
-  commandFilePath: string;
   commandFunctionName: string;
+  commandFilePath: string;
 }
 
 export const AddCommandWorkflowMachine = setup({
@@ -45,70 +43,76 @@ export const AddCommandWorkflowMachine = setup({
     const __dirname = path.dirname(__filename);
     const sourceDir = path.join(__dirname, "add-command");
 
-    // The target directory will be commands/{input.name}
-    const targetDir = path.join("./commands", input.name);
-    const commandFilePath = path.join(targetDir, "index.ts");
+    // validate inputs
+    const parts = input.path
+      .split("/")
+      .filter((part) => part !== "" && part !== ".");
+    if (
+      parts.length < 3 ||
+      parts[0] !== "bin" ||
+      !parts[parts.length - 1].includes(".ts")
+    ) {
+      throw new Error(
+        "Path should be of the form bin/{cli-name}/{command-name}.ts",
+      );
+    }
+
+    const targetDir = dirname(input.path);
+    const commandFilePath = input.path;
+    const cliName = parts[1];
+    const commandName = parts[parts.length - 1].replace(".ts", "");
+    const commandFunctionName = `add${kebabCaseToPascalCase(commandName)}Command`;
 
     return {
-      name: input.name,
-      pascalName: input.name.charAt(0).toUpperCase() + input.name.slice(1),
-      commandName: input.name,
-      cliName: input.cliName || "saf-workflow",
+      name: commandName,
+      pascalName: kebabCaseToPascalCase(commandName),
+      cliName,
+      commandFunctionName,
       sourceDir,
       targetDir,
       commandFilePath,
-      commandFunctionName: `add${input.name.charAt(0).toUpperCase() + input.name.slice(1)}Command`,
       ...contextFromInput(input),
     };
   },
 
   entry: logInfo("Successfully began add-command workflow"),
 
-  // TODO: update the states to match the actual workflow you're creating. It will usually involve some combination of copying template files, updating files, and running tests.
   states: {
     ...copyTemplateStateComposer({
       stateName: "copyTemplate",
-      nextStateName: "updateMainFile",
+      nextStateName: "updateTemplate",
     }),
 
     ...updateTemplateComposer<AddCommandWorkflowContext>({
-      filePath: (context) => path.join(context.targetDir, `${context.name}.ts`),
+      stateName: "updateTemplate",
+      nextStateName: "addToIndex",
+      filePath: (context) => context.commandFilePath,
       promptMessage: (context) =>
-        `Please update ${context.name}.ts to implement the main functionality. Replace any TODO comments with actual implementation.`,
-      stateName: "updateMainFile",
-      nextStateName: "updateConfigFile",
-    }),
-
-    ...updateTemplateComposer<AddCommandWorkflowContext>({
-      filePath: (context) =>
-        path.join(context.targetDir, `${context.name}.config.ts`),
-      promptMessage: (context) =>
-        `Please update ${context.name}.config.ts with the appropriate configuration for this workflow.`,
-      stateName: "updateConfigFile",
-      nextStateName: "updateTests",
-    }),
-
-    ...updateTemplateComposer<AddCommandWorkflowContext>({
-      filePath: (context) =>
-        path.join(context.targetDir, `${context.name}.test.ts`),
-      promptMessage: (context) =>
-        `Please update ${context.name}.test.ts to test the functionality you implemented. Make sure to mock any external dependencies.`,
-      stateName: "updateTests",
-      nextStateName: "runTests",
-    }),
-
-    ...runTestsComposer<AddCommandWorkflowContext>({
-      filePath: (context) =>
-        path.join(context.targetDir, `${context.name}.test.ts`),
-      stateName: "runTests",
-      nextStateName: "verifyDone",
+        `Please update ${context.commandFilePath}, resolving any TODOs.`,
     }),
 
     ...promptAgentComposer<AddCommandWorkflowContext>({
-      stateName: "verifyDone",
+      stateName: "addToIndex",
+      nextStateName: "testCommand",
+      promptForContext: ({ context }) =>
+        `Add the new command to the main index.ts file.
+      
+      Import the command function:
+      import { ${context.commandFunctionName} } from "./${context.name}.ts";
+      
+      Add it to the program before \`program.parse\` is called:
+      ${context.commandFunctionName}(program);`,
+    }),
+
+    ...promptAgentComposer<AddCommandWorkflowContext>({
+      stateName: "testCommand",
       nextStateName: "done",
       promptForContext: ({ context }) =>
-        `Please verify that the ${context.name} workflow is working correctly. Test the functionality manually and ensure all files are properly configured.`,
+        `Test the new command by running:
+      
+      npm exec ${context.cliName} ${context.name}
+      
+      The command should display help information without errors.`,
     }),
 
     done: {
@@ -125,10 +129,10 @@ export class AddCommandWorkflow extends XStateWorkflow {
 
   cliArguments = [
     {
-      name: "name",
+      name: "path",
       description:
-        "The name of the command to create (e.g., 'build' or 'deploy')",
-      exampleValue: "example-command",
+        "Relative path to the new command file, e.g. bin/cli-name/command-name.ts",
+      exampleValue: "bin/example-cli/example-command.ts",
     },
   ];
   sourceUrl = import.meta.url;
