@@ -9,6 +9,7 @@ import {
   contextFromInput,
   type WorkflowInput,
   outputFromContext,
+  updateTemplateFileComposer,
 } from "@saflib/workflows";
 import { getSafReporters } from "@saflib/node";
 import { kebabCaseToPascalCase } from "@saflib/utils";
@@ -116,11 +117,28 @@ export const AddWorkflowMachine = setup({
     // TODO: Automate this; doesn't need to be a prompt
     ...promptAgentComposer<AddWorkflowContext>({
       stateName: "verifyWorkflowList",
-      nextStateName: "done",
+      nextStateName: "implementWorkflow",
       promptForContext: ({ context }) =>
         `Check that the new workflow appears in the saf-workflow CLI tool.
       
       Run the command \`npm exec saf-workflow kickoff help\` in your terminal (any directory). Ensure that your new workflow "${context.workflowName}" appears in the list.`,
+    }),
+
+    ...updateTemplateFileComposer<AddWorkflowContext>({
+      stateName: "implementWorkflow",
+      nextStateName: "reviewChecklist",
+      filePath: (context) => context.workflowPath,
+      promptMessage: (context) =>
+        `Update the package.json of this package (${context.packageName}) to include a './workflows' export pointing to the 'workflows/index.ts' file.`,
+    }),
+
+    ...promptAgentComposer<AddWorkflowContext>({
+      stateName: "reviewChecklist",
+      nextStateName: "done",
+      promptForContext: ({ context }) =>
+        `Review the checklist and verify that the workflow was added correctly.
+      
+      Run \`npm exec saf-workflow checklist ${context.workflowName}\` to see the checklist.`,
     }),
 
     done: {
