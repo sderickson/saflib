@@ -1,5 +1,5 @@
 {
-  "name": "commander",
+  "name": "@saflib/commander",
   "description": "Shared commander utilities for SAF CLI applications",
   "private": true,
   "type": "module",
