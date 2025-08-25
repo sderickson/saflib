@@ -3,6 +3,8 @@
 import { Command } from "commander";
 import { buildMonorepoContext } from "../workspace.ts";
 import { generateCommand } from "./generate.ts";
+import { setupContext } from "@saflib/commander";
+
 const monorepoContext = buildMonorepoContext();
 
 const program = new Command()
@@ -43,4 +45,6 @@ packagesSorted.forEach((packageName) => {
     });
 });
 
-program.parse(process.argv);
+setupContext({ serviceName: "saf-docs" }, () => {
+  program.parse(process.argv);
+});
