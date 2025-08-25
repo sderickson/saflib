@@ -24,8 +24,5 @@
   "devDependencies": {
     "@saflib/monorepo": "*",
     "@saflib/vitest": "*"
-  },
-  "saflib": {
-    "group": "auth"
   }
 }
