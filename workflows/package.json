@@ -14,6 +14,7 @@
     "typecheck": "tsc"
   },
   "dependencies": {
+    "@saflib/commander": "*",
     "@saflib/dev-tools": "*",
     "@saflib/utils": "*",
     "commander": "^14.0.0",
