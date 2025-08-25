@@ -5,8 +5,6 @@ import {
   logInfo,
   XStateWorkflow,
   copyTemplateStateComposer,
-  updateTemplateComposer,
-  runTestsComposer,
   promptAgentComposer,
   type TemplateWorkflowContext,
   contextFromInput,
@@ -41,8 +39,8 @@ export const AddCommandWorkflowMachine = setup({
     const __dirname = path.dirname(__filename);
     const sourceDir = path.join(__dirname, "add-commands");
 
-    // The target directory will be the current working directory where the workflow is run
-    const targetDir = process.cwd();
+    // The target directory will be commands/{input.name}
+    const targetDir = path.join(process.cwd(), "commands", input.name);
 
     return {
       name: input.name,
@@ -59,30 +57,27 @@ export const AddCommandWorkflowMachine = setup({
   states: {
     ...copyTemplateStateComposer({
       stateName: "copyTemplate",
-      nextStateName: "updateCommandFile",
+      nextStateName: "addToBin",
     }),
 
-    ...updateTemplateComposer<AddCommandWorkflowContext>({
-      filePath: (context) => path.join(context.targetDir, `${context.name}.ts`),
-      promptMessage: (context) =>
-        `Please update ${context.name}.ts to implement the command functionality. Replace TODO comments with actual implementation.`,
-      stateName: "updateCommandFile",
-      nextStateName: "updateIndexFile",
-    }),
-
-    ...updateTemplateComposer<AddCommandWorkflowContext>({
-      filePath: (context) => path.join(context.targetDir, `index.ts`),
-      promptMessage: (context) =>
-        `Please update index.ts to import and use the new ${context.name} command. Uncomment the import and addCommand lines.`,
-      stateName: "updateIndexFile",
+    ...promptAgentComposer<AddCommandWorkflowContext>({
+      stateName: "addToBin",
       nextStateName: "verifyDone",
+      promptForContext: ({ context }) =>
+        `Please add the ${context.name} command to the package's bin folder. This typically involves:
+1. Creating a bin/{context.name} file that imports and runs the CLI
+2. Adding the bin entry to package.json
+3. Making the bin file executable (chmod +x bin/{context.name})`,
     }),
 
     ...promptAgentComposer<AddCommandWorkflowContext>({
       stateName: "verifyDone",
       nextStateName: "done",
       promptForContext: ({ context }) =>
-        `Please verify that the ${context.name} command is working correctly. Test the functionality manually and ensure all files are properly configured.`,
+        `Please verify that the ${context.name} command is working correctly by running:
+npm exec ${context.name} help
+
+The command should display help information without errors.`,
     }),
 
     done: {
