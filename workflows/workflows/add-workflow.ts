@@ -9,7 +9,6 @@ import {
   contextFromInput,
   type WorkflowInput,
   outputFromContext,
-  updateTemplateComposer,
 } from "@saflib/workflows";
 import { getSafReporters } from "@saflib/node";
 import { kebabCaseToPascalCase } from "@saflib/utils";
@@ -117,7 +116,7 @@ export const AddWorkflowMachine = setup({
     // TODO: Automate this; doesn't need to be a prompt
     ...promptAgentComposer<AddWorkflowContext>({
       stateName: "verifyWorkflowList",
-      nextStateName: "implementWorkflow",
+      nextStateName: "setupComplete",
       promptForContext: ({ context }) =>
         `Check that the new workflow appears in the saf-workflow CLI tool.
       
@@ -125,22 +124,33 @@ export const AddWorkflowMachine = setup({
     }),
 
     ...promptAgentComposer<AddWorkflowContext>({
-      stateName: "implementWorkflow",
-      nextStateName: "updateWorkflowFile",
-      promptForContext: ({ context }) =>
-        `Time to implement! Create a folder for template files next to the workflow file (${context.workflowPath}). You may skip this if the workflow involves no files.
-      
-      Remember to include the strings TemplateFile, template-file, etc in these files. These will be replaced with the same-string-style name of the thing being created.`,
+      stateName: "setupComplete",
+      nextStateName: "createTemplates",
+      promptForContext: () =>
+        `Stop and understand the workflow requirements before proceeding.
+
+      If you don't know the answers to any of the following, ask the person giving the task:
+      1. What should this workflow do?
+      2. What template files should it create?
+      3. What should the workflow steps be?
+      4. Any specific requirements or constraints?
+      `,
     }),
 
-    ...updateTemplateComposer<AddWorkflowContext>({
-      stateName: "updateWorkflowFile",
+    ...promptAgentComposer<AddWorkflowContext>({
+      stateName: "createTemplates",
+      nextStateName: "implementWorkflow",
+      promptForContext: ({ context }) =>
+        `Creating template files for ${context.workflowName} workflow.
+
+      Create a folder named \`${context.workflowName}\` next to the workflow file. Add any template files you need to the folder.`,
+    }),
+
+    ...promptAgentComposer<AddWorkflowContext>({
+      stateName: "implementWorkflow",
       nextStateName: "reviewChecklist",
-      filePath: (context) => context.workflowPath,
-      promptMessage: (context) =>
-        `Implement the workflow in (${context.workflowPath}).
-      
-      Make sure to have \`sourceDir\` be the template directory you just created, if you created one.`,
+      promptForContext: ({ context }) =>
+        `Implementing the workflow logic in ${context.workflowPath}.`,
     }),
 
     ...promptAgentComposer<AddWorkflowContext>({
@@ -163,7 +173,7 @@ export const AddWorkflowMachine = setup({
 export class AddWorkflow extends XStateWorkflow {
   machine = AddWorkflowMachine;
   description =
-    "Create a new workflow and adds it to the CLI tool. Does not currently implement the workflow.";
+    "Create a new workflow and adds it to the CLI tool. Stops after setup to wait for implementation requirements.";
   cliArguments = [
     {
       name: "name",
