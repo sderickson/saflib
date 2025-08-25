@@ -7,6 +7,9 @@
     ".": "./index.ts",
     "./workflows": "./workflows/index.ts"
   },
+  "bin": {
+    "saf-specs": "./commands/saf-specs/index.ts"
+  },
   "devDependencies": {
     "@redocly/cli": "^1.0.0",
     "openapi-typescript": "^7.0.0",

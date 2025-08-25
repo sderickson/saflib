@@ -13,16 +13,12 @@ import {
  */
 export interface RunNpmCommandFactoryOptions extends ComposerFunctionOptions {
   // All commands here are the only ones that can be run by a workflow.
-  command:
-    | "install"
-    | "install @saflib/env"
-    | "install @saflib/email"
-    | "exec saf-env generate"
-    | "exec saf-env generate-all"
-    | "run generate";
+  command: string;
   stateName: string;
   nextStateName: string;
 }
+
+const allowedPrefixes = ["install", "exec saf-", "run"];
 
 /**
  * Composer for running npm commands.
@@ -32,6 +28,10 @@ export function runNpmCommandComposer({
   stateName,
   nextStateName,
 }: RunNpmCommandFactoryOptions) {
+  if (!allowedPrefixes.some((prefix) => command.startsWith(prefix))) {
+    throw new Error(`Invalid command: ${command}`);
+  }
+
   const getCommand = () => {
     return () => {
       return runCommandAsync("npm", command.split(" "));

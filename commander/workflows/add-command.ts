@@ -10,6 +10,8 @@ import {
   contextFromInput,
   type WorkflowInput,
   outputFromContext,
+  updateTemplateComposer,
+  runNpmCommandComposer,
 } from "@saflib/workflows";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -20,6 +22,7 @@ interface AddCommandWorkflowInput extends WorkflowInput {
 
 interface AddCommandWorkflowContext extends TemplateWorkflowContext {
   commandName: string;
+  indexFilePath: string;
 }
 
 export const AddCommandWorkflowMachine = setup({
@@ -40,7 +43,8 @@ export const AddCommandWorkflowMachine = setup({
     const sourceDir = path.join(__dirname, "add-command");
 
     // The target directory will be commands/{input.name}
-    const targetDir = path.join(process.cwd(), "commands", input.name);
+    const targetDir = path.join("./commands", input.name);
+    const indexFilePath = path.join(targetDir, "index.ts");
 
     return {
       name: input.name,
@@ -48,6 +52,7 @@ export const AddCommandWorkflowMachine = setup({
       commandName: input.name,
       sourceDir,
       targetDir,
+      indexFilePath,
       ...contextFromInput(input),
     };
   },
@@ -57,27 +62,49 @@ export const AddCommandWorkflowMachine = setup({
   states: {
     ...copyTemplateStateComposer({
       stateName: "copyTemplate",
+      nextStateName: "updateIndexFile",
+    }),
+
+    ...updateTemplateComposer<AddCommandWorkflowContext>({
+      stateName: "updateIndexFile",
+      nextStateName: "makeIndexExecutable",
+      filePath: (context) => context.indexFilePath,
+      promptMessage: (context) =>
+        `Please update ${context.indexFilePath}, resolving any TODOs.`,
+    }),
+
+    ...promptAgentComposer<AddCommandWorkflowContext>({
+      stateName: "makeIndexExecutable",
       nextStateName: "addToBin",
+      promptForContext: ({ context }) =>
+        `Run the command \`chmod +x ${context.indexFilePath}\` to make the index file executable.`,
     }),
 
     ...promptAgentComposer<AddCommandWorkflowContext>({
       stateName: "addToBin",
-      nextStateName: "verifyDone",
+      nextStateName: "install",
       promptForContext: ({ context }) =>
-        `Please add the ${context.name} command to the package's bin folder. This typically involves:
-1. Creating a bin/{context.name} file that imports and runs the CLI
-2. Adding the bin entry to package.json
-3. Making the bin file executable (chmod +x bin/{context.name})`,
+        `Add ${context.indexFilePath} to the package's bin folder.
+      
+      It should look like this:
+      "bin": {
+        "${context.name}": "${context.indexFilePath}"
+      }`,
+    }),
+
+    ...runNpmCommandComposer({
+      stateName: "install",
+      nextStateName: "verifyDone",
+      command: `install`,
     }),
 
     ...promptAgentComposer<AddCommandWorkflowContext>({
       stateName: "verifyDone",
       nextStateName: "done",
       promptForContext: ({ context }) =>
-        `Please verify that the ${context.name} command is working correctly by running:
-npm exec ${context.name} help
-
-The command should display help information without errors.`,
+        `Run the command \`npm exec ${context.name} help\` to verify that the command is working correctly.
+      
+      Run \`npm exec ${context.name}\` and it should display help information without errors.`,
     }),
 
     done: {
@@ -97,7 +124,7 @@ export class AddCommandWorkflow extends XStateWorkflow {
       name: "name",
       description:
         "The name of the command to create (e.g., 'build' or 'deploy')",
-      exampleValue: "build",
+      exampleValue: "example-command",
     },
   ];
   sourceUrl = import.meta.url;
