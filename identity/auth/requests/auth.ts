@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient, queryOptions } from "@tanstack/vue-query";
-import { client } from "./client.ts";
+import { client, emailClient } from "./client.ts";
 import type { AuthResponseBody, AuthRequestBody } from "@saflib/identity-spec";
 import { TanstackError, handleClientMethod } from "@saflib/vue-spa";
 import type { Ref } from "vue";
@@ -125,7 +125,7 @@ export const getSentAuthEmails = (email?: Ref<string | undefined>) => {
     queryKey: ["sent-emails", "auth", email],
     queryFn: async () => {
       return handleClientMethod(
-        client.GET("/email/sent", {
+        emailClient.GET("/email/sent", {
           params: { query: { userEmail: email?.value } },
         }),
       );
