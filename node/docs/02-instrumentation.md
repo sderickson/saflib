@@ -76,3 +76,9 @@ They should use the following functions and variables:
 - [`makeSubsystemReporters`](./ref/functions/makeSubsystemReporters.md) when you want to log outside of an operation, such as when initializing a subsystem.
 
 See examples throughout [`@saflib`](https://github.com/search?q=repo%3Asderickson%2Fsaflib%20safReportersStorage.run&type=code).
+
+## Recording Metrics
+
+Metrics should be recorded through subsystem libraries as well, using [`prom-client`](https://github.com/siimon/prom-client). `@saflib/express` uses [`express-prom-bundle`](https://github.com/jochen-schweizer/express-prom-bundle) to record metrics for HTTP requests, and the other SAF libraries use `prom-client` directly to provide a similar histogram metric. See [examples](https://github.com/search?q=repo%3Asderickson%2Fsaflib%20client.Histogram&type=code).
+
+Beyond these basic RED metrics, SAF application code does not currently provide any other guidance or built-in metrics for back-end, but there's certainly room for more, potentially through traces and finite state machines.
