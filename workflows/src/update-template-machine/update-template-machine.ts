@@ -10,7 +10,7 @@ import type { WorkflowContext } from "../xstate.ts";
 import type { TemplateWorkflowContext } from "../types.ts";
 
 /**
- * Options for the updateTemplateFileComposer function.
+ * Options for the updateTemplateComposer function.
  */
 export interface UpdateTemplateFileComposerOptions<C extends WorkflowContext>
   extends ComposerFunctionOptions {
@@ -32,7 +32,7 @@ export interface UpdateTemplateFileComposerOptions<C extends WorkflowContext>
  * addition to prompting the agent to make changes, this will block the agent
  * from continuing until all "todo" strings are gone from the file.
  */
-export function updateTemplateFileComposer<C extends TemplateWorkflowContext>({
+export function updateTemplateComposer<C extends TemplateWorkflowContext>({
   filePath,
   promptMessage,
   stateName,

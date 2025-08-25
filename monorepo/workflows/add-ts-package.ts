@@ -10,7 +10,7 @@ import {
   type WorkflowInput,
   outputFromContext,
   copyTemplateStateComposer,
-  updateTemplateFileComposer,
+  updateTemplateComposer,
   type TemplateWorkflowContext,
 } from "@saflib/workflows";
 import path from "node:path";
@@ -65,7 +65,7 @@ export const AddTsPackageWorkflowMachine = setup({
       nextStateName: "updatePackageJson",
     }),
 
-    ...updateTemplateFileComposer<AddTsPackageWorkflowContext>({
+    ...updateTemplateComposer<AddTsPackageWorkflowContext>({
       filePath: (context) => path.join(context.targetDir, "package.json"),
       promptMessage: (context) =>
         `The file '${path.join(context.path, "package.json")}' has been created. Please update the "description" field and any other fields as needed, such as dependencies on other SAF libraries.`,

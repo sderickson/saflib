@@ -5,7 +5,7 @@ import {
   logInfo,
   XStateWorkflow,
   copyTemplateStateComposer,
-  updateTemplateFileComposer,
+  updateTemplateComposer,
   runTestsComposer,
   promptAgentComposer,
   type TemplateWorkflowContext,
@@ -73,7 +73,7 @@ export const ToDoWorkflowMachine = setup({
       nextStateName: "updateMainFile",
     }),
 
-    ...updateTemplateFileComposer<ToDoWorkflowContext>({
+    ...updateTemplateComposer<ToDoWorkflowContext>({
       filePath: (context) => path.join(context.targetDir, `${context.name}.ts`),
       promptMessage: (context) =>
         `Please update ${context.name}.ts to implement the main functionality. Replace any TODO comments with actual implementation.`,
@@ -81,7 +81,7 @@ export const ToDoWorkflowMachine = setup({
       nextStateName: "updateConfigFile",
     }),
 
-    ...updateTemplateFileComposer<ToDoWorkflowContext>({
+    ...updateTemplateComposer<ToDoWorkflowContext>({
       filePath: (context) =>
         path.join(context.targetDir, `${context.name}.config.ts`),
       promptMessage: (context) =>
@@ -90,7 +90,7 @@ export const ToDoWorkflowMachine = setup({
       nextStateName: "updateTests",
     }),
 
-    ...updateTemplateFileComposer<ToDoWorkflowContext>({
+    ...updateTemplateComposer<ToDoWorkflowContext>({
       filePath: (context) =>
         path.join(context.targetDir, `${context.name}.test.ts`),
       promptMessage: (context) =>

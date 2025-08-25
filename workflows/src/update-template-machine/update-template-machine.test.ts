@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { createActor, waitFor } from "xstate";
-import { updateTemplateFileComposer } from "./update-template-machine.ts";
+import { updateTemplateComposer } from "./update-template-machine.ts";
 import path from "node:path";
 import { setup } from "xstate";
 import { workflowActions, workflowActors } from "../xstate.ts";
@@ -48,7 +48,7 @@ describe("updateTemplateFileFactory", () => {
         sourceDir: testFilePath,
       },
       states: {
-        ...updateTemplateFileComposer({
+        ...updateTemplateComposer({
           filePath: "test-file.txt",
           promptMessage: "Please update the test file",
           stateName: "testState",
@@ -94,7 +94,7 @@ describe("updateTemplateFileFactory", () => {
         sourceDir: testFilePath,
       },
       states: {
-        ...updateTemplateFileComposer({
+        ...updateTemplateComposer({
           filePath: "test-file.txt",
           promptMessage: "Please update the test file",
           stateName: "testState",
@@ -139,7 +139,7 @@ describe("updateTemplateFileFactory", () => {
         sourceDir: testFilePath,
       },
       states: {
-        ...updateTemplateFileComposer({
+        ...updateTemplateComposer({
           filePath: (context: TestContext) => context.testFile,
           promptMessage: "Please update the test file",
           stateName: "testState",

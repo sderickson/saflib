@@ -5,7 +5,7 @@ import {
   logInfo,
   XStateWorkflow,
   copyTemplateStateComposer,
-  updateTemplateFileComposer,
+  updateTemplateComposer,
   runTestsComposer,
   promptAgentComposer,
   type TemplateWorkflowContext,
@@ -61,7 +61,7 @@ export const AddCommandWorkflowMachine = setup({
   entry: logInfo("Successfully began workflow"),
 
   states: {
-    ...updateTemplateFileComposer<AddCommandWorkflowContext>({
+    ...updateTemplateComposer<AddCommandWorkflowContext>({
       filePath: (context) =>
         path.join(context.targetDir, `${context.commandName}.ts`),
       promptMessage: (context) =>

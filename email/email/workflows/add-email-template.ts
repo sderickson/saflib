@@ -9,7 +9,7 @@ import {
   type WorkflowInput,
   outputFromContext,
   copyTemplateStateComposer,
-  updateTemplateFileComposer,
+  updateTemplateComposer,
   type TemplateWorkflowContext,
 } from "@saflib/workflows";
 import path from "node:path";
@@ -82,7 +82,7 @@ export const AddEmailTemplateWorkflowMachine = setup({
       nextStateName: "implementTemplate",
     }),
 
-    ...updateTemplateFileComposer<AddEmailTemplateWorkflowContext>({
+    ...updateTemplateComposer<AddEmailTemplateWorkflowContext>({
       filePath: (context) => context.targetFilePath,
       promptMessage: (context) =>
         `Implement the email template at ${context.targetFilePath}:

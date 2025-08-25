@@ -9,7 +9,7 @@ import {
   contextFromInput,
   type WorkflowInput,
   outputFromContext,
-  updateTemplateFileComposer,
+  updateTemplateComposer,
 } from "@saflib/workflows";
 import { getSafReporters } from "@saflib/node";
 import { kebabCaseToPascalCase } from "@saflib/utils";
@@ -124,7 +124,7 @@ export const AddWorkflowMachine = setup({
       Run the command \`npm exec saf-workflow kickoff help\` in your terminal (any directory). Ensure that your new workflow "${context.workflowName}" appears in the list.`,
     }),
 
-    ...updateTemplateFileComposer<AddWorkflowContext>({
+    ...updateTemplateComposer<AddWorkflowContext>({
       stateName: "implementWorkflow",
       nextStateName: "reviewChecklist",
       filePath: (context) => context.workflowPath,
