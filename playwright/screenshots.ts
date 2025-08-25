@@ -5,11 +5,17 @@ import path, { dirname } from "path";
 
 const countForTest: Record<string, number> = {};
 
-interface ScreenshotOptions {
+/**
+ * Options for the `attachScreenshot` function.
+ */
+export interface ScreenshotOptions {
   fullPage?: boolean;
   type?: "jpeg" | "png";
 }
 
+/**
+ * Clean up screenshots from the previous test run. Call this at the beginning of your test.
+ */
 export const cleanScreenshots = async () => {
   const browserName = test.info().project.name;
   const isChromium = browserName.includes("chromium");
@@ -29,6 +35,9 @@ export const cleanScreenshots = async () => {
   }
 };
 
+/**
+ * Attach a screenshot to the test report. Use throughout tests to create a visual record of the user journey for easier review.
+ */
 export const attachScreenshot = async (
   page: Page,
   options: ScreenshotOptions = {},
