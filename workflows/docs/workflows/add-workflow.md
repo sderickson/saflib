@@ -28,6 +28,10 @@ When run, the workflow will:
 * Add `@your/target-package` as a dependency of `@saflib/workflows-cli`.
 * Add `@your/target-package` to `@saflib/workflows-cli`'s list of workflows. 
 * Check that the new workflow appears in the saf-workflow CLI tool.
+* Stop and understand the workflow requirements before proceeding.
+* Creating template files for example-workflow workflow.
+* Implementing the workflow logic in workflows/example-workflow.ts.
+* Review the checklist and verify that the workflow was added correctly.
 
 
 ## Help Docs
@@ -35,8 +39,8 @@ When run, the workflow will:
 ```bash
 Usage: saf-workflow kickoff add-workflow [options] <name>
 
-Create a new workflow and adds it to the CLI tool. Does not currently implement
-the workflow.
+Create a new workflow and adds it to the CLI tool. Stops after setup to wait for
+implementation requirements.
 
 Arguments:
   name        The name of the new workflow to create (e.g.,

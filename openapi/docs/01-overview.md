@@ -1,305 +1,118 @@
 # Overview
 
-This guide explains how to set up a new OpenAPI spec package in the SAF monorepo.
+SAF uses [OpenAPI](https://www.openapis.org/what-is-openapi) to define and generate shared schemas and APIs across frontend and backend. This includes:
+
+- API routes
+- Shared object schemas
+- Product events
+
+Packages using `@saflib/openapi` can generate:
+
+- TypeScript types
+- JSON schemas
+- API docs
 
 ## Package Structure
 
 ```
-specs/your-spec/
-├── dist/                    # Generated files (gitignored)
-│   ├── openapi.d.ts        # Generated TypeScript types
-│   ├── openapi.json        # Generated JSON spec
-│   └── index.html          # Generated API docs
-├── routes/                  # Route definitions
-│   └── your-routes.yaml    # Route-specific specs
-├── schemas/                 # Schema definitions
-│   └── your-schemas.yaml   # Schema-specific specs
-├── openapi.yaml            # Main OpenAPI spec file
-├── package.json            # Package configuration
-└── index.ts               # Package exports
+{service-name}-spec/
+├── dist/
+│   ├── openapi.d.ts
+│   ├── openapi.json
+│   └── index.html
+├── events/
+│   ├── index.yaml
+│   ├── event-1.yaml
+│   ├── event-2.yaml
+│   └── ...
+├── routes/
+│   ├── {feature-1}/
+│   │   ├── operation-id-1.yaml
+│   │   ├── operation-id-2.yaml
+│   │   └── ...
+│   ├── {feature-2}/
+│   └── ...
+├── schemas/
+│   ├── business-model-1.yaml
+│   ├── business-model-2.yaml
+│   └── ...
+├── openapi.yaml
+├── package.json
+└── index.ts
 ```
 
-## Package Configuration
+## Files and Directories Explained
 
-Create a `package.json` with the following structure:
+### `dist/`
 
-```json
-{
-  "name": "@saf-2025/specs-your-spec",
-  "description": "Shared OpenAPI specification for your service",
-  "type": "module",
-  "main": "./index.ts",
-  "scripts": {
-    "generate:types": "openapi-typescript ./openapi.yaml -o dist/openapi.d.ts",
-    "generate:json": "redocly bundle openapi.yaml --ext json --output dist/openapi.json",
-    "generate:html": "redocly build-docs ./openapi.yaml --output=dist/index.html",
-    "generate": "npm run generate:types && npm run generate:json && npm run generate:html"
-  },
-  "devDependencies": {
-    "@saflib/openapi": "*"
-  },
-  "files": ["dist"]
-}
-```
-
-## Package Exports
-
-Create an `index.ts` file with the following exports:
-
-```typescript
-import * as json from "./dist/openapi.json" with { type: "json" };
-import type { OpenAPIV3 } from "openapi-types"; // Adjusted from express-openapi-validator type
-import type { paths, operations } from "./dist/openapi.d.ts"; // Import paths and operations
-import type {
-  ExtractRequestSchema,
-  ExtractResponseSchema,
-} from "@saflib/openapi"; // Import helper types (adjust path if needed)
-
-// Export the JSON spec for middleware
-export const jsonSpec = json.default as unknown as OpenAPIV3.Document;
-
-// Export raw generated types (paths, operations) for advanced use cases
-export type { paths, operations };
-
-// Export easy-to-use Request/Response types derived from operations
-// Replace 'YourSpec' with the appropriate name (e.g., AuthRequest, CronResponseBody)
-export type YourSpecResponse = ExtractResponseSchema<operations>;
-export type YourSpecRequest = ExtractRequestSchema<operations>;
-```
-
-This pattern uses helper types (`ExtractRequestSchema`, `ExtractResponseSchema`) to automatically generate convenient request and response types based on your defined `operationId`s, reducing boilerplate and improving type safety.
-
-## OpenAPI Spec Structure
-
-1. Create a main `openapi.yaml` file that includes your route and schema files:
-
-```yaml
-openapi: 3.0.0
-info:
-  title: Your Service API
-  version: 1.0.0
-  description: API specification for your service
-
-servers:
-  - url: http://api.docker.localhost/
-    description: Development server
-
-components:
-  securitySchemes:
-    scopes:
-      type: apiKey
-      in: header
-      name: X-User-Scopes
-      description: Comma-separated list of user scopes
-  schemas:
-    YourSchema:
-      $ref: "./schemas/your-schema.yaml"
-
-paths:
-  /your-endpoint:
-    get:
-      $ref: "./routes/your-routes.yaml#/get"
-    post:
-      $ref: "./routes/your-routes.yaml#/post"
-  /your-endpoint/{id}:
-    put:
-      $ref: "./routes/your-routes.yaml#/~1{id}/put"
-    delete:
-      $ref: "./routes/your-routes.yaml#/~1{id}/delete"
-```
-
-2. Create route definitions in `routes/your-routes.yaml`:
-
-```yaml
-get:
-  summary: Your endpoint description
-  operationId: yourOperation
-  tags:
-    - your-tag
-  responses:
-    "200":
-      description: Success response
-      content:
-        application/json:
-          schema:
-            $ref: "../schemas/your-schema.yaml"
-    "401":
-      description: Unauthorized - missing or invalid auth headers
-      content:
-        application/json:
-          schema:
-            $ref: "../schemas/error.yaml"
-
-post:
-  summary: Create a new item
-  operationId: createItem
-  tags:
-    - your-tag
-  requestBody:
-    required: true
-    content:
-      application/json:
-        schema:
-          $ref: "../schemas/your-schema.yaml"
-  responses:
-    "201":
-      description: Item created
-      content:
-        application/json:
-          schema:
-            $ref: "../schemas/your-schema.yaml"
-    "401":
-      description: Unauthorized - missing or invalid auth headers
-      content:
-        application/json:
-          schema:
-            $ref: "../schemas/error.yaml"
-
-# Example of an endpoint requiring admin scope
-delete:
-  summary: Delete all items
-  operationId: deleteAllItems
-  tags:
-    - your-tag
-  security:
-    - scopes: ["admin"]
-  responses:
-    "204":
-      description: All items successfully deleted
-    "401":
-      description: Unauthorized - missing or invalid auth headers
-      content:
-        application/json:
-          schema:
-            $ref: "../schemas/error.yaml"
-    "403":
-      description: User does not have permission to delete all items
-      content:
-        application/json:
-          schema:
-            $ref: "../schemas/error.yaml"
-
-~1{id}/put:
-  summary: Update an item
-  operationId: updateItem
-  tags:
-    - your-tag
-  requestBody:
-    required: true
-    content:
-      application/json:
-        schema:
-          $ref: "../schemas/your-schema.yaml"
-  responses:
-    "200":
-      description: Item updated
-      content:
-        application/json:
-          schema:
-            $ref: "../schemas/your-schema.yaml"
-    "401":
-      description: Unauthorized - missing or invalid auth headers
-      content:
-        application/json:
-          schema:
-            $ref: "../schemas/error.yaml"
-
-~1{id}/delete:
-  summary: Delete an item
-  operationId: deleteItem
-  tags:
-    - your-tag
-  responses:
-    "204":
-      description: Item deleted
-    "401":
-      description: Unauthorized - missing or invalid auth headers
-      content:
-        application/json:
-          schema:
-            $ref: "../schemas/error.yaml"
-```
-
-3. Create schema definitions in `schemas/your-schema.yaml`:
-
-```yaml
-type: object
-required:
-  - requiredField
-properties:
-  requiredField:
-    type: string
-    description: Field description
-```
-
-4. **Referencing Shared Schemas (e.g., Error Schema):**
-   To use schemas defined in shared packages (like the standard error schema in `@saflib/openapi`), create a local intermediary schema file (e.g., `schemas/error.yaml`) within your spec package:
-
-   ```yaml
-   # <your-spec-package>/schemas/error.yaml
-   error:
-     $ref: "../../../saflib/openapi-specs/schemas/error.yaml" # Adjust path as needed
-   ```
-
-   Then, reference this local intermediary file from your routes or main spec file:
-
-   ```yaml
-   # Example in routes/your-routes.yaml
-   # ...
-   responses:
-     "404":
-       description: Not Found
-       content:
-         application/json:
-           schema:
-             $ref: "../schemas/error.yaml" # Points to the local intermediary
-   ```
-
-   This pattern avoids issues with direct cross-package relative path resolution in some tools.
-
-## Generating Specs
-
-1. Install dependencies:
+Generated files. These are checked into the repo, per [best-practices](../../best-practices.md#check-in-generated-files).
 
 ```bash
-npm install
+npm run saf-specs generate
 ```
 
-2. Generate specs:
+To generate HTML docs as well, run
 
 ```bash
-npm run generate
+npm run saf-specs generate -- --html
 ```
 
-This will:
+### `events/`
 
-- Generate TypeScript types in `dist/openapi.d.ts`
-- Generate JSON spec in `dist/openapi.json`
-- Generate API docs in `dist/index.html`
+Product event definitions. These are the sorts of events you send to Google Analytics or similar services. The index file will `oneOf` all the events, to create a single event type for any code which accepts any specified event. Each object should have an `event` property which is any string in the `index.yaml` file, and a specific string for each defined event.
 
-## Using the Spec Package
+By defining events in a spec, they can be handled in the backend, frontend, or across them both (depending on your ingestion pipeline).
 
-1. Import the JSON spec for middleware validation:
+Depending on how many events you have, you may want to organize them into folders. Try to keep them in one package, though, so there's a comprehensive list of well-defined events for a service.
 
-```typescript
-import { jsonSpec } from "@saf-2025/specs-your-spec";
-```
+### `routes/`
 
-2. Import types for type safety:
+API route definitions. There should be one file per route, with the file name being the operation ID.
 
-```typescript
-import type { YourSchema } from "@saf-2025/specs-your-spec";
-```
+Routes should use `schemas/` for recurring business objects. Unless you're sure the route will never return more than one kind of object, the response should be an object whose values are a business object or an array of business objects. Responses should avoid getting any deeper than that.
 
-## Best Practices
+The top-level property should be the same as the operationId, as this will help debugging errors which just print the schema path for the offending file.
 
-1. Keep route and schema definitions in separate files for better organization
-2. Use consistent naming conventions for operationIds and schema names
-3. Include proper descriptions for all endpoints and schemas
-4. Define all possible response status codes in the spec
-5. Use proper security schemes for protected endpoints
-6. Keep the spec up to date with implementation changes
-7. Use `$ref` to reference paths and schemas from separate files
-8. For path parameters in references, use `~1` to escape the forward slash (e.g., `~1{id}`)
-9. Always include 401 responses for endpoints that require authentication
-10. Include 403 responses for endpoints that require specific scopes
+### `schemas/`
+
+Business object definitions. These are important to get right, as they are shared across much of the domain. Aside from being used by route handlers and tanstack queries, these objects are also expected to be passed around and used as types for parameters and responses. Consider these use cases when defining them.
+
+Per [best-practices](../../best-practices.md#specify-and-enforce-shared-apis-models-and-strings), keep these objects flat. If they reference some other object, have the field be an identifier.
+
+Schemas should be defined in a way that is easy to reuse across routes.
+
+### `openapi.yaml`
+
+The index file for the spec. The main properties it requires are:
+
+- `openapi` and `info`: standard OpenAPI properties
+- `paths`: links to `routes/` files
+- `components`: links to each individual schema file, and the `events/` index file
+
+Examples:
+
+- [`@saflib/identity` openapi.yaml](https://github.com/sderickson/saflib/blob/main/identity/identity-spec/openapi.yaml)
+- [`@saflib/cron` openapi.yaml](https://github.com/sderickson/saflib/blob/main/cron/cron-spec/openapi.yaml)
+
+### `index.ts`
+
+The main entrypoint for the package. It should export:
+
+- `jsonSpec`: the spec imported as `import * as json from "./dist/openapi.json" with { type: "json" };`
+- `paths`: the paths type as `import type { paths } from "./dist/openapi.d.ts";`
+- Helper types for extracting request and response types by operationId.
+- Each `schema` as its own type.
+
+This provides everything the application needs to verify communications, enforce type safety, and easily access common business object types.
+
+Examples:
+
+- [`@saflib/identity` index file](https://github.com/sderickson/saflib/blob/main/identity/identity-spec/index.ts)
+- [`@saflib/cron` index file](https://github.com/sderickson/saflib/blob/main/cron/cron-spec/index.ts)
+
+## Using Generated Files
+
+See other packages for how they are used:
+
+- [`@saflib/express`](../../express/docs/03-routes.md#typing-the-interface)
+- `@saflib/vue` - TODO

@@ -2,9 +2,6 @@
   "name": "@saflib/identity-db",
   "description": "Shared authentication database library for SAF services",
   "type": "module",
-  "saflib": {
-    "group": "auth"
-  },
   "exports": {
     ".": "./index.ts"
   },

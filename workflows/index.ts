@@ -40,7 +40,7 @@ export { copyTemplateStateComposer } from "./src/copy-template-machine/copy-temp
 
 export {
   type UpdateTemplateFileComposerOptions,
-  updateTemplateFileComposer,
+  updateTemplateComposer,
 } from "./src/update-template-machine/update-template-machine.ts";
 
 export * from "./src/test-runner.ts";

@@ -20,13 +20,13 @@ get:
       content:
         application/json:
           schema:
-            $ref: "../schemas/error.yaml#/error"
+            $ref: "../schemas/error.yaml"
     "403":
       description: Forbidden - Insufficient permissions (requires cron:read).
       content:
         application/json:
           schema:
-            $ref: "../schemas/error.yaml#/error"
+            $ref: "../schemas/error.yaml"
 
 # PUT /cron/jobs/settings
 put:
@@ -65,16 +65,16 @@ put:
       content:
         application/json:
           schema:
-            $ref: "../schemas/error.yaml#/error"
+            $ref: "../schemas/error.yaml"
     "403":
       description: Forbidden - Insufficient permissions (requires cron:write).
       content:
         application/json:
           schema:
-            $ref: "../schemas/error.yaml#/error"
+            $ref: "../schemas/error.yaml"
     "404":
       description: Job setting with the specified name not found.
       content:
         application/json:
           schema:
-            $ref: "../schemas/error.yaml#/error"
+            $ref: "../schemas/error.yaml"

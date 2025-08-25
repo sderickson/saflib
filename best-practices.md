@@ -157,3 +157,14 @@ There needs to be a source of truth for how to do things the right way specific 
 - **How-To Guides** are great fodder for agentic workflows, and human-readable versions should be generated from those.
 
 The above types of docs are defined by [Diátaxis](https://diataxis.fr/).
+
+## Commit Generated Files to the Repo
+
+Where it makes sense, commit generated files to the repo. The main questions you should ask for whether it does make sense are:
+
+- Would it be helpful to see while navigating the codebase through the browser such as on GitHub?
+- Can they be used as context for agentic workflows?
+- Does it provide useful information in a code review when it changes?
+- Do they _need_ to exist in the file system in order for the system to work in development?
+
+As long as the files themselves aren't too large or difficult to read, "Yes" answers suggest they should be committed to the repo. The extra repo size and code review context are often worth the above benefits.

@@ -5,12 +5,6 @@
     "version": "1.0.0",
     "description": "Strictly for E2E testing, to see what emails are sent in, for example, playwright tests."
   },
-  "servers": [
-    {
-      "url": "http://cron.docker.localhost/",
-      "description": "Development server"
-    }
-  ],
   "paths": {
     "/email/sent": {
       "get": {

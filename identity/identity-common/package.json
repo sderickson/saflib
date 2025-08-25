@@ -5,9 +5,6 @@
   "exports": {
     ".": "./index.ts"
   },
-  "saflib": {
-    "group": "auth"
-  },
   "dependencies": {
     "@saflib/drizzle-sqlite3": "*"
   },

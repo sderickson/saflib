@@ -24,4 +24,4 @@ get:
       content:
         application/json:
           schema:
-            $ref: "../schemas/error.yaml#/error"
+            $ref: "../schemas/error.yaml"

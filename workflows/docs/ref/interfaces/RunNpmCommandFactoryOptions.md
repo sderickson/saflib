@@ -14,7 +14,7 @@ Options for the runNpmCommandComposer function.
 
 ### command
 
-> **command**: `"install @saflib/env"` \| `"exec saf-env generate"` \| `"exec saf-env generate-all"`
+> **command**: `string`
 
 ***
 

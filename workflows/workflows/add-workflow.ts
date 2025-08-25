@@ -71,11 +71,11 @@ export const AddWorkflowMachine = setup({
     // First copy over the template files
     ...copyTemplateStateComposer({
       stateName: "initialize",
-      nextStateName: "updateWorkflowFile",
+      nextStateName: "updateWorkflowFileInitially",
     }),
 
     ...promptAgentComposer<AddWorkflowContext>({
-      stateName: "updateWorkflowFile",
+      stateName: "updateWorkflowFileInitially",
       nextStateName: "exportWorkflow",
       promptForContext: ({ context }) =>
         `Add name, description, and cliArguments to the newly created ${context.workflowPath}.
@@ -116,11 +116,50 @@ export const AddWorkflowMachine = setup({
     // TODO: Automate this; doesn't need to be a prompt
     ...promptAgentComposer<AddWorkflowContext>({
       stateName: "verifyWorkflowList",
-      nextStateName: "done",
+      nextStateName: "setupComplete",
       promptForContext: ({ context }) =>
         `Check that the new workflow appears in the saf-workflow CLI tool.
       
       Run the command \`npm exec saf-workflow kickoff help\` in your terminal (any directory). Ensure that your new workflow "${context.workflowName}" appears in the list.`,
+    }),
+
+    ...promptAgentComposer<AddWorkflowContext>({
+      stateName: "setupComplete",
+      nextStateName: "createTemplates",
+      promptForContext: () =>
+        `Stop and understand the workflow requirements before proceeding.
+
+      If you don't know the answers to any of the following, ask the person giving the task:
+      1. What should this workflow do?
+      2. What template files should it create?
+      3. What should the workflow steps be?
+      4. Any specific requirements or constraints?
+      `,
+    }),
+
+    ...promptAgentComposer<AddWorkflowContext>({
+      stateName: "createTemplates",
+      nextStateName: "implementWorkflow",
+      promptForContext: ({ context }) =>
+        `Creating template files for ${context.workflowName} workflow.
+
+      Create a folder named \`${context.workflowName}\` next to the workflow file. Add any template files you need to the folder.`,
+    }),
+
+    ...promptAgentComposer<AddWorkflowContext>({
+      stateName: "implementWorkflow",
+      nextStateName: "reviewChecklist",
+      promptForContext: ({ context }) =>
+        `Implementing the workflow logic in ${context.workflowPath}.`,
+    }),
+
+    ...promptAgentComposer<AddWorkflowContext>({
+      stateName: "reviewChecklist",
+      nextStateName: "done",
+      promptForContext: ({ context }) =>
+        `Review the checklist and verify that the workflow was added correctly.
+      
+      Run \`npm exec saf-workflow checklist ${context.workflowName}\` to see the checklist.`,
     }),
 
     done: {
@@ -134,7 +173,7 @@ export const AddWorkflowMachine = setup({
 export class AddWorkflow extends XStateWorkflow {
   machine = AddWorkflowMachine;
   description =
-    "Create a new workflow and adds it to the CLI tool. Does not currently implement the workflow.";
+    "Create a new workflow and adds it to the CLI tool. Stops after setup to wait for implementation requirements.";
   cliArguments = [
     {
       name: "name",

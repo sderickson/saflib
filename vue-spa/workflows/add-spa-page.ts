@@ -5,7 +5,7 @@ import {
   logInfo,
   XStateWorkflow,
   copyTemplateStateComposer,
-  updateTemplateFileComposer,
+  updateTemplateComposer,
   type TemplateWorkflowContext,
   runTestsComposer,
   promptAgentComposer,
@@ -60,7 +60,7 @@ export const AddSpaPageWorkflowMachine = setup({
     }),
 
     // Then for each file, have the agent update it
-    ...updateTemplateFileComposer<TemplateWorkflowContext>({
+    ...updateTemplateComposer<TemplateWorkflowContext>({
       filePath: (context) =>
         path.join(context.targetDir, `${context.pascalName}.loader.ts`),
       promptMessage: (context) =>
@@ -69,7 +69,7 @@ export const AddSpaPageWorkflowMachine = setup({
       nextStateName: "useLoader",
     }),
 
-    ...updateTemplateFileComposer<TemplateWorkflowContext>({
+    ...updateTemplateComposer<TemplateWorkflowContext>({
       filePath: (context) =>
         path.join(context.targetDir, `${context.pascalName}.vue`),
       promptMessage: (context) =>
@@ -85,7 +85,7 @@ export const AddSpaPageWorkflowMachine = setup({
         `Find the "links" package adjacent to this package. Add the link for the new page there along with the others.`,
     }),
 
-    ...updateTemplateFileComposer<TemplateWorkflowContext>({
+    ...updateTemplateComposer<TemplateWorkflowContext>({
       filePath: "router.ts",
       promptMessage: (context) =>
         `Please update the router.ts file to include the new page. Add a new route for ${context.name} that uses the ${context.pascalName}Async component. Use the link from the shared links package instead of hardcoding the path.`,
@@ -93,7 +93,7 @@ export const AddSpaPageWorkflowMachine = setup({
       nextStateName: "updateTests",
     }),
 
-    ...updateTemplateFileComposer<TemplateWorkflowContext>({
+    ...updateTemplateComposer<TemplateWorkflowContext>({
       filePath: (context) =>
         path.join(context.targetDir, `${context.pascalName}.test.ts`),
       promptMessage: (context) =>
@@ -110,7 +110,7 @@ export const AddSpaPageWorkflowMachine = setup({
       nextStateName: "updateStrings",
     }),
 
-    ...updateTemplateFileComposer<TemplateWorkflowContext>({
+    ...updateTemplateComposer<TemplateWorkflowContext>({
       filePath: (context) =>
         path.join(context.targetDir, `${context.pascalName}.strings.ts`),
       promptMessage: (context) =>
@@ -126,7 +126,7 @@ export const AddSpaPageWorkflowMachine = setup({
         `Find the strings.ts file in the root of the package. Add the strings from the file you just updated there.`,
     }),
 
-    ...updateTemplateFileComposer<TemplateWorkflowContext>({
+    ...updateTemplateComposer<TemplateWorkflowContext>({
       filePath: (context) =>
         path.join(context.targetDir, `${context.pascalName}.vue`),
       promptMessage: (context) =>
@@ -135,7 +135,7 @@ export const AddSpaPageWorkflowMachine = setup({
       nextStateName: "updateTestsForDesign",
     }),
 
-    ...updateTemplateFileComposer<TemplateWorkflowContext>({
+    ...updateTemplateComposer<TemplateWorkflowContext>({
       filePath: (context) =>
         path.join(context.targetDir, `${context.pascalName}.test.ts`),
       promptMessage: (context) =>

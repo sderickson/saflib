@@ -12,7 +12,7 @@ import {
   type WorkflowInput,
   outputFromContext,
   copyTemplateStateComposer,
-  updateTemplateFileComposer,
+  updateTemplateComposer,
   type TemplateWorkflowContext,
 } from "@saflib/workflows";
 import path from "node:path";
@@ -136,7 +136,7 @@ export const AddRouteWorkflowMachine = setup({
       nextStateName: "implementRoute",
     }),
 
-    ...updateTemplateFileComposer<AddRouteWorkflowContext>({
+    ...updateTemplateComposer<AddRouteWorkflowContext>({
       filePath: (context) => path.join(context.targetDir, `${context.name}.ts`),
       promptMessage: (context) =>
         `Implement the ${context.camelName} route handler. Make sure to:
@@ -167,7 +167,7 @@ export const AddRouteWorkflowMachine = setup({
       nextStateName: "updateTests",
     }),
 
-    ...updateTemplateFileComposer<AddRouteWorkflowContext>({
+    ...updateTemplateComposer<AddRouteWorkflowContext>({
       filePath: (context) =>
         path.join(context.targetDir, `${context.name}.test.ts`),
       promptMessage: (context) =>

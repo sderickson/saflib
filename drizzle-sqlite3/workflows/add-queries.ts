@@ -10,7 +10,7 @@ import {
   type WorkflowInput,
   outputFromContext,
   copyTemplateStateComposer,
-  updateTemplateFileComposer,
+  updateTemplateComposer,
   type TemplateWorkflowContext,
 } from "@saflib/workflows";
 import path from "node:path";
@@ -165,7 +165,7 @@ export const AddQueriesWorkflowMachine = setup({
       nextStateName: "implementQuery",
     }),
 
-    ...updateTemplateFileComposer<AddQueriesWorkflowContext>({
+    ...updateTemplateComposer<AddQueriesWorkflowContext>({
       filePath: (context) => path.join(context.targetDir, `${context.name}.ts`),
       promptMessage: (context) =>
         `Implement the \`${context.camelName}\` query following the documentation guidelines.`,
@@ -182,7 +182,7 @@ export const AddQueriesWorkflowMachine = setup({
       nextStateName: "updateTests",
     }),
 
-    ...updateTemplateFileComposer<AddQueriesWorkflowContext>({
+    ...updateTemplateComposer<AddQueriesWorkflowContext>({
       filePath: (context) =>
         path.join(context.targetDir, `${context.name}.test.ts`),
       promptMessage: (context) => `Implement \`${context.name}.test.ts\`.

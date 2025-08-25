@@ -7,6 +7,7 @@
     "saf-workflow": "./workflow-cli.ts"
   },
   "dependencies": {
+    "@saflib/commander": "*",
     "@saflib/drizzle-sqlite3": "*",
     "@saflib/email": "*",
     "@saflib/env": "*",
@@ -14,10 +15,10 @@
     "@saflib/grpc": "*",
     "@saflib/grpc-specs": "*",
     "@saflib/monorepo": "*",
-    "@saflib/node-xstate": "*",
     "@saflib/openapi": "*",
     "@saflib/processes": "*",
     "@saflib/vue-spa": "*",
-    "@saflib/workflows": "*"
+    "@saflib/workflows": "*",
+    "@saflib/xstate": "*"
   }
 }

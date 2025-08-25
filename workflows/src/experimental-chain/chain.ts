@@ -28,7 +28,7 @@ type ComposerTuple<T extends Record<string, any>> = [
  *     stateName: "copyTemplate",
  *     nextStateName: "updateLoader",
  *   }),
- *   ...updateTemplateFileComposer({
+ *   ...updateTemplateComposer({
  *     filePath: "loader.ts",
  *     promptMessage: "Update the loader",
  *     stateName: "updateLoader",
@@ -45,7 +45,7 @@ type ComposerTuple<T extends Record<string, any>> = [
  * // You can use this concise approach:
  * const { initial, states } = createChain([
  *   [useTemplateStateComposer, {}],
- *   [updateTemplateFileComposer, {
+ *   [updateTemplateComposer, {
  *     filePath: "loader.ts",
  *     promptMessage: "Update the loader"
  *   }],
