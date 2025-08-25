@@ -1,4 +1,4 @@
-import { metricHistogramDefaultBuckets } from "@saflib/monorepo";
+import { metricHistogramDefaultBuckets } from "@saflib/node";
 import client from "prom-client";
 
 const grpcMetricName = "grpc_request_duration_seconds";

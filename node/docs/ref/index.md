@@ -31,6 +31,7 @@
 | Variable | Description |
 | ------ | ------ |
 | [defaultErrorReporter](variables/defaultErrorReporter.md) | Default ErrorReporter; call addErrorCollector with this to use it. |
+| [metricHistogramDefaultBuckets](variables/metricHistogramDefaultBuckets.md) | - |
 | [safContextStorage](variables/safContextStorage.md) | Storage for SafContext. |
 | [safReportersStorage](variables/safReportersStorage.md) | AsyncLocalStorage for SafReporters. |
 | [testContext](variables/testContext.md) | Context provided during testing. |

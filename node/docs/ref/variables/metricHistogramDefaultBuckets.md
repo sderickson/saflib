@@ -1,9 +1,7 @@
-[**@saflib/monorepo**](../index.md)
+[**@saflib/node**](../index.md)
 
 ***
 
 # Variable: metricHistogramDefaultBuckets
 
 > `const` **metricHistogramDefaultBuckets**: `number`[]
-
-For Prometheus metrics.
