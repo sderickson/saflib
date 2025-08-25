@@ -72,11 +72,11 @@ export const AddWorkflowMachine = setup({
     // First copy over the template files
     ...copyTemplateStateComposer({
       stateName: "initialize",
-      nextStateName: "updateWorkflowFile",
+      nextStateName: "updateWorkflowFileInitially",
     }),
 
     ...promptAgentComposer<AddWorkflowContext>({
-      stateName: "updateWorkflowFile",
+      stateName: "updateWorkflowFileInitially",
       nextStateName: "exportWorkflow",
       promptForContext: ({ context }) =>
         `Add name, description, and cliArguments to the newly created ${context.workflowPath}.
@@ -124,12 +124,23 @@ export const AddWorkflowMachine = setup({
       Run the command \`npm exec saf-workflow kickoff help\` in your terminal (any directory). Ensure that your new workflow "${context.workflowName}" appears in the list.`,
     }),
 
-    ...updateTemplateComposer<AddWorkflowContext>({
+    ...promptAgentComposer<AddWorkflowContext>({
       stateName: "implementWorkflow",
+      nextStateName: "updateWorkflowFile",
+      promptForContext: ({ context }) =>
+        `Time to implement! Create a folder for template files next to the workflow file (${context.workflowPath}). You may skip this if the workflow involves no files.
+      
+      Remember to include the strings TemplateFile, template-file, etc in these files. These will be replaced with the same-string-style name of the thing being created.`,
+    }),
+
+    ...updateTemplateComposer<AddWorkflowContext>({
+      stateName: "updateWorkflowFile",
       nextStateName: "reviewChecklist",
       filePath: (context) => context.workflowPath,
       promptMessage: (context) =>
-        `Update the package.json of this package (${context.packageName}) to include a './workflows' export pointing to the 'workflows/index.ts' file.`,
+        `Implement the workflow in (${context.workflowPath}).
+      
+      Make sure to have \`sourceDir\` be the template directory you just created, if you created one.`,
     }),
 
     ...promptAgentComposer<AddWorkflowContext>({

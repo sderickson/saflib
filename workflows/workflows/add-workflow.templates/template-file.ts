@@ -17,26 +17,25 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 // TODO: replace this with the actual input for your workflow
-interface ToDoWorkflowInput extends WorkflowInput {
+interface TemplateFileWorkflowInput extends WorkflowInput {
   name: string;
 }
 
 // TODO: Remove exampleProperty and replace it with the actual context properties your workflow needs
-interface ToDoWorkflowContext extends TemplateWorkflowContext {
+interface TemplateFileWorkflowContext extends TemplateWorkflowContext {
   // Add any additional context properties your workflow needs
   exampleProperty: string;
 }
 
-export const ToDoWorkflowMachine = setup({
+export const TemplateFileWorkflowMachine = setup({
   types: {
-    input: {} as ToDoWorkflowInput,
-    context: {} as ToDoWorkflowContext,
+    input: {} as TemplateFileWorkflowInput,
+    context: {} as TemplateFileWorkflowContext,
   },
   actions: workflowActions,
   actors: workflowActors,
 }).createMachine({
-  // TODO: replace "to-do" with the actual name of the workflow
-  id: "to-do",
+  id: "template-file",
 
   // TODO: Only keep "copyTemplate" if this workflow actually copies over template files
   // Otherwise, remove the template states and update this to the actual initial state
@@ -53,7 +52,7 @@ export const ToDoWorkflowMachine = setup({
     // This will probably be based on the inputs, such as the name of what is being created
     const targetDir = path.join(process.cwd(), "output");
 
-    // TODO: Update to include the actual context properties from ToDoWorkflowContext
+    // TODO: Update to include the actual context properties from TemplateFileWorkflowContext
     return {
       name: input.name,
       pascalName: input.name.charAt(0).toUpperCase() + input.name.slice(1),
@@ -73,7 +72,7 @@ export const ToDoWorkflowMachine = setup({
       nextStateName: "updateMainFile",
     }),
 
-    ...updateTemplateComposer<ToDoWorkflowContext>({
+    ...updateTemplateComposer<TemplateFileWorkflowContext>({
       filePath: (context) => path.join(context.targetDir, `${context.name}.ts`),
       promptMessage: (context) =>
         `Please update ${context.name}.ts to implement the main functionality. Replace any TODO comments with actual implementation.`,
@@ -81,7 +80,7 @@ export const ToDoWorkflowMachine = setup({
       nextStateName: "updateConfigFile",
     }),
 
-    ...updateTemplateComposer<ToDoWorkflowContext>({
+    ...updateTemplateComposer<TemplateFileWorkflowContext>({
       filePath: (context) =>
         path.join(context.targetDir, `${context.name}.config.ts`),
       promptMessage: (context) =>
@@ -90,7 +89,7 @@ export const ToDoWorkflowMachine = setup({
       nextStateName: "updateTests",
     }),
 
-    ...updateTemplateComposer<ToDoWorkflowContext>({
+    ...updateTemplateComposer<TemplateFileWorkflowContext>({
       filePath: (context) =>
         path.join(context.targetDir, `${context.name}.test.ts`),
       promptMessage: (context) =>
@@ -99,14 +98,14 @@ export const ToDoWorkflowMachine = setup({
       nextStateName: "runTests",
     }),
 
-    ...runTestsComposer<ToDoWorkflowContext>({
+    ...runTestsComposer<TemplateFileWorkflowContext>({
       filePath: (context) =>
         path.join(context.targetDir, `${context.name}.test.ts`),
       stateName: "runTests",
       nextStateName: "verifyDone",
     }),
 
-    ...promptAgentComposer<ToDoWorkflowContext>({
+    ...promptAgentComposer<TemplateFileWorkflowContext>({
       stateName: "verifyDone",
       nextStateName: "done",
       promptForContext: ({ context }) =>
@@ -120,16 +119,18 @@ export const ToDoWorkflowMachine = setup({
   output: outputFromContext,
 });
 
-export class ToDoWorkflow extends XStateWorkflow {
-  machine = ToDoWorkflowMachine;
+export class TemplateFileWorkflow extends XStateWorkflow {
+  machine = TemplateFileWorkflowMachine;
   description = "TODO: Describe what this workflow does";
 
-  // TODO: Update to match the inputs described in ToDoWorkflowInput
+  // TODO: Update to match the inputs described in TemplateFileWorkflowInput
   cliArguments = [
     {
       name: "name",
       description:
         "The name of the thing to create (e.g., 'my-component' or 'my-service')",
+      // TODO: replace "thingy" with what is actually being created in this workflow
+      exampleValue: "example-thingy",
     },
   ];
   sourceUrl = import.meta.url;
