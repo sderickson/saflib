@@ -1,13 +1,13 @@
 // @ts-nocheck - TODO remove this line as part of workflow
 import { afterEach, beforeEach, describe, it, vi } from "vitest";
-import { makeMachineTemplateMachine } from "./machine-template.ts";
+import { makeExampleMachineMachine } from "./example-machine.ts";
 import { createActor, waitFor } from "xstate";
 import type { DbKey } from "@saflib/drizzle-sqlite3";
 // import { yourDb } from "@your-org/your-db";
 import { throwError } from "@saflib/monorepo";
-import { allChildrenSettled } from "@saflib/node-xstate";
+import { allChildrenSettled } from "@saflib/xstate";
 
-describe("makeMachineTemplateMachine", () => {
+describe("makeExampleMachineMachine", () => {
   let dbKey: DbKey;
   beforeEach(async () => {
     vi.useFakeTimers();
@@ -20,16 +20,16 @@ describe("makeMachineTemplateMachine", () => {
 
   it.skip("should be in the PENDING state when created", async () => {
     // TODO: Create a test entity using the appropriate database call
-    const scheduledMachineTemplate = {
+    const scheduledExampleMachine = {
       id: 1,
       status: "PENDING",
       machineSnapshot: null,
       // TODO: Add other required fields for your entity
     };
 
-    const machine = createActor(makeMachineTemplateMachine, {
+    const machine = createActor(makeExampleMachineMachine, {
       input: {
-        scheduledMachineTemplate: scheduledMachineTemplate as any,
+        scheduledExampleMachine: scheduledExampleMachine as any,
       },
     });
     machine.start();

@@ -14,7 +14,7 @@
     "@saflib/grpc": "*",
     "@saflib/grpc-specs": "*",
     "@saflib/monorepo": "*",
-    "@saflib/node-xstate": "*",
+    "@saflib/xstate": "*",
     "@saflib/openapi": "*",
     "@saflib/processes": "*",
     "@saflib/vue-spa": "*",
