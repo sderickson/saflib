@@ -65,7 +65,9 @@ export const UpdateSpecWorkflowMachine = setup({
             # You can then specify a 'required' array separately if needed for the request,
             # or omit it if all properties are optional for the request body.
 
-        This keeps your spec DRY and easier to maintain.`,
+        This keeps your spec DRY and easier to maintain.
+        
+        Also, when creating a route file, have the top-level property be the same as the operationId.`,
       stateName: "updateSpec",
       nextStateName: "updateOpenapiYaml",
     }),

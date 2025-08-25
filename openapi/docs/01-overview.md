@@ -71,7 +71,7 @@ API route definitions. There should be one file per route, with the file name be
 
 Routes should use `schemas/` for recurring business objects. Unless you're sure the route will never return more than one kind of object, the response should be an object whose values are a business object or an array of business objects. Responses should avoid getting any deeper than that.
 
-The top-level property should be the HTTP method that the route expects, such as `get`, `post`, `put`, `delete`.
+The top-level property should be the same as the operationId, as this will help debugging errors which just print the schema path for the offending file.
 
 ### `schemas/`
 
