@@ -103,7 +103,7 @@ Features should be implemented following this layer order:
 1. **API Spec Layer**
    - Update OpenAPI specifications
    - Generate updated types
-   - Reference: [update-spec.md](../openapi/docs/03-updates.md)
+   - Reference: [overview.md](../openapi/docs/01-overview.md)
 
 2. **Database Layer**
    - Schema changes
@@ -131,7 +131,7 @@ Features should be implemented following this layer order:
 - Document error cases
 - Generate and verify types
 - Testing: Verify type generation
-- Documentation: [updates.md](../openapi/docs/03-updates.md)
+- Documentation: [overview.md](../openapi/docs/01-overview.md)
 
 ### Database Layer
 
