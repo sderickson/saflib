@@ -47,7 +47,7 @@ export const AddTsPackageWorkflowMachine = setup({
     const packageDirName = path.basename(input.path);
 
     return {
-      name: packageDirName,
+      name: input.name,
       pascalName:
         packageDirName.charAt(0).toUpperCase() + packageDirName.slice(1),
       targetDir,

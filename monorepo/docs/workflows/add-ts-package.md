@@ -21,9 +21,10 @@ To run this workflow automatically, tell the agent to:
 When run, the workflow will:
 
 * Copy template files and rename placeholders.
+  * Upsert **index.test.ts** from [template](https://github.com/sderickson/saflib/blob/main/monorepo/workflows/templates/index.test.ts)
   * Upsert **index.ts** from [template](https://github.com/sderickson/saflib/blob/main/monorepo/workflows/templates/index.ts)
   * Upsert **package.json** from [template](https://github.com/sderickson/saflib/blob/main/monorepo/workflows/templates/package.json)
-  * Upsert **test.ts** from [template](https://github.com/sderickson/saflib/blob/main/monorepo/workflows/templates/test.ts)
+  * Upsert **tsconfig.json** from [template](https://github.com/sderickson/saflib/blob/main/monorepo/workflows/templates/tsconfig.json)
   * Upsert **vitest.config.js** from [template](https://github.com/sderickson/saflib/blob/main/monorepo/workflows/templates/vitest.config.js)
 * Update package.json to remove TODOs
 * Ensure the new package path 'packages/my-lib' is included in the "workspaces" array in the root `package.json`.
