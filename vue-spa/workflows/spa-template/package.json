@@ -1,5 +1,5 @@
 {
-  "name": "@your-org/web-template",
+  "name": "@your-org/web-template-file",
   "private": true,
   "type": "module",
   "exports": {
