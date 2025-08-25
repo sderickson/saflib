@@ -13,14 +13,11 @@
     "test:coverage": "vitest run --coverage",
     "typecheck": "tsc"
   },
-  "dependencies": {
+  "devDependencies": {
     "@saflib/commander": "*",
     "@saflib/dev-tools": "*",
     "@saflib/utils": "*",
-    "commander": "^14.0.0",
+    "@saflib/vitest": "*",
     "xstate": "^5.19.3"
-  },
-  "devDependencies": {
-    "@saflib/vitest": "*"
   }
 }
