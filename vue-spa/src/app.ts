@@ -9,7 +9,7 @@ import type { Router } from "vue-router";
 import { createI18n } from "vue-i18n";
 import { type I18nMessages } from "./strings.ts";
 
-interface CreateVueAppOptions {
+export interface CreateVueAppOptions {
   router: Router;
   vuetifyConfig?: VuetifyOptions;
   callback?: (app: ReturnType<typeof createApp>) => void;

@@ -1,6 +1,6 @@
 import { useRoute } from "vue-router";
 
-type ProductEventListener<T> = (event: T) => void;
+export type ProductEventListener<T> = (event: T) => void;
 
 /*
   Provide a product event type to ensure type safety.
@@ -30,12 +30,12 @@ export const getClientName = () => {
   return clientName;
 };
 
-type ProductEventCommon = {
-  /** @description The frontend client that triggered the event. For web, it should be "web-{spa-name}". */
+export type ProductEventCommon = {
+  /** The frontend client that triggered the event. For web, it should be "web-{spa-name}". */
   client: string;
-  /** @description The page that triggered the event. For vue, it should be the route name provided by vue router. */
+  /** The page that triggered the event. For vue, it should be the route name provided by vue router. */
   view: string;
-  /** @description The component that triggered the event. For vue, it should be the component name. */
+  /** The component that triggered the event. For vue, it should be the component name. */
   component: string;
 };
 

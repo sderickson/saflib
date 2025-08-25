@@ -12,20 +12,20 @@ export function generateTypeDoc(monorepoContext: MonorepoContext) {
       "No exports found in package.json; use `exports` field not `main`.",
     );
   }
-  const entrypointCommands = Object.values(entrypoints)
-    .filter((entrypoint) => !entrypoint.includes("./workflows"))
-    .filter((entrypoint) => !entrypoint.includes("./eslint.config.js"))
-    .filter((entrypoint) => !entrypoint.includes("./tsconfig.json"))
-    .map((entrypoint) => {
-      return `--entryPoints ${entrypoint}`;
-    });
+  // const entrypointCommands = Object.values(entrypoints)
+  //   .filter((entrypoint) => !entrypoint.includes("./workflows"))
+  //   .filter((entrypoint) => !entrypoint.includes("./eslint.config.js"))
+  //   .filter((entrypoint) => !entrypoint.includes("./tsconfig.json"))
+  //   .map((entrypoint) => {
+  //     return `--entryPoints ${entrypoint}`;
+  //   });
 
   console.log("\nGenerating typedoc...");
   const command = [
     "typedoc",
 
     // for each entrypoint, add the entrypoint command
-    ...entrypointCommands,
+    // ...entrypointCommands,
 
     // for easy reading on GitHub, Vitepress
     "--plugin typedoc-plugin-markdown",

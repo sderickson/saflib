@@ -1,0 +1,4 @@
+{
+  "extends": "@saflib/monorepo/tsconfig.json",
+  "include": ["./src/**/*.ts"]
+}

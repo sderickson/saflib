@@ -1,5 +1,6 @@
 import { QueryClient } from "@tanstack/vue-query";
 import createClient from "openapi-fetch";
+
 export const createSafClient = <Q extends {}>(
   subdomain: string,
 ): ReturnType<typeof createClient<Q>> => {
@@ -36,15 +37,15 @@ export class TanstackError extends Error {
   }
 }
 
-interface ClientResponse {
+export interface ClientResponse {
   status: number;
 }
 
-interface ClientResponseError {
+export interface ClientResponseError {
   code?: string;
 }
 
-interface ClientResult<T> {
+export interface ClientResult<T> {
   error?: ClientResponseError;
   data?: T;
   response: ClientResponse;
