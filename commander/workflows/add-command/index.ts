@@ -4,7 +4,10 @@ import { setupContext } from "@saflib/commander";
 
 const program = new Command()
   .name("template-file")
-  .description("TODO: Add CLI description");
+  .description("TODO: Add CLI description")
+  .action(() => {
+    program.help();
+  });
 
 setupContext(
   {

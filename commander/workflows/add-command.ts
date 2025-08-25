@@ -37,7 +37,7 @@ export const AddCommandWorkflowMachine = setup({
   context: ({ input }) => {
     const __filename = fileURLToPath(import.meta.url);
     const __dirname = path.dirname(__filename);
-    const sourceDir = path.join(__dirname, "add-commands");
+    const sourceDir = path.join(__dirname, "add-command");
 
     // The target directory will be commands/{input.name}
     const targetDir = path.join(process.cwd(), "commands", input.name);
