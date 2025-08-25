@@ -1,6 +1,6 @@
-import { AddCommandWorkflow } from "./add-command.ts";
+import { AddCLIWorkflow } from "./add-cli.ts";
 import type { ConcreteWorkflow } from "@saflib/workflows";
 
-const workflowClasses: ConcreteWorkflow[] = [AddCommandWorkflow];
+const workflowClasses: ConcreteWorkflow[] = [AddCLIWorkflow];
 
 export default workflowClasses;

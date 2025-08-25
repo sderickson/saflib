@@ -16,40 +16,40 @@ import {
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-interface AddCommandWorkflowInput extends WorkflowInput {
+interface AddCLIWorkflowInput extends WorkflowInput {
   name: string;
 }
 
-interface AddCommandWorkflowContext extends TemplateWorkflowContext {
-  commandName: string;
+interface AddCLIWorkflowContext extends TemplateWorkflowContext {
+  cliName: string;
   indexFilePath: string;
 }
 
-export const AddCommandWorkflowMachine = setup({
+export const AddCLIWorkflowMachine = setup({
   types: {
-    input: {} as AddCommandWorkflowInput,
-    context: {} as AddCommandWorkflowContext,
+    input: {} as AddCLIWorkflowInput,
+    context: {} as AddCLIWorkflowContext,
   },
   actions: workflowActions,
   actors: workflowActors,
 }).createMachine({
-  id: "add-command",
+  id: "add-cli",
 
   initial: "copyTemplate",
 
   context: ({ input }) => {
     const __filename = fileURLToPath(import.meta.url);
     const __dirname = path.dirname(__filename);
-    const sourceDir = path.join(__dirname, "add-command");
+    const sourceDir = path.join(__dirname, "add-cli");
 
-    // The target directory will be commands/{input.name}
-    const targetDir = path.join("./commands", input.name);
+    // The target directory will be bin/{input.name}
+    const targetDir = path.join("./bin", input.name);
     const indexFilePath = path.join(targetDir, "index.ts");
 
     return {
       name: input.name,
       pascalName: input.name.charAt(0).toUpperCase() + input.name.slice(1),
-      commandName: input.name,
+      cliName: input.name,
       sourceDir,
       targetDir,
       indexFilePath,
@@ -57,7 +57,7 @@ export const AddCommandWorkflowMachine = setup({
     };
   },
 
-  entry: logInfo("Successfully began add-command workflow"),
+  entry: logInfo("Successfully began add-cli workflow"),
 
   states: {
     ...copyTemplateStateComposer({
@@ -65,7 +65,7 @@ export const AddCommandWorkflowMachine = setup({
       nextStateName: "updateIndexFile",
     }),
 
-    ...updateTemplateComposer<AddCommandWorkflowContext>({
+    ...updateTemplateComposer<AddCLIWorkflowContext>({
       stateName: "updateIndexFile",
       nextStateName: "makeIndexExecutable",
       filePath: (context) => context.indexFilePath,
@@ -73,14 +73,14 @@ export const AddCommandWorkflowMachine = setup({
         `Please update ${context.indexFilePath}, resolving any TODOs.`,
     }),
 
-    ...promptAgentComposer<AddCommandWorkflowContext>({
+    ...promptAgentComposer<AddCLIWorkflowContext>({
       stateName: "makeIndexExecutable",
       nextStateName: "addToBin",
       promptForContext: ({ context }) =>
         `Run the command \`chmod +x ${context.indexFilePath}\` to make the index file executable.`,
     }),
 
-    ...promptAgentComposer<AddCommandWorkflowContext>({
+    ...promptAgentComposer<AddCLIWorkflowContext>({
       stateName: "addToBin",
       nextStateName: "install",
       promptForContext: ({ context }) =>
@@ -98,11 +98,11 @@ export const AddCommandWorkflowMachine = setup({
       command: `install`,
     }),
 
-    ...promptAgentComposer<AddCommandWorkflowContext>({
+    ...promptAgentComposer<AddCLIWorkflowContext>({
       stateName: "verifyDone",
       nextStateName: "done",
       promptForContext: ({ context }) =>
-        `Run the command \`npm exec ${context.name}\` to verify that the command is working correctly.
+        `Run the command \`npm exec ${context.name}\` to verify that the cli is working correctly.
       
       Run \`npm exec ${context.name}\` and it should display help information without errors.`,
     }),
@@ -114,17 +114,16 @@ export const AddCommandWorkflowMachine = setup({
   output: outputFromContext,
 });
 
-export class AddCommandWorkflow extends XStateWorkflow {
-  machine = AddCommandWorkflowMachine;
+export class AddCLIWorkflow extends XStateWorkflow {
+  machine = AddCLIWorkflowMachine;
   description =
-    "Creates a new command for a Commander.js CLI application with proper context setup";
+    "Creates a new CLI with Commander.js, accessible through npm exec";
 
   cliArguments = [
     {
       name: "name",
-      description:
-        "The name of the command to create (e.g., 'build' or 'deploy')",
-      exampleValue: "example-command",
+      description: "The name of the cli to create (e.g., 'build' or 'deploy')",
+      exampleValue: "example-cli",
     },
   ];
   sourceUrl = import.meta.url;
