@@ -218,6 +218,7 @@ export class SpecProjectXstateWorkflow extends XStateWorkflow {
       name: "name",
       description:
         "kebab-case name of project to use in folder and git branch names and alike",
+      exampleValue: "example-project",
     },
   ];
   sourceUrl = import.meta.url;

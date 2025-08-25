@@ -3,7 +3,6 @@
   "description": "Templates and workflows for building and maintaining SAF projects",
   "type": "module",
   "exports": {
-    ".": "./index.ts",
     "./workflows": "./workflows/index.ts"
   },
   "dependencies": {
