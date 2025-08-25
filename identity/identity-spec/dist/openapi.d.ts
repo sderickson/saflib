@@ -201,23 +201,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/email/sent": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List all sent emails */
-        get: operations["listSentEmails"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -262,18 +245,6 @@ export interface components {
              * @example The requested resource could not be found.
              */
             message?: string;
-        };
-        "sent-email": {
-            to: string[];
-            cc?: string[];
-            bcc?: string[];
-            subject: string;
-            text?: string;
-            html?: string;
-            attachments?: string[];
-            from: string;
-            timeSent?: number;
-            replyTo?: string[];
         };
     };
     responses: never;
@@ -750,38 +721,6 @@ export interface operations {
                 };
             };
             /** @description Forbidden - user does not have admin privileges. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["error"];
-                };
-            };
-        };
-    };
-    listSentEmails: {
-        parameters: {
-            query?: {
-                /** @description The email address of the user to get sent emails to or from */
-                userEmail?: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description A list of sent emails. */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["sent-email"][];
-                };
-            };
-            /** @description Forbidden - server is not mocking email sends */
             403: {
                 headers: {
                     [name: string]: unknown;

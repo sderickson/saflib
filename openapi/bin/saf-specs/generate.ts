@@ -2,6 +2,9 @@ import type { Command } from "commander";
 import { addNewLinesToString } from "@saflib/utils";
 import { execSync } from "child_process";
 import { getSafReporters } from "@saflib/node";
+import { errorSchema } from "@saflib/openapi";
+import { writeFileSync } from "fs";
+import path from "path";
 
 export const addGenerateCommand = (program: Command) => {
   program
@@ -18,6 +21,11 @@ export const addGenerateCommand = (program: Command) => {
       const { log } = getSafReporters();
 
       const { file, output } = options;
+
+      writeFileSync(
+        path.join(process.cwd(), "./schemas/error.yaml"),
+        errorSchema,
+      );
 
       log.info("Generating OpenAPI types...");
       execSync(`openapi-typescript ${file} -o ${output}/openapi.d.ts`, {

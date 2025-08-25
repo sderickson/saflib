@@ -1,4 +1,4 @@
-# Shared Error Schema
+# Shared Error Schema. Originates from `@saflib/openapi`, copied by `npm exec saf-specs generate`.
 # TODO:
 # - Make it strict - no "error" property, just message
 # - Get every spec to use this
