@@ -1,14 +1,11 @@
 import { describe, it, expect, vi } from "vitest";
-import {
-  stubGlobals,
-  mountWithPlugins,
-  setupMockServer,
-} from "@saflib/vue-spa/testing";
+import { stubGlobals, setupMockServer } from "@saflib/vue-spa/testing";
 import { type VueWrapper } from "@vue/test-utils";
 import { http, HttpResponse, type PathParams } from "msw";
 import type { CronResponseBody, CronRequestBody } from "@saflib/cron-spec"; // Assuming types are available
 import CronJobsPage from "./CronJobsPage.vue";
 import { router } from "./test_router";
+import { mountTestApp } from "../test-app";
 type ListCronJobsResponse = CronResponseBody["listCronJobs"][200];
 type UpdateSettingsResponse = CronResponseBody["updateCronJobSettings"][200];
 type UpdateSettingsRequest = CronRequestBody["updateCronJobSettings"];
@@ -79,20 +76,14 @@ describe("CronJobsPage", () => {
   stubGlobals(); // Sets up global mocks (ResizeObserver, location)
   const server = setupMockServer(handlers); // Sets up MSW server
 
-  // --- Helper Functions ---
   const mountComponent = async (waitForData = true) => {
     router.push("/cron/jobs?subdomain=test");
-    const wrapper = mountWithPlugins(
-      CronJobsPage,
-      {
-        propsData: {
-          subdomain: "test",
-        },
+    const wrapper = mountTestApp(CronJobsPage, {
+      propsData: {
+        subdomain: "test",
       },
-      { router },
-    );
+    });
     if (waitForData) {
-      // Wait for the initial data fetch to complete
       await vi.waitFor(() => {
         expect(
           wrapper.findComponent({ name: "v-progress-linear" }).exists(),
@@ -134,15 +125,7 @@ describe("CronJobsPage", () => {
   // --- Tests ---
 
   it("should render the title and loading indicator initially", async () => {
-    const wrapper = mountWithPlugins(
-      CronJobsPage,
-      {
-        propsData: {
-          subdomain: "test",
-        },
-      },
-      { router },
-    ); // Mount without waiting
+    const wrapper = await mountComponent(false);
     expect(wrapper.find("h1").text()).toBe("Cron Jobs");
     expect(getLoadingIndicator(wrapper).exists()).toBe(true);
     expect(getTable(wrapper).exists()).toBe(false);
