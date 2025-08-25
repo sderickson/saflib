@@ -2,9 +2,9 @@
 
 ***
 
-# Function: updateTemplateFileComposer()
+# Function: updateTemplateComposer()
 
-> **updateTemplateFileComposer**\<`C`\>(`__namedParameters`): `object`
+> **updateTemplateComposer**\<`C`\>(`__namedParameters`): `object`
 
 Composer for updating files copied by states from copyTemplateStateComposer.
 Use this to provide specific instructions on how to update each file. In

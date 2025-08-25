@@ -23,7 +23,7 @@
 | [RunNpmCommandFactoryOptions](interfaces/RunNpmCommandFactoryOptions.md) | Options for the runNpmCommandComposer function. |
 | [RunTestsComposerOptions](interfaces/RunTestsComposerOptions.md) | Options for the runTestsComposer function. |
 | [TemplateWorkflowContext](interfaces/TemplateWorkflowContext.md) | There are at least two machines which work on templates: creating and updating. These share some common context properties in addition to WorkflowContext properties. |
-| [UpdateTemplateFileComposerOptions](interfaces/UpdateTemplateFileComposerOptions.md) | Options for the updateTemplateFileComposer function. |
+| [UpdateTemplateFileComposerOptions](interfaces/UpdateTemplateFileComposerOptions.md) | Options for the updateTemplateComposer function. |
 | [WorkflowContext](interfaces/WorkflowContext.md) | Context shared across all workflow machines. |
 | [WorkflowInput](interfaces/WorkflowInput.md) | Inputs every workflow machine receives. |
 | [WorkflowMeta](interfaces/WorkflowMeta.md) | Wrapper around a ConcreteWorkflow class. Honestly might not be necessary and could likely be removed. |
@@ -62,4 +62,4 @@
 | [runNpmCommandComposer](functions/runNpmCommandComposer.md) | Composer for running npm commands. |
 | [runTestsComposer](functions/runTestsComposer.md) | Composer for running tests. Takes a specific file path to test. |
 | [runWorkflowCli](functions/runWorkflowCli.md) | Uses Commander.js to run a CLI for running workflows. |
-| [updateTemplateFileComposer](functions/updateTemplateFileComposer.md) | Composer for updating files copied by states from copyTemplateStateComposer. Use this to provide specific instructions on how to update each file. In addition to prompting the agent to make changes, this will block the agent from continuing until all "todo" strings are gone from the file. |
+| [updateTemplateComposer](functions/updateTemplateComposer.md) | Composer for updating files copied by states from copyTemplateStateComposer. Use this to provide specific instructions on how to update each file. In addition to prompting the agent to make changes, this will block the agent from continuing until all "todo" strings are gone from the file. |

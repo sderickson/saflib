@@ -4,7 +4,7 @@
 
 # Interface: UpdateTemplateFileComposerOptions\<C\>
 
-Options for the updateTemplateFileComposer function.
+Options for the updateTemplateComposer function.
 
 ## Extends
 
