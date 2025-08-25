@@ -15,33 +15,28 @@ export const addGenerateCommand = (program: Command) => {
     .option("-o, --output <dir>", "Output directory", "./dist")
     .option("-h, --html", "Also generate HTML documentation")
     .action(async (options) => {
-      const { log, logError } = getSafReporters();
+      const { log } = getSafReporters();
 
-      try {
-        const { file, output } = options;
+      const { file, output } = options;
 
-        log.info("Generating OpenAPI types...");
-        execSync(`openapi-typescript ${file} -o ${output}/openapi.d.ts`, {
+      log.info("Generating OpenAPI types...");
+      execSync(`openapi-typescript ${file} -o ${output}/openapi.d.ts`, {
+        stdio: "inherit",
+      });
+
+      log.info("Generating JSON bundle...");
+      execSync(
+        `redocly bundle ${file} --ext json --output ${output}/openapi.json`,
+        { stdio: "inherit" },
+      );
+
+      if (options.html) {
+        log.info("Generating HTML documentation...");
+        execSync(`redocly build-docs ${file} --output=${output}/index.html`, {
           stdio: "inherit",
         });
-
-        log.info("Generating JSON bundle...");
-        execSync(
-          `redocly bundle ${file} --ext json --output ${output}/openapi.json`,
-          { stdio: "inherit" },
-        );
-
-        if (options.html) {
-          log.info("Generating HTML documentation...");
-          execSync(`redocly build-docs ${file} --output=${output}/index.html`, {
-            stdio: "inherit",
-          });
-        }
-
-        log.info("✅ OpenAPI generation completed successfully!");
-      } catch (err) {
-        logError(err);
-        process.exit(1);
       }
+
+      log.info("✅ OpenAPI generation completed successfully!");
     });
 };
