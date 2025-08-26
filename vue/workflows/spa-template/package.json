@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./index.ts",
+    ".": "./main.ts",
     "./strings": "./strings.ts"
   },
   "scripts": {

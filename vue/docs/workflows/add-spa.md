@@ -23,7 +23,6 @@ When run, the workflow will:
 * Copy template files and rename placeholders.
   * Upsert **TemplateApp.vue** from [template](https://github.com/sderickson/saflib/blob/main/vue/workflows/spa-template/TemplateApp.vue)
   * Upsert **i18n.ts** from [template](https://github.com/sderickson/saflib/blob/main/vue/workflows/spa-template/i18n.ts)
-  * Upsert **index.ts** from [template](https://github.com/sderickson/saflib/blob/main/vue/workflows/spa-template/index.ts)
   * Upsert **main.ts** from [template](https://github.com/sderickson/saflib/blob/main/vue/workflows/spa-template/main.ts)
   * Upsert **node_modules** from [template](https://github.com/sderickson/saflib/blob/main/vue/workflows/spa-template/node_modules)
   * Upsert **package.json** from [template](https://github.com/sderickson/saflib/blob/main/vue/workflows/spa-template/package.json)
