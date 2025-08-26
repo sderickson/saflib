@@ -1,5 +1,5 @@
 {
-  "name": "@saflib/drizzle-sqlite3",
+  "name": "@saflib/drizzle",
   "description": "Tools, docs, and workflows for using drizzle + better-sqlite3",
   "type": "module",
   "exports": {

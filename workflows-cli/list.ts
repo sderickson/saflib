@@ -2,7 +2,7 @@
 import type { ConcreteWorkflow, WorkflowMeta } from "@saflib/workflows";
 import metaWorkflows from "@saflib/workflows/workflows";
 import processWorkflows from "@saflib/processes/workflows";
-import drizzleWorkflows from "@saflib/drizzle-sqlite3/workflows";
+import drizzleWorkflows from "@saflib/drizzle/workflows";
 import openapiWorkflows from "@saflib/openapi/workflows";
 import monorepoWorkflows from "@saflib/monorepo/workflows";
 import vueSpaWorkflows from "@saflib/vue/workflows";

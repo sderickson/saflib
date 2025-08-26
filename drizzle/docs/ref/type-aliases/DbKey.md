@@ -1,6 +1,6 @@
-[**@saflib/drizzle-sqlite3**](../index.md)
+[**@saflib/drizzle**](../index.md)
 
-***
+---
 
 # Type Alias: DbKey
 

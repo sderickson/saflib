@@ -13,7 +13,7 @@ import {
 } from "@saflib/node";
 import { jobSettingsDb } from "@saflib/cron-db";
 import type { JobConfig, JobsMap } from "./types.ts";
-import type { DbKey } from "@saflib/drizzle-sqlite3";
+import type { DbKey } from "@saflib/drizzle";
 import { JobSettingNotFoundError } from "@saflib/cron-db";
 import { cronMetric, type CronLabels } from "./metrics.ts";
 // --- Helper Function for Job Execution and Error Handling ---

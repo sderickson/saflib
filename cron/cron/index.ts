@@ -3,7 +3,7 @@ import { cronDb } from "@saflib/cron-db";
 import { createCronRouter } from "./http.ts";
 import { makeSubsystemReporters } from "@saflib/node";
 import type { CronServiceOptions } from "./http.ts";
-import type { DbKey } from "@saflib/drizzle-sqlite3";
+import type { DbKey } from "@saflib/drizzle";
 
 export type { CronServiceOptions };
 

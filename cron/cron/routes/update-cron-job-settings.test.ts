@@ -5,7 +5,7 @@ import { createApp } from "../http.ts";
 import type { CronRequestBody, CronResponseBody } from "@saflib/cron-spec";
 import { mapJobSettingToResponse } from "./_helpers.ts"; // Need helper for response check
 import { cronDb, jobSettingsDb } from "@saflib/cron-db";
-import type { DbKey } from "@saflib/drizzle-sqlite3";
+import type { DbKey } from "@saflib/drizzle";
 import { throwError } from "@saflib/monorepo";
 import { mockJobs } from "../mock-jobs.ts";
 

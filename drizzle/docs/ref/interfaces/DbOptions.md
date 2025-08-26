@@ -1,6 +1,6 @@
-[**@saflib/drizzle-sqlite3**](../index.md)
+[**@saflib/drizzle**](../index.md)
 
-***
+---
 
 # Interface: DbOptions
 
@@ -18,7 +18,7 @@ a configuration is incorrect and doesn't point to a database that you know
 should exist, you wouldn't want it to just start a new one, but instead to
 fail fast.
 
-***
+---
 
 ### onDisk?
 

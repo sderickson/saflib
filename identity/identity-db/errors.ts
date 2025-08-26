@@ -1,4 +1,4 @@
-import { HandledDatabaseError } from "@saflib/drizzle-sqlite3";
+import { HandledDatabaseError } from "@saflib/drizzle";
 
 export class IdentityDatabaseError extends HandledDatabaseError {}
 export class EmailAuthNotFoundError extends IdentityDatabaseError {}

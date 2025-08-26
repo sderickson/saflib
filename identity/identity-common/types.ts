@@ -1,5 +1,5 @@
 import type { User } from "@saflib/identity-db";
-import type { DbKey } from "@saflib/drizzle-sqlite3";
+import type { DbKey } from "@saflib/drizzle";
 
 /**
  * Callbacks for events which occur in the identity service.

@@ -12,7 +12,7 @@ It will look like this:
 
 ```typescript
 import { mainDb } from "@your-org/your-db-package";
-import type { DbKey } from "@saflib/drizzle-sqlite3";
+import type { DbKey } from "@saflib/drizzle";
 
 describe("such-and-such query", () => {
   let dbKey: DbKey;

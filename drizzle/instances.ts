@@ -13,7 +13,7 @@ import { typedEnv } from "@saflib/env";
  * ORM. Any package which depends on this will create a single instance given the
  * database schema and config, export the public interface, and be used by queries
  * to access the drizzle ORM. This way the package which depends on
- * `@saflib/drizzle-sqlite3` has full access to its database, but packages
+ * `@saflib/drizzle` has full access to its database, but packages
  * which depend on *it* only have access to an opaque key which only database
  * queries can use.
  */

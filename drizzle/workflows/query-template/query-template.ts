@@ -4,8 +4,8 @@ import { SomeError } from "../../errors.ts";
 import type { SomeDbType } from "../../types.ts";
 import type { ReturnsError } from "@saflib/monorepo";
 
-import { queryWrapper } from "@saflib/drizzle-sqlite3";
-import type { DbKey } from "@saflib/drizzle-sqlite3";
+import { queryWrapper } from "@saflib/drizzle";
+import type { DbKey } from "@saflib/drizzle";
 
 export type TemplateFileError = SomeError;
 

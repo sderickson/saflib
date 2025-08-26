@@ -2,11 +2,11 @@
 
 This library provides a set of shared logic, documentation, and workflows for using a combination of [drizzle](https://orm.drizzle.team/) and [better-sqlite3](https://www.npmjs.com/package/better-sqlite3) to include [SQLite](https://sqlite.org/index.html) instances in the app.
 
-These docs explain how consumers of `@saflib/drizzle-sqlite3` should use this library within SAF applications.
+These docs explain how consumers of `@saflib/drizzle` should use this library within SAF applications.
 
 ## Package Structure
 
-Each package which depends on `@saflib/drizzle-sqlite3` should have the following structure:
+Each package which depends on `@saflib/drizzle` should have the following structure:
 
 ```
 {service-name}-db/
@@ -95,7 +95,7 @@ See [instances.ts](https://github.com/sderickson/saflib/blob/main/drizzle-sqlite
 The glue between the schema, config, and this library's logic. It will likely be exactly this:
 
 ```typescript
-import { DbManager } from "@saflib/drizzle-sqlite3";
+import { DbManager } from "@saflib/drizzle";
 import * as schema from "./schema.ts";
 import config from "./drizzle.config.ts";
 
@@ -112,7 +112,7 @@ Drizzle also provides [this helpful guide](https://orm.drizzle.team/docs/migrati
 
 ### `package.json`
 
-Aside from including `"@saflib/drizzle-sqlite3": "*"` in the dependencies, you can include some `drizzle-kit` commands in package scripts. The most useful would be `"generate": "drizzle-kit generate"`, which will create migration files if the schema has changed. You can also use the kit through `npx` directly.
+Aside from including `"@saflib/drizzle": "*"` in the dependencies, you can include some `drizzle-kit` commands in package scripts. The most useful would be `"generate": "drizzle-kit generate"`, which will create migration files if the schema has changed. You can also use the kit through `npx` directly.
 
 See [Migrations with Drizzle Kit](https://orm.drizzle.team/docs/kit-overview) for more info.
 

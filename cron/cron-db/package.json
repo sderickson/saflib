@@ -14,7 +14,7 @@
     "typecheck": "tsc"
   },
   "dependencies": {
-    "@saflib/drizzle-sqlite3": "*",
+    "@saflib/drizzle": "*",
     "@saflib/env": "*",
     "drizzle-kit": "*"
   },

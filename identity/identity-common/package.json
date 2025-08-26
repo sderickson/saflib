@@ -6,7 +6,7 @@
     ".": "./index.ts"
   },
   "dependencies": {
-    "@saflib/drizzle-sqlite3": "*"
+    "@saflib/drizzle": "*"
   },
   "devDependencies": {
     "@saflib/vitest": "*",

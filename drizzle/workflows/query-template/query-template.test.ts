@@ -1,6 +1,6 @@
 // @ts-nocheck - TODO remove this line as part of workflow
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import type { DbKey } from "@saflib/drizzle-sqlite3";
+import type { DbKey } from "@saflib/drizzle";
 // TODO: Uncomment and fix this import
 // import { someDb, someQueryDb } from "@own/package";
 

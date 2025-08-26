@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeAll, afterAll } from "vitest";
-import type { DbKey } from "@saflib/drizzle-sqlite3";
+import type { DbKey } from "@saflib/drizzle";
 import { JobSettingNotFoundError } from "../../errors.ts";
 import { throwError } from "@saflib/monorepo";
 import { jobSettingsDb, cronDb } from "@saflib/cron-db";

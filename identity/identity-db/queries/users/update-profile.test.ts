@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { identityDb, usersDb } from "@saflib/identity-db";
-import type { DbKey } from "@saflib/drizzle-sqlite3";
+import type { DbKey } from "@saflib/drizzle";
 import { UserNotFoundError } from "../../errors.ts";
 
 describe("updateProfile", () => {

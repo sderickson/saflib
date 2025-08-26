@@ -1,7 +1,7 @@
-import { queryWrapper } from "@saflib/drizzle-sqlite3";
+import { queryWrapper } from "@saflib/drizzle";
 import { emailAuth } from "../../schemas/index.ts";
 import { identityDbManager } from "../../instances.ts";
-import type { DbKey } from "@saflib/drizzle-sqlite3";
+import type { DbKey } from "@saflib/drizzle";
 import type { NewEmailAuth, SelectEmailAuth } from "../../types.ts";
 
 export const create = queryWrapper(

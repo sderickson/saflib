@@ -1,4 +1,4 @@
-import { HandledDatabaseError } from "@saflib/drizzle-sqlite3";
+import { HandledDatabaseError } from "@saflib/drizzle";
 
 /**
  * Superclass for all handled cron db errors

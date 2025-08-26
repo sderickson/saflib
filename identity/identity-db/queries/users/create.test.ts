@@ -1,4 +1,4 @@
-import type { DbKey } from "@saflib/drizzle-sqlite3";
+import type { DbKey } from "@saflib/drizzle";
 import { describe, it, expect, beforeEach } from "vitest";
 import { EmailConflictError } from "../../errors.ts";
 import { identityDb, usersDb } from "@saflib/identity-db";
