@@ -1,4 +1,4 @@
 {
-  "entryPoints": ["./src/index.ts"],
+  "entryPoints": ["./src/index.ts", "./tanstack.ts", "./testing/index.ts"],
   "tsconfig": "./tsconfig.monorepo.json"
 }

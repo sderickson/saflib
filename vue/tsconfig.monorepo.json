@@ -1,4 +1,5 @@
 {
   "extends": "@saflib/monorepo/tsconfig.json",
-  "include": ["./src/**/*.ts"]
+  "include": ["./**/*.ts"],
+  "exclude": ["./components/**", "./workflows/**"]
 }

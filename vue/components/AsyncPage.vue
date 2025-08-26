@@ -13,7 +13,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import type { Component } from "vue";
-import type { LoaderQueries } from "../src/types.ts";
+import type { LoaderQueries } from "../types.ts";
 
 interface Props {
   loader?: () => LoaderQueries;

@@ -1,8 +1,8 @@
 import { expect } from "vitest";
 import { type VueWrapper } from "@vue/test-utils";
-import { convertI18NInterpolationToRegex } from "../i18n-utils";
+import { convertI18NInterpolationToRegex } from "../i18n-utils.ts";
 
-interface ElementStringObject {
+export interface ElementStringObject {
   placeholder?: string;
   text?: string;
   "data-testid"?: string;
@@ -12,7 +12,7 @@ interface ElementStringObject {
 // Store strings for Vue components in Record<string, ElementString>
 // Then you can v-bind them to the component, and also use them in tests for reliable element selection
 // These objects can also be used in playwright tests, and eventually for i18n.
-type ElementString = string | ElementStringObject;
+export type ElementString = string | ElementStringObject;
 
 export const getElementByString = (
   wrapper: VueWrapper,

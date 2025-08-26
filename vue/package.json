@@ -5,12 +5,9 @@
   "exports": {
     ".": "./src/index.ts",
     "./components": "./components/index.ts",
-    "./test-utils": "./src/test-utils.ts",
+    "./tanstack": "./tanstack.ts",
     "./tsconfig.app.json": "./tsconfig.app.json",
-    "./tsconfig.json": "./tsconfig.json",
-    "./tsconfig.node.json": "./tsconfig.node.json",
     "./workflows": "./workflows/index.ts",
-    "./tanstack": "./src/tanstack.ts",
     "./testing": "./testing/index.ts",
     "./vitest-config": "./testing/vitest-config.js",
     "./i18n-utils": "./i18n-utils.ts"

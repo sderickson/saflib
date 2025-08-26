@@ -8,7 +8,7 @@ import { createRouter, createMemoryHistory } from "vue-router";
 import { VueQueryPlugin } from "@tanstack/vue-query";
 import { QueryClient } from "@tanstack/vue-query";
 import { createI18n } from "vue-i18n";
-import type { I18nMessages } from "../src/strings";
+import type { I18nMessages } from "../src/strings.ts";
 
 // GLOBAL MOCK HELPERS -----------------
 
