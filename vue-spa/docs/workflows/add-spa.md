@@ -29,14 +29,14 @@ When run, the workflow will:
   * Upsert **pages** from [template](https://github.com/sderickson/saflib/blob/main/vue-spa/workflows/spa-template/pages)
   * Upsert **router.ts** from [template](https://github.com/sderickson/saflib/blob/main/vue-spa/workflows/spa-template/router.ts)
   * Upsert **strings.ts** from [template](https://github.com/sderickson/saflib/blob/main/vue-spa/workflows/spa-template/strings.ts)
+  * Upsert **test-app.ts** from [template](https://github.com/sderickson/saflib/blob/main/vue-spa/workflows/spa-template/test-app.ts)
   * Upsert **tsconfig.json** from [template](https://github.com/sderickson/saflib/blob/main/vue-spa/workflows/spa-template/tsconfig.json)
   * Upsert **vitest.config.ts** from [template](https://github.com/sderickson/saflib/blob/main/vue-spa/workflows/spa-template/vitest.config.ts)
-* Update the package name and other template strings in the new SPA's package.json and other files. The new package name is @saflib/web-example-spa-client. Also update the "router.ts" file to use the new SPA's name as the base path.
-* Add @saflib/web-example-spa-client as a dependency in clients/spas/package.json, then run 'npm install' from the root of the monorepo (not from the clients/spas directory).
-* Create index.html and main.ts files in clients/spas/example-spa similar to other SPAs already there.
-* Update clients/spas/vite.config.ts to add proxy and input properties for the new SPA.
-* Update deploy/prod/remote-assets/config/Caddyfile to add the new SPA to the serve_prod_spas snippet.
-* Test the new SPA by running 'npm run build' and make sure there are no errors, then ask the user to run 'npm run prod-local' in the instance directory and have them verify the new page shows up.
+* Add `@saflib/web-example-spa` as a dependency in `clients/spas/package.json`, then run `npm install` from the root of the monorepo (not from the `clients/spas` directory).
+* Create `index.html` and `main.ts` files in `clients/spas/example-spa` similar to other SPAs already there.
+* Update `clients/spas/vite.config.ts` to add proxy and input properties for the new SPA.
+* Update all `Caddyfiles` in the repo; add the new SPA in a similar fashion with the subdomain `example-spa`.
+* Test the new SPA by running 'npm run build' from `deploy/prod` and make sure there are no errors.
 
 
 ## Help Docs

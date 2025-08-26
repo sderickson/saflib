@@ -51,7 +51,7 @@ export const AddSpaWorkflowMachine = setup({
       pascalName: input.name.charAt(0).toUpperCase() + input.name.slice(1),
       targetDir,
       sourceDir,
-      packageName: `${thisPackageOrg}/web-${input.name}-client`,
+      packageName: `${thisPackageOrg}/web-${input.name}`,
       ...contextFromInput(input),
     };
   },
@@ -59,47 +59,40 @@ export const AddSpaWorkflowMachine = setup({
   states: {
     ...copyTemplateStateComposer({
       stateName: "copyTemplate",
-      nextStateName: "updatePackageName",
-    }),
-
-    ...promptAgentComposer<AddSpaWorkflowContext>({
-      promptForContext: ({ context }) =>
-        `Update the package name and other template strings in the new SPA's package.json and other files. The new package name is ${context.packageName}. Also update the "router.ts" file to use the new SPA's name as the base path.`,
-      stateName: "updatePackageName",
       nextStateName: "addDependency",
     }),
 
     ...promptAgentComposer<AddSpaWorkflowContext>({
       promptForContext: ({ context }) =>
-        `Add ${context.packageName} as a dependency in clients/spas/package.json, then run 'npm install' from the root of the monorepo (not from the clients/spas directory).`,
+        `Add \`${context.packageName}\` as a dependency in \`clients/spas/package.json\`, then run \`npm install\` from the root of the monorepo (not from the \`clients/spas\` directory).`,
       stateName: "addDependency",
       nextStateName: "createEntryPoints",
     }),
 
     ...promptAgentComposer<AddSpaWorkflowContext>({
       promptForContext: ({ context }) =>
-        `Create index.html and main.ts files in clients/spas/${context.name} similar to other SPAs already there.`,
+        `Create \`index.html\` and \`main.ts\` files in \`clients/spas/${context.name}\` similar to other SPAs already there.`,
       stateName: "createEntryPoints",
       nextStateName: "updateViteConfig",
     }),
 
     ...promptAgentComposer<AddSpaWorkflowContext>({
       promptForContext: () =>
-        `Update clients/spas/vite.config.ts to add proxy and input properties for the new SPA.`,
+        `Update \`clients/spas/vite.config.ts\` to add proxy and input properties for the new SPA.`,
       stateName: "updateViteConfig",
       nextStateName: "updateCaddyfile",
     }),
 
     ...promptAgentComposer<AddSpaWorkflowContext>({
-      promptForContext: () =>
-        `Update deploy/prod/remote-assets/config/Caddyfile to add the new SPA to the serve_prod_spas snippet.`,
+      promptForContext: ({ context }) =>
+        `Update all \`Caddyfiles\` in the repo; add the new SPA in a similar fashion with the subdomain \`${context.name}\`.`,
       stateName: "updateCaddyfile",
       nextStateName: "testDeployment",
     }),
 
     ...promptAgentComposer<AddSpaWorkflowContext>({
       promptForContext: () =>
-        `Test the new SPA by running 'npm run build' and make sure there are no errors, then ask the user to run 'npm run prod-local' in the instance directory and have them verify the new page shows up.`,
+        `Test the new SPA by running 'npm run build' from \`deploy/prod\` and make sure there are no errors.`,
       stateName: "testDeployment",
       nextStateName: "done",
     }),
