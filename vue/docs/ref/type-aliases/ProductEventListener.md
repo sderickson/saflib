@@ -6,6 +6,8 @@
 
 > **ProductEventListener**\<`T`\> = (`event`) => `void`
 
+A function that receives product events as they're emitted.
+
 ## Type Parameters
 
 | Type Parameter |

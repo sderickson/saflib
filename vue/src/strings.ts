@@ -1,6 +1,6 @@
 import { useI18n } from "vue-i18n";
 
-export const makeStringToKeyMap = (
+const makeStringToKeyMap = (
   strings: I18nMessages,
   acc: Map<string | object, string> = new Map(),
   prefix: string = "",
@@ -30,14 +30,23 @@ export const makeStringToKeyMap = (
   }, acc);
 };
 
+/**
+ * Generic interface for vue-i18n translation objects supported by SAF.
+ */
 export interface I18nMessages {
   [key: string]: string | string[] | I18nMessages | Array<I18nMessages>;
 }
 
+/**
+ * Interface for flat vue-i18n objects, where each key is a string. Used most commonly for strings which are shared for a single HTML element.
+ */
 export interface I18NObject {
   [key: string]: string;
 }
 
+/**
+ * Creates an alternative to Vue I18n's $t function, which takes the English text instead of a key. This is mainly so TypeScript enforces that keys are translated to strings.
+ */
 export const makeReverseTComposable = (strings: I18nMessages) => {
   const stringToKeyMap = makeStringToKeyMap(strings);
   return () => {
@@ -66,7 +75,6 @@ export const makeReverseTComposable = (strings: I18nMessages) => {
     return {
       t: wrappedT,
       lookupTKey,
-      tObject,
     };
   };
 };

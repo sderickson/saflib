@@ -1,6 +1,9 @@
 import { QueryClient } from "@tanstack/vue-query";
 import createClient from "openapi-fetch";
 
+/**
+ * Given a "paths" openapi generated type and a subdomain, creates a typed `openapi-fetch` client which queries the given subdomain. Uses the current domain and protocol. Handles CSRF token injection, and works in tests.
+ */
 export const createSafClient = <Q extends {}>(
   subdomain: string,
 ): ReturnType<typeof createClient<Q>> => {
@@ -27,6 +30,9 @@ export const createSafClient = <Q extends {}>(
   });
 };
 
+/**
+ * Error returned by `handleClientMethod` so that Tanstack errors are always instances of this class.
+ */
 export class TanstackError extends Error {
   status: number;
   code: string | undefined;
@@ -37,20 +43,32 @@ export class TanstackError extends Error {
   }
 }
 
+/**
+ * Interface for the successful response from the client that handleClientMethod expects.
+ */
 export interface ClientResponse {
   status: number;
 }
 
+/**
+ * Interface for the error from the client that handleClientMethod expects.
+ */
 export interface ClientResponseError {
   code?: string;
 }
 
+/**
+ * Interface for the result from the client that handleClientMethod expects.
+ */
 export interface ClientResult<T> {
   error?: ClientResponseError;
   data?: T;
   response: ClientResponse;
 }
 
+/**
+ * Wrapper around an openapi-fetch client fetch method to handle errors and return the data in a way that is compatible with Tanstack Query.
+ */
 export const handleClientMethod = async <T>(
   request: Promise<ClientResult<T>>,
 ): Promise<T> => {
@@ -76,6 +94,9 @@ export const handleClientMethod = async <T>(
   return result.data;
 };
 
+/**
+ * Creates a Tanstack Query client with default timeout and retry settings. It has a staleTime of 10 seconds, so that requests made from different parts of the page during a page load don't trigger multiple requests. It also doesn't retry for status codes that are unlikely to be fixed by retrying, such as 401, 403, 404, 500, and network errors.
+ */
 export const createTanstackQueryClient = () => {
   return new QueryClient({
     defaultOptions: {

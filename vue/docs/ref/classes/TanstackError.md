@@ -4,6 +4,8 @@
 
 # Class: TanstackError
 
+Error returned by `handleClientMethod` so that Tanstack errors are always instances of this class.
+
 ## Extends
 
 - `Error`

@@ -6,6 +6,8 @@
 
 > **getClientName**(): `string`
 
+Getter for the client name.
+
 ## Returns
 
 `string`

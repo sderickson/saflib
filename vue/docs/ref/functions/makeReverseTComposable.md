@@ -6,6 +6,8 @@
 
 > **makeReverseTComposable**(`strings`): () => `object`
 
+Creates an alternative to Vue I18n's $t function, which takes the English text instead of a key. This is mainly so TypeScript enforces that keys are translated to strings.
+
 ## Parameters
 
 | Parameter | Type |
@@ -63,19 +65,5 @@
 | `s` | [`I18NObject`](../interfaces/I18NObject.md) |
 
 ###### Returns
-
-[`I18NObject`](../interfaces/I18NObject.md)
-
-#### tObject()
-
-> **tObject**: (`o`) => [`I18NObject`](../interfaces/I18NObject.md)
-
-##### Parameters
-
-| Parameter | Type |
-| ------ | ------ |
-| `o` | [`I18NObject`](../interfaces/I18NObject.md) |
-
-##### Returns
 
 [`I18NObject`](../interfaces/I18NObject.md)

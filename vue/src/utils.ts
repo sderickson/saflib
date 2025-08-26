@@ -1,4 +1,6 @@
-// works in vitest or browser
+/**
+ * Utility to get the current host, including the port, e.g. "localhost:3000".
+ */
 export const getHost = () => {
   let host = "localhost:3000";
   if (typeof document !== "undefined") {
@@ -7,6 +9,9 @@ export const getHost = () => {
   return host;
 };
 
+/**
+ * Utility to get the current protocol the same way document.location.protocol does, e.g. "http:" or "https:".
+ */
 export const getProtocol = () => {
   let protocol = "http:";
   if (typeof document !== "undefined") {

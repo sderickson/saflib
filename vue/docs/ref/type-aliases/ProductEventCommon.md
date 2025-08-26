@@ -6,6 +6,8 @@
 
 > **ProductEventCommon** = `object`
 
+Common fields for all product events.
+
 ## Properties
 
 ### client

@@ -6,11 +6,13 @@
 
 > **makeProductEventLogger**\<`T`\>(): `object`
 
+Create centralized object to emit and listen to product events. Provide a product event type to ensure type safety, produced as part of the API spec.
+
 ## Type Parameters
 
 | Type Parameter |
 | ------ |
-| `T` |
+| `T` *extends* [`ProductEventCommon`](../type-aliases/ProductEventCommon.md) |
 
 ## Returns
 
@@ -43,3 +45,10 @@
 #### Returns
 
 `void`
+
+## Example
+
+```ts
+import type { ProductEvent } from "@your-org/service-spec"; // package using @saflib/openapi
+const { onProductEvent, emitProductEvent } = makeProductEventLogger<ProductEvent>();
+```
