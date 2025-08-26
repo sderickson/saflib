@@ -2,18 +2,18 @@
   <v-form v-model="valid">
     <div class="float-right">
       <SpaLink :link="authLinks.login" class="text-blue text-decoration-none">
-        {{ register_page.already_have_account }}
+        {{ t(register_page.already_have_account) }}
         <v-icon icon="mdi-chevron-right"></v-icon>
       </SpaLink>
     </div>
 
     <div class="mb-4 font-weight-medium">
-      {{ register_page.create_your_account }}
+      {{ t(register_page.create_your_account) }}
     </div>
     <div v-if="firstNameInput">
       <v-text-field
         v-model="firstName"
-        v-bind="register_page.first_name"
+        v-bind="t(register_page.first_name)"
         prepend-inner-icon="mdi-account-outline"
         class="mb-4"
         :autofocus="firstInput === 'firstName'"
@@ -23,7 +23,7 @@
     <div v-if="lastNameInput">
       <v-text-field
         v-model="lastName"
-        v-bind="register_page.last_name"
+        v-bind="t(register_page.last_name)"
         prepend-inner-icon="mdi-account-outline"
         class="mb-4"
         :autofocus="firstInput === 'lastName'"
@@ -33,7 +33,7 @@
     <div v-if="nameInput">
       <v-text-field
         v-model="name"
-        v-bind="register_page.name"
+        v-bind="t(register_page.name)"
         prepend-inner-icon="mdi-account-outline"
         class="mb-4"
         :autofocus="firstInput === 'name'"
@@ -42,7 +42,7 @@
 
     <v-text-field
       v-model="email"
-      v-bind="register_page.email"
+      v-bind="t(register_page.email)"
       prepend-inner-icon="mdi-email-outline"
       :rules="emailRules"
       class="mb-4"
@@ -55,7 +55,7 @@
       :type="passwordVisible ? 'text' : 'password'"
       :rules="passwordRules"
       class="mb-4"
-      v-bind="register_page.password"
+      v-bind="t(register_page.password)"
       prepend-inner-icon="mdi-lock-outline"
       @click:append-inner="passwordVisible = !passwordVisible"
     ></v-text-field>
@@ -64,7 +64,7 @@
       v-model="confirmPassword"
       :type="passwordVisible ? 'text' : 'password'"
       :rules="confirmPasswordRules"
-      v-bind="register_page.confirm_password"
+      v-bind="t(register_page.confirm_password)"
       prepend-inner-icon="mdi-lock-outline"
       class="mb-4"
     ></v-text-field>
@@ -78,14 +78,14 @@
       :loading="isPending"
       @click="handleRegister"
     >
-      {{ ctaText || register_page.register }}
+      {{ ctaText || t(register_page.register) }}
     </v-btn>
 
     <v-alert v-if="isError" type="error" variant="outlined" class="mb-3">
       {{
         error?.status === 409
-          ? register_page.email_already_exists
-          : register_page.failed_to_register
+          ? t(register_page.email_already_exists)
+          : t(register_page.failed_to_register)
       }}
     </v-alert>
   </v-form>
@@ -99,6 +99,9 @@ import { register_page } from "./RegisterPage.strings.ts";
 import { authLinks } from "@saflib/auth-links";
 import { SpaLink } from "@saflib/vue-spa/components";
 import type { User } from "@saflib/identity-spec";
+import { useReverseT } from "../../i18n.ts";
+
+const { t } = useReverseT();
 
 const props = defineProps<{
   firstNameInput?: boolean;
@@ -162,8 +165,8 @@ const handleRegister = () => {
 };
 
 const confirmPasswordRules = [
-  (value: string) => !!value || register_page.please_confirm_password,
+  (value: string) => !!value || t(register_page.please_confirm_password),
   (value: string) =>
-    value === password.value || register_page.passwords_must_match,
+    value === password.value || t(register_page.passwords_must_match),
 ];
 </script>

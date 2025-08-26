@@ -5,17 +5,18 @@
         :link="authLinks.register"
         class="text-blue text-decoration-none"
       >
-        {{ login_page.sign_up_now }} <v-icon icon="mdi-chevron-right"></v-icon>
+        {{ t(login_page.sign_up_now) }}
+        <v-icon icon="mdi-chevron-right"></v-icon>
       </SpaLink>
     </div>
 
     <div class="mb-4 font-weight-medium">
-      {{ login_page.log_into_your_account }}
+      {{ t(login_page.log_into_your_account) }}
     </div>
 
     <v-text-field
       v-model="email"
-      v-bind="login_page.email"
+      v-bind="t(login_page.email)"
       prepend-inner-icon="mdi-email-outline"
       :rules="emailRules"
       :disabled="isPending"
@@ -30,7 +31,7 @@
         :link="authLinks.forgot"
         class="text-caption text-decoration-none text-blue"
       >
-        {{ login_page.forgot_password }}
+        {{ t(login_page.forgot_password) }}
       </SpaLink>
     </div>
 
@@ -38,7 +39,7 @@
       v-model="password"
       :append-inner-icon="passwordVisible ? 'mdi-eye-off' : 'mdi-eye'"
       :type="passwordVisible ? 'text' : 'password'"
-      v-bind="login_page.password"
+      v-bind="t(login_page.password)"
       prepend-inner-icon="mdi-lock-outline"
       :rules="passwordRules"
       :disabled="isPending"
@@ -47,7 +48,7 @@
     />
 
     <v-alert v-if="isError" type="error" variant="tonal" class="mb-3">
-      {{ login_page.invalid_credentials }}
+      {{ t(login_page.invalid_credentials) }}
     </v-alert>
 
     <v-btn
@@ -60,7 +61,7 @@
       :disabled="!valid"
       @click="handleLogin"
     >
-      {{ login_page.log_in }}
+      {{ t(login_page.log_in) }}
     </v-btn>
   </v-form>
 </template>
@@ -73,6 +74,9 @@ import { login_page } from "./LoginPage.strings.ts";
 import { authLinks } from "@saflib/auth-links";
 import { SpaLink } from "@saflib/vue-spa/components";
 import type { User } from "@saflib/identity-spec";
+import { useReverseT } from "../../i18n.ts";
+
+const { t } = useReverseT();
 
 const emit = defineEmits<{
   (e: "login", user: User): void;

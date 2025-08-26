@@ -61,7 +61,6 @@ const props = defineProps<{
   redirectTo: string;
 }>();
 
-console.log("used reverse t!");
 const { t } = useReverseT();
 const { profileQuery } = useVerifyWallPageLoader(props.redirectTo);
 
