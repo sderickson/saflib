@@ -1,8 +1,9 @@
 import { createApp, type App } from "vue";
 import { VueQueryPlugin, QueryClient } from "@tanstack/vue-query";
 import { setupServer } from "msw/node";
-import { HttpHandler } from "msw";
+import { HttpHandler, HttpResponse } from "msw";
 import { beforeAll, afterAll, afterEach } from "vitest";
+import { http } from "msw";
 
 /**
  * Helper function to test Vue Query composables in isolation.
@@ -61,3 +62,48 @@ export function setupMockServer(handlers: HttpHandler[]) {
 
   return server;
 }
+
+type Extract<
+  Op extends Record<string, any>,
+  StatusCode extends number,
+> = Op["responses"][StatusCode] extends {
+  content: { "application/json": any };
+}
+  ? Op["responses"][StatusCode]["content"]["application/json"]
+  : never;
+
+/**
+ * Use to create a typed helper function for creating typesafe mock API handlers.
+ */
+export const typedCreateHandler = <Paths extends Record<string, any>>({
+  subdomain,
+}: {
+  subdomain: string;
+}) => {
+  const createHandler = <
+    P extends keyof Paths,
+    V extends keyof Paths[P],
+    S extends number,
+  >({
+    path,
+    verb,
+    status,
+    handler,
+  }: {
+    path: P;
+    verb: V;
+    status: S;
+    handler: () => Extract<
+      Paths[P][V] extends Record<string, any> ? Paths[P][V] : never,
+      S
+    >;
+  }) => {
+    return http[verb as keyof typeof http](
+      `http://${subdomain}.localhost:3000${String(path)}`,
+      () => {
+        return HttpResponse.json(handler(), { status });
+      },
+    );
+  };
+  return { createHandler };
+};
