@@ -49,11 +49,11 @@ export const getClientName = () => {
  */
 export type ProductEventCommon = {
   /** The frontend client that triggered the event. For web, it should be "web-{spa-name}". */
-  client: string;
+  client?: string;
   /** The page that triggered the event. For vue, it should be the route name provided by vue router. */
-  view: string;
+  view?: string;
   /** The component that triggered the event. For vue, it should be the component name. */
-  component: string;
+  component?: string;
 };
 
 /**
