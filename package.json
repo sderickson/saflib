@@ -13,7 +13,7 @@
     "/**"
   ],
   "devDependencies": {
-    "@saflib/vue-spa": "*"
+    "@saflib/vue": "*"
   },
   "engines": {
     "node": ">=22"

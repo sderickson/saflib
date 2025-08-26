@@ -1,4 +1,4 @@
-import { createVueApp } from "@saflib/vue-spa";
+import { createVueApp } from "@saflib/vue";
 import App from "./TemplateApp.vue";
 import { router } from "./router";
 

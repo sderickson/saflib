@@ -72,7 +72,7 @@ import { emailRules, passwordRules } from "../../utils/rules.ts";
 import { useLogin } from "../../requests/auth.ts";
 import { login_page } from "./LoginPage.strings.ts";
 import { authLinks } from "@saflib/auth-links";
-import { SpaLink } from "@saflib/vue-spa/components";
+import { SpaLink } from "@saflib/vue/components";
 import type { User } from "@saflib/identity-spec";
 import { useReverseT } from "../../i18n.ts";
 

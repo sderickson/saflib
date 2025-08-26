@@ -4,7 +4,7 @@ import type {
   IdentityResponseBody,
   IdentityRequestBody,
 } from "@saflib/identity-spec";
-import { TanstackError, handleClientMethod } from "@saflib/vue-spa";
+import { TanstackError, handleClientMethod } from "@saflib/vue";
 import type { Ref } from "vue";
 
 export const useLogin = () => {

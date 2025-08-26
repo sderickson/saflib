@@ -1,11 +1,11 @@
 import { describe, it, expect, vi } from "vitest";
-import { stubGlobals, setupMockServer } from "@saflib/vue-spa/testing";
+import { stubGlobals, setupMockServer } from "@saflib/vue/testing";
 import LastMockEmailPageAsync from "./LastMockEmailPageAsync.vue";
 import type { Component } from "vue";
 import { http, HttpResponse } from "msw";
 import type { EmailResponseBody } from "@saflib/email-spec";
 import { last_mock_email_page as strings } from "./LastMockEmailPage.strings.ts";
-import { getElementByString } from "@saflib/vue-spa/testing";
+import { getElementByString } from "@saflib/vue/testing";
 import type { VueWrapper } from "@vue/test-utils";
 import type { IdentityResponseBody } from "@saflib/identity-spec";
 import { mountTestApp } from "../test-app.ts";

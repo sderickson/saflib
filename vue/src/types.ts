@@ -1,5 +1,5 @@
 import type { UseQueryReturnType } from "@tanstack/vue-query";
-import type { TanstackError } from "@saflib/vue-spa";
+import type { TanstackError } from "@saflib/vue";
 import type { Ref } from "vue";
 
 export type LoaderQuery = Pick<

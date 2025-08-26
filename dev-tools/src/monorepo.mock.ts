@@ -26,7 +26,7 @@ export const monorepoPackageMock = {
   "/app/clients/web-www/package.json": JSON.stringify({
     name: "@foo/www-web-client",
     dependencies: {
-      "@saflib/vue-spa": "*",
+      "@saflib/vue": "*",
       "@foo/custom-lib": "*",
     },
   }),
@@ -34,7 +34,7 @@ export const monorepoPackageMock = {
   "/app/clients/web-auth/package.json": JSON.stringify({
     name: "@foo/auth-web-client",
     dependencies: {
-      "@saflib/vue-spa": "*",
+      "@saflib/vue": "*",
       "@saflib/auth": "*",
     },
   }),
@@ -89,7 +89,7 @@ export const monorepoPackageMock = {
     name: "@saflib/auth",
     dependencies: {
       "third-party-lib": "3.2.1",
-      "@saflib/vue-spa": "*",
+      "@saflib/vue": "*",
       "@saflib/identity-spec": "*",
     },
   }),
@@ -106,7 +106,7 @@ export const monorepoPackageMock = {
     name: "@saflib/unused-lib",
   }),
   "/app/saflib/vue-spa/package.json": JSON.stringify({
-    name: "@saflib/vue-spa",
+    name: "@saflib/vue",
   }),
 
   // Services

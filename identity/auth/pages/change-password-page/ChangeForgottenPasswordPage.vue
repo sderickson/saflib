@@ -83,7 +83,7 @@ import { useResetPassword } from "../../requests/auth";
 import { passwordRules } from "../../utils/rules";
 import { change_forgotten_password_page } from "./ChangeForgottenPasswordPage.strings";
 import { authLinks } from "@saflib/auth-links";
-import { SpaLink } from "@saflib/vue-spa/components";
+import { SpaLink } from "@saflib/vue/components";
 
 import { useReverseT } from "../../i18n.ts";
 

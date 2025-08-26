@@ -13,6 +13,6 @@
     "test:coverage": "vitest --coverage"
   },
   "dependencies": {
-    "@saflib/vue-spa": "*"
+    "@saflib/vue": "*"
   }
 }

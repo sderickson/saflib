@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { stubGlobals, setupMockServer } from "@saflib/vue-spa/testing";
+import { stubGlobals, setupMockServer } from "@saflib/vue/testing";
 import { type VueWrapper } from "@vue/test-utils";
 import { http, HttpResponse, type PathParams } from "msw";
 import type { CronResponseBody, CronRequestBody } from "@saflib/cron-spec"; // Assuming types are available

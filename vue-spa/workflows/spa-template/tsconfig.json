@@ -1,5 +1,0 @@
-{
-  "extends": [
-    "@saflib/vue-spa/tsconfig.app.json"
-  ]
-}

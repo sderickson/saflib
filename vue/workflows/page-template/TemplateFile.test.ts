@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { stubGlobals, getElementByString } from "@saflib/vue-spa/testing";
+import { stubGlobals, getElementByString } from "@saflib/vue/testing";
 import { type VueWrapper } from "@vue/test-utils";
 import TemplateFileAsync from "./TemplateFileAsync.vue";
 import { template_file_page as strings } from "./TemplateFile.strings.ts";

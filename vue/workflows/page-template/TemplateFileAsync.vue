@@ -5,6 +5,6 @@
 <script setup lang="ts">
 import { defineAsyncComponent } from "vue";
 import { useTemplateFileLoader } from "./TemplateFile.loader.ts";
-import { AsyncPage } from "@saflib/vue-spa/components";
+import { AsyncPage } from "@saflib/vue/components";
 const TemplateFile = defineAsyncComponent(() => import("./TemplateFile.vue"));
 </script>

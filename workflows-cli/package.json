@@ -17,7 +17,7 @@
     "@saflib/monorepo": "*",
     "@saflib/openapi": "*",
     "@saflib/processes": "*",
-    "@saflib/vue-spa": "*",
+    "@saflib/vue": "*",
     "@saflib/workflows": "*",
     "@saflib/xstate": "*"
   }

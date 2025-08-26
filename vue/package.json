@@ -1,5 +1,5 @@
 {
-  "name": "@saflib/vue-spa",
+  "name": "@saflib/vue",
   "description": "All-in-one set of helper methods and documents for creating Vue SPAs for SAF applications",
   "type": "module",
   "exports": {

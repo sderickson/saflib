@@ -104,7 +104,7 @@ import {
   useResendVerification,
   getProfile,
 } from "../../requests/auth";
-import { TanstackError } from "@saflib/vue-spa";
+import { TanstackError } from "@saflib/vue";
 import { linkToHref } from "@saflib/links";
 import { authLinks } from "@saflib/auth-links";
 import { useQuery } from "@tanstack/vue-query";

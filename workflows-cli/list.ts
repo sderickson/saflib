@@ -5,7 +5,7 @@ import processWorkflows from "@saflib/processes/workflows";
 import drizzleWorkflows from "@saflib/drizzle-sqlite3/workflows";
 import openapiWorkflows from "@saflib/openapi/workflows";
 import monorepoWorkflows from "@saflib/monorepo/workflows";
-import vueSpaWorkflows from "@saflib/vue-spa/workflows";
+import vueSpaWorkflows from "@saflib/vue/workflows";
 import expressWorkflows from "@saflib/express/workflows";
 import grpcSpecsWorkflows from "@saflib/grpc-specs/workflows";
 import grpcNodeWorkflows from "@saflib/grpc/workflows";

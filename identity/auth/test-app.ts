@@ -1,4 +1,4 @@
-import { mountWithPlugins } from "@saflib/vue-spa/testing";
+import { mountWithPlugins } from "@saflib/vue/testing";
 import type { ComponentMountingOptions } from "@vue/test-utils";
 import type { Component } from "vue";
 import { createAuthRouter } from "./auth-router.ts";
