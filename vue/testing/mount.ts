@@ -3,71 +3,23 @@ import * as components from "vuetify/components";
 import * as directives from "vuetify/directives";
 import { mount, type ComponentMountingOptions } from "@vue/test-utils";
 import type { Component, Plugin } from "vue";
-import { afterAll, vi } from "vitest";
 import { createRouter, createMemoryHistory } from "vue-router";
 import { VueQueryPlugin } from "@tanstack/vue-query";
 import { QueryClient } from "@tanstack/vue-query";
 import { createI18n } from "vue-i18n";
 import type { I18nMessages } from "../src/strings.ts";
 
-// GLOBAL MOCK HELPERS -----------------
-
-export const stubGlobals = () => {
-  stubGlobalsSetup();
-
-  afterAll(() => {
-    stubGlobalsTeardown();
-  });
-};
-
 /**
- * Mock implementation of ResizeObserver for testing
+ * Options for the `mountWithPlugins` function.
  */
-class ResizeObserverMock {
-  observe() {}
-  unobserve() {}
-  disconnect() {}
-}
-
-const matchMediaMock = (): MediaQueryList => {
-  return {
-    matches: false,
-    media: "",
-    onchange: () => {},
-    addEventListener: () => {},
-    removeEventListener: () => {},
-    dispatchEvent: () => true,
-    addListener: () => {},
-    removeListener: () => {},
-  };
-};
-
-function stubGlobalsSetup() {
-  vi.stubGlobal("location", {
-    href: "http://localhost",
-  });
-  vi.stubGlobal("ResizeObserver", ResizeObserverMock);
-  vi.stubGlobal("matchMedia", matchMediaMock);
-  vi.stubGlobal("visualViewport", {
-    width: 1000,
-    height: 1000,
-    addEventListener: () => {},
-    removeEventListener: () => {},
-    dispatchEvent: () => true,
-  });
-}
-
-function stubGlobalsTeardown() {
-  vi.unstubAllGlobals();
-}
-
-// MOUNT HELPERS -----------------
-
 export interface MountWithPluginsOptions {
   router?: Plugin;
   i18nMessages?: I18nMessages;
 }
 
+/**
+ * Mount a Vue component with plugins. Handles plugins like vuetify, router, and i18n. Uses `mount` under the hood.
+ */
 export function mountWithPlugins(
   component: Component,
   options: ComponentMountingOptions<Component> = {},

@@ -4,6 +4,8 @@
 
 # Interface: MountWithPluginsOptions
 
+Options for the `mountWithPlugins` function.
+
 ## Properties
 
 ### i18nMessages?

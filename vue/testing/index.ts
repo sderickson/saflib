@@ -3,6 +3,7 @@
  * @module @saflib/vue/testing
  */
 
-export * from "./components.ts";
+export * from "./mount.ts";
 export * from "./requests.ts";
 export * from "./string-utils.ts";
+export * from "./globals.ts";

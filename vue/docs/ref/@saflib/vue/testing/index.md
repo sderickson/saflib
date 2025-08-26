@@ -10,25 +10,14 @@ Testing utilities for Vue.
 
 | Interface | Description |
 | ------ | ------ |
-| [ElementStringObject](interfaces/ElementStringObject.md) | - |
-| [MountWithPluginsOptions](interfaces/MountWithPluginsOptions.md) | - |
-
-## Type Aliases
-
-| Type Alias | Description |
-| ------ | ------ |
-| [ElementString](type-aliases/ElementString.md) | - |
-| [UseMutationReturnType](type-aliases/UseMutationReturnType.md) | - |
-| [UseQueryReturnType](type-aliases/UseQueryReturnType.md) | - |
+| [MountWithPluginsOptions](interfaces/MountWithPluginsOptions.md) | Options for the `mountWithPlugins` function. |
 
 ## Functions
 
 | Function | Description |
 | ------ | ------ |
-| [getElementByString](functions/getElementByString.md) | - |
-| [isMutationResult](functions/isMutationResult.md) | Type guard to check if a result is a UseMutationReturnType |
-| [isQueryResult](functions/isQueryResult.md) | Type guard to check if a result is a UseQueryReturnType |
-| [mountWithPlugins](functions/mountWithPlugins.md) | - |
-| [setupMockServer](functions/setupMockServer.md) | - |
-| [stubGlobals](functions/stubGlobals.md) | - |
-| [withVueQuery](functions/withVueQuery.md) | Helper function to test Vue Query composables in isolation |
+| [getElementByString](functions/getElementByString.md) | This should always be used to find elements in tests. |
+| [mountWithPlugins](functions/mountWithPlugins.md) | Mount a Vue component with plugins. Handles plugins like vuetify, router, and i18n. Uses `mount` under the hood. |
+| [setupMockServer](functions/setupMockServer.md) | Simple wrapper around `msw`'s `setupServer` function. |
+| [stubGlobals](functions/stubGlobals.md) | Call during test setup to stub browser globals like ResizeObserver, matchMedia, location, and visualViewport. |
+| [withVueQuery](functions/withVueQuery.md) | Helper function to test Vue Query composables in isolation. |

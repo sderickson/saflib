@@ -6,12 +6,14 @@
 
 > **getElementByString**(`wrapper`, `stringObj`): `DOMWrapper`\<`Element`\>
 
+This should always be used to find elements in tests.
+
 ## Parameters
 
 | Parameter | Type |
 | ------ | ------ |
 | `wrapper` | `VueWrapper` |
-| `stringObj` | [`ElementString`](../type-aliases/ElementString.md) |
+| `stringObj` | `ElementString` |
 
 ## Returns
 

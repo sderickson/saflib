@@ -5,6 +5,9 @@ import {
   type ElementString,
 } from "@saflib/utils";
 
+/**
+ * This should always be used to find elements in tests.
+ */
 export const getElementByString = (
   wrapper: VueWrapper,
   stringObj: ElementString,

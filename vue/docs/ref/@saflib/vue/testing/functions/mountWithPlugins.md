@@ -6,6 +6,8 @@
 
 > **mountWithPlugins**(`component`, `options`, `pluginOptions`): `VueWrapper`\<`any`, `any`\>
 
+Mount a Vue component with plugins. Handles plugins like vuetify, router, and i18n. Uses `mount` under the hood.
+
 ## Parameters
 
 | Parameter | Type |

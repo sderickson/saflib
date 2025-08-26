@@ -6,7 +6,15 @@
 
 > **withVueQuery**\<`T`\>(`composable`, `queryClient?`): \[`T`, `App`\<`Element`\>, `any`\]
 
-Helper function to test Vue Query composables in isolation
+Helper function to test Vue Query composables in isolation.
+
+```typescript
+const [query, app, queryClient] = withVueQuery(() =>
+  useQuery(getContact(contactId)),
+);
+await query.refetch();
+expect(query.data.value).toEqual(mockContact);
+```
 
 ## Type Parameters
 
@@ -16,13 +24,11 @@ Helper function to test Vue Query composables in isolation
 
 ## Parameters
 
-| Parameter | Type | Description |
-| ------ | ------ | ------ |
-| `composable` | () => `T` | The composable function to test |
-| `queryClient?` | `any` | Optional custom query client |
+| Parameter | Type |
+| ------ | ------ |
+| `composable` | () => `T` |
+| `queryClient?` | `any` |
 
 ## Returns
 
 \[`T`, `App`\<`Element`\>, `any`\]
-
-A tuple containing the composable result, the Vue app instance, and the query client
