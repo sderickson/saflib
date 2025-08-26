@@ -1,6 +1,9 @@
 import * as argon2 from "argon2";
 import { createHandler } from "@saflib/express";
-import type { AuthRequestBody, AuthResponseBody } from "@saflib/identity-spec";
+import type {
+  IdentityRequestBody,
+  IdentityResponseBody,
+} from "@saflib/identity-spec";
 import { emailAuthDb, EmailAuthNotFoundError } from "@saflib/identity-db";
 import { authServiceStorage } from "@saflib/identity-common";
 
@@ -10,11 +13,11 @@ export const setPassword = createHandler(async (req, res) => {
   if (!req.user) {
     res.status(401).json({
       message: "User must be logged in",
-    } satisfies AuthResponseBody["setPassword"][401]);
+    } satisfies IdentityResponseBody["setPassword"][401]);
     return;
   }
 
-  const data: AuthRequestBody["setPassword"] = req.body;
+  const data: IdentityRequestBody["setPassword"] = req.body;
   const { currentPassword, newPassword } = data;
 
   // Get the user's current email auth record to verify current password
@@ -27,7 +30,7 @@ export const setPassword = createHandler(async (req, res) => {
       case error instanceof EmailAuthNotFoundError:
         res.status(401).json({
           message: "Authentication error",
-        } satisfies AuthResponseBody["setPassword"][401]);
+        } satisfies IdentityResponseBody["setPassword"][401]);
         return;
       default:
         throw error satisfies never;
@@ -46,7 +49,7 @@ export const setPassword = createHandler(async (req, res) => {
   if (!isCurrentPasswordValid) {
     res.status(401).json({
       message: "Current password is incorrect",
-    } satisfies AuthResponseBody["setPassword"][401]);
+    } satisfies IdentityResponseBody["setPassword"][401]);
     return;
   }
 
@@ -63,7 +66,7 @@ export const setPassword = createHandler(async (req, res) => {
     await callbacks.onPasswordUpdated(req.user);
   }
 
-  const response: AuthResponseBody["setPassword"][200] = {
+  const response: IdentityResponseBody["setPassword"][200] = {
     success: true,
   };
   res.status(200).json(response);

@@ -1,9 +1,9 @@
 [**@saflib/identity-spec**](../index.md)
 
-***
+---
 
-# Type Alias: AuthResponseBody
+# Type Alias: IdentityResponseBody
 
-> **AuthResponseBody** = `ExtractResponseBody`\<`operations`\>
+> **IdentityResponseBody** = `ExtractResponseBody`\<`operations`\>
 
 For typing Express responses for identity API routes.

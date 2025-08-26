@@ -4,7 +4,7 @@ import VerifyWallPageAsync from "./VerifyWallPageAsync.vue";
 import { verify_wall_page as strings } from "./VerifyWallPage.strings.ts";
 import { getElementByString } from "@saflib/vue-spa/testing";
 import { http, HttpResponse } from "msw";
-import type { AuthResponseBody } from "@saflib/identity-spec";
+import type { IdentityResponseBody } from "@saflib/identity-spec";
 import { mountTestApp } from "../../test-app.ts";
 
 const handlers = [
@@ -13,7 +13,7 @@ const handlers = [
       id: 123,
       email: "test@example.com",
       emailVerified: false,
-    } satisfies AuthResponseBody["getUserProfile"]["200"]);
+    } satisfies IdentityResponseBody["getUserProfile"]["200"]);
   }),
 ];
 

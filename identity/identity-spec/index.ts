@@ -10,12 +10,12 @@ import {
 /**
  * For typing Express responses for identity API routes.
  */
-export type AuthResponseBody = ExtractResponseBody<operations>;
+export type IdentityResponseBody = ExtractResponseBody<operations>;
 
 /**
  * For typing Express requests for identity API routes.
  */
-export type AuthRequestBody = ExtractRequestBody<operations>;
+export type IdentityRequestBody = ExtractRequestBody<operations>;
 
 /**
  * The User type from the OpenAPI specification.

@@ -2,13 +2,15 @@ import { createHandler } from "@saflib/express";
 import createError from "http-errors";
 import { authServiceStorage } from "@saflib/identity-common";
 import { UserNotFoundError, usersDb } from "@saflib/identity-db";
-import type { AuthResponseBody } from "@saflib/identity-spec";
+import type { IdentityResponseBody } from "@saflib/identity-spec";
 
 export const getProfileHandler = createHandler(async (req, res) => {
   const { dbKey } = authServiceStorage.getStore()!;
 
   if (!req.isAuthenticated() || !req.user) {
-    res.status(200).json({} satisfies AuthResponseBody["getUserProfile"][200]);
+    res
+      .status(200)
+      .json({} satisfies IdentityResponseBody["getUserProfile"][200]);
     return;
   }
 
@@ -32,7 +34,7 @@ export const getProfileHandler = createHandler(async (req, res) => {
     givenName: result.givenName ?? undefined,
     familyName: result.familyName ?? undefined,
     createdAt: result.createdAt.toISOString(),
-  } satisfies AuthResponseBody["getUserProfile"][200];
+  } satisfies IdentityResponseBody["getUserProfile"][200];
 
   res.status(200).json(response);
 });

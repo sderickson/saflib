@@ -61,7 +61,7 @@ Since a route handler is primarily responsible for HTTP concerns, it should hous
 
 For more complex behaviors whcih do not fall into one of these, consider using one of the following:
 
-- Finite state machines (with `@saflib/node-xstate`) for complex, asynchronous workflows
+- Finite state machines (with `@saflib/xstate`) for complex, asynchronous workflows
 - Database packages with transactions for complex query behaviors
 
 Another special mention is transformers. Databases, 1st party services, and 3rd party services have their own models, and those need to be transformed from and into API requests and responses. These should be kept in a separate `transformers/` directory at the root of the package.

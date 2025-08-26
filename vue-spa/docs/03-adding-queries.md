@@ -21,12 +21,12 @@ The recommended way to define reusable query configurations is using `queryOptio
 // requests/users.ts
 import { queryOptions } from "@tanstack/vue-query";
 import { client } from "./client";
-import type { AuthResponse } from "@saflib/identity-specs"; // Import from appropriate spec package
+import type { IdentityResponse } from "@saflib/identity-specs"; // Import from appropriate spec package
 import { handleClientMethod } from "@saflib/vue-spa"; // Helper for wrapping openapi-fetch client methods
 import type { Ref } from "vue";
 
 // Export the specific response type for clarity
-export type ListUsersResponse = AuthResponse["listUsers"][200];
+export type ListUsersResponse = IdentityResponse["listUsers"][200];
 
 /**
  * Query options to fetch a list of users
@@ -41,7 +41,7 @@ export const listUsers = queryOptions({
  * Query options to fetch a user's profile by ID
  * @param userId Ref to the user ID
  */
-export type GetUserProfileResponse = AuthResponse["getUserProfile"][200];
+export type GetUserProfileResponse = IdentityResponse["getUserProfile"][200];
 
 export const getUserProfileQueryOptions = (userId: Ref<number | undefined>) => {
   return queryOptions({
@@ -157,13 +157,14 @@ Mutations use `useMutation` and `handleClientMethod`. It's recommended to define
 // requests/userProfile.ts
 import { useMutation, useQueryClient } from "@tanstack/vue-query";
 import { client } from "./client";
-import type { AuthRequest, AuthResponse } from "./types"; // Assuming central types
+import type { AuthRequest, IdentityResponse } from "./types"; // Assuming central types
 import { handleClientMethod } from "@saflib/vue-spa";
 import type { Ref } from "vue";
 
 // Export request body and response types
 export type UpdateUserProfileBody = AuthRequest["updateUserProfile"];
-export type UpdateUserProfileResponse = AuthResponse["updateUserProfile"][200];
+export type UpdateUserProfileResponse =
+  IdentityResponse["updateUserProfile"][200];
 
 /**
  * Hook to update a user's profile
