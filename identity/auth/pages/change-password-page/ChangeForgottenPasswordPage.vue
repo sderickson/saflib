@@ -1,18 +1,20 @@
 <template>
   <div>
     <v-alert v-if="successMessage" type="success" variant="tonal" class="mb-4">
-      {{ successMessage }}
+      {{ t(successMessage) }}
     </v-alert>
 
     <v-alert v-if="errorMessage" type="error" variant="tonal" class="mb-4">
-      {{ errorMessage }}
+      {{ t(errorMessage) }}
     </v-alert>
 
     <v-form v-if="!successMessage" v-model="valid">
-      <div class="mb-4 font-weight-medium">Reset Password</div>
+      <div class="mb-4 font-weight-medium">
+        {{ t(change_forgotten_password_page.reset_password) }}
+      </div>
 
       <div class="text-body-2 text-medium-emphasis mb-4">
-        Please set a new password.
+        {{ t(change_forgotten_password_page.please_set_a_new_password) }}
       </div>
 
       <v-text-field
@@ -26,15 +28,16 @@
 
       <v-text-field
         v-model="confirmPassword"
-        v-bind="change_forgotten_password_page.confirm_password"
+        v-bind="t(change_forgotten_password_page.confirm_password)"
         prepend-inner-icon="mdi-lock-check-outline"
         type="password"
         :rules="[
           (v) =>
-            !!v || change_forgotten_password_page.please_confirm_your_password,
+            !!v ||
+            t(change_forgotten_password_page.please_confirm_your_password),
           (_) =>
             passwordsMatch ||
-            change_forgotten_password_page.passwords_do_not_match,
+            t(change_forgotten_password_page.passwords_do_not_match),
         ]"
         :disabled="isPending"
       ></v-text-field>
@@ -51,15 +54,15 @@
       >
         {{
           isPending
-            ? change_forgotten_password_page.resetting
-            : change_forgotten_password_page.reset_password
+            ? t(change_forgotten_password_page.resetting)
+            : t(change_forgotten_password_page.reset_password)
         }}
       </v-btn>
     </v-form>
 
     <v-card-text v-else class="text-center">
       <SpaLink :link="authLinks.login" class="text-blue text-decoration-none">
-        {{ change_forgotten_password_page.continue_to_login }}
+        {{ t(change_forgotten_password_page.continue_to_login) }}
         <v-icon icon="mdi-chevron-right"></v-icon>
       </SpaLink>
     </v-card-text>
