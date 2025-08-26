@@ -77,3 +77,20 @@ export const convertI18NInterpolationToRegex = (str: string) => {
   }
   return str;
 };
+
+/**
+ * Strings that are exported by client packages will be in objects like these. Their values match valid HTML attributes.
+ */
+export interface ElementStringObject {
+  role?: "button" | "combobox" | "option" | "heading" | "link";
+  text?: string;
+  "data-testid"?: string;
+  placeholder?: string;
+  "aria-label"?: string;
+  label?: string;
+}
+
+/**
+ * A string for an HTML element can either be a plain string, or an object with valid HTML attributes.
+ */
+export type ElementString = string | ElementStringObject;

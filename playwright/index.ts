@@ -1,6 +1,9 @@
 import type { Page } from "@playwright/test";
 export * from "./screenshots.ts";
-import { convertI18NInterpolationToRegex } from "@saflib/utils";
+import {
+  convertI18NInterpolationToRegex,
+  type ElementString,
+} from "@saflib/utils";
 
 /**
  * Dimensions for a small Android device, for E2E testing the mobile experience.
@@ -20,23 +23,6 @@ export const getUniqueId = () => {
 export const getUniqueEmail = () => {
   return `test${getUniqueId()}@gmail.com`;
 };
-
-/**
- * Strings that are exported by client packages will be in objects like these. Their values match valid HTML attributes.
- */
-export interface ElementStringObject {
-  role?: "button" | "combobox" | "option" | "heading" | "link";
-  text?: string;
-  "data-testid"?: string;
-  placeholder?: string;
-  "aria-label"?: string;
-  label?: string;
-}
-
-/**
- * A string for an HTML element can either be a plain string, or an object with valid HTML attributes.
- */
-export type ElementString = string | ElementStringObject;
 
 /**
  * Convenience function for getting an element by an ElementString. Use this as much as possible, as it really helps avoid spending a bunch of time debugging string matching issues.

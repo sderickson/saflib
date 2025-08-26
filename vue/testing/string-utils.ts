@@ -1,18 +1,9 @@
 import { expect } from "vitest";
 import { type VueWrapper } from "@vue/test-utils";
-import { convertI18NInterpolationToRegex } from "@saflib/utils";
-
-export interface ElementStringObject {
-  placeholder?: string;
-  text?: string;
-  "data-testid"?: string;
-  label?: string;
-}
-
-// Store strings for Vue components in Record<string, ElementString>
-// Then you can v-bind them to the component, and also use them in tests for reliable element selection
-// These objects can also be used in playwright tests, and eventually for i18n.
-export type ElementString = string | ElementStringObject;
+import {
+  convertI18NInterpolationToRegex,
+  type ElementString,
+} from "@saflib/utils";
 
 export const getElementByString = (
   wrapper: VueWrapper,
