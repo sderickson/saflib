@@ -3,9 +3,7 @@
 <template>
   <v-app>
     <v-main>
-      <router-view v-slot="{ Component }">
-        <component :is="Component" />
-      </router-view>
+      <router-view />
     </v-main>
   </v-app>
 </template>

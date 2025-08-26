@@ -8,18 +8,7 @@ Despite Playwright's [wide array of locators](https://playwright.dev/docs/locato
 
 This is where [sharing strings](../../best-practices.md#specify-and-enforce-shared-apis-models-and-strings) really comes in handy. By structuring client strings in a consistent way and making them available outside of client packages _without_ depending on client build systems (rollup, vite, etc.), Playwright can use the same exact strings the client does and enforce that through type checking. There's no more duplicating the same strings across Playwright tests and client code.
 
-It's also important that these strings be organized to match HTML attributes. Strings are stored in objects that follow this type:
-
-```typescript
-export interface ElementStringObject {
-  role?: "button" | "combobox" | "option" | "heading" | "link";
-  text?: string;
-  "data-testid"?: string;
-  placeholder?: string;
-  "aria-label"?: string;
-  label?: string;
-}
-```
+It's also important that these strings be organized to match HTML attributes. Strings are stored in objects that follow [this type](../../utils/docs/ref/interfaces/ElementStringObject.md); an object with keys such as `"aria-label"`, `"text"`, `"role"`, etc.
 
 Then, Vue can bind the entire object to the element like this:
 

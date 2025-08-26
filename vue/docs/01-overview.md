@@ -33,6 +33,7 @@ web-{subdomain}/
 │   ├── {page-two}/
 │   │   └── ...
 │   └── ...
+├── {Subdomain}App.vue
 ├── i18n.ts
 ├── main.ts
 ├── package.json
@@ -66,11 +67,17 @@ Contains the components for each page of the SPA. Each page is expected to have:
 
 For more information, see [Pages](./02-pages.md).
 
+### `{Subdomain}App.vue`
+
+_[Template file](../workflows/spa-template/TemplateFileApp.vue)_
+
+The root Vue component for the SPA. At minimum, it should include a `<router-view />` element. This is also where your SPA's layout should go; if different pages have different layouts, they should probably be different SPAs!
+
 ### `i18n.ts`
 
 _[Template file](../workflows/spa-template/i18n.ts)_
 
-Each page and component in this package should call `const { t } = useReverseT()` and use the `t` function to translate strings.
+Each page and component in this package should call `const { t } = useReverseT()` and use the `t` function to translate strings. Note that this is separate from `strings.ts` to avoid external packages that depend on `strings.ts` also depending on Vue I18n and co.
 
 For more information, see [i18n](./03-i18n.md).
 
