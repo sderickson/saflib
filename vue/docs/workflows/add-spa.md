@@ -21,7 +21,7 @@ To run this workflow automatically, tell the agent to:
 When run, the workflow will:
 
 * Copy template files and rename placeholders.
-  * Upsert **TemplateApp.vue** from [template](https://github.com/sderickson/saflib/blob/main/vue/workflows/spa-template/TemplateApp.vue)
+  * Upsert **ExampleSpaApp.vue** from [template](https://github.com/sderickson/saflib/blob/main/vue/workflows/spa-template/TemplateFileApp.vue)
   * Upsert **i18n.ts** from [template](https://github.com/sderickson/saflib/blob/main/vue/workflows/spa-template/i18n.ts)
   * Upsert **main.ts** from [template](https://github.com/sderickson/saflib/blob/main/vue/workflows/spa-template/main.ts)
   * Upsert **node_modules** from [template](https://github.com/sderickson/saflib/blob/main/vue/workflows/spa-template/node_modules)
