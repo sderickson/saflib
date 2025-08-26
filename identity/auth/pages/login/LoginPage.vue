@@ -71,7 +71,7 @@ import { emailRules, passwordRules } from "../../utils/rules.ts";
 import { useLogin } from "../../requests/auth.ts";
 import { login_page } from "./LoginPage.strings.ts";
 import { authLinks } from "@saflib/auth-links";
-import { SpaLink } from "@saflib/vue-spa";
+import { SpaLink } from "@saflib/vue-spa/components";
 import type { User } from "@saflib/identity-spec";
 
 const emit = defineEmits<{

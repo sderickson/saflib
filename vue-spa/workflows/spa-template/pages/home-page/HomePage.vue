@@ -1,6 +1,6 @@
 <template>
   <v-container>
-    <h1>{{ strings.example_header }}</h1>
+    <h1>{{ t(strings.example_header) }}</h1>
     <v-text-field v-bind="strings.example_input"></v-text-field>
     <div v-if="profile.id">Logged in with {{ profile.email }}</div>
     <div v-else>Not logged in</div>
@@ -8,8 +8,11 @@
 </template>
 
 <script setup lang="ts">
+import { useReverseT } from "../../i18n.ts";
 import { home_page as strings } from "./HomePage.strings";
 import { useHomePageLoader } from "./HomePage.loader";
+
+const { t } = useReverseT();
 
 const { profileQuery } = useHomePageLoader();
 

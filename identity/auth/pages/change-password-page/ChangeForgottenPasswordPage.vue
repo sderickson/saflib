@@ -17,7 +17,7 @@
 
       <v-text-field
         v-model="newPassword"
-        v-bind="change_forgotten_password_page.new_password"
+        v-bind="t(change_forgotten_password_page.new_password)"
         prepend-inner-icon="mdi-lock-outline"
         type="password"
         :rules="passwordRules"
@@ -80,7 +80,11 @@ import { useResetPassword } from "../../requests/auth";
 import { passwordRules } from "../../utils/rules";
 import { change_forgotten_password_page } from "./ChangeForgottenPasswordPage.strings";
 import { authLinks } from "@saflib/auth-links";
-import { SpaLink } from "@saflib/vue-spa";
+import { SpaLink } from "@saflib/vue-spa/components";
+
+import { useReverseT } from "../../i18n.ts";
+
+const { t } = useReverseT();
 
 const route = useRoute();
 const token = route.query.token as string;

@@ -9,6 +9,7 @@ import { mountTestApp } from "../../test-app.ts";
 
 const handlers = [
   http.get("http://identity.localhost:3000/auth/profile", () => {
+    console.log("used verify wall page test!");
     return HttpResponse.json({
       id: 123,
       email: "test@example.com",

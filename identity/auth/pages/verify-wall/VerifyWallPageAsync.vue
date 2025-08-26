@@ -9,7 +9,7 @@
 <script setup lang="ts">
 import { defineAsyncComponent } from "vue";
 import { useVerifyWallPageLoader } from "./VerifyWallPage.loader.ts";
-import { AsyncPage } from "@saflib/vue-spa";
+import { AsyncPage } from "@saflib/vue-spa/components";
 
 const props = defineProps<{
   redirectTo: string;

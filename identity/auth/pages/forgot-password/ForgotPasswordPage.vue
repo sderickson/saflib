@@ -52,7 +52,7 @@ import { ref } from "vue";
 import { emailRules } from "../../utils/rules";
 import { useForgotPassword } from "../../requests/auth";
 import { forgot_password_page } from "./ForgotPasswordPage.strings";
-import { SpaLink } from "@saflib/vue-spa";
+import { SpaLink } from "@saflib/vue-spa/components";
 import { authLinks } from "@saflib/auth-links";
 
 const email = ref("");

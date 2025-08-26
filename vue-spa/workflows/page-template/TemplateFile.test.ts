@@ -1,45 +1,27 @@
-// TODO: uncomment lines below, and update imports to actual files if needed
-import {
-  describe,
-  it,
-  expect,
-  //  vi
-} from "vitest";
-import { stubGlobals, setupMockServer } from "@saflib/vue-spa/testing";
-// import TemplateFileAsync from "./TemplateFileAsync.vue";
-// import { TemplateFile_page as strings } from "./TemplateFile.strings.ts";
-// import { getElementByString } from "@saflib/vue-spa/testing";
-import { http, HttpResponse } from "msw";
-import type { AuthResponseBody } from "@saflib/identity-spec"; // TODO: import the appropriate spec
-// import { mountTestApp } from "../../test-app.ts";
-
-// TODO: update with mock responses for the actual API calls made in the loader
-const handlers = [
-  http.get("http://identity.localhost:3000/users", () => {
-    return HttpResponse.json([] satisfies AuthResponseBody["listUsers"]["200"]); // TODO: enforce the correct response type
-  }),
-];
+import { describe, it, expect, vi } from "vitest";
+import { stubGlobals, getElementByString } from "@saflib/vue-spa/testing";
+import { type VueWrapper } from "@vue/test-utils";
+import TemplateFileAsync from "./TemplateFileAsync.vue";
+import { template_file_page as strings } from "./TemplateFile.strings.ts";
+// TODO: Fix this import to point to the actual one for this package
+import { mountTestApp } from "../spa-template/test-app.ts";
 
 describe("TemplateFile", () => {
   stubGlobals();
 
-  const server = setupMockServer(handlers);
-  expect(server).toBeDefined();
-  /*
-    For tests which test different responses, use the following pattern:
-      server.use(
-      http.get("http://identity.localhost:3000/users", () => {
-        return HttpResponse.json(updatedResponse);
-      }),
-    );
-  */
+  const getExampleHeader = (wrapper: VueWrapper) => {
+    return getElementByString(wrapper, strings.title);
+  };
+
+  const getExampleInput = (wrapper: VueWrapper) => {
+    return getElementByString(wrapper, strings.example_input);
+  };
 
   it("should render the example strings", async () => {
-    // const wrapper = mountTestApp(TemplateFileAsync);
+    const wrapper = mountTestApp(TemplateFileAsync);
     // first expectation should "waitFor" since this test includes loading code and fetching data
-    // await vi.waitFor(() => getTitle(wrapper).exists());
-    // expect(getElementByString(wrapper, strings.title).exists()).toBe(true);
-    // expect(getElementByString(wrapper, strings.example_input).exists()).toBe(true);
-    // TODO: add a check for the raw, printed data from the loader
+    await vi.waitFor(() => getExampleHeader(wrapper).exists());
+    expect(getExampleHeader(wrapper).exists()).toBe(true);
+    expect(getExampleInput(wrapper).exists()).toBe(true);
   });
 });
