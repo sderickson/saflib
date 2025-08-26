@@ -1,6 +1,6 @@
 import type { Page } from "@playwright/test";
 export * from "./screenshots.ts";
-import { convertI18NInterpolationToRegex } from "@saflib/vue/i18n-utils";
+import { convertI18NInterpolationToRegex } from "@saflib/utils";
 
 /**
  * Dimensions for a small Android device, for E2E testing the mobile experience.

@@ -1,6 +1,6 @@
 import { expect } from "vitest";
 import { type VueWrapper } from "@vue/test-utils";
-import { convertI18NInterpolationToRegex } from "../i18n-utils.ts";
+import { convertI18NInterpolationToRegex } from "@saflib/utils";
 
 export interface ElementStringObject {
   placeholder?: string;

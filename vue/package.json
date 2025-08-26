@@ -6,11 +6,10 @@
     ".": "./src/index.ts",
     "./components": "./components/index.ts",
     "./tanstack": "./tanstack.ts",
+    "./testing": "./testing/index.ts",
     "./tsconfig.app.json": "./tsconfig.app.json",
     "./workflows": "./workflows/index.ts",
-    "./testing": "./testing/index.ts",
-    "./vitest-config": "./testing/vitest-config.js",
-    "./i18n-utils": "./i18n-utils.ts"
+    "./vitest-config": "./testing/vitest-config.js"
   },
   "scripts": {
     "typecheck": "tsc --project tsconfig.app.json"
