@@ -1,40 +1,12 @@
 import { describe, it, expect, vi } from "vitest";
-import {
-  stubGlobals,
-  mountWithPlugins,
-  setupMockServer,
-} from "@saflib/vue-spa/testing";
+import { stubGlobals, getElementByString } from "@saflib/vue-spa/testing";
 import { type VueWrapper } from "@vue/test-utils";
 import HomePageAsync from "./HomePageAsync.vue";
 import { home_page as strings } from "./HomePage.strings.ts";
-import { router } from "../../router.ts";
-import { getElementByString } from "../../../../testing/string-utils.ts";
-import type { Component } from "vue";
-import { http, HttpResponse } from "msw";
-import type { AuthResponseBody } from "@saflib/identity-spec"; // TODO: import the appropriate spec
-
-const handlers = [
-  http.get("http://identity.localhost:3000/users", () => {
-    return HttpResponse.json([] satisfies AuthResponseBody["listUsers"]["200"]); // TODO: enforce the correct response type
-  }),
-];
+import { mountTestApp } from "../../test-app.ts";
 
 describe("HomePage", () => {
   stubGlobals();
-
-  setupMockServer(handlers);
-  /*
-    For tests which test different responses, use the following pattern:
-      server.use(
-      http.get("http://identity.localhost:3000/users", () => {
-        return HttpResponse.json(updatedResponse);
-      }),
-    );
-  */
-
-  const mountComponent = (component: Component) => {
-    return mountWithPlugins(component, {}, { router });
-  };
 
   const getExampleHeader = (wrapper: VueWrapper) => {
     return getElementByString(wrapper, strings.example_header);
@@ -45,7 +17,7 @@ describe("HomePage", () => {
   };
 
   it("should render the example strings", async () => {
-    const wrapper = mountComponent(HomePageAsync);
+    const wrapper = mountTestApp(HomePageAsync);
     // first expectation should "waitFor" since this test includes loading code and fetching data
     await vi.waitFor(() => getExampleHeader(wrapper).exists());
     expect(getExampleHeader(wrapper).exists()).toBe(true);

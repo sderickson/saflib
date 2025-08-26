@@ -1,8 +1,8 @@
-import { useUsersQuery } from "@saflib/auth";
+import { getProfile } from "@saflib/auth";
+import { useQuery } from "@tanstack/vue-query";
 
 export function useHomePageLoader() {
-  // Add tanstack query calls here and return each query result in the array
   return {
-    usersQuery: useUsersQuery(),
+    profileQuery: useQuery(getProfile()),
   };
 }

@@ -29,6 +29,7 @@ When run, the workflow will:
   * Upsert **pages** from [template](https://github.com/sderickson/saflib/blob/main/vue-spa/workflows/spa-template/pages)
   * Upsert **router.ts** from [template](https://github.com/sderickson/saflib/blob/main/vue-spa/workflows/spa-template/router.ts)
   * Upsert **strings.ts** from [template](https://github.com/sderickson/saflib/blob/main/vue-spa/workflows/spa-template/strings.ts)
+  * Upsert **tsconfig.json** from [template](https://github.com/sderickson/saflib/blob/main/vue-spa/workflows/spa-template/tsconfig.json)
   * Upsert **vitest.config.ts** from [template](https://github.com/sderickson/saflib/blob/main/vue-spa/workflows/spa-template/vitest.config.ts)
 * Update the package name and other template strings in the new SPA's package.json and other files. The new package name is @saflib/web-example-spa-client. Also update the "router.ts" file to use the new SPA's name as the base path.
 * Add @saflib/web-example-spa-client as a dependency in clients/spas/package.json, then run 'npm install' from the root of the monorepo (not from the clients/spas directory).
