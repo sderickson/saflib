@@ -10,4 +10,7 @@ export const template_file_page = {
     placeholder: "Name",
     label: "Enter your name",
   },
+
+  logged_in_with_email: "Logged in with {email}",
+  not_logged_in: "Not logged in",
 };
