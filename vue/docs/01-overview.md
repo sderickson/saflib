@@ -79,7 +79,7 @@ _[Template file](../workflows/spa-template/i18n.ts)_
 
 Each page and component in this package should call `const { t } = useReverseT()` and use the `t` function to translate strings. Note that this is separate from `strings.ts` to avoid external packages that depend on `strings.ts` also depending on Vue I18n and co.
 
-For more information, see [i18n](./03-i18n.md).
+For more information on using this in pages, and why it's set up this way, see [i18n](./03-i18n.md).
 
 ### `main.ts`
 
