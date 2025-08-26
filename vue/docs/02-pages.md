@@ -72,6 +72,8 @@ _[Template file](../workflows/page-template/TemplateFile.test.ts)_
 
 Since Vue components depend on a great number of things, it's most useful to have integration (or component) tests for them. These tests run the page within a complete Vue app, with browser interfaces and network requests stubbed.
 
+See [testing](./04-testing.md) for more info.
+
 ## Sub-Components
 
 Naturally, pages will often be complex enough to warrant breaking down into sub-components. Where these components live depends:
