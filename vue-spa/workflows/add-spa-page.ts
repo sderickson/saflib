@@ -11,6 +11,7 @@ import {
   promptAgentComposer,
   contextFromInput,
   type WorkflowInput,
+  outputFromContext,
 } from "@saflib/workflows";
 import { kebabCaseToPascalCase } from "@saflib/utils";
 import path from "node:path";
@@ -162,6 +163,7 @@ export const AddSpaPageWorkflowMachine = setup({
       type: "final",
     },
   },
+  output: outputFromContext,
 });
 
 export class AddSpaPageWorkflow extends XStateWorkflow {
@@ -172,7 +174,8 @@ export class AddSpaPageWorkflow extends XStateWorkflow {
     {
       name: "name",
       description:
-        "Name of the new page in kebab-case (e.g. 'welcome-new-user' or 'welcome-new-user-page')",
+        "Name of the new page in kebab-case (e.g. 'welcome-new-user')",
+      exampleValue: "example-page",
     },
   ];
   sourceUrl = import.meta.url;

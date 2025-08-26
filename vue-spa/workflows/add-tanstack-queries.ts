@@ -10,6 +10,7 @@ import {
   doTestsPass,
   contextFromInput,
   type WorkflowInput,
+  outputFromContext,
 } from "@saflib/workflows";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -311,6 +312,7 @@ export const AddTanstackQueriesWorkflowMachine = setup({
       type: "final",
     },
   },
+  output: outputFromContext,
 });
 
 export class AddTanstackQueriesWorkflow extends XStateWorkflow {
@@ -320,6 +322,7 @@ export class AddTanstackQueriesWorkflow extends XStateWorkflow {
     {
       name: "path",
       description: "Path of the new queries file (e.g. 'requests/feature.ts')",
+      exampleValue: "requests/feature.ts",
     },
   ];
   sourceUrl = import.meta.url;

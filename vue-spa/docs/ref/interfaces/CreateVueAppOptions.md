@@ -4,6 +4,8 @@
 
 # Interface: CreateVueAppOptions
 
+Options for createVueApp.
+
 ## Properties
 
 ### callback()?

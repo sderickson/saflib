@@ -17,7 +17,7 @@
 | [ClientResponse](interfaces/ClientResponse.md) | - |
 | [ClientResponseError](interfaces/ClientResponseError.md) | - |
 | [ClientResult](interfaces/ClientResult.md) | - |
-| [CreateVueAppOptions](interfaces/CreateVueAppOptions.md) | - |
+| [CreateVueAppOptions](interfaces/CreateVueAppOptions.md) | Options for createVueApp. |
 | [I18nMessages](interfaces/I18nMessages.md) | - |
 
 ## Type Aliases
@@ -35,7 +35,7 @@
 | ------ | ------ |
 | [createSafClient](functions/createSafClient.md) | - |
 | [createTanstackQueryClient](functions/createTanstackQueryClient.md) | - |
-| [createVueApp](functions/createVueApp.md) | - |
+| [createVueApp](functions/createVueApp.md) | Wrapper around vue's `createApp` function. Handles SAF-required plugins. |
 | [getClientName](functions/getClientName.md) | - |
 | [getHost](functions/getHost.md) | - |
 | [getProtocol](functions/getProtocol.md) | - |

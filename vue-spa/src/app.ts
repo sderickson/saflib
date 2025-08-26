@@ -9,6 +9,9 @@ import type { Router } from "vue-router";
 import { createI18n } from "vue-i18n";
 import { type I18nMessages } from "./strings.ts";
 
+/**
+ * Options for createVueApp.
+ */
 export interface CreateVueAppOptions {
   router: Router;
   vuetifyConfig?: VuetifyOptions;
@@ -16,6 +19,16 @@ export interface CreateVueAppOptions {
   i18nMessages?: I18nMessages;
 }
 
+/**
+ * Wrapper around vue's `createApp` function. Handles SAF-required plugins.
+ *
+ * Sets up:
+ * - Vuetify
+ * - Vue Router
+ * - Tanstack Query
+ * - Vue I18n
+ *
+ */
 export const createVueApp = (
   Application: Component,
   { router, vuetifyConfig, callback, i18nMessages }: CreateVueAppOptions,
@@ -53,5 +66,5 @@ export const createVueApp = (
   }
 
   app.mount("#app");
-  return createApp(app);
+  return app;
 };
