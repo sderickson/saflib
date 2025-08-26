@@ -1,6 +1,6 @@
 [**@saflib/vue**](../index.md)
 
----
+***
 
 # Class: TanstackError
 
@@ -16,10 +16,10 @@
 
 #### Parameters
 
-| Parameter | Type     |
-| --------- | -------- |
-| `status`  | `number` |
-| `code?`   | `string` |
+| Parameter | Type |
+| ------ | ------ |
+| `status` | `number` |
+| `code?` | `string` |
 
 #### Returns
 
@@ -39,13 +39,13 @@
 
 `Error.cause`
 
----
+***
 
 ### code
 
 > **code**: `undefined` \| `string`
 
----
+***
 
 ### message
 
@@ -55,7 +55,7 @@
 
 `Error.message`
 
----
+***
 
 ### name
 
@@ -65,7 +65,7 @@
 
 `Error.name`
 
----
+***
 
 ### stack?
 
@@ -75,13 +75,13 @@
 
 `Error.stack`
 
----
+***
 
 ### status
 
 > **status**: `number`
 
----
+***
 
 ### stackTraceLimit
 
@@ -114,7 +114,7 @@ a string representing the location in the code at which
 ```js
 const myObject = {};
 Error.captureStackTrace(myObject);
-myObject.stack; // Similar to `new Error().stack`
+myObject.stack;  // Similar to `new Error().stack`
 ```
 
 The first line of the trace will be prefixed with
@@ -153,9 +153,9 @@ a();
 
 #### Parameters
 
-| Parameter         | Type       |
-| ----------------- | ---------- |
-| `targetObject`    | `object`   |
+| Parameter | Type |
+| ------ | ------ |
+| `targetObject` | `object` |
 | `constructorOpt?` | `Function` |
 
 #### Returns
@@ -166,7 +166,7 @@ a();
 
 `Error.captureStackTrace`
 
----
+***
 
 ### prepareStackTrace()
 
@@ -174,9 +174,9 @@ a();
 
 #### Parameters
 
-| Parameter     | Type         |
-| ------------- | ------------ |
-| `err`         | `Error`      |
+| Parameter | Type |
+| ------ | ------ |
+| `err` | `Error` |
 | `stackTraces` | `CallSite`[] |
 
 #### Returns

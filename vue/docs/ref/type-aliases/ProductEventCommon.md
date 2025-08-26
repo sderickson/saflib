@@ -1,6 +1,6 @@
 [**@saflib/vue**](../index.md)
 
----
+***
 
 # Type Alias: ProductEventCommon
 
@@ -14,7 +14,7 @@
 
 The frontend client that triggered the event. For web, it should be "web-{spa-name}".
 
----
+***
 
 ### component
 
@@ -22,7 +22,7 @@ The frontend client that triggered the event. For web, it should be "web-{spa-na
 
 The component that triggered the event. For vue, it should be the component name.
 
----
+***
 
 ### view
 

@@ -1,6 +1,6 @@
 [**@saflib/vue**](../index.md)
 
----
+***
 
 # Function: makeProductEventLogger()
 
@@ -9,8 +9,8 @@
 ## Type Parameters
 
 | Type Parameter |
-| -------------- |
-| `T`            |
+| ------ |
+| `T` |
 
 ## Returns
 
@@ -23,8 +23,8 @@
 #### Parameters
 
 | Parameter | Type |
-| --------- | ---- |
-| `event`   | `T`  |
+| ------ | ------ |
+| `event` | `T` |
 
 #### Returns
 
@@ -36,8 +36,8 @@
 
 #### Parameters
 
-| Parameter  | Type                                                                     |
-| ---------- | ------------------------------------------------------------------------ |
+| Parameter | Type |
+| ------ | ------ |
 | `listener` | [`ProductEventListener`](../type-aliases/ProductEventListener.md)\<`T`\> |
 
 #### Returns

@@ -14,7 +14,7 @@
     "typecheck": "vue-tsc -b"
   },
   "dependencies": {
-    "@saflib/vue": "*",
-    "@saflib/identity-spec": "*"
+    "@saflib/identity-spec": "*",
+    "@saflib/vue": "*"
   }
 }

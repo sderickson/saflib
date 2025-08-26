@@ -2,7 +2,7 @@
 
 ## Source
 
-[add-spa-page.ts](https://github.com/sderickson/saflib/blob/main/vue-spa/workflows/add-spa-page.ts)
+[add-spa-page.ts](https://github.com/sderickson/saflib/blob/main/vue/workflows/add-spa-page.ts)
 
 ## Usage
 
@@ -21,11 +21,11 @@ To run this workflow automatically, tell the agent to:
 When run, the workflow will:
 
 * Copy template files and rename placeholders.
-  * Upsert **ExamplePage.loader.ts** from [template](https://github.com/sderickson/saflib/blob/main/vue-spa/workflows/page-template/TemplateFile.loader.ts)
-  * Upsert **ExamplePage.strings.ts** from [template](https://github.com/sderickson/saflib/blob/main/vue-spa/workflows/page-template/TemplateFile.strings.ts)
-  * Upsert **ExamplePage.test.ts** from [template](https://github.com/sderickson/saflib/blob/main/vue-spa/workflows/page-template/TemplateFile.test.ts)
-  * Upsert **ExamplePage.vue** from [template](https://github.com/sderickson/saflib/blob/main/vue-spa/workflows/page-template/TemplateFile.vue)
-  * Upsert **ExamplePageAsync.vue** from [template](https://github.com/sderickson/saflib/blob/main/vue-spa/workflows/page-template/TemplateFileAsync.vue)
+  * Upsert **ExamplePage.loader.ts** from [template](https://github.com/sderickson/saflib/blob/main/vue/workflows/page-template/TemplateFile.loader.ts)
+  * Upsert **ExamplePage.strings.ts** from [template](https://github.com/sderickson/saflib/blob/main/vue/workflows/page-template/TemplateFile.strings.ts)
+  * Upsert **ExamplePage.test.ts** from [template](https://github.com/sderickson/saflib/blob/main/vue/workflows/page-template/TemplateFile.test.ts)
+  * Upsert **ExamplePage.vue** from [template](https://github.com/sderickson/saflib/blob/main/vue/workflows/page-template/TemplateFile.vue)
+  * Upsert **ExamplePageAsync.vue** from [template](https://github.com/sderickson/saflib/blob/main/vue/workflows/page-template/TemplateFileAsync.vue)
 * Update ExamplePage.loader.ts to remove TODOs
 * Update ExamplePage.vue to remove TODOs
 * Find the "links" package adjacent to this package. Add the link for the new page there along with the others.

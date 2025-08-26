@@ -3,12 +3,12 @@ import { describe, it, expect } from "vitest";
 import { http, HttpResponse } from "msw";
 import { setupMockServer, withVueQuery } from "@saflib/vue/testing";
 import { useQuery } from "@tanstack/vue-query";
-import { useQueryTemplate } from "./query-template.js";
+import { useQueryTemplate } from "../query-template.js";
 import type {
   GetQueryTemplateResponse,
   CreateQueryTemplateBody,
   UpdateQueryTemplateBody,
-} from "./query-template.js";
+} from "../query-template.js";
 
 const mockResponse: GetQueryTemplateResponse = {
   // TODO: Add mock response structure based on OpenAPI spec

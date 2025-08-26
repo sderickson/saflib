@@ -1,8 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
-import { stubGlobals, setupMockServer } from "@saflib/vue/testing";
+import { stubGlobals, setupMockServer, getElementByString } from "@saflib/vue";
 import VerifyWallPageAsync from "./VerifyWallPageAsync.vue";
 import { verify_wall_page as strings } from "./VerifyWallPage.strings.ts";
-import { getElementByString } from "@saflib/vue/testing";
 import { http, HttpResponse } from "msw";
 import type { IdentityResponseBody } from "@saflib/identity-spec";
 import { mountTestApp } from "../../test-app.ts";

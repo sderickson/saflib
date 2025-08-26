@@ -2,7 +2,7 @@
 
 ## Source
 
-[add-spa.ts](https://github.com/sderickson/saflib/blob/main/vue-spa/workflows/add-spa.ts)
+[add-spa.ts](https://github.com/sderickson/saflib/blob/main/vue/workflows/add-spa.ts)
 
 ## Usage
 
@@ -21,17 +21,18 @@ To run this workflow automatically, tell the agent to:
 When run, the workflow will:
 
 * Copy template files and rename placeholders.
-  * Upsert **TemplateApp.vue** from [template](https://github.com/sderickson/saflib/blob/main/vue-spa/workflows/spa-template/TemplateApp.vue)
-  * Upsert **index.ts** from [template](https://github.com/sderickson/saflib/blob/main/vue-spa/workflows/spa-template/index.ts)
-  * Upsert **main.ts** from [template](https://github.com/sderickson/saflib/blob/main/vue-spa/workflows/spa-template/main.ts)
-  * Upsert **node_modules** from [template](https://github.com/sderickson/saflib/blob/main/vue-spa/workflows/spa-template/node_modules)
-  * Upsert **package.json** from [template](https://github.com/sderickson/saflib/blob/main/vue-spa/workflows/spa-template/package.json)
-  * Upsert **pages** from [template](https://github.com/sderickson/saflib/blob/main/vue-spa/workflows/spa-template/pages)
-  * Upsert **router.ts** from [template](https://github.com/sderickson/saflib/blob/main/vue-spa/workflows/spa-template/router.ts)
-  * Upsert **strings.ts** from [template](https://github.com/sderickson/saflib/blob/main/vue-spa/workflows/spa-template/strings.ts)
-  * Upsert **test-app.ts** from [template](https://github.com/sderickson/saflib/blob/main/vue-spa/workflows/spa-template/test-app.ts)
-  * Upsert **tsconfig.json** from [template](https://github.com/sderickson/saflib/blob/main/vue-spa/workflows/spa-template/tsconfig.json)
-  * Upsert **vitest.config.ts** from [template](https://github.com/sderickson/saflib/blob/main/vue-spa/workflows/spa-template/vitest.config.ts)
+  * Upsert **TemplateApp.vue** from [template](https://github.com/sderickson/saflib/blob/main/vue/workflows/spa-template/TemplateApp.vue)
+  * Upsert **i18n.ts** from [template](https://github.com/sderickson/saflib/blob/main/vue/workflows/spa-template/i18n.ts)
+  * Upsert **index.ts** from [template](https://github.com/sderickson/saflib/blob/main/vue/workflows/spa-template/index.ts)
+  * Upsert **main.ts** from [template](https://github.com/sderickson/saflib/blob/main/vue/workflows/spa-template/main.ts)
+  * Upsert **node_modules** from [template](https://github.com/sderickson/saflib/blob/main/vue/workflows/spa-template/node_modules)
+  * Upsert **package.json** from [template](https://github.com/sderickson/saflib/blob/main/vue/workflows/spa-template/package.json)
+  * Upsert **pages** from [template](https://github.com/sderickson/saflib/blob/main/vue/workflows/spa-template/pages)
+  * Upsert **router.ts** from [template](https://github.com/sderickson/saflib/blob/main/vue/workflows/spa-template/router.ts)
+  * Upsert **strings.ts** from [template](https://github.com/sderickson/saflib/blob/main/vue/workflows/spa-template/strings.ts)
+  * Upsert **test-app.ts** from [template](https://github.com/sderickson/saflib/blob/main/vue/workflows/spa-template/test-app.ts)
+  * Upsert **tsconfig.json** from [template](https://github.com/sderickson/saflib/blob/main/vue/workflows/spa-template/tsconfig.json)
+  * Upsert **vitest.config.ts** from [template](https://github.com/sderickson/saflib/blob/main/vue/workflows/spa-template/vitest.config.ts)
 * Add `@saflib/web-example-spa` as a dependency in `clients/spas/package.json`, then run `npm install` from the root of the monorepo (not from the `clients/spas` directory).
 * Create `index.html` and `main.ts` files in `clients/spas/example-spa` similar to other SPAs already there.
 * Update `clients/spas/vite.config.ts` to add proxy and input properties for the new SPA.

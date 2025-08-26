@@ -15,6 +15,7 @@ import {
 } from "@saflib/workflows";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { getTopWorkflowDir } from "@saflib/dev-tools";
 
 interface AddTanstackQueriesWorkflowInput extends WorkflowInput {
   path: string; // e.g. "requests/feature.ts"
@@ -24,8 +25,7 @@ interface AddTanstackQueriesWorkflowContext extends TemplateWorkflowContext {
   camelName: string; // e.g. feature
   targetFile: string; // e.g. "/<abs-path>/requests/feature.ts"
   targetTestFile: string; // e.g. "/<abs-path>/requests/feature.test.ts"
-  sourceFile: string; // e.g. "/<abs-path>/workflows/query-template.ts"
-  sourceTestFile: string; // e.g. "/<abs-path>/workflows/query-template.test.ts"
+  sourceDir: string; // e.g. "/<abs-path>/workflows/query-template"
   refDoc: string;
   testingGuide: string;
   packageIndexPath: string; // e.g. "/<abs-path>/index.ts"
@@ -55,8 +55,7 @@ export const AddTanstackQueriesWorkflowMachine = setup({
   context: ({ input }) => {
     const __filename = fileURLToPath(import.meta.url);
     const __dirname = path.dirname(__filename);
-    const sourceFile = path.join(__dirname, "query-template.ts");
-    const sourceTestFile = path.join(__dirname, "query-template.test.ts");
+    const sourceDir = path.join(__dirname, "query-template");
     const targetFile = path.join(process.cwd(), input.path);
     const targetTestFile = path.join(
       process.cwd(),
@@ -65,11 +64,13 @@ export const AddTanstackQueriesWorkflowMachine = setup({
     const targetDir = path.dirname(targetFile);
     const name = path.basename(input.path, ".ts");
     const camelName = toCamelCase(name);
-    const refDoc = path.resolve(__dirname, "../docs/03-adding-queries.md");
-    const testingGuide = path.resolve(
-      __dirname,
-      "../../vue-spa-dev/docs/query-testing.md",
-    );
+    const topWorkflowDir = getTopWorkflowDir();
+    const refDoc = path
+      .resolve(__dirname, "../docs/03-adding-queries.md")
+      .replace(topWorkflowDir, "");
+    const testingGuide = path
+      .resolve(__dirname, "../docs/05-query-testing.md")
+      .replace(topWorkflowDir, "");
     const packageIndexPath = path.join(targetDir, "index.ts");
 
     return {
@@ -77,11 +78,9 @@ export const AddTanstackQueriesWorkflowMachine = setup({
       pascalName: name.charAt(0).toUpperCase() + name.slice(1),
       camelName,
       targetDir,
-      sourceDir: __dirname,
       targetFile,
       targetTestFile,
-      sourceFile,
-      sourceTestFile,
+      sourceDir,
       refDoc,
       testingGuide,
       packageIndexPath,

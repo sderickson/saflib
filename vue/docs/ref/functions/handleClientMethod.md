@@ -1,6 +1,6 @@
 [**@saflib/vue**](../index.md)
 
----
+***
 
 # Function: handleClientMethod()
 
@@ -9,13 +9,13 @@
 ## Type Parameters
 
 | Type Parameter |
-| -------------- |
-| `T`            |
+| ------ |
+| `T` |
 
 ## Parameters
 
-| Parameter | Type                                                                |
-| --------- | ------------------------------------------------------------------- |
+| Parameter | Type |
+| ------ | ------ |
 | `request` | `Promise`\<[`ClientResult`](../interfaces/ClientResult.md)\<`T`\>\> |
 
 ## Returns

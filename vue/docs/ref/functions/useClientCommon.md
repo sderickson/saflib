@@ -1,6 +1,6 @@
 [**@saflib/vue**](../index.md)
 
----
+***
 
 # Function: useClientCommon()
 
@@ -8,8 +8,8 @@
 
 ## Parameters
 
-| Parameter       | Type     |
-| --------------- | -------- |
+| Parameter | Type |
+| ------ | ------ |
 | `componentName` | `string` |
 
 ## Returns

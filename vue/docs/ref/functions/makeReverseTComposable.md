@@ -1,6 +1,6 @@
 [**@saflib/vue**](../index.md)
 
----
+***
 
 # Function: makeReverseTComposable()
 
@@ -8,8 +8,8 @@
 
 ## Parameters
 
-| Parameter | Type                                            |
-| --------- | ----------------------------------------------- |
+| Parameter | Type |
+| ------ | ------ |
 | `strings` | [`I18nMessages`](../interfaces/I18nMessages.md) |
 
 ## Returns
@@ -26,9 +26,9 @@
 
 ##### Parameters
 
-| Parameter | Type     |
-| --------- | -------- |
-| `s`       | `string` |
+| Parameter | Type |
+| ------ | ------ |
+| `s` | `string` |
 
 ##### Returns
 
@@ -36,14 +36,46 @@
 
 #### t()
 
-> **t**: (`s`) => `string` = `wrappedT`
+> **t**: \{(`s`): `string`; (`s`): [`I18NObject`](../interfaces/I18NObject.md); \} = `wrappedT`
+
+##### Call Signature
+
+> (`s`): `string`
+
+###### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `s` | `string` |
+
+###### Returns
+
+`string`
+
+##### Call Signature
+
+> (`s`): [`I18NObject`](../interfaces/I18NObject.md)
+
+###### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `s` | [`I18NObject`](../interfaces/I18NObject.md) |
+
+###### Returns
+
+[`I18NObject`](../interfaces/I18NObject.md)
+
+#### tObject()
+
+> **tObject**: (`o`) => [`I18NObject`](../interfaces/I18NObject.md)
 
 ##### Parameters
 
-| Parameter | Type     |
-| --------- | -------- |
-| `s`       | `string` |
+| Parameter | Type |
+| ------ | ------ |
+| `o` | [`I18NObject`](../interfaces/I18NObject.md) |
 
 ##### Returns
 
-`string`
+[`I18NObject`](../interfaces/I18NObject.md)
