@@ -1,6 +1,6 @@
-[**@saflib/vue-spa**](../index.md)
+[**@saflib/vue**](../index.md)
 
-***
+---
 
 # Function: createSafClient()
 
@@ -8,14 +8,14 @@
 
 ## Type Parameters
 
-| Type Parameter |
-| ------ |
-| `Q` *extends* `object` |
+| Type Parameter         |
+| ---------------------- |
+| `Q` _extends_ `object` |
 
 ## Parameters
 
-| Parameter | Type |
-| ------ | ------ |
+| Parameter   | Type     |
+| ----------- | -------- |
 | `subdomain` | `string` |
 
 ## Returns

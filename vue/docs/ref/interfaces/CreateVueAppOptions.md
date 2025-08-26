@@ -1,6 +1,6 @@
-[**@saflib/vue-spa**](../index.md)
+[**@saflib/vue**](../index.md)
 
-***
+---
 
 # Interface: CreateVueAppOptions
 
@@ -14,27 +14,27 @@ Options for createVueApp.
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `app` | `App`\<`Element`\> |
+| Parameter | Type               |
+| --------- | ------------------ |
+| `app`     | `App`\<`Element`\> |
 
 #### Returns
 
 `void`
 
-***
+---
 
 ### i18nMessages?
 
 > `optional` **i18nMessages**: [`I18nMessages`](I18nMessages.md)
 
-***
+---
 
 ### router
 
 > **router**: `Router`
 
-***
+---
 
 ### vuetifyConfig?
 

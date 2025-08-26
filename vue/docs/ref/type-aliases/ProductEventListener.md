@@ -1,6 +1,6 @@
-[**@saflib/vue-spa**](../index.md)
+[**@saflib/vue**](../index.md)
 
-***
+---
 
 # Type Alias: ProductEventListener()\<T\>
 
@@ -9,14 +9,14 @@
 ## Type Parameters
 
 | Type Parameter |
-| ------ |
-| `T` |
+| -------------- |
+| `T`            |
 
 ## Parameters
 
 | Parameter | Type |
-| ------ | ------ |
-| `event` | `T` |
+| --------- | ---- |
+| `event`   | `T`  |
 
 ## Returns
 

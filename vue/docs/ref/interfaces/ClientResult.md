@@ -1,14 +1,14 @@
-[**@saflib/vue-spa**](../index.md)
+[**@saflib/vue**](../index.md)
 
-***
+---
 
 # Interface: ClientResult\<T\>
 
 ## Type Parameters
 
 | Type Parameter |
-| ------ |
-| `T` |
+| -------------- |
+| `T`            |
 
 ## Properties
 
@@ -16,13 +16,13 @@
 
 > `optional` **data**: `T`
 
-***
+---
 
 ### error?
 
 > `optional` **error**: [`ClientResponseError`](ClientResponseError.md)
 
-***
+---
 
 ### response
 

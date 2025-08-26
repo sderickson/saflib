@@ -1,6 +1,6 @@
-[**@saflib/vue-spa**](../index.md)
+[**@saflib/vue**](../index.md)
 
-***
+---
 
 # Function: makeStringToKeyMap()
 
@@ -8,11 +8,11 @@
 
 ## Parameters
 
-| Parameter | Type | Default value |
-| ------ | ------ | ------ |
-| `strings` | [`I18nMessages`](../interfaces/I18nMessages.md) | `undefined` |
-| `acc` | `Record`\<`string`, `string`\> | `{}` |
-| `prefix` | `string` | `""` |
+| Parameter | Type                                            | Default value |
+| --------- | ----------------------------------------------- | ------------- |
+| `strings` | [`I18nMessages`](../interfaces/I18nMessages.md) | `undefined`   |
+| `acc`     | `Record`\<`string`, `string`\>                  | `{}`          |
+| `prefix`  | `string`                                        | `""`          |
 
 ## Returns
 

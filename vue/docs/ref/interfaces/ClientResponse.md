@@ -1,6 +1,6 @@
-[**@saflib/vue-spa**](../index.md)
+[**@saflib/vue**](../index.md)
 
-***
+---
 
 # Interface: ClientResponse
 

@@ -1,6 +1,6 @@
-[**@saflib/vue-spa**](../index.md)
+[**@saflib/vue**](../index.md)
 
-***
+---
 
 # Function: makeReverseTComposable()
 
@@ -8,8 +8,8 @@
 
 ## Parameters
 
-| Parameter | Type |
-| ------ | ------ |
+| Parameter | Type                                            |
+| --------- | ----------------------------------------------- |
 | `strings` | [`I18nMessages`](../interfaces/I18nMessages.md) |
 
 ## Returns
@@ -26,9 +26,9 @@
 
 ##### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `s` | `string` |
+| Parameter | Type     |
+| --------- | -------- |
+| `s`       | `string` |
 
 ##### Returns
 
@@ -40,9 +40,9 @@
 
 ##### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `s` | `string` |
+| Parameter | Type     |
+| --------- | -------- |
+| `s`       | `string` |
 
 ##### Returns
 

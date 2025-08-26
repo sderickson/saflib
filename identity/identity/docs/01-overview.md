@@ -90,7 +90,7 @@ header_up X-Require-Admin true # Only users signed in and validated with an emai
 - Forgot Password
 - Verify Email
 
-Create a `@saflib/vue-spa` client at the subdomain `auth` with the router provided by `createAuthRouter`. You can customize it from there by wrapping the provided pages with your own components and passing those into `createAuthRouter` to override page defaults.
+Create a `@saflib/vue` client at the subdomain `auth` with the router provided by `createAuthRouter`. You can customize it from there by wrapping the provided pages with your own components and passing those into `createAuthRouter` to override page defaults.
 
 If you need to redirect users _to_ the auth client, use `@saflib/auth-links` in conjunction with `@saflib/links` to create links to the auth client.
 

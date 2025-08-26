@@ -1,6 +1,6 @@
-[**@saflib/vue-spa**](../index.md)
+[**@saflib/vue**](../index.md)
 
-***
+---
 
 # Function: setClientName()
 
@@ -8,9 +8,9 @@
 
 ## Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `client` | `string` |
+| Parameter | Type     |
+| --------- | -------- |
+| `client`  | `string` |
 
 ## Returns
 

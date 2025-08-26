@@ -22,7 +22,7 @@ The recommended way to define reusable query configurations is using `queryOptio
 import { queryOptions } from "@tanstack/vue-query";
 import { client } from "./client";
 import type { IdentityResponse } from "@saflib/identity-specs"; // Import from appropriate spec package
-import { handleClientMethod } from "@saflib/vue-spa"; // Helper for wrapping openapi-fetch client methods
+import { handleClientMethod } from "@saflib/vue"; // Helper for wrapping openapi-fetch client methods
 import type { Ref } from "vue";
 
 // Export the specific response type for clarity
@@ -158,7 +158,7 @@ Mutations use `useMutation` and `handleClientMethod`. It's recommended to define
 import { useMutation, useQueryClient } from "@tanstack/vue-query";
 import { client } from "./client";
 import type { AuthRequest, IdentityResponse } from "./types"; // Assuming central types
-import { handleClientMethod } from "@saflib/vue-spa";
+import { handleClientMethod } from "@saflib/vue";
 import type { Ref } from "vue";
 
 // Export request body and response types
@@ -282,4 +282,4 @@ For more details, refer to:
 - [TanStack Query Documentation](https://tanstack.com/query/latest/docs/vue/overview)
 - [TanStack Query `queryOptions`](https://tanstack.com/query/latest/docs/vue/reference/queryOptions)
 - Your generated API type definitions.
-- The `handleClientMethod` and `TanstackError` implementation in `@saflib/vue-spa`.
+- The `handleClientMethod` and `TanstackError` implementation in `@saflib/vue`.

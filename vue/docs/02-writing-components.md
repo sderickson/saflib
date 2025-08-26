@@ -161,7 +161,7 @@
 
 #### Async Loader Pattern for Pages
 
-To handle asynchronous data loading for page components gracefully, especially when relying on Tanstack Query (Vue Query), we use a standardized pattern involving a loader function, an async wrapper component, and the main page component. This pattern utilizes the shared `AsyncPage` component available in `@saflib/vue-spa`.
+To handle asynchronous data loading for page components gracefully, especially when relying on Tanstack Query (Vue Query), we use a standardized pattern involving a loader function, an async wrapper component, and the main page component. This pattern utilizes the shared `AsyncPage` component available in `@saflib/vue`.
 
 **Benefits:**
 
@@ -201,7 +201,7 @@ To handle asynchronous data loading for page components gracefully, especially w
     import { defineAsyncComponent, computed } from "vue";
     import { useRoute } from "vue-router";
     import { useMyPageLoader } from "./MyPage.loader.ts";
-    import { AsyncPage } from "@saflib/vue-spa";
+    import { AsyncPage } from "@saflib/vue";
 
     const route = useRoute();
     const someId = computed(() => {
@@ -269,7 +269,7 @@ To handle asynchronous data loading for page components gracefully, especially w
 
 **Shared `AsyncPage` Component:**
 
-The `AsyncPage` component (located in `@saflib/vue-spa`) handles the core logic:
+The `AsyncPage` component (located in `@saflib/vue`) handles the core logic:
 
 - Takes `loader` (function returning `UseQueryReturnType[]`) and `pageComponent` (async component definition) as props.
 - Executes the `loader` function.

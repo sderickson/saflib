@@ -31,13 +31,13 @@ This is a recommended structure for a SAF monorepo. It serves as a reasonable la
 
 Clients as in web clients, desktop clients, and mobile clients. SAF only supports web clients currently.
 
-Most web clients are expected to be Vue 3 single page apps with their own dedicated subdomain. Each SPA should have its own package within `clients/`, be named `web-{subdomain}`, and depend on `@saflib/vue-spa`. It exports a function which will run `createVueApp` for the SPA.
+Most web clients are expected to be Vue 3 single page apps with their own dedicated subdomain. Each SPA should have its own package within `clients/`, be named `web-{subdomain}`, and depend on `@saflib/vue`. It exports a function which will run `createVueApp` for the SPA.
 
 All web clients are built with a single Vite config in a `spas` package in `clients/`. This package's main purpose is to provide a single entry point for developing and building all SPAs together. This includes a Dockerfile which copies all necessary files and npm installs them, such that the image could either run vite in development or build the static files for production.
 
 There should also be a `@saflib/web-common` package which contains shared logic across SPAs.
 
-See docs for `@saflib/vue-spa` for more information.
+See docs for `@saflib/vue` for more information.
 
 ### `deploy/`
 
