@@ -63,7 +63,14 @@ export function setupMockServer(handlers: HttpHandler[]) {
   return server;
 }
 
-type Extract<
+type ExtractRequestParams<Op extends Record<string, any>> =
+  Op["parameters"] extends {
+    path: { [key: string]: any };
+  }
+    ? Op["parameters"]["path"]
+    : never;
+
+type ExtractResponseBody<
   Op extends Record<string, any>,
   StatusCode extends number,
 > = Op["responses"][StatusCode] extends {
@@ -93,7 +100,11 @@ export const typedCreateHandler = <Paths extends Record<string, any>>({
     path: P;
     verb: V;
     status: S;
-    handler: () => Extract<
+    handler: (
+      params: ExtractRequestParams<
+        Paths[P][V] extends Record<string, any> ? Paths[P][V] : never
+      >,
+    ) => ExtractResponseBody<
       Paths[P][V] extends Record<string, any> ? Paths[P][V] : never,
       S
     >;
@@ -102,8 +113,8 @@ export const typedCreateHandler = <Paths extends Record<string, any>>({
     const pathString = String(path).replace(/{(\w+)}/g, ":$1");
     return http[verb as keyof typeof http](
       `http://${subdomain}.localhost:3000${pathString}`,
-      () => {
-        return HttpResponse.json(handler(), { status });
+      (request) => {
+        return HttpResponse.json(handler(request), { status });
       },
     );
   };
