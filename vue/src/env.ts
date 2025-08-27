@@ -2,9 +2,17 @@
 // @ts-expect-error - vite/client is not a module
 import type { ImportMetaEnv as _ImportMetaEnv } from "vite/client";
 
+interface ViteEnv {
+  NODE_ENV: string;
+}
+
 /**
  * Get the vite environment variables.
  */
-export const getViteEnv = () => {
-  return import.meta.env;
+const getViteEnv = () => {
+  return import.meta.env as unknown as ViteEnv;
+};
+
+export const isTestEnv = () => {
+  return getViteEnv().NODE_ENV === "test";
 };

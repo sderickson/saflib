@@ -100,11 +100,11 @@ export const typedCreateHandler = <Paths extends Record<string, any>>({
     path: P;
     verb: V;
     status: S;
-    handler: (
+    handler: (request: {
       params: ExtractRequestParams<
         Paths[P][V] extends Record<string, any> ? Paths[P][V] : never
-      >,
-    ) => ExtractResponseBody<
+      >;
+    }) => ExtractResponseBody<
       Paths[P][V] extends Record<string, any> ? Paths[P][V] : never,
       S
     >;
