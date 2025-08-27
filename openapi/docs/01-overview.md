@@ -26,11 +26,11 @@ Packages using `@saflib/openapi` can generate:
 │   ├── event-2.yaml
 │   └── ...
 ├── routes/
-│   ├── {feature-1}/
+│   ├── {resource-1}/
 │   │   ├── operation-id-1.yaml
 │   │   ├── operation-id-2.yaml
 │   │   └── ...
-│   ├── {feature-2}/
+│   ├── {resource-2}/
 │   └── ...
 ├── schemas/
 │   ├── business-model-1.yaml
@@ -67,7 +67,7 @@ Depending on how many events you have, you may want to organize them into folder
 
 ### `routes/`
 
-API route definitions. There should be one file per route, with the file name being the operation ID.
+API route definitions. There should be one file per route, with the file name being the operation ID. Group them by resource (which should be the first part of the path, per classic REST API design).
 
 Routes should use `schemas/` for recurring business objects. Unless you're sure the route will never return more than one kind of object, the response should be an object whose values are a business object or an array of business objects. Responses should avoid getting any deeper than that.
 
