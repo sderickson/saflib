@@ -126,7 +126,21 @@ export const typedCreateHandler = <Paths extends Record<string, any>>({
     return http[verb as keyof typeof http](
       `http://${subdomain}.localhost:3000${pathString}`,
       async (request) => {
-        return HttpResponse.json(await handler(request), { status });
+        let body: any;
+        if (verb === "post" || verb === "put" || verb === "patch") {
+          try {
+            body = await request.request.json();
+          } catch (e) {
+            body = undefined;
+          }
+        }
+        return HttpResponse.json(
+          await handler({
+            params: request.params,
+            body,
+          }),
+          { status },
+        );
       },
     );
   };

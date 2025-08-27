@@ -5,6 +5,7 @@
 
 import { QueryClient } from "@tanstack/vue-query";
 import createClient from "openapi-fetch";
+import { isTestEnv } from "./src/env";
 
 /**
  * Given a "paths" openapi generated type and a subdomain, creates a typed `openapi-fetch` client which queries the given subdomain. Uses the current domain and protocol. Handles CSRF token injection, and works in tests.
@@ -88,6 +89,9 @@ export const handleClientMethod = async <T>(
     // This is because UI should not render the untranslated error message, but instead
     // give the user a message based on the HTTP status or, if that's not sufficient,
     // the error code.
+    if (isTestEnv()) {
+      console.error(result.error);
+    }
     throw new TanstackError(result.response.status, result.error.code);
   }
   if (result.data === undefined) {
