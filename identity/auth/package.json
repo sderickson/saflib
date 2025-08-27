@@ -5,7 +5,8 @@
   "exports": {
     ".": "./index.ts",
     "./strings": "./strings.ts",
-    "./i18n": "./i18n.ts"
+    "./i18n": "./i18n.ts",
+    "./mocks": "./mocks.ts"
   },
   "scripts": {
     "test": "vitest run",

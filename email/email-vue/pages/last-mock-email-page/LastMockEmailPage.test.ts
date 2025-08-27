@@ -7,9 +7,9 @@ import type { EmailResponseBody } from "@saflib/email-spec";
 import { last_mock_email_page as strings } from "./LastMockEmailPage.strings.ts";
 import { getElementByString } from "@saflib/vue/testing";
 import type { VueWrapper } from "@vue/test-utils";
-import type { IdentityResponseBody } from "@saflib/identity-spec";
 import { mountTestApp } from "../test-app.ts";
 import { router } from "../test_router.ts";
+import { identityServiceMockHandlers } from "@saflib/auth/mocks";
 
 const mockEmails: EmailResponseBody["listSentEmails"][200] = [
   {
@@ -32,18 +32,11 @@ const mockEmails: EmailResponseBody["listSentEmails"][200] = [
   },
 ];
 
-const mockProfile: IdentityResponseBody["getUserProfile"][200] = {
-  id: 1,
-  email: "test@example.com",
-};
-
 const handlers = [
   http.get("http://app.localhost:3000/email/sent", () => {
     return HttpResponse.json(mockEmails);
   }),
-  http.get("http://identity.localhost:3000/auth/profile", () => {
-    return HttpResponse.json(mockProfile);
-  }),
+  ...identityServiceMockHandlers,
 ];
 
 describe("LastMockEmailPage", () => {
