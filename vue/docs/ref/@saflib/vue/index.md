@@ -31,7 +31,7 @@ Common utilities for Vue SPAs and pages.
 | [getClientName](functions/getClientName.md) | Getter for the client name. |
 | [getHost](functions/getHost.md) | Utility to get the current host, including the port, e.g. "localhost:3000". |
 | [getProtocol](functions/getProtocol.md) | Utility to get the current protocol the same way document.location.protocol does, e.g. "http:" or "https:". |
-| [getViteEnv](functions/getViteEnv.md) | Get the vite environment variables. |
+| [isTestEnv](functions/isTestEnv.md) | - |
 | [makeProductEventLogger](functions/makeProductEventLogger.md) | Create centralized object to emit and listen to product events. Provide a product event type to ensure type safety, produced as part of the API spec. |
 | [makeReverseTComposable](functions/makeReverseTComposable.md) | Creates an alternative to Vue I18n's $t function, which takes the English text instead of a key. This is mainly so TypeScript enforces that keys are translated to strings. |
 | [setClientName](functions/setClientName.md) | Call when the SPA starts, providing the name of the client. It should be the same as the package name, without the org prefix, so "web-auth" or "web-landing". |

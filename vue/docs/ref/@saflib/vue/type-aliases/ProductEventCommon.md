@@ -10,24 +10,24 @@ Common fields for all product events.
 
 ## Properties
 
-### client
+### client?
 
-> **client**: `string`
+> `optional` **client**: `string`
 
 The frontend client that triggered the event. For web, it should be "web-{spa-name}".
 
 ***
 
-### component
+### component?
 
-> **component**: `string`
+> `optional` **component**: `string`
 
 The component that triggered the event. For vue, it should be the component name.
 
 ***
 
-### view
+### view?
 
-> **view**: `string`
+> `optional` **view**: `string`
 
 The page that triggered the event. For vue, it should be the route name provided by vue router.
