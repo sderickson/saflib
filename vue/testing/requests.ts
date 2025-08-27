@@ -98,8 +98,10 @@ export const typedCreateHandler = <Paths extends Record<string, any>>({
       S
     >;
   }) => {
+    // translate instances of "{id}" (the openapi spec format) with ":id" (the msw format)
+    const pathString = String(path).replace(/{(\w+)}/g, ":$1");
     return http[verb as keyof typeof http](
-      `http://${subdomain}.localhost:3000${String(path)}`,
+      `http://${subdomain}.localhost:3000${pathString}`,
       () => {
         return HttpResponse.json(handler(), { status });
       },
