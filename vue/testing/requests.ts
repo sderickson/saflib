@@ -129,10 +129,11 @@ export const typedCreateHandler = <Paths extends Record<string, any>>({
         Paths[P][V] extends Record<string, any> ? Paths[P][V] : never
       >;
     }) => Promise<
-      ExtractResponseBody<
-        Paths[P][V] extends Record<string, any> ? Paths[P][V] : never,
-        S
-      >
+      | ExtractResponseBody<
+          Paths[P][V] extends Record<string, any> ? Paths[P][V] : never,
+          S
+        >
+      | undefined
     >;
   }) => {
     // translate instances of "{id}" (the openapi spec format) with ":id" (the msw format)
