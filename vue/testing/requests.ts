@@ -134,9 +134,16 @@ export const typedCreateHandler = <Paths extends Record<string, any>>({
             body = undefined;
           }
         }
+        const params = { ...request.params };
+        for (const key in params) {
+          if (key.toLowerCase().endsWith("id")) {
+            // @ts-expect-error - coercing to number
+            params[key] = parseInt(params[key]);
+          }
+        }
         return HttpResponse.json(
           await handler({
-            params: request.params,
+            params,
             body,
           }),
           { status },
