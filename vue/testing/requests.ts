@@ -4,6 +4,19 @@ import { setupServer } from "msw/node";
 import { HttpHandler, HttpResponse } from "msw";
 import { beforeAll, afterAll, afterEach } from "vitest";
 import { http } from "msw";
+import { createRouter, createWebHistory } from "vue-router";
+
+const router = createRouter({
+  history: createWebHistory(),
+  routes: [
+    {
+      path: "/",
+      component: {
+        template: "<div>Test Space</div>",
+      },
+    },
+  ],
+});
 
 /**
  * Helper function to test Vue Query composables in isolation.
@@ -38,6 +51,7 @@ export function withVueQuery<T>(
   });
 
   app.use(VueQueryPlugin, { queryClient: client });
+  app.use(router);
   app.mount(document.createElement("div"));
 
   return [result, app, client];
