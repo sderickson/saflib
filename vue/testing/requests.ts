@@ -114,17 +114,19 @@ export const typedCreateHandler = <Paths extends Record<string, any>>({
       body: ExtractRequestBody<
         Paths[P][V] extends Record<string, any> ? Paths[P][V] : never
       >;
-    }) => ExtractResponseBody<
-      Paths[P][V] extends Record<string, any> ? Paths[P][V] : never,
-      S
+    }) => Promise<
+      ExtractResponseBody<
+        Paths[P][V] extends Record<string, any> ? Paths[P][V] : never,
+        S
+      >
     >;
   }) => {
     // translate instances of "{id}" (the openapi spec format) with ":id" (the msw format)
     const pathString = String(path).replace(/{(\w+)}/g, ":$1");
     return http[verb as keyof typeof http](
       `http://${subdomain}.localhost:3000${pathString}`,
-      (request) => {
-        return HttpResponse.json(handler(request), { status });
+      async (request) => {
+        return HttpResponse.json(await handler(request), { status });
       },
     );
   };
