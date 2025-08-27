@@ -4,4 +4,3 @@
 
 - [add-spa](./add-spa.md)
 - [add-spa-page](./add-spa-page.md)
-- [add-tanstack-queries](./add-tanstack-queries.md)

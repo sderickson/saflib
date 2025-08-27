@@ -17,6 +17,7 @@
     "@saflib/monorepo": "*",
     "@saflib/openapi": "*",
     "@saflib/processes": "*",
+    "@saflib/sdk": "*",
     "@saflib/vue": "*",
     "@saflib/workflows": "*",
     "@saflib/xstate": "*"

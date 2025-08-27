@@ -2,7 +2,7 @@
 
 ## Source
 
-[add-tanstack-queries.ts](https://github.com/sderickson/saflib/blob/main/vue/workflows/add-tanstack-queries.ts)
+[add-tanstack-queries.ts](https://github.com/sderickson/saflib/blob/main/sdk/workflows/add-tanstack-queries.ts)
 
 ## Usage
 
@@ -22,12 +22,12 @@ When run, the workflow will:
 
 * Read the project spec and the reference documentation for TanStack Query integration.
 * Copy template files and rename placeholders.
-  * Upsert **query-template.test.ts** from [template](https://github.com/sderickson/saflib/blob/main/vue/workflows/query-template/query-template.test.ts)
-  * Upsert **query-template.ts** from [template](https://github.com/sderickson/saflib/blob/main/vue/workflows/query-template/query-template.ts)
-* Read the testing guide: /saflib/vue/docs/05-query-testing.md
+  * Upsert **query-template.test.ts** from [template](https://github.com/sderickson/saflib/blob/main/sdk/workflows/query-template/query-template.test.ts)
+  * Upsert **query-template.ts** from [template](https://github.com/sderickson/saflib/blob/main/sdk/workflows/query-template/query-template.ts)
+* Read the testing guide: /saflib/sdk/docs/05-query-testing.md
 * Update feature.test.ts to remove TODOs
 * Run test, make sure it passes.
-* Update the package index.ts at /Users/scotterickson/src/saf-2025/saflib/vue/requests/index.ts to export the new queries file.
+* Update the package index.ts at /Users/scotterickson/src/saf-2025/saflib/sdk/requests/index.ts to export the new queries file.
 
 
 ## Help Docs

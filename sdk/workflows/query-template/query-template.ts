@@ -6,7 +6,7 @@ import type {
   ApiResponseBody,
   ApiRequestPathParams,
 } from "@your-org/specs-apis";
-import { handleClientMethod } from "../../tanstack.ts";
+import { handleClientMethod } from "@saflib/vue/tanstack";
 import type { Ref } from "vue";
 
 // --- PLACEHOLDER TYPES ---

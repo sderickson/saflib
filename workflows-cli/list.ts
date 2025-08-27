@@ -12,6 +12,7 @@ import grpcNodeWorkflows from "@saflib/grpc/workflows";
 import emailWorkflows from "@saflib/email/workflows";
 import envWorkflows from "@saflib/env/workflows";
 import commanderWorkflows from "@saflib/commander/workflows";
+import sdkWorkflows from "@saflib/sdk/workflows";
 import { getPackageName } from "@saflib/workflows";
 
 const workflowClasses: ConcreteWorkflow[] = [
@@ -27,6 +28,7 @@ const workflowClasses: ConcreteWorkflow[] = [
   ...emailWorkflows,
   ...envWorkflows,
   ...commanderWorkflows,
+  ...sdkWorkflows,
 ];
 
 function concreteWorkflowToMeta(workflow: ConcreteWorkflow): WorkflowMeta {
