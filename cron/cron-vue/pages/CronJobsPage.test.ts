@@ -77,7 +77,7 @@ describe("CronJobsPage", () => {
   const server = setupMockServer(handlers); // Sets up MSW server
 
   const mountComponent = async (waitForData = true) => {
-    router.push("/cron/jobs?subdomain=test");
+    await router.push("/cron/jobs?subdomain=test");
     const wrapper = mountTestApp(CronJobsPage, {
       propsData: {
         subdomain: "test",
