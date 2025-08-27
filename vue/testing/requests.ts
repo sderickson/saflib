@@ -79,6 +79,13 @@ type ExtractResponseBody<
   ? Op["responses"][StatusCode]["content"]["application/json"]
   : never;
 
+type ExtractRequestBody<Op extends Record<string, any>> =
+  Op["requestBody"] extends {
+    content: { "application/json": any };
+  }
+    ? Op["requestBody"]["content"]["application/json"]
+    : never;
+
 /**
  * Use to create a typed helper function for creating typesafe mock API handlers.
  */
@@ -102,6 +109,9 @@ export const typedCreateHandler = <Paths extends Record<string, any>>({
     status: S;
     handler: (request: {
       params: ExtractRequestParams<
+        Paths[P][V] extends Record<string, any> ? Paths[P][V] : never
+      >;
+      body: ExtractRequestBody<
         Paths[P][V] extends Record<string, any> ? Paths[P][V] : never
       >;
     }) => ExtractResponseBody<
