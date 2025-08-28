@@ -1,10 +1,15 @@
 # Best Practices
 
-The following are rules that should be followed for _any_ software stack that aims to enable both human and AI agents work quickly and effectively, given that what is good for one tends to be good for the other. SAF is how I develop and exemplify these rules. Other documentation in this repository will reference these rules when they are applied.
+The following are rules that should be followed for _any_ software stack that aims to enable both human and AI agents work quickly and effectively, given that [what is good for one tends to be good for the other](https://scotterickson.info/blog/2025-04-18-Theory-of-Dx). SAF is how I identify, develop and exemplify these rules. This is a living document, and other documentation in this repository will reference these rules when they are applied.
 
 ## Embrace Type Safety at Every Layer
 
 Many of the following rules depend on the stack having a type system. Any stack that does not provide a way to type and enforce _every_ interface in the stack (including APIs and environment variables) will be fundamentally hampered, as static analysis provides an immediate and reliable feedback loop which is critical for rapid and reliable development.
+
+**Example applications:**
+
+- [Drizzle](./drizzle/docs/01-overview.md) was chosen because it has a [Type API](https://orm.drizzle.team/docs/goodies#type-api)
+- [`@saflib/express`](./express/docs/03-routes.md#typing-the-interface) and [`@saflib/vue`](./)
 
 ## Pass Objects
 

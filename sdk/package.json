@@ -3,7 +3,8 @@
   "description": "For creating service-specific SDK packages",
   "type": "module",
   "exports": {
-    "./workflows": "./workflows/index.ts"
+    "./workflows": "./workflows/index.ts",
+    "./testing": "./testing/index.ts"
   },
   "devDependencies": {
     "@saflib/workflows": "*",

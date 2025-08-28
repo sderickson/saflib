@@ -1,9 +1,4 @@
 {
   "entryPoints": ["./src/index.ts", "./tanstack.ts", "./testing/index.ts"],
-  "tsconfig": "./tsconfig.monorepo.json",
-  "intentionallyNotExported": [
-    "ExtractResponseBody",
-    "ExtractRequestBody",
-    "ExtractRequestParams"
-  ]
+  "tsconfig": "./tsconfig.monorepo.json"
 }

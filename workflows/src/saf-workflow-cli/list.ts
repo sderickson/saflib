@@ -21,6 +21,6 @@ export const addListCommand = (
         const stubWorkflow = new workflow();
         return getPackageName(stubWorkflow.sourceUrl) === currentPackage;
       });
-      console.log(workflowsForPackage.map((w) => w.name).join("\n"));
+      console.log(workflowsForPackage.map((w) => new w().name).join("\n"));
     });
 };
