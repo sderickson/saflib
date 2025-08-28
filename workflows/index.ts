@@ -1,6 +1,5 @@
 export {
   getPackageName,
-  type WorkflowMeta,
   type ConcreteWorkflow,
   contextFromInput,
   outputFromContext,

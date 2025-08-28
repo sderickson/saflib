@@ -21,18 +21,6 @@ type AbstractClassConstructor<T extends Workflow> = new (...args: any[]) => T;
 export type ConcreteWorkflow = AbstractClassConstructor<Workflow>;
 
 /**
- * Wrapper around a ConcreteWorkflow class. Honestly might not be necessary
- * and could likely be removed.
- */
-export interface WorkflowMeta {
-  name: string;
-  description: string;
-  cliArguments: CLIArgument[];
-  Workflow: ConcreteWorkflow;
-  packageName: string;
-}
-
-/**
  * Abstract superclass for XStateWorkflow. Can probably be removed since SimpleWorkflows are gone.
  */
 export abstract class Workflow {
