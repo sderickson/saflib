@@ -1,6 +1,6 @@
 [**@saflib/identity-spec**](../index.md)
 
----
+***
 
 # Type Alias: IdentityResponseBody
 

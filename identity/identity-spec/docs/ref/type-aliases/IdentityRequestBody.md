@@ -2,8 +2,8 @@
 
 ***
 
-# Type Alias: AuthRequestBody
+# Type Alias: IdentityRequestBody
 
-> **AuthRequestBody** = `ExtractRequestBody`\<`operations`\>
+> **IdentityRequestBody** = `ExtractRequestBody`\<`operations`\>
 
 For typing Express requests for identity API routes.

@@ -63,11 +63,11 @@ Components are shared components for the service. These should be organized simi
 
 ### `requests/`
 
-Requests are the core of the SDK, and are implemented with [Tanstack Query](https://tanstack.com/query/latest/docs/framework/vue/overview). There should be one file per operation, the files should be named after the operation ID, and be organized by resource. See [TanStack Queries](../06-tanstack-queries.md) and [Testing Queries](../05-query-testing.md) for more information.
+Requests are the core of the SDK, and are implemented with [Tanstack Query](https://tanstack.com/query/latest/docs/framework/vue/overview). There should be one file per operation, the files should be named after the operation ID, and be organized by resource. See [Requests](./02-requests.md) and [Testing](./03-testing.md) for more information.
 
 These are called "requests" to distinguish them from database queries, to include both Tanstack queries and mutations, and as shorthand for "HTTP [Requests](https://developer.mozilla.org/en-US/docs/Web/API/Request)".
 
-Alongside all these files are fakes. Per [best-practices](../../../best-practices.md#build-and-maintain-fakes-stubs-and-adapters-for-service-boundaries), fakes should be defined and shared in a common package, rather than written and maintained for each test. See [Fakes](../04-fakes.md) for more information.
+Alongside all these files are fakes. Per [best-practices](../../best-practices.md#build-and-maintain-fakes-stubs-and-adapters-for-service-boundaries), fakes should be defined and shared in a common package, rather than written and maintained for each test. See [Fakes](./04-fakes.md) for more information.
 
 ### `index.ts`
 
@@ -79,4 +79,4 @@ Similarly to the `index.ts` file, this re-exports files from the `requests/` dir
 
 ### `typed-fake.json`
 
-This file simply stores the result of a call to [`typedCreateHandler`](../ref/@saflib/vue/testing/functions/typedCreateHandler.md) with the fake store. It is used by each fake file to type the fake handlers.
+This file simply stores the result of a call to [`typedCreateHandler`](../../vue/docs/ref/@saflib/vue/testing/functions/typedCreateHandler.md) with the fake store. It is used by each fake file to type the fake handlers.

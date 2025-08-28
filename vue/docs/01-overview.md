@@ -69,8 +69,6 @@ For more information, see [Pages](./02-pages.md).
 
 ### `{Subdomain}App.vue`
 
-_[Template file](../workflows/spa-template/TemplateFileApp.vue)_
-
 The root Vue component for the SPA. At minimum, it should include a `<router-view />` element. This is also where your SPA's layout should go; if different pages have different layouts, they should probably be different SPAs!
 
 ### `i18n.ts`
@@ -87,8 +85,8 @@ _[Template file](../workflows/spa-template/main.ts)_
 
 Exports a `main` function which:
 
-1. Calls [`setClientName`](./ref/functions/setClientName.md)
-2. Calls [`createVueApp`](./ref/functions/createVueApp.md)
+1. Calls [`setClientName`](./ref/@saflib/vue/functions/setClientName.md)
+2. Calls [`createVueApp`](./ref/@saflib/vue/functions/createVueApp.md)
 
 It will look something like [this](../workflows/spa-template/main.ts).
 
