@@ -72,7 +72,7 @@ describe("updateTemplateFileFactory", () => {
   it("should stay in current state when file has TODOs", async () => {
     writeFileSync(
       testFilePath,
-      "This is a test file with TODO: implement this",
+      "This is a test file with // TODO: implement this",
     );
 
     const testMachine = setup({
