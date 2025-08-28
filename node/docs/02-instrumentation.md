@@ -8,7 +8,7 @@ For basic observability of web applications, SAF provides the logic for:
 
 All SAF-provided libraries support these systems, and this library provides all the tools for new systems to do the same.
 
-**Tracing** is the one major area of instrumentation that SAF does not provide. That's mostly due to the other three being simpler to set up and mostly sufficient. Still, SAF is designed in a way where tracing can be added, in particular by enforcing a consistent context definition (through this library) and using wrapping functions in libraries such as [`@saflib/express`](../../express/docs/ref/functions/createHandler.md) and [`@saflib/drizzle-sqlite`](../../drizzle-sqlite3/docs/ref/functions/queryWrapper.md) where spans can be systematically added at package boundaries.
+**Tracing** is the one major area of instrumentation that SAF does not provide. That's mostly due to the other three being simpler to set up and mostly sufficient. Still, SAF is designed in a way where tracing can be added, in particular by enforcing a consistent context definition (through this library) and using wrapping functions in libraries such as [`@saflib/express`](../../express/docs/ref/functions/createHandler.md) and [`@saflib/drizzle-sqlite`](../../drizzle/docs/ref/functions/queryWrapper.md) where spans can be systematically added at package boundaries.
 
 ## Stores
 
