@@ -22,7 +22,7 @@ The focus of the docs on this site are what's in `saflib`, which contains all th
 
 ## Setup
 
-To use these packages in a new project, you can create a project from [the official SAF template repo](https://github.com/sderickson/saf-template). You can also use the [SAF website repo](https://github.com/sderickson/saf-2025) as reference. The latter is what builds and serves this documentation using [VitePress](https://vitepress.dev/).
+To use these packages in a new project, you can create a project from [the SAF template repo](https://github.com/sderickson/saf-template). You can also use the [SAF website repo](https://github.com/sderickson/saf-2025) as reference. The latter is what builds and serves this documentation using [VitePress](https://vitepress.dev/).
 
 To use these packages in an existing project:
 

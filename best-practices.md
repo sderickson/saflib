@@ -92,6 +92,10 @@ This is most applicable to parts of the codebase where there are a number of the
 - Edits are faster as there's less surface area for the agent to work with when making changes.
 - Automated workflows on files, such as creating or updating a new route or page, can be done more easily by just providing a file path.
 
+**Example application:**
+
+- `@saflib/identity`'s [database queries](https://github.com/sderickson/saflib/tree/c5f310d2faa42bc84dd5530966d26f63c8086431/identity/identity-db/queries/email-auth) and [Express handlers](https://github.com/sderickson/saflib/tree/c5f310d2faa42bc84dd5530966d26f63c8086431/identity/identity-http/routes/auth), and [OpenAPI specs](https://github.com/sderickson/saflib/tree/c5f310d2faa42bc84dd5530966d26f63c8086431/identity/identity-spec/routes/auth) break everything down into a single file apiece.
+
 ## Keep Code Modular
 
 Software should be broken up into packages which have a well-defined purpose, a public interface, and an up-to-date list of dependencies. These packages should also not become too large in any of these regards.
@@ -99,6 +103,10 @@ Software should be broken up into packages which have a well-defined purpose, a 
 **Benefits:**
 
 - Similar to "Keep Files Small"; it limits the required context for humans or agents to work on one surface at a time.
+
+**Example application:**
+
+SAF itself is broken up into [a good number of monorepo packages](https://github.com/sderickson/saflib/tree/main) which are also listed in the sidebar of the [documentation](https://docs.saf-demo.online/).
 
 ## Specify and Enforce Shared APIs, Models, and Strings
 
@@ -122,6 +130,11 @@ For serialized data, prefer flattened data stuctures with identifiers for relate
 - Shared strings reduce the likelihood of typos and inconsistencies, shifting fixes left. This is particularly useful for tests which check that a given string exists in a UI, or needs to navigate to a given page.
 - Flattened data structures allows for passing only the data that is needed, and avoids coupling those structures to how it was transported (e.g. through one or several API calls).
 
+**Example applications:**
+
+- `@saflib/links` provides [a simple structure](./links/docs/ref/type-aliases/Link.md) and some [methods](./links/docs/ref/index.md#functions) for sharing links to specific pages between packages.
+- `@saflib/utils` provides an [interface](./utils/docs/ref/interfaces/ElementStringObject.md) for easy use by Vue and consumption by [Playwright](./playwright/docs/ref/functions/getByString.md)
+
 ## Build and Maintain Fakes, Stubs, and Adapters for Service Boundaries
 
 Any non-trivial app will reach a point where it depends on separate services, either first or third party, and those integration points should provide fakes and stubs for consumers to use for testing. This allows consuming services and packages to have unit or integration tests which don't depend on a live or fully-featured service.
@@ -129,6 +142,10 @@ Any non-trivial app will reach a point where it depends on separate services, ei
 Fakes (which are working, simplified implementations of a service) should be available for backend testing. Stubs (which are sample data of the form returned by a service) should be available for frontend testing. The frontend does not need a fully-featured fake because complex interactions are best covered through E2E tests, where the fakes will be used in the backend.
 
 Third party integrations often provide more features than the product needs; the package or module responsible for integrating with that third-party service should adapt the interface to solely the needs of the product.
+
+**Example application:**
+
+- `@saflib/sdk` provides a [helper method](./sdk/docs/ref/@saflib/sdk/testing/functions/typedCreateHandler.md) for typing fake server handlers.
 
 **Benefits:**
 
@@ -170,6 +187,10 @@ There needs to be a source of truth for how to do things the right way specific 
 
 The above types of docs are defined by [Diátaxis](https://diataxis.fr/).
 
+**Example application:**
+
+Each package in [the docs](https://docs.saf-demo.online/) has a mix of explanation docs and generated reference docs. Instead of maintaining them separately, how-to guides are effectively generated from workflows such as [this one](./drizzle/docs/workflows/add-queries.md).
+
 ## Commit Generated Files to the Repo
 
 Where it makes sense, commit generated files to the repo. The main questions you should ask for whether it does make sense are:
@@ -179,4 +200,4 @@ Where it makes sense, commit generated files to the repo. The main questions you
 - Does it provide useful information in a code review when it changes?
 - Do they _need_ to exist in the file system in order for the system to work in development?
 
-As long as the files themselves aren't too large or difficult to read, "Yes" answers suggest they should be committed to the repo. The extra repo size and code review context are often worth the above benefits.
+As long as the files themselves aren't too large or difficult to read, "Yes" answers suggest they should be committed to the repo. The extra repo size and code review context are often worth the above benefits. Make sure to have Prettier or similar running automatically so formatting doesn't create noise.
