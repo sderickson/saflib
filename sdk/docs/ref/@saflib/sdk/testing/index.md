@@ -1,8 +1,10 @@
-[**@saflib/sdk**](../index.md)
+[**@saflib/sdk**](../../../index.md)
 
 ***
 
-# testing
+# @saflib/sdk/testing
+
+Testing utilities for SDK packages and packages that use them.
 
 ## Functions
 
