@@ -8,10 +8,11 @@ Many of the following rules depend on the stack having a type system. Any stack 
 
 **Example applications:**
 
-- [Drizzle](./drizzle/docs/01-overview.md) was chosen because it has a [Type API](https://orm.drizzle.team/docs/goodies#type-api)
+- [`@saflib/drizzle`](./drizzle/docs/01-overview.md) relies heavily on Drizzle's [Type API](https://orm.drizzle.team/docs/goodies#type-api)
 - [`@saflib/express`](./express/docs/03-routes.md#typing-the-interface) and [`@saflib/sdk`](./sdk/docs/02-requests.md#creating-a-typed-client) provide documentation and utilities to enforce types generated with [`@saflib/openapi`](./openapi/docs/cli/saf-specs.md)
 - [`@saflib/vue`](./vue/docs/03-i18n.md#why) flips how vue-i18n typically works, so that translated strings become typechecked
 - [`@saflib/playwright`](./playwright/docs/overview.md#string-locators) provides a custom locator that takes typed objects to ensure tests and the components they test render and check for the same strings
+- [`@saflib/env`](./env/docs/overview.md) allows typing and validating environment variables
 
 ## Pass Objects
 
@@ -191,9 +192,9 @@ The above types of docs are defined by [Diátaxis](https://diataxis.fr/).
 
 Each package in [the docs](https://docs.saf-demo.online/) has a mix of explanation docs and generated reference docs. Instead of maintaining them separately, how-to guides are effectively generated from workflows such as [this one](./drizzle/docs/workflows/add-queries.md).
 
-## Commit Generated Files to the Repo
+## Commit Human-Readable Generated Files to the Repo
 
-Where it makes sense, commit generated files to the repo. The main questions you should ask for whether it does make sense are:
+Where it makes sense, commit generated files to the repo. To help decide, ask:
 
 - Would it be helpful to see while navigating the codebase through the browser such as on GitHub?
 - Can they be used as context for agentic workflows?
