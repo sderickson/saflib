@@ -1,8 +1,5 @@
 import { createApp, type App } from "vue";
 import { VueQueryPlugin, QueryClient } from "@tanstack/vue-query";
-import { setupServer } from "msw/node";
-import { HttpHandler } from "msw";
-import { beforeAll, afterAll, afterEach } from "vitest";
 import { createRouter, createWebHistory } from "vue-router";
 
 const router = createRouter({
@@ -54,24 +51,4 @@ export function withVueQuery<T>(
   app.mount(document.createElement("div"));
 
   return [result, app, client];
-}
-
-/**
- * Simple wrapper around `msw`'s `setupServer` function.
- */
-export function setupMockServer(handlers: HttpHandler[]) {
-  const server = setupServer(...handlers);
-
-  // Start server before all tests
-  beforeAll(() => {
-    server.listen({ onUnhandledRequest: "error" });
-  });
-
-  // Reset handlers between tests
-  afterEach(() => server.resetHandlers());
-
-  // Clean up after all tests
-  afterAll(() => server.close());
-
-  return server;
 }
