@@ -1,11 +1,11 @@
 import type { Command } from "commander";
 import { saveWorkflow } from "../file-io.ts";
 import { addNewLinesToString } from "@saflib/utils";
-import { type WorkflowMeta } from "../workflow.ts";
+import { type ConcreteWorkflow } from "../workflow.ts";
 
 export const addKickoffCommand = (
   program: Command,
-  workflows: WorkflowMeta[],
+  workflows: ConcreteWorkflow[],
 ) => {
   const kickoffProgram = program
     .command("kickoff")
@@ -14,23 +14,23 @@ export const addKickoffCommand = (
         "Kick off a workflow. Takes a workflow name and then any arguments for the workflow. Names should be kebab-case, and paths should be ./relative/to/package/root.ts. All commands should be run in a folder with a package.json; the package the workflow is acting on. Example:\n\nnpm exec saf-workflow kickoff add-tests ./path/to/file.ts",
       ),
     );
-  workflows.forEach((workflowMeta) => {
+  workflows.forEach((workflow) => {
+    const stubWorkflow = new workflow();
     let chain = kickoffProgram
-      .command(workflowMeta.name)
-      .description(workflowMeta.description);
-    workflowMeta.cliArguments.forEach((arg) => {
+      .command(stubWorkflow.name)
+      .description(stubWorkflow.description);
+    stubWorkflow.cliArguments.forEach((arg) => {
       chain = chain.argument(arg.name, arg.description);
     });
-    chain.action(async (...args) => await kickoffWorkflow(workflowMeta, args));
+    chain.action(async (...args) => await kickoffWorkflow(workflow, args));
   });
 };
 
-const kickoffWorkflow = async (workflowMeta: WorkflowMeta, args: string[]) => {
-  const { Workflow, cliArguments } = workflowMeta;
+const kickoffWorkflow = async (Workflow: ConcreteWorkflow, args: string[]) => {
   const workflow = new Workflow();
   const result = await workflow.init(
     { dryRun: false },
-    ...args.slice(0, cliArguments.length),
+    ...args.slice(0, workflow.cliArguments.length),
   );
   if (result.error) {
     console.error(result.error.message);

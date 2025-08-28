@@ -1,6 +1,6 @@
 import { resolve } from "node:path";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
-import type { WorkflowMeta, Workflow } from "./workflow.ts";
+import type { Workflow, ConcreteWorkflow } from "./workflow.ts";
 import type { WorkflowBlob } from "./types.ts";
 
 export const getPlanStatusFilePath = () => {
@@ -23,7 +23,7 @@ export const saveWorkflow = (workflow: Workflow) => {
   );
 };
 
-export const loadWorkflow = (workflows: WorkflowMeta[]) => {
+export const loadWorkflow = (workflows: ConcreteWorkflow[]) => {
   const contents = loadPlanStatusContents();
   if (!contents) {
     return null;
@@ -34,7 +34,7 @@ export const loadWorkflow = (workflows: WorkflowMeta[]) => {
   if (!workflow) {
     return null;
   }
-  const instance = new workflow.Workflow();
+  const instance = new workflow();
   instance.hydrate(blob);
   return instance;
 };
