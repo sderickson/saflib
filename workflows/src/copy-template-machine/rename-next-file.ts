@@ -36,6 +36,11 @@ export const renameNextFile = fromPromise(
     const camelName = kebabCaseToCamelCase(name);
     updatedContent = updatedContent.replace(/templateFile/g, camelName);
 
+    updatedContent = updatedContent.replace(
+      /TEMPLATE_FILE/g,
+      snakeName.toUpperCase(),
+    );
+
     await writeFile(targetPath, updatedContent);
 
     return { fileName: targetFileName };
