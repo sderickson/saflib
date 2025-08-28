@@ -48,16 +48,11 @@
 | ------ | ------ |
 | [contextFromInput](functions/contextFromInput.md) | Helper function to create initial `WorkflowContext` from `WorkflowInput`. |
 | [copyTemplateStateComposer](functions/copyTemplateStateComposer.md) | Composer for copying template files to a target directory. Also replaces every instance "template-file", "template_file", "TemplateFile", and "templateFile" with the name of the thing being created, passed in via the CLI or other interface. To use this composer, the machine context must extend TemplateWorkflowContext. |
-| [~~doesTestPass~~](functions/doesTestPass.md) | - |
-| [~~doTestsPass~~](functions/doTestsPass.md) | - |
-| [~~generateMigrations~~](functions/generateMigrations.md) | - |
-| [~~getPackageName~~](functions/getPackageName.md) | Utility function to get the package name from the root URL. |
+| [getPackageName](functions/getPackageName.md) | Utility function to get the package name from the root URL. |
 | [logError](functions/logError.md) | Action builder for logging error messages. |
 | [logInfo](functions/logInfo.md) | Action builder for logging info messages. |
 | [outputFromContext](functions/outputFromContext.md) | Helper function to create `WorkflowOutput` from `WorkflowContext`. |
-| [promptAgent](functions/promptAgent.md) | Action builder for prompting the agent. |
 | [promptAgentComposer](functions/promptAgentComposer.md) | Composer for prompting the agent. During normal execution, once a prompt is printed, the workflow will stop so it can be continued later. |
-| [~~promptState~~](functions/promptState.md) | - |
 | [runNpmCommandComposer](functions/runNpmCommandComposer.md) | Composer for running npm commands. |
 | [runTestsComposer](functions/runTestsComposer.md) | Composer for running tests. Takes a specific file path to test. |
 | [runWorkflowCli](functions/runWorkflowCli.md) | Uses Commander.js to run a CLI for running workflows. |

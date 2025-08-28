@@ -25,14 +25,9 @@ export {
   logInfo,
   type WorkflowContext,
   logError,
-  promptAgent,
-  doTestsPass,
-  doesTestPass,
-  generateMigrations,
   type WorkflowOutput,
   type LogParams,
   type ComposerFunctionOptions,
-  promptState,
 } from "./src/xstate.ts";
 
 export { copyTemplateStateComposer } from "./src/copy-template-machine/copy-template-machine.ts";
