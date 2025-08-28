@@ -3,7 +3,7 @@ import * as grpc from "@grpc/grpc-js";
 import { runTestServer } from "@saflib/grpc/testing";
 import { makeGrpcServer } from "../../grpc.ts";
 import { emailAuthDb, identityDb, usersDb } from "@saflib/identity-db";
-import type { DbKey } from "@saflib/drizzle-sqlite3";
+import type { DbKey } from "@saflib/drizzle";
 import { users } from "@saflib/identity-rpcs";
 
 describe("handleGetUserProfile", () => {

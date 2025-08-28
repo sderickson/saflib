@@ -1,5 +1,5 @@
 // import * as grpc from "@grpc/grpc-js";
-// import type { DbKey } from "@saflib/drizzle-sqlite3";
+// import type { DbKey } from "@saflib/drizzle";
 
 // interface ApiContext {
 //   dbKey: DbKey;

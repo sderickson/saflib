@@ -10,7 +10,7 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "@saflib/vue-spa": "*",
+    "@saflib/vue": "*",
     "@saflib/cron-spec": "*"
   }
 }

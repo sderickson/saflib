@@ -1,5 +1,5 @@
 import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
-import type { Expect, Equal } from "@saflib/drizzle-sqlite3";
+import type { Expect, Equal } from "@saflib/drizzle";
 
 const lastRunStatusEnum = ["success", "fail", "running", "timed out"] as const;
 

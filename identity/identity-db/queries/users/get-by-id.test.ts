@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import type { DbKey } from "@saflib/drizzle-sqlite3";
+import type { DbKey } from "@saflib/drizzle";
 import { identityDb, usersDb, UserNotFoundError } from "@saflib/identity-db";
 
 describe("getById", () => {

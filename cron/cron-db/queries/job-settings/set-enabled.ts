@@ -1,6 +1,6 @@
-import { queryWrapper } from "@saflib/drizzle-sqlite3";
+import { queryWrapper } from "@saflib/drizzle";
 import { jobSettings, type JobSetting } from "../../schema.ts";
-import type { DbKey } from "@saflib/drizzle-sqlite3";
+import type { DbKey } from "@saflib/drizzle";
 import { cronDbManager } from "../../instances.ts";
 import type { ReturnsError } from "@saflib/monorepo";
 

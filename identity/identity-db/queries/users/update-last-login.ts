@@ -1,9 +1,9 @@
-import { queryWrapper } from "@saflib/drizzle-sqlite3";
+import { queryWrapper } from "@saflib/drizzle";
 import { users } from "../../schemas/index.ts";
 import type { User } from "../../types.ts";
 import { UserNotFoundError } from "../../errors.ts";
 import { eq } from "drizzle-orm";
-import type { DbKey } from "@saflib/drizzle-sqlite3";
+import type { DbKey } from "@saflib/drizzle";
 import { identityDbManager } from "../../instances.ts";
 import type { ReturnsError } from "@saflib/monorepo";
 

@@ -45,7 +45,7 @@ Handlers may report errors in any of the following ways:
 
 The vast majority of errors responses should simply be [the error object](https://github.com/sderickson/saflib/blob/37d619bf41fe2922880dee7483b9fb9690d2ee1b/openapi/schemas/error.yaml) specified in `@saflib/openapi`. Error middleware will always respond with this structure, and so you can only use 1. and 2. if your spec adheres to the common error response object. If you need a custom error object, you will have to use option 3.
 
-Note that `message` is _for debugging_. The `message` is _not_ intended to be shown to end users as part of normal use; it is not localized. Instead, the frontend should use the HTTP status and, if necessary, the `code` field to decide what to render to the user. The `@saflib/vue-spa` package in fact logs the message and [only propagates](https://github.com/sderickson/saflib/blob/e75a8597ae497ea8d422dab1a1e96f41792b85ba/vue-spa/src/tanstack.ts#L63-L67) the http status and response code fields to Vue components. All SDKs should do the same.
+Note that `message` is _for debugging_. The `message` is _not_ intended to be shown to end users as part of normal use; it is not localized. Instead, the frontend should use the HTTP status and, if necessary, the `code` field to decide what to render to the user. The `@saflib/vue` package in fact logs the message and [only propagates](https://github.com/sderickson/saflib/blob/e75a8597ae497ea8d422dab1a1e96f41792b85ba/vue-spa/src/tanstack.ts#L63-L67) the http status and response code fields to Vue components. All SDKs should do the same.
 
 > TODO: Make sure message is actually console logged.
 
@@ -61,7 +61,7 @@ Since a route handler is primarily responsible for HTTP concerns, it should hous
 
 For more complex behaviors whcih do not fall into one of these, consider using one of the following:
 
-- Finite state machines (with `@saflib/node-xstate`) for complex, asynchronous workflows
+- Finite state machines (with `@saflib/xstate`) for complex, asynchronous workflows
 - Database packages with transactions for complex query behaviors
 
 Another special mention is transformers. Databases, 1st party services, and 3rd party services have their own models, and those need to be transformed from and into API requests and responses. These should be kept in a separate `transformers/` directory at the root of the package.

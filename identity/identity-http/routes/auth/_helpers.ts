@@ -1,6 +1,6 @@
 import { type User as DbUser } from "../../types.ts";
 import { type User as UserSpec } from "@saflib/identity-spec";
-import type { DbKey } from "@saflib/drizzle-sqlite3";
+import type { DbKey } from "@saflib/drizzle";
 
 // Helper function to create user response
 export async function createUserResponse(

@@ -1,6 +1,6 @@
 {
   "name": "@saflib/identity-rpcs",
-  "description": "Protocol Buffer definitions and TypeScript types for authentication and user management services",
+  "description": "rRPC services and methods for the identity service",
   "type": "module",
   "private": true,
   "exports": {

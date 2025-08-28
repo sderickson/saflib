@@ -1,12 +1,12 @@
 {
   "name": "@saflib/identity-common",
-  "description": "Shared authentication code for identity service",
+  "description": "Shared code for the identity service",
   "type": "module",
   "exports": {
     ".": "./index.ts"
   },
   "dependencies": {
-    "@saflib/drizzle-sqlite3": "*"
+    "@saflib/drizzle": "*"
   },
   "devDependencies": {
     "@saflib/vitest": "*",

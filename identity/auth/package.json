@@ -1,11 +1,12 @@
 {
   "name": "@saflib/auth",
-  "description": "Shared authentication components and utilities for SAF",
+  "description": "The auth client. Sign up, sign in, and other authentication flows.",
   "type": "module",
   "exports": {
     ".": "./index.ts",
     "./strings": "./strings.ts",
-    "./i18n": "./i18n.ts"
+    "./i18n": "./i18n.ts",
+    "./mocks": "./mocks.ts"
   },
   "scripts": {
     "test": "vitest run",
@@ -14,7 +15,7 @@
     "typecheck": "vue-tsc -b"
   },
   "dependencies": {
-    "@saflib/vue-spa": "*",
-    "@saflib/identity-spec": "*"
+    "@saflib/identity-spec": "*",
+    "@saflib/vue": "*"
   }
 }

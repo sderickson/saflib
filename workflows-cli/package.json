@@ -8,7 +8,7 @@
   },
   "dependencies": {
     "@saflib/commander": "*",
-    "@saflib/drizzle-sqlite3": "*",
+    "@saflib/drizzle": "*",
     "@saflib/email": "*",
     "@saflib/env": "*",
     "@saflib/express": "*",
@@ -17,7 +17,8 @@
     "@saflib/monorepo": "*",
     "@saflib/openapi": "*",
     "@saflib/processes": "*",
-    "@saflib/vue-spa": "*",
+    "@saflib/sdk": "*",
+    "@saflib/vue": "*",
     "@saflib/workflows": "*",
     "@saflib/xstate": "*"
   }

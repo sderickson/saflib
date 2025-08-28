@@ -3,7 +3,7 @@ import { createApp } from "@saflib/identity-http";
 import { identityDb } from "@saflib/identity-db";
 import { makeGrpcServer } from "@saflib/identity-grpc";
 import { startGrpcServer } from "@saflib/grpc";
-import type { DbOptions } from "@saflib/drizzle-sqlite3";
+import type { DbOptions } from "@saflib/drizzle";
 import type { User } from "@saflib/identity-db";
 import type { IdentityServiceCallbacks } from "@saflib/identity-common";
 import { makeSubsystemReporters } from "@saflib/node";

@@ -1,6 +1,6 @@
 {
   "name": "@saflib/env",
-  "description": "TODO: Add package description",
+  "description": "Specify, share, and enforce environment variables",
   "private": true,
   "type": "module",
   "exports": {

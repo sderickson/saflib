@@ -10,7 +10,7 @@ import {
 import { addErrorCollector } from "@saflib/node";
 import { startJobs } from "./index.ts";
 import { cronDb, jobSettingsDb } from "@saflib/cron-db";
-import type { DbKey } from "@saflib/drizzle-sqlite3";
+import type { DbKey } from "@saflib/drizzle";
 import { throwError } from "@saflib/monorepo";
 import { mockJobHandler, mockJobs } from "../mock-jobs.ts";
 import { getSafReporters } from "@saflib/node";

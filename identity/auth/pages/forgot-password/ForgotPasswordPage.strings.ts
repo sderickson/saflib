@@ -12,4 +12,5 @@ export const forgot_password_page = {
   email_address_success:
     "If an account exists with this email, a recovery email was sent",
   email_address_network_error: "An error occurred. Please try again.",
+  sending: "Sending...",
 };

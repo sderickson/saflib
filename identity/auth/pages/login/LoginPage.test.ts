@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { stubGlobals } from "@saflib/vue-spa/testing";
-import { getElementByString } from "@saflib/vue-spa/testing";
+import { stubGlobals } from "@saflib/vue/testing";
+import { getElementByString } from "@saflib/vue/testing";
 import { type VueWrapper } from "@vue/test-utils";
 import LoginPage from "../../pages/login/LoginPage.vue";
 import { login_page } from "./LoginPage.strings.ts";

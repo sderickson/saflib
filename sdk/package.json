@@ -1,0 +1,13 @@
+{
+  "name": "@saflib/sdk",
+  "description": "For creating service-specific SDK packages",
+  "type": "module",
+  "exports": {
+    "./workflows": "./workflows/index.ts"
+  },
+  "devDependencies": {
+    "@saflib/workflows": "*",
+    "@saflib/dev-tools": "*",
+    "@saflib/vue": "*"
+  }
+}

@@ -1,7 +1,10 @@
 import * as argon2 from "argon2";
 import { createHandler } from "@saflib/express";
 import { createUserResponse } from "./_helpers.ts";
-import type { AuthResponseBody, AuthRequestBody } from "@saflib/identity-spec";
+import type {
+  IdentityResponseBody,
+  IdentityRequestBody,
+} from "@saflib/identity-spec";
 import { randomBytes } from "crypto";
 import { usersDb, emailAuthDb, EmailConflictError } from "@saflib/identity-db";
 import { authServiceStorage } from "@saflib/identity-common";
@@ -11,7 +14,7 @@ import { getSafReporters } from "@saflib/node";
 
 export const registerHandler = createHandler(async (req, res) => {
   const { dbKey } = authServiceStorage.getStore()!;
-  const registerRequest: AuthRequestBody["registerUser"] = req.body;
+  const registerRequest: IdentityRequestBody["registerUser"] = req.body;
   const { email, password, name, givenName, familyName } = registerRequest;
   const { logError } = getSafReporters();
 
@@ -84,7 +87,8 @@ export const registerHandler = createHandler(async (req, res) => {
     }
 
     createUserResponse(dbKey, user).then((response) => {
-      const successResponse: AuthResponseBody["registerUser"][200] = response;
+      const successResponse: IdentityResponseBody["registerUser"][200] =
+        response;
       res.status(200).json(successResponse);
     });
   });

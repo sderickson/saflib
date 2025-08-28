@@ -4,7 +4,7 @@ import express from "express";
 import { createApp } from "../http.ts";
 import { cronDb, jobSettingsDb, type JobSetting } from "@saflib/cron-db";
 import type { JobSettings } from "@saflib/cron-spec";
-import type { DbKey } from "@saflib/drizzle-sqlite3";
+import type { DbKey } from "@saflib/drizzle";
 import { mockJobs } from "../mock-jobs.ts";
 
 describe("GET /jobs", () => {
@@ -22,8 +22,16 @@ describe("GET /jobs", () => {
     seededSettings = []; // Reset seeded settings
 
     // Seed test data using setEnabledByName (upsert)
-    const { result: setting1 } = await jobSettingsDb.setEnabled(dbKey, "job1", true);
-    const { result: setting2 } = await jobSettingsDb.setEnabled(dbKey, "job2", false);
+    const { result: setting1 } = await jobSettingsDb.setEnabled(
+      dbKey,
+      "job1",
+      true,
+    );
+    const { result: setting2 } = await jobSettingsDb.setEnabled(
+      dbKey,
+      "job2",
+      false,
+    );
     assert(setting1 && setting2);
     seededSettings.push(setting1, setting2);
   });

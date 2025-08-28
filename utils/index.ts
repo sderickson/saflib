@@ -55,3 +55,38 @@ export function kebabCaseToCamelCase(name: string) {
 export function kebabCaseToSnakeCase(name: string) {
   return name.replace(/-/g, "_");
 }
+
+const regexCharacters = ["(", ")", ".", "*", "+", "?", "^", "$", "|", "/"];
+
+/**
+ * Utility function to convert the vue-i18n message format syntax to a
+ * regex for finding an instance of that string, in particular for tests.
+ * https://vue-i18n.intlify.dev/guide/essentials/syntax.html
+ */
+export const convertI18NInterpolationToRegex = (str: string) => {
+  if (str.includes("{")) {
+    let escapedStr = str;
+    for (const char of regexCharacters) {
+      escapedStr = escapedStr.replace(char, `\\${char}`);
+    }
+    return new RegExp(escapedStr.replace(/\{(.*?)\}/g, ".*"));
+  }
+  return str;
+};
+
+/**
+ * Strings that are exported by client packages will be in objects like these. Their values match valid HTML attributes.
+ */
+export interface ElementStringObject {
+  role?: "button" | "combobox" | "option" | "heading" | "link";
+  text?: string;
+  "data-testid"?: string;
+  placeholder?: string;
+  "aria-label"?: string;
+  label?: string;
+}
+
+/**
+ * A string for an HTML element can either be a plain string, or an object with valid HTML attributes.
+ */
+export type ElementString = string | ElementStringObject;

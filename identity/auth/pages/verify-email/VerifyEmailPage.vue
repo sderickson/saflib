@@ -1,6 +1,6 @@
 <template>
   <div class="mb-4 font-weight-medium">
-    {{ verify_email_page.verify_email }}
+    {{ t(verify_email_page.verify_email) }}
   </div>
 
   <div v-if="isLoading">
@@ -12,7 +12,7 @@
       type="success"
       variant="tonal"
       class="mb-4"
-      :text="verify_email_page.verify_email_sent"
+      :text="t(verify_email_page.verify_email_sent)"
     />
   </div>
 
@@ -22,28 +22,28 @@
       type="success"
       variant="tonal"
       class="mb-4"
-      :text="verify_email_page.verify_email_success"
+      :text="t(verify_email_page.verify_email_success)"
     />
     <a class="text-blue text-decoration-none" :href="redirectTo">
-      {{ verify_email_page.continue_to_app }}
+      {{ t(verify_email_page.continue_to_app) }}
       <v-icon icon="mdi-chevron-right"></v-icon>
     </a>
   </div>
 
   <div v-else-if="!profile">
-    {{ verify_email_page.not_logged_in }}. Please
+    {{ t(verify_email_page.not_logged_in) }}. Please
     <a :href="loginLink">log in</a>
     to continue.
   </div>
 
   <div v-else-if="errorCase === 'unauthorized'">
-    {{ verify_email_page.not_logged_in }}. Please
+    {{ t(verify_email_page.not_logged_in) }}. Please
     <a :href="loginLink">log in</a>
     to continue.
   </div>
 
   <div v-else-if="errorCase === 'forbidden'">
-    {{ verify_email_page.not_authorized }}. Please
+    {{ t(verify_email_page.not_authorized) }}. Please
     <a :href="loginLink">log in</a>
     with the correct account.
   </div>
@@ -53,7 +53,7 @@
       type="error"
       variant="tonal"
       class="mb-4"
-      :text="verify_email_page.unknown_error"
+      :text="t(verify_email_page.unknown_error)"
     />
 
     <v-btn
@@ -69,8 +69,8 @@
     >
       {{
         isResending
-          ? verify_email_page.sending
-          : verify_email_page.resend_verification_email
+          ? t(verify_email_page.sending)
+          : t(verify_email_page.resend_verification_email)
       }}
     </v-btn>
   </div>
@@ -88,8 +88,8 @@
     >
       {{
         isResending
-          ? verify_email_page.sending
-          : verify_email_page.resend_verification_email
+          ? t(verify_email_page.sending)
+          : t(verify_email_page.resend_verification_email)
       }}
     </v-btn>
   </div>
@@ -104,10 +104,13 @@ import {
   useResendVerification,
   getProfile,
 } from "../../requests/auth";
-import { TanstackError } from "@saflib/vue-spa";
+import { TanstackError } from "@saflib/vue/tanstack";
 import { linkToHref } from "@saflib/links";
 import { authLinks } from "@saflib/auth-links";
 import { useQuery } from "@tanstack/vue-query";
+import { useReverseT } from "../../i18n.ts";
+
+const { t } = useReverseT();
 
 defineProps<{
   redirectTo: string;

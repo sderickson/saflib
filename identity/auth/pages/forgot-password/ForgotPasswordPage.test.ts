@@ -1,8 +1,8 @@
 import { describe, it, expect } from "vitest";
-import { stubGlobals } from "@saflib/vue-spa/testing";
+import { stubGlobals } from "@saflib/vue/testing";
 import type { VueWrapper } from "@vue/test-utils";
 import ForgotPasswordPage from "./ForgotPasswordPage.vue";
-import { getElementByString } from "@saflib/vue-spa/testing";
+import { getElementByString } from "@saflib/vue/testing";
 import { forgot_password_page } from "./ForgotPasswordPage.strings.ts";
 import { mountTestApp } from "../../test-app.ts";
 

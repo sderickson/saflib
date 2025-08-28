@@ -12,6 +12,7 @@ export function generateTypeDoc(monorepoContext: MonorepoContext) {
       "No exports found in package.json; use `exports` field not `main`.",
     );
   }
+  // TODO: don't generate these if they're in the typedoc.json file.
   const entrypointCommands = Object.values(entrypoints)
     .filter((entrypoint) => !entrypoint.includes("./workflows"))
     .filter((entrypoint) => !entrypoint.includes("./eslint.config.js"))

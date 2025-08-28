@@ -1,14 +1,17 @@
 import { useMutation, useQueryClient, queryOptions } from "@tanstack/vue-query";
 import { client, emailClient } from "./client.ts";
-import type { AuthResponseBody, AuthRequestBody } from "@saflib/identity-spec";
-import { TanstackError, handleClientMethod } from "@saflib/vue-spa";
+import type {
+  IdentityResponseBody,
+  IdentityRequestBody,
+} from "@saflib/identity-spec";
+import { TanstackError, handleClientMethod } from "@saflib/vue/tanstack";
 import type { Ref } from "vue";
 
 export const useLogin = () => {
   return useMutation<
-    AuthResponseBody["loginUser"][200],
+    IdentityResponseBody["loginUser"][200],
     TanstackError,
-    AuthRequestBody["loginUser"]
+    IdentityRequestBody["loginUser"]
   >({
     mutationFn: (body) => {
       return handleClientMethod(client.POST("/auth/login", { body }));
@@ -17,7 +20,7 @@ export const useLogin = () => {
 };
 
 export const useLogout = () => {
-  return useMutation<AuthResponseBody["logoutUser"][200], TanstackError>({
+  return useMutation<IdentityResponseBody["logoutUser"][200], TanstackError>({
     mutationFn: () => {
       return handleClientMethod(client.POST("/auth/logout"));
     },
@@ -26,9 +29,9 @@ export const useLogout = () => {
 
 export const useRegister = () => {
   return useMutation<
-    AuthResponseBody["registerUser"][200],
+    IdentityResponseBody["registerUser"][200],
     TanstackError,
-    AuthRequestBody["registerUser"]
+    IdentityRequestBody["registerUser"]
   >({
     mutationFn: (body) => {
       return handleClientMethod(client.POST("/auth/register", { body }));
@@ -38,9 +41,9 @@ export const useRegister = () => {
 
 export const useForgotPassword = () => {
   return useMutation<
-    AuthResponseBody["forgotPassword"][200],
+    IdentityResponseBody["forgotPassword"][200],
     TanstackError,
-    AuthRequestBody["forgotPassword"]
+    IdentityRequestBody["forgotPassword"]
   >({
     mutationFn: (body) => {
       return handleClientMethod(client.POST("/auth/forgot-password", { body }));
@@ -50,9 +53,9 @@ export const useForgotPassword = () => {
 
 export const useResetPassword = () => {
   return useMutation<
-    AuthResponseBody["resetPassword"][200],
+    IdentityResponseBody["resetPassword"][200],
     TanstackError,
-    AuthRequestBody["resetPassword"]
+    IdentityRequestBody["resetPassword"]
   >({
     mutationFn: (body) => {
       return handleClientMethod(client.POST("/auth/reset-password", { body }));
@@ -62,9 +65,9 @@ export const useResetPassword = () => {
 
 export const useSetPassword = () => {
   return useMutation<
-    AuthResponseBody["setPassword"][200],
+    IdentityResponseBody["setPassword"][200],
     TanstackError,
-    AuthRequestBody["setPassword"]
+    IdentityRequestBody["setPassword"]
   >({
     mutationFn: (body) => {
       return handleClientMethod(client.POST("/auth/set-password", { body }));
@@ -74,9 +77,9 @@ export const useSetPassword = () => {
 
 export const useVerifyEmail = () => {
   return useMutation<
-    AuthResponseBody["verifyEmail"][200],
+    IdentityResponseBody["verifyEmail"][200],
     TanstackError,
-    AuthRequestBody["verifyEmail"]
+    IdentityRequestBody["verifyEmail"]
   >({
     mutationFn: (body) => {
       return handleClientMethod(client.POST("/auth/verify-email", { body }));
@@ -86,7 +89,7 @@ export const useVerifyEmail = () => {
 
 export const useResendVerification = () => {
   return useMutation<
-    AuthResponseBody["resendVerification"][200],
+    IdentityResponseBody["resendVerification"][200],
     TanstackError
   >({
     mutationFn: async () => {
@@ -98,9 +101,9 @@ export const useResendVerification = () => {
 export const useUpdateProfile = () => {
   const queryClient = useQueryClient();
   return useMutation<
-    AuthResponseBody["updateUserProfile"][200],
+    IdentityResponseBody["updateUserProfile"][200],
     TanstackError,
-    AuthRequestBody["updateUserProfile"]
+    IdentityRequestBody["updateUserProfile"]
   >({
     mutationFn: (body) => {
       return handleClientMethod(client.PUT("/auth/profile", { body }));

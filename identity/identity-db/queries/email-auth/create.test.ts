@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, assert } from "vitest";
 import { identityDb, usersDb, emailAuthDb } from "@saflib/identity-db";
-import type { DbKey } from "@saflib/drizzle-sqlite3";
+import type { DbKey } from "@saflib/drizzle";
 
 describe("create email auth", () => {
   let dbKey: DbKey;

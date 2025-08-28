@@ -71,7 +71,7 @@ describe("buildWorkspaceDependencyGraph", () => {
     const dependencyGraph = buildWorkspaceDependencyGraph(monorepoPackageJsons);
     expect(dependencyGraph).toBeDefined();
     expect(dependencyGraph["@foo/auth-web-client"]).toStrictEqual([
-      "@saflib/vue-spa",
+      "@saflib/vue",
       "@saflib/auth",
     ]);
   });
@@ -109,7 +109,7 @@ describe("getAllPackageWorkspaceDependencies", () => {
     );
     expect(dependencies).toStrictEqual(
       new Set([
-        "@saflib/vue-spa",
+        "@saflib/vue",
         "@saflib/auth",
         "@saflib/identity-spec",
         "@saflib/openapi",

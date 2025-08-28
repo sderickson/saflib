@@ -2,8 +2,8 @@ import { getProfile } from "@saflib/auth";
 import { computed, type Ref } from "vue";
 import { useQuery } from "@tanstack/vue-query";
 import { useRoute } from "vue-router";
-import { handleClientMethod } from "@saflib/vue-spa";
-import { createSafClient } from "@saflib/vue-spa/tanstack";
+import { handleClientMethod } from "@saflib/vue/tanstack";
+import { createSafClient } from "@saflib/vue/tanstack";
 import type { paths as emailPaths } from "@saflib/email-spec";
 
 export const getSentEmails = (

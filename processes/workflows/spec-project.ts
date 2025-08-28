@@ -4,11 +4,12 @@ import {
   workflowActors,
   logInfo,
   type WorkflowContext,
-  logError,
+  promptAgentComposer,
   promptAgent,
   XStateWorkflow,
   contextFromInput,
   type WorkflowInput,
+  outputFromContext,
 } from "@saflib/workflows";
 import { execSync } from "child_process";
 import { readFileSync, writeFileSync } from "fs";
@@ -101,7 +102,7 @@ export const SpecProjectXstateWorkflowMachine = setup({
         },
         onError: {
           actions: [
-            logError(({ event }) => `Initialization failed: ${event.error}`),
+            logInfo(({ event }) => `Initialization failed: ${event.error}`),
             raise({ type: "prompt" }),
           ],
         },
@@ -119,72 +120,37 @@ export const SpecProjectXstateWorkflowMachine = setup({
         },
       },
     },
-    showSafDocOutput: {
-      entry: raise({ type: "prompt" }),
-      on: {
-        prompt: {
-          actions: [
-            promptAgent(
-              ({ context }) =>
-                `The following packages are available in this monorepo. You can learn more about any given package by running \`npm exec saf-doc <package-name>\`.
+
+    ...promptAgentComposer<SpecProjectXstateWorkflowContext>({
+      promptForContext: ({ context }) =>
+        `The following packages are available in this monorepo. You can learn more about any given package by running \`npm exec saf-doc <package-name>\`.
 
 ${context.safDocOutput}`,
-            ),
-          ],
-        },
-        continue: {
-          target: "fillSpec",
-        },
-      },
-    },
-    fillSpec: {
-      entry: raise({ type: "prompt" }),
-      on: {
-        prompt: {
-          actions: [
-            promptAgent(
-              ({ context }) =>
-                `You are writing a product/technical specification for ${context.name}. Ask for an overview of the project if you haven't already gotten one, then given that description, fill ${context.specFilePath} which was just created.`,
-            ),
-          ],
-        },
-        continue: {
-          target: "reviewSpec",
-        },
-      },
-    },
-    reviewSpec: {
-      entry: raise({ type: "prompt" }),
-      on: {
-        prompt: {
-          actions: [
-            promptAgent(
-              () =>
-                `Go back and forth with the human on the spec. Have the human make updates and notes in the doc, then review their changes, make your own updates, and repeat until they sign off.`,
-            ),
-          ],
-        },
-        continue: {
-          target: "reviewChecklistGuide",
-        },
-      },
-    },
-    reviewChecklistGuide: {
-      entry: raise({ type: "prompt" }),
-      on: {
-        prompt: {
-          actions: [
-            promptAgent(
-              () =>
-                `Before creating the checklist, please review the guide on writing spec project checklists located at saflib/processes/docs/writing-spec-project-checklists.md. This will help you create a proper implementation checklist with the correct format, workflow commands, and paths. Once you've reviewed the guide, run "npm exec saf-workflow next" to continue.`,
-            ),
-          ],
-        },
-        continue: {
-          target: "promptForChecklist",
-        },
-      },
-    },
+      stateName: "showSafDocOutput",
+      nextStateName: "fillSpec",
+    }),
+
+    ...promptAgentComposer<SpecProjectXstateWorkflowContext>({
+      promptForContext: ({ context }) =>
+        `You are writing a product/technical specification for ${context.name}. Ask for an overview of the project if you haven't already gotten one, then given that description, fill ${context.specFilePath} which was just created.`,
+      stateName: "fillSpec",
+      nextStateName: "reviewSpec",
+    }),
+
+    ...promptAgentComposer<SpecProjectXstateWorkflowContext>({
+      promptForContext: () =>
+        `Go back and forth with the human on the spec. Have the human make updates and notes in the doc, then review their changes, make your own updates, and repeat until they sign off.`,
+      stateName: "reviewSpec",
+      nextStateName: "reviewChecklistGuide",
+    }),
+
+    ...promptAgentComposer<SpecProjectXstateWorkflowContext>({
+      promptForContext: () =>
+        `Before creating the checklist, please review the guide on writing spec project checklists located at saflib/processes/docs/writing-spec-project-checklists.md. This will help you create a proper implementation checklist with the correct format, workflow commands, and paths. Once you've reviewed the guide, run "npm exec saf-workflow next" to continue.`,
+      stateName: "reviewChecklistGuide",
+      nextStateName: "promptForChecklist",
+    }),
+
     promptForChecklist: {
       invoke: {
         src: fromPromise(async () => {
@@ -206,7 +172,7 @@ ${context.safDocOutput}`,
         },
         onError: {
           actions: [
-            logError(
+            logInfo(
               ({ event }) => `Failed to run saf-workflow help: ${event.error}`,
             ),
             raise({ type: "prompt" }),
@@ -216,17 +182,19 @@ ${context.safDocOutput}`,
       on: {
         prompt: {
           actions: [
-            promptAgent(({ context }) => {
-              const helpOutput =
-                context.safWorkflowHelpOutput ||
-                "Could not retrieve saf-workflow help output.";
-              return `The spec has been finalized. Please fill out the checklist.md located at ${context.checklistFilePath}.
+            promptAgent(
+              ({ context }: { context: SpecProjectXstateWorkflowContext }) => {
+                const helpOutput =
+                  context.safWorkflowHelpOutput ||
+                  "Could not retrieve saf-workflow help output.";
+                return `The spec has been finalized. Please fill out the checklist.md located at ${context.checklistFilePath}.
 
 Here is a list of available workflow commands to help you:
 ${helpOutput}
 
 Once you have filled out the checklist, please trigger the "continue" event.`;
-            }),
+              },
+            ),
           ],
         },
         continue: {
@@ -234,10 +202,12 @@ Once you have filled out the checklist, please trigger the "continue" event.`;
         },
       },
     },
+
     done: {
       type: "final",
     },
   },
+  output: outputFromContext,
 });
 
 export class SpecProjectXstateWorkflow extends XStateWorkflow {
@@ -248,6 +218,7 @@ export class SpecProjectXstateWorkflow extends XStateWorkflow {
       name: "name",
       description:
         "kebab-case name of project to use in folder and git branch names and alike",
+      exampleValue: "example-project",
     },
   ];
   sourceUrl = import.meta.url;

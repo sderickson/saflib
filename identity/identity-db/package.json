@@ -1,6 +1,6 @@
 {
   "name": "@saflib/identity-db",
-  "description": "Shared authentication database library for SAF services",
+  "description": "Database for identity service",
   "type": "module",
   "exports": {
     ".": "./index.ts"
@@ -13,7 +13,7 @@
     "typecheck": "tsc"
   },
   "dependencies": {
-    "@saflib/drizzle-sqlite3": "*"
+    "@saflib/drizzle": "*"
   },
   "devDependencies": {
     "@saflib/vitest": "*",

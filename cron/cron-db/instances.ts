@@ -1,4 +1,4 @@
-import { DbManager } from "@saflib/drizzle-sqlite3";
+import { DbManager } from "@saflib/drizzle";
 import * as schema from "./schema.ts";
 import config from "./drizzle.config.ts";
 

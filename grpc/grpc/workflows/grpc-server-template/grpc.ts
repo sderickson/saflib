@@ -1,6 +1,6 @@
 // @ts-nocheck - TODO remove this line as part of workflow
 import { SERVICE_NAMEDb } from "@saflib/dbs-SERVICE_NAME";
-import { type DbKey } from "@saflib/drizzle-sqlite3";
+import { type DbKey } from "@saflib/drizzle";
 import { SERVICE_NAMEServiceStorage } from "./context.ts";
 import { addSafContext, makeGrpcServerContextWrapper } from "@saflib/grpc";
 import * as grpc from "@grpc/grpc-js";
