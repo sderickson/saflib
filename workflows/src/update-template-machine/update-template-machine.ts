@@ -62,7 +62,7 @@ export function updateTemplateComposer<C extends TemplateWorkflowContext>({
                   ? path.resolve(process.cwd(), filePath)
                   : path.resolve(process.cwd(), filePath(context));
               const content = readFileSync(resolvedPath, "utf-8");
-              const hasTodos = /\btodo\b/i.test(content);
+              const hasTodos = /\s*(?:#|\/\/).*todo/i.test(content);
               return hasTodos;
             },
             target: stateName,

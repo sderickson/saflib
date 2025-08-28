@@ -57,7 +57,7 @@ export const AddQueriesWorkflowMachine = setup({
   id: "add-queries",
   description:
     "Add a new query to a database built off the drizzle-sqlite3 package.",
-  initial: "getOriented",
+  initial: "copyTemplate",
   context: ({ input }) => {
     const __filename = fileURLToPath(import.meta.url);
     const __dirname = path.dirname(__filename);
@@ -91,13 +91,6 @@ export const AddQueriesWorkflowMachine = setup({
   },
   entry: logInfo("Successfully began workflow"),
   states: {
-    ...promptAgentComposer<AddQueriesWorkflowContext>({
-      promptForContext: ({ context }) =>
-        `Read the project spec and understand the overall goal for ${context.name}.`,
-      stateName: "getOriented",
-      nextStateName: "copyTemplate",
-    }),
-
     ...copyTemplateStateComposer({
       stateName: "copyTemplate",
       nextStateName: "checkQueryCollection",
