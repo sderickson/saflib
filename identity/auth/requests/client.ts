@@ -1,6 +1,6 @@
 import type { paths } from "@saflib/identity-spec";
 import type { paths as emailPaths } from "@saflib/email-spec";
-import { createSafClient, TanstackError } from "@saflib/vue/tanstack";
+import { createSafClient, TanstackError } from "@saflib/sdk";
 
 export const client = createSafClient<paths>("identity");
 export const emailClient = createSafClient<emailPaths>("identity");

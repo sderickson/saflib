@@ -1,8 +1,8 @@
-[**@saflib/vue**](../../../index.md)
+[**@saflib/sdk**](../../index.md)
 
 ***
 
-# @saflib/vue/tanstack
+# @saflib/sdk
 
 Tanstack Query utilities for Vue.
 

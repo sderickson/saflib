@@ -3,12 +3,18 @@
   "description": "For creating service-specific SDK packages",
   "type": "module",
   "exports": {
+    ".": "./index.ts",
     "./workflows": "./workflows/index.ts",
     "./testing": "./testing/index.ts"
+  },
+  "dependencies": {
+    "@tanstack/vue-query": "^5.0.0",
+    "openapi-fetch": "^0.14.0"    
   },
   "devDependencies": {
     "@saflib/workflows": "*",
     "@saflib/dev-tools": "*",
-    "@saflib/vue": "*"
+    "@saflib/vue": "*",
+    "msw": "^2.0.0"
   }
 }

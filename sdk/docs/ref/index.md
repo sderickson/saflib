@@ -4,8 +4,9 @@
 
 # @saflib/sdk
 
-## Functions
+## Modules
 
-| Function | Description |
+| Module | Description |
 | ------ | ------ |
-| [typedCreateHandler](functions/typedCreateHandler.md) | Use to create a typed helper function for creating typesafe mock API handlers. |
+| [@saflib/sdk](@saflib/sdk/index.md) | Tanstack Query utilities for Vue. |
+| [testing](testing/index.md) | - |
