@@ -8,9 +8,7 @@ export function generateTypeDoc(monorepoContext: MonorepoContext) {
 
   const entrypoints = currentPackageJson.exports;
   if (!entrypoints) {
-    throw new Error(
-      "No exports found in package.json; use `exports` field not `main`.",
-    );
+    return;
   }
   // TODO: don't generate these if they're in the typedoc.json file.
   const entrypointCommands = Object.values(entrypoints)
