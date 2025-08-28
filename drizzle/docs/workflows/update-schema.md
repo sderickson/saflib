@@ -2,7 +2,7 @@
 
 ## Source
 
-[update-schema.ts](https://github.com/sderickson/saflib/blob/main/drizzle-sqlite3/workflows/update-schema.ts)
+[update-schema.ts](https://github.com/sderickson/saflib/blob/main/drizzle/workflows/update-schema.ts)
 
 ## Usage
 

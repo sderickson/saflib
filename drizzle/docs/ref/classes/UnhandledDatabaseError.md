@@ -1,10 +1,10 @@
 [**@saflib/drizzle**](../index.md)
 
----
+***
 
 # Class: UnhandledDatabaseError
 
-A subclass of `Error` which is used to indicate that an error was _not_ caught
+A subclass of `Error` which is used to indicate that an error was *not* caught
 and handled by the database library. The cause of the error is not propagated,
 since consumers of the database libary should not have access to underlying
 SQL issues.
@@ -40,7 +40,7 @@ to handle it. Any occurence should be considered a bug.
 
 `Error.cause`
 
----
+***
 
 ### message
 
@@ -50,7 +50,7 @@ to handle it. Any occurence should be considered a bug.
 
 `Error.message`
 
----
+***
 
 ### name
 
@@ -60,7 +60,7 @@ to handle it. Any occurence should be considered a bug.
 
 `Error.name`
 
----
+***
 
 ### stack?
 
@@ -70,7 +70,7 @@ to handle it. Any occurence should be considered a bug.
 
 `Error.stack`
 
----
+***
 
 ### stackTraceLimit
 
@@ -103,7 +103,7 @@ a string representing the location in the code at which
 ```js
 const myObject = {};
 Error.captureStackTrace(myObject);
-myObject.stack; // Similar to `new Error().stack`
+myObject.stack;  // Similar to `new Error().stack`
 ```
 
 The first line of the trace will be prefixed with
@@ -142,9 +142,9 @@ a();
 
 #### Parameters
 
-| Parameter         | Type       |
-| ----------------- | ---------- |
-| `targetObject`    | `object`   |
+| Parameter | Type |
+| ------ | ------ |
+| `targetObject` | `object` |
 | `constructorOpt?` | `Function` |
 
 #### Returns
@@ -155,7 +155,7 @@ a();
 
 `Error.captureStackTrace`
 
----
+***
 
 ### prepareStackTrace()
 
@@ -163,9 +163,9 @@ a();
 
 #### Parameters
 
-| Parameter     | Type         |
-| ------------- | ------------ |
-| `err`         | `Error`      |
+| Parameter | Type |
+| ------ | ------ |
+| `err` | `Error` |
 | `stackTraces` | `CallSite`[] |
 
 #### Returns

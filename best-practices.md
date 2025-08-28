@@ -9,7 +9,9 @@ Many of the following rules depend on the stack having a type system. Any stack 
 **Example applications:**
 
 - [Drizzle](./drizzle/docs/01-overview.md) was chosen because it has a [Type API](https://orm.drizzle.team/docs/goodies#type-api)
-- [`@saflib/express`](./express/docs/03-routes.md#typing-the-interface) and [`@saflib/vue`](./)
+- [`@saflib/express`](./express/docs/03-routes.md#typing-the-interface) and [`@saflib/sdk`](./sdk/docs/02-requests.md#creating-a-typed-client) provide documentation and utilities to enforce types generated with [`@saflib/openapi`](./openapi/docs/cli/saf-specs.md)
+- [`@saflib/vue`](./vue/docs/03-i18n.md#why) flips how vue-i18n typically works, so that translated strings become typechecked
+- [`@saflib/playwright`](./playwright/docs/overview.md#string-locators) provides a custom locator that takes typed objects to ensure tests and the components they test render and check for the same strings
 
 ## Pass Objects
 
@@ -65,6 +67,11 @@ The types of Errors returned should be created, managed, and exported by the pac
 - Expected errors are typed, and TypeScript nudges the developer to handle them.
 - If a function starts returning a new error type, consumers can be forced to handle it by using the `throw error satisfies never` pattern.
 - By masking dependency exceptions, libraries protect against an entire category of nasty coupling.
+
+**Example applications:**
+
+- `@saflib/monorepo` provides a [`ReturnsError`](./monorepo/docs/ref/type-aliases/ReturnsError.md) type for such functions, and a [`throwError`](./monorepo/docs/ref/functions/throwError.md) helper function.
+- `@saflib/drizzle`'s [query template](https://github.com/sderickson/saflib/blob/c5f310d2faa42bc84dd5530966d26f63c8086431/drizzle/workflows/query-template/template-file.ts) uses `ReturnsError`, and `@saflib/express`'s [route template](https://github.com/sderickson/saflib/blob/c5f310d2faa42bc84dd5530966d26f63c8086431/express/workflows/route-template/route-template.ts#L18-L26) demonstrates how to use it.
 
 ## Name Well
 

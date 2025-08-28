@@ -1,6 +1,6 @@
 [**@saflib/drizzle**](../index.md)
 
----
+***
 
 # Type Alias: Expect\<T\>
 
@@ -10,6 +10,6 @@ To be used with "Equal" to check explicit table interfaces match Drizzle's infer
 
 ## Type Parameters
 
-| Type Parameter       |
-| -------------------- |
-| `T` _extends_ `true` |
+| Type Parameter |
+| ------ |
+| `T` *extends* `true` |
