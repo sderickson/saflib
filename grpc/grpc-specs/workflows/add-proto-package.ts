@@ -1,104 +1,159 @@
-import { SimpleWorkflow } from "@saflib/workflows";
-import * as fs from "node:fs";
-import * as path from "node:path";
+/**
+ * TODO: Test and update this workflow. Just generated a migration to modern workflow tools but didn't test it. The checklist probably needs to be worked on anyway.
+ */
 
-interface AddProtoPackageWorkflowParams {
+import { setup } from "xstate";
+import {
+  workflowActions,
+  workflowActors,
+  logInfo,
+  promptAgentComposer,
+  runNpmCommandComposer,
+  XStateWorkflow,
+  contextFromInput,
+  type WorkflowInput,
+  outputFromContext,
+  copyTemplateStateComposer,
+  updateTemplateComposer,
+  type TemplateWorkflowContext,
+} from "@saflib/workflows";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+interface AddProtoPackageWorkflowInput extends WorkflowInput {
   name: string;
   path: string; // Relative to monorepo root, e.g., "specs" or "libs"
 }
 
-export class AddProtoPackageWorkflow extends SimpleWorkflow<AddProtoPackageWorkflowParams> {
-  name = "add-proto-package";
-  description =
-    "Creates a new Protocol Buffer package according to monorepo best practices.";
-  sourceUrl = import.meta.url;
-  init = async (name: string, packagePath: string) => {
-    this.params = {
-      name, // Expected to be the full package name, e.g., @scope/pkg-name
-      path: packagePath, // Expected to be the direct path to the package, e.g., specs/pkg-name
-    };
+interface AddProtoPackageWorkflowContext extends TemplateWorkflowContext {
+  packageName: string; // e.g. "@your-org/package-name-rpcs"
+  protoPackageName: string; // e.g. "yourorg.packagename.v1"
+  path: string; // Relative path from monorepo root
+}
 
-    const dirname = path.dirname(import.meta.url);
-    const templatesDir = path.join(dirname, "templates");
-
-    if (!fs.existsSync(this.params.path)) {
-      fs.mkdirSync(this.params.path, { recursive: true });
-    }
-
-    // Create dist directory
-    const distDir = path.join(this.params.path, "dist");
-    if (!fs.existsSync(distDir)) {
-      fs.mkdirSync(distDir, { recursive: true });
-    }
-
-    // Create protos directory
-    const protosDir = path.join(this.params.path, "protos");
-    if (!fs.existsSync(protosDir)) {
-      fs.mkdirSync(protosDir, { recursive: true });
-    }
+export const AddProtoPackageWorkflowMachine = setup({
+  types: {
+    input: {} as AddProtoPackageWorkflowInput,
+    context: {} as AddProtoPackageWorkflowContext,
+  },
+  actions: workflowActions,
+  actors: workflowActors,
+}).createMachine({
+  id: "add-proto-package",
+  description:
+    "Creates a new Protocol Buffer package according to monorepo best practices.",
+  initial: "copyTemplate",
+  context: ({ input }) => {
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = path.dirname(__filename);
+    const sourceDir = path.join(__dirname, "templates");
+    const targetDir = path.join(process.cwd(), input.path);
+    const packageDirName = path.basename(input.path);
 
     // Transform npm package name to proto package name
     // @saflib/identity-rpcs -> saflib.auth.v1
-    const protoPackageName = this.transformToProtoPackageName(name);
-
-    const filesToCopy = [
-      { template: "package.json.template", output: "package.json" },
-      { template: "tsconfig.json.template", output: "tsconfig.json" },
-      { template: "index.ts.template", output: "index.ts" },
-      { template: "generate.sh.template", output: "generate.sh" },
-      { template: "README.md.template", output: "README.md" },
-      { template: "example.proto.template", output: "protos/example.proto" },
-    ];
-
-    for (const file of filesToCopy) {
-      const templatePath = path.join(templatesDir, file.template);
-      const outputPath = path.join(this.params.path, file.output);
-      let content = fs.readFileSync(templatePath, "utf8");
-      // Replace template variables
-      content = content.replace(/\{\{PACKAGE_NAME\}\}/g, name);
-      content = content.replace(
-        /\{\{PROTO_PACKAGE_NAME\}\}/g,
-        protoPackageName,
-      );
-      fs.writeFileSync(outputPath, content);
-    }
-
-    // Make generate.sh executable
-    const generateShPath = path.join(this.params.path, "generate.sh");
-    fs.chmodSync(generateShPath, "755");
+    const protoPackageName = transformToProtoPackageName(input.name);
 
     return {
-      result: {
-        fullPackagePath: this.params.path,
-        packageName: this.params.name,
-        protoPackageName,
-      },
+      name: packageDirName,
+      pascalName:
+        packageDirName.charAt(0).toUpperCase() + packageDirName.slice(1),
+      targetDir,
+      sourceDir,
+      packageName: input.name,
+      protoPackageName,
+      path: input.path,
+      ...contextFromInput(input),
     };
-  };
+  },
+  entry: logInfo("Successfully began workflow"),
+  states: {
+    ...copyTemplateStateComposer({
+      stateName: "copyTemplate",
+      nextStateName: "updatePackageJson",
+    }),
 
-  private transformToProtoPackageName(npmPackageName: string): string {
-    // Extract scope and package name from @scope/package-name
-    const match = npmPackageName.match(/^@([^/]+)\/(.+)$/);
-    if (!match) {
-      throw new Error(
-        `Invalid package name format: ${npmPackageName}. Expected @scope/package-name`,
-      );
-    }
+    ...updateTemplateComposer<AddProtoPackageWorkflowContext>({
+      filePath: (context) => path.join(context.targetDir, "package.json"),
+      promptMessage: (context) =>
+        `The file '${path.join(context.path, "package.json")}' has been created. Please update the "description" field to describe what this proto package contains, and any other fields as needed.`,
+      stateName: "updatePackageJson",
+      nextStateName: "updateProtoDefinitions",
+    }),
 
-    const [, scope, packageName] = match;
+    ...updateTemplateComposer<AddProtoPackageWorkflowContext>({
+      filePath: (context) =>
+        path.join(context.targetDir, "protos/example.proto"),
+      promptMessage: (context) =>
+        `An example proto file '${path.join(context.path, "protos/example.proto")}' has been created. Please update it with your actual service definitions, or create additional .proto files as needed. Remember to import "envelope.proto" for SafAuth and SafRequest types.`,
+      stateName: "updateProtoDefinitions",
+      nextStateName: "updateRootWorkspace",
+    }),
 
-    // Strip -rpcs suffix if present
-    let cleanPackageName = packageName;
-    if (cleanPackageName.endsWith("-rpcs")) {
-      cleanPackageName = cleanPackageName.slice(0, -5); // Remove "-rpcs"
-    }
+    ...promptAgentComposer<AddProtoPackageWorkflowContext>({
+      promptForContext: ({ context }) =>
+        `Ensure the new package path '${context.path}' is included in the "workspaces" array in the root \`package.json\`.
 
-    // Remove hyphens and replace with underscores (or just remove them)
-    cleanPackageName = cleanPackageName.replace(/-/g, "");
+        For example: \`"workspaces": ["${context.path}", "other-packages/*"]\``,
+      stateName: "updateRootWorkspace",
+      nextStateName: "runNpmInstall",
+    }),
 
-    return `${scope}.${cleanPackageName}.v1`;
+    ...runNpmCommandComposer({
+      command: "install",
+      stateName: "runNpmInstall",
+      nextStateName: "generateTypeScriptCode",
+    }),
+
+    ...promptAgentComposer<AddProtoPackageWorkflowContext>({
+      promptForContext: ({ context }) =>
+        `Run \`npm run generate --workspace="${context.packageName}"\` to generate TypeScript code from the proto definitions. This will create files in the dist/ directory.`,
+      stateName: "generateTypeScriptCode",
+      nextStateName: "updateIndexTs",
+    }),
+
+    ...updateTemplateComposer<AddProtoPackageWorkflowContext>({
+      filePath: (context) => path.join(context.targetDir, "index.ts"),
+      promptMessage: (context) =>
+        `After generation, update '${path.join(context.path, "index.ts")}' to export the generated TypeScript files from the dist/ directory. For example: export * from "./dist/example.ts";`,
+      stateName: "updateIndexTs",
+      nextStateName: "done",
+    }),
+
+    done: {
+      type: "final",
+    },
+  },
+  output: outputFromContext,
+});
+
+function transformToProtoPackageName(npmPackageName: string): string {
+  // Extract scope and package name from @scope/package-name
+  const match = npmPackageName.match(/^@([^/]+)\/(.+)$/);
+  if (!match) {
+    throw new Error(
+      `Invalid package name format: ${npmPackageName}. Expected @scope/package-name`,
+    );
   }
 
+  const [, scope, packageName] = match;
+
+  // Strip -rpcs suffix if present
+  let cleanPackageName = packageName;
+  if (cleanPackageName.endsWith("-rpcs")) {
+    cleanPackageName = cleanPackageName.slice(0, -5); // Remove "-rpcs"
+  }
+
+  // Remove hyphens and replace with underscores (or just remove them)
+  cleanPackageName = cleanPackageName.replace(/-/g, "");
+
+  return `${scope}.${cleanPackageName}.v1`;
+}
+
+export class AddProtoPackageWorkflow extends XStateWorkflow {
+  machine = AddProtoPackageWorkflowMachine;
+  description =
+    "Creates a new Protocol Buffer package according to monorepo best practices.";
   cliArguments = [
     {
       name: "name",
@@ -111,62 +166,5 @@ export class AddProtoPackageWorkflow extends SimpleWorkflow<AddProtoPackageWorkf
         "The RELATIVE path from monorepo root where the package directory (containing package.json) will be created (e.g., specs/my-rpcs)",
     },
   ];
-
-  workflowPrompt = () => {
-    return `You are creating a new Protocol Buffer package named '${this.params?.name}' at the path '${this.params?.path}'. Follow the steps to set up the package structure, dependencies, and proto generation configuration as per monorepo guidelines.`;
-  };
-
-  steps = [
-    {
-      name: "Update package.json description",
-      prompt: () => {
-        if (!this.params?.path)
-          return "Error: Package path not available. Init might have failed.";
-        const packageJsonPath = path.join(this.params.path, "package.json");
-        return `The file '${packageJsonPath}' has been created. Please update the "description" field to describe what this proto package contains, and any other fields as needed.`;
-      },
-    },
-    {
-      name: "Update proto definitions",
-      prompt: () => {
-        if (!this.params?.path)
-          return "Error: Package path not available. Init might have failed.";
-        const protoPath = path.join(this.params.path, "protos/example.proto");
-        return `An example proto file '${protoPath}' has been created. Please update it with your actual service definitions, or create additional .proto files as needed. Remember to import "envelope.proto" for SafAuth and SafRequest types.`;
-      },
-    },
-    {
-      name: "Ensure package is in root workspace",
-      prompt: () => {
-        if (!this.params?.path)
-          return "Error: Workflow params not available or path is missing.";
-        const directPath = this.params.path;
-        const rootPackageJsonPath = path.join(process.cwd(), "package.json");
-        return `Ensure the new package path '${directPath}' is included in the "workspaces" array in '${rootPackageJsonPath}'. For example: "workspaces": ["${directPath}", "other-packages/*"]`;
-      },
-    },
-    {
-      name: "Run npm install",
-      prompt: () =>
-        `Run 'npm install' in the monorepo root directory to link the new package, install dependencies, and update the lockfile.`,
-    },
-    {
-      name: "Generate TypeScript code",
-      prompt: () => {
-        if (!this.params?.path || !this.params?.name)
-          return "Error: Package path or name not available. Init might have failed.";
-        const workspaceName = this.params.name;
-        return `Run 'npm run generate --workspace="${workspaceName}"' to generate TypeScript code from the proto definitions. This will create files in the dist/ directory.`;
-      },
-    },
-    {
-      name: "Update index.ts exports",
-      prompt: () => {
-        if (!this.params?.path)
-          return "Error: Package path not available. Init might have failed.";
-        const indexPath = path.join(this.params.path, "index.ts");
-        return `After generation, update '${indexPath}' to export the generated TypeScript files from the dist/ directory. For example: export * from "./dist/example.ts";`;
-      },
-    },
-  ];
+  sourceUrl = import.meta.url;
 }
