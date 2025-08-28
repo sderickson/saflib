@@ -1,6 +1,6 @@
 [**@saflib/vue**](../../../index.md)
 
-***
+---
 
 # Function: setClientName()
 
@@ -10,9 +10,9 @@ Call when the SPA starts, providing the name of the client. It should be the sam
 
 ## Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `client` | `string` |
+| Parameter | Type     |
+| --------- | -------- |
+| `client`  | `string` |
 
 ## Returns
 

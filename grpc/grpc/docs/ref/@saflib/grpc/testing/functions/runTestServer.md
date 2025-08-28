@@ -1,6 +1,6 @@
 [**@saflib/grpc**](../../../../index.md)
 
-***
+---
 
 # Function: runTestServer()
 
@@ -10,15 +10,15 @@ Runs a gRPC server for testing. Handles if fake timers are in use (which tends t
 
 ## Type Parameters
 
-| Type Parameter |
-| ------ |
-| `S` *extends* `Server` |
+| Type Parameter         |
+| ---------------------- |
+| `S` _extends_ `Server` |
 
 ## Parameters
 
 | Parameter | Type |
-| ------ | ------ |
-| `service` | `S` |
+| --------- | ---- |
+| `service` | `S`  |
 
 ## Returns
 

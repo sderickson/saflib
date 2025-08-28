@@ -1,6 +1,6 @@
 [**@saflib/utils**](../index.md)
 
-***
+---
 
 # Function: kebabCaseToPascalCase()
 
@@ -10,9 +10,9 @@ Convert a kebab-case string to PascalCase.
 
 ## Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `str` | `string` |
+| Parameter | Type     |
+| --------- | -------- |
+| `str`     | `string` |
 
 ## Returns
 

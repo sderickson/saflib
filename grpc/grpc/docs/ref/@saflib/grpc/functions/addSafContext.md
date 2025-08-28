@@ -1,6 +1,6 @@
 [**@saflib/grpc**](../../../index.md)
 
-***
+---
 
 # Function: addSafContext()
 
@@ -10,10 +10,10 @@ Takes a gRPC service and wraps it to provide SafContext and SafReporters for eac
 
 ## Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `impl` | `UntypedServiceImplementation` |
-| `_definition` | `ServiceDefinition` |
+| Parameter     | Type                           |
+| ------------- | ------------------------------ |
+| `impl`        | `UntypedServiceImplementation` |
+| `_definition` | `ServiceDefinition`            |
 
 ## Returns
 

@@ -1,6 +1,6 @@
 [**@saflib/workflows**](../index.md)
 
-***
+---
 
 # Function: promptAgentComposer()
 
@@ -11,14 +11,14 @@ is printed, the workflow will stop so it can be continued later.
 
 ## Type Parameters
 
-| Type Parameter |
-| ------ |
-| `C` *extends* [`WorkflowContext`](../interfaces/WorkflowContext.md) |
+| Type Parameter                                                      |
+| ------------------------------------------------------------------- |
+| `C` _extends_ [`WorkflowContext`](../interfaces/WorkflowContext.md) |
 
 ## Parameters
 
-| Parameter | Type |
-| ------ | ------ |
+| Parameter           | Type                                |
+| ------------------- | ----------------------------------- |
 | `__namedParameters` | `PromptAgentComposerOptions`\<`C`\> |
 
 ## Returns

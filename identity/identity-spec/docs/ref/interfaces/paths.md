@@ -1,6 +1,6 @@
 [**@saflib/identity-spec**](../index.md)
 
-***
+---
 
 # Interface: paths
 
@@ -191,7 +191,7 @@ The requested resource could not be found.
 
 > `optional` **trace**: `undefined`
 
-***
+---
 
 ### /auth/login
 
@@ -447,7 +447,7 @@ The requested resource could not be found.
 
 > `optional` **trace**: `undefined`
 
-***
+---
 
 ### /auth/logout
 
@@ -559,7 +559,7 @@ Successful logout
 
 > `optional` **trace**: `undefined`
 
-***
+---
 
 ### /auth/profile
 
@@ -1081,7 +1081,7 @@ The requested resource could not be found.
 
 > `optional` **trace**: `undefined`
 
-***
+---
 
 ### /auth/register
 
@@ -1361,7 +1361,7 @@ The requested resource could not be found.
 
 > `optional` **trace**: `undefined`
 
-***
+---
 
 ### /auth/resend-verification
 
@@ -1531,7 +1531,7 @@ The requested resource could not be found.
 
 > `optional` **trace**: `undefined`
 
-***
+---
 
 ### /auth/reset-password
 
@@ -1717,7 +1717,7 @@ The requested resource could not be found.
 
 > `optional` **trace**: `undefined`
 
-***
+---
 
 ### /auth/set-password
 
@@ -1903,7 +1903,7 @@ The requested resource could not be found.
 
 > `optional` **trace**: `undefined`
 
-***
+---
 
 ### /auth/verify
 
@@ -2223,7 +2223,7 @@ The requested resource could not be found.
 
 > `optional` **trace**: `undefined`
 
-***
+---
 
 ### /auth/verify-email
 
@@ -2569,7 +2569,7 @@ The requested resource could not be found.
 
 > `optional` **trace**: `undefined`
 
-***
+---
 
 ### /users
 

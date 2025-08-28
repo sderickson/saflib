@@ -1,6 +1,6 @@
 [**@saflib/vue**](../../../index.md)
 
-***
+---
 
 # Function: useClientCommon()
 
@@ -9,15 +9,17 @@
 Get the common context for a product event.
 
 Usage:
+
 ```ts
-const { onProductEvent, emitProductEvent } = makeProductEventLogger<ProductEvent>();
+const { onProductEvent, emitProductEvent } =
+  makeProductEventLogger<ProductEvent>();
 emitProductEvent({ ...useClientCommon("MyComponent"), event: "my-event" });
 ```
 
 ## Parameters
 
-| Parameter | Type |
-| ------ | ------ |
+| Parameter       | Type     |
+| --------------- | -------- |
 | `componentName` | `string` |
 
 ## Returns

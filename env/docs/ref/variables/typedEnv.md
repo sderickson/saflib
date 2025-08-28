@@ -1,6 +1,6 @@
 [**@saflib/env**](../index.md)
 
-***
+---
 
 # Variable: typedEnv
 

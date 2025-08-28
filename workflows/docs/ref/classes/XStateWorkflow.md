@@ -1,6 +1,6 @@
 [**@saflib/workflows**](../index.md)
 
-***
+---
 
 # Abstract Class: XStateWorkflow
 
@@ -8,10 +8,10 @@ Abstract superclass for XStateWorkflows.
 
 To use, subclass it with:
 
-* machine - the XState machine for the workflow.
-* sourceUrl - import.meta.url
-* description - to show up in the CLI tool
-* cliArguments - to show up in the CLI tool
+- machine - the XState machine for the workflow.
+- sourceUrl - import.meta.url
+- description - to show up in the CLI tool
+- cliArguments - to show up in the CLI tool
 
 ## Extends
 
@@ -41,7 +41,7 @@ To use, subclass it with:
 
 [`Workflow`](Workflow.md).[`cliArguments`](Workflow.md#cliarguments)
 
-***
+---
 
 ### description
 
@@ -51,13 +51,13 @@ To use, subclass it with:
 
 [`Workflow`](Workflow.md).[`description`](Workflow.md#description)
 
-***
+---
 
 ### machine
 
 > `abstract` `readonly` **machine**: `AnyStateMachine`
 
-***
+---
 
 ### sourceUrl
 
@@ -97,7 +97,7 @@ To use, subclass it with:
 
 [`Workflow`](Workflow.md).[`dehydrate`](Workflow.md#dehydrate)
 
-***
+---
 
 ### done()
 
@@ -111,7 +111,7 @@ To use, subclass it with:
 
 [`Workflow`](Workflow.md).[`done`](Workflow.md#done)
 
-***
+---
 
 ### getChecklist()
 
@@ -125,7 +125,7 @@ To use, subclass it with:
 
 [`Workflow`](Workflow.md).[`getChecklist`](Workflow.md#getchecklist)
 
-***
+---
 
 ### getCurrentStateName()
 
@@ -139,7 +139,7 @@ To use, subclass it with:
 
 [`Workflow`](Workflow.md).[`getCurrentStateName`](Workflow.md#getcurrentstatename)
 
-***
+---
 
 ### getError()
 
@@ -153,7 +153,7 @@ To use, subclass it with:
 
 [`Workflow`](Workflow.md).[`getError`](Workflow.md#geterror)
 
-***
+---
 
 ### goToNextStep()
 
@@ -167,7 +167,7 @@ To use, subclass it with:
 
 [`Workflow`](Workflow.md).[`goToNextStep`](Workflow.md#gotonextstep)
 
-***
+---
 
 ### hydrate()
 
@@ -175,9 +175,9 @@ To use, subclass it with:
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `blob` | `WorkflowBlob` |
+| Parameter | Type           |
+| --------- | -------------- |
+| `blob`    | `WorkflowBlob` |
 
 #### Returns
 
@@ -187,7 +187,7 @@ To use, subclass it with:
 
 [`Workflow`](Workflow.md).[`hydrate`](Workflow.md#hydrate)
 
-***
+---
 
 ### init()
 
@@ -195,10 +195,10 @@ To use, subclass it with:
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
+| Parameter | Type                    |
+| --------- | ----------------------- |
 | `options` | `XStateWorkflowOptions` |
-| ...`args` | `string`[] |
+| ...`args` | `string`[]              |
 
 #### Returns
 
@@ -208,7 +208,7 @@ To use, subclass it with:
 
 `Workflow.init`
 
-***
+---
 
 ### kickoff()
 
@@ -222,7 +222,7 @@ To use, subclass it with:
 
 [`Workflow`](Workflow.md).[`kickoff`](Workflow.md#kickoff)
 
-***
+---
 
 ### printStatus()
 

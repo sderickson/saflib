@@ -1,6 +1,6 @@
 [**@saflib/drizzle**](../index.md)
 
-***
+---
 
 # Type Alias: DbTransaction\<S\>
 
@@ -11,6 +11,6 @@ with a generic parameter for the schema.
 
 ## Type Parameters
 
-| Type Parameter |
-| ------ |
-| `S` *extends* [`Schema`](Schema.md) |
+| Type Parameter                      |
+| ----------------------------------- |
+| `S` _extends_ [`Schema`](Schema.md) |

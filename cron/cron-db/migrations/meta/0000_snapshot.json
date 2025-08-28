@@ -46,9 +46,7 @@
       "indexes": {
         "job_settings_job_name_unique": {
           "name": "job_settings_job_name_unique",
-          "columns": [
-            "job_name"
-          ],
+          "columns": ["job_name"],
           "isUnique": true
         }
       },

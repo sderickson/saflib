@@ -1,6 +1,6 @@
 [**@saflib/identity-rpcs**](../../../../index.md)
 
-***
+---
 
 # Class: GetUserProfileResponse
 
@@ -16,9 +16,9 @@
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `data?` | `any`[] \| \{ `profile?`: [`UserProfile`](UserProfile.md); \} |
+| Parameter | Type                                                          |
+| --------- | ------------------------------------------------------------- |
+| `data?`   | `any`[] \| \{ `profile?`: [`UserProfile`](UserProfile.md); \} |
 
 #### Returns
 
@@ -42,7 +42,7 @@
 
 `pb_1.Message.extensions`
 
-***
+---
 
 ### extensionsBinary
 
@@ -58,17 +58,17 @@
 
 ## Accessors
 
-### has\_profile
+### has_profile
 
 #### Get Signature
 
-> **get** **has\_profile**(): `boolean`
+> **get** **has_profile**(): `boolean`
 
 ##### Returns
 
 `boolean`
 
-***
+---
 
 ### profile
 
@@ -86,9 +86,9 @@
 
 ##### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `value` | [`UserProfile`](UserProfile.md) |
+| Parameter | Type                            |
+| --------- | ------------------------------- |
+| `value`   | [`UserProfile`](UserProfile.md) |
 
 ##### Returns
 
@@ -108,7 +108,7 @@
 
 `pb_1.Message.clone`
 
-***
+---
 
 ### cloneMessage()
 
@@ -122,7 +122,7 @@
 
 `pb_1.Message.cloneMessage`
 
-***
+---
 
 ### getExtension()
 
@@ -131,13 +131,13 @@
 #### Type Parameters
 
 | Type Parameter |
-| ------ |
-| `T` |
+| -------------- |
+| `T`            |
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
+| Parameter   | Type                        |
+| ----------- | --------------------------- |
 | `fieldInfo` | `ExtensionFieldInfo`\<`T`\> |
 
 #### Returns
@@ -148,7 +148,7 @@
 
 `pb_1.Message.getExtension`
 
-***
+---
 
 ### getJsPbMessageId()
 
@@ -162,7 +162,7 @@
 
 `pb_1.Message.getJsPbMessageId`
 
-***
+---
 
 ### readBinaryExtension()
 
@@ -170,12 +170,12 @@
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `proto` | `Message` |
-| `reader` | `BinaryReader` |
-| `extensions` | \{\[`key`: `number`\]: `ExtensionFieldBinaryInfo`\<`Message`\>; \} |
-| `setExtensionFn` | \<`T`\>(`fieldInfo`, `val`) => `void` |
+| Parameter        | Type                                                               |
+| ---------------- | ------------------------------------------------------------------ |
+| `proto`          | `Message`                                                          |
+| `reader`         | `BinaryReader`                                                     |
+| `extensions`     | \{\[`key`: `number`\]: `ExtensionFieldBinaryInfo`\<`Message`\>; \} |
+| `setExtensionFn` | \<`T`\>(`fieldInfo`, `val`) => `void`                              |
 
 #### Returns
 
@@ -185,7 +185,7 @@
 
 `pb_1.Message.readBinaryExtension`
 
-***
+---
 
 ### serialize()
 
@@ -203,15 +203,15 @@
 
 ##### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `w` | `BinaryWriter` |
+| Parameter | Type           |
+| --------- | -------------- |
+| `w`       | `BinaryWriter` |
 
 ##### Returns
 
 `void`
 
-***
+---
 
 ### serializeBinary()
 
@@ -225,7 +225,7 @@
 
 `pb_1.Message.serializeBinary`
 
-***
+---
 
 ### serializeBinaryExtensions()
 
@@ -233,12 +233,12 @@
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `proto` | `Message` |
-| `writer` | `BinaryWriter` |
-| `extensions` | \{\[`key`: `number`\]: `ExtensionFieldBinaryInfo`\<`Message`\>; \} |
-| `getExtensionFn` | \<`T`\>(`fieldInfo`) => `T` |
+| Parameter        | Type                                                               |
+| ---------------- | ------------------------------------------------------------------ |
+| `proto`          | `Message`                                                          |
+| `writer`         | `BinaryWriter`                                                     |
+| `extensions`     | \{\[`key`: `number`\]: `ExtensionFieldBinaryInfo`\<`Message`\>; \} |
+| `getExtensionFn` | \<`T`\>(`fieldInfo`) => `T`                                        |
 
 #### Returns
 
@@ -248,7 +248,7 @@
 
 `pb_1.Message.serializeBinaryExtensions`
 
-***
+---
 
 ### setExtension()
 
@@ -257,15 +257,15 @@
 #### Type Parameters
 
 | Type Parameter |
-| ------ |
-| `T` |
+| -------------- |
+| `T`            |
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
+| Parameter   | Type                        |
+| ----------- | --------------------------- |
 | `fieldInfo` | `ExtensionFieldInfo`\<`T`\> |
-| `value` | `T` |
+| `value`     | `T`                         |
 
 #### Returns
 
@@ -275,7 +275,7 @@
 
 `pb_1.Message.setExtension`
 
-***
+---
 
 ### toArray()
 
@@ -289,7 +289,7 @@
 
 `pb_1.Message.toArray`
 
-***
+---
 
 ### toObject()
 
@@ -303,15 +303,15 @@
 
 > `optional` **profile**: `object`
 
-###### profile.created\_at?
+###### profile.created_at?
 
-> `optional` **created\_at**: `object`
+> `optional` **created_at**: `object`
 
-###### profile.created\_at.nanos?
+###### profile.created_at.nanos?
 
 > `optional` **nanos**: `number`
 
-###### profile.created\_at.seconds?
+###### profile.created_at.seconds?
 
 > `optional` **seconds**: `number`
 
@@ -319,31 +319,31 @@
 
 > `optional` **email**: `string`
 
-###### profile.email\_verified?
+###### profile.email_verified?
 
-> `optional` **email\_verified**: `boolean`
+> `optional` **email_verified**: `boolean`
 
-###### profile.family\_name?
+###### profile.family_name?
 
-> `optional` **family\_name**: `string`
+> `optional` **family_name**: `string`
 
-###### profile.given\_name?
+###### profile.given_name?
 
-> `optional` **given\_name**: `string`
+> `optional` **given_name**: `string`
 
 ###### profile.name?
 
 > `optional` **name**: `string`
 
-###### profile.user\_id?
+###### profile.user_id?
 
-> `optional` **user\_id**: `number`
+> `optional` **user_id**: `number`
 
 #### Overrides
 
 `pb_1.Message.toObject`
 
-***
+---
 
 ### toString()
 
@@ -357,7 +357,7 @@
 
 `pb_1.Message.toString`
 
-***
+---
 
 ### addToRepeatedField()
 
@@ -365,12 +365,12 @@
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `msg` | `Message` |
-| `fieldNumber` | `number` |
-| `value` | `any` |
-| `index?` | `number` |
+| Parameter     | Type      |
+| ------------- | --------- |
+| `msg`         | `Message` |
+| `fieldNumber` | `number`  |
+| `value`       | `any`     |
+| `index?`      | `number`  |
 
 #### Returns
 
@@ -380,7 +380,7 @@
 
 `pb_1.Message.addToRepeatedField`
 
-***
+---
 
 ### addToRepeatedWrapperField()
 
@@ -388,19 +388,19 @@
 
 #### Type Parameters
 
-| Type Parameter |
-| ------ |
-| `T` *extends* `Message` |
+| Type Parameter          |
+| ----------------------- |
+| `T` _extends_ `Message` |
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `msg` | `Message` |
-| `fieldNumber` | `number` |
-| `value` | `undefined` \| `T` |
-| `ctor` | () => `T` |
-| `index?` | `number` |
+| Parameter     | Type               |
+| ------------- | ------------------ |
+| `msg`         | `Message`          |
+| `fieldNumber` | `number`           |
+| `value`       | `undefined` \| `T` |
+| `ctor`        | () => `T`          |
+| `index?`      | `number`           |
 
 #### Returns
 
@@ -410,7 +410,7 @@
 
 `pb_1.Message.addToRepeatedWrapperField`
 
-***
+---
 
 ### bytesAsB64()
 
@@ -418,9 +418,9 @@
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `bytes` | `Uint8Array` |
+| Parameter | Type         |
+| --------- | ------------ |
+| `bytes`   | `Uint8Array` |
 
 #### Returns
 
@@ -430,7 +430,7 @@
 
 `pb_1.Message.bytesAsB64`
 
-***
+---
 
 ### bytesAsU8()
 
@@ -438,9 +438,9 @@
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `str` | `string` |
+| Parameter | Type     |
+| --------- | -------- |
+| `str`     | `string` |
 
 #### Returns
 
@@ -450,7 +450,7 @@
 
 `pb_1.Message.bytesAsU8`
 
-***
+---
 
 ### bytesListAsB64()
 
@@ -458,8 +458,8 @@
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
+| Parameter   | Type                                |
+| ----------- | ----------------------------------- |
 | `bytesList` | `Uint8Array`\<`ArrayBufferLike`\>[] |
 
 #### Returns
@@ -470,7 +470,7 @@
 
 `pb_1.Message.bytesListAsB64`
 
-***
+---
 
 ### bytesListAsU8()
 
@@ -478,8 +478,8 @@
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
+| Parameter | Type       |
+| --------- | ---------- |
 | `strList` | `string`[] |
 
 #### Returns
@@ -490,7 +490,7 @@
 
 `pb_1.Message.bytesListAsU8`
 
-***
+---
 
 ### clone()
 
@@ -498,15 +498,15 @@
 
 #### Type Parameters
 
-| Type Parameter |
-| ------ |
-| `T` *extends* `Message` |
+| Type Parameter          |
+| ----------------------- |
+| `T` _extends_ `Message` |
 
 #### Parameters
 
 | Parameter | Type |
-| ------ | ------ |
-| `msg` | `T` |
+| --------- | ---- |
+| `msg`     | `T`  |
 
 #### Returns
 
@@ -516,7 +516,7 @@
 
 `pb_1.Message.clone`
 
-***
+---
 
 ### cloneMessage()
 
@@ -524,15 +524,15 @@
 
 #### Type Parameters
 
-| Type Parameter |
-| ------ |
-| `T` *extends* `Message` |
+| Type Parameter          |
+| ----------------------- |
+| `T` _extends_ `Message` |
 
 #### Parameters
 
 | Parameter | Type |
-| ------ | ------ |
-| `msg` | `T` |
+| --------- | ---- |
+| `msg`     | `T`  |
 
 #### Returns
 
@@ -542,7 +542,7 @@
 
 `pb_1.Message.cloneMessage`
 
-***
+---
 
 ### compareExtensions()
 
@@ -550,8 +550,8 @@
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
+| Parameter    | Type  |
+| ------------ | ----- |
 | `extension1` | \{ \} |
 | `extension2` | \{ \} |
 
@@ -563,7 +563,7 @@
 
 `pb_1.Message.compareExtensions`
 
-***
+---
 
 ### compareFields()
 
@@ -571,10 +571,10 @@
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `field1` | `any` |
-| `field2` | `any` |
+| Parameter | Type  |
+| --------- | ----- |
+| `field1`  | `any` |
+| `field2`  | `any` |
 
 #### Returns
 
@@ -584,7 +584,7 @@
 
 `pb_1.Message.compareFields`
 
-***
+---
 
 ### computeOneofCase()
 
@@ -592,10 +592,10 @@
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `msg` | `Message` |
-| `oneof` | `number`[] |
+| Parameter | Type       |
+| --------- | ---------- |
+| `msg`     | `Message`  |
+| `oneof`   | `number`[] |
 
 #### Returns
 
@@ -605,7 +605,7 @@
 
 `pb_1.Message.computeOneofCase`
 
-***
+---
 
 ### copyInto()
 
@@ -613,10 +613,10 @@
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
+| Parameter     | Type      |
+| ------------- | --------- |
 | `fromMessage` | `Message` |
-| `toMessage` | `Message` |
+| `toMessage`   | `Message` |
 
 #### Returns
 
@@ -626,7 +626,7 @@
 
 `pb_1.Message.copyInto`
 
-***
+---
 
 ### deserialize()
 
@@ -634,15 +634,15 @@
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `bytes` | `Uint8Array`\<`ArrayBufferLike`\> \| `BinaryReader` |
+| Parameter | Type                                                |
+| --------- | --------------------------------------------------- |
+| `bytes`   | `Uint8Array`\<`ArrayBufferLike`\> \| `BinaryReader` |
 
 #### Returns
 
 `GetUserProfileResponse`
 
-***
+---
 
 ### deserializeBinary()
 
@@ -650,9 +650,9 @@
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `bytes` | `Uint8Array` |
+| Parameter | Type         |
+| --------- | ------------ |
+| `bytes`   | `Uint8Array` |
 
 #### Returns
 
@@ -662,7 +662,7 @@
 
 `pb_1.Message.deserializeBinary`
 
-***
+---
 
 ### deserializeBinaryFromReader()
 
@@ -670,10 +670,10 @@
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `message` | `Message` |
-| `reader` | `BinaryReader` |
+| Parameter | Type           |
+| --------- | -------------- |
+| `message` | `Message`      |
+| `reader`  | `BinaryReader` |
 
 #### Returns
 
@@ -683,7 +683,7 @@
 
 `pb_1.Message.deserializeBinaryFromReader`
 
-***
+---
 
 ### difference()
 
@@ -691,16 +691,16 @@
 
 #### Type Parameters
 
-| Type Parameter |
-| ------ |
-| `T` *extends* `Message` |
+| Type Parameter          |
+| ----------------------- |
+| `T` _extends_ `Message` |
 
 #### Parameters
 
 | Parameter | Type |
-| ------ | ------ |
-| `m1` | `T` |
-| `m2` | `T` |
+| --------- | ---- |
+| `m1`      | `T`  |
+| `m2`      | `T`  |
 
 #### Returns
 
@@ -710,7 +710,7 @@
 
 `pb_1.Message.difference`
 
-***
+---
 
 ### equals()
 
@@ -718,10 +718,10 @@
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `m1` | `Message` |
-| `m2` | `Message` |
+| Parameter | Type      |
+| --------- | --------- |
+| `m1`      | `Message` |
+| `m2`      | `Message` |
 
 #### Returns
 
@@ -731,7 +731,7 @@
 
 `pb_1.Message.equals`
 
-***
+---
 
 ### fromObject()
 
@@ -739,25 +739,25 @@
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `data` | \{ `profile?`: \{ `created_at?`: \{ `nanos?`: `number`; `seconds?`: `number`; \}; `email?`: `string`; `email_verified?`: `boolean`; `family_name?`: `string`; `given_name?`: `string`; `name?`: `string`; `user_id?`: `number`; \}; \} |
-| `data.profile?` | \{ `created_at?`: \{ `nanos?`: `number`; `seconds?`: `number`; \}; `email?`: `string`; `email_verified?`: `boolean`; `family_name?`: `string`; `given_name?`: `string`; `name?`: `string`; `user_id?`: `number`; \} |
-| `data.profile.created_at?` | \{ `nanos?`: `number`; `seconds?`: `number`; \} |
-| `data.profile.created_at.nanos?` | `number` |
-| `data.profile.created_at.seconds?` | `number` |
-| `data.profile.email?` | `string` |
-| `data.profile.email_verified?` | `boolean` |
-| `data.profile.family_name?` | `string` |
-| `data.profile.given_name?` | `string` |
-| `data.profile.name?` | `string` |
-| `data.profile.user_id?` | `number` |
+| Parameter                          | Type                                                                                                                                                                                                                                   |
+| ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `data`                             | \{ `profile?`: \{ `created_at?`: \{ `nanos?`: `number`; `seconds?`: `number`; \}; `email?`: `string`; `email_verified?`: `boolean`; `family_name?`: `string`; `given_name?`: `string`; `name?`: `string`; `user_id?`: `number`; \}; \} |
+| `data.profile?`                    | \{ `created_at?`: \{ `nanos?`: `number`; `seconds?`: `number`; \}; `email?`: `string`; `email_verified?`: `boolean`; `family_name?`: `string`; `given_name?`: `string`; `name?`: `string`; `user_id?`: `number`; \}                    |
+| `data.profile.created_at?`         | \{ `nanos?`: `number`; `seconds?`: `number`; \}                                                                                                                                                                                        |
+| `data.profile.created_at.nanos?`   | `number`                                                                                                                                                                                                                               |
+| `data.profile.created_at.seconds?` | `number`                                                                                                                                                                                                                               |
+| `data.profile.email?`              | `string`                                                                                                                                                                                                                               |
+| `data.profile.email_verified?`     | `boolean`                                                                                                                                                                                                                              |
+| `data.profile.family_name?`        | `string`                                                                                                                                                                                                                               |
+| `data.profile.given_name?`         | `string`                                                                                                                                                                                                                               |
+| `data.profile.name?`               | `string`                                                                                                                                                                                                                               |
+| `data.profile.user_id?`            | `number`                                                                                                                                                                                                                               |
 
 #### Returns
 
 `GetUserProfileResponse`
 
-***
+---
 
 ### getField()
 
@@ -765,10 +765,10 @@
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `msg` | `Message` |
-| `fieldNumber` | `number` |
+| Parameter     | Type      |
+| ------------- | --------- |
+| `msg`         | `Message` |
+| `fieldNumber` | `number`  |
 
 #### Returns
 
@@ -778,7 +778,7 @@
 
 `pb_1.Message.getField`
 
-***
+---
 
 ### getFieldWithDefault()
 
@@ -787,16 +787,16 @@
 #### Type Parameters
 
 | Type Parameter |
-| ------ |
-| `T` |
+| -------------- |
+| `T`            |
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `msg` | `Message` |
-| `fieldNumber` | `number` |
-| `defaultValue` | `T` |
+| Parameter      | Type      |
+| -------------- | --------- |
+| `msg`          | `Message` |
+| `fieldNumber`  | `number`  |
+| `defaultValue` | `T`       |
 
 #### Returns
 
@@ -806,7 +806,7 @@
 
 `pb_1.Message.getFieldWithDefault`
 
-***
+---
 
 ### getMapField()
 
@@ -814,12 +814,12 @@
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `msg` | `Message` |
-| `fieldNumber` | `number` |
-| `noLazyCreate` | `boolean` |
-| `valueCtor?` | *typeof* `Message` |
+| Parameter      | Type               |
+| -------------- | ------------------ |
+| `msg`          | `Message`          |
+| `fieldNumber`  | `number`           |
+| `noLazyCreate` | `boolean`          |
+| `valueCtor?`   | _typeof_ `Message` |
 
 #### Returns
 
@@ -829,7 +829,7 @@
 
 `pb_1.Message.getMapField`
 
-***
+---
 
 ### getOptionalFloatingPointField()
 
@@ -837,10 +837,10 @@
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `msg` | `Message` |
-| `fieldNumber` | `number` |
+| Parameter     | Type      |
+| ------------- | --------- |
+| `msg`         | `Message` |
+| `fieldNumber` | `number`  |
 
 #### Returns
 
@@ -850,7 +850,7 @@
 
 `pb_1.Message.getOptionalFloatingPointField`
 
-***
+---
 
 ### getRepeatedFloatingPointField()
 
@@ -858,10 +858,10 @@
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `msg` | `Message` |
-| `fieldNumber` | `number` |
+| Parameter     | Type      |
+| ------------- | --------- |
+| `msg`         | `Message` |
+| `fieldNumber` | `number`  |
 
 #### Returns
 
@@ -871,7 +871,7 @@
 
 `pb_1.Message.getRepeatedFloatingPointField`
 
-***
+---
 
 ### getRepeatedWrapperField()
 
@@ -879,17 +879,17 @@
 
 #### Type Parameters
 
-| Type Parameter |
-| ------ |
-| `T` *extends* `Message` |
+| Type Parameter          |
+| ----------------------- |
+| `T` _extends_ `Message` |
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `msg` | `Message` |
-| `ctor` | () => `T` |
-| `fieldNumber` | `number` |
+| Parameter     | Type      |
+| ------------- | --------- |
+| `msg`         | `Message` |
+| `ctor`        | () => `T` |
+| `fieldNumber` | `number`  |
 
 #### Returns
 
@@ -899,7 +899,7 @@
 
 `pb_1.Message.getRepeatedWrapperField`
 
-***
+---
 
 ### getWrapperField()
 
@@ -907,18 +907,18 @@
 
 #### Type Parameters
 
-| Type Parameter |
-| ------ |
-| `T` *extends* `Message` |
+| Type Parameter          |
+| ----------------------- |
+| `T` _extends_ `Message` |
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `msg` | `Message` |
-| `ctor` | () => `T` |
-| `fieldNumber` | `number` |
-| `required?` | `number` |
+| Parameter     | Type      |
+| ------------- | --------- |
+| `msg`         | `Message` |
+| `ctor`        | () => `T` |
+| `fieldNumber` | `number`  |
+| `required?`   | `number`  |
 
 #### Returns
 
@@ -928,7 +928,7 @@
 
 `pb_1.Message.getWrapperField`
 
-***
+---
 
 ### initialize()
 
@@ -936,14 +936,14 @@
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `msg` | `Message` |
-| `data` | `MessageArray` |
-| `messageId` | `string` \| `number` |
-| `suggestedPivot` | `number` |
-| `repeatedFields?` | `null` \| `number`[] |
-| `oneofFields?` | `null` \| `number`[][] |
+| Parameter         | Type                   |
+| ----------------- | ---------------------- |
+| `msg`             | `Message`              |
+| `data`            | `MessageArray`         |
+| `messageId`       | `string` \| `number`   |
+| `suggestedPivot`  | `number`               |
+| `repeatedFields?` | `null` \| `number`[]   |
+| `oneofFields?`    | `null` \| `number`[][] |
 
 #### Returns
 
@@ -953,7 +953,7 @@
 
 `pb_1.Message.initialize`
 
-***
+---
 
 ### registerMessageType()
 
@@ -961,10 +961,10 @@
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `id` | `number` |
-| `constructor` | *typeof* `Message` |
+| Parameter     | Type               |
+| ------------- | ------------------ |
+| `id`          | `number`           |
+| `constructor` | _typeof_ `Message` |
 
 #### Returns
 
@@ -974,7 +974,7 @@
 
 `pb_1.Message.registerMessageType`
 
-***
+---
 
 ### serializeBinaryToWriter()
 
@@ -982,10 +982,10 @@
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `message` | `Message` |
-| `writer` | `BinaryWriter` |
+| Parameter | Type           |
+| --------- | -------------- |
+| `message` | `Message`      |
+| `writer`  | `BinaryWriter` |
 
 #### Returns
 
@@ -995,7 +995,7 @@
 
 `pb_1.Message.serializeBinaryToWriter`
 
-***
+---
 
 ### setField()
 
@@ -1003,11 +1003,11 @@
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `msg` | `Message` |
-| `fieldNumber` | `number` |
-| `value` | `ReadonlyFieldValue` |
+| Parameter     | Type                 |
+| ------------- | -------------------- |
+| `msg`         | `Message`            |
+| `fieldNumber` | `number`             |
+| `value`       | `ReadonlyFieldValue` |
 
 #### Returns
 
@@ -1017,7 +1017,7 @@
 
 `pb_1.Message.setField`
 
-***
+---
 
 ### setOneofField()
 
@@ -1025,12 +1025,12 @@
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `msg` | `Message` |
-| `fieldNumber` | `number` |
-| `oneof` | `number`[] |
-| `value` | `ReadonlyFieldValue` |
+| Parameter     | Type                 |
+| ------------- | -------------------- |
+| `msg`         | `Message`            |
+| `fieldNumber` | `number`             |
+| `oneof`       | `number`[]           |
+| `value`       | `ReadonlyFieldValue` |
 
 #### Returns
 
@@ -1040,7 +1040,7 @@
 
 `pb_1.Message.setOneofField`
 
-***
+---
 
 ### setOneofWrapperField()
 
@@ -1048,12 +1048,12 @@
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `msg` | `Message` |
-| `fieldNumber` | `number` |
-| `oneof` | `number`[] |
-| `value` | `any` |
+| Parameter     | Type       |
+| ------------- | ---------- |
+| `msg`         | `Message`  |
+| `fieldNumber` | `number`   |
+| `oneof`       | `number`[] |
+| `value`       | `any`      |
 
 #### Returns
 
@@ -1063,7 +1063,7 @@
 
 `pb_1.Message.setOneofWrapperField`
 
-***
+---
 
 ### setRepeatedWrapperField()
 
@@ -1071,17 +1071,17 @@
 
 #### Type Parameters
 
-| Type Parameter |
-| ------ |
-| `T` *extends* `Message` |
+| Type Parameter          |
+| ----------------------- |
+| `T` _extends_ `Message` |
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `msg` | `Message` |
-| `fieldNumber` | `number` |
-| `value?` | readonly `T`[] |
+| Parameter     | Type           |
+| ------------- | -------------- |
+| `msg`         | `Message`      |
+| `fieldNumber` | `number`       |
+| `value?`      | readonly `T`[] |
 
 #### Returns
 
@@ -1091,7 +1091,7 @@
 
 `pb_1.Message.setRepeatedWrapperField`
 
-***
+---
 
 ### setWrapperField()
 
@@ -1099,17 +1099,17 @@
 
 #### Type Parameters
 
-| Type Parameter |
-| ------ |
-| `T` *extends* `Message` |
+| Type Parameter          |
+| ----------------------- |
+| `T` _extends_ `Message` |
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `msg` | `Message` |
-| `fieldNumber` | `number` |
-| `value?` | `Map`\<`any`, `any`\> \| `T` |
+| Parameter     | Type                         |
+| ------------- | ---------------------------- |
+| `msg`         | `Message`                    |
+| `fieldNumber` | `number`                     |
+| `value?`      | `Map`\<`any`, `any`\> \| `T` |
 
 #### Returns
 
@@ -1119,7 +1119,7 @@
 
 `pb_1.Message.setWrapperField`
 
-***
+---
 
 ### toMap()
 
@@ -1127,12 +1127,12 @@
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `field` | `any`[] |
-| `mapKeyGetterFn` | (`field`) => `string` |
-| `toObjectFn?` | `StaticToObject` |
-| `includeInstance?` | `boolean` |
+| Parameter          | Type                  |
+| ------------------ | --------------------- |
+| `field`            | `any`[]               |
+| `mapKeyGetterFn`   | (`field`) => `string` |
+| `toObjectFn?`      | `StaticToObject`      |
+| `includeInstance?` | `boolean`             |
 
 #### Returns
 
@@ -1142,7 +1142,7 @@
 
 `pb_1.Message.toMap`
 
-***
+---
 
 ### toObject()
 
@@ -1150,10 +1150,10 @@
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
+| Parameter         | Type      |
+| ----------------- | --------- |
 | `includeInstance` | `boolean` |
-| `msg` | `Message` |
+| `msg`             | `Message` |
 
 #### Returns
 
@@ -1163,7 +1163,7 @@
 
 `pb_1.Message.toObject`
 
-***
+---
 
 ### toObjectExtension()
 
@@ -1171,13 +1171,13 @@
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `msg` | `Message` |
-| `obj` | \{ \} |
-| `extensions` | \{\[`key`: `number`\]: `ExtensionFieldInfo`\<`Message`\>; \} |
-| `getExtensionFn` | (`fieldInfo`) => `Message` |
-| `includeInstance?` | `boolean` |
+| Parameter          | Type                                                         |
+| ------------------ | ------------------------------------------------------------ |
+| `msg`              | `Message`                                                    |
+| `obj`              | \{ \}                                                        |
+| `extensions`       | \{\[`key`: `number`\]: `ExtensionFieldInfo`\<`Message`\>; \} |
+| `getExtensionFn`   | (`fieldInfo`) => `Message`                                   |
+| `includeInstance?` | `boolean`                                                    |
 
 #### Returns
 
@@ -1187,7 +1187,7 @@
 
 `pb_1.Message.toObjectExtension`
 
-***
+---
 
 ### toObjectList()
 
@@ -1195,17 +1195,17 @@
 
 #### Type Parameters
 
-| Type Parameter |
-| ------ |
-| `T` *extends* `Message` |
+| Type Parameter          |
+| ----------------------- |
+| `T` _extends_ `Message` |
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `field` | `T`[] |
-| `toObjectFn` | (`includeInstance`, `data`) => `object` |
-| `includeInstance?` | `boolean` |
+| Parameter          | Type                                    |
+| ------------------ | --------------------------------------- |
+| `field`            | `T`[]                                   |
+| `toObjectFn`       | (`includeInstance`, `data`) => `object` |
+| `includeInstance?` | `boolean`                               |
 
 #### Returns
 

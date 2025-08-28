@@ -1,6 +1,6 @@
 [**@saflib/node**](../index.md)
 
-***
+---
 
 # Type Alias: LoggerContext
 

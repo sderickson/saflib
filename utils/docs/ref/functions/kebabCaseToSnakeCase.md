@@ -1,6 +1,6 @@
 [**@saflib/utils**](../index.md)
 
-***
+---
 
 # Function: kebabCaseToSnakeCase()
 
@@ -10,9 +10,9 @@ Convert a kebab-case string to snake_case.
 
 ## Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `name` | `string` |
+| Parameter | Type     |
+| --------- | -------- |
+| `name`    | `string` |
 
 ## Returns
 

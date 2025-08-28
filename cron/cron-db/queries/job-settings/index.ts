@@ -1,7 +1,10 @@
 import { getAll, type GetAllResult } from "./get-all.ts";
 import { getByName, type GetByNameResult } from "./get-by-name.ts";
 import { setEnabled, type SetEnabledResult } from "./set-enabled.ts";
-import { setLastRunStatus, type SetLastRunStatusResult } from "./set-last-run-status.ts";
+import {
+  setLastRunStatus,
+  type SetLastRunStatusResult,
+} from "./set-last-run-status.ts";
 import type { JobSetting } from "../../schema.ts";
 
 /**

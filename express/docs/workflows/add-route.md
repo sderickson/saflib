@@ -20,19 +20,18 @@ To run this workflow automatically, tell the agent to:
 
 When run, the workflow will:
 
-* Read the reference documentation for adding routes.
-* Copy template files and rename placeholders.
-  * Upsert **route-template.test.ts** from [template](https://github.com/sderickson/saflib/blob/main/express/workflows/route-template/route-template.test.ts)
-  * Upsert **route-template.ts** from [template](https://github.com/sderickson/saflib/blob/main/express/workflows/route-template/route-template.ts)
-* Check if the feature router exists at `/routes/example-subpath/index.ts`. If it doesn't exist, create it with the basic structure to export the new route handler.
-* Update the feature router at `/routes/example-subpath/index.ts` to include the new route handler.
-* Check if the HTTP app exists at `/http.ts` or `/app.ts`. If neither exists, create one to mount your routes.
-* Update the HTTP app to include the feature router.
-* Update example-route.ts to remove TODOs
-* Read the testing guide.
-* Update example-route.test.ts to remove TODOs
-* Run test, make sure it passes.
-
+- Read the reference documentation for adding routes.
+- Copy template files and rename placeholders.
+  - Upsert **route-template.test.ts** from [template](https://github.com/sderickson/saflib/blob/main/express/workflows/route-template/route-template.test.ts)
+  - Upsert **route-template.ts** from [template](https://github.com/sderickson/saflib/blob/main/express/workflows/route-template/route-template.ts)
+- Check if the feature router exists at `/routes/example-subpath/index.ts`. If it doesn't exist, create it with the basic structure to export the new route handler.
+- Update the feature router at `/routes/example-subpath/index.ts` to include the new route handler.
+- Check if the HTTP app exists at `/http.ts` or `/app.ts`. If neither exists, create one to mount your routes.
+- Update the HTTP app to include the feature router.
+- Update example-route.ts to remove TODOs
+- Read the testing guide.
+- Update example-route.test.ts to remove TODOs
+- Run test, make sure it passes.
 
 ## Help Docs
 

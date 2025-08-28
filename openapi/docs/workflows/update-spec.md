@@ -20,12 +20,11 @@ To run this workflow automatically, tell the agent to:
 
 When run, the workflow will:
 
-* Review the project spec, and the documentation for updating specs.
-* Add common objects to `schemas/`, and routes to `routes/`. Then link them in the `openapi.yaml` file.
-* Update the openapi.yaml file to include the new routes and schemas.
-* Run `npm run generate`
-* Update `index.ts` to export any new schemas that were added to the spec.
-
+- Review the project spec, and the documentation for updating specs.
+- Add common objects to `schemas/`, and routes to `routes/`. Then link them in the `openapi.yaml` file.
+- Update the openapi.yaml file to include the new routes and schemas.
+- Run `npm run generate`
+- Update `index.ts` to export any new schemas that were added to the spec.
 
 ## Help Docs
 

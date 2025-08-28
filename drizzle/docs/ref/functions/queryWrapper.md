@@ -1,6 +1,6 @@
 [**@saflib/drizzle**](../index.md)
 
-***
+---
 
 # Function: queryWrapper()
 
@@ -12,15 +12,15 @@ returned, not thrown.
 
 ## Type Parameters
 
-| Type Parameter |
-| ------ |
-| `F` *extends* (...`args`) => `Promise`\<`any`\> |
+| Type Parameter                                  |
+| ----------------------------------------------- |
+| `F` _extends_ (...`args`) => `Promise`\<`any`\> |
 
 ## Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `queryFunc` | `F` |
+| Parameter   | Type |
+| ----------- | ---- |
+| `queryFunc` | `F`  |
 
 ## Returns
 

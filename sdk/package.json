@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@tanstack/vue-query": "^5.0.0",
-    "openapi-fetch": "^0.14.0"    
+    "openapi-fetch": "^0.14.0"
   },
   "devDependencies": {
     "@saflib/workflows": "*",

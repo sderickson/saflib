@@ -1,6 +1,6 @@
 [**@saflib/grpc**](../../../../index.md)
 
-***
+---
 
 # Function: resolveGrpcRequest()
 
@@ -11,15 +11,15 @@ Moves fake timers forward if necessary.
 
 ## Type Parameters
 
-| Type Parameter |
-| ------ |
-| `T` *extends* `object` |
+| Type Parameter         |
+| ---------------------- |
+| `T` _extends_ `object` |
 
 ## Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `p` | `Promise`\<`T`\> |
+| Parameter | Type             |
+| --------- | ---------------- |
+| `p`       | `Promise`\<`T`\> |
 
 ## Returns
 

@@ -1,6 +1,6 @@
 [**@saflib/identity-http**](../index.md)
 
-***
+---
 
 # Variable: typedEnv
 

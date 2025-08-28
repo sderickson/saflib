@@ -1,6 +1,6 @@
 [**@saflib/vue**](../../../index.md)
 
-***
+---
 
 # Type Alias: ProductEventListener()\<T\>
 
@@ -11,14 +11,14 @@ A function that receives product events as they're emitted.
 ## Type Parameters
 
 | Type Parameter |
-| ------ |
-| `T` |
+| -------------- |
+| `T`            |
 
 ## Parameters
 
 | Parameter | Type |
-| ------ | ------ |
-| `event` | `T` |
+| --------- | ---- |
+| `event`   | `T`  |
 
 ## Returns
 

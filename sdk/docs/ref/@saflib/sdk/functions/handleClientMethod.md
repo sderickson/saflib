@@ -1,6 +1,6 @@
 [**@saflib/sdk**](../../../index.md)
 
-***
+---
 
 # Function: handleClientMethod()
 
@@ -11,13 +11,13 @@ Wrapper around an openapi-fetch client fetch method to handle errors and return 
 ## Type Parameters
 
 | Type Parameter |
-| ------ |
-| `T` |
+| -------------- |
+| `T`            |
 
 ## Parameters
 
-| Parameter | Type |
-| ------ | ------ |
+| Parameter | Type                                                                |
+| --------- | ------------------------------------------------------------------- |
 | `request` | `Promise`\<[`ClientResult`](../interfaces/ClientResult.md)\<`T`\>\> |
 
 ## Returns

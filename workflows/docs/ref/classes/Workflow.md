@@ -1,6 +1,6 @@
 [**@saflib/workflows**](../index.md)
 
-***
+---
 
 # Abstract Class: Workflow
 
@@ -26,13 +26,13 @@ Abstract superclass for XStateWorkflow. Can probably be removed since SimpleWork
 
 > `abstract` `readonly` **cliArguments**: [`CLIArgument`](../interfaces/CLIArgument.md)[]
 
-***
+---
 
 ### description
 
 > `abstract` `readonly` **description**: `string`
 
-***
+---
 
 ### init()
 
@@ -40,21 +40,21 @@ Abstract superclass for XStateWorkflow. Can probably be removed since SimpleWork
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
+| Parameter | Type    |
+| --------- | ------- |
 | ...`args` | `any`[] |
 
 #### Returns
 
 `Promise`\<`ReturnsError`\<`any`\>\>
 
-***
+---
 
 ### name
 
 > `abstract` `readonly` **name**: `string`
 
-***
+---
 
 ### sourceUrl
 
@@ -70,7 +70,7 @@ Abstract superclass for XStateWorkflow. Can probably be removed since SimpleWork
 
 `WorkflowBlob`
 
-***
+---
 
 ### done()
 
@@ -80,7 +80,7 @@ Abstract superclass for XStateWorkflow. Can probably be removed since SimpleWork
 
 `boolean`
 
-***
+---
 
 ### getChecklist()
 
@@ -90,7 +90,7 @@ Abstract superclass for XStateWorkflow. Can probably be removed since SimpleWork
 
 [`ChecklistItem`](../interfaces/ChecklistItem.md)[]
 
-***
+---
 
 ### getCurrentStateName()
 
@@ -100,7 +100,7 @@ Abstract superclass for XStateWorkflow. Can probably be removed since SimpleWork
 
 `string`
 
-***
+---
 
 ### getError()
 
@@ -110,7 +110,7 @@ Abstract superclass for XStateWorkflow. Can probably be removed since SimpleWork
 
 `undefined` \| `Error`
 
-***
+---
 
 ### goToNextStep()
 
@@ -120,7 +120,7 @@ Abstract superclass for XStateWorkflow. Can probably be removed since SimpleWork
 
 `Promise`\<`void`\>
 
-***
+---
 
 ### hydrate()
 
@@ -128,15 +128,15 @@ Abstract superclass for XStateWorkflow. Can probably be removed since SimpleWork
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `blob` | `WorkflowBlob` |
+| Parameter | Type           |
+| --------- | -------------- |
+| `blob`    | `WorkflowBlob` |
 
 #### Returns
 
 `void`
 
-***
+---
 
 ### kickoff()
 
@@ -146,7 +146,7 @@ Abstract superclass for XStateWorkflow. Can probably be removed since SimpleWork
 
 `Promise`\<`boolean`\>
 
-***
+---
 
 ### printStatus()
 

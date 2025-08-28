@@ -1,6 +1,6 @@
 [**@saflib/node**](../index.md)
 
-***
+---
 
 # Type Alias: ErrorCollector()
 
@@ -10,9 +10,9 @@ Collectors take errors reported to them and propagate them to telemetry services
 
 ## Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `param` | [`ErrorCollectorParam`](../interfaces/ErrorCollectorParam.md) |
+| Parameter | Type                                                          |
+| --------- | ------------------------------------------------------------- |
+| `param`   | [`ErrorCollectorParam`](../interfaces/ErrorCollectorParam.md) |
 
 ## Returns
 

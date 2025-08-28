@@ -1,6 +1,6 @@
 [**@saflib/cron**](../index.md)
 
-***
+---
 
 # Function: runCron()
 
@@ -11,8 +11,8 @@ provide to the cron router to share the same connection.
 
 ## Parameters
 
-| Parameter | Type |
-| ------ | ------ |
+| Parameter | Type                                                        |
+| --------- | ----------------------------------------------------------- |
 | `options` | [`CronServiceOptions`](../interfaces/CronServiceOptions.md) |
 
 ## Returns

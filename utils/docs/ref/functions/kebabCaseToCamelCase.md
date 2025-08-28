@@ -1,6 +1,6 @@
 [**@saflib/utils**](../index.md)
 
-***
+---
 
 # Function: kebabCaseToCamelCase()
 
@@ -10,9 +10,9 @@ Convert a kebab-case string to camelCase.
 
 ## Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `name` | `string` |
+| Parameter | Type     |
+| --------- | -------- |
+| `name`    | `string` |
 
 ## Returns
 

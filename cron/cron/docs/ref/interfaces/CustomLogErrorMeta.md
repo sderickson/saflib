@@ -1,6 +1,6 @@
 [**@saflib/cron**](../index.md)
 
-***
+---
 
 # Interface: CustomLogErrorMeta
 

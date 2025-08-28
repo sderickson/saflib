@@ -1,6 +1,6 @@
 [**@saflib/workflows**](../index.md)
 
-***
+---
 
 # Interface: WorkflowContext
 
@@ -20,7 +20,7 @@ Short descriptions of every step taken in the workflow. Can be used
 either to generate a sample checklist for a workflow, or a summary
 of the work done by a completed workflow. Workflows build these recursively.
 
-***
+---
 
 ### dryRun?
 
@@ -30,7 +30,7 @@ Flag to skip all execution of the workflow. Use to return before doing things
 like file operations. This is necessary to get a checklist from a workflow
 without actually operating it.
 
-***
+---
 
 ### loggedLast?
 
@@ -39,7 +39,7 @@ without actually operating it.
 Flag for if the last thing printed was a log message. This is just
 to space logs and prompts out from each other.
 
-***
+---
 
 ### systemPrompt?
 

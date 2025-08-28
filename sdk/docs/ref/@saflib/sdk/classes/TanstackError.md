@@ -1,6 +1,6 @@
 [**@saflib/sdk**](../../../index.md)
 
-***
+---
 
 # Class: TanstackError
 
@@ -18,10 +18,10 @@ Error returned by `handleClientMethod` so that Tanstack errors are always instan
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `status` | `number` |
-| `code?` | `string` |
+| Parameter | Type     |
+| --------- | -------- |
+| `status`  | `number` |
+| `code?`   | `string` |
 
 #### Returns
 
@@ -41,13 +41,13 @@ Error returned by `handleClientMethod` so that Tanstack errors are always instan
 
 `Error.cause`
 
-***
+---
 
 ### code
 
 > **code**: `undefined` \| `string`
 
-***
+---
 
 ### message
 
@@ -57,7 +57,7 @@ Error returned by `handleClientMethod` so that Tanstack errors are always instan
 
 `Error.message`
 
-***
+---
 
 ### name
 
@@ -67,7 +67,7 @@ Error returned by `handleClientMethod` so that Tanstack errors are always instan
 
 `Error.name`
 
-***
+---
 
 ### stack?
 
@@ -77,13 +77,13 @@ Error returned by `handleClientMethod` so that Tanstack errors are always instan
 
 `Error.stack`
 
-***
+---
 
 ### status
 
 > **status**: `number`
 
-***
+---
 
 ### stackTraceLimit
 
@@ -116,7 +116,7 @@ a string representing the location in the code at which
 ```js
 const myObject = {};
 Error.captureStackTrace(myObject);
-myObject.stack;  // Similar to `new Error().stack`
+myObject.stack; // Similar to `new Error().stack`
 ```
 
 The first line of the trace will be prefixed with
@@ -155,9 +155,9 @@ a();
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `targetObject` | `object` |
+| Parameter         | Type       |
+| ----------------- | ---------- |
+| `targetObject`    | `object`   |
 | `constructorOpt?` | `Function` |
 
 #### Returns
@@ -168,7 +168,7 @@ a();
 
 `Error.captureStackTrace`
 
-***
+---
 
 ### prepareStackTrace()
 
@@ -176,9 +176,9 @@ a();
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `err` | `Error` |
+| Parameter     | Type         |
+| ------------- | ------------ |
+| `err`         | `Error`      |
 | `stackTraces` | `CallSite`[] |
 
 #### Returns

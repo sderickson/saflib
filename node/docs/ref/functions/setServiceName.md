@@ -1,6 +1,6 @@
 [**@saflib/node**](../index.md)
 
-***
+---
 
 # Function: setServiceName()
 
@@ -11,9 +11,9 @@ provided in SafContext and to instrumentation.
 
 ## Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `name` | `string` |
+| Parameter | Type     |
+| --------- | -------- |
+| `name`    | `string` |
 
 ## Returns
 

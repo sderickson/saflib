@@ -2,8 +2,8 @@
 
 This library enables services to schedule functions to run regularly using a cron-like interface. It's built on [the cron NPM package](https://www.npmjs.com/package/cron). It and related packages provide:
 
-* Logging and metrics
-* Admin page, with the ability to enable/disable cron jobs dynamically
+- Logging and metrics
+- Admin page, with the ability to enable/disable cron jobs dynamically
 
 ## Package Structure
 
@@ -48,5 +48,5 @@ To manage cron jobs, render the page provided by [`@saflib/cron-vue`](../../cron
 
 For development of the cron packages.
 
-* [@saflib/cron-db](../../cron-db/docs/ref/index.md)
-* [@saflib/cron-spec](../../cron-spec/docs/ref/index.md)
+- [@saflib/cron-db](../../cron-db/docs/ref/index.md)
+- [@saflib/cron-spec](../../cron-spec/docs/ref/index.md)

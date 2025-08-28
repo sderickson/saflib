@@ -1,6 +1,6 @@
 [**@saflib/identity-db**](../index.md)
 
-***
+---
 
 # Type Alias: UpdateEmailParams
 
@@ -12,7 +12,7 @@
 
 > **newEmail**: `string`
 
-***
+---
 
 ### userId
 

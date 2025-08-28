@@ -20,14 +20,13 @@ To run this workflow automatically, tell the agent to:
 
 When run, the workflow will:
 
-* Copy template files and rename placeholders.
-  * Upsert **index.ts** from [template](https://github.com/sderickson/saflib/blob/main/commander/workflows/add-command/index.ts)
-* Update index.ts to remove TODOs
-* Run the command `chmod +x commands/example-command/index.ts` to make the index file executable.
-* Add commands/example-command/index.ts to the package's bin folder.
-* Run `npm install`
-* Run the command `npm exec example-command` to verify that the command is working correctly.
-
+- Copy template files and rename placeholders.
+  - Upsert **index.ts** from [template](https://github.com/sderickson/saflib/blob/main/commander/workflows/add-command/index.ts)
+- Update index.ts to remove TODOs
+- Run the command `chmod +x commands/example-command/index.ts` to make the index file executable.
+- Add commands/example-command/index.ts to the package's bin folder.
+- Run `npm install`
+- Run the command `npm exec example-command` to verify that the command is working correctly.
 
 ## Help Docs
 

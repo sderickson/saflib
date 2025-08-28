@@ -1,6 +1,6 @@
 [**@saflib/workflows**](../index.md)
 
-***
+---
 
 # Interface: TemplateWorkflowContext
 
@@ -26,7 +26,7 @@ of the work done by a completed workflow. Workflows build these recursively.
 
 [`WorkflowContext`](WorkflowContext.md).[`checklist`](WorkflowContext.md#checklist)
 
-***
+---
 
 ### dryRun?
 
@@ -40,7 +40,7 @@ without actually operating it.
 
 [`WorkflowContext`](WorkflowContext.md).[`dryRun`](WorkflowContext.md#dryrun)
 
-***
+---
 
 ### loggedLast?
 
@@ -53,7 +53,7 @@ to space logs and prompts out from each other.
 
 [`WorkflowContext`](WorkflowContext.md).[`loggedLast`](WorkflowContext.md#loggedlast)
 
-***
+---
 
 ### name
 
@@ -62,7 +62,7 @@ to space logs and prompts out from each other.
 kebab-case name of the thing being created or updated, such as
 "home" for a web page or "get-by-id" for a database query.
 
-***
+---
 
 ### pascalName
 
@@ -70,7 +70,7 @@ kebab-case name of the thing being created or updated, such as
 
 PascalCase version of the kebab-case name.
 
-***
+---
 
 ### sourceDir
 
@@ -78,7 +78,7 @@ PascalCase version of the kebab-case name.
 
 Absolute path to the directory where the template files are located.
 
-***
+---
 
 ### systemPrompt?
 
@@ -91,7 +91,7 @@ agent what the workflow is for, especially if it's a long one.
 
 [`WorkflowContext`](WorkflowContext.md).[`systemPrompt`](WorkflowContext.md#systemprompt)
 
-***
+---
 
 ### targetDir
 

@@ -1,6 +1,6 @@
 [**@saflib/cron**](../index.md)
 
-***
+---
 
 # Function: createCronRouter()
 
@@ -13,8 +13,8 @@ They are only accessible to admin users.
 
 ## Parameters
 
-| Parameter | Type |
-| ------ | ------ |
+| Parameter | Type                                                        |
+| --------- | ----------------------------------------------------------- |
 | `options` | [`CronServiceOptions`](../interfaces/CronServiceOptions.md) |
 
 ## Returns

@@ -1,6 +1,6 @@
 [**@saflib/workflows**](../index.md)
 
-***
+---
 
 # Function: updateTemplateComposer()
 
@@ -13,14 +13,14 @@ from continuing until all "todo" strings are gone from the file.
 
 ## Type Parameters
 
-| Type Parameter |
-| ------ |
-| `C` *extends* [`TemplateWorkflowContext`](../interfaces/TemplateWorkflowContext.md) |
+| Type Parameter                                                                      |
+| ----------------------------------------------------------------------------------- |
+| `C` _extends_ [`TemplateWorkflowContext`](../interfaces/TemplateWorkflowContext.md) |
 
 ## Parameters
 
-| Parameter | Type |
-| ------ | ------ |
+| Parameter           | Type                                                                                             |
+| ------------------- | ------------------------------------------------------------------------------------------------ |
 | `__namedParameters` | [`UpdateTemplateFileComposerOptions`](../interfaces/UpdateTemplateFileComposerOptions.md)\<`C`\> |
 
 ## Returns

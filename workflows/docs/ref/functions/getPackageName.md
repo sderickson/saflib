@@ -1,6 +1,6 @@
 [**@saflib/workflows**](../index.md)
 
-***
+---
 
 # Function: getPackageName()
 
@@ -10,8 +10,8 @@ Utility function to get the package name from the root URL.
 
 ## Parameters
 
-| Parameter | Type |
-| ------ | ------ |
+| Parameter | Type     |
+| --------- | -------- |
 | `rootUrl` | `string` |
 
 ## Returns

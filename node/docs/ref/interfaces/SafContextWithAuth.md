@@ -1,6 +1,6 @@
 [**@saflib/node**](../index.md)
 
-***
+---
 
 # Interface: SafContextWithAuth
 
@@ -23,7 +23,7 @@ More info should be gotten directly from the auth service.
 
 [`SafContext`](SafContext.md).[`auth`](SafContext.md#auth)
 
-***
+---
 
 ### operationName
 
@@ -36,7 +36,7 @@ e.g. "GetUser", such as operationId in OpenAPI, rpc name in gRPC, job name in cr
 
 [`SafContext`](SafContext.md).[`operationName`](SafContext.md#operationname)
 
-***
+---
 
 ### requestId?
 
@@ -51,7 +51,7 @@ a request ID and should use it to correlate requests across processes.
 
 [`SafContext`](SafContext.md).[`requestId`](SafContext.md#requestid)
 
-***
+---
 
 ### serviceName
 
@@ -65,7 +65,7 @@ The name should match the docker service and npm package name (not including the
 
 [`SafContext`](SafContext.md).[`serviceName`](SafContext.md#servicename)
 
-***
+---
 
 ### subsystemName
 

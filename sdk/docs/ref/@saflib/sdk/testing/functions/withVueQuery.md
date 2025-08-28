@@ -1,6 +1,6 @@
 [**@saflib/sdk**](../../../../index.md)
 
-***
+---
 
 # Function: withVueQuery()
 
@@ -19,15 +19,15 @@ expect(query.data.value).toEqual(mockContact);
 ## Type Parameters
 
 | Type Parameter |
-| ------ |
-| `T` |
+| -------------- |
+| `T`            |
 
 ## Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `composable` | () => `T` |
-| `queryClient?` | `any` |
+| Parameter      | Type      |
+| -------------- | --------- |
+| `composable`   | () => `T` |
+| `queryClient?` | `any`     |
 
 ## Returns
 

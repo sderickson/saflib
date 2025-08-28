@@ -1,6 +1,6 @@
 [**@saflib/sdk**](../../../index.md)
 
-***
+---
 
 # Interface: ClientResult\<T\>
 
@@ -9,8 +9,8 @@ Interface for the result from the client that handleClientMethod expects.
 ## Type Parameters
 
 | Type Parameter |
-| ------ |
-| `T` |
+| -------------- |
+| `T`            |
 
 ## Properties
 
@@ -18,13 +18,13 @@ Interface for the result from the client that handleClientMethod expects.
 
 > `optional` **data**: `T`
 
-***
+---
 
 ### error?
 
 > `optional` **error**: [`ClientResponseError`](ClientResponseError.md)
 
-***
+---
 
 ### response
 

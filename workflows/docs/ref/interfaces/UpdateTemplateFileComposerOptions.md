@@ -1,6 +1,6 @@
 [**@saflib/workflows**](../index.md)
 
-***
+---
 
 # Interface: UpdateTemplateFileComposerOptions\<C\>
 
@@ -12,9 +12,9 @@ Options for the updateTemplateComposer function.
 
 ## Type Parameters
 
-| Type Parameter |
-| ------ |
-| `C` *extends* [`WorkflowContext`](WorkflowContext.md) |
+| Type Parameter                                        |
+| ----------------------------------------------------- |
+| `C` _extends_ [`WorkflowContext`](WorkflowContext.md) |
 
 ## Properties
 
@@ -25,7 +25,7 @@ Options for the updateTemplateComposer function.
 Path to the file to update. Can be a string or a function that returns a string.
 The string is expected to be resolved
 
-***
+---
 
 ### nextStateName
 
@@ -35,7 +35,7 @@ The string is expected to be resolved
 
 [`ComposerFunctionOptions`](ComposerFunctionOptions.md).[`nextStateName`](ComposerFunctionOptions.md#nextstatename)
 
-***
+---
 
 ### promptMessage
 
@@ -43,7 +43,7 @@ The string is expected to be resolved
 
 Message to prompt the agent with.
 
-***
+---
 
 ### stateName
 

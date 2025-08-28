@@ -1,6 +1,6 @@
 [**@saflib/express**](../index.md)
 
-***
+---
 
 # Function: startExpressServer()
 
@@ -10,9 +10,9 @@ Given an Express app and options, starts the server and sets it up for graceful 
 
 ## Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `app` | `Express` |
+| Parameter | Type                                                        |
+| --------- | ----------------------------------------------------------- |
+| `app`     | `Express`                                                   |
 | `options` | [`StartServerOptions`](../interfaces/StartServerOptions.md) |
 
 ## Returns

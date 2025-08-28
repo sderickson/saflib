@@ -6,272 +6,304 @@
  * git: https://github.com/thesayyn/protoc-gen-ts */
 import * as pb_1 from "google-protobuf";
 export class SafAuth extends pb_1.Message {
-    #one_of_decls: number[][] = [];
-    constructor(data?: any[] | {
-        user_id?: number;
-        user_email?: string;
-        user_scopes?: string[];
-    }) {
-        super();
-        pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [3], this.#one_of_decls);
-        if (!Array.isArray(data) && typeof data == "object") {
-            if ("user_id" in data && data.user_id != undefined) {
-                this.user_id = data.user_id;
-            }
-            if ("user_email" in data && data.user_email != undefined) {
-                this.user_email = data.user_email;
-            }
-            if ("user_scopes" in data && data.user_scopes != undefined) {
-                this.user_scopes = data.user_scopes;
-            }
-        }
+  #one_of_decls: number[][] = [];
+  constructor(
+    data?:
+      | any[]
+      | {
+          user_id?: number;
+          user_email?: string;
+          user_scopes?: string[];
+        },
+  ) {
+    super();
+    pb_1.Message.initialize(
+      this,
+      Array.isArray(data) ? data : [],
+      0,
+      -1,
+      [3],
+      this.#one_of_decls,
+    );
+    if (!Array.isArray(data) && typeof data == "object") {
+      if ("user_id" in data && data.user_id != undefined) {
+        this.user_id = data.user_id;
+      }
+      if ("user_email" in data && data.user_email != undefined) {
+        this.user_email = data.user_email;
+      }
+      if ("user_scopes" in data && data.user_scopes != undefined) {
+        this.user_scopes = data.user_scopes;
+      }
     }
-    get user_id() {
-        return pb_1.Message.getFieldWithDefault(this, 1, 0) as number;
+  }
+  get user_id() {
+    return pb_1.Message.getFieldWithDefault(this, 1, 0) as number;
+  }
+  set user_id(value: number) {
+    pb_1.Message.setField(this, 1, value);
+  }
+  get user_email() {
+    return pb_1.Message.getFieldWithDefault(this, 2, "") as string;
+  }
+  set user_email(value: string) {
+    pb_1.Message.setField(this, 2, value);
+  }
+  get user_scopes() {
+    return pb_1.Message.getFieldWithDefault(this, 3, []) as string[];
+  }
+  set user_scopes(value: string[]) {
+    pb_1.Message.setField(this, 3, value);
+  }
+  static fromObject(data: {
+    user_id?: number;
+    user_email?: string;
+    user_scopes?: string[];
+  }): SafAuth {
+    const message = new SafAuth({});
+    if (data.user_id != null) {
+      message.user_id = data.user_id;
     }
-    set user_id(value: number) {
-        pb_1.Message.setField(this, 1, value);
+    if (data.user_email != null) {
+      message.user_email = data.user_email;
     }
-    get user_email() {
-        return pb_1.Message.getFieldWithDefault(this, 2, "") as string;
+    if (data.user_scopes != null) {
+      message.user_scopes = data.user_scopes;
     }
-    set user_email(value: string) {
-        pb_1.Message.setField(this, 2, value);
+    return message;
+  }
+  toObject() {
+    const data: {
+      user_id?: number;
+      user_email?: string;
+      user_scopes?: string[];
+    } = {};
+    if (this.user_id != null) {
+      data.user_id = this.user_id;
     }
-    get user_scopes() {
-        return pb_1.Message.getFieldWithDefault(this, 3, []) as string[];
+    if (this.user_email != null) {
+      data.user_email = this.user_email;
     }
-    set user_scopes(value: string[]) {
-        pb_1.Message.setField(this, 3, value);
+    if (this.user_scopes != null) {
+      data.user_scopes = this.user_scopes;
     }
-    static fromObject(data: {
-        user_id?: number;
-        user_email?: string;
-        user_scopes?: string[];
-    }): SafAuth {
-        const message = new SafAuth({});
-        if (data.user_id != null) {
-            message.user_id = data.user_id;
-        }
-        if (data.user_email != null) {
-            message.user_email = data.user_email;
-        }
-        if (data.user_scopes != null) {
-            message.user_scopes = data.user_scopes;
-        }
-        return message;
+    return data;
+  }
+  serialize(): Uint8Array;
+  serialize(w: pb_1.BinaryWriter): void;
+  serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
+    const writer = w || new pb_1.BinaryWriter();
+    if (this.user_id != 0) writer.writeInt64(1, this.user_id);
+    if (this.user_email.length) writer.writeString(2, this.user_email);
+    if (this.user_scopes.length)
+      writer.writeRepeatedString(3, this.user_scopes);
+    if (!w) return writer.getResultBuffer();
+  }
+  static deserialize(bytes: Uint8Array | pb_1.BinaryReader): SafAuth {
+    const reader =
+        bytes instanceof pb_1.BinaryReader
+          ? bytes
+          : new pb_1.BinaryReader(bytes),
+      message = new SafAuth();
+    while (reader.nextField()) {
+      if (reader.isEndGroup()) break;
+      switch (reader.getFieldNumber()) {
+        case 1:
+          message.user_id = reader.readInt64();
+          break;
+        case 2:
+          message.user_email = reader.readString();
+          break;
+        case 3:
+          pb_1.Message.addToRepeatedField(message, 3, reader.readString());
+          break;
+        default:
+          reader.skipField();
+      }
     }
-    toObject() {
-        const data: {
-            user_id?: number;
-            user_email?: string;
-            user_scopes?: string[];
-        } = {};
-        if (this.user_id != null) {
-            data.user_id = this.user_id;
-        }
-        if (this.user_email != null) {
-            data.user_email = this.user_email;
-        }
-        if (this.user_scopes != null) {
-            data.user_scopes = this.user_scopes;
-        }
-        return data;
-    }
-    serialize(): Uint8Array;
-    serialize(w: pb_1.BinaryWriter): void;
-    serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
-        const writer = w || new pb_1.BinaryWriter();
-        if (this.user_id != 0)
-            writer.writeInt64(1, this.user_id);
-        if (this.user_email.length)
-            writer.writeString(2, this.user_email);
-        if (this.user_scopes.length)
-            writer.writeRepeatedString(3, this.user_scopes);
-        if (!w)
-            return writer.getResultBuffer();
-    }
-    static deserialize(bytes: Uint8Array | pb_1.BinaryReader): SafAuth {
-        const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes), message = new SafAuth();
-        while (reader.nextField()) {
-            if (reader.isEndGroup())
-                break;
-            switch (reader.getFieldNumber()) {
-                case 1:
-                    message.user_id = reader.readInt64();
-                    break;
-                case 2:
-                    message.user_email = reader.readString();
-                    break;
-                case 3:
-                    pb_1.Message.addToRepeatedField(message, 3, reader.readString());
-                    break;
-                default: reader.skipField();
-            }
-        }
-        return message;
-    }
-    serializeBinary(): Uint8Array {
-        return this.serialize();
-    }
-    static deserializeBinary(bytes: Uint8Array): SafAuth {
-        return SafAuth.deserialize(bytes);
-    }
+    return message;
+  }
+  serializeBinary(): Uint8Array {
+    return this.serialize();
+  }
+  static deserializeBinary(bytes: Uint8Array): SafAuth {
+    return SafAuth.deserialize(bytes);
+  }
 }
 export class SafRequest extends pb_1.Message {
-    #one_of_decls: number[][] = [];
-    constructor(data?: any[] | {
-        id?: string;
-    }) {
-        super();
-        pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [], this.#one_of_decls);
-        if (!Array.isArray(data) && typeof data == "object") {
-            if ("id" in data && data.id != undefined) {
-                this.id = data.id;
-            }
-        }
+  #one_of_decls: number[][] = [];
+  constructor(
+    data?:
+      | any[]
+      | {
+          id?: string;
+        },
+  ) {
+    super();
+    pb_1.Message.initialize(
+      this,
+      Array.isArray(data) ? data : [],
+      0,
+      -1,
+      [],
+      this.#one_of_decls,
+    );
+    if (!Array.isArray(data) && typeof data == "object") {
+      if ("id" in data && data.id != undefined) {
+        this.id = data.id;
+      }
     }
-    get id() {
-        return pb_1.Message.getFieldWithDefault(this, 1, "") as string;
+  }
+  get id() {
+    return pb_1.Message.getFieldWithDefault(this, 1, "") as string;
+  }
+  set id(value: string) {
+    pb_1.Message.setField(this, 1, value);
+  }
+  static fromObject(data: { id?: string }): SafRequest {
+    const message = new SafRequest({});
+    if (data.id != null) {
+      message.id = data.id;
     }
-    set id(value: string) {
-        pb_1.Message.setField(this, 1, value);
+    return message;
+  }
+  toObject() {
+    const data: {
+      id?: string;
+    } = {};
+    if (this.id != null) {
+      data.id = this.id;
     }
-    static fromObject(data: {
-        id?: string;
-    }): SafRequest {
-        const message = new SafRequest({});
-        if (data.id != null) {
-            message.id = data.id;
-        }
-        return message;
+    return data;
+  }
+  serialize(): Uint8Array;
+  serialize(w: pb_1.BinaryWriter): void;
+  serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
+    const writer = w || new pb_1.BinaryWriter();
+    if (this.id.length) writer.writeString(1, this.id);
+    if (!w) return writer.getResultBuffer();
+  }
+  static deserialize(bytes: Uint8Array | pb_1.BinaryReader): SafRequest {
+    const reader =
+        bytes instanceof pb_1.BinaryReader
+          ? bytes
+          : new pb_1.BinaryReader(bytes),
+      message = new SafRequest();
+    while (reader.nextField()) {
+      if (reader.isEndGroup()) break;
+      switch (reader.getFieldNumber()) {
+        case 1:
+          message.id = reader.readString();
+          break;
+        default:
+          reader.skipField();
+      }
     }
-    toObject() {
-        const data: {
-            id?: string;
-        } = {};
-        if (this.id != null) {
-            data.id = this.id;
-        }
-        return data;
-    }
-    serialize(): Uint8Array;
-    serialize(w: pb_1.BinaryWriter): void;
-    serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
-        const writer = w || new pb_1.BinaryWriter();
-        if (this.id.length)
-            writer.writeString(1, this.id);
-        if (!w)
-            return writer.getResultBuffer();
-    }
-    static deserialize(bytes: Uint8Array | pb_1.BinaryReader): SafRequest {
-        const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes), message = new SafRequest();
-        while (reader.nextField()) {
-            if (reader.isEndGroup())
-                break;
-            switch (reader.getFieldNumber()) {
-                case 1:
-                    message.id = reader.readString();
-                    break;
-                default: reader.skipField();
-            }
-        }
-        return message;
-    }
-    serializeBinary(): Uint8Array {
-        return this.serialize();
-    }
-    static deserializeBinary(bytes: Uint8Array): SafRequest {
-        return SafRequest.deserialize(bytes);
-    }
+    return message;
+  }
+  serializeBinary(): Uint8Array {
+    return this.serialize();
+  }
+  static deserializeBinary(bytes: Uint8Array): SafRequest {
+    return SafRequest.deserialize(bytes);
+  }
 }
 export class SafError extends pb_1.Message {
-    #one_of_decls: number[][] = [];
-    constructor(data?: any[] | {
-        code?: string;
-        message?: string;
-    }) {
-        super();
-        pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [], this.#one_of_decls);
-        if (!Array.isArray(data) && typeof data == "object") {
-            if ("code" in data && data.code != undefined) {
-                this.code = data.code;
-            }
-            if ("message" in data && data.message != undefined) {
-                this.message = data.message;
-            }
-        }
+  #one_of_decls: number[][] = [];
+  constructor(
+    data?:
+      | any[]
+      | {
+          code?: string;
+          message?: string;
+        },
+  ) {
+    super();
+    pb_1.Message.initialize(
+      this,
+      Array.isArray(data) ? data : [],
+      0,
+      -1,
+      [],
+      this.#one_of_decls,
+    );
+    if (!Array.isArray(data) && typeof data == "object") {
+      if ("code" in data && data.code != undefined) {
+        this.code = data.code;
+      }
+      if ("message" in data && data.message != undefined) {
+        this.message = data.message;
+      }
     }
-    get code() {
-        return pb_1.Message.getFieldWithDefault(this, 1, "") as string;
+  }
+  get code() {
+    return pb_1.Message.getFieldWithDefault(this, 1, "") as string;
+  }
+  set code(value: string) {
+    pb_1.Message.setField(this, 1, value);
+  }
+  get message() {
+    return pb_1.Message.getFieldWithDefault(this, 2, "") as string;
+  }
+  set message(value: string) {
+    pb_1.Message.setField(this, 2, value);
+  }
+  static fromObject(data: { code?: string; message?: string }): SafError {
+    const message = new SafError({});
+    if (data.code != null) {
+      message.code = data.code;
     }
-    set code(value: string) {
-        pb_1.Message.setField(this, 1, value);
+    if (data.message != null) {
+      message.message = data.message;
     }
-    get message() {
-        return pb_1.Message.getFieldWithDefault(this, 2, "") as string;
+    return message;
+  }
+  toObject() {
+    const data: {
+      code?: string;
+      message?: string;
+    } = {};
+    if (this.code != null) {
+      data.code = this.code;
     }
-    set message(value: string) {
-        pb_1.Message.setField(this, 2, value);
+    if (this.message != null) {
+      data.message = this.message;
     }
-    static fromObject(data: {
-        code?: string;
-        message?: string;
-    }): SafError {
-        const message = new SafError({});
-        if (data.code != null) {
-            message.code = data.code;
-        }
-        if (data.message != null) {
-            message.message = data.message;
-        }
-        return message;
+    return data;
+  }
+  serialize(): Uint8Array;
+  serialize(w: pb_1.BinaryWriter): void;
+  serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
+    const writer = w || new pb_1.BinaryWriter();
+    if (this.code.length) writer.writeString(1, this.code);
+    if (this.message.length) writer.writeString(2, this.message);
+    if (!w) return writer.getResultBuffer();
+  }
+  static deserialize(bytes: Uint8Array | pb_1.BinaryReader): SafError {
+    const reader =
+        bytes instanceof pb_1.BinaryReader
+          ? bytes
+          : new pb_1.BinaryReader(bytes),
+      message = new SafError();
+    while (reader.nextField()) {
+      if (reader.isEndGroup()) break;
+      switch (reader.getFieldNumber()) {
+        case 1:
+          message.code = reader.readString();
+          break;
+        case 2:
+          message.message = reader.readString();
+          break;
+        default:
+          reader.skipField();
+      }
     }
-    toObject() {
-        const data: {
-            code?: string;
-            message?: string;
-        } = {};
-        if (this.code != null) {
-            data.code = this.code;
-        }
-        if (this.message != null) {
-            data.message = this.message;
-        }
-        return data;
-    }
-    serialize(): Uint8Array;
-    serialize(w: pb_1.BinaryWriter): void;
-    serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
-        const writer = w || new pb_1.BinaryWriter();
-        if (this.code.length)
-            writer.writeString(1, this.code);
-        if (this.message.length)
-            writer.writeString(2, this.message);
-        if (!w)
-            return writer.getResultBuffer();
-    }
-    static deserialize(bytes: Uint8Array | pb_1.BinaryReader): SafError {
-        const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes), message = new SafError();
-        while (reader.nextField()) {
-            if (reader.isEndGroup())
-                break;
-            switch (reader.getFieldNumber()) {
-                case 1:
-                    message.code = reader.readString();
-                    break;
-                case 2:
-                    message.message = reader.readString();
-                    break;
-                default: reader.skipField();
-            }
-        }
-        return message;
-    }
-    serializeBinary(): Uint8Array {
-        return this.serialize();
-    }
-    static deserializeBinary(bytes: Uint8Array): SafError {
-        return SafError.deserialize(bytes);
-    }
+    return message;
+  }
+  serializeBinary(): Uint8Array {
+    return this.serialize();
+  }
+  static deserializeBinary(bytes: Uint8Array): SafError {
+    return SafError.deserialize(bytes);
+  }
 }

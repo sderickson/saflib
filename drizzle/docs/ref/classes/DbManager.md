@@ -1,6 +1,6 @@
 [**@saflib/drizzle**](../index.md)
 
-***
+---
 
 # Class: DbManager\<S, C\>
 
@@ -9,15 +9,15 @@ ORM. Any package which depends on this will create a single instance given the
 database schema and config, export the public interface, and be used by queries
 to access the drizzle ORM. This way the package which depends on
 `@saflib/drizzle` has full access to its database, but packages
-which depend on *it* only have access to an opaque key which only database
+which depend on _it_ only have access to an opaque key which only database
 queries can use.
 
 ## Type Parameters
 
-| Type Parameter |
-| ------ |
-| `S` *extends* [`Schema`](../type-aliases/Schema.md) |
-| `C` *extends* `Config` |
+| Type Parameter                                      |
+| --------------------------------------------------- |
+| `S` _extends_ [`Schema`](../type-aliases/Schema.md) |
+| `C` _extends_ `Config`                              |
 
 ## Constructors
 
@@ -27,10 +27,10 @@ queries can use.
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `schema` | `S` |
-| `c` | `C` |
+| Parameter | Type     |
+| --------- | -------- |
+| `schema`  | `S`      |
+| `c`       | `C`      |
 | `rootUrl` | `string` |
 
 #### Returns
@@ -50,15 +50,15 @@ If onDisk is a string, the database will be created at the given (absolute) path
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
+| Parameter  | Type                                      |
+| ---------- | ----------------------------------------- |
 | `options?` | [`DbOptions`](../interfaces/DbOptions.md) |
 
 #### Returns
 
 `symbol`
 
-***
+---
 
 ### disconnect()
 
@@ -66,15 +66,15 @@ If onDisk is a string, the database will be created at the given (absolute) path
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `key` | `symbol` |
+| Parameter | Type     |
+| --------- | -------- |
+| `key`     | `symbol` |
 
 #### Returns
 
 `boolean`
 
-***
+---
 
 ### get()
 
@@ -82,15 +82,15 @@ If onDisk is a string, the database will be created at the given (absolute) path
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `key` | `symbol` |
+| Parameter | Type     |
+| --------- | -------- |
+| `key`     | `symbol` |
 
 #### Returns
 
 `undefined` \| [`DbConnection`](../type-aliases/DbConnection.md)\<`S`\>
 
-***
+---
 
 ### publicInterface()
 
@@ -109,8 +109,8 @@ If onDisk is a string, the database will be created at the given (absolute) path
 
 ###### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
+| Parameter  | Type                                      |
+| ---------- | ----------------------------------------- |
 | `options?` | [`DbOptions`](../interfaces/DbOptions.md) |
 
 ###### Returns
@@ -123,9 +123,9 @@ If onDisk is a string, the database will be created at the given (absolute) path
 
 ###### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `key` | `symbol` |
+| Parameter | Type     |
+| --------- | -------- |
+| `key`     | `symbol` |
 
 ###### Returns
 

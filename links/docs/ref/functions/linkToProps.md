@@ -1,6 +1,6 @@
 [**@saflib/links**](../index.md)
 
-***
+---
 
 # Function: linkToProps()
 
@@ -13,9 +13,9 @@ reloads.
 
 ## Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `link` | [`Link`](../type-aliases/Link.md) |
+| Parameter | Type                              |
+| --------- | --------------------------------- |
+| `link`    | [`Link`](../type-aliases/Link.md) |
 
 ## Returns
 

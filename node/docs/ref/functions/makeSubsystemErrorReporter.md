@@ -1,6 +1,6 @@
 [**@saflib/node**](../index.md)
 
-***
+---
 
 # Function: makeSubsystemErrorReporter()
 
@@ -12,11 +12,11 @@ function.
 
 ## Parameters
 
-| Parameter | Type |
-| ------ | ------ |
+| Parameter       | Type     |
+| --------------- | -------- |
 | `subsystemName` | `string` |
 | `operationName` | `string` |
-| `logger` | `Logger` |
+| `logger`        | `Logger` |
 
 ## Returns
 

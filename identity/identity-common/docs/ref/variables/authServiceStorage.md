@@ -1,6 +1,6 @@
 [**@saflib/identity-common**](../index.md)
 
-***
+---
 
 # Variable: authServiceStorage
 

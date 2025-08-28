@@ -1,6 +1,6 @@
 [**@saflib/node**](../index.md)
 
-***
+---
 
 # Function: makeSubsystemReporters()
 
@@ -10,10 +10,10 @@ Creates a new SafReporters object for a given subsystem and operation.
 
 ## Parameters
 
-| Parameter | Type |
-| ------ | ------ |
+| Parameter       | Type                                                |
+| --------------- | --------------------------------------------------- |
 | `subsystemName` | [`SubsystemName`](../type-aliases/SubsystemName.md) |
-| `operationName` | `string` |
+| `operationName` | `string`                                            |
 
 ## Returns
 

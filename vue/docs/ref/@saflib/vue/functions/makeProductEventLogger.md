@@ -1,6 +1,6 @@
 [**@saflib/vue**](../../../index.md)
 
-***
+---
 
 # Function: makeProductEventLogger()
 
@@ -10,9 +10,9 @@ Create centralized object to emit and listen to product events. Provide a produc
 
 ## Type Parameters
 
-| Type Parameter |
-| ------ |
-| `T` *extends* [`ProductEventCommon`](../type-aliases/ProductEventCommon.md) |
+| Type Parameter                                                              |
+| --------------------------------------------------------------------------- |
+| `T` _extends_ [`ProductEventCommon`](../type-aliases/ProductEventCommon.md) |
 
 ## Returns
 
@@ -25,8 +25,8 @@ Create centralized object to emit and listen to product events. Provide a produc
 #### Parameters
 
 | Parameter | Type |
-| ------ | ------ |
-| `event` | `T` |
+| --------- | ---- |
+| `event`   | `T`  |
 
 #### Returns
 
@@ -38,8 +38,8 @@ Create centralized object to emit and listen to product events. Provide a produc
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
+| Parameter  | Type                                                                     |
+| ---------- | ------------------------------------------------------------------------ |
 | `listener` | [`ProductEventListener`](../type-aliases/ProductEventListener.md)\<`T`\> |
 
 #### Returns
@@ -50,5 +50,6 @@ Create centralized object to emit and listen to product events. Provide a produc
 
 ```ts
 import type { ProductEvent } from "@your-org/service-spec"; // package using @saflib/openapi
-const { onProductEvent, emitProductEvent } = makeProductEventLogger<ProductEvent>();
+const { onProductEvent, emitProductEvent } =
+  makeProductEventLogger<ProductEvent>();
 ```

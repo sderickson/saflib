@@ -1,6 +1,6 @@
 [**@saflib/grpc**](../../../index.md)
 
-***
+---
 
 # Interface: GrpcServerOptions
 
@@ -12,7 +12,7 @@ Options when starting a gRPC server.
 
 > `optional` **interceptors**: `ServerInterceptor`[]
 
-***
+---
 
 ### port
 

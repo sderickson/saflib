@@ -45,4 +45,6 @@ export interface EmailEnvSchema {
 /**
  * `process.env` casted to the `EmailEnvSchema` type.
  */
-export const typedEnv = (globalThis.process ? process.env : {}) as unknown as EmailEnvSchema;
+export const typedEnv = (globalThis.process
+  ? process.env
+  : {}) as unknown as EmailEnvSchema;

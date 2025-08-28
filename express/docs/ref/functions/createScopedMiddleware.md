@@ -1,6 +1,6 @@
 [**@saflib/express**](../index.md)
 
-***
+---
 
 # Function: createScopedMiddleware()
 
@@ -11,8 +11,8 @@ This middleware all depends on the OpenAPI spec for those routes.
 
 ## Parameters
 
-| Parameter | Type |
-| ------ | ------ |
+| Parameter | Type                                                                  |
+| --------- | --------------------------------------------------------------------- |
 | `options` | [`ScopedMiddlewareOptions`](../interfaces/ScopedMiddlewareOptions.md) |
 
 ## Returns

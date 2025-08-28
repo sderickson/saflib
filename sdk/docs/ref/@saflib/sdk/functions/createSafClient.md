@@ -1,6 +1,6 @@
 [**@saflib/sdk**](../../../index.md)
 
-***
+---
 
 # Function: createSafClient()
 
@@ -10,14 +10,14 @@ Given a "paths" openapi generated type and a subdomain, creates a typed `openapi
 
 ## Type Parameters
 
-| Type Parameter |
-| ------ |
-| `Q` *extends* `object` |
+| Type Parameter         |
+| ---------------------- |
+| `Q` _extends_ `object` |
 
 ## Parameters
 
-| Parameter | Type |
-| ------ | ------ |
+| Parameter   | Type     |
+| ----------- | -------- |
 | `subdomain` | `string` |
 
 ## Returns

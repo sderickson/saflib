@@ -1,6 +1,6 @@
 [**@saflib/vue**](../../../index.md)
 
-***
+---
 
 # Function: makeReverseTComposable()
 
@@ -10,8 +10,8 @@ Creates an alternative to Vue I18n's $t function, which takes the English text i
 
 ## Parameters
 
-| Parameter | Type |
-| ------ | ------ |
+| Parameter | Type                                            |
+| --------- | ----------------------------------------------- |
 | `strings` | [`I18nMessages`](../interfaces/I18nMessages.md) |
 
 ## Returns
@@ -28,9 +28,9 @@ Creates an alternative to Vue I18n's $t function, which takes the English text i
 
 ##### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `s` | `string` |
+| Parameter | Type     |
+| --------- | -------- |
+| `s`       | `string` |
 
 ##### Returns
 
@@ -46,9 +46,9 @@ Creates an alternative to Vue I18n's $t function, which takes the English text i
 
 ###### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `s` | `string` |
+| Parameter | Type     |
+| --------- | -------- |
+| `s`       | `string` |
 
 ###### Returns
 
@@ -60,9 +60,9 @@ Creates an alternative to Vue I18n's $t function, which takes the English text i
 
 ###### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `s` | [`I18NObject`](../interfaces/I18NObject.md) |
+| Parameter | Type                                        |
+| --------- | ------------------------------------------- |
+| `s`       | [`I18NObject`](../interfaces/I18NObject.md) |
 
 ###### Returns
 

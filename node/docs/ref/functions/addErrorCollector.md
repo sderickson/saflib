@@ -1,6 +1,6 @@
 [**@saflib/node**](../index.md)
 
-***
+---
 
 # Function: addErrorCollector()
 
@@ -10,8 +10,8 @@ Adds a callback for when errors are reported by the application.
 
 ## Parameters
 
-| Parameter | Type |
-| ------ | ------ |
+| Parameter   | Type                                                  |
+| ----------- | ----------------------------------------------------- |
 | `collector` | [`ErrorCollector`](../type-aliases/ErrorCollector.md) |
 
 ## Returns

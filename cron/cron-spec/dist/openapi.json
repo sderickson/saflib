@@ -16,14 +16,10 @@
       "get": {
         "summary": "List all cron jobs",
         "operationId": "listCronJobs",
-        "tags": [
-          "cron"
-        ],
+        "tags": ["cron"],
         "security": [
           {
-            "scopes": [
-              "cron:read"
-            ]
+            "scopes": ["cron:read"]
           }
         ],
         "responses": {
@@ -67,14 +63,10 @@
       "put": {
         "summary": "Update settings for a specific cron job by name",
         "operationId": "updateCronJobSettings",
-        "tags": [
-          "cron"
-        ],
+        "tags": ["cron"],
         "security": [
           {
-            "scopes": [
-              "cron:write"
-            ]
+            "scopes": ["cron:write"]
           }
         ],
         "requestBody": {
@@ -94,10 +86,7 @@
                     "description": "Set whether the job is enabled."
                   }
                 },
-                "required": [
-                  "jobName",
-                  "enabled"
-                ]
+                "required": ["jobName", "enabled"]
               }
             }
           }
@@ -184,13 +173,7 @@
           },
           "lastRunStatus": {
             "type": "string",
-            "enum": [
-              "success",
-              "fail",
-              "running",
-              "timed out",
-              null
-            ],
+            "enum": ["success", "fail", "running", "timed out", null],
             "nullable": true,
             "description": "Status of the last job run."
           },
@@ -207,10 +190,7 @@
             "description": "Timestamp when the job setting was last updated."
           }
         },
-        "required": [
-          "jobName",
-          "enabled"
-        ]
+        "required": ["jobName", "enabled"]
       },
       "error": {
         "type": "object",

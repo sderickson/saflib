@@ -1,6 +1,6 @@
 [**@saflib/grpc**](../../../index.md)
 
-***
+---
 
 # Function: makeGrpcServerContextWrapper()
 
@@ -11,10 +11,10 @@ It returns a wrapper function so it can be used for each service added to the gR
 
 ## Parameters
 
-| Parameter | Type |
-| ------ | ------ |
+| Parameter | Type                         |
+| --------- | ---------------------------- |
 | `storage` | `AsyncLocalStorage`\<`any`\> |
-| `context` | `any` |
+| `context` | `any`                        |
 
 ## Returns
 

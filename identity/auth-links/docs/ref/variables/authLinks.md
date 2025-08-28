@@ -1,6 +1,6 @@
 [**@saflib/auth-links**](../index.md)
 
-***
+---
 
 # Variable: authLinks
 

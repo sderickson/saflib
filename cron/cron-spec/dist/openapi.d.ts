@@ -4,184 +4,184 @@
  */
 
 export interface paths {
-    "/cron/jobs": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List all cron jobs */
-        get: operations["listCronJobs"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+  "/cron/jobs": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/cron/jobs/settings": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        /** Update settings for a specific cron job by name */
-        put: operations["updateCronJobSettings"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    /** List all cron jobs */
+    get: operations["listCronJobs"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/cron/jobs/settings": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
+    get?: never;
+    /** Update settings for a specific cron job by name */
+    put: operations["updateCronJobSettings"];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
-    schemas: {
-        JobSettings: components["schemas"]["job_settings"];
-        job_settings: {
-            /** @description Unique identifier for the job setting. */
-            readonly id?: number;
-            /** @description The unique name of the cron job. */
-            jobName: string;
-            /** @description Whether the job is enabled to run. */
-            enabled: boolean;
-            /**
-             * Format: date-time
-             * @description Timestamp of the last time the job ran.
-             */
-            lastRunAt?: string | null;
-            /**
-             * @description Status of the last job run.
-             * @enum {string|null}
-             */
-            lastRunStatus?: "success" | "fail" | "running" | "timed out" | null;
-            /**
-             * Format: date-time
-             * @description Timestamp when the job setting was created.
-             */
-            readonly createdAt?: string;
-            /**
-             * Format: date-time
-             * @description Timestamp when the job setting was last updated.
-             */
-            readonly updatedAt?: string;
-        };
-        error: {
-            /** @description A short, machine-readable error code, for when HTTP status codes are not sufficient. */
-            code?: string;
-            /**
-             * @description A human-readable description of the error.
-             * @example The requested resource could not be found.
-             */
-            message?: string;
-        };
+  schemas: {
+    JobSettings: components["schemas"]["job_settings"];
+    job_settings: {
+      /** @description Unique identifier for the job setting. */
+      readonly id?: number;
+      /** @description The unique name of the cron job. */
+      jobName: string;
+      /** @description Whether the job is enabled to run. */
+      enabled: boolean;
+      /**
+       * Format: date-time
+       * @description Timestamp of the last time the job ran.
+       */
+      lastRunAt?: string | null;
+      /**
+       * @description Status of the last job run.
+       * @enum {string|null}
+       */
+      lastRunStatus?: "success" | "fail" | "running" | "timed out" | null;
+      /**
+       * Format: date-time
+       * @description Timestamp when the job setting was created.
+       */
+      readonly createdAt?: string;
+      /**
+       * Format: date-time
+       * @description Timestamp when the job setting was last updated.
+       */
+      readonly updatedAt?: string;
     };
-    responses: never;
-    parameters: never;
-    requestBodies: never;
-    headers: never;
-    pathItems: never;
+    error: {
+      /** @description A short, machine-readable error code, for when HTTP status codes are not sufficient. */
+      code?: string;
+      /**
+       * @description A human-readable description of the error.
+       * @example The requested resource could not be found.
+       */
+      message?: string;
+    };
+  };
+  responses: never;
+  parameters: never;
+  requestBodies: never;
+  headers: never;
+  pathItems: never;
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    listCronJobs: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description A list of cron jobs. */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["job_settings"][];
-                };
-            };
-            /** @description Unauthorized - Invalid or missing authentication. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["error"];
-                };
-            };
-            /** @description Forbidden - Insufficient permissions (requires cron:read). */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["error"];
-                };
-            };
-        };
+  listCronJobs: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    updateCronJobSettings: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
+    requestBody?: never;
+    responses: {
+      /** @description A list of cron jobs. */
+      200: {
+        headers: {
+          [name: string]: unknown;
         };
-        /** @description The job name and settings to update. */
-        requestBody: {
-            content: {
-                "application/json": {
-                    /** @description The name of the job to update. */
-                    jobName: string;
-                    /** @description Set whether the job is enabled. */
-                    enabled: boolean;
-                };
-            };
+        content: {
+          "application/json": components["schemas"]["job_settings"][];
         };
-        responses: {
-            /** @description Job settings updated successfully. */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["job_settings"];
-                };
-            };
-            /** @description Unauthorized - Invalid or missing authentication. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["error"];
-                };
-            };
-            /** @description Forbidden - Insufficient permissions (requires cron:write). */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["error"];
-                };
-            };
-            /** @description Job setting with the specified name not found. */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["error"];
-                };
-            };
+      };
+      /** @description Unauthorized - Invalid or missing authentication. */
+      401: {
+        headers: {
+          [name: string]: unknown;
         };
+        content: {
+          "application/json": components["schemas"]["error"];
+        };
+      };
+      /** @description Forbidden - Insufficient permissions (requires cron:read). */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["error"];
+        };
+      };
     };
+  };
+  updateCronJobSettings: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** @description The job name and settings to update. */
+    requestBody: {
+      content: {
+        "application/json": {
+          /** @description The name of the job to update. */
+          jobName: string;
+          /** @description Set whether the job is enabled. */
+          enabled: boolean;
+        };
+      };
+    };
+    responses: {
+      /** @description Job settings updated successfully. */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["job_settings"];
+        };
+      };
+      /** @description Unauthorized - Invalid or missing authentication. */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["error"];
+        };
+      };
+      /** @description Forbidden - Insufficient permissions (requires cron:write). */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["error"];
+        };
+      };
+      /** @description Job setting with the specified name not found. */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["error"];
+        };
+      };
+    };
+  };
 }

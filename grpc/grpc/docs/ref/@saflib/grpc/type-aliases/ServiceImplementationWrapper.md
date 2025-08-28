@@ -1,6 +1,6 @@
 [**@saflib/grpc**](../../../index.md)
 
-***
+---
 
 # Type Alias: ServiceImplementationWrapper()
 
@@ -10,9 +10,9 @@ Helper type for a function which wraps a gRPC service.
 
 ## Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `impl` | `UntypedServiceImplementation` |
+| Parameter | Type                           |
+| --------- | ------------------------------ |
+| `impl`    | `UntypedServiceImplementation` |
 
 ## Returns
 

@@ -1,6 +1,6 @@
 [**@saflib/identity-db**](../index.md)
 
-***
+---
 
 # Type Alias: UpdateEmailResult
 

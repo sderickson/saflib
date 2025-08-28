@@ -1,6 +1,6 @@
 [**@saflib/cron-db**](../index.md)
 
-***
+---
 
 # Variable: jobSettingsDb
 
@@ -16,9 +16,9 @@ Queries for getting info on cron jobs, and updating them.
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `dbKey` | `symbol` |
+| Parameter | Type     |
+| --------- | -------- |
+| `dbKey`   | `symbol` |
 
 #### Returns
 
@@ -30,9 +30,9 @@ Queries for getting info on cron jobs, and updating them.
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `dbKey` | `symbol` |
+| Parameter | Type     |
+| --------- | -------- |
+| `dbKey`   | `symbol` |
 | `jobName` | `string` |
 
 #### Returns
@@ -45,10 +45,10 @@ Queries for getting info on cron jobs, and updating them.
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `dbKey` | `symbol` |
-| `jobName` | `string` |
+| Parameter | Type      |
+| --------- | --------- |
+| `dbKey`   | `symbol`  |
+| `jobName` | `string`  |
 | `enabled` | `boolean` |
 
 #### Returns
@@ -61,11 +61,11 @@ Queries for getting info on cron jobs, and updating them.
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `dbKey` | `symbol` |
-| `jobName` | `string` |
-| `status` | `"success"` \| `"fail"` \| `"running"` \| `"timed out"` |
+| Parameter | Type                                                    |
+| --------- | ------------------------------------------------------- |
+| `dbKey`   | `symbol`                                                |
+| `jobName` | `string`                                                |
+| `status`  | `"success"` \| `"fail"` \| `"running"` \| `"timed out"` |
 
 #### Returns
 

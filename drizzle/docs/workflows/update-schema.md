@@ -20,11 +20,10 @@ To run this workflow automatically, tell the agent to:
 
 When run, the workflow will:
 
-* Review the project spect, and read the guidelines for tables and columns in the schema doc.
-* Find the right schema file in this folder and update it based on the spec.
-* Run `npm run generate`
-* If any new tables were created, make sure to add the inferred types to `./types.ts` so they're exported in `./index.ts`.
-
+- Review the project spect, and read the guidelines for tables and columns in the schema doc.
+- Find the right schema file in this folder and update it based on the spec.
+- Run `npm run generate`
+- If any new tables were created, make sure to add the inferred types to `./types.ts` so they're exported in `./index.ts`.
 
 ## Help Docs
 

@@ -1,6 +1,6 @@
 [**@saflib/sdk**](../../../index.md)
 
-***
+---
 
 # Interface: ClientResponse
 

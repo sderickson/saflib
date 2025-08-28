@@ -1,6 +1,6 @@
 [**@saflib/utils**](../index.md)
 
-***
+---
 
 # Type Alias: ElementString
 

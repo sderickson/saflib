@@ -1,6 +1,6 @@
 [**@saflib/node**](../index.md)
 
-***
+---
 
 # Function: addTransport()
 
@@ -10,8 +10,8 @@ For production, when the application starts, it should add any transports using 
 
 ## Parameters
 
-| Parameter | Type |
-| ------ | ------ |
+| Parameter   | Type              |
+| ----------- | ----------------- |
 | `transport` | `TransportStream` |
 
 ## Returns

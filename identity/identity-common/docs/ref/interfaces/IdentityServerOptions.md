@@ -1,6 +1,6 @@
 [**@saflib/identity-common**](../index.md)
 
-***
+---
 
 # Interface: IdentityServerOptions
 
@@ -12,7 +12,7 @@ Options for the identity service.
 
 > **callbacks**: [`IdentityServiceCallbacks`](IdentityServiceCallbacks.md)
 
-***
+---
 
 ### dbKey?
 

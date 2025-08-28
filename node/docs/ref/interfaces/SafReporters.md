@@ -1,6 +1,6 @@
 [**@saflib/node**](../index.md)
 
-***
+---
 
 # Interface: SafReporters
 
@@ -13,7 +13,7 @@ so that context is included.
 
 > **log**: `Logger`
 
-***
+---
 
 ### logError
 

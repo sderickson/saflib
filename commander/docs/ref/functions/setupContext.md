@@ -1,6 +1,6 @@
 [**@saflib/commander**](../index.md)
 
-***
+---
 
 # Function: setupContext()
 
@@ -12,9 +12,7 @@ To use, wrap this function around your `parse` call like this:
 
 ```ts
 import { Command } from "commander";
-const program = new Command()
-  .name("my-cli-tool")
-  .description("My CLI tool");
+const program = new Command().name("my-cli-tool").description("My CLI tool");
 
 // ... rest of commander setup
 
@@ -25,10 +23,10 @@ setupContext({ serviceName: "my-cli-tool" }, () => {
 
 ## Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `options` | [`SetupContextOptions`](../interfaces/SetupContextOptions.md) |
-| `callback` | () => `void` |
+| Parameter  | Type                                                          |
+| ---------- | ------------------------------------------------------------- |
+| `options`  | [`SetupContextOptions`](../interfaces/SetupContextOptions.md) |
+| `callback` | () => `void`                                                  |
 
 ## Returns
 

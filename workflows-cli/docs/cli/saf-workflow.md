@@ -16,7 +16,7 @@ Commands:
      workflow. Names should be kebab-case, and paths should be
      ./relative/to/package/root.ts. All commands should be run in a folder with a
      package.json; the package the workflow is acting on. Example:
-  
+
   npm exec saf-workflow kickoff add-tests ./path/to/file.ts
   status          Show the status of the current workflow.
   next            Try to go to the next step of the current workflow.

@@ -1,6 +1,6 @@
 [**@saflib/links**](../index.md)
 
-***
+---
 
 # Function: navigateToLink()
 
@@ -12,9 +12,9 @@ TODO: This should use vue-router instead of window.location.href where possible.
 
 ## Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `link` | [`Link`](../type-aliases/Link.md) |
+| Parameter  | Type                                          |
+| ---------- | --------------------------------------------- |
+| `link`     | [`Link`](../type-aliases/Link.md)             |
 | `options?` | [`LinkOptions`](../interfaces/LinkOptions.md) |
 
 ## Returns

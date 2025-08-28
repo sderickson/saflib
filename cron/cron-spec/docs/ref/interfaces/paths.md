@@ -1,6 +1,6 @@
 [**@saflib/cron-spec**](../index.md)
 
-***
+---
 
 # Interface: paths
 
@@ -211,7 +211,7 @@ The requested resource could not be found.
 
 > `optional` **trace**: `undefined`
 
-***
+---
 
 ### /cron/jobs/settings
 

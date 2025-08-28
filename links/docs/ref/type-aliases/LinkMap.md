@@ -1,6 +1,6 @@
 [**@saflib/links**](../index.md)
 
-***
+---
 
 # Type Alias: LinkMap
 

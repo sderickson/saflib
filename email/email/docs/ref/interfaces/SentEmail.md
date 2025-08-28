@@ -1,6 +1,6 @@
 [**@saflib/email**](../index.md)
 
-***
+---
 
 # Interface: SentEmail
 
@@ -22,7 +22,7 @@ An array of attachment objects
 
 [`EmailOptions`](EmailOptions.md).[`attachments`](EmailOptions.md#attachments)
 
-***
+---
 
 ### bcc?
 
@@ -34,7 +34,7 @@ Comma separated list or an array of recipients e-mail addresses that will appear
 
 [`EmailOptions`](EmailOptions.md).[`bcc`](EmailOptions.md#bcc)
 
-***
+---
 
 ### cc?
 
@@ -46,7 +46,7 @@ Comma separated list or an array of recipients e-mail addresses that will appear
 
 [`EmailOptions`](EmailOptions.md).[`cc`](EmailOptions.md#cc)
 
-***
+---
 
 ### from?
 
@@ -58,7 +58,7 @@ The e-mail address of the sender. All e-mail addresses can be plain 'sender@serv
 
 [`EmailOptions`](EmailOptions.md).[`from`](EmailOptions.md#from)
 
-***
+---
 
 ### html?
 
@@ -70,7 +70,7 @@ The HTML version of the message
 
 [`EmailOptions`](EmailOptions.md).[`html`](EmailOptions.md#html)
 
-***
+---
 
 ### replyTo?
 
@@ -82,7 +82,7 @@ Comma separated list or an array of e-mail addresses that will appear on the Rep
 
 [`EmailOptions`](EmailOptions.md).[`replyTo`](EmailOptions.md#replyto)
 
-***
+---
 
 ### subject?
 
@@ -94,7 +94,7 @@ The subject of the e-mail
 
 [`EmailOptions`](EmailOptions.md).[`subject`](EmailOptions.md#subject)
 
-***
+---
 
 ### text?
 
@@ -106,13 +106,13 @@ The plaintext version of the message
 
 [`EmailOptions`](EmailOptions.md).[`text`](EmailOptions.md#text)
 
-***
+---
 
 ### timeSent
 
 > **timeSent**: `number`
 
-***
+---
 
 ### to?
 

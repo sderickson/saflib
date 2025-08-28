@@ -1,6 +1,6 @@
 [**@saflib/vue**](../../../../index.md)
 
-***
+---
 
 # Function: stubGlobals()
 

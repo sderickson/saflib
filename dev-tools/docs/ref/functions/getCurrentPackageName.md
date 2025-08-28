@@ -1,6 +1,6 @@
 [**@saflib/dev-tools**](../index.md)
 
-***
+---
 
 # Function: getCurrentPackageName()
 

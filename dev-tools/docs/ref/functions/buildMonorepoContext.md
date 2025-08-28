@@ -1,6 +1,6 @@
 [**@saflib/dev-tools**](../index.md)
 
-***
+---
 
 # Function: buildMonorepoContext()
 
@@ -12,8 +12,8 @@ returning "this" package's monorepo context.
 
 ## Parameters
 
-| Parameter | Type |
-| ------ | ------ |
+| Parameter  | Type     |
+| ---------- | -------- |
 | `rootDir?` | `string` |
 
 ## Returns

@@ -1,6 +1,6 @@
 [**@saflib/express**](../index.md)
 
-***
+---
 
 # Function: makeUserHeaders()
 
@@ -8,10 +8,10 @@
 
 ## Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `userId` | `string` |
-| `email` | `string` |
+| Parameter | Type     |
+| --------- | -------- |
+| `userId`  | `string` |
+| `email`   | `string` |
 
 ## Returns
 

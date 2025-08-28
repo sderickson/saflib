@@ -1,6 +1,6 @@
 [**@saflib/cron**](../index.md)
 
-***
+---
 
 # Interface: JobConfig
 
@@ -14,7 +14,7 @@ Configuration for a single cron job.
 
 Optional error reporter for the job. Returns true if the error was logged.
 
-***
+---
 
 ### enabled
 
@@ -22,7 +22,7 @@ Optional error reporter for the job. Returns true if the error was logged.
 
 Default enabled state (primarily for initial setup, DB state overrides).
 
-***
+---
 
 ### handler()
 
@@ -32,23 +32,23 @@ The async function to execute when the job runs.
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `reqId` | `string` |
+| Parameter | Type     |
+| --------- | -------- |
+| `reqId`   | `string` |
 
 #### Returns
 
 `Promise`\<`any`\>
 
-***
+---
 
 ### schedule
 
 > **schedule**: `string`
 
-Cron schedule string (e.g., '* * * * *')
+Cron schedule string (e.g., '\* \* \* \* \*')
 
-***
+---
 
 ### timeoutSeconds?
 

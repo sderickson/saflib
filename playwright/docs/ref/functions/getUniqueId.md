@@ -1,6 +1,6 @@
 [**@saflib/playwright**](../index.md)
 
-***
+---
 
 # Function: getUniqueId()
 
