@@ -1,6 +1,6 @@
-# Implementation Checklist: <PROJECT_NAME>
+# Implementation Checklist: TEMPLATE_FILE
 
-The agent should find the first unchecked workflow, run it, and check it off. Each workflow should be run in the context of the <PROJECT_NAME> project.
+The agent should find the first unchecked workflow, run it, and check it off. Each workflow should be run in the context of the TEMPLATE_FILE project.
 
 To run a workflow with the workflow tool:
 

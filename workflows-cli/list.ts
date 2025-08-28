@@ -7,8 +7,6 @@ import openapiWorkflows from "@saflib/openapi/workflows";
 import monorepoWorkflows from "@saflib/monorepo/workflows";
 import vueSpaWorkflows from "@saflib/vue/workflows";
 import expressWorkflows from "@saflib/express/workflows";
-import grpcSpecsWorkflows from "@saflib/grpc-specs/workflows";
-import grpcNodeWorkflows from "@saflib/grpc/workflows";
 import emailWorkflows from "@saflib/email/workflows";
 import envWorkflows from "@saflib/env/workflows";
 import commanderWorkflows from "@saflib/commander/workflows";
@@ -23,8 +21,6 @@ const workflowClasses: ConcreteWorkflow[] = [
   ...openapiWorkflows,
   ...expressWorkflows,
   ...vueSpaWorkflows,
-  ...grpcSpecsWorkflows,
-  ...grpcNodeWorkflows,
   ...emailWorkflows,
   ...envWorkflows,
   ...commanderWorkflows,

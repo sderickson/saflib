@@ -1,29 +1,26 @@
-import { fromPromise, raise, setup } from "xstate";
+import { setup } from "xstate";
 import {
   workflowActions,
   workflowActors,
   logInfo,
-  type WorkflowContext,
   promptAgentComposer,
-  promptAgent,
   XStateWorkflow,
   contextFromInput,
   type WorkflowInput,
   outputFromContext,
+  copyTemplateStateComposer,
+  type TemplateWorkflowContext,
+  runNpmCommandComposer,
 } from "@saflib/workflows";
-import { execSync } from "child_process";
-import { readFileSync, writeFileSync } from "fs";
 import path from "path";
+import { kebabCaseToPascalCase } from "@saflib/utils";
 
 interface SpecProjectXstateWorkflowInput extends WorkflowInput {
   name: string;
 }
 
-interface SpecProjectXstateWorkflowContext extends WorkflowContext {
+interface SpecProjectXstateWorkflowContext extends TemplateWorkflowContext {
   name: string;
-  projectDirPath: string;
-  specFilePath: string;
-  checklistFilePath: string;
   safDocOutput: string;
   safWorkflowHelpOutput: string;
 }
@@ -38,17 +35,16 @@ export const SpecProjectXstateWorkflowMachine = setup({
 }).createMachine({
   id: "spec-project",
   description: "Write a product/technical specification for a project.",
-  initial: "initializing",
+  initial: "copyTemplate",
   context: ({ input }) => {
     const date = new Date().toISOString().split("T")[0];
     const projectDirName = `${date}-${input.name}`;
-    const specFilePath = path.join(projectDirName, "spec.md");
-    const checklistFilePath = path.join(projectDirName, "checklist.md");
+    const targetDir = path.resolve(process.cwd(), projectDirName);
     const context = {
       name: input.name,
-      projectDirPath: projectDirName,
-      specFilePath: specFilePath,
-      checklistFilePath: checklistFilePath,
+      pascalName: kebabCaseToPascalCase(input.name),
+      targetDir,
+      sourceDir: path.resolve(import.meta.dirname, "./templates"),
       safDocOutput: "",
       safWorkflowHelpOutput: "",
       ...contextFromInput(input),
@@ -57,69 +53,10 @@ export const SpecProjectXstateWorkflowMachine = setup({
   },
   entry: logInfo("Successfully began workflow"),
   states: {
-    initializing: {
-      invoke: {
-        input: ({ context }) => context,
-        src: fromPromise(
-          async ({
-            input: context,
-          }: {
-            input: SpecProjectXstateWorkflowContext;
-          }) => {
-            execSync(`mkdir -p ${context.projectDirPath}`);
-            execSync(`touch ${context.specFilePath}`);
-
-            const specTemplateContent = readFileSync(
-              path.resolve(import.meta.dirname, "./spec.template.md"),
-              "utf8",
-            );
-            writeFileSync(context.specFilePath, specTemplateContent);
-
-            const checklistTemplateContent = readFileSync(
-              path.resolve(import.meta.dirname, "./checklist.template.md"),
-              "utf8",
-            );
-            const processedChecklistContent = checklistTemplateContent.replace(
-              /<PROJECT_NAME>/g,
-              context.name,
-            );
-            writeFileSync(context.checklistFilePath, processedChecklistContent);
-
-            const safDocOutput = execSync("npm exec saf-doc").toString();
-            return { safDocOutput };
-          },
-        ),
-        onDone: {
-          target: "showSafDocOutput",
-          actions: [
-            logInfo("Copied templates and ran saf-doc."),
-            ({ event, context }) => {
-              context.safDocOutput = (
-                event.output as { safDocOutput: string }
-              ).safDocOutput;
-            },
-          ],
-        },
-        onError: {
-          actions: [
-            logInfo(({ event }) => `Initialization failed: ${event.error}`),
-            raise({ type: "prompt" }),
-          ],
-        },
-      },
-      on: {
-        prompt: {
-          actions: promptAgent(
-            () =>
-              `Initialization failed. Please check the logs and help resolve the issue.`,
-          ),
-        },
-        continue: {
-          reenter: true,
-          target: "initializing",
-        },
-      },
-    },
+    ...copyTemplateStateComposer({
+      stateName: "copyTemplate",
+      nextStateName: "showSafDocOutput",
+    }),
 
     ...promptAgentComposer<SpecProjectXstateWorkflowContext>({
       promptForContext: ({ context }) =>
@@ -132,7 +69,7 @@ ${context.safDocOutput}`,
 
     ...promptAgentComposer<SpecProjectXstateWorkflowContext>({
       promptForContext: ({ context }) =>
-        `You are writing a product/technical specification for ${context.name}. Ask for an overview of the project if you haven't already gotten one, then given that description, fill ${context.specFilePath} which was just created.`,
+        `You are writing a product/technical specification for ${context.name}. Ask for an overview of the project if you haven't already gotten one, then given that description, fill the spec.md file which was just created.`,
       stateName: "fillSpec",
       nextStateName: "reviewSpec",
     }),
@@ -146,62 +83,23 @@ ${context.safDocOutput}`,
 
     ...promptAgentComposer<SpecProjectXstateWorkflowContext>({
       promptForContext: () =>
-        `Before creating the checklist, please review the guide on writing spec project checklists located at saflib/processes/docs/writing-spec-project-checklists.md. This will help you create a proper implementation checklist with the correct format, workflow commands, and paths. Once you've reviewed the guide, run "npm exec saf-workflow next" to continue.`,
+        `Before creating the checklist, please review the guide on writing spec project checklists located at writing-spec-project-checklists.md. This will help you create a proper implementation checklist with the correct format, workflow commands, and paths. Once you've reviewed the guide, run "npm exec saf-workflow next" to continue.`,
       stateName: "reviewChecklistGuide",
-      nextStateName: "promptForChecklist",
+      nextStateName: "printWorkflows",
     }),
 
-    promptForChecklist: {
-      invoke: {
-        src: fromPromise(async () => {
-          const helpOutput = execSync(
-            "npm exec saf-workflow kickoff help",
-          ).toString();
-          return { helpOutput };
-        }),
-        onDone: {
-          actions: [
-            logInfo("Ran `npm exec saf-workflow kickoff help`."),
-            ({ event, context }) => {
-              context.safWorkflowHelpOutput = (
-                event.output as { helpOutput: string }
-              ).helpOutput;
-            },
-            raise({ type: "prompt" }),
-          ],
-        },
-        onError: {
-          actions: [
-            logInfo(
-              ({ event }) => `Failed to run saf-workflow help: ${event.error}`,
-            ),
-            raise({ type: "prompt" }),
-          ],
-        },
-      },
-      on: {
-        prompt: {
-          actions: [
-            promptAgent(
-              ({ context }: { context: SpecProjectXstateWorkflowContext }) => {
-                const helpOutput =
-                  context.safWorkflowHelpOutput ||
-                  "Could not retrieve saf-workflow help output.";
-                return `The spec has been finalized. Please fill out the checklist.md located at ${context.checklistFilePath}.
+    ...runNpmCommandComposer({
+      stateName: "printWorkflows",
+      nextStateName: "promptForChecklist",
+      command: "exec saf-workflow kickoff help",
+    }),
 
-Here is a list of available workflow commands to help you:
-${helpOutput}
-
-Once you have filled out the checklist, please trigger the "continue" event.`;
-              },
-            ),
-          ],
-        },
-        continue: {
-          target: "done",
-        },
-      },
-    },
+    ...promptAgentComposer<SpecProjectXstateWorkflowContext>({
+      promptForContext: () =>
+        `See the above list of available workflow commands. Please fill out the checklist.md file with these commands and arguments.`,
+      stateName: "promptForChecklist",
+      nextStateName: "done",
+    }),
 
     done: {
       type: "final",

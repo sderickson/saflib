@@ -8,8 +8,7 @@
 
 | Class | Description |
 | ------ | ------ |
-| [~~SimpleWorkflow~~](classes/SimpleWorkflow.md) | First iteration of workflows. Opted to try using XState instead for plenty of built in FSM features and tooling. |
-| [Workflow](classes/Workflow.md) | Abstract superclass for SimpleWorkflow and XStateWorkflow. To be removed when XStateWorkflow is fully adopted. |
+| [Workflow](classes/Workflow.md) | Abstract superclass for XStateWorkflow. Can probably be removed since SimpleWorkflows are gone. |
 | [XStateWorkflow](classes/XStateWorkflow.md) | Abstract superclass for XStateWorkflows. |
 
 ## Interfaces

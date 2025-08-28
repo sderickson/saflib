@@ -5,7 +5,6 @@ export {
   contextFromInput,
   outputFromContext,
   XStateWorkflow,
-  SimpleWorkflow,
   Workflow,
 } from "./src/workflow.ts";
 
