@@ -32,7 +32,7 @@ Each package which depends on `@saflib/drizzle` should have the following struct
 
 ### `data/`
 
-Where the SQLite files are stored. Follows [convention](../../conventions.md#container-volumes).
+Where the SQLite files are stored.
 
 ### `drizzle.config.ts`
 

@@ -26,7 +26,7 @@ In order to test the integration of everything involved in rendering a page, you
 
 Rather than including mock data in the same file, which will often be redundant with other files, tests should import mock data from the package that provides the Tanstack queries, per [best practices](../../best-practices.md#ownership-of-mocks-fakes-shims).
 
-Use [`setupMockServer`](./ref/@saflib/vue/testing/functions/setupMockServer.md) within the `describe` block next to `setupGlobals`. They both handle setup and teardown for each test.
+Use [`setupMockServer`](../../sdk/docs/ref/@saflib/sdk/testing/functions/setupMockServer.md) within the `describe` block next to `setupGlobals`. They both handle setup and teardown for each test.
 
 ## Element Selection
 

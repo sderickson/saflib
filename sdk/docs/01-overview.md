@@ -79,4 +79,4 @@ Similarly to the `index.ts` file, this re-exports files from the `requests/` dir
 
 ### `typed-fake.json`
 
-This file simply stores the result of a call to [`typedCreateHandler`](./ref/testing/functions/typedCreateHandler.md) with the fake store. It is used by each fake file to type the fake handlers.
+This file simply stores the result of a call to [`typedCreateHandler`](./ref/@saflib/sdk/testing/functions/typedCreateHandler.md) with the fake store. It is used by each fake file to type the fake handlers.
