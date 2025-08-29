@@ -1,40 +1,18 @@
 # Best Practices
 
-The following are rules that should be followed for _any_ software stack that aims to enable both human and AI agents work quickly and effectively, given that [what is good for one tends to be good for the other](https://scotterickson.info/blog/2025-04-18-Theory-of-Dx). SAF is how I identify, develop and exemplify these rules. This is a living document, and other documentation in this repository will reference these rules when they are applied.
+The following are rules I recommend for _any_ software stack so that both human and AI agents work quickly and effectively. I use my work on SAF to identify, develop, and demonstrate these rules. This is a living document, and will continue to evolve as I learn more.
 
 ## Embrace Type Safety at Every Layer
 
-Many of the following rules depend on the stack having a type system. Any stack that does not provide a way to type and enforce _every_ interface in the stack (including APIs and environment variables) will be fundamentally hampered, as static analysis provides an immediate and reliable feedback loop which is critical for rapid and reliable development.
+Many of the following rules depend on the stack having a type system. Unless _every_ interface in the stack can by typed, development will be fundamentally hampered, as static analysis provides an immediate and reliable feedback loop which is critical for rapid and reliable development.
 
 **Example applications:**
 
 - [`@saflib/drizzle`](./drizzle/docs/01-overview.md) relies heavily on Drizzle's [Type API](https://orm.drizzle.team/docs/goodies#type-api)
 - [`@saflib/express`](./express/docs/03-routes.md#typing-the-interface) and [`@saflib/sdk`](./sdk/docs/02-requests.md#creating-a-typed-client) provide documentation and utilities to enforce types generated with [`@saflib/openapi`](./openapi/docs/cli/saf-specs.md)
-- [`@saflib/vue`](./vue/docs/03-i18n.md#why) flips how vue-i18n typically works, so that translated strings become typechecked
-- [`@saflib/playwright`](./playwright/docs/overview.md#string-locators) provides a custom locator that takes typed objects to ensure tests and the components they test render and check for the same strings
+- [`@saflib/vue`](./vue/docs/03-i18n.md) flips how vue-i18n typically works, so that translated strings become typechecked
+- [`@saflib/playwright`](./playwright/docs/overview.md#string-locators) provides a custom locator that takes typed objects provided by frontend packages, to ensure tests and the components they test render and check for the same strings
 - [`@saflib/env`](./env/docs/overview.md) allows typing and validating environment variables
-
-## Pass Objects
-
-For complex function signatures, arguments should be passed in as objects. Even if you are adding the first and only parameter to start, wrap it in an object so that if more options are added later, the function signature does not need to change.
-
-```typescript
-// Bad
-function createUser(
-  name: string,
-  email: string,
-  age: number,
-  isAdmin: boolean,
-) {}
-
-// Good
-function createUser({ name, email, age, isAdmin }: CreateUserParams) {}
-```
-
-**Benefits:**
-
-- Arguments passed into functions are more explicit and easier to understand without investigating the function signature or documentation, reducing the context window size and need to navigate around the codebase.
-- Adding further (optional) arguments does not require changing calls to the function.
 
 ## Return Errors
 
@@ -60,7 +38,7 @@ use(result.someValue);
 
 Note that logic may still `throw` exceptions, but this should be truly exceptional. Exceptions should only be thrown in cases where, if it _actually_ happens in a test or in production, it will be considered an issue to be fixed.
 
-The types of Errors returned should be created, managed, and exported by the package. Propagating downstream errors (such as from a dependency like a database error) upstream is a form of tight coupling. Even unhandled errors should be caught at the package or service boundary and obfuscated (such as a generic "UnhandledError") to ensure consumers _cannot_ tie themselves to deeper dependencies.
+Packages should only return instances of Errors they define. Propagating downstream errors (such as from a dependency like a database error) upstream is a form of tight coupling. Even unhandled errors should be caught at the package or service boundary and obfuscated (such as a generic "UnhandledError") to ensure consumers _cannot_ tie themselves to deeper dependencies.
 
 **Benefits:**
 
@@ -73,15 +51,6 @@ The types of Errors returned should be created, managed, and exported by the pac
 
 - `@saflib/monorepo` provides a [`ReturnsError`](./monorepo/docs/ref/type-aliases/ReturnsError.md) type for such functions, and a [`throwError`](./monorepo/docs/ref/functions/throwError.md) helper function.
 - `@saflib/drizzle`'s [query template](https://github.com/sderickson/saflib/blob/c5f310d2faa42bc84dd5530966d26f63c8086431/drizzle/workflows/query-template/template-file.ts) uses `ReturnsError`, and `@saflib/express`'s [route template](https://github.com/sderickson/saflib/blob/c5f310d2faa42bc84dd5530966d26f63c8086431/express/workflows/route-template/route-template.ts#L18-L26) demonstrates how to use it.
-
-## Name Well
-
-Give functions, types, parameters, and returned objects concise, clear, and consistent names. Shared semantic meaning can help, but mostly this comes down to practicing good writing and communication.
-
-**Benefits:**
-
-- Like with Pass Objects, this reduces the context window size and need to navigate around the codebase.
-- If a name is vague and also undocumented, its purpose or value may be unclear and used counter to the original intent.
 
 ## Keep Files Small
 
@@ -111,7 +80,7 @@ SAF itself is broken up into [a good number of monorepo packages](https://github
 
 ## Specify and Enforce Shared APIs, Models, and Strings
 
-Anything that is shared across system boundaries should have a clear, independent source of truth, and that source of truth should be enforced by every consumer, ideally by static analysis or type checking.
+Anything that is shared across system boundaries should have a clear, independent source of truth, and that source of truth should be enforced by every consumer, ideally by type checking or some other form of static analysis.
 
 Assets to be owned by one package, shared with other packages, and enforced by static analysis across all usages include:
 
@@ -121,7 +90,6 @@ Assets to be owned by one package, shared with other packages, and enforced by s
 - HTTP/gRPC request and response objects
 - Business models
 - Environment variables
-- Configuration objects
 
 For serialized data, prefer flattened data stuctures with identifiers for related data rather than nested objects.
 
@@ -136,22 +104,26 @@ For serialized data, prefer flattened data stuctures with identifiers for relate
 - `@saflib/links` provides [a simple structure](./links/docs/ref/type-aliases/Link.md) and some [methods](./links/docs/ref/index.md#functions) for sharing links to specific pages between packages.
 - `@saflib/utils` provides an [interface](./utils/docs/ref/interfaces/ElementStringObject.md) for easy use by Vue and consumption by [Playwright](./playwright/docs/ref/functions/getByString.md)
 
-## Build and Maintain Fakes, Stubs, and Adapters for Service Boundaries
+## Build and Maintain Fakes and Adapters for Service Boundaries
 
-Any non-trivial app will reach a point where it depends on separate services, either first or third party, and those integration points should provide fakes and stubs for consumers to use for testing. This allows consuming services and packages to have unit or integration tests which don't depend on a live or fully-featured service.
+Any non-trivial app will reach a point where it depends on separate services, either first or third party, and those integration points should provide fakes for consumers to use for testing. This allows consuming services and packages to have unit or integration tests which don't depend on a live or fully-featured service.
 
-Fakes (which are working, simplified implementations of a service) should be available for backend testing. Stubs (which are sample data of the form returned by a service) should be available for frontend testing. The frontend does not need a fully-featured fake because complex interactions are best covered through E2E tests, where the fakes will be used in the backend.
+Fakes (working, simplified implementations of a service) should be available for both frontend and backend testing. Packages that provide fakes are:
 
-Third party integrations often provide more features than the product needs; the package or module responsible for integrating with that third-party service should adapt the interface to solely the needs of the product.
+- Frontend SDKs
+- gRPC clients
+- 3rd party integrations
 
-**Example application:**
-
-- `@saflib/sdk` provides a [helper method](./sdk/docs/ref/@saflib/sdk/testing/functions/typedCreateHandler.md) for typing fake server handlers.
+Third party integrations often provide more features than the product needs; the package or module responsible for integrating with that third-party service should adapt the interface to solely the needs of the product, which will also reduce the surface area that needs to be faked.
 
 **Benefits:**
 
 - Fakes and stubs are necessary to ensure any component can be tested (from unit through E2E) with confidence and speed.
 - An adapter helps control and manage how tightly coupled a product is to any third-party service, while also reducing the surface area that needs to be faked.
+
+**Example application:**
+
+- `@saflib/sdk` provides a [helper method](./sdk/docs/ref/@saflib/sdk/testing/functions/typedCreateHandler.md) for typing fake server handlers.
 
 ### Ownership of Mocks, Fakes, Shims
 
@@ -178,27 +150,29 @@ Tests should stick to testing the package, API, or user interface they are targe
 - Checking product events or key metrics are recorded correctly after a user behavior or endpoint call, to ensure analytics and monitoring don't break.
 - Viewing emails sent in order to make sure they do get sent, or to get some contents such as an email verification code, which are necessary for the test to continue.
 
-## Document Technical Decisions In the Codebase
+**Benefits:**
+
+- A great deal of peace of mind that the product continues to work as expected even when a great deal has changed.
+- Generated code that is tested is far less likely to need to be reworked when used later in the process.
+
+**Example application:**
+
+- SAF packages often have testing-specific documentation, workflows, and/or exports to help enable greater and more consistent testing.
+
+## Document the Codebase, Make it Accessible
 
 There needs to be a source of truth for how to do things the right way specific to your stack, and the closer those decisions are to the code the better.
 
 - **Reference** documentation should be generated from source, such as through [Typedoc](https://github.com/TypeStrong/typedoc) or [Redoc](https://github.com/Redocly/redoc).
-- **Explanation** and **Tutorial** docs should live in the package they address, such as in markdown files in a separate `docs/` directory.
+- **Explanation** docs should live in the package they address, such as in markdown files in a separate `docs/` directory.
 - **How-To Guides** are great fodder for agentic workflows, and human-readable versions should be generated from those.
 
-The above types of docs are defined by [Diátaxis](https://diataxis.fr/).
+**Benefits:**
 
-**Example application:**
+- Written documentation provides a source of truth for how to do things the right way specific to your stack. Workflows can be developed toward and checked against them.
+- If something is not documented, it can be assumed to be undecided.
 
-Each package in [the docs](https://docs.saf-demo.online/) has a mix of explanation docs and generated reference docs. Instead of maintaining them separately, how-to guides are effectively generated from workflows such as [this one](./drizzle/docs/workflows/add-queries.md).
+**Example applications:**
 
-## Commit Human-Readable Generated Files to the Repo
-
-Where it makes sense, commit generated files to the repo. To help decide, ask:
-
-- Would it be helpful to see while navigating the codebase through the browser such as on GitHub?
-- Can they be used as context for agentic workflows?
-- Does it provide useful information in a code review when it changes?
-- Do they _need_ to exist in the file system in order for the system to work in development?
-
-As long as the files themselves aren't too large or difficult to read, "Yes" answers suggest they should be committed to the repo. The extra repo size and code review context are often worth the above benefits. Make sure to have Prettier or similar running automatically so formatting doesn't create noise.
+- Each package in [the docs](https://docs.saf-demo.online/) has a mix of explanation docs and generated reference docs. Instead of maintaining them separately, how-to guides are effectively generated from workflows such as [this one](./drizzle/docs/workflows/add-queries.md).
+- `@saflib/dev-tools` provides a [CLI tool](./dev-tools/docs/cli/saf-docs.md) for generating documentation from code, workflows, and CLI commands.
