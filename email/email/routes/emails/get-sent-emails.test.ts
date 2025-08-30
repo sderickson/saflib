@@ -26,12 +26,12 @@ describe("getSentEmails", () => {
     const email2 = `test${Math.random()}@test.com`;
     await emailClient.sendEmail({
       to: email1,
-      from: "support@vendata.com",
+      from: "support@your-org.com",
       subject: "Test Email",
       text: "Test Email",
     });
     await emailClient.sendEmail({
-      to: "support@vendata.com",
+      to: "support@your-org.com",
       from: email2,
       subject: "Test Email",
       text: "Test Email",
