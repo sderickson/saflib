@@ -1,6 +1,6 @@
 [**@saflib/commander**](../index.md)
 
-***
+---
 
 # Interface: SetupContextOptions
 
@@ -12,7 +12,7 @@ Name.
 
 > **serviceName**: `string`
 
-***
+---
 
 ### silentLogging?
 

@@ -1,6 +1,6 @@
 [**@saflib/playwright**](../index.md)
 
-***
+---
 
 # Type Alias: ElementString
 

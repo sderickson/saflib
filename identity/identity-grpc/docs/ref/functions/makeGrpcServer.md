@@ -1,6 +1,6 @@
 [**@saflib/identity-grpc**](../index.md)
 
-***
+---
 
 # Function: makeGrpcServer()
 
@@ -10,8 +10,8 @@ Starts the gRPC server for the identity service.
 
 ## Parameters
 
-| Parameter | Type |
-| ------ | ------ |
+| Parameter | Type                    |
+| --------- | ----------------------- |
 | `options` | `IdentityServerOptions` |
 
 ## Returns

@@ -1,6 +1,6 @@
 [**@saflib/identity-rpcs**](../../../../index.md)
 
-***
+---
 
 # Abstract Class: UnimplementedUsersService
 
@@ -38,9 +38,9 @@
 
 ###### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `bytes` | `Buffer` |
+| Parameter | Type     |
+| --------- | -------- |
+| `bytes`   | `Buffer` |
 
 ###### Returns
 
@@ -52,8 +52,8 @@
 
 ###### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
+| Parameter | Type                                                |
+| --------- | --------------------------------------------------- |
 | `message` | [`GetUserProfileRequest`](GetUserProfileRequest.md) |
 
 ###### Returns
@@ -70,9 +70,9 @@
 
 ###### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `bytes` | `Buffer` |
+| Parameter | Type     |
+| --------- | -------- |
+| `bytes`   | `Buffer` |
 
 ###### Returns
 
@@ -84,8 +84,8 @@
 
 ###### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
+| Parameter | Type                                                  |
+| --------- | ----------------------------------------------------- |
 | `message` | [`GetUserProfileResponse`](GetUserProfileResponse.md) |
 
 ###### Returns
@@ -104,10 +104,10 @@
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `call` | `ServerUnaryCall`\<[`GetUserProfileRequest`](GetUserProfileRequest.md), [`GetUserProfileResponse`](GetUserProfileResponse.md)\> |
-| `callback` | `sendUnaryData`\<[`GetUserProfileResponse`](GetUserProfileResponse.md)\> |
+| Parameter  | Type                                                                                                                            |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `call`     | `ServerUnaryCall`\<[`GetUserProfileRequest`](GetUserProfileRequest.md), [`GetUserProfileResponse`](GetUserProfileResponse.md)\> |
+| `callback` | `sendUnaryData`\<[`GetUserProfileResponse`](GetUserProfileResponse.md)\>                                                        |
 
 #### Returns
 

@@ -1,6 +1,6 @@
 [**@saflib/node**](../index.md)
 
-***
+---
 
 # Interface: LoggerOptions
 
@@ -23,13 +23,13 @@ More info should be gotten directly from the auth service.
 
 [`SafContext`](SafContext.md).[`auth`](SafContext.md#auth)
 
-***
+---
 
 ### format?
 
 > `optional` **format**: `Format`
 
-***
+---
 
 ### operationName
 
@@ -42,7 +42,7 @@ e.g. "GetUser", such as operationId in OpenAPI, rpc name in gRPC, job name in cr
 
 [`SafContext`](SafContext.md).[`operationName`](SafContext.md#operationname)
 
-***
+---
 
 ### requestId?
 
@@ -57,7 +57,7 @@ a request ID and should use it to correlate requests across processes.
 
 [`SafContext`](SafContext.md).[`requestId`](SafContext.md#requestid)
 
-***
+---
 
 ### subsystemName
 

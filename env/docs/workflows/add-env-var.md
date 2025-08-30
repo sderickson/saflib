@@ -20,13 +20,12 @@ To run this workflow automatically, tell the agent to:
 
 When run, the workflow will:
 
-* Copy template files and rename placeholders.
-  * Create env.schema.json from [template](https://github.com/sderickson/saflib/blob/main/env/workflows/add-env-vars/env.schema.json)
-* Update env.schema.json to remove TODOs
-* Run `npm install @saflib/env`
-* Run `npm exec saf-env generate`
-* Run `npm exec saf-env generate-all`
-
+- Copy template files and rename placeholders.
+  - Create env.schema.json from [template](https://github.com/sderickson/saflib/blob/main/env/workflows/add-env-vars/env.schema.json)
+- Update env.schema.json to remove TODOs
+- Run `npm install @saflib/env`
+- Run `npm exec saf-env generate`
+- Run `npm exec saf-env generate-all`
 
 ## Help Docs
 

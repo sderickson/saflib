@@ -1,6 +1,6 @@
 [**@saflib/node**](../index.md)
 
-***
+---
 
 # Function: createLogger()
 
@@ -14,8 +14,8 @@ can be correlated.
 
 ## Parameters
 
-| Parameter | Type |
-| ------ | ------ |
+| Parameter  | Type                                              |
+| ---------- | ------------------------------------------------- |
 | `options?` | [`LoggerOptions`](../interfaces/LoggerOptions.md) |
 
 ## Returns

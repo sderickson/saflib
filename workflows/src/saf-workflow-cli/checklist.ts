@@ -1,37 +1,34 @@
 import type { Command } from "commander";
 import type { ChecklistItem } from "../types.ts";
-import { XStateWorkflow, type WorkflowMeta } from "../workflow.ts";
+import { XStateWorkflow, type ConcreteWorkflow } from "../workflow.ts";
 import { addNewLinesToString } from "@saflib/utils";
 
 export const addChecklistCommand = (
   program: Command,
-  workflows: WorkflowMeta[],
+  workflows: ConcreteWorkflow[],
 ) => {
   const checklistProgram = program
     .command("checklist")
     .description(addNewLinesToString("Show the checklist for a workflow."));
 
-  const supportedWorkflows = workflows
-    .filter(({ cliArguments }) =>
-      cliArguments.every((arg) => arg.exampleValue !== undefined),
-    )
-    .filter(({ Workflow }) => {
-      return new Workflow() instanceof XStateWorkflow;
-    });
+  const supportedWorkflows = workflows.filter((workflow) => {
+    return new workflow() instanceof XStateWorkflow;
+  });
 
-  supportedWorkflows.forEach((workflowMeta) => {
+  supportedWorkflows.forEach((workflow) => {
+    const stubWorkflow = new workflow();
     let chain = checklistProgram
-      .command(workflowMeta.name)
-      .description(workflowMeta.description);
+      .command(stubWorkflow.name)
+      .description(stubWorkflow.description);
     chain.action(async () => {
-      await printChecklist(workflowMeta);
+      await printChecklist(workflow);
     });
   });
 };
 
-export const printChecklist = async (workflowMeta: WorkflowMeta) => {
-  const { Workflow, cliArguments } = workflowMeta;
+export const printChecklist = async (Workflow: ConcreteWorkflow) => {
   const workflow = new Workflow();
+  const cliArguments = workflow.cliArguments;
   const exampleArgs = cliArguments.map(
     (arg) => arg.exampleValue || "example-value-missing",
   );

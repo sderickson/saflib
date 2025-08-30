@@ -1,6 +1,6 @@
 [**@saflib/workflows**](../index.md)
 
-***
+---
 
 # Interface: RunTestsComposerOptions\<C\>
 
@@ -12,9 +12,9 @@ Options for the runTestsComposer function.
 
 ## Type Parameters
 
-| Type Parameter |
-| ------ |
-| `C` *extends* [`WorkflowContext`](WorkflowContext.md) |
+| Type Parameter                                        |
+| ----------------------------------------------------- |
+| `C` _extends_ [`WorkflowContext`](WorkflowContext.md) |
 
 ## Properties
 
@@ -22,7 +22,7 @@ Options for the runTestsComposer function.
 
 > **filePath**: `string` \| (`context`) => `string`
 
-***
+---
 
 ### nextStateName
 
@@ -32,7 +32,7 @@ Options for the runTestsComposer function.
 
 [`ComposerFunctionOptions`](ComposerFunctionOptions.md).[`nextStateName`](ComposerFunctionOptions.md#nextstatename)
 
-***
+---
 
 ### stateName
 

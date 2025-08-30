@@ -1,6 +1,6 @@
 [**@saflib/node**](../index.md)
 
-***
+---
 
 # Interface: Auth
 
@@ -12,13 +12,13 @@ Auth object passed in with every authenticated request.
 
 > **userEmail**: `string`
 
-***
+---
 
 ### userId
 
 > **userId**: `number`
 
-***
+---
 
 ### userScopes
 

@@ -1,6 +1,6 @@
 [**@saflib/workflows**](../index.md)
 
-***
+---
 
 # Interface: RunNpmCommandFactoryOptions
 
@@ -16,7 +16,7 @@ Options for the runNpmCommandComposer function.
 
 > **command**: `string`
 
-***
+---
 
 ### nextStateName
 
@@ -26,7 +26,7 @@ Options for the runNpmCommandComposer function.
 
 [`ComposerFunctionOptions`](ComposerFunctionOptions.md).[`nextStateName`](ComposerFunctionOptions.md#nextstatename)
 
-***
+---
 
 ### stateName
 

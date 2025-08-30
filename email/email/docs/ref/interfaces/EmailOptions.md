@@ -1,6 +1,6 @@
 [**@saflib/email**](../index.md)
 
-***
+---
 
 # Interface: EmailOptions
 
@@ -27,7 +27,7 @@ An array of attachment objects
 
 `Pick.attachments`
 
-***
+---
 
 ### bcc?
 
@@ -39,7 +39,7 @@ Comma separated list or an array of recipients e-mail addresses that will appear
 
 `Pick.bcc`
 
-***
+---
 
 ### cc?
 
@@ -51,7 +51,7 @@ Comma separated list or an array of recipients e-mail addresses that will appear
 
 `Pick.cc`
 
-***
+---
 
 ### from?
 
@@ -63,7 +63,7 @@ The e-mail address of the sender. All e-mail addresses can be plain 'sender@serv
 
 `Pick.from`
 
-***
+---
 
 ### html?
 
@@ -75,7 +75,7 @@ The HTML version of the message
 
 `Pick.html`
 
-***
+---
 
 ### replyTo?
 
@@ -87,7 +87,7 @@ Comma separated list or an array of e-mail addresses that will appear on the Rep
 
 `Pick.replyTo`
 
-***
+---
 
 ### subject?
 
@@ -99,7 +99,7 @@ The subject of the e-mail
 
 `Pick.subject`
 
-***
+---
 
 ### text?
 
@@ -111,7 +111,7 @@ The plaintext version of the message
 
 `Pick.text`
 
-***
+---
 
 ### to?
 

@@ -1,6 +1,6 @@
 [**@saflib/workflows**](../index.md)
 
-***
+---
 
 # Interface: LogParams
 
@@ -12,7 +12,7 @@ Params for the log action.
 
 > `optional` **level**: `"error"` \| `"info"` \| `"warn"`
 
-***
+---
 
 ### msg
 

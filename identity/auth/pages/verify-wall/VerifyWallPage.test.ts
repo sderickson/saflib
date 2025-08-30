@@ -1,9 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
-import {
-  stubGlobals,
-  setupMockServer,
-  getElementByString,
-} from "@saflib/vue/testing";
+import { stubGlobals, getElementByString } from "@saflib/vue/testing";
+import { setupMockServer } from "@saflib/sdk/testing";
 import VerifyWallPageAsync from "./VerifyWallPageAsync.vue";
 import { verify_wall_page as strings } from "./VerifyWallPage.strings.ts";
 import { mountTestApp } from "../../test-app.ts";

@@ -1,6 +1,6 @@
 [**@saflib/workflows**](../index.md)
 
-***
+---
 
 # Function: runTestsComposer()
 
@@ -10,14 +10,14 @@ Composer for running tests. Takes a specific file path to test.
 
 ## Type Parameters
 
-| Type Parameter |
-| ------ |
-| `C` *extends* [`WorkflowContext`](../interfaces/WorkflowContext.md) |
+| Type Parameter                                                      |
+| ------------------------------------------------------------------- |
+| `C` _extends_ [`WorkflowContext`](../interfaces/WorkflowContext.md) |
 
 ## Parameters
 
-| Parameter | Type |
-| ------ | ------ |
+| Parameter           | Type                                                                         |
+| ------------------- | ---------------------------------------------------------------------------- |
 | `__namedParameters` | [`RunTestsComposerOptions`](../interfaces/RunTestsComposerOptions.md)\<`C`\> |
 
 ## Returns

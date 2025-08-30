@@ -1,6 +1,6 @@
 [**@saflib/workflows**](../index.md)
 
-***
+---
 
 # Function: logError()
 
@@ -10,16 +10,16 @@ Action builder for logging error messages.
 
 ## Type Parameters
 
-| Type Parameter |
-| ------ |
-| `C` |
-| `E` *extends* `AnyEventObject` |
+| Type Parameter                 |
+| ------------------------------ |
+| `C`                            |
+| `E` _extends_ `AnyEventObject` |
 
 ## Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `cb` | `string` \| (`ctx`) => `string` |
+| Parameter | Type                            |
+| --------- | ------------------------------- |
+| `cb`      | `string` \| (`ctx`) => `string` |
 
 ## Returns
 
@@ -31,9 +31,9 @@ Action builder for logging error messages.
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `event` | `ActionParam`\<`C`, `E`\> |
+| Parameter | Type                      |
+| --------- | ------------------------- |
+| `event`   | `ActionParam`\<`C`, `E`\> |
 
 #### Returns
 

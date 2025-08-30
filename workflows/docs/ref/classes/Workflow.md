@@ -1,16 +1,14 @@
 [**@saflib/workflows**](../index.md)
 
-***
+---
 
 # Abstract Class: Workflow
 
-Abstract superclass for SimpleWorkflow and XStateWorkflow. To be removed
-when XStateWorkflow is fully adopted.
+Abstract superclass for XStateWorkflow. Can probably be removed since SimpleWorkflows are gone.
 
 ## Extended by
 
 - [`XStateWorkflow`](XStateWorkflow.md)
-- [`SimpleWorkflow`](SimpleWorkflow.md)
 
 ## Constructors
 
@@ -28,13 +26,13 @@ when XStateWorkflow is fully adopted.
 
 > `abstract` `readonly` **cliArguments**: [`CLIArgument`](../interfaces/CLIArgument.md)[]
 
-***
+---
 
 ### description
 
 > `abstract` `readonly` **description**: `string`
 
-***
+---
 
 ### init()
 
@@ -42,21 +40,21 @@ when XStateWorkflow is fully adopted.
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
+| Parameter | Type    |
+| --------- | ------- |
 | ...`args` | `any`[] |
 
 #### Returns
 
 `Promise`\<`ReturnsError`\<`any`\>\>
 
-***
+---
 
 ### name
 
 > `abstract` `readonly` **name**: `string`
 
-***
+---
 
 ### sourceUrl
 
@@ -72,7 +70,7 @@ when XStateWorkflow is fully adopted.
 
 `WorkflowBlob`
 
-***
+---
 
 ### done()
 
@@ -82,7 +80,7 @@ when XStateWorkflow is fully adopted.
 
 `boolean`
 
-***
+---
 
 ### getChecklist()
 
@@ -92,7 +90,7 @@ when XStateWorkflow is fully adopted.
 
 [`ChecklistItem`](../interfaces/ChecklistItem.md)[]
 
-***
+---
 
 ### getCurrentStateName()
 
@@ -102,7 +100,7 @@ when XStateWorkflow is fully adopted.
 
 `string`
 
-***
+---
 
 ### getError()
 
@@ -112,7 +110,7 @@ when XStateWorkflow is fully adopted.
 
 `undefined` \| `Error`
 
-***
+---
 
 ### goToNextStep()
 
@@ -122,7 +120,7 @@ when XStateWorkflow is fully adopted.
 
 `Promise`\<`void`\>
 
-***
+---
 
 ### hydrate()
 
@@ -130,15 +128,15 @@ when XStateWorkflow is fully adopted.
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `blob` | `WorkflowBlob` |
+| Parameter | Type           |
+| --------- | -------------- |
+| `blob`    | `WorkflowBlob` |
 
 #### Returns
 
 `void`
 
-***
+---
 
 ### kickoff()
 
@@ -148,7 +146,7 @@ when XStateWorkflow is fully adopted.
 
 `Promise`\<`boolean`\>
 
-***
+---
 
 ### printStatus()
 

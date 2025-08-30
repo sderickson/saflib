@@ -1,6 +1,6 @@
 [**@saflib/email**](../index.md)
 
-***
+---
 
 # Variable: mockingOn
 

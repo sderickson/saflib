@@ -1,6 +1,6 @@
 [**@saflib/dev-tools**](../index.md)
 
-***
+---
 
 # Interface: PackageJson
 
@@ -15,37 +15,37 @@ for more information.
 
 > `optional` **bin**: `Record`\<`string`, `string`\>
 
-***
+---
 
 ### dependencies?
 
 > `optional` **dependencies**: `Record`\<`string`, `string`\>
 
-***
+---
 
 ### description?
 
 > `optional` **description**: `string`
 
-***
+---
 
 ### exports?
 
 > `optional` **exports**: `Record`\<`string`, `string`\>
 
-***
+---
 
 ### name
 
 > **name**: `string`
 
-***
+---
 
 ### scripts?
 
 > `optional` **scripts**: `Record`\<`string`, `string`\>
 
-***
+---
 
 ### workspaces?
 

@@ -1,6 +1,6 @@
 [**@saflib/env**](../index.md)
 
-***
+---
 
 # Function: validateEnv()
 
@@ -10,9 +10,9 @@ Given `process.env` and a schema, validate the environment variables. Throws an 
 
 ## Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `env` | `any` |
+| Parameter   | Type  |
+| ----------- | ----- |
+| `env`       | `any` |
 | `envSchema` | `any` |
 
 ## Returns

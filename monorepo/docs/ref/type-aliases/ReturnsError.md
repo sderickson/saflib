@@ -1,6 +1,6 @@
 [**@saflib/monorepo**](../index.md)
 
-***
+---
 
 # Type Alias: ReturnsError\<T, E\>
 
@@ -16,15 +16,17 @@ Users of ReturnError should use it like this:
 ```typescript
 // Make any errors available as a package export so consumers
 // can check for them in a switch statement.
-export class ExpectedError extends Error {};
+export class ExpectedError extends Error {}
 
-export const unsafeOperation = async (): Promise<ReturnsError<string, ExpectedError>> => {
+export const unsafeOperation = async (): Promise<
+  ReturnsError<string, ExpectedError>
+> => {
   // ... some code ...
   if (conditionFails) {
     return { error: new ExpectedError("Condition failed") };
   }
   return { result: "success" };
-}
+};
 ```
 
 Consumers of functions that ReturnError should handle the errors like this:
@@ -43,7 +45,7 @@ if (error) {
 
 ## Type Parameters
 
-| Type Parameter | Default type |
-| ------ | ------ |
-| `T` | - |
-| `E` *extends* `Error` | `Error` |
+| Type Parameter        | Default type |
+| --------------------- | ------------ |
+| `T`                   | -            |
+| `E` _extends_ `Error` | `Error`      |

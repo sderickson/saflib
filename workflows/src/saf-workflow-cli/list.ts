@@ -1,9 +1,13 @@
 import type { Command } from "commander";
-import type { WorkflowMeta } from "../workflow.ts";
+import type { ConcreteWorkflow } from "../workflow.ts";
 import { addNewLinesToString } from "@saflib/utils";
 import { getCurrentPackage } from "@saflib/dev-tools";
+import { getPackageName } from "../workflow.ts";
 
-export const addListCommand = (program: Command, workflows: WorkflowMeta[]) => {
+export const addListCommand = (
+  program: Command,
+  workflows: ConcreteWorkflow[],
+) => {
   program
     .command("list")
     .description(
@@ -13,9 +17,10 @@ export const addListCommand = (program: Command, workflows: WorkflowMeta[]) => {
     )
     .action(async () => {
       const currentPackage = getCurrentPackage();
-      const workflowsForPackage = workflows.filter(
-        (workflow) => workflow.packageName === currentPackage,
-      );
-      console.log(workflowsForPackage.map((w) => w.name).join("\n"));
+      const workflowsForPackage = workflows.filter((workflow) => {
+        const stubWorkflow = new workflow();
+        return getPackageName(stubWorkflow.sourceUrl) === currentPackage;
+      });
+      console.log(workflowsForPackage.map((w) => new w().name).join("\n"));
     });
 };

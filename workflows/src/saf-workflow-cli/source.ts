@@ -1,30 +1,30 @@
 import type { Command } from "commander";
-import { type WorkflowMeta } from "../workflow.ts";
+import { type ConcreteWorkflow } from "../workflow.ts";
 import { addNewLinesToString } from "@saflib/utils";
 import { getGitHubUrl } from "@saflib/dev-tools";
 
 export const addSourceCommand = (
   program: Command,
-  workflows: WorkflowMeta[],
+  workflows: ConcreteWorkflow[],
 ) => {
   const sourceProgram = program
     .command("source")
     .description(addNewLinesToString("Print the GitHub url for a workflow."));
 
-  workflows.forEach((workflowMeta) => {
+  workflows.forEach((workflow) => {
+    const stubWorkflow = new workflow();
     let chain = sourceProgram
-      .command(workflowMeta.name)
-      .description(workflowMeta.description);
+      .command(stubWorkflow.name)
+      .description(stubWorkflow.description);
     chain.action(async () => {
-      await printSourceUrl(workflowMeta);
+      await printSourceUrl(workflow);
     });
   });
 };
 
-export const printSourceUrl = async (workflowMeta: WorkflowMeta) => {
-  const { Workflow } = workflowMeta;
-  const workflow = new Workflow();
-  const absolutePath = workflow.sourceUrl.replace("file://", "");
+export const printSourceUrl = async (workflow: ConcreteWorkflow) => {
+  const stubWorkflow = new workflow();
+  const absolutePath = stubWorkflow.sourceUrl.replace("file://", "");
   const sourceUrl = getGitHubUrl(absolutePath);
   console.log(sourceUrl);
 };

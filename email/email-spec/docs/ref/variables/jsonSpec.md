@@ -1,6 +1,6 @@
 [**@saflib/email-spec**](../index.md)
 
-***
+---
 
 # Variable: jsonSpec
 

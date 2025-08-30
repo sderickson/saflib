@@ -10,9 +10,7 @@
       "get": {
         "summary": "List all sent emails",
         "operationId": "listSentEmails",
-        "tags": [
-          "email"
-        ],
+        "tags": ["email"],
         "parameters": [
           {
             "name": "userEmail",
@@ -105,11 +103,7 @@
             }
           }
         },
-        "required": [
-          "to",
-          "subject",
-          "from"
-        ]
+        "required": ["to", "subject", "from"]
       },
       "error": {
         "type": "object",

@@ -1,6 +1,6 @@
 [**@saflib/links**](../index.md)
 
-***
+---
 
 # Function: linkToHref()
 
@@ -11,9 +11,9 @@ be specified in the Link object.
 
 ## Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `link` | [`Link`](../type-aliases/Link.md) |
+| Parameter  | Type                                          |
+| ---------- | --------------------------------------------- |
+| `link`     | [`Link`](../type-aliases/Link.md)             |
 | `options?` | [`LinkOptions`](../interfaces/LinkOptions.md) |
 
 ## Returns

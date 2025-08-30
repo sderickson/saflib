@@ -1,6 +1,6 @@
 [**@saflib/grpc-specs**](../index.md)
 
-***
+---
 
 # Class: SafAuth
 
@@ -16,9 +16,9 @@
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `data?` | `any`[] \| \{ `user_email?`: `string`; `user_id?`: `number`; `user_scopes?`: `string`[]; \} |
+| Parameter | Type                                                                                        |
+| --------- | ------------------------------------------------------------------------------------------- |
+| `data?`   | `any`[] \| \{ `user_email?`: `string`; `user_id?`: `number`; `user_scopes?`: `string`[]; \} |
 
 #### Returns
 
@@ -42,7 +42,7 @@
 
 `pb_1.Message.extensions`
 
-***
+---
 
 ### extensionsBinary
 
@@ -58,11 +58,11 @@
 
 ## Accessors
 
-### user\_email
+### user_email
 
 #### Get Signature
 
-> **get** **user\_email**(): `string`
+> **get** **user_email**(): `string`
 
 ##### Returns
 
@@ -70,25 +70,25 @@
 
 #### Set Signature
 
-> **set** **user\_email**(`value`): `void`
+> **set** **user_email**(`value`): `void`
 
 ##### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `value` | `string` |
+| Parameter | Type     |
+| --------- | -------- |
+| `value`   | `string` |
 
 ##### Returns
 
 `void`
 
-***
+---
 
-### user\_id
+### user_id
 
 #### Get Signature
 
-> **get** **user\_id**(): `number`
+> **get** **user_id**(): `number`
 
 ##### Returns
 
@@ -96,25 +96,25 @@
 
 #### Set Signature
 
-> **set** **user\_id**(`value`): `void`
+> **set** **user_id**(`value`): `void`
 
 ##### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `value` | `number` |
+| Parameter | Type     |
+| --------- | -------- |
+| `value`   | `number` |
 
 ##### Returns
 
 `void`
 
-***
+---
 
-### user\_scopes
+### user_scopes
 
 #### Get Signature
 
-> **get** **user\_scopes**(): `string`[]
+> **get** **user_scopes**(): `string`[]
 
 ##### Returns
 
@@ -122,13 +122,13 @@
 
 #### Set Signature
 
-> **set** **user\_scopes**(`value`): `void`
+> **set** **user_scopes**(`value`): `void`
 
 ##### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `value` | `string`[] |
+| Parameter | Type       |
+| --------- | ---------- |
+| `value`   | `string`[] |
 
 ##### Returns
 
@@ -148,7 +148,7 @@
 
 `pb_1.Message.clone`
 
-***
+---
 
 ### cloneMessage()
 
@@ -162,7 +162,7 @@
 
 `pb_1.Message.cloneMessage`
 
-***
+---
 
 ### getExtension()
 
@@ -171,13 +171,13 @@
 #### Type Parameters
 
 | Type Parameter |
-| ------ |
-| `T` |
+| -------------- |
+| `T`            |
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
+| Parameter   | Type                        |
+| ----------- | --------------------------- |
 | `fieldInfo` | `ExtensionFieldInfo`\<`T`\> |
 
 #### Returns
@@ -188,7 +188,7 @@
 
 `pb_1.Message.getExtension`
 
-***
+---
 
 ### getJsPbMessageId()
 
@@ -202,7 +202,7 @@
 
 `pb_1.Message.getJsPbMessageId`
 
-***
+---
 
 ### readBinaryExtension()
 
@@ -210,12 +210,12 @@
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `proto` | `Message` |
-| `reader` | `BinaryReader` |
-| `extensions` | \{\[`key`: `number`\]: `ExtensionFieldBinaryInfo`\<`Message`\>; \} |
-| `setExtensionFn` | \<`T`\>(`fieldInfo`, `val`) => `void` |
+| Parameter        | Type                                                               |
+| ---------------- | ------------------------------------------------------------------ |
+| `proto`          | `Message`                                                          |
+| `reader`         | `BinaryReader`                                                     |
+| `extensions`     | \{\[`key`: `number`\]: `ExtensionFieldBinaryInfo`\<`Message`\>; \} |
+| `setExtensionFn` | \<`T`\>(`fieldInfo`, `val`) => `void`                              |
 
 #### Returns
 
@@ -225,7 +225,7 @@
 
 `pb_1.Message.readBinaryExtension`
 
-***
+---
 
 ### serialize()
 
@@ -243,15 +243,15 @@
 
 ##### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `w` | `BinaryWriter` |
+| Parameter | Type           |
+| --------- | -------------- |
+| `w`       | `BinaryWriter` |
 
 ##### Returns
 
 `void`
 
-***
+---
 
 ### serializeBinary()
 
@@ -265,7 +265,7 @@
 
 `pb_1.Message.serializeBinary`
 
-***
+---
 
 ### serializeBinaryExtensions()
 
@@ -273,12 +273,12 @@
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `proto` | `Message` |
-| `writer` | `BinaryWriter` |
-| `extensions` | \{\[`key`: `number`\]: `ExtensionFieldBinaryInfo`\<`Message`\>; \} |
-| `getExtensionFn` | \<`T`\>(`fieldInfo`) => `T` |
+| Parameter        | Type                                                               |
+| ---------------- | ------------------------------------------------------------------ |
+| `proto`          | `Message`                                                          |
+| `writer`         | `BinaryWriter`                                                     |
+| `extensions`     | \{\[`key`: `number`\]: `ExtensionFieldBinaryInfo`\<`Message`\>; \} |
+| `getExtensionFn` | \<`T`\>(`fieldInfo`) => `T`                                        |
 
 #### Returns
 
@@ -288,7 +288,7 @@
 
 `pb_1.Message.serializeBinaryExtensions`
 
-***
+---
 
 ### setExtension()
 
@@ -297,15 +297,15 @@
 #### Type Parameters
 
 | Type Parameter |
-| ------ |
-| `T` |
+| -------------- |
+| `T`            |
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
+| Parameter   | Type                        |
+| ----------- | --------------------------- |
 | `fieldInfo` | `ExtensionFieldInfo`\<`T`\> |
-| `value` | `T` |
+| `value`     | `T`                         |
 
 #### Returns
 
@@ -315,7 +315,7 @@
 
 `pb_1.Message.setExtension`
 
-***
+---
 
 ### toArray()
 
@@ -329,7 +329,7 @@
 
 `pb_1.Message.toArray`
 
-***
+---
 
 ### toObject()
 
@@ -339,23 +339,23 @@
 
 `object`
 
-##### user\_email?
+##### user_email?
 
-> `optional` **user\_email**: `string`
+> `optional` **user_email**: `string`
 
-##### user\_id?
+##### user_id?
 
-> `optional` **user\_id**: `number`
+> `optional` **user_id**: `number`
 
-##### user\_scopes?
+##### user_scopes?
 
-> `optional` **user\_scopes**: `string`[]
+> `optional` **user_scopes**: `string`[]
 
 #### Overrides
 
 `pb_1.Message.toObject`
 
-***
+---
 
 ### toString()
 
@@ -369,7 +369,7 @@
 
 `pb_1.Message.toString`
 
-***
+---
 
 ### addToRepeatedField()
 
@@ -377,12 +377,12 @@
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `msg` | `Message` |
-| `fieldNumber` | `number` |
-| `value` | `any` |
-| `index?` | `number` |
+| Parameter     | Type      |
+| ------------- | --------- |
+| `msg`         | `Message` |
+| `fieldNumber` | `number`  |
+| `value`       | `any`     |
+| `index?`      | `number`  |
 
 #### Returns
 
@@ -392,7 +392,7 @@
 
 `pb_1.Message.addToRepeatedField`
 
-***
+---
 
 ### addToRepeatedWrapperField()
 
@@ -400,19 +400,19 @@
 
 #### Type Parameters
 
-| Type Parameter |
-| ------ |
-| `T` *extends* `Message` |
+| Type Parameter          |
+| ----------------------- |
+| `T` _extends_ `Message` |
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `msg` | `Message` |
-| `fieldNumber` | `number` |
-| `value` | `undefined` \| `T` |
-| `ctor` | () => `T` |
-| `index?` | `number` |
+| Parameter     | Type               |
+| ------------- | ------------------ |
+| `msg`         | `Message`          |
+| `fieldNumber` | `number`           |
+| `value`       | `undefined` \| `T` |
+| `ctor`        | () => `T`          |
+| `index?`      | `number`           |
 
 #### Returns
 
@@ -422,7 +422,7 @@
 
 `pb_1.Message.addToRepeatedWrapperField`
 
-***
+---
 
 ### bytesAsB64()
 
@@ -430,9 +430,9 @@
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `bytes` | `Uint8Array` |
+| Parameter | Type         |
+| --------- | ------------ |
+| `bytes`   | `Uint8Array` |
 
 #### Returns
 
@@ -442,7 +442,7 @@
 
 `pb_1.Message.bytesAsB64`
 
-***
+---
 
 ### bytesAsU8()
 
@@ -450,9 +450,9 @@
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `str` | `string` |
+| Parameter | Type     |
+| --------- | -------- |
+| `str`     | `string` |
 
 #### Returns
 
@@ -462,7 +462,7 @@
 
 `pb_1.Message.bytesAsU8`
 
-***
+---
 
 ### bytesListAsB64()
 
@@ -470,8 +470,8 @@
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
+| Parameter   | Type                                |
+| ----------- | ----------------------------------- |
 | `bytesList` | `Uint8Array`\<`ArrayBufferLike`\>[] |
 
 #### Returns
@@ -482,7 +482,7 @@
 
 `pb_1.Message.bytesListAsB64`
 
-***
+---
 
 ### bytesListAsU8()
 
@@ -490,8 +490,8 @@
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
+| Parameter | Type       |
+| --------- | ---------- |
 | `strList` | `string`[] |
 
 #### Returns
@@ -502,7 +502,7 @@
 
 `pb_1.Message.bytesListAsU8`
 
-***
+---
 
 ### clone()
 
@@ -510,15 +510,15 @@
 
 #### Type Parameters
 
-| Type Parameter |
-| ------ |
-| `T` *extends* `Message` |
+| Type Parameter          |
+| ----------------------- |
+| `T` _extends_ `Message` |
 
 #### Parameters
 
 | Parameter | Type |
-| ------ | ------ |
-| `msg` | `T` |
+| --------- | ---- |
+| `msg`     | `T`  |
 
 #### Returns
 
@@ -528,7 +528,7 @@
 
 `pb_1.Message.clone`
 
-***
+---
 
 ### cloneMessage()
 
@@ -536,15 +536,15 @@
 
 #### Type Parameters
 
-| Type Parameter |
-| ------ |
-| `T` *extends* `Message` |
+| Type Parameter          |
+| ----------------------- |
+| `T` _extends_ `Message` |
 
 #### Parameters
 
 | Parameter | Type |
-| ------ | ------ |
-| `msg` | `T` |
+| --------- | ---- |
+| `msg`     | `T`  |
 
 #### Returns
 
@@ -554,7 +554,7 @@
 
 `pb_1.Message.cloneMessage`
 
-***
+---
 
 ### compareExtensions()
 
@@ -562,8 +562,8 @@
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
+| Parameter    | Type  |
+| ------------ | ----- |
 | `extension1` | \{ \} |
 | `extension2` | \{ \} |
 
@@ -575,7 +575,7 @@
 
 `pb_1.Message.compareExtensions`
 
-***
+---
 
 ### compareFields()
 
@@ -583,10 +583,10 @@
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `field1` | `any` |
-| `field2` | `any` |
+| Parameter | Type  |
+| --------- | ----- |
+| `field1`  | `any` |
+| `field2`  | `any` |
 
 #### Returns
 
@@ -596,7 +596,7 @@
 
 `pb_1.Message.compareFields`
 
-***
+---
 
 ### computeOneofCase()
 
@@ -604,10 +604,10 @@
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `msg` | `Message` |
-| `oneof` | `number`[] |
+| Parameter | Type       |
+| --------- | ---------- |
+| `msg`     | `Message`  |
+| `oneof`   | `number`[] |
 
 #### Returns
 
@@ -617,7 +617,7 @@
 
 `pb_1.Message.computeOneofCase`
 
-***
+---
 
 ### copyInto()
 
@@ -625,10 +625,10 @@
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
+| Parameter     | Type      |
+| ------------- | --------- |
 | `fromMessage` | `Message` |
-| `toMessage` | `Message` |
+| `toMessage`   | `Message` |
 
 #### Returns
 
@@ -638,7 +638,7 @@
 
 `pb_1.Message.copyInto`
 
-***
+---
 
 ### deserialize()
 
@@ -646,15 +646,15 @@
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `bytes` | `Uint8Array`\<`ArrayBufferLike`\> \| `BinaryReader` |
+| Parameter | Type                                                |
+| --------- | --------------------------------------------------- |
+| `bytes`   | `Uint8Array`\<`ArrayBufferLike`\> \| `BinaryReader` |
 
 #### Returns
 
 `SafAuth`
 
-***
+---
 
 ### deserializeBinary()
 
@@ -662,9 +662,9 @@
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `bytes` | `Uint8Array` |
+| Parameter | Type         |
+| --------- | ------------ |
+| `bytes`   | `Uint8Array` |
 
 #### Returns
 
@@ -674,7 +674,7 @@
 
 `pb_1.Message.deserializeBinary`
 
-***
+---
 
 ### deserializeBinaryFromReader()
 
@@ -682,10 +682,10 @@
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `message` | `Message` |
-| `reader` | `BinaryReader` |
+| Parameter | Type           |
+| --------- | -------------- |
+| `message` | `Message`      |
+| `reader`  | `BinaryReader` |
 
 #### Returns
 
@@ -695,7 +695,7 @@
 
 `pb_1.Message.deserializeBinaryFromReader`
 
-***
+---
 
 ### difference()
 
@@ -703,16 +703,16 @@
 
 #### Type Parameters
 
-| Type Parameter |
-| ------ |
-| `T` *extends* `Message` |
+| Type Parameter          |
+| ----------------------- |
+| `T` _extends_ `Message` |
 
 #### Parameters
 
 | Parameter | Type |
-| ------ | ------ |
-| `m1` | `T` |
-| `m2` | `T` |
+| --------- | ---- |
+| `m1`      | `T`  |
+| `m2`      | `T`  |
 
 #### Returns
 
@@ -722,7 +722,7 @@
 
 `pb_1.Message.difference`
 
-***
+---
 
 ### equals()
 
@@ -730,10 +730,10 @@
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `m1` | `Message` |
-| `m2` | `Message` |
+| Parameter | Type      |
+| --------- | --------- |
+| `m1`      | `Message` |
+| `m2`      | `Message` |
 
 #### Returns
 
@@ -743,7 +743,7 @@
 
 `pb_1.Message.equals`
 
-***
+---
 
 ### fromObject()
 
@@ -751,18 +751,18 @@
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `data` | \{ `user_email?`: `string`; `user_id?`: `number`; `user_scopes?`: `string`[]; \} |
-| `data.user_email?` | `string` |
-| `data.user_id?` | `number` |
-| `data.user_scopes?` | `string`[] |
+| Parameter           | Type                                                                             |
+| ------------------- | -------------------------------------------------------------------------------- |
+| `data`              | \{ `user_email?`: `string`; `user_id?`: `number`; `user_scopes?`: `string`[]; \} |
+| `data.user_email?`  | `string`                                                                         |
+| `data.user_id?`     | `number`                                                                         |
+| `data.user_scopes?` | `string`[]                                                                       |
 
 #### Returns
 
 `SafAuth`
 
-***
+---
 
 ### getField()
 
@@ -770,10 +770,10 @@
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `msg` | `Message` |
-| `fieldNumber` | `number` |
+| Parameter     | Type      |
+| ------------- | --------- |
+| `msg`         | `Message` |
+| `fieldNumber` | `number`  |
 
 #### Returns
 
@@ -783,7 +783,7 @@
 
 `pb_1.Message.getField`
 
-***
+---
 
 ### getFieldWithDefault()
 
@@ -792,16 +792,16 @@
 #### Type Parameters
 
 | Type Parameter |
-| ------ |
-| `T` |
+| -------------- |
+| `T`            |
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `msg` | `Message` |
-| `fieldNumber` | `number` |
-| `defaultValue` | `T` |
+| Parameter      | Type      |
+| -------------- | --------- |
+| `msg`          | `Message` |
+| `fieldNumber`  | `number`  |
+| `defaultValue` | `T`       |
 
 #### Returns
 
@@ -811,7 +811,7 @@
 
 `pb_1.Message.getFieldWithDefault`
 
-***
+---
 
 ### getMapField()
 
@@ -819,12 +819,12 @@
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `msg` | `Message` |
-| `fieldNumber` | `number` |
-| `noLazyCreate` | `boolean` |
-| `valueCtor?` | *typeof* `Message` |
+| Parameter      | Type               |
+| -------------- | ------------------ |
+| `msg`          | `Message`          |
+| `fieldNumber`  | `number`           |
+| `noLazyCreate` | `boolean`          |
+| `valueCtor?`   | _typeof_ `Message` |
 
 #### Returns
 
@@ -834,7 +834,7 @@
 
 `pb_1.Message.getMapField`
 
-***
+---
 
 ### getOptionalFloatingPointField()
 
@@ -842,10 +842,10 @@
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `msg` | `Message` |
-| `fieldNumber` | `number` |
+| Parameter     | Type      |
+| ------------- | --------- |
+| `msg`         | `Message` |
+| `fieldNumber` | `number`  |
 
 #### Returns
 
@@ -855,7 +855,7 @@
 
 `pb_1.Message.getOptionalFloatingPointField`
 
-***
+---
 
 ### getRepeatedFloatingPointField()
 
@@ -863,10 +863,10 @@
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `msg` | `Message` |
-| `fieldNumber` | `number` |
+| Parameter     | Type      |
+| ------------- | --------- |
+| `msg`         | `Message` |
+| `fieldNumber` | `number`  |
 
 #### Returns
 
@@ -876,7 +876,7 @@
 
 `pb_1.Message.getRepeatedFloatingPointField`
 
-***
+---
 
 ### getRepeatedWrapperField()
 
@@ -884,17 +884,17 @@
 
 #### Type Parameters
 
-| Type Parameter |
-| ------ |
-| `T` *extends* `Message` |
+| Type Parameter          |
+| ----------------------- |
+| `T` _extends_ `Message` |
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `msg` | `Message` |
-| `ctor` | () => `T` |
-| `fieldNumber` | `number` |
+| Parameter     | Type      |
+| ------------- | --------- |
+| `msg`         | `Message` |
+| `ctor`        | () => `T` |
+| `fieldNumber` | `number`  |
 
 #### Returns
 
@@ -904,7 +904,7 @@
 
 `pb_1.Message.getRepeatedWrapperField`
 
-***
+---
 
 ### getWrapperField()
 
@@ -912,18 +912,18 @@
 
 #### Type Parameters
 
-| Type Parameter |
-| ------ |
-| `T` *extends* `Message` |
+| Type Parameter          |
+| ----------------------- |
+| `T` _extends_ `Message` |
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `msg` | `Message` |
-| `ctor` | () => `T` |
-| `fieldNumber` | `number` |
-| `required?` | `number` |
+| Parameter     | Type      |
+| ------------- | --------- |
+| `msg`         | `Message` |
+| `ctor`        | () => `T` |
+| `fieldNumber` | `number`  |
+| `required?`   | `number`  |
 
 #### Returns
 
@@ -933,7 +933,7 @@
 
 `pb_1.Message.getWrapperField`
 
-***
+---
 
 ### initialize()
 
@@ -941,14 +941,14 @@
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `msg` | `Message` |
-| `data` | `MessageArray` |
-| `messageId` | `string` \| `number` |
-| `suggestedPivot` | `number` |
-| `repeatedFields?` | `null` \| `number`[] |
-| `oneofFields?` | `null` \| `number`[][] |
+| Parameter         | Type                   |
+| ----------------- | ---------------------- |
+| `msg`             | `Message`              |
+| `data`            | `MessageArray`         |
+| `messageId`       | `string` \| `number`   |
+| `suggestedPivot`  | `number`               |
+| `repeatedFields?` | `null` \| `number`[]   |
+| `oneofFields?`    | `null` \| `number`[][] |
 
 #### Returns
 
@@ -958,7 +958,7 @@
 
 `pb_1.Message.initialize`
 
-***
+---
 
 ### registerMessageType()
 
@@ -966,10 +966,10 @@
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `id` | `number` |
-| `constructor` | *typeof* `Message` |
+| Parameter     | Type               |
+| ------------- | ------------------ |
+| `id`          | `number`           |
+| `constructor` | _typeof_ `Message` |
 
 #### Returns
 
@@ -979,7 +979,7 @@
 
 `pb_1.Message.registerMessageType`
 
-***
+---
 
 ### serializeBinaryToWriter()
 
@@ -987,10 +987,10 @@
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `message` | `Message` |
-| `writer` | `BinaryWriter` |
+| Parameter | Type           |
+| --------- | -------------- |
+| `message` | `Message`      |
+| `writer`  | `BinaryWriter` |
 
 #### Returns
 
@@ -1000,7 +1000,7 @@
 
 `pb_1.Message.serializeBinaryToWriter`
 
-***
+---
 
 ### setField()
 
@@ -1008,11 +1008,11 @@
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `msg` | `Message` |
-| `fieldNumber` | `number` |
-| `value` | `ReadonlyFieldValue` |
+| Parameter     | Type                 |
+| ------------- | -------------------- |
+| `msg`         | `Message`            |
+| `fieldNumber` | `number`             |
+| `value`       | `ReadonlyFieldValue` |
 
 #### Returns
 
@@ -1022,7 +1022,7 @@
 
 `pb_1.Message.setField`
 
-***
+---
 
 ### setOneofField()
 
@@ -1030,12 +1030,12 @@
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `msg` | `Message` |
-| `fieldNumber` | `number` |
-| `oneof` | `number`[] |
-| `value` | `ReadonlyFieldValue` |
+| Parameter     | Type                 |
+| ------------- | -------------------- |
+| `msg`         | `Message`            |
+| `fieldNumber` | `number`             |
+| `oneof`       | `number`[]           |
+| `value`       | `ReadonlyFieldValue` |
 
 #### Returns
 
@@ -1045,7 +1045,7 @@
 
 `pb_1.Message.setOneofField`
 
-***
+---
 
 ### setOneofWrapperField()
 
@@ -1053,12 +1053,12 @@
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `msg` | `Message` |
-| `fieldNumber` | `number` |
-| `oneof` | `number`[] |
-| `value` | `any` |
+| Parameter     | Type       |
+| ------------- | ---------- |
+| `msg`         | `Message`  |
+| `fieldNumber` | `number`   |
+| `oneof`       | `number`[] |
+| `value`       | `any`      |
 
 #### Returns
 
@@ -1068,7 +1068,7 @@
 
 `pb_1.Message.setOneofWrapperField`
 
-***
+---
 
 ### setRepeatedWrapperField()
 
@@ -1076,17 +1076,17 @@
 
 #### Type Parameters
 
-| Type Parameter |
-| ------ |
-| `T` *extends* `Message` |
+| Type Parameter          |
+| ----------------------- |
+| `T` _extends_ `Message` |
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `msg` | `Message` |
-| `fieldNumber` | `number` |
-| `value?` | readonly `T`[] |
+| Parameter     | Type           |
+| ------------- | -------------- |
+| `msg`         | `Message`      |
+| `fieldNumber` | `number`       |
+| `value?`      | readonly `T`[] |
 
 #### Returns
 
@@ -1096,7 +1096,7 @@
 
 `pb_1.Message.setRepeatedWrapperField`
 
-***
+---
 
 ### setWrapperField()
 
@@ -1104,17 +1104,17 @@
 
 #### Type Parameters
 
-| Type Parameter |
-| ------ |
-| `T` *extends* `Message` |
+| Type Parameter          |
+| ----------------------- |
+| `T` _extends_ `Message` |
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `msg` | `Message` |
-| `fieldNumber` | `number` |
-| `value?` | `Map`\<`any`, `any`\> \| `T` |
+| Parameter     | Type                         |
+| ------------- | ---------------------------- |
+| `msg`         | `Message`                    |
+| `fieldNumber` | `number`                     |
+| `value?`      | `Map`\<`any`, `any`\> \| `T` |
 
 #### Returns
 
@@ -1124,7 +1124,7 @@
 
 `pb_1.Message.setWrapperField`
 
-***
+---
 
 ### toMap()
 
@@ -1132,12 +1132,12 @@
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `field` | `any`[] |
-| `mapKeyGetterFn` | (`field`) => `string` |
-| `toObjectFn?` | `StaticToObject` |
-| `includeInstance?` | `boolean` |
+| Parameter          | Type                  |
+| ------------------ | --------------------- |
+| `field`            | `any`[]               |
+| `mapKeyGetterFn`   | (`field`) => `string` |
+| `toObjectFn?`      | `StaticToObject`      |
+| `includeInstance?` | `boolean`             |
 
 #### Returns
 
@@ -1147,7 +1147,7 @@
 
 `pb_1.Message.toMap`
 
-***
+---
 
 ### toObject()
 
@@ -1155,10 +1155,10 @@
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
+| Parameter         | Type      |
+| ----------------- | --------- |
 | `includeInstance` | `boolean` |
-| `msg` | `Message` |
+| `msg`             | `Message` |
 
 #### Returns
 
@@ -1168,7 +1168,7 @@
 
 `pb_1.Message.toObject`
 
-***
+---
 
 ### toObjectExtension()
 
@@ -1176,13 +1176,13 @@
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `msg` | `Message` |
-| `obj` | \{ \} |
-| `extensions` | \{\[`key`: `number`\]: `ExtensionFieldInfo`\<`Message`\>; \} |
-| `getExtensionFn` | (`fieldInfo`) => `Message` |
-| `includeInstance?` | `boolean` |
+| Parameter          | Type                                                         |
+| ------------------ | ------------------------------------------------------------ |
+| `msg`              | `Message`                                                    |
+| `obj`              | \{ \}                                                        |
+| `extensions`       | \{\[`key`: `number`\]: `ExtensionFieldInfo`\<`Message`\>; \} |
+| `getExtensionFn`   | (`fieldInfo`) => `Message`                                   |
+| `includeInstance?` | `boolean`                                                    |
 
 #### Returns
 
@@ -1192,7 +1192,7 @@
 
 `pb_1.Message.toObjectExtension`
 
-***
+---
 
 ### toObjectList()
 
@@ -1200,17 +1200,17 @@
 
 #### Type Parameters
 
-| Type Parameter |
-| ------ |
-| `T` *extends* `Message` |
+| Type Parameter          |
+| ----------------------- |
+| `T` _extends_ `Message` |
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `field` | `T`[] |
-| `toObjectFn` | (`includeInstance`, `data`) => `object` |
-| `includeInstance?` | `boolean` |
+| Parameter          | Type                                    |
+| ------------------ | --------------------------------------- |
+| `field`            | `T`[]                                   |
+| `toObjectFn`       | (`includeInstance`, `data`) => `object` |
+| `includeInstance?` | `boolean`                               |
 
 #### Returns
 

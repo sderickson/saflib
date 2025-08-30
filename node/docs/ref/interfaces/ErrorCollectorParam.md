@@ -1,6 +1,6 @@
 [**@saflib/node**](../index.md)
 
-***
+---
 
 # Interface: ErrorCollectorParam
 
@@ -12,25 +12,25 @@ Parameters provided to error collectors.
 
 > **error**: `Error`
 
-***
+---
 
 ### extra
 
 > **extra**: `Record`\<`string`, `unknown`\>
 
-***
+---
 
 ### level
 
 > **level**: [`ErrorLevels`](../type-aliases/ErrorLevels.md)
 
-***
+---
 
 ### tags
 
 > **tags**: `Record`\<`string`, `string` \| `undefined`\>
 
-***
+---
 
 ### user?
 
@@ -40,6 +40,6 @@ Parameters provided to error collectors.
 
 > **id**: `string`
 
-#### ip\_address?
+#### ip_address?
 
-> `optional` **ip\_address**: `string`
+> `optional` **ip_address**: `string`

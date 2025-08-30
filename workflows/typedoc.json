@@ -6,7 +6,6 @@
     "PromptAgentComposerOptions",
     "XStateWorkflowOptions",
     "ActionParam",
-    "Step",
     "WorkflowBlob"
   ]
 }

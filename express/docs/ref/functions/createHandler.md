@@ -1,6 +1,6 @@
 [**@saflib/express**](../index.md)
 
-***
+---
 
 # Function: createHandler()
 
@@ -11,8 +11,8 @@ exceptions get passed to `next`.
 
 ## Parameters
 
-| Parameter | Type |
-| ------ | ------ |
+| Parameter | Type                                          |
+| --------- | --------------------------------------------- |
 | `handler` | (`req`, `res`, `next`) => `Promise`\<`void`\> |
 
 ## Returns
@@ -21,11 +21,11 @@ exceptions get passed to `next`.
 
 ### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `req` | `Request` |
-| `res` | `Response` |
-| `next` | `NextFunction` |
+| Parameter | Type           |
+| --------- | -------------- |
+| `req`     | `Request`      |
+| `res`     | `Response`     |
+| `next`    | `NextFunction` |
 
 ### Returns
 

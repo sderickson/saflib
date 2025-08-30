@@ -1,6 +1,6 @@
 [**@saflib/dev-tools**](../index.md)
 
-***
+---
 
 # Interface: MonorepoContext
 
@@ -16,19 +16,19 @@ and pass it around.
 
 > **monorepoPackageDirectories**: [`MonorepoPackageDirectories`](MonorepoPackageDirectories.md)
 
-***
+---
 
 ### monorepoPackageJsons
 
 > **monorepoPackageJsons**: [`MonorepoPackageJsons`](MonorepoPackageJsons.md)
 
-***
+---
 
 ### packages
 
 > **packages**: `Set`\<`string`\>
 
-***
+---
 
 ### packagesWithDockerfileTemplates
 
@@ -36,7 +36,7 @@ and pass it around.
 
 Subset of packages for quickly finding those which produce Docker images.
 
-***
+---
 
 ### rootDir
 
@@ -44,7 +44,7 @@ Subset of packages for quickly finding those which produce Docker images.
 
 Absolute path.
 
-***
+---
 
 ### workspaceDependencyGraph
 

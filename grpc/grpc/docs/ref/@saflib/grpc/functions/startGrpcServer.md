@@ -1,6 +1,6 @@
 [**@saflib/grpc**](../../../index.md)
 
-***
+---
 
 # Function: startGrpcServer()
 
@@ -10,9 +10,9 @@ Start a gRPC server with options, shutting it down on SIGTERM and SIGINT.
 
 ## Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `server` | `Server` |
+| Parameter | Type                                                      |
+| --------- | --------------------------------------------------------- |
+| `server`  | `Server`                                                  |
 | `options` | [`GrpcServerOptions`](../interfaces/GrpcServerOptions.md) |
 
 ## Returns

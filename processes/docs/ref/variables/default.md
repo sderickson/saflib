@@ -1,6 +1,6 @@
 [**@saflib/processes**](../index.md)
 
-***
+---
 
 # Variable: default
 

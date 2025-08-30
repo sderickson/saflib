@@ -1,6 +1,6 @@
 [**@saflib/express**](../index.md)
 
-***
+---
 
 # Interface: ScopedMiddlewareOptions
 
@@ -12,7 +12,7 @@ Options for creating scoped middleware.
 
 > `optional` **apiSpec**: `DocumentV3`
 
-***
+---
 
 ### authRequired?
 

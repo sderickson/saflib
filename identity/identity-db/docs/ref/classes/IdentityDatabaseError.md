@@ -1,6 +1,6 @@
 [**@saflib/identity-db**](../index.md)
 
-***
+---
 
 # Class: IdentityDatabaseError
 
@@ -25,8 +25,8 @@
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
+| Parameter  | Type     |
+| ---------- | -------- |
 | `message?` | `string` |
 
 #### Returns
@@ -43,9 +43,9 @@
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `message?` | `string` |
+| Parameter  | Type           |
+| ---------- | -------------- |
+| `message?` | `string`       |
 | `options?` | `ErrorOptions` |
 
 #### Returns
@@ -66,7 +66,7 @@
 
 `HandledDatabaseError.cause`
 
-***
+---
 
 ### message
 
@@ -76,7 +76,7 @@
 
 `HandledDatabaseError.message`
 
-***
+---
 
 ### name
 
@@ -86,7 +86,7 @@
 
 `HandledDatabaseError.name`
 
-***
+---
 
 ### stack?
 
@@ -96,7 +96,7 @@
 
 `HandledDatabaseError.stack`
 
-***
+---
 
 ### stackTraceLimit
 
@@ -129,7 +129,7 @@ a string representing the location in the code at which
 ```js
 const myObject = {};
 Error.captureStackTrace(myObject);
-myObject.stack;  // Similar to `new Error().stack`
+myObject.stack; // Similar to `new Error().stack`
 ```
 
 The first line of the trace will be prefixed with
@@ -168,9 +168,9 @@ a();
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `targetObject` | `object` |
+| Parameter         | Type       |
+| ----------------- | ---------- |
+| `targetObject`    | `object`   |
 | `constructorOpt?` | `Function` |
 
 #### Returns
@@ -181,7 +181,7 @@ a();
 
 `HandledDatabaseError.captureStackTrace`
 
-***
+---
 
 ### prepareStackTrace()
 
@@ -189,9 +189,9 @@ a();
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `err` | `Error` |
+| Parameter     | Type         |
+| ------------- | ------------ |
+| `err`         | `Error`      |
 | `stackTraces` | `CallSite`[] |
 
 #### Returns

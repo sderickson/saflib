@@ -1,6 +1,6 @@
 [**@saflib/vue**](../../../index.md)
 
-***
+---
 
 # Function: createVueApp()
 
@@ -9,6 +9,7 @@
 Wrapper around vue's `createApp` function. Handles SAF-required plugins.
 
 Sets up:
+
 - Vuetify
 - Vue Router
 - Tanstack Query
@@ -16,9 +17,9 @@ Sets up:
 
 ## Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `Application` | `Component` |
+| Parameter           | Type                                                          |
+| ------------------- | ------------------------------------------------------------- |
+| `Application`       | `Component`                                                   |
 | `__namedParameters` | [`CreateVueAppOptions`](../interfaces/CreateVueAppOptions.md) |
 
 ## Returns

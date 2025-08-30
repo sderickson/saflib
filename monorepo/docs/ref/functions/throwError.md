@@ -1,6 +1,6 @@
 [**@saflib/monorepo**](../index.md)
 
-***
+---
 
 # Function: throwError()
 
@@ -18,15 +18,15 @@ Error class.
 ## Type Parameters
 
 | Type Parameter |
-| ------ |
-| `T` |
+| -------------- |
+| `T`            |
 
 ## Parameters
 
-| Parameter | Type | Default value |
-| ------ | ------ | ------ |
-| `promise` | `Promise`\<[`ReturnsError`](../type-aliases/ReturnsError.md)\<`T`, `Error`\>\> | `undefined` |
-| `ErrorClass` | (`message`, `options?`) => `Error` | `Error` |
+| Parameter    | Type                                                                           | Default value |
+| ------------ | ------------------------------------------------------------------------------ | ------------- |
+| `promise`    | `Promise`\<[`ReturnsError`](../type-aliases/ReturnsError.md)\<`T`, `Error`\>\> | `undefined`   |
+| `ErrorClass` | (`message`, `options?`) => `Error`                                             | `Error`       |
 
 ## Returns
 

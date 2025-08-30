@@ -29,27 +29,44 @@ Automated workflows are a product of SAF, and its core feature. I built SAF init
 To solve this, I built a simple [workflow tool](https://scotterickson.info/blog/2025-05-10-workflow-first-iteration) to work with agents. It's a CLI tool which runs a state machine under the hood, and each state either
 
 1. Prints out a prompt and exits
-2. Runs a command and continues if successful, otherwise prints out an error and exits
+2. Runs a script (such as copying over template files) and continues
+3. Does a check (such as running a regex on a file or running a unit test) and continues if successful, otherwise prints out an error and exits
 
 When it exits, it saves the machine state to disk so that when it's run again, it can pick up where it left off. This way the agent can run the workflow command, get a prompt, do the work, then run the workflow command again to get the next prompt until the machine is done. See [this blog post](https://scotterickson.info/blog/2025-05-10-workflow-first-iteration) for more details.
 
-Any routine work can become a workflow with this tool, such as adding a route to a server, a page to a website, a table to a database, a deployment to a project, or a package to a monorepo. Because it's built on XState, workflows can also invoke other workflows.
+Any routine work can become a workflow with this tool, such as [adding a route to a spec](./openapi/docs/workflows/update-spec.md), a [server handler for the route](./express/docs/workflows/add-route.md), a [page to a website](./vue/docs/workflows/add-spa-page.md), a [table to a database](./drizzle/docs/workflows/update-schema.md), a deployment to a project (TODO!), or a [package to a monorepo](./monorepo/docs/workflows/add-ts-package.md). Because it's built on [XState](https://stately.ai/docs), workflows can also invoke other workflows.
 
-Going back to SAF, I opted to compose my own framework not only because it gives me a way to discern [best practices](./best-practices.md), it also is a playground for building out these workflows and testing them out. My goal is to:
+Going back to SAF, I opted to compose my own framework not only because it gives me a way to discern [best practices](./best-practices.md), it also is a playground for building out these workflows and testing them out and optimizing the stack _for_ the workflows. My goal is to:
 
 1. Write workflows for all routine work _(in progress)_
 2. Set up evals for them to ensure they are reliable
 3. Experiment with changing the framework to see how much best practices actually help (based on eval results)
 
+## Demo
+
+This is a demo of the workflow tool in action, using [`@saflib/drizzle`](./drizzle/docs/workflows/index.md) workflows to create a database schema and five queries in 13 minutes.
+
+<iframe width="100%" height="400" src="https://www.youtube.com/embed/p6jfG5JH7_8?si=Avxv1kGjHLmXW4nP" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+
+Here are the exact prompts I used in the demo.
+
+**Prompt 1**
+
+> Hey, I’d like to add a simple TODO app as a demonstration. To start, I’d like you to update the database schema to add a new table for TODOs. Can you go to /services/caller/caller-db and run `npm exec saf-workflow kickoff update-schema` and follow the prompts to add a new table with a very straightforward todo schema?
+
+**Prompt 2**
+
+> Looks good! Now I’d like to add queries for it. Please within this same directory run `npm exec saf-workflow kickoff add-queries ./queries/todos/create.ts` and set that up to create a todo?
+
+**Prompt 3**
+
+> Looks good! Let’s add more database queries. Let's start with `get-all.ts`, then `get-by-id.ts`, `update.ts`, and `remove.ts`.
+
 ## Exploring Workflows
 
 You can see what workflows there are and what they look like by finding "Workflows" in the sidebar to the left. Each package in SAF which provides workflows will have one.
 
-Here are some examples:
-
-- [Add a schema for an environment variable](./env/docs/workflows/add-env-var.md)
-- [Add a workflow](./workflows/docs/workflows/add-workflow.md) (the meta-workflow!)
-- (more to come)
+The documentation for each workflow is generated. In the docs for any given workflow, there's a "Checklist" section which is just what you get when you run the [workflow tool](./workflows-cli/docs/cli/saf-workflow.md) `checklist` command for that workflow.
 
 ## Trying Out Workflows
 

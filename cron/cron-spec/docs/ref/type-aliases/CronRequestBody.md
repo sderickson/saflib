@@ -1,6 +1,6 @@
 [**@saflib/cron-spec**](../index.md)
 
-***
+---
 
 # Type Alias: CronRequestBody
 

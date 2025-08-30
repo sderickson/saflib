@@ -1,19 +1,18 @@
 {
   // Has the vue config supercede the project's base tsconfig
-"extends": [
+  "extends": [
     "@saflib/monorepo/tsconfig.json",
     "@vue/tsconfig/tsconfig.dom.json"
   ],
   "compilerOptions": {
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
     "target": "esnext",
-    "lib": ["esnext", "dom"],
+    "lib": ["esnext", "dom"]
   },
-  "exclude": ["node_modules", "vite.config.ts"],
+  "exclude": ["node_modules", "vite.config.ts"]
   // "include": [
   //   "**/*.ts",
   //   "**/*.vue",
-    // "assets.d.ts"
+  // "assets.d.ts"
   // ]
 }
-

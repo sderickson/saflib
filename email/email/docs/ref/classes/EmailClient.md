@@ -1,6 +1,6 @@
 [**@saflib/email**](../index.md)
 
-***
+---
 
 # Class: EmailClient
 
@@ -24,8 +24,8 @@ A simplified client for sending emails, wrapping around nodemailer (or a mock in
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
+| Parameter | Type                                            |
+| --------- | ----------------------------------------------- |
 | `options` | [`EmailOptions`](../interfaces/EmailOptions.md) |
 
 #### Returns

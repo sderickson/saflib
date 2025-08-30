@@ -1,6 +1,6 @@
 [**@saflib/identity-rpcs**](../index.md)
 
-***
+---
 
 # Type Alias: LimitedUsersClient
 

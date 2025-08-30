@@ -1,6 +1,6 @@
 [**@saflib/openapi**](../index.md)
 
-***
+---
 
 # Function: castJson()
 
@@ -10,9 +10,9 @@ Takes an imported JSON object and casts it to the OpenAPIV3.DocumentV3 type so t
 
 ## Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `json` | `any` |
+| Parameter | Type  |
+| --------- | ----- |
+| `json`    | `any` |
 
 ## Returns
 

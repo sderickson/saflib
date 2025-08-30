@@ -5,7 +5,6 @@
   "exports": {
     ".": "./src/index.ts",
     "./components": "./components/index.ts",
-    "./tanstack": "./tanstack.ts",
     "./testing": "./testing/index.ts",
     "./tsconfig.app.json": "./tsconfig.app.json",
     "./workflows": "./workflows/index.ts",
@@ -15,13 +14,12 @@
     "typecheck": "tsc --project tsconfig.app.json"
   },
   "dependencies": {
+    "@saflib/sdk": "*",
     "@mdi/font": "^7.0.0",
     "@saflib/utils": "*",
-    "@tanstack/vue-query": "^5.0.0",
     "@types/vue-i18n": "^6.1.3",
     "@vitejs/plugin-vue": "^6.0.0",
     "@vue/tsconfig": "^0.7.0",
-    "openapi-fetch": "^0.14.0",
     "rollup-plugin-ignore": "^1.0.0",
     "vite": "^7.0.0",
     "vite-plugin-vue-devtools": "^7.0.0",
@@ -36,7 +34,6 @@
     "@saflib/workflows": "*",
     "@vue/test-utils": "^2.0.0",
     "jsdom": "^26.0.0",
-    "msw": "^2.0.0",
     "sass-embedded": "^1.0.0",
     "vite-plugin-vuetify": "^2.0.0",
     "vue-tsc": "^3.0.0"

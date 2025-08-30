@@ -1,6 +1,6 @@
 [**@saflib/workflows**](../index.md)
 
-***
+---
 
 # Interface: ChecklistItem
 
@@ -14,7 +14,7 @@ to create a recursively generated checklist tree.
 
 > **description**: `string`
 
-***
+---
 
 ### subitems?
 

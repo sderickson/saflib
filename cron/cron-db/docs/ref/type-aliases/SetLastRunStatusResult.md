@@ -1,6 +1,6 @@
 [**@saflib/cron-db**](../index.md)
 
-***
+---
 
 # Type Alias: SetLastRunStatusResult
 

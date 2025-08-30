@@ -1,6 +1,6 @@
 [**@saflib/workflows**](../index.md)
 
-***
+---
 
 # Interface: ComposerFunctionOptions
 
@@ -20,7 +20,7 @@ for easily composing a workflow machine from common steps.
 
 > **nextStateName**: `string`
 
-***
+---
 
 ### stateName
 

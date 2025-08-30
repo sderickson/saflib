@@ -1,6 +1,6 @@
 [**@saflib/identity-rpcs**](../index.md)
 
-***
+---
 
 # Variable: usersClient
 

@@ -1,4 +1,4 @@
-import { createTanstackQueryClient } from "../tanstack.ts";
+import { createTanstackQueryClient } from "@saflib/sdk";
 import { createApp, type Component } from "vue";
 import { createVuetify, type VuetifyOptions } from "vuetify";
 import {

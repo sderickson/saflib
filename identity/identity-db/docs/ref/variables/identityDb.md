@@ -1,6 +1,6 @@
 [**@saflib/identity-db**](../index.md)
 
-***
+---
 
 # Variable: identityDb
 
@@ -21,8 +21,8 @@ If onDisk is a string, the database will be created at the given (absolute) path
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
+| Parameter  | Type        |
+| ---------- | ----------- |
 | `options?` | `DbOptions` |
 
 #### Returns
@@ -35,9 +35,9 @@ If onDisk is a string, the database will be created at the given (absolute) path
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `key` | `symbol` |
+| Parameter | Type     |
+| --------- | -------- |
+| `key`     | `symbol` |
 
 #### Returns
 

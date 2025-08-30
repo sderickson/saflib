@@ -1,5 +1,5 @@
 import { Command } from "commander";
-import type { WorkflowMeta } from "@saflib/workflows";
+import type { ConcreteWorkflow } from "@saflib/workflows";
 import { addNewLinesToString } from "@saflib/utils";
 import { setupContext } from "@saflib/commander";
 import { addKickoffCommand } from "./kickoff.ts";
@@ -19,7 +19,7 @@ import { addSourceCommand } from "./source.ts";
  *
  * This also means you can customize which workflows are actually available.
  */
-export function runWorkflowCli(workflows: WorkflowMeta[]) {
+export function runWorkflowCli(workflows: ConcreteWorkflow[]) {
   const program = new Command()
     .name("saf-workflow")
     .description(

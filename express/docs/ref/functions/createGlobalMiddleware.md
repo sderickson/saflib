@@ -1,6 +1,6 @@
 [**@saflib/express**](../index.md)
 
-***
+---
 
 # Function: createGlobalMiddleware()
 
@@ -11,8 +11,8 @@ for every request.
 
 ## Parameters
 
-| Parameter | Type |
-| ------ | ------ |
+| Parameter | Type                                                                  |
+| --------- | --------------------------------------------------------------------- |
 | `options` | [`GlobalMiddlewareOptions`](../interfaces/GlobalMiddlewareOptions.md) |
 
 ## Returns

@@ -1,6 +1,6 @@
 [**@saflib/cron-db**](../index.md)
 
-***
+---
 
 # Class: JobSettingNotFoundError
 
@@ -18,8 +18,8 @@ Superclass for all handled cron db errors
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
+| Parameter  | Type     |
+| ---------- | -------- |
 | `message?` | `string` |
 
 #### Returns
@@ -36,9 +36,9 @@ Superclass for all handled cron db errors
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `message?` | `string` |
+| Parameter  | Type           |
+| ---------- | -------------- |
+| `message?` | `string`       |
 | `options?` | `ErrorOptions` |
 
 #### Returns
@@ -59,7 +59,7 @@ Superclass for all handled cron db errors
 
 [`CronDatabaseError`](CronDatabaseError.md).[`cause`](CronDatabaseError.md#cause)
 
-***
+---
 
 ### message
 
@@ -69,7 +69,7 @@ Superclass for all handled cron db errors
 
 [`CronDatabaseError`](CronDatabaseError.md).[`message`](CronDatabaseError.md#message)
 
-***
+---
 
 ### name
 
@@ -79,7 +79,7 @@ Superclass for all handled cron db errors
 
 [`CronDatabaseError`](CronDatabaseError.md).[`name`](CronDatabaseError.md#name)
 
-***
+---
 
 ### stack?
 
@@ -89,7 +89,7 @@ Superclass for all handled cron db errors
 
 [`CronDatabaseError`](CronDatabaseError.md).[`stack`](CronDatabaseError.md#stack)
 
-***
+---
 
 ### stackTraceLimit
 
@@ -122,7 +122,7 @@ a string representing the location in the code at which
 ```js
 const myObject = {};
 Error.captureStackTrace(myObject);
-myObject.stack;  // Similar to `new Error().stack`
+myObject.stack; // Similar to `new Error().stack`
 ```
 
 The first line of the trace will be prefixed with
@@ -161,9 +161,9 @@ a();
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `targetObject` | `object` |
+| Parameter         | Type       |
+| ----------------- | ---------- |
+| `targetObject`    | `object`   |
 | `constructorOpt?` | `Function` |
 
 #### Returns
@@ -174,7 +174,7 @@ a();
 
 [`CronDatabaseError`](CronDatabaseError.md).[`captureStackTrace`](CronDatabaseError.md#capturestacktrace)
 
-***
+---
 
 ### prepareStackTrace()
 
@@ -182,9 +182,9 @@ a();
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `err` | `Error` |
+| Parameter     | Type         |
+| ------------- | ------------ |
+| `err`         | `Error`      |
 | `stackTraces` | `CallSite`[] |
 
 #### Returns

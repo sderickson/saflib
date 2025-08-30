@@ -1,6 +1,6 @@
 [**@saflib/identity-http**](../index.md)
 
-***
+---
 
 # Function: createApp()
 
@@ -10,8 +10,8 @@ Starts the HTTP server for the identity service.
 
 ## Parameters
 
-| Parameter | Type |
-| ------ | ------ |
+| Parameter | Type                    |
+| --------- | ----------------------- |
 | `options` | `IdentityServerOptions` |
 
 ## Returns

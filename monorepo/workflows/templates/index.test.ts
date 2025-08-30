@@ -14,4 +14,4 @@ test("greet function is available and works", () => {
 test("meaningOfLife is available and correct", () => {
   expect(mainExports.meaningOfLife).toBeDefined();
   expect(mainExports.meaningOfLife).toBe(42);
-}); 
+});

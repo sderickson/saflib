@@ -1,6 +1,6 @@
 [**@saflib/cron**](../index.md)
 
-***
+---
 
 # Interface: CronServiceOptions
 
@@ -14,7 +14,7 @@ Options to be passed when starting a cron service.
 
 Key to be used to connect to the cron DB.
 
-***
+---
 
 ### dbOptions?
 
@@ -22,7 +22,7 @@ Key to be used to connect to the cron DB.
 
 Options to be passed to the cron DB, if dbKey is not provided.
 
-***
+---
 
 ### jobs
 

@@ -1,6 +1,6 @@
 [**@saflib/vue**](../../../../index.md)
 
-***
+---
 
 # Function: mountWithPlugins()
 
@@ -10,10 +10,10 @@ Mount a Vue component with plugins. Handles plugins like vuetify, router, and i1
 
 ## Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `component` | `Component` |
-| `options` | `ComponentMountingOptions`\<`Component`\> |
+| Parameter       | Type                                                                  |
+| --------------- | --------------------------------------------------------------------- |
+| `component`     | `Component`                                                           |
+| `options`       | `ComponentMountingOptions`\<`Component`\>                             |
 | `pluginOptions` | [`MountWithPluginsOptions`](../interfaces/MountWithPluginsOptions.md) |
 
 ## Returns

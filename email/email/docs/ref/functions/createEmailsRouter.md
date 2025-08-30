@@ -1,6 +1,6 @@
 [**@saflib/email**](../index.md)
 
-***
+---
 
 # Function: createEmailsRouter()
 
@@ -11,8 +11,8 @@ for E2E testing.
 
 ## Parameters
 
-| Parameter | Type |
-| ------ | ------ |
+| Parameter | Type                                                          |
+| --------- | ------------------------------------------------------------- |
 | `options` | [`EmailsRouterOptions`](../interfaces/EmailsRouterOptions.md) |
 
 ## Returns

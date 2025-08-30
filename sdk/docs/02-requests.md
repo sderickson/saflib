@@ -4,12 +4,12 @@ This guide focuses on how to implement query and mutation functions for TanStack
 
 ## Creating a Typed Client
 
-All queries and mutations use an [`openapi-fetch`](https://openapi-ts.dev/openapi-fetch/) typed client created with [`createSafClient`](../../vue/docs/ref/@saflib/vue/tanstack/functions/createSafClient.md). Each SDK should have one created at the root of the package that every query and mutation can access.
+All queries and mutations use an [`openapi-fetch`](https://openapi-ts.dev/openapi-fetch/) typed client created with [`createSafClient`](./ref/@saflib/sdk/functions/createSafClient.md). Each SDK should have one created at the root of the package that every query and mutation can access.
 
 ```ts
 // <your-package>/client.ts
 import type { paths } from "@your-org/your-service-spec";
-import { createSafClient, TanstackError } from "@saflib/vue/tanstack";
+import { createSafClient, TanstackError } from "@saflib/sdk";
 
 export const client = createSafClient<paths>("your-service");
 ```
@@ -20,7 +20,7 @@ See [`@saflib/openapi`](../../openapi/docs/01-overview.md) for more information 
 
 A query should be a function which returns a [QueryOptions](https://tanstack.com/query/v5/docs/framework/vue/guides/query-options) object. The function can take whatever parameters, such as `Ref` objects for query parameters, or options to include in the object.
 
-The function should use [`handleClientMethod`](../../vue/docs/ref/@saflib/vue/tanstack/functions/handleClientMethod.md) to make the request, wrapped around a call to the typed client.
+The function should use [`handleClientMethod`](./ref/@saflib/sdk/functions/handleClientMethod.md) to make the request, wrapped around a call to the typed client.
 
 ```ts
 import { client } from "../client.ts";
@@ -47,7 +47,7 @@ A mutation needs to be a composable, so writing one is a bit different.
 
 ```ts
 import type { ApiRequest } from "@your-org/your-service-spec";
-import { handleClientMethod } from "@saflib/vue/tanstack";
+import { handleClientMethod } from "@saflib/sdk";
 
 export function useCreateResource() {
   const queryClient = useQueryClient();

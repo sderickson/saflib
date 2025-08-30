@@ -1,5 +1,6 @@
 import { execSync } from "node:child_process";
 import { getCurrentPackageName, type MonorepoContext } from "../workspace.ts";
+import { existsSync, readFileSync } from "node:fs";
 
 export function generateTypeDoc(monorepoContext: MonorepoContext) {
   const currentPackage = getCurrentPackageName();
@@ -8,18 +9,23 @@ export function generateTypeDoc(monorepoContext: MonorepoContext) {
 
   const entrypoints = currentPackageJson.exports;
   if (!entrypoints) {
-    throw new Error(
-      "No exports found in package.json; use `exports` field not `main`.",
-    );
+    return;
   }
-  // TODO: don't generate these if they're in the typedoc.json file.
-  const entrypointCommands = Object.values(entrypoints)
+
+  let entrypointCommands = Object.values(entrypoints)
     .filter((entrypoint) => !entrypoint.includes("./workflows"))
     .filter((entrypoint) => !entrypoint.includes("./eslint.config.js"))
     .filter((entrypoint) => !entrypoint.includes("./tsconfig.json"))
     .map((entrypoint) => {
       return `--entryPoints ${entrypoint}`;
     });
+  const typedoc = `${process.cwd()}/typedoc.json`;
+  if (existsSync(typedoc)) {
+    const typedocJson = readFileSync(typedoc, "utf-8");
+    if (JSON.parse(typedocJson).entryPoints) {
+      entrypointCommands = []; // typedoc will take entrypoints from the typedoc.json file
+    }
+  }
 
   console.log("\nGenerating typedoc...");
   const command = [

@@ -1,6 +1,6 @@
 [**@saflib/identity**](../index.md)
 
-***
+---
 
 # Function: startIdentityService()
 
@@ -10,8 +10,8 @@ Start the auth service, including both HTTP and gRPC servers.
 
 ## Parameters
 
-| Parameter | Type |
-| ------ | ------ |
+| Parameter  | Type                                                                          |
+| ---------- | ----------------------------------------------------------------------------- |
 | `options?` | [`StartIdentityServiceOptions`](../interfaces/StartIdentityServiceOptions.md) |
 
 ## Returns

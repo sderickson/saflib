@@ -1,6 +1,6 @@
 [**@saflib/workflows**](../index.md)
 
-***
+---
 
 # Function: contextFromInput()
 
@@ -10,9 +10,9 @@ Helper function to create initial `WorkflowContext` from `WorkflowInput`.
 
 ## Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `input` | [`WorkflowInput`](../interfaces/WorkflowInput.md) |
+| Parameter | Type                                              |
+| --------- | ------------------------------------------------- |
+| `input`   | [`WorkflowInput`](../interfaces/WorkflowInput.md) |
 
 ## Returns
 

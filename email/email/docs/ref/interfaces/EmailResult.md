@@ -1,6 +1,6 @@
 [**@saflib/email**](../index.md)
 
-***
+---
 
 # Interface: EmailResult
 
@@ -14,19 +14,19 @@ other transport.
 
 > **accepted**: `string`[]
 
-***
+---
 
 ### messageId
 
 > **messageId**: `string`
 
-***
+---
 
 ### rejected
 
 > **rejected**: `string`[]
 
-***
+---
 
 ### response
 

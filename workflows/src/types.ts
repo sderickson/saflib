@@ -2,14 +2,6 @@ import type { Snapshot } from "xstate";
 import type { WorkflowContext } from "./xstate.ts";
 
 /**
- * @deprecated with SimpleWorkflows
- */
-export interface Step {
-  name: string;
-  prompt: () => string;
-}
-
-/**
  * Required argument for the workflow, in a format the CLI tool (commander) can use.
  */
 export interface CLIArgument {
@@ -23,7 +15,7 @@ export interface CLIArgument {
 }
 
 /**
- * @deprecated with SimpleWorkflows
+ * High-level status of the workflow.
  */
 export type WorkflowStatus = "not started" | "in progress" | "completed";
 

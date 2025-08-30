@@ -1,6 +1,6 @@
 [**@saflib/openapi**](../index.md)
 
-***
+---
 
 # Variable: errorSchema
 

@@ -1,6 +1,6 @@
 [**@saflib/utils**](../index.md)
 
-***
+---
 
 # Function: convertI18NInterpolationToRegex()
 
@@ -12,9 +12,9 @@ https://vue-i18n.intlify.dev/guide/essentials/syntax.html
 
 ## Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `str` | `string` |
+| Parameter | Type     |
+| --------- | -------- |
+| `str`     | `string` |
 
 ## Returns
 

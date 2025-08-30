@@ -1,6 +1,6 @@
 [**@saflib/xstate**](../index.md)
 
-***
+---
 
 # Function: allChildrenSettled()
 
@@ -10,6 +10,7 @@ Convenience function for getting a machine to run until it stops running of its 
 but does not necessarily reach a terminal state.
 
 Usage:
+
 ```ts
 
 import { createActor, waitFor } from "xstate";
@@ -28,3 +29,4 @@ await waitFor(actor, allChildrenSettled);
 ## Returns
 
 `boolean`
+```

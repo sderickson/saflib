@@ -1,7 +1,7 @@
 [**@saflib/identity-db**](../index.md)
 
-***
+---
 
 # Type Alias: UpdateProfileParams
 
-> **UpdateProfileParams** = `Pick`\<*typeof* `users.$inferInsert`, `"name"` \| `"givenName"` \| `"familyName"`\>
+> **UpdateProfileParams** = `Pick`\<_typeof_ `users.$inferInsert`, `"name"` \| `"givenName"` \| `"familyName"`\>

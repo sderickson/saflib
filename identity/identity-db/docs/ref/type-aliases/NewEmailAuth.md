@@ -1,7 +1,7 @@
 [**@saflib/identity-db**](../index.md)
 
-***
+---
 
 # Type Alias: NewEmailAuth
 
-> **NewEmailAuth** = *typeof* `emailAuth.$inferInsert`
+> **NewEmailAuth** = _typeof_ `emailAuth.$inferInsert`

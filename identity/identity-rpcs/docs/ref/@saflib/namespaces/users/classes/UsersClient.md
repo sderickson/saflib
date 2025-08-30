@@ -1,6 +1,6 @@
 [**@saflib/identity-rpcs**](../../../../index.md)
 
-***
+---
 
 # Class: UsersClient
 
@@ -20,11 +20,11 @@
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `address` | `string` |
-| `credentials` | `ChannelCredentials` |
-| `options?` | `Partial`\<`ChannelOptions`\> |
+| Parameter     | Type                          |
+| ------------- | ----------------------------- |
+| `address`     | `string`                      |
+| `credentials` | `ChannelCredentials`          |
+| `options?`    | `Partial`\<`ChannelOptions`\> |
 
 #### Returns
 
@@ -40,7 +40,7 @@
 
 > **GetUserProfile**: `GrpcPromiseServiceInterface`\<[`GetUserProfileRequest`](GetUserProfileRequest.md), [`GetUserProfileResponse`](GetUserProfileResponse.md)\>
 
-***
+---
 
 ### service
 
@@ -50,7 +50,7 @@
 
 `grpc_1.makeGenericClientConstructor(UnimplementedUsersService.definition, "Users", {}).service`
 
-***
+---
 
 ### serviceName
 
@@ -74,7 +74,7 @@
 
 `grpc_1.makeGenericClientConstructor(UnimplementedUsersService.definition, "Users", {}).close`
 
-***
+---
 
 ### getChannel()
 
@@ -88,7 +88,7 @@
 
 `grpc_1.makeGenericClientConstructor(UnimplementedUsersService.definition, "Users", {}).getChannel`
 
-***
+---
 
 ### makeBidiStreamRequest()
 
@@ -99,19 +99,19 @@
 ##### Type Parameters
 
 | Type Parameter |
-| ------ |
-| `RequestType` |
+| -------------- |
+| `RequestType`  |
 | `ResponseType` |
 
 ##### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `method` | `string` |
-| `serialize` | (`value`) => `Buffer` |
+| Parameter     | Type                        |
+| ------------- | --------------------------- |
+| `method`      | `string`                    |
+| `serialize`   | (`value`) => `Buffer`       |
 | `deserialize` | (`value`) => `ResponseType` |
-| `metadata` | `Metadata` |
-| `options?` | `CallOptions` |
+| `metadata`    | `Metadata`                  |
+| `options?`    | `CallOptions`               |
 
 ##### Returns
 
@@ -128,18 +128,18 @@
 ##### Type Parameters
 
 | Type Parameter |
-| ------ |
-| `RequestType` |
+| -------------- |
+| `RequestType`  |
 | `ResponseType` |
 
 ##### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `method` | `string` |
-| `serialize` | (`value`) => `Buffer` |
+| Parameter     | Type                        |
+| ------------- | --------------------------- |
+| `method`      | `string`                    |
+| `serialize`   | (`value`) => `Buffer`       |
 | `deserialize` | (`value`) => `ResponseType` |
-| `options?` | `CallOptions` |
+| `options?`    | `CallOptions`               |
 
 ##### Returns
 
@@ -149,7 +149,7 @@
 
 `grpc_1.makeGenericClientConstructor(UnimplementedUsersService.definition, "Users", {}).makeBidiStreamRequest`
 
-***
+---
 
 ### makeClientStreamRequest()
 
@@ -160,20 +160,20 @@
 ##### Type Parameters
 
 | Type Parameter |
-| ------ |
-| `RequestType` |
+| -------------- |
+| `RequestType`  |
 | `ResponseType` |
 
 ##### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `method` | `string` |
-| `serialize` | (`value`) => `Buffer` |
-| `deserialize` | (`value`) => `ResponseType` |
-| `metadata` | `Metadata` |
-| `options` | `CallOptions` |
-| `callback` | `UnaryCallback`\<`ResponseType`\> |
+| Parameter     | Type                              |
+| ------------- | --------------------------------- |
+| `method`      | `string`                          |
+| `serialize`   | (`value`) => `Buffer`             |
+| `deserialize` | (`value`) => `ResponseType`       |
+| `metadata`    | `Metadata`                        |
+| `options`     | `CallOptions`                     |
+| `callback`    | `UnaryCallback`\<`ResponseType`\> |
 
 ##### Returns
 
@@ -190,19 +190,19 @@
 ##### Type Parameters
 
 | Type Parameter |
-| ------ |
-| `RequestType` |
+| -------------- |
+| `RequestType`  |
 | `ResponseType` |
 
 ##### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `method` | `string` |
-| `serialize` | (`value`) => `Buffer` |
-| `deserialize` | (`value`) => `ResponseType` |
-| `metadata` | `Metadata` |
-| `callback` | `UnaryCallback`\<`ResponseType`\> |
+| Parameter     | Type                              |
+| ------------- | --------------------------------- |
+| `method`      | `string`                          |
+| `serialize`   | (`value`) => `Buffer`             |
+| `deserialize` | (`value`) => `ResponseType`       |
+| `metadata`    | `Metadata`                        |
+| `callback`    | `UnaryCallback`\<`ResponseType`\> |
 
 ##### Returns
 
@@ -219,19 +219,19 @@
 ##### Type Parameters
 
 | Type Parameter |
-| ------ |
-| `RequestType` |
+| -------------- |
+| `RequestType`  |
 | `ResponseType` |
 
 ##### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `method` | `string` |
-| `serialize` | (`value`) => `Buffer` |
-| `deserialize` | (`value`) => `ResponseType` |
-| `options` | `CallOptions` |
-| `callback` | `UnaryCallback`\<`ResponseType`\> |
+| Parameter     | Type                              |
+| ------------- | --------------------------------- |
+| `method`      | `string`                          |
+| `serialize`   | (`value`) => `Buffer`             |
+| `deserialize` | (`value`) => `ResponseType`       |
+| `options`     | `CallOptions`                     |
+| `callback`    | `UnaryCallback`\<`ResponseType`\> |
 
 ##### Returns
 
@@ -248,18 +248,18 @@
 ##### Type Parameters
 
 | Type Parameter |
-| ------ |
-| `RequestType` |
+| -------------- |
+| `RequestType`  |
 | `ResponseType` |
 
 ##### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `method` | `string` |
-| `serialize` | (`value`) => `Buffer` |
-| `deserialize` | (`value`) => `ResponseType` |
-| `callback` | `UnaryCallback`\<`ResponseType`\> |
+| Parameter     | Type                              |
+| ------------- | --------------------------------- |
+| `method`      | `string`                          |
+| `serialize`   | (`value`) => `Buffer`             |
+| `deserialize` | (`value`) => `ResponseType`       |
+| `callback`    | `UnaryCallback`\<`ResponseType`\> |
 
 ##### Returns
 
@@ -269,7 +269,7 @@
 
 `grpc_1.makeGenericClientConstructor(UnimplementedUsersService.definition, "Users", {}).makeClientStreamRequest`
 
-***
+---
 
 ### makeServerStreamRequest()
 
@@ -280,20 +280,20 @@
 ##### Type Parameters
 
 | Type Parameter |
-| ------ |
-| `RequestType` |
+| -------------- |
+| `RequestType`  |
 | `ResponseType` |
 
 ##### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `method` | `string` |
-| `serialize` | (`value`) => `Buffer` |
+| Parameter     | Type                        |
+| ------------- | --------------------------- |
+| `method`      | `string`                    |
+| `serialize`   | (`value`) => `Buffer`       |
 | `deserialize` | (`value`) => `ResponseType` |
-| `argument` | `RequestType` |
-| `metadata` | `Metadata` |
-| `options?` | `CallOptions` |
+| `argument`    | `RequestType`               |
+| `metadata`    | `Metadata`                  |
+| `options?`    | `CallOptions`               |
 
 ##### Returns
 
@@ -310,19 +310,19 @@
 ##### Type Parameters
 
 | Type Parameter |
-| ------ |
-| `RequestType` |
+| -------------- |
+| `RequestType`  |
 | `ResponseType` |
 
 ##### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `method` | `string` |
-| `serialize` | (`value`) => `Buffer` |
+| Parameter     | Type                        |
+| ------------- | --------------------------- |
+| `method`      | `string`                    |
+| `serialize`   | (`value`) => `Buffer`       |
 | `deserialize` | (`value`) => `ResponseType` |
-| `argument` | `RequestType` |
-| `options?` | `CallOptions` |
+| `argument`    | `RequestType`               |
+| `options?`    | `CallOptions`               |
 
 ##### Returns
 
@@ -332,7 +332,7 @@
 
 `grpc_1.makeGenericClientConstructor(UnimplementedUsersService.definition, "Users", {}).makeServerStreamRequest`
 
-***
+---
 
 ### makeUnaryRequest()
 
@@ -343,21 +343,21 @@
 ##### Type Parameters
 
 | Type Parameter |
-| ------ |
-| `RequestType` |
+| -------------- |
+| `RequestType`  |
 | `ResponseType` |
 
 ##### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `method` | `string` |
-| `serialize` | (`value`) => `Buffer` |
-| `deserialize` | (`value`) => `ResponseType` |
-| `argument` | `RequestType` |
-| `metadata` | `Metadata` |
-| `options` | `CallOptions` |
-| `callback` | `UnaryCallback`\<`ResponseType`\> |
+| Parameter     | Type                              |
+| ------------- | --------------------------------- |
+| `method`      | `string`                          |
+| `serialize`   | (`value`) => `Buffer`             |
+| `deserialize` | (`value`) => `ResponseType`       |
+| `argument`    | `RequestType`                     |
+| `metadata`    | `Metadata`                        |
+| `options`     | `CallOptions`                     |
+| `callback`    | `UnaryCallback`\<`ResponseType`\> |
 
 ##### Returns
 
@@ -374,20 +374,20 @@
 ##### Type Parameters
 
 | Type Parameter |
-| ------ |
-| `RequestType` |
+| -------------- |
+| `RequestType`  |
 | `ResponseType` |
 
 ##### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `method` | `string` |
-| `serialize` | (`value`) => `Buffer` |
-| `deserialize` | (`value`) => `ResponseType` |
-| `argument` | `RequestType` |
-| `metadata` | `Metadata` |
-| `callback` | `UnaryCallback`\<`ResponseType`\> |
+| Parameter     | Type                              |
+| ------------- | --------------------------------- |
+| `method`      | `string`                          |
+| `serialize`   | (`value`) => `Buffer`             |
+| `deserialize` | (`value`) => `ResponseType`       |
+| `argument`    | `RequestType`                     |
+| `metadata`    | `Metadata`                        |
+| `callback`    | `UnaryCallback`\<`ResponseType`\> |
 
 ##### Returns
 
@@ -404,20 +404,20 @@
 ##### Type Parameters
 
 | Type Parameter |
-| ------ |
-| `RequestType` |
+| -------------- |
+| `RequestType`  |
 | `ResponseType` |
 
 ##### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `method` | `string` |
-| `serialize` | (`value`) => `Buffer` |
-| `deserialize` | (`value`) => `ResponseType` |
-| `argument` | `RequestType` |
-| `options` | `CallOptions` |
-| `callback` | `UnaryCallback`\<`ResponseType`\> |
+| Parameter     | Type                              |
+| ------------- | --------------------------------- |
+| `method`      | `string`                          |
+| `serialize`   | (`value`) => `Buffer`             |
+| `deserialize` | (`value`) => `ResponseType`       |
+| `argument`    | `RequestType`                     |
+| `options`     | `CallOptions`                     |
+| `callback`    | `UnaryCallback`\<`ResponseType`\> |
 
 ##### Returns
 
@@ -434,19 +434,19 @@
 ##### Type Parameters
 
 | Type Parameter |
-| ------ |
-| `RequestType` |
+| -------------- |
+| `RequestType`  |
 | `ResponseType` |
 
 ##### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `method` | `string` |
-| `serialize` | (`value`) => `Buffer` |
-| `deserialize` | (`value`) => `ResponseType` |
-| `argument` | `RequestType` |
-| `callback` | `UnaryCallback`\<`ResponseType`\> |
+| Parameter     | Type                              |
+| ------------- | --------------------------------- |
+| `method`      | `string`                          |
+| `serialize`   | (`value`) => `Buffer`             |
+| `deserialize` | (`value`) => `ResponseType`       |
+| `argument`    | `RequestType`                     |
+| `callback`    | `UnaryCallback`\<`ResponseType`\> |
 
 ##### Returns
 
@@ -456,7 +456,7 @@
 
 `grpc_1.makeGenericClientConstructor(UnimplementedUsersService.definition, "Users", {}).makeUnaryRequest`
 
-***
+---
 
 ### waitForReady()
 
@@ -464,9 +464,9 @@
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `deadline` | `Deadline` |
+| Parameter  | Type                 |
+| ---------- | -------------------- |
+| `deadline` | `Deadline`           |
 | `callback` | (`error?`) => `void` |
 
 #### Returns

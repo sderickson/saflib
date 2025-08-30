@@ -1,6 +1,6 @@
 [**@saflib/identity-db**](../index.md)
 
-***
+---
 
 # Variable: usersDb
 
@@ -17,10 +17,10 @@ similar to the OIDC Standard Claims.
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `dbKey` | `symbol` |
-| `user` | [`NewUser`](../type-aliases/NewUser.md) |
+| Parameter | Type                                    |
+| --------- | --------------------------------------- |
+| `dbKey`   | `symbol`                                |
+| `user`    | [`NewUser`](../type-aliases/NewUser.md) |
 
 #### Returns
 
@@ -32,9 +32,9 @@ similar to the OIDC Standard Claims.
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `dbKey` | `symbol` |
+| Parameter | Type     |
+| --------- | -------- |
+| `dbKey`   | `symbol` |
 
 #### Returns
 
@@ -46,10 +46,10 @@ similar to the OIDC Standard Claims.
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `dbKey` | `symbol` |
-| `email` | `string` |
+| Parameter | Type     |
+| --------- | -------- |
+| `dbKey`   | `symbol` |
+| `email`   | `string` |
 
 #### Returns
 
@@ -61,10 +61,10 @@ similar to the OIDC Standard Claims.
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `dbKey` | `symbol` |
-| `id` | `number` |
+| Parameter | Type     |
+| --------- | -------- |
+| `dbKey`   | `symbol` |
+| `id`      | `number` |
 
 #### Returns
 
@@ -76,10 +76,10 @@ similar to the OIDC Standard Claims.
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `dbKey` | `symbol` |
-| `id` | `number` |
+| Parameter | Type     |
+| --------- | -------- |
+| `dbKey`   | `symbol` |
+| `id`      | `number` |
 
 #### Returns
 
@@ -91,11 +91,11 @@ similar to the OIDC Standard Claims.
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `dbKey` | `symbol` |
-| `userId` | `number` |
-| `params` | [`UpdateProfileParams`](../type-aliases/UpdateProfileParams.md) |
+| Parameter | Type                                                            |
+| --------- | --------------------------------------------------------------- |
+| `dbKey`   | `symbol`                                                        |
+| `userId`  | `number`                                                        |
+| `params`  | [`UpdateProfileParams`](../type-aliases/UpdateProfileParams.md) |
 
 #### Returns
 

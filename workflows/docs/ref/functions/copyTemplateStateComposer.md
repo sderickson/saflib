@@ -1,6 +1,6 @@
 [**@saflib/workflows**](../index.md)
 
-***
+---
 
 # Function: copyTemplateStateComposer()
 
@@ -13,8 +13,8 @@ To use this composer, the machine context must extend TemplateWorkflowContext.
 
 ## Parameters
 
-| Parameter | Type |
-| ------ | ------ |
+| Parameter | Type                                                                  |
+| --------- | --------------------------------------------------------------------- |
 | `options` | [`ComposerFunctionOptions`](../interfaces/ComposerFunctionOptions.md) |
 
 ## Returns

@@ -1,6 +1,6 @@
 [**@saflib/identity-db**](../index.md)
 
-***
+---
 
 # Variable: emailAuthDb
 
@@ -17,10 +17,10 @@ for the users.
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `dbKey` | `symbol` |
-| `userId` | `number` |
+| Parameter | Type     |
+| --------- | -------- |
+| `dbKey`   | `symbol` |
+| `userId`  | `number` |
 
 #### Returns
 
@@ -32,18 +32,18 @@ for the users.
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `dbKey` | `symbol` |
-| `auth` | \{ `email`: `string`; `forgotPasswordToken?`: `null` \| `string`; `forgotPasswordTokenExpiresAt?`: `null` \| `Date`; `passwordHash`: `unknown`; `userId`: `number`; `verificationToken?`: `null` \| `string`; `verificationTokenExpiresAt?`: `null` \| `Date`; `verifiedAt?`: `null` \| `Date`; \} |
-| `auth.email` | `string` |
-| `auth.forgotPasswordToken?` | `null` \| `string` |
-| `auth.forgotPasswordTokenExpiresAt?` | `null` \| `Date` |
-| `auth.passwordHash` | `unknown` |
-| `auth.userId` | `number` |
-| `auth.verificationToken?` | `null` \| `string` |
-| `auth.verificationTokenExpiresAt?` | `null` \| `Date` |
-| `auth.verifiedAt?` | `null` \| `Date` |
+| Parameter                            | Type                                                                                                                                                                                                                                                                                               |
+| ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `dbKey`                              | `symbol`                                                                                                                                                                                                                                                                                           |
+| `auth`                               | \{ `email`: `string`; `forgotPasswordToken?`: `null` \| `string`; `forgotPasswordTokenExpiresAt?`: `null` \| `Date`; `passwordHash`: `unknown`; `userId`: `number`; `verificationToken?`: `null` \| `string`; `verificationTokenExpiresAt?`: `null` \| `Date`; `verifiedAt?`: `null` \| `Date`; \} |
+| `auth.email`                         | `string`                                                                                                                                                                                                                                                                                           |
+| `auth.forgotPasswordToken?`          | `null` \| `string`                                                                                                                                                                                                                                                                                 |
+| `auth.forgotPasswordTokenExpiresAt?` | `null` \| `Date`                                                                                                                                                                                                                                                                                   |
+| `auth.passwordHash`                  | `unknown`                                                                                                                                                                                                                                                                                          |
+| `auth.userId`                        | `number`                                                                                                                                                                                                                                                                                           |
+| `auth.verificationToken?`            | `null` \| `string`                                                                                                                                                                                                                                                                                 |
+| `auth.verificationTokenExpiresAt?`   | `null` \| `Date`                                                                                                                                                                                                                                                                                   |
+| `auth.verifiedAt?`                   | `null` \| `Date`                                                                                                                                                                                                                                                                                   |
 
 #### Returns
 
@@ -55,10 +55,10 @@ for the users.
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `dbKey` | `symbol` |
-| `email` | `string` |
+| Parameter | Type     |
+| --------- | -------- |
+| `dbKey`   | `symbol` |
+| `email`   | `string` |
 
 #### Returns
 
@@ -70,10 +70,10 @@ for the users.
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `dbKey` | `symbol` |
-| `token` | `string` |
+| Parameter | Type     |
+| --------- | -------- |
+| `dbKey`   | `symbol` |
+| `token`   | `string` |
 
 #### Returns
 
@@ -85,10 +85,10 @@ for the users.
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `dbKey` | `symbol` |
-| `token` | `string` |
+| Parameter | Type     |
+| --------- | -------- |
+| `dbKey`   | `symbol` |
+| `token`   | `string` |
 
 #### Returns
 
@@ -100,10 +100,10 @@ for the users.
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `dbKey` | `symbol` |
-| `ids` | `number`[] |
+| Parameter | Type       |
+| --------- | ---------- |
+| `dbKey`   | `symbol`   |
+| `ids`     | `number`[] |
 
 #### Returns
 
@@ -115,10 +115,10 @@ for the users.
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `dbKey` | `symbol` |
-| `userId` | `number` |
+| Parameter  | Type     |
+| ---------- | -------- |
+| `dbKey`    | `symbol` |
+| `userId`   | `number` |
 | `newEmail` | `string` |
 
 #### Returns
@@ -131,12 +131,12 @@ for the users.
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `dbKey` | `symbol` |
-| `userId` | `number` |
-| `forgotPasswordToken` | `null` \| `string` |
-| `forgotPasswordTokenExpiresAt` | `null` \| `Date` |
+| Parameter                      | Type               |
+| ------------------------------ | ------------------ |
+| `dbKey`                        | `symbol`           |
+| `userId`                       | `number`           |
+| `forgotPasswordToken`          | `null` \| `string` |
+| `forgotPasswordTokenExpiresAt` | `null` \| `Date`   |
 
 #### Returns
 
@@ -148,10 +148,10 @@ for the users.
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `dbKey` | `symbol` |
-| `userId` | `number` |
+| Parameter      | Type         |
+| -------------- | ------------ |
+| `dbKey`        | `symbol`     |
+| `userId`       | `number`     |
 | `passwordHash` | `Uint8Array` |
 
 #### Returns
@@ -164,10 +164,10 @@ for the users.
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `dbKey` | `symbol` |
-| `userId` | `number` |
+| Parameter      | Type         |
+| -------------- | ------------ |
+| `dbKey`        | `symbol`     |
+| `userId`       | `number`     |
 | `passwordHash` | `Uint8Array` |
 
 #### Returns
@@ -180,12 +180,12 @@ for the users.
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `dbKey` | `symbol` |
-| `userId` | `number` |
-| `verificationToken` | `string` |
-| `verificationTokenExpiresAt` | `Date` |
+| Parameter                    | Type     |
+| ---------------------------- | -------- |
+| `dbKey`                      | `symbol` |
+| `userId`                     | `number` |
+| `verificationToken`          | `string` |
+| `verificationTokenExpiresAt` | `Date`   |
 
 #### Returns
 
@@ -197,10 +197,10 @@ for the users.
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `dbKey` | `symbol` |
-| `userId` | `number` |
+| Parameter | Type     |
+| --------- | -------- |
+| `dbKey`   | `symbol` |
+| `userId`  | `number` |
 
 #### Returns
 

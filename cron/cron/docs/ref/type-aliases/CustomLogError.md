@@ -1,6 +1,6 @@
 [**@saflib/cron**](../index.md)
 
-***
+---
 
 # Type Alias: CustomLogError()
 
@@ -10,10 +10,10 @@ Callback for handling when a job throws an error.
 
 ## Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `error` | `Error` |
-| `meta` | [`CustomLogErrorMeta`](../interfaces/CustomLogErrorMeta.md) |
+| Parameter | Type                                                        |
+| --------- | ----------------------------------------------------------- |
+| `error`   | `Error`                                                     |
+| `meta`    | [`CustomLogErrorMeta`](../interfaces/CustomLogErrorMeta.md) |
 
 ## Returns
 

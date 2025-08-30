@@ -1,6 +1,6 @@
 [**@saflib/workflows**](../index.md)
 
-***
+---
 
 # Function: runNpmCommandComposer()
 
@@ -10,8 +10,8 @@ Composer for running npm commands.
 
 ## Parameters
 
-| Parameter | Type |
-| ------ | ------ |
+| Parameter           | Type                                                                          |
+| ------------------- | ----------------------------------------------------------------------------- |
 | `__namedParameters` | [`RunNpmCommandFactoryOptions`](../interfaces/RunNpmCommandFactoryOptions.md) |
 
 ## Returns

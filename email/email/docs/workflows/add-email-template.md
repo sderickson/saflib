@@ -20,11 +20,10 @@ To run this workflow automatically, tell the agent to:
 
 When run, the workflow will:
 
-* Run `npm install @saflib/email`
-* Copy template files and rename placeholders.
-  * Upsert **example-email.ts** from [template](https://github.com/sderickson/saflib/blob/main/email/email/workflows/email-template-template/template-file.ts)
-* Update example-email.ts to remove TODOs
-
+- Run `npm install @saflib/email`
+- Copy template files and rename placeholders.
+  - Upsert **example-email.ts** from [template](https://github.com/sderickson/saflib/blob/main/email/email/workflows/email-template-template/template-file.ts)
+- Update example-email.ts to remove TODOs
 
 ## Help Docs
 

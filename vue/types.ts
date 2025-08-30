@@ -1,5 +1,5 @@
 import type { UseQueryReturnType } from "@tanstack/vue-query";
-import type { TanstackError } from "./tanstack.ts";
+import type { TanstackError } from "@saflib/sdk";
 import type { Ref } from "vue";
 
 /**

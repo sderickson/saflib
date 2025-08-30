@@ -45,4 +45,6 @@ export interface IdentityRpcsEnvSchema {
 /**
  * `process.env` casted to the `IdentityRpcsEnvSchema` type.
  */
-export const typedEnv = (globalThis.process ? process.env : {}) as unknown as IdentityRpcsEnvSchema;
+export const typedEnv = (globalThis.process
+  ? process.env
+  : {}) as unknown as IdentityRpcsEnvSchema;
