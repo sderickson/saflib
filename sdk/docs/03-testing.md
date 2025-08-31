@@ -1,4 +1,4 @@
-# Testing TanStack Functions
+# Testing
 
 The main thing to test with your Tanstack functions is the caching behavior. Individual functions don't very much need to be tested, since they are simply thin wrappers around API calls. But caching is always a tricky thing to get right, so it's important to make sure your query keys are behaving as intended.
 

@@ -1,4 +1,4 @@
-# TanStack and Requests
+# TanStack
 
 This guide focuses on how to implement query and mutation functions for TanStack Query.
 

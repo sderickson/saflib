@@ -64,7 +64,7 @@ This is most applicable to parts of the codebase where there are a number of the
 
 **Example application:**
 
-- `@saflib/identity`'s [database queries](https://github.com/sderickson/saflib/tree/c5f310d2faa42bc84dd5530966d26f63c8086431/identity/identity-db/queries/email-auth) and [Express handlers](https://github.com/sderickson/saflib/tree/c5f310d2faa42bc84dd5530966d26f63c8086431/identity/identity-http/routes/auth), and [OpenAPI specs](https://github.com/sderickson/saflib/tree/c5f310d2faa42bc84dd5530966d26f63c8086431/identity/identity-spec/routes/auth) break everything down into a single file apiece.
+- `@saflib/identity`'s [database queries](https://github.com/sderickson/saflib/tree/c5f310d2faa42bc84dd5530966d26f63c8086431/identity/identity-db/queries/email-auth), [Express handlers](https://github.com/sderickson/saflib/tree/c5f310d2faa42bc84dd5530966d26f63c8086431/identity/identity-http/routes/auth), and [OpenAPI specs](https://github.com/sderickson/saflib/tree/c5f310d2faa42bc84dd5530966d26f63c8086431/identity/identity-spec/routes/auth) break everything down into a single file apiece.
 
 ## Keep Code Modular
 
@@ -85,7 +85,7 @@ Anything that is shared across system boundaries should have a clear, independen
 Assets to be owned by one package, shared with other packages, and enforced by static analysis across all usages include:
 
 - URLs to product pages
-- Strings
+- Product copy
 - Product events
 - HTTP/gRPC request and response objects
 - Business models
@@ -95,39 +95,47 @@ For serialized data, prefer flattened data stuctures with identifiers for relate
 
 **Benefits:**
 
-- Quick feedback when a shared contract changes which would break dependent code, showing how much work there is to do and where to do it.
-- Shared strings reduce the likelihood of typos and inconsistencies, shifting fixes left. This is particularly useful for tests which check that a given string exists in a UI, or needs to navigate to a given page.
-- Flattened data structures allows for passing only the data that is needed, and avoids coupling those structures to how it was transported (e.g. through one or several API calls).
+- Quick feedback when a shared contract changes which would break dependent code, such as what is written on a page or what pages there are in a SPA or what metadata a product event requires, showing how much work there is to do and where to do it.
+- Sharing strings for product copy reduces the likelihood of typos and inconsistencies, shifting fixes left. This is particularly useful for tests which check that a given string exists in a UI, or needs to navigate to a given page.
+- Flattened data structures allows for passing only the data that is needed, and avoids coupling those structures to the source, e.g. through one or several API calls, GraphQL, websockets, a cache, or other.
 
 **Example applications:**
 
-- `@saflib/links` provides [a simple structure](./links/docs/ref/type-aliases/Link.md) and some [methods](./links/docs/ref/index.md#functions) for sharing links to specific pages between packages.
-- `@saflib/utils` provides an [interface](./utils/docs/ref/interfaces/ElementStringObject.md) for easy use by Vue and consumption by [Playwright](./playwright/docs/ref/functions/getByString.md)
+- `@saflib/links` provides [a simple structure](./links/docs/ref/type-aliases/Link.md) and some [methods](./links/docs/ref/index.md#functions) for sharing and using links to specific pages between packages.
+- `@saflib/utils` provides an [interface](./utils/docs/ref/interfaces/ElementStringObject.md) for objects with textual HTML element properties which can be easily `v-bind`ed in a Vue template, and located by [Playwright](./playwright/docs/ref/functions/getByString.md).
 
 ## Build and Maintain Fakes and Adapters for Service Boundaries
 
-Any non-trivial app will reach a point where it depends on separate services, either first or third party, and those integration points should provide fakes for consumers to use for testing. This allows consuming services and packages to have unit or integration tests which don't depend on a live or fully-featured service.
+Any non-trivial app will reach a point where it depends on separate services, either first or third party, and those integration points should provide fake implementations for consumers to use for testing. This allows consuming services and packages to have unit or integration tests which don't depend on a live or fully-featured service.
 
-Fakes (working, simplified implementations of a service) should be available for both frontend and backend testing. Packages that provide fakes are:
+Fakes should be available for both frontend and backend testing. Packages that must provide fake implementations are:
 
 - Frontend SDKs
 - gRPC clients
 - 3rd party integrations
 
-Third party integrations often provide more features than the product needs; the package or module responsible for integrating with that third-party service should adapt the interface to solely the needs of the product, which will also reduce the surface area that needs to be faked.
+A fake implementation should have:
+
+- An in memory store so unsafe operations can be tested
+- A set of store states (scenarios) which can be tested against, e.g. different subscription states for a mocked payment service
+
+Beyond that, more complexity should only be added judiciously, such as consistency checks.
+
+Third party integrations often provide more features than the product needs; the package or module responsible for integrating with that third-party service should adapt the interface to solely the needs of the product.
 
 **Benefits:**
 
 - Fakes and stubs are necessary to ensure any component can be tested (from unit through E2E) with confidence and speed.
+- By limiting how complex they may become, the cost to maintain and understand them is bounded.
 - An adapter helps control and manage how tightly coupled a product is to any third-party service, while also reducing the surface area that needs to be faked.
 
 **Example application:**
 
 - `@saflib/sdk` provides a [helper method](./sdk/docs/ref/@saflib/sdk/testing/functions/typedCreateHandler.md) for typing fake server handlers.
 
-### Ownership of Mocks, Fakes, Shims
+### On Ownership of Fakes
 
-Fakes and stubs are often included with or adjacent to the test code that uses them, but they should instead be part of the integration module or package. In practice, test writers will write and contribute most of them, but these should be kept and managed in a central location to reduce redundant work and updates when shared models change.
+Fakes are often included with or adjacent to the test code that uses them out of expediency, but they should instead be part of the integration module or client package. In practice, test writers will write and contribute additional scenarios, but these should be kept and managed in a central location to reduce redundant work and updates when shared models change. And there's no reason for every consumer to have and maintain its own fake implementation.
 
 ## Have Thorough Test Coverage
 
@@ -139,7 +147,7 @@ A solid automated test suite will include:
 
 - Pure unit tests on library or utility code.
 - Unit tests on database queries with an in-memory instance of the database.
-- Integration tests for each operation such as web and grpc endpoints, FSM states, and background jobs, with in-memory database instances and faked external and internal service dependencies.
+- Integration tests for each operation such as web and gRPC endpoints, FSM states, and background jobs, with in-memory database instances and faked external and internal service dependencies.
 - Integration (or component) tests for frontend web pages and components, where network requests are faked. Focus mainly on testing renders, not interactions.
 - E2E tests with all external dependencies faked and all internal dependencies fully running.
 
@@ -147,13 +155,14 @@ Packages should be measured for how covered _their_ code is by _their_ tests. A 
 
 Tests should stick to testing the package, API, or user interface they are targeting as much as possible. They should avoid reaching behind and checking, for example, database entries directly, because the tests should focus on the interface and not its dependencies. This is not a hard-and-fast rule however; here are some exceptions:
 
-- Checking product events or key metrics are recorded correctly after a user behavior or endpoint call, to ensure analytics and monitoring don't break.
+- Checking product events or key metrics are recorded correctly after a user behavior or endpoint call, to ensure analytics and monitoring don't break or become inaccurate.
 - Viewing emails sent in order to make sure they do get sent, or to get some contents such as an email verification code, which are necessary for the test to continue.
 
 **Benefits:**
 
 - A great deal of peace of mind that the product continues to work as expected even when a great deal has changed.
 - Generated code that is tested is far less likely to need to be reworked when used later in the process.
+- For [automated, agentic workflows](./workflows.md), sufficient automated test coverage is required for workflow evals to work.
 
 **Example application:**
 
@@ -165,7 +174,7 @@ There needs to be a source of truth for how to do things the right way specific 
 
 - **Reference** documentation should be generated from source, such as through [Typedoc](https://github.com/TypeStrong/typedoc) or [Redoc](https://github.com/Redocly/redoc).
 - **Explanation** docs should live in the package they address, such as in markdown files in a separate `docs/` directory.
-- **How-To Guides** are great fodder for agentic workflows, and human-readable versions should be generated from those.
+- **How-To Guides** are naturally expressed with [agentic workflows](./workflows.md), and human-readable versions should be generated from those.
 
 **Benefits:**
 
@@ -175,4 +184,4 @@ There needs to be a source of truth for how to do things the right way specific 
 **Example applications:**
 
 - Each package in [the docs](https://docs.saf-demo.online/) has a mix of explanation docs and generated reference docs. Instead of maintaining them separately, how-to guides are effectively generated from workflows such as [this one](./drizzle/docs/workflows/add-queries.md).
-- `@saflib/dev-tools` provides a [CLI tool](./dev-tools/docs/cli/saf-docs.md) for generating documentation from code, workflows, and CLI commands.
+- `@saflib/dev-tools` provides a [CLI tool](./dev-tools/docs/cli/saf-docs.md) for generating documentation from code, workflows, and CLI commands. For example, [this workflow](./drizzle/docs/workflows/add-queries.md) was generated from [this code](./drizzle/workflows/add-queries.ts).

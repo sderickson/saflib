@@ -7,7 +7,7 @@ SDK packages are basically shared frontend code for a service. They include:
 - Event logging
 - Common components and logic, particularly for shared API [schemas](../../openapi/docs/01-overview.md#schemas)
 
-Because SPA packages and SDK packages often use the same tools, they both depend on `@saflib/vue`. This package currently has only documentation and workflows.
+Because SPA packages and SDK packages often use the same tools, they both depend on `@saflib/vue`.
 
 ## Package Structure
 
