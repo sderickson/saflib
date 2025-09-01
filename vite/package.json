@@ -11,9 +11,17 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@saflib/env": "*",
+    "@saflib/vue": "*",
+    "@vitejs/plugin-vue": "^6.0.1",
+    "rollup-plugin-ignore": "^1.0.10",
+    "vite": "^7.0.0",
+    "vite-plugin-vue-devtools": "^8.0.1",
+    "vite-plugin-vuetify": "^2.1.2"
+  },
   "devDependencies": {
-    "@saflib/vitest": "*",
-    "@saflib/monorepo": "*"
+    "@saflib/monorepo": "*",
+    "@saflib/vitest": "*"
   }
 }
