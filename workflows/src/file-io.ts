@@ -19,7 +19,7 @@ export const saveWorkflow = (workflow: Workflow) => {
   const planStatusFilePath = getPlanStatusFilePath();
   writeFileSync(
     planStatusFilePath,
-    JSON.stringify(workflow.dehydrate(), null, 2),
+    JSON.stringify(workflow.dehydrate(), null, 2)
   );
 };
 
@@ -30,7 +30,7 @@ export const loadWorkflow = (workflows: ConcreteWorkflow[]) => {
   }
   const blob = JSON.parse(contents) as WorkflowBlob;
 
-  const workflow = workflows.find((w) => w.name === blob.workflowName);
+  const workflow = workflows.find((w) => new w().name === blob.workflowName);
   if (!workflow) {
     return null;
   }
