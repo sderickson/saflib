@@ -85,5 +85,3 @@ export function makeConfig(config: MakeConfigProps) {
     },
   });
 }
-
-// export default makeConfig();
