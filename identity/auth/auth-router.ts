@@ -29,11 +29,27 @@ export const createAuthRouter = (options: AuthRouterOptions) => {
   }
   const routes: RouteRecordRaw[] = [
     ...(options?.additionalRoutes ?? []),
-    { path: authLinks.home.path, component: LoginPage },
-    { path: authLinks.login.path, component: LoginPage },
-    { path: authLinks.register.path, component: RegisterPage },
+    {
+      path: authLinks.home.path,
+      component: LoginPage,
+      props: { redirectTo: options?.defaultRedirect },
+    },
+    {
+      path: authLinks.login.path,
+      component: LoginPage,
+      props: { redirectTo: options?.defaultRedirect },
+    },
+    {
+      path: authLinks.register.path,
+      component: RegisterPage,
+      props: { redirectTo: options?.defaultRedirect },
+    },
     { path: authLinks.forgot.path, component: ForgotPasswordPage },
-    { path: authLinks.logout.path, component: LogoutPage },
+    {
+      path: authLinks.logout.path,
+      component: LogoutPage,
+      props: { redirectTo: options?.defaultRedirect },
+    },
     {
       path: authLinks.resetPassword.path,
       component: ChangeForgottenPasswordPage,

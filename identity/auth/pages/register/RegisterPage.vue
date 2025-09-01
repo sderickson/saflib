@@ -108,6 +108,7 @@ const props = defineProps<{
   lastNameInput?: boolean;
   nameInput?: boolean;
   ctaText?: string;
+  redirectTo?: string;
 }>();
 
 const emit = defineEmits<{
@@ -150,8 +151,11 @@ watch(
   async (success) => {
     if (success && newUser.value) {
       emit("signup", newUser.value);
+      if (props.redirectTo) {
+        window.location.href = props.redirectTo;
+      }
     }
-  },
+  }
 );
 
 const handleRegister = () => {
