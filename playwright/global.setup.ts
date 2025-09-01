@@ -14,7 +14,7 @@ setup("check docker service health", async ({ page }) => {
     for (const serviceSubdomain of serviceSubdomains) {
       // uses @saflib/express's health middleware
       response = await page.goto(
-        `http://${serviceSubdomain}.docker.localhost/health`,
+        `http://${serviceSubdomain}.docker.localhost/health`
       );
       if (response && response.status() !== 200) {
         anyUnhealthy = true;

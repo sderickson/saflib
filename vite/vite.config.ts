@@ -7,6 +7,7 @@ import path from "path";
 import ignore from "rollup-plugin-ignore";
 // import { htmlHeaderPlugin } from "../../clients/spas/html-header-plugin.ts";
 import { typedEnv } from "./env.ts";
+import fs from "fs";
 
 const subdomains = typedEnv.CLIENT_SUBDOMAINS?.split(",") ?? [];
 const hosts = subdomains.map((subdomain) =>
@@ -40,6 +41,7 @@ const subDomainProxyPlugin: Plugin = {
 };
 
 const input = {
+  index: path.resolve(process.cwd(), "index.html"),
   ...Object.fromEntries(
     subdomains
       .filter((subdomain) => subdomain !== "")
@@ -47,8 +49,10 @@ const input = {
         subdomain,
         path.resolve(process.cwd(), `${subdomain}/index.html`),
       ])
+      .filter(([_, path]) => fs.existsSync(path))
   ),
 };
+console.log("input", input);
 
 interface MakeConfigProps {
   plugins?: Plugin[];
