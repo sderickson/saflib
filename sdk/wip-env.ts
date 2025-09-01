@@ -2,6 +2,8 @@
 // @ts-expect-error - vite/client is not a module
 import type { ImportMetaEnv as _ImportMetaEnv } from "vite/client";
 
+// I called this "wip-env" because this should probably be incorporated into @saflib/env's system eventually, and also "env.ts" gets overwritten by @saflib/env
+
 interface ViteEnv {
   NODE_ENV: string;
 }

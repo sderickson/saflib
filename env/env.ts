@@ -33,6 +33,10 @@ export interface EnvEnvSchema {
    */
   PROTOCOL: "https" | "http";
   /**
+   * Comma-separated list of service subdomains, e.g. 'revenue,geo,identity,core'.
+   */
+  SERVICE_SUBDOMAINS: string;
+  /**
    * The timezone of the deployment, e.g. 'America/New_York'. Must be UTC.
    */
   TZ: "UTC";
@@ -41,6 +45,4 @@ export interface EnvEnvSchema {
 /**
  * `process.env` casted to the `EnvEnvSchema` type.
  */
-export const typedEnv = (globalThis.process
-  ? process.env
-  : {}) as unknown as EnvEnvSchema;
+export const typedEnv = (globalThis.process ? process.env : {}) as unknown as EnvEnvSchema;

@@ -50,6 +50,10 @@ export interface IdentityEnvSchema {
    */
   PROTOCOL: "https" | "http";
   /**
+   * Comma-separated list of service subdomains, e.g. 'revenue,geo,identity,core'.
+   */
+  SERVICE_SUBDOMAINS: string;
+  /**
    * The timezone of the deployment, e.g. 'America/New_York'. Must be UTC.
    */
   TZ: "UTC";
@@ -58,6 +62,4 @@ export interface IdentityEnvSchema {
 /**
  * `process.env` casted to the `IdentityEnvSchema` type.
  */
-export const typedEnv = (globalThis.process
-  ? process.env
-  : {}) as unknown as IdentityEnvSchema;
+export const typedEnv = (globalThis.process ? process.env : {}) as unknown as IdentityEnvSchema;

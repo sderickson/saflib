@@ -7,6 +7,7 @@ import { errorHandler, notFoundHandler } from "./errors.ts";
 import { everyRequestLogger, unsafeRequestLogger } from "./httpLogger.ts";
 import { createOpenApiValidator } from "./openapi.ts";
 import helmet from "helmet";
+import { healthRouter } from "./health.ts";
 import { makeContextMiddleware } from "./context.ts";
 import { blockHtml } from "./blockHtml.ts";
 import { createScopeValidator } from "./scopes.ts";
@@ -37,6 +38,7 @@ export const createGlobalMiddleware = (
   return [
     metricsMiddleware,
     helmet(),
+    healthRouter,
     everyRequestLogger,
     json(),
     urlencoded({ extended: false }),

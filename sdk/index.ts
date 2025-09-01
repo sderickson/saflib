@@ -5,7 +5,7 @@
 
 import { QueryClient } from "@tanstack/vue-query";
 import createClient from "openapi-fetch";
-import { isTestEnv } from "./env.ts";
+import { isTestEnv } from "./wip-env.ts";
 
 export { isTestEnv };
 
