@@ -21,6 +21,10 @@ export interface IdentityRpcsEnvSchema {
    */
   DOMAIN: string;
   /**
+   * Comma-separated list of domains to redirect to the root domain, e.g. 'old-subdomain1.saf.com,old-subdomain2.saf.com'.
+   */
+  DOMAIN_REDIRECTS?: string;
+  /**
    * The port on which the gRPC server will listen, or the client will connect.
    */
   IDENTITY_SERVICE_GRPC_PORT: string;

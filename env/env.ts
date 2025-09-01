@@ -21,6 +21,10 @@ export interface EnvEnvSchema {
    */
   DOMAIN: string;
   /**
+   * Comma-separated list of domains to redirect to the root domain, e.g. 'old-subdomain1.saf.com,old-subdomain2.saf.com'.
+   */
+  DOMAIN_REDIRECTS?: string;
+  /**
    * Whether to mock 3rd party integrations. Set to 'true' to mock. And integration packages should respect this setting.
    */
   MOCK_INTEGRATIONS?: "true" | "false";

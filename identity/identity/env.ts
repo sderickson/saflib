@@ -21,6 +21,10 @@ export interface IdentityEnvSchema {
    */
   DOMAIN: string;
   /**
+   * Comma-separated list of domains to redirect to the root domain, e.g. 'old-subdomain1.saf.com,old-subdomain2.saf.com'.
+   */
+  DOMAIN_REDIRECTS?: string;
+  /**
    * Comma-separated list of emails who will get the 'admin' scope. Emails must be validated to receive this scope.
    */
   IDENTITY_SERVICE_ADMIN_EMAILS?: string;
