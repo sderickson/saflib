@@ -1,1 +1,1 @@
-export { makeConfig } from "./vite.config.ts";
+export { makeConfig, type MakeConfigProps } from "./vite.config.ts";

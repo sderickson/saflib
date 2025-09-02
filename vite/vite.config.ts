@@ -11,7 +11,7 @@ import fs from "fs";
 
 const subdomains = typedEnv.CLIENT_SUBDOMAINS?.split(",") ?? [];
 const hosts = subdomains.map((subdomain) =>
-  subdomain === "" ? "docker.localhost" : `${subdomain}.docker.localhost`
+  subdomain === "" ? "docker.localhost" : `${subdomain}.docker.localhost`,
 );
 
 const subDomainProxyPlugin: Plugin = {
@@ -49,17 +49,31 @@ const input = {
         subdomain,
         path.resolve(process.cwd(), `${subdomain}/index.html`),
       ])
-      .filter(([_, path]) => fs.existsSync(path))
+      .filter(([_, path]) => fs.existsSync(path)),
   ),
 };
-console.log("input", input);
 
-interface MakeConfigProps {
+/**
+ * Arguments for makeConfig
+ */
+export interface MakeConfigProps {
+  /**
+   * Additional plugins to include in the Vite config. Vue, Vuetify, VueDevTools, and a SPA proxy plugin are included by default.
+   */
   plugins?: Plugin[];
+  /**
+   * A relative path (from process.cwd()) to the Vuetify style configFile override.
+   */
   vuetifyOverrides: string;
+  /**
+   * The absolute path of the root of the monorepo, to ensure vite has access to saflib packages.
+   */
   monorepoRoot: string;
 }
 
+/**
+ * Make a Vite config for a multi-SPA, SAF project. Includes all the expected plugins.
+ */
 export function makeConfig(config: MakeConfigProps) {
   const { plugins = [], vuetifyOverrides, monorepoRoot } = config;
   return defineConfig({
