@@ -66,6 +66,12 @@ Logs 5xx errors and returns all intercepted errors in the [standard error format
 
 Built in Express middleware included: `json` and `urlencoded`.
 
+### `health`
+
+**Type**: Global
+
+Provides a basic health check endpoint for container orchestration readiness/liveness probes.
+
 ### `helmet`
 
 **Type**: Global

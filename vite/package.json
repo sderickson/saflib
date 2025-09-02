@@ -1,0 +1,27 @@
+{
+  "name": "@saflib/vite",
+  "description": "TODO: Add package description",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
+  },
+  "dependencies": {
+    "@saflib/env": "*",
+    "@saflib/vue": "*",
+    "@vitejs/plugin-vue": "^6.0.1",
+    "rollup-plugin-ignore": "^1.0.10",
+    "vite": "^7.0.0",
+    "vite-plugin-vue-devtools": "^8.0.1",
+    "vite-plugin-vuetify": "^2.1.2"
+  },
+  "devDependencies": {
+    "@saflib/monorepo": "*",
+    "@saflib/vitest": "*"
+  }
+}

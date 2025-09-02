@@ -82,6 +82,10 @@ const emit = defineEmits<{
   (e: "login", user: User): void;
 }>();
 
+const props = defineProps<{
+  redirectTo?: string;
+}>();
+
 const { mutateAsync: login, isError, data: user, isPending } = useLogin();
 
 const email = ref("");
@@ -96,6 +100,9 @@ const handleLogin = async () => {
     await login({ email: email.value, password: password.value });
     if (user.value) {
       emit("login", user.value);
+      if (props.redirectTo) {
+        window.location.href = props.redirectTo;
+      }
     }
   } catch (error) {}
 };

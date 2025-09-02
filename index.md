@@ -4,7 +4,7 @@ SAF stands for Scott's Application Framework. I've built it to:
 
 1. Build my own production-ready web apps
 2. Experiment with LLM-assisted development
-3. Share what I learn
+3. Share and collaborate on what I learn
 
 Guiding principles:
 
@@ -26,9 +26,7 @@ These docs are also accessible when coding with SAF by searching for their markd
 
 ## Setup
 
-_**Warning**: The repos linked to below need to be updated._
-
-To use these packages in a new project, you can create a project from [the SAF template repo](https://github.com/sderickson/saf-template). You can also use the [SAF website repo](https://github.com/sderickson/saf-2025) as reference. The latter is what builds and serves this documentation using [VitePress](https://vitepress.dev/).
+To use these packages in a new project, you can create a project from [the SAF template repo](https://github.com/sderickson/saf-template).
 
 To use these packages in an existing project:
 

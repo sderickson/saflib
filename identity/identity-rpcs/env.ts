@@ -21,6 +21,10 @@ export interface IdentityRpcsEnvSchema {
    */
   DOMAIN: string;
   /**
+   * Comma-separated list of domains to redirect to the root domain, e.g. 'old-subdomain1.saf.com,old-subdomain2.saf.com'.
+   */
+  DOMAIN_REDIRECTS?: string;
+  /**
    * The port on which the gRPC server will listen, or the client will connect.
    */
   IDENTITY_SERVICE_GRPC_PORT: string;
@@ -37,6 +41,10 @@ export interface IdentityRpcsEnvSchema {
    */
   PROTOCOL: "https" | "http";
   /**
+   * Comma-separated list of service subdomains, e.g. 'revenue,geo,identity,core'.
+   */
+  SERVICE_SUBDOMAINS: string;
+  /**
    * The timezone of the deployment, e.g. 'America/New_York'. Must be UTC.
    */
   TZ: "UTC";
@@ -45,6 +53,4 @@ export interface IdentityRpcsEnvSchema {
 /**
  * `process.env` casted to the `IdentityRpcsEnvSchema` type.
  */
-export const typedEnv = (globalThis.process
-  ? process.env
-  : {}) as unknown as IdentityRpcsEnvSchema;
+export const typedEnv = (globalThis.process ? process.env : {}) as unknown as IdentityRpcsEnvSchema;

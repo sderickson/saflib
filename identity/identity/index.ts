@@ -7,7 +7,7 @@ import type { DbOptions } from "@saflib/drizzle";
 import type { User } from "@saflib/identity-db";
 import type { IdentityServiceCallbacks } from "@saflib/identity-common";
 import { makeSubsystemReporters } from "@saflib/node";
-import { typedEnv } from "@saflib/identity-http";
+import { typedEnv } from "./env.ts";
 
 /**
  * Callbacks for events which occur in the auth service.

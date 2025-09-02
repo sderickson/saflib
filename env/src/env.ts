@@ -28,7 +28,7 @@ export const getCombinedEnvSchema = async (targetPackageName?: string) => {
 
   const allDependencies = getAllPackageWorkspaceDependencies(
     currentPackageName,
-    context,
+    context
   );
 
   const allPackageNames = Array.from(allDependencies).concat([
@@ -38,12 +38,15 @@ export const getCombinedEnvSchema = async (targetPackageName?: string) => {
   const allEnvSchemas: JSONSchema4[] = allPackageNames
     .map((dependency) => {
       const packagePath = context.monorepoPackageDirectories[dependency];
+      if (packagePath === undefined) {
+        throw new Error(`Package ${dependency} not found`);
+      }
       const envSchemaPath = path.join(packagePath, "env.schema.json");
       if (!existsSync(envSchemaPath)) {
         return null;
       }
       const schema = JSON.parse(
-        readFileSync(envSchemaPath, "utf-8"),
+        readFileSync(envSchemaPath, "utf-8")
       ) as JSONSchema4;
       schema.source = dependency;
       return schema;
@@ -111,7 +114,7 @@ export function kebabCaseToPascalCase(str: string) {
 
 export const makeEnvParserSnippet = async (
   schema: SimplifiedJSONSchema,
-  packageName: string,
+  packageName: string
 ) => {
   const packageNamePieces = packageName.split("/");
   const lastPiece = packageNamePieces[packageNamePieces.length - 1];

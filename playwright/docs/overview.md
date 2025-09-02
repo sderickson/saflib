@@ -24,4 +24,12 @@ See `@saflib/vue` for more information on how to define and export strings.
 
 Playwright tests should live in the client package which they mainly test, and they should test the important user journeys the client implements. These user journeys should come from the designs provided, so that Playwright tests enforce that designed user journeys continue to work as expected.
 
-Playwright tests can also provide a record of these user journeys, for review and feedback. Playwright tests should use the provided [`attachScreenshot`](./ref/functions/attachScreenshot.md) function to create a visual record of the user journey for easier review. These can be shipped to where others in the organization can see them, for understanding a given client package, or for QA.
+Playwright tests can also provide a record of these user journeys, for review and feedback. Playwright tests should use the provided [`attachScreenshot`](./ref/@saflib/playwright/functions/attachScreenshot.md) function to create a visual record of the user journey for easier review. These can be shipped to where others in the organization can see them, for understanding a given client package, or for QA.
+
+## Playwright Config
+
+`@saflib/playwright` includes a default playwright config with the following features:
+
+- Firefox and Chromium browsers
+- A global setup test which checks the health of services listed in `SERVICE_SUBDOMAINS` environment variable.
+- Some more aggressive timeouts; by default they're 30 seconds, I changed them to 10 seconds.

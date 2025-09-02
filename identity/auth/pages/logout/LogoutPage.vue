@@ -6,6 +6,10 @@ import { useReverseT } from "../../i18n.ts";
 
 const { t } = useReverseT();
 
+const props = defineProps<{
+  redirectTo?: string;
+}>();
+
 const emit = defineEmits(["logout"]);
 const { mutate: logout } = useLogout();
 
@@ -13,6 +17,9 @@ onMounted(() => {
   logout(undefined, {
     onSuccess: async () => {
       emit("logout");
+      if (props.redirectTo) {
+        window.location.href = props.redirectTo;
+      }
     },
   });
 });
