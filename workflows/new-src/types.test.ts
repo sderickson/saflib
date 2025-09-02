@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { makeMachineFromWorkflow, justPromptWorkflow, pm } from "./types.ts";
+import { pm } from "./types.ts";
 import { createActor, waitFor } from "xstate";
 import { allChildrenSettled } from "../src/utils.ts";
 
@@ -14,8 +14,6 @@ describe("makeMachineFromWorkflow", () => {
       },
     });
     actor.start();
-    // await waitFor(actor, allChildrenSettled);
-    console.log(actor.getSnapshot());
-    // expect(actor.getSnapshot().value).toBe("done");
+    await waitFor(actor, allChildrenSettled);
   });
 });

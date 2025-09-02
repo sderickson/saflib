@@ -91,7 +91,7 @@ interface PromptMachineContext extends WorkflowMachineContext {
   promptText: string;
 }
 
-const promptStepMachine = setup({
+export const promptStepMachine = setup({
   types: {
     input: {} as PromptMachineInput,
     context: {} as PromptMachineContext,
@@ -133,7 +133,7 @@ const promptStepMachine = setup({
           ],
         },
         continue: {
-          target: "running",
+          target: "done",
         },
       },
     },
@@ -155,7 +155,10 @@ const input = [
 
 export const justPromptWorkflow: Workflow<JustPromptContext> = {
   input,
-  context: () => ({ promptText: "What is your name?", checklist: [] }),
+  context: () => {
+    console.log("context called!");
+    return { promptText: "What is your name?", checklist: [] };
+  },
   id: "prompt-example",
   description: "Just a prompt example",
   templateFiles: {},
@@ -189,28 +192,35 @@ export function makeMachineFromWorkflow<
   I extends WorkflowInput,
   C extends WorkflowContext,
 >(workflow: Workflow<C>) {
-  const actors: Record<string, AnyActor> = {};
-  for (const step of workflow.steps) {
-    actors[step.machine.id] = createActor(step.machine, { input: step.input });
+  const actors: Record<string, AnyStateMachine> = {};
+  for (let i = 0; i < workflow.steps.length; i++) {
+    const actor_id = `actor_${i}`;
+    const step = workflow.steps[i];
+    console.log("assigning actor", actor_id, "with input", step.input);
+    actors[actor_id] = step.machine;
   }
 
   const states: Record<string, object> = {};
   for (let i = 0; i < workflow.steps.length; i++) {
     const step = workflow.steps[i];
-    const stateName = `step${i + 1}`;
+    const stateName = `step_${i}`;
+    console.log(
+      `assigning state ${stateName} to invoke actor_${i} and then go to step_${i + 1}`,
+    );
     states[stateName] = {
       invoke: {
         input: step.input,
-        src: step.machine.id,
+        src: `actor_${i}`,
         onDone: {
-          target: `step${i + 2}`,
+          target: `step_${i + 1}`,
         },
       },
     };
   }
-  states[`step${workflow.steps.length + 1}`] = {
+  states[`step_${workflow.steps.length}`] = {
     type: "final",
   };
+  console.log("state keys", Object.keys(states));
 
   return setup({
     types: {
@@ -229,7 +239,7 @@ export function makeMachineFromWorkflow<
     id: workflow.id,
     description: workflow.description,
     context: workflow.context,
-    initial: "step1",
+    initial: "step_0",
     states,
     output: ({ context }) => outputFromContext({ context }),
   });
