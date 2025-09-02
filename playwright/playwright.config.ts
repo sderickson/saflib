@@ -1,3 +1,8 @@
+/**
+ * Default playwright config for SAF applications.
+ * @module @saflib/playwright/playwright.config
+ */
+
 import { defineConfig, devices } from "@playwright/test";
 import { fileURLToPath } from "node:url";
 import { dirname } from "node:path";

@@ -1,3 +1,8 @@
+/**
+ * Utilities for Playwright tests.
+ * @module @saflib/playwright
+ */
+
 import type { Page } from "@playwright/test";
 export * from "./screenshots.ts";
 import {
