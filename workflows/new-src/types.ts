@@ -1,8 +1,13 @@
 import {
-  //  setup,
+  assign,
+  raise,
+  setup,
   type AnyStateMachine,
   type InputFrom,
 } from "xstate";
+import { promptAgent, workflowActions, workflowActors } from "../src/xstate.ts";
+import { outputFromContext } from "../src/workflow.ts";
+import type { CLIArgument } from "../src/types.ts";
 
 // const machine = setup({
 //   types: {
@@ -30,19 +35,6 @@ import {
 // };
 
 /**
- * Required argument for the workflow, in a format the CLI tool (commander) can use.
- */
-export interface CLIArgument {
-  name: string;
-  description?: string;
-
-  /**
-   * When generating an example checklist, this is the value that will be provided.
-   */
-  exampleValue?: string;
-}
-
-/**
  * A step in a workflow with an actor and its corresponding input
  */
 type Step<Machine extends AnyStateMachine> = {
@@ -53,9 +45,8 @@ type Step<Machine extends AnyStateMachine> = {
 /**
  * A workflow definition. Can be used to create an XState machine which, when run, will execute the workflow.
  */
-export interface Workflow<C extends Record<string, any>> {
+export interface Workflow {
   input: Array<CLIArgument>;
-  context: () => C;
   id: string;
   description: string;
 
@@ -71,3 +62,79 @@ export interface Workflow<C extends Record<string, any>> {
 
   steps: Array<Step<AnyStateMachine>>;
 }
+
+interface WorkflowMachineInput {
+  dryRun?: boolean;
+}
+
+export interface ChecklistItem {
+  description: string;
+  subitems?: ChecklistItem[];
+}
+
+interface WorkflowMachineContext {
+  checklist: Array<ChecklistItem>;
+  loggedLast?: boolean;
+  systemPrompt?: string;
+  dryRun?: boolean;
+}
+
+interface PromptMachineInput extends WorkflowMachineInput {
+  promptText: string;
+}
+
+interface PromptMachineContext extends WorkflowMachineContext {
+  promptText: string;
+}
+
+const promptMachine = setup({
+  types: {
+    input: {} as PromptMachineInput,
+    context: {} as PromptMachineContext,
+  },
+  actions: {
+    ...workflowActions,
+  },
+  actors: {
+    ...workflowActors,
+  },
+}).createMachine({
+  id: "prompt",
+  context: ({ input }) => ({
+    checklist: [],
+    loggedLast: false,
+    systemPrompt: "",
+    dryRun: input.dryRun,
+    promptText: input.promptText,
+  }),
+  initial: "running",
+  entry: raise({ type: "prompt" }),
+  states: {
+    running: {
+      on: {
+        prompt: {
+          actions: [
+            promptAgent(({ context }) => context.promptText),
+            assign({
+              checklist: ({ context }) => {
+                return [
+                  ...context.checklist,
+                  {
+                    description: context.promptText.split("\n")[0],
+                  },
+                ];
+              },
+            }),
+          ],
+        },
+        continue: {
+          target: "running",
+        },
+      },
+    },
+    done: {
+      type: "final",
+    },
+  },
+  output: ({ context }) => outputFromContext({ context }),
+});
