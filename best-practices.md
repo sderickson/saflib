@@ -102,7 +102,7 @@ For serialized data, prefer flattened data stuctures with identifiers for relate
 **Example applications:**
 
 - `@saflib/links` provides [a simple structure](./links/docs/ref/type-aliases/Link.md) and some [methods](./links/docs/ref/index.md#functions) for sharing and using links to specific pages between packages.
-- `@saflib/utils` provides an [interface](./utils/docs/ref/interfaces/ElementStringObject.md) for objects with textual HTML element properties which can be easily `v-bind`ed in a Vue template, and located by [Playwright](./playwright/docs/ref/functions/getByString.md).
+- `@saflib/utils` provides an [interface](./utils/docs/ref/interfaces/ElementStringObject.md) for objects with textual HTML element properties which can be easily `v-bind`ed in a Vue template, and located by [Playwright](./playwright/docs/ref/@saflib/playwright/functions/getByString.md).
 
 ## Build and Maintain Fakes and Adapters for Service Boundaries
 
