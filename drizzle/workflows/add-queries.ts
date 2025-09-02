@@ -212,3 +212,17 @@ export class AddQueriesWorkflow extends XStateWorkflow {
   ];
   sourceUrl = import.meta.url;
 }
+
+// const cliArguments = [
+//   {
+//     name: "path" as const,
+//     description: "Path of the new query (e.g. 'queries/contacts/get-by-id')",
+//     exampleValue: "queries/example-table/example-query",
+//   },
+// ];
+
+// type ArgumentNames = (typeof cliArguments)[number]["name"];
+
+// type InferredArgsType = {
+//   [K in ArgumentNames]: string;
+// };
