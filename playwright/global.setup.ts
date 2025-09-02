@@ -1,7 +1,6 @@
 import { expect, test as setup } from "@playwright/test";
 
 const serviceSubdomains = process.env.SERVICE_SUBDOMAINS?.split(",") || [];
-console.log("serviceSubdomains", serviceSubdomains);
 
 setup("check docker service health", async ({ page }) => {
   let response;
