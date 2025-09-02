@@ -156,7 +156,6 @@ const input = [
 export const justPromptWorkflow: Workflow<JustPromptContext> = {
   input,
   context: () => {
-    console.log("context called!");
     return { promptText: "What is your name?", checklist: [] };
   },
   id: "prompt-example",
@@ -196,7 +195,6 @@ export function makeMachineFromWorkflow<
   for (let i = 0; i < workflow.steps.length; i++) {
     const actor_id = `actor_${i}`;
     const step = workflow.steps[i];
-    console.log("assigning actor", actor_id, "with input", step.input);
     actors[actor_id] = step.machine;
   }
 
@@ -204,9 +202,6 @@ export function makeMachineFromWorkflow<
   for (let i = 0; i < workflow.steps.length; i++) {
     const step = workflow.steps[i];
     const stateName = `step_${i}`;
-    console.log(
-      `assigning state ${stateName} to invoke actor_${i} and then go to step_${i + 1}`,
-    );
     states[stateName] = {
       invoke: {
         input: step.input,
@@ -220,7 +215,6 @@ export function makeMachineFromWorkflow<
   states[`step_${workflow.steps.length}`] = {
     type: "final",
   };
-  console.log("state keys", Object.keys(states));
 
   return setup({
     types: {
