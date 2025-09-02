@@ -172,6 +172,7 @@ interface PromptParams {
 
 const promptImpl: WorkflowActionFunction<any, AnyEventObject, PromptParams> =
   assign(({ context }: { context: WorkflowContext }, { msg }: PromptParams) => {
+    console.log("printing prompt", msg);
     if (context.systemPrompt) {
       print(context.systemPrompt);
     }

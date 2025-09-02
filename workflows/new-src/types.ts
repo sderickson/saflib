@@ -151,7 +151,7 @@ interface JustPromptContext extends WorkflowContext {
 const input = [
   { name: "prompt", description: "The prompt to be shown" },
   { name: "prompt2", description: "The second prompt to be shown" },
-];
+] as const;
 
 export const justPromptWorkflow: Workflow<JustPromptContext> = {
   input,
@@ -242,9 +242,3 @@ export function makeMachineFromWorkflow<
 export const pm = makeMachineFromWorkflow<test, PromptMachineContext>(
   justPromptWorkflow,
 );
-createActor(pm, {
-  input: {
-    prompt: "What is your name?",
-    prompt2: "What is your favorite color?",
-  },
-});
