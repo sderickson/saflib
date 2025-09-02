@@ -2,7 +2,6 @@ import {
   assign,
   raise,
   setup,
-  type MachineContext,
   type AnyStateMachine,
   type InputFrom,
   type AnyActor,
@@ -130,6 +129,7 @@ const promptStepMachine = setup({
                 ];
               },
             }),
+            raise({ type: "continue" }),
           ],
         },
         continue: {
@@ -148,11 +148,13 @@ interface JustPromptContext extends WorkflowContext {
   promptText: string;
 }
 
-const justPromptWorkflow: Workflow<JustPromptContext> = {
-  input: [
-    { name: "prompt", description: "The prompt to be shown" },
-    { name: "prompt2", description: "The second prompt to be shown" },
-  ] as const,
+const input = [
+  { name: "prompt", description: "The prompt to be shown" },
+  { name: "prompt2", description: "The second prompt to be shown" },
+];
+
+export const justPromptWorkflow: Workflow<JustPromptContext> = {
+  input,
   context: () => ({ promptText: "What is your name?", checklist: [] }),
   id: "prompt-example",
   description: "Just a prompt example",
@@ -163,6 +165,10 @@ const justPromptWorkflow: Workflow<JustPromptContext> = {
       machine: promptStepMachine,
       input: { promptText: "What is your name?" },
     },
+    {
+      machine: promptStepMachine,
+      input: { promptText: "What is your favorite color?" },
+    },
   ],
 };
 
@@ -170,9 +176,18 @@ interface WorkflowMachineOutput {
   checklist: ChecklistItem[];
 }
 
-function makeMachineFromWorkflow<
+type ArrayElementType<T extends readonly unknown[]> = T[number];
+type ExtractKeys<T extends readonly { name: string }[]> =
+  ArrayElementType<T>["name"];
+type CreateArgsType<T extends readonly { name: string }[]> = {
+  [K in ExtractKeys<T>]: string;
+};
+
+type test = CreateArgsType<typeof input> & WorkflowInput;
+
+export function makeMachineFromWorkflow<
   I extends WorkflowInput,
-  C extends MachineContext & WorkflowContext,
+  C extends WorkflowContext,
 >(workflow: Workflow<C>) {
   const actors: Record<string, AnyActor> = {};
   for (const step of workflow.steps) {
@@ -220,9 +235,12 @@ function makeMachineFromWorkflow<
   });
 }
 
-const pm = makeMachineFromWorkflow<PromptMachineInput, PromptMachineContext>(
+export const pm = makeMachineFromWorkflow<test, PromptMachineContext>(
   justPromptWorkflow,
 );
 createActor(pm, {
-  input: { promptText: "What is your name?" },
+  input: {
+    prompt: "What is your name?",
+    prompt2: "What is your favorite color?",
+  },
 });
