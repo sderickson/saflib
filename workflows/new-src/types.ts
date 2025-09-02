@@ -4,14 +4,14 @@ import {
   setup,
   type MachineContext,
   type AnyStateMachine,
-  type ContextFrom,
   type InputFrom,
   type AnyActor,
   createActor,
 } from "xstate";
 import { promptAgent, workflowActions, workflowActors } from "../src/xstate.ts";
 import { outputFromContext } from "../src/workflow.ts";
-import type { CLIArgument, WorkflowContext } from "../src/types.ts";
+import type { CLIArgument } from "../src/types.ts";
+import type { WorkflowContext } from "../src/xstate.ts";
 
 // const machine = setup({
 //   types: {
@@ -144,7 +144,7 @@ const promptStepMachine = setup({
   output: ({ context }) => outputFromContext({ context }),
 });
 
-interface JustPromptContext {
+interface JustPromptContext extends WorkflowContext {
   promptText: string;
 }
 
@@ -155,7 +155,7 @@ const cliArguments = [
 
 const justPromptWorkflow: Workflow<JustPromptContext> = {
   input: cliArguments,
-  context: () => ({ promptText: "What is your name?" }),
+  context: () => ({ promptText: "What is your name?", checklist: [] }),
   id: "prompt-example",
   description: "Just a prompt example",
   templateFiles: {},
