@@ -1,3 +1,35 @@
+import { createActor, setup } from "xstate";
+const machine = setup({
+  types: {
+    input: {} as { foo: string },
+    context: {} as { bar: string },
+  },
+}).createMachine({
+  id: "foo",
+  context: ({ input }) => ({
+    bar: input.foo,
+  }),
+  initial: "bar",
+  states: {
+    bar: {
+      on: {
+        baz: "baz",
+      },
+    },
+  },
+});
+
+interface Context {
+  baz: string;
+}
+
+const step: Step<typeof machine> = {
+  actor: machine,
+  input: { foo: "bar" },
+};
+
+const actor = createActor(machine, { input: { foo: "bar" } });
+
 /**
  * Required argument for the workflow, in a format the CLI tool (commander) can use.
  */
