@@ -11,7 +11,7 @@ import {
 import { promptAgent, workflowActions, workflowActors } from "../src/xstate.ts";
 import { outputFromContext } from "../src/workflow.ts";
 import type { CLIArgument } from "../src/types.ts";
-import type { WorkflowContext } from "../src/xstate.ts";
+import type { WorkflowContext, WorkflowInput } from "../src/xstate.ts";
 
 // const machine = setup({
 //   types: {
@@ -148,13 +148,11 @@ interface JustPromptContext extends WorkflowContext {
   promptText: string;
 }
 
-const cliArguments = [
-  { name: "prompt", description: "The prompt to be shown" },
-  { name: "prompt2", description: "The second prompt to be shown" },
-] as const;
-
 const justPromptWorkflow: Workflow<JustPromptContext> = {
-  input: cliArguments,
+  input: [
+    { name: "prompt", description: "The prompt to be shown" },
+    { name: "prompt2", description: "The second prompt to be shown" },
+  ] as const,
   context: () => ({ promptText: "What is your name?", checklist: [] }),
   id: "prompt-example",
   description: "Just a prompt example",
@@ -172,16 +170,10 @@ interface WorkflowMachineOutput {
   checklist: ChecklistItem[];
 }
 
-type ArrayElementType<T extends readonly unknown[]> = T[number];
-type ExtractKeys<T extends readonly { name: string }[]> =
-  ArrayElementType<T>["name"];
-type CreateArgsType<T extends readonly { name: string }[]> = {
-  [K in ExtractKeys<T>]: string;
-};
-
-function makeMachineFromWorkflow<C extends MachineContext & WorkflowContext>(
-  workflow: Workflow<C>,
-) {
+function makeMachineFromWorkflow<
+  I extends WorkflowInput,
+  C extends MachineContext & WorkflowContext,
+>(workflow: Workflow<C>) {
   const actors: Record<string, AnyActor> = {};
   for (const step of workflow.steps) {
     actors[step.machine.id] = createActor(step.machine, { input: step.input });
@@ -195,13 +187,19 @@ function makeMachineFromWorkflow<C extends MachineContext & WorkflowContext>(
       invoke: {
         input: step.input,
         src: step.machine.id,
+        onDone: {
+          target: `step${i + 2}`,
+        },
       },
     };
   }
+  states[`step${workflow.steps.length + 1}`] = {
+    type: "final",
+  };
 
   return setup({
     types: {
-      input: {} as CreateArgsType<typeof cliArguments>,
+      input: {} as I,
       context: {} as C,
       output: {} as WorkflowMachineOutput,
     },
@@ -222,4 +220,9 @@ function makeMachineFromWorkflow<C extends MachineContext & WorkflowContext>(
   });
 }
 
-const pm = makeMachineFromWorkflow(justPromptWorkflow);
+const pm = makeMachineFromWorkflow<PromptMachineInput, PromptMachineContext>(
+  justPromptWorkflow,
+);
+createActor(pm, {
+  input: { promptText: "What is your name?" },
+});
