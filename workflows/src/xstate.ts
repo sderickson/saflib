@@ -10,6 +10,7 @@ import {
   type MachineContext,
   fromPromise,
   raise,
+  type AnyActorRef,
 } from "xstate";
 import type { ChecklistItem } from "./types.ts";
 import { getCurrentPackage } from "@saflib/dev-tools";
@@ -33,6 +34,8 @@ export interface WorkflowInput {
   loggedLast?: boolean;
 
   systemPrompt?: string;
+
+  rootRef?: AnyActorRef;
 }
 
 /**
@@ -76,6 +79,8 @@ export interface WorkflowContext {
    * without actually operating it.
    */
   dryRun?: boolean;
+
+  rootRef: AnyActorRef;
 }
 
 type WorkflowActionFunction<

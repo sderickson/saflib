@@ -5,6 +5,7 @@ import {
   type AnyStateMachine,
   type InputFrom,
   fromPromise,
+  sendTo,
 } from "xstate";
 import { promptAgent, workflowActions, workflowActors } from "../src/xstate.ts";
 import { outputFromContext } from "../src/workflow.ts";
@@ -111,12 +112,13 @@ export const promptStepMachine = setup({
   },
 }).createMachine({
   id: "prompt-step",
-  context: ({ input }) => ({
+  context: ({ input, self }) => ({
     checklist: [],
     loggedLast: false,
     systemPrompt: "",
     dryRun: input.dryRun,
     promptText: input.promptText,
+    rootRef: input.rootRef || self,
   }),
   initial: "sleep",
   entry: raise({ type: "prompt" }),
@@ -135,6 +137,8 @@ export const promptStepMachine = setup({
         prompt: {
           actions: [
             promptAgent(({ context }) => context.promptText),
+            sendTo(({ context }) => context.rootRef, { type: "halt" }),
+
             assign({
               checklist: ({ context }) => {
                 return [
@@ -220,9 +224,10 @@ export function makeMachineFromWorkflow<I, C>(workflow: Workflow<C>) {
     const stateName = `step_${i}`;
     states[stateName] = {
       invoke: {
-        input: () => {
+        input: ({ context }: { context: Context }) => {
           return {
             ...step.input,
+            rootRef: context.rootRef,
           };
         },
         src: `actor_${i}`,
@@ -250,14 +255,16 @@ export function makeMachineFromWorkflow<I, C>(workflow: Workflow<C>) {
       ...actors,
     },
   }).createMachine({
+    entry: raise({ type: "start" }),
     id: workflow.id,
     description: workflow.description,
-    context: ({ input }) => {
+    context: ({ input, self }) => {
       const context: Context = {
         ...workflow.context(),
         checklist: [],
         loggedLast: input.loggedLast,
         systemPrompt: input.systemPrompt,
+        rootRef: input.rootRef || self,
       };
       return context;
     },
