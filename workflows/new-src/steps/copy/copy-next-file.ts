@@ -40,6 +40,6 @@ export const copyNextFile = fromPromise(
     );
 
     await copyFile(sourcePath, targetPath);
-    return { skipped: false, fileName: targetFileName };
+    return { skipped: false, fileName: targetFileName, filePath: targetPath };
   },
 );

@@ -9,4 +9,5 @@ export interface CopyTemplateMachineContext extends WorkflowContext {
   filesToCopy: string[];
   name: string;
   targetDir: string;
+  copiedFiles: Record<string, string>;
 }

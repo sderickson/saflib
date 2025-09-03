@@ -53,8 +53,14 @@ function _makeWorkflowMachine<I extends readonly CLIArgument[], C>(
         input: ({ context }: { context: Context }) => {
           return {
             ...step.input({ context }),
+            // don't need checklist; the machine will compose their own
+            // don't need loggedLast; the machine just tracks that for its own output
+            systemPrompt: context.systemPrompt,
+            dryRun: context.dryRun,
             rootRef: context.rootRef,
             templateFiles: context.templateFiles,
+            copiedFiles: context.copiedFiles,
+            docFiles: context.docFiles,
           };
         },
         src: `actor_${i}`,

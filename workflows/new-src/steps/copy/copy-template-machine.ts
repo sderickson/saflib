@@ -45,6 +45,7 @@ export const CopyTemplateMachine = setup({
       name: arg.input.name,
       targetDir: arg.input.targetDir,
       templateFiles: arg.input.templateFiles,
+      copiedFiles: arg.input.copiedFiles || {},
     };
   },
   entry: logInfo("Starting template copy workflow"),

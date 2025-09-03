@@ -39,6 +39,8 @@ export interface WorkflowInput {
 
   templateFiles?: Record<string, string>;
 
+  copiedFiles?: Record<string, string>;
+
   docFiles?: Record<string, string>;
 }
 
@@ -87,6 +89,11 @@ export interface WorkflowContext {
   rootRef: AnyActorRef;
 
   templateFiles?: Record<string, string>;
+
+  /**
+   * The key is the id of the file, and the value is the absolute path to the file.
+   */
+  copiedFiles?: Record<string, string>;
 
   docFiles?: Record<string, string>;
 }
@@ -164,6 +171,7 @@ export const logWarn = <C, E extends AnyEventObject>(
 const logImpl: WorkflowActionFunction<any, AnyEventObject, LogParams> = assign(
   ({ context }: { context: WorkflowContext }, { msg, level = "info" }) => {
     const statusChar = level === "info" ? "✓" : level === "error" ? "✗" : "⚠";
+    console.log("logging", msg);
     print(`${statusChar} ${msg}`, context.loggedLast ?? false);
     return { loggedLast: true };
   },
