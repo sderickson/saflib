@@ -6,7 +6,6 @@ import {
   logError,
   logWarn,
 } from "../../../src/xstate.ts";
-import { getGitHubUrl } from "@saflib/dev-tools";
 import { copyNextFile } from "./copy-next-file.ts";
 import { renameNextFile } from "./rename-next-file.ts";
 import type { WorkflowOutput } from "../../../src/xstate.ts";
@@ -16,6 +15,7 @@ import type {
   CopyTemplateMachineContext,
   CopyTemplateMachineInput,
 } from "./types.ts";
+import { parseChecklist, parseCopiedFiles } from "./helpers.ts";
 
 export const CopyTemplateMachine = setup({
   types: {
@@ -68,49 +68,19 @@ export const CopyTemplateMachine = setup({
                   `File ${event.output.fileName} already exists, skipping`,
               ),
               assign({
-                checklist: ({ context, event }) => {
-                  const fileId = context.filesToCopy[0];
-                  const fullPath = context.templateFiles![fileId];
-                  const githubPath = getGitHubUrl(fullPath);
-                  return [
-                    ...context.checklist,
-                    {
-                      description: `Upsert **${event.output.fileName}** from [template](${githubPath})`,
-                    },
-                  ];
-                },
-                copiedFiles: ({ context, event }) => {
-                  return {
-                    ...context.copiedFiles,
-                    [event.output.fileId]: event.output.filePath,
-                  };
-                },
+                checklist: parseChecklist,
+                copiedFiles: parseCopiedFiles,
               }),
             ],
           },
           {
             target: "rename",
             actions: [
-              logInfo(({ event }) => `Copied file to ${event.output.fileName}`),
               assign({
-                checklist: ({ context, event }) => {
-                  const fileId = context.filesToCopy[0];
-                  const fullPath = context.templateFiles![fileId];
-                  const githubPath = getGitHubUrl(fullPath);
-                  return [
-                    ...context.checklist,
-                    {
-                      description: `Upsert **${event.output.fileName}** from [template](${githubPath})`,
-                    },
-                  ];
-                },
-                copiedFiles: ({ context, event }) => {
-                  return {
-                    ...context.copiedFiles,
-                    [event.output.fileId]: event.output.filePath,
-                  };
-                },
+                checklist: parseChecklist,
+                copiedFiles: parseCopiedFiles,
               }),
+              logInfo(({ event }) => `Copied file to ${event.output.fileName}`),
             ],
           },
         ],
@@ -158,7 +128,6 @@ export const CopyTemplateMachine = setup({
     },
   },
   output: ({ context }) => {
-    console.log("I have context here...", context.copiedFiles);
     return {
       checklist: [
         {
@@ -166,6 +135,7 @@ export const CopyTemplateMachine = setup({
           subitems: context.checklist,
         },
       ],
+      copiedFiles: context.copiedFiles,
     };
   },
 });

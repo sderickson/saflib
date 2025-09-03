@@ -54,6 +54,8 @@ export interface WorkflowOutput {
    * of the work done by a completed workflow. Workflows build these recursively.
    */
   checklist: ChecklistItem[];
+
+  copiedFiles?: Record<string, string>;
 }
 
 /**

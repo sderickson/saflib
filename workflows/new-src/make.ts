@@ -78,6 +78,13 @@ function _makeWorkflowMachine<I extends readonly CLIArgument[], C>(
                 const output: WorkflowOutput = event.output;
                 return [...context.checklist, ...output.checklist];
               },
+              copiedFiles: ({ context, event }) => {
+                const output: WorkflowOutput = event.output;
+                if (output.copiedFiles) {
+                  return { ...context.copiedFiles, ...output.copiedFiles };
+                }
+                return context.copiedFiles;
+              },
             }),
           ],
         },
