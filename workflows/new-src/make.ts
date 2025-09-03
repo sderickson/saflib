@@ -89,6 +89,6 @@ export function defineWorkflow<
   templateFiles: Record<string, string>;
   docFiles: Record<string, string>;
   steps: Array<Step<C, AnyStateMachine>>;
-}): Workflow<I, C> {
-  return config;
+}) {
+  return makeMachineFromWorkflow(config);
 }

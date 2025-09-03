@@ -1,16 +1,12 @@
 import { promptStepMachine } from "./steps/prompt.ts";
-import { makeMachineFromWorkflow, defineWorkflow } from "./make.ts";
-
-interface JustPromptContext {
-  promptText: string;
-}
+import { defineWorkflow } from "./make.ts";
 
 const input = [
   { name: "prompt", description: "The prompt to be shown" },
   { name: "prompt2", description: "The second prompt to be shown" },
 ] as const;
 
-export const justPromptWorkflow = defineWorkflow({
+export const promptWorkflowMachine = defineWorkflow({
   input,
   context: ({ input }) => {
     return { promptText: input.prompt };
@@ -34,8 +30,3 @@ export const justPromptWorkflow = defineWorkflow({
     },
   ],
 });
-
-export const promptWorkflowMachine = makeMachineFromWorkflow<
-  typeof input,
-  JustPromptContext
->(justPromptWorkflow);
