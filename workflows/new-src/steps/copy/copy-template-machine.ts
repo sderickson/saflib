@@ -32,7 +32,9 @@ export const CopyTemplateMachine = setup({
     ...workflowActors,
   },
   guards: {
-    hasMoreFiles: ({ context }) => context.filesToCopy.length > 0,
+    hasMoreFiles: ({ context }) => {
+      return context.filesToCopy.length > 0;
+    },
   },
 }).createMachine({
   id: "copy-template",
@@ -60,10 +62,31 @@ export const CopyTemplateMachine = setup({
           {
             guard: ({ event }) => event.output.skipped,
             target: "popFile",
-            actions: logWarn(
-              ({ event }) =>
-                `File ${event.output.fileName} already exists, skipping`,
-            ),
+            actions: [
+              logWarn(
+                ({ event }) =>
+                  `File ${event.output.fileName} already exists, skipping`,
+              ),
+              assign({
+                checklist: ({ context, event }) => {
+                  const fileId = context.filesToCopy[0];
+                  const fullPath = context.templateFiles![fileId];
+                  const githubPath = getGitHubUrl(fullPath);
+                  return [
+                    ...context.checklist,
+                    {
+                      description: `Upsert **${event.output.fileName}** from [template](${githubPath})`,
+                    },
+                  ];
+                },
+                copiedFiles: ({ context, event }) => {
+                  return {
+                    ...context.copiedFiles,
+                    [event.output.fileId]: event.output.filePath,
+                  };
+                },
+              }),
+            ],
           },
           {
             target: "rename",
@@ -80,6 +103,12 @@ export const CopyTemplateMachine = setup({
                       description: `Upsert **${event.output.fileName}** from [template](${githubPath})`,
                     },
                   ];
+                },
+                copiedFiles: ({ context, event }) => {
+                  return {
+                    ...context.copiedFiles,
+                    [event.output.fileId]: event.output.filePath,
+                  };
                 },
               }),
             ],
@@ -129,6 +158,7 @@ export const CopyTemplateMachine = setup({
     },
   },
   output: ({ context }) => {
+    console.log("I have context here...", context.copiedFiles);
     return {
       checklist: [
         {

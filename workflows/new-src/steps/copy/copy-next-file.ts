@@ -6,8 +6,19 @@ import { copyFile } from "node:fs/promises";
 import { transformName } from "./utils.ts";
 import type { CopyTemplateMachineContext } from "./types.ts";
 
+interface CopyNextFileOutput {
+  skipped: boolean;
+  fileName: string;
+  fileId: string;
+  filePath: string;
+}
+
 export const copyNextFile = fromPromise(
-  async ({ input }: { input: CopyTemplateMachineContext }) => {
+  async ({
+    input,
+  }: {
+    input: CopyTemplateMachineContext;
+  }): Promise<CopyNextFileOutput> => {
     const { filesToCopy, dryRun, templateFiles, name, targetDir } = input;
 
     if (filesToCopy.length === 0) {
@@ -23,13 +34,23 @@ export const copyNextFile = fromPromise(
     const targetPath = path.join(targetDir, targetFileName);
 
     if (dryRun) {
-      return { skipped: false, fileName: targetFileName };
+      return {
+        skipped: false,
+        fileName: targetFileName,
+        fileId: currentFile,
+        filePath: targetPath,
+      };
     }
 
     // Check if target file already exists
     try {
       await access(targetPath, constants.F_OK);
-      return { skipped: true, fileName: targetFileName };
+      return {
+        skipped: true,
+        fileName: targetFileName,
+        fileId: currentFile,
+        filePath: targetPath,
+      };
     } catch {
       // File doesn't exist, proceed with copy
     }
@@ -40,6 +61,11 @@ export const copyNextFile = fromPromise(
     );
 
     await copyFile(sourcePath, targetPath);
-    return { skipped: false, fileName: targetFileName, filePath: targetPath };
+    return {
+      skipped: false,
+      fileName: targetFileName,
+      filePath: targetPath,
+      fileId: currentFile,
+    };
   },
 );

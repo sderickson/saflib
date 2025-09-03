@@ -17,7 +17,7 @@ const input = [
   },
 ] as const;
 
-const sourceDir = path.join(__dirname, "page-template");
+const sourceDir = path.join(import.meta.dirname, "page-template");
 
 interface AddSpaPageWorkflowContext {
   name: string;
@@ -59,10 +59,13 @@ export const AddSpaPageWorkflowMachine = makeWorkflowMachine<
       targetDir: context.targetDir,
     })),
 
-    step(UpdateStepMachine, ({ context }) => ({
-      fileId: "loader",
-      promptMessage: `Please update the loader method in ${path.basename(context.copiedFiles!.loader)} to return any necessary Tanstack queries for rendering the page.`,
-    })),
+    step(UpdateStepMachine, ({ context }) => {
+      console.log("update-step context", context.copiedFiles);
+      return {
+        fileId: "loader",
+        promptMessage: `Please update the loader method in ${path.basename(context.copiedFiles!.loader)} to return any necessary Tanstack queries for rendering the page.`,
+      };
+    }),
 
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "vue",

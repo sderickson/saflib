@@ -112,6 +112,8 @@ function _makeWorkflowMachine<I extends readonly CLIArgument[], C>(
         loggedLast: input.loggedLast,
         systemPrompt: input.systemPrompt,
         rootRef: input.rootRef || self,
+        templateFiles: workflow.templateFiles,
+        docFiles: workflow.docFiles,
       };
       return context;
     },
