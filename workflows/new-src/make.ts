@@ -9,7 +9,29 @@ import { raise, setup, type AnyStateMachine } from "xstate";
 import { outputFromContext } from "../src/workflow.ts";
 import type { CLIArgument } from "../src/types.ts";
 
-export function makeMachineFromWorkflow<I extends readonly CLIArgument[], C>(
+/**
+ * Helper, identity function to infer types.
+ *
+ * By using this function on a Workflow object, it properly types the input object in the context function, and the context in the callbacks for the steps.
+ *
+ * I'm keeping this separate just because it's good to have the type inference piece separate where it can be messed with independently.
+ */
+function defineWorkflow<I extends readonly CLIArgument[], C = any>(config: {
+  input: I;
+  context: (arg: { input: CreateArgsType<I> }) => C;
+  id: string;
+  description: string;
+  templateFiles: Record<string, string>;
+  docFiles: Record<string, string>;
+  steps: Array<Step<C, AnyStateMachine>>;
+}): Workflow<I, C> {
+  return config;
+}
+
+/**
+ * Implementation of the makeMachineFromWorkflow function.
+ */
+function _makeWorkflowMachine<I extends readonly CLIArgument[], C>(
   workflow: Workflow<I, C>,
 ) {
   type Input = CreateArgsType<I> & WorkflowInput;
@@ -78,17 +100,13 @@ export function makeMachineFromWorkflow<I extends readonly CLIArgument[], C>(
   });
 }
 
-export function defineWorkflow<
-  I extends readonly CLIArgument[],
-  C = any,
->(config: {
-  input: I;
-  context: (arg: { input: CreateArgsType<I> }) => C;
-  id: string;
-  description: string;
-  templateFiles: Record<string, string>;
-  docFiles: Record<string, string>;
-  steps: Array<Step<C, AnyStateMachine>>;
-}) {
-  return makeMachineFromWorkflow(config);
+/**
+ * From a Workflow object, create an XState machine.
+ *
+ * This basically translates my simplified and scoped workflow machine definition to the full XState machine definition.
+ */
+export function makeWorkflowMachine<I extends readonly CLIArgument[], C>(
+  config: Workflow<I, C>,
+) {
+  return _makeWorkflowMachine(defineWorkflow(config));
 }
