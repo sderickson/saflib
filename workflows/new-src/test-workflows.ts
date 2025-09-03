@@ -1,4 +1,4 @@
-import { promptStepMachine } from "./steps/prompt.ts";
+import { PromptStepMachine } from "./steps/prompt.ts";
 import { makeWorkflowMachine } from "./make.ts";
 
 const input = [
@@ -17,13 +17,13 @@ export const promptWorkflowMachine = makeWorkflowMachine({
   docFiles: {},
   steps: [
     {
-      machine: promptStepMachine,
+      machine: PromptStepMachine,
       input: ({ context }) => {
         return { promptText: context.promptText };
       },
     },
     {
-      machine: promptStepMachine,
+      machine: PromptStepMachine,
       input: ({ context }) => {
         return { promptText: context.promptText + " Really?" };
       },

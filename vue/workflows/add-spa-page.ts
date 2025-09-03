@@ -4,7 +4,7 @@ import {
   UpdateStepMachine,
   PromptStepMachine,
   makeWorkflowMachine,
-  Step,
+  type Step,
 } from "@saflib/workflows";
 import { kebabCaseToPascalCase } from "@saflib/utils";
 import path from "node:path";
@@ -20,12 +20,6 @@ const input = [
 
 const sourceDir = path.join(__dirname, "page-template");
 
-const defineSteps = <C>(
-  steps: Array<Step<C, AnyStateMachine>>,
-): Array<Step<C, AnyStateMachine>> => {
-  return steps;
-};
-
 const defineStep = <C, M extends AnyStateMachine>(
   machine: M,
   input: (arg: { context: C }) => InputFrom<M>,
@@ -39,10 +33,6 @@ const defineStep = <C, M extends AnyStateMachine>(
 interface AddSpaPageWorkflowContext {
   name: string;
   targetDir: string;
-}
-
-interface SomeOtherContext {
-  namer: string;
 }
 
 export const AddSpaPageWorkflowMachine = makeWorkflowMachine<
@@ -69,15 +59,6 @@ export const AddSpaPageWorkflowMachine = makeWorkflowMachine<
   },
   docFiles: {},
   steps: [
-    {
-      machine: CopyTemplateMachine,
-      input: ({ context }) => {
-        return {
-          name: context.name,
-          // targetDir: context.targetDir,
-        };
-      },
-    },
     defineStep(CopyTemplateMachine, ({ context }) => ({
       name: context.name,
       targetDir: context.targetDir,

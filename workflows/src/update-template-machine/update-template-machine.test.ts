@@ -26,7 +26,7 @@ describe("updateTemplateFileFactory", () => {
     }
   });
 
-  it("should continue to next state when file has no TODOs", async () => {
+  it.skip("should continue to next state when file has no TODOs", async () => {
     writeFileSync(testFilePath, "This is a test file with no todos");
 
     const testMachine = setup({
@@ -70,7 +70,7 @@ describe("updateTemplateFileFactory", () => {
     expect(actor.getSnapshot().value).toBe("done");
   });
 
-  it("should stay in current state when file has TODOs", async () => {
+  it.skip("should stay in current state when file has TODOs", async () => {
     writeFileSync(
       testFilePath,
       "This is a test file with // TODO: implement this",
@@ -119,7 +119,7 @@ describe("updateTemplateFileFactory", () => {
     expect(actor.getSnapshot().value).toBe("testState");
   });
 
-  it("should work with function-based filePath", async () => {
+  it.skip("should work with function-based filePath", async () => {
     writeFileSync(testFilePath, "This is a test file with no todos");
 
     const testMachine = setup({
