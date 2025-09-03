@@ -1,5 +1,9 @@
 import { assign, raise, setup } from "xstate";
-import type { WorkflowContext, WorkflowInput } from "../../../src/xstate.ts";
+import type {
+  WorkflowContext,
+  WorkflowInput,
+  WorkflowOutput,
+} from "../../../src/xstate.ts";
 import {
   promptAgent,
   workflowActions,
@@ -21,6 +25,7 @@ interface UpdateMachineContext extends WorkflowContext {
 
 export const UpdateStepMachine = setup({
   types: {
+    output: {} as WorkflowOutput,
     input: {} as UpdateMachineInput,
     context: {} as UpdateMachineContext,
   },
@@ -35,6 +40,7 @@ export const UpdateStepMachine = setup({
   initial: "update",
   context: ({ input, self }) => {
     const filePath = input.copiedFiles![input.fileId];
+    console.log("dry run?", input.dryRun);
     return {
       checklist: [],
       loggedLast: false,
@@ -61,6 +67,7 @@ export const UpdateStepMachine = setup({
         continue: [
           {
             guard: ({ context }) => {
+              console.log("guard", context.dryRun);
               if (context.dryRun) {
                 return false;
               }
@@ -98,5 +105,14 @@ export const UpdateStepMachine = setup({
     done: {
       type: "final",
     },
+  },
+  output: ({ context }) => {
+    return {
+      checklist: [
+        {
+          description: `Update ${path.basename(context.filePath)} to remove TODOs`,
+        },
+      ],
+    };
   },
 });

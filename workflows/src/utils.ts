@@ -1,6 +1,6 @@
 import { getSafReporters } from "@saflib/node";
 import { addNewLinesToString } from "@saflib/utils";
-import type { AnyMachineSnapshot, AnyActor } from "xstate";
+import { type AnyMachineSnapshot, type AnyActor, waitFor } from "xstate";
 
 export function allSettled(snapshot: AnyMachineSnapshot): boolean {
   if (snapshot.children) {
@@ -18,4 +18,18 @@ export const print = (msg: string, noNewLine = false) => {
     log.info("");
   }
   log.info(addNewLinesToString(msg));
+};
+
+export const continueWorkflow = (actor: AnyActor) => {
+  const snapshot = actor.getSnapshot();
+  if (!snapshot.children) {
+    actor.send({ type: "continue" });
+    return;
+  }
+  Object.values(snapshot.children as Record<string, AnyActor>).forEach(
+    (child) => {
+      child.send({ type: "continue" });
+      continueWorkflow(child);
+    },
+  );
 };
