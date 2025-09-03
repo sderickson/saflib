@@ -1,15 +1,13 @@
-import { setup, type AnyStateMachine, type InputFrom } from "xstate";
 import {
   CopyTemplateMachine,
   UpdateStepMachine,
   PromptStepMachine,
   makeWorkflowMachine,
-  type Step,
   step,
+  TestStepMachine,
+  XStateWorkflow,
 } from "@saflib/workflows";
-import { kebabCaseToPascalCase } from "@saflib/utils";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 
 const input = [
   {
@@ -84,8 +82,48 @@ export const AddSpaPageWorkflowMachine = makeWorkflowMachine<
       promptMessage: `Please update ${path.basename(context.copiedFiles!.test)} to mock the server requests and verify that the raw data from the loader is rendered correctly.`,
     })),
 
-    // defineStep(PromptStepMachine, () => ({
-    //   promptText: "Please update the test file",
-    // })),
+    step(TestStepMachine, () => ({
+      fileId: "test",
+    })),
+
+    step(UpdateStepMachine, ({ context }) => ({
+      fileId: "strings",
+      promptMessage: `Please update ${path.basename(context.copiedFiles!.strings)} to include all text from the design. Use string keys that will work well with the translation system (e.g., 'title', 'subtitle', 'description', etc.).`,
+    })),
+
+    step(PromptStepMachine, () => ({
+      promptText: `Find the strings.ts file in the root of the package. Add the strings from the file you just updated there.`,
+    })),
+
+    step(UpdateStepMachine, ({ context }) => ({
+      fileId: "vue",
+      promptMessage: `Please update ${path.basename(context.copiedFiles!.vue)} to match the design and use the translation system. Import and use the "useReverseT" function from the i18n.ts file at the root of the package, and use t(strings.key) instead of strings.key for all text. Use Vuetify components and variables instead of custom styles, even if it means the design isn't pixel-perfect. Do NOT set any style tags.`,
+    })),
+
+    step(UpdateStepMachine, ({ context }) => ({
+      fileId: "test",
+      promptMessage: `Please update ${path.basename(context.copiedFiles!.test)} to verify that the page renders correctly with the new design and translation system. Update the helper methods to locate actual key elements of the page, then update the one test to check that they all exist and have the right text. Only use "getElementByString" to locate elements, using the strings from the strings file as the argument.`,
+    })),
+
+    step(TestStepMachine, () => ({
+      fileId: "test",
+    })),
+
+    step(TestStepMachine, () => ({})),
   ],
 });
+
+export class AddSpaPageWorkflow extends XStateWorkflow {
+  machine = AddSpaPageWorkflowMachine;
+  description =
+    "Create a new page in a SAF-powered Vue SPA, using a template and renaming placeholders.";
+  cliArguments = [
+    {
+      name: "name",
+      description:
+        "Name of the new page in kebab-case (e.g. 'welcome-new-user')",
+      exampleValue: "example-page",
+    },
+  ];
+  sourceUrl = import.meta.url;
+}

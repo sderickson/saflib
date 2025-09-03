@@ -1,4 +1,4 @@
-import { assign, raise, sendTo, setup } from "xstate";
+import { assign, raise, setup } from "xstate";
 import type { WorkflowContext, WorkflowInput } from "../../../src/xstate.ts";
 import {
   promptAgent,

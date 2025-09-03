@@ -217,17 +217,11 @@ const getTestCommandAndArgs = () => {
   return { command, args };
 };
 
-/**
- * @deprecated - to be replaced with runTestsComposer
- */
 export const doesTestPass = (pathString: string) => {
   const { command, args } = getTestCommandAndArgs();
   return runCommandAsync(command, [...args, pathString]);
 };
 
-/**
- * @deprecated - to be replaced with runTestsComposer
- */
 export const doTestsPass = () => {
   const { command, args } = getTestCommandAndArgs();
   return runCommandAsync(command, args);
