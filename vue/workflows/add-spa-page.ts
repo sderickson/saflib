@@ -1,9 +1,10 @@
-import { setup, type InputFrom } from "xstate";
+import { setup, type AnyStateMachine, type InputFrom } from "xstate";
 import {
   CopyTemplateMachine,
   UpdateStepMachine,
   PromptStepMachine,
   makeWorkflowMachine,
+  Step,
 } from "@saflib/workflows";
 import { kebabCaseToPascalCase } from "@saflib/utils";
 import path from "node:path";
@@ -19,7 +20,35 @@ const input = [
 
 const sourceDir = path.join(__dirname, "page-template");
 
-export const AddSpaPageWorkflowMachine = makeWorkflowMachine({
+const defineSteps = <C>(
+  steps: Array<Step<C, AnyStateMachine>>,
+): Array<Step<C, AnyStateMachine>> => {
+  return steps;
+};
+
+const defineStep = <C, M extends AnyStateMachine>(
+  machine: M,
+  input: (arg: { context: C }) => InputFrom<M>,
+): Step<C, M> => {
+  return {
+    machine,
+    input,
+  };
+};
+
+interface AddSpaPageWorkflowContext {
+  name: string;
+  targetDir: string;
+}
+
+interface SomeOtherContext {
+  namer: string;
+}
+
+export const AddSpaPageWorkflowMachine = makeWorkflowMachine<
+  AddSpaPageWorkflowContext,
+  typeof input
+>({
   input,
   context: ({ input }) => {
     const pageName = input.name.endsWith("-page")
@@ -43,12 +72,18 @@ export const AddSpaPageWorkflowMachine = makeWorkflowMachine({
     {
       machine: CopyTemplateMachine,
       input: ({ context }) => {
-        type Input = InputFrom<typeof CopyTemplateMachine>;
         return {
           name: context.name,
-          targetDir: context.targetDir,
-        } satisfies Input;
+          // targetDir: context.targetDir,
+        };
       },
     },
+    defineStep(CopyTemplateMachine, ({ context }) => ({
+      name: context.name,
+      targetDir: context.targetDir,
+    })),
+    // defineStep(PromptStepMachine, () => ({
+    //   promptText: "Please update the test file",
+    // })),
   ],
 });

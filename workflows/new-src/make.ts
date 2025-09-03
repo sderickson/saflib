@@ -120,7 +120,7 @@ function _makeWorkflowMachine<I extends readonly CLIArgument[], C>(
  *
  * This basically translates my simplified and scoped workflow machine definition to the full XState machine definition.
  */
-export function makeWorkflowMachine<I extends readonly CLIArgument[], C>(
+export function makeWorkflowMachine<C, I extends readonly CLIArgument[]>(
   config: Workflow<I, C>,
 ) {
   return _makeWorkflowMachine(defineWorkflow(config));
