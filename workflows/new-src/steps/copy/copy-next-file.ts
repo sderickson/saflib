@@ -1,6 +1,5 @@
 import path from "node:path";
 import { fromPromise } from "xstate";
-import type { WorkflowContext } from "../../../src/xstate.ts";
 import { access } from "node:fs/promises";
 import { constants } from "node:fs";
 import { copyFile } from "node:fs/promises";
@@ -9,14 +8,17 @@ import type { CopyTemplateMachineContext } from "./types.ts";
 
 export const copyNextFile = fromPromise(
   async ({ input }: { input: CopyTemplateMachineContext }) => {
-    const { sourceDir, targetDir, name, filesToCopy, dryRun } = input;
+    const { filesToCopy, dryRun, templateFiles, name, targetDir } = input;
 
     if (filesToCopy.length === 0) {
       throw new Error("No files to copy");
     }
 
     const currentFile = filesToCopy[0];
-    const sourcePath = path.join(sourceDir, currentFile);
+    const sourcePath = templateFiles?.[currentFile];
+    if (!sourcePath) {
+      throw new Error(`Template file ${currentFile} not found`);
+    }
     const targetFileName = transformName(currentFile, name);
     const targetPath = path.join(targetDir, targetFileName);
 

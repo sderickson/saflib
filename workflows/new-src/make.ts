@@ -5,7 +5,7 @@ import type {
   WorkflowOutput,
 } from "../src/xstate.ts";
 import { workflowActions, workflowActors } from "../src/xstate.ts";
-import { raise, setup, type AnyStateMachine } from "xstate";
+import { assign, raise, setup, type AnyStateMachine } from "xstate";
 import { outputFromContext } from "../src/workflow.ts";
 import type { CLIArgument } from "../src/types.ts";
 
@@ -59,6 +59,14 @@ function _makeWorkflowMachine<I extends readonly CLIArgument[], C>(
         src: `actor_${i}`,
         onDone: {
           target: `step_${i + 1}`,
+          actions: [
+            assign({
+              checklist: ({ context, event }) => {
+                const output: WorkflowOutput = event.output;
+                return [...context.checklist, ...output.checklist];
+              },
+            }),
+          ],
         },
       },
     };
