@@ -33,6 +33,10 @@ export interface WorkflowInput {
   dryRun?: boolean;
 
   rootRef?: AnyActorRef;
+
+  loggedLast?: boolean;
+
+  systemPrompt?: string;
 }
 
 /**

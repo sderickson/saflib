@@ -40,11 +40,11 @@ import type { WorkflowContext, WorkflowInput } from "../src/xstate.ts";
 // };
 
 /**
- * A step in a workflow with an actor and its corresponding input
+ * A step in a workflow with an actor and its corresponding input.
  */
-type Step<C, Machine extends AnyStateMachine> = {
-  machine: Machine;
-  input: InputFrom<Machine> | ((context: C) => InputFrom<Machine>);
+type Step<C, M extends AnyStateMachine> = {
+  machine: M;
+  input: InputFrom<M> | ((context: C) => InputFrom<M>);
 };
 
 /**
@@ -69,20 +69,32 @@ export interface Workflow<C> {
   steps: Array<Step<C, AnyStateMachine>>;
 }
 
+/**
+ * A checklist item, generated while going through the workflow after each step
+ * completes.
+ */
 export interface ChecklistItem {
   description: string;
   subitems?: ChecklistItem[];
 }
 
+/**
+ * Input *specifically* for the prompt step machine. Extends WorkflowInput because each workflow needs to accept it so that other workflow machines can invoke them.
+ */
 interface PromptMachineInput extends WorkflowInput {
   promptText: string;
-  rootRef: AnyActorRef;
 }
 
+/**
+ * Context *specifically* for the prompt step machine. Extends WorkflowContext because each workflow needs to accept it so that other workflow machines can invoke them.
+ */
 interface PromptMachineContext extends WorkflowContext {
   promptText: string;
 }
 
+/**
+ * A machine for a step in a workflow, where an LLM is prompted to do something.
+ */
 export const promptStepMachine = setup({
   types: {
     input: {} as PromptMachineInput,
@@ -152,7 +164,7 @@ export const promptStepMachine = setup({
   output: ({ context }) => outputFromContext({ context }),
 });
 
-interface JustPromptContext extends WorkflowContext {
+interface JustPromptContext {
   promptText: string;
 }
 
@@ -193,12 +205,12 @@ type CreateArgsType<T extends readonly { name: string }[]> = {
   [K in ExtractKeys<T>]: string;
 };
 
-type test = CreateArgsType<typeof input> & WorkflowInput;
+type JustPromptInput = CreateArgsType<typeof input>;
 
-export function makeMachineFromWorkflow<
-  I extends WorkflowInput,
-  C extends WorkflowContext,
->(workflow: Workflow<C>) {
+export function makeMachineFromWorkflow<I, C>(workflow: Workflow<C>) {
+  type Input = I & WorkflowInput;
+  type Context = C & WorkflowContext;
+
   const actors: Record<string, AnyStateMachine> = {};
   for (let i = 0; i < workflow.steps.length; i++) {
     const actor_id = `actor_${i}`;
@@ -212,7 +224,7 @@ export function makeMachineFromWorkflow<
     const stateName = `step_${i}`;
     states[stateName] = {
       invoke: {
-        input: ({ self, context }: { self: AnyActor; context: C }) => {
+        input: ({ self, context }: { self: AnyActor; context: Context }) => {
           return {
             ...step.input,
             rootRef: context.rootRef || self,
@@ -231,8 +243,8 @@ export function makeMachineFromWorkflow<
 
   return setup({
     types: {
-      input: {} as I,
-      context: {} as C,
+      input: {} as Input,
+      context: {} as Context,
       output: {} as WorkflowMachineOutput,
     },
     actions: {
@@ -246,10 +258,14 @@ export function makeMachineFromWorkflow<
     id: workflow.id,
     description: workflow.description,
     context: ({ self, input }) => {
-      return {
+      const context: Context = {
         ...workflow.context(),
         rootRef: input.rootRef || self,
+        checklist: [],
+        loggedLast: input.loggedLast,
+        systemPrompt: input.systemPrompt,
       };
+      return context;
     },
     initial: "step_0",
     states,
@@ -257,6 +273,6 @@ export function makeMachineFromWorkflow<
   });
 }
 
-export const pm = makeMachineFromWorkflow<test, PromptMachineContext>(
+export const pm = makeMachineFromWorkflow<JustPromptInput, JustPromptContext>(
   justPromptWorkflow,
 );
