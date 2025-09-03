@@ -1,4 +1,4 @@
-import type { Workflow } from "./types.ts";
+import type { CreateArgsType, Workflow } from "./types.ts";
 import type {
   WorkflowInput,
   WorkflowContext,
@@ -7,9 +7,12 @@ import type {
 import { workflowActions, workflowActors } from "../src/xstate.ts";
 import { raise, setup, type AnyStateMachine } from "xstate";
 import { outputFromContext } from "../src/workflow.ts";
+import type { CLIArgument } from "../src/types.ts";
 
-export function makeMachineFromWorkflow<I, C>(workflow: Workflow<C>) {
-  type Input = I & WorkflowInput;
+export function makeMachineFromWorkflow<I extends readonly CLIArgument[], C>(
+  workflow: Workflow<I, C>,
+) {
+  type Input = CreateArgsType<I> & WorkflowInput;
   type Context = C & WorkflowContext;
 
   const actors: Record<string, AnyStateMachine> = {};
@@ -61,7 +64,7 @@ export function makeMachineFromWorkflow<I, C>(workflow: Workflow<C>) {
     description: workflow.description,
     context: ({ input, self }) => {
       const context: Context = {
-        ...workflow.context(),
+        ...workflow.context({ input }),
         checklist: [],
         loggedLast: input.loggedLast,
         systemPrompt: input.systemPrompt,

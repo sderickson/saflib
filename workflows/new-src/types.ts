@@ -6,15 +6,17 @@ import type { CLIArgument } from "../src/types.ts";
  */
 export type Step<C, M extends AnyStateMachine> = {
   machine: M;
-  input: InputFrom<M> | ((context: C) => InputFrom<M>);
+  input: (arg: { context: C }) => InputFrom<M>;
+  // TODO: Figure out how to get this to work later
+  // input: InputFrom<M> | ((arg: { context: C }) => InputFrom<M>);
 };
 
 /**
  * A workflow definition. Can be used to create an XState machine which, when run, will execute the workflow.
  */
-export interface Workflow<C> {
-  input: readonly CLIArgument[];
-  context: () => C;
+export interface Workflow<I extends readonly CLIArgument[], C> {
+  input: I;
+  context: (arg: { input: CreateArgsType<I> }) => C;
   id: string;
   description: string;
 

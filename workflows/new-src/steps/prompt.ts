@@ -35,12 +35,12 @@ export const promptStepMachine = setup({
   },
   actors: {
     ...workflowActors,
-    sleep: fromPromise(async (_: any) => {
-      console.log("sleeping...");
-      await new Promise((resolve) => setTimeout(resolve, 100));
-      console.log("done sleeping");
-      return true;
-    }),
+    // sleep: fromPromise(async (_: any) => {
+    //   console.log("sleeping...");
+    //   await new Promise((resolve) => setTimeout(resolve, 100));
+    //   console.log("done sleeping");
+    //   return true;
+    // }),
   },
 }).createMachine({
   id: "prompt-step",

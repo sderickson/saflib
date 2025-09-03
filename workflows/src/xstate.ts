@@ -36,6 +36,10 @@ export interface WorkflowInput {
   systemPrompt?: string;
 
   rootRef?: AnyActorRef;
+
+  templateFiles?: Record<string, string>;
+
+  docFiles?: Record<string, string>;
 }
 
 /**
@@ -81,6 +85,10 @@ export interface WorkflowContext {
   dryRun?: boolean;
 
   rootRef: AnyActorRef;
+
+  templateFiles?: Record<string, string>;
+
+  docFiles?: Record<string, string>;
 }
 
 type WorkflowActionFunction<

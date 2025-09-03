@@ -193,6 +193,21 @@ export function getPackageName(rootUrl: string) {
   }
 }
 
+export function buildWorkflowContext({
+  input,
+  self,
+}: {
+  input: WorkflowInput;
+  self: AnyActorRef;
+}): WorkflowContext {
+  return {
+    checklist: [],
+    loggedLast: false,
+    dryRun: input.dryRun,
+    rootRef: input.rootRef || self,
+  };
+}
+
 /**
  * Helper function to create initial `WorkflowContext` from `WorkflowInput`.
  */
