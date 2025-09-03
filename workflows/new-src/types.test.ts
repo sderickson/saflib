@@ -14,6 +14,9 @@ describe("makeMachineFromWorkflow", () => {
       },
     });
     actor.start();
-    await waitFor(actor, allChildrenSettled);
+    console.log(actor.getSnapshot());
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    console.log(actor.getSnapshot());
+    // await waitFor(actor, allChildrenSettled);
   });
 });

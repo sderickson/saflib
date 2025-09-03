@@ -5,7 +5,9 @@ import {
   type AnyStateMachine,
   type InputFrom,
   type AnyActor,
-  createActor,
+  fromPromise,
+  sendTo,
+  type AnyActorRef,
 } from "xstate";
 import { promptAgent, workflowActions, workflowActors } from "../src/xstate.ts";
 import { outputFromContext } from "../src/workflow.ts";
@@ -67,27 +69,17 @@ export interface Workflow<C> {
   steps: Array<Step<C, AnyStateMachine>>;
 }
 
-interface WorkflowMachineInput {
-  dryRun?: boolean;
-}
-
 export interface ChecklistItem {
   description: string;
   subitems?: ChecklistItem[];
 }
 
-interface WorkflowMachineContext {
-  checklist: Array<ChecklistItem>;
-  loggedLast?: boolean;
-  systemPrompt?: string;
-  dryRun?: boolean;
-}
-
-interface PromptMachineInput extends WorkflowMachineInput {
+interface PromptMachineInput extends WorkflowInput {
   promptText: string;
+  rootRef: AnyActorRef;
 }
 
-interface PromptMachineContext extends WorkflowMachineContext {
+interface PromptMachineContext extends WorkflowContext {
   promptText: string;
 }
 
@@ -101,24 +93,40 @@ export const promptStepMachine = setup({
   },
   actors: {
     ...workflowActors,
+    sleep: fromPromise(async (_: any) => {
+      console.log("sleeping...");
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      console.log("done sleeping");
+      return true;
+    }),
   },
 }).createMachine({
   id: "prompt-step",
-  context: ({ input }) => ({
+  context: ({ input, self }) => ({
     checklist: [],
     loggedLast: false,
     systemPrompt: "",
     dryRun: input.dryRun,
     promptText: input.promptText,
+    rootRef: input.rootRef || self,
   }),
-  initial: "running",
+  initial: "sleep",
   entry: raise({ type: "prompt" }),
   states: {
+    sleep: {
+      invoke: {
+        src: "sleep",
+        onDone: {
+          target: "running",
+        },
+      },
+    },
     running: {
       on: {
         prompt: {
           actions: [
             promptAgent(({ context }) => context.promptText),
+            sendTo(({ context }) => context.rootRef, { type: "halt" }),
             assign({
               checklist: ({ context }) => {
                 return [
@@ -129,7 +137,7 @@ export const promptStepMachine = setup({
                 ];
               },
             }),
-            raise({ type: "continue" }),
+            // raise({ type: "continue" }),
           ],
         },
         continue: {
@@ -204,7 +212,12 @@ export function makeMachineFromWorkflow<
     const stateName = `step_${i}`;
     states[stateName] = {
       invoke: {
-        input: step.input,
+        input: ({ self, context }: { self: AnyActor; context: C }) => {
+          return {
+            ...step.input,
+            rootRef: context.rootRef || self,
+          };
+        },
         src: `actor_${i}`,
         onDone: {
           target: `step_${i + 1}`,
@@ -232,7 +245,12 @@ export function makeMachineFromWorkflow<
   }).createMachine({
     id: workflow.id,
     description: workflow.description,
-    context: workflow.context,
+    context: ({ self, input }) => {
+      return {
+        ...workflow.context(),
+        rootRef: input.rootRef || self,
+      };
+    },
     initial: "step_0",
     states,
     output: ({ context }) => outputFromContext({ context }),
