@@ -36,12 +36,6 @@ export const PromptStepMachine = setup({
   },
   actors: {
     ...workflowActors,
-    // sleep: fromPromise(async (_: any) => {
-    //   console.log("sleeping...");
-    //   await new Promise((resolve) => setTimeout(resolve, 100));
-    //   console.log("done sleeping");
-    //   return true;
-    // }),
   },
 }).createMachine({
   id: "prompt-step",
@@ -54,16 +48,7 @@ export const PromptStepMachine = setup({
     rootRef: input.rootRef || self,
   }),
   initial: "running",
-  // initial: "sleep",
   states: {
-    // sleep: {
-    //   invoke: {
-    //     src: "sleep",
-    //     onDone: {
-    //       target: "running",
-    //     },
-    //   },
-    // },
     running: {
       entry: raise({ type: "prompt" }),
       on: {

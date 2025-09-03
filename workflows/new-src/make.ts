@@ -120,6 +120,7 @@ function _makeWorkflowMachine<I extends readonly CLIArgument[], C>(
         systemPrompt: input.systemPrompt,
         rootRef: input.rootRef || self,
         templateFiles: workflow.templateFiles,
+        copiedFiles: {},
         docFiles: workflow.docFiles,
         dryRun: input.dryRun,
       };

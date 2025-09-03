@@ -23,7 +23,6 @@ describe("add-spa-page", () => {
       }
       lastStateName = currentStateName;
     }
-    console.log("Last value", actor.getSnapshot().value);
-    // expect(actor.getSnapshot().value).toBe("done");
+    expect(actor.getSnapshot().status).toBe("done");
   });
 });

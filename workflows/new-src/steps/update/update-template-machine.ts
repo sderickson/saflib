@@ -40,7 +40,6 @@ export const UpdateStepMachine = setup({
   initial: "update",
   context: ({ input, self }) => {
     const filePath = input.copiedFiles![input.fileId];
-    console.log("dry run?", input.dryRun);
     return {
       checklist: [],
       loggedLast: false,
@@ -67,7 +66,6 @@ export const UpdateStepMachine = setup({
         continue: [
           {
             guard: ({ context }) => {
-              console.log("guard", context.dryRun);
               if (context.dryRun) {
                 return false;
               }

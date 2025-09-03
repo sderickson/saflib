@@ -4,6 +4,7 @@ import {
   workflowActors,
   type WorkflowContext,
   type WorkflowInput,
+  type WorkflowOutput,
 } from "../../src/xstate.ts";
 import path from "node:path";
 import { doesTestPass } from "../../src/xstate.ts";
@@ -22,6 +23,7 @@ export const TestStepMachine = setup({
   types: {
     input: {} as TestMachineInput,
     context: {} as TestMachineContext,
+    output: {} as WorkflowOutput,
   },
   actions: {
     ...workflowActions,
@@ -31,25 +33,41 @@ export const TestStepMachine = setup({
   },
 }).createMachine({
   id: "test-step",
-  context: ({ input, self }) => ({
-    checklist: [],
-    loggedLast: false,
-    systemPrompt: "",
-    dryRun: input.dryRun,
-    rootRef: input.rootRef || self,
-    fileId: input.fileId,
-  }),
+  context: ({ input, self }) => {
+    return {
+      checklist: [],
+      loggedLast: false,
+      systemPrompt: "",
+      dryRun: input.dryRun,
+      rootRef: input.rootRef || self,
+      fileId: input.fileId,
+      copiedFiles: input.copiedFiles || {},
+    };
+  },
   initial: "test",
   states: {
     test: {
       invoke: {
-        src: fromPromise(async ({ input: fileName }: { input: string }) => {
-          return await doesTestPass(fileName);
-        }),
-        input: ({ context }) =>
-          context.fileId
-            ? path.basename(context.copiedFiles![context.fileId])
-            : "",
+        src: fromPromise(
+          async ({
+            input: { fileName, dryRun },
+          }: {
+            input: { fileName: string; dryRun: boolean };
+          }) => {
+            if (dryRun) {
+              return true;
+            }
+            return await doesTestPass(fileName);
+          },
+        ),
+        input: ({ context }) => {
+          return {
+            fileName: context.fileId
+              ? path.basename(context.copiedFiles![context.fileId])
+              : "",
+            dryRun: context.dryRun,
+          };
+        },
         onDone: {
           target: "done",
           actions: [
@@ -90,5 +108,14 @@ export const TestStepMachine = setup({
     done: {
       type: "final",
     },
+  },
+  output: ({ context }) => {
+    return {
+      checklist: [
+        {
+          description: `Run test ${path.basename(context.fileId || "")}, make sure it passes.`,
+        },
+      ],
+    };
   },
 });
