@@ -134,11 +134,19 @@ export const promptStepMachine = setup({
       },
     },
     running: {
+      entry: raise({ type: "prompt" }),
       on: {
         prompt: {
           actions: [
             promptAgent(({ context }) => context.promptText),
-            sendTo(({ context }) => context.rootRef, { type: "halt" }),
+            sendTo(
+              ({ context }) => {
+                console.log("sending halt to rootRef");
+                context.rootRef.send({ type: "halt" });
+                return context.rootRef;
+              },
+              { type: "halt" },
+            ),
             assign({
               checklist: ({ context }) => {
                 return [

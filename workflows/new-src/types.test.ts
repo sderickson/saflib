@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { pm } from "./types.ts";
 import { createActor, waitFor } from "xstate";
-import { allChildrenSettled } from "../src/utils.ts";
+import { allSettled } from "../src/utils.ts";
 
 describe("makeMachineFromWorkflow", () => {
   it("should create a machine from a workflow", async () => {
@@ -14,9 +14,6 @@ describe("makeMachineFromWorkflow", () => {
       },
     });
     actor.start();
-    console.log(actor.getSnapshot());
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    console.log(actor.getSnapshot());
-    // await waitFor(actor, allChildrenSettled);
+    await waitFor(actor, allSettled);
   });
 });

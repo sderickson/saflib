@@ -4,7 +4,7 @@ import { createActor, waitFor } from "xstate";
 import { getSafReporters } from "@saflib/node";
 import path from "node:path";
 import { existsSync, readFileSync } from "node:fs";
-import { allChildrenSettled } from "./utils.ts";
+import { allSettled } from "./utils.ts";
 import type {
   WorkflowContext,
   WorkflowInput,
@@ -92,7 +92,7 @@ export abstract class XStateWorkflow extends Workflow {
       console.log("Actor started with error", snapshot.error);
       return false;
     }
-    await waitFor(actor, allChildrenSettled);
+    await waitFor(actor, allSettled);
     const { log } = getSafReporters();
     log.info("");
     log.info("To continue, run 'npm exec saf-workflow next'");
@@ -105,7 +105,7 @@ export abstract class XStateWorkflow extends Workflow {
       throw new Error("Workflow not started");
     }
     this.actor.send({ type: "prompt" });
-    await waitFor(this.actor, allChildrenSettled);
+    await waitFor(this.actor, allSettled);
   };
 
   goToNextStep = async (): Promise<void> => {
@@ -119,7 +119,7 @@ export abstract class XStateWorkflow extends Workflow {
     }
 
     this.actor.send({ type: "continue" });
-    await waitFor(this.actor, allChildrenSettled);
+    await waitFor(this.actor, allSettled);
 
     if (this.actor.getSnapshot().status === "done") {
       log.info("\nThis workflow has been completed.\n");
