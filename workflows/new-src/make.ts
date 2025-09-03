@@ -5,7 +5,13 @@ import type {
   WorkflowOutput,
 } from "../src/xstate.ts";
 import { workflowActions, workflowActors } from "../src/xstate.ts";
-import { assign, raise, setup, type AnyStateMachine } from "xstate";
+import {
+  assign,
+  raise,
+  setup,
+  type AnyStateMachine,
+  type InputFrom,
+} from "xstate";
 import { outputFromContext } from "../src/workflow.ts";
 import type { CLIArgument } from "../src/types.ts";
 
@@ -120,8 +126,21 @@ function _makeWorkflowMachine<I extends readonly CLIArgument[], C>(
  *
  * This basically translates my simplified and scoped workflow machine definition to the full XState machine definition.
  */
-export function makeWorkflowMachine<C, I extends readonly CLIArgument[]>(
+export const makeWorkflowMachine = <C, I extends readonly CLIArgument[]>(
   config: Workflow<I, C>,
-) {
+) => {
   return _makeWorkflowMachine(defineWorkflow(config));
-}
+};
+
+/**
+ * Helper function for defining a step in a workflow, enforcing types properly.
+ */
+export const step = <C, M extends AnyStateMachine>(
+  machine: M,
+  input: (arg: { context: C & WorkflowContext }) => InputFrom<M>,
+): Step<C, M> => {
+  return {
+    machine,
+    input,
+  };
+};

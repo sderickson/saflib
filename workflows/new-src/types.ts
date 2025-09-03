@@ -1,12 +1,13 @@
 import { type AnyStateMachine, type InputFrom } from "xstate";
 import type { CLIArgument } from "../src/types.ts";
+import type { WorkflowContext } from "../src/xstate.ts";
 
 /**
  * A step in a workflow with an actor and its corresponding input.
  */
 export type Step<C, M extends AnyStateMachine> = {
   machine: M;
-  input: (arg: { context: C }) => InputFrom<M>;
+  input: (arg: { context: C & WorkflowContext }) => InputFrom<M>;
 };
 
 /**
