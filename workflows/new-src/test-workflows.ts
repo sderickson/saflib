@@ -1,22 +1,19 @@
 import { promptStepMachine } from "./steps/prompt.ts";
-import type { Workflow, Step } from "./types.ts";
+import type { Workflow, Step, CreateArgsType } from "./types.ts";
 import { makeMachineFromWorkflow } from "./make.ts";
 import type { CLIArgument } from "../src/types.ts";
 import { type AnyStateMachine } from "xstate";
 
-function defineWorkflow<I extends readonly CLIArgument[], C>(
-  workflow: Workflow<I, C>,
-): Workflow<I, C> {
-  return {
-    ...workflow,
-    steps: defineSteps<C>(workflow.steps),
-  };
-}
-
-function defineSteps<C>(
-  steps: Step<C, AnyStateMachine>[],
-): Step<C, AnyStateMachine>[] {
-  return steps;
+function defineWorkflow<I extends readonly CLIArgument[], C = any>(config: {
+  input: I;
+  context: (arg: { input: CreateArgsType<I> }) => C;
+  id: string;
+  description: string;
+  templateFiles: Record<string, string>;
+  docFiles: Record<string, string>;
+  steps: Array<Step<C, AnyStateMachine>>;
+}): Workflow<I, C> {
+  return config;
 }
 
 interface JustPromptContext {
@@ -37,7 +34,7 @@ export const justPromptWorkflow = defineWorkflow({
   description: "Just a prompt example",
   templateFiles: {},
   docFiles: {},
-  steps: defineSteps<JustPromptContext>([
+  steps: [
     {
       machine: promptStepMachine,
       input: ({ context }) => {
@@ -50,7 +47,7 @@ export const justPromptWorkflow = defineWorkflow({
         return { promptText: context.promptText };
       },
     },
-  ]),
+  ],
 });
 
 export const promptWorkflowMachine = makeMachineFromWorkflow<
