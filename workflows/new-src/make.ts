@@ -114,6 +114,7 @@ function _makeWorkflowMachine<I extends readonly CLIArgument[], C>(
         rootRef: input.rootRef || self,
         templateFiles: workflow.templateFiles,
         docFiles: workflow.docFiles,
+        dryRun: input.dryRun,
       };
       return context;
     },
