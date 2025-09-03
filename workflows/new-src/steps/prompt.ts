@@ -1,4 +1,4 @@
-import { fromPromise, setup } from "xstate";
+import { setup } from "xstate";
 import {
   workflowActions,
   workflowActors,

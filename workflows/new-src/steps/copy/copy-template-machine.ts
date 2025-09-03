@@ -44,13 +44,16 @@ export const CopyTemplateMachine = setup({
       filesToCopy: Object.keys(arg.input.templateFiles || {}),
       name: arg.input.name,
       targetDir: arg.input.targetDir,
+      templateFiles: arg.input.templateFiles,
     };
   },
   entry: logInfo("Starting template copy workflow"),
   states: {
     copy: {
       invoke: {
-        input: ({ context }) => context,
+        input: ({ context }) => {
+          return context;
+        },
         src: "copyNextFile",
         onDone: [
           {
@@ -67,10 +70,9 @@ export const CopyTemplateMachine = setup({
               logInfo(({ event }) => `Copied file to ${event.output.fileName}`),
               assign({
                 checklist: ({ context, event }) => {
-                  const filesToCopy = context.filesToCopy;
-                  console.log("filesToCopy", filesToCopy[0]);
-                  const githubPath = getGitHubUrl(filesToCopy[0]);
-                  console.log("githubPath", githubPath);
+                  const fileId = context.filesToCopy[0];
+                  const fullPath = context.templateFiles![fileId];
+                  const githubPath = getGitHubUrl(fullPath);
                   return [
                     ...context.checklist,
                     {

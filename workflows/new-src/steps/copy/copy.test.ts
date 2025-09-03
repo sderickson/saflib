@@ -46,7 +46,10 @@ export default {
   it("should copy and rename template files correctly", async () => {
     const actor = createActor(CopyTemplateMachine, {
       input: {
-        sourceDir: sourceDir,
+        templateFiles: {
+          "template-file.ts": path.join(sourceDir, "template-file.ts"),
+          "TemplateFile.vue": path.join(sourceDir, "TemplateFile.vue"),
+        },
         targetDir: targetDir,
         name: "foo-bar",
       },
@@ -81,7 +84,9 @@ export default {
 
     const actor = createActor(CopyTemplateMachine, {
       input: {
-        sourceDir: sourceDir,
+        templateFiles: {
+          "foo-bar.ts": path.join(sourceDir, "foo-bar.ts"),
+        },
         targetDir: targetDir,
         name: "foo-bar",
       },

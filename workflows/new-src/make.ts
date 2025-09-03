@@ -54,6 +54,7 @@ function _makeWorkflowMachine<I extends readonly CLIArgument[], C>(
           return {
             ...step.input({ context }),
             rootRef: context.rootRef,
+            templateFiles: context.templateFiles,
           };
         },
         src: `actor_${i}`,
