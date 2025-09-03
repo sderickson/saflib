@@ -10,8 +10,6 @@ import {
   type MachineContext,
   fromPromise,
   raise,
-  type AnyActor,
-  type AnyActorRef,
 } from "xstate";
 import type { ChecklistItem } from "./types.ts";
 import { getCurrentPackage } from "@saflib/dev-tools";
@@ -31,8 +29,6 @@ export interface WorkflowInput {
    * Flag to skip all execution of the workflow. Used mainly to get a checklist.
    */
   dryRun?: boolean;
-
-  rootRef?: AnyActorRef;
 
   loggedLast?: boolean;
 
@@ -80,8 +76,6 @@ export interface WorkflowContext {
    * without actually operating it.
    */
   dryRun?: boolean;
-
-  rootRef: AnyActorRef;
 }
 
 type WorkflowActionFunction<
