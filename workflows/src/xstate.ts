@@ -171,7 +171,6 @@ export const logWarn = <C, E extends AnyEventObject>(
 const logImpl: WorkflowActionFunction<any, AnyEventObject, LogParams> = assign(
   ({ context }: { context: WorkflowContext }, { msg, level = "info" }) => {
     const statusChar = level === "info" ? "✓" : level === "error" ? "✗" : "⚠";
-    console.log("logging", msg);
     print(`${statusChar} ${msg}`, context.loggedLast ?? false);
     return { loggedLast: true };
   },
@@ -197,7 +196,6 @@ interface PromptParams {
 
 const promptImpl: WorkflowActionFunction<any, AnyEventObject, PromptParams> =
   assign(({ context }: { context: WorkflowContext }, { msg }: PromptParams) => {
-    console.log("printing prompt", msg);
     if (context.systemPrompt) {
       print(context.systemPrompt);
     }

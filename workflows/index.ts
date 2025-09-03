@@ -16,6 +16,8 @@ export type {
   XStateMachineStates,
 } from "./src/types.ts";
 
+export * from "./new-src/index.ts";
+
 export {
   workflowActions,
   workflowActors,

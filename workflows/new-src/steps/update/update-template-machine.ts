@@ -19,7 +19,7 @@ interface UpdateMachineContext extends WorkflowContext {
   promptMessage: string | ((context: WorkflowContext) => string);
 }
 
-export const updateStepMachine = setup({
+export const UpdateStepMachine = setup({
   types: {
     input: {} as UpdateMachineInput,
     context: {} as UpdateMachineContext,

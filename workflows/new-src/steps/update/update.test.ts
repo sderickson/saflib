@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { createActor, waitFor } from "xstate";
-import { updateStepMachine } from "./update-template-machine.ts";
+import { UpdateStepMachine } from "./update-template-machine.ts";
 import path from "node:path";
 import { writeFileSync, unlinkSync, existsSync } from "node:fs";
 import { allSettled } from "../../../src/utils.ts";
@@ -22,7 +22,7 @@ describe("updateTemplateFileFactory", () => {
 
   it("should continue to next state when file has no TODOs", async () => {
     writeFileSync(testFilePath, "This is a test file with no todos");
-    const actor = createActor(updateStepMachine, {
+    const actor = createActor(UpdateStepMachine, {
       input: {
         fileId: "test-file.txt",
         promptMessage: "Please update the test file",
@@ -45,7 +45,7 @@ describe("updateTemplateFileFactory", () => {
       "This is a test file with // TODO: implement this",
     );
 
-    const actor = createActor(updateStepMachine, {
+    const actor = createActor(UpdateStepMachine, {
       input: {
         fileId: "test-file.txt",
         promptMessage: "Please update the test file",

@@ -26,7 +26,7 @@ interface PromptMachineContext extends WorkflowContext {
 /**
  * A machine for a step in a workflow, where an LLM is prompted to do something.
  */
-export const promptStepMachine = setup({
+export const PromptStepMachine = setup({
   types: {
     input: {} as PromptMachineInput,
     context: {} as PromptMachineContext,
