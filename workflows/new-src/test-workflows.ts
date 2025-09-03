@@ -1,20 +1,5 @@
 import { promptStepMachine } from "./steps/prompt.ts";
-import type { Workflow, Step, CreateArgsType } from "./types.ts";
-import { makeMachineFromWorkflow } from "./make.ts";
-import type { CLIArgument } from "../src/types.ts";
-import { type AnyStateMachine } from "xstate";
-
-function defineWorkflow<I extends readonly CLIArgument[], C = any>(config: {
-  input: I;
-  context: (arg: { input: CreateArgsType<I> }) => C;
-  id: string;
-  description: string;
-  templateFiles: Record<string, string>;
-  docFiles: Record<string, string>;
-  steps: Array<Step<C, AnyStateMachine>>;
-}): Workflow<I, C> {
-  return config;
-}
+import { makeMachineFromWorkflow, defineWorkflow } from "./make.ts";
 
 interface JustPromptContext {
   promptText: string;

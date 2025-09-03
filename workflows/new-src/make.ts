@@ -1,4 +1,4 @@
-import type { CreateArgsType, Workflow } from "./types.ts";
+import type { CreateArgsType, Step, Workflow } from "./types.ts";
 import type {
   WorkflowInput,
   WorkflowContext,
@@ -76,4 +76,19 @@ export function makeMachineFromWorkflow<I extends readonly CLIArgument[], C>(
     states,
     output: ({ context }) => outputFromContext({ context }),
   });
+}
+
+export function defineWorkflow<
+  I extends readonly CLIArgument[],
+  C = any,
+>(config: {
+  input: I;
+  context: (arg: { input: CreateArgsType<I> }) => C;
+  id: string;
+  description: string;
+  templateFiles: Record<string, string>;
+  docFiles: Record<string, string>;
+  steps: Array<Step<C, AnyStateMachine>>;
+}): Workflow<I, C> {
+  return config;
 }

@@ -7,8 +7,6 @@ import type { CLIArgument } from "../src/types.ts";
 export type Step<C, M extends AnyStateMachine> = {
   machine: M;
   input: (arg: { context: C }) => InputFrom<M>;
-  // TODO: Figure out how to get this to work later
-  // input: InputFrom<M> | ((arg: { context: C }) => InputFrom<M>);
 };
 
 /**
@@ -26,7 +24,7 @@ export interface Workflow<I extends readonly CLIArgument[], C> {
   templateFiles: Record<string, string>;
 
   /**
-   * The key is the id to be used in the machine, and the value is the absolute path to the doc file.
+   * The key is the id to b e used in the machine, and the value is the absolute path to the doc file.
    */
   docFiles: Record<string, string>;
 
