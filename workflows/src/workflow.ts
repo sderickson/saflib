@@ -1,5 +1,5 @@
 import type { CLIArgument, ChecklistItem, WorkflowBlob } from "./types.ts";
-import type { AnyStateMachine, AnyActor } from "xstate";
+import type { AnyStateMachine, AnyActor, AnyActorRef } from "xstate";
 import { createActor, waitFor } from "xstate";
 import { getSafReporters } from "@saflib/node";
 import path from "node:path";
@@ -201,6 +201,7 @@ export function contextFromInput(input: WorkflowInput): WorkflowContext {
     checklist: [],
     loggedLast: false,
     dryRun: input.dryRun,
+    rootRef: input.rootRef as AnyActorRef,
   };
 }
 

@@ -47,7 +47,7 @@ export const CopyTemplateMachine = setup({
   id: "copy-template",
   description: "Copy template files and rename placeholders",
   initial: "fetchFileNames",
-  context: ({ input }) => ({
+  context: ({ input, self }) => ({
     name: input.name,
     pascalName: kebabCaseToPascalCase(input.name),
     targetDir: input.targetDir,
@@ -58,6 +58,7 @@ export const CopyTemplateMachine = setup({
     loggedLast: false,
     checklist: [],
     dryRun: input.dryRun,
+    rootRef: self,
   }),
   entry: logInfo("Starting template copy workflow"),
   states: {

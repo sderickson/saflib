@@ -38,7 +38,7 @@ describe("updateTemplateFileFactory", () => {
     }).createMachine({
       id: "test",
       initial: "testState",
-      context: {
+      context: ({ self }) => ({
         checklist: [],
         testFile: testFilePath,
         loggedLast: false,
@@ -46,7 +46,8 @@ describe("updateTemplateFileFactory", () => {
         pascalName: "Test",
         targetDir: testFilePath,
         sourceDir: testFilePath,
-      },
+        rootRef: self,
+      }),
       states: {
         ...updateTemplateComposer({
           filePath: "test-file.txt",
@@ -84,7 +85,7 @@ describe("updateTemplateFileFactory", () => {
     }).createMachine({
       id: "test",
       initial: "testState",
-      context: {
+      context: ({ self }) => ({
         checklist: [],
         testFile: testFilePath,
         loggedLast: false,
@@ -92,7 +93,8 @@ describe("updateTemplateFileFactory", () => {
         pascalName: "Test",
         targetDir: testFilePath,
         sourceDir: testFilePath,
-      },
+        rootRef: self,
+      }),
       states: {
         ...updateTemplateComposer({
           filePath: "test-file.txt",
@@ -129,7 +131,7 @@ describe("updateTemplateFileFactory", () => {
     }).createMachine({
       id: "test",
       initial: "testState",
-      context: {
+      context: ({ self }) => ({
         checklist: [],
         testFile: testFilePath,
         loggedLast: false,
@@ -137,7 +139,8 @@ describe("updateTemplateFileFactory", () => {
         pascalName: "Test",
         targetDir: testFilePath,
         sourceDir: testFilePath,
-      },
+        rootRef: self,
+      }),
       states: {
         ...updateTemplateComposer({
           filePath: (context: TestContext) => context.testFile,
