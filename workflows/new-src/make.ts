@@ -1,0 +1,76 @@
+import type { Workflow } from "./types.ts";
+import type {
+  WorkflowInput,
+  WorkflowContext,
+  WorkflowOutput,
+} from "../src/xstate.ts";
+import { workflowActions, workflowActors } from "../src/xstate.ts";
+import { raise, setup, type AnyStateMachine } from "xstate";
+import { outputFromContext } from "../src/workflow.ts";
+
+export function makeMachineFromWorkflow<I, C>(workflow: Workflow<C>) {
+  type Input = I & WorkflowInput;
+  type Context = C & WorkflowContext;
+
+  const actors: Record<string, AnyStateMachine> = {};
+  for (let i = 0; i < workflow.steps.length; i++) {
+    const actor_id = `actor_${i}`;
+    const step = workflow.steps[i];
+    actors[actor_id] = step.machine;
+  }
+
+  const states: Record<string, object> = {};
+  for (let i = 0; i < workflow.steps.length; i++) {
+    const step = workflow.steps[i];
+    const stateName = `step_${i}`;
+    states[stateName] = {
+      invoke: {
+        input: ({ context }: { context: Context }) => {
+          return {
+            ...step.input,
+            rootRef: context.rootRef,
+          };
+        },
+        src: `actor_${i}`,
+        onDone: {
+          target: `step_${i + 1}`,
+        },
+      },
+    };
+  }
+  states[`step_${workflow.steps.length}`] = {
+    type: "final",
+  };
+
+  return setup({
+    types: {
+      input: {} as Input,
+      context: {} as Context,
+      output: {} as WorkflowOutput,
+    },
+    actions: {
+      ...workflowActions,
+    },
+    actors: {
+      ...workflowActors,
+      ...actors,
+    },
+  }).createMachine({
+    entry: raise({ type: "start" }),
+    id: workflow.id,
+    description: workflow.description,
+    context: ({ input, self }) => {
+      const context: Context = {
+        ...workflow.context(),
+        checklist: [],
+        loggedLast: input.loggedLast,
+        systemPrompt: input.systemPrompt,
+        rootRef: input.rootRef || self,
+      };
+      return context;
+    },
+    initial: "step_0",
+    states,
+    output: ({ context }) => outputFromContext({ context }),
+  });
+}
