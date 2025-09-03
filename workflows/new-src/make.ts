@@ -52,7 +52,7 @@ function _makeWorkflowMachine<I extends readonly CLIArgument[], C>(
       invoke: {
         input: ({ context }: { context: Context }) => {
           return {
-            ...step.input,
+            ...step.input({ context }),
             rootRef: context.rootRef,
           };
         },

@@ -3,6 +3,7 @@ import {
   workflowActions,
   workflowActors,
   promptAgent,
+  logInfo,
 } from "../../src/xstate.ts";
 import { sendTo, assign, raise } from "xstate";
 import { outputFromContext } from "../../src/workflow.ts";
@@ -85,6 +86,7 @@ export const promptStepMachine = setup({
           ],
         },
         continue: {
+          actions: [logInfo("Continuing...")],
           target: "done",
         },
       },

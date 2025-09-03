@@ -25,7 +25,7 @@ export const promptWorkflowMachine = makeWorkflowMachine({
     {
       machine: promptStepMachine,
       input: ({ context }) => {
-        return { promptText: context.promptText };
+        return { promptText: context.promptText + " Really?" };
       },
     },
   ],
