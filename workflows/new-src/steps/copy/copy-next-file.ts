@@ -25,32 +25,30 @@ export const copyNextFile = fromPromise(
       throw new Error("No files to copy");
     }
 
-    const currentFile = filesToCopy[0];
-    const sourcePath = templateFiles?.[currentFile];
+    const currentFileId = filesToCopy[0];
+    const sourcePath = templateFiles?.[currentFileId];
     if (!sourcePath) {
-      throw new Error(`Template file ${currentFile} not found`);
+      throw new Error(`Template file ${currentFileId} not found`);
     }
-    const targetFileName = transformName(currentFile, name);
+    const targetFileName = transformName(path.basename(sourcePath), name);
     const targetPath = path.join(targetDir, targetFileName);
 
+    const response: CopyNextFileOutput = {
+      skipped: false,
+      fileName: targetFileName,
+      fileId: currentFileId,
+      filePath: targetPath,
+    };
+
     if (dryRun) {
-      return {
-        skipped: false,
-        fileName: targetFileName,
-        fileId: currentFile,
-        filePath: targetPath,
-      };
+      return response;
     }
 
     // Check if target file already exists
     try {
       await access(targetPath, constants.F_OK);
-      return {
-        skipped: true,
-        fileName: targetFileName,
-        fileId: currentFile,
-        filePath: targetPath,
-      };
+      response.skipped = true;
+      return response;
     } catch {
       // File doesn't exist, proceed with copy
     }
@@ -61,11 +59,6 @@ export const copyNextFile = fromPromise(
     );
 
     await copyFile(sourcePath, targetPath);
-    return {
-      skipped: false,
-      fileName: targetFileName,
-      filePath: targetPath,
-      fileId: currentFile,
-    };
+    return response;
   },
 );
