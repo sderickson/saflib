@@ -71,7 +71,13 @@ export const TestStepMachine = setup({
         onDone: {
           target: "done",
           actions: [
-            logInfo(() => `Tests passed successfully.`),
+            logInfo(({ context }) =>
+              context.fileId
+                ? `Tests passed successfully for ${path.basename(
+                    context.copiedFiles![context.fileId],
+                  )}`
+                : `Tests passed successfully.`,
+            ),
             assign({
               checklist: ({ context }) => {
                 return [
