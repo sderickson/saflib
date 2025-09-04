@@ -5,6 +5,14 @@
   "exports": {
     "./workflows": "./workflows/index.ts"
   },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
+  },
+  "devDependencies": {
+    "@saflib/vitest": "*"
+  },
   "dependencies": {
     "@saflib/workflows": "*"
   }

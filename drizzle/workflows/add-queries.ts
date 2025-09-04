@@ -21,7 +21,6 @@ const input = [
 
 interface AddQueriesWorkflowContext {
   name: string;
-  pascalName: string;
   camelName: string; // e.g. getById
   targetDir: string;
   refDoc: string;
@@ -38,13 +37,6 @@ function toCamelCase(name: string) {
       if (index === 0) return part;
       return part.charAt(0).toUpperCase() + part.slice(1);
     })
-    .join("");
-}
-
-function toPascalCase(name: string) {
-  return name
-    .split("-")
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join("");
 }
 
@@ -75,7 +67,6 @@ export const AddQueriesWorkflowMachine = makeWorkflowMachine<
 
     return {
       name,
-      pascalName: toPascalCase(name),
       camelName: toCamelCase(name),
       targetDir,
       refDoc,
