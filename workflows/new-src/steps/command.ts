@@ -120,10 +120,6 @@ export const CommandStepMachine = setup({
     },
   },
   output: ({ context }) => {
-    let description = `Run \`${context.command} ${context.args.join(" ")}\``;
-    if (context.printBefore) {
-      description += ` ${context.printBefore}`;
-    }
     return {
       checklist: [
         {
