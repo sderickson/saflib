@@ -5,6 +5,7 @@ import {
   makeWorkflowMachine,
   step,
   XStateWorkflow,
+  DocStepMachine,
 } from "@saflib/workflows";
 import path from "path";
 
@@ -54,7 +55,12 @@ export const SpecProjectWorkflowMachine = makeWorkflowMachine<
     checklist: path.join(sourceDir, "template-file.checklist.md"),
   },
 
-  docFiles: {},
+  docFiles: {
+    writing: path.join(
+      import.meta.dirname,
+      "../docs/writing-spec-project-checklists.md",
+    ),
+  },
 
   steps: [
     step(CopyTemplateMachine, ({ context }) => ({
@@ -76,11 +82,11 @@ export const SpecProjectWorkflowMachine = makeWorkflowMachine<
     })),
 
     step(PromptStepMachine, () => ({
-      promptText: `Go back and forth with the human on the spec. Have the human make updates and notes in the doc, then review their changes, make your own updates, and repeat until they sign off.`,
+      promptText: `Discuss and iterate on the spec until it's approved.`,
     })),
 
-    step(PromptStepMachine, () => ({
-      promptText: `Before creating the checklist, please review the guide on writing spec project checklists located at writing-spec-project-checklists.md. This will help you create a proper implementation checklist with the correct format, workflow commands, and paths. Once you've reviewed the guide, run "npm exec saf-workflow next" to continue.`,
+    step(DocStepMachine, () => ({
+      docId: "writing",
     })),
 
     step(CommandStepMachine, () => ({
