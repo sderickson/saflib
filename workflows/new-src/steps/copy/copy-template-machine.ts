@@ -80,7 +80,6 @@ export const CopyTemplateMachine = setup({
                 checklist: parseChecklist,
                 copiedFiles: parseCopiedFiles,
               }),
-              logInfo(({ event }) => `Copied file to ${event.output.fileName}`),
             ],
           },
         ],
@@ -92,16 +91,18 @@ export const CopyTemplateMachine = setup({
         src: "renameNextFile",
         onDone: {
           target: "popFile",
-          actions: logInfo(
-            ({ event }) => `Renamed placeholders in ${event.output.fileName}`,
-          ),
         },
       },
     },
     popFile: {
-      entry: assign(({ context }) => ({
-        filesToCopy: context.filesToCopy.slice(1),
-      })),
+      entry: [
+        logInfo(
+          ({ event }) => `Generated "${event.output.fileName}" from template`,
+        ),
+        assign(({ context }) => ({
+          filesToCopy: context.filesToCopy.slice(1),
+        })),
+      ],
       always: [
         {
           guard: "hasMoreFiles",

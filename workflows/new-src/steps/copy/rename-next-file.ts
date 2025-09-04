@@ -11,9 +11,10 @@ import {
 
 export const renameNextFile = fromPromise(
   async ({ input }: { input: CopyTemplateMachineContext }) => {
-    const { targetDir, name, filesToCopy, dryRun } = input;
+    const { targetDir, name, filesToCopy, dryRun, templateFiles } = input;
 
-    const currentFile = filesToCopy[0];
+    const currentFileId = filesToCopy[0];
+    const currentFile = path.basename(templateFiles![currentFileId]);
     const targetFileName = transformName(currentFile, name);
     const targetPath = path.join(targetDir, targetFileName);
 
