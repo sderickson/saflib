@@ -23,8 +23,6 @@ interface AddQueriesWorkflowContext {
   name: string;
   camelName: string; // e.g. getById
   targetDir: string;
-  refDoc: string;
-  testingGuide: string;
   featureName: string; // e.g. "contacts"
   featureIndexPath: string; // e.g. "/<abs-path>/queries/contacts/index.ts"
   packageIndexPath: string; // e.g. "/<abs-path>/index.ts"
@@ -53,11 +51,6 @@ export const AddQueriesWorkflowMachine = makeWorkflowMachine<
 
   context: ({ input }) => {
     const targetDir = path.dirname(path.join(process.cwd(), input.path));
-    const refDoc = path.resolve(import.meta.dirname, "../docs/03-queries.md");
-    const testingGuide = path.resolve(
-      import.meta.dirname,
-      "../../drizzle-sqlite3-dev/docs/01-testing-guide.md",
-    );
     const featureName = path.basename(targetDir);
     const featureIndexPath = path
       .join(targetDir, "index.ts")
@@ -69,8 +62,6 @@ export const AddQueriesWorkflowMachine = makeWorkflowMachine<
       name,
       camelName: toCamelCase(name),
       targetDir,
-      refDoc,
-      testingGuide,
       featureName,
       featureIndexPath,
       packageIndexPath,
@@ -82,7 +73,13 @@ export const AddQueriesWorkflowMachine = makeWorkflowMachine<
     test: path.join(sourceDir, "query.test.ts"),
   },
 
-  docFiles: {},
+  docFiles: {
+    refDoc: path.join(import.meta.dirname, "../docs/03-queries.md"),
+    testingGuide: path.join(
+      import.meta.dirname,
+      "../../drizzle-sqlite3-dev/docs/01-testing-guide.md",
+    ),
+  },
 
   steps: [
     step(CopyTemplateMachine, ({ context }) => ({
