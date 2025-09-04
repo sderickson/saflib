@@ -20,7 +20,7 @@ interface CommandMachineInput extends WorkflowInput {
 
 interface CommandMachineContext extends WorkflowContext {
   command: string;
-  args?: string[];
+  args: string[];
 }
 
 export const CommandStepMachine = setup({
@@ -52,7 +52,7 @@ export const CommandStepMachine = setup({
           async ({
             input: { command, args, dryRun },
           }: {
-            input: { command: string; args: string[]; dryRun: boolean };
+            input: CommandMachineContext;
           }) => {
             if (dryRun) {
               return "Dry run";
@@ -60,26 +60,20 @@ export const CommandStepMachine = setup({
             return await runCommandAsync(command, args);
           },
         ),
-        input: ({ context }) => {
-          return {
-            command: context.command,
-            args: context.args || [],
-            dryRun: context.dryRun,
-          };
-        },
+        input: ({ context }) => context,
         onDone: {
           target: "done",
           actions: [
             logInfo(
               ({ context }) =>
-                `Successfully ran \`${context.command} ${(context.args || []).join(" ")}\``,
+                `Successfully ran \`${context.command} ${context.args.join(" ")}\``,
             ),
             assign({
               checklist: ({ context }) => {
                 return [
                   ...context.checklist,
                   {
-                    description: `Run \`${context.command} ${(context.args || []).join(" ")}\``,
+                    description: `Run \`${context.command} ${context.args.join(" ")}\``,
                   },
                 ];
               },
@@ -100,7 +94,7 @@ export const CommandStepMachine = setup({
         prompt: {
           actions: promptAgent(
             ({ context }) =>
-              `The command \`${context.command} ${(context.args || []).join(" ")}\` failed. Please fix the issues and continue.`,
+              `The command \`${context.command} ${context.args.join(" ")}\` failed. Please fix the issues and continue.`,
           ),
         },
         continue: {
@@ -117,7 +111,7 @@ export const CommandStepMachine = setup({
     return {
       checklist: [
         {
-          description: `Run \`${context.command} ${(context.args || []).join(" ")}\``,
+          description: `Run \`${context.command} ${context.args.join(" ")}\``,
         },
       ],
     };
