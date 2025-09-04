@@ -34,7 +34,7 @@ export const TestStepMachine = setup({
   },
 }).createMachine({
   id: "test-step",
-  context: ({ input, self }) => {
+  context: ({ input }) => {
     return {
       ...contextFromInput(input),
       fileId: input.fileId,

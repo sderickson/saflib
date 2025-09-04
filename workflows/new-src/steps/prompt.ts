@@ -39,7 +39,7 @@ export const PromptStepMachine = setup({
   },
 }).createMachine({
   id: "prompt-step",
-  context: ({ input, self }) => ({
+  context: ({ input }) => ({
     ...contextFromInput(input),
     promptText: input.promptText,
   }),
