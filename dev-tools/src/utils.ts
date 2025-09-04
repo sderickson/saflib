@@ -1,6 +1,5 @@
 import { existsSync, readFileSync } from "fs";
 import path, { join } from "node:path";
-import { fileURLToPath } from "node:url";
 
 export const getCurrentPackage = () => {
   const currentPackage = readFileSync(

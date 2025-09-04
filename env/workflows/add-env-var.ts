@@ -36,7 +36,6 @@ export const AddEnvVarWorkflowMachine = makeWorkflowMachine<
   input,
 
   context: ({ input }) => {
-    const targetDir = process.cwd();
     const variableName = input.name.toUpperCase();
 
     return {
