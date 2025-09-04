@@ -4,7 +4,7 @@ import { createActor, waitFor } from "xstate";
 import { getSafReporters } from "@saflib/node";
 import path from "node:path";
 import { existsSync, readFileSync } from "node:fs";
-import { allSettled } from "./utils.ts";
+import { allSettled, continueWorkflow } from "./utils.ts";
 import type {
   WorkflowContext,
   WorkflowInput,
@@ -118,7 +118,7 @@ export abstract class XStateWorkflow extends Workflow {
       return;
     }
 
-    this.actor.send({ type: "continue" });
+    continueWorkflow(this.actor);
     await waitFor(this.actor, allSettled);
 
     if (this.actor.getSnapshot().status === "done") {

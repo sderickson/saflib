@@ -5,12 +5,14 @@ import type { ConcreteWorkflow } from "../workflow.ts";
 
 export const addNextCommand = (
   program: Command,
-  workflows: ConcreteWorkflow[]
+  workflows: ConcreteWorkflow[],
 ) => {
   program
     .command("next")
     .description(
-      addNewLinesToString("Try to go to the next step of the current workflow.")
+      addNewLinesToString(
+        "Try to go to the next step of the current workflow.",
+      ),
     )
     .action(async () => {
       const workflow = loadWorkflow(workflows);
