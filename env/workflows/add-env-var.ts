@@ -86,12 +86,5 @@ export class AddEnvVarWorkflow extends XStateWorkflow {
   machine = AddEnvVarWorkflowMachine;
   description =
     "Add a new environment variable to the schema and generate the corresponding TypeScript types";
-  cliArguments = [
-    {
-      name: "name",
-      description:
-        "The name of the environment variable (in all upper case, e.g., 'API_KEY' or 'DATABASE_URL')",
-      exampleValue: "EXAMPLE_ENV_VAR",
-    },
-  ];
+  cliArguments = input;
 }

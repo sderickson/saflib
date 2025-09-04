@@ -103,13 +103,6 @@ export const SpecProjectWorkflowMachine = makeWorkflowMachine<
 export class SpecProjectWorkflow extends XStateWorkflow {
   machine = SpecProjectWorkflowMachine;
   description = SpecProjectWorkflowMachine.definition.description || "";
-  cliArguments = [
-    {
-      name: "name",
-      description:
-        "kebab-case name of project to use in folder and git branch names and alike",
-      exampleValue: "example-project",
-    },
-  ];
+  cliArguments = input;
   sourceUrl = import.meta.url;
 }

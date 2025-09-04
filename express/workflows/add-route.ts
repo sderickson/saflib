@@ -136,12 +136,6 @@ export const AddRouteWorkflowMachine = makeWorkflowMachine<
 export class AddRouteWorkflow extends XStateWorkflow {
   machine = AddRouteWorkflowMachine;
   description = "Add a new route to an Express.js service.";
-  cliArguments = [
-    {
-      name: "path",
-      description: "Path of the new route (e.g. 'routes/todos/create')",
-      exampleValue: "routes/example-subpath/example-route",
-    },
-  ];
+  cliArguments = input;
   sourceUrl = import.meta.url;
 }

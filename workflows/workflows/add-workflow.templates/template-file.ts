@@ -98,14 +98,6 @@ export const TemplateFileWorkflowMachine = makeWorkflowMachine<
 export class TemplateFileWorkflow extends XStateWorkflow {
   machine = TemplateFileWorkflowMachine;
   description = TemplateFileWorkflowMachine.definition.description || "";
-  cliArguments = [
-    {
-      name: "name",
-      description:
-        "The name of the thing to create (e.g., 'my-component' or 'my-service')",
-      // TODO: replace "thingy" with what is actually being created in this workflow
-      exampleValue: "example-thingy",
-    },
-  ];
+  cliArguments = input;
   sourceUrl = import.meta.url;
 }

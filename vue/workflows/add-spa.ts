@@ -99,12 +99,6 @@ export class AddSpaWorkflow extends XStateWorkflow {
   machine = AddSpaWorkflowMachine;
   description =
     "Create a new SAF-powered frontend SPA using Vue, Vue-Router, and Tanstack Query";
-  cliArguments = [
-    {
-      name: "name",
-      description: "Name of the new SPA (e.g. 'admin' for web-admin)",
-      exampleValue: "example-spa",
-    },
-  ];
+  cliArguments = input;
   sourceUrl = import.meta.url;
 }

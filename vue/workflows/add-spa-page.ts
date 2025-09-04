@@ -130,13 +130,6 @@ export const AddSpaPageWorkflowMachine = makeWorkflowMachine<
 export class AddSpaPageWorkflow extends XStateWorkflow {
   machine = AddSpaPageWorkflowMachine;
   description = AddSpaPageWorkflowMachine.definition.description || "";
-  cliArguments = [
-    {
-      name: "name",
-      description:
-        "Name of the new page in kebab-case (e.g. 'welcome-new-user')",
-      exampleValue: "example-page",
-    },
-  ];
+  cliArguments = input;
   sourceUrl = import.meta.url;
 }

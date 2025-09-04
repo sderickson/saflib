@@ -130,13 +130,6 @@ export const AddWorkflowMachine = makeWorkflowMachine<
 export class AddWorkflow extends XStateWorkflow {
   machine = AddWorkflowMachine;
   description = AddWorkflowMachine.definition.description || "";
-  cliArguments = [
-    {
-      name: "name",
-      description:
-        "The name of the new workflow to create (e.g., 'refactor-component')",
-      exampleValue: "example-workflow",
-    },
-  ];
+  cliArguments = input;
   sourceUrl = import.meta.url;
 }
