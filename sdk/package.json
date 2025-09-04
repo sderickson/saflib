@@ -4,7 +4,6 @@
   "type": "module",
   "exports": {
     ".": "./index.ts",
-    "./workflows": "./workflows/index.ts",
     "./testing": "./testing/index.ts"
   },
   "dependencies": {
@@ -13,6 +12,7 @@
   },
   "devDependencies": {
     "@saflib/workflows": "*",
+    "@saflib/vitest": "*",
     "@saflib/dev-tools": "*",
     "@saflib/vue": "*",
     "msw": "^2.0.0"

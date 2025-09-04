@@ -152,12 +152,6 @@ export const AddQueriesWorkflowMachine = makeWorkflowMachine<
 export class AddQueriesWorkflow extends XStateWorkflow {
   machine = AddQueriesWorkflowMachine;
   description = AddQueriesWorkflowMachine.definition.description || "";
-  cliArguments = [
-    {
-      name: "path",
-      description: "Path of the new query (e.g. 'queries/contacts/get-by-id')",
-      exampleValue: "queries/example-table/example-query",
-    },
-  ];
+  cliArguments = input;
   sourceUrl = import.meta.url;
 }

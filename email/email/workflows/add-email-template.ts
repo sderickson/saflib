@@ -1,91 +1,71 @@
-import { setup } from "xstate";
 import {
-  workflowActions,
-  workflowActors,
-  logInfo,
-  runNpmCommandComposer,
+  CopyTemplateMachine,
+  UpdateStepMachine,
+  CommandStepMachine,
+  makeWorkflowMachine,
+  step,
   XStateWorkflow,
-  contextFromInput,
-  type WorkflowInput,
-  outputFromContext,
-  copyTemplateStateComposer,
-  updateTemplateComposer,
-  type TemplateWorkflowContext,
 } from "@saflib/workflows";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 
-interface AddEmailTemplateWorkflowInput extends WorkflowInput {
-  path: string;
-}
+const sourceDir = path.join(import.meta.dirname, "email-template-template");
 
-interface AddEmailTemplateWorkflowContext extends TemplateWorkflowContext {
-  camelName: string;
-  targetFilePath: string;
-  packageJsonPath: string;
-}
-
-function toCamelCase(name: string) {
-  return name.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
-}
-
-function toPascalCase(name: string) {
-  return name
-    .split("-")
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join("");
-}
-
-export const AddEmailTemplateWorkflowMachine = setup({
-  types: {
-    input: {} as AddEmailTemplateWorkflowInput,
-    context: {} as AddEmailTemplateWorkflowContext,
+const input = [
+  {
+    name: "path",
+    description:
+      "Path of the new email template (e.g. './email-templates/weekly-report.ts')",
+    exampleValue: "./email-templates/example-email.ts",
   },
-  actions: workflowActions,
-  actors: workflowActors,
-}).createMachine({
+] as const;
+
+interface AddEmailTemplateWorkflowContext {
+  name: string;
+  targetFilePath: string;
+}
+
+export const AddEmailTemplateWorkflowMachine = makeWorkflowMachine<
+  AddEmailTemplateWorkflowContext,
+  typeof input
+>({
   id: "add-email-template",
+
   description: "Add email template infrastructure and templates to a project.",
-  initial: "installEmailDependency",
+
+  input,
+
   context: ({ input }) => {
-    const __filename = fileURLToPath(import.meta.url);
-    const __dirname = path.dirname(__filename);
-    const sourceDir = path.join(__dirname, "email-template-template");
     const targetFilePath = path
       .join(process.cwd(), input.path)
       .replace(process.cwd(), "");
-    const targetDir = path.dirname(targetFilePath);
     const name = path.basename(input.path).split(".")[0];
-    const packageJsonPath = path.join(process.cwd(), "package.json");
 
     return {
       name,
-      pascalName: toPascalCase(name),
-      camelName: toCamelCase(name),
-      targetDir,
       targetFilePath,
-      sourceDir,
-      packageJsonPath,
-      ...contextFromInput(input),
     };
   },
-  entry: logInfo("Successfully began workflow"),
-  states: {
-    ...runNpmCommandComposer({
-      command: "install @saflib/email",
-      stateName: "installEmailDependency",
-      nextStateName: "copyTemplate",
-    }),
 
-    ...copyTemplateStateComposer({
-      stateName: "copyTemplate",
-      nextStateName: "implementTemplate",
-    }),
+  templateFiles: {
+    template: path.join(sourceDir, "template-file.ts"),
+  },
 
-    ...updateTemplateComposer<AddEmailTemplateWorkflowContext>({
-      filePath: (context) => context.targetFilePath,
-      promptMessage: (context) =>
-        `Implement the email template at ${context.targetFilePath}:
+  docFiles: {},
+
+  steps: [
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["install", "@saflib/email"],
+    })),
+
+    step(CopyTemplateMachine, ({ context }) => ({
+      name: context.name,
+      targetDir: path.dirname(context.targetFilePath),
+    })),
+
+    step(UpdateStepMachine, ({ context }) => ({
+      fileId: "template",
+      promptMessage: `Implement the email template at ${context.targetFilePath}:
 
         1. Update the function signature and export name to match your use case
         2. Define the email subject and HTML content
@@ -94,27 +74,13 @@ export const AddEmailTemplateWorkflowMachine = setup({
         5. Use proper TypeScript types
 
         The template should export a function that takes the necessary parameters and returns EmailContent with subject and html properties.`,
-      stateName: "implementTemplate",
-      nextStateName: "done",
-    }),
-
-    done: {
-      type: "final",
-    },
-  },
-  output: outputFromContext,
+    })),
+  ],
 });
 
 export class AddEmailTemplateWorkflow extends XStateWorkflow {
   machine = AddEmailTemplateWorkflowMachine;
   description = "Add email template infrastructure and templates to a project.";
-  cliArguments = [
-    {
-      name: "path",
-      description:
-        "Path of the new email template (e.g. './email-templates/weekly-report.ts')",
-      exampleValue: "./email-templates/example-email.ts",
-    },
-  ];
+  cliArguments = input;
   sourceUrl = import.meta.url;
 }

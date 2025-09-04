@@ -99,12 +99,6 @@ export const AddCLIWorkflowMachine = makeWorkflowMachine<
 export class AddCLIWorkflow extends XStateWorkflow {
   machine = AddCLIWorkflowMachine;
   description = AddCLIWorkflowMachine.definition.description || "";
-  cliArguments = [
-    {
-      name: "name",
-      description: "The name of the cli to create (e.g., 'build' or 'deploy')",
-      exampleValue: "example-cli",
-    },
-  ];
+  cliArguments = input;
   sourceUrl = import.meta.url;
 }

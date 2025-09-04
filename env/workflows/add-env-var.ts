@@ -1,96 +1,84 @@
-import { setup } from "xstate";
 import {
-  type WorkflowInput,
-  workflowActions,
-  workflowActors,
-  logInfo,
+  CopyTemplateMachine,
+  UpdateStepMachine,
+  CommandStepMachine,
+  makeWorkflowMachine,
+  step,
   XStateWorkflow,
-  copyTemplateStateComposer,
-  updateTemplateComposer,
-  runNpmCommandComposer,
-  type TemplateWorkflowContext,
-  contextFromInput,
-  outputFromContext,
 } from "@saflib/workflows";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 
-interface AddEnvVarWorkflowInput extends WorkflowInput {
+const sourceDir = path.join(import.meta.dirname, "add-env-vars");
+
+const input = [
+  {
+    name: "name",
+    description:
+      "The name of the environment variable (in all upper case, e.g., 'API_KEY' or 'DATABASE_URL')",
+    exampleValue: "EXAMPLE_ENV_VAR",
+  },
+] as const;
+
+interface AddEnvVarWorkflowContext {
   name: string;
-}
-
-interface AddEnvVarWorkflowContext extends TemplateWorkflowContext {
   variableName: string;
-  schemaPath: string;
 }
 
-export const AddEnvVarWorkflowMachine = setup({
-  types: {
-    input: {} as AddEnvVarWorkflowInput,
-    context: {} as AddEnvVarWorkflowContext,
-  },
-  actions: {
-    ...workflowActions,
-  },
-  actors: workflowActors,
-}).createMachine({
+export const AddEnvVarWorkflowMachine = makeWorkflowMachine<
+  AddEnvVarWorkflowContext,
+  typeof input
+>({
   id: "add-env-var",
-  initial: "copyTemplate",
+
+  description:
+    "Add a new environment variable to the schema and generate the corresponding TypeScript types",
+
+  input,
+
   context: ({ input }) => {
-    const __filename = fileURLToPath(import.meta.url);
-    const __dirname = path.dirname(__filename);
-    const sourceDir = path.join(__dirname, "add-env-vars");
     const targetDir = process.cwd();
     const variableName = input.name.toUpperCase();
 
     return {
       name: input.name,
-      pascalName: input.name.charAt(0).toUpperCase() + input.name.slice(1),
       variableName,
-      sourceDir,
-      targetDir,
-      schemaPath: path.join(targetDir, "env.schema.json"),
-      ...contextFromInput(input),
     };
   },
-  entry: logInfo("Successfully began add-env-var workflow"),
-  states: {
-    ...copyTemplateStateComposer({
-      stateName: "copyTemplate",
-      nextStateName: "updateSchema",
-    }),
 
-    ...updateTemplateComposer<AddEnvVarWorkflowContext>({
-      filePath: (context) => context.schemaPath,
-      promptMessage: (context) =>
-        `Please add the environment variable '${context.variableName}' to the env.schema.json file. Add it to the properties object with an appropriate type and description. If it is effectively a boolean, use the enum type with values 'true', 'false', and ''.`,
-      stateName: "updateSchema",
-      nextStateName: "installSaflibEnv",
-    }),
-
-    ...runNpmCommandComposer({
-      command: "install @saflib/env",
-      stateName: "installSaflibEnv",
-      nextStateName: "generateEnv",
-    }),
-
-    ...runNpmCommandComposer({
-      command: "exec saf-env generate",
-      stateName: "generateEnv",
-      nextStateName: "generateAllEnv",
-    }),
-
-    ...runNpmCommandComposer({
-      command: "exec saf-env generate-all",
-      stateName: "generateAllEnv",
-      nextStateName: "done",
-    }),
-
-    done: {
-      type: "final",
-    },
+  templateFiles: {
+    schema: path.join(sourceDir, "env.schema.json"),
   },
-  output: outputFromContext,
+
+  docFiles: {},
+
+  steps: [
+    step(CopyTemplateMachine, ({ context }) => ({
+      name: context.name,
+      targetDir: process.cwd(),
+    })),
+
+    step(UpdateStepMachine, ({ context }) => ({
+      fileId: "schema",
+      promptMessage: `Add the environment variable '${context.variableName}' to the env.schema.json file.
+      
+      Add it to the properties object with an appropriate type and description. If it is effectively a boolean, use the enum type with values 'true', 'false', and ''.`,
+    })),
+
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["install", "@saflib/env"],
+    })),
+
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["exec", "saf-env", "generate"],
+    })),
+
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["exec", "saf-env", "generate-all"],
+    })),
+  ],
 });
 
 export class AddEnvVarWorkflow extends XStateWorkflow {

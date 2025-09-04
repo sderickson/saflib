@@ -108,13 +108,6 @@ export const AddCommandWorkflowMachine = makeWorkflowMachine<
 export class AddCommandWorkflow extends XStateWorkflow {
   machine = AddCommandWorkflowMachine;
   description = AddCommandWorkflowMachine.definition.description || "";
-  cliArguments = [
-    {
-      name: "path",
-      description:
-        "Relative path to the new command file, e.g. bin/cli-name/command-name.ts",
-      exampleValue: "bin/example-cli/example-command.ts",
-    },
-  ];
+  cliArguments = input;
   sourceUrl = import.meta.url;
 }

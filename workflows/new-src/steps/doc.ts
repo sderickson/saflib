@@ -143,7 +143,6 @@ Please read through this documentation carefully and understand the guidelines b
   },
   output: ({ context }) => {
     const docPath = context.docFiles![context.docId];
-    console.log("docPath", docPath);
     const githubPath = getGitHubUrl(docPath);
     return {
       checklist: [

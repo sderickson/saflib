@@ -26,7 +26,7 @@ export type ConcreteWorkflow = AbstractClassConstructor<Workflow>;
 export abstract class Workflow {
   abstract readonly name: string;
   abstract readonly description: string;
-  abstract readonly cliArguments: CLIArgument[];
+  abstract readonly cliArguments: readonly CLIArgument[];
   abstract readonly sourceUrl: string;
   abstract init: (...args: any[]) => Promise<ReturnsError<any>>;
   abstract kickoff(): Promise<boolean>;
