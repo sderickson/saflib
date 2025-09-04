@@ -155,7 +155,7 @@ watch(
         window.location.href = props.redirectTo;
       }
     }
-  }
+  },
 );
 
 const handleRegister = () => {

@@ -49,7 +49,9 @@ export const printChecklist = async (Workflow: ConcreteWorkflow) => {
     }
     const currentStateName = workflow.getCurrentStateName();
     if (currentStateName === lastStateName) {
-      throw new Error(`Workflow is stuck on state ${currentStateName}.`);
+      throw new Error(
+        `Workflow ${workflow.name} is stuck on state ${currentStateName}.`,
+      );
     }
     lastStateName = currentStateName;
   }

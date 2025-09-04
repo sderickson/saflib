@@ -102,7 +102,7 @@ export const getSentAuthEmails = (email?: Ref<string | undefined>) => {
       return handleClientMethod(
         emailClient.GET("/email/sent", {
           params: { query: { userEmail: email?.value } },
-        })
+        }),
       );
     },
   };

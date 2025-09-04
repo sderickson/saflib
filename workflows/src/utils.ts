@@ -23,8 +23,8 @@ export const print = (msg: string, noNewLine = false) => {
 
 export const continueWorkflow = (actor: AnyActor) => {
   const snapshot = actor.getSnapshot();
+  actor.send({ type: "continue" });
   if (!snapshot.children) {
-    actor.send({ type: "continue" });
     return;
   }
   Object.values(snapshot.children as Record<string, AnyActor>).forEach(

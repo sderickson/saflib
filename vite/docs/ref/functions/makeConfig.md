@@ -1,6 +1,6 @@
 [**@saflib/vite**](../index.md)
 
-***
+---
 
 # Function: makeConfig()
 
@@ -10,9 +10,9 @@ Make a Vite config for a multi-SPA, SAF project. Includes all the expected plugi
 
 ## Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `config` | [`MakeConfigProps`](../interfaces/MakeConfigProps.md) |
+| Parameter | Type                                                  |
+| --------- | ----------------------------------------------------- |
+| `config`  | [`MakeConfigProps`](../interfaces/MakeConfigProps.md) |
 
 ## Returns
 

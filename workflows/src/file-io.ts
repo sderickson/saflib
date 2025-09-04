@@ -19,7 +19,7 @@ export const saveWorkflow = (workflow: Workflow) => {
   const planStatusFilePath = getPlanStatusFilePath();
   writeFileSync(
     planStatusFilePath,
-    JSON.stringify(workflow.dehydrate(), null, 2)
+    JSON.stringify(workflow.dehydrate(), null, 2),
   );
 };
 
