@@ -1,3 +1,3 @@
-import { defaultConfig } from "@saflib/vitest/vitest.config.js";
+import { defaultConfig } from "./testing/vitest-config.js";
 
 export default defaultConfig;
