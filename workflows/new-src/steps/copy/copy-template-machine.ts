@@ -17,6 +17,8 @@ import type {
 } from "./types.ts";
 import { parseChecklist, parseCopiedFiles } from "./helpers.ts";
 
+export type { CopyTemplateMachineInput };
+
 export const CopyTemplateMachine = setup({
   types: {
     input: {} as CopyTemplateMachineInput,

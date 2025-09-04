@@ -12,7 +12,7 @@ import { logInfo, logError, promptAgent } from "../../src/xstate.ts";
 import { raise } from "xstate";
 import { contextFromInput } from "../../src/workflow.ts";
 
-interface TestMachineInput extends WorkflowInput {
+export interface TestMachineInput extends WorkflowInput {
   fileId?: string;
 }
 

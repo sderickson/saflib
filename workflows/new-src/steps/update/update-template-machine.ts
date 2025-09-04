@@ -14,7 +14,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { contextFromInput } from "../../../src/workflow.ts";
 
-interface UpdateMachineInput extends WorkflowInput {
+export interface UpdateMachineInput extends WorkflowInput {
   fileId: string;
   promptMessage: string | ((context: WorkflowContext) => string);
 }

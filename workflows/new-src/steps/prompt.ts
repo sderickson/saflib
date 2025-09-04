@@ -9,16 +9,10 @@ import { sendTo, assign, raise } from "xstate";
 import { contextFromInput, outputFromContext } from "../../src/workflow.ts";
 import type { WorkflowContext, WorkflowInput } from "../../src/xstate.ts";
 
-/**
- * Input *specifically* for the prompt step machine. Extends WorkflowInput because each workflow needs to accept it so that other workflow machines can invoke them.
- */
-interface PromptMachineInput extends WorkflowInput {
+export interface PromptMachineInput extends WorkflowInput {
   promptText: string;
 }
 
-/**
- * Context *specifically* for the prompt step machine. Extends WorkflowContext because each workflow needs to accept it so that other workflow machines can invoke them.
- */
 interface PromptMachineContext extends WorkflowContext {
   promptText: string;
 }

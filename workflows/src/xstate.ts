@@ -9,7 +9,6 @@ import {
   type PromiseActorLogic,
   type MachineContext,
   fromPromise,
-  raise,
   type AnyActorRef,
 } from "xstate";
 import type { ChecklistItem } from "./types.ts";
@@ -279,76 +278,3 @@ export const runCommandAsync = (command: string, args: string[]) => {
   });
   return promise;
 };
-
-/**
- * @deprecated - use promptAgentComposer instead
- */
-export function promptState<C extends WorkflowContext>(
-  promptForContext: ({ context }: { context: C }) => string | string,
-  target: string,
-) {
-  return {
-    entry: raise({ type: "prompt" }),
-    on: {
-      prompt: {
-        actions: [promptAgent(promptForContext)],
-      },
-      continue: {
-        target,
-      },
-    },
-  };
-}
-
-interface PromptAgentComposerOptions<C extends WorkflowContext>
-  extends ComposerFunctionOptions {
-  promptForContext: ({ context }: { context: C }) => string | string;
-}
-
-/**
- * Composer for prompting the agent. During normal execution, once a prompt
- * is printed, the workflow will stop so it can be continued later.
- */
-export function promptAgentComposer<C extends WorkflowContext>({
-  promptForContext,
-  stateName,
-  nextStateName,
-}: PromptAgentComposerOptions<C>) {
-  return {
-    [stateName]: {
-      entry: raise({ type: "prompt" }),
-      on: {
-        prompt: {
-          actions: [
-            promptAgent(promptForContext),
-            assign({
-              checklist: ({ context }) => {
-                return [
-                  ...context.checklist,
-                  {
-                    description: promptForContext({
-                      context: context as C,
-                    }).split("\n")[0],
-                  },
-                ];
-              },
-            }),
-          ],
-        },
-        continue: {
-          target: nextStateName,
-        },
-      },
-    },
-  };
-}
-
-/**
- * Options for all composer functions. These functions return
- * an object which can be spread into an XState "states" object,
- * for easily composing a workflow machine from common steps.
- */
-export interface ComposerFunctionOptions {
-  stateName: string;
-  nextStateName: string;
-}

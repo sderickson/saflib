@@ -20,18 +20,18 @@ To run this workflow automatically, tell the agent to:
 
 When run, the workflow will:
 
-- Copy template files and rename placeholders.
-  - Upsert **index.ts** from [template](https://github.com/sderickson/saflib/blob/main/workflows/workflows/add-workflow.templates/index.ts)
-  - Upsert **example-workflow.ts** from [template](https://github.com/sderickson/saflib/blob/main/workflows/workflows/add-workflow.templates/template-file.ts)
-- Add name, description, and cliArguments to the newly created workflows/example-workflow.ts.
-- Export **example-workflow** from **@your/target-package**.
-- Add `@your/target-package` as a dependency of `@saflib/workflows-cli`.
-- Add `@your/target-package` to `@saflib/workflows-cli`'s list of workflows.
-- Check that the new workflow appears in the saf-workflow CLI tool.
-- Stop and understand the workflow requirements before proceeding.
-- Creating template files for example-workflow workflow.
-- Implementing the workflow logic in workflows/example-workflow.ts.
-- Review the checklist and verify that the workflow was added correctly.
+* Copy template files and rename placeholders.
+  * Upsert **example-workflow.ts** from [template](https://github.com/sderickson/saflib/blob/main/workflows/workflows/add-workflow.templates/template-file.ts)
+* Add name, description, and cliArguments to the newly created workflows/example-workflow.ts.
+* Export **example-workflow** from **@saflib/workflows**. 
+* Add `@saflib/workflows` as a dependency of `@saflib/workflows-cli`.
+* Add `@saflib/workflows` to `@saflib/workflows-cli`'s list of workflows. 
+* Check that the new workflow appears in the saf-workflow CLI tool.
+* Stop and understand the workflow requirements before proceeding.
+* Create template files for example-workflow workflow.
+* Implement the workflow logic in workflows/example-workflow.ts.
+* Review the checklist and verify that the workflow was added correctly.
+
 
 ## Help Docs
 

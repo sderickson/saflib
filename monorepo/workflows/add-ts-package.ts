@@ -64,7 +64,7 @@ export const AddTsPackageWorkflowMachine = makeWorkflowMachine<
     tsconfig: path.join(sourceDir, "tsconfig.json"),
     index: path.join(sourceDir, "index.ts"),
     test: path.join(sourceDir, "index.test.ts"),
-    vitest: path.join(sourceDir, "vitest.config.ts"),
+    vitest: path.join(sourceDir, "vitest.config.js"),
   },
 
   docFiles: {},

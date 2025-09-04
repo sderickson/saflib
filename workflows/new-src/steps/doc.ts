@@ -14,7 +14,7 @@ import { readFileSync } from "fs";
 import path from "node:path";
 import { getGitHubUrl } from "@saflib/dev-tools";
 
-interface DocMachineInput extends WorkflowInput {
+export interface DocMachineInput extends WorkflowInput {
   docId: string;
 }
 

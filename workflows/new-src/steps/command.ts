@@ -13,7 +13,7 @@ import {
 import { raise } from "xstate";
 import { contextFromInput } from "../../src/workflow.ts";
 
-interface CommandMachineInput extends WorkflowInput {
+export interface CommandMachineInput extends WorkflowInput {
   command: string;
   args?: string[];
 }

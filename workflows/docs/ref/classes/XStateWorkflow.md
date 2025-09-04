@@ -1,6 +1,6 @@
 [**@saflib/workflows**](../index.md)
 
----
+***
 
 # Abstract Class: XStateWorkflow
 
@@ -8,14 +8,14 @@ Abstract superclass for XStateWorkflows.
 
 To use, subclass it with:
 
-- machine - the XState machine for the workflow.
-- sourceUrl - import.meta.url
-- description - to show up in the CLI tool
-- cliArguments - to show up in the CLI tool
+* machine - the XState machine for the workflow.
+* sourceUrl - import.meta.url
+* description - to show up in the CLI tool
+* cliArguments - to show up in the CLI tool
 
 ## Extends
 
-- [`Workflow`](Workflow.md)
+- `Workflow`
 
 ## Constructors
 
@@ -29,19 +29,19 @@ To use, subclass it with:
 
 #### Inherited from
 
-[`Workflow`](Workflow.md).[`constructor`](Workflow.md#constructor)
+`Workflow.constructor`
 
 ## Properties
 
 ### cliArguments
 
-> `abstract` `readonly` **cliArguments**: [`CLIArgument`](../interfaces/CLIArgument.md)[]
+> `abstract` `readonly` **cliArguments**: readonly [`CLIArgument`](../interfaces/CLIArgument.md)[]
 
 #### Inherited from
 
-[`Workflow`](Workflow.md).[`cliArguments`](Workflow.md#cliarguments)
+`Workflow.cliArguments`
 
----
+***
 
 ### description
 
@@ -49,15 +49,15 @@ To use, subclass it with:
 
 #### Inherited from
 
-[`Workflow`](Workflow.md).[`description`](Workflow.md#description)
+`Workflow.description`
 
----
+***
 
 ### machine
 
 > `abstract` `readonly` **machine**: `AnyStateMachine`
 
----
+***
 
 ### sourceUrl
 
@@ -65,7 +65,7 @@ To use, subclass it with:
 
 #### Inherited from
 
-[`Workflow`](Workflow.md).[`sourceUrl`](Workflow.md#sourceurl)
+`Workflow.sourceUrl`
 
 ## Accessors
 
@@ -81,7 +81,7 @@ To use, subclass it with:
 
 #### Overrides
 
-[`Workflow`](Workflow.md).[`name`](Workflow.md#name)
+`Workflow.name`
 
 ## Methods
 
@@ -95,9 +95,9 @@ To use, subclass it with:
 
 #### Overrides
 
-[`Workflow`](Workflow.md).[`dehydrate`](Workflow.md#dehydrate)
+`Workflow.dehydrate`
 
----
+***
 
 ### done()
 
@@ -109,23 +109,23 @@ To use, subclass it with:
 
 #### Overrides
 
-[`Workflow`](Workflow.md).[`done`](Workflow.md#done)
+`Workflow.done`
 
----
+***
 
 ### getChecklist()
 
-> **getChecklist**(): [`ChecklistItem`](../interfaces/ChecklistItem.md)[]
+> **getChecklist**(): `ChecklistItem`[]
 
 #### Returns
 
-[`ChecklistItem`](../interfaces/ChecklistItem.md)[]
+`ChecklistItem`[]
 
 #### Overrides
 
-[`Workflow`](Workflow.md).[`getChecklist`](Workflow.md#getchecklist)
+`Workflow.getChecklist`
 
----
+***
 
 ### getCurrentStateName()
 
@@ -137,9 +137,9 @@ To use, subclass it with:
 
 #### Overrides
 
-[`Workflow`](Workflow.md).[`getCurrentStateName`](Workflow.md#getcurrentstatename)
+`Workflow.getCurrentStateName`
 
----
+***
 
 ### getError()
 
@@ -151,9 +151,9 @@ To use, subclass it with:
 
 #### Overrides
 
-[`Workflow`](Workflow.md).[`getError`](Workflow.md#geterror)
+`Workflow.getError`
 
----
+***
 
 ### goToNextStep()
 
@@ -165,9 +165,9 @@ To use, subclass it with:
 
 #### Overrides
 
-[`Workflow`](Workflow.md).[`goToNextStep`](Workflow.md#gotonextstep)
+`Workflow.goToNextStep`
 
----
+***
 
 ### hydrate()
 
@@ -175,9 +175,9 @@ To use, subclass it with:
 
 #### Parameters
 
-| Parameter | Type           |
-| --------- | -------------- |
-| `blob`    | `WorkflowBlob` |
+| Parameter | Type |
+| ------ | ------ |
+| `blob` | `WorkflowBlob` |
 
 #### Returns
 
@@ -185,9 +185,9 @@ To use, subclass it with:
 
 #### Overrides
 
-[`Workflow`](Workflow.md).[`hydrate`](Workflow.md#hydrate)
+`Workflow.hydrate`
 
----
+***
 
 ### init()
 
@@ -195,10 +195,10 @@ To use, subclass it with:
 
 #### Parameters
 
-| Parameter | Type                    |
-| --------- | ----------------------- |
+| Parameter | Type |
+| ------ | ------ |
 | `options` | `XStateWorkflowOptions` |
-| ...`args` | `string`[]              |
+| ...`args` | `string`[] |
 
 #### Returns
 
@@ -208,7 +208,7 @@ To use, subclass it with:
 
 `Workflow.init`
 
----
+***
 
 ### kickoff()
 
@@ -220,9 +220,9 @@ To use, subclass it with:
 
 #### Overrides
 
-[`Workflow`](Workflow.md).[`kickoff`](Workflow.md#kickoff)
+`Workflow.kickoff`
 
----
+***
 
 ### printStatus()
 
@@ -234,4 +234,4 @@ To use, subclass it with:
 
 #### Overrides
 
-[`Workflow`](Workflow.md).[`printStatus`](Workflow.md#printstatus)
+`Workflow.printStatus`

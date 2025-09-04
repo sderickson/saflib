@@ -1,6 +1,6 @@
 [**@saflib/workflows**](../index.md)
 
----
+***
 
 # Function: runWorkflowCli()
 
@@ -17,9 +17,9 @@ This also means you can customize which workflows are actually available.
 
 ## Parameters
 
-| Parameter   | Type                                              |
-| ----------- | ------------------------------------------------- |
-| `workflows` | [`WorkflowMeta`](../interfaces/WorkflowMeta.md)[] |
+| Parameter | Type |
+| ------ | ------ |
+| `workflows` | [`ConcreteWorkflow`](../type-aliases/ConcreteWorkflow.md)[] |
 
 ## Returns
 

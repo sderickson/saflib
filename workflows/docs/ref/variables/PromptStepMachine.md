@@ -1,0 +1,9 @@
+[**@saflib/workflows**](../index.md)
+
+***
+
+# Variable: PromptStepMachine
+
+> `const` **PromptStepMachine**: `StateMachine`\<`PromptMachineContext`, `AnyEventObject`, \{\[`key`: `string`\]: `undefined` \| `ActorRefFromLogic`\<`PromiseActorLogic`\<`unknown`, `NonReducibleUnknown`, `EventObject`\>\>; \}, \{ `id`: `undefined` \| `string`; `logic`: `PromiseActorLogic`\<`unknown`, `NonReducibleUnknown`, `EventObject`\>; `src`: `"noop"`; \}, `Values`\<\{ `log`: \{ `params`: `LogParams`; `type`: `"log"`; \}; `prompt`: \{ `params`: `PromptParams`; `type`: `"prompt"`; \}; \}\>, `never`, `never`, `"done"` \| `"running"`, `string`, [`PromptMachineInput`](../interfaces/PromptMachineInput.md), `NonReducibleUnknown`, `EventObject`, `MetaObject`, \{ `context`: (`__namedParameters`) => `object`; `id`: `"prompt-step"`; `initial`: `"running"`; `output`: (`__namedParameters`) => `WorkflowOutput`; `states`: \{ `done`: \{ `type`: `"final"`; \}; `running`: \{ `entry`: `ActionFunction`\<`PromptMachineContext`, `AnyEventObject`, `AnyEventObject`, `undefined`, `never`, `never`, `never`, `never`, `never`\>; `on`: \{ `continue`: \{ `actions`: readonly \[\{ `params`: (`event`) => `object`; `type`: `"log"`; \}\]; `target`: `"done"`; \}; `prompt`: \{ `actions`: readonly \[\{ `params`: (`event`) => `object`; `type`: `"prompt"`; \}, `ActionFunction`\<`PromptMachineContext`, `AnyEventObject`, `AnyEventObject`, `undefined`, `never`, `never`, `never`, `never`, `never`\>, `ActionFunction`\<`PromptMachineContext`, `AnyEventObject`, `AnyEventObject`, `undefined`, \{ `id`: `undefined` \| `string`; `logic`: `PromiseActorLogic`\<`unknown`, `NonReducibleUnknown`, `EventObject`\>; `src`: `"noop"`; \}, `never`, `never`, `never`, `never`\>\]; \}; \}; \}; \}; \}\>
+
+A machine for a step in a workflow, where an LLM is prompted to do something.
