@@ -23,13 +23,17 @@ export const print = (msg: string, noNewLine = false) => {
 
 export const continueWorkflow = (actor: AnyActor) => {
   const snapshot = actor.getSnapshot();
-  actor.send({ type: "continue" });
+  if (actor.getSnapshot().status === "active") {
+    actor.send({ type: "continue" });
+  }
   if (!snapshot.children) {
     return;
   }
   Object.values(snapshot.children as Record<string, AnyActor>).forEach(
     (child) => {
-      child.send({ type: "continue" });
+      if (child.getSnapshot().status === "active") {
+        child.send({ type: "continue" });
+      }
       continueWorkflow(child);
     },
   );

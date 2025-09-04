@@ -116,6 +116,8 @@ function _makeWorkflowMachine<I extends readonly CLIArgument[], C>(
       const context: Context = {
         ...workflow.context({ input }),
         ...contextFromInput(input),
+        templateFiles: workflow.templateFiles,
+        docFiles: workflow.docFiles,
       };
       return context;
     },

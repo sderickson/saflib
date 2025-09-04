@@ -1,47 +1,44 @@
-import { setup } from "xstate";
 import {
-  workflowActions,
-  workflowActors,
-  logInfo,
+  CopyTemplateMachine,
+  UpdateStepMachine,
+  PromptStepMachine,
+  CommandStepMachine,
+  makeWorkflowMachine,
+  step,
   XStateWorkflow,
-  copyTemplateStateComposer,
-  promptAgentComposer,
-  type TemplateWorkflowContext,
-  contextFromInput,
-  type WorkflowInput,
-  outputFromContext,
-  updateTemplateComposer,
-  runNpmCommandComposer,
 } from "@saflib/workflows";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 
-interface AddCLIWorkflowInput extends WorkflowInput {
+const sourceDir = path.join(import.meta.dirname, "add-cli");
+
+const input = [
+  {
+    name: "name",
+    description: "The name of the cli to create (e.g., 'build' or 'deploy')",
+    exampleValue: "example-cli",
+  },
+] as const;
+
+interface AddCLIWorkflowContext {
   name: string;
-}
-
-interface AddCLIWorkflowContext extends TemplateWorkflowContext {
+  pascalName: string;
   cliName: string;
+  targetDir: string;
   indexFilePath: string;
 }
 
-export const AddCLIWorkflowMachine = setup({
-  types: {
-    input: {} as AddCLIWorkflowInput,
-    context: {} as AddCLIWorkflowContext,
-  },
-  actions: workflowActions,
-  actors: workflowActors,
-}).createMachine({
+export const AddCLIWorkflowMachine = makeWorkflowMachine<
+  AddCLIWorkflowContext,
+  typeof input
+>({
   id: "add-cli",
 
-  initial: "copyTemplate",
+  description:
+    "Creates a new CLI with Commander.js, accessible through npm exec",
+
+  input,
 
   context: ({ input }) => {
-    const __filename = fileURLToPath(import.meta.url);
-    const __dirname = path.dirname(__filename);
-    const sourceDir = path.join(__dirname, "add-cli");
-
     // The target directory will be bin/{input.name}
     const targetDir = path.join("./bin", input.name);
     const indexFilePath = path.join(targetDir, "index.ts");
@@ -50,75 +47,58 @@ export const AddCLIWorkflowMachine = setup({
       name: input.name,
       pascalName: input.name.charAt(0).toUpperCase() + input.name.slice(1),
       cliName: input.name,
-      sourceDir,
       targetDir,
       indexFilePath,
-      ...contextFromInput(input),
     };
   },
 
-  entry: logInfo("Successfully began add-cli workflow"),
+  templateFiles: {
+    index: path.join(sourceDir, "index.ts"),
+  },
 
-  states: {
-    ...copyTemplateStateComposer({
-      stateName: "copyTemplate",
-      nextStateName: "updateIndexFile",
-    }),
+  docFiles: {},
 
-    ...updateTemplateComposer<AddCLIWorkflowContext>({
-      stateName: "updateIndexFile",
-      nextStateName: "makeIndexExecutable",
-      filePath: (context) => context.indexFilePath,
-      promptMessage: (context) =>
-        `Please update ${context.indexFilePath}, resolving any TODOs.`,
-    }),
+  steps: [
+    step(CopyTemplateMachine, ({ context }) => ({
+      name: context.name,
+      targetDir: context.targetDir,
+    })),
 
-    ...promptAgentComposer<AddCLIWorkflowContext>({
-      stateName: "makeIndexExecutable",
-      nextStateName: "addToBin",
-      promptForContext: ({ context }) =>
-        `Run the command \`chmod +x ${context.indexFilePath}\` to make the index file executable.`,
-    }),
+    step(UpdateStepMachine, ({ context }) => ({
+      fileId: "index",
+      promptMessage: `Update **${path.basename(context.copiedFiles!.index)}**, resolving any TODOs.`,
+    })),
 
-    ...promptAgentComposer<AddCLIWorkflowContext>({
-      stateName: "addToBin",
-      nextStateName: "install",
-      promptForContext: ({ context }) =>
-        `Add ${context.indexFilePath} to the package's bin folder.
+    step(CommandStepMachine, ({ context }) => ({
+      command: "chmod",
+      args: ["+x", context.indexFilePath],
+    })),
+
+    step(PromptStepMachine, ({ context }) => ({
+      promptText: `Add ${context.indexFilePath} to the package's bin folder.
       
       It should look like this:
       "bin": {
         "${context.name}": "${context.indexFilePath}"
       }`,
-    }),
+    })),
 
-    ...runNpmCommandComposer({
-      stateName: "install",
-      nextStateName: "verifyDone",
-      command: `install`,
-    }),
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["install"],
+    })),
 
-    ...promptAgentComposer<AddCLIWorkflowContext>({
-      stateName: "verifyDone",
-      nextStateName: "done",
-      promptForContext: ({ context }) =>
-        `Run the command \`npm exec ${context.name}\` to verify that the cli is working correctly.
+    step(PromptStepMachine, ({ context }) => ({
+      promptText: `Run the command \`npm exec ${context.name}\` to verify that the cli is working correctly.
       
       Run \`npm exec ${context.name}\` and it should display help information without errors.`,
-    }),
-
-    done: {
-      type: "final",
-    },
-  },
-  output: outputFromContext,
+    })),
+  ],
 });
 
 export class AddCLIWorkflow extends XStateWorkflow {
   machine = AddCLIWorkflowMachine;
-  description =
-    "Creates a new CLI with Commander.js, accessible through npm exec";
-
+  description = AddCLIWorkflowMachine.definition.description || "";
   cliArguments = [
     {
       name: "name",
