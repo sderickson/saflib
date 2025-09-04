@@ -129,8 +129,7 @@ export const AddSpaPageWorkflowMachine = makeWorkflowMachine<
 
 export class AddSpaPageWorkflow extends XStateWorkflow {
   machine = AddSpaPageWorkflowMachine;
-  description =
-    "Create a new page in a SAF-powered Vue SPA, using a template and renaming placeholders.";
+  description = AddSpaPageWorkflowMachine.definition.description || "";
   cliArguments = [
     {
       name: "name",
