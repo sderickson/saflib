@@ -5,7 +5,6 @@ import {
   step,
   XStateWorkflow,
 } from "@saflib/workflows";
-import { kebabCaseToPascalCase } from "@saflib/utils";
 import { readFileSync } from "fs";
 import path from "node:path";
 
@@ -24,8 +23,6 @@ interface AddWorkflowContext {
   workflowName: string;
   workflowPath: string;
   packageName: string;
-  name: string;
-  pascalName: string;
   targetDir: string;
 }
 
@@ -43,7 +40,6 @@ export const AddWorkflowMachine = makeWorkflowMachine<
   context: ({ input }) => {
     const workflowName = input.name || "";
     const workflowPath = `workflows/${workflowName}.ts`;
-    // In the new workflow system, dryRun is handled by the framework
     const packageName =
       readFileSync("package.json", "utf8").match(/name": "(.+)"/)?.[1] ||
       "@your/target-package";
@@ -53,8 +49,6 @@ export const AddWorkflowMachine = makeWorkflowMachine<
       workflowName,
       workflowPath,
       packageName,
-      name: workflowName,
-      pascalName: kebabCaseToPascalCase(workflowName),
       targetDir,
     };
   },
@@ -67,7 +61,7 @@ export const AddWorkflowMachine = makeWorkflowMachine<
 
   steps: [
     step(CopyTemplateMachine, ({ context }) => ({
-      name: context.name,
+      name: context.workflowName,
       targetDir: context.targetDir,
     })),
 
@@ -115,13 +109,14 @@ export const AddWorkflowMachine = makeWorkflowMachine<
     })),
 
     step(PromptStepMachine, ({ context }) => ({
-      promptText: `Creating template files for ${context.workflowName} workflow.
+      promptText: `Create template files for ${context.workflowName} workflow.
 
-      Create a folder named \`${context.workflowName}\` next to the workflow file. Add any template files you need to the folder.`,
+      Create a folder named \`${context.workflowName}\` next to the workflow file. Add any template files you need to the folder.
+      If you don't have them already, ask for samples to base the template files on.`,
     })),
 
     step(PromptStepMachine, ({ context }) => ({
-      promptText: `Implementing the workflow logic in ${context.workflowPath}.`,
+      promptText: `Implement the workflow logic in ${context.workflowPath}.`,
     })),
 
     step(PromptStepMachine, ({ context }) => ({
