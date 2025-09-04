@@ -3,6 +3,7 @@ import type { ComponentMountingOptions } from "@vue/test-utils";
 import type { Component } from "vue";
 import { router } from "./router.ts";
 import { templateFileStrings } from "./strings.ts";
+import { identityServiceMockHandlers } from "@saflib/auth/mocks";
 
 export const mountTestApp = <C extends Component>(
   Component: C,
@@ -15,3 +16,6 @@ export const mountTestApp = <C extends Component>(
     },
   });
 };
+
+// TODO: import and add here any other mock handlers from sdk packages this SPA depends on
+export const testAppHandlers = [...identityServiceMockHandlers];
