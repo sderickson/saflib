@@ -7,7 +7,6 @@ import {
   XStateWorkflow,
 } from "@saflib/workflows";
 import path from "path";
-import { kebabCaseToPascalCase } from "@saflib/utils";
 
 const sourceDir = path.resolve(import.meta.dirname, "./templates");
 
@@ -22,7 +21,6 @@ const input = [
 
 interface SpecProjectWorkflowContext {
   name: string;
-  pascalName: string;
   targetDir: string;
   safDocOutput: string;
   safWorkflowHelpOutput: string;
@@ -45,7 +43,6 @@ export const SpecProjectWorkflowMachine = makeWorkflowMachine<
 
     return {
       name: input.name,
-      pascalName: kebabCaseToPascalCase(input.name),
       targetDir,
       safDocOutput: "",
       safWorkflowHelpOutput: "",
@@ -65,10 +62,13 @@ export const SpecProjectWorkflowMachine = makeWorkflowMachine<
       targetDir: context.targetDir,
     })),
 
-    step(PromptStepMachine, ({ context }) => ({
-      promptText: `The following packages are available in this monorepo. You can learn more about any given package by running \`npm exec saf-doc <package-name>\`.
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["exec", "saf-docs", "print"],
+    })),
 
-${context.safDocOutput}`,
+    step(PromptStepMachine, () => ({
+      promptText: `Get familiar with the SAF packages available to you above. For more information about any given package, run \`npm exec saf-docs <package-name>\`.`,
     })),
 
     step(PromptStepMachine, ({ context }) => ({

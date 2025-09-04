@@ -44,8 +44,20 @@ export const CommandStepMachine = setup({
       args: input.args || [],
     };
   },
-  initial: "runCommand",
+  initial: "printBefore",
   states: {
+    printBefore: {
+      entry: raise({ type: "printBefore" }),
+      on: {
+        printBefore: {
+          target: "runCommand",
+          actions: logInfo(
+            ({ context }) =>
+              `Running command: ${context.command} ${context.args.join(" ")}`,
+          ),
+        },
+      },
+    },
     runCommand: {
       invoke: {
         src: fromPromise(
@@ -108,6 +120,10 @@ export const CommandStepMachine = setup({
     },
   },
   output: ({ context }) => {
+    let description = `Run \`${context.command} ${context.args.join(" ")}\``;
+    if (context.printBefore) {
+      description += ` ${context.printBefore}`;
+    }
     return {
       checklist: [
         {

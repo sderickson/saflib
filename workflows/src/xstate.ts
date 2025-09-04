@@ -269,7 +269,7 @@ export const runCommandAsync = (command: string, args: string[]) => {
     resolve = _resolve;
     reject = _reject;
   });
-  const child = spawn(command, args);
+  const child = spawn(command, args, { stdio: "inherit" });
   child.on("close", (code) => {
     if (code === 0) {
       resolve("Tests passed");
