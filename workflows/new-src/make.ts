@@ -14,6 +14,7 @@ import {
 } from "xstate";
 import { contextFromInput, outputFromContext } from "../src/workflow.ts";
 import type { CLIArgument } from "../src/types.ts";
+import { existsSync } from "fs";
 
 /**
  * Helper, identity function to infer types.
@@ -42,6 +43,19 @@ function _makeWorkflowMachine<I extends readonly CLIArgument[], C>(
 ) {
   type Input = CreateArgsType<I> & WorkflowInput;
   type Context = C & WorkflowContext;
+
+  for (const [key, value] of Object.entries(workflow.templateFiles)) {
+    if (!existsSync(value)) {
+      console.log("Invalid template file path:", value);
+      throw new Error(`Missing template file ${key} for ${workflow.id}`);
+    }
+  }
+  for (const [key, value] of Object.entries(workflow.docFiles)) {
+    if (!existsSync(value)) {
+      console.log("Invalid doc file path:", value);
+      throw new Error(`Missing doc file ${key} for ${workflow.id}`);
+    }
+  }
 
   const actors: Record<string, AnyStateMachine> = {};
   for (let i = 0; i < workflow.steps.length; i++) {

@@ -70,16 +70,13 @@ export const AddQueriesWorkflowMachine = makeWorkflowMachine<
   },
 
   templateFiles: {
-    query: path.join(sourceDir, "query.ts"),
-    test: path.join(sourceDir, "query.test.ts"),
+    query: path.join(sourceDir, "template-file.ts"),
+    test: path.join(sourceDir, "template-file.test.ts"),
   },
 
   docFiles: {
     refDoc: path.join(import.meta.dirname, "../docs/03-queries.md"),
-    testingGuide: path.join(
-      import.meta.dirname,
-      "../../drizzle-sqlite3-dev/docs/01-testing-guide.md",
-    ),
+    testingGuide: path.join(import.meta.dirname, "../docs/04-testing.md"),
   },
 
   steps: [

@@ -53,8 +53,8 @@ export const SpecProjectWorkflowMachine = makeWorkflowMachine<
   },
 
   templateFiles: {
-    spec: path.join(sourceDir, "spec.md"),
-    checklist: path.join(sourceDir, "checklist.md"),
+    spec: path.join(sourceDir, "template-file.spec.md"),
+    checklist: path.join(sourceDir, "template-file.checklist.md"),
   },
 
   docFiles: {},

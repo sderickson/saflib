@@ -72,7 +72,7 @@ export const AddCommandWorkflowMachine = makeWorkflowMachine<
   },
 
   templateFiles: {
-    command: path.join(sourceDir, "command.ts"),
+    index: path.join(sourceDir, "template-file.ts"),
   },
 
   docFiles: {},
@@ -84,8 +84,8 @@ export const AddCommandWorkflowMachine = makeWorkflowMachine<
     })),
 
     step(UpdateStepMachine, ({ context }) => ({
-      fileId: "command",
-      promptMessage: `Update **${path.basename(context.copiedFiles!.command)}**, resolving any TODOs.`,
+      fileId: "index",
+      promptMessage: `Update **${path.basename(context.copiedFiles!.index)}**, resolving any TODOs.`,
     })),
 
     step(PromptStepMachine, ({ context }) => ({

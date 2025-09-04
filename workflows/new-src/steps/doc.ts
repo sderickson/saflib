@@ -12,6 +12,7 @@ import { contextFromInput } from "../../src/workflow.ts";
 import { raise } from "xstate";
 import { readFileSync } from "fs";
 import path from "node:path";
+import { getGitHubUrl } from "@saflib/dev-tools";
 
 interface DocMachineInput extends WorkflowInput {
   docId: string;
@@ -142,10 +143,12 @@ Please read through this documentation carefully and understand the guidelines b
   },
   output: ({ context }) => {
     const docPath = context.docFiles![context.docId];
+    console.log("docPath", docPath);
+    const githubPath = getGitHubUrl(docPath);
     return {
       checklist: [
         {
-          description: `Review documentation: ${path.basename(docPath)}`,
+          description: `Review documentation: [${path.basename(docPath)}](${githubPath})`,
         },
       ],
     };
