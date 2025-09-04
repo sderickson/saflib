@@ -12,6 +12,7 @@ import {
 } from "../../../src/xstate.ts";
 import { readFileSync } from "node:fs";
 import path from "node:path";
+import { contextFromInput } from "../../../src/workflow.ts";
 
 interface UpdateMachineInput extends WorkflowInput {
   fileId: string;
@@ -38,16 +39,12 @@ export const UpdateStepMachine = setup({
 }).createMachine({
   id: "update-step",
   initial: "update",
-  context: ({ input, self }) => {
+  context: ({ input }) => {
     const filePath = input.copiedFiles![input.fileId];
     return {
-      checklist: [],
-      loggedLast: false,
-      systemPrompt: "",
-      dryRun: input.dryRun,
+      ...contextFromInput(input),
       filePath,
       promptMessage: input.promptMessage,
-      rootRef: input.rootRef || self,
     };
   },
   states: {

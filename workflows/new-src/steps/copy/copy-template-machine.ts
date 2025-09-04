@@ -9,7 +9,7 @@ import {
 import { copyNextFile } from "./copy-next-file.ts";
 import { renameNextFile } from "./rename-next-file.ts";
 import type { WorkflowOutput } from "../../../src/xstate.ts";
-import { buildWorkflowContext } from "../../../src/workflow.ts";
+import { contextFromInput } from "../../../src/workflow.ts";
 
 import type {
   CopyTemplateMachineContext,
@@ -41,13 +41,15 @@ export const CopyTemplateMachine = setup({
   description: "Copy template files and rename placeholders",
   initial: "copy",
   context: (arg) => {
+    if (!arg.input.copiedFiles) {
+      throw new Error("copiedFiles is required");
+    }
     return {
-      ...buildWorkflowContext(arg),
+      ...contextFromInput(arg.input),
       filesToCopy: Object.keys(arg.input.templateFiles || {}),
       name: arg.input.name,
       targetDir: arg.input.targetDir,
-      templateFiles: arg.input.templateFiles,
-      copiedFiles: arg.input.copiedFiles || {},
+      copiedFiles: arg.input.copiedFiles,
     };
   },
   entry: logInfo("Starting template copy workflow"),

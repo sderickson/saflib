@@ -12,7 +12,7 @@ import {
   type AnyStateMachine,
   type InputFrom,
 } from "xstate";
-import { outputFromContext } from "../src/workflow.ts";
+import { contextFromInput, outputFromContext } from "../src/workflow.ts";
 import type { CLIArgument } from "../src/types.ts";
 
 /**
@@ -112,17 +112,10 @@ function _makeWorkflowMachine<I extends readonly CLIArgument[], C>(
     entry: raise({ type: "start" }),
     id: workflow.id,
     description: workflow.description,
-    context: ({ input, self }) => {
+    context: ({ input }) => {
       const context: Context = {
         ...workflow.context({ input }),
-        checklist: [],
-        loggedLast: input.loggedLast,
-        systemPrompt: input.systemPrompt,
-        rootRef: input.rootRef || self,
-        templateFiles: workflow.templateFiles,
-        copiedFiles: {},
-        docFiles: workflow.docFiles,
-        dryRun: input.dryRun,
+        ...contextFromInput(input),
       };
       return context;
     },

@@ -6,7 +6,7 @@ import {
   logInfo,
 } from "../../src/xstate.ts";
 import { sendTo, assign, raise } from "xstate";
-import { outputFromContext } from "../../src/workflow.ts";
+import { contextFromInput, outputFromContext } from "../../src/workflow.ts";
 import type { WorkflowContext, WorkflowInput } from "../../src/xstate.ts";
 
 /**
@@ -40,12 +40,8 @@ export const PromptStepMachine = setup({
 }).createMachine({
   id: "prompt-step",
   context: ({ input, self }) => ({
-    checklist: [],
-    loggedLast: false,
-    systemPrompt: "",
-    dryRun: input.dryRun,
+    ...contextFromInput(input),
     promptText: input.promptText,
-    rootRef: input.rootRef || self,
   }),
   initial: "running",
   states: {

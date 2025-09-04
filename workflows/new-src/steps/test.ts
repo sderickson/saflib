@@ -10,6 +10,7 @@ import path from "node:path";
 import { doesTestPass } from "../../src/xstate.ts";
 import { logInfo, logError, promptAgent } from "../../src/xstate.ts";
 import { raise } from "xstate";
+import { contextFromInput } from "../../src/workflow.ts";
 
 interface TestMachineInput extends WorkflowInput {
   fileId?: string;
@@ -35,13 +36,8 @@ export const TestStepMachine = setup({
   id: "test-step",
   context: ({ input, self }) => {
     return {
-      checklist: [],
-      loggedLast: false,
-      systemPrompt: "",
-      dryRun: input.dryRun,
-      rootRef: input.rootRef || self,
+      ...contextFromInput(input),
       fileId: input.fileId,
-      copiedFiles: input.copiedFiles || {},
     };
   },
   initial: "test",
