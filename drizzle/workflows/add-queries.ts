@@ -3,6 +3,7 @@ import {
   UpdateStepMachine,
   PromptStepMachine,
   TestStepMachine,
+  DocStepMachine,
   makeWorkflowMachine,
   step,
   XStateWorkflow,
@@ -125,10 +126,8 @@ export const AddQueriesWorkflowMachine = makeWorkflowMachine<
         3. Add your errors to the existing one (beside the \`package.json\` file)`,
     })),
 
-    step(PromptStepMachine, ({ context }) => ({
-      promptText: `Review the guidelines for implementing database queries. 
-      
-      ${context.refDoc}`,
+    step(DocStepMachine, () => ({
+      docId: "refDoc",
     })),
 
     step(UpdateStepMachine, ({ context }) => ({
@@ -136,10 +135,8 @@ export const AddQueriesWorkflowMachine = makeWorkflowMachine<
       promptMessage: `Implement the \`${context.camelName}\` query following the documentation guidelines.`,
     })),
 
-    step(PromptStepMachine, ({ context }) => ({
-      promptText: `Review the guidelines for writing tests for database queries.
-      
-      ${context.testingGuide}`,
+    step(DocStepMachine, () => ({
+      docId: "testingGuide",
     })),
 
     step(UpdateStepMachine, ({ context }) => ({
