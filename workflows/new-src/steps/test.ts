@@ -110,10 +110,20 @@ export const TestStepMachine = setup({
     },
   },
   output: ({ context }) => {
+    if (!context.fileId) {
+      return {
+        checklist: [
+          {
+            description: `Run tests in the package, make sure they all pass.`,
+          },
+        ],
+      };
+    }
+    const fullPath = context.copiedFiles![context.fileId || ""];
     return {
       checklist: [
         {
-          description: `Run test ${path.basename(context.fileId || "")}, make sure it passes.`,
+          description: `Run **${path.basename(fullPath)}**, make sure it passes.`,
         },
       ],
     };

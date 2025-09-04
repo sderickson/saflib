@@ -86,11 +86,16 @@ export const UpdateStepMachine = setup({
             actions: [
               assign({
                 checklist: ({ context }) => {
-                  const filePathStr = path.basename(context.filePath);
+                  // const filePathStr = path.basename(context.filePath);
+                  const promptMessage =
+                    typeof context.promptMessage === "string"
+                      ? context.promptMessage
+                      : context.promptMessage(context);
                   return [
                     ...context.checklist,
                     {
-                      description: `Update ${filePathStr} to remove TODOs`,
+                      // description: `Update ${filePathStr} to remove TODOs`,
+                      description: promptMessage.split("\n")[0],
                     },
                   ];
                 },
@@ -106,11 +111,7 @@ export const UpdateStepMachine = setup({
   },
   output: ({ context }) => {
     return {
-      checklist: [
-        {
-          description: `Update ${path.basename(context.filePath)} to remove TODOs`,
-        },
-      ],
+      checklist: context.checklist,
     };
   },
 });

@@ -61,12 +61,16 @@ export const AddSpaPageWorkflowMachine = makeWorkflowMachine<
 
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "loader",
-      promptMessage: `Please update the loader method in ${path.basename(context.copiedFiles!.loader)} to return any necessary Tanstack queries for rendering the page.`,
+      promptMessage: `Update **${path.basename(context.copiedFiles!.loader)}**: return Tanstack queries needed to render the page.`,
     })),
 
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "vue",
-      promptMessage: `Please update ${path.basename(context.copiedFiles!.vue)} to take the data from the loader, assert that it's loaded, then render sample the data using Vuetify components. Don't create the UX just yet; focus on making sure the data is loading properly. Do not add any sort of loading state or skeleton; that's the job of the "Async" component.`,
+      promptMessage: `Update **${path.basename(context.copiedFiles!.vue)}**: take the data from the loader, assert that it's loaded, and render sample data.
+      
+      Other notes:
+      * Don't create the UX just yet; focus on making sure the data is loading properly.
+      * Do not add any sort of loading state or skeleton; that's the job of the "Async" component.`,
     })),
 
     step(PromptStepMachine, () => ({
@@ -74,12 +78,15 @@ export const AddSpaPageWorkflowMachine = makeWorkflowMachine<
     })),
 
     step(PromptStepMachine, ({ context }) => ({
-      promptText: `Please update the router.ts file to include the new page. Add a new route for ${context.name} that uses ${path.basename(context.copiedFiles!.async)}. Use the link from the shared links package instead of hardcoding the path.`,
+      promptText: `Update the new page to **router.ts**.
+      
+      * Use ${path.basename(context.copiedFiles!.async)}.
+      * Use the link from the shared links package instead of hardcoding the path.`,
     })),
 
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "test",
-      promptMessage: `Please update ${path.basename(context.copiedFiles!.test)} to mock the server requests and verify that the raw data from the loader is rendered correctly.`,
+      promptMessage: `Update **${path.basename(context.copiedFiles!.test)}**: test that the page renders.`,
     })),
 
     step(TestStepMachine, () => ({
@@ -88,21 +95,28 @@ export const AddSpaPageWorkflowMachine = makeWorkflowMachine<
 
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "strings",
-      promptMessage: `Please update ${path.basename(context.copiedFiles!.strings)} to include all text from the design. Use string keys that will work well with the translation system (e.g., 'title', 'subtitle', 'description', etc.).`,
+      promptMessage: `Update **${path.basename(context.copiedFiles!.strings)}**: include all text from the design.
+      
+      Use string keys that will work well with the translation system (e.g., 'title', 'subtitle', 'description', etc.).`,
     })),
 
     step(PromptStepMachine, () => ({
-      promptText: `Find the strings.ts file in the root of the package. Add the strings from the file you just updated there.`,
+      promptText: `Add those strings to the **strings.ts** file in the root of the package.`,
     })),
 
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "vue",
-      promptMessage: `Please update ${path.basename(context.copiedFiles!.vue)} to match the design and use the translation system. Import and use the "useReverseT" function from the i18n.ts file at the root of the package, and use t(strings.key) instead of strings.key for all text. Use Vuetify components and variables instead of custom styles, even if it means the design isn't pixel-perfect. Do NOT set any style tags.`,
+      promptMessage: `Update **${path.basename(context.copiedFiles!.vue)}** to match the design and use the translation system.
+      
+      Import and use the "useReverseT" function from the i18n.ts file at the root of the package, and use t(strings.key) instead of strings.key for all text. Use Vuetify components and variables instead of custom styles, even if it means the design isn't pixel-perfect. Do NOT set any style tags.`,
     })),
 
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "test",
-      promptMessage: `Please update ${path.basename(context.copiedFiles!.test)} to verify that the page renders correctly with the new design and translation system. Update the helper methods to locate actual key elements of the page, then update the one test to check that they all exist and have the right text. Only use "getElementByString" to locate elements, using the strings from the strings file as the argument.`,
+      promptMessage: `Update **${path.basename(context.copiedFiles!.test)}** to verify that the page renders correctly with the new design and translation system.
+      
+      * Update the helper methods to locate actual key elements of the page, then update the one test to check that they all exist and have the right text.
+      * Only use "getElementByString" to locate elements, using the strings from the strings file as the argument.`,
     })),
 
     step(TestStepMachine, () => ({
