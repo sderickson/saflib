@@ -35,14 +35,18 @@ export const continueWorkflow = (actor: AnyActor) => {
   );
 };
 
-export const printChecklistRecursively = (
+export const checklistToString = (
   checklist: ChecklistItem[],
   prefix = "",
-) => {
-  checklist.forEach((item) => {
-    console.log(`${prefix}* ${item.description}`);
-    if (item.subitems) {
-      printChecklistRecursively(item.subitems, `${prefix}  `);
-    }
-  });
+): string => {
+  return checklist
+    .map((item) => {
+      const lines = [`${prefix}* ${item.description}`];
+      if (item.subitems) {
+        lines.push(checklistToString(item.subitems, `${prefix}  `));
+      }
+      return lines;
+    })
+    .flat()
+    .join("\n");
 };

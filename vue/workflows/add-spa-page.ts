@@ -9,6 +9,8 @@ import {
 } from "@saflib/workflows";
 import path from "node:path";
 
+const sourceDir = path.join(import.meta.dirname, "page-template");
+
 const input = [
   {
     name: "name",
@@ -16,8 +18,6 @@ const input = [
     exampleValue: "example-page",
   },
 ] as const;
-
-const sourceDir = path.join(import.meta.dirname, "page-template");
 
 interface AddSpaPageWorkflowContext {
   name: string;

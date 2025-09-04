@@ -1,5 +1,5 @@
 import type { Command } from "commander";
-import { printChecklistRecursively } from "../utils.ts";
+import { checklistToString } from "../utils.ts";
 import { XStateWorkflow, type ConcreteWorkflow } from "../workflow.ts";
 import { addNewLinesToString } from "@saflib/utils";
 
@@ -54,5 +54,5 @@ export const printChecklist = async (Workflow: ConcreteWorkflow) => {
     lastStateName = currentStateName;
   }
 
-  printChecklistRecursively(workflow.getChecklist());
+  console.log(checklistToString(workflow.getChecklist()));
 };

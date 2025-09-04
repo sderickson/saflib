@@ -1,11 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { AddSpaPageWorkflowMachine } from "./add-spa-page.ts";
 import { createActor, waitFor } from "xstate";
-import {
-  allSettled,
-  continueWorkflow,
-  printChecklistRecursively,
-} from "../../workflows/src/utils.ts";
+import { allSettled, continueWorkflow } from "../../workflows/src/utils.ts";
 
 describe("add-spa-page", () => {
   it("should create a new page", async () => {
@@ -28,6 +24,5 @@ describe("add-spa-page", () => {
       lastStateName = currentStateName;
     }
     expect(actor.getSnapshot().status).toBe("done");
-    printChecklistRecursively(actor.getSnapshot().output!.checklist || []);
   });
 });
