@@ -1,48 +1,46 @@
-import { setup } from "xstate";
 import {
-  workflowActions,
-  workflowActors,
-  logInfo,
+  CopyTemplateMachine,
+  UpdateStepMachine,
+  PromptStepMachine,
+  makeWorkflowMachine,
+  step,
   XStateWorkflow,
-  copyTemplateStateComposer,
-  updateTemplateComposer,
-  promptAgentComposer,
-  type TemplateWorkflowContext,
-  contextFromInput,
-  type WorkflowInput,
-  outputFromContext,
 } from "@saflib/workflows";
 import path, { dirname } from "node:path";
-import { fileURLToPath } from "node:url";
 import { kebabCaseToPascalCase } from "@saflib/utils";
 
-interface AddCommandWorkflowInput extends WorkflowInput {
-  path: string;
-}
+const sourceDir = path.join(import.meta.dirname, "add-command");
 
-interface AddCommandWorkflowContext extends TemplateWorkflowContext {
+const input = [
+  {
+    name: "path",
+    description:
+      "Relative path to the new command file, e.g. bin/cli-name/command-name.ts",
+    exampleValue: "bin/example-cli/example-command.ts",
+  },
+] as const;
+
+interface AddCommandWorkflowContext {
+  name: string;
+  pascalName: string;
   cliName: string;
   commandFunctionName: string;
+  targetDir: string;
   commandFilePath: string;
 }
 
-export const AddCommandWorkflowMachine = setup({
-  types: {
-    input: {} as AddCommandWorkflowInput,
-    context: {} as AddCommandWorkflowContext,
-  },
-  actions: workflowActions,
-  actors: workflowActors,
-}).createMachine({
+export const AddCommandWorkflowMachine = makeWorkflowMachine<
+  AddCommandWorkflowContext,
+  typeof input
+>({
   id: "add-command",
 
-  initial: "copyTemplate",
+  description:
+    "Creates a new CLI command and adds it to an existing Commander.js CLI",
+
+  input,
 
   context: ({ input }) => {
-    const __filename = fileURLToPath(import.meta.url);
-    const __dirname = path.dirname(__filename);
-    const sourceDir = path.join(__dirname, "add-command");
-
     // validate inputs
     const parts = input.path
       .split("/")
@@ -68,67 +66,53 @@ export const AddCommandWorkflowMachine = setup({
       pascalName: kebabCaseToPascalCase(commandName),
       cliName,
       commandFunctionName,
-      sourceDir,
       targetDir,
       commandFilePath,
-      ...contextFromInput(input),
     };
   },
 
-  entry: logInfo("Successfully began add-command workflow"),
+  templateFiles: {
+    command: path.join(sourceDir, "command.ts"),
+  },
 
-  states: {
-    ...copyTemplateStateComposer({
-      stateName: "copyTemplate",
-      nextStateName: "updateTemplate",
-    }),
+  docFiles: {},
 
-    ...updateTemplateComposer<AddCommandWorkflowContext>({
-      stateName: "updateTemplate",
-      nextStateName: "addToIndex",
-      filePath: (context) => context.commandFilePath,
-      promptMessage: (context) =>
-        `Please update ${context.commandFilePath}, resolving any TODOs.`,
-    }),
+  steps: [
+    step(CopyTemplateMachine, ({ context }) => ({
+      name: context.name,
+      targetDir: context.targetDir,
+    })),
 
-    ...promptAgentComposer<AddCommandWorkflowContext>({
-      stateName: "addToIndex",
-      nextStateName: "testCommand",
-      promptForContext: ({ context }) =>
-        `Add the new command to the adjacent index.ts file.
+    step(UpdateStepMachine, ({ context }) => ({
+      fileId: "command",
+      promptMessage: `Update **${path.basename(context.copiedFiles!.command)}**, resolving any TODOs.`,
+    })),
+
+    step(PromptStepMachine, ({ context }) => ({
+      promptText: `Add the new command to the adjacent index.ts file.
       
       Import the command function:
       import { ${context.commandFunctionName} } from "./${context.name}.ts";
       
       Add it to the program before \`program.parse\` is called:
       ${context.commandFunctionName}(program);`,
-    }),
+    })),
 
-    ...promptAgentComposer<AddCommandWorkflowContext>({
-      stateName: "testCommand",
-      nextStateName: "done",
-      promptForContext: ({ context }) =>
-        `Test the new command.
+    step(PromptStepMachine, ({ context }) => ({
+      promptText: `Test the new command.
 
       Run the following command:
       
       npm exec ${context.cliName} ${context.name}
       
       The command should display help information without errors.`,
-    }),
-
-    done: {
-      type: "final",
-    },
-  },
-  output: outputFromContext,
+    })),
+  ],
 });
 
 export class AddCommandWorkflow extends XStateWorkflow {
   machine = AddCommandWorkflowMachine;
-  description =
-    "Creates a new CLI command and adds it to an existing Commander.js CLI";
-
+  description = AddCommandWorkflowMachine.definition.description || "";
   cliArguments = [
     {
       name: "path",
