@@ -10,12 +10,6 @@ export const getCurrentPackage = () => {
   return JSON.parse(currentPackage).name;
 };
 
-export const directoryFromMetaUrl = (metaUrl: string) => {
-  const __filename = fileURLToPath(metaUrl);
-  const __dirname = path.dirname(__filename);
-  return __dirname;
-};
-
 export const getSaflibAbsoluteDir = () => {
   let currentDir = process.cwd();
   while (currentDir !== "/") {

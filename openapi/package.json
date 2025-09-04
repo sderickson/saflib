@@ -7,11 +7,17 @@
     ".": "./index.ts",
     "./workflows": "./workflows/index.ts"
   },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
+  },
   "bin": {
     "saf-specs": "./bin/saf-specs/index.ts"
   },
   "devDependencies": {
     "@redocly/cli": "^1.0.0",
+    "@saflib/vitest": "*",
     "openapi-typescript": "^7.0.0",
     "serve": "^14.0.0"
   }
