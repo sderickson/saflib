@@ -22,11 +22,9 @@ const input = [
 
 interface AddCommandWorkflowContext {
   name: string;
-  pascalName: string;
   cliName: string;
   commandFunctionName: string;
   targetDir: string;
-  commandFilePath: string;
 }
 
 export const AddCommandWorkflowMachine = makeWorkflowMachine<
@@ -56,18 +54,15 @@ export const AddCommandWorkflowMachine = makeWorkflowMachine<
     }
 
     const targetDir = dirname(input.path);
-    const commandFilePath = input.path;
     const cliName = parts[1];
     const commandName = parts[parts.length - 1].replace(".ts", "");
     const commandFunctionName = `add${kebabCaseToPascalCase(commandName)}Command`;
 
     return {
       name: commandName,
-      pascalName: kebabCaseToPascalCase(commandName),
       cliName,
       commandFunctionName,
       targetDir,
-      commandFilePath,
     };
   },
 
