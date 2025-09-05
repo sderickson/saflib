@@ -2,9 +2,8 @@ import {
   CopyStepMachine,
   UpdateStepMachine,
   CommandStepMachine,
-  makeWorkflowMachine,
+  defineWorkflow,
   step,
-  XStateWorkflowRunner,
 } from "@saflib/workflows";
 import path from "node:path";
 
@@ -24,15 +23,17 @@ interface AddEmailTemplateWorkflowContext {
   targetFilePath: string;
 }
 
-export const AddEmailTemplateWorkflowMachine = makeWorkflowMachine<
-  AddEmailTemplateWorkflowContext,
-  typeof input
+export const AddEmailTemplateWorkflowDefinition = defineWorkflow<
+  typeof input,
+  AddEmailTemplateWorkflowContext
 >({
   id: "add-email-template",
 
   description: "Add email template infrastructure and templates to a project.",
 
   input,
+
+  sourceUrl: import.meta.url,
 
   context: ({ input }) => {
     const targetFilePath = path
@@ -77,10 +78,3 @@ export const AddEmailTemplateWorkflowMachine = makeWorkflowMachine<
     })),
   ],
 });
-
-export class AddEmailTemplateWorkflow extends XStateWorkflowRunner {
-  machine = AddEmailTemplateWorkflowMachine;
-  description = "Add email template infrastructure and templates to a project.";
-  cliArguments = input;
-  sourceUrl = import.meta.url;
-}

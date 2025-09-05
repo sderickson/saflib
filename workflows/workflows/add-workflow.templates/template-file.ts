@@ -3,7 +3,7 @@ import {
   UpdateStepMachine,
   PromptStepMachine,
   TestStepMachine,
-  makeWorkflowMachine,
+  defineWorkflow,
   step,
 } from "@saflib/workflows";
 import path from "node:path";
@@ -29,9 +29,9 @@ interface TemplateFileWorkflowContext {
   exampleProperty: string;
 }
 
-export const TemplateFileWorkflowMachine = makeWorkflowMachine<
-  TemplateFileWorkflowContext,
-  typeof input
+export const TemplateFileWorkflowDefinition = defineWorkflow<
+  typeof input,
+  TemplateFileWorkflowContext
 >({
   id: "template-file",
 
@@ -95,10 +95,3 @@ export const TemplateFileWorkflowMachine = makeWorkflowMachine<
     })),
   ],
 });
-
-// export class TemplateFileWorkflow extends XStateWorkflowRunner {
-//   machine = TemplateFileWorkflowMachine;
-//   description = TemplateFileWorkflowMachine.definition.description || "";
-//   cliArguments = input;
-//   sourceUrl = import.meta.url;
-// }

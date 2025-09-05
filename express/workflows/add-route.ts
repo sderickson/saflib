@@ -4,9 +4,8 @@ import {
   PromptStepMachine,
   TestStepMachine,
   DocStepMachine,
-  makeWorkflowMachine,
+  defineWorkflow,
   step,
-  XStateWorkflowRunner,
 } from "@saflib/workflows";
 import path from "node:path";
 import { kebabCaseToPascalCase, kebabCaseToCamelCase } from "@saflib/utils";
@@ -32,15 +31,17 @@ interface AddRouteWorkflowContext {
   appPath: string; // e.g. "/app.ts"
 }
 
-export const AddRouteWorkflowMachine = makeWorkflowMachine<
-  AddRouteWorkflowContext,
-  typeof input
+export const AddRouteWorkflowDefinition = defineWorkflow<
+  typeof input,
+  AddRouteWorkflowContext
 >({
   id: "add-route",
 
   description: "Add a new route to an Express.js service.",
 
   input,
+
+  sourceUrl: import.meta.url,
 
   context: ({ input }) => {
     const targetDir = path.dirname(path.join(process.cwd(), input.path));
@@ -132,10 +133,3 @@ export const AddRouteWorkflowMachine = makeWorkflowMachine<
     })),
   ],
 });
-
-export class AddRouteWorkflow extends XStateWorkflowRunner {
-  machine = AddRouteWorkflowMachine;
-  description = "Add a new route to an Express.js service.";
-  cliArguments = input;
-  sourceUrl = import.meta.url;
-}

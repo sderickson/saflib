@@ -1,6 +1,6 @@
-import type { ConcreteWorkflowRunner } from "@saflib/workflows";
-import { AddEnvVarWorkflow } from "./add-env-var.ts";
+import type { WorkflowDefinition } from "@saflib/workflows";
+import { AddEnvVarWorkflowDefinition } from "./add-env-var.ts";
 
-const workflowClasses: ConcreteWorkflowRunner[] = [AddEnvVarWorkflow];
+const workflowDefinitions: WorkflowDefinition[] = [AddEnvVarWorkflowDefinition];
 
-export default workflowClasses;
+export default workflowDefinitions;

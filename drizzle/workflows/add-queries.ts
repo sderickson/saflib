@@ -4,9 +4,8 @@ import {
   PromptStepMachine,
   TestStepMachine,
   DocStepMachine,
-  makeWorkflowMachine,
+  defineWorkflow,
   step,
-  XStateWorkflowRunner,
 } from "@saflib/workflows";
 import path from "node:path";
 
@@ -39,9 +38,9 @@ function toCamelCase(name: string) {
     .join("");
 }
 
-export const AddQueriesWorkflowMachine = makeWorkflowMachine<
-  AddQueriesWorkflowContext,
-  typeof input
+export const AddQueriesWorkflowDefinition = defineWorkflow<
+  typeof input,
+  AddQueriesWorkflowContext
 >({
   id: "add-queries",
 
@@ -49,6 +48,8 @@ export const AddQueriesWorkflowMachine = makeWorkflowMachine<
     "Add a new query to a database built off the drizzle-sqlite3 package.",
 
   input,
+
+  sourceUrl: import.meta.url,
 
   context: ({ input }) => {
     const targetDir = path.dirname(path.join(process.cwd(), input.path));
@@ -148,10 +149,3 @@ export const AddQueriesWorkflowMachine = makeWorkflowMachine<
     })),
   ],
 });
-
-export class AddQueriesWorkflow extends XStateWorkflowRunner {
-  machine = AddQueriesWorkflowMachine;
-  description = AddQueriesWorkflowMachine.definition.description || "";
-  cliArguments = input;
-  sourceUrl = import.meta.url;
-}

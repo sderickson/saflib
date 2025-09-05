@@ -2,9 +2,8 @@ import {
   CopyStepMachine,
   PromptStepMachine,
   CommandStepMachine,
-  makeWorkflowMachine,
+  defineWorkflow,
   step,
-  XStateWorkflowRunner,
   DocStepMachine,
 } from "@saflib/workflows";
 import path from "path";
@@ -27,15 +26,17 @@ interface SpecProjectWorkflowContext {
   safWorkflowHelpOutput: string;
 }
 
-export const SpecProjectWorkflowMachine = makeWorkflowMachine<
-  SpecProjectWorkflowContext,
-  typeof input
+export const SpecProjectWorkflowDefinition = defineWorkflow<
+  typeof input,
+  SpecProjectWorkflowContext
 >({
   id: "spec-project",
 
   description: "Write a product/technical specification for a project.",
 
   input,
+
+  sourceUrl: import.meta.url,
 
   context: ({ input }) => {
     const date = new Date().toISOString().split("T")[0];
@@ -99,10 +100,3 @@ export const SpecProjectWorkflowMachine = makeWorkflowMachine<
     })),
   ],
 });
-
-export class SpecProjectWorkflow extends XStateWorkflowRunner {
-  machine = SpecProjectWorkflowMachine;
-  description = SpecProjectWorkflowMachine.definition.description || "";
-  cliArguments = input;
-  sourceUrl = import.meta.url;
-}

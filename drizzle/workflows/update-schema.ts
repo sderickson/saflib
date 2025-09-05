@@ -2,9 +2,8 @@ import {
   PromptStepMachine,
   CommandStepMachine,
   DocStepMachine,
-  makeWorkflowMachine,
+  defineWorkflow,
   step,
-  XStateWorkflowRunner,
 } from "@saflib/workflows";
 import path from "path";
 
@@ -12,15 +11,17 @@ const input = [] as const;
 
 interface UpdateSchemaWorkflowContext {}
 
-export const UpdateSchemaWorkflowMachine = makeWorkflowMachine<
-  UpdateSchemaWorkflowContext,
-  typeof input
+export const UpdateSchemaWorkflowDefinition = defineWorkflow<
+  typeof input,
+  UpdateSchemaWorkflowContext
 >({
   id: "update-schema",
 
   description: "Update a drizzle/sqlite3 schema.",
 
   input,
+
+  sourceUrl: import.meta.url,
 
   context: () => ({}),
 
@@ -49,10 +50,3 @@ export const UpdateSchemaWorkflowMachine = makeWorkflowMachine<
     })),
   ],
 });
-
-export class UpdateSchemaWorkflow extends XStateWorkflowRunner {
-  machine = UpdateSchemaWorkflowMachine;
-  description = "Update a drizzle/sqlite3 schema.";
-  cliArguments = input;
-  sourceUrl = import.meta.url;
-}

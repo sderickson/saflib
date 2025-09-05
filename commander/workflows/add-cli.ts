@@ -3,9 +3,8 @@ import {
   UpdateStepMachine,
   PromptStepMachine,
   CommandStepMachine,
-  makeWorkflowMachine,
+  defineWorkflow,
   step,
-  XStateWorkflowRunner,
 } from "@saflib/workflows";
 import path from "node:path";
 
@@ -27,9 +26,9 @@ interface AddCLIWorkflowContext {
   indexFilePath: string;
 }
 
-export const AddCLIWorkflowMachine = makeWorkflowMachine<
-  AddCLIWorkflowContext,
-  typeof input
+export const AddCLIWorkflowDefinition = defineWorkflow<
+  typeof input,
+  AddCLIWorkflowContext
 >({
   id: "add-cli",
 
@@ -37,6 +36,8 @@ export const AddCLIWorkflowMachine = makeWorkflowMachine<
     "Creates a new CLI with Commander.js, accessible through npm exec",
 
   input,
+
+  sourceUrl: import.meta.url,
 
   context: ({ input }) => {
     // The target directory will be bin/{input.name}
@@ -95,10 +96,3 @@ export const AddCLIWorkflowMachine = makeWorkflowMachine<
     })),
   ],
 });
-
-export class AddCLIWorkflow extends XStateWorkflowRunner {
-  machine = AddCLIWorkflowMachine;
-  description = AddCLIWorkflowMachine.definition.description || "";
-  cliArguments = input;
-  sourceUrl = import.meta.url;
-}

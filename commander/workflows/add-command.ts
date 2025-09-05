@@ -2,9 +2,8 @@ import {
   CopyStepMachine,
   UpdateStepMachine,
   PromptStepMachine,
-  makeWorkflowMachine,
+  defineWorkflow,
   step,
-  XStateWorkflowRunner,
 } from "@saflib/workflows";
 import path, { dirname } from "node:path";
 import { kebabCaseToPascalCase } from "@saflib/utils";
@@ -27,9 +26,9 @@ interface AddCommandWorkflowContext {
   targetDir: string;
 }
 
-export const AddCommandWorkflowMachine = makeWorkflowMachine<
-  AddCommandWorkflowContext,
-  typeof input
+export const AddCommandWorkflowDefinition = defineWorkflow<
+  typeof input,
+  AddCommandWorkflowContext
 >({
   id: "add-command",
 
@@ -37,6 +36,8 @@ export const AddCommandWorkflowMachine = makeWorkflowMachine<
     "Creates a new CLI command and adds it to an existing Commander.js CLI",
 
   input,
+
+  sourceUrl: import.meta.url,
 
   context: ({ input }) => {
     // validate inputs
@@ -104,10 +105,3 @@ export const AddCommandWorkflowMachine = makeWorkflowMachine<
     })),
   ],
 });
-
-export class AddCommandWorkflow extends XStateWorkflowRunner {
-  machine = AddCommandWorkflowMachine;
-  description = AddCommandWorkflowMachine.definition.description || "";
-  cliArguments = input;
-  sourceUrl = import.meta.url;
-}

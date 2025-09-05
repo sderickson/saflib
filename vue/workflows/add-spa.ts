@@ -1,9 +1,8 @@
 import {
   CopyStepMachine,
   PromptStepMachine,
-  makeWorkflowMachine,
+  defineWorkflow,
   step,
-  XStateWorkflowRunner,
 } from "@saflib/workflows";
 import path from "node:path";
 import { readFileSync } from "node:fs";
@@ -25,9 +24,9 @@ interface AddSpaWorkflowContext {
   packageName: string;
 }
 
-export const AddSpaWorkflowMachine = makeWorkflowMachine<
-  AddSpaWorkflowContext,
-  typeof input
+export const AddSpaWorkflowDefinition = defineWorkflow<
+  typeof input,
+  AddSpaWorkflowContext
 >({
   id: "add-spa",
 
@@ -35,6 +34,8 @@ export const AddSpaWorkflowMachine = makeWorkflowMachine<
     "Create a new SAF-powered frontend SPA using Vue, Vue-Router, and Tanstack Query",
 
   input,
+
+  sourceUrl: import.meta.url,
 
   context: ({ input }) => {
     const thisPackagePath = path.join(process.cwd(), "package.json");
@@ -94,11 +95,3 @@ export const AddSpaWorkflowMachine = makeWorkflowMachine<
     })),
   ],
 });
-
-export class AddSpaWorkflow extends XStateWorkflowRunner {
-  machine = AddSpaWorkflowMachine;
-  description =
-    "Create a new SAF-powered frontend SPA using Vue, Vue-Router, and Tanstack Query";
-  cliArguments = input;
-  sourceUrl = import.meta.url;
-}

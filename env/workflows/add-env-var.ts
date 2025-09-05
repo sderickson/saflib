@@ -2,9 +2,8 @@ import {
   CopyStepMachine,
   UpdateStepMachine,
   CommandStepMachine,
-  makeWorkflowMachine,
+  defineWorkflow,
   step,
-  XStateWorkflowRunner,
 } from "@saflib/workflows";
 import path from "node:path";
 
@@ -24,9 +23,9 @@ interface AddEnvVarWorkflowContext {
   variableName: string;
 }
 
-export const AddEnvVarWorkflowMachine = makeWorkflowMachine<
-  AddEnvVarWorkflowContext,
-  typeof input
+export const AddEnvVarWorkflowDefinition = defineWorkflow<
+  typeof input,
+  AddEnvVarWorkflowContext
 >({
   id: "add-env-var",
 
@@ -34,6 +33,8 @@ export const AddEnvVarWorkflowMachine = makeWorkflowMachine<
     "Add a new environment variable to the schema and generate the corresponding TypeScript types",
 
   input,
+
+  sourceUrl: import.meta.url,
 
   context: ({ input }) => {
     const variableName = input.name.toUpperCase();
@@ -79,11 +80,3 @@ export const AddEnvVarWorkflowMachine = makeWorkflowMachine<
     })),
   ],
 });
-
-export class AddEnvVarWorkflow extends XStateWorkflowRunner {
-  sourceUrl = import.meta.url;
-  machine = AddEnvVarWorkflowMachine;
-  description =
-    "Add a new environment variable to the schema and generate the corresponding TypeScript types";
-  cliArguments = input;
-}

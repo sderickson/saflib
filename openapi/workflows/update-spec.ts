@@ -2,9 +2,8 @@ import {
   PromptStepMachine,
   CommandStepMachine,
   DocStepMachine,
-  makeWorkflowMachine,
+  defineWorkflow,
   step,
-  XStateWorkflowRunner,
 } from "@saflib/workflows";
 import { resolve } from "path";
 
@@ -12,15 +11,17 @@ const input = [] as const;
 
 interface UpdateSpecWorkflowContext {}
 
-export const UpdateSpecWorkflowMachine = makeWorkflowMachine<
-  UpdateSpecWorkflowContext,
-  typeof input
+export const UpdateSpecWorkflowDefinition = defineWorkflow<
+  typeof input,
+  UpdateSpecWorkflowContext
 >({
   id: "update-spec",
 
   description: "Update the OpenAPI spec for the project.",
 
   input,
+
+  sourceUrl: import.meta.url,
 
   context: () => ({}),
 
@@ -66,10 +67,3 @@ export const UpdateSpecWorkflowMachine = makeWorkflowMachine<
     })),
   ],
 });
-
-export class UpdateSpecWorkflow extends XStateWorkflowRunner {
-  machine = UpdateSpecWorkflowMachine;
-  description = "Update the OpenAPI spec for the project.";
-  cliArguments = input;
-  sourceUrl = import.meta.url;
-}

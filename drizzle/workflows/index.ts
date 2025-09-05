@@ -1,10 +1,10 @@
-import { AddQueriesWorkflow } from "./add-queries.ts";
-import { UpdateSchemaWorkflow } from "./update-schema.ts";
-import type { ConcreteWorkflowRunner } from "@saflib/workflows";
+import { AddQueriesWorkflowDefinition } from "./add-queries.ts";
+import { UpdateSchemaWorkflowDefinition } from "./update-schema.ts";
+import type { WorkflowDefinition } from "@saflib/workflows";
 
-const workflowClasses: ConcreteWorkflowRunner[] = [
-  UpdateSchemaWorkflow,
-  AddQueriesWorkflow,
+const workflowDefinitions: WorkflowDefinition[] = [
+  UpdateSchemaWorkflowDefinition,
+  AddQueriesWorkflowDefinition,
 ];
 
-export default workflowClasses;
+export default workflowDefinitions;

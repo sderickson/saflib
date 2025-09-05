@@ -3,9 +3,8 @@ import {
   UpdateStepMachine,
   PromptStepMachine,
   CommandStepMachine,
-  makeWorkflowMachine,
+  defineWorkflow,
   step,
-  XStateWorkflowRunner,
   TestStepMachine,
 } from "@saflib/workflows";
 import path from "node:path";
@@ -35,9 +34,9 @@ interface AddTsPackageWorkflowContext {
   path: string; // Relative path from monorepo root
 }
 
-export const AddTsPackageWorkflowMachine = makeWorkflowMachine<
-  AddTsPackageWorkflowContext,
-  typeof input
+export const AddTsPackageWorkflowDefinition = defineWorkflow<
+  typeof input,
+  AddTsPackageWorkflowContext
 >({
   id: "add-ts-package",
 
@@ -45,6 +44,8 @@ export const AddTsPackageWorkflowMachine = makeWorkflowMachine<
     "Creates a new TypeScript package according to monorepo best practices.",
 
   input,
+
+  sourceUrl: import.meta.url,
 
   context: ({ input }) => {
     const targetDir = path.join(process.cwd(), input.path);
@@ -96,11 +97,3 @@ export const AddTsPackageWorkflowMachine = makeWorkflowMachine<
     })),
   ],
 });
-
-export class AddTsPackageWorkflow extends XStateWorkflowRunner {
-  machine = AddTsPackageWorkflowMachine;
-  description =
-    "Creates a new TypeScript package according to monorepo best practices.";
-  cliArguments = input;
-  sourceUrl = import.meta.url;
-}

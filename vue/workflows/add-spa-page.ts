@@ -2,10 +2,9 @@ import {
   CopyStepMachine,
   UpdateStepMachine,
   PromptStepMachine,
-  makeWorkflowMachine,
+  defineWorkflow,
   step,
   TestStepMachine,
-  XStateWorkflowRunner,
 } from "@saflib/workflows";
 import path from "node:path";
 
@@ -24,9 +23,9 @@ interface AddSpaPageWorkflowContext {
   targetDir: string;
 }
 
-export const AddSpaPageWorkflowMachine = makeWorkflowMachine<
-  AddSpaPageWorkflowContext,
-  typeof input
+export const AddSpaPageWorkflowDefinition = defineWorkflow<
+  typeof input,
+  AddSpaPageWorkflowContext
 >({
   id: "add-spa-page",
 
@@ -34,6 +33,8 @@ export const AddSpaPageWorkflowMachine = makeWorkflowMachine<
     "Create a new page in a SAF-powered Vue SPA, using a template and renaming placeholders.",
 
   input,
+
+  sourceUrl: import.meta.url,
 
   context: ({ input }) => {
     const pageName = input.name.endsWith("-page")
@@ -126,10 +127,3 @@ export const AddSpaPageWorkflowMachine = makeWorkflowMachine<
     step(TestStepMachine, () => ({})),
   ],
 });
-
-export class AddSpaPageWorkflow extends XStateWorkflowRunner {
-  machine = AddSpaPageWorkflowMachine;
-  description = AddSpaPageWorkflowMachine.definition.description || "";
-  cliArguments = input;
-  sourceUrl = import.meta.url;
-}
