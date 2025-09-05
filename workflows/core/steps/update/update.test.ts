@@ -3,7 +3,7 @@ import { createActor, waitFor } from "xstate";
 import { UpdateStepMachine } from "./update-template-machine.ts";
 import path from "node:path";
 import { writeFileSync, unlinkSync, existsSync } from "node:fs";
-import { allSettled } from "../../utils.ts";
+import { workflowAllSettled } from "../../utils.ts";
 
 describe("updateTemplateFileFactory", () => {
   const testFilePath = path.join(process.cwd(), "test-file.txt");
@@ -32,10 +32,10 @@ describe("updateTemplateFileFactory", () => {
       },
     });
     actor.start();
-    await waitFor(actor, allSettled);
+    await waitFor(actor, workflowAllSettled);
     expect(actor.getSnapshot().value).toBe("update");
     actor.send({ type: "continue" });
-    await waitFor(actor, allSettled);
+    await waitFor(actor, workflowAllSettled);
     expect(actor.getSnapshot().value).toBe("done");
   });
 
@@ -63,7 +63,7 @@ describe("updateTemplateFileFactory", () => {
 
     expect(actor.getSnapshot().value).toBe("update");
     actor.send({ type: "continue" });
-    await waitFor(actor, allSettled);
+    await waitFor(actor, workflowAllSettled);
     expect(actor.getSnapshot().value).toBe("update");
   });
 });

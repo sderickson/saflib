@@ -7,11 +7,11 @@ import {
 } from "xstate";
 import type { ChecklistItem, WorkflowContext, WorkflowInput } from "./types.ts";
 
-export function allSettled(snapshot: AnyMachineSnapshot): boolean {
+export function workflowAllSettled(snapshot: AnyMachineSnapshot): boolean {
   if (snapshot.children) {
     const children = Object.values(snapshot.children) as AnyActor[];
     return children.every((child) => {
-      return allSettled(child.getSnapshot());
+      return workflowAllSettled(child.getSnapshot());
     });
   }
   return snapshot.status !== "active";

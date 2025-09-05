@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { AddTsPackageWorkflowMachine } from "./add-ts-package.ts";
 import { createActor, waitFor } from "xstate";
-import { allSettled, continueWorkflow } from "../../workflows/src/utils.ts";
+import { workflowAllSettled, continueWorkflow } from "@saflib/workflows";
 
 describe("add-ts-package", () => {
   it("should create a new TypeScript package", async () => {
@@ -13,11 +13,11 @@ describe("add-ts-package", () => {
       },
     });
     actor.start();
-    await waitFor(actor, allSettled);
+    await waitFor(actor, workflowAllSettled);
     let lastStateName = "";
     while (actor.getSnapshot().status !== "done") {
       continueWorkflow(actor);
-      await waitFor(actor, allSettled);
+      await waitFor(actor, workflowAllSettled);
       const currentStateName = actor.getSnapshot().value;
       if (currentStateName === lastStateName) {
         throw new Error(`Workflow is stuck on state ${currentStateName}.`);

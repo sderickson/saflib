@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { AddRouteWorkflowMachine } from "./add-route.ts";
 import { createActor, waitFor } from "xstate";
-import { allSettled, continueWorkflow } from "../../workflows/src/utils.ts";
+import { workflowAllSettled, continueWorkflow } from "@saflib/workflows";
 
 describe("add-route", () => {
   it("should create a new route", async () => {
@@ -12,11 +12,11 @@ describe("add-route", () => {
       },
     });
     actor.start();
-    await waitFor(actor, allSettled);
+    await waitFor(actor, workflowAllSettled);
     let lastStateName = "";
     while (actor.getSnapshot().status !== "done") {
       continueWorkflow(actor);
-      await waitFor(actor, allSettled);
+      await waitFor(actor, workflowAllSettled);
       const currentStateName = actor.getSnapshot().value;
       if (currentStateName === lastStateName) {
         throw new Error(`Workflow is stuck on state ${currentStateName}.`);

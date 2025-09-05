@@ -1,5 +1,5 @@
 import { Command } from "commander";
-import type { ConcreteWorkflowRunner } from "@saflib/workflows";
+import type { ConcreteWorkflowRunner } from "./workflow.ts";
 import { addNewLinesToString } from "@saflib/utils";
 import { setupContext } from "@saflib/commander";
 import { addKickoffCommand } from "./kickoff.ts";
@@ -45,3 +45,8 @@ export function runWorkflowCli(workflows: ConcreteWorkflowRunner[]) {
     },
   );
 }
+
+export {
+  type ConcreteWorkflowRunner,
+  XStateWorkflowRunner,
+} from "./workflow.ts";

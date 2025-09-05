@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { createActor, waitFor } from "xstate";
 import { CopyStepMachine } from "./copy-template-machine.ts";
-import { allSettled } from "../../utils.ts";
+import { workflowAllSettled } from "../../utils.ts";
 import { mkdir, writeFile, rm, readFile } from "node:fs/promises";
 import path from "node:path";
 
@@ -56,7 +56,7 @@ export default {
     });
 
     actor.start();
-    await waitFor(actor, allSettled);
+    await waitFor(actor, workflowAllSettled);
 
     const snapshot = actor.getSnapshot();
     expect(snapshot.value).toBe("done");
@@ -93,7 +93,7 @@ export default {
     });
 
     actor.start();
-    await waitFor(actor, allSettled);
+    await waitFor(actor, workflowAllSettled);
 
     const snapshot = actor.getSnapshot();
     expect(snapshot.value).toBe("done");

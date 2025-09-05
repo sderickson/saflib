@@ -5,7 +5,7 @@ import { createActor, waitFor } from "xstate";
 import { getSafReporters } from "@saflib/node";
 import path from "node:path";
 import { existsSync, readFileSync } from "node:fs";
-import { allSettled, continueWorkflow } from "../core/utils.ts";
+import { workflowAllSettled, continueWorkflow } from "../core/utils.ts";
 import type { ReturnsError } from "@saflib/monorepo";
 
 // The following is TS magic to describe a class constructor that implements the Workflow class.
@@ -90,7 +90,7 @@ export abstract class XStateWorkflowRunner extends AbstractWorkflowRunner {
       console.log("Actor started with error", snapshot.error);
       return false;
     }
-    await waitFor(actor, allSettled);
+    await waitFor(actor, workflowAllSettled);
     const { log } = getSafReporters();
     log.info("");
     log.info("To continue, run 'npm exec saf-workflow next'");
@@ -103,7 +103,7 @@ export abstract class XStateWorkflowRunner extends AbstractWorkflowRunner {
       throw new Error("Workflow not started");
     }
     this.actor.send({ type: "prompt" });
-    await waitFor(this.actor, allSettled);
+    await waitFor(this.actor, workflowAllSettled);
   };
 
   goToNextStep = async (): Promise<void> => {
@@ -117,7 +117,7 @@ export abstract class XStateWorkflowRunner extends AbstractWorkflowRunner {
     }
 
     continueWorkflow(this.actor);
-    await waitFor(this.actor, allSettled);
+    await waitFor(this.actor, workflowAllSettled);
 
     if (this.actor.getSnapshot().status === "done") {
       log.info("\nThis workflow has been completed.\n");
