@@ -1,28 +1,10 @@
-import { describe, it, expect } from "vitest";
-import { AddCommandWorkflowMachine } from "./add-command.ts";
-import { createActor, waitFor } from "xstate";
-import { workflowAllSettled, continueWorkflow } from "@saflib/workflows";
+import { describe, expect, it } from "vitest";
+import { AddCommandWorkflow } from "./add-command.ts";
+import { dryRunWorkflow } from "@saflib/workflows";
 
 describe("add-command", () => {
-  it("should create a new command", async () => {
-    const actor = createActor(AddCommandWorkflowMachine, {
-      input: {
-        path: "bin/test-cli/test-command.ts",
-        dryRun: true,
-      },
-    });
-    actor.start();
-    await waitFor(actor, workflowAllSettled);
-    let lastStateName = "";
-    while (actor.getSnapshot().status !== "done") {
-      continueWorkflow(actor);
-      await waitFor(actor, workflowAllSettled);
-      const currentStateName = actor.getSnapshot().value;
-      if (currentStateName === lastStateName) {
-        throw new Error(`Workflow is stuck on state ${currentStateName}.`);
-      }
-      lastStateName = currentStateName;
-    }
-    expect(actor.getSnapshot().status).toBe("done");
+  it("should successfully dry run", async () => {
+    const result = await dryRunWorkflow(AddCommandWorkflow);
+    expect(result.checklist).toBeDefined();
   });
 });
