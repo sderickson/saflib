@@ -1,6 +1,6 @@
 [**@saflib/workflows**](../index.md)
 
-***
+---
 
 # Function: makeWorkflowMachine()
 
@@ -12,16 +12,16 @@ This basically translates my simplified and scoped workflow machine definition t
 
 ## Type Parameters
 
-| Type Parameter |
-| ------ |
-| `C` |
-| `I` *extends* readonly [`WorkflowArgument`](../interfaces/WorkflowArgument.md)[] |
+| Type Parameter                                                                   |
+| -------------------------------------------------------------------------------- |
+| `C`                                                                              |
+| `I` _extends_ readonly [`WorkflowArgument`](../interfaces/WorkflowArgument.md)[] |
 
 ## Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `config` | [`WorkflowDefinition`](../interfaces/WorkflowDefinition.md)\<`I`, `C`\> |
+| Parameter | Type                                                                    |
+| --------- | ----------------------------------------------------------------------- |
+| `config`  | [`WorkflowDefinition`](../interfaces/WorkflowDefinition.md)\<`I`, `C`\> |
 
 ## Returns
 

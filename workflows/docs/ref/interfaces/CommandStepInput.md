@@ -1,6 +1,6 @@
 [**@saflib/workflows**](../index.md)
 
-***
+---
 
 # Interface: CommandStepInput
 
@@ -14,7 +14,7 @@ Input for the CommandStepMachine. These arguments are passed to Node's [`spawn`]
 
 List of arguments to pass to the command.
 
-***
+---
 
 ### command
 

@@ -1,6 +1,6 @@
 [**@saflib/workflows**](../index.md)
 
-***
+---
 
 # Function: outputFromContext()
 
@@ -10,10 +10,10 @@ Helper function to create `WorkflowOutput` from `WorkflowContext`.
 
 ## Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `__namedParameters` | \{ `context`: `WorkflowContext`; \} |
-| `__namedParameters.context` | `WorkflowContext` |
+| Parameter                   | Type                                |
+| --------------------------- | ----------------------------------- |
+| `__namedParameters`         | \{ `context`: `WorkflowContext`; \} |
+| `__namedParameters.context` | `WorkflowContext`                   |
 
 ## Returns
 

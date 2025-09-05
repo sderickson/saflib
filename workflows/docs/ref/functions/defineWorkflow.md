@@ -1,6 +1,6 @@
 [**@saflib/workflows**](../index.md)
 
-***
+---
 
 # Function: defineWorkflow()
 
@@ -14,24 +14,24 @@ I'm keeping this separate just because it's good to have the type inference piec
 
 ## Type Parameters
 
-| Type Parameter | Default type |
-| ------ | ------ |
-| `I` *extends* readonly [`WorkflowArgument`](../interfaces/WorkflowArgument.md)[] | - |
-| `C` | `any` |
+| Type Parameter                                                                   | Default type |
+| -------------------------------------------------------------------------------- | ------------ |
+| `I` _extends_ readonly [`WorkflowArgument`](../interfaces/WorkflowArgument.md)[] | -            |
+| `C`                                                                              | `any`        |
 
 ## Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `config` | \{ `context`: (`arg`) => `C`; `description`: `string`; `docFiles`: `Record`\<`string`, `string`\>; `id`: `string`; `input`: `I`; `sourceUrl`: `string`; `steps`: [`WorkflowStep`](../type-aliases/WorkflowStep.md)\<`C`, `AnyStateMachine`\>[]; `templateFiles`: `Record`\<`string`, `string`\>; \} |
-| `config.context` | (`arg`) => `C` |
-| `config.description` | `string` |
-| `config.docFiles` | `Record`\<`string`, `string`\> |
-| `config.id` | `string` |
-| `config.input` | `I` |
-| `config.sourceUrl` | `string` |
-| `config.steps` | [`WorkflowStep`](../type-aliases/WorkflowStep.md)\<`C`, `AnyStateMachine`\>[] |
-| `config.templateFiles` | `Record`\<`string`, `string`\> |
+| Parameter              | Type                                                                                                                                                                                                                                                                                                |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `config`               | \{ `context`: (`arg`) => `C`; `description`: `string`; `docFiles`: `Record`\<`string`, `string`\>; `id`: `string`; `input`: `I`; `sourceUrl`: `string`; `steps`: [`WorkflowStep`](../type-aliases/WorkflowStep.md)\<`C`, `AnyStateMachine`\>[]; `templateFiles`: `Record`\<`string`, `string`\>; \} |
+| `config.context`       | (`arg`) => `C`                                                                                                                                                                                                                                                                                      |
+| `config.description`   | `string`                                                                                                                                                                                                                                                                                            |
+| `config.docFiles`      | `Record`\<`string`, `string`\>                                                                                                                                                                                                                                                                      |
+| `config.id`            | `string`                                                                                                                                                                                                                                                                                            |
+| `config.input`         | `I`                                                                                                                                                                                                                                                                                                 |
+| `config.sourceUrl`     | `string`                                                                                                                                                                                                                                                                                            |
+| `config.steps`         | [`WorkflowStep`](../type-aliases/WorkflowStep.md)\<`C`, `AnyStateMachine`\>[]                                                                                                                                                                                                                       |
+| `config.templateFiles` | `Record`\<`string`, `string`\>                                                                                                                                                                                                                                                                      |
 
 ## Returns
 

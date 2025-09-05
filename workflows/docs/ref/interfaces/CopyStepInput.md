@@ -1,6 +1,6 @@
 [**@saflib/workflows**](../index.md)
 
-***
+---
 
 # Interface: CopyStepInput
 
@@ -14,7 +14,7 @@ Input for the CopyStepMachine.
 
 kebab-case name of the thing being created from the template. Will be used to query replace instances of "template-file" and other variants like templateFile and template_file.
 
-***
+---
 
 ### targetDir
 

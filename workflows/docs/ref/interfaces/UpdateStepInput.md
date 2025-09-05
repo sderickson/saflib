@@ -1,6 +1,6 @@
 [**@saflib/workflows**](../index.md)
 
-***
+---
 
 # Interface: UpdateStepInput
 
@@ -14,7 +14,7 @@ Input for the UpdateStepMachine.
 
 The id of the file the user is expected to update. Must match one of the keys in the `templateFiles` property for the workflow.
 
-***
+---
 
 ### promptMessage
 

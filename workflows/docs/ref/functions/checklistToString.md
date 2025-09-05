@@ -1,6 +1,6 @@
 [**@saflib/workflows**](../index.md)
 
-***
+---
 
 # Function: checklistToString()
 
@@ -10,10 +10,10 @@ Convenience function to convert a checklist to a string. Checklist items are in 
 
 ## Parameters
 
-| Parameter | Type | Default value |
-| ------ | ------ | ------ |
-| `checklist` | `ChecklistItem`[] | `undefined` |
-| `prefix` | `string` | `""` |
+| Parameter   | Type              | Default value |
+| ----------- | ----------------- | ------------- |
+| `checklist` | `ChecklistItem`[] | `undefined`   |
+| `prefix`    | `string`          | `""`          |
 
 ## Returns
 

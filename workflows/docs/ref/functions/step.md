@@ -1,6 +1,6 @@
 [**@saflib/workflows**](../index.md)
 
-***
+---
 
 # Function: step()
 
@@ -10,17 +10,17 @@ Helper function for defining a step in a workflow, enforcing types properly.
 
 ## Type Parameters
 
-| Type Parameter |
-| ------ |
-| `C` |
-| `M` *extends* `AnyStateMachine` |
+| Type Parameter                  |
+| ------------------------------- |
+| `C`                             |
+| `M` _extends_ `AnyStateMachine` |
 
 ## Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `machine` | `M` |
-| `input` | (`arg`) => `InputFrom`\<`M`\> |
+| Parameter | Type                          |
+| --------- | ----------------------------- |
+| `machine` | `M`                           |
+| `input`   | (`arg`) => `InputFrom`\<`M`\> |
 
 ## Returns
 

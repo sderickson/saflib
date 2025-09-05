@@ -1,6 +1,6 @@
 [**@saflib/workflows**](../index.md)
 
-***
+---
 
 # Type Alias: WorkflowStep\<C, M\>
 
@@ -10,10 +10,10 @@ A step in a workflow with an actor and its corresponding input.
 
 ## Type Parameters
 
-| Type Parameter |
-| ------ |
-| `C` |
-| `M` *extends* `AnyStateMachine` |
+| Type Parameter                  |
+| ------------------------------- |
+| `C`                             |
+| `M` _extends_ `AnyStateMachine` |
 
 ## Properties
 
@@ -23,16 +23,16 @@ A step in a workflow with an actor and its corresponding input.
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `arg` | \{ `context`: `C` & `WorkflowContext`; \} |
-| `arg.context` | `C` & `WorkflowContext` |
+| Parameter     | Type                                      |
+| ------------- | ----------------------------------------- |
+| `arg`         | \{ `context`: `C` & `WorkflowContext`; \} |
+| `arg.context` | `C` & `WorkflowContext`                   |
 
 #### Returns
 
 `InputFrom`\<`M`\>
 
-***
+---
 
 ### machine
 

@@ -1,6 +1,6 @@
 [**@saflib/workflows**](../index.md)
 
-***
+---
 
 # Interface: WorkflowDefinition\<I, C\>
 
@@ -8,10 +8,10 @@ An interface that includes the inputs, files, steps, and everything else that ma
 
 ## Type Parameters
 
-| Type Parameter | Default type |
-| ------ | ------ |
-| `I` *extends* readonly [`WorkflowArgument`](WorkflowArgument.md)[] | `any` |
-| `C` | `any` |
+| Type Parameter                                                     | Default type |
+| ------------------------------------------------------------------ | ------------ |
+| `I` _extends_ readonly [`WorkflowArgument`](WorkflowArgument.md)[] | `any`        |
+| `C`                                                                | `any`        |
 
 ## Properties
 
@@ -23,16 +23,16 @@ The context specific to this workflow, generated from the input and available to
 
 #### Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `arg` | \{ `input`: `CreateArgsType`\<`I`\>; \} |
-| `arg.input` | `CreateArgsType`\<`I`\> |
+| Parameter   | Type                                    |
+| ----------- | --------------------------------------- |
+| `arg`       | \{ `input`: `CreateArgsType`\<`I`\>; \} |
+| `arg.input` | `CreateArgsType`\<`I`\>                 |
 
 #### Returns
 
 `C`
 
-***
+---
 
 ### description
 
@@ -40,7 +40,7 @@ The context specific to this workflow, generated from the input and available to
 
 Description of the workflow which will be shown in the CLI tool.
 
-***
+---
 
 ### docFiles
 
@@ -48,7 +48,7 @@ Description of the workflow which will be shown in the CLI tool.
 
 A map of ids to doc file absolute paths which will be referenced as part of the workflow.
 
-***
+---
 
 ### id
 
@@ -56,7 +56,7 @@ A map of ids to doc file absolute paths which will be referenced as part of the 
 
 Unique id for the workflow, for invoking it with the CLI tool.
 
-***
+---
 
 ### input
 
@@ -64,7 +64,7 @@ Unique id for the workflow, for invoking it with the CLI tool.
 
 The input specific to this workflow.
 
-***
+---
 
 ### sourceUrl
 
@@ -72,7 +72,7 @@ The input specific to this workflow.
 
 The source URL of the workflow. Set to import.meta.url.
 
-***
+---
 
 ### steps
 
@@ -80,7 +80,7 @@ The source URL of the workflow. Set to import.meta.url.
 
 An array of steps to be executed in the workflow. Each step is a state machine, and a function which takes the context and returns the input for the state machine.
 
-***
+---
 
 ### templateFiles
 

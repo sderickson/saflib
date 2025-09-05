@@ -1,6 +1,6 @@
 [**@saflib/workflows**](../index.md)
 
-***
+---
 
 # Function: dryRunWorkflow()
 
@@ -10,8 +10,8 @@ Convenience function to take a ConcretWorkflowRunner, dry run it, and return the
 
 ## Parameters
 
-| Parameter | Type |
-| ------ | ------ |
+| Parameter    | Type                                                                        |
+| ------------ | --------------------------------------------------------------------------- |
 | `definition` | [`WorkflowDefinition`](../interfaces/WorkflowDefinition.md)\<`any`, `any`\> |
 
 ## Returns
