@@ -1,9 +1,10 @@
-import { describe, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import { AddSpaWorkflow } from "./add-spa.ts";
-import { dryRunWorkflow } from "../../workflows/saf-workflow-cli/utils.ts";
+import { dryRunWorkflow } from "@saflib/workflows";
 
 describe("add-spa", () => {
   it("should successfully dry run", async () => {
-    await dryRunWorkflow(AddSpaWorkflow);
+    const result = await dryRunWorkflow(AddSpaWorkflow);
+    expect(result.checklist).toBeDefined();
   });
 });
