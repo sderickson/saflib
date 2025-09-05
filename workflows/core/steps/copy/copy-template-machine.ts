@@ -54,7 +54,6 @@ export const CopyStepMachine = setup({
       copiedFiles: arg.input.copiedFiles || {},
     };
   },
-  entry: logInfo("Starting template copy workflow"),
   states: {
     copy: {
       invoke: {
@@ -90,6 +89,11 @@ export const CopyStepMachine = setup({
       },
     },
     rename: {
+      entry: [
+        logInfo(
+          ({ event }) => `Generated "${event.output.fileName}" from template`,
+        ),
+      ],
       invoke: {
         input: ({ context }) => context,
         src: "renameNextFile",
@@ -100,9 +104,6 @@ export const CopyStepMachine = setup({
     },
     popFile: {
       entry: [
-        logInfo(
-          ({ event }) => `Generated "${event.output.fileName}" from template`,
-        ),
         assign(({ context }) => ({
           filesToCopy: context.filesToCopy.slice(1),
         })),

@@ -21,7 +21,6 @@ export const loadPlanStatusContents = (): string | null => {
 
 export const saveWorkflow = (workflow: AbstractWorkflowRunner) => {
   const planStatusFilePath = getPlanStatusFilePath();
-  console.log("workflow.dehydrate()", workflow.dehydrate());
   writeFileSync(
     planStatusFilePath,
     JSON.stringify(workflow.dehydrate(), null, 2),
