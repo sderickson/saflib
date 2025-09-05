@@ -87,13 +87,13 @@ export const ExampleWorkflowMachine = makeWorkflowMachine<
   },
 
   steps: [
-    // copy the template files
+    // copy the template files to the target directory
     step(CopyStepMachine, ({ context }) => ({
       name: context.name,
       targetDir: context.targetDir,
     })),
 
-    // prompt the agent to review the doc
+    // prompt the agent to review a doc
     step(DocStepMachine, () => ({
       docId: "overview",
     })),
