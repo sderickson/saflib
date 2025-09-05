@@ -1,5 +1,5 @@
 import { fromPromise } from "xstate";
-import type { CopyTemplateMachineContext } from "./types.ts";
+import type { CopyStepContext } from "./types.ts";
 import { readFile, writeFile } from "node:fs/promises";
 import { transformName } from "./utils.ts";
 import path from "node:path";
@@ -10,7 +10,7 @@ import {
 } from "@saflib/utils";
 
 export const renameNextFile = fromPromise(
-  async ({ input }: { input: CopyTemplateMachineContext }) => {
+  async ({ input }: { input: CopyStepContext }) => {
     const { targetDir, name, filesToCopy, dryRun, templateFiles } = input;
 
     const currentFileId = filesToCopy[0];

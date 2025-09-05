@@ -16,14 +16,14 @@ import { getGitHubUrl } from "@saflib/dev-tools";
 /**
  * Input for the DocStepMachine.
  */
-export interface DocMachineInput {
+export interface DocStepInput {
   /**
    * The id of the document to review. Must match one of the keys in the `docFiles` property for the workflow.
    */
   docId: string;
 }
 
-interface DocMachineContext extends WorkflowContext {
+interface DocStepContext extends WorkflowContext {
   docId: string;
 }
 
@@ -32,8 +32,8 @@ interface DocMachineContext extends WorkflowContext {
  */
 export const DocStepMachine = setup({
   types: {
-    input: {} as DocMachineInput & WorkflowInput,
-    context: {} as DocMachineContext,
+    input: {} as DocStepInput & WorkflowInput,
+    context: {} as DocStepContext,
     output: {} as WorkflowOutput,
   },
   actions: {

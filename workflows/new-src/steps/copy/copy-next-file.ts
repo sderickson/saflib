@@ -4,7 +4,7 @@ import { access } from "node:fs/promises";
 import { constants } from "node:fs";
 import { copyFile } from "node:fs/promises";
 import { transformName } from "./utils.ts";
-import type { CopyTemplateMachineContext } from "./types.ts";
+import type { CopyStepContext } from "./types.ts";
 
 interface CopyNextFileOutput {
   skipped: boolean;
@@ -17,7 +17,7 @@ export const copyNextFile = fromPromise(
   async ({
     input,
   }: {
-    input: CopyTemplateMachineContext;
+    input: CopyStepContext;
   }): Promise<CopyNextFileOutput> => {
     const { filesToCopy, dryRun, templateFiles, name, targetDir } = input;
 

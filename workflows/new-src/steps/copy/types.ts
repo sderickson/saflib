@@ -15,7 +15,7 @@ export interface CopyStepInput {
   targetDir: string;
 }
 
-export interface CopyTemplateMachineContext extends WorkflowContext {
+export interface CopyStepContext extends WorkflowContext {
   filesToCopy: string[];
   name: string;
   targetDir: string;

@@ -12,7 +12,7 @@ import type { WorkflowOutput, WorkflowInput } from "../../../src/xstate.ts";
 import { contextFromInput } from "../../../src/workflow.ts";
 
 import type {
-  CopyTemplateMachineContext,
+  CopyStepContext,
   CopyStepInput,
 } from "./types.ts";
 import { parseChecklist, parseCopiedFiles } from "./helpers.ts";
@@ -25,7 +25,7 @@ export type { CopyStepInput };
 export const CopyStepMachine = setup({
   types: {
     input: {} as CopyStepInput & WorkflowInput,
-    context: {} as CopyTemplateMachineContext,
+    context: {} as CopyStepContext,
     output: {} as WorkflowOutput,
   },
   actions: {

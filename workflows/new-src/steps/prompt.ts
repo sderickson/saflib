@@ -12,14 +12,14 @@ import type { WorkflowContext, WorkflowInput } from "../../src/xstate.ts";
 /**
  * Input for the PromptStepMachine.
  */
-export interface PromptMachineInput {
+export interface PromptStepInput {
   /**
    * The text to be shown to the agent or user. The machine will then stop until the workflow is continued.
    */
   promptText: string;
 }
 
-interface PromptMachineContext extends WorkflowContext {
+interface PromptStepContext extends WorkflowContext {
   promptText: string;
 }
 
@@ -28,8 +28,8 @@ interface PromptMachineContext extends WorkflowContext {
  */
 export const PromptStepMachine = setup({
   types: {
-    input: {} as PromptMachineInput & WorkflowInput,
-    context: {} as PromptMachineContext,
+    input: {} as PromptStepInput & WorkflowInput,
+    context: {} as PromptStepContext,
   },
   actions: {
     ...workflowActions,

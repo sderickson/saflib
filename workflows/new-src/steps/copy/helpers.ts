@@ -1,5 +1,5 @@
 import type { DoneActorEvent, OutputFrom } from "xstate";
-import type { CopyTemplateMachineContext } from "./types.ts";
+import type { CopyStepContext } from "./types.ts";
 import { copyNextFile } from "./copy-next-file.ts";
 import { getGitHubUrl } from "@saflib/dev-tools";
 
@@ -7,7 +7,7 @@ export const parseChecklist = ({
   context,
   event,
 }: {
-  context: CopyTemplateMachineContext;
+  context: CopyStepContext;
   event: DoneActorEvent<OutputFrom<typeof copyNextFile>, string>;
 }) => {
   const fileId = context.filesToCopy[0];
@@ -25,7 +25,7 @@ export const parseCopiedFiles = ({
   context,
   event,
 }: {
-  context: CopyTemplateMachineContext;
+  context: CopyStepContext;
   event: DoneActorEvent<OutputFrom<typeof copyNextFile>, string>;
 }) => {
   return {

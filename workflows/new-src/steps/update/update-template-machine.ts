@@ -17,7 +17,7 @@ import { contextFromInput } from "../../../src/workflow.ts";
 /**
  * Input for the UpdateStepMachine.
  */
-export interface UpdateMachineInput {
+export interface UpdateStepInput {
   /**
    * The id of the file the user is expected to update. Must match one of the keys in the `templateFiles` property for the workflow.
    */
@@ -29,7 +29,7 @@ export interface UpdateMachineInput {
   promptMessage: string | ((context: WorkflowContext) => string);
 }
 
-interface UpdateMachineContext extends WorkflowContext {
+interface UpdateStepContext extends WorkflowContext {
   filePath: string;
   promptMessage: string | ((context: WorkflowContext) => string);
 }
@@ -40,8 +40,8 @@ interface UpdateMachineContext extends WorkflowContext {
 export const UpdateStepMachine = setup({
   types: {
     output: {} as WorkflowOutput,
-    input: {} as UpdateMachineInput & WorkflowInput,
-    context: {} as UpdateMachineContext,
+    input: {} as UpdateStepInput & WorkflowInput,
+    context: {} as UpdateStepContext,
   },
   actions: {
     ...workflowActions,

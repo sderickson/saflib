@@ -2,7 +2,7 @@
 
 ***
 
-# Interface: CommandMachineInput
+# Interface: CommandStepInput
 
 Input for the CommandStepMachine. These arguments are passed to Node's [`spawn`](https://nodejs.org/api/child_process.html#child_processspawncommand-args-options) function.
 

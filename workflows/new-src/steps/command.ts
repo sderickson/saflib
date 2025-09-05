@@ -16,7 +16,7 @@ import { contextFromInput } from "../../src/workflow.ts";
 /**
  * Input for the CommandStepMachine. These arguments are passed to Node's [`spawn`](https://nodejs.org/api/child_process.html#child_processspawncommand-args-options) function.
  */
-export interface CommandMachineInput {
+export interface CommandStepInput {
   /**
    * The command to run, such as `npm` or `chmod`.
    */
@@ -28,7 +28,7 @@ export interface CommandMachineInput {
   args?: string[];
 }
 
-interface CommandMachineContext extends WorkflowContext {
+interface CommandStepContext extends WorkflowContext {
   command: string;
   args: string[];
 }
@@ -38,8 +38,8 @@ interface CommandMachineContext extends WorkflowContext {
  */
 export const CommandStepMachine = setup({
   types: {
-    input: {} as CommandMachineInput & WorkflowInput,
-    context: {} as CommandMachineContext,
+    input: {} as CommandStepInput & WorkflowInput,
+    context: {} as CommandStepContext,
     output: {} as WorkflowOutput,
   },
   actions: {
@@ -77,7 +77,7 @@ export const CommandStepMachine = setup({
           async ({
             input: { command, args, dryRun },
           }: {
-            input: CommandMachineContext;
+            input: CommandStepContext;
           }) => {
             if (dryRun) {
               return "Dry run";

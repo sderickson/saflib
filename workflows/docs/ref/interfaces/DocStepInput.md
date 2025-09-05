@@ -2,7 +2,7 @@
 
 ***
 
-# Interface: DocMachineInput
+# Interface: DocStepInput
 
 Input for the DocStepMachine.
 

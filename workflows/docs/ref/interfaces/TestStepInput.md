@@ -2,7 +2,7 @@
 
 ***
 
-# Interface: TestMachineInput
+# Interface: TestStepInput
 
 Input for the TestStepMachine.
 

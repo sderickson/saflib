@@ -2,7 +2,7 @@
 
 ***
 
-# Interface: PromptMachineInput
+# Interface: PromptStepInput
 
 Input for the PromptStepMachine.
 

@@ -2,7 +2,7 @@
 
 ***
 
-# Interface: UpdateMachineInput
+# Interface: UpdateStepInput
 
 Input for the UpdateStepMachine.
 

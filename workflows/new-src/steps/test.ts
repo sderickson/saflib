@@ -15,14 +15,14 @@ import { contextFromInput } from "../../src/workflow.ts";
 /**
  * Input for the TestStepMachine.
  */
-export interface TestMachineInput {
+export interface TestStepInput {
   /**
    * The id of the file to test. Must match one of the keys in the `templateFiles` property for the workflow. If not included, the workflow will run all tests for the current package.
    */
   fileId?: string;
 }
 
-interface TestMachineContext extends WorkflowContext {
+interface TestStepContext extends WorkflowContext {
   fileId?: string;
 }
 
@@ -31,8 +31,8 @@ interface TestMachineContext extends WorkflowContext {
  */
 export const TestStepMachine = setup({
   types: {
-    input: {} as TestMachineInput & WorkflowInput,
-    context: {} as TestMachineContext,
+    input: {} as TestStepInput & WorkflowInput,
+    context: {} as TestStepContext,
     output: {} as WorkflowOutput,
   },
   actions: {

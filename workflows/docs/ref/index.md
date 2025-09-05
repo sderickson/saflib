@@ -14,12 +14,12 @@
 
 | Interface | Description |
 | ------ | ------ |
-| [CommandMachineInput](interfaces/CommandMachineInput.md) | Input for the CommandStepMachine. These arguments are passed to Node's [`spawn`](https://nodejs.org/api/child_process.html#child_processspawncommand-args-options) function. |
+| [CommandStepInput](interfaces/CommandStepInput.md) | Input for the CommandStepMachine. These arguments are passed to Node's [`spawn`](https://nodejs.org/api/child_process.html#child_processspawncommand-args-options) function. |
 | [CopyStepInput](interfaces/CopyStepInput.md) | Input for the CopyStepMachine. |
-| [DocMachineInput](interfaces/DocMachineInput.md) | Input for the DocStepMachine. |
-| [PromptMachineInput](interfaces/PromptMachineInput.md) | Input for the PromptStepMachine. |
-| [TestMachineInput](interfaces/TestMachineInput.md) | Input for the TestStepMachine. |
-| [UpdateMachineInput](interfaces/UpdateMachineInput.md) | Input for the UpdateStepMachine. |
+| [DocStepInput](interfaces/DocStepInput.md) | Input for the DocStepMachine. |
+| [PromptStepInput](interfaces/PromptStepInput.md) | Input for the PromptStepMachine. |
+| [TestStepInput](interfaces/TestStepInput.md) | Input for the TestStepMachine. |
+| [UpdateStepInput](interfaces/UpdateStepInput.md) | Input for the UpdateStepMachine. |
 | [WorkflowArgument](interfaces/WorkflowArgument.md) | Required argument for the workflow, in a format the CLI tool (or other program) can use. |
 | [WorkflowDefinition](interfaces/WorkflowDefinition.md) | An interface that includes the inputs, files, steps, and everything else that makes up a workflow. Can be used to create an XState machine which can be used in other workflows, and an XStateWorkflowRunner which will execute just the workflow itself. |
 
