@@ -2,7 +2,7 @@ import type { Command } from "commander";
 import type { ConcreteWorkflowRunner } from "./workflow.ts";
 import { addNewLinesToString } from "@saflib/utils";
 import { getCurrentPackage } from "@saflib/dev-tools";
-import { getPackageName } from  "./workflow.ts";
+import { getPackageName } from "./utils.ts";
 
 export const addListCommand = (
   program: Command,

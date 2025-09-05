@@ -179,26 +179,3 @@ export abstract class XStateWorkflowRunner extends AbstractWorkflowRunner {
     return this.actor.getSnapshot().error;
   };
 }
-
-/**
- * Utility function to get the package name from the root URL.
- */
-export function getPackageName(rootUrl: string) {
-  if (!rootUrl.startsWith("file://")) {
-    throw new Error("Root URL should be import.meta.url");
-  }
-  const rootPath = path.dirname(rootUrl.replace("file://", ""));
-  let currentDir = rootPath;
-  while (true) {
-    const packageJsonPath = path.join(currentDir, "package.json");
-    if (existsSync(packageJsonPath)) {
-      const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf8"));
-      return packageJson.name;
-    }
-    const parentDir = path.dirname(currentDir);
-    if (parentDir === currentDir) {
-      throw new Error("package.json not found");
-    }
-    currentDir = parentDir;
-  }
-}

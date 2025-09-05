@@ -5,9 +5,12 @@ import {
   workflowAllSettled,
   continueWorkflow,
 } from "../../workflows/core/utils.ts";
+import { dryRunWorkflow } from "../../workflows/saf-workflow-cli/utils.ts";
 
 describe("add-spa", () => {
   it("should create a new SPA", async () => {
+    const workflow = await dryRunWorkflow(AddSpaWorkflowMachine);
+    const checklist = workflow.checklist;
     const actor = createActor(AddSpaWorkflowMachine, {
       input: {
         name: "test-spa",
