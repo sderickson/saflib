@@ -4,7 +4,7 @@ import {
   step,
   defineWorkflow,
   DocStepMachine,
-} from "@saflib/workflows";
+} from "../core/index.ts";
 import { readFileSync } from "fs";
 import path from "node:path";
 
