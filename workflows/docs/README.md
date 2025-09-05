@@ -39,8 +39,8 @@ import metaWorkflows from "@saflib/workflows/workflows";
 import { runWorkflowCli } from "@saflib/workflows";
 
 runWorkflowCli([
+  // workflows/add-workflow HOOK - do not remove this line
   ...metaWorkflows,
-  // add other workflows later...
 ]);
 ```
 

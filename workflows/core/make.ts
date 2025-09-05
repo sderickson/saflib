@@ -32,7 +32,7 @@ export function defineWorkflow<
   C = any,
 >(config: {
   input: I;
-  context: (arg: { input: CreateArgsType<I> }) => C;
+  context: (arg: { input: CreateArgsType<I> & { dryRun?: boolean } }) => C;
   id: string;
   description: string;
   sourceUrl: string;

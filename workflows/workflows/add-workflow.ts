@@ -3,6 +3,7 @@ import {
   PromptStepMachine,
   step,
   defineWorkflow,
+  DocStepMachine,
 } from "@saflib/workflows";
 import { readFileSync } from "fs";
 import path from "node:path";
@@ -41,9 +42,12 @@ export const AddWorkflowDefinition = defineWorkflow<
   context: ({ input }) => {
     const workflowName = input.name || "";
     const workflowPath = `workflows/${workflowName}.ts`;
-    const packageName =
+    let packageName =
       readFileSync("package.json", "utf8").match(/name": "(.+)"/)?.[1] ||
       "@your/target-package";
+    if (input.dryRun) {
+      packageName = "@example/package";
+    }
     const targetDir = process.cwd() + "/workflows";
 
     return {
@@ -56,9 +60,12 @@ export const AddWorkflowDefinition = defineWorkflow<
 
   templateFiles: {
     workflow: path.join(sourceDir, "template-file.ts"),
+    index: path.join(sourceDir, "index.ts"),
   },
 
-  docFiles: {},
+  docFiles: {
+    readme: path.join(import.meta.dirname, "../docs/README.md"),
+  },
 
   steps: [
     step(CopyStepMachine, ({ context }) => ({
@@ -80,14 +87,18 @@ export const AddWorkflowDefinition = defineWorkflow<
         4. If needed, update the package.json of this package (${context.packageName}) to include a './workflows' export pointing to the 'workflows/index.ts' file.`,
     })),
 
-    step(PromptStepMachine, ({ context }) => ({
-      promptText: `Add \`${context.packageName}\` as a dependency of \`@saflib/workflows-cli\`.
+    step(PromptStepMachine, () => ({
+      promptText: `Find the file which gathers all workflows to include them in the saf-workflow CLI tool.
       
-       If it's not a dependency in \`'saflib/workflows-cli/package.json'\`, go to that directory and run \`npm install ${context.packageName}\`.`,
+      Look for the string "workflows/add-workflow HOOK", a file named "workflow-cli.ts", or a package which depends on @saflib/workflows that seems promising.`,
     })),
 
     step(PromptStepMachine, ({ context }) => ({
-      promptText: `Add \`${context.packageName}\` to \`@saflib/workflows-cli\`'s list of workflows. 
+      promptText: `If needed, install \`${context.packageName}\` as a dependency of the package that contains that file you found.`,
+    })),
+
+    step(PromptStepMachine, ({ context }) => ({
+      promptText: `Add \`${context.packageName}\`'s exported workflows to the CLI file's list of workflows. 
         1. Import the workflow array exported from the package (e.g., \`import newWorkflows from '${context.packageName}/workflows';\`). Make sure to use the correct package name.
         2. Add the imported workflows to the \`workflowClasses\` array. You can use the spread operator (\`...newWorkflows\`) for this.`,
     })),
@@ -98,15 +109,8 @@ export const AddWorkflowDefinition = defineWorkflow<
       Run the command \`npm exec saf-workflow kickoff help\` in your terminal (any directory). Ensure that your new workflow "${context.workflowName}" appears in the list.`,
     })),
 
-    step(PromptStepMachine, () => ({
-      promptText: `Stop and understand the workflow requirements before proceeding.
-
-      If you don't know the answers to any of the following, ask the person giving the task:
-      1. What should this workflow do?
-      2. What template files should it create?
-      3. What should the workflow steps be?
-      4. Any specific requirements or constraints?
-      `,
+    step(DocStepMachine, () => ({
+      docId: "readme",
     })),
 
     step(PromptStepMachine, ({ context }) => ({
@@ -116,8 +120,20 @@ export const AddWorkflowDefinition = defineWorkflow<
       If you don't have them already, ask for samples to base the template files on.`,
     })),
 
+    step(PromptStepMachine, () => ({
+      promptText: `Add documentation links to the workflow.
+      
+      A good workflow is one with documentation to guide development. If you have not already been provided with documentation, ask for it.`,
+    })),
+
     step(PromptStepMachine, ({ context }) => ({
-      promptText: `Implement the workflow logic in ${context.workflowPath}.`,
+      promptText: `Add steps to ${context.workflowPath}.
+      
+      The steps will normally include:
+      1. First copying the template files
+      2. Then updating each template file that has TODOs in it.
+      3. Reviewing documents at key points.
+      4. Running tests and other scripts at key points.`,
     })),
 
     step(PromptStepMachine, ({ context }) => ({
