@@ -1,5 +1,15 @@
 {
   "name": "@saflib/workflows",
+  "version": "0.1.0",
+  "files": [
+    "core",
+    "saf-workflow-cli",
+    "workflows",
+    "index.ts",
+    "strings.ts",
+    "tsconfig.json",
+    "workspace.ts"
+  ],
   "description": "Workflow engine and utilities for SAF",
   "private": true,
   "type": "module",
@@ -11,13 +21,16 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "typecheck": "tsc"
+    "typecheck": "tsc",
+    "build": "tsc",
+    "prepublishOnly": "npm run build"
   },
   "dependencies": {
     "winston": "^3.0.0",
     "xstate": "^5.19.3"
   },
   "devDependencies": {
-    "@saflib/vitest": "*"
+    "@saflib/vitest": "*",
+    "typescript": "^5.9.2"
   }
 }
