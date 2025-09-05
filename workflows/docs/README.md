@@ -42,6 +42,8 @@ npm exec saf-workflow kickoff <workflow-name> <workflow-arguments>
 
 The CLI tool will run through the steps until a step prints out a prompt. Then it will print instructions to continue the workflow and exit. By telling an agent to run a command, they will then automatically go through the steps, doing their own work when prompted.
 
+See a demo [here](https://www.youtube.com/watch?v=p6jfG5JH7_8).
+
 ## Defining a Workflow
 
 A workflow definition looks like this:
