@@ -1,6 +1,6 @@
 import type { Command } from "commander";
-import { checklistToString } from "../utils.ts";
-import { XStateWorkflowRunner, type ConcreteWorkflowRunner } from "../workflow.ts";
+import { checklistToString } from "../core/utils.ts";
+import { XStateWorkflowRunner, type ConcreteWorkflowRunner } from "./workflow.ts";
 import { addNewLinesToString } from "@saflib/utils";
 
 export const addChecklistCommand = (

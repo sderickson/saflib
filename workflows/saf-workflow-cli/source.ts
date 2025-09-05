@@ -1,5 +1,5 @@
 import type { Command } from "commander";
-import { type ConcreteWorkflowRunner } from "../workflow.ts";
+import { type ConcreteWorkflowRunner } from "./workflow.ts";
 import { addNewLinesToString } from "@saflib/utils";
 import { getGitHubUrl } from "@saflib/dev-tools";
 

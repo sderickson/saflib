@@ -2,15 +2,19 @@ import { assign, fromPromise, setup } from "xstate";
 import {
   workflowActions,
   workflowActors,
+  doesTestPass,
+  logInfo,
+  logError,
+  promptAgent,
+} from "../xstate.ts";
+import {
   type WorkflowContext,
   type WorkflowInput,
   type WorkflowOutput,
-} from "../../src/xstate.ts";
+} from "../types.ts";
 import path from "node:path";
-import { doesTestPass } from "../../src/xstate.ts";
-import { logInfo, logError, promptAgent } from "../../src/xstate.ts";
 import { raise } from "xstate";
-import { contextFromInput } from "../../src/workflow.ts";
+import { contextFromInput } from "../../saf-workflow-cli/workflow.ts";
 
 /**
  * Input for the TestStepMachine.

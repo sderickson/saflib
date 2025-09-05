@@ -5,11 +5,11 @@ import {
   logInfo,
   logError,
   logWarn,
-} from "../../../src/xstate.ts";
+} from "../../xstate.ts";
 import { copyNextFile } from "./copy-next-file.ts";
 import { renameNextFile } from "./rename-next-file.ts";
-import type { WorkflowOutput, WorkflowInput } from "../../../src/xstate.ts";
-import { contextFromInput } from "../../../src/workflow.ts";
+import type { WorkflowOutput, WorkflowInput } from "../../types.ts";
+import { contextFromInput } from "../../../saf-workflow-cli/workflow.ts";
 
 import type {
   CopyStepContext,

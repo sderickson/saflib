@@ -3,8 +3,8 @@ import type {
   WorkflowInput,
   WorkflowContext,
   WorkflowOutput,
-} from "../src/xstate.ts";
-import { workflowActions, workflowActors } from "../src/xstate.ts";
+} from "./types.ts";
+import { workflowActions, workflowActors } from "./xstate.ts";
 import {
   assign,
   raise,
@@ -12,8 +12,8 @@ import {
   type AnyStateMachine,
   type InputFrom,
 } from "xstate";
-import { contextFromInput, outputFromContext } from "../src/workflow.ts";
-import type { WorkflowArgument } from "../src/types.ts";
+import { contextFromInput } from "../saf-workflow-cli/workflow.ts";
+import type { WorkflowArgument } from "./types.ts";
 import { existsSync } from "fs";
 
 /**
@@ -164,3 +164,16 @@ export const step = <C, M extends AnyStateMachine>(
     input,
   };
 };
+
+/**
+ * Helper function to create `WorkflowOutput` from `WorkflowContext`.
+ */
+export function outputFromContext({
+  context,
+}: {
+  context: WorkflowContext;
+}): WorkflowOutput {
+  return {
+    checklist: context.checklist,
+  };
+}

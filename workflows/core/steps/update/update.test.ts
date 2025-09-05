@@ -3,7 +3,7 @@ import { createActor, waitFor } from "xstate";
 import { UpdateStepMachine } from "./update-template-machine.ts";
 import path from "node:path";
 import { writeFileSync, unlinkSync, existsSync } from "node:fs";
-import { allSettled } from "../../../src/utils.ts";
+import { allSettled } from "../../utils.ts";
 
 describe("updateTemplateFileFactory", () => {
   const testFilePath = path.join(process.cwd(), "test-file.txt");

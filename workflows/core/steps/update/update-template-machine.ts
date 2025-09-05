@@ -3,16 +3,16 @@ import type {
   WorkflowContext,
   WorkflowInput,
   WorkflowOutput,
-} from "../../../src/xstate.ts";
+} from "../../types.ts";
 import {
   promptAgent,
   workflowActions,
   logError,
   workflowActors,
-} from "../../../src/xstate.ts";
+} from "../../xstate.ts";
 import { readFileSync } from "node:fs";
 import path from "node:path";
-import { contextFromInput } from "../../../src/workflow.ts";
+import { contextFromInput } from "../../../saf-workflow-cli/workflow.ts";
 
 /**
  * Input for the UpdateStepMachine.

@@ -1,15 +1,15 @@
-import type { WorkflowArgument, ChecklistItem, WorkflowBlob } from "./types.ts";
+import type { WorkflowArgument, ChecklistItem } from "../core/types.ts";
+import type { WorkflowBlob } from "./types.ts";
 import type { AnyStateMachine, AnyActor, AnyActorRef } from "xstate";
 import { createActor, waitFor } from "xstate";
 import { getSafReporters } from "@saflib/node";
 import path from "node:path";
 import { existsSync, readFileSync } from "node:fs";
-import { allSettled, continueWorkflow } from "./utils.ts";
+import { allSettled, continueWorkflow } from "../core/utils.ts";
 import type {
   WorkflowContext,
   WorkflowInput,
-  WorkflowOutput,
-} from "./xstate.ts";
+} from "../core/types.ts";
 import type { ReturnsError } from "@saflib/monorepo";
 
 // The following is TS magic to describe a class constructor that implements the Workflow class.
@@ -205,18 +205,5 @@ export function contextFromInput(input: WorkflowInput): WorkflowContext {
     templateFiles: input.templateFiles,
     copiedFiles: input.copiedFiles,
     docFiles: input.docFiles,
-  };
-}
-
-/**
- * Helper function to create `WorkflowOutput` from `WorkflowContext`.
- */
-export function outputFromContext({
-  context,
-}: {
-  context: WorkflowContext;
-}): WorkflowOutput {
-  return {
-    checklist: context.checklist,
   };
 }

@@ -4,10 +4,13 @@ import {
   workflowActors,
   promptAgent,
   logInfo,
-} from "../../src/xstate.ts";
-import { sendTo, assign, raise } from "xstate";
-import { contextFromInput, outputFromContext } from "../../src/workflow.ts";
-import type { WorkflowContext, WorkflowInput } from "../../src/xstate.ts";
+} from "../xstate.ts";
+import {
+  type WorkflowContext,
+  type WorkflowInput,
+} from "../types.ts";
+import { sendTo, raise } from "xstate";
+import { contextFromInput } from "../../saf-workflow-cli/workflow.ts";
 
 /**
  * Input for the PromptStepMachine.
@@ -52,18 +55,6 @@ export const PromptStepMachine = setup({
           actions: [
             promptAgent(({ context }) => context.promptText),
             sendTo(({ context }) => context.rootRef, { type: "halt" }),
-
-            assign({
-              checklist: ({ context }) => {
-                return [
-                  ...context.checklist,
-                  {
-                    description: context.promptText.split("\n")[0],
-                  },
-                ];
-              },
-            }),
-            // raise({ type: "continue" }),
           ],
         },
         continue: {
@@ -76,5 +67,13 @@ export const PromptStepMachine = setup({
       type: "final",
     },
   },
-  output: ({ context }) => outputFromContext({ context }),
+  output: ({ context }) => {
+    return {
+      checklist: [
+        {
+          description: context.promptText.split("\n")[0],
+        },
+      ],
+    }
+  },
 });

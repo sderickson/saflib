@@ -1,4 +1,4 @@
-import type { WorkflowContext } from "../../../src/xstate.ts";
+import type { WorkflowContext } from "../../types.ts";
 
 /**
  * Input for the CopyStepMachine.

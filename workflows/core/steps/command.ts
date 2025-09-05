@@ -1,17 +1,19 @@
 import { assign, fromPromise, setup } from "xstate";
 import {
-  workflowActions,
-  workflowActors,
   type WorkflowContext,
   type WorkflowInput,
   type WorkflowOutput,
+} from "../types.ts";
+import {
+  workflowActions,
+  workflowActors,
   runCommandAsync,
   logInfo,
   logError,
   promptAgent,
-} from "../../src/xstate.ts";
+} from "../xstate.ts";
 import { raise } from "xstate";
-import { contextFromInput } from "../../src/workflow.ts";
+import { contextFromInput } from "../../saf-workflow-cli/workflow.ts";
 
 /**
  * Input for the CommandStepMachine. These arguments are passed to Node's [`spawn`](https://nodejs.org/api/child_process.html#child_processspawncommand-args-options) function.

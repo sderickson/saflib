@@ -2,13 +2,15 @@ import { fromPromise, setup } from "xstate";
 import {
   workflowActions,
   workflowActors,
+  logInfo,
+  promptAgent,
+} from "../xstate.ts";
+import {
   type WorkflowContext,
   type WorkflowInput,
   type WorkflowOutput,
-  logInfo,
-  promptAgent,
-} from "../../src/xstate.ts";
-import { contextFromInput } from "../../src/workflow.ts";
+} from "../types.ts";
+import { contextFromInput } from "../../saf-workflow-cli/workflow.ts";
 import { raise } from "xstate";
 import path from "node:path";
 import { getGitHubUrl } from "@saflib/dev-tools";
