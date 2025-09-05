@@ -22,7 +22,7 @@ See a demo [here](https://www.youtube.com/watch?v=p6jfG5JH7_8).
 
 ### Setup
 
-_**I am just about to publish this package to npm; npm install doesn't work right now.**_
+_**!!! I am just about to publish this package to npm; npm install doesn't work right now. !!!**_
 
 You will need a dedicated executable file which imports all the workflow definitions from other packages and runs the [provided CLI function](./ref/functions/runWorkflowCli.md). See for example this repository's [@saflib/workflows-cli package](https://github.com/sderickson/saflib/tree/main/workflows-cli).
 
