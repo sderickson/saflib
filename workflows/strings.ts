@@ -15,7 +15,7 @@ export function addNewLinesToString(str: string, maxLineWidth: number = 80) {
 
 function addNewLinesToLine(str: string, maxLineWidth: number = 80) {
   const words = str.split(" ");
-  const lines = [];
+  const lines: string[] = [];
   let currentLine = words.shift() ?? "";
   while (words.length > 0) {
     const word = words.shift() ?? "";

@@ -20,7 +20,7 @@ export const promptAgent = <C, E extends AnyEventObject>(
   };
 };
 
-interface PromptParams {
+export interface PromptParams {
   msg: string;
 }
 

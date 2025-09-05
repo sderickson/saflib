@@ -29,7 +29,7 @@ export interface UpdateStepInput {
   promptMessage: string | ((context: WorkflowContext) => string);
 }
 
-interface UpdateStepContext extends WorkflowContext {
+export interface UpdateStepContext extends WorkflowContext {
   filePath: string;
   promptMessage: string | ((context: WorkflowContext) => string);
 }
@@ -124,4 +124,4 @@ export const UpdateStepMachine = setup({
       checklist: context.checklist,
     };
   },
-});
+}) as any; // TODO: fix this

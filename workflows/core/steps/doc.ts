@@ -25,7 +25,7 @@ export interface DocStepInput {
   docId: string;
 }
 
-interface DocStepContext extends WorkflowContext {
+export interface DocStepContext extends WorkflowContext {
   docId: string;
 }
 

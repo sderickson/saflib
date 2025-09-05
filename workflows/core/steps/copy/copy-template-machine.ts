@@ -144,4 +144,4 @@ export const CopyStepMachine = setup({
       copiedFiles: context.copiedFiles,
     };
   },
-});
+}) as any; // TODO: fix this
