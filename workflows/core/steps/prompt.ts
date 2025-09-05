@@ -5,12 +5,9 @@ import {
   promptAgent,
   logInfo,
 } from "../xstate.ts";
-import {
-  type WorkflowContext,
-  type WorkflowInput,
-} from "../types.ts";
+import { type WorkflowContext, type WorkflowInput } from "../types.ts";
 import { sendTo, raise } from "xstate";
-import { contextFromInput } from "../../saf-workflow-cli/workflow.ts";
+import { contextFromInput } from "../utils.ts";
 
 /**
  * Input for the PromptStepMachine.
@@ -74,6 +71,6 @@ export const PromptStepMachine = setup({
           description: context.promptText.split("\n")[0],
         },
       ],
-    }
+    };
   },
 });

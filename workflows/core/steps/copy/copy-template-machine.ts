@@ -9,12 +9,9 @@ import {
 import { copyNextFile } from "./copy-next-file.ts";
 import { renameNextFile } from "./rename-next-file.ts";
 import type { WorkflowOutput, WorkflowInput } from "../../types.ts";
-import { contextFromInput } from "../../../saf-workflow-cli/workflow.ts";
+import { contextFromInput } from "../../utils.ts";
 
-import type {
-  CopyStepContext,
-  CopyStepInput,
-} from "./types.ts";
+import type { CopyStepContext, CopyStepInput } from "./types.ts";
 import { parseChecklist, parseCopiedFiles } from "./helpers.ts";
 
 export type { CopyStepInput };

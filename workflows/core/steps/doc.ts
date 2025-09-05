@@ -10,7 +10,7 @@ import {
   type WorkflowInput,
   type WorkflowOutput,
 } from "../types.ts";
-import { contextFromInput } from "../../saf-workflow-cli/workflow.ts";
+import { contextFromInput } from "../utils.ts";
 import { raise } from "xstate";
 import path from "node:path";
 import { getGitHubUrl } from "@saflib/dev-tools";

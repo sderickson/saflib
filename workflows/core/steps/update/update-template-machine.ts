@@ -12,7 +12,7 @@ import {
 } from "../../xstate.ts";
 import { readFileSync } from "node:fs";
 import path from "node:path";
-import { contextFromInput } from "../../../saf-workflow-cli/workflow.ts";
+import { contextFromInput } from "../../utils.ts";
 
 /**
  * Input for the UpdateStepMachine.

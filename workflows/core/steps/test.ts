@@ -14,7 +14,7 @@ import {
 } from "../types.ts";
 import path from "node:path";
 import { raise } from "xstate";
-import { contextFromInput } from "../../saf-workflow-cli/workflow.ts";
+import { contextFromInput } from "../utils.ts";
 
 /**
  * Input for the TestStepMachine.

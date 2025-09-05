@@ -13,7 +13,7 @@ import {
   promptAgent,
 } from "../xstate.ts";
 import { raise } from "xstate";
-import { contextFromInput } from "../../saf-workflow-cli/workflow.ts";
+import { contextFromInput } from "../utils.ts";
 
 /**
  * Input for the CommandStepMachine. These arguments are passed to Node's [`spawn`](https://nodejs.org/api/child_process.html#child_processspawncommand-args-options) function.

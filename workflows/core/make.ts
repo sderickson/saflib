@@ -1,4 +1,8 @@
-import type { CreateArgsType, WorkflowStep, WorkflowDefinition } from "./types.ts";
+import type {
+  CreateArgsType,
+  WorkflowStep,
+  WorkflowDefinition,
+} from "./types.ts";
 import type {
   WorkflowInput,
   WorkflowContext,
@@ -12,7 +16,7 @@ import {
   type AnyStateMachine,
   type InputFrom,
 } from "xstate";
-import { contextFromInput } from "../saf-workflow-cli/workflow.ts";
+import { contextFromInput } from "./utils.ts";
 import type { WorkflowArgument } from "./types.ts";
 import { existsSync } from "fs";
 
@@ -23,7 +27,10 @@ import { existsSync } from "fs";
  *
  * I'm keeping this separate just because it's good to have the type inference piece separate where it can be messed with independently.
  */
-function defineWorkflow<I extends readonly WorkflowArgument[], C = any>(config: {
+function defineWorkflow<
+  I extends readonly WorkflowArgument[],
+  C = any,
+>(config: {
   input: I;
   context: (arg: { input: CreateArgsType<I> }) => C;
   id: string;

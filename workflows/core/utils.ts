@@ -1,7 +1,11 @@
 import { getSafReporters } from "@saflib/node";
 import { addNewLinesToString } from "@saflib/utils";
-import { type AnyMachineSnapshot, type AnyActor } from "xstate";
-import type { ChecklistItem } from "./types.ts";
+import {
+  type AnyMachineSnapshot,
+  type AnyActor,
+  type AnyActorRef,
+} from "xstate";
+import type { ChecklistItem, WorkflowContext, WorkflowInput } from "./types.ts";
 
 export function allSettled(snapshot: AnyMachineSnapshot): boolean {
   if (snapshot.children) {
@@ -54,3 +58,16 @@ export const checklistToString = (
     .flat()
     .join("\n");
 };
+
+export function contextFromInput(input: WorkflowInput): WorkflowContext {
+  return {
+    checklist: [],
+    loggedLast: false,
+    systemPrompt: input.systemPrompt,
+    dryRun: input.dryRun,
+    rootRef: input.rootRef as AnyActorRef,
+    templateFiles: input.templateFiles,
+    copiedFiles: input.copiedFiles,
+    docFiles: input.docFiles,
+  };
+}

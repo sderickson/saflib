@@ -1,24 +1,23 @@
 import type { WorkflowArgument, ChecklistItem } from "../core/types.ts";
 import type { WorkflowBlob } from "./types.ts";
-import type { AnyStateMachine, AnyActor, AnyActorRef } from "xstate";
+import type { AnyStateMachine, AnyActor } from "xstate";
 import { createActor, waitFor } from "xstate";
 import { getSafReporters } from "@saflib/node";
 import path from "node:path";
 import { existsSync, readFileSync } from "node:fs";
 import { allSettled, continueWorkflow } from "../core/utils.ts";
-import type {
-  WorkflowContext,
-  WorkflowInput,
-} from "../core/types.ts";
 import type { ReturnsError } from "@saflib/monorepo";
 
 // The following is TS magic to describe a class constructor that implements the Workflow class.
-type AbstractClassConstructor<T extends AbstractWorkflowRunner> = new (...args: any[]) => T;
+type AbstractClassConstructor<T extends AbstractWorkflowRunner> = new (
+  ...args: any[]
+) => T;
 
 /**
  * A concrete subclass of XStateWorkflowRunner. Packages which export workflows should use this to type the array of workflow classes. This is the type which the CLI tool accepts to provide a list of workflows.
  */
-export type ConcreteWorkflowRunner = AbstractClassConstructor<AbstractWorkflowRunner>;
+export type ConcreteWorkflowRunner =
+  AbstractClassConstructor<AbstractWorkflowRunner>;
 
 /**
  * Abstract superclass for XStateWorkflow. Can probably be removed since SimpleWorkflows are gone.
@@ -190,20 +189,4 @@ export function getPackageName(rootUrl: string) {
     }
     currentDir = parentDir;
   }
-}
-
-/**
- * Helper function to create initial `WorkflowContext` from `WorkflowInput`.
- */
-export function contextFromInput(input: WorkflowInput): WorkflowContext {
-  return {
-    checklist: [],
-    loggedLast: false,
-    systemPrompt: input.systemPrompt,
-    dryRun: input.dryRun,
-    rootRef: input.rootRef as AnyActorRef,
-    templateFiles: input.templateFiles,
-    copiedFiles: input.copiedFiles,
-    docFiles: input.docFiles,
-  };
 }
