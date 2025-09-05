@@ -127,10 +127,3 @@ export const AddWorkflowDefinition = defineWorkflow<
     })),
   ],
 });
-
-// export class AddWorkflow extends XStateWorkflowRunner {
-//   machine = AddWorkflowMachine;
-//   description = AddWorkflowMachine.definition.description || "";
-//   cliArguments = input;
-//   sourceUrl = import.meta.url;
-// }

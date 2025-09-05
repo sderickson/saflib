@@ -69,23 +69,20 @@ export const ExampleWorkflowMachine = makeWorkflowMachine<
   typeof input
 >({
   id: "example",
-
   description: "Create a new thing in your project.",
-
-  input,
-
-  context: ({ input }) => {
-    const targetDir = path.join(process.cwd(), "things", input.name);
-    return { name: input.name, targetDir };
-  },
-
+  sourceUrl: import.meta.url,
   templateFiles: {
     thing: path.join(sourceDir, "template-file.ts"),
     test: path.join(sourceDir, "template-file.test.ts"),
   },
-
   docFiles: {
     overview: path.join(import.meta.dirname, "./README.md"),
+  },
+
+  input,
+  context: ({ input }) => {
+    const targetDir = path.join(process.cwd(), "things", input.name);
+    return { name: input.name, targetDir };
   },
 
   steps: [
@@ -121,12 +118,4 @@ export const ExampleWorkflowMachine = makeWorkflowMachine<
     step(TestStepMachine, () => ({})),
   ],
 });
-
-// A runner class specifically for this workflow
-export class ExampleWorkflow extends XStateWorkflowRunner {
-  machine = ExampleWorkflowMachine;
-  description = ExampleWorkflowMachine.definition.description || "";
-  cliArguments = input;
-  sourceUrl = import.meta.url;
-}
 ```
