@@ -1,4 +1,8 @@
 /**
+ * Functions copied from @saflib/utils, so that workflows can be published independently.
+ */
+
+/**
  * Given a string which may have newlines already included, add /n to each line such that no line is longer than maxLineWidth.
  */
 export function addNewLinesToString(str: string, maxLineWidth: number = 80) {

@@ -6,7 +6,7 @@ import {
   setupWorkflowContext,
   type WorkflowLoggerOptions,
   type GetSourceUrlFunction,
-} from "../core/logger.ts";
+} from "../core/store.ts";
 import { addKickoffCommand } from "./kickoff.ts";
 import { addChecklistCommand } from "./checklist.ts";
 import { addStatusCommand } from "./status.ts";

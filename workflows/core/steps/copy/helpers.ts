@@ -1,7 +1,7 @@
 import type { DoneActorEvent, OutputFrom } from "xstate";
 import type { CopyStepContext } from "./types.ts";
 import { copyNextFile } from "./copy-next-file.ts";
-import { getSourceUrl } from "../../logger.ts";
+import { getSourceUrl } from "../../store.ts";
 
 export const parseChecklist = ({
   context,

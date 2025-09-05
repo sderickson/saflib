@@ -14,11 +14,10 @@
     "typecheck": "tsc"
   },
   "dependencies": {
-    "winston": "^3.0.0"
+    "winston": "^3.0.0",
+    "xstate": "^5.19.3"
   },
   "devDependencies": {
-    "@saflib/dev-tools": "*",
-    "@saflib/vitest": "*",
-    "xstate": "^5.19.3"
+    "@saflib/vitest": "*"
   }
 }

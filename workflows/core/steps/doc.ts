@@ -13,7 +13,7 @@ import {
 import { contextFromInput } from "../utils.ts";
 import { raise } from "xstate";
 import path from "node:path";
-import { getSourceUrl } from "../logger.ts";
+import { getSourceUrl } from "../store.ts";
 
 /**
  * Input for the DocStepMachine.

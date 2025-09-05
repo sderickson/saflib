@@ -7,7 +7,7 @@ import type {
 import type { WorkflowBlob } from "./types.ts";
 import type { AnyStateMachine, AnyActor } from "xstate";
 import { createActor, waitFor } from "xstate";
-import { getWorkflowLogger } from "../core/logger.ts";
+import { getWorkflowLogger } from "../core/store.ts";
 import { workflowAllSettled, continueWorkflow } from "../core/utils.ts";
 import { makeWorkflowMachine } from "../core/make.ts";
 
