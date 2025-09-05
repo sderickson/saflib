@@ -1,4 +1,8 @@
-import type { WorkflowArgument, ChecklistItem } from "../core/types.ts";
+import type {
+  WorkflowArgument,
+  ChecklistItem,
+  WorkflowOutput,
+} from "../core/types.ts";
 import type { WorkflowBlob } from "./types.ts";
 import type { AnyStateMachine, AnyActor } from "xstate";
 import { createActor, waitFor } from "xstate";
@@ -37,6 +41,7 @@ export abstract class AbstractWorkflowRunner {
   abstract done(): boolean;
   abstract getChecklist(): ChecklistItem[];
   abstract getError(): Error | undefined;
+  abstract getOutput(): WorkflowOutput;
 }
 
 interface XStateWorkflowOptions {
@@ -151,6 +156,13 @@ export abstract class XStateWorkflowRunner extends AbstractWorkflowRunner {
       return [];
     }
     return this.actor.getSnapshot().output.checklist;
+  };
+
+  getOutput = (): WorkflowOutput => {
+    if (!this.actor) {
+      return { checklist: [] };
+    }
+    return this.actor.getSnapshot().output;
   };
 
   getCurrentStateName = (): string => {

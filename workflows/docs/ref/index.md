@@ -22,6 +22,7 @@
 | [UpdateStepInput](interfaces/UpdateStepInput.md) | Input for the UpdateStepMachine. |
 | [WorkflowArgument](interfaces/WorkflowArgument.md) | Required argument for the workflow, in a format the CLI tool (or other program) can use. |
 | [WorkflowDefinition](interfaces/WorkflowDefinition.md) | An interface that includes the inputs, files, steps, and everything else that makes up a workflow. Can be used to create an XState machine which can be used in other workflows, and an XStateWorkflowRunner which will execute just the workflow itself. |
+| [WorkflowOutput](interfaces/WorkflowOutput.md) | Outputs every workflow machine returns. |
 
 ## Type Aliases
 
@@ -45,6 +46,11 @@
 
 | Function | Description |
 | ------ | ------ |
+| [checklistToString](functions/checklistToString.md) | Convenience function to convert a checklist to a string. Checklist items are in markdown, so |
+| [continueWorkflow](functions/continueWorkflow.md) | Convenience function to continue a workflow which has halted because a prompt was shown. Signals every active actor to "continue". |
+| [dryRunWorkflow](functions/dryRunWorkflow.md) | Convenience function to take a ConcretWorkflowRunner, dry run it, and return the output. The output in particular includes the checklist. |
 | [makeWorkflowMachine](functions/makeWorkflowMachine.md) | Takes a WorkflowsDefinition, as well as its Context and Input types, and creates an XState machine. |
+| [outputFromContext](functions/outputFromContext.md) | Helper function to create `WorkflowOutput` from `WorkflowContext`. |
 | [runWorkflowCli](functions/runWorkflowCli.md) | Given a list of workflow classes, runs a CLI for running workflows. |
 | [step](functions/step.md) | Helper function for defining a step in a workflow, enforcing types properly. |
+| [workflowAllSettled](functions/workflowAllSettled.md) | Convenience function. Use with xstate's `waitFor` to wait for the workflow to halt, because it has prompted the agent to do something. |

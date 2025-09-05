@@ -50,3 +50,5 @@ export {
   type ConcreteWorkflowRunner,
   XStateWorkflowRunner,
 } from "./workflow.ts";
+
+export { dryRunWorkflow } from "./utils.ts";

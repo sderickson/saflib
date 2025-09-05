@@ -1,7 +1,11 @@
 import type { Command } from "commander";
 import { checklistToString } from "../core/utils.ts";
-import { XStateWorkflowRunner, type ConcreteWorkflowRunner } from "./workflow.ts";
+import {
+  XStateWorkflowRunner,
+  type ConcreteWorkflowRunner,
+} from "./workflow.ts";
 import { addNewLinesToString } from "@saflib/utils";
+import { dryRunWorkflow } from "./utils.ts";
 
 export const addChecklistCommand = (
   program: Command,
@@ -27,34 +31,6 @@ export const addChecklistCommand = (
 };
 
 export const printChecklist = async (Workflow: ConcreteWorkflowRunner) => {
-  const workflow = new Workflow();
-  const cliArguments = workflow.cliArguments;
-  const exampleArgs = cliArguments.map(
-    (arg) => arg.exampleValue || "example-value-missing",
-  );
-  const result = await workflow.init({ dryRun: true }, ...exampleArgs);
-  if (result.error) {
-    console.error(result.error.message);
-    process.exit(1);
-  }
-  await workflow.kickoff();
-  let lastStateName = workflow.getCurrentStateName();
-
-  while (!workflow.done()) {
-    await workflow.goToNextStep();
-    const error = workflow.getError();
-    if (error) {
-      console.error("Workflow errored", error);
-      process.exit(1);
-    }
-    const currentStateName = workflow.getCurrentStateName();
-    if (currentStateName === lastStateName) {
-      throw new Error(
-        `Workflow ${workflow.name} is stuck on state ${currentStateName}.`,
-      );
-    }
-    lastStateName = currentStateName;
-  }
-
-  console.log(checklistToString(workflow.getChecklist()));
+  const workflow = await dryRunWorkflow(Workflow);
+  console.log(checklistToString(workflow.checklist));
 };

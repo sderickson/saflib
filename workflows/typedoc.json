@@ -19,7 +19,6 @@
     "WorkflowInput",
     "WorkflowContext",
     "WorkflowBlob",
-    "WorkflowOutput",
     "XStateWorkflowOptions" 
   ]
 }

@@ -154,6 +154,20 @@ To use, subclass it with:
 
 ***
 
+### getOutput()
+
+> **getOutput**(): [`WorkflowOutput`](../interfaces/WorkflowOutput.md)
+
+#### Returns
+
+[`WorkflowOutput`](../interfaces/WorkflowOutput.md)
+
+#### Overrides
+
+`AbstractWorkflowRunner.getOutput`
+
+***
+
 ### goToNextStep()
 
 > **goToNextStep**(): `Promise`\<`void`\>
