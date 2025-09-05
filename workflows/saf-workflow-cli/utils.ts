@@ -1,5 +1,9 @@
-import type { WorkflowOutput } from "../core/types.ts";
-import type { ConcreteWorkflowRunner } from "./workflow.ts";
+import type {
+  WorkflowOutput,
+  WorkflowDefinition,
+  WorkflowArgument,
+} from "../core/types.ts";
+import { XStateWorkflowRunner } from "./workflow.ts";
 import path from "node:path";
 import { existsSync, readFileSync } from "node:fs";
 
@@ -7,18 +11,17 @@ import { existsSync, readFileSync } from "node:fs";
  * Convenience function to take a ConcretWorkflowRunner, dry run it, and return the output. The output in particular includes the checklist.
  */
 export const dryRunWorkflow = async (
-  Workflow: ConcreteWorkflowRunner,
+  definition: WorkflowDefinition<any, any>,
 ): Promise<WorkflowOutput> => {
-  const workflow = new Workflow();
-  const cliArguments = workflow.cliArguments;
+  const cliArguments = definition.input as WorkflowArgument[];
   const exampleArgs = cliArguments.map(
     (arg) => arg.exampleValue || "example-value-missing",
   );
-  const result = await workflow.init({ dryRun: true }, ...exampleArgs);
-  if (result.error) {
-    console.error(result.error.message);
-    process.exit(1);
-  }
+  const workflow = new XStateWorkflowRunner({
+    definition,
+    args: exampleArgs,
+    dryRun: true,
+  });
   await workflow.kickoff();
   let lastStateName = workflow.getCurrentStateName();
 
@@ -32,7 +35,7 @@ export const dryRunWorkflow = async (
     const currentStateName = workflow.getCurrentStateName();
     if (currentStateName === lastStateName) {
       throw new Error(
-        `Workflow ${workflow.name} is stuck on state ${currentStateName}.`,
+        `Workflow ${definition.id} is stuck on state ${currentStateName}.`,
       );
     }
     lastStateName = currentStateName;

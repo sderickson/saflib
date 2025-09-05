@@ -27,7 +27,7 @@ import { existsSync } from "fs";
  *
  * I'm keeping this separate just because it's good to have the type inference piece separate where it can be messed with independently.
  */
-function defineWorkflow<
+export function defineWorkflow<
   I extends readonly WorkflowArgument[],
   C = any,
 >(config: {
@@ -35,6 +35,7 @@ function defineWorkflow<
   context: (arg: { input: CreateArgsType<I> }) => C;
   id: string;
   description: string;
+  sourceUrl: string;
   templateFiles: Record<string, string>;
   docFiles: Record<string, string>;
   steps: Array<WorkflowStep<C, AnyStateMachine>>;

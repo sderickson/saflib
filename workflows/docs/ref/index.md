@@ -4,12 +4,6 @@
 
 # @saflib/workflows
 
-## Classes
-
-| Class | Description |
-| ------ | ------ |
-| [XStateWorkflowRunner](classes/XStateWorkflowRunner.md) | A class used to load and run the workflow, managing XState events and I/O operations. This is an abstract super class and should be subclassed with the WorkflowDefinition and other properties set. Those subclasses are what the CLI tool uses to create and run workflows. |
-
 ## Interfaces
 
 | Interface | Description |
@@ -28,7 +22,6 @@
 
 | Type Alias | Description |
 | ------ | ------ |
-| [ConcreteWorkflowRunner](type-aliases/ConcreteWorkflowRunner.md) | A concrete subclass of XStateWorkflowRunner. Packages which export workflows should use this to type the array of workflow classes. This is the type which the CLI tool accepts to provide a list of workflows. |
 | [WorkflowStep](type-aliases/WorkflowStep.md) | A step in a workflow with an actor and its corresponding input. |
 
 ## Variables
@@ -47,10 +40,9 @@
 | Function | Description |
 | ------ | ------ |
 | [checklistToString](functions/checklistToString.md) | Convenience function to convert a checklist to a string. Checklist items are in markdown, so |
-| [continueWorkflow](functions/continueWorkflow.md) | Convenience function to continue a workflow which has halted because a prompt was shown. Signals every active actor to "continue". |
+| [defineWorkflow](functions/defineWorkflow.md) | Helper, identity function to infer types. |
 | [dryRunWorkflow](functions/dryRunWorkflow.md) | Convenience function to take a ConcretWorkflowRunner, dry run it, and return the output. The output in particular includes the checklist. |
 | [makeWorkflowMachine](functions/makeWorkflowMachine.md) | Takes a WorkflowsDefinition, as well as its Context and Input types, and creates an XState machine. |
 | [outputFromContext](functions/outputFromContext.md) | Helper function to create `WorkflowOutput` from `WorkflowContext`. |
 | [runWorkflowCli](functions/runWorkflowCli.md) | Given a list of workflow classes, runs a CLI for running workflows. |
 | [step](functions/step.md) | Helper function for defining a step in a workflow, enforcing types properly. |
-| [workflowAllSettled](functions/workflowAllSettled.md) | Convenience function. Use with xstate's `waitFor` to wait for the workflow to halt, because it has prompted the agent to do something. |

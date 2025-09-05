@@ -5,7 +5,6 @@ import {
   TestStepMachine,
   makeWorkflowMachine,
   step,
-  XStateWorkflowRunner,
 } from "@saflib/workflows";
 import path from "node:path";
 
@@ -39,6 +38,8 @@ export const TemplateFileWorkflowMachine = makeWorkflowMachine<
   description: "TODO: Describe what this workflow does",
 
   input,
+
+  sourceUrl: import.meta.url,
 
   context: ({ input }) => {
     // TODO: replace "output" with where the files should actually go based on the input
@@ -95,9 +96,9 @@ export const TemplateFileWorkflowMachine = makeWorkflowMachine<
   ],
 });
 
-export class TemplateFileWorkflow extends XStateWorkflowRunner {
-  machine = TemplateFileWorkflowMachine;
-  description = TemplateFileWorkflowMachine.definition.description || "";
-  cliArguments = input;
-  sourceUrl = import.meta.url;
-}
+// export class TemplateFileWorkflow extends XStateWorkflowRunner {
+//   machine = TemplateFileWorkflowMachine;
+//   description = TemplateFileWorkflowMachine.definition.description || "";
+//   cliArguments = input;
+//   sourceUrl = import.meta.url;
+// }

@@ -1,7 +1,5 @@
 {
   "intentionallyNotExported": [
-    "AbstractClassConstructor",
-    "AbstractWorkflowRunner",
     "ActionParam",
     "ChecklistItem",
     "CommandStepContext",
@@ -17,8 +15,6 @@
     "TestStepContext",
     "UpdateStepContext",
     "WorkflowInput",
-    "WorkflowContext",
-    "WorkflowBlob",
-    "XStateWorkflowOptions" 
+    "WorkflowContext"
   ]
 }

@@ -8,10 +8,10 @@ An interface that includes the inputs, files, steps, and everything else that ma
 
 ## Type Parameters
 
-| Type Parameter |
-| ------ |
-| `I` *extends* readonly [`WorkflowArgument`](WorkflowArgument.md)[] |
-| `C` |
+| Type Parameter | Default type |
+| ------ | ------ |
+| `I` *extends* readonly [`WorkflowArgument`](WorkflowArgument.md)[] | `any` |
+| `C` | `any` |
 
 ## Properties
 
@@ -63,6 +63,14 @@ Unique id for the workflow, for invoking it with the CLI tool.
 > **input**: `I`
 
 The input specific to this workflow.
+
+***
+
+### sourceUrl
+
+> **sourceUrl**: `string`
+
+The source URL of the workflow. Set to import.meta.url.
 
 ***
 

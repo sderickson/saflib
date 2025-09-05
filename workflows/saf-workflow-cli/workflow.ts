@@ -2,15 +2,14 @@ import type {
   WorkflowArgument,
   ChecklistItem,
   WorkflowOutput,
+  WorkflowDefinition,
 } from "../core/types.ts";
 import type { WorkflowBlob } from "./types.ts";
 import type { AnyStateMachine, AnyActor } from "xstate";
 import { createActor, waitFor } from "xstate";
 import { getSafReporters } from "@saflib/node";
-import path from "node:path";
-import { existsSync, readFileSync } from "node:fs";
 import { workflowAllSettled, continueWorkflow } from "../core/utils.ts";
-import type { ReturnsError } from "@saflib/monorepo";
+import { makeWorkflowMachine } from "../core/make.ts";
 
 // The following is TS magic to describe a class constructor that implements the Workflow class.
 type AbstractClassConstructor<T extends AbstractWorkflowRunner> = new (
@@ -27,11 +26,6 @@ export type ConcreteWorkflowRunner =
  * Abstract superclass for XStateWorkflow. Can probably be removed since SimpleWorkflows are gone.
  */
 export abstract class AbstractWorkflowRunner {
-  abstract readonly name: string;
-  abstract readonly description: string;
-  abstract readonly cliArguments: readonly WorkflowArgument[];
-  abstract readonly sourceUrl: string;
-  abstract init: (...args: any[]) => Promise<ReturnsError<any>>;
   abstract kickoff(): Promise<boolean>;
   abstract printStatus(): Promise<void>;
   abstract getCurrentStateName(): string;
@@ -44,7 +38,9 @@ export abstract class AbstractWorkflowRunner {
   abstract getOutput(): WorkflowOutput;
 }
 
-interface XStateWorkflowOptions {
+interface XStateWorkflowOptions<I extends readonly WorkflowArgument[], C> {
+  definition: WorkflowDefinition<I, C>;
+  args?: string[];
   dryRun?: boolean;
 }
 
@@ -57,35 +53,33 @@ interface XStateWorkflowOptions {
  * * description - to show up in the CLI tool
  * * cliArguments - to show up in the CLI tool
  */
-export abstract class XStateWorkflowRunner extends AbstractWorkflowRunner {
-  abstract readonly machine: AnyStateMachine;
-  private input: any;
+export class XStateWorkflowRunner extends AbstractWorkflowRunner {
+  private machine: AnyStateMachine;
+  private input: { [key: string]: string } & { dryRun?: boolean };
+  private args: string[];
   private actor: AnyActor | undefined;
+  private definition: WorkflowDefinition<any, any>;
 
-  get name() {
-    return this.machine.id;
+  constructor(options: XStateWorkflowOptions<any, any>) {
+    super();
+    this.definition = options.definition;
+    this.input = {};
+    this.args = options.args || [];
+    const inputLength = options.args?.length || 0;
+    const expectedInputLength = this.definition.input.length;
+    if (expectedInputLength !== inputLength) {
+      throw new Error(
+        `Expected ${expectedInputLength} arguments, got ${inputLength}`,
+      );
+    }
+    for (let i = 0; i < expectedInputLength; i++) {
+      const arg = this.definition.input[i];
+      this.input[arg.name] = options.args?.[i] || "";
+    }
+
+    this.input.dryRun = options.dryRun;
+    this.machine = makeWorkflowMachine(this.definition);
   }
-
-  init = async (
-    options: XStateWorkflowOptions,
-    ...args: string[]
-  ): Promise<ReturnsError<any>> => {
-    if (args.length !== this.cliArguments.length) {
-      return {
-        error: new Error(
-          `Expected ${this.cliArguments.length} arguments, got ${args.length}`,
-        ),
-      };
-    }
-    const input = {} as any;
-    for (let i = 0; i < this.cliArguments.length; i++) {
-      input[this.cliArguments[i].name] = args[i];
-    }
-    input.dryRun = options.dryRun;
-    this.input = input;
-
-    return { result: undefined };
-  };
 
   kickoff = async (): Promise<boolean> => {
     const actor = createActor(this.machine, { input: this.input });
@@ -132,7 +126,8 @@ export abstract class XStateWorkflowRunner extends AbstractWorkflowRunner {
 
   dehydrate = (): WorkflowBlob => {
     return {
-      workflowName: this.name,
+      workflowName: this.machine.id,
+      args: this.args,
       snapshotState: this.actor?.getPersistedSnapshot(),
     };
   };

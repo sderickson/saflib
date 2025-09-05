@@ -14,6 +14,7 @@ export interface WorkflowBlobInternalState {
 
 export interface WorkflowBlob {
   workflowName: string;
+  args: string[];
   internalState?: WorkflowBlobInternalState;
   snapshotState?: Snapshot<any>;
 }

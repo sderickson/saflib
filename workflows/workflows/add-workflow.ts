@@ -1,9 +1,8 @@
 import {
   CopyStepMachine,
   PromptStepMachine,
-  makeWorkflowMachine,
   step,
-  XStateWorkflowRunner,
+  defineWorkflow,
 } from "@saflib/workflows";
 import { readFileSync } from "fs";
 import path from "node:path";
@@ -26,9 +25,9 @@ interface AddWorkflowContext {
   targetDir: string;
 }
 
-export const AddWorkflowMachine = makeWorkflowMachine<
-  AddWorkflowContext,
-  typeof input
+export const AddWorkflowDefinition = defineWorkflow<
+  typeof input,
+  AddWorkflowContext
 >({
   id: "add-workflow",
 
@@ -36,6 +35,8 @@ export const AddWorkflowMachine = makeWorkflowMachine<
     "Create a new workflow and adds it to the CLI tool. Stops after setup to wait for implementation requirements.",
 
   input,
+
+  sourceUrl: import.meta.url,
 
   context: ({ input }) => {
     const workflowName = input.name || "";
@@ -127,9 +128,9 @@ export const AddWorkflowMachine = makeWorkflowMachine<
   ],
 });
 
-export class AddWorkflow extends XStateWorkflowRunner {
-  machine = AddWorkflowMachine;
-  description = AddWorkflowMachine.definition.description || "";
-  cliArguments = input;
-  sourceUrl = import.meta.url;
-}
+// export class AddWorkflow extends XStateWorkflowRunner {
+//   machine = AddWorkflowMachine;
+//   description = AddWorkflowMachine.definition.description || "";
+//   cliArguments = input;
+//   sourceUrl = import.meta.url;
+// }

@@ -1,36 +1,28 @@
 import type { Command } from "commander";
 import { checklistToString } from "../core/utils.ts";
-import {
-  XStateWorkflowRunner,
-  type ConcreteWorkflowRunner,
-} from "./workflow.ts";
+import type { WorkflowDefinition } from "../core/types.ts";
 import { addNewLinesToString } from "@saflib/utils";
 import { dryRunWorkflow } from "./utils.ts";
 
 export const addChecklistCommand = (
   program: Command,
-  workflows: ConcreteWorkflowRunner[],
+  workflows: WorkflowDefinition[],
 ) => {
   const checklistProgram = program
     .command("checklist")
     .description(addNewLinesToString("Show the checklist for a workflow."));
 
-  const supportedWorkflows = workflows.filter((workflow) => {
-    return new workflow() instanceof XStateWorkflowRunner;
-  });
-
-  supportedWorkflows.forEach((workflow) => {
-    const stubWorkflow = new workflow();
+  workflows.forEach((workflow) => {
     let chain = checklistProgram
-      .command(stubWorkflow.name)
-      .description(stubWorkflow.description);
+      .command(workflow.id)
+      .description(workflow.description);
     chain.action(async () => {
       await printChecklist(workflow);
     });
   });
 };
 
-export const printChecklist = async (Workflow: ConcreteWorkflowRunner) => {
+export const printChecklist = async (Workflow: WorkflowDefinition) => {
   const workflow = await dryRunWorkflow(Workflow);
   console.log(checklistToString(workflow.checklist));
 };

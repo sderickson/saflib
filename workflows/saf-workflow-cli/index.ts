@@ -1,5 +1,5 @@
 import { Command } from "commander";
-import type { ConcreteWorkflowRunner } from "./workflow.ts";
+import type { WorkflowDefinition } from "../core/types.ts";
 import { addNewLinesToString } from "@saflib/utils";
 import { setupContext } from "@saflib/commander";
 import { addKickoffCommand } from "./kickoff.ts";
@@ -19,7 +19,7 @@ import { addSourceCommand } from "./source.ts";
  *
  * Use this also to customize which workflows are actually available.
  */
-export function runWorkflowCli(workflows: ConcreteWorkflowRunner[]) {
+export function runWorkflowCli(workflows: WorkflowDefinition[]) {
   const program = new Command()
     .name("saf-workflow")
     .description(
@@ -45,10 +45,5 @@ export function runWorkflowCli(workflows: ConcreteWorkflowRunner[]) {
     },
   );
 }
-
-export {
-  type ConcreteWorkflowRunner,
-  XStateWorkflowRunner,
-} from "./workflow.ts";
 
 export { dryRunWorkflow } from "./utils.ts";

@@ -1,12 +1,12 @@
 import type { Command } from "commander";
-import type { ConcreteWorkflowRunner } from "./workflow.ts";
+import type { WorkflowDefinition } from "../core/types.ts";
 import { addNewLinesToString } from "@saflib/utils";
 import { getCurrentPackage } from "@saflib/dev-tools";
 import { getPackageName } from "./utils.ts";
 
 export const addListCommand = (
   program: Command,
-  workflows: ConcreteWorkflowRunner[],
+  workflows: WorkflowDefinition[],
 ) => {
   program
     .command("list")
@@ -18,9 +18,8 @@ export const addListCommand = (
     .action(async () => {
       const currentPackage = getCurrentPackage();
       const workflowsForPackage = workflows.filter((workflow) => {
-        const stubWorkflow = new workflow();
-        return getPackageName(stubWorkflow.sourceUrl) === currentPackage;
+        return getPackageName(workflow.sourceUrl) === currentPackage;
       });
-      console.log(workflowsForPackage.map((w) => new w().name).join("\n"));
+      console.log(workflowsForPackage.map((w) => w.id).join("\n"));
     });
 };

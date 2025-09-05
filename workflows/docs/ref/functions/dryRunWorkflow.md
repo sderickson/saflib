@@ -4,7 +4,7 @@
 
 # Function: dryRunWorkflow()
 
-> **dryRunWorkflow**(`Workflow`): `Promise`\<[`WorkflowOutput`](../interfaces/WorkflowOutput.md)\>
+> **dryRunWorkflow**(`definition`): `Promise`\<[`WorkflowOutput`](../interfaces/WorkflowOutput.md)\>
 
 Convenience function to take a ConcretWorkflowRunner, dry run it, and return the output. The output in particular includes the checklist.
 
@@ -12,7 +12,7 @@ Convenience function to take a ConcretWorkflowRunner, dry run it, and return the
 
 | Parameter | Type |
 | ------ | ------ |
-| `Workflow` | [`ConcreteWorkflowRunner`](../type-aliases/ConcreteWorkflowRunner.md) |
+| `definition` | [`WorkflowDefinition`](../interfaces/WorkflowDefinition.md)\<`any`, `any`\> |
 
 ## Returns
 

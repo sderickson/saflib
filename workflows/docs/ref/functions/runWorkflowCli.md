@@ -19,7 +19,7 @@ Use this also to customize which workflows are actually available.
 
 | Parameter | Type |
 | ------ | ------ |
-| `workflows` | [`ConcreteWorkflowRunner`](../type-aliases/ConcreteWorkflowRunner.md)[] |
+| `workflows` | [`WorkflowDefinition`](../interfaces/WorkflowDefinition.md)\<`any`, `any`\>[] |
 
 ## Returns
 

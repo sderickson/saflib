@@ -10,8 +10,6 @@ import {
   type AnyActorRef,
 } from "xstate";
 
-
-
 /**
  * A step in a workflow with an actor and its corresponding input.
  */
@@ -23,7 +21,10 @@ export type WorkflowStep<C, M extends AnyStateMachine> = {
 /**
  * An interface that includes the inputs, files, steps, and everything else that makes up a workflow. Can be used to create an XState machine which can be used in other workflows, and an XStateWorkflowRunner which will execute just the workflow itself.
  */
-export interface WorkflowDefinition<I extends readonly WorkflowArgument[], C> {
+export interface WorkflowDefinition<
+  I extends readonly WorkflowArgument[] = any,
+  C = any,
+> {
   /**
    * The input specific to this workflow.
    */
@@ -38,6 +39,11 @@ export interface WorkflowDefinition<I extends readonly WorkflowArgument[], C> {
    * Unique id for the workflow, for invoking it with the CLI tool.
    */
   id: string;
+
+  /**
+   * The source URL of the workflow. Set to import.meta.url.
+   */
+  sourceUrl: string;
 
   /**
    * Description of the workflow which will be shown in the CLI tool.
@@ -67,7 +73,6 @@ export type CreateArgsType<T extends readonly { name: string }[]> = {
   [K in ExtractKeys<T>]: string;
 };
 
-
 /**
  * Simple checklist object. Machines should append one to the list for each
  * state. If a state invokes another machine, add its checklist output as subitems
@@ -90,8 +95,6 @@ export interface WorkflowArgument {
    */
   exampleValue?: string;
 }
-
-
 
 // general types
 
