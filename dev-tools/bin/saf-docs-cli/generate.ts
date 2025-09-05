@@ -1,4 +1,4 @@
-import { type MonorepoContext } from "../workspace.ts";
+import { type MonorepoContext } from "@saflib/dev-tools";
 import { generateTypeDoc } from "./generate-typedoc.ts";
 import { generateCliDocs } from "./generate-cli.ts";
 import { generateEnvDocs } from "./generate-env.ts";

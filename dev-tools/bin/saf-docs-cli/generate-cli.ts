@@ -1,4 +1,4 @@
-import { getCurrentPackageName, type MonorepoContext } from "../workspace.ts";
+import { getCurrentPackageName, type MonorepoContext } from "@saflib/dev-tools";
 import { execSync } from "node:child_process";
 
 import { mkdirSync, readdirSync, unlinkSync, writeFileSync } from "node:fs";

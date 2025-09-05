@@ -1,6 +1,6 @@
 import { execSync } from "node:child_process";
 import { mkdirSync, readdirSync, unlinkSync, writeFileSync } from "node:fs";
-import { getCurrentPackageName } from "../workspace.ts";
+import { getCurrentPackageName } from "@saflib/dev-tools";
 
 export function generateWorkflowDocs() {
   const currentPackage = getCurrentPackageName();

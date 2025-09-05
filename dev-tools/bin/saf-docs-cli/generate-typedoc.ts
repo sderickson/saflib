@@ -1,5 +1,5 @@
 import { execSync } from "node:child_process";
-import { getCurrentPackageName, type MonorepoContext } from "../workspace.ts";
+import { getCurrentPackageName, type MonorepoContext } from "@saflib/dev-tools";
 import { existsSync, readFileSync } from "node:fs";
 
 export function generateTypeDoc(monorepoContext: MonorepoContext) {
