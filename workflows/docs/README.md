@@ -6,30 +6,6 @@ The purpose of `@saflib/workflows` is to make code generation more reliable for 
 
 For more information on the why, see [this doc](https://docs.saf-demo.online/workflows.html).
 
-## What's In A Workflow?
-
-To define a workflow, you need the following:
-
-### Steps
-
-The core part of a workflow is a series of steps to take to complete the task. The steps include:
-
-- **Copying** from template files
-- **Updating** those files-from-templates based on the current task
-- **Running Checks** like running automated tests or static analysis tools
-- **Running Scripts** such as installing dependencies or generating code (deterministically)
-- **Prompting** the agent or user
-
-### Documents
-
-These documents are the source of truth for what the workflow should generate. The workflow itself should not contain documentation; it should refer to the documentation and focus on directing and orchestrating.
-
-Ideally, these documents should live in the same package or module as the workflow, because guiding documents beget workflows.
-
-### Templates
-
-These represent the preferred way to structure whatever thing is being created or updated as part of the workflow. You're much more likely to have a reliable result if the agent (or developer!) doesn't have to start from scratch.
-
 ## Command Line Interface
 
 The workflow interface is a command line tool; this works well with agents which can run arbitrary commands so they can automatically continue the workflow. A workflow can also then be "run" by a human to test it, or to understand the process and better review another's work.
@@ -66,14 +42,36 @@ runWorkflowCli([
 ]);
 ```
 
-At this point you can tell your preferred agent to navigate to the package you want to add a workflow tool and run `npm exec saf-workflow workflows/add-workflow <name>`. For the best experience, provide it with, or direct it how to produce, the core elements: templates, documents, and steps.
+## Adding Workflows
 
-## Generating Checklists
+Once the CLI is set up, you can tell your preferred agent to navigate to the package you want to add a workflow tool and run `npm exec saf-workflow workflows/add-workflow <name>`. For the best experience, provide it with, or direct it how to produce, the core elements: **steps**, **documents**, and **templates**.
 
-The workflow CLI tool includes a `checklist` command which will dry-run the workflow and print out a checklist of the steps the workflow takes. This can be used in documentation, such as the [generated checklist for adding workflows](./workflows/add-workflow.md#checklist).
+### Steps
 
-## Examples
+The core part of a workflow is a series of steps to take to complete the task. The steps include:
+
+- **Copying** from template files
+- **Updating** those files-from-templates based on the current task
+- **Running Checks** like running automated tests or static analysis tools
+- **Running Scripts** such as installing dependencies or generating code (deterministically)
+- **Prompting** the agent or user
+
+### Documents
+
+These documents are the source of truth for what the workflow should generate. The workflow itself should not contain documentation; it should refer to the documentation and focus on directing and orchestrating.
+
+Ideally, these documents should live in the same package or module as the workflow, because guiding documents beget workflows.
+
+### Templates
+
+These represent the preferred way to structure whatever thing is being created or updated as part of the workflow. You're much more likely to have a reliable result if the agent (or developer!) doesn't have to start from scratch.
+
+## Example Workflows
 
 This repository has [several workflows](https://github.com/search?q=repo%3Asderickson%2Fsaflib%20defineWorkflow&type=code) in it as examples. They're continuously updated as I develop the library and how to use it.
 
 You can also see the [template file](https://github.com/sderickson/saflib/blob/main/workflows/workflows/add-workflow.templates/template-file.ts) for the "add-workflow" workflow.
+
+## Generating Checklists
+
+The workflow CLI tool includes a `checklist` command which will dry-run the workflow and print out a checklist of the steps the workflow takes. This can be used in documentation, such as the [generated checklist for adding workflows](./workflows/add-workflow.md#checklist).
