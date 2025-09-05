@@ -4,6 +4,6 @@
 
 # Variable: typedEnv
 
-> `const` **typedEnv**: [`IdentityServiceEnvSchema`](../interfaces/IdentityServiceEnvSchema.md)
+> `const` **typedEnv**: [`IdentityHttpEnvSchema`](../interfaces/IdentityHttpEnvSchema.md)
 
-`process.env` casted to the `IdentityServiceEnvSchema` type.
+`process.env` casted to the `IdentityHttpEnvSchema` type.

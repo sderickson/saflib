@@ -63,7 +63,10 @@ export function generateTypeDoc(options: GenerateTypeDocOptions) {
   ].join(" ");
 
   try {
-    execSync(command, { stdio: "inherit" });
+    execSync(command, {
+      stdio: "inherit",
+      cwd: monorepoContext.monorepoPackageDirectories[packageName],
+    });
   } catch (e) {
     console.error("Failed to generate docs. Fix warnings above.");
     process.exit(1);

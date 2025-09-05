@@ -21,12 +21,13 @@ export function generateWorkflowDocs(options: GenerateWorkflowDocsOptions) {
     unlinkSync(`${workflowsDir}/${file}`);
   }
   const workflowDocs = workflowNames.map((workflowName) => {
+    const basename = workflowName.split("/").pop();
     const doc = getWorkflowDoc(workflowName);
-    const filePath = `${workflowsDir}/${workflowName}.md`;
+    const filePath = `${workflowsDir}/${basename}.md`;
     writeFileSync(filePath, doc);
     return {
       name: workflowName,
-      path: `./${workflowName}.md`,
+      path: `./${basename}.md`,
     };
   });
 

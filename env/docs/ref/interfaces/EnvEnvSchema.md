@@ -41,6 +41,14 @@ The root domain of the deployment, e.g. 'saf.com'.
 
 ---
 
+### DOMAIN_REDIRECTS?
+
+> `optional` **DOMAIN_REDIRECTS**: `string`
+
+Comma-separated list of domains to redirect to the root domain, e.g. 'old-subdomain1.saf.com,old-subdomain2.saf.com'.
+
+---
+
 ### MOCK_INTEGRATIONS?
 
 > `optional` **MOCK_INTEGRATIONS**: `"true"` \| `"false"`
@@ -62,6 +70,14 @@ The environment of the deployment. Generally should avoid using this, consider i
 > **PROTOCOL**: `"https"` \| `"http"`
 
 The protocol of the deployment, e.g. 'https'
+
+---
+
+### SERVICE_SUBDOMAINS
+
+> **SERVICE_SUBDOMAINS**: `string`
+
+Comma-separated list of service subdomains, e.g. 'revenue,geo,identity,core'.
 
 ---
 
