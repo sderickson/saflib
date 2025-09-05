@@ -1,10 +1,10 @@
-import { AddSpaWorkflow } from "./add-spa.ts";
-import { AddSpaPageWorkflow } from "./add-spa-page.ts";
-import type { ConcreteWorkflow } from "@saflib/workflows";
+import { AddSpaWorkflowDefinition } from "./add-spa.ts";
+import { AddSpaPageWorkflowDefinition } from "./add-spa-page.ts";
+import type { WorkflowDefinition } from "@saflib/workflows";
 
-const workflowClasses: ConcreteWorkflow[] = [
-  AddSpaWorkflow,
-  AddSpaPageWorkflow,
+const workflowDefinitions: WorkflowDefinition[] = [
+  AddSpaWorkflowDefinition,
+  AddSpaPageWorkflowDefinition,
 ];
 
-export default workflowClasses;
+export default workflowDefinitions;

@@ -4,15 +4,15 @@
   "type": "module",
   "exports": {
     ".": "./index.ts",
-    "./workflows": "./workflows/index.ts",
     "./testing": "./testing/index.ts"
   },
   "dependencies": {
-    "@tanstack/vue-query": "^5.0.0",
+    "@tanstack/vue-query": "^5.85.9",
     "openapi-fetch": "^0.14.0"
   },
   "devDependencies": {
     "@saflib/workflows": "*",
+    "@saflib/vitest": "*",
     "@saflib/dev-tools": "*",
     "@saflib/vue": "*",
     "msw": "^2.0.0"

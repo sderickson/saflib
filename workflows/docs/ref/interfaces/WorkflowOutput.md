@@ -10,8 +10,14 @@ Outputs every workflow machine returns.
 
 ### checklist
 
-> **checklist**: [`ChecklistItem`](ChecklistItem.md)[]
+> **checklist**: `ChecklistItem`[]
 
 Short descriptions of every step taken in the workflow. Can be used
 either to generate a sample checklist for a workflow, or a summary
 of the work done by a completed workflow. Workflows build these recursively.
+
+---
+
+### copiedFiles?
+
+> `optional` **copiedFiles**: `Record`\<`string`, `string`\>

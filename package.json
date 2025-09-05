@@ -17,5 +17,9 @@
   },
   "engines": {
     "node": ">=22"
+  },
+  "dependencies": {
+    "@saflib/dev-tools": "*",
+    "vue-tsc": "^3.0.6"
   }
 }

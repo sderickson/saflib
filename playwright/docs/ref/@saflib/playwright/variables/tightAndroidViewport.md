@@ -1,6 +1,6 @@
 [**@saflib/playwright**](../../../index.md)
 
-***
+---
 
 # Variable: tightAndroidViewport
 
@@ -8,7 +8,7 @@
 
 Dimensions for a small Android device, for E2E testing the mobile experience.
 
-## Type Declaration
+## Type declaration
 
 ### height
 

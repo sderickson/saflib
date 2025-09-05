@@ -1,11 +1,20 @@
 {
   "intentionallyNotExported": [
-    "AbstractClassConstructor",
-    "WorkflowActionFunction",
-    "PromptParams",
-    "PromptAgentComposerOptions",
-    "XStateWorkflowOptions",
     "ActionParam",
-    "WorkflowBlob"
+    "ChecklistItem",
+    "CommandStepContext",
+    "Context",
+    "CopyNextFileOutput",
+    "CopyStepContext",
+    "CreateArgsType",
+    "DocStepContext",
+    "Input",
+    "LogParams",
+    "PromptStepContext",
+    "PromptParams",
+    "TestStepContext",
+    "UpdateStepContext",
+    "WorkflowInput",
+    "WorkflowContext"
   ]
 }

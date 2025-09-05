@@ -1,6 +1,8 @@
-import { AddEmailTemplateWorkflow } from "./add-email-template.ts";
-import type { ConcreteWorkflow } from "@saflib/workflows";
+import { AddEmailTemplateWorkflowDefinition } from "./add-email-template.ts";
+import type { WorkflowDefinition } from "@saflib/workflows";
 
-const workflowClasses: ConcreteWorkflow[] = [AddEmailTemplateWorkflow];
+const workflowDefinitions: WorkflowDefinition[] = [
+  AddEmailTemplateWorkflowDefinition,
+];
 
-export default workflowClasses;
+export default workflowDefinitions;

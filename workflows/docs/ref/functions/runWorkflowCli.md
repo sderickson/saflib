@@ -6,20 +6,20 @@
 
 > **runWorkflowCli**(`workflows`): `void`
 
-Uses Commander.js to run a CLI for running workflows.
+Given a list of workflow classes, runs a CLI for running workflows.
 
 The @saflib/workflows package can't run the CLI because other packages
 depend on it to make workflows. So a separate package needs to depend on
 those packages which depend on @saflib/workflows. This export allows
-a separate package to actually compose and expose the CLI.
+a separate package to actually gather all the ConcreteWorkflowRunners and expose them as a CLI.
 
-This also means you can customize which workflows are actually available.
+Use this also to customize which workflows are actually available.
 
 ## Parameters
 
-| Parameter   | Type                                              |
-| ----------- | ------------------------------------------------- |
-| `workflows` | [`WorkflowMeta`](../interfaces/WorkflowMeta.md)[] |
+| Parameter   | Type                                                                          |
+| ----------- | ----------------------------------------------------------------------------- |
+| `workflows` | [`WorkflowDefinition`](../interfaces/WorkflowDefinition.md)\<`any`, `any`\>[] |
 
 ## Returns
 

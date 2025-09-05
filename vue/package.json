@@ -11,6 +11,9 @@
     "./vitest-config": "./testing/vitest-config.js"
   },
   "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "typecheck": "tsc --project tsconfig.app.json"
   },
   "dependencies": {

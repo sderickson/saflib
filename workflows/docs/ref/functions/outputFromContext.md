@@ -10,10 +10,10 @@ Helper function to create `WorkflowOutput` from `WorkflowContext`.
 
 ## Parameters
 
-| Parameter                   | Type                                                                    |
-| --------------------------- | ----------------------------------------------------------------------- |
-| `__namedParameters`         | \{ `context`: [`WorkflowContext`](../interfaces/WorkflowContext.md); \} |
-| `__namedParameters.context` | [`WorkflowContext`](../interfaces/WorkflowContext.md)                   |
+| Parameter                   | Type                                |
+| --------------------------- | ----------------------------------- |
+| `__namedParameters`         | \{ `context`: `WorkflowContext`; \} |
+| `__namedParameters.context` | `WorkflowContext`                   |
 
 ## Returns
 

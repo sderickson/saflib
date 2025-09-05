@@ -1,7 +1,8 @@
-// @ts-nocheck
-import { pascalCaseWorkflowNameWorkflow } from "./workflowName.ts";
-import type { ConcreteWorkflow } from "@saflib/workflows";
+import { TemplateFileWorkflowDefinition } from "./template-file.ts";
+import type { WorkflowDefinition } from "@saflib/workflows";
 
-const workflowClasses: ConcreteWorkflow[] = [pascalCaseWorkflowNameWorkflow];
+const workflowDefinitions: WorkflowDefinition[] = [
+  TemplateFileWorkflowDefinition,
+];
 
-export default workflowClasses;
+export default workflowDefinitions;

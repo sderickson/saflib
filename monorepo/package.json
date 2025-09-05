@@ -8,6 +8,11 @@
     "./tsconfig.json": "./tsconfig.json",
     "./eslint.config.js": "./eslint.config.js"
   },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
+  },
   "devDependencies": {
     "globals": "^16",
     "eslint": "^9.0.0",

@@ -4,10 +4,12 @@ import { type VueWrapper } from "@vue/test-utils";
 import TemplateFileAsync from "./TemplateFileAsync.vue";
 import { template_file_page as strings } from "./TemplateFile.strings.ts";
 // TODO: Fix this import to point to the actual one for this package
-import { mountTestApp } from "../spa-template/test-app.ts";
+import { mountTestApp, testAppHandlers } from "../spa-template/test-app.ts";
+import { setupMockServer } from "@saflib/sdk/testing";
 
 describe("TemplateFile", () => {
   stubGlobals();
+  setupMockServer(testAppHandlers);
 
   const getExampleHeader = (wrapper: VueWrapper) => {
     return getElementByString(wrapper, strings.title);

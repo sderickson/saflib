@@ -30,6 +30,8 @@ const matchMediaMock = (): MediaQueryList => {
   };
 };
 
+let scrollToOriginal = window.scrollTo;
+
 function stubGlobalsSetup() {
   vi.stubGlobal("location", {
     href: "http://localhost",
@@ -43,8 +45,10 @@ function stubGlobalsSetup() {
     removeEventListener: () => {},
     dispatchEvent: () => true,
   });
+  window.scrollTo = vi.fn();
 }
 
 function stubGlobalsTeardown() {
   vi.unstubAllGlobals();
+  window.scrollTo = scrollToOriginal;
 }

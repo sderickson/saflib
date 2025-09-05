@@ -1,6 +1,6 @@
 [**@saflib/playwright**](../../../index.md)
 
-***
+---
 
 # Function: attachScreenshot()
 
@@ -10,9 +10,9 @@ Attach a screenshot to the test report. Use throughout tests to create a visual 
 
 ## Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `page` | `Page` |
+| Parameter | Type                                                      |
+| --------- | --------------------------------------------------------- |
+| `page`    | `Page`                                                    |
 | `options` | [`ScreenshotOptions`](../interfaces/ScreenshotOptions.md) |
 
 ## Returns

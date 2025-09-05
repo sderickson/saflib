@@ -1,6 +1,5 @@
 import { existsSync, readFileSync } from "fs";
 import path, { join } from "node:path";
-import { fileURLToPath } from "node:url";
 
 export const getCurrentPackage = () => {
   const currentPackage = readFileSync(
@@ -8,12 +7,6 @@ export const getCurrentPackage = () => {
     "utf8",
   );
   return JSON.parse(currentPackage).name;
-};
-
-export const directoryFromMetaUrl = (metaUrl: string) => {
-  const __filename = fileURLToPath(metaUrl);
-  const __dirname = path.dirname(__filename);
-  return __dirname;
 };
 
 export const getSaflibAbsoluteDir = () => {

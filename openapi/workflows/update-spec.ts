@@ -1,60 +1,43 @@
-import { setup } from "xstate";
 import {
-  workflowActions,
-  workflowActors,
-  logInfo,
-  type WorkflowContext,
-  promptAgentComposer,
-  runNpmCommandComposer,
-  XStateWorkflow,
-  contextFromInput,
-  type WorkflowInput,
-  outputFromContext,
+  PromptStepMachine,
+  CommandStepMachine,
+  DocStepMachine,
+  defineWorkflow,
+  step,
 } from "@saflib/workflows";
 import { resolve } from "path";
-import { fileURLToPath } from "node:url";
 
-interface UpdateSpecWorkflowInput extends WorkflowInput {}
+const input = [] as const;
 
-interface UpdateSpecWorkflowContext extends WorkflowContext {
-  refDoc: string;
-}
+interface UpdateSpecWorkflowContext {}
 
-export const UpdateSpecWorkflowMachine = setup({
-  types: {
-    input: {} as UpdateSpecWorkflowInput,
-    context: {} as UpdateSpecWorkflowContext,
-  },
-  actions: workflowActions,
-  actors: workflowActors,
-}).createMachine({
-  id: "update-spec",
+export const UpdateSpecWorkflowDefinition = defineWorkflow<
+  typeof input,
+  UpdateSpecWorkflowContext
+>({
+  id: "openapi/update-spec",
+
   description: "Update the OpenAPI spec for the project.",
-  initial: "getOriented",
-  context: ({ input }) => {
-    const __filename = fileURLToPath(import.meta.url);
-    const __dirname = resolve(__filename, "..");
-    const refDoc = resolve(__dirname, "docs/03-updates.md");
 
-    return {
-      refDoc,
-      ...contextFromInput(input),
-    };
+  input,
+
+  sourceUrl: import.meta.url,
+
+  context: () => ({}),
+
+  templateFiles: {},
+
+  docFiles: {
+    overviewDoc: resolve(import.meta.dirname, "../docs/01-overview.md"),
   },
-  entry: logInfo("Successfully began workflow"),
-  states: {
-    ...promptAgentComposer<UpdateSpecWorkflowContext>({
-      promptForContext: ({ context }) =>
-        `Review the project spec, and the documentation for updating specs.
-      
-      ${context.refDoc}`,
-      stateName: "getOriented",
-      nextStateName: "updateSpec",
-    }),
 
-    ...promptAgentComposer<UpdateSpecWorkflowContext>({
-      promptForContext: () =>
-        `Add common objects to \`schemas\/\`, and routes to \`routes\/\`. Then link them in the \`openapi.yaml\` file.
+  steps: [
+    step(DocStepMachine, () => ({
+      docId: "overviewDoc",
+    })),
+
+    step(PromptStepMachine, () => ({
+      promptText: `Add common objects to \`schemas\/\`, and routes to \`routes\/\`. Then link them in the \`openapi.yaml\` file.
 
         **Tip:** For request bodies, reference the properties from your main schema directly. Example:
 
@@ -68,40 +51,19 @@ export const UpdateSpecWorkflowMachine = setup({
         This keeps your spec DRY and easier to maintain.
         
         Also, when creating a route file, have the top-level property be the same as the operationId.`,
-      stateName: "updateSpec",
-      nextStateName: "updateOpenapiYaml",
-    }),
+    })),
 
-    ...promptAgentComposer<UpdateSpecWorkflowContext>({
-      promptForContext: () =>
-        `Update the openapi.yaml file to include the new routes and schemas.`,
-      stateName: "updateOpenapiYaml",
-      nextStateName: "generateFiles",
-    }),
+    step(PromptStepMachine, () => ({
+      promptText: `Update the openapi.yaml file to include the new routes and schemas.`,
+    })),
 
-    ...runNpmCommandComposer({
-      command: "run generate",
-      stateName: "generateFiles",
-      nextStateName: "updateIndexTs",
-    }),
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["run", "generate"],
+    })),
 
-    ...promptAgentComposer<UpdateSpecWorkflowContext>({
-      promptForContext: () =>
-        `Update \`index.ts\` to export any new schemas that were added to the spec.`,
-      stateName: "updateIndexTs",
-      nextStateName: "done",
-    }),
-
-    done: {
-      type: "final",
-    },
-  },
-  output: outputFromContext,
+    step(PromptStepMachine, () => ({
+      promptText: `Update \`index.ts\` to export any new schemas that were added to the spec.`,
+    })),
+  ],
 });
-
-export class UpdateSpecWorkflow extends XStateWorkflow {
-  machine = UpdateSpecWorkflowMachine;
-  description = "Update the OpenAPI spec for the project.";
-  cliArguments = [];
-  sourceUrl = import.meta.url;
-}

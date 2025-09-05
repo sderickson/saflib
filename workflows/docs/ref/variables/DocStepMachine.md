@@ -1,0 +1,9 @@
+[**@saflib/workflows**](../index.md)
+
+---
+
+# Variable: DocStepMachine
+
+> `const` **DocStepMachine**: `StateMachine`\<`DocStepContext`, `AnyEventObject`, \{\[`key`: `string`\]: `undefined` \| `ActorRefFromLogic`\<`PromiseActorLogic`\<`unknown`, `NonReducibleUnknown`, `EventObject`\>\>; \}, \{ `id`: `undefined` \| `string`; `logic`: `PromiseActorLogic`\<`unknown`, `NonReducibleUnknown`, `EventObject`\>; `src`: `"noop"`; \}, `Values`\<\{ `log`: \{ `params`: `LogParams`; `type`: `"log"`; \}; `prompt`: \{ `params`: `PromptParams`; `type`: `"prompt"`; \}; \}\>, `never`, `never`, `"done"` \| `"reviewDoc"`, `string`, [`DocStepInput`](../interfaces/DocStepInput.md) & `WorkflowInput`, [`WorkflowOutput`](../interfaces/WorkflowOutput.md), `EventObject`, `MetaObject`, \{ `context`: (`__namedParameters`) => `object`; `id`: `"doc-step"`; `initial`: `"reviewDoc"`; `output`: (`__namedParameters`) => `object`; `states`: \{ `done`: \{ `type`: `"final"`; \}; `reviewDoc`: \{ `invoke`: \{ `input`: (`__namedParameters`) => `object`; `onDone`: \{ `actions`: readonly \[\{ `params`: (`event`) => `object`; `type`: `"prompt"`; \}\]; `target`: `"done"`; \}; `onError`: \{ `actions`: readonly \[\{ `params`: (`event`) => `object`; `type`: `"log"`; \}, `ActionFunction`\<`DocStepContext`, `ErrorActorEvent`\<`unknown`, `string`\>, `AnyEventObject`, `undefined`, `never`, `never`, `never`, `never`, `never`\>\]; \}; `src`: `PromiseActorLogic`\<`undefined` \| `"Dry run - would review documentation"`, \{ `docFiles`: `Record`\<`string`, `string`\>; `docId`: `string`; `dryRun`: `boolean`; \}, `any`\>; \}; `on`: \{ `continue`: \{ `reenter`: `true`; `target`: `"reviewDoc"`; \}; `prompt`: \{ `actions`: \{ `params`: (`event`) => `object`; `type`: `"prompt"`; \}; \}; \}; \}; \}; \}\>
+
+Prompts the agent to read a document from the `docFiles` property for the workflow.

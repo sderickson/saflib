@@ -1,6 +1,6 @@
 [**@saflib/playwright**](../../../index.md)
 
-***
+---
 
 # Function: chooseVuetifySelectOption()
 
@@ -10,11 +10,11 @@ The Vuetify select component is a bit tricky with Playwright, so this is a conve
 
 ## Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `page` | `Page` |
-| `label` | `string` |
-| `option` | `string` |
+| Parameter | Type     |
+| --------- | -------- |
+| `page`    | `Page`   |
+| `label`   | `string` |
+| `option`  | `string` |
 
 ## Returns
 

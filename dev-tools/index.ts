@@ -17,6 +17,6 @@ export {
   getCurrentPackage,
   getGitHubUrl,
   getTopWorkflowDir,
-  directoryFromMetaUrl,
 } from "./src/utils.ts";
 export { type PackageJson } from "./types.ts";
+export { addGenerateAllCommand } from "./bin/saf-docs-cli/generate-all.ts";

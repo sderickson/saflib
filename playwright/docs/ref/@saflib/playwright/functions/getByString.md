@@ -1,6 +1,6 @@
 [**@saflib/playwright**](../../../index.md)
 
-***
+---
 
 # Function: getByString()
 
@@ -10,9 +10,9 @@ Convenience function for getting an element by an ElementString. Use this as muc
 
 ## Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `page` | `Page` |
+| Parameter     | Type            |
+| ------------- | --------------- |
+| `page`        | `Page`          |
 | `stringThing` | `ElementString` |
 
 ## Returns

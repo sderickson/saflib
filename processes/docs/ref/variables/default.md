@@ -4,4 +4,4 @@
 
 # Variable: default
 
-> `const` **default**: `ConcreteWorkflow`[]
+> `const` **default**: `WorkflowDefinition`[]

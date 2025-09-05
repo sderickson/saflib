@@ -1,123 +1,102 @@
-import { setup } from "xstate";
 import {
-  workflowActions,
-  workflowActors,
-  logInfo,
-  promptAgentComposer,
-  XStateWorkflow,
-  contextFromInput,
-  type WorkflowInput,
-  outputFromContext,
-  copyTemplateStateComposer,
-  type TemplateWorkflowContext,
-  runNpmCommandComposer,
+  CopyStepMachine,
+  PromptStepMachine,
+  CommandStepMachine,
+  defineWorkflow,
+  step,
+  DocStepMachine,
 } from "@saflib/workflows";
 import path from "path";
-import { kebabCaseToPascalCase } from "@saflib/utils";
 
-interface SpecProjectXstateWorkflowInput extends WorkflowInput {
-  name: string;
-}
+const sourceDir = path.resolve(import.meta.dirname, "./templates");
 
-interface SpecProjectXstateWorkflowContext extends TemplateWorkflowContext {
+const input = [
+  {
+    name: "name",
+    description:
+      "kebab-case name of project to use in folder and git branch names and alike",
+    exampleValue: "example-project",
+  },
+] as const;
+
+interface SpecProjectWorkflowContext {
   name: string;
+  targetDir: string;
   safDocOutput: string;
   safWorkflowHelpOutput: string;
 }
 
-export const SpecProjectXstateWorkflowMachine = setup({
-  types: {
-    input: {} as SpecProjectXstateWorkflowInput,
-    context: {} as SpecProjectXstateWorkflowContext,
-  },
-  actions: workflowActions,
-  actors: workflowActors,
-}).createMachine({
-  id: "spec-project",
+export const SpecProjectWorkflowDefinition = defineWorkflow<
+  typeof input,
+  SpecProjectWorkflowContext
+>({
+  id: "processes/spec-project",
+
   description: "Write a product/technical specification for a project.",
-  initial: "copyTemplate",
+
+  input,
+
+  sourceUrl: import.meta.url,
+
   context: ({ input }) => {
     const date = new Date().toISOString().split("T")[0];
     const projectDirName = `${date}-${input.name}`;
     const targetDir = path.resolve(process.cwd(), projectDirName);
-    const context = {
+
+    return {
       name: input.name,
-      pascalName: kebabCaseToPascalCase(input.name),
       targetDir,
-      sourceDir: path.resolve(import.meta.dirname, "./templates"),
       safDocOutput: "",
       safWorkflowHelpOutput: "",
-      ...contextFromInput(input),
     };
-    return context;
   },
-  entry: logInfo("Successfully began workflow"),
-  states: {
-    ...copyTemplateStateComposer({
-      stateName: "copyTemplate",
-      nextStateName: "showSafDocOutput",
-    }),
 
-    ...promptAgentComposer<SpecProjectXstateWorkflowContext>({
-      promptForContext: ({ context }) =>
-        `The following packages are available in this monorepo. You can learn more about any given package by running \`npm exec saf-doc <package-name>\`.
-
-${context.safDocOutput}`,
-      stateName: "showSafDocOutput",
-      nextStateName: "fillSpec",
-    }),
-
-    ...promptAgentComposer<SpecProjectXstateWorkflowContext>({
-      promptForContext: ({ context }) =>
-        `You are writing a product/technical specification for ${context.name}. Ask for an overview of the project if you haven't already gotten one, then given that description, fill the spec.md file which was just created.`,
-      stateName: "fillSpec",
-      nextStateName: "reviewSpec",
-    }),
-
-    ...promptAgentComposer<SpecProjectXstateWorkflowContext>({
-      promptForContext: () =>
-        `Go back and forth with the human on the spec. Have the human make updates and notes in the doc, then review their changes, make your own updates, and repeat until they sign off.`,
-      stateName: "reviewSpec",
-      nextStateName: "reviewChecklistGuide",
-    }),
-
-    ...promptAgentComposer<SpecProjectXstateWorkflowContext>({
-      promptForContext: () =>
-        `Before creating the checklist, please review the guide on writing spec project checklists located at writing-spec-project-checklists.md. This will help you create a proper implementation checklist with the correct format, workflow commands, and paths. Once you've reviewed the guide, run "npm exec saf-workflow next" to continue.`,
-      stateName: "reviewChecklistGuide",
-      nextStateName: "printWorkflows",
-    }),
-
-    ...runNpmCommandComposer({
-      stateName: "printWorkflows",
-      nextStateName: "promptForChecklist",
-      command: "exec saf-workflow kickoff help",
-    }),
-
-    ...promptAgentComposer<SpecProjectXstateWorkflowContext>({
-      promptForContext: () =>
-        `See the above list of available workflow commands. Please fill out the checklist.md file with these commands and arguments.`,
-      stateName: "promptForChecklist",
-      nextStateName: "done",
-    }),
-
-    done: {
-      type: "final",
-    },
+  templateFiles: {
+    spec: path.join(sourceDir, "template-file.spec.md"),
+    checklist: path.join(sourceDir, "template-file.checklist.md"),
   },
-  output: outputFromContext,
+
+  docFiles: {
+    writing: path.join(
+      import.meta.dirname,
+      "../docs/writing-spec-project-checklists.md",
+    ),
+  },
+
+  steps: [
+    step(CopyStepMachine, ({ context }) => ({
+      name: context.name,
+      targetDir: context.targetDir,
+    })),
+
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["exec", "saf-docs", "print"],
+    })),
+
+    step(PromptStepMachine, () => ({
+      promptText: `Get familiar with the SAF packages available to you above. For more information about any given package, run \`npm exec saf-docs <package-name>\`.`,
+    })),
+
+    step(PromptStepMachine, ({ context }) => ({
+      promptText: `You are writing a product/technical specification for ${context.name}. Ask for an overview of the project if you haven't already gotten one, then given that description, fill the spec.md file which was just created.`,
+    })),
+
+    step(PromptStepMachine, () => ({
+      promptText: `Discuss and iterate on the spec until it's approved.`,
+    })),
+
+    step(DocStepMachine, () => ({
+      docId: "writing",
+    })),
+
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["exec", "saf-workflow", "kickoff", "help"],
+    })),
+
+    step(PromptStepMachine, () => ({
+      promptText: `See the above list of available workflow commands. Please fill out the checklist.md file with these commands and arguments.`,
+    })),
+  ],
 });
-
-export class SpecProjectXstateWorkflow extends XStateWorkflow {
-  machine = SpecProjectXstateWorkflowMachine;
-  description = "Write a product/technical specification for a project.";
-  cliArguments = [
-    {
-      name: "name",
-      description:
-        "kebab-case name of project to use in folder and git branch names and alike",
-      exampleValue: "example-project",
-    },
-  ];
-  sourceUrl = import.meta.url;
-}

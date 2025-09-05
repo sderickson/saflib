@@ -34,7 +34,7 @@ To solve this, I built a simple [workflow tool](https://scotterickson.info/blog/
 
 When it exits, it saves the machine state to disk so that when it's run again, it can pick up where it left off. This way the agent can run the workflow command, get a prompt, do the work, then run the workflow command again to get the next prompt until the machine is done. See [this blog post](https://scotterickson.info/blog/2025-05-10-workflow-first-iteration) for more details.
 
-Any routine work can become a workflow with this tool, such as [adding a route to a spec](./openapi/docs/workflows/update-spec.md), a [server handler for the route](./express/docs/workflows/add-route.md), a [page to a website](./vue/docs/workflows/add-spa-page.md), a [table to a database](./drizzle/docs/workflows/update-schema.md), a deployment to a project (TODO!), or a [package to a monorepo](./monorepo/docs/workflows/add-ts-package.md). Because it's built on [XState](https://stately.ai/docs), workflows can also invoke other workflows.
+Any routine work can become a workflow with this tool, such as [adding a route to a spec](./openapi/docs/workflows/update-spec.md), a [server handler for the route](./express/docs/workflows/add-handler.md), a [page to a website](./vue/docs/workflows/add-spa-page.md), a [table to a database](./drizzle/docs/workflows/update-schema.md), a deployment to a project (TODO!), or a [package to a monorepo](./monorepo/docs/workflows/add-ts-package.md). Because it's built on [XState](https://stately.ai/docs), workflows can also invoke other workflows.
 
 Going back to SAF, I opted to compose my own framework not only because it gives me a way to discern [best practices](./best-practices.md), it also is a playground for building out these workflows and testing them out and optimizing the stack _for_ the workflows. My goal is to:
 
@@ -70,10 +70,11 @@ The documentation for each workflow is generated. In the docs for any given work
 
 ## Trying Out Workflows
 
-Unfortunately, it's not very self-service. I still need to update [saf-template](https://github.com/sderickson/saf-template) to be able to use all modern workflows. Once that's done you'll be able to clone it and use the workflow tool with whichever coding agent (Cursor, Claude Code, Roo Code, etc.) you want.
+The `@saflib/workflows` package [documentation](./workflows/docs/README.md) explains how to install and use workflows in your own project. The only workflow that comes with that is one for adding workflows; you'll need to create your own otherwise since workflows are specific to your stack.
 
-If you're interested in collaborating on these, however, please feel free to reach out at [sderickson@gmail.com](mailto:sderickson@gmail.com)! You can also star or watch any of the following:
+If you'd like to try the workflows I use with my stack, clone and/or fork the [saf-template](https://github.com/sderickson/saf-template) repo. That repo has instructions on how to set it up. These SAF workflows are still experimental so your mileage may vary.
+
+If you're interested in collaborating on workflows, please feel free to reach out at [sderickson@gmail.com](mailto:sderickson@gmail.com) or create issues in [saflib](https://github.com/sderickson/saflib) You can also star or watch any of the following:
 
 - [saflib repo](https://github.com/sderickson/saflib) repo
-- [saf-template repo](https://github.com/sderickson/saf-template) repo
 - [SAF Project Board](https://github.com/users/sderickson/projects/2/views/3)
