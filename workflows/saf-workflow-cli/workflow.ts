@@ -7,7 +7,7 @@ import type {
 import type { WorkflowBlob } from "./types.ts";
 import type { AnyStateMachine, AnyActor } from "xstate";
 import { createActor, waitFor } from "xstate";
-import { getSafReporters } from "@saflib/node";
+import { getWorkflowLogger } from "../core/logger.ts";
 import { workflowAllSettled, continueWorkflow } from "../core/utils.ts";
 import { makeWorkflowMachine } from "../core/make.ts";
 
@@ -90,7 +90,7 @@ export class XStateWorkflowRunner extends AbstractWorkflowRunner {
       return false;
     }
     await waitFor(actor, workflowAllSettled);
-    const { log } = getSafReporters();
+    const log = getWorkflowLogger();
     log.info("");
     log.info("To continue, run 'npm exec saf-workflow next'");
     this.actor = actor;
@@ -106,7 +106,7 @@ export class XStateWorkflowRunner extends AbstractWorkflowRunner {
   };
 
   goToNextStep = async (): Promise<void> => {
-    const { log } = getSafReporters();
+    const log = getWorkflowLogger();
     if (!this.actor) {
       throw new Error("Workflow not started");
     }

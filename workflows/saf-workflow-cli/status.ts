@@ -1,6 +1,6 @@
 import type { Command } from "commander";
 import type { WorkflowDefinition } from "../core/types.ts";
-import { addNewLinesToString } from "@saflib/utils";
+import { addNewLinesToString } from "../strings.ts";
 import { loadWorkflow } from "./file-io.ts";
 
 export const addStatusCommand = (

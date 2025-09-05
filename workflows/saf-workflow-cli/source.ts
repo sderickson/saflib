@@ -1,5 +1,5 @@
 import type { Command } from "commander";
-import { addNewLinesToString } from "@saflib/utils";
+import { addNewLinesToString } from "../strings.ts";
 import { getGitHubUrl } from "@saflib/dev-tools";
 import type { WorkflowDefinition } from "../core/types.ts";
 

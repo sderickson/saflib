@@ -1,5 +1,5 @@
-import { getSafReporters } from "@saflib/node";
-import { addNewLinesToString } from "@saflib/utils";
+import { addNewLinesToString } from "../strings.ts";
+import { getWorkflowLogger } from "./logger.ts";
 import {
   type AnyMachineSnapshot,
   type AnyActor,
@@ -31,7 +31,7 @@ export function workflowAllSettled(snapshot: AnyMachineSnapshot): boolean {
 }
 
 export const print = (msg: string, noNewLine = false) => {
-  const { log } = getSafReporters();
+  const log = getWorkflowLogger();
   if (!noNewLine) {
     log.info("");
   }

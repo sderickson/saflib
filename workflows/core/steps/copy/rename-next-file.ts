@@ -7,7 +7,7 @@ import {
   kebabCaseToSnakeCase,
   kebabCaseToPascalCase,
   kebabCaseToCamelCase,
-} from "@saflib/utils";
+} from "../../../strings.ts";
 
 export const renameNextFile = fromPromise(
   async ({ input }: { input: CopyStepContext }) => {
