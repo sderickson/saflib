@@ -14,11 +14,6 @@
     "skipLibCheck": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
-    "verbatimModuleSyntax": true,
-
-    "outDir": "./dist",
-    "declaration": true,
-    "declarationMap": true,
-    "rootDir": "./",
+    "verbatimModuleSyntax": true
   }
 }

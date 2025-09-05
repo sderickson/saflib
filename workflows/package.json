@@ -22,7 +22,7 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "typecheck": "tsc",
-    "build": "tsc",
+    "build": "tsc --project tsconfig.build.json",
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
