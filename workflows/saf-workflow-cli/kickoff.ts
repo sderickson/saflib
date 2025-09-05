@@ -35,7 +35,7 @@ const kickoffWorkflow = async (
 ) => {
   const workflow = new XStateWorkflowRunner({
     definition: Workflow,
-    args: args,
+    args: args.slice(0, Workflow.input.length),
     dryRun: false,
   });
   await workflow.kickoff();

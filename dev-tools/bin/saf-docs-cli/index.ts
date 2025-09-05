@@ -1,7 +1,7 @@
 #!/usr/bin/env node --experimental-strip-types --disable-warning=ExperimentalWarning
 
 import { Command } from "commander";
-import { buildMonorepoContext } from "../workspace.ts";
+import { buildMonorepoContext } from "@saflib/dev-tools";
 import { generateCommand } from "./generate.ts";
 import { setupContext } from "@saflib/commander";
 
