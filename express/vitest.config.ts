@@ -4,6 +4,6 @@ export default defineConfig({
   test: {
     globals: true,
     environment: "node",
-    exclude: ["workflows/route-template/**"],
+    exclude: ["workflows/handler-template/**"],
   },
 });

@@ -10,13 +10,13 @@ import {
 import path from "node:path";
 import { kebabCaseToPascalCase, kebabCaseToCamelCase } from "@saflib/utils";
 
-const sourceDir = path.join(import.meta.dirname, "route-template");
+const sourceDir = path.join(import.meta.dirname, "handler-template");
 
 const input = [
   {
     name: "path",
-    description: "Path of the new route (e.g. 'routes/todos/create')",
-    exampleValue: "routes/example-subpath/example-route",
+    description: "Path of the new handler (e.g. 'routes/todos/create')",
+    exampleValue: "routes/example-subpath/example-handler",
   },
 ] as const;
 
@@ -25,7 +25,7 @@ interface AddHandlerWorkflowContext {
   camelName: string; // e.g. createCallSeries
   targetDir: string;
   featureName: string; // e.g. "call-series"
-  featureRouterPath: string; // e.g. "/routes/call-series/index.ts"
+  handlerPath: string; // e.g. "/routes/call-series/index.ts"
   pascalFeatureName: string; // e.g. "CallSeries"
   httpAppPath: string; // e.g. "/http.ts"
   appPath: string; // e.g. "/app.ts"
@@ -48,7 +48,7 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
     const featureName = path.basename(targetDir);
 
     const cwd = process.cwd();
-    const featureRouterPath = path.join(targetDir, "index.ts").replace(cwd, "");
+    const handlerPath = path.join(targetDir, "index.ts").replace(cwd, "");
     const pascalFeatureName = kebabCaseToPascalCase(featureName);
     const httpAppPath = path.join(cwd, "http.ts").replace(cwd, "");
     const appPath = path.join(cwd, "app.ts").replace(cwd, "");
@@ -59,7 +59,7 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
       camelName: kebabCaseToCamelCase(name),
       targetDir,
       featureName,
-      featureRouterPath,
+      handlerPath,
       pascalFeatureName,
       httpAppPath,
       appPath,
@@ -67,7 +67,7 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
   },
 
   templateFiles: {
-    route: path.join(sourceDir, "template-file.ts"),
+    handler: path.join(sourceDir, "template-file.ts"),
     test: path.join(sourceDir, "template-file.test.ts"),
   },
 
@@ -87,11 +87,11 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
     })),
 
     step(PromptStepMachine, ({ context }) => ({
-      promptText: `Check if the feature router exists at \`${context.featureRouterPath}\`. If it doesn't exist, create it with the basic structure to export the new route handler.`,
+      promptText: `Check if the feature router exists at \`${context.handlerPath}\`. If it doesn't exist, create it with the basic structure to export the new route handler.`,
     })),
 
     step(PromptStepMachine, ({ context }) => ({
-      promptText: `Update the feature router at \`${context.featureRouterPath}\` to include the new route handler.
+      promptText: `Update the feature router at \`${context.handlerPath}\` to include the new route handler.
         1. Import the new handler from "./${context.name}.ts"
         2. Add the route to the router using the appropriate HTTP method
         3. Make sure to export a create${context.pascalFeatureName}Router function that returns the router`,
@@ -109,7 +109,7 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
     })),
 
     step(UpdateStepMachine, ({ context }) => ({
-      fileId: "route",
+      fileId: "handler",
       promptMessage: `Implement the ${context.camelName} route handler. Make sure to:
         1. Use createHandler from @saflib/express
         2. Use types from your OpenAPI spec for request/response bodies

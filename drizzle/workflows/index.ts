@@ -1,4 +1,4 @@
-import { AddQueryWorkflowDefinition } from "./add-queries.ts";
+import { AddQueryWorkflowDefinition } from "./add-query.ts";
 import { UpdateSchemaWorkflowDefinition } from "./update-schema.ts";
 import type { WorkflowDefinition } from "@saflib/workflows";
 

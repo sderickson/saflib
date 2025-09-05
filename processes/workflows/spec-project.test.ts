@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { SpecProjectWorkflow } from "./spec-project.ts";
+import { SpecProjectWorkflowDefinition } from "./spec-project.ts";
 import { dryRunWorkflow } from "@saflib/workflows";
 
 describe("spec-project", () => {
   it("should successfully dry run", async () => {
-    const result = await dryRunWorkflow(SpecProjectWorkflow);
+    const result = await dryRunWorkflow(SpecProjectWorkflowDefinition);
     expect(result.checklist).toBeDefined();
   });
 });

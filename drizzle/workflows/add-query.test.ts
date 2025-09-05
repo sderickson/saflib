@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { AddRouteWorkflow } from "./add-route.ts";
+import { AddQueryWorkflowDefinition } from "./add-query.ts";
 import { dryRunWorkflow } from "@saflib/workflows";
 
-describe("add-route", () => {
+describe("add-queries", () => {
   it("should successfully dry run", async () => {
-    const result = await dryRunWorkflow(AddRouteWorkflow);
+    const result = await dryRunWorkflow(AddQueryWorkflowDefinition);
     expect(result.checklist).toBeDefined();
   });
 });

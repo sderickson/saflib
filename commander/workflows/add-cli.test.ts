@@ -1,10 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { AddCLIWorkflow } from "./add-cli.ts";
+import { AddCLIWorkflowDefinition } from "./add-cli.ts";
 import { dryRunWorkflow } from "@saflib/workflows";
 
 describe("add-cli", () => {
   it("should create a new CLI", async () => {
-    const result = await dryRunWorkflow(AddCLIWorkflow);
+    const result = await dryRunWorkflow(AddCLIWorkflowDefinition);
     expect(result.checklist).toBeDefined();
   });
 });
