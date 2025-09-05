@@ -13,7 +13,7 @@ import {
 import { contextFromInput } from "../utils.ts";
 import { raise } from "xstate";
 import path from "node:path";
-import { getGitHubUrl } from "@saflib/dev-tools";
+import { getSourceUrl } from "../logger.ts";
 
 /**
  * Input for the DocStepMachine.
@@ -127,7 +127,7 @@ export const DocStepMachine = setup({
   },
   output: ({ context }) => {
     const docPath = context.docFiles![context.docId];
-    const githubPath = getGitHubUrl(docPath);
+    const githubPath = getSourceUrl(docPath);
     return {
       checklist: [
         {

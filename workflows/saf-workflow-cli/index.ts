@@ -3,8 +3,9 @@ import type { WorkflowDefinition } from "../core/types.ts";
 import { addNewLinesToString } from "../strings.ts";
 import {
   createWorkflowLogger,
-  setupWorkflowLogger,
+  setupWorkflowContext,
   type WorkflowLoggerOptions,
+  type GetSourceUrlFunction,
 } from "../core/logger.ts";
 import { addKickoffCommand } from "./kickoff.ts";
 import { addChecklistCommand } from "./checklist.ts";
@@ -18,6 +19,7 @@ import { addSourceCommand } from "./source.ts";
  */
 export interface WorkflowCliOptions {
   logger?: WorkflowLoggerOptions;
+  getSourceUrl?: GetSourceUrlFunction;
 }
 
 /**
@@ -49,7 +51,7 @@ export function runWorkflowCli(
   addListCommand(program, workflows);
   addSourceCommand(program, workflows);
 
-  // Set up logging
+  // Set up workflow context
   const silentLogging = process.argv.includes("checklist");
   const loggerOptions: WorkflowLoggerOptions = {
     silent: silentLogging,
@@ -57,7 +59,10 @@ export function runWorkflowCli(
   };
 
   const logger = createWorkflowLogger(loggerOptions);
-  setupWorkflowLogger(logger);
+  setupWorkflowContext({
+    logger,
+    getSourceUrl: options.getSourceUrl,
+  });
 
   program.parse(process.argv);
 }

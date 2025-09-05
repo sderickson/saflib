@@ -1,6 +1,7 @@
 import winston, { type Logger, format } from "winston";
 import { type TransformableInfo } from "logform";
 import { AsyncLocalStorage } from "async_hooks";
+import path from "node:path";
 
 /**
  * Logger interface that matches the winston Logger interface
@@ -10,6 +11,19 @@ export interface WorkflowLogger {
   error: (message: string) => void;
   warn: (message: string) => void;
   debug: (message: string) => void;
+}
+
+/**
+ * Function type for getting source URLs from absolute file paths
+ */
+export type GetSourceUrlFunction = (absolutePath: string) => string;
+
+/**
+ * Context object that provides workflow utilities
+ */
+export interface WorkflowContext {
+  logger: WorkflowLogger;
+  getSourceUrl?: GetSourceUrlFunction;
 }
 
 /**
@@ -57,25 +71,53 @@ export function createSilentLogger(): Logger {
 }
 
 /**
- * AsyncLocalStorage for workflow loggers
+ * AsyncLocalStorage for workflow context
  */
-export const workflowLoggerStorage = new AsyncLocalStorage<WorkflowLogger>();
+export const workflowContextStorage = new AsyncLocalStorage<WorkflowContext>();
+
+/**
+ * Get the current workflow context from async storage
+ */
+export function getWorkflowContext(): WorkflowContext {
+  const context = workflowContextStorage.getStore();
+  if (!context) {
+    // Fallback to a context with silent logger if no context is set
+    return {
+      logger: createSilentLogger(),
+    };
+  }
+  return context;
+}
 
 /**
  * Get the current workflow logger from async storage
  */
 export function getWorkflowLogger(): WorkflowLogger {
-  const logger = workflowLoggerStorage.getStore();
-  if (!logger) {
-    // Fallback to a silent logger if no logger is set
-    return createSilentLogger();
-  }
-  return logger;
+  return getWorkflowContext().logger;
 }
 
 /**
- * Set up the workflow logger in async storage
+ * Get source URL for a file path, with fallback to basename
+ */
+export function getSourceUrl(absolutePath: string): string {
+  const context = getWorkflowContext();
+  if (context.getSourceUrl) {
+    return context.getSourceUrl(absolutePath);
+  }
+  // Fallback to just the basename if no getSourceUrl function is provided
+  return path.basename(absolutePath);
+}
+
+/**
+ * Set up the workflow context in async storage
+ */
+export function setupWorkflowContext(context: WorkflowContext): void {
+  workflowContextStorage.enterWith(context);
+}
+
+/**
+ * Set up the workflow logger in async storage (backward compatibility)
  */
 export function setupWorkflowLogger(logger: WorkflowLogger): void {
-  workflowLoggerStorage.enterWith(logger);
+  setupWorkflowContext({ logger });
 }

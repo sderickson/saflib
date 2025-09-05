@@ -28,9 +28,10 @@ Use this also to customize which workflows are actually available.
 
 ## WorkflowCliOptions
 
-| Property | Type                    | Description                                 |
-| -------- | ----------------------- | ------------------------------------------- |
-| `logger` | `WorkflowLoggerOptions` | Options for configuring the workflow logger |
+| Property       | Type                    | Description                                   |
+| -------------- | ----------------------- | --------------------------------------------- |
+| `logger`       | `WorkflowLoggerOptions` | Options for configuring the workflow logger   |
+| `getSourceUrl` | `GetSourceUrlFunction`  | Function to convert file paths to source URLs |
 
 ## WorkflowLoggerOptions
 
@@ -40,11 +41,20 @@ Use this also to customize which workflows are actually available.
 | `serviceName` | `string`                 | Name of the service for logging (default: "workflows") |
 | `format`      | `winston.Logform.Format` | Custom winston format (optional)                       |
 
+## GetSourceUrlFunction
+
+| Property       | Type     | Description                                |
+| -------------- | -------- | ------------------------------------------ |
+| `absolutePath` | `string` | The absolute file path to convert to a URL |
+
+**Returns:** `string` - The source URL for the file
+
 ## Example
 
 ```typescript
 import { runWorkflowCli } from "@saflib/workflows";
 import { myWorkflows } from "./my-workflows";
+import { getGitHubUrl } from "@saflib/dev-tools";
 
 // Basic usage
 runWorkflowCli(myWorkflows);
@@ -53,7 +63,25 @@ runWorkflowCli(myWorkflows);
 runWorkflowCli(myWorkflows, {
   logger: {
     silent: true, // Suppress all log output
-    serviceName: "my-custom-service",
+  },
+});
+
+// With custom source URL function
+runWorkflowCli(myWorkflows, {
+  getSourceUrl: (absolutePath) => {
+    // Use the dev-tools getGitHubUrl function
+    return getGitHubUrl(absolutePath);
+  },
+});
+
+// With both custom logger and source URL function
+runWorkflowCli(myWorkflows, {
+  logger: {
+    silent: false,
+  },
+  getSourceUrl: (absolutePath) => {
+    // Custom logic to generate source URLs
+    return `https://my-custom-repo.com/blob/main${absolutePath}`;
   },
 });
 ```

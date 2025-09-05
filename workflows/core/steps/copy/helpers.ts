@@ -1,7 +1,7 @@
 import type { DoneActorEvent, OutputFrom } from "xstate";
 import type { CopyStepContext } from "./types.ts";
 import { copyNextFile } from "./copy-next-file.ts";
-import { getGitHubUrl } from "@saflib/dev-tools";
+import { getSourceUrl } from "../../logger.ts";
 
 export const parseChecklist = ({
   context,
@@ -12,7 +12,7 @@ export const parseChecklist = ({
 }) => {
   const fileId = context.filesToCopy[0];
   const fullPath = context.templateFiles![fileId];
-  const githubPath = getGitHubUrl(fullPath);
+  const githubPath = getSourceUrl(fullPath);
   return [
     ...context.checklist,
     {
