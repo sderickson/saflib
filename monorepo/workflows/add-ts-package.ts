@@ -38,7 +38,7 @@ export const AddTsPackageWorkflowDefinition = defineWorkflow<
   typeof input,
   AddTsPackageWorkflowContext
 >({
-  id: "add-ts-package",
+  id: "monorepo/add-package",
 
   description:
     "Creates a new TypeScript package according to monorepo best practices.",

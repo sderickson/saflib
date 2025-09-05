@@ -28,7 +28,7 @@ export const AddSpaWorkflowDefinition = defineWorkflow<
   typeof input,
   AddSpaWorkflowContext
 >({
-  id: "add-spa",
+  id: "vue/add-spa",
 
   description:
     "Create a new SAF-powered frontend SPA using Vue, Vue-Router, and Tanstack Query",

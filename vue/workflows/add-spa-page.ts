@@ -27,7 +27,7 @@ export const AddSpaPageWorkflowDefinition = defineWorkflow<
   typeof input,
   AddSpaPageWorkflowContext
 >({
-  id: "add-spa-page",
+  id: "vue/add-page",
 
   description:
     "Create a new page in a SAF-powered Vue SPA, using a template and renaming placeholders.",

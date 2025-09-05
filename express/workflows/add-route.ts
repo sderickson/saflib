@@ -20,7 +20,7 @@ const input = [
   },
 ] as const;
 
-interface AddRouteWorkflowContext {
+interface AddHandlerWorkflowContext {
   name: string;
   camelName: string; // e.g. createCallSeries
   targetDir: string;
@@ -31,11 +31,11 @@ interface AddRouteWorkflowContext {
   appPath: string; // e.g. "/app.ts"
 }
 
-export const AddRouteWorkflowDefinition = defineWorkflow<
+export const AddHandlerWorkflowDefinition = defineWorkflow<
   typeof input,
-  AddRouteWorkflowContext
+  AddHandlerWorkflowContext
 >({
-  id: "add-route",
+  id: "express/add-handler",
 
   description: "Add a new route to an Express.js service.",
 

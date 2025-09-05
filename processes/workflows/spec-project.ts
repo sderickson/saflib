@@ -30,7 +30,7 @@ export const SpecProjectWorkflowDefinition = defineWorkflow<
   typeof input,
   SpecProjectWorkflowContext
 >({
-  id: "spec-project",
+  id: "processes/spec-project",
 
   description: "Write a product/technical specification for a project.",
 

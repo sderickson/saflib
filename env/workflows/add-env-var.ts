@@ -27,7 +27,7 @@ export const AddEnvVarWorkflowDefinition = defineWorkflow<
   typeof input,
   AddEnvVarWorkflowContext
 >({
-  id: "add-env-var",
+  id: "env/add-var",
 
   description:
     "Add a new environment variable to the schema and generate the corresponding TypeScript types",

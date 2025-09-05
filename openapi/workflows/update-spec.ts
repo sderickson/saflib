@@ -15,7 +15,7 @@ export const UpdateSpecWorkflowDefinition = defineWorkflow<
   typeof input,
   UpdateSpecWorkflowContext
 >({
-  id: "update-spec",
+  id: "openapi/update-spec",
 
   description: "Update the OpenAPI spec for the project.",
 

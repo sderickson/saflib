@@ -29,7 +29,7 @@ export const AddWorkflowDefinition = defineWorkflow<
   typeof input,
   AddWorkflowContext
 >({
-  id: "add-workflow",
+  id: "workflows/add-workflow",
 
   description:
     "Create a new workflow and adds it to the CLI tool. Stops after setup to wait for implementation requirements.",

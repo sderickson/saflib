@@ -19,7 +19,7 @@ const input = [
   },
 ] as const;
 
-interface AddQueriesWorkflowContext {
+interface AddQueryWorkflowContext {
   name: string;
   camelName: string; // e.g. getById
   targetDir: string;
@@ -38,11 +38,11 @@ function toCamelCase(name: string) {
     .join("");
 }
 
-export const AddQueriesWorkflowDefinition = defineWorkflow<
+export const AddQueryWorkflowDefinition = defineWorkflow<
   typeof input,
-  AddQueriesWorkflowContext
+  AddQueryWorkflowContext
 >({
-  id: "add-queries",
+  id: "drizzle/add-query",
 
   description:
     "Add a new query to a database built off the drizzle-sqlite3 package.",

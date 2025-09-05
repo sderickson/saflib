@@ -27,7 +27,7 @@ export const AddEmailTemplateWorkflowDefinition = defineWorkflow<
   typeof input,
   AddEmailTemplateWorkflowContext
 >({
-  id: "add-email-template",
+  id: "email/add-template",
 
   description: "Add email template infrastructure and templates to a project.",
 

@@ -15,7 +15,7 @@ export const UpdateSchemaWorkflowDefinition = defineWorkflow<
   typeof input,
   UpdateSchemaWorkflowContext
 >({
-  id: "update-schema",
+  id: "drizzle/update-schema",
 
   description: "Update a drizzle/sqlite3 schema.",
 

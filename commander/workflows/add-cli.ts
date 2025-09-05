@@ -30,7 +30,7 @@ export const AddCLIWorkflowDefinition = defineWorkflow<
   typeof input,
   AddCLIWorkflowContext
 >({
-  id: "add-cli",
+  id: "commander/add-cli",
 
   description:
     "Creates a new CLI with Commander.js, accessible through npm exec",
