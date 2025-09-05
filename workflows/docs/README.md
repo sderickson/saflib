@@ -70,7 +70,7 @@ These represent the preferred way to structure whatever thing is being created o
 
 ## Example Workflows
 
-This repository has [several workflows](https://github.com/search?q=repo%3Asderickson%2Fsaflib%20defineWorkflow&type=code) in it as examples. They're continuously updated as I develop the library and how to use it.
+This repository has [several workflows](https://github.com/search?q=repo%3Asderickson%2Fsaflib+%22%3D+defineWorkflow%3C%22&type=code) in it as examples. They're continuously updated as I develop the library and how to use it.
 
 You can also see the [template file](https://github.com/sderickson/saflib/blob/main/workflows/workflows/add-workflow.templates/template-file.ts) for the "add-workflow" workflow.
 
