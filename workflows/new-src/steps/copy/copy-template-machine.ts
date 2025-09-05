@@ -8,20 +8,23 @@ import {
 } from "../../../src/xstate.ts";
 import { copyNextFile } from "./copy-next-file.ts";
 import { renameNextFile } from "./rename-next-file.ts";
-import type { WorkflowOutput } from "../../../src/xstate.ts";
+import type { WorkflowOutput, WorkflowInput } from "../../../src/xstate.ts";
 import { contextFromInput } from "../../../src/workflow.ts";
 
 import type {
   CopyTemplateMachineContext,
-  CopyTemplateMachineInput,
+  CopyStepInput,
 } from "./types.ts";
 import { parseChecklist, parseCopiedFiles } from "./helpers.ts";
 
-export type { CopyTemplateMachineInput };
+export type { CopyStepInput };
 
-export const CopyTemplateMachine = setup({
+/**
+ * Copies all `templateFiles` to the given directory, renaming all instances of `"template-file"` to the given `name`. Also replaces other variants of the string: camelCase, snake_case, and PascalCase.
+ */
+export const CopyStepMachine = setup({
   types: {
-    input: {} as CopyTemplateMachineInput,
+    input: {} as CopyStepInput & WorkflowInput,
     context: {} as CopyTemplateMachineContext,
     output: {} as WorkflowOutput,
   },

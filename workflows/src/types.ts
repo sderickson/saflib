@@ -2,9 +2,9 @@ import type { Snapshot } from "xstate";
 import type { WorkflowContext } from "./xstate.ts";
 
 /**
- * Required argument for the workflow, in a format the CLI tool (commander) can use.
+ * Required argument for the workflow, in a format the CLI tool (or other program) can use.
  */
-export interface CLIArgument {
+export interface WorkflowArgument {
   name: string;
   description?: string;
 

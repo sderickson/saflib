@@ -1,18 +1,18 @@
 import type { Command } from "commander";
 import { checklistToString } from "../utils.ts";
-import { XStateWorkflow, type ConcreteWorkflow } from "../workflow.ts";
+import { XStateWorkflowRunner, type ConcreteWorkflowRunner } from "../workflow.ts";
 import { addNewLinesToString } from "@saflib/utils";
 
 export const addChecklistCommand = (
   program: Command,
-  workflows: ConcreteWorkflow[],
+  workflows: ConcreteWorkflowRunner[],
 ) => {
   const checklistProgram = program
     .command("checklist")
     .description(addNewLinesToString("Show the checklist for a workflow."));
 
   const supportedWorkflows = workflows.filter((workflow) => {
-    return new workflow() instanceof XStateWorkflow;
+    return new workflow() instanceof XStateWorkflowRunner;
   });
 
   supportedWorkflows.forEach((workflow) => {
@@ -26,7 +26,7 @@ export const addChecklistCommand = (
   });
 };
 
-export const printChecklist = async (Workflow: ConcreteWorkflow) => {
+export const printChecklist = async (Workflow: ConcreteWorkflowRunner) => {
   const workflow = new Workflow();
   const cliArguments = workflow.cliArguments;
   const exampleArgs = cliArguments.map(

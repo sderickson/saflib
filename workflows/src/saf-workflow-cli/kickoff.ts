@@ -1,11 +1,11 @@
 import type { Command } from "commander";
 import { saveWorkflow } from "../file-io.ts";
 import { addNewLinesToString } from "@saflib/utils";
-import { type ConcreteWorkflow } from "../workflow.ts";
+import { type ConcreteWorkflowRunner } from "../workflow.ts";
 
 export const addKickoffCommand = (
   program: Command,
-  workflows: ConcreteWorkflow[],
+  workflows: ConcreteWorkflowRunner[],
 ) => {
   const kickoffProgram = program
     .command("kickoff")
@@ -26,7 +26,7 @@ export const addKickoffCommand = (
   });
 };
 
-const kickoffWorkflow = async (Workflow: ConcreteWorkflow, args: string[]) => {
+const kickoffWorkflow = async (Workflow: ConcreteWorkflowRunner, args: string[]) => {
   const workflow = new Workflow();
   const result = await workflow.init(
     { dryRun: false },

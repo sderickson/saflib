@@ -2,9 +2,9 @@
 
 ***
 
-# Interface: CLIArgument
+# Interface: WorkflowArgument
 
-Required argument for the workflow, in a format the CLI tool (commander) can use.
+Required argument for the workflow, in a format the CLI tool (or other program) can use.
 
 ## Properties
 

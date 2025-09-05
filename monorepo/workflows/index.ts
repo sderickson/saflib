@@ -1,6 +1,6 @@
 import { AddTsPackageWorkflow } from "./add-ts-package.ts";
-import type { ConcreteWorkflow } from "@saflib/workflows";
+import type { ConcreteWorkflowRunner } from "@saflib/workflows";
 
-const workflowClasses: ConcreteWorkflow[] = [AddTsPackageWorkflow];
+const workflowClasses: ConcreteWorkflowRunner[] = [AddTsPackageWorkflow];
 
 export default workflowClasses;

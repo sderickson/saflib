@@ -12,7 +12,13 @@ import { logInfo, logError, promptAgent } from "../../src/xstate.ts";
 import { raise } from "xstate";
 import { contextFromInput } from "../../src/workflow.ts";
 
-export interface TestMachineInput extends WorkflowInput {
+/**
+ * Input for the TestStepMachine.
+ */
+export interface TestMachineInput {
+  /**
+   * The id of the file to test. Must match one of the keys in the `templateFiles` property for the workflow. If not included, the workflow will run all tests for the current package.
+   */
   fileId?: string;
 }
 
@@ -20,9 +26,12 @@ interface TestMachineContext extends WorkflowContext {
   fileId?: string;
 }
 
+/**
+ * Runs either a single test in the package or all tests in the package. Stops the workflow if the test(s) fail.
+ */
 export const TestStepMachine = setup({
   types: {
-    input: {} as TestMachineInput,
+    input: {} as TestMachineInput & WorkflowInput,
     context: {} as TestMachineContext,
     output: {} as WorkflowOutput,
   },

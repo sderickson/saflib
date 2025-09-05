@@ -2,9 +2,9 @@
 
 ***
 
-# Type Alias: Step\<C, M\>
+# Type Alias: WorkflowStep\<C, M\>
 
-> **Step**\<`C`, `M`\> = `object`
+> **WorkflowStep**\<`C`, `M`\> = `object`
 
 A step in a workflow with an actor and its corresponding input.
 

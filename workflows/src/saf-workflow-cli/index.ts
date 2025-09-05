@@ -1,5 +1,5 @@
 import { Command } from "commander";
-import type { ConcreteWorkflow } from "@saflib/workflows";
+import type { ConcreteWorkflowRunner } from "@saflib/workflows";
 import { addNewLinesToString } from "@saflib/utils";
 import { setupContext } from "@saflib/commander";
 import { addKickoffCommand } from "./kickoff.ts";
@@ -10,16 +10,16 @@ import { addListCommand } from "./list.ts";
 import { addSourceCommand } from "./source.ts";
 
 /**
- * Uses Commander.js to run a CLI for running workflows.
+ * Given a list of workflow classes, runs a CLI for running workflows.
  *
  * The @saflib/workflows package can't run the CLI because other packages
  * depend on it to make workflows. So a separate package needs to depend on
  * those packages which depend on @saflib/workflows. This export allows
- * a separate package to actually compose and expose the CLI.
+ * a separate package to actually gather all the ConcreteWorkflowRunners and expose them as a CLI.
  *
- * This also means you can customize which workflows are actually available.
+ * Use this also to customize which workflows are actually available.
  */
-export function runWorkflowCli(workflows: ConcreteWorkflow[]) {
+export function runWorkflowCli(workflows: ConcreteWorkflowRunner[]) {
   const program = new Command()
     .name("saf-workflow")
     .description(

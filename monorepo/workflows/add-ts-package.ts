@@ -1,11 +1,11 @@
 import {
-  CopyTemplateMachine,
+  CopyStepMachine,
   UpdateStepMachine,
   PromptStepMachine,
   CommandStepMachine,
   makeWorkflowMachine,
   step,
-  XStateWorkflow,
+  XStateWorkflowRunner,
   TestStepMachine,
 } from "@saflib/workflows";
 import path from "node:path";
@@ -70,7 +70,7 @@ export const AddTsPackageWorkflowMachine = makeWorkflowMachine<
   docFiles: {},
 
   steps: [
-    step(CopyTemplateMachine, ({ context }) => ({
+    step(CopyStepMachine, ({ context }) => ({
       name: context.packageDirName,
       targetDir: context.targetDir,
     })),
@@ -97,7 +97,7 @@ export const AddTsPackageWorkflowMachine = makeWorkflowMachine<
   ],
 });
 
-export class AddTsPackageWorkflow extends XStateWorkflow {
+export class AddTsPackageWorkflow extends XStateWorkflowRunner {
   machine = AddTsPackageWorkflowMachine;
   description =
     "Creates a new TypeScript package according to monorepo best practices.";

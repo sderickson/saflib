@@ -1,5 +1,5 @@
 // Entry point for @tools/workflows
-import type { ConcreteWorkflow } from "@saflib/workflows";
+import type { ConcreteWorkflowRunner } from "@saflib/workflows";
 import metaWorkflows from "@saflib/workflows/workflows";
 import processWorkflows from "@saflib/processes/workflows";
 import drizzleWorkflows from "@saflib/drizzle/workflows";
@@ -11,7 +11,7 @@ import emailWorkflows from "@saflib/email/workflows";
 import envWorkflows from "@saflib/env/workflows";
 import commanderWorkflows from "@saflib/commander/workflows";
 
-const workflowClasses: ConcreteWorkflow[] = [
+const workflowClasses: ConcreteWorkflowRunner[] = [
   ...metaWorkflows,
   ...monorepoWorkflows,
   ...processWorkflows,

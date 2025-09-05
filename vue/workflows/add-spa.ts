@@ -1,9 +1,9 @@
 import {
-  CopyTemplateMachine,
+  CopyStepMachine,
   PromptStepMachine,
   makeWorkflowMachine,
   step,
-  XStateWorkflow,
+  XStateWorkflowRunner,
 } from "@saflib/workflows";
 import path from "node:path";
 import { readFileSync } from "node:fs";
@@ -68,7 +68,7 @@ export const AddSpaWorkflowMachine = makeWorkflowMachine<
   docFiles: {},
 
   steps: [
-    step(CopyTemplateMachine, ({ context }) => ({
+    step(CopyStepMachine, ({ context }) => ({
       name: context.name,
       targetDir: context.targetDir,
     })),
@@ -95,7 +95,7 @@ export const AddSpaWorkflowMachine = makeWorkflowMachine<
   ],
 });
 
-export class AddSpaWorkflow extends XStateWorkflow {
+export class AddSpaWorkflow extends XStateWorkflowRunner {
   machine = AddSpaWorkflowMachine;
   description =
     "Create a new SAF-powered frontend SPA using Vue, Vue-Router, and Tanstack Query";

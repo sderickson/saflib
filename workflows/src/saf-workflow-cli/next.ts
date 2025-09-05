@@ -1,11 +1,11 @@
 import type { Command } from "commander";
 import { loadWorkflow, saveWorkflow } from "../file-io.ts";
 import { addNewLinesToString } from "@saflib/utils";
-import type { ConcreteWorkflow } from "../workflow.ts";
+import type { ConcreteWorkflowRunner } from "../workflow.ts";
 
 export const addNextCommand = (
   program: Command,
-  workflows: ConcreteWorkflow[],
+  workflows: ConcreteWorkflowRunner[],
 ) => {
   program
     .command("next")

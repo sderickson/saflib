@@ -8,45 +8,43 @@
 
 | Class | Description |
 | ------ | ------ |
-| [XStateWorkflow](classes/XStateWorkflow.md) | Abstract superclass for XStateWorkflows. |
+| [XStateWorkflowRunner](classes/XStateWorkflowRunner.md) | A class used to load and run the workflow, managing XState events and I/O operations. This is an abstract super class and should be subclassed with the WorkflowDefinition and other properties set. Those subclasses are what the CLI tool uses to create and run workflows. |
 
 ## Interfaces
 
 | Interface | Description |
 | ------ | ------ |
-| [CLIArgument](interfaces/CLIArgument.md) | Required argument for the workflow, in a format the CLI tool (commander) can use. |
-| [CommandMachineInput](interfaces/CommandMachineInput.md) | - |
-| [CopyTemplateMachineInput](interfaces/CopyTemplateMachineInput.md) | - |
-| [DocMachineInput](interfaces/DocMachineInput.md) | - |
-| [PromptMachineInput](interfaces/PromptMachineInput.md) | - |
-| [TestMachineInput](interfaces/TestMachineInput.md) | - |
-| [UpdateMachineInput](interfaces/UpdateMachineInput.md) | - |
-| [Workflow](interfaces/Workflow.md) | A workflow definition. Can be used to create an XState machine which, when run, will execute the workflow. |
+| [CommandMachineInput](interfaces/CommandMachineInput.md) | Input for the CommandStepMachine. These arguments are passed to Node's [`spawn`](https://nodejs.org/api/child_process.html#child_processspawncommand-args-options) function. |
+| [CopyStepInput](interfaces/CopyStepInput.md) | Input for the CopyStepMachine. |
+| [DocMachineInput](interfaces/DocMachineInput.md) | Input for the DocStepMachine. |
+| [PromptMachineInput](interfaces/PromptMachineInput.md) | Input for the PromptStepMachine. |
+| [TestMachineInput](interfaces/TestMachineInput.md) | Input for the TestStepMachine. |
+| [UpdateMachineInput](interfaces/UpdateMachineInput.md) | Input for the UpdateStepMachine. |
+| [WorkflowArgument](interfaces/WorkflowArgument.md) | Required argument for the workflow, in a format the CLI tool (or other program) can use. |
+| [WorkflowDefinition](interfaces/WorkflowDefinition.md) | An interface that includes the inputs, files, steps, and everything else that makes up a workflow. Can be used to create an XState machine which can be used in other workflows, and an XStateWorkflowRunner which will execute just the workflow itself. |
 
 ## Type Aliases
 
 | Type Alias | Description |
 | ------ | ------ |
-| [ConcreteWorkflow](type-aliases/ConcreteWorkflow.md) | Some subclass of Workflow which implements all abstract methods and properties. |
-| [CreateArgsType](type-aliases/CreateArgsType.md) | - |
-| [Step](type-aliases/Step.md) | A step in a workflow with an actor and its corresponding input. |
+| [ConcreteWorkflowRunner](type-aliases/ConcreteWorkflowRunner.md) | A concrete subclass of XStateWorkflowRunner. Packages which export workflows should use this to type the array of workflow classes. This is the type which the CLI tool accepts to provide a list of workflows. |
+| [WorkflowStep](type-aliases/WorkflowStep.md) | A step in a workflow with an actor and its corresponding input. |
 
 ## Variables
 
 | Variable | Description |
 | ------ | ------ |
-| [CommandStepMachine](variables/CommandStepMachine.md) | - |
-| [CopyTemplateMachine](variables/CopyTemplateMachine.md) | - |
-| [DocStepMachine](variables/DocStepMachine.md) | - |
-| [PromptStepMachine](variables/PromptStepMachine.md) | A machine for a step in a workflow, where an LLM is prompted to do something. |
-| [TestStepMachine](variables/TestStepMachine.md) | - |
-| [UpdateStepMachine](variables/UpdateStepMachine.md) | - |
+| [CommandStepMachine](variables/CommandStepMachine.md) | Runs a shell command as part of a workflow. Stops the workflow if the command fails. |
+| [CopyStepMachine](variables/CopyStepMachine.md) | Copies all `templateFiles` to the given directory, renaming all instances of `"template-file"` to the given `name`. Also replaces other variants of the string: camelCase, snake_case, and PascalCase. |
+| [DocStepMachine](variables/DocStepMachine.md) | Prompts the agent to read a document from the `docFiles` property for the workflow. |
+| [PromptStepMachine](variables/PromptStepMachine.md) | Prompts the agent or user to do something. Stops the workflow until the workflow is continued. |
+| [TestStepMachine](variables/TestStepMachine.md) | Runs either a single test in the package or all tests in the package. Stops the workflow if the test(s) fail. |
+| [UpdateStepMachine](variables/UpdateStepMachine.md) | Prompts the agent to update one of the templateFiles that was copied over by the CopyStepMachine. |
 
 ## Functions
 
 | Function | Description |
 | ------ | ------ |
-| [makeWorkflowMachine](functions/makeWorkflowMachine.md) | From a Workflow object, create an XState machine. |
-| [outputFromContext](functions/outputFromContext.md) | Helper function to create `WorkflowOutput` from `WorkflowContext`. |
-| [runWorkflowCli](functions/runWorkflowCli.md) | Uses Commander.js to run a CLI for running workflows. |
+| [makeWorkflowMachine](functions/makeWorkflowMachine.md) | Takes a WorkflowsDefinition, as well as its Context and Input types, and creates an XState machine. |
+| [runWorkflowCli](functions/runWorkflowCli.md) | Given a list of workflow classes, runs a CLI for running workflows. |
 | [step](functions/step.md) | Helper function for defining a step in a workflow, enforcing types properly. |

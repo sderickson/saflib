@@ -1,7 +1,7 @@
 // @ts-nocheck
 import { pascalCaseWorkflowNameWorkflow } from "./workflowName.ts";
-import type { ConcreteWorkflow } from "@saflib/workflows";
+import type { ConcreteWorkflowRunner } from "@saflib/workflows";
 
-const workflowClasses: ConcreteWorkflow[] = [pascalCaseWorkflowNameWorkflow];
+const workflowClasses: ConcreteWorkflowRunner[] = [pascalCaseWorkflowNameWorkflow];
 
 export default workflowClasses;

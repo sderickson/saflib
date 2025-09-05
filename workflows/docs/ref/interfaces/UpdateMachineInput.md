@@ -4,57 +4,15 @@
 
 # Interface: UpdateMachineInput
 
-## Extends
-
-- `WorkflowInput`
+Input for the UpdateStepMachine.
 
 ## Properties
-
-### copiedFiles?
-
-> `optional` **copiedFiles**: `Record`\<`string`, `string`\>
-
-#### Inherited from
-
-`WorkflowInput.copiedFiles`
-
-***
-
-### docFiles?
-
-> `optional` **docFiles**: `Record`\<`string`, `string`\>
-
-#### Inherited from
-
-`WorkflowInput.docFiles`
-
-***
-
-### dryRun?
-
-> `optional` **dryRun**: `boolean`
-
-Flag to skip all execution of the workflow. Used mainly to get a checklist.
-
-#### Inherited from
-
-`WorkflowInput.dryRun`
-
-***
 
 ### fileId
 
 > **fileId**: `string`
 
-***
-
-### loggedLast?
-
-> `optional` **loggedLast**: `boolean`
-
-#### Inherited from
-
-`WorkflowInput.loggedLast`
+The id of the file the user is expected to update. Must match one of the keys in the `templateFiles` property for the workflow.
 
 ***
 
@@ -62,32 +20,4 @@ Flag to skip all execution of the workflow. Used mainly to get a checklist.
 
 > **promptMessage**: `string` \| (`context`) => `string`
 
-***
-
-### rootRef?
-
-> `optional` **rootRef**: `AnyActorRef`
-
-#### Inherited from
-
-`WorkflowInput.rootRef`
-
-***
-
-### systemPrompt?
-
-> `optional` **systemPrompt**: `string`
-
-#### Inherited from
-
-`WorkflowInput.systemPrompt`
-
-***
-
-### templateFiles?
-
-> `optional` **templateFiles**: `Record`\<`string`, `string`\>
-
-#### Inherited from
-
-`WorkflowInput.templateFiles`
+The message to show to the user. The machine will then stop until the workflow is continued.

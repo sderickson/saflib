@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { createActor, waitFor } from "xstate";
-import { CopyTemplateMachine } from "./copy-template-machine.ts";
+import { CopyStepMachine } from "./copy-template-machine.ts";
 import { allSettled } from "../../../src/utils.ts";
 import { mkdir, writeFile, rm, readFile } from "node:fs/promises";
 import path from "node:path";
@@ -44,7 +44,7 @@ export default {
   });
 
   it("should copy and rename template files correctly", async () => {
-    const actor = createActor(CopyTemplateMachine, {
+    const actor = createActor(CopyStepMachine, {
       input: {
         templateFiles: {
           "template-file.ts": path.join(sourceDir, "template-file.ts"),
@@ -82,7 +82,7 @@ export default {
     // Create an existing file
     await writeFile(path.join(targetDir, "foo-bar.ts"), "existing content");
 
-    const actor = createActor(CopyTemplateMachine, {
+    const actor = createActor(CopyStepMachine, {
       input: {
         templateFiles: {
           "foo-bar.ts": path.join(sourceDir, "foo-bar.ts"),

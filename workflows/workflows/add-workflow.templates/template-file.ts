@@ -1,11 +1,11 @@
 import {
-  CopyTemplateMachine,
+  CopyStepMachine,
   UpdateStepMachine,
   PromptStepMachine,
   TestStepMachine,
   makeWorkflowMachine,
   step,
-  XStateWorkflow,
+  XStateWorkflowRunner,
 } from "@saflib/workflows";
 import path from "node:path";
 
@@ -65,7 +65,7 @@ export const TemplateFileWorkflowMachine = makeWorkflowMachine<
 
   // TODO: update the steps to match the actual workflow you're creating. It will usually involve some combination of copying template files, updating files, and running tests.
   steps: [
-    step(CopyTemplateMachine, ({ context }) => ({
+    step(CopyStepMachine, ({ context }) => ({
       name: context.name,
       targetDir: context.targetDir,
     })),
@@ -95,7 +95,7 @@ export const TemplateFileWorkflowMachine = makeWorkflowMachine<
   ],
 });
 
-export class TemplateFileWorkflow extends XStateWorkflow {
+export class TemplateFileWorkflow extends XStateWorkflowRunner {
   machine = TemplateFileWorkflowMachine;
   description = TemplateFileWorkflowMachine.definition.description || "";
   cliArguments = input;

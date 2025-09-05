@@ -1,6 +1,6 @@
 import { UpdateSpecWorkflow } from "./update-spec.ts";
-import type { ConcreteWorkflow } from "@saflib/workflows";
+import type { ConcreteWorkflowRunner } from "@saflib/workflows";
 
-const workflowClasses: ConcreteWorkflow[] = [UpdateSpecWorkflow];
+const workflowClasses: ConcreteWorkflowRunner[] = [UpdateSpecWorkflow];
 
 export default workflowClasses;

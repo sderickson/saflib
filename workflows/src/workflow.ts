@@ -1,4 +1,4 @@
-import type { CLIArgument, ChecklistItem, WorkflowBlob } from "./types.ts";
+import type { WorkflowArgument, ChecklistItem, WorkflowBlob } from "./types.ts";
 import type { AnyStateMachine, AnyActor, AnyActorRef } from "xstate";
 import { createActor, waitFor } from "xstate";
 import { getSafReporters } from "@saflib/node";
@@ -13,20 +13,20 @@ import type {
 import type { ReturnsError } from "@saflib/monorepo";
 
 // The following is TS magic to describe a class constructor that implements the Workflow class.
-type AbstractClassConstructor<T extends Workflow> = new (...args: any[]) => T;
+type AbstractClassConstructor<T extends AbstractWorkflowRunner> = new (...args: any[]) => T;
 
 /**
- * Some subclass of Workflow which implements all abstract methods and properties.
+ * A concrete subclass of XStateWorkflowRunner. Packages which export workflows should use this to type the array of workflow classes. This is the type which the CLI tool accepts to provide a list of workflows.
  */
-export type ConcreteWorkflow = AbstractClassConstructor<Workflow>;
+export type ConcreteWorkflowRunner = AbstractClassConstructor<AbstractWorkflowRunner>;
 
 /**
  * Abstract superclass for XStateWorkflow. Can probably be removed since SimpleWorkflows are gone.
  */
-export abstract class Workflow {
+export abstract class AbstractWorkflowRunner {
   abstract readonly name: string;
   abstract readonly description: string;
-  abstract readonly cliArguments: readonly CLIArgument[];
+  abstract readonly cliArguments: readonly WorkflowArgument[];
   abstract readonly sourceUrl: string;
   abstract init: (...args: any[]) => Promise<ReturnsError<any>>;
   abstract kickoff(): Promise<boolean>;
@@ -45,16 +45,15 @@ interface XStateWorkflowOptions {
 }
 
 /**
- * Abstract superclass for XStateWorkflows.
+ * A class used to load and run the workflow, managing XState events and I/O operations. This is an abstract super class and should be subclassed with the WorkflowDefinition and other properties set. Those subclasses are what the CLI tool uses to create and run workflows.
  *
  * To use, subclass it with:
- *
  * * machine - the XState machine for the workflow.
  * * sourceUrl - import.meta.url
  * * description - to show up in the CLI tool
  * * cliArguments - to show up in the CLI tool
  */
-export abstract class XStateWorkflow extends Workflow {
+export abstract class XStateWorkflowRunner extends AbstractWorkflowRunner {
   abstract readonly machine: AnyStateMachine;
   private input: any;
   private actor: AnyActor | undefined;

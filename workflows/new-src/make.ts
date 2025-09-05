@@ -1,4 +1,4 @@
-import type { CreateArgsType, Step, Workflow } from "./types.ts";
+import type { CreateArgsType, WorkflowStep, WorkflowDefinition } from "./types.ts";
 import type {
   WorkflowInput,
   WorkflowContext,
@@ -13,7 +13,7 @@ import {
   type InputFrom,
 } from "xstate";
 import { contextFromInput, outputFromContext } from "../src/workflow.ts";
-import type { CLIArgument } from "../src/types.ts";
+import type { WorkflowArgument } from "../src/types.ts";
 import { existsSync } from "fs";
 
 /**
@@ -23,23 +23,23 @@ import { existsSync } from "fs";
  *
  * I'm keeping this separate just because it's good to have the type inference piece separate where it can be messed with independently.
  */
-function defineWorkflow<I extends readonly CLIArgument[], C = any>(config: {
+function defineWorkflow<I extends readonly WorkflowArgument[], C = any>(config: {
   input: I;
   context: (arg: { input: CreateArgsType<I> }) => C;
   id: string;
   description: string;
   templateFiles: Record<string, string>;
   docFiles: Record<string, string>;
-  steps: Array<Step<C, AnyStateMachine>>;
-}): Workflow<I, C> {
+  steps: Array<WorkflowStep<C, AnyStateMachine>>;
+}): WorkflowDefinition<I, C> {
   return config;
 }
 
 /**
  * Implementation of the makeMachineFromWorkflow function.
  */
-function _makeWorkflowMachine<I extends readonly CLIArgument[], C>(
-  workflow: Workflow<I, C>,
+function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
+  workflow: WorkflowDefinition<I, C>,
 ) {
   type Input = CreateArgsType<I> & WorkflowInput;
   type Context = C & WorkflowContext;
@@ -142,12 +142,12 @@ function _makeWorkflowMachine<I extends readonly CLIArgument[], C>(
 }
 
 /**
- * From a Workflow object, create an XState machine.
+ * Takes a WorkflowsDefinition, as well as its Context and Input types, and creates an XState machine.
  *
  * This basically translates my simplified and scoped workflow machine definition to the full XState machine definition.
  */
-export const makeWorkflowMachine = <C, I extends readonly CLIArgument[]>(
-  config: Workflow<I, C>,
+export const makeWorkflowMachine = <C, I extends readonly WorkflowArgument[]>(
+  config: WorkflowDefinition<I, C>,
 ) => {
   return _makeWorkflowMachine(defineWorkflow(config));
 };
@@ -158,7 +158,7 @@ export const makeWorkflowMachine = <C, I extends readonly CLIArgument[]>(
 export const step = <C, M extends AnyStateMachine>(
   machine: M,
   input: (arg: { context: C & WorkflowContext }) => InputFrom<M>,
-): Step<C, M> => {
+): WorkflowStep<C, M> => {
   return {
     machine,
     input,

@@ -14,8 +14,18 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { contextFromInput } from "../../../src/workflow.ts";
 
-export interface UpdateMachineInput extends WorkflowInput {
+/**
+ * Input for the UpdateStepMachine.
+ */
+export interface UpdateMachineInput {
+  /**
+   * The id of the file the user is expected to update. Must match one of the keys in the `templateFiles` property for the workflow.
+   */
   fileId: string;
+
+  /**
+   * The message to show to the user. The machine will then stop until the workflow is continued.
+   */
   promptMessage: string | ((context: WorkflowContext) => string);
 }
 
@@ -24,10 +34,13 @@ interface UpdateMachineContext extends WorkflowContext {
   promptMessage: string | ((context: WorkflowContext) => string);
 }
 
+/**
+ * Prompts the agent to update one of the templateFiles that was copied over by the CopyStepMachine.
+ */
 export const UpdateStepMachine = setup({
   types: {
     output: {} as WorkflowOutput,
-    input: {} as UpdateMachineInput,
+    input: {} as UpdateMachineInput & WorkflowInput,
     context: {} as UpdateMachineContext,
   },
   actions: {

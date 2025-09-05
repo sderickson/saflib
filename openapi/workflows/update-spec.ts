@@ -4,7 +4,7 @@ import {
   DocStepMachine,
   makeWorkflowMachine,
   step,
-  XStateWorkflow,
+  XStateWorkflowRunner,
 } from "@saflib/workflows";
 import { resolve } from "path";
 
@@ -67,7 +67,7 @@ export const UpdateSpecWorkflowMachine = makeWorkflowMachine<
   ],
 });
 
-export class UpdateSpecWorkflow extends XStateWorkflow {
+export class UpdateSpecWorkflow extends XStateWorkflowRunner {
   machine = UpdateSpecWorkflowMachine;
   description = "Update the OpenAPI spec for the project.";
   cliArguments = input;

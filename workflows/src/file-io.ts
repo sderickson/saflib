@@ -1,6 +1,6 @@
 import { resolve } from "node:path";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
-import type { Workflow, ConcreteWorkflow } from "./workflow.ts";
+import type { AbstractWorkflowRunner, ConcreteWorkflowRunner } from "./workflow.ts";
 import type { WorkflowBlob } from "./types.ts";
 
 export const getPlanStatusFilePath = () => {
@@ -15,7 +15,7 @@ export const loadPlanStatusContents = (): string | null => {
   return readFileSync(planStatusFilePath, "utf8");
 };
 
-export const saveWorkflow = (workflow: Workflow) => {
+export const saveWorkflow = (workflow: AbstractWorkflowRunner) => {
   const planStatusFilePath = getPlanStatusFilePath();
   writeFileSync(
     planStatusFilePath,
@@ -23,7 +23,7 @@ export const saveWorkflow = (workflow: Workflow) => {
   );
 };
 
-export const loadWorkflow = (workflows: ConcreteWorkflow[]) => {
+export const loadWorkflow = (workflows: ConcreteWorkflowRunner[]) => {
   const contents = loadPlanStatusContents();
   if (!contents) {
     return null;

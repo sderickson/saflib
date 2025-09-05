@@ -1,6 +1,6 @@
 import { AddRouteWorkflow } from "./add-route.ts";
-import type { ConcreteWorkflow } from "@saflib/workflows";
+import type { ConcreteWorkflowRunner } from "@saflib/workflows";
 
-const workflowClasses: ConcreteWorkflow[] = [AddRouteWorkflow];
+const workflowClasses: ConcreteWorkflowRunner[] = [AddRouteWorkflow];
 
 export default workflowClasses;

@@ -1,12 +1,12 @@
 import {
-  CopyTemplateMachine,
+  CopyStepMachine,
   UpdateStepMachine,
   PromptStepMachine,
   TestStepMachine,
   DocStepMachine,
   makeWorkflowMachine,
   step,
-  XStateWorkflow,
+  XStateWorkflowRunner,
 } from "@saflib/workflows";
 import path from "node:path";
 import { kebabCaseToPascalCase, kebabCaseToCamelCase } from "@saflib/utils";
@@ -80,7 +80,7 @@ export const AddRouteWorkflowMachine = makeWorkflowMachine<
       docId: "refDoc",
     })),
 
-    step(CopyTemplateMachine, ({ context }) => ({
+    step(CopyStepMachine, ({ context }) => ({
       name: context.name,
       targetDir: context.targetDir,
     })),
@@ -133,7 +133,7 @@ export const AddRouteWorkflowMachine = makeWorkflowMachine<
   ],
 });
 
-export class AddRouteWorkflow extends XStateWorkflow {
+export class AddRouteWorkflow extends XStateWorkflowRunner {
   machine = AddRouteWorkflowMachine;
   description = "Add a new route to an Express.js service.";
   cliArguments = input;

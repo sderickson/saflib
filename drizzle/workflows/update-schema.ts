@@ -4,7 +4,7 @@ import {
   DocStepMachine,
   makeWorkflowMachine,
   step,
-  XStateWorkflow,
+  XStateWorkflowRunner,
 } from "@saflib/workflows";
 import path from "path";
 
@@ -50,7 +50,7 @@ export const UpdateSchemaWorkflowMachine = makeWorkflowMachine<
   ],
 });
 
-export class UpdateSchemaWorkflow extends XStateWorkflow {
+export class UpdateSchemaWorkflow extends XStateWorkflowRunner {
   machine = UpdateSchemaWorkflowMachine;
   description = "Update a drizzle/sqlite3 schema.";
   cliArguments = input;

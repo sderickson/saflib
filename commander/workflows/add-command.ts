@@ -1,10 +1,10 @@
 import {
-  CopyTemplateMachine,
+  CopyStepMachine,
   UpdateStepMachine,
   PromptStepMachine,
   makeWorkflowMachine,
   step,
-  XStateWorkflow,
+  XStateWorkflowRunner,
 } from "@saflib/workflows";
 import path, { dirname } from "node:path";
 import { kebabCaseToPascalCase } from "@saflib/utils";
@@ -73,7 +73,7 @@ export const AddCommandWorkflowMachine = makeWorkflowMachine<
   docFiles: {},
 
   steps: [
-    step(CopyTemplateMachine, ({ context }) => ({
+    step(CopyStepMachine, ({ context }) => ({
       name: context.name,
       targetDir: context.targetDir,
     })),
@@ -105,7 +105,7 @@ export const AddCommandWorkflowMachine = makeWorkflowMachine<
   ],
 });
 
-export class AddCommandWorkflow extends XStateWorkflow {
+export class AddCommandWorkflow extends XStateWorkflowRunner {
   machine = AddCommandWorkflowMachine;
   description = AddCommandWorkflowMachine.definition.description || "";
   cliArguments = input;

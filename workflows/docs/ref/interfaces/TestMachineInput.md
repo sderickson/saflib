@@ -4,84 +4,12 @@
 
 # Interface: TestMachineInput
 
-## Extends
-
-- `WorkflowInput`
+Input for the TestStepMachine.
 
 ## Properties
-
-### copiedFiles?
-
-> `optional` **copiedFiles**: `Record`\<`string`, `string`\>
-
-#### Inherited from
-
-`WorkflowInput.copiedFiles`
-
-***
-
-### docFiles?
-
-> `optional` **docFiles**: `Record`\<`string`, `string`\>
-
-#### Inherited from
-
-`WorkflowInput.docFiles`
-
-***
-
-### dryRun?
-
-> `optional` **dryRun**: `boolean`
-
-Flag to skip all execution of the workflow. Used mainly to get a checklist.
-
-#### Inherited from
-
-`WorkflowInput.dryRun`
-
-***
 
 ### fileId?
 
 > `optional` **fileId**: `string`
 
-***
-
-### loggedLast?
-
-> `optional` **loggedLast**: `boolean`
-
-#### Inherited from
-
-`WorkflowInput.loggedLast`
-
-***
-
-### rootRef?
-
-> `optional` **rootRef**: `AnyActorRef`
-
-#### Inherited from
-
-`WorkflowInput.rootRef`
-
-***
-
-### systemPrompt?
-
-> `optional` **systemPrompt**: `string`
-
-#### Inherited from
-
-`WorkflowInput.systemPrompt`
-
-***
-
-### templateFiles?
-
-> `optional` **templateFiles**: `Record`\<`string`, `string`\>
-
-#### Inherited from
-
-`WorkflowInput.templateFiles`
+The id of the file to test. Must match one of the keys in the `templateFiles` property for the workflow. If not included, the workflow will run all tests for the current package.

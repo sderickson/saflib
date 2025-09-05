@@ -9,7 +9,13 @@ import { sendTo, assign, raise } from "xstate";
 import { contextFromInput, outputFromContext } from "../../src/workflow.ts";
 import type { WorkflowContext, WorkflowInput } from "../../src/xstate.ts";
 
-export interface PromptMachineInput extends WorkflowInput {
+/**
+ * Input for the PromptStepMachine.
+ */
+export interface PromptMachineInput {
+  /**
+   * The text to be shown to the agent or user. The machine will then stop until the workflow is continued.
+   */
   promptText: string;
 }
 
@@ -18,11 +24,11 @@ interface PromptMachineContext extends WorkflowContext {
 }
 
 /**
- * A machine for a step in a workflow, where an LLM is prompted to do something.
+ * Prompts the agent or user to do something. Stops the workflow until the workflow is continued.
  */
 export const PromptStepMachine = setup({
   types: {
-    input: {} as PromptMachineInput,
+    input: {} as PromptMachineInput & WorkflowInput,
     context: {} as PromptMachineContext,
   },
   actions: {

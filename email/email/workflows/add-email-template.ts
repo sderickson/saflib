@@ -1,10 +1,10 @@
 import {
-  CopyTemplateMachine,
+  CopyStepMachine,
   UpdateStepMachine,
   CommandStepMachine,
   makeWorkflowMachine,
   step,
-  XStateWorkflow,
+  XStateWorkflowRunner,
 } from "@saflib/workflows";
 import path from "node:path";
 
@@ -58,7 +58,7 @@ export const AddEmailTemplateWorkflowMachine = makeWorkflowMachine<
       args: ["install", "@saflib/email"],
     })),
 
-    step(CopyTemplateMachine, ({ context }) => ({
+    step(CopyStepMachine, ({ context }) => ({
       name: context.name,
       targetDir: path.dirname(context.targetFilePath),
     })),
@@ -78,7 +78,7 @@ export const AddEmailTemplateWorkflowMachine = makeWorkflowMachine<
   ],
 });
 
-export class AddEmailTemplateWorkflow extends XStateWorkflow {
+export class AddEmailTemplateWorkflow extends XStateWorkflowRunner {
   machine = AddEmailTemplateWorkflowMachine;
   description = "Add email template infrastructure and templates to a project.";
   cliArguments = input;

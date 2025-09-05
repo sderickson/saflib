@@ -13,8 +13,18 @@ import {
 import { raise } from "xstate";
 import { contextFromInput } from "../../src/workflow.ts";
 
-export interface CommandMachineInput extends WorkflowInput {
+/**
+ * Input for the CommandStepMachine. These arguments are passed to Node's [`spawn`](https://nodejs.org/api/child_process.html#child_processspawncommand-args-options) function.
+ */
+export interface CommandMachineInput {
+  /**
+   * The command to run, such as `npm` or `chmod`.
+   */
   command: string;
+
+  /**
+   * List of arguments to pass to the command.
+   */
   args?: string[];
 }
 
@@ -23,9 +33,12 @@ interface CommandMachineContext extends WorkflowContext {
   args: string[];
 }
 
+/**
+ * Runs a shell command as part of a workflow. Stops the workflow if the command fails.
+ */
 export const CommandStepMachine = setup({
   types: {
-    input: {} as CommandMachineInput,
+    input: {} as CommandMachineInput & WorkflowInput,
     context: {} as CommandMachineContext,
     output: {} as WorkflowOutput,
   },

@@ -1,4 +1,4 @@
-import { assign, fromPromise, setup } from "xstate";
+import { fromPromise, setup } from "xstate";
 import {
   workflowActions,
   workflowActors,
@@ -10,11 +10,16 @@ import {
 } from "../../src/xstate.ts";
 import { contextFromInput } from "../../src/workflow.ts";
 import { raise } from "xstate";
-import { readFileSync } from "fs";
 import path from "node:path";
 import { getGitHubUrl } from "@saflib/dev-tools";
 
-export interface DocMachineInput extends WorkflowInput {
+/**
+ * Input for the DocStepMachine.
+ */
+export interface DocMachineInput {
+  /**
+   * The id of the document to review. Must match one of the keys in the `docFiles` property for the workflow.
+   */
   docId: string;
 }
 
@@ -22,9 +27,12 @@ interface DocMachineContext extends WorkflowContext {
   docId: string;
 }
 
+/**
+ * Prompts the agent to read a document from the `docFiles` property for the workflow.
+ */
 export const DocStepMachine = setup({
   types: {
-    input: {} as DocMachineInput,
+    input: {} as DocMachineInput & WorkflowInput,
     context: {} as DocMachineContext,
     output: {} as WorkflowOutput,
   },
@@ -70,10 +78,6 @@ export const DocStepMachine = setup({
             if (!docPath.endsWith(".md")) {
               throw new Error(`Document "${docId}" is not a markdown file`);
             }
-
-            // Read the document content
-            const content = readFileSync(docPath, "utf-8");
-            return content;
           },
         ),
         input: ({ context }) => {
@@ -86,31 +90,9 @@ export const DocStepMachine = setup({
         onDone: {
           target: "done",
           actions: [
-            logInfo(({ context }) => {
+            promptAgent(({ context }) => {
               const docPath = context.docFiles![context.docId];
-              return `Successfully loaded documentation: ${path.basename(docPath)}`;
-            }),
-            assign({
-              checklist: ({ context }) => {
-                const docPath = context.docFiles![context.docId];
-                return [
-                  ...context.checklist,
-                  {
-                    description: `Review documentation: ${path.basename(docPath)}`,
-                  },
-                ];
-              },
-            }),
-            promptAgent(({ context, event }) => {
-              const docPath = context.docFiles![context.docId];
-              const content = event.output as string;
-              return `Please review the following documentation:
-
-**File:** ${docPath}
-
-${content}
-
-Please read through this documentation carefully and understand the guidelines before proceeding.`;
+              return `Please review the following documentation: ${docPath}`;
             }),
           ],
         },

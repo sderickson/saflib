@@ -4,9 +4,7 @@
 
 # Interface: CommandMachineInput
 
-## Extends
-
-- `WorkflowInput`
+Input for the CommandStepMachine. These arguments are passed to Node's [`spawn`](https://nodejs.org/api/child_process.html#child_processspawncommand-args-options) function.
 
 ## Properties
 
@@ -14,80 +12,12 @@
 
 > `optional` **args**: `string`[]
 
+List of arguments to pass to the command.
+
 ***
 
 ### command
 
 > **command**: `string`
 
-***
-
-### copiedFiles?
-
-> `optional` **copiedFiles**: `Record`\<`string`, `string`\>
-
-#### Inherited from
-
-`WorkflowInput.copiedFiles`
-
-***
-
-### docFiles?
-
-> `optional` **docFiles**: `Record`\<`string`, `string`\>
-
-#### Inherited from
-
-`WorkflowInput.docFiles`
-
-***
-
-### dryRun?
-
-> `optional` **dryRun**: `boolean`
-
-Flag to skip all execution of the workflow. Used mainly to get a checklist.
-
-#### Inherited from
-
-`WorkflowInput.dryRun`
-
-***
-
-### loggedLast?
-
-> `optional` **loggedLast**: `boolean`
-
-#### Inherited from
-
-`WorkflowInput.loggedLast`
-
-***
-
-### rootRef?
-
-> `optional` **rootRef**: `AnyActorRef`
-
-#### Inherited from
-
-`WorkflowInput.rootRef`
-
-***
-
-### systemPrompt?
-
-> `optional` **systemPrompt**: `string`
-
-#### Inherited from
-
-`WorkflowInput.systemPrompt`
-
-***
-
-### templateFiles?
-
-> `optional` **templateFiles**: `Record`\<`string`, `string`\>
-
-#### Inherited from
-
-`WorkflowInput.templateFiles`
+The command to run, such as `npm` or `chmod`.

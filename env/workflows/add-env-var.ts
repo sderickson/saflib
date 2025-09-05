@@ -1,10 +1,10 @@
 import {
-  CopyTemplateMachine,
+  CopyStepMachine,
   UpdateStepMachine,
   CommandStepMachine,
   makeWorkflowMachine,
   step,
-  XStateWorkflow,
+  XStateWorkflowRunner,
 } from "@saflib/workflows";
 import path from "node:path";
 
@@ -51,7 +51,7 @@ export const AddEnvVarWorkflowMachine = makeWorkflowMachine<
   docFiles: {},
 
   steps: [
-    step(CopyTemplateMachine, ({ context }) => ({
+    step(CopyStepMachine, ({ context }) => ({
       name: context.name,
       targetDir: process.cwd(),
     })),
@@ -80,7 +80,7 @@ export const AddEnvVarWorkflowMachine = makeWorkflowMachine<
   ],
 });
 
-export class AddEnvVarWorkflow extends XStateWorkflow {
+export class AddEnvVarWorkflow extends XStateWorkflowRunner {
   sourceUrl = import.meta.url;
   machine = AddEnvVarWorkflowMachine;
   description =

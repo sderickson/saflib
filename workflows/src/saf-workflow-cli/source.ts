@@ -1,11 +1,11 @@
 import type { Command } from "commander";
-import { type ConcreteWorkflow } from "../workflow.ts";
+import { type ConcreteWorkflowRunner } from "../workflow.ts";
 import { addNewLinesToString } from "@saflib/utils";
 import { getGitHubUrl } from "@saflib/dev-tools";
 
 export const addSourceCommand = (
   program: Command,
-  workflows: ConcreteWorkflow[],
+  workflows: ConcreteWorkflowRunner[],
 ) => {
   const sourceProgram = program
     .command("source")
@@ -22,7 +22,7 @@ export const addSourceCommand = (
   });
 };
 
-export const printSourceUrl = async (workflow: ConcreteWorkflow) => {
+export const printSourceUrl = async (workflow: ConcreteWorkflowRunner) => {
   const stubWorkflow = new workflow();
   const absolutePath = stubWorkflow.sourceUrl.replace("file://", "");
   const sourceUrl = getGitHubUrl(absolutePath);

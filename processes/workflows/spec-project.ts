@@ -1,10 +1,10 @@
 import {
-  CopyTemplateMachine,
+  CopyStepMachine,
   PromptStepMachine,
   CommandStepMachine,
   makeWorkflowMachine,
   step,
-  XStateWorkflow,
+  XStateWorkflowRunner,
   DocStepMachine,
 } from "@saflib/workflows";
 import path from "path";
@@ -63,7 +63,7 @@ export const SpecProjectWorkflowMachine = makeWorkflowMachine<
   },
 
   steps: [
-    step(CopyTemplateMachine, ({ context }) => ({
+    step(CopyStepMachine, ({ context }) => ({
       name: context.name,
       targetDir: context.targetDir,
     })),
@@ -100,7 +100,7 @@ export const SpecProjectWorkflowMachine = makeWorkflowMachine<
   ],
 });
 
-export class SpecProjectWorkflow extends XStateWorkflow {
+export class SpecProjectWorkflow extends XStateWorkflowRunner {
   machine = SpecProjectWorkflowMachine;
   description = SpecProjectWorkflowMachine.definition.description || "";
   cliArguments = input;

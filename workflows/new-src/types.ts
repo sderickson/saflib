@@ -1,35 +1,53 @@
 import { type AnyStateMachine, type InputFrom } from "xstate";
-import type { CLIArgument } from "../src/types.ts";
+import type { WorkflowArgument } from "../src/types.ts";
 import type { WorkflowContext } from "../src/xstate.ts";
 
 /**
  * A step in a workflow with an actor and its corresponding input.
  */
-export type Step<C, M extends AnyStateMachine> = {
+export type WorkflowStep<C, M extends AnyStateMachine> = {
   machine: M;
   input: (arg: { context: C & WorkflowContext }) => InputFrom<M>;
 };
 
 /**
- * A workflow definition. Can be used to create an XState machine which, when run, will execute the workflow.
+ * An interface that includes the inputs, files, steps, and everything else that makes up a workflow. Can be used to create an XState machine which can be used in other workflows, and an XStateWorkflowRunner which will execute just the workflow itself.
  */
-export interface Workflow<I extends readonly CLIArgument[], C> {
+export interface WorkflowDefinition<I extends readonly WorkflowArgument[], C> {
+  /**
+   * The input specific to this workflow.
+   */
   input: I;
+
+  /**
+   * The context specific to this workflow, generated from the input and available to use in each step.
+   */
   context: (arg: { input: CreateArgsType<I> }) => C;
+
+  /**
+   * Unique id for the workflow, for invoking it with the CLI tool.
+   */
   id: string;
+
+  /**
+   * Description of the workflow which will be shown in the CLI tool.
+   */
   description: string;
 
   /**
-   * The key is the id to be used in the machine, and the value is the absolute path to the template file.
+   * A map of ids to template file absolute paths which will be copied and updated as part of the workflow.
    */
   templateFiles: Record<string, string>;
 
   /**
-   * The key is the id to b e used in the machine, and the value is the absolute path to the doc file.
+   * A map of ids to doc file absolute paths which will be referenced as part of the workflow.
    */
   docFiles: Record<string, string>;
 
-  steps: Array<Step<C, AnyStateMachine>>;
+  /**
+   * An array of steps to be executed in the workflow. Each step is a state machine, and a function which takes the context and returns the input for the state machine.
+   */
+  steps: Array<WorkflowStep<C, AnyStateMachine>>;
 }
 
 type ArrayElementType<T extends readonly unknown[]> = T[number];

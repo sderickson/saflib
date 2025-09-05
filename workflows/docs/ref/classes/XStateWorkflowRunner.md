@@ -2,12 +2,11 @@
 
 ***
 
-# Abstract Class: XStateWorkflow
+# Abstract Class: XStateWorkflowRunner
 
-Abstract superclass for XStateWorkflows.
+A class used to load and run the workflow, managing XState events and I/O operations. This is an abstract super class and should be subclassed with the WorkflowDefinition and other properties set. Those subclasses are what the CLI tool uses to create and run workflows.
 
 To use, subclass it with:
-
 * machine - the XState machine for the workflow.
 * sourceUrl - import.meta.url
 * description - to show up in the CLI tool
@@ -15,31 +14,31 @@ To use, subclass it with:
 
 ## Extends
 
-- `Workflow`
+- `AbstractWorkflowRunner`
 
 ## Constructors
 
 ### Constructor
 
-> **new XStateWorkflow**(): `XStateWorkflow`
+> **new XStateWorkflowRunner**(): `XStateWorkflowRunner`
 
 #### Returns
 
-`XStateWorkflow`
+`XStateWorkflowRunner`
 
 #### Inherited from
 
-`Workflow.constructor`
+`AbstractWorkflowRunner.constructor`
 
 ## Properties
 
 ### cliArguments
 
-> `abstract` `readonly` **cliArguments**: readonly [`CLIArgument`](../interfaces/CLIArgument.md)[]
+> `abstract` `readonly` **cliArguments**: readonly [`WorkflowArgument`](../interfaces/WorkflowArgument.md)[]
 
 #### Inherited from
 
-`Workflow.cliArguments`
+`AbstractWorkflowRunner.cliArguments`
 
 ***
 
@@ -49,7 +48,7 @@ To use, subclass it with:
 
 #### Inherited from
 
-`Workflow.description`
+`AbstractWorkflowRunner.description`
 
 ***
 
@@ -65,7 +64,7 @@ To use, subclass it with:
 
 #### Inherited from
 
-`Workflow.sourceUrl`
+`AbstractWorkflowRunner.sourceUrl`
 
 ## Accessors
 
@@ -81,7 +80,7 @@ To use, subclass it with:
 
 #### Overrides
 
-`Workflow.name`
+`AbstractWorkflowRunner.name`
 
 ## Methods
 
@@ -95,7 +94,7 @@ To use, subclass it with:
 
 #### Overrides
 
-`Workflow.dehydrate`
+`AbstractWorkflowRunner.dehydrate`
 
 ***
 
@@ -109,7 +108,7 @@ To use, subclass it with:
 
 #### Overrides
 
-`Workflow.done`
+`AbstractWorkflowRunner.done`
 
 ***
 
@@ -123,7 +122,7 @@ To use, subclass it with:
 
 #### Overrides
 
-`Workflow.getChecklist`
+`AbstractWorkflowRunner.getChecklist`
 
 ***
 
@@ -137,7 +136,7 @@ To use, subclass it with:
 
 #### Overrides
 
-`Workflow.getCurrentStateName`
+`AbstractWorkflowRunner.getCurrentStateName`
 
 ***
 
@@ -151,7 +150,7 @@ To use, subclass it with:
 
 #### Overrides
 
-`Workflow.getError`
+`AbstractWorkflowRunner.getError`
 
 ***
 
@@ -165,7 +164,7 @@ To use, subclass it with:
 
 #### Overrides
 
-`Workflow.goToNextStep`
+`AbstractWorkflowRunner.goToNextStep`
 
 ***
 
@@ -185,7 +184,7 @@ To use, subclass it with:
 
 #### Overrides
 
-`Workflow.hydrate`
+`AbstractWorkflowRunner.hydrate`
 
 ***
 
@@ -206,7 +205,7 @@ To use, subclass it with:
 
 #### Overrides
 
-`Workflow.init`
+`AbstractWorkflowRunner.init`
 
 ***
 
@@ -220,7 +219,7 @@ To use, subclass it with:
 
 #### Overrides
 
-`Workflow.kickoff`
+`AbstractWorkflowRunner.kickoff`
 
 ***
 
@@ -234,4 +233,4 @@ To use, subclass it with:
 
 #### Overrides
 
-`Workflow.printStatus`
+`AbstractWorkflowRunner.printStatus`
