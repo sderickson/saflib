@@ -1,6 +1,6 @@
 # Overview
 
-`@saflib/workflows` provides a framework for defining and running developer workflows in TypeScript projects, particularly with coding tools such as Cursor, Claude Code, or any tool which integrates an LLM with coding tools, and which may run arbitrary commands continuously if allowed.
+`@saflib/workflows` provides a framework for defining and running developer workflows in TypeScript projects, particularly with coding tools such as Cursor, Claude Code, or any similar agentic coding tool.
 
 The purpose of `@saflib/workflows` is to make code generation more reliable for routine work. You can define a series of steps which the agent will follow, with checks along the way to make sure the work is done according to what is correct for your project or stack.
 
@@ -22,15 +22,15 @@ The core part of a workflow is a series of steps to take to complete the task. T
 
 ### Documents
 
-These documents are the source of truth for what the workflow should generate. The workflow itself should not contain documentation, it should refer to the documentation and focus on directing and orchestrating.
+These documents are the source of truth for what the workflow should generate. The workflow itself should not contain documentation; it should refer to the documentation and focus on directing and orchestrating.
 
-Ideally, these documents should live in the same package or module as the workflow, because docs beget workflows.
+Ideally, these documents should live in the same package or module as the workflow, because guiding documents beget workflows.
 
 ### Templates
 
 These represent the preferred way to structure whatever thing is being created or updated as part of the workflow. You're much more likely to have a reliable result if the agent (or developer!) doesn't have to start from scratch.
 
-## Interface
+## Command Line Interface
 
 The workflow interface is a command line tool; this works well with agents which can run arbitrary commands so they can automatically continue the workflow. A workflow can also then be "run" by a human to test it, or to understand the process and better review another's work.
 
@@ -44,78 +44,36 @@ The CLI tool will run through the steps until a step prints out a prompt. Then i
 
 See a demo [here](https://www.youtube.com/watch?v=p6jfG5JH7_8).
 
-## Defining a Workflow
+### Setup
 
-A workflow definition looks like this:
+You will need a dedicated executable file which imports all the workflow definitions from other packages and runs the [provided CLI function](./ref/functions/runWorkflowCli.md). See for example this repository's [@saflib/workflows-cli package](https://github.com/sderickson/saflib/tree/main/workflows-cli).
+
+To bootstrap workflows:
+
+1. Run `npm install @saflib/workflows`
+2. Add `"bin": { "saf-workflow": "./workflow-cli.ts" }` to your `package.json`
+3. Add the `workflow-cli.ts` file:
 
 ```ts
-// Arguments specific to this workflow, to be passed to the CLI tool
-const input = [
-  {
-    name: "name",
-    description: "Name of the thing being created",
-    exampleValue: "example-thing",
-  },
-] as const;
+#!/usr/bin/env node --experimental-strip-types --disable-warning=ExperimentalWarning
 
-// Context specific to this workflow, to be used in the steps, derived from input
-interface ExampleWorkflowContext {
-  name: string;
-  targetDir: string;
-}
+import metaWorkflows from "@saflib/workflows/workflows";
+import { runWorkflowCli } from "@saflib/workflows";
 
-export const ExampleWorkflowMachine = makeWorkflowMachine<
-  ExampleWorkflowContext,
-  typeof input
->({
-  id: "example",
-  description: "Create a new thing in your project.",
-  sourceUrl: import.meta.url,
-  templateFiles: {
-    thing: path.join(sourceDir, "template-file.ts"),
-    test: path.join(sourceDir, "template-file.test.ts"),
-  },
-  docFiles: {
-    overview: path.join(import.meta.dirname, "./README.md"),
-  },
-
-  input,
-  context: ({ input }) => {
-    const targetDir = path.join(process.cwd(), "things", input.name);
-    return { name: input.name, targetDir };
-  },
-
-  steps: [
-    // copy the template files to the target directory
-    step(CopyStepMachine, ({ context }) => ({
-      name: context.name,
-      targetDir: context.targetDir,
-    })),
-
-    // prompt the agent to review a doc
-    step(DocStepMachine, () => ({
-      docId: "overview",
-    })),
-
-    // prompt to update the first file
-    step(UpdateStepMachine, ({ context }) => ({
-      fileId: "thing",
-      promptMessage: `Implement **${path.basename(context.copiedFiles!.thing)}**.`,
-    })),
-
-    // prompt to update the second file
-    step(UpdateStepMachine, ({ context }) => ({
-      fileId: "test",
-      promptMessage: `Update **${path.basename(context.copiedFiles!.test)}**: test that the thing works.`,
-    })),
-
-    // run the test, prompt the agent to fix the test if it fails
-    step(TestStepMachine, () => ({
-      fileId: "test",
-    })),
-
-    // run all tests for the package, prompt the agent to fix any failures
-    step(TestStepMachine, () => ({})),
-  ],
-});
+runWorkflowCli([
+  ...metaWorkflows,
+  // add other workflows later...
+]);
 ```
+
+At this point you can tell your preferred agent to navigate to the package you want to add a workflow tool and run `npm exec saf-workflow workflows/add-workflow <name>`. For the best experience, provide it with, or direct it how to produce, the core elements: templates, documents, and steps.
+
+## Generating Checklists
+
+The workflow CLI tool includes a `checklist` command which will dry-run the workflow and print out a checklist of the steps the workflow takes. This can be used in documentation, such as the [generated checklist for adding workflows](./workflows/add-workflow.md#checklist).
+
+## Examples
+
+This repository has [several workflows](https://github.com/search?q=repo%3Asderickson%2Fsaflib%20defineWorkflow&type=code) in it as examples. They're continuously updated as I develop the library and how to use it.
+
+You can also see the [template file](https://github.com/sderickson/saflib/blob/main/workflows/workflows/add-workflow.templates/template-file.ts) for the "add-workflow" workflow.
