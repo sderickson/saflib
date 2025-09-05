@@ -1,0 +1,21 @@
+import { getCurrentPackage } from "@saflib/dev-tools";
+import { runCommandAsync } from "./utils.ts";
+
+// test action
+
+const getTestCommandAndArgs = () => {
+  let command = "npm";
+  let args = ["test"];
+
+  // prevent infinite loop
+  if (getCurrentPackage() === "@saflib/workflows") {
+    command = "ls";
+    args = [];
+  }
+  return { command, args };
+};
+
+export const doesTestPass = (pathString: string) => {
+  const { command, args } = getTestCommandAndArgs();
+  return runCommandAsync(command, [...args, pathString]);
+};
