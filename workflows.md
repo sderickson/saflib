@@ -70,10 +70,11 @@ The documentation for each workflow is generated. In the docs for any given work
 
 ## Trying Out Workflows
 
-Unfortunately, it's not very self-service. I still need to update [saf-template](https://github.com/sderickson/saf-template) to be able to use all modern workflows. Once that's done you'll be able to clone it and use the workflow tool with whichever coding agent (Cursor, Claude Code, Roo Code, etc.) you want.
+The `@saflib/workflows` package [documentation](./workflows/docs/README.md) explains how to install and use workflows in your own project. The only workflow that comes with that is one for adding workflows; you'll need to create your own otherwise since workflows are specific to your stack.
 
-If you're interested in collaborating on these, however, please feel free to reach out at [sderickson@gmail.com](mailto:sderickson@gmail.com)! You can also star or watch any of the following:
+If you'd like to try the workflows I use with my stack, clone and/or fork the [saf-template](https://github.com/sderickson/saf-template) repo. That repo has instructions on how to set it up. These SAF workflows are still experimental so your mileage may vary.
+
+If you're interested in collaborating on workflows, please feel free to reach out at [sderickson@gmail.com](mailto:sderickson@gmail.com) or create issues in [saflib](https://github.com/sderickson/saflib) You can also star or watch any of the following:
 
 - [saflib repo](https://github.com/sderickson/saflib) repo
-- [saf-template repo](https://github.com/sderickson/saf-template) repo
 - [SAF Project Board](https://github.com/users/sderickson/projects/2/views/3)
