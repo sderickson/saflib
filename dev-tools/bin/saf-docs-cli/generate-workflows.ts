@@ -1,9 +1,12 @@
 import { execSync } from "node:child_process";
 import { mkdirSync, readdirSync, unlinkSync, writeFileSync } from "node:fs";
-import { getCurrentPackageName } from "@saflib/dev-tools";
 
-export function generateWorkflowDocs() {
-  const currentPackage = getCurrentPackageName();
+export interface GenerateWorkflowDocsOptions {
+  packageName: string;
+}
+
+export function generateWorkflowDocs(options: GenerateWorkflowDocsOptions) {
+  const { packageName } = options;
   const workflowList = execSync("npm exec saf-workflow list");
   const workflowListString = workflowList.toString();
   const workflowNames = workflowListString.split("\n").filter(Boolean);
@@ -29,7 +32,7 @@ export function generateWorkflowDocs() {
 
   const indexDoc = `# Workflow Reference
 
-\`${currentPackage}\` provides the following automated workflows for packages depending on it:
+\`${packageName}\` provides the following automated workflows for packages depending on it:
 
 ${workflowDocs.map(({ name, path }) => `- [${name}](${path})`).join("\n")}`;
 

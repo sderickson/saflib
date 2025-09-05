@@ -1,11 +1,15 @@
 import { execSync } from "node:child_process";
-import { getCurrentPackageName, type MonorepoContext } from "@saflib/dev-tools";
+import { type MonorepoContext } from "@saflib/dev-tools";
 import { existsSync, readFileSync } from "node:fs";
 
-export function generateTypeDoc(monorepoContext: MonorepoContext) {
-  const currentPackage = getCurrentPackageName();
-  const currentPackageJson =
-    monorepoContext.monorepoPackageJsons[currentPackage];
+export interface GenerateTypeDocOptions {
+  monorepoContext: MonorepoContext;
+  packageName: string;
+}
+
+export function generateTypeDoc(options: GenerateTypeDocOptions) {
+  const { monorepoContext, packageName } = options;
+  const currentPackageJson = monorepoContext.monorepoPackageJsons[packageName];
 
   const entrypoints = currentPackageJson.exports;
   if (!entrypoints) {

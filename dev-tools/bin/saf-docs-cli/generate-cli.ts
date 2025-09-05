@@ -1,12 +1,16 @@
-import { getCurrentPackageName, type MonorepoContext } from "@saflib/dev-tools";
+import { type MonorepoContext } from "@saflib/dev-tools";
 import { execSync } from "node:child_process";
 
 import { mkdirSync, readdirSync, unlinkSync, writeFileSync } from "node:fs";
 
-export function generateCliDocs(monorepoContext: MonorepoContext) {
-  const currentPackage = getCurrentPackageName();
-  const currentPackageJson =
-    monorepoContext.monorepoPackageJsons[currentPackage];
+export interface GenerateCliDocsOptions {
+  monorepoContext: MonorepoContext;
+  packageName: string;
+}
+
+export function generateCliDocs(options: GenerateCliDocsOptions) {
+  const { monorepoContext, packageName } = options;
+  const currentPackageJson = monorepoContext.monorepoPackageJsons[packageName];
 
   const bin = currentPackageJson.bin;
   if (bin && Object.keys(bin).length > 0) {

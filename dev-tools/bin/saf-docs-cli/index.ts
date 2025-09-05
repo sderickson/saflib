@@ -3,6 +3,7 @@
 import { Command } from "commander";
 import { buildMonorepoContext } from "@saflib/dev-tools";
 import { generateCommand } from "./generate.ts";
+import { addGenerateAllCommand } from "./generate-all.ts";
 import { setupContext } from "@saflib/commander";
 
 const monorepoContext = buildMonorepoContext();
@@ -15,8 +16,10 @@ program
   .command("generate")
   .description("Generate typedoc and CLI docs for the current package.")
   .action(() => {
-    generateCommand(monorepoContext);
+    generateCommand({ monorepoContext });
   });
+
+addGenerateAllCommand(program);
 
 const packagesSorted = Array.from(monorepoContext.packages).sort();
 

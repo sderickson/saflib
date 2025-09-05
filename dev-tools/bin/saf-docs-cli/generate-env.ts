@@ -1,11 +1,16 @@
-import { getCurrentPackageName, type MonorepoContext } from "@saflib/dev-tools";
+import { type MonorepoContext } from "@saflib/dev-tools";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
-export function generateEnvDocs(monorepoContext: MonorepoContext) {
-  const currentPackage = getCurrentPackageName();
+export interface GenerateEnvDocsOptions {
+  monorepoContext: MonorepoContext;
+  packageName: string;
+}
+
+export function generateEnvDocs(options: GenerateEnvDocsOptions) {
+  const { monorepoContext, packageName } = options;
   const currentPackageDir =
-    monorepoContext.monorepoPackageDirectories[currentPackage];
+    monorepoContext.monorepoPackageDirectories[packageName];
 
   const envSchemaPath = join(currentPackageDir, "env.schema.json");
   if (existsSync(envSchemaPath)) {
