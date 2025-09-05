@@ -24,25 +24,37 @@ export const renameNextFile = fromPromise(
 
     const content = await readFile(targetPath, "utf-8");
 
-    let updatedContent = content;
-
-    updatedContent = updatedContent.replace(/template-file/g, name);
-
+    let updatedContent = content.split("\n");
     const snakeName = kebabCaseToSnakeCase(name);
-    updatedContent = updatedContent.replace(/template_file/g, snakeName);
-
     const pascalName = kebabCaseToPascalCase(name);
-    updatedContent = updatedContent.replace(/TemplateFile/g, pascalName);
-
     const camelName = kebabCaseToCamelCase(name);
-    updatedContent = updatedContent.replace(/templateFile/g, camelName);
 
-    updatedContent = updatedContent.replace(
-      /TEMPLATE_FILE/g,
-      snakeName.toUpperCase(),
-    );
+    for (var i = 0; i < updatedContent.length; i++) {
+      if (updatedContent[i].includes("/* do not replace */")) {
+        updatedContent[i] = updatedContent[i].replace(
+          "/* do not replace */",
+          "",
+        );
+        continue;
+      }
 
-    await writeFile(targetPath, updatedContent);
+      updatedContent[i] = updatedContent[i].replace(/template-file/g, name);
+      updatedContent[i] = updatedContent[i].replace(
+        /template_file/g,
+        snakeName,
+      );
+      updatedContent[i] = updatedContent[i].replace(
+        /TemplateFile/g,
+        pascalName,
+      );
+      updatedContent[i] = updatedContent[i].replace(/templateFile/g, camelName);
+      updatedContent[i] = updatedContent[i].replace(
+        /TEMPLATE_FILE/g,
+        snakeName.toUpperCase(),
+      );
+    }
+
+    await writeFile(targetPath, updatedContent.join("\n"));
 
     return { fileName: targetFileName };
   },

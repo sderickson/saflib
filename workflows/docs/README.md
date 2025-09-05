@@ -68,6 +68,8 @@ Ideally, these documents should live in the same package or module as the workfl
 
 These represent the preferred way to structure whatever thing is being created or updated as part of the workflow. You're much more likely to have a reliable result if the agent (or developer!) doesn't have to start from scratch.
 
+**Template Naming Convention**: Template files should use `template-file` as the base name, which gets automatically replaced with the actual name during workflow execution. The system also handles variants like `template_file` (snake_case), `TemplateFile` (PascalCase), and `templateFile` (camelCase). This allows template files to remain valid TypeScript/JavaScript while still being customizable.
+
 ## Example Workflows
 
 This repository has [several workflows](https://github.com/search?q=repo%3Asderickson%2Fsaflib+%22%3D+defineWorkflow%3C%22&type=code) in it as examples. They're continuously updated as I develop the library and how to use it.

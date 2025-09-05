@@ -76,7 +76,8 @@ export const AddWorkflowDefinition = defineWorkflow<
     step(PromptStepMachine, ({ context }) => ({
       promptText: `Add name, description, and cliArguments to the newly created ${context.workflowPath}.
       
-      Don't worry about the other TODOs for now; currently we're just making sure the stub workflow is properly installed into the CLI tool.`,
+      Don't worry about the other TODOs for now; currently we're just making sure the stub workflow is properly installed into the CLI tool.
+      You should namespace the id, though. Make sure it starts with the name of the package (sans organization), e.g. workflows/add-workflow`,
     })),
 
     step(PromptStepMachine, ({ context }) => ({
@@ -117,7 +118,9 @@ export const AddWorkflowDefinition = defineWorkflow<
       promptText: `Create template files for ${context.workflowName} workflow.
 
       Create a folder named \`${context.workflowName}\` next to the workflow file. Add any template files you need to the folder.
-      If you don't have them already, ask for samples to base the template files on.`,
+      If you don't have them already, ask for samples to base the template files on.
+      
+      **Important**: Use "template-file" as the base name in your template files (not {{...}} placeholders). The system will automatically replace "template-file", "template_file", "TemplateFile", and "templateFile" with the actual name during workflow execution. This keeps template files valid TypeScript/JavaScript.`,
     })),
 
     step(PromptStepMachine, () => ({
