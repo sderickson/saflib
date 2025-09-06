@@ -1,8 +1,8 @@
 # Overview
 
-`@saflib/workflows` provides a framework for defining and running developer workflows in TypeScript projects, particularly with coding tools such as Cursor, Claude Code, or any similar agentic coding tool.
+`saflib-workflows` provides a framework for defining and running developer workflows in TypeScript projects, particularly with coding tools such as Cursor, Claude Code, or any similar agentic coding tool.
 
-The purpose of `@saflib/workflows` is to make code generation more reliable for routine work. You can define a series of steps which the agent will follow, with checks along the way to make sure the work is done according to what is correct for your project or stack.
+The purpose of `saflib-workflows` is to make code generation more reliable for routine work. You can define a series of steps which the agent will follow, with checks along the way to make sure the work is done according to what is correct for your project or stack.
 
 For more information on the why, see [this doc](https://docs.saf-demo.online/workflows.html).
 
@@ -24,25 +24,27 @@ See a demo [here](https://www.youtube.com/watch?v=p6jfG5JH7_8).
 
 _**!!! I am just about to publish this package to npm; npm install doesn't work right now. !!!**_
 
-You will need a dedicated executable file which imports all the workflow definitions from other packages and runs the [provided CLI function](./ref/functions/runWorkflowCli.md). See for example this repository's [@saflib/workflows-cli package](https://github.com/sderickson/saflib/tree/main/workflows-cli).
+You will need a dedicated executable file which imports all the workflow definitions from other packages and runs the [provided CLI function](./ref/functions/runWorkflowCli.md). See for example this repository's [saflib-workflows-cli package](https://github.com/sderickson/saflib/tree/main/workflows-cli).
 
 To bootstrap workflows:
 
-1. Run `npm install @saflib/workflows`
+1. Run `npm install saflib-workflows`
 2. Add `"bin": { "saf-workflow": "./workflow-cli.ts" }` to your `package.json`
 3. Add the `workflow-cli.ts` file:
 
 ```ts
 #!/usr/bin/env node --experimental-strip-types --disable-warning=ExperimentalWarning
 
-import metaWorkflows from "@saflib/workflows/workflows";
-import { runWorkflowCli } from "@saflib/workflows";
+import metaWorkflows from "saflib-workflows/workflows";
+import { runWorkflowCli } from "saflib-workflows";
 
 runWorkflowCli([
   // workflows/add-workflow HOOK - do not remove this line
   ...metaWorkflows,
 ]);
 ```
+
+Example setup in [this repo](https://github.com/sderickson/test-workflows-package).
 
 ## Adding Workflows
 
