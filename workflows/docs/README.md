@@ -36,7 +36,7 @@ To bootstrap workflows:
 #!/usr/bin/env node --experimental-strip-types --disable-warning=ExperimentalWarning
 
 import metaWorkflows from "@saflib/workflows/workflows";
-import { runWorkflowCli } from "@saflib/workflows-internal";
+import { runWorkflowCli } from "@saflib/workflows";
 
 runWorkflowCli([
   // workflows/add-workflow HOOK - do not remove this line

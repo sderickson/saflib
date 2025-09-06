@@ -1,5 +1,5 @@
 {
-  "name": "@saflib/workflows-internal",
+  "name": "@saflib/workflows",
   "description": "Workflow engine and utilities for SAF",
   "private": true,
   "type": "module",

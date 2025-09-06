@@ -8,7 +8,7 @@ const getTestCommandAndArgs = () => {
   let args = ["test"];
 
   // prevent infinite loop
-  if (getCurrentPackage() === "@saflib/workflows-internal") {
+  if (getCurrentPackage() === "@saflib/workflows") {
     command = "ls";
     args = [];
   }

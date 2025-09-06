@@ -1,8 +1,7 @@
 {
-  "name": "@saflib/workflows",
+  "name": "saflib-workflows",
   "description": "Workflow engine and utilities for SAF",
   "version": "0.0.0",
-  "private": true,
   "type": "module",
   "exports": {
     ".": {

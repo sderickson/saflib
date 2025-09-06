@@ -30,7 +30,7 @@
   },
   "devDependencies": {
     "@saflib/vitest": "*",
-    "@saflib/workflows-internal": "*",
+    "@saflib/workflows": "*",
     "@types/node": "^24.3.0",
     "@vue/test-utils": "^2.0.0",
     "jsdom": "^26.0.0",

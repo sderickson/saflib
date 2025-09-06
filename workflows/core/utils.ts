@@ -12,7 +12,7 @@ import type { ChecklistItem, WorkflowContext, WorkflowInput } from "./types.ts";
  * 
  * ```ts
  * import { createActor, waitFor } from "xstate";
- * import { workflowAllSettled } from "@saflib/workflows-internal";
+ * import { workflowAllSettled } from "@saflib/workflows";
  * const actor = createActor(WorkflowMachine, {
       input: { /* ... *\/ },
     });

@@ -1,6 +1,6 @@
 {
   "name": "@saflib/workflows-cli",
-  "description": "Project-specific workflows using @saflib/workflows-internal",
+  "description": "Project-specific workflows using @saflib/workflows",
   "private": true,
   "type": "module",
   "bin": {
@@ -18,7 +18,7 @@
     "@saflib/openapi": "*",
     "@saflib/processes": "*",
     "@saflib/vue": "*",
-    "@saflib/workflows-internal": "*",
+    "@saflib/workflows": "*",
     "@saflib/xstate": "*"
   }
 }

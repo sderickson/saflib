@@ -4,7 +4,7 @@ import {
   PromptStepMachine,
   defineWorkflow,
   step,
-} from "@saflib/workflows-internal";
+} from "@saflib/workflows";
 import path, { dirname } from "node:path";
 import { kebabCaseToPascalCase } from "@saflib/utils";
 

@@ -1,5 +1,5 @@
 import { TemplateFileWorkflowDefinition } from "./template-file.ts";
-import type { WorkflowDefinition } from "@saflib/workflows-internal";
+import type { WorkflowDefinition } from "@saflib/workflows";
 
 const workflowDefinitions: WorkflowDefinition[] = [
   TemplateFileWorkflowDefinition,

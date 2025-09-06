@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { AddQueryWorkflowDefinition } from "./add-query.ts";
-import { dryRunWorkflow } from "@saflib/workflows-internal";
+import { dryRunWorkflow } from "@saflib/workflows";
 
 describe("add-queries", () => {
   it("should successfully dry run", async () => {

@@ -1,4 +1,4 @@
-import type { WorkflowDefinition } from "@saflib/workflows-internal";
+import type { WorkflowDefinition } from "@saflib/workflows";
 import { AddEnvVarWorkflowDefinition } from "./add-env-var.ts";
 
 const workflowDefinitions: WorkflowDefinition[] = [AddEnvVarWorkflowDefinition];

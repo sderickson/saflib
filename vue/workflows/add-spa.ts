@@ -3,7 +3,7 @@ import {
   PromptStepMachine,
   defineWorkflow,
   step,
-} from "@saflib/workflows-internal";
+} from "@saflib/workflows";
 import path from "node:path";
 import { readFileSync } from "node:fs";
 

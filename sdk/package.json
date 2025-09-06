@@ -11,7 +11,7 @@
     "openapi-fetch": "^0.14.0"
   },
   "devDependencies": {
-    "@saflib/workflows-internal": "*",
+    "@saflib/workflows": "*",
     "@saflib/vitest": "*",
     "@saflib/dev-tools": "*",
     "@saflib/vue": "*",
