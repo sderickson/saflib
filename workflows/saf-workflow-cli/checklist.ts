@@ -1,7 +1,7 @@
 import type { Command } from "commander";
 import { checklistToString } from "../core/utils.ts";
 import type { WorkflowDefinition } from "../core/types.ts";
-import { addNewLinesToString } from "@saflib/utils";
+import { addNewLinesToString } from "../strings.ts";
 import { dryRunWorkflow } from "./utils.ts";
 
 export const addChecklistCommand = (

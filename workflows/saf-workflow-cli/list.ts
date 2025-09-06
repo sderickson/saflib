@@ -1,7 +1,7 @@
 import type { Command } from "commander";
 import type { WorkflowDefinition } from "../core/types.ts";
-import { addNewLinesToString } from "@saflib/utils";
-import { getCurrentPackage } from "@saflib/dev-tools";
+import { addNewLinesToString } from "../strings.ts";
+import { getCurrentPackage } from "../workspace.ts";
 import { getPackageName } from "./utils.ts";
 
 export const addListCommand = (

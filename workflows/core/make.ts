@@ -32,7 +32,7 @@ export function defineWorkflow<
   C = any,
 >(config: {
   input: I;
-  context: (arg: { input: CreateArgsType<I> }) => C;
+  context: (arg: { input: CreateArgsType<I> & { dryRun?: boolean } }) => C;
   id: string;
   description: string;
   sourceUrl: string;
@@ -82,7 +82,6 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
           return {
             ...step.input({ context }),
             // don't need checklist; the machine will compose their own
-            // don't need loggedLast; the machine just tracks that for its own output
             systemPrompt: context.systemPrompt,
             dryRun: context.dryRun,
             rootRef: context.rootRef,

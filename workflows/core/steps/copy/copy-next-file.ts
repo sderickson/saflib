@@ -6,7 +6,7 @@ import { copyFile } from "node:fs/promises";
 import { transformName } from "./utils.ts";
 import type { CopyStepContext } from "./types.ts";
 
-interface CopyNextFileOutput {
+export interface CopyNextFileOutput {
   skipped: boolean;
   fileName: string;
   fileId: string;

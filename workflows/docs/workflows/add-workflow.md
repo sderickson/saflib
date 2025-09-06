@@ -1,13 +1,13 @@
-# add-workflow
+# workflows/add-workflow
 
 ## Source
 
-[add-workflow.ts](https://github.com/sderickson/saflib/blob/main/workflows/workflows/add-workflow.ts)
+[add-workflow.ts](add-workflow.ts)
 
 ## Usage
 
 ```bash
-npm exec saf-workflow kickoff add-workflow <name>
+npm exec saf-workflow kickoff workflows/add-workflow <name>
 ```
 
 To run this workflow automatically, tell the agent to:
@@ -21,21 +21,24 @@ To run this workflow automatically, tell the agent to:
 When run, the workflow will:
 
 - Copy template files and rename placeholders.
-  - Upsert **example-workflow.ts** from [template](https://github.com/sderickson/saflib/blob/main/workflows/workflows/add-workflow.templates/template-file.ts)
+  - Upsert **example-workflow.ts** from [template](template-file.ts)
+  - Upsert **index.ts** from [template](index.ts)
 - Add name, description, and cliArguments to the newly created workflows/example-workflow.ts.
-- Export **example-workflow** from **@saflib/workflows**.
-- Add `@saflib/workflows` as a dependency of `@saflib/workflows-cli`.
-- Add `@saflib/workflows` to `@saflib/workflows-cli`'s list of workflows.
+- Export **example-workflow** from **@example/package**.
+- Find the file which gathers all workflows to include them in the saf-workflow CLI tool.
+- If needed, install `@example/package` as a dependency of the package that contains that file you found.
+- Add `@example/package`'s exported workflows to the CLI file's list of workflows.
 - Check that the new workflow appears in the saf-workflow CLI tool.
-- Stop and understand the workflow requirements before proceeding.
+- Review documentation: [README.md](README.md)
 - Create template files for example-workflow workflow.
-- Implement the workflow logic in workflows/example-workflow.ts.
+- Add documentation links to the workflow.
+- Add steps to workflows/example-workflow.ts.
 - Review the checklist and verify that the workflow was added correctly.
 
 ## Help Docs
 
 ```bash
-Usage: saf-workflow kickoff add-workflow [options] <name>
+Usage: saf-workflow kickoff workflows/add-workflow [options] <name>
 
 Create a new workflow and adds it to the CLI tool. Stops after setup to wait for
 implementation requirements.

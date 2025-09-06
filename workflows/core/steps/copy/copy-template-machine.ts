@@ -37,6 +37,7 @@ export const CopyStepMachine = setup({
     hasMoreFiles: ({ context }) => {
       return context.filesToCopy.length > 0;
     },
+    skipped: ({ event }) => event.output.skipped,
   },
 }).createMachine({
   id: "copy-template",
@@ -52,6 +53,7 @@ export const CopyStepMachine = setup({
       name: arg.input.name,
       targetDir: arg.input.targetDir,
       copiedFiles: arg.input.copiedFiles || {},
+      lineReplace: arg.input.lineReplace,
     };
   },
   states: {
@@ -63,7 +65,7 @@ export const CopyStepMachine = setup({
         src: "copyNextFile",
         onDone: [
           {
-            guard: ({ event }) => event.output.skipped,
+            guard: "skipped",
             target: "popFile",
             actions: [
               logWarn(

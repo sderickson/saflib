@@ -1,4 +1,4 @@
-import { getCurrentPackage } from "@saflib/dev-tools";
+import { getCurrentPackage } from "../../workspace.ts";
 import { runCommandAsync } from "./utils.ts";
 
 // test action

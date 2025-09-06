@@ -1,5 +1,4 @@
-import { getSafReporters } from "@saflib/node";
-import { addNewLinesToString } from "@saflib/utils";
+import { addNewLinesToString } from "../strings.ts";
 import {
   type AnyMachineSnapshot,
   type AnyActor,
@@ -30,12 +29,10 @@ export function workflowAllSettled(snapshot: AnyMachineSnapshot): boolean {
   return snapshot.status !== "active";
 }
 
-export const print = (msg: string, noNewLine = false) => {
-  const { log } = getSafReporters();
-  if (!noNewLine) {
-    log.info("");
-  }
-  log.info(addNewLinesToString(msg));
+interface PrintOptions {}
+
+export const print = (msg: string, _: PrintOptions = {}) => {
+  console.log(addNewLinesToString(msg));
 };
 
 /**
@@ -81,7 +78,6 @@ export const checklistToString = (
 export function contextFromInput(input: WorkflowInput): WorkflowContext {
   return {
     checklist: [],
-    loggedLast: false,
     systemPrompt: input.systemPrompt,
     dryRun: input.dryRun,
     rootRef: input.rootRef as AnyActorRef,

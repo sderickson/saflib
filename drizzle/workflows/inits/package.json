@@ -1,0 +1,22 @@
+{
+  "name": "@saflib/template-file",
+  "description": "TODO: Add description for template-file database",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "generate": "drizzle-kit generate",
+    "typecheck": "tsc"
+  },
+  "dependencies": {
+    "@saflib/drizzle": "*"
+  },
+  "devDependencies": {
+    "@saflib/vitest": "*"
+  }
+}

@@ -1,6 +1,6 @@
 import type { Command } from "commander";
 import { saveWorkflow } from "./file-io.ts";
-import { addNewLinesToString } from "@saflib/utils";
+import { addNewLinesToString } from "../strings.ts";
 import type { WorkflowDefinition, WorkflowArgument } from "../core/types.ts";
 import { XStateWorkflowRunner } from "./workflow.ts";
 

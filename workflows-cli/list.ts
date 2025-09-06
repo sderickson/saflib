@@ -12,6 +12,7 @@ import commanderWorkflows from "@saflib/commander/workflows";
 import type { WorkflowDefinition } from "@saflib/workflows";
 
 const workflowClasses: WorkflowDefinition[] = [
+  // workflows/add-workflow HOOK - do not remove this line
   ...metaWorkflows,
   ...monorepoWorkflows,
   ...processWorkflows,

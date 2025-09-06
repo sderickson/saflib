@@ -1,5 +1,5 @@
 import { AddWorkflowDefinition } from "./add-workflow.ts";
-import type { WorkflowDefinition } from "@saflib/workflows";
+import type { WorkflowDefinition } from "../core/index.ts";
 
 const workflowClasses: WorkflowDefinition[] = [AddWorkflowDefinition];
 

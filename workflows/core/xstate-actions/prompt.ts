@@ -20,7 +20,7 @@ export const promptAgent = <C, E extends AnyEventObject>(
   };
 };
 
-interface PromptParams {
+export interface PromptParams {
   msg: string;
 }
 
@@ -30,10 +30,14 @@ export const promptImpl: WorkflowActionFunction<
   PromptParams
 > = assign(
   ({ context }: { context: WorkflowContext }, { msg }: PromptParams) => {
+    // space prompts from the original command, logs, and other prompts
+    print("");
     if (context.systemPrompt) {
       print(context.systemPrompt);
+      print("");
     }
     print(msg);
-    return { loggedLast: false };
+    print("");
+    return {};
   },
 );

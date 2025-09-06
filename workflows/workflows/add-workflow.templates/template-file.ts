@@ -23,9 +23,7 @@ const input = [
 // TODO: Remove exampleProperty and replace it with the actual context properties your workflow needs
 interface TemplateFileWorkflowContext {
   name: string;
-  pascalName: string;
   targetDir: string;
-  // Add any additional context properties your workflow needs
   exampleProperty: string;
 }
 
@@ -33,7 +31,8 @@ export const TemplateFileWorkflowDefinition = defineWorkflow<
   typeof input,
   TemplateFileWorkflowContext
 >({
-  id: "template-file",
+  // TODO: replace "todo/" with the name of the package that contains the template files
+  id: "todo/template-file",
 
   description: "TODO: Describe what this workflow does",
 
@@ -48,7 +47,6 @@ export const TemplateFileWorkflowDefinition = defineWorkflow<
 
     return {
       name: input.name,
-      pascalName: input.name.charAt(0).toUpperCase() + input.name.slice(1),
       targetDir,
       exampleProperty: "example value",
     };
@@ -56,15 +54,16 @@ export const TemplateFileWorkflowDefinition = defineWorkflow<
 
   // TODO: create the template-files dir and add template files
   // Include TODOs like this file does.
-  templateFiles: {
+  /* do not replace */ templateFiles: {
     main: path.join(sourceDir, "main.ts"),
     config: path.join(sourceDir, "config.ts"),
     test: path.join(sourceDir, "test.ts"),
   },
 
+  // TODO: add documentation file references
   docFiles: {},
 
-  // TODO: update the steps to match the actual workflow you're creating. It will usually involve some combination of copying template files, updating files, and running tests.
+  // TODO: update the steps to match the actual workflow you're creating. It will usually involve some combination of copying template files, updating files, prompting, running scripts, and running tests.
   steps: [
     step(CopyStepMachine, ({ context }) => ({
       name: context.name,
