@@ -11,7 +11,8 @@ import {
 
 export const renameNextFile = fromPromise(
   async ({ input }: { input: CopyStepContext }) => {
-    const { targetDir, name, filesToCopy, dryRun, templateFiles } = input;
+    const { targetDir, name, filesToCopy, dryRun, templateFiles, lineReplace } =
+      input;
 
     const currentFileId = filesToCopy[0];
     const currentFile = path.basename(templateFiles![currentFileId]);
@@ -52,6 +53,9 @@ export const renameNextFile = fromPromise(
         /TEMPLATE_FILE/g,
         snakeName.toUpperCase(),
       );
+      if (lineReplace) {
+        updatedContent[i] = lineReplace(updatedContent[i]);
+      }
     }
 
     await writeFile(targetPath, updatedContent.join("\n"));

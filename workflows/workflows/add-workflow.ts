@@ -7,6 +7,7 @@ import {
 } from "../core/index.ts";
 import { readFileSync } from "fs";
 import path from "node:path";
+import { existsSync } from "node:fs";
 
 const sourceDir = path.join(import.meta.dirname, "add-workflow.templates");
 
@@ -22,6 +23,7 @@ const input = [
 interface AddWorkflowContext {
   workflowName: string;
   workflowPath: string;
+  workflowPackageName: string;
   packageName: string;
   targetDir: string;
 }
@@ -48,11 +50,14 @@ export const AddWorkflowDefinition = defineWorkflow<
     if (input.dryRun) {
       packageName = "@example/package";
     }
+    const workflowPackageName = findWorkflowPackageName();
+
     const targetDir = process.cwd() + "/workflows";
 
     return {
       workflowName,
       workflowPath,
+      workflowPackageName,
       packageName,
       targetDir,
     };
@@ -68,10 +73,16 @@ export const AddWorkflowDefinition = defineWorkflow<
   },
 
   steps: [
-    step(CopyStepMachine, ({ context }) => ({
-      name: context.workflowName,
-      targetDir: context.targetDir,
-    })),
+    step(CopyStepMachine, ({ context }) => {
+      return {
+        name: context.workflowName,
+        targetDir: context.targetDir,
+        // Internal use uses @saflib/workflows, but published package uses saflib-workflows.
+        // Adjust the produced workflow depending on what the name of the workflow package is.
+        lineReplace: (line) =>
+          line.replace("@saflib/workflows", context.workflowPackageName),
+      };
+    }),
 
     step(PromptStepMachine, ({ context }) => ({
       promptText: `Add name, description, and cliArguments to the newly created ${context.workflowPath}.
@@ -146,3 +157,19 @@ export const AddWorkflowDefinition = defineWorkflow<
     })),
   ],
 });
+
+const findWorkflowPackageName = () => {
+  let workflowPackageName = "@saflib/workflows";
+  let currentDir = import.meta.dirname;
+  while (currentDir !== "/") {
+    const packageJsonFileName = path.join(currentDir, "package.json");
+    if (existsSync(packageJsonFileName)) {
+      workflowPackageName = JSON.parse(
+        readFileSync(packageJsonFileName, "utf8"),
+      ).name;
+      break;
+    }
+    currentDir = path.dirname(currentDir);
+  }
+  return workflowPackageName;
+};

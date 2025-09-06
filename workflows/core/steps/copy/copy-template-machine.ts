@@ -53,6 +53,7 @@ export const CopyStepMachine = setup({
       name: arg.input.name,
       targetDir: arg.input.targetDir,
       copiedFiles: arg.input.copiedFiles || {},
+      lineReplace: arg.input.lineReplace,
     };
   },
   states: {

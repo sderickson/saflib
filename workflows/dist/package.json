@@ -1,7 +1,7 @@
 {
   "name": "saflib-workflows",
   "description": "Workflow engine and utilities for SAF",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "type": "module",
   "exports": {
     ".": {
