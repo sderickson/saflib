@@ -49,6 +49,17 @@ export const UpdateStepMachine = setup({
   actors: {
     ...workflowActors,
   },
+  guards: {
+    todosRemain: ({ context }: { context: UpdateStepContext }) => {
+      if (context.dryRun) {
+        return false;
+      }
+      const resolvedPath = context.filePath;
+      const content = readFileSync(resolvedPath, "utf-8");
+      const hasTodos = /\s*(?:#|\/\/).*todo/i.test(content);
+      return hasTodos;
+    },
+  },
 }).createMachine({
   id: "update-step",
   initial: "update",
@@ -75,15 +86,7 @@ export const UpdateStepMachine = setup({
         },
         continue: [
           {
-            guard: ({ context }) => {
-              if (context.dryRun) {
-                return false;
-              }
-              const resolvedPath = context.filePath;
-              const content = readFileSync(resolvedPath, "utf-8");
-              const hasTodos = /\s*(?:#|\/\/).*todo/i.test(content);
-              return hasTodos;
-            },
+            guard: "todosRemain",
             actions: [
               logError(({ context }) => {
                 const filePathStr = path.basename(context.filePath);

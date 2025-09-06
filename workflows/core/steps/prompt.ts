@@ -1,4 +1,4 @@
-import { setup } from "xstate";
+import { setup, sendTo, raise } from "xstate";
 import {
   workflowActions,
   workflowActors,
@@ -6,7 +6,6 @@ import {
   logInfo,
 } from "../xstate.ts";
 import { type WorkflowContext, type WorkflowInput } from "../types.ts";
-import { sendTo, raise } from "xstate";
 import { contextFromInput } from "../utils.ts";
 
 /**
