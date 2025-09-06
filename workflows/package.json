@@ -13,10 +13,12 @@
     "test:coverage": "vitest run --coverage",
     "typecheck": "tsc",
     "build": "tsup",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "pack": "rm -rf dist/src && rm dist/saflib-workflows-*.tgz && npm run build && cd dist && npm pack"
   },
   "dependencies": {
-    "xstate": "^5.19.3"
+    "xstate": "^5.19.3",
+    "commander": "^14.0.0"
   },
   "devDependencies": {
     "@saflib/vitest": "*",
