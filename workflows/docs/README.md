@@ -42,6 +42,8 @@ runWorkflowCli([
 ]);
 ```
 
+You may also need to install @types/node if you haven't already; the generated workflow files need it for the typing to work.
+
 Example setup in [this repo](https://github.com/sderickson/test-workflows-package).
 
 ## Adding Workflows
