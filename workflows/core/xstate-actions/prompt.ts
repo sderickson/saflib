@@ -32,8 +32,10 @@ export const promptImpl: WorkflowActionFunction<
   ({ context }: { context: WorkflowContext }, { msg }: PromptParams) => {
     if (context.systemPrompt) {
       print(context.systemPrompt);
+      print("");
     }
     print(msg);
+    print("");
     return { loggedLast: false };
   },
 );

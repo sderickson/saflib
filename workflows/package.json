@@ -16,7 +16,6 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "winston": "^3.0.0",
     "xstate": "^5.19.3"
   },
   "devDependencies": {

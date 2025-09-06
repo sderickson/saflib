@@ -6,6 +6,7 @@ import {
   setupWorkflowContext,
   type WorkflowLoggerOptions,
   type GetSourceUrlFunction,
+  type WorkflowLogger,
 } from "../core/store.ts";
 import { addKickoffCommand } from "./kickoff.ts";
 import { addChecklistCommand } from "./checklist.ts";
@@ -18,7 +19,8 @@ import { addSourceCommand } from "./source.ts";
  * Options for configuring the workflow CLI
  */
 export interface WorkflowCliOptions {
-  logger?: WorkflowLoggerOptions;
+  logger?: WorkflowLogger;
+  loggerOptions?: WorkflowLoggerOptions;
   getSourceUrl?: GetSourceUrlFunction;
 }
 
@@ -55,10 +57,10 @@ export function runWorkflowCli(
   const silentLogging = process.argv.includes("checklist");
   const loggerOptions: WorkflowLoggerOptions = {
     silent: silentLogging,
-    ...options.logger,
+    ...options.loggerOptions,
   };
 
-  const logger = createWorkflowLogger(loggerOptions);
+  const logger = options.logger || createWorkflowLogger(loggerOptions);
   setupWorkflowContext({
     logger,
     getSourceUrl: options.getSourceUrl,

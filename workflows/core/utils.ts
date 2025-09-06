@@ -30,12 +30,15 @@ export function workflowAllSettled(snapshot: AnyMachineSnapshot): boolean {
   return snapshot.status !== "active";
 }
 
-export const print = (msg: string, noNewLine = false) => {
-  const log = getWorkflowLogger();
-  if (!noNewLine) {
-    log.info("");
+interface PrintOptions {
+  noNewLine?: boolean;
+}
+
+export const print = (msg: string, options: PrintOptions = {}) => {
+  if (!options.noNewLine) {
+    console.log("");
   }
-  log.info(addNewLinesToString(msg));
+  console.log(addNewLinesToString(msg));
 };
 
 /**
