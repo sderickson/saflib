@@ -1,21 +1,11 @@
 {
-  "name": "@saflib/workflows",
-  "version": "0.1.0",
-  "files": [
-    "dist"
-  ],
+  "name": "@saflib/workflows-internal",
   "description": "Workflow engine and utilities for SAF",
   "private": true,
   "type": "module",
   "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
-    },
-    "./workflows": {
-      "types": "./dist/workflows/index.d.ts",
-      "import": "./dist/workflows/index.js"
-    }
+    ".": "./index.ts",
+    "./workflows": "./workflows/index.ts"
   },
   "scripts": {
     "test": "vitest run",

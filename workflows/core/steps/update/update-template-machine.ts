@@ -124,4 +124,4 @@ export const UpdateStepMachine = setup({
       checklist: context.checklist,
     };
   },
-}) as any; // TODO: fix this
+});
