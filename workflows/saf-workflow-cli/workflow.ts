@@ -91,7 +91,6 @@ export class XStateWorkflowRunner extends AbstractWorkflowRunner {
     }
     await waitFor(actor, workflowAllSettled);
     const log = getWorkflowLogger();
-    log.info("");
     log.info("To continue, run 'npm exec saf-workflow next'");
     this.actor = actor;
     return actor.getSnapshot().status !== "error";

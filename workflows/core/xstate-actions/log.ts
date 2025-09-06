@@ -1,10 +1,5 @@
-import { print } from "../utils.ts";
 import { assign, type AnyEventObject } from "xstate";
-import {
-  type ActionParam,
-  type WorkflowContext,
-  type WorkflowActionFunction,
-} from "../types.ts";
+import { type ActionParam, type WorkflowActionFunction } from "../types.ts";
 import { getWorkflowLogger } from "../store.ts";
 
 /**
@@ -68,5 +63,5 @@ export const logImpl: WorkflowActionFunction<any, AnyEventObject, LogParams> =
   assign((_, { msg, level = "info" }) => {
     const logger = getWorkflowLogger();
     logger[level](msg);
-    return { loggedLast: true };
+    return {};
   });

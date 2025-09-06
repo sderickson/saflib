@@ -82,7 +82,6 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
           return {
             ...step.input({ context }),
             // don't need checklist; the machine will compose their own
-            // don't need loggedLast; the machine just tracks that for its own output
             systemPrompt: context.systemPrompt,
             dryRun: context.dryRun,
             rootRef: context.rootRef,

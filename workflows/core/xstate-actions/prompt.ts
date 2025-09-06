@@ -30,12 +30,14 @@ export const promptImpl: WorkflowActionFunction<
   PromptParams
 > = assign(
   ({ context }: { context: WorkflowContext }, { msg }: PromptParams) => {
+    // space prompts from the original command, logs, and other prompts
+    print("");
     if (context.systemPrompt) {
       print(context.systemPrompt);
       print("");
     }
     print(msg);
     print("");
-    return { loggedLast: false };
+    return {};
   },
 );

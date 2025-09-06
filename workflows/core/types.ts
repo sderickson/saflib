@@ -112,8 +112,6 @@ export interface WorkflowInput {
    */
   dryRun?: boolean;
 
-  loggedLast?: boolean;
-
   systemPrompt?: string;
 
   rootRef?: AnyActorRef;
@@ -149,12 +147,6 @@ export interface WorkflowContext {
    * of the work done by a completed workflow. Workflows build these recursively.
    */
   checklist: ChecklistItem[];
-
-  /**
-   * Flag for if the last thing printed was a log message. This is just
-   * to space logs and prompts out from each other.
-   */
-  loggedLast?: boolean;
 
   /**
    * Optional prompt to be printed above every step prompt. Use to remind the

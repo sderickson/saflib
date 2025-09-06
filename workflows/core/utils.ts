@@ -30,14 +30,9 @@ export function workflowAllSettled(snapshot: AnyMachineSnapshot): boolean {
   return snapshot.status !== "active";
 }
 
-interface PrintOptions {
-  noNewLine?: boolean;
-}
+interface PrintOptions {}
 
-export const print = (msg: string, options: PrintOptions = {}) => {
-  if (!options.noNewLine) {
-    console.log("");
-  }
+export const print = (msg: string, _: PrintOptions = {}) => {
   console.log(addNewLinesToString(msg));
 };
 
@@ -84,7 +79,6 @@ export const checklistToString = (
 export function contextFromInput(input: WorkflowInput): WorkflowContext {
   return {
     checklist: [],
-    loggedLast: false,
     systemPrompt: input.systemPrompt,
     dryRun: input.dryRun,
     rootRef: input.rootRef as AnyActorRef,
