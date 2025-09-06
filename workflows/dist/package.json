@@ -8,6 +8,25 @@
   "description": "Workflow engine and utilities for SAF",
   "version": "0.0.3",
   "type": "module",
+  "homepage": "https://docs.saf-demo.online/workflows/docs/README.html",
+  "author": "Scott Erickson <sderickson@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sderickson/saflib.git",
+    "directory": "saflib/workflows"
+  },
+  "bugs": {
+    "url": "https://github.com/sderickson/saflib/issues"
+  },
+  "keywords": [
+    "workflows",
+    "llm",
+    "agentic",
+    "cursor",
+    "claude",
+    "codex"
+  ],
   "exports": {
     ".": {
       "types": "./src/index.d.ts",
