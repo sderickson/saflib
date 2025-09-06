@@ -1,16 +1,16 @@
 {
   "name": "saflib-workflows",
   "description": "Workflow engine and utilities for SAF",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "type": "module",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "types": "./src/index.d.ts",
+      "import": "./src/index.js"
     },
     "./workflows": {
-      "types": "./dist/workflows/index.d.ts",
-      "import": "./dist/workflows/index.js"
+      "types": "./src/workflows/index.d.ts",
+      "import": "./src/workflows/index.js"
     }
   },
   "dependencies": {
