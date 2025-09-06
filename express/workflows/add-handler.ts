@@ -6,7 +6,7 @@ import {
   DocStepMachine,
   defineWorkflow,
   step,
-} from "@saflib/workflows";
+} from "@saflib/workflows-internal";
 import path from "node:path";
 import { kebabCaseToPascalCase, kebabCaseToCamelCase } from "@saflib/utils";
 

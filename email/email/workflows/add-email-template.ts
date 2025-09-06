@@ -4,7 +4,7 @@ import {
   CommandStepMachine,
   defineWorkflow,
   step,
-} from "@saflib/workflows";
+} from "@saflib/workflows-internal";
 import path from "node:path";
 
 const sourceDir = path.join(import.meta.dirname, "email-template-template");

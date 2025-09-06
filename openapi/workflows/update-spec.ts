@@ -4,7 +4,7 @@ import {
   DocStepMachine,
   defineWorkflow,
   step,
-} from "@saflib/workflows";
+} from "@saflib/workflows-internal";
 import { resolve } from "path";
 
 const input = [] as const;

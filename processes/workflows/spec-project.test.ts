@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { SpecProjectWorkflowDefinition } from "./spec-project.ts";
-import { dryRunWorkflow } from "@saflib/workflows";
+import { dryRunWorkflow } from "@saflib/workflows-internal";
 
 describe("spec-project", () => {
   it("should successfully dry run", async () => {

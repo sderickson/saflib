@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { AddEnvVarWorkflowDefinition } from "./add-env-var.ts";
-import { dryRunWorkflow } from "@saflib/workflows";
+import { dryRunWorkflow } from "@saflib/workflows-internal";
 
 describe("add-env-var", () => {
   it("should successfully dry run", async () => {

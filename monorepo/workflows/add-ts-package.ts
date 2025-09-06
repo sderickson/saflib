@@ -6,7 +6,7 @@ import {
   defineWorkflow,
   step,
   TestStepMachine,
-} from "@saflib/workflows";
+} from "@saflib/workflows-internal";
 import path from "node:path";
 
 const sourceDir = path.join(import.meta.dirname, "templates");

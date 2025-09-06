@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { AddCLIWorkflowDefinition } from "./add-cli.ts";
-import { dryRunWorkflow } from "@saflib/workflows";
+import { dryRunWorkflow } from "@saflib/workflows-internal";
 
 describe("add-cli", () => {
   it("should create a new CLI", async () => {
