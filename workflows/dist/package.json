@@ -2,7 +2,8 @@
   "name": "saflib-workflows",
   "files": [
     "src",
-    "package.json"
+    "package.json",
+    "LICENSE"
   ],
   "description": "Workflow engine and utilities for SAF",
   "version": "0.0.3",
