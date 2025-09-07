@@ -30,7 +30,7 @@ export interface CommandStepInput {
   args?: string[];
 }
 
-interface CommandStepContext extends WorkflowContext {
+export interface CommandStepContext extends WorkflowContext {
   command: string;
   args: string[];
 }

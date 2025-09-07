@@ -3,9 +3,11 @@ import {
   PromptStepMachine,
   step,
   defineWorkflow,
-} from "@saflib/workflows";
+  DocStepMachine,
+} from "../core/index.ts";
 import { readFileSync } from "fs";
 import path from "node:path";
+import { existsSync } from "node:fs";
 
 const sourceDir = path.join(import.meta.dirname, "add-workflow.templates");
 
@@ -21,6 +23,7 @@ const input = [
 interface AddWorkflowContext {
   workflowName: string;
   workflowPath: string;
+  workflowPackageName: string;
   packageName: string;
   targetDir: string;
 }
@@ -41,14 +44,20 @@ export const AddWorkflowDefinition = defineWorkflow<
   context: ({ input }) => {
     const workflowName = input.name || "";
     const workflowPath = `workflows/${workflowName}.ts`;
-    const packageName =
+    let packageName =
       readFileSync("package.json", "utf8").match(/name": "(.+)"/)?.[1] ||
       "@your/target-package";
+    if (input.dryRun) {
+      packageName = "@example/package";
+    }
+    const workflowPackageName = findWorkflowPackageName();
+
     const targetDir = process.cwd() + "/workflows";
 
     return {
       workflowName,
       workflowPath,
+      workflowPackageName,
       packageName,
       targetDir,
     };
@@ -56,20 +65,30 @@ export const AddWorkflowDefinition = defineWorkflow<
 
   templateFiles: {
     workflow: path.join(sourceDir, "template-file.ts"),
+    index: path.join(sourceDir, "index.ts"),
   },
 
-  docFiles: {},
+  docFiles: {
+    readme: path.join(import.meta.dirname, "../docs/README.md"),
+  },
 
   steps: [
-    step(CopyStepMachine, ({ context }) => ({
-      name: context.workflowName,
-      targetDir: context.targetDir,
-    })),
+    step(CopyStepMachine, ({ context }) => {
+      return {
+        name: context.workflowName,
+        targetDir: context.targetDir,
+        // Internal use uses @saflib/workflows, but published package uses saflib-workflows.
+        // Adjust the produced workflow depending on what the name of the workflow package is.
+        lineReplace: (line) =>
+          line.replace("@saflib/workflows", context.workflowPackageName),
+      };
+    }),
 
     step(PromptStepMachine, ({ context }) => ({
       promptText: `Add name, description, and cliArguments to the newly created ${context.workflowPath}.
       
-      Don't worry about the other TODOs for now; currently we're just making sure the stub workflow is properly installed into the CLI tool.`,
+      Don't worry about the other TODOs for now; currently we're just making sure the stub workflow is properly installed into the CLI tool.
+      You should namespace the id, though. Make sure it starts with the name of the package (sans organization), e.g. workflows/add-workflow`,
     })),
 
     step(PromptStepMachine, ({ context }) => ({
@@ -80,14 +99,18 @@ export const AddWorkflowDefinition = defineWorkflow<
         4. If needed, update the package.json of this package (${context.packageName}) to include a './workflows' export pointing to the 'workflows/index.ts' file.`,
     })),
 
-    step(PromptStepMachine, ({ context }) => ({
-      promptText: `Add \`${context.packageName}\` as a dependency of \`@saflib/workflows-cli\`.
+    step(PromptStepMachine, () => ({
+      promptText: `Find the file which gathers all workflows to include them in the saf-workflow CLI tool.
       
-       If it's not a dependency in \`'saflib/workflows-cli/package.json'\`, go to that directory and run \`npm install ${context.packageName}\`.`,
+      Look for the string "workflows/add-workflow HOOK", a file named "workflow-cli.ts", or a package which depends on @saflib/workflows that seems promising.`,
     })),
 
     step(PromptStepMachine, ({ context }) => ({
-      promptText: `Add \`${context.packageName}\` to \`@saflib/workflows-cli\`'s list of workflows. 
+      promptText: `If needed, install \`${context.packageName}\` as a dependency of the package that contains that file you found.`,
+    })),
+
+    step(PromptStepMachine, ({ context }) => ({
+      promptText: `Add \`${context.packageName}\`'s exported workflows to the CLI file's list of workflows. 
         1. Import the workflow array exported from the package (e.g., \`import newWorkflows from '${context.packageName}/workflows';\`). Make sure to use the correct package name.
         2. Add the imported workflows to the \`workflowClasses\` array. You can use the spread operator (\`...newWorkflows\`) for this.`,
     })),
@@ -98,26 +121,33 @@ export const AddWorkflowDefinition = defineWorkflow<
       Run the command \`npm exec saf-workflow kickoff help\` in your terminal (any directory). Ensure that your new workflow "${context.workflowName}" appears in the list.`,
     })),
 
-    step(PromptStepMachine, () => ({
-      promptText: `Stop and understand the workflow requirements before proceeding.
-
-      If you don't know the answers to any of the following, ask the person giving the task:
-      1. What should this workflow do?
-      2. What template files should it create?
-      3. What should the workflow steps be?
-      4. Any specific requirements or constraints?
-      `,
+    step(DocStepMachine, () => ({
+      docId: "readme",
     })),
 
     step(PromptStepMachine, ({ context }) => ({
       promptText: `Create template files for ${context.workflowName} workflow.
 
       Create a folder named \`${context.workflowName}\` next to the workflow file. Add any template files you need to the folder.
-      If you don't have them already, ask for samples to base the template files on.`,
+      If you don't have them already, ask for samples to base the template files on.
+      
+      **Important**: Use "template-file" as the base name in your template files (not {{...}} placeholders). The system will automatically replace "template-file", "template_file", "TemplateFile", and "templateFile" with the actual name during workflow execution. This keeps template files valid TypeScript/JavaScript.`,
+    })),
+
+    step(PromptStepMachine, () => ({
+      promptText: `Add documentation links to the workflow.
+      
+      A good workflow is one with documentation to guide development. If you have not already been provided with documentation, ask for it.`,
     })),
 
     step(PromptStepMachine, ({ context }) => ({
-      promptText: `Implement the workflow logic in ${context.workflowPath}.`,
+      promptText: `Add steps to ${context.workflowPath}.
+      
+      The steps will normally include:
+      1. First copying the template files
+      2. Then updating each template file that has TODOs in it.
+      3. Reviewing documents at key points.
+      4. Running tests and other scripts at key points.`,
     })),
 
     step(PromptStepMachine, ({ context }) => ({
@@ -127,3 +157,19 @@ export const AddWorkflowDefinition = defineWorkflow<
     })),
   ],
 });
+
+const findWorkflowPackageName = () => {
+  let workflowPackageName = "@saflib/workflows";
+  let currentDir = import.meta.dirname;
+  while (currentDir !== "/") {
+    const packageJsonFileName = path.join(currentDir, "package.json");
+    if (existsSync(packageJsonFileName)) {
+      workflowPackageName = JSON.parse(
+        readFileSync(packageJsonFileName, "utf8"),
+      ).name;
+      break;
+    }
+    currentDir = path.dirname(currentDir);
+  }
+  return workflowPackageName;
+};

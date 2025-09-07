@@ -1,13 +1,28 @@
 import { Command } from "commander";
 import type { WorkflowDefinition } from "../core/types.ts";
-import { addNewLinesToString } from "@saflib/utils";
-import { setupContext } from "@saflib/commander";
+import { addNewLinesToString } from "../strings.ts";
+import {
+  createWorkflowLogger,
+  setupWorkflowContext,
+  type WorkflowLoggerOptions,
+  type GetSourceUrlFunction,
+  type WorkflowLogger,
+} from "../core/store.ts";
 import { addKickoffCommand } from "./kickoff.ts";
 import { addChecklistCommand } from "./checklist.ts";
 import { addStatusCommand } from "./status.ts";
 import { addNextCommand } from "./next.ts";
 import { addListCommand } from "./list.ts";
 import { addSourceCommand } from "./source.ts";
+
+/**
+ * Options for configuring the workflow CLI
+ */
+export interface WorkflowCliOptions {
+  logger?: WorkflowLogger;
+  loggerOptions?: WorkflowLoggerOptions;
+  getSourceUrl?: GetSourceUrlFunction;
+}
 
 /**
  * Given a list of workflow classes, runs a CLI for running workflows.
@@ -19,7 +34,10 @@ import { addSourceCommand } from "./source.ts";
  *
  * Use this also to customize which workflows are actually available.
  */
-export function runWorkflowCli(workflows: WorkflowDefinition[]) {
+export function runWorkflowCli(
+  workflows: WorkflowDefinition[],
+  options: WorkflowCliOptions = {},
+) {
   const program = new Command()
     .name("saf-workflow")
     .description(
@@ -35,15 +53,20 @@ export function runWorkflowCli(workflows: WorkflowDefinition[]) {
   addListCommand(program, workflows);
   addSourceCommand(program, workflows);
 
-  setupContext(
-    {
-      serviceName: "workflows",
-      silentLogging: process.argv.includes("checklist"),
-    },
-    () => {
-      program.parse(process.argv);
-    },
-  );
+  // Set up workflow context
+  const silentLogging = process.argv.includes("checklist");
+  const loggerOptions: WorkflowLoggerOptions = {
+    silent: silentLogging,
+    ...options.loggerOptions,
+  };
+
+  const logger = options.logger || createWorkflowLogger(loggerOptions);
+  setupWorkflowContext({
+    logger,
+    getSourceUrl: options.getSourceUrl,
+  });
+
+  program.parse(process.argv);
 }
 
 export { dryRunWorkflow } from "./utils.ts";

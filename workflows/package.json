@@ -11,13 +11,18 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "typecheck": "tsc"
+    "typecheck": "tsc",
+    "build": "tsup",
+    "prepublishOnly": "npm run build",
+    "pack": "rm -rf dist/src && rm -f dist/saflib-workflows-*.tgz && npm run build && cp -r docs dist/src && cp -r workflows/add-workflow.templates dist/src/workflows && cp ./docs/README.md dist/README.md && cd dist && npm pack"
+  },
+  "dependencies": {
+    "xstate": "^5.19.3",
+    "commander": "^14.0.0"
   },
   "devDependencies": {
-    "@saflib/commander": "*",
-    "@saflib/dev-tools": "*",
-    "@saflib/utils": "*",
     "@saflib/vitest": "*",
-    "xstate": "^5.19.3"
+    "tsup": "^8.5.0",
+    "typescript": "^5.9.2"
   }
 }

@@ -1,6 +1,6 @@
 import type { Command } from "commander";
-import { addNewLinesToString } from "@saflib/utils";
-import { getGitHubUrl } from "@saflib/dev-tools";
+import { addNewLinesToString } from "../strings.ts";
+import { getSourceUrl } from "../core/store.ts";
 import type { WorkflowDefinition } from "../core/types.ts";
 
 export const addSourceCommand = (
@@ -23,6 +23,6 @@ export const addSourceCommand = (
 
 export const printSourceUrl = async (workflow: WorkflowDefinition) => {
   const absolutePath = workflow.sourceUrl.replace("file://", "");
-  const sourceUrl = getGitHubUrl(absolutePath);
+  const sourceUrl = getSourceUrl(absolutePath);
   console.log(sourceUrl);
 };

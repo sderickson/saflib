@@ -13,6 +13,11 @@ export interface CopyStepInput {
    * Absolute path to the directory where the updated copies of the template files will go.
    */
   targetDir: string;
+
+  /**
+   * Optional argument to do custom string transformations of the template file.
+   */
+  lineReplace?: (line: string) => string;
 }
 
 export interface CopyStepContext extends WorkflowContext {
@@ -20,4 +25,5 @@ export interface CopyStepContext extends WorkflowContext {
   name: string;
   targetDir: string;
   copiedFiles: Record<string, string>;
+  lineReplace?: (line: string) => string;
 }

@@ -4,7 +4,7 @@
 
 # Function: runWorkflowCli()
 
-> **runWorkflowCli**(`workflows`): `void`
+> **runWorkflowCli**(`workflows`, `options`): `void`
 
 Given a list of workflow classes, runs a CLI for running workflows.
 
@@ -20,6 +20,7 @@ Use this also to customize which workflows are actually available.
 | Parameter   | Type                                                                          |
 | ----------- | ----------------------------------------------------------------------------- |
 | `workflows` | [`WorkflowDefinition`](../interfaces/WorkflowDefinition.md)\<`any`, `any`\>[] |
+| `options`   | [`WorkflowCliOptions`](../interfaces/WorkflowCliOptions.md)                   |
 
 ## Returns
 
