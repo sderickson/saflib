@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Prompts are no longer printed when checklists are printed.
 - Using workflows in workflows should work, but it's not fully stable yet.
+- Tweak what's printed when the workflow is completed.
 
 ## [0.1.1] - 2025-09-06
 
