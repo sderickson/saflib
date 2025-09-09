@@ -60,7 +60,6 @@ export const PromptStepMachine = setup({
           },
         ],
         continue: {
-          actions: [logInfo("Continuing...")],
           target: "done",
         },
       },

@@ -13,10 +13,10 @@ export const getPlanStatusFilePath = () => {
   return resolve(process.cwd(), "saf-workflow-status.json");
 };
 
-export const loadPlanStatusContents = (): string | null => {
+export const loadPlanStatusContents = (): string | undefined => {
   const planStatusFilePath = getPlanStatusFilePath();
   if (!existsSync(planStatusFilePath)) {
-    return null;
+    return undefined;
   }
   return readFileSync(planStatusFilePath, "utf8");
 };
@@ -29,21 +29,23 @@ export const saveWorkflow = (workflow: AbstractWorkflowRunner) => {
   );
 };
 
-export const loadWorkflow = (workflows: WorkflowDefinition[]) => {
+export const loadWorkflow = async (workflows: WorkflowDefinition[]) => {
   const contents = loadPlanStatusContents();
   if (!contents) {
-    return null;
+    return undefined;
   }
   const blob = JSON.parse(contents) as WorkflowBlob;
 
-  const workflow = workflows.find((w) => w.id === blob.workflowName);
+  let workflow = workflows.find((w) => w.id === blob.workflowName);
 
   if (blob.workflowSourceUrl) {
-    // TODO
+    workflow = await loadWorkflowDefinitionFromFile(
+      blob.workflowSourceUrl.replace("file://", "")
+    );
   }
 
   if (!workflow) {
-    return null;
+    return undefined;
   }
   const instance = new XStateWorkflowRunner({
     definition: workflow,
@@ -56,25 +58,25 @@ export const loadWorkflow = (workflows: WorkflowDefinition[]) => {
 
 export const loadWorkflowDefinitionFromFile = async (
   filePath: string
-): Promise<WorkflowDefinition | null> => {
+): Promise<WorkflowDefinition | undefined> => {
   const log = getWorkflowLogger();
   if (!existsSync(filePath)) {
     log.error(`Error: File not found: ${filePath}`);
-    return null;
+    return undefined;
   }
 
   const module = await import(filePath);
 
   if (!module.default) {
     log.error(`Error: No default export found in ${filePath}`);
-    return null;
+    return undefined;
   }
 
   if (!isWorkflowDefinition(module.default)) {
     log.error(
       `Error: Default export from ${filePath} is not a valid WorkflowDefinition`
     );
-    return null;
+    return undefined;
   }
 
   return module.default;

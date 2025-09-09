@@ -58,7 +58,7 @@ export class XStateWorkflowRunner extends AbstractWorkflowRunner {
   private input: { [key: string]: string } & { dryRun?: boolean };
   private args: string[];
   private actor: AnyActor | undefined;
-  private definition: WorkflowDefinition<any, any>;
+  definition: WorkflowDefinition<any, any>;
 
   constructor(options: XStateWorkflowOptions<any, any>) {
     super();
