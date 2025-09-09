@@ -33,7 +33,7 @@ export interface WorkflowDefinition<
   /**
    * The context specific to this workflow, generated from the input and available to use in each step.
    */
-  context: (arg: { input: CreateArgsType<I> }) => C;
+  context: (arg: { input: CreateArgsType<I> & { cwd: string } }) => C;
 
   /**
    * Unique id for the workflow, for invoking it with the CLI tool.
@@ -127,6 +127,8 @@ export interface WorkflowInput {
   copiedFiles?: Record<string, string>;
 
   docFiles?: Record<string, string>;
+
+  cwd?: string;
 }
 
 /**
@@ -141,6 +143,8 @@ export interface WorkflowOutput {
   checklist: ChecklistItem;
 
   copiedFiles?: Record<string, string>;
+
+  newCwd?: string;
 }
 
 /**
@@ -182,6 +186,8 @@ export interface WorkflowContext {
   copiedFiles?: Record<string, string>;
 
   docFiles?: Record<string, string>;
+
+  cwd: string;
 }
 
 export type WorkflowActionFunction<

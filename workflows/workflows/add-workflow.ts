@@ -55,7 +55,7 @@ export const AddWorkflowDefinition = defineWorkflow<
     }
     const workflowPackageName = findWorkflowPackageName();
 
-    const targetDir = process.cwd() + "/workflows";
+    const targetDir = input.cwd + "/workflows";
 
     return {
       workflowName,
@@ -168,7 +168,7 @@ const findWorkflowPackageName = () => {
     const packageJsonFileName = path.join(currentDir, "package.json");
     if (existsSync(packageJsonFileName)) {
       workflowPackageName = JSON.parse(
-        readFileSync(packageJsonFileName, "utf8"),
+        readFileSync(packageJsonFileName, "utf8")
       ).name;
       break;
     }

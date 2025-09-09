@@ -37,7 +37,7 @@ export const InitWorkflowDefinition = defineWorkflow<
   sourceUrl: import.meta.url,
 
   context: ({ input }) => {
-    const targetDir = path.join(process.cwd(), input.name);
+    const targetDir = path.join(input.cwd, input.name);
     const packageName = `@saflib/${input.name}`;
 
     return {

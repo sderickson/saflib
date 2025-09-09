@@ -32,7 +32,9 @@ export function defineWorkflow<
   C = any,
 >(config: {
   input: I;
-  context: (arg: { input: CreateArgsType<I> & { dryRun?: boolean } }) => C;
+  context: (arg: {
+    input: CreateArgsType<I> & { dryRun?: boolean; cwd: string };
+  }) => C;
   id: string;
   description: string;
   checklistDescription?: (context: C) => string;
@@ -48,7 +50,7 @@ export function defineWorkflow<
  * Implementation of the makeMachineFromWorkflow function.
  */
 function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
-  workflow: WorkflowDefinition<I, C>,
+  workflow: WorkflowDefinition<I, C>
 ) {
   type Input = CreateArgsType<I> & WorkflowInput;
   type Context = C & WorkflowContext;
@@ -89,6 +91,7 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
             templateFiles: context.templateFiles,
             copiedFiles: context.copiedFiles,
             docFiles: context.docFiles,
+            cwd: context.cwd,
           };
         },
         src: `actor_${i}`,
@@ -136,7 +139,12 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
     description: workflow.description,
     context: ({ input, self }) => {
       const context: Context = {
-        ...workflow.context({ input }),
+        ...workflow.context({
+          input: {
+            ...input,
+            cwd: input.cwd || process.cwd(),
+          },
+        }),
         ...contextFromInput(input, self),
         templateFiles: workflow.templateFiles,
         docFiles: workflow.docFiles,
@@ -161,7 +169,7 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
  * This basically translates my simplified and scoped workflow machine definition to the full XState machine definition.
  */
 export const makeWorkflowMachine = <C, I extends readonly WorkflowArgument[]>(
-  config: WorkflowDefinition<I, C>,
+  config: WorkflowDefinition<I, C>
 ) => {
   return _makeWorkflowMachine(defineWorkflow(config));
 };
@@ -171,7 +179,7 @@ export const makeWorkflowMachine = <C, I extends readonly WorkflowArgument[]>(
  */
 export const step = <C, M extends AnyStateMachine>(
   machine: M,
-  input: (arg: { context: C & WorkflowContext }) => InputFrom<M>,
+  input: (arg: { context: C & WorkflowContext }) => InputFrom<M>
 ): WorkflowStep<C, M> => {
   return {
     machine,

@@ -55,12 +55,12 @@ export const AddQueryWorkflowDefinition = defineWorkflow<
   sourceUrl: import.meta.url,
 
   context: ({ input }) => {
-    const targetDir = path.dirname(path.join(process.cwd(), input.path));
+    const targetDir = path.dirname(path.join(input.cwd, input.path));
     const featureName = path.basename(targetDir);
     const featureIndexPath = path
       .join(targetDir, "index.ts")
-      .replace(process.cwd(), "");
-    const packageIndexPath = path.join(process.cwd(), "index.ts");
+      .replace(input.cwd, "");
+    const packageIndexPath = path.join(input.cwd, "index.ts");
     const name = path.basename(input.path).split(".")[0];
 
     return {
