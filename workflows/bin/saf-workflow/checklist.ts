@@ -52,16 +52,6 @@ export const addChecklistCommand = (
 
       await printChecklist(workflowDefinition);
     });
-
-  // // Keep the old subcommand structure for backward compatibility
-  // workflows.forEach((workflow) => {
-  //   let chain = checklistProgram
-  //     .command(workflow.id)
-  //     .description(workflow.description);
-  //   chain.action(async () => {
-  //     await printChecklist(workflow);
-  //   });
-  // });
 };
 
 export const printChecklist = async (Workflow: WorkflowDefinition) => {
