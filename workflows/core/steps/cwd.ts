@@ -2,13 +2,14 @@ import { setup } from "xstate";
 import type { WorkflowInput, WorkflowOutput } from "../types.ts";
 import { contextFromInput } from "../utils.ts";
 import { workflowActions, workflowActors } from "../xstate.ts";
+import path from "node:path";
 
 export interface CwdStepInput {
-  cwd: string;
+  path: string;
 }
 
 export interface CwdStepContext {
-  cwd: string;
+  newCwd: string;
 }
 /**
  * Updates the current working directory for subsequent steps, such as "copy", "update", and "command".
@@ -31,7 +32,7 @@ export const CwdStepMachine = setup({
   context: ({ input, self }) => {
     return {
       ...contextFromInput(input, self),
-      cwd: input.cwd,
+      newCwd: path.join(process.cwd(), input.path),
     };
   },
   states: {
@@ -42,9 +43,9 @@ export const CwdStepMachine = setup({
   output: ({ context }) => {
     return {
       checklist: {
-        description: `Change working directory to ${context.cwd}`,
+        description: `Change working directory to ${context.newCwd}`,
       },
-      newCwd: context.cwd,
+      newCwd: context.newCwd,
     };
   },
 });

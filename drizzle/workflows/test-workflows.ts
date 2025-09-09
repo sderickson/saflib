@@ -31,9 +31,9 @@ const TestDrizzleWorkflowsDefinition = defineWorkflow<
   steps: [
     step(PromptStepMachine, () => ({
       promptText: `Go over the test goals.
-      
+
       This is a test of the @saflib/drizzle workflows.
-      
+
       The test goals are:
       - Initialize a new database package
       - Update the schema with a new table
@@ -45,7 +45,7 @@ const TestDrizzleWorkflowsDefinition = defineWorkflow<
       name: "test-database",
     })),
     step(CwdStepMachine, () => ({
-      cwd: "test-database",
+      path: "test-database",
     })),
     step(makeWorkflowMachine(UpdateSchemaWorkflowDefinition), () => ({})),
     step(makeWorkflowMachine(AddQueryWorkflowDefinition), () => ({

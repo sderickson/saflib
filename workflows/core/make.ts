@@ -110,6 +110,13 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
                 }
                 return context.copiedFiles;
               },
+              cwd: ({ context, event }) => {
+                const output: WorkflowOutput = event.output;
+                if (output.newCwd) {
+                  return output.newCwd;
+                }
+                return context.cwd;
+              },
             }),
           ],
         },
