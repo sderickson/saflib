@@ -86,13 +86,6 @@ export const UpdateStepMachine = setup({
                   ? context.promptMessage
                   : context.promptMessage(context);
               }),
-              sendTo(
-                ({ context }) => {
-                  console.log("Sending halt to rootRef", context.rootRef.id);
-                  return context.rootRef;
-                },
-                { type: "halt" }
-              ),
             ],
           },
         ],

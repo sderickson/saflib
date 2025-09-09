@@ -80,12 +80,6 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
     states[stateName] = {
       invoke: {
         input: ({ context }: { context: Context }) => {
-          console.log(
-            `invoking ${stateName} with root ref ${context.rootRef?.id} from definition ${workflow.id}`
-          );
-          if (!context.rootRef) {
-            console.log("context", context);
-          }
           return {
             ...step.input({ context }),
             // don't need checklist; the machine will compose their own

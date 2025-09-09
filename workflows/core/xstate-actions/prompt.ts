@@ -10,7 +10,7 @@ import {
  * Action builder for prompting the agent.
  */
 export const promptAgent = <C, E extends AnyEventObject>(
-  cb: string | ((ctx: ActionParam<C, E>) => string),
+  cb: string | ((ctx: ActionParam<C, E>) => string)
 ) => {
   return {
     type: "prompt" as const,
@@ -31,6 +31,9 @@ export const promptImpl: WorkflowActionFunction<
 > = assign(
   ({ context }: { context: WorkflowContext }, { msg }: PromptParams) => {
     // space prompts from the original command, logs, and other prompts
+    if (process.env.NODE_ENV === "test") {
+      return {};
+    }
     print("");
     if (context.systemPrompt) {
       print(context.systemPrompt);
@@ -39,5 +42,5 @@ export const promptImpl: WorkflowActionFunction<
     print(msg);
     print("");
     return {};
-  },
+  }
 );

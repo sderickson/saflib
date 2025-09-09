@@ -1,9 +1,10 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { createActor, waitFor } from "xstate";
+import { createActor } from "xstate";
 import { CopyStepMachine } from "./copy-template-machine.ts";
 import { workflowAllSettled } from "../../utils.ts";
 import { mkdir, writeFile, rm, readFile } from "node:fs/promises";
 import path from "node:path";
+import { pollingWaitFor } from "../../utils.ts";
 
 describe("CopyTemplateMachine", () => {
   const testDir = path.join(process.cwd(), "test-temp");
@@ -21,7 +22,7 @@ describe("CopyTemplateMachine", () => {
       `export class TemplateFile {
   name = "template-file";
   snake_name = "template_file";
-}`,
+}`
     );
 
     await writeFile(
@@ -34,7 +35,7 @@ describe("CopyTemplateMachine", () => {
 export default {
   name: "TemplateFile"
 }
-</script>`,
+</script>`
     );
   });
 
@@ -56,7 +57,7 @@ export default {
     });
 
     actor.start();
-    await waitFor(actor, workflowAllSettled);
+    await pollingWaitFor(actor, workflowAllSettled);
 
     const snapshot = actor.getSnapshot();
     expect(snapshot.value).toBe("done");
@@ -64,7 +65,7 @@ export default {
     // Check that files were copied and renamed
     const fooBarTs = await readFile(
       path.join(targetDir, "foo-bar.ts"),
-      "utf-8",
+      "utf-8"
     );
     expect(fooBarTs).toContain("export class FooBar {");
     expect(fooBarTs).toContain('name = "foo-bar";');
@@ -72,7 +73,7 @@ export default {
 
     const FooBarVue = await readFile(
       path.join(targetDir, "FooBar.vue"),
-      "utf-8",
+      "utf-8"
     );
     expect(FooBarVue).toContain("{{ fooBar }}");
     expect(FooBarVue).toContain('name: "FooBar"');
@@ -93,7 +94,7 @@ export default {
     });
 
     actor.start();
-    await waitFor(actor, workflowAllSettled);
+    await pollingWaitFor(actor, workflowAllSettled);
 
     const snapshot = actor.getSnapshot();
     expect(snapshot.value).toBe("done");
@@ -101,7 +102,7 @@ export default {
     // Check that existing file was not overwritten
     const existingFile = await readFile(
       path.join(targetDir, "foo-bar.ts"),
-      "utf-8",
+      "utf-8"
     );
     expect(existingFile).toBe("existing content");
   });

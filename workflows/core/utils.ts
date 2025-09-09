@@ -20,7 +20,6 @@ import type { ChecklistItem, WorkflowContext, WorkflowInput } from "./types.ts";
  * ```
  */
 export function workflowAllSettled(snapshot: AnyMachineSnapshot): boolean {
-  console.log("Checking if workflow is settled", snapshot.status);
   if (snapshot.children) {
     const children = Object.values(snapshot.children) as AnyActor[];
     return children.every((child) => {
@@ -105,12 +104,11 @@ export const pollingWaitFor = (
     resolve = _resolve;
   });
   timeout = setInterval(() => {
-    console.log("Timeout");
     if (condition(actor.getSnapshot())) {
       clearInterval(timeout);
       resolve(actor.getSnapshot());
     }
-  }, 1000);
+  }, 10);
 
   return promise;
 };
