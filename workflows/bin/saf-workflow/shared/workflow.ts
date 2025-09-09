@@ -124,6 +124,7 @@ export class XStateWorkflowRunner extends AbstractWorkflowRunner {
   dehydrate = (): WorkflowBlob => {
     return {
       workflowName: this.machine.id,
+      workflowSourceUrl: this.definition.sourceUrl,
       args: this.args,
       snapshotState: this.actor?.getPersistedSnapshot(),
     };

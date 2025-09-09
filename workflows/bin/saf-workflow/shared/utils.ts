@@ -85,3 +85,21 @@ export const kickoffWorkflow = async (
   console.log("--- To continue, run 'npm exec saf-workflow next' ---\n");
   saveWorkflow(workflow);
 };
+
+/**
+ * Duck typing function to check if an object is a WorkflowDefinition
+ */
+export function isWorkflowDefinition(obj: any): obj is WorkflowDefinition {
+  return (
+    obj &&
+    typeof obj === "object" &&
+    typeof obj.id === "string" &&
+    typeof obj.description === "string" &&
+    typeof obj.sourceUrl === "string" &&
+    Array.isArray(obj.input) &&
+    typeof obj.context === "function" &&
+    typeof obj.templateFiles === "object" &&
+    typeof obj.docFiles === "object" &&
+    Array.isArray(obj.steps)
+  );
+}
