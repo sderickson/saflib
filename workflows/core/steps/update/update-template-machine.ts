@@ -13,6 +13,7 @@ import {
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { contextFromInput } from "../../utils.ts";
+import { sendTo } from "xstate";
 
 /**
  * Input for the UpdateStepMachine.
@@ -64,10 +65,10 @@ export const UpdateStepMachine = setup({
 }).createMachine({
   id: "update-step",
   initial: "update",
-  context: ({ input }) => {
+  context: ({ input, self }) => {
     const filePath = input.copiedFiles![input.fileId];
     return {
-      ...contextFromInput(input),
+      ...contextFromInput(input, self),
       filePath,
       promptMessage: input.promptMessage,
     };
@@ -85,6 +86,13 @@ export const UpdateStepMachine = setup({
                   ? context.promptMessage
                   : context.promptMessage(context);
               }),
+              sendTo(
+                ({ context }) => {
+                  console.log("Sending halt to rootRef", context.rootRef.id);
+                  return context.rootRef;
+                },
+                { type: "halt" }
+              ),
             ],
           },
         ],

@@ -22,6 +22,7 @@ export const addNextCommand = (
       }
       log.info(`Successfully loaded workflow ${workflow.definition.id}`);
       await workflow.goToNextStep();
+      log.info(`saving workflow ${workflow.definition.id}`);
       saveWorkflow(workflow);
     });
 };

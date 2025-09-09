@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { CommandStepMachine } from "./command.ts";
-import { createActor, waitFor } from "xstate";
+import { createActor } from "xstate";
+import { pollingWaitFor } from "../utils.ts";
 
 describe("CommandStepMachine", () => {
   it("should run a command in dry run mode", async () => {
@@ -12,7 +13,7 @@ describe("CommandStepMachine", () => {
       },
     });
     actor.start();
-    await waitFor(actor, (state) => state.matches("done"));
+    await pollingWaitFor(actor, (state) => state.matches("done"));
     expect(actor.getSnapshot().status).toBe("done");
   });
 
@@ -25,7 +26,7 @@ describe("CommandStepMachine", () => {
       },
     });
     actor.start();
-    await waitFor(actor, (state) => state.matches("done"));
+    await pollingWaitFor(actor, (state) => state.matches("done"));
     expect(actor.getSnapshot().status).toBe("done");
   });
 
@@ -37,7 +38,7 @@ describe("CommandStepMachine", () => {
       },
     });
     actor.start();
-    await waitFor(actor, (state) => state.matches("done"));
+    await pollingWaitFor(actor, (state) => state.matches("done"));
     expect(actor.getSnapshot().status).toBe("done");
   });
 });

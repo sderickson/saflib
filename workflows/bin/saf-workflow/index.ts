@@ -35,7 +35,7 @@ export interface WorkflowCliOptions {
  *
  * Use this also to customize which workflows are actually available.
  */
-export function runWorkflowCli(
+export async function runWorkflowCli(
   workflows: WorkflowDefinition[],
   options: WorkflowCliOptions = {}
 ) {
@@ -68,7 +68,7 @@ export function runWorkflowCli(
     getSourceUrl: options.getSourceUrl,
   });
 
-  program.parse(process.argv);
+  await program.parseAsync(process.argv);
 }
 
 export { dryRunWorkflow } from "./shared/utils.ts";

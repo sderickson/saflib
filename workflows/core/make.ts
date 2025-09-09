@@ -48,7 +48,7 @@ export function defineWorkflow<
  * Implementation of the makeMachineFromWorkflow function.
  */
 function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
-  workflow: WorkflowDefinition<I, C>,
+  workflow: WorkflowDefinition<I, C>
 ) {
   type Input = CreateArgsType<I> & WorkflowInput;
   type Context = C & WorkflowContext;
@@ -80,6 +80,12 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
     states[stateName] = {
       invoke: {
         input: ({ context }: { context: Context }) => {
+          console.log(
+            `invoking ${stateName} with root ref ${context.rootRef?.id} from definition ${workflow.id}`
+          );
+          if (!context.rootRef) {
+            console.log("context", context);
+          }
           return {
             ...step.input({ context }),
             // don't need checklist; the machine will compose their own
@@ -134,10 +140,10 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
     entry: raise({ type: "start" }),
     id: workflow.id,
     description: workflow.description,
-    context: ({ input }) => {
+    context: ({ input, self }) => {
       const context: Context = {
         ...workflow.context({ input }),
-        ...contextFromInput(input),
+        ...contextFromInput(input, self),
         templateFiles: workflow.templateFiles,
         docFiles: workflow.docFiles,
       };
@@ -161,7 +167,7 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
  * This basically translates my simplified and scoped workflow machine definition to the full XState machine definition.
  */
 export const makeWorkflowMachine = <C, I extends readonly WorkflowArgument[]>(
-  config: WorkflowDefinition<I, C>,
+  config: WorkflowDefinition<I, C>
 ) => {
   return _makeWorkflowMachine(defineWorkflow(config));
 };
@@ -171,7 +177,7 @@ export const makeWorkflowMachine = <C, I extends readonly WorkflowArgument[]>(
  */
 export const step = <C, M extends AnyStateMachine>(
   machine: M,
-  input: (arg: { context: C & WorkflowContext }) => InputFrom<M>,
+  input: (arg: { context: C & WorkflowContext }) => InputFrom<M>
 ): WorkflowStep<C, M> => {
   return {
     machine,

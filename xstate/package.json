@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@saflib/node": "*",
-    "xstate": "^5.19.3"
+    "xstate": "^5.21.0"
   },
   "devDependencies": {
     "@saflib/vitest": "*"

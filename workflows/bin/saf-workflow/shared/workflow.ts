@@ -6,9 +6,13 @@ import type {
 } from "../../../core/types.ts";
 import type { WorkflowBlob } from "./types.ts";
 import type { AnyStateMachine, AnyActor } from "xstate";
-import { createActor, waitFor } from "xstate";
+import { createActor } from "xstate";
 import { getWorkflowLogger } from "../../../core/store.ts";
-import { workflowAllSettled, continueWorkflow } from "../../../core/utils.ts";
+import {
+  workflowAllSettled,
+  continueWorkflow,
+  pollingWaitFor,
+} from "../../../core/utils.ts";
 import { makeWorkflowMachine } from "../../../core/make.ts";
 
 // The following is TS magic to describe a class constructor that implements the Workflow class.
@@ -89,7 +93,7 @@ export class XStateWorkflowRunner extends AbstractWorkflowRunner {
       console.log("Actor started with error", snapshot.error);
       return false;
     }
-    await waitFor(actor, workflowAllSettled);
+    await pollingWaitFor(actor, workflowAllSettled);
     this.actor = actor;
     return actor.getSnapshot().status !== "error";
   };
@@ -110,7 +114,7 @@ export class XStateWorkflowRunner extends AbstractWorkflowRunner {
     }
     log.info("Workflow is in progress. Re-emitting prompt.");
     this.actor.send({ type: "prompt" });
-    await waitFor(this.actor, workflowAllSettled);
+    await pollingWaitFor(this.actor, workflowAllSettled);
   };
 
   goToNextStep = async (): Promise<void> => {
@@ -124,7 +128,9 @@ export class XStateWorkflowRunner extends AbstractWorkflowRunner {
     }
 
     continueWorkflow(this.actor);
-    await waitFor(this.actor, workflowAllSettled);
+    console.log("Continued workflow");
+    await pollingWaitFor(this.actor, workflowAllSettled);
+    console.log("Workflow all settled");
 
     if (this.actor.getSnapshot().status === "done") {
       console.log("\n--- This workflow has been completed. ---\n");
@@ -142,9 +148,15 @@ export class XStateWorkflowRunner extends AbstractWorkflowRunner {
   };
 
   hydrate = (blob: WorkflowBlob): void => {
+    console.log("hydrating actor", blob.snapshotState);
     this.actor = createActor(this.machine, {
       snapshot: blob.snapshotState,
     });
+    console.log(
+      "hydrated actor",
+      this.actor.id,
+      this.actor.getPersistedSnapshot()
+    );
     this.actor.start();
   };
 

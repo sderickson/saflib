@@ -47,9 +47,9 @@ export const TestStepMachine = setup({
   },
 }).createMachine({
   id: "test-step",
-  context: ({ input }) => {
+  context: ({ input, self }) => {
     return {
-      ...contextFromInput(input),
+      ...contextFromInput(input, self),
       fileId: input.fileId,
     };
   },
@@ -67,7 +67,7 @@ export const TestStepMachine = setup({
               return true;
             }
             return await doesTestPass(fileName);
-          },
+          }
         ),
         input: ({ context }) => {
           return {
@@ -83,9 +83,9 @@ export const TestStepMachine = setup({
             logInfo(({ context }) =>
               context.fileId
                 ? `Tests passed successfully for ${path.basename(
-                    context.copiedFiles![context.fileId],
+                    context.copiedFiles![context.fileId]
                   )}`
-                : `Tests passed successfully.`,
+                : `Tests passed successfully.`
             ),
             assign({
               checklist: ({ context }) => {
@@ -102,7 +102,7 @@ export const TestStepMachine = setup({
         onError: {
           actions: [
             logError(
-              ({ event }) => `Tests failed: ${(event.error as Error).message}`,
+              ({ event }) => `Tests failed: ${(event.error as Error).message}`
             ),
             raise({ type: "prompt" }),
           ],
@@ -111,7 +111,7 @@ export const TestStepMachine = setup({
       on: {
         prompt: {
           actions: promptAgent(
-            () => "Tests failed. Please fix the issues and continue.",
+            () => "Tests failed. Please fix the issues and continue."
           ),
         },
         continue: {
