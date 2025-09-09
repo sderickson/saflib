@@ -6,7 +6,7 @@ import {
 } from "@saflib/workflows";
 import path from "node:path";
 
-const sourceDir = path.join(import.meta.dirname, "inits");
+const sourceDir = path.join(import.meta.dirname, "templates");
 
 const input = [
   {

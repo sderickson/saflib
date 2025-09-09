@@ -9,7 +9,10 @@ import {
 } from "@saflib/workflows";
 import path from "node:path";
 
-const sourceDir = path.join(import.meta.dirname, "query-template");
+const sourceDir = path.join(
+  import.meta.dirname,
+  "templates/queries/example-table",
+);
 
 const input = [
   {
