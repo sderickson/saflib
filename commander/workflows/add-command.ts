@@ -35,7 +35,9 @@ export const AddCommandWorkflowDefinition = defineWorkflow<
   id: "commander/add-command",
 
   description:
-    "Creates a new CLI command and adds it to an existing Commander.js CLI",
+    "Create a new CLI command and add it to an existing Commander.js CLI",
+
+  checklistDescription: ({ name, cliName }) => `Add ${name} to ${cliName} CLI.`,
 
   input,
 
@@ -58,7 +60,7 @@ export const AddCommandWorkflowDefinition = defineWorkflow<
 
     const targetDir = dirname(input.path);
 
-    if (!existsSync(targetDir)) {
+    if (!input.dryRun && !existsSync(targetDir)) {
       throw new Error(`Target directory ${targetDir} does not exist`);
     }
 

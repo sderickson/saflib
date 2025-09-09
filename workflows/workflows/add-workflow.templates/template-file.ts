@@ -34,7 +34,11 @@ export const TemplateFileWorkflowDefinition = defineWorkflow<
   // TODO: replace "todo/" with the name of the package that contains the template files
   id: "todo/template-file",
 
-  description: "TODO: Describe what this workflow does",
+  // TODO: replace with a description based on the context, also in the present tense like a good commit message.
+  description: "Create a new thing",
+
+  // TODO: replace with a description based on the context, also in the present tense like a good commit message.
+  checklistDescription: ({ name }) => `Create a new ${name} thing.`,
 
   input,
 
