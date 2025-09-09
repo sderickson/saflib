@@ -6,7 +6,7 @@
     "LICENSE"
   ],
   "description": "Workflow engine and utilities for SAF",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "type": "module",
   "homepage": "https://docs.saf-demo.online/workflows/docs/README.html",
   "author": "Scott Erickson <sderickson@gmail.com>",

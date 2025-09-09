@@ -46,7 +46,6 @@ export const AddSpaWorkflowDefinition = defineWorkflow<
     const targetDir = path.join(process.cwd(), "..", "web-" + input.name);
 
     return {
-      dryRun: input.dryRun,
       name: input.name,
       pascalName: input.name.charAt(0).toUpperCase() + input.name.slice(1),
       targetDir,
