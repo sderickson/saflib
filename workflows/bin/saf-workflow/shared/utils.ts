@@ -2,10 +2,11 @@ import type {
   WorkflowOutput,
   WorkflowDefinition,
   WorkflowArgument,
-} from "../../core/types.ts";
+} from "../../../core/types.ts";
 import { XStateWorkflowRunner } from "./workflow.ts";
 import path from "node:path";
 import { existsSync, readFileSync } from "node:fs";
+import { saveWorkflow } from "./file-io.ts";
 
 /**
  * Convenience function to take a ConcretWorkflowRunner, dry run it, and return the output. The output in particular includes the checklist.
@@ -66,3 +67,21 @@ export function getPackageName(rootUrl: string) {
     currentDir = parentDir;
   }
 }
+
+/**
+ * Shared utility function to kick off a workflow with the given definition and arguments.
+ * This is used by both the regular kickoff command and the kickoff-unlisted command.
+ */
+export const kickoffWorkflow = async (
+  Workflow: WorkflowDefinition,
+  args: string[]
+) => {
+  const workflow = new XStateWorkflowRunner({
+    definition: Workflow,
+    args: args.slice(0, Workflow.input.length),
+    dryRun: false,
+  });
+  await workflow.kickoff();
+  console.log("--- To continue, run 'npm exec saf-workflow next' ---\n");
+  saveWorkflow(workflow);
+};

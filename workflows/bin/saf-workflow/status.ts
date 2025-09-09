@@ -1,7 +1,7 @@
 import type { Command } from "commander";
 import type { WorkflowDefinition } from "../../core/types.ts";
 import { addNewLinesToString } from "../../strings.ts";
-import { loadWorkflow } from "./file-io.ts";
+import { loadWorkflow } from "./shared/file-io.ts";
 
 export const addStatusCommand = (
   program: Command,

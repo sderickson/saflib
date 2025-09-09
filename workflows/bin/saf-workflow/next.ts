@@ -1,5 +1,5 @@
 import type { Command } from "commander";
-import { loadWorkflow, saveWorkflow } from "./file-io.ts";
+import { loadWorkflow, saveWorkflow } from "./shared/file-io.ts";
 import { addNewLinesToString } from "../../strings.ts";
 import type { WorkflowDefinition } from "../../core/types.ts";
 

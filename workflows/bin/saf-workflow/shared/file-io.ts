@@ -4,7 +4,7 @@ import {
   XStateWorkflowRunner,
   type AbstractWorkflowRunner,
 } from "./workflow.ts";
-import type { WorkflowDefinition } from "../../core/types.ts";
+import type { WorkflowDefinition } from "../../../core/types.ts";
 import type { WorkflowBlob } from "./types.ts";
 
 export const getPlanStatusFilePath = () => {

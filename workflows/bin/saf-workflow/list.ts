@@ -2,7 +2,7 @@ import type { Command } from "commander";
 import type { WorkflowDefinition } from "../../core/types.ts";
 import { addNewLinesToString } from "../../strings.ts";
 import { getCurrentPackage } from "../../workspace.ts";
-import { getPackageName } from "./utils.ts";
+import { getPackageName } from "./shared/utils.ts";
 
 export const addListCommand = (
   program: Command,

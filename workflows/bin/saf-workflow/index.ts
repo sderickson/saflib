@@ -9,6 +9,7 @@ import {
   type WorkflowLogger,
 } from "../../core/store.ts";
 import { addKickoffCommand } from "./kickoff.ts";
+import { addKickoffUnlistedCommand } from "./kickoff-unlisted.ts";
 import { addChecklistCommand } from "./checklist.ts";
 import { addStatusCommand } from "./status.ts";
 import { addNextCommand } from "./next.ts";
@@ -47,6 +48,7 @@ export function runWorkflowCli(
     );
 
   addKickoffCommand(program, workflows);
+  addKickoffUnlistedCommand(program);
   addStatusCommand(program, workflows);
   addNextCommand(program, workflows);
   addChecklistCommand(program, workflows);
@@ -69,4 +71,4 @@ export function runWorkflowCli(
   program.parse(process.argv);
 }
 
-export { dryRunWorkflow } from "./utils.ts";
+export { dryRunWorkflow } from "./shared/utils.ts";

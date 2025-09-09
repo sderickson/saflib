@@ -3,13 +3,13 @@ import type {
   ChecklistItem,
   WorkflowOutput,
   WorkflowDefinition,
-} from "../../core/types.ts";
+} from "../../../core/types.ts";
 import type { WorkflowBlob } from "./types.ts";
 import type { AnyStateMachine, AnyActor } from "xstate";
 import { createActor, waitFor } from "xstate";
-import { getWorkflowLogger } from "../../core/store.ts";
-import { workflowAllSettled, continueWorkflow } from "../../core/utils.ts";
-import { makeWorkflowMachine } from "../../core/make.ts";
+import { getWorkflowLogger } from "../../../core/store.ts";
+import { workflowAllSettled, continueWorkflow } from "../../../core/utils.ts";
+import { makeWorkflowMachine } from "../../../core/make.ts";
 
 // The following is TS magic to describe a class constructor that implements the Workflow class.
 type AbstractClassConstructor<T extends AbstractWorkflowRunner> = new (

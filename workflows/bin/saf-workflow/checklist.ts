@@ -2,7 +2,7 @@ import type { Command } from "commander";
 import { checklistToString } from "../../core/utils.ts";
 import type { WorkflowDefinition } from "../../core/types.ts";
 import { addNewLinesToString } from "../../strings.ts";
-import { dryRunWorkflow } from "./utils.ts";
+import { dryRunWorkflow } from "./shared/utils.ts";
 
 export const addChecklistCommand = (
   program: Command,
