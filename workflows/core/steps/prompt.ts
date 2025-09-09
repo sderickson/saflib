@@ -36,6 +36,9 @@ export const PromptStepMachine = setup({
   actors: {
     ...workflowActors,
   },
+  guards: {
+    dryRun: ({ context }) => context.dryRun || false,
+  },
 }).createMachine({
   id: "prompt-step",
   context: ({ input }) => ({
@@ -47,12 +50,15 @@ export const PromptStepMachine = setup({
     running: {
       entry: raise({ type: "prompt" }),
       on: {
-        prompt: {
-          actions: [
-            promptAgent(({ context }) => context.promptText),
-            sendTo(({ context }) => context.rootRef, { type: "halt" }),
-          ],
-        },
+        prompt: [
+          {
+            guard: "dryRun",
+            actions: [raise({ type: "continue" })],
+          },
+          {
+            actions: [promptAgent(({ context }) => context.promptText)],
+          },
+        ],
         continue: {
           actions: [logInfo("Continuing...")],
           target: "done",
