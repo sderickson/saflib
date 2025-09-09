@@ -11,7 +11,7 @@ import path from "node:path";
 
 const sourceDir = path.join(
   import.meta.dirname,
-  "templates/queries/example-table",
+  "templates/queries/example-table"
 );
 
 const input = [
@@ -76,6 +76,7 @@ export const AddQueryWorkflowDefinition = defineWorkflow<
   templateFiles: {
     query: path.join(sourceDir, "template-file.ts"),
     test: path.join(sourceDir, "template-file.test.ts"),
+    index: path.join(sourceDir, "index.ts"),
   },
 
   docFiles: {
