@@ -6,9 +6,6 @@ import {
 } from "@saflib/workflows";
 import path from "node:path";
 import { readFileSync } from "node:fs";
-import { AddWorkflowDefinition, makeWorkflowMachine } from "@saflib/workflows";
-
-const AddWorkflowMachine = makeWorkflowMachine(AddWorkflowDefinition);
 
 const sourceDir = path.join(import.meta.dirname, "spa-template");
 
@@ -76,11 +73,6 @@ export const AddSpaWorkflowDefinition = defineWorkflow<
     step(CopyStepMachine, ({ context }) => ({
       name: context.name,
       targetDir: context.targetDir,
-    })),
-
-    step(AddWorkflowMachine, () => ({
-      name: "another-name-to-copy",
-      nestChecklist: "Add the new Workflow to the monorepo for some reason...",
     })),
 
     step(PromptStepMachine, ({ context }) => ({
