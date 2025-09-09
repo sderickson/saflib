@@ -39,5 +39,6 @@ const kickoffWorkflow = async (
     dryRun: false,
   });
   await workflow.kickoff();
+  console.log("--- To continue, run 'npm exec saf-workflow next' ---\n");
   saveWorkflow(workflow);
 };

@@ -59,6 +59,7 @@ export const UpdateStepMachine = setup({
       const hasTodos = /\s*(?:#|\/\/).*todo/i.test(content);
       return hasTodos;
     },
+    dryRun: ({ context }) => context.dryRun || false,
   },
 }).createMachine({
   id: "update-step",
@@ -75,15 +76,19 @@ export const UpdateStepMachine = setup({
     update: {
       entry: raise({ type: "prompt" }),
       on: {
-        prompt: {
-          actions: [
-            promptAgent(({ context }) => {
-              return typeof context.promptMessage === "string"
-                ? context.promptMessage
-                : context.promptMessage(context);
-            }),
-          ],
-        },
+        prompt: [
+          { guard: "dryRun", actions: [raise({ type: "continue" })] },
+          {
+            actions: [
+              promptAgent(({ context }) => {
+                return typeof context.promptMessage === "string"
+                  ? context.promptMessage
+                  : context.promptMessage(context);
+              }),
+            ],
+          },
+        ],
+
         continue: [
           {
             guard: "todosRemain",

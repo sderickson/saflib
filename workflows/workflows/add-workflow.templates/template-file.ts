@@ -72,17 +72,17 @@ export const TemplateFileWorkflowDefinition = defineWorkflow<
 
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "main",
-      promptMessage: `Please update **${path.basename(context.copiedFiles!.main)}** to implement the main functionality. Replace any TODO comments with actual implementation.`,
+      promptMessage: `Update **${path.basename(context.copiedFiles!.main)}** to implement the main functionality. Replace any TODO comments with actual implementation.`,
     })),
 
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "config",
-      promptMessage: `Please update **${path.basename(context.copiedFiles!.config)}** with the appropriate configuration for this workflow.`,
+      promptMessage: `Update **${path.basename(context.copiedFiles!.config)}** with the appropriate configuration for this workflow.`,
     })),
 
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "test",
-      promptMessage: `Please update **${path.basename(context.copiedFiles!.test)}** to test the functionality you implemented. Make sure to mock any external dependencies.`,
+      promptMessage: `Update **${path.basename(context.copiedFiles!.test)}** to test the functionality you implemented. Make sure to mock any external dependencies.`,
     })),
 
     step(TestStepMachine, () => ({
@@ -90,7 +90,7 @@ export const TemplateFileWorkflowDefinition = defineWorkflow<
     })),
 
     step(PromptStepMachine, ({ context }) => ({
-      promptText: `Please verify that the ${context.name} workflow is working correctly. Test the functionality manually and ensure all files are properly configured.`,
+      promptText: `Verify that the ${context.name} workflow is working correctly. Test the functionality manually and ensure all files are properly configured.`,
     })),
   ],
 });

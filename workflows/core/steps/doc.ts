@@ -44,6 +44,9 @@ export const DocStepMachine = setup({
   actors: {
     ...workflowActors,
   },
+  guards: {
+    dryRun: ({ context }) => context.dryRun || false,
+  },
 }).createMachine({
   id: "doc-step",
   context: ({ input }) => {
@@ -89,15 +92,21 @@ export const DocStepMachine = setup({
             dryRun: context.dryRun,
           };
         },
-        onDone: {
-          target: "done",
-          actions: [
-            promptAgent(({ context }) => {
-              const docPath = context.docFiles![context.docId];
-              return `Please review the following documentation: ${docPath}`;
-            }),
-          ],
-        },
+        onDone: [
+          {
+            guard: "dryRun",
+            target: "done",
+          },
+          {
+            target: "done",
+            actions: [
+              promptAgent(({ context }) => {
+                const docPath = context.docFiles![context.docId];
+                return `Please review the following documentation: ${docPath}`;
+              }),
+            ],
+          },
+        ],
         onError: {
           actions: [
             logInfo(

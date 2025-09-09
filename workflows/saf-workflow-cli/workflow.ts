@@ -90,7 +90,6 @@ export class XStateWorkflowRunner extends AbstractWorkflowRunner {
       return false;
     }
     await waitFor(actor, workflowAllSettled);
-    console.log("--- To continue, run 'npm exec saf-workflow next' ---\n");
     this.actor = actor;
     return actor.getSnapshot().status !== "error";
   };
