@@ -128,9 +128,7 @@ export class XStateWorkflowRunner extends AbstractWorkflowRunner {
     }
 
     continueWorkflow(this.actor);
-    console.log("Continued workflow");
     await pollingWaitFor(this.actor, workflowAllSettled);
-    console.log("Workflow all settled");
 
     if (this.actor.getSnapshot().status === "done") {
       console.log("\n--- This workflow has been completed. ---\n");
@@ -148,15 +146,9 @@ export class XStateWorkflowRunner extends AbstractWorkflowRunner {
   };
 
   hydrate = (blob: WorkflowBlob): void => {
-    console.log("hydrating actor", blob.snapshotState);
     this.actor = createActor(this.machine, {
       snapshot: blob.snapshotState,
     });
-    console.log(
-      "hydrated actor",
-      this.actor.id,
-      this.actor.getPersistedSnapshot()
-    );
     this.actor.start();
   };
 
