@@ -95,9 +95,20 @@ export class XStateWorkflowRunner extends AbstractWorkflowRunner {
   };
 
   printStatus = async (): Promise<void> => {
+    const log = getWorkflowLogger();
     if (!this.actor) {
-      throw new Error("Workflow not started");
+      log.error("Workflow not started");
+      return;
     }
+    if (this.actor.getSnapshot().status === "error") {
+      log.error("Workflow has errored. And could not continue.");
+      return;
+    }
+    if (this.actor.getSnapshot().status === "done") {
+      log.info("Workflow has been completed.");
+      return;
+    }
+    log.info("Workflow is in progress. Re-emitting prompt.");
     this.actor.send({ type: "prompt" });
     await waitFor(this.actor, workflowAllSettled);
   };

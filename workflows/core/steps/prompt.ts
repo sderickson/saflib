@@ -1,10 +1,5 @@
 import { setup, raise } from "xstate";
-import {
-  workflowActions,
-  workflowActors,
-  promptAgent,
-  logInfo,
-} from "../xstate.ts";
+import { workflowActions, workflowActors, promptAgent } from "../xstate.ts";
 import { type WorkflowContext, type WorkflowInput } from "../types.ts";
 import { contextFromInput } from "../utils.ts";
 
