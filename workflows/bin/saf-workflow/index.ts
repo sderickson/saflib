@@ -1,13 +1,13 @@
 import { Command } from "commander";
-import type { WorkflowDefinition } from "../core/types.ts";
-import { addNewLinesToString } from "../strings.ts";
+import type { WorkflowDefinition } from "../../core/types.ts";
+import { addNewLinesToString } from "../../strings.ts";
 import {
   createWorkflowLogger,
   setupWorkflowContext,
   type WorkflowLoggerOptions,
   type GetSourceUrlFunction,
   type WorkflowLogger,
-} from "../core/store.ts";
+} from "../../core/store.ts";
 import { addKickoffCommand } from "./kickoff.ts";
 import { addChecklistCommand } from "./checklist.ts";
 import { addStatusCommand } from "./status.ts";
@@ -36,14 +36,14 @@ export interface WorkflowCliOptions {
  */
 export function runWorkflowCli(
   workflows: WorkflowDefinition[],
-  options: WorkflowCliOptions = {},
+  options: WorkflowCliOptions = {}
 ) {
   const program = new Command()
     .name("saf-workflow")
     .description(
       addNewLinesToString(
-        "Tool for agents to be given a series of prompts. For a list of available workflows, run:\n\nnpm exec saf-workflow help kickoff",
-      ),
+        "Tool for agents to be given a series of prompts. For a list of available workflows, run:\n\nnpm exec saf-workflow help kickoff"
+      )
     );
 
   addKickoffCommand(program, workflows);

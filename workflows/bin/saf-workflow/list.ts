@@ -1,19 +1,19 @@
 import type { Command } from "commander";
-import type { WorkflowDefinition } from "../core/types.ts";
-import { addNewLinesToString } from "../strings.ts";
-import { getCurrentPackage } from "../workspace.ts";
+import type { WorkflowDefinition } from "../../core/types.ts";
+import { addNewLinesToString } from "../../strings.ts";
+import { getCurrentPackage } from "../../workspace.ts";
 import { getPackageName } from "./utils.ts";
 
 export const addListCommand = (
   program: Command,
-  workflows: WorkflowDefinition[],
+  workflows: WorkflowDefinition[]
 ) => {
   program
     .command("list")
     .description(
       addNewLinesToString(
-        "List all available workflows for the current package.",
-      ),
+        "List all available workflows for the current package."
+      )
     )
     .action(async () => {
       const currentPackage = getCurrentPackage();

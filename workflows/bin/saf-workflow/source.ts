@@ -1,11 +1,11 @@
 import type { Command } from "commander";
-import { addNewLinesToString } from "../strings.ts";
-import { getSourceUrl } from "../core/store.ts";
-import type { WorkflowDefinition } from "../core/types.ts";
+import { addNewLinesToString } from "../../strings.ts";
+import { getSourceUrl } from "../../core/store.ts";
+import type { WorkflowDefinition } from "../../core/types.ts";
 
 export const addSourceCommand = (
   program: Command,
-  workflows: WorkflowDefinition[],
+  workflows: WorkflowDefinition[]
 ) => {
   const sourceProgram = program
     .command("source")

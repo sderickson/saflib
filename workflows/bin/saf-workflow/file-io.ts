@@ -4,7 +4,7 @@ import {
   XStateWorkflowRunner,
   type AbstractWorkflowRunner,
 } from "./workflow.ts";
-import type { WorkflowDefinition } from "../core/types.ts";
+import type { WorkflowDefinition } from "../../core/types.ts";
 import type { WorkflowBlob } from "./types.ts";
 
 export const getPlanStatusFilePath = () => {
@@ -23,7 +23,7 @@ export const saveWorkflow = (workflow: AbstractWorkflowRunner) => {
   const planStatusFilePath = getPlanStatusFilePath();
   writeFileSync(
     planStatusFilePath,
-    JSON.stringify(workflow.dehydrate(), null, 2),
+    JSON.stringify(workflow.dehydrate(), null, 2)
   );
 };
 

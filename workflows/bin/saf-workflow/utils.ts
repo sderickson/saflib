@@ -2,7 +2,7 @@ import type {
   WorkflowOutput,
   WorkflowDefinition,
   WorkflowArgument,
-} from "../core/types.ts";
+} from "../../core/types.ts";
 import { XStateWorkflowRunner } from "./workflow.ts";
 import path from "node:path";
 import { existsSync, readFileSync } from "node:fs";
@@ -11,11 +11,11 @@ import { existsSync, readFileSync } from "node:fs";
  * Convenience function to take a ConcretWorkflowRunner, dry run it, and return the output. The output in particular includes the checklist.
  */
 export const dryRunWorkflow = async (
-  definition: WorkflowDefinition<any, any>,
+  definition: WorkflowDefinition<any, any>
 ): Promise<WorkflowOutput> => {
   const cliArguments = definition.input as WorkflowArgument[];
   const exampleArgs = cliArguments.map(
-    (arg) => arg.exampleValue || "example-value-missing",
+    (arg) => arg.exampleValue || "example-value-missing"
   );
   const workflow = new XStateWorkflowRunner({
     definition,
@@ -35,7 +35,7 @@ export const dryRunWorkflow = async (
     const currentStateName = workflow.getCurrentStateName();
     if (currentStateName === lastStateName) {
       throw new Error(
-        `Workflow ${definition.id} is stuck on state ${currentStateName}.`,
+        `Workflow ${definition.id} is stuck on state ${currentStateName}.`
       );
     }
     lastStateName = currentStateName;

@@ -1,12 +1,12 @@
 import type { Command } from "commander";
-import { checklistToString } from "../core/utils.ts";
-import type { WorkflowDefinition } from "../core/types.ts";
-import { addNewLinesToString } from "../strings.ts";
+import { checklistToString } from "../../core/utils.ts";
+import type { WorkflowDefinition } from "../../core/types.ts";
+import { addNewLinesToString } from "../../strings.ts";
 import { dryRunWorkflow } from "./utils.ts";
 
 export const addChecklistCommand = (
   program: Command,
-  workflows: WorkflowDefinition[],
+  workflows: WorkflowDefinition[]
 ) => {
   const checklistProgram = program
     .command("checklist")
@@ -26,7 +26,7 @@ export const printChecklist = async (Workflow: WorkflowDefinition) => {
   const workflow = await dryRunWorkflow(Workflow);
   console.log(
     checklistToString(
-      workflow.checklist.subitems || [{ description: "No checklist output" }],
-    ),
+      workflow.checklist.subitems || [{ description: "No checklist output" }]
+    )
   );
 };
