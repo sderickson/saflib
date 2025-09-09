@@ -116,7 +116,7 @@ export class XStateWorkflowRunner extends AbstractWorkflowRunner {
     await waitFor(this.actor, workflowAllSettled);
 
     if (this.actor.getSnapshot().status === "done") {
-      log.info("\nThis workflow has been completed.\n");
+      console.log("\n--- This workflow has been completed. ---\n");
       return;
     }
   };
