@@ -2,7 +2,6 @@ import { setup } from "xstate";
 import type { WorkflowInput, WorkflowOutput } from "../types.ts";
 import { contextFromInput } from "../utils.ts";
 import { workflowActions, workflowActors } from "../xstate.ts";
-import path from "node:path";
 
 export interface CwdStepInput {
   cwd: string;

@@ -10,6 +10,7 @@ import {
   makeWorkflowMachine,
   PromptStepMachine,
   CommandStepMachine,
+  CwdStepMachine,
 } from "@saflib/workflows";
 
 const input = [] as const;
@@ -43,9 +44,8 @@ const TestDrizzleWorkflowsDefinition = defineWorkflow<
     step(makeWorkflowMachine(InitWorkflowDefinition), () => ({
       name: "test-database",
     })),
-    step(CommandStepMachine, () => ({
-      command: "cd",
-      args: ["test-database"],
+    step(CwdStepMachine, () => ({
+      cwd: "test-database",
     })),
     step(makeWorkflowMachine(UpdateSchemaWorkflowDefinition), () => ({})),
     step(makeWorkflowMachine(AddQueryWorkflowDefinition), () => ({

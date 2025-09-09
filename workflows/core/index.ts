@@ -12,6 +12,7 @@ export * from "./steps/prompt.ts";
 export * from "./steps/test.ts";
 export * from "./steps/command.ts";
 export * from "./steps/doc.ts";
+export * from "./steps/cwd.ts";
 export { checklistToString } from "./utils.ts";
 export {
   type GetSourceUrlFunction,
