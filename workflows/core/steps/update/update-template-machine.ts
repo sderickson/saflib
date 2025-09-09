@@ -1,4 +1,4 @@
-import { assign, raise, setup } from "xstate";
+import { raise, setup } from "xstate";
 import type {
   WorkflowContext,
   WorkflowInput,
@@ -96,24 +96,6 @@ export const UpdateStepMachine = setup({
           },
           {
             target: "done",
-            actions: [
-              assign({
-                checklist: ({ context }) => {
-                  // const filePathStr = path.basename(context.filePath);
-                  const promptMessage =
-                    typeof context.promptMessage === "string"
-                      ? context.promptMessage
-                      : context.promptMessage(context);
-                  return [
-                    ...context.checklist,
-                    {
-                      // description: `Update ${filePathStr} to remove TODOs`,
-                      description: promptMessage.split("\n")[0],
-                    },
-                  ];
-                },
-              }),
-            ],
           },
         ],
       },
@@ -123,8 +105,14 @@ export const UpdateStepMachine = setup({
     },
   },
   output: ({ context }) => {
+    const promptMessage =
+      typeof context.promptMessage === "string"
+        ? context.promptMessage
+        : context.promptMessage(context);
     return {
-      checklist: context.checklist,
+      checklist: {
+        description: promptMessage.split("\n")[0],
+      },
     };
   },
 });

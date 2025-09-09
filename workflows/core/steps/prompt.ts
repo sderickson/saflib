@@ -1,4 +1,4 @@
-import { setup, sendTo, raise } from "xstate";
+import { setup, raise } from "xstate";
 import {
   workflowActions,
   workflowActors,
@@ -71,11 +71,9 @@ export const PromptStepMachine = setup({
   },
   output: ({ context }) => {
     return {
-      checklist: [
-        {
-          description: context.promptText.split("\n")[0],
-        },
-      ],
+      checklist: {
+        description: context.promptText.split("\n")[0],
+      },
     };
   },
 });

@@ -33,7 +33,7 @@ export abstract class AbstractWorkflowRunner {
   abstract dehydrate(): WorkflowBlob;
   abstract hydrate(blob: WorkflowBlob): void;
   abstract done(): boolean;
-  abstract getChecklist(): ChecklistItem[];
+  abstract getChecklist(): ChecklistItem;
   abstract getError(): Error | undefined;
   abstract getOutput(): WorkflowOutput;
 }
@@ -144,16 +144,16 @@ export class XStateWorkflowRunner extends AbstractWorkflowRunner {
     return this.actor.getSnapshot().status === "done";
   };
 
-  getChecklist = (): ChecklistItem[] => {
+  getChecklist = (): ChecklistItem => {
     if (!this.actor) {
-      return [];
+      return { description: "" };
     }
     return this.actor.getSnapshot().output.checklist;
   };
 
   getOutput = (): WorkflowOutput => {
     if (!this.actor) {
-      return { checklist: [] };
+      return { checklist: { description: "" } };
     }
     return this.actor.getSnapshot().output;
   };

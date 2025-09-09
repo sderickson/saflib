@@ -136,11 +136,9 @@ export const CommandStepMachine = setup({
   },
   output: ({ context }) => {
     return {
-      checklist: [
-        {
-          description: `Run \`${context.command} ${context.args.join(" ")}\``,
-        },
-      ],
+      checklist: {
+        description: `Run \`${context.command} ${context.args.join(" ")}\``,
+      },
     };
   },
 });

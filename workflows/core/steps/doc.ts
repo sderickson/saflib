@@ -129,11 +129,9 @@ export const DocStepMachine = setup({
     const docPath = context.docFiles![context.docId];
     const githubPath = getSourceUrl(docPath);
     return {
-      checklist: [
-        {
-          description: `Review documentation: [${path.basename(docPath)}](${githubPath})`,
-        },
-      ],
+      checklist: {
+        description: `Review documentation: [${path.basename(docPath)}](${githubPath})`,
+      },
     };
   },
 });

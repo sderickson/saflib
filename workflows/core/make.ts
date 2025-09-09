@@ -35,6 +35,7 @@ export function defineWorkflow<
   context: (arg: { input: CreateArgsType<I> & { dryRun?: boolean } }) => C;
   id: string;
   description: string;
+  checklistDescription?: (context: C) => string;
   sourceUrl: string;
   templateFiles: Record<string, string>;
   docFiles: Record<string, string>;
@@ -97,7 +98,7 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
             assign({
               checklist: ({ context, event }) => {
                 const output: WorkflowOutput = event.output;
-                return [...context.checklist, ...output.checklist];
+                return [...context.checklist, output.checklist];
               },
               copiedFiles: ({ context, event }) => {
                 const output: WorkflowOutput = event.output;
@@ -144,7 +145,13 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
     },
     initial: "step_0",
     states,
-    output: ({ context }) => outputFromContext({ context }),
+    output: ({ context }) => ({
+      checklist: {
+        description:
+          workflow.checklistDescription?.(context) || workflow.description,
+        subitems: context.checklist,
+      },
+    }),
   });
 }
 
@@ -171,16 +178,3 @@ export const step = <C, M extends AnyStateMachine>(
     input,
   };
 };
-
-/**
- * Helper function to create `WorkflowOutput` from `WorkflowContext`.
- */
-export function outputFromContext({
-  context,
-}: {
-  context: WorkflowContext;
-}): WorkflowOutput {
-  return {
-    checklist: context.checklist,
-  };
-}

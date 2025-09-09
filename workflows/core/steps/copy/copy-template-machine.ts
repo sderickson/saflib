@@ -121,12 +121,7 @@ export const CopyStepMachine = setup({
       ],
     },
     done: {
-      actions: [
-        logInfo("Template files copied and renamed successfully."),
-        assign({
-          checklist: ({ context }) => context.checklist,
-        }),
-      ],
+      actions: [logInfo("Template files copied and renamed successfully.")],
       type: "final",
       entry: logInfo("Template copy workflow completed successfully"),
     },
@@ -137,12 +132,10 @@ export const CopyStepMachine = setup({
   },
   output: ({ context }) => {
     return {
-      checklist: [
-        {
-          description: `Copy template files and rename placeholders.`,
-          subitems: context.checklist,
-        },
-      ],
+      checklist: {
+        description: `Copy template files and rename placeholders.`,
+        subitems: context.checklist,
+      },
       copiedFiles: context.copiedFiles,
     };
   },
