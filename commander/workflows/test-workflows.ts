@@ -29,9 +29,9 @@ const TestCommanderWorkflowsDefinition = defineWorkflow<
   steps: [
     step(PromptStepMachine, () => ({
       promptText: `Go over the test goals.
-      
+
       This is a test of the @saflib/commander workflows.
-      
+
       The test goals are:
       - Add a new CLI
       - Add a new command to the CLI

@@ -13,7 +13,6 @@ import {
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { contextFromInput } from "../../utils.ts";
-import { sendTo } from "xstate";
 
 /**
  * Input for the UpdateStepMachine.
@@ -66,7 +65,17 @@ export const UpdateStepMachine = setup({
   id: "update-step",
   initial: "update",
   context: ({ input, self }) => {
-    const filePath = input.copiedFiles![input.fileId];
+    if (!input.copiedFiles) {
+      throw new Error(
+        "`copiedFiles` not passed in. Did you run CopyStepMachine before UpdateStepMachine?"
+      );
+    }
+    if (!input.copiedFiles[input.fileId]) {
+      throw new Error(
+        `\`copiedFiles[${input.fileId}]\` not found. Is that a valid key in \`templateFiles\`?`
+      );
+    }
+    const filePath = input.copiedFiles[input.fileId];
     return {
       ...contextFromInput(input, self),
       filePath,

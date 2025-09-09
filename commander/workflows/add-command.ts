@@ -89,7 +89,7 @@ export const AddCommandWorkflowDefinition = defineWorkflow<
     })),
 
     step(UpdateStepMachine, ({ context }) => ({
-      fileId: "index",
+      fileId: "command",
       promptMessage: `Update **${path.basename(context.copiedFiles!.command)}**, resolving any TODOs.`,
     })),
 
@@ -126,7 +126,7 @@ export const AddCommandWorkflowDefinition = defineWorkflow<
 
     step(CommandStepMachine, () => ({
       command: "npm",
-      args: ["exec", "saf-doc", "generate"],
+      args: ["exec", "saf-docs", "generate"],
     })),
   ],
 });
