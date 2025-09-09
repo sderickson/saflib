@@ -24,5 +24,9 @@ export const addChecklistCommand = (
 
 export const printChecklist = async (Workflow: WorkflowDefinition) => {
   const workflow = await dryRunWorkflow(Workflow);
-  console.log(checklistToString(workflow.checklist));
+  console.log(
+    checklistToString(
+      workflow.checklist.subitems || [{ description: "No checklist output" }],
+    ),
+  );
 };

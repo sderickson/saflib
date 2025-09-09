@@ -8,7 +8,7 @@ import {
 } from "@saflib/workflows";
 import path from "node:path";
 
-const sourceDir = path.join(import.meta.dirname, "template-files");
+const sourceDir = path.join(import.meta.dirname, "spec-projects");
 
 // TODO: replace this with the actual input for your workflow
 const input = [
@@ -21,18 +21,18 @@ const input = [
 ] as const;
 
 // TODO: Remove exampleProperty and replace it with the actual context properties your workflow needs
-interface TemplateFileWorkflowContext {
+interface SpecProjectWorkflowContext {
   name: string;
   targetDir: string;
   exampleProperty: string;
 }
 
-export const TemplateFileWorkflowDefinition = defineWorkflow<
+export const SpecProjectWorkflowDefinition = defineWorkflow<
   typeof input,
-  TemplateFileWorkflowContext
+  SpecProjectWorkflowContext
 >({
   // TODO: replace "todo/" with the name of the package that contains the template files
-  id: "todo/template-file",
+  id: "todo/spec-project",
 
   description: "TODO: Describe what this workflow does",
 
@@ -52,9 +52,9 @@ export const TemplateFileWorkflowDefinition = defineWorkflow<
     };
   },
 
-  // TODO: create the template-files dir and add template files
+  // TODO: create the spec-projects dir and add template files
   // Include TODOs like this file does.
-  /* do not replace */ templateFiles: {
+   templateFiles: {
     main: path.join(sourceDir, "main.ts"),
     config: path.join(sourceDir, "config.ts"),
     test: path.join(sourceDir, "test.ts"),

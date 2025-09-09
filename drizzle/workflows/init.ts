@@ -1,7 +1,6 @@
 import {
   CopyStepMachine,
   UpdateStepMachine,
-  PromptStepMachine,
   defineWorkflow,
   step,
 } from "@saflib/workflows";
@@ -73,39 +72,31 @@ export const InitWorkflowDefinition = defineWorkflow<
 
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "packageJson",
-      promptMessage: `Please update **package.json** with the correct package name "${context.packageName}" and any specific dependencies needed for this database package.`,
+      promptMessage: `Update **package.json** with the correct package name "${context.packageName}" and any specific dependencies needed for this database package.`,
     })),
 
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "schema",
-      promptMessage: `Please update **schema.ts** to define the database tables and types for the ${context.name} database. Replace the example table with actual tables needed for this service.`,
+      promptMessage: `Update **schema.ts** to define the database tables and types for the ${context.name} database.
+      
+      Replace the example table with actual tables needed for this service.`,
     })),
 
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "types",
-      promptMessage: `Please update **types.ts** to export the appropriate types for the ${context.name} database, including any custom types derived from the schema.`,
+      promptMessage: `Update **types.ts** to export the appropriate types for the ${context.name} database, including any custom types derived from the schema.`,
     })),
 
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "errors",
-      promptMessage: `Please update **errors.ts** to define the specific error classes for the ${context.name} database. Replace the example errors with actual errors that might occur in this database.`,
+      promptMessage: `Update **errors.ts** to define the specific error classes for the ${context.name} database.
+      
+      Replace the example errors with actual errors that might occur in this database.`,
     })),
 
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "index",
-      promptMessage: `Please update **index.ts** to properly export the database interface, types, and errors for the ${context.name} database package.`,
-    })),
-
-    step(PromptStepMachine, ({ context }) => ({
-      promptText: `The ${context.name} database package has been created with the basic structure. You should now:
-
-1. Create a \`queries/\` directory with domain-specific query files
-2. Create a \`migrations/\` directory for database migrations  
-3. Create a \`data/\` directory with a \`.gitkeep\` file
-4. Run \`npm run generate\` to create initial migrations
-5. Add any additional configuration or setup needed
-
-The package follows the @saflib/drizzle conventions as documented in the overview.`,
+      promptMessage: `Update **index.ts** to properly export the database interface, types, and errors for the ${context.name} database package.`,
     })),
   ],
 });

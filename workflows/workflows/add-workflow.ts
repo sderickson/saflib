@@ -37,6 +37,9 @@ export const AddWorkflowDefinition = defineWorkflow<
   description:
     "Create a new workflow and adds it to the CLI tool. Stops after setup to wait for implementation requirements.",
 
+  checklistDescription: ({ workflowName }) =>
+    `Add ${workflowName} to the CLI tool.`,
+
   input,
 
   sourceUrl: import.meta.url,

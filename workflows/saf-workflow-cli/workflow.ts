@@ -33,7 +33,7 @@ export abstract class AbstractWorkflowRunner {
   abstract dehydrate(): WorkflowBlob;
   abstract hydrate(blob: WorkflowBlob): void;
   abstract done(): boolean;
-  abstract getChecklist(): ChecklistItem[];
+  abstract getChecklist(): ChecklistItem;
   abstract getError(): Error | undefined;
   abstract getOutput(): WorkflowOutput;
 }
@@ -90,7 +90,6 @@ export class XStateWorkflowRunner extends AbstractWorkflowRunner {
       return false;
     }
     await waitFor(actor, workflowAllSettled);
-    console.log("--- To continue, run 'npm exec saf-workflow next' ---\n");
     this.actor = actor;
     return actor.getSnapshot().status !== "error";
   };
@@ -117,7 +116,7 @@ export class XStateWorkflowRunner extends AbstractWorkflowRunner {
     await waitFor(this.actor, workflowAllSettled);
 
     if (this.actor.getSnapshot().status === "done") {
-      log.info("\nThis workflow has been completed.\n");
+      console.log("\n--- This workflow has been completed. ---\n");
       return;
     }
   };
@@ -144,16 +143,16 @@ export class XStateWorkflowRunner extends AbstractWorkflowRunner {
     return this.actor.getSnapshot().status === "done";
   };
 
-  getChecklist = (): ChecklistItem[] => {
+  getChecklist = (): ChecklistItem => {
     if (!this.actor) {
-      return [];
+      return { description: "" };
     }
     return this.actor.getSnapshot().output.checklist;
   };
 
   getOutput = (): WorkflowOutput => {
     if (!this.actor) {
-      return { checklist: [] };
+      return { checklist: { description: "" } };
     }
     return this.actor.getSnapshot().output;
   };

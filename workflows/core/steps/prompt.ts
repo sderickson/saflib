@@ -1,4 +1,4 @@
-import { setup, sendTo, raise } from "xstate";
+import { setup, raise } from "xstate";
 import {
   workflowActions,
   workflowActors,
@@ -36,6 +36,9 @@ export const PromptStepMachine = setup({
   actors: {
     ...workflowActors,
   },
+  guards: {
+    dryRun: ({ context }) => context.dryRun || false,
+  },
 }).createMachine({
   id: "prompt-step",
   context: ({ input }) => ({
@@ -47,12 +50,15 @@ export const PromptStepMachine = setup({
     running: {
       entry: raise({ type: "prompt" }),
       on: {
-        prompt: {
-          actions: [
-            promptAgent(({ context }) => context.promptText),
-            sendTo(({ context }) => context.rootRef, { type: "halt" }),
-          ],
-        },
+        prompt: [
+          {
+            guard: "dryRun",
+            actions: [raise({ type: "continue" })],
+          },
+          {
+            actions: [promptAgent(({ context }) => context.promptText)],
+          },
+        ],
         continue: {
           actions: [logInfo("Continuing...")],
           target: "done",
@@ -65,11 +71,9 @@ export const PromptStepMachine = setup({
   },
   output: ({ context }) => {
     return {
-      checklist: [
-        {
-          description: context.promptText.split("\n")[0],
-        },
-      ],
+      checklist: {
+        description: context.promptText.split("\n")[0],
+      },
     };
   },
 });

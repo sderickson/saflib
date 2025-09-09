@@ -1,4 +1,4 @@
-import { assign, raise, setup } from "xstate";
+import { raise, setup } from "xstate";
 import type {
   WorkflowContext,
   WorkflowInput,
@@ -59,6 +59,7 @@ export const UpdateStepMachine = setup({
       const hasTodos = /\s*(?:#|\/\/).*todo/i.test(content);
       return hasTodos;
     },
+    dryRun: ({ context }) => context.dryRun || false,
   },
 }).createMachine({
   id: "update-step",
@@ -75,15 +76,19 @@ export const UpdateStepMachine = setup({
     update: {
       entry: raise({ type: "prompt" }),
       on: {
-        prompt: {
-          actions: [
-            promptAgent(({ context }) => {
-              return typeof context.promptMessage === "string"
-                ? context.promptMessage
-                : context.promptMessage(context);
-            }),
-          ],
-        },
+        prompt: [
+          { guard: "dryRun", actions: [raise({ type: "continue" })] },
+          {
+            actions: [
+              promptAgent(({ context }) => {
+                return typeof context.promptMessage === "string"
+                  ? context.promptMessage
+                  : context.promptMessage(context);
+              }),
+            ],
+          },
+        ],
+
         continue: [
           {
             guard: "todosRemain",
@@ -96,24 +101,6 @@ export const UpdateStepMachine = setup({
           },
           {
             target: "done",
-            actions: [
-              assign({
-                checklist: ({ context }) => {
-                  // const filePathStr = path.basename(context.filePath);
-                  const promptMessage =
-                    typeof context.promptMessage === "string"
-                      ? context.promptMessage
-                      : context.promptMessage(context);
-                  return [
-                    ...context.checklist,
-                    {
-                      // description: `Update ${filePathStr} to remove TODOs`,
-                      description: promptMessage.split("\n")[0],
-                    },
-                  ];
-                },
-              }),
-            ],
           },
         ],
       },
@@ -123,8 +110,14 @@ export const UpdateStepMachine = setup({
     },
   },
   output: ({ context }) => {
+    const promptMessage =
+      typeof context.promptMessage === "string"
+        ? context.promptMessage
+        : context.promptMessage(context);
     return {
-      checklist: context.checklist,
+      checklist: {
+        description: promptMessage.split("\n")[0],
+      },
     };
   },
 });

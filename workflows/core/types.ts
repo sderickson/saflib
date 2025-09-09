@@ -51,6 +51,12 @@ export interface WorkflowDefinition<
   description: string;
 
   /**
+   * Description that will be printed when the workflow itself is part of a checklist.
+   * Experimental! Still need to experiment with workflows in workflows.
+   */
+  checklistDescription?: (context: C) => string;
+
+  /**
    * A map of ids to template file absolute paths which will be copied and updated as part of the workflow.
    */
   templateFiles: Record<string, string>;
@@ -132,7 +138,7 @@ export interface WorkflowOutput {
    * either to generate a sample checklist for a workflow, or a summary
    * of the work done by a completed workflow. Workflows build these recursively.
    */
-  checklist: ChecklistItem[];
+  checklist: ChecklistItem;
 
   copiedFiles?: Record<string, string>;
 }
