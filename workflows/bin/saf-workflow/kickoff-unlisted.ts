@@ -4,6 +4,7 @@ import type { WorkflowDefinition } from "../../core/types.ts";
 import { kickoffWorkflow } from "./shared/utils.ts";
 import { resolve } from "node:path";
 import { existsSync } from "node:fs";
+import { getWorkflowLogger } from "../../core/store.ts";
 
 /**
  * Duck typing function to check if an object is a WorkflowDefinition
@@ -28,32 +29,27 @@ export const addKickoffUnlistedCommand = (program: Command) => {
     .command("kickoff-unlisted")
     .description(
       addNewLinesToString(
-        "Kick off a workflow from a file path. Takes a path to a file whose default export is a WorkflowDefinition, followed by any arguments the workflow needs.\n\nExample:\n\nnpm exec saf-workflow kickoff-unlisted ./path/to/workflow.ts arg1 arg2"
+        "Kick off a workflow from a file path. That path should export a definition as its default export."
       )
     )
-    .argument("<filePath>", "Path to the workflow file")
+    .argument("<path>", "Path to the workflow file")
     .argument("[args...]", "Arguments for the workflow")
     .action(async (filePath: string, args: string[]) => {
       try {
-        // Resolve the file path relative to current working directory
         const resolvedPath = resolve(process.cwd(), filePath);
 
-        // Check if file exists
         if (!existsSync(resolvedPath)) {
           console.error(`Error: File not found: ${resolvedPath}`);
           process.exit(1);
         }
 
-        // Dynamic import of the workflow file
         const module = await import(resolvedPath);
 
-        // Check if the module has a default export
         if (!module.default) {
           console.error(`Error: No default export found in ${filePath}`);
           process.exit(1);
         }
 
-        // Validate that the default export is a WorkflowDefinition
         if (!isWorkflowDefinition(module.default)) {
           console.error(
             `Error: Default export from ${filePath} is not a valid WorkflowDefinition`
@@ -80,9 +76,12 @@ export const addKickoffUnlistedCommand = (program: Command) => {
           process.exit(1);
         }
 
-        console.log(`Starting workflow: ${workflowDefinition.id}`);
-        console.log(`Description: ${workflowDefinition.description}`);
-        console.log(`Arguments: ${args.join(", ")}\n`);
+        const log = getWorkflowLogger();
+
+        log.info(`Workflow sucessfully loaded`);
+        log.info(`- Workflow:     ${workflowDefinition.id}`);
+        log.info(`- Description:  ${workflowDefinition.description}`);
+        log.info(`- Arguments:    ${args.join(", ")}`);
 
         // Kick off the workflow
         await kickoffWorkflow(workflowDefinition, args);
