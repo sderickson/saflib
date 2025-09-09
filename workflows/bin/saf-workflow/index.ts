@@ -37,14 +37,14 @@ export interface WorkflowCliOptions {
  */
 export async function runWorkflowCli(
   workflows: WorkflowDefinition[],
-  options: WorkflowCliOptions = {}
+  options: WorkflowCliOptions = {},
 ) {
   const program = new Command()
     .name("saf-workflow")
     .description(
       addNewLinesToString(
-        "Tool for agents to be given a series of prompts. For a list of available workflows, run:\n\nnpm exec saf-workflow help kickoff"
-      )
+        "Tool for agents to be given a series of prompts. For a list of available workflows, run:\n\nnpm exec saf-workflow help kickoff",
+      ),
     );
 
   addKickoffCommand(program, workflows);

@@ -5,7 +5,7 @@ import type { WorkflowDefinition } from "../../core/types.ts";
 
 export const addSourceCommand = (
   program: Command,
-  workflows: WorkflowDefinition[]
+  workflows: WorkflowDefinition[],
 ) => {
   const sourceProgram = program
     .command("source")

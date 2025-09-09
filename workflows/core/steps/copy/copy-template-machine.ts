@@ -70,7 +70,7 @@ export const CopyStepMachine = setup({
             actions: [
               logWarn(
                 ({ event }) =>
-                  `File ${event.output.fileName} already exists, skipping`
+                  `File ${event.output.fileName} already exists, skipping`,
               ),
               assign({
                 checklist: parseChecklist,
@@ -93,7 +93,7 @@ export const CopyStepMachine = setup({
     rename: {
       entry: [
         logInfo(
-          ({ event }) => `Generated "${event.output.fileName}" from template`
+          ({ event }) => `Generated "${event.output.fileName}" from template`,
         ),
       ],
       invoke: {

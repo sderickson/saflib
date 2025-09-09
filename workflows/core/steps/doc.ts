@@ -76,14 +76,14 @@ export const DocStepMachine = setup({
             const docPath = docFiles[docId];
             if (!docPath) {
               throw new Error(
-                `Document with id "${docId}" not found in docFiles`
+                `Document with id "${docId}" not found in docFiles`,
               );
             }
 
             if (!docPath.endsWith(".md")) {
               throw new Error(`Document "${docId}" is not a markdown file`);
             }
-          }
+          },
         ),
         input: ({ context }) => {
           return {
@@ -111,7 +111,7 @@ export const DocStepMachine = setup({
           actions: [
             logInfo(
               ({ event }) =>
-                `Failed to load documentation: ${(event.error as Error).message}`
+                `Failed to load documentation: ${(event.error as Error).message}`,
             ),
             raise({ type: "prompt" }),
           ],
@@ -121,7 +121,7 @@ export const DocStepMachine = setup({
         prompt: {
           actions: promptAgent(
             ({ context }) =>
-              `Failed to load documentation for "${context.docId}". Please check that the document exists and is accessible.`
+              `Failed to load documentation for "${context.docId}". Please check that the document exists and is accessible.`,
           ),
         },
         continue: {

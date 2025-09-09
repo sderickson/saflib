@@ -10,8 +10,8 @@ export const addKickoffUnlistedCommand = (program: Command) => {
     .command("kickoff-unlisted")
     .description(
       addNewLinesToString(
-        "Kick off a workflow from a file path. That path should export a definition as its default export."
-      )
+        "Kick off a workflow from a file path. That path should export a definition as its default export.",
+      ),
     )
     .argument("<path>", "Path to the workflow file")
     .argument("[args...]", "Arguments for the workflow")
@@ -30,7 +30,7 @@ export const addKickoffUnlistedCommand = (program: Command) => {
       log.info(`- Description:  ${workflowDefinition.description}`);
       if (workflowDefinition.input.length > 0) {
         log.info(
-          `- Parameters:   ${workflowDefinition.input.map((arg: any) => arg.name).join(", ")}`
+          `- Parameters:   ${workflowDefinition.input.map((arg: any) => arg.name).join(", ")}`,
         );
       }
 
@@ -40,7 +40,7 @@ export const addKickoffUnlistedCommand = (program: Command) => {
 
       if (providedArgs < expectedArgs) {
         log.error(
-          `Error: Expected ${expectedArgs} argument${expectedArgs === 1 ? "" : "s"}, but got ${providedArgs}`
+          `Error: Expected ${expectedArgs} argument${expectedArgs === 1 ? "" : "s"}, but got ${providedArgs}`,
         );
         process.exit(1);
       }

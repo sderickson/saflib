@@ -10,7 +10,7 @@ import {
  * Action builder for prompting the agent.
  */
 export const promptAgent = <C, E extends AnyEventObject>(
-  cb: string | ((ctx: ActionParam<C, E>) => string)
+  cb: string | ((ctx: ActionParam<C, E>) => string),
 ) => {
   return {
     type: "prompt" as const,
@@ -42,5 +42,5 @@ export const promptImpl: WorkflowActionFunction<
     print(msg);
     print("");
     return {};
-  }
+  },
 );

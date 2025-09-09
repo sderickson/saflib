@@ -6,12 +6,14 @@ import { getWorkflowLogger } from "../../core/store.ts";
 
 export const addNextCommand = (
   program: Command,
-  workflows: WorkflowDefinition[]
+  workflows: WorkflowDefinition[],
 ) => {
   program
     .command("next")
     .description(
-      addNewLinesToString("Try to go to the next step of the current workflow.")
+      addNewLinesToString(
+        "Try to go to the next step of the current workflow.",
+      ),
     )
     .action(async () => {
       const log = getWorkflowLogger();

@@ -54,7 +54,7 @@ export const AddCommandWorkflowDefinition = defineWorkflow<
       !parts[parts.length - 1].includes(".ts")
     ) {
       throw new Error(
-        "Path should be of the form bin/{cli-name}/{command-name}.ts"
+        "Path should be of the form bin/{cli-name}/{command-name}.ts",
       );
     }
 

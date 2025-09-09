@@ -54,7 +54,7 @@ export const SpecProjectWorkflowDefinition = defineWorkflow<
 
   // TODO: create the spec-projects dir and add template files
   // Include TODOs like this file does.
-   templateFiles: {
+  templateFiles: {
     main: path.join(sourceDir, "main.ts"),
     config: path.join(sourceDir, "config.ts"),
     test: path.join(sourceDir, "test.ts"),

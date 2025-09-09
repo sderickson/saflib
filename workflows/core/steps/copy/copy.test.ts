@@ -22,7 +22,7 @@ describe("CopyTemplateMachine", () => {
       `export class TemplateFile {
   name = "template-file";
   snake_name = "template_file";
-}`
+}`,
     );
 
     await writeFile(
@@ -35,7 +35,7 @@ describe("CopyTemplateMachine", () => {
 export default {
   name: "TemplateFile"
 }
-</script>`
+</script>`,
     );
   });
 
@@ -65,7 +65,7 @@ export default {
     // Check that files were copied and renamed
     const fooBarTs = await readFile(
       path.join(targetDir, "foo-bar.ts"),
-      "utf-8"
+      "utf-8",
     );
     expect(fooBarTs).toContain("export class FooBar {");
     expect(fooBarTs).toContain('name = "foo-bar";');
@@ -73,7 +73,7 @@ export default {
 
     const FooBarVue = await readFile(
       path.join(targetDir, "FooBar.vue"),
-      "utf-8"
+      "utf-8",
     );
     expect(FooBarVue).toContain("{{ fooBar }}");
     expect(FooBarVue).toContain('name: "FooBar"');
@@ -102,7 +102,7 @@ export default {
     // Check that existing file was not overwritten
     const existingFile = await readFile(
       path.join(targetDir, "foo-bar.ts"),
-      "utf-8"
+      "utf-8",
     );
     expect(existingFile).toBe("existing content");
   });

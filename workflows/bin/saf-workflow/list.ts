@@ -6,14 +6,14 @@ import { getPackageName } from "./shared/utils.ts";
 
 export const addListCommand = (
   program: Command,
-  workflows: WorkflowDefinition[]
+  workflows: WorkflowDefinition[],
 ) => {
   program
     .command("list")
     .description(
       addNewLinesToString(
-        "List all available workflows for the current package."
-      )
+        "List all available workflows for the current package.",
+      ),
     )
     .action(async () => {
       const currentPackage = getCurrentPackage();

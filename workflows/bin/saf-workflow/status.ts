@@ -6,12 +6,12 @@ import { getWorkflowLogger } from "../../core/store.ts";
 
 export const addStatusCommand = (
   program: Command,
-  workflows: WorkflowDefinition[]
+  workflows: WorkflowDefinition[],
 ) => {
   program
     .command("status")
     .description(
-      addNewLinesToString("Show the status of the current workflow.")
+      addNewLinesToString("Show the status of the current workflow."),
     )
     .action(async () => {
       const workflow = await loadWorkflow(workflows);

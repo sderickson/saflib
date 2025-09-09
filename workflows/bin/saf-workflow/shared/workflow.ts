@@ -73,7 +73,7 @@ export class XStateWorkflowRunner extends AbstractWorkflowRunner {
     const expectedInputLength = this.definition.input.length;
     if (expectedInputLength !== inputLength) {
       throw new Error(
-        `Expected ${expectedInputLength} arguments, got ${inputLength}`
+        `Expected ${expectedInputLength} arguments, got ${inputLength}`,
       );
     }
     for (let i = 0; i < expectedInputLength; i++) {
