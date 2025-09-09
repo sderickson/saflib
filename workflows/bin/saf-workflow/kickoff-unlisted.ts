@@ -28,9 +28,11 @@ export const addKickoffUnlistedCommand = (program: Command) => {
       log.info(`Workflow sucessfully loaded`);
       log.info(`- Workflow:     ${workflowDefinition.id}`);
       log.info(`- Description:  ${workflowDefinition.description}`);
-      log.info(
-        `- Arguments:    ${workflowDefinition.input.map((arg: any) => arg.name).join(", ")}`
-      );
+      if (workflowDefinition.input.length > 0) {
+        log.info(
+          `- Parameters:   ${workflowDefinition.input.map((arg: any) => arg.name).join(", ")}`
+        );
+      }
 
       // Check if enough arguments were provided
       const expectedArgs = workflowDefinition.input.length;
@@ -43,7 +45,9 @@ export const addKickoffUnlistedCommand = (program: Command) => {
         process.exit(1);
       }
 
-      log.info(`- Arguments:    ${args.join(", ")}`);
+      if (args.length > 0) {
+        log.info(`- Arguments:    ${args.join(", ")}`);
+      }
 
       // Kick off the workflow
       await kickoffWorkflow(workflowDefinition, args);

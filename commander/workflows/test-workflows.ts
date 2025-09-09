@@ -15,7 +15,7 @@ const input = [] as const;
 
 interface TestCommanderWorkflowsContext {}
 
-export const TestCommanderWorkflowsDefinition = defineWorkflow<
+const TestCommanderWorkflowsDefinition = defineWorkflow<
   typeof input,
   TestCommanderWorkflowsContext
 >({
@@ -53,3 +53,5 @@ export const TestCommanderWorkflowsDefinition = defineWorkflow<
     })),
   ],
 });
+
+export default TestCommanderWorkflowsDefinition;
