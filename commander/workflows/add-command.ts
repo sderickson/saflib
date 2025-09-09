@@ -4,11 +4,13 @@ import {
   PromptStepMachine,
   defineWorkflow,
   step,
+  CommandStepMachine,
 } from "@saflib/workflows";
 import path, { dirname } from "node:path";
 import { kebabCaseToPascalCase } from "@saflib/utils";
+import { existsSync } from "node:fs";
 
-const sourceDir = path.join(import.meta.dirname, "add-command");
+const sourceDir = path.join(import.meta.dirname, "templates");
 
 const input = [
   {
@@ -50,11 +52,16 @@ export const AddCommandWorkflowDefinition = defineWorkflow<
       !parts[parts.length - 1].includes(".ts")
     ) {
       throw new Error(
-        "Path should be of the form bin/{cli-name}/{command-name}.ts",
+        "Path should be of the form bin/{cli-name}/{command-name}.ts"
       );
     }
 
     const targetDir = dirname(input.path);
+
+    if (!existsSync(targetDir)) {
+      throw new Error(`Target directory ${targetDir} does not exist`);
+    }
+
     const cliName = parts[1];
     const commandName = parts[parts.length - 1].replace(".ts", "");
     const commandFunctionName = `add${kebabCaseToPascalCase(commandName)}Command`;
@@ -68,7 +75,7 @@ export const AddCommandWorkflowDefinition = defineWorkflow<
   },
 
   templateFiles: {
-    index: path.join(sourceDir, "template-file.ts"),
+    command: path.join(sourceDir, "template-file.ts"),
   },
 
   docFiles: {},
@@ -81,7 +88,7 @@ export const AddCommandWorkflowDefinition = defineWorkflow<
 
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "index",
-      promptMessage: `Update **${path.basename(context.copiedFiles!.index)}**, resolving any TODOs.`,
+      promptMessage: `Update **${path.basename(context.copiedFiles!.command)}**, resolving any TODOs.`,
     })),
 
     step(PromptStepMachine, ({ context }) => ({
@@ -102,6 +109,22 @@ export const AddCommandWorkflowDefinition = defineWorkflow<
       npm exec ${context.cliName} ${context.name}
       
       The command should display help information without errors.`,
+    })),
+
+    step(PromptStepMachine, () => ({
+      promptText: `Implement the new command.
+      
+      Ask for implementation details if it's unclear what to implement or how to do it.`,
+    })),
+
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["install", "@saflib/dev-tools", "--save-dev"],
+    })),
+
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["exec", "saf-doc", "generate"],
     })),
   ],
 });
