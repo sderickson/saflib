@@ -23,13 +23,16 @@ describe("getById", () => {
       name: "Test User",
     });
 
+    expect(createdUser).toBeDefined();
+    expect(createdUser?.id).toBeDefined();
+
     // Get the user by ID
-    const { result } = await getById(dbKey, { id: createdUser.id });
+    const { result } = await getById(dbKey, { id: createdUser!.id });
 
     expect(result).toBeDefined();
-    expect(result.email).toBe("test@example.com");
-    expect(result.name).toBe("Test User");
-    expect(result.id).toBe(createdUser.id);
+    expect(result?.email).toBe("test@example.com");
+    expect(result?.name).toBe("Test User");
+    expect(result?.id).toBe(createdUser!.id);
   });
 
   it("should return UserNotFoundError when user not found", async () => {

@@ -25,9 +25,9 @@ describe("create", () => {
     });
 
     expect(result).toBeDefined();
-    expect(result.email).toBe("test@example.com");
-    expect(result.name).toBe("Test User");
-    expect(result.id).toBeDefined();
+    expect(result?.email).toBe("test@example.com");
+    expect(result?.name).toBe("Test User");
+    expect(result?.id).toBeDefined();
   });
 
   it("should return InvalidUserDataError when email is missing", async () => {

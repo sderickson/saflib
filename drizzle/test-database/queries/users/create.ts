@@ -18,6 +18,9 @@ export const create = queryWrapper(
     params: InsertUserParams
   ): Promise<ReturnsError<User, CreateError>> => {
     const db = mainDbManager.get(dbKey);
+    if (!db) {
+      throw new Error("Database connection not found");
+    }
 
     // Validate input
     if (!params.email || !params.name) {

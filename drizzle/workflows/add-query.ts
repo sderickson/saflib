@@ -6,6 +6,7 @@ import {
   DocStepMachine,
   defineWorkflow,
   step,
+  CommandStepMachine,
 } from "@saflib/workflows";
 import path from "node:path";
 
@@ -150,6 +151,11 @@ export const AddQueryWorkflowDefinition = defineWorkflow<
 
     step(TestStepMachine, () => ({
       fileId: "test",
+    })),
+
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["run", "typecheck"],
     })),
   ],
 });

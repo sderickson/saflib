@@ -15,7 +15,10 @@ export const getById = queryWrapper(
     dbKey: DbKey,
     params: { id: number }
   ): Promise<ReturnsError<User, GetByIdError>> => {
-    const db = mainDbManager.get(dbKey);
+    const db = mainDbManager.get(dbKey)!;
+    if (!db) {
+      throw new Error("Database connection not found");
+    }
 
     const result = await db
       .select()
