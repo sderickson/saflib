@@ -2,7 +2,7 @@
 
 ## Source
 
-[add-cli.ts](add-cli.ts)
+[add-cli.ts](https://github.com/sderickson/saflib/blob/main/commander/workflows/add-cli.ts)
 
 ## Usage
 
@@ -21,7 +21,7 @@ To run this workflow automatically, tell the agent to:
 When run, the workflow will:
 
 - Copy template files and rename placeholders.
-  - Upsert **index.ts** from [template](index.ts)
+  - Upsert **index.ts** from [template](https://github.com/sderickson/saflib/blob/main/commander/workflows/templates/index.ts)
 - Update **index.ts**, resolving any TODOs.
 - Run `chmod +x bin/example-cli/index.ts`
 - Add bin/example-cli/index.ts to the package's bin folder.

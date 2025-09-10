@@ -2,7 +2,7 @@
 
 ## Source
 
-[add-command.ts](add-command.ts)
+[add-command.ts](https://github.com/sderickson/saflib/blob/main/commander/workflows/add-command.ts)
 
 ## Usage
 
@@ -21,7 +21,7 @@ To run this workflow automatically, tell the agent to:
 When run, the workflow will:
 
 - Copy template files and rename placeholders.
-  - Upsert **example-command.ts** from [template](template-file.ts)
+  - Upsert **example-command.ts** from [template](https://github.com/sderickson/saflib/blob/main/commander/workflows/templates/template-file.ts)
 - Update **example-command.ts**, resolving any TODOs.
 - Add the new command to the adjacent index.ts file.
 - Test the new command.
