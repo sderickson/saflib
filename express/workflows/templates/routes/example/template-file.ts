@@ -5,7 +5,7 @@ import createError from "http-errors";
 import { callerServiceStorage } from "@your-org/services-api/context.ts";
 import { getSafContextWithAuth } from "@saflib/node";
 
-export const templateFile = createHandler(async (req, res) => {
+export const templateFileHandler = createHandler(async (req, res) => {
   const ctx = callerServiceStorage.getStore()!;
   const { auth } = getSafContextWithAuth();
   const data: TemplateFileRequest = req.body || {};

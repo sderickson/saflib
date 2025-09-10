@@ -1,20 +1,19 @@
-// @ts-nocheck - TODO remove this line as part of workflow
 import { describe, it, expect, beforeEach } from "vitest";
 import request from "supertest";
 import express from "express";
-// import { createApp } from "../../app.ts";
+import { createApp } from "../../http.ts";
 import { makeUserHeaders } from "@saflib/express";
 
 describe("templateFile", () => {
   let app: express.Express;
 
   beforeEach(() => {
-    // app = createApp();
+    app = createApp();
   });
 
   it("should handle successful requests", async () => {
     const response = await request(app)
-      .post("/template-file")
+      .post("/resource-name/template-file")
       .set(makeUserHeaders())
       .send({
         // TODO: Add test request body
@@ -30,7 +29,7 @@ describe("templateFile", () => {
 
   it("should handle validation errors", async () => {
     const response = await request(app)
-      .post("/template-file")
+      .post("/resource-name/template-file")
       .set(makeUserHeaders())
       .send({
         // TODO: Add invalid request body
