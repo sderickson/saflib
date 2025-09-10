@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { AddHandlerWorkflowDefinition } from "./add-handler.ts";
+import { InitWorkflowDefinition } from "./init.ts";
 import { dryRunWorkflow } from "@saflib/workflows";
 
-describe("express/add-handler", () => {
+describe("express/init", () => {
   it("should successfully dry run", async () => {
-    const result = await dryRunWorkflow(AddHandlerWorkflowDefinition);
+    const result = await dryRunWorkflow(InitWorkflowDefinition);
     expect(result.checklist).toBeDefined();
   });
 });
