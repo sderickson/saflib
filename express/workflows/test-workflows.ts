@@ -12,7 +12,6 @@ import {
   step,
   makeWorkflowMachine,
   PromptStepMachine,
-  CommandStepMachine,
   CwdStepMachine,
 } from "@saflib/workflows";
 
