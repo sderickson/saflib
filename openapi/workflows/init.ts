@@ -4,6 +4,7 @@ import {
   defineWorkflow,
   step,
   CommandStepMachine,
+  CwdStepMachine,
 } from "@saflib/workflows";
 import path from "node:path";
 
@@ -85,6 +86,10 @@ export const InitWorkflowDefinition = defineWorkflow<
       targetDir: context.targetDir,
       lineReplace: (line) =>
         line.replace("@template/file-spec", context.packageName),
+    })),
+
+    step(CwdStepMachine, ({ context }) => ({
+      path: context.targetDir,
     })),
 
     step(CommandStepMachine, () => ({
