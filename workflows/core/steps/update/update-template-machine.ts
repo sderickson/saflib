@@ -13,6 +13,24 @@ import {
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { contextFromInput } from "../../utils.ts";
+import { getWorkflowLogger } from "../../store.ts";
+
+export interface UpdateStepTest {
+  /**
+   * What to print if the test fails.
+   */
+  description: string;
+
+  /**
+   * The name of the test.
+   */
+  name: string;
+
+  /**
+   * An arbitrary test. Fails the test if it returns false.
+   */
+  test: (content: string) => boolean;
+}
 
 /**
  * Input for the UpdateStepMachine.
@@ -27,11 +45,17 @@ export interface UpdateStepInput {
    * The message to show to the user. The machine will then stop until the workflow is continued.
    */
   promptMessage: string | ((context: WorkflowContext) => string);
+
+  /**
+   * A list of tests to run on the resulting file.
+   */
+  valid?: UpdateStepTest[];
 }
 
 export interface UpdateStepContext extends WorkflowContext {
   filePath: string;
   promptMessage: string | ((context: WorkflowContext) => string);
+  valid: UpdateStepTest[];
 }
 
 /**
@@ -50,6 +74,28 @@ export const UpdateStepMachine = setup({
     ...workflowActors,
   },
   guards: {
+    testsPass: ({ context }: { context: UpdateStepContext }) => {
+      if (context.dryRun || !context.valid.length) {
+        return true;
+      }
+      const resolvedPath = context.filePath;
+      const content = readFileSync(resolvedPath, "utf-8");
+      const log = getWorkflowLogger();
+      let allPassed = true;
+      for (const test of context.valid) {
+        if (!test.test(content)) {
+          log.error(`Test ${test.name} failed: ${test.description}`);
+          allPassed = false;
+        } else {
+          log.info(`Test ${test.name} passed.`);
+        }
+      }
+      if (allPassed) {
+        log.info(`Tests passed for ${resolvedPath}`);
+        return true;
+      }
+      return false;
+    },
     todosRemain: ({ context }: { context: UpdateStepContext }) => {
       if (context.dryRun) {
         return false;
@@ -67,12 +113,12 @@ export const UpdateStepMachine = setup({
   context: ({ input, self }) => {
     if (!input.copiedFiles) {
       throw new Error(
-        "`copiedFiles` not passed in. Did you run CopyStepMachine before UpdateStepMachine?",
+        "`copiedFiles` not passed in. Did you run CopyStepMachine before UpdateStepMachine?"
       );
     }
     if (!input.copiedFiles[input.fileId]) {
       throw new Error(
-        `\`copiedFiles[${input.fileId}]\` not found. Is that a valid key in \`templateFiles\`?`,
+        `\`copiedFiles[${input.fileId}]\` not found. Is that a valid key in \`templateFiles\`?`
       );
     }
     const filePath = input.copiedFiles[input.fileId];
@@ -80,6 +126,7 @@ export const UpdateStepMachine = setup({
       ...contextFromInput(input, self),
       filePath,
       promptMessage: input.promptMessage,
+      valid: input.valid || [],
     };
   },
   states: {
@@ -100,6 +147,15 @@ export const UpdateStepMachine = setup({
         ],
 
         continue: [
+          {
+            guard: "testsPass",
+            actions: [
+              logError(({ context }) => {
+                const filePathStr = path.basename(context.filePath);
+                return `Validation checks did not all succeed for ${filePathStr}. Please fix the issues and continue.`;
+              }),
+            ],
+          },
           {
             guard: "todosRemain",
             actions: [
