@@ -1,0 +1,11 @@
+{
+  "name": "@template/file-spec",
+  "description": "API specs for template-service service",
+  "type": "module",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "dependencies": {
+    "@saflib/openapi": "*"
+  }
+}

@@ -3,7 +3,7 @@ import { addNewLinesToString } from "@saflib/utils";
 import { execSync } from "child_process";
 import { getSafReporters } from "@saflib/node";
 import { errorSchema } from "@saflib/openapi";
-import { writeFileSync } from "fs";
+import { mkdirSync, writeFileSync } from "fs";
 import path from "path";
 
 export const addGenerateCommand = (program: Command) => {
@@ -11,8 +11,8 @@ export const addGenerateCommand = (program: Command) => {
     .command("generate")
     .description(
       addNewLinesToString(
-        "Generate OpenAPI types, JSON bundle, and HTML documentation",
-      ),
+        "Generate OpenAPI types, JSON bundle, and HTML documentation"
+      )
     )
     .option("-f, --file <file>", "OpenAPI spec file path", "./openapi.yaml")
     .option("-o, --output <dir>", "Output directory", "./dist")
@@ -22,9 +22,11 @@ export const addGenerateCommand = (program: Command) => {
 
       const { file, output } = options;
 
+      mkdirSync(path.join(process.cwd(), "./schemas"), { recursive: true });
+
       writeFileSync(
         path.join(process.cwd(), "./schemas/error.yaml"),
-        errorSchema,
+        errorSchema
       );
 
       log.info("Generating OpenAPI types...");
@@ -35,7 +37,7 @@ export const addGenerateCommand = (program: Command) => {
       log.info("Generating JSON bundle...");
       execSync(
         `redocly bundle ${file} --ext json --output ${output}/openapi.json`,
-        { stdio: "inherit" },
+        { stdio: "inherit" }
       );
 
       if (options.html) {
