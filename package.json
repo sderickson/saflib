@@ -20,7 +20,6 @@
   },
   "dependencies": {
     "@saflib/dev-tools": "*",
-    "prettier": "^3.6.2",
     "saflib-workflows": "^0.1.2",
     "vue-tsc": "^3.0.6"
   }
