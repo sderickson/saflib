@@ -1,3 +1,4 @@
+# TODO: Replace this example schema with actual schemas for your API.
 type: object
 properties:
   id:
