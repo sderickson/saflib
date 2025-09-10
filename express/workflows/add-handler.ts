@@ -75,6 +75,13 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
   },
 
   steps: [
+    step(PromptStepMachine, () => ({
+      promptText: `Make sure this package has the correct spec package installed.
+      
+      Run \`npm install\` to install it if it's not already installed.
+      If you don't know what route is being added as a handler, ask.`,
+    })),
+
     step(CopyStepMachine, ({ context }) => ({
       name: context.name,
       targetDir: context.targetDir,
