@@ -83,7 +83,7 @@ export const InitWorkflowDefinition = defineWorkflow<
       name: context.packageName,
       targetDir: context.targetDir,
       lineReplace: (line) =>
-        line.replace("@template/file-db", context.packageName),
+        line.replace("@template/file-http", context.packageName),
     })),
 
     step(UpdateStepMachine, ({ context }) => ({

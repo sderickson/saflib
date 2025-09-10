@@ -1,5 +1,5 @@
 {
-  "name": "@template/file-db",
+  "name": "@template/file-http",
   "description": "HTTP server",
   "type": "module",
   "exports": {
