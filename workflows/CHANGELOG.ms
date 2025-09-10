@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `kickoff` now can take a file path to a workflow definition.
 - `CwdStepMachine` for setting the current working directory.
 - `pollingWaitFor` for wait for workflow machines to halt.
+- `skipIf` option to `CommandStepMachine`.
+- `valid` option to `CopyStepMachine`.
 
 ### Fixed
 
@@ -21,7 +23,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Some logging improvements.
+- Some logging.
+- Some docs.
+- Some "add-workflow" steps.
 
 ## [0.1.2] - 2025-09-08
 
