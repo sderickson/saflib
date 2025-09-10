@@ -12,11 +12,11 @@ import { saveWorkflow } from "./file-io.ts";
  * Convenience function to take a WorkflowDefinition, dry run it, and return the output. The output in particular includes the checklist.
  */
 export const dryRunWorkflow = async (
-  definition: WorkflowDefinition<any, any>
+  definition: WorkflowDefinition<any, any>,
 ): Promise<WorkflowOutput> => {
   const cliArguments = definition.input as WorkflowArgument[];
   const exampleArgs = cliArguments.map(
-    (arg) => arg.exampleValue || "example-value-missing"
+    (arg) => arg.exampleValue || "example-value-missing",
   );
   const workflow = new XStateWorkflowRunner({
     definition,
@@ -36,7 +36,7 @@ export const dryRunWorkflow = async (
     const currentStateName = workflow.getCurrentStateName();
     if (currentStateName === lastStateName) {
       throw new Error(
-        `Workflow ${definition.id} is stuck on state ${currentStateName}.`
+        `Workflow ${definition.id} is stuck on state ${currentStateName}.`,
       );
     }
     lastStateName = currentStateName;
@@ -74,7 +74,7 @@ export function getPackageName(rootUrl: string) {
  */
 export const kickoffWorkflow = async (
   Workflow: WorkflowDefinition,
-  args: string[]
+  args: string[],
 ) => {
   const workflow = new XStateWorkflowRunner({
     definition: Workflow,

@@ -25,7 +25,7 @@ export const saveWorkflow = (workflow: AbstractWorkflowRunner) => {
   const planStatusFilePath = getPlanStatusFilePath();
   writeFileSync(
     planStatusFilePath,
-    JSON.stringify(workflow.dehydrate(), null, 2)
+    JSON.stringify(workflow.dehydrate(), null, 2),
   );
 };
 
@@ -40,7 +40,7 @@ export const loadWorkflow = async (workflows: WorkflowDefinition[]) => {
 
   if (blob.workflowSourceUrl && !workflow) {
     workflow = await loadWorkflowDefinitionFromFile(
-      blob.workflowSourceUrl.replace("file://", "")
+      blob.workflowSourceUrl.replace("file://", ""),
     );
   }
 
@@ -57,7 +57,7 @@ export const loadWorkflow = async (workflows: WorkflowDefinition[]) => {
 };
 
 export const loadWorkflowDefinitionFromFile = async (
-  filePath: string
+  filePath: string,
 ): Promise<WorkflowDefinition | undefined> => {
   const log = getWorkflowLogger();
   if (!existsSync(filePath)) {
@@ -74,7 +74,7 @@ export const loadWorkflowDefinitionFromFile = async (
 
   if (!isWorkflowDefinition(module.default)) {
     log.error(
-      `Error: Default export from ${filePath} is not a valid WorkflowDefinition`
+      `Error: Default export from ${filePath} is not a valid WorkflowDefinition`,
     );
     return undefined;
   }

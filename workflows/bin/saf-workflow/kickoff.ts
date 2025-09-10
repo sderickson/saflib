@@ -8,14 +8,14 @@ import { resolve } from "node:path";
 
 export const addKickoffCommand = (
   program: Command,
-  workflows: WorkflowDefinition[]
+  workflows: WorkflowDefinition[],
 ) => {
   const kickoffProgram = program
     .command("kickoff")
     .description(
       addNewLinesToString(
-        "Kick off a workflow. Takes a workflow name and then any arguments for the workflow. Names should be kebab-case, and paths should be ./relative/to/package/root.ts. All commands should be run in a folder with a package.json; the package the workflow is acting on. Example:\n\nnpm exec saf-workflow kickoff add-tests ./path/to/file.ts"
-      )
+        "Kick off a workflow. Takes a workflow name and then any arguments for the workflow. Names should be kebab-case, and paths should be ./relative/to/package/root.ts. All commands should be run in a folder with a package.json; the package the workflow is acting on. Example:\n\nnpm exec saf-workflow kickoff add-tests ./path/to/file.ts",
+      ),
     );
 
   workflows.sort((a, b) => a.id.localeCompare(b.id));
@@ -33,8 +33,8 @@ export const addKickoffCommand = (
   kickoffProgram
     .description(
       addNewLinesToString(
-        "Kick off a workflow from a file path. That path should export a definition as its default export."
-      )
+        "Kick off a workflow from a file path. That path should export a definition as its default export.",
+      ),
     )
     .argument("<path>", "Path to the workflow file")
     .argument("[args...]", "Arguments for the workflow")
@@ -53,7 +53,7 @@ export const addKickoffCommand = (
       log.info(`- Description:  ${workflowDefinition.description}`);
       if (workflowDefinition.input.length > 0) {
         log.info(
-          `- Parameters:   ${workflowDefinition.input.map((arg: any) => arg.name).join(", ")}`
+          `- Parameters:   ${workflowDefinition.input.map((arg: any) => arg.name).join(", ")}`,
         );
       }
 
@@ -63,7 +63,7 @@ export const addKickoffCommand = (
 
       if (providedArgs < expectedArgs) {
         log.error(
-          `Error: Expected ${expectedArgs} argument${expectedArgs === 1 ? "" : "s"}, but got ${providedArgs}`
+          `Error: Expected ${expectedArgs} argument${expectedArgs === 1 ? "" : "s"}, but got ${providedArgs}`,
         );
         process.exit(1);
       }

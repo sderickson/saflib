@@ -5,7 +5,7 @@ type RunCommandAsyncOptions = Pick<SpawnOptions, "cwd">;
 export const runCommandAsync = (
   command: string,
   args: string[],
-  options: RunCommandAsyncOptions = {}
+  options: RunCommandAsyncOptions = {},
 ) => {
   let resolve: (value: string) => void;
   let reject: (error: Error) => void;

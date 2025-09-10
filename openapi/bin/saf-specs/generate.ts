@@ -11,8 +11,8 @@ export const addGenerateCommand = (program: Command) => {
     .command("generate")
     .description(
       addNewLinesToString(
-        "Generate OpenAPI types, JSON bundle, and HTML documentation"
-      )
+        "Generate OpenAPI types, JSON bundle, and HTML documentation",
+      ),
     )
     .option("-f, --file <file>", "OpenAPI spec file path", "./openapi.yaml")
     .option("-o, --output <dir>", "Output directory", "./dist")
@@ -26,7 +26,7 @@ export const addGenerateCommand = (program: Command) => {
 
       writeFileSync(
         path.join(process.cwd(), "./schemas/error.yaml"),
-        errorSchema
+        errorSchema,
       );
 
       log.info("Generating OpenAPI types...");
@@ -37,7 +37,7 @@ export const addGenerateCommand = (program: Command) => {
       log.info("Generating JSON bundle...");
       execSync(
         `redocly bundle ${file} --ext json --output ${output}/openapi.json`,
-        { stdio: "inherit" }
+        { stdio: "inherit" },
       );
 
       if (options.html) {

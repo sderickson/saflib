@@ -13,7 +13,7 @@ export const createResourceNameRouter = () => {
     createScopedMiddleware({
       // TODO: uncomment this once the right jsonSpec is imported
       // apiSpec: jsonSpec,
-    })
+    }),
   );
   router.get("/resource-name/route-name", templateFileHandler);
 

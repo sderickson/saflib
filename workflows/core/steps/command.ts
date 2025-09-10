@@ -16,7 +16,7 @@ import { raise } from "xstate";
 import { contextFromInput } from "../utils.ts";
 
 export type CommandStepSkipIf = (
-  context: CommandStepContext & { cwd: string }
+  context: CommandStepContext & { cwd: string },
 ) => boolean;
 
 /**
@@ -75,7 +75,7 @@ export const CommandStepMachine = setup({
           target: "runCommand",
           actions: logInfo(
             ({ context }) =>
-              `Running command: ${context.command} ${context.args.join(" ")}`
+              `Running command: ${context.command} ${context.args.join(" ")}`,
           ),
         },
       },
@@ -88,7 +88,7 @@ export const CommandStepMachine = setup({
           }
           if (input.skipIf && input.skipIf(input)) {
             logInfo(
-              `Skipping command: ${input.command} ${input.args.join(" ")}`
+              `Skipping command: ${input.command} ${input.args.join(" ")}`,
             );
             return "Skipped";
           }
@@ -102,7 +102,7 @@ export const CommandStepMachine = setup({
           actions: [
             logInfo(
               ({ context }) =>
-                `Successfully ran \`${context.command} ${context.args.join(" ")}\``
+                `Successfully ran \`${context.command} ${context.args.join(" ")}\``,
             ),
             assign({
               checklist: ({ context }) => {
@@ -119,7 +119,8 @@ export const CommandStepMachine = setup({
         onError: {
           actions: [
             logError(
-              ({ event }) => `Command failed: ${(event.error as Error).message}`
+              ({ event }) =>
+                `Command failed: ${(event.error as Error).message}`,
             ),
             raise({ type: "prompt" }),
           ],
@@ -129,7 +130,7 @@ export const CommandStepMachine = setup({
         prompt: {
           actions: promptAgent(
             ({ context }) =>
-              `The command \`${context.command} ${context.args.join(" ")}\` failed. Please fix the issues and continue.`
+              `The command \`${context.command} ${context.args.join(" ")}\` failed. Please fix the issues and continue.`,
           ),
         },
         continue: {
