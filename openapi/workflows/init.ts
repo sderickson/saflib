@@ -16,6 +16,12 @@ const input = [
       "The name of the API spec package to create (e.g., 'user-spec' or 'analytics-spec')",
     exampleValue: "example-spec",
   },
+  {
+    name: "path",
+    description:
+      "The path to the target directory for the API spec package (e.g., './specs/example')",
+    exampleValue: "./specs/example",
+  },
 ] as const;
 
 interface InitWorkflowContext {
@@ -46,7 +52,7 @@ export const InitWorkflowDefinition = defineWorkflow<
     if (!input.name.endsWith("-spec")) {
       name = input.name + "-spec";
     }
-    const targetDir = path.join(input.cwd, name);
+    const targetDir = path.join(input.cwd, input.path);
     const packageName = `@saflib/${name}`;
     const serviceName = name.replace("-spec", "");
 
