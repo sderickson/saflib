@@ -10,7 +10,7 @@ import { readFileSync } from "fs";
 import path from "node:path";
 import { existsSync } from "node:fs";
 
-const sourceDir = path.join(import.meta.dirname, "add-workflow.templates");
+const sourceDir = path.join(import.meta.dirname, "templates");
 
 const input = [
   {
@@ -69,6 +69,7 @@ export const AddWorkflowDefinition = defineWorkflow<
 
   templateFiles: {
     workflow: path.join(sourceDir, "template-file.ts"),
+    test: path.join(sourceDir, "template-file.test.ts"),
     index: path.join(sourceDir, "index.ts"),
   },
 
