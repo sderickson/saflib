@@ -9,14 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- `kickoff-unlisted` command for running workflows from a file path.
+- `kickoff` now can take a file path to a workflow definition.
 - `CwdStepMachine` for setting the current working directory.
 - `pollingWaitFor` for wait for workflow machines to halt.
 
 ### Fixed
 
-- Made `runWorkflowCli` async since there's async work afoot.
-- Fix the CLI exiting prematurely.
+- `runWorkflowCli` is async since there's async work afoot.
+- CLI exiting prematurely.
+- Fix `npm exec saf-workflow status`
 
 ### Changed
 
