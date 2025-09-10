@@ -8,7 +8,7 @@ import {
 } from "@saflib/workflows";
 import path from "node:path";
 
-const sourceDir = path.join(import.meta.dirname, "inits");
+const sourceDir = path.join(import.meta.dirname, "templates");
 
 const input = [
   {
@@ -85,28 +85,6 @@ export const InitWorkflowDefinition = defineWorkflow<
     step(CommandStepMachine, () => ({
       command: "npm",
       args: ["exec", "saf-specs", "generate"],
-    })),
-
-    step(UpdateStepMachine, ({ context }) => ({
-      fileId: "packageJson",
-      promptMessage: `Update **package.json** with the correct package name "${context.packageName}" and any specific dependencies needed for this API spec package.`,
-    })),
-
-    step(UpdateStepMachine, ({ context }) => ({
-      fileId: "openapi",
-      promptMessage: `Update **openapi.yaml** to define the API specification for the ${context.serviceName} service.
-      
-      Replace the TODO comments with actual API routes and schemas:
-      - Add your API paths and operations
-      - Define security schemes if needed
-      - Add shared schemas for your business objects`,
-    })),
-
-    step(UpdateStepMachine, ({ context }) => ({
-      fileId: "index",
-      promptMessage: `Update **index.ts** to properly export the API spec types and schemas for the ${context.serviceName} package.
-      
-      Replace the TODO comments with actual schema exports based on your OpenAPI specification.`,
     })),
   ],
 });

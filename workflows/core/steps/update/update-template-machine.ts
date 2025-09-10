@@ -74,9 +74,9 @@ export const UpdateStepMachine = setup({
     ...workflowActors,
   },
   guards: {
-    testsPass: ({ context }: { context: UpdateStepContext }) => {
+    invalid: ({ context }: { context: UpdateStepContext }) => {
       if (context.dryRun || !context.valid.length) {
-        return true;
+        return false;
       }
       const resolvedPath = context.filePath;
       const content = readFileSync(resolvedPath, "utf-8");
@@ -92,9 +92,9 @@ export const UpdateStepMachine = setup({
       }
       if (allPassed) {
         log.info(`Tests passed for ${resolvedPath}`);
-        return true;
+        return false;
       }
-      return false;
+      return true;
     },
     todosRemain: ({ context }: { context: UpdateStepContext }) => {
       if (context.dryRun) {
@@ -148,7 +148,7 @@ export const UpdateStepMachine = setup({
 
         continue: [
           {
-            guard: "testsPass",
+            guard: "invalid",
             actions: [
               logError(({ context }) => {
                 const filePathStr = path.basename(context.filePath);
