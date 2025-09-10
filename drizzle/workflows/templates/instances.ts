@@ -5,5 +5,5 @@ import config from "./drizzle.config.ts";
 export const templateFileManager = new DbManager(
   schema,
   config,
-  import.meta.url
+  import.meta.url,
 );

@@ -12,9 +12,9 @@ export type TemplateFileError = SomeError;
 export const templateFile = queryWrapper(
   async (
     dbKey: DbKey,
-    params: SomeDbType
+    params: SomeDbType,
   ): Promise<ReturnsError<SomeDbType, TemplateFileError>> => {
     const db = someDbManager.get(dbKey);
     return { result: {} };
-  }
+  },
 );

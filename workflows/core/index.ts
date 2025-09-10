@@ -13,8 +13,9 @@ export * from "./steps/test.ts";
 export * from "./steps/command.ts";
 export * from "./steps/doc.ts";
 export * from "./steps/cwd.ts";
-export { checklistToString } from "./utils.ts";
+export { checklistToString, pollingWaitFor } from "./utils.ts";
 export {
   type GetSourceUrlFunction,
   type WorkflowLoggerOptions,
+  type WorkflowLogger,
 } from "./store.ts";

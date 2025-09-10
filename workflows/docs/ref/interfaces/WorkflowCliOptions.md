@@ -16,4 +16,10 @@ Options for configuring the workflow CLI
 
 ### logger?
 
-> `optional` **logger**: [`WorkflowLoggerOptions`](WorkflowLoggerOptions.md)
+> `optional` **logger**: [`WorkflowLogger`](WorkflowLogger.md)
+
+---
+
+### loggerOptions?
+
+> `optional` **loggerOptions**: [`WorkflowLoggerOptions`](WorkflowLoggerOptions.md)
