@@ -116,3 +116,9 @@ agent what the workflow is for, especially if it's a long one.
 #### Inherited from
 
 `WorkflowContext.templateFiles`
+
+---
+
+### valid
+
+> **valid**: [`UpdateStepTest`](UpdateStepTest.md)[]

@@ -96,6 +96,12 @@ I may futz with this again later, but it seems unlikely to work. In the meantime
 
 ---
 
+### skipIf?
+
+> `optional` **skipIf**: [`CommandStepSkipIf`](../type-aliases/CommandStepSkipIf.md)
+
+---
+
 ### systemPrompt?
 
 > `optional` **systemPrompt**: `string`
