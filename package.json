@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "@saflib/dev-tools": "*",
-    "saflib-workflows": "^0.0.0",
+    "saflib-workflows": "^0.1.2",
     "vue-tsc": "^3.0.6"
   }
 }

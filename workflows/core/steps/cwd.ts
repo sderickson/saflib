@@ -33,9 +33,12 @@ export const CwdStepMachine = setup({
   id: "cwd-step",
   initial: "done",
   context: ({ input, self }) => {
+    const newCwd = input.path.startsWith("/")
+      ? input.path
+      : path.join(process.cwd(), input.path);
     return {
       ...contextFromInput(input, self),
-      newCwd: path.join(process.cwd(), input.path),
+      newCwd,
     };
   },
   states: {
