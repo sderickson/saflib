@@ -5,6 +5,9 @@
   "exports": {
     ".": "./index.ts"
   },
+  "scripts": {
+    "typecheck": "tsc"
+  },
   "dependencies": {
     "@saflib/openapi": "*"
   }
