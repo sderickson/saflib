@@ -1,6 +1,5 @@
 import {
   CopyStepMachine,
-  UpdateStepMachine,
   DocStepMachine,
   defineWorkflow,
   step,

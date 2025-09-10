@@ -1,100 +1,92 @@
 import {
   CopyStepMachine,
   UpdateStepMachine,
-  PromptStepMachine,
-  TestStepMachine,
+  CommandStepMachine,
   defineWorkflow,
   step,
+  PromptStepMachine,
 } from "@saflib/workflows";
 import path from "node:path";
 
-const sourceDir = path.join(import.meta.dirname, "add-routes");
+const sourceDir = path.join(import.meta.dirname, "templates/routes");
 
-// TODO: replace this with the actual input for your workflow
 const input = [
   {
-    name: "name",
-    description:
-      "The name of the thing to create (e.g., 'my-component' or 'my-service')",
-    exampleValue: "example-thingy",
+    name: "path",
+    description: "The path for the route (e.g., 'users' or 'products')",
+    exampleValue: "routes/example-resource/example-route",
   },
 ] as const;
 
-// TODO: Remove exampleProperty and replace it with the actual context properties your workflow needs
 interface AddRouteWorkflowContext {
-  name: string;
+  resource: string;
   targetDir: string;
-  exampleProperty: string;
+  operationId: string;
 }
 
 export const AddRouteWorkflowDefinition = defineWorkflow<
   typeof input,
   AddRouteWorkflowContext
 >({
-  // TODO: replace "todo/" with the name of the package that contains the template files
-  id: "todo/add-route",
+  id: "openapi/add-route",
 
-  // TODO: replace with a description based on the context, also in the present tense like a good commit message.
-  description: "Create a new thing",
+  description: "Add a new route to an existing OpenAPI specification package",
 
-  // TODO: replace with a description based on the context, also in the present tense like a good commit message.
-  checklistDescription: ({ name }) => `Create a new ${name} thing.`,
+  checklistDescription: ({ resource, operationId }) =>
+    `Add a new ${operationId} route for ${resource} resource to the OpenAPI specification.`,
 
   input,
 
   sourceUrl: import.meta.url,
 
   context: ({ input }) => {
-    // TODO: replace "output" with where the files should actually go based on the input
-    // This will probably be based on the inputs, such as the name of what is being created
-    const targetDir = path.join(input.cwd, "output");
+    const targetDir = input.cwd;
+    const resource = path.basename(targetDir);
+    const name = path.basename(input.path).split(".")[0];
 
     return {
-      name: input.name,
+      resource,
       targetDir,
-      exampleProperty: "example value",
+      operationId: name,
     };
   },
 
-  // TODO: create the add-routes dir and add template files
-  // Include TODOs like this file does.
-   templateFiles: {
-    main: path.join(sourceDir, "main.ts"),
-    config: path.join(sourceDir, "config.ts"),
-    test: path.join(sourceDir, "test.ts"),
+  templateFiles: {
+    route: path.join(sourceDir, "template-file.yaml"),
   },
 
-  // TODO: add documentation file references
-  docFiles: {},
+  docFiles: {
+    overview: path.join(import.meta.dirname, "../docs/01-overview.md"),
+  },
 
-  // TODO: update the steps to match the actual workflow you're creating. It will usually involve some combination of copying template files, updating files, prompting, running scripts, and running tests.
   steps: [
     step(CopyStepMachine, ({ context }) => ({
-      name: context.name,
-      targetDir: context.targetDir,
+      name: context.operationId,
+      targetDir: path.join(context.targetDir, "routes", context.resource),
     })),
 
     step(UpdateStepMachine, ({ context }) => ({
-      fileId: "main",
-      promptMessage: `Update **${path.basename(context.copiedFiles!.main)}** to implement the main functionality. Replace any TODO comments with actual implementation.`,
+      fileId: "route",
+      promptMessage: `Update **${path.basename(context.copiedFiles!.route)}**. Resolve all TODOs.
+      
+      Replace the template properties with actual route definition:
+      - Define request parameters and body schemas using $ref to existing schemas
+      - Define response schemas using $ref to existing schemas (including error.yaml for error responses)
+      - Remove any unused sections (parameters, requestBody) if not needed`,
     })),
 
-    step(UpdateStepMachine, ({ context }) => ({
-      fileId: "config",
-      promptMessage: `Update **${path.basename(context.copiedFiles!.config)}** with the appropriate configuration for this workflow.`,
+    step(PromptStepMachine, () => ({
+      promptText: `Add the route to the openapi.yaml file in the paths section. Reference the route file using $ref.`,
     })),
 
-    step(UpdateStepMachine, ({ context }) => ({
-      fileId: "test",
-      promptMessage: `Update **${path.basename(context.copiedFiles!.test)}** to test the functionality you implemented. Make sure to mock any external dependencies.`,
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["exec", "saf-specs", "generate"],
     })),
 
-    step(TestStepMachine, () => ({
-      fileId: "test",
-    })),
-
-    step(PromptStepMachine, ({ context }) => ({
-      promptText: `Verify that the ${context.name} workflow is working correctly. Test the functionality manually and ensure all files are properly configured.`,
+    step(CommandStepMachine, () => ({
+      command: "npx",
+      args: ["tsc", "--noEmit"],
     })),
   ],
 });

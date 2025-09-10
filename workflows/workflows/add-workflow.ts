@@ -123,7 +123,7 @@ export const AddWorkflowDefinition = defineWorkflow<
     step(PromptStepMachine, ({ context }) => ({
       promptText: `Check that the new workflow appears in the saf-workflow CLI tool.
       
-      Run the command \`npm exec saf-workflow kickoff help\` in your terminal (any directory). Ensure that your new workflow "${context.workflowName}" appears in the list.`,
+      Run the command \`npm exec saf-workflow help kickoff\` in your terminal (any directory). Ensure that your new workflow "${context.workflowName}" appears in the list.`,
     })),
 
     step(DocStepMachine, () => ({
