@@ -1,14 +1,15 @@
 import { Command } from "commander";
-import type { WorkflowDefinition } from "../core/types.ts";
-import { addNewLinesToString } from "../strings.ts";
+import type { WorkflowDefinition } from "../../core/types.ts";
+import { addNewLinesToString } from "../../strings.ts";
 import {
   createWorkflowLogger,
   setupWorkflowContext,
   type WorkflowLoggerOptions,
   type GetSourceUrlFunction,
   type WorkflowLogger,
-} from "../core/store.ts";
+} from "../../core/store.ts";
 import { addKickoffCommand } from "./kickoff.ts";
+import { addKickoffUnlistedCommand } from "./kickoff-unlisted.ts";
 import { addChecklistCommand } from "./checklist.ts";
 import { addStatusCommand } from "./status.ts";
 import { addNextCommand } from "./next.ts";
@@ -34,7 +35,7 @@ export interface WorkflowCliOptions {
  *
  * Use this also to customize which workflows are actually available.
  */
-export function runWorkflowCli(
+export async function runWorkflowCli(
   workflows: WorkflowDefinition[],
   options: WorkflowCliOptions = {},
 ) {
@@ -47,6 +48,7 @@ export function runWorkflowCli(
     );
 
   addKickoffCommand(program, workflows);
+  addKickoffUnlistedCommand(program);
   addStatusCommand(program, workflows);
   addNextCommand(program, workflows);
   addChecklistCommand(program, workflows);
@@ -66,7 +68,7 @@ export function runWorkflowCli(
     getSourceUrl: options.getSourceUrl,
   });
 
-  program.parse(process.argv);
+  await program.parseAsync(process.argv);
 }
 
-export { dryRunWorkflow } from "./utils.ts";
+export { dryRunWorkflow } from "./shared/utils.ts";

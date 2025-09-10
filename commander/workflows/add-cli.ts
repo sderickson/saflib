@@ -8,7 +8,7 @@ import {
 } from "@saflib/workflows";
 import path from "node:path";
 
-const sourceDir = path.join(import.meta.dirname, "add-cli");
+const sourceDir = path.join(import.meta.dirname, "templates");
 
 const input = [
   {
@@ -33,7 +33,9 @@ export const AddCLIWorkflowDefinition = defineWorkflow<
   id: "commander/add-cli",
 
   description:
-    "Creates a new CLI with Commander.js, accessible through npm exec",
+    "Create  a new CLI with Commander.js, accessible through npm exec",
+
+  checklistDescription: ({ name }) => `Create a new CLI called ${name}.`,
 
   input,
 
@@ -86,7 +88,7 @@ export const AddCLIWorkflowDefinition = defineWorkflow<
 
     step(CommandStepMachine, () => ({
       command: "npm",
-      args: ["install"],
+      args: ["install", "@saflib/commander"],
     })),
 
     step(PromptStepMachine, ({ context }) => ({

@@ -1,2 +1,2 @@
-export * from "./saf-workflow-cli/index.ts";
+export * from "./bin/saf-workflow/index.ts";
 export * from "./core/index.ts";

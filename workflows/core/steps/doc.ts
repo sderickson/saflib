@@ -49,9 +49,9 @@ export const DocStepMachine = setup({
   },
 }).createMachine({
   id: "doc-step",
-  context: ({ input }) => {
+  context: ({ input, self }) => {
     return {
-      ...contextFromInput(input),
+      ...contextFromInput(input, self),
       docId: input.docId,
     };
   },

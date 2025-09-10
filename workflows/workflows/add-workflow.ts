@@ -55,7 +55,7 @@ export const AddWorkflowDefinition = defineWorkflow<
     }
     const workflowPackageName = findWorkflowPackageName();
 
-    const targetDir = process.cwd() + "/workflows";
+    const targetDir = input.cwd + "/workflows";
 
     return {
       workflowName,

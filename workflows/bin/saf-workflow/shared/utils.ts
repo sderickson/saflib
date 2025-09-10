@@ -2,10 +2,11 @@ import type {
   WorkflowOutput,
   WorkflowDefinition,
   WorkflowArgument,
-} from "../core/types.ts";
+} from "../../../core/types.ts";
 import { XStateWorkflowRunner } from "./workflow.ts";
 import path from "node:path";
 import { existsSync, readFileSync } from "node:fs";
+import { saveWorkflow } from "./file-io.ts";
 
 /**
  * Convenience function to take a ConcretWorkflowRunner, dry run it, and return the output. The output in particular includes the checklist.
@@ -65,4 +66,40 @@ export function getPackageName(rootUrl: string) {
     }
     currentDir = parentDir;
   }
+}
+
+/**
+ * Shared utility function to kick off a workflow with the given definition and arguments.
+ * This is used by both the regular kickoff command and the kickoff-unlisted command.
+ */
+export const kickoffWorkflow = async (
+  Workflow: WorkflowDefinition,
+  args: string[],
+) => {
+  const workflow = new XStateWorkflowRunner({
+    definition: Workflow,
+    args: args.slice(0, Workflow.input.length),
+    dryRun: false,
+  });
+  await workflow.kickoff();
+  console.log("--- To continue, run 'npm exec saf-workflow next' ---\n");
+  saveWorkflow(workflow);
+};
+
+/**
+ * Duck typing function to check if an object is a WorkflowDefinition
+ */
+export function isWorkflowDefinition(obj: any): obj is WorkflowDefinition {
+  return (
+    obj &&
+    typeof obj === "object" &&
+    typeof obj.id === "string" &&
+    typeof obj.description === "string" &&
+    typeof obj.sourceUrl === "string" &&
+    Array.isArray(obj.input) &&
+    typeof obj.context === "function" &&
+    typeof obj.templateFiles === "object" &&
+    typeof obj.docFiles === "object" &&
+    Array.isArray(obj.steps)
+  );
 }

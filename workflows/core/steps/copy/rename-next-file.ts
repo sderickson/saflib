@@ -1,7 +1,6 @@
 import { fromPromise } from "xstate";
 import type { CopyStepContext } from "./types.ts";
 import { readFile, writeFile } from "node:fs/promises";
-import { transformName } from "./utils.ts";
 import path from "node:path";
 import {
   kebabCaseToSnakeCase,
@@ -11,13 +10,11 @@ import {
 
 export const renameNextFile = fromPromise(
   async ({ input }: { input: CopyStepContext }) => {
-    const { targetDir, name, filesToCopy, dryRun, templateFiles, lineReplace } =
-      input;
+    const { name, filesToCopy, dryRun, lineReplace, copiedFiles } = input;
 
     const currentFileId = filesToCopy[0];
-    const currentFile = path.basename(templateFiles![currentFileId]);
-    const targetFileName = transformName(currentFile, name);
-    const targetPath = path.join(targetDir, targetFileName);
+    const targetPath = copiedFiles[currentFileId];
+    const targetFileName = path.basename(targetPath);
 
     if (dryRun) {
       return { fileName: targetFileName };

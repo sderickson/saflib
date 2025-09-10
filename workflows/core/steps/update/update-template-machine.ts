@@ -64,10 +64,20 @@ export const UpdateStepMachine = setup({
 }).createMachine({
   id: "update-step",
   initial: "update",
-  context: ({ input }) => {
-    const filePath = input.copiedFiles![input.fileId];
+  context: ({ input, self }) => {
+    if (!input.copiedFiles) {
+      throw new Error(
+        "`copiedFiles` not passed in. Did you run CopyStepMachine before UpdateStepMachine?",
+      );
+    }
+    if (!input.copiedFiles[input.fileId]) {
+      throw new Error(
+        `\`copiedFiles[${input.fileId}]\` not found. Is that a valid key in \`templateFiles\`?`,
+      );
+    }
+    const filePath = input.copiedFiles[input.fileId];
     return {
-      ...contextFromInput(input),
+      ...contextFromInput(input, self),
       filePath,
       promptMessage: input.promptMessage,
     };

@@ -15,6 +15,25 @@ An interface that includes the inputs, files, steps, and everything else that ma
 
 ## Properties
 
+### checklistDescription()?
+
+> `optional` **checklistDescription**: (`context`) => `string`
+
+Description that will be printed when the workflow itself is part of a checklist.
+Experimental! Still need to experiment with workflows in workflows.
+
+#### Parameters
+
+| Parameter | Type |
+| --------- | ---- |
+| `context` | `C`  |
+
+#### Returns
+
+`string`
+
+---
+
 ### context()
 
 > **context**: (`arg`) => `C`
@@ -23,10 +42,10 @@ The context specific to this workflow, generated from the input and available to
 
 #### Parameters
 
-| Parameter   | Type                                    |
-| ----------- | --------------------------------------- |
-| `arg`       | \{ `input`: `CreateArgsType`\<`I`\>; \} |
-| `arg.input` | `CreateArgsType`\<`I`\>                 |
+| Parameter   | Type                                               |
+| ----------- | -------------------------------------------------- |
+| `arg`       | \{ `input`: `CreateArgsType`\<`I`\> & `object`; \} |
+| `arg.input` | `CreateArgsType`\<`I`\> & `object`                 |
 
 #### Returns
 

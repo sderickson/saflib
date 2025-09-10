@@ -34,7 +34,11 @@ export const TemplateFileWorkflowDefinition = defineWorkflow<
   // TODO: replace "todo/" with the name of the package that contains the template files
   id: "todo/template-file",
 
-  description: "TODO: Describe what this workflow does",
+  // TODO: replace with a description based on the context, also in the present tense like a good commit message.
+  description: "Create a new thing",
+
+  // TODO: replace with a description based on the context, also in the present tense like a good commit message.
+  checklistDescription: ({ name }) => `Create a new ${name} thing.`,
 
   input,
 
@@ -43,7 +47,7 @@ export const TemplateFileWorkflowDefinition = defineWorkflow<
   context: ({ input }) => {
     // TODO: replace "output" with where the files should actually go based on the input
     // This will probably be based on the inputs, such as the name of what is being created
-    const targetDir = path.join(process.cwd(), "output");
+    const targetDir = path.join(input.cwd, "output");
 
     return {
       name: input.name,

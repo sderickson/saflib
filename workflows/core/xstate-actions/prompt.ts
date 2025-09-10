@@ -31,6 +31,9 @@ export const promptImpl: WorkflowActionFunction<
 > = assign(
   ({ context }: { context: WorkflowContext }, { msg }: PromptParams) => {
     // space prompts from the original command, logs, and other prompts
+    if (process.env.NODE_ENV === "test") {
+      return {};
+    }
     print("");
     if (context.systemPrompt) {
       print(context.systemPrompt);

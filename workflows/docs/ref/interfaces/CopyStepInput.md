@@ -8,6 +8,24 @@ Input for the CopyStepMachine.
 
 ## Properties
 
+### lineReplace()?
+
+> `optional` **lineReplace**: (`line`) => `string`
+
+Optional argument to do custom string transformations of the template file.
+
+#### Parameters
+
+| Parameter | Type     |
+| --------- | -------- |
+| `line`    | `string` |
+
+#### Returns
+
+`string`
+
+---
+
 ### name
 
 > **name**: `string`

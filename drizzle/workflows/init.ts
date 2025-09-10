@@ -6,7 +6,7 @@ import {
 } from "@saflib/workflows";
 import path from "node:path";
 
-const sourceDir = path.join(import.meta.dirname, "inits");
+const sourceDir = path.join(import.meta.dirname, "templates");
 
 const input = [
   {
@@ -37,11 +37,16 @@ export const InitWorkflowDefinition = defineWorkflow<
   sourceUrl: import.meta.url,
 
   context: ({ input }) => {
-    const targetDir = path.join(process.cwd(), input.name);
-    const packageName = `@saflib/${input.name}`;
+    let name = input.name;
+    // make sure name ends with -db
+    if (!input.name.endsWith("-db")) {
+      name = input.name + "-db";
+    }
+    const targetDir = path.join(input.cwd, name);
+    const packageName = `@saflib/${name}`;
 
     return {
-      name: input.name,
+      name,
       targetDir,
       packageName,
     };

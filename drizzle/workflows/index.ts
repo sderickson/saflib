@@ -9,4 +9,10 @@ const workflowDefinitions: WorkflowDefinition[] = [
   InitWorkflowDefinition,
 ];
 
+export {
+  AddQueryWorkflowDefinition,
+  UpdateSchemaWorkflowDefinition,
+  InitWorkflowDefinition,
+};
+
 export default workflowDefinitions;

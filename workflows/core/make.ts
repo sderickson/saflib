@@ -32,7 +32,9 @@ export function defineWorkflow<
   C = any,
 >(config: {
   input: I;
-  context: (arg: { input: CreateArgsType<I> & { dryRun?: boolean } }) => C;
+  context: (arg: {
+    input: CreateArgsType<I> & { dryRun?: boolean; cwd: string };
+  }) => C;
   id: string;
   description: string;
   checklistDescription?: (context: C) => string;
@@ -89,6 +91,7 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
             templateFiles: context.templateFiles,
             copiedFiles: context.copiedFiles,
             docFiles: context.docFiles,
+            cwd: context.cwd,
           };
         },
         src: `actor_${i}`,
@@ -106,6 +109,13 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
                   return { ...context.copiedFiles, ...output.copiedFiles };
                 }
                 return context.copiedFiles;
+              },
+              cwd: ({ context, event }) => {
+                const output: WorkflowOutput = event.output;
+                if (output.newCwd) {
+                  return output.newCwd;
+                }
+                return context.cwd;
               },
             }),
           ],
@@ -134,10 +144,15 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
     entry: raise({ type: "start" }),
     id: workflow.id,
     description: workflow.description,
-    context: ({ input }) => {
+    context: ({ input, self }) => {
       const context: Context = {
-        ...workflow.context({ input }),
-        ...contextFromInput(input),
+        ...workflow.context({
+          input: {
+            ...input,
+            cwd: input.cwd || process.cwd(),
+          },
+        }),
+        ...contextFromInput(input, self),
         templateFiles: workflow.templateFiles,
         docFiles: workflow.docFiles,
       };

@@ -7,4 +7,5 @@ const workflowDefinitions: WorkflowDefinition[] = [
   AddCommandWorkflowDefinition,
 ];
 
+export { AddCLIWorkflowDefinition, AddCommandWorkflowDefinition };
 export default workflowDefinitions;

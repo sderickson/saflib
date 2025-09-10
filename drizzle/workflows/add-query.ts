@@ -6,10 +6,14 @@ import {
   DocStepMachine,
   defineWorkflow,
   step,
+  CommandStepMachine,
 } from "@saflib/workflows";
 import path from "node:path";
 
-const sourceDir = path.join(import.meta.dirname, "query-template");
+const sourceDir = path.join(
+  import.meta.dirname,
+  "templates/queries/example-table",
+);
 
 const input = [
   {
@@ -52,12 +56,12 @@ export const AddQueryWorkflowDefinition = defineWorkflow<
   sourceUrl: import.meta.url,
 
   context: ({ input }) => {
-    const targetDir = path.dirname(path.join(process.cwd(), input.path));
+    const targetDir = path.dirname(path.join(input.cwd, input.path));
     const featureName = path.basename(targetDir);
     const featureIndexPath = path
       .join(targetDir, "index.ts")
-      .replace(process.cwd(), "");
-    const packageIndexPath = path.join(process.cwd(), "index.ts");
+      .replace(input.cwd, "");
+    const packageIndexPath = path.join(input.cwd, "index.ts");
     const name = path.basename(input.path).split(".")[0];
 
     return {
@@ -73,6 +77,7 @@ export const AddQueryWorkflowDefinition = defineWorkflow<
   templateFiles: {
     query: path.join(sourceDir, "template-file.ts"),
     test: path.join(sourceDir, "template-file.test.ts"),
+    index: path.join(sourceDir, "index.ts"),
   },
 
   docFiles: {
@@ -146,6 +151,11 @@ export const AddQueryWorkflowDefinition = defineWorkflow<
 
     step(TestStepMachine, () => ({
       fileId: "test",
+    })),
+
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["run", "typecheck"],
     })),
   ],
 });

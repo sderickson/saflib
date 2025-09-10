@@ -4,7 +4,7 @@
 
 # Function: runWorkflowCli()
 
-> **runWorkflowCli**(`workflows`, `options`): `void`
+> **runWorkflowCli**(`workflows`, `options`): `Promise`\<`void`\>
 
 Given a list of workflow classes, runs a CLI for running workflows.
 
@@ -24,4 +24,4 @@ Use this also to customize which workflows are actually available.
 
 ## Returns
 
-`void`
+`Promise`\<`void`\>

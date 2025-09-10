@@ -1,8 +1,7 @@
 import type { Command } from "commander";
-import { saveWorkflow } from "./file-io.ts";
-import { addNewLinesToString } from "../strings.ts";
-import type { WorkflowDefinition, WorkflowArgument } from "../core/types.ts";
-import { XStateWorkflowRunner } from "./workflow.ts";
+import { addNewLinesToString } from "../../strings.ts";
+import type { WorkflowDefinition, WorkflowArgument } from "../../core/types.ts";
+import { kickoffWorkflow } from "./shared/utils.ts";
 
 export const addKickoffCommand = (
   program: Command,
@@ -27,18 +26,4 @@ export const addKickoffCommand = (
     });
     chain.action(async (...args) => await kickoffWorkflow(workflow, args));
   });
-};
-
-const kickoffWorkflow = async (
-  Workflow: WorkflowDefinition,
-  args: string[],
-) => {
-  const workflow = new XStateWorkflowRunner({
-    definition: Workflow,
-    args: args.slice(0, Workflow.input.length),
-    dryRun: false,
-  });
-  await workflow.kickoff();
-  console.log("--- To continue, run 'npm exec saf-workflow next' ---\n");
-  saveWorkflow(workflow);
 };

@@ -43,17 +43,17 @@ export const CopyStepMachine = setup({
   id: "copy-template",
   description: "Copy template files and rename placeholders",
   initial: "copy",
-  context: (arg) => {
-    if (!arg.input.templateFiles) {
+  context: ({ input, self }) => {
+    if (!input.templateFiles) {
       throw new Error("templateFiles is required");
     }
     return {
-      ...contextFromInput(arg.input),
-      filesToCopy: Object.keys(arg.input.templateFiles || {}),
-      name: arg.input.name,
-      targetDir: arg.input.targetDir,
-      copiedFiles: arg.input.copiedFiles || {},
-      lineReplace: arg.input.lineReplace,
+      ...contextFromInput(input, self),
+      filesToCopy: Object.keys(input.templateFiles || {}),
+      name: input.name,
+      targetDir: input.targetDir,
+      copiedFiles: input.copiedFiles || {},
+      lineReplace: input.lineReplace,
     };
   },
   states: {

@@ -3,13 +3,17 @@ import type {
   ChecklistItem,
   WorkflowOutput,
   WorkflowDefinition,
-} from "../core/types.ts";
+} from "../../../core/types.ts";
 import type { WorkflowBlob } from "./types.ts";
 import type { AnyStateMachine, AnyActor } from "xstate";
-import { createActor, waitFor } from "xstate";
-import { getWorkflowLogger } from "../core/store.ts";
-import { workflowAllSettled, continueWorkflow } from "../core/utils.ts";
-import { makeWorkflowMachine } from "../core/make.ts";
+import { createActor } from "xstate";
+import { getWorkflowLogger } from "../../../core/store.ts";
+import {
+  workflowAllSettled,
+  continueWorkflow,
+  pollingWaitFor,
+} from "../../../core/utils.ts";
+import { makeWorkflowMachine } from "../../../core/make.ts";
 
 // The following is TS magic to describe a class constructor that implements the Workflow class.
 type AbstractClassConstructor<T extends AbstractWorkflowRunner> = new (
@@ -58,7 +62,7 @@ export class XStateWorkflowRunner extends AbstractWorkflowRunner {
   private input: { [key: string]: string } & { dryRun?: boolean };
   private args: string[];
   private actor: AnyActor | undefined;
-  private definition: WorkflowDefinition<any, any>;
+  definition: WorkflowDefinition<any, any>;
 
   constructor(options: XStateWorkflowOptions<any, any>) {
     super();
@@ -89,17 +93,28 @@ export class XStateWorkflowRunner extends AbstractWorkflowRunner {
       console.log("Actor started with error", snapshot.error);
       return false;
     }
-    await waitFor(actor, workflowAllSettled);
+    await pollingWaitFor(actor, workflowAllSettled);
     this.actor = actor;
     return actor.getSnapshot().status !== "error";
   };
 
   printStatus = async (): Promise<void> => {
+    const log = getWorkflowLogger();
     if (!this.actor) {
-      throw new Error("Workflow not started");
+      log.error("Workflow not started");
+      return;
     }
+    if (this.actor.getSnapshot().status === "error") {
+      log.error("Workflow has errored. And could not continue.");
+      return;
+    }
+    if (this.actor.getSnapshot().status === "done") {
+      log.info("Workflow has been completed.");
+      return;
+    }
+    log.info("Workflow is in progress. Re-emitting prompt.");
     this.actor.send({ type: "prompt" });
-    await waitFor(this.actor, workflowAllSettled);
+    await pollingWaitFor(this.actor, workflowAllSettled);
   };
 
   goToNextStep = async (): Promise<void> => {
@@ -113,7 +128,7 @@ export class XStateWorkflowRunner extends AbstractWorkflowRunner {
     }
 
     continueWorkflow(this.actor);
-    await waitFor(this.actor, workflowAllSettled);
+    await pollingWaitFor(this.actor, workflowAllSettled);
 
     if (this.actor.getSnapshot().status === "done") {
       console.log("\n--- This workflow has been completed. ---\n");
@@ -124,6 +139,7 @@ export class XStateWorkflowRunner extends AbstractWorkflowRunner {
   dehydrate = (): WorkflowBlob => {
     return {
       workflowName: this.machine.id,
+      workflowSourceUrl: this.definition.sourceUrl,
       args: this.args,
       snapshotState: this.actor?.getPersistedSnapshot(),
     };

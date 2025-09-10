@@ -1,9 +1,10 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { createActor, waitFor } from "xstate";
+import { createActor } from "xstate";
 import { CopyStepMachine } from "./copy-template-machine.ts";
 import { workflowAllSettled } from "../../utils.ts";
 import { mkdir, writeFile, rm, readFile } from "node:fs/promises";
 import path from "node:path";
+import { pollingWaitFor } from "../../utils.ts";
 
 describe("CopyTemplateMachine", () => {
   const testDir = path.join(process.cwd(), "test-temp");
@@ -56,7 +57,7 @@ export default {
     });
 
     actor.start();
-    await waitFor(actor, workflowAllSettled);
+    await pollingWaitFor(actor, workflowAllSettled);
 
     const snapshot = actor.getSnapshot();
     expect(snapshot.value).toBe("done");
@@ -93,7 +94,7 @@ export default {
     });
 
     actor.start();
-    await waitFor(actor, workflowAllSettled);
+    await pollingWaitFor(actor, workflowAllSettled);
 
     const snapshot = actor.getSnapshot();
     expect(snapshot.value).toBe("done");

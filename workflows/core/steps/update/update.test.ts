@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { createActor, waitFor } from "xstate";
+import { createActor } from "xstate";
 import { UpdateStepMachine } from "./update-template-machine.ts";
 import path from "node:path";
 import { writeFileSync, unlinkSync, existsSync } from "node:fs";
-import { workflowAllSettled } from "../../utils.ts";
+import { pollingWaitFor, workflowAllSettled } from "../../utils.ts";
 
 describe("updateTemplateFileFactory", () => {
   const testFilePath = path.join(process.cwd(), "test-file.txt");
@@ -25,17 +25,17 @@ describe("updateTemplateFileFactory", () => {
     const actor = createActor(UpdateStepMachine, {
       input: {
         fileId: "test-file.txt",
-        promptMessage: "Please update the test file",
+        promptMessage: "Update the test file",
         copiedFiles: {
           "test-file.txt": testFilePath,
         },
       },
     });
     actor.start();
-    await waitFor(actor, workflowAllSettled);
+    await pollingWaitFor(actor, workflowAllSettled);
     expect(actor.getSnapshot().value).toBe("update");
     actor.send({ type: "continue" });
-    await waitFor(actor, workflowAllSettled);
+    await pollingWaitFor(actor, workflowAllSettled);
     expect(actor.getSnapshot().value).toBe("done");
   });
 
@@ -48,7 +48,7 @@ describe("updateTemplateFileFactory", () => {
     const actor = createActor(UpdateStepMachine, {
       input: {
         fileId: "test-file.txt",
-        promptMessage: "Please update the test file",
+        promptMessage: "Update the test file",
         copiedFiles: {
           "test-file.txt": testFilePath,
         },
@@ -63,7 +63,7 @@ describe("updateTemplateFileFactory", () => {
 
     expect(actor.getSnapshot().value).toBe("update");
     actor.send({ type: "continue" });
-    await waitFor(actor, workflowAllSettled);
+    await pollingWaitFor(actor, workflowAllSettled);
     expect(actor.getSnapshot().value).toBe("update");
   });
 });

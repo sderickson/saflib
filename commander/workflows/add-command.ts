@@ -4,11 +4,13 @@ import {
   PromptStepMachine,
   defineWorkflow,
   step,
+  CommandStepMachine,
 } from "@saflib/workflows";
 import path, { dirname } from "node:path";
 import { kebabCaseToPascalCase } from "@saflib/utils";
+import { existsSync } from "node:fs";
 
-const sourceDir = path.join(import.meta.dirname, "add-command");
+const sourceDir = path.join(import.meta.dirname, "templates");
 
 const input = [
   {
@@ -33,7 +35,9 @@ export const AddCommandWorkflowDefinition = defineWorkflow<
   id: "commander/add-command",
 
   description:
-    "Creates a new CLI command and adds it to an existing Commander.js CLI",
+    "Create a new CLI command and add it to an existing Commander.js CLI",
+
+  checklistDescription: ({ name, cliName }) => `Add ${name} to ${cliName} CLI.`,
 
   input,
 
@@ -55,6 +59,11 @@ export const AddCommandWorkflowDefinition = defineWorkflow<
     }
 
     const targetDir = dirname(input.path);
+
+    if (!input.dryRun && !existsSync(targetDir)) {
+      throw new Error(`Target directory ${targetDir} does not exist`);
+    }
+
     const cliName = parts[1];
     const commandName = parts[parts.length - 1].replace(".ts", "");
     const commandFunctionName = `add${kebabCaseToPascalCase(commandName)}Command`;
@@ -68,7 +77,7 @@ export const AddCommandWorkflowDefinition = defineWorkflow<
   },
 
   templateFiles: {
-    index: path.join(sourceDir, "template-file.ts"),
+    command: path.join(sourceDir, "template-file.ts"),
   },
 
   docFiles: {},
@@ -80,8 +89,8 @@ export const AddCommandWorkflowDefinition = defineWorkflow<
     })),
 
     step(UpdateStepMachine, ({ context }) => ({
-      fileId: "index",
-      promptMessage: `Update **${path.basename(context.copiedFiles!.index)}**, resolving any TODOs.`,
+      fileId: "command",
+      promptMessage: `Update **${path.basename(context.copiedFiles!.command)}**, resolving any TODOs.`,
     })),
 
     step(PromptStepMachine, ({ context }) => ({
@@ -102,6 +111,22 @@ export const AddCommandWorkflowDefinition = defineWorkflow<
       npm exec ${context.cliName} ${context.name}
       
       The command should display help information without errors.`,
+    })),
+
+    step(PromptStepMachine, () => ({
+      promptText: `Implement the new command.
+      
+      Ask for implementation details if it's unclear what to implement or how to do it.`,
+    })),
+
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["install", "@saflib/dev-tools", "--save-dev"],
+    })),
+
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["exec", "saf-docs", "generate"],
     })),
   ],
 });

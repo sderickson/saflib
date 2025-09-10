@@ -43,7 +43,7 @@ export const SpecProjectWorkflowDefinition = defineWorkflow<
   context: ({ input }) => {
     // TODO: replace "output" with where the files should actually go based on the input
     // This will probably be based on the inputs, such as the name of what is being created
-    const targetDir = path.join(process.cwd(), "output");
+    const targetDir = path.join(input.cwd, "output");
 
     return {
       name: input.name,
@@ -54,7 +54,7 @@ export const SpecProjectWorkflowDefinition = defineWorkflow<
 
   // TODO: create the spec-projects dir and add template files
   // Include TODOs like this file does.
-   templateFiles: {
+  templateFiles: {
     main: path.join(sourceDir, "main.ts"),
     config: path.join(sourceDir, "config.ts"),
     test: path.join(sourceDir, "test.ts"),

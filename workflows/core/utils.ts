@@ -10,13 +10,13 @@ import type { ChecklistItem, WorkflowContext, WorkflowInput } from "./types.ts";
  * Convenience function. Use with xstate's `waitFor` to wait for the workflow to halt, because it has prompted the agent to do something.
  * 
  * ```ts
- * import { createActor, waitFor } from "xstate";
- * import { workflowAllSettled } from "@saflib/workflows";
+ * import { createActor } from "xstate";
+ * import { workflowAllSettled, pollingWaitFor } from "@saflib/workflows";
  * const actor = createActor(WorkflowMachine, {
       input: { /* ... *\/ },
     });
     actor.start();
-    await waitFor(actor, workflowAllSettled);
+    await pollingWaitFor(actor, workflowAllSettled);
  * ```
  */
 export function workflowAllSettled(snapshot: AnyMachineSnapshot): boolean {
@@ -75,14 +75,41 @@ export const checklistToString = (
     .join("\n");
 };
 
-export function contextFromInput(input: WorkflowInput): WorkflowContext {
+export function contextFromInput(
+  input: WorkflowInput,
+  rootRef: AnyActorRef,
+): WorkflowContext {
   return {
     checklist: [],
     systemPrompt: input.systemPrompt,
     dryRun: input.dryRun,
-    rootRef: input.rootRef as AnyActorRef,
     templateFiles: input.templateFiles,
     copiedFiles: input.copiedFiles,
     docFiles: input.docFiles,
+    rootRef: input.rootRef || rootRef,
+    cwd: input.cwd || process.cwd(),
   };
 }
+
+let timeout: NodeJS.Timeout | undefined;
+
+/**
+ * Something's weird about "waitFor" in xstate. If I use that, Node exits because apparently there's no promise or interval pending to keep it from exiting. So I'm resorting to a polling interval instead.
+ */
+export const pollingWaitFor = (
+  actor: AnyActor,
+  condition: (snapshot: AnyMachineSnapshot) => boolean,
+) => {
+  let resolve: (value: any) => void;
+  const promise = new Promise((_resolve, _reject) => {
+    resolve = _resolve;
+  });
+  timeout = setInterval(() => {
+    if (condition(actor.getSnapshot())) {
+      clearInterval(timeout);
+      resolve(actor.getSnapshot());
+    }
+  }, 10);
+
+  return promise;
+};

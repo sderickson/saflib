@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- `kickoff-unlisted` command for running workflows from a file path.
+- `CwdStepMachine` for setting the current working directory.
+- `pollingWaitFor` for wait for workflow machines to halt.
+
+### Fixed
+
+- Made `runWorkflowCli` async since there's async work afoot.
+- Fix the CLI exiting prematurely.
+
+### Changed
+
+- Some logging improvements.
+
 ## [0.1.2] - 2025-09-08
 
 ### Added

@@ -1,4 +1,4 @@
-# add-command
+# commander/add-command
 
 ## Source
 
@@ -7,7 +7,7 @@
 ## Usage
 
 ```bash
-npm exec saf-workflow kickoff add-command <name>
+npm exec saf-workflow kickoff commander/add-command <path>
 ```
 
 To run this workflow automatically, tell the agent to:
@@ -21,23 +21,24 @@ To run this workflow automatically, tell the agent to:
 When run, the workflow will:
 
 - Copy template files and rename placeholders.
-  - Upsert **index.ts** from [template](https://github.com/sderickson/saflib/blob/main/commander/workflows/add-command/index.ts)
-- Update index.ts to remove TODOs
-- Run the command `chmod +x commands/example-command/index.ts` to make the index file executable.
-- Add commands/example-command/index.ts to the package's bin folder.
-- Run `npm install`
-- Run the command `npm exec example-command` to verify that the command is working correctly.
+  - Upsert **example-command.ts** from [template](https://github.com/sderickson/saflib/blob/main/commander/workflows/templates/template-file.ts)
+- Update **example-command.ts**, resolving any TODOs.
+- Add the new command to the adjacent index.ts file.
+- Test the new command.
+- Implement the new command.
+- Run `npm install @saflib/dev-tools --save-dev`
+- Run `npm exec saf-docs generate`
 
 ## Help Docs
 
 ```bash
-Usage: saf-workflow kickoff add-command [options] <name>
+Usage: saf-workflow kickoff commander/add-command [options] <path>
 
-Creates a new command for a Commander.js CLI application with proper context
-setup
+Create a new CLI command and add it to an existing Commander.js CLI
 
 Arguments:
-  name        The name of the command to create (e.g., 'build' or 'deploy')
+  path        Relative path to the new command file, e.g.
+              bin/cli-name/command-name.ts
 
 Options:
   -h, --help  display help for command

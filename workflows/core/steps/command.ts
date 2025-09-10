@@ -52,9 +52,9 @@ export const CommandStepMachine = setup({
   },
 }).createMachine({
   id: "command-step",
-  context: ({ input }) => {
+  context: ({ input, self }) => {
     return {
-      ...contextFromInput(input),
+      ...contextFromInput(input, self),
       command: input.command,
       args: input.args || [],
     };
@@ -77,14 +77,14 @@ export const CommandStepMachine = setup({
       invoke: {
         src: fromPromise(
           async ({
-            input: { command, args, dryRun },
+            input: { command, args, dryRun, cwd },
           }: {
             input: CommandStepContext;
           }) => {
             if (dryRun) {
               return "Dry run";
             }
-            return await runCommandAsync(command, args);
+            return await runCommandAsync(command, args, { cwd });
           },
         ),
         input: ({ context }) => context,

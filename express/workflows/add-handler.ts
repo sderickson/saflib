@@ -44,10 +44,10 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
   sourceUrl: import.meta.url,
 
   context: ({ input }) => {
-    const targetDir = path.dirname(path.join(process.cwd(), input.path));
+    const targetDir = path.dirname(path.join(input.cwd, input.path));
     const featureName = path.basename(targetDir);
 
-    const cwd = process.cwd();
+    const cwd = input.cwd;
     const handlerPath = path.join(targetDir, "index.ts").replace(cwd, "");
     const pascalFeatureName = kebabCaseToPascalCase(featureName);
     const httpAppPath = path.join(cwd, "http.ts").replace(cwd, "");
