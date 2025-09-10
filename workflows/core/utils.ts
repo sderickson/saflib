@@ -52,16 +52,16 @@ export const continueWorkflow = (actor: AnyActor) => {
         child.send({ type: "continue" });
       }
       continueWorkflow(child);
-    },
+    }
   );
 };
 
 /**
- * Convenience function to convert a checklist to a string. Checklist items are in markdown, so
+ * Convenience function to convert a checklist to a string. Checklist items are in markdown, so provide workflow documentation.
  */
 export const checklistToString = (
   checklist: ChecklistItem[],
-  prefix = "",
+  prefix = ""
 ): string => {
   return checklist
     .map((item) => {
@@ -77,7 +77,7 @@ export const checklistToString = (
 
 export function contextFromInput(
   input: WorkflowInput,
-  rootRef: AnyActorRef,
+  rootRef: AnyActorRef
 ): WorkflowContext {
   return {
     checklist: [],
@@ -98,7 +98,7 @@ let timeout: NodeJS.Timeout | undefined;
  */
 export const pollingWaitFor = (
   actor: AnyActor,
-  condition: (snapshot: AnyMachineSnapshot) => boolean,
+  condition: (snapshot: AnyMachineSnapshot) => boolean
 ) => {
   let resolve: (value: any) => void;
   const promise = new Promise((_resolve, _reject) => {
