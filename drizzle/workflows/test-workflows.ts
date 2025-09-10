@@ -49,6 +49,9 @@ const TestDrizzleWorkflowsDefinition = defineWorkflow<
     })),
     step(makeWorkflowMachine(UpdateSchemaWorkflowDefinition), () => ({})),
     step(makeWorkflowMachine(AddQueryWorkflowDefinition), () => ({
+      path: "queries/users/create",
+    })),
+    step(makeWorkflowMachine(AddQueryWorkflowDefinition), () => ({
       path: "queries/users/get-by-id",
     })),
     step(CommandStepMachine, () => ({
