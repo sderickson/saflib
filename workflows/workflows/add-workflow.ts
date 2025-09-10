@@ -4,6 +4,7 @@ import {
   step,
   defineWorkflow,
   DocStepMachine,
+  CommandStepMachine,
 } from "../core/index.ts";
 import { readFileSync } from "fs";
 import path from "node:path";
@@ -134,6 +135,12 @@ export const AddWorkflowDefinition = defineWorkflow<
       Create a folder named \`templates\` next to the workflow file if it doesn't already exist. Add any template files you need to the folder. Make sure the organization of those template files matches the organization recommended by the package. Check if you're not sure how to organize them. And if you don't have them already, ask for samples to base the template files on.
       
       **Important**: Use "template-file" as the base name in your template files (not {{...}} placeholders). The system will automatically replace "template-file", "template_file", "TemplateFile", and "templateFile" with the actual name during workflow execution. This keeps template files valid TypeScript/JavaScript.`,
+    })),
+
+    step(CommandStepMachine, () => ({
+      command: "npx",
+      args: ["tsc", "--noEmit"],
+      skipIf: ({ cwd }) => !existsSync(path.join(cwd, "tsconfig.json")),
     })),
 
     step(PromptStepMachine, () => ({
