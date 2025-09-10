@@ -12,6 +12,7 @@ import {
   workflowAllSettled,
   continueWorkflow,
   pollingWaitFor,
+  promptWorkflow,
 } from "../../../core/utils.ts";
 import { makeWorkflowMachine } from "../../../core/make.ts";
 
@@ -73,7 +74,7 @@ export class XStateWorkflowRunner extends AbstractWorkflowRunner {
     const expectedInputLength = this.definition.input.length;
     if (expectedInputLength !== inputLength) {
       throw new Error(
-        `Expected ${expectedInputLength} arguments, got ${inputLength}`,
+        `Expected ${expectedInputLength} arguments, got ${inputLength}`
       );
     }
     for (let i = 0; i < expectedInputLength; i++) {
@@ -113,7 +114,7 @@ export class XStateWorkflowRunner extends AbstractWorkflowRunner {
       return;
     }
     log.info("Workflow is in progress. Re-emitting prompt.");
-    this.actor.send({ type: "prompt" });
+    promptWorkflow(this.actor);
     await pollingWaitFor(this.actor, workflowAllSettled);
   };
 

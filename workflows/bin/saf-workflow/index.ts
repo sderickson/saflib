@@ -9,7 +9,6 @@ import {
   type WorkflowLogger,
 } from "../../core/store.ts";
 import { addKickoffCommand } from "./kickoff.ts";
-import { addKickoffUnlistedCommand } from "./kickoff-unlisted.ts";
 import { addChecklistCommand } from "./checklist.ts";
 import { addStatusCommand } from "./status.ts";
 import { addNextCommand } from "./next.ts";
@@ -37,18 +36,17 @@ export interface WorkflowCliOptions {
  */
 export async function runWorkflowCli(
   workflows: WorkflowDefinition[],
-  options: WorkflowCliOptions = {},
+  options: WorkflowCliOptions = {}
 ) {
   const program = new Command()
     .name("saf-workflow")
     .description(
       addNewLinesToString(
-        "Tool for agents to be given a series of prompts. For a list of available workflows, run:\n\nnpm exec saf-workflow help kickoff",
-      ),
+        "Tool for agents to be given a series of prompts. For a list of available workflows, run:\n\nnpm exec saf-workflow help kickoff"
+      )
     );
 
   addKickoffCommand(program, workflows);
-  addKickoffUnlistedCommand(program);
   addStatusCommand(program, workflows);
   addNextCommand(program, workflows);
   addChecklistCommand(program, workflows);
