@@ -8,7 +8,7 @@ import {
 } from "@saflib/workflows";
 import path from "node:path";
 
-const sourceDir = path.join(import.meta.dirname, "template-files");
+const sourceDir = path.join(import.meta.dirname, "templates");
 
 // TODO: replace this with the actual input for your workflow
 const input = [
@@ -58,6 +58,7 @@ export const TemplateFileWorkflowDefinition = defineWorkflow<
 
   // TODO: create the template-files dir and add template files
   // Include TODOs like this file does.
+  // Instances of "template-file" in the file name and content will be replaced with the "name" given to CopyStepMachine
   /* do not replace */ templateFiles: {
     main: path.join(sourceDir, "main.ts"),
     config: path.join(sourceDir, "config.ts"),
