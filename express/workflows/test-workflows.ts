@@ -71,7 +71,7 @@ const TestExpressWorkflowsDefinition = defineWorkflow<
       path: ".",
     })),
     step(makeWorkflowMachine(ExpressInitWorkflowDefinition), () => ({
-      name: "test@test-http",
+      name: "@test/test-http",
       path: "./test-http",
     })),
 
