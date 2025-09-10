@@ -40,7 +40,7 @@ export const AddSpaPageWorkflowDefinition = defineWorkflow<
     const pageName = input.name.endsWith("-page")
       ? input.name
       : input.name + "-page";
-    const targetDir = path.join(process.cwd(), "pages", pageName);
+    const targetDir = path.join(input.cwd, "pages", pageName);
     return { name: pageName, targetDir };
   },
 

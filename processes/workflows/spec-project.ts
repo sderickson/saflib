@@ -41,7 +41,7 @@ export const SpecProjectWorkflowDefinition = defineWorkflow<
   context: ({ input }) => {
     const date = new Date().toISOString().split("T")[0];
     const projectDirName = `${date}-${input.name}`;
-    const targetDir = path.resolve(process.cwd(), projectDirName);
+    const targetDir = path.resolve(input.cwd, projectDirName);
 
     return {
       name: input.name,
@@ -59,7 +59,7 @@ export const SpecProjectWorkflowDefinition = defineWorkflow<
   docFiles: {
     writing: path.join(
       import.meta.dirname,
-      "../docs/writing-spec-project-checklists.md",
+      "../docs/writing-spec-project-checklists.md"
     ),
   },
 

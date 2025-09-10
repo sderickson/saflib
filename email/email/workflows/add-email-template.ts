@@ -37,8 +37,8 @@ export const AddEmailTemplateWorkflowDefinition = defineWorkflow<
 
   context: ({ input }) => {
     const targetFilePath = path
-      .join(process.cwd(), input.path)
-      .replace(process.cwd(), "");
+      .join(input.cwd, input.path)
+      .replace(input.cwd, "");
     const name = path.basename(input.path).split(".")[0];
 
     return {

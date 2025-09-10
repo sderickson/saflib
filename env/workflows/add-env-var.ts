@@ -54,7 +54,7 @@ export const AddEnvVarWorkflowDefinition = defineWorkflow<
   steps: [
     step(CopyStepMachine, ({ context }) => ({
       name: context.name,
-      targetDir: process.cwd(),
+      targetDir: context.cwd,
     })),
 
     step(UpdateStepMachine, ({ context }) => ({

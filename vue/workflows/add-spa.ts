@@ -38,12 +38,12 @@ export const AddSpaWorkflowDefinition = defineWorkflow<
   sourceUrl: import.meta.url,
 
   context: ({ input }) => {
-    const thisPackagePath = path.join(process.cwd(), "package.json");
+    const thisPackagePath = path.join(input.cwd, "package.json");
     const thisPackage = JSON.parse(readFileSync(thisPackagePath, "utf8"));
     const thisPackageName = thisPackage.name;
     const thisPackageOrg = thisPackageName.split("/")[0];
 
-    const targetDir = path.join(process.cwd(), "..", "web-" + input.name);
+    const targetDir = path.join(input.cwd, "..", "web-" + input.name);
 
     return {
       name: input.name,

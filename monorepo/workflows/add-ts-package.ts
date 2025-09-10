@@ -48,7 +48,7 @@ export const AddTsPackageWorkflowDefinition = defineWorkflow<
   sourceUrl: import.meta.url,
 
   context: ({ input }) => {
-    const targetDir = path.join(process.cwd(), input.path);
+    const targetDir = path.join(input.cwd, input.path);
     const packageDirName = path.basename(input.path);
 
     return {

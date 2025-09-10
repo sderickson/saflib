@@ -43,7 +43,7 @@ export const SpecProjectWorkflowDefinition = defineWorkflow<
   context: ({ input }) => {
     // TODO: replace "output" with where the files should actually go based on the input
     // This will probably be based on the inputs, such as the name of what is being created
-    const targetDir = path.join(process.cwd(), "output");
+    const targetDir = path.join(input.cwd, "output");
 
     return {
       name: input.name,

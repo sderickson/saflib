@@ -8,7 +8,7 @@ import { join } from "node:path";
 export const getCurrentPackage = () => {
   const currentPackage = readFileSync(
     join(process.cwd(), "package.json"),
-    "utf8",
+    "utf8"
   );
   return JSON.parse(currentPackage).name;
 };
