@@ -1,4 +1,4 @@
-# add-spa
+# vue/add-spa
 
 ## Source
 
@@ -7,7 +7,7 @@
 ## Usage
 
 ```bash
-npm exec saf-workflow kickoff add-spa <name>
+npm exec saf-workflow kickoff vue/add-spa <name>
 ```
 
 To run this workflow automatically, tell the agent to:
@@ -40,7 +40,7 @@ When run, the workflow will:
 ## Help Docs
 
 ```bash
-Usage: saf-workflow kickoff add-spa [options] <name>
+Usage: saf-workflow kickoff vue/add-spa [options] <name>
 
 Create a new SAF-powered frontend SPA using Vue, Vue-Router, and Tanstack Query
 

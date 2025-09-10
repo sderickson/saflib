@@ -20,14 +20,14 @@ To run this workflow automatically, tell the agent to:
 
 When run, the workflow will:
 
-- Review documentation: [03-routes.md](https://github.com/sderickson/saflib/blob/main/express/docs/03-routes.md)
+- Make sure this package has the correct spec package installed.
 - Copy template files and rename placeholders.
-  - Upsert **example-handler.ts** from [template](https://github.com/sderickson/saflib/blob/main/express/workflows/handler-template/template-file.ts)
-  - Upsert **example-handler.test.ts** from [template](https://github.com/sderickson/saflib/blob/main/express/workflows/handler-template/template-file.test.ts)
-- Check if the feature router exists at `/routes/example-subpath/index.ts`. If it doesn't exist, create it with the basic structure to export the new route handler.
+  - Upsert **example-handler.ts** from [template](https://github.com/sderickson/saflib/blob/main/express/workflows/templates/routes/example/template-file.ts)
+  - Upsert **example-handler.test.ts** from [template](https://github.com/sderickson/saflib/blob/main/express/workflows/templates/routes/example/template-file.test.ts)
+  - Upsert **index.ts** from [template](https://github.com/sderickson/saflib/blob/main/express/workflows/templates/routes/example/index.ts)
 - Update the feature router at `/routes/example-subpath/index.ts` to include the new route handler.
-- Check if the HTTP app exists at `/http.ts` or `/app.ts`. If neither exists, create one to mount your routes.
-- Update the HTTP app to include the feature router.
+- Update the HTTP app to include the feature router, if not already there.
+- Review documentation: [03-routes.md](https://github.com/sderickson/saflib/blob/main/express/docs/03-routes.md)
 - Implement the exampleHandler route handler. Make sure to:
 - Review documentation: [04-testing.md](https://github.com/sderickson/saflib/blob/main/express/docs/04-testing.md)
 - Update the generated example-handler.test.ts file following the testing guide patterns. Make sure to implement proper test cases that cover both success and error scenarios.

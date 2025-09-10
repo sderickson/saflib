@@ -1,4 +1,4 @@
-# add-ts-package
+# monorepo/add-package
 
 ## Source
 
@@ -7,7 +7,7 @@
 ## Usage
 
 ```bash
-npm exec saf-workflow kickoff add-ts-package <name> <path>
+npm exec saf-workflow kickoff monorepo/add-package <name> <path>
 ```
 
 To run this workflow automatically, tell the agent to:
@@ -21,20 +21,20 @@ To run this workflow automatically, tell the agent to:
 When run, the workflow will:
 
 - Copy template files and rename placeholders.
-  - Upsert **index.test.ts** from [template](https://github.com/sderickson/saflib/blob/main/monorepo/workflows/templates/index.test.ts)
-  - Upsert **index.ts** from [template](https://github.com/sderickson/saflib/blob/main/monorepo/workflows/templates/index.ts)
   - Upsert **package.json** from [template](https://github.com/sderickson/saflib/blob/main/monorepo/workflows/templates/package.json)
   - Upsert **tsconfig.json** from [template](https://github.com/sderickson/saflib/blob/main/monorepo/workflows/templates/tsconfig.json)
+  - Upsert **index.ts** from [template](https://github.com/sderickson/saflib/blob/main/monorepo/workflows/templates/index.ts)
+  - Upsert **index.test.ts** from [template](https://github.com/sderickson/saflib/blob/main/monorepo/workflows/templates/index.test.ts)
   - Upsert **vitest.config.js** from [template](https://github.com/sderickson/saflib/blob/main/monorepo/workflows/templates/vitest.config.js)
-- Update package.json to remove TODOs
+- The file 'packages/my-lib/package.json' has been created. Please update the "description" field and any other fields as needed, such as dependencies on other SAF libraries.
 - Ensure the new package path 'packages/my-lib' is included in the "workspaces" array in the root `package.json`.
 - Run `npm install`
-- Run the package tests and make sure they pass.
+- Run **index.test.ts**, make sure it passes.
 
 ## Help Docs
 
 ```bash
-Usage: saf-workflow kickoff add-ts-package [options] <name> <path>
+Usage: saf-workflow kickoff monorepo/add-package [options] <name> <path>
 
 Creates a new TypeScript package according to monorepo best practices.
 

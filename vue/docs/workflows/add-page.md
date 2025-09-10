@@ -1,4 +1,4 @@
-# add-spa-page
+# vue/add-page
 
 ## Source
 
@@ -7,7 +7,7 @@
 ## Usage
 
 ```bash
-npm exec saf-workflow kickoff add-spa-page <name>
+npm exec saf-workflow kickoff vue/add-page <name>
 ```
 
 To run this workflow automatically, tell the agent to:
@@ -42,7 +42,7 @@ When run, the workflow will:
 ## Help Docs
 
 ```bash
-Usage: saf-workflow kickoff add-spa-page [options] <name>
+Usage: saf-workflow kickoff vue/add-page [options] <name>
 
 Create a new page in a SAF-powered Vue SPA, using a template and renaming
 placeholders.

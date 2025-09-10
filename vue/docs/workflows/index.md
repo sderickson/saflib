@@ -2,5 +2,5 @@
 
 `@saflib/vue` provides the following automated workflows for packages depending on it:
 
-- [add-spa](./add-spa.md)
-- [add-spa-page](./add-spa-page.md)
+- [vue/add-page](./add-page.md)
+- [vue/add-spa](./add-spa.md)

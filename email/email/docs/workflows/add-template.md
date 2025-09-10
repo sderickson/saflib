@@ -1,4 +1,4 @@
-# add-email-template
+# email/add-template
 
 ## Source
 
@@ -7,7 +7,7 @@
 ## Usage
 
 ```bash
-npm exec saf-workflow kickoff add-email-template <path>
+npm exec saf-workflow kickoff email/add-template <path>
 ```
 
 To run this workflow automatically, tell the agent to:
@@ -22,13 +22,13 @@ When run, the workflow will:
 
 - Run `npm install @saflib/email`
 - Copy template files and rename placeholders.
-  - Upsert **example-email.ts** from [template](https://github.com/sderickson/saflib/blob/main/email/email/workflows/email-template-template/template-file.ts)
-- Update example-email.ts to remove TODOs
+  - Upsert **example-email.ts** from [template](https://github.com/sderickson/saflib/blob/main/email/email/workflows/templates/template-file.ts)
+- Implement the email template at /email-templates/example-email.ts:
 
 ## Help Docs
 
 ```bash
-Usage: saf-workflow kickoff add-email-template [options] <path>
+Usage: saf-workflow kickoff email/add-template [options] <path>
 
 Add email template infrastructure and templates to a project.
 
