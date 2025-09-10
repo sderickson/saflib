@@ -131,8 +131,7 @@ export const AddWorkflowDefinition = defineWorkflow<
     step(PromptStepMachine, ({ context }) => ({
       promptText: `Create template files for ${context.workflowName} workflow.
 
-      Create a folder named \`${context.workflowName}\` next to the workflow file. Add any template files you need to the folder.
-      If you don't have them already, ask for samples to base the template files on.
+      Create a folder named \`templates\` next to the workflow file if it doesn't already exist. Add any template files you need to the folder. Make sure the organization of those template files matches the organization recommended by the package. Check if you're not sure how to organize them. And if you don't have them already, ask for samples to base the template files on.
       
       **Important**: Use "template-file" as the base name in your template files (not {{...}} placeholders). The system will automatically replace "template-file", "template_file", "TemplateFile", and "templateFile" with the actual name during workflow execution. This keeps template files valid TypeScript/JavaScript.`,
     })),
@@ -168,7 +167,7 @@ const findWorkflowPackageName = () => {
     const packageJsonFileName = path.join(currentDir, "package.json");
     if (existsSync(packageJsonFileName)) {
       workflowPackageName = JSON.parse(
-        readFileSync(packageJsonFileName, "utf8"),
+        readFileSync(packageJsonFileName, "utf8")
       ).name;
       break;
     }
