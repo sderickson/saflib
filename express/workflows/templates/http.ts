@@ -29,7 +29,8 @@ export function createApp() {
   //   });
   // });
 
-  // Add route handlers here.
+  // Add route handlers here. Do not prefix the routes; the router will handle the prefix.
+  // app.use(createResourceNameRouter())
 
   app.use(createErrorMiddleware());
 
