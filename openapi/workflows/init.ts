@@ -54,13 +54,12 @@ export const InitWorkflowDefinition = defineWorkflow<
       name = input.name + "-spec";
     }
     const targetDir = path.join(input.cwd, input.path);
-    const packageName = `@saflib/${name}`;
     const serviceName = name.replace("-spec", "");
 
     return {
       name,
       targetDir,
-      packageName,
+      packageName: name,
       serviceName,
     };
   },
