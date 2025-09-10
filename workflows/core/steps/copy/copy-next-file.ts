@@ -55,10 +55,10 @@ export const copyNextFile = fromPromise(
 
     // Ensure target directory exists
     await import("node:fs/promises").then((fs) =>
-      fs.mkdir(path.dirname(targetPath), { recursive: true })
+      fs.mkdir(path.dirname(targetPath), { recursive: true }),
     );
 
     await copyFile(sourcePath, targetPath);
     return response;
-  }
+  },
 );

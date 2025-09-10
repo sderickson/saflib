@@ -2,7 +2,7 @@
 
 ## Source
 
-[init.ts](init.ts)
+[init.ts](https://github.com/sderickson/saflib/blob/main/drizzle/workflows/init.ts)
 
 ## Usage
 
@@ -21,16 +21,16 @@ To run this workflow automatically, tell the agent to:
 When run, the workflow will:
 
 - Copy template files and rename placeholders.
-  - Upsert **package.json** from [template](package.json)
-  - Upsert **drizzle.config.ts** from [template](drizzle.config.ts)
-  - Upsert **schema.ts** from [template](schema.ts)
-  - Upsert **instances.ts** from [template](instances.ts)
-  - Upsert **errors.ts** from [template](errors.ts)
-  - Upsert **types.ts** from [template](types.ts)
-  - Upsert **index.ts** from [template](index.ts)
-  - Upsert **tsconfig.json** from [template](tsconfig.json)
-  - Upsert **vitest.config.js** from [template](vitest.config.js)
-  - Upsert **.gitignore** from [template](.gitignore)
+  - Upsert **package.json** from [template](https://github.com/sderickson/saflib/blob/main/drizzle/workflows/templates/package.json)
+  - Upsert **drizzle.config.ts** from [template](https://github.com/sderickson/saflib/blob/main/drizzle/workflows/templates/drizzle.config.ts)
+  - Upsert **schema.ts** from [template](https://github.com/sderickson/saflib/blob/main/drizzle/workflows/templates/schema.ts)
+  - Upsert **instances.ts** from [template](https://github.com/sderickson/saflib/blob/main/drizzle/workflows/templates/instances.ts)
+  - Upsert **errors.ts** from [template](https://github.com/sderickson/saflib/blob/main/drizzle/workflows/templates/errors.ts)
+  - Upsert **types.ts** from [template](https://github.com/sderickson/saflib/blob/main/drizzle/workflows/templates/types.ts)
+  - Upsert **index.ts** from [template](https://github.com/sderickson/saflib/blob/main/drizzle/workflows/templates/index.ts)
+  - Upsert **tsconfig.json** from [template](https://github.com/sderickson/saflib/blob/main/drizzle/workflows/templates/tsconfig.json)
+  - Upsert **vitest.config.js** from [template](https://github.com/sderickson/saflib/blob/main/drizzle/workflows/templates/vitest.config.js)
+  - Upsert **.gitignore** from [template](https://github.com/sderickson/saflib/blob/main/drizzle/workflows/templates/.gitignore)
 - Update **package.json** with the correct package name "@saflib/example-db" and any specific dependencies needed for this database package.
 - Update **schema.ts** to define the database tables and types for the example-db database.
 - Update **types.ts** to export the appropriate types for the example-db database, including any custom types derived from the schema.

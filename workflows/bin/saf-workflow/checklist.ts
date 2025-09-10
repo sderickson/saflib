@@ -9,14 +9,14 @@ import { getWorkflowLogger } from "../../core/store.ts";
 
 export const addChecklistCommand = (
   program: Command,
-  workflows: WorkflowDefinition[]
+  workflows: WorkflowDefinition[],
 ) => {
   program
     .command("checklist")
     .description(
       addNewLinesToString(
-        "Show the checklist for a workflow. Can be called with a workflow ID or a file path to a workflow definition."
-      )
+        "Show the checklist for a workflow. Can be called with a workflow ID or a file path to a workflow definition.",
+      ),
     )
     .argument("<workflowIdOrPath>", "Workflow ID or path to workflow file")
     .action(async (workflowIdOrPath: string) => {
@@ -58,7 +58,7 @@ export const printChecklist = async (Workflow: WorkflowDefinition) => {
   const workflow = await dryRunWorkflow(Workflow);
   console.log(
     checklistToString(
-      workflow.checklist.subitems || [{ description: "No checklist output" }]
-    )
+      workflow.checklist.subitems || [{ description: "No checklist output" }],
+    ),
   );
 };

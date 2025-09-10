@@ -168,7 +168,7 @@ const findWorkflowPackageName = () => {
     const packageJsonFileName = path.join(currentDir, "package.json");
     if (existsSync(packageJsonFileName)) {
       workflowPackageName = JSON.parse(
-        readFileSync(packageJsonFileName, "utf8")
+        readFileSync(packageJsonFileName, "utf8"),
       ).name;
       break;
     }

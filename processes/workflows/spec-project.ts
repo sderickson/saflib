@@ -59,7 +59,7 @@ export const SpecProjectWorkflowDefinition = defineWorkflow<
   docFiles: {
     writing: path.join(
       import.meta.dirname,
-      "../docs/writing-spec-project-checklists.md"
+      "../docs/writing-spec-project-checklists.md",
     ),
   },
 
