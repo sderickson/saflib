@@ -1,4 +1,4 @@
-[**@saflib/monorepo**](../index.md)
+[**@saflib/monorepo**](../../index.md)
 
 ---
 
