@@ -58,7 +58,7 @@ If you'd like to try workflows I've written for [my stack](https://docs.saf-demo
 
 Once the CLI is set up, you can tell your preferred agent to navigate to the package you want to add a workflow to (assuming you're using npm [workspaces](https://docs.npmjs.com/cli/v11/using-npm/workspaces) or some other monorepo approach) and run `npm exec saf-workflow kickoff workflows/add-workflow <name>`. The workflow will create the workflow and integrate it into the CLI file you set up earlier.
 
-For the best experience, provide the agent with, or direct it how to produce, the core elements: **steps**, **documents**, and **templates**.
+For the best experience, provide the agent with the core elements: **steps**, **documents**, and **templates**.
 
 ### Steps
 
