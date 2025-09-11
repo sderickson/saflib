@@ -29,7 +29,7 @@ When run, the workflow will:
   - Upsert **vitest.config.js** from [template](https://github.com/sderickson/saflib/blob/main/express/workflows/templates/vitest.config.js)
   - Upsert **index.test.ts** from [template](https://github.com/sderickson/saflib/blob/main/express/workflows/templates/index.test.ts)
 - Update **http.ts** to implement the HTTP server for example-http.
-- Change working directory to /Users/scotterickson/src/saf-2025/saflib/express/services/example
+- Change working directory to services/example
 - Run `npm install`
 - Run `npm test`
 

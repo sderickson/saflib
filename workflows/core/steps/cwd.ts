@@ -50,9 +50,11 @@ export const CwdStepMachine = setup({
     },
   },
   output: ({ context }) => {
+    const actualCwd = process.cwd();
+    const relativeCwd = path.relative(actualCwd, context.newCwd);
     return {
       checklist: {
-        description: `Change working directory to ${context.newCwd}`,
+        description: `Change working directory to ${relativeCwd}`,
       },
       newCwd: context.newCwd,
     };
