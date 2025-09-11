@@ -13,6 +13,27 @@ import {
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { contextFromInput } from "../../utils.ts";
+import { getWorkflowLogger } from "../../store.ts";
+
+/**
+ * A simple test format on changes made, for checks beyond just "todo" string existence.
+ */
+export interface UpdateStepTest {
+  /**
+   * What to print if the test fails.
+   */
+  description: string;
+
+  /**
+   * The name of the test.
+   */
+  name: string;
+
+  /**
+   * An arbitrary test, given the contents of the file that was updated. Fails the test if it returns false.
+   */
+  test: (content: string) => boolean;
+}
 
 /**
  * Input for the UpdateStepMachine.
@@ -27,11 +48,20 @@ export interface UpdateStepInput {
    * The message to show to the user. The machine will then stop until the workflow is continued.
    */
   promptMessage: string | ((context: WorkflowContext) => string);
+
+  /**
+   * A list of tests to run on the resulting file.
+   */
+  valid?: UpdateStepTest[];
 }
 
+/**
+ * @internal
+ */
 export interface UpdateStepContext extends WorkflowContext {
   filePath: string;
   promptMessage: string | ((context: WorkflowContext) => string);
+  valid: UpdateStepTest[];
 }
 
 /**
@@ -50,6 +80,28 @@ export const UpdateStepMachine = setup({
     ...workflowActors,
   },
   guards: {
+    invalid: ({ context }: { context: UpdateStepContext }) => {
+      if (context.dryRun || !context.valid.length) {
+        return false;
+      }
+      const resolvedPath = context.filePath;
+      const content = readFileSync(resolvedPath, "utf-8");
+      const log = getWorkflowLogger();
+      let allPassed = true;
+      for (const test of context.valid) {
+        if (!test.test(content)) {
+          log.error(`Test ${test.name} failed: ${test.description}`);
+          allPassed = false;
+        } else {
+          log.info(`Test ${test.name} passed.`);
+        }
+      }
+      if (allPassed) {
+        log.info(`Tests passed for ${resolvedPath}`);
+        return false;
+      }
+      return true;
+    },
     todosRemain: ({ context }: { context: UpdateStepContext }) => {
       if (context.dryRun) {
         return false;
@@ -80,6 +132,7 @@ export const UpdateStepMachine = setup({
       ...contextFromInput(input, self),
       filePath,
       promptMessage: input.promptMessage,
+      valid: input.valid || [],
     };
   },
   states: {
@@ -100,6 +153,15 @@ export const UpdateStepMachine = setup({
         ],
 
         continue: [
+          {
+            guard: "invalid",
+            actions: [
+              logError(({ context }) => {
+                const filePathStr = path.basename(context.filePath);
+                return `Validation checks did not all succeed for ${filePathStr}. Please fix the issues and continue.`;
+              }),
+            ],
+          },
           {
             guard: "todosRemain",
             actions: [

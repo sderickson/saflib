@@ -1,0 +1,30 @@
+# TODO: Replace this example schema with actual schemas for your API.
+type: object
+properties:
+  id:
+    type: string
+    description: Unique identifier for the template-resource
+    example: "123e4567-e89b-12d3-a456-426614174000"
+  name:
+    type: string
+    description: Human-readable name for the template-resource
+    example: "Example Template Resource"
+  description:
+    type: string
+    description: Optional description of the template-resource
+    example: "This is an example template resource"
+  createdAt:
+    type: string
+    format: date-time
+    description: When the template-resource was created
+    example: "2023-01-01T00:00:00Z"
+  updatedAt:
+    type: string
+    format: date-time
+    description: When the template-resource was last updated
+    example: "2023-01-01T00:00:00Z"
+required:
+  - id
+  - name
+  - createdAt
+  - updatedAt

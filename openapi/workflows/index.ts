@@ -1,8 +1,18 @@
-import { UpdateSpecWorkflowDefinition } from "./update-spec.ts";
+import { InitWorkflowDefinition } from "./init.ts";
+import { AddSchemaWorkflowDefinition } from "./add-schema.ts";
+import { AddRouteWorkflowDefinition } from "./add-route.ts";
 import type { WorkflowDefinition } from "@saflib/workflows";
 
+export {
+  InitWorkflowDefinition,
+  AddSchemaWorkflowDefinition,
+  AddRouteWorkflowDefinition,
+};
+
 const workflowDefinitions: WorkflowDefinition[] = [
-  UpdateSpecWorkflowDefinition,
+  InitWorkflowDefinition,
+  AddSchemaWorkflowDefinition,
+  AddRouteWorkflowDefinition,
 ];
 
 export default workflowDefinitions;

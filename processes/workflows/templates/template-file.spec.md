@@ -25,6 +25,7 @@
 [List the API endpoints that need to be created or modified. Include only essential details.]
 
 1. [HTTP Method] [Path]
+
    - Purpose: [brief description]
    - Request parameters: [list parameters]
    - Request body: [describe structure]

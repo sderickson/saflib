@@ -3,7 +3,7 @@ import { addNewLinesToString } from "@saflib/utils";
 import { execSync } from "child_process";
 import { getSafReporters } from "@saflib/node";
 import { errorSchema } from "@saflib/openapi";
-import { writeFileSync } from "fs";
+import { mkdirSync, writeFileSync } from "fs";
 import path from "path";
 
 export const addGenerateCommand = (program: Command) => {
@@ -21,6 +21,8 @@ export const addGenerateCommand = (program: Command) => {
       const { log } = getSafReporters();
 
       const { file, output } = options;
+
+      mkdirSync(path.join(process.cwd(), "./schemas"), { recursive: true });
 
       writeFileSync(
         path.join(process.cwd(), "./schemas/error.yaml"),

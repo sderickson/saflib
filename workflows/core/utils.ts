@@ -35,6 +35,21 @@ export const print = (msg: string, _: PrintOptions = {}) => {
   console.log(addNewLinesToString(msg));
 };
 
+export const promptWorkflow = (actor: AnyActor) => {
+  const snapshot = actor.getSnapshot();
+  if (actor.getSnapshot().status === "active") {
+    actor.send({ type: "prompt" });
+  }
+  if (!snapshot.children) {
+    return;
+  }
+  Object.values(snapshot.children as Record<string, AnyActor>).forEach(
+    (child) => {
+      promptWorkflow(child);
+    },
+  );
+};
+
 /**
  * Convenience function to continue a workflow which has halted because a prompt was shown. Signals every active actor to "continue".
  */
@@ -48,16 +63,13 @@ export const continueWorkflow = (actor: AnyActor) => {
   }
   Object.values(snapshot.children as Record<string, AnyActor>).forEach(
     (child) => {
-      if (child.getSnapshot().status === "active") {
-        child.send({ type: "continue" });
-      }
       continueWorkflow(child);
     },
   );
 };
 
 /**
- * Convenience function to convert a checklist to a string. Checklist items are in markdown, so
+ * Convenience function to convert a checklist to a string. Checklist items are in markdown, so provide workflow documentation.
  */
 export const checklistToString = (
   checklist: ChecklistItem[],

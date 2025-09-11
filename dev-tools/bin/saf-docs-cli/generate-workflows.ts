@@ -1,20 +1,24 @@
 import { execSync } from "node:child_process";
 import { mkdirSync, readdirSync, unlinkSync, writeFileSync } from "node:fs";
+import type { MonorepoContext } from "../../src/workspace.ts";
 
 export interface GenerateWorkflowDocsOptions {
   packageName: string;
+  monorepoContext: MonorepoContext;
 }
 
 export function generateWorkflowDocs(options: GenerateWorkflowDocsOptions) {
-  const { packageName } = options;
-  const workflowList = execSync("npm exec saf-workflow list");
+  const { packageName, monorepoContext } = options;
+  const currentDir = monorepoContext.monorepoPackageDirectories[packageName];
+  const workflowList = execSync("npm exec saf-workflow list", {
+    cwd: currentDir,
+  });
   const workflowListString = workflowList.toString();
   const workflowNames = workflowListString.split("\n").filter(Boolean);
   if (workflowNames.length === 0) {
     return;
   }
   console.log("\nGenerating workflow docs...");
-  const currentDir = process.cwd();
   const workflowsDir = `${currentDir}/docs/workflows`;
   mkdirSync(workflowsDir, { recursive: true });
   for (const file of readdirSync(workflowsDir)) {
@@ -43,13 +47,15 @@ ${workflowDocs.map(({ name, path }) => `- [${name}](${path})`).join("\n")}`;
 
 const getWorkflowDoc = (workflowName: string) => {
   const workflowHelp = execSync(
-    `npm exec saf-workflow kickoff help ${workflowName}`,
+    `npm exec saf-workflow kickoff ${workflowName} -- --help`,
   );
   const command = workflowHelp
     .toString()
     .split("\n")[0]
     .replace("Usage: ", "npm exec ")
-    .replace("[options] ", "");
+    .replace("[command]", workflowName)
+    .replace("[options] ", "")
+    .replace("[args...]", "");
 
   const checklist = execSync(`npm exec saf-workflow checklist ${workflowName}`);
 

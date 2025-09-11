@@ -21,3 +21,9 @@ List of arguments to pass to the command.
 > **command**: `string`
 
 The command to run, such as `npm` or `chmod`.
+
+---
+
+### skipIf?
+
+> `optional` **skipIf**: [`CommandStepSkipIf`](../type-aliases/CommandStepSkipIf.md)

@@ -4,10 +4,16 @@ import { contextFromInput } from "../utils.ts";
 import { workflowActions, workflowActors } from "../xstate.ts";
 import path from "node:path";
 
+/**
+ * Input for the CwdStepMachine.
+ */
 export interface CwdStepInput {
   path: string;
 }
 
+/**
+ * @internal
+ */
 export interface CwdStepContext {
   newCwd: string;
 }
@@ -30,9 +36,12 @@ export const CwdStepMachine = setup({
   id: "cwd-step",
   initial: "done",
   context: ({ input, self }) => {
+    const newCwd = input.path.startsWith("/")
+      ? input.path
+      : path.join(process.cwd(), input.path);
     return {
       ...contextFromInput(input, self),
-      newCwd: path.join(process.cwd(), input.path),
+      newCwd,
     };
   },
   states: {

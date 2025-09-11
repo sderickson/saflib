@@ -2,4 +2,4 @@
 
 `@saflib/email` provides the following automated workflows for packages depending on it:
 
-- [add-email-template](./add-email-template.md)
+- [email/add-template](./add-template.md)

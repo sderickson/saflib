@@ -16,5 +16,5 @@ export const generateCommand = (options: GenerateOptions) => {
   generateTypeDoc({ monorepoContext, packageName: targetPackage });
   generateCliDocs({ monorepoContext, packageName: targetPackage });
   generateEnvDocs({ monorepoContext, packageName: targetPackage });
-  generateWorkflowDocs({ packageName: targetPackage });
+  generateWorkflowDocs({ monorepoContext, packageName: targetPackage });
 };

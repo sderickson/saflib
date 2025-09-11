@@ -4,6 +4,8 @@
 
 # Interface: CwdStepInput
 
+Input for the CwdStepMachine.
+
 ## Properties
 
 ### path

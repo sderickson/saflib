@@ -38,7 +38,7 @@ export const loadWorkflow = async (workflows: WorkflowDefinition[]) => {
 
   let workflow = workflows.find((w) => w.id === blob.workflowName);
 
-  if (blob.workflowSourceUrl) {
+  if (blob.workflowSourceUrl && !workflow) {
     workflow = await loadWorkflowDefinitionFromFile(
       blob.workflowSourceUrl.replace("file://", ""),
     );

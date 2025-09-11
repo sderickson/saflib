@@ -9,7 +9,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { saveWorkflow } from "./file-io.ts";
 
 /**
- * Convenience function to take a ConcretWorkflowRunner, dry run it, and return the output. The output in particular includes the checklist.
+ * Convenience function to take a WorkflowDefinition, dry run it, and return the output. The output in particular includes the checklist.
  */
 export const dryRunWorkflow = async (
   definition: WorkflowDefinition<any, any>,

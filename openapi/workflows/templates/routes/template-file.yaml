@@ -1,0 +1,55 @@
+# TODO: Replace this example route with actual route definition for your API.
+# The top-level key should be the operationId (e.g., "listUsers", "createUser", etc.)
+
+templateFile:
+  summary: "TODO: Brief description of what this operation does"
+  operationId: "templateFile"
+
+  # TODO: Update request parameters (if any)
+  parameters:
+    - name: "todo"
+      in: "path" # or "query"
+      required: true
+      schema:
+        type: "string"
+      description: "todo"
+
+  # TODO: Update request body (if any)
+  requestBody:
+    required: true
+    content:
+      application/json:
+        # TODO: Update to an appropriate schema reference
+        schema:
+          $ref: "../../schemas/todo.yaml"
+
+  # TODO: Update response definitions. You do not need to include 400 or 5xx responses.
+  responses:
+    "200":
+      description: "todo"
+      content:
+        application/json:
+          schema:
+            # TODO: Update to an appropriate schema reference
+            $ref: "../../schemas/todo.yaml"
+
+    "401":
+      description: "Unauthorized - missing or invalid auth headers, or not logged in."
+      content:
+        application/json:
+          schema:
+            $ref: "../../schemas/error.yaml"
+
+    "403":
+      description: "Forbidden - user does not have required privileges."
+      content:
+        application/json:
+          schema:
+            $ref: "../../schemas/error.yaml"
+
+    "404":
+      description: "Not Found"
+      content:
+        application/json:
+          schema:
+            $ref: "../../schemas/error.yaml"

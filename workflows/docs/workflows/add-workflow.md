@@ -21,8 +21,9 @@ To run this workflow automatically, tell the agent to:
 When run, the workflow will:
 
 - Copy template files and rename placeholders.
-  - Upsert **example-workflow.ts** from [template](https://github.com/sderickson/saflib/blob/main/workflows/workflows/add-workflow.templates/template-file.ts)
-  - Upsert **index.ts** from [template](https://github.com/sderickson/saflib/blob/main/workflows/workflows/add-workflow.templates/index.ts)
+  - Upsert **example-workflow.ts** from [template](https://github.com/sderickson/saflib/blob/main/workflows/workflows/templates/template-file.ts)
+  - Upsert **example-workflow.test.ts** from [template](https://github.com/sderickson/saflib/blob/main/workflows/workflows/templates/template-file.test.ts)
+  - Upsert **index.ts** from [template](https://github.com/sderickson/saflib/blob/main/workflows/workflows/templates/index.ts)
 - Add name, description, and cliArguments to the newly created workflows/example-workflow.ts.
 - Export **example-workflow** from **@example/package**.
 - Find the file which gathers all workflows to include them in the saf-workflow CLI tool.
@@ -31,6 +32,7 @@ When run, the workflow will:
 - Check that the new workflow appears in the saf-workflow CLI tool.
 - Review documentation: [README.md](https://github.com/sderickson/saflib/blob/main/workflows/docs/README.md)
 - Create template files for example-workflow workflow.
+- Run `npx tsc --noEmit`
 - Add documentation links to the workflow.
 - Add steps to workflows/example-workflow.ts.
 - Review the checklist and verify that the workflow was added correctly.

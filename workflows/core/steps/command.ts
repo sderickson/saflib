@@ -16,6 +16,13 @@ import { raise } from "xstate";
 import { contextFromInput } from "../utils.ts";
 
 /**
+ * A function that determines if the command should be skipped. Given the context and cwd.
+ */
+export type CommandStepSkipIf = (
+  context: CommandStepContext & { cwd: string },
+) => Promise<boolean>;
+
+/**
  * Input for the CommandStepMachine. These arguments are passed to Node's [`spawn`](https://nodejs.org/api/child_process.html#child_processspawncommand-args-options) function.
  */
 export interface CommandStepInput {
@@ -28,11 +35,17 @@ export interface CommandStepInput {
    * List of arguments to pass to the command.
    */
   args?: string[];
+
+  skipIf?: CommandStepSkipIf;
 }
 
+/**
+ * @internal
+ */
 export interface CommandStepContext extends WorkflowContext {
   command: string;
   args: string[];
+  skipIf?: CommandStepSkipIf;
 }
 
 /**
@@ -75,18 +88,20 @@ export const CommandStepMachine = setup({
     },
     runCommand: {
       invoke: {
-        src: fromPromise(
-          async ({
-            input: { command, args, dryRun, cwd },
-          }: {
-            input: CommandStepContext;
-          }) => {
-            if (dryRun) {
-              return "Dry run";
-            }
-            return await runCommandAsync(command, args, { cwd });
-          },
-        ),
+        src: fromPromise(async ({ input }: { input: CommandStepContext }) => {
+          if (input.dryRun) {
+            return "Dry run";
+          }
+          if (input.skipIf && (await input.skipIf(input))) {
+            logInfo(
+              `Skipping command: ${input.command} ${input.args.join(" ")}`,
+            );
+            return "Skipped";
+          }
+          return await runCommandAsync(input.command, input.args, {
+            cwd: input.cwd,
+          });
+        }),
         input: ({ context }) => context,
         onDone: {
           target: "done",

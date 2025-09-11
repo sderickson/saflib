@@ -4,12 +4,13 @@ import {
   step,
   defineWorkflow,
   DocStepMachine,
+  CommandStepMachine,
 } from "../core/index.ts";
 import { readFileSync } from "fs";
 import path from "node:path";
 import { existsSync } from "node:fs";
 
-const sourceDir = path.join(import.meta.dirname, "add-workflow.templates");
+const sourceDir = path.join(import.meta.dirname, "templates");
 
 const input = [
   {
@@ -68,6 +69,7 @@ export const AddWorkflowDefinition = defineWorkflow<
 
   templateFiles: {
     workflow: path.join(sourceDir, "template-file.ts"),
+    test: path.join(sourceDir, "template-file.test.ts"),
     index: path.join(sourceDir, "index.ts"),
   },
 
@@ -121,7 +123,7 @@ export const AddWorkflowDefinition = defineWorkflow<
     step(PromptStepMachine, ({ context }) => ({
       promptText: `Check that the new workflow appears in the saf-workflow CLI tool.
       
-      Run the command \`npm exec saf-workflow kickoff help\` in your terminal (any directory). Ensure that your new workflow "${context.workflowName}" appears in the list.`,
+      Run the command \`npm exec saf-workflow help kickoff\` in your terminal (any directory). Ensure that your new workflow "${context.workflowName}" appears in the list.`,
     })),
 
     step(DocStepMachine, () => ({
@@ -131,10 +133,17 @@ export const AddWorkflowDefinition = defineWorkflow<
     step(PromptStepMachine, ({ context }) => ({
       promptText: `Create template files for ${context.workflowName} workflow.
 
-      Create a folder named \`${context.workflowName}\` next to the workflow file. Add any template files you need to the folder.
-      If you don't have them already, ask for samples to base the template files on.
+      Create a folder named \`templates\` next to the workflow file if it doesn't already exist. Add any template files you need to the folder. Make sure the organization of those template files matches the organization recommended by the package. Check if you're not sure how to organize them. And if you don't have them already, ask for samples to base the template files on.
       
-      **Important**: Use "template-file" as the base name in your template files (not {{...}} placeholders). The system will automatically replace "template-file", "template_file", "TemplateFile", and "templateFile" with the actual name during workflow execution. This keeps template files valid TypeScript/JavaScript.`,
+      **Important**: Use "template-file" as the base name in your template files (not {{...}} placeholders). The system will automatically replace "template-file", "template_file", "TemplateFile", and "templateFile" with the actual name during workflow execution. This keeps template files valid TypeScript/JavaScript.
+      
+      This goes for file names as well. You may well create a file named \`template-file.ts\` or something like that and it will get renamed based on the name passed into \`CopyStepMachine\`.`,
+    })),
+
+    step(CommandStepMachine, () => ({
+      command: "npx",
+      args: ["tsc", "--noEmit"],
+      skipIf: async ({ cwd }) => !existsSync(path.join(cwd, "tsconfig.json")),
     })),
 
     step(PromptStepMachine, () => ({

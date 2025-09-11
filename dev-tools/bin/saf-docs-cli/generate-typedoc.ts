@@ -10,6 +10,8 @@ export interface GenerateTypeDocOptions {
 export function generateTypeDoc(options: GenerateTypeDocOptions) {
   const { monorepoContext, packageName } = options;
   const currentPackageJson = monorepoContext.monorepoPackageJsons[packageName];
+  const currentPackageDir =
+    monorepoContext.monorepoPackageDirectories[packageName];
 
   const entrypoints = currentPackageJson.exports;
   if (!entrypoints) {
@@ -23,7 +25,7 @@ export function generateTypeDoc(options: GenerateTypeDocOptions) {
     .map((entrypoint) => {
       return `--entryPoints ${entrypoint}`;
     });
-  const typedoc = `${process.cwd()}/typedoc.json`;
+  const typedoc = `${currentPackageDir}/typedoc.json`;
   if (existsSync(typedoc)) {
     const typedocJson = readFileSync(typedoc, "utf-8");
     if (JSON.parse(typedocJson).entryPoints) {
@@ -60,6 +62,8 @@ export function generateTypeDoc(options: GenerateTypeDocOptions) {
     // Since I'm committing these to the repo, sources will create a bunch of
     // noise with their GitHub-links-with-shas.
     "--disableSources",
+
+    "--excludeInternal",
   ].join(" ");
 
   try {
