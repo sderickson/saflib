@@ -49,6 +49,4 @@ export interface ViteEnvSchema {
 /**
  * `process.env` casted to the `ViteEnvSchema` type.
  */
-export const typedEnv = (globalThis.process
-  ? process.env
-  : {}) as unknown as ViteEnvSchema;
+export const typedEnv = (globalThis.process ? process.env : {}) as unknown as ViteEnvSchema;
