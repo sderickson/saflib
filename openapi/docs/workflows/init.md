@@ -26,7 +26,7 @@ When run, the workflow will:
   - Upsert **package.json** from [template](https://github.com/sderickson/saflib/blob/main/openapi/workflows/templates/package.json)
   - Upsert **index.ts** from [template](https://github.com/sderickson/saflib/blob/main/openapi/workflows/templates/index.ts)
   - Upsert **tsconfig.json** from [template](https://github.com/sderickson/saflib/blob/main/openapi/workflows/templates/tsconfig.json)
-- Change working directory to /Users/scotterickson/src/saf-2025/saflib/express/specs/example
+- Change working directory to specs/example
 - Run `npm exec saf-specs generate`
 
 ## Help Docs
