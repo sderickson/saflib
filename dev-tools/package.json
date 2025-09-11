@@ -20,9 +20,10 @@
   },
   "devDependencies": {
     "@saflib/commander": "*",
+    "@saflib/monorepo": "*",
     "@saflib/vitest": "*",
+    "memfs": "^4.17.0",
     "typedoc": "^0.28.10",
-    "typedoc-plugin-markdown": "^4.8.1",
-    "memfs": "^4.17.0"
+    "typedoc-plugin-markdown": "^4.8.1"
   }
 }
