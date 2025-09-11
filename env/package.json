@@ -22,6 +22,7 @@
   "devDependencies": {
     "@saflib/commander": "*",
     "@saflib/dev-tools": "*",
+    "@saflib/monorepo": "*",
     "@saflib/vitest": "*",
     "@types/json-schema": "^7.0.15",
     "json-schema-to-typescript": "^15.0.4"
