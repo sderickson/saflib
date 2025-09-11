@@ -183,5 +183,5 @@ There needs to be a source of truth for how to do things the right way specific 
 
 **Example applications:**
 
-- Each package in [the docs](https://docs.saf-demo.online/) has a mix of explanation docs and generated reference docs. Instead of maintaining them separately, how-to guides are effectively generated from workflows such as [this one](./drizzle/docs/workflows/add-queries.md).
-- `@saflib/dev-tools` provides a [CLI tool](./dev-tools/docs/cli/saf-docs.md) for generating documentation from code, workflows, and CLI commands. For example, [this workflow](./drizzle/docs/workflows/add-queries.md) was generated from [this code](./drizzle/workflows/add-queries.ts).
+- Each package in [the docs](https://docs.saf-demo.online/) has a mix of explanation docs and generated reference docs. Instead of maintaining them separately, how-to guides are effectively generated from workflows such as [this one](./drizzle/docs/workflows/add-query.md).
+- `@saflib/dev-tools` provides a [CLI tool](./dev-tools/docs/cli/saf-docs.md) for generating documentation from code, workflows, and CLI commands. For example, [this workflow](./drizzle/docs/workflows/add-query.md) was generated from [this code](./drizzle/workflows/add-query.ts).
