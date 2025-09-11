@@ -19,5 +19,9 @@ export const generateCommand = (options: GenerateOptions) => {
   generateCliDocs({ monorepoContext, packageName: targetPackage });
   generateEnvDocs({ monorepoContext, packageName: targetPackage });
   generateWorkflowDocs({ monorepoContext, packageName: targetPackage });
-  formatPath(path.join(targetPackage, "docs"));
+
+  const packageDir = monorepoContext.monorepoPackageDirectories[targetPackage];
+
+  console.log(`Formatting docs for ${targetPackage}`);
+  formatPath(path.join(packageDir, "docs"));
 };
