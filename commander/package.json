@@ -17,7 +17,8 @@
     "winston": "^3.11.0"
   },
   "devDependencies": {
-    "@saflib/vitest": "*",
-    "@saflib/node": "*"
+    "@saflib/monorepo": "*",
+    "@saflib/node": "*",
+    "@saflib/vitest": "*"
   }
 }
