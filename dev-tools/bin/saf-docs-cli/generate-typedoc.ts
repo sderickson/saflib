@@ -18,7 +18,14 @@ export function generateTypeDoc(options: GenerateTypeDocOptions) {
     return;
   }
 
-  let entrypointCommands = Object.values(entrypoints)
+  const entrypointValues = Object.values(entrypoints).filter(
+    (entrypoint) => typeof entrypoint === "string",
+  );
+  if (!entrypointValues.length) {
+    return;
+  }
+
+  let entrypointCommands = entrypointValues
     .filter((entrypoint) => !entrypoint.includes("./workflows"))
     .filter((entrypoint) => !entrypoint.includes("./eslint.config.js"))
     .filter((entrypoint) => !entrypoint.includes("./tsconfig.json"))
