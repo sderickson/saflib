@@ -5,6 +5,7 @@ import { writeFileSync, existsSync } from "fs";
 import { buildMonorepoContext, getCurrentPackageName } from "@saflib/dev-tools";
 import path from "path";
 import { setupContext } from "@saflib/commander";
+import { formatPath } from "@saflib/monorepo/dev";
 
 const program = new Command();
 
@@ -85,6 +86,7 @@ program
           packageName,
         );
         writeFileSync(envTsPath, typeSnippet);
+        formatPath(envTsPath);
 
         // If the package has a combined schema file, update it too
         if (existsSync(combinedSchemaPath)) {
@@ -92,6 +94,7 @@ program
             combinedSchemaPath,
             JSON.stringify(combinedSchema, null, 2),
           );
+          formatPath(combinedSchemaPath);
           console.log(`  Updated env.schema.combined.json`);
         }
 

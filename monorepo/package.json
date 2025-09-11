@@ -6,12 +6,16 @@
     ".": "./index.ts",
     "./workflows": "./workflows/index.ts",
     "./tsconfig.json": "./tsconfig.json",
-    "./eslint.config.js": "./eslint.config.js"
+    "./eslint.config.js": "./eslint.config.js",
+    "./dev": "./dev.ts"
   },
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage"
+  },
+  "bin": {
+    "saf-format": "./bin/format.ts"
   },
   "devDependencies": {
     "globals": "^16",
