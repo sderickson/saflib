@@ -86,7 +86,7 @@ program
           packageName,
         );
         writeFileSync(envTsPath, typeSnippet);
-        execSync(`npm exec saf-monorepo format ${envTsPath}`, {
+        execSync(`npm exec saf-format ${envTsPath}`, {
           stdio: "inherit",
         });
 
@@ -96,7 +96,7 @@ program
             combinedSchemaPath,
             JSON.stringify(combinedSchema, null, 2),
           );
-          execSync(`npm exec saf-monorepo format ${combinedSchemaPath}`, {
+          execSync(`npm exec saf-format ${combinedSchemaPath}`, {
             stdio: "inherit",
           });
           console.log(`  Updated env.schema.combined.json`);
