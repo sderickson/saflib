@@ -13,6 +13,9 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage"
   },
+  "bin": {
+    "saf-format": "./format.ts"
+  },
   "devDependencies": {
     "globals": "^16",
     "eslint": "^9.0.0",
