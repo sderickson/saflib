@@ -4,14 +4,16 @@
 
 # Type Alias: CommandStepSkipIf()
 
-> **CommandStepSkipIf** = (`context`) => `boolean`
+> **CommandStepSkipIf** = (`context`) => `Promise`\<`boolean`\>
+
+A function that determines if the command should be skipped. Given the context and cwd.
 
 ## Parameters
 
-| Parameter | Type                                                                   |
-| --------- | ---------------------------------------------------------------------- |
-| `context` | [`CommandStepContext`](../interfaces/CommandStepContext.md) & `object` |
+| Parameter | Type                            |
+| --------- | ------------------------------- |
+| `context` | `CommandStepContext` & `object` |
 
 ## Returns
 
-`boolean`
+`Promise`\<`boolean`\>

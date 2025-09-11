@@ -20,6 +20,9 @@ export interface CopyStepInput {
   lineReplace?: (line: string) => string;
 }
 
+/**
+ * @internal
+ */
 export interface CopyStepContext extends WorkflowContext {
   filesToCopy: string[];
   name: string;

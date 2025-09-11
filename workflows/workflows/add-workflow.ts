@@ -143,7 +143,7 @@ export const AddWorkflowDefinition = defineWorkflow<
     step(CommandStepMachine, () => ({
       command: "npx",
       args: ["tsc", "--noEmit"],
-      skipIf: ({ cwd }) => !existsSync(path.join(cwd, "tsconfig.json")),
+      skipIf: async ({ cwd }) => !existsSync(path.join(cwd, "tsconfig.json")),
     })),
 
     step(PromptStepMachine, () => ({

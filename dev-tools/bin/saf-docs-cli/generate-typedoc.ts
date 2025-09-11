@@ -62,6 +62,8 @@ export function generateTypeDoc(options: GenerateTypeDocOptions) {
     // Since I'm committing these to the repo, sources will create a bunch of
     // noise with their GitHub-links-with-shas.
     "--disableSources",
+
+    "--excludeInternal",
   ].join(" ");
 
   try {

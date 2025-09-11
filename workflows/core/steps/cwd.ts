@@ -11,6 +11,9 @@ export interface CwdStepInput {
   path: string;
 }
 
+/**
+ * @internal
+ */
 export interface CwdStepContext {
   newCwd: string;
 }

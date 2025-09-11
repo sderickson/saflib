@@ -26,6 +26,9 @@ export interface TestStepInput {
   fileId?: string;
 }
 
+/**
+ * @internal
+ */
 export interface TestStepContext extends WorkflowContext {
   fileId?: string;
 }

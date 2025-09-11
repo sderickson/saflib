@@ -13,6 +13,9 @@ export interface PromptStepInput {
   promptText: string;
 }
 
+/**
+ * @internal
+ */
 export interface PromptStepContext extends WorkflowContext {
   promptText: string;
 }

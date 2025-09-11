@@ -15,6 +15,9 @@ import path from "node:path";
 import { contextFromInput } from "../../utils.ts";
 import { getWorkflowLogger } from "../../store.ts";
 
+/**
+ * A simple test format on changes made, for checks beyond just "todo" string existence.
+ */
 export interface UpdateStepTest {
   /**
    * What to print if the test fails.
@@ -27,7 +30,7 @@ export interface UpdateStepTest {
   name: string;
 
   /**
-   * An arbitrary test. Fails the test if it returns false.
+   * An arbitrary test, given the contents of the file that was updated. Fails the test if it returns false.
    */
   test: (content: string) => boolean;
 }
@@ -52,6 +55,9 @@ export interface UpdateStepInput {
   valid?: UpdateStepTest[];
 }
 
+/**
+ * @internal
+ */
 export interface UpdateStepContext extends WorkflowContext {
   filePath: string;
   promptMessage: string | ((context: WorkflowContext) => string);

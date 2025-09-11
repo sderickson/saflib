@@ -4,6 +4,8 @@
 
 # Interface: UpdateStepTest
 
+A simple test format on changes made, for checks beyond just "todo" string existence.
+
 ## Properties
 
 ### description
@@ -26,7 +28,7 @@ The name of the test.
 
 > **test**: (`content`) => `boolean`
 
-An arbitrary test. Fails the test if it returns false.
+An arbitrary test, given the contents of the file that was updated. Fails the test if it returns false.
 
 #### Parameters
 
