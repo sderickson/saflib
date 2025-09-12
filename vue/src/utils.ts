@@ -82,3 +82,16 @@ export const linkToProps = (link: Link) => {
 export const linkToHrefWithHost = (link: Link, options?: LinkOptions) => {
   return linkToHref(link, { domain: getHost(), ...options });
 };
+
+/**
+ * Simple utility to do a full page redirect to a link.
+ *
+ * TODO: This should use vue-router instead of window.location.href where possible.
+ */
+export const navigateToLink = (link: Link, options?: LinkOptions) => {
+  const href = linkToHref(link, {
+    domain: getHost(),
+    ...options,
+  });
+  window.location.href = href;
+};
