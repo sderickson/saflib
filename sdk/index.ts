@@ -6,6 +6,7 @@
 import { QueryClient } from "@tanstack/vue-query";
 import createClient from "openapi-fetch";
 import { isTestEnv } from "./wip-env.ts";
+import { getProtocol, getHost } from "@saflib/vue";
 
 export { isTestEnv };
 
@@ -13,16 +14,17 @@ export { isTestEnv };
  * Given a "paths" openapi generated type and a subdomain, creates a typed `openapi-fetch` client which queries the given subdomain. Uses the current domain and protocol. Handles CSRF token injection, and works in tests.
  */
 export const createSafClient = <Q extends {}>(
-  subdomain: string,
+  serviceSubdomain: string,
 ): ReturnType<typeof createClient<Q>> => {
   let protocol = "http";
   let host = "localhost:3000";
   if (typeof document !== "undefined") {
-    protocol = document.location.protocol;
-    host = document.location.host.split(".").slice(-2).join(".");
+    protocol = getProtocol();
+    host = getHost();
   }
+  const baseUrl = `${protocol}//${serviceSubdomain}.${host}`;
   return createClient<Q>({
-    baseUrl: `${protocol}//${subdomain}.${host}`,
+    baseUrl,
     credentials: "include",
     fetch: (request) => {
       // this is little noop wrapper is required for msw to work
