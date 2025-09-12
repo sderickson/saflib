@@ -1,4 +1,4 @@
-import { type Link, linkToHref } from "@saflib/links";
+import { type Link, type LinkOptions, linkToHref } from "@saflib/links";
 
 /**
  * Utility to get the current host, including the port, e.g. "localhost:3000".
@@ -77,4 +77,8 @@ export const linkToProps = (link: Link) => {
   return {
     href: linkToHref(link, { domain: getHost() }),
   };
+};
+
+export const linkToHrefWithHost = (link: Link, options?: LinkOptions) => {
+  return linkToHref(link, { domain: getHost(), ...options });
 };

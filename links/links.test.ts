@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { linkToHref, linkToProps } from "./index.ts";
+import { linkToHref } from "./index.ts";
 import { typedEnv } from "@saflib/env";
 beforeEach(() => {
   globalThis.document = {
@@ -45,15 +45,5 @@ describe("linkToHref", () => {
     expect(linkToHref({ subdomain: "test", path: "/" })).toBe(
       "https://test.some.domain/",
     );
-  });
-});
-describe("linkToProps", () => {
-  it("returns href for links to other subdomains, and to for links to the same subdomain", () => {
-    expect(linkToProps({ subdomain: "subdomain-a", path: "/" })).toEqual({
-      to: "/",
-    });
-    expect(linkToProps({ subdomain: "subdomain-b", path: "/" })).toEqual({
-      href: "http://subdomain-b.docker.localhost/",
-    });
   });
 });
