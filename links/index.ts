@@ -19,6 +19,7 @@ export type LinkMap = Record<string, Link>;
  */
 export interface LinkOptions {
   params?: Record<string, string>;
+  domain?: string;
 }
 
 /**
@@ -29,7 +30,12 @@ export const linkToHref = (link: Link, options?: LinkOptions): string => {
   let domain = "";
   let protocol = "";
   if (globalThis.document) {
-    domain = document.location.hostname.split(".").slice(-2).join(".");
+    if (!options?.domain) {
+      throw new Error(
+        "domain is required when using linkToHref in the browser",
+      );
+    }
+    domain = options.domain;
     protocol = document.location.protocol;
   } else {
     domain = typedEnv.DOMAIN;

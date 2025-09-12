@@ -6,7 +6,13 @@ import { type Link, linkToHref } from "@saflib/links";
 export const getHost = () => {
   let host = "localhost:3000";
   if (typeof document !== "undefined") {
-    host = document.location.host.replace(getClientName(), "");
+    if (!getClientName()) {
+      throw new Error(
+        "You must call setClientName with your subdomain before using getHost",
+      );
+    }
+    const clientName = getClientName();
+    host = document.location.host.replace(clientName, "");
     if (host.startsWith(".")) {
       host = host.slice(1);
     }
@@ -69,6 +75,6 @@ export const linkToProps = (link: Link) => {
     };
   }
   return {
-    href: linkToHref(link),
+    href: linkToHref(link, { domain: getHost() }),
   };
 };
