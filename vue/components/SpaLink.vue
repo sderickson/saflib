@@ -20,7 +20,8 @@
  * If you just want a simple piece-of-text link, though, this is your component.
  */
 
-import { type Link, linkToProps } from "@saflib/links";
+import { type Link } from "@saflib/links";
+import { linkToProps } from "@saflib/vue";
 
 const { link } = defineProps<{ link: Link }>();
 const linkProps = linkToProps(link);

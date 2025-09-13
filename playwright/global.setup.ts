@@ -1,6 +1,7 @@
 import { expect, test as setup } from "@playwright/test";
 
 const serviceSubdomains = process.env.SERVICE_SUBDOMAINS?.split(",") || [];
+const domain = process.env.DOMAIN;
 
 setup("check docker service health", async ({ page }) => {
   let response;
@@ -12,9 +13,7 @@ setup("check docker service health", async ({ page }) => {
     anyUnhealthy = false;
     for (const serviceSubdomain of serviceSubdomains) {
       // uses @saflib/express's health middleware
-      response = await page.goto(
-        `http://${serviceSubdomain}.docker.localhost/health`,
-      );
+      response = await page.goto(`http://${serviceSubdomain}.${domain}/health`);
       if (response && response.status() !== 200) {
         anyUnhealthy = true;
         break;

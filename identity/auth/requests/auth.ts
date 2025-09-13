@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient, queryOptions } from "@tanstack/vue-query";
-import { client, emailClient } from "./client.ts";
+import { getClient, getEmailClient } from "./client.ts";
 import type {
   IdentityResponseBody,
   IdentityRequestBody,
@@ -10,7 +10,7 @@ import type { Ref } from "vue";
 export const useLogin = () => {
   return useMutation({
     mutationFn: (body: IdentityRequestBody["loginUser"]) => {
-      return handleClientMethod(client.POST("/auth/login", { body }));
+      return handleClientMethod(getClient().POST("/auth/login", { body }));
     },
   });
 };
@@ -18,7 +18,7 @@ export const useLogin = () => {
 export const useLogout = () => {
   return useMutation({
     mutationFn: () => {
-      return handleClientMethod(client.POST("/auth/logout"));
+      return handleClientMethod(getClient().POST("/auth/logout"));
     },
   });
 };
@@ -26,7 +26,7 @@ export const useLogout = () => {
 export const useRegister = () => {
   return useMutation({
     mutationFn: (body: IdentityRequestBody["registerUser"]) => {
-      return handleClientMethod(client.POST("/auth/register", { body }));
+      return handleClientMethod(getClient().POST("/auth/register", { body }));
     },
   });
 };
@@ -34,7 +34,9 @@ export const useRegister = () => {
 export const useForgotPassword = () => {
   return useMutation({
     mutationFn: (body: IdentityRequestBody["forgotPassword"]) => {
-      return handleClientMethod(client.POST("/auth/forgot-password", { body }));
+      return handleClientMethod(
+        getClient().POST("/auth/forgot-password", { body }),
+      );
     },
   });
 };
@@ -42,7 +44,9 @@ export const useForgotPassword = () => {
 export const useResetPassword = () => {
   return useMutation({
     mutationFn: (body: IdentityRequestBody["resetPassword"]) => {
-      return handleClientMethod(client.POST("/auth/reset-password", { body }));
+      return handleClientMethod(
+        getClient().POST("/auth/reset-password", { body }),
+      );
     },
   });
 };
@@ -50,7 +54,9 @@ export const useResetPassword = () => {
 export const useSetPassword = () => {
   return useMutation({
     mutationFn: (body: IdentityRequestBody["setPassword"]) => {
-      return handleClientMethod(client.POST("/auth/set-password", { body }));
+      return handleClientMethod(
+        getClient().POST("/auth/set-password", { body }),
+      );
     },
   });
 };
@@ -58,7 +64,9 @@ export const useSetPassword = () => {
 export const useVerifyEmail = () => {
   return useMutation({
     mutationFn: (body: IdentityRequestBody["verifyEmail"]) => {
-      return handleClientMethod(client.POST("/auth/verify-email", { body }));
+      return handleClientMethod(
+        getClient().POST("/auth/verify-email", { body }),
+      );
     },
   });
 };
@@ -69,7 +77,7 @@ export const useResendVerification = () => {
     TanstackError
   >({
     mutationFn: async () => {
-      return handleClientMethod(client.POST("/auth/resend-verification"));
+      return handleClientMethod(getClient().POST("/auth/resend-verification"));
     },
   });
 };
@@ -78,7 +86,7 @@ export const useUpdateProfile = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (body: IdentityRequestBody["updateUserProfile"]) => {
-      return handleClientMethod(client.PUT("/auth/profile", { body }));
+      return handleClientMethod(getClient().PUT("/auth/profile", { body }));
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["profile"] });
@@ -90,7 +98,7 @@ export const getProfile = () => {
   return queryOptions({
     queryKey: ["profile"],
     queryFn: async () => {
-      return handleClientMethod(client.GET("/auth/profile"));
+      return handleClientMethod(getClient().GET("/auth/profile"));
     },
   });
 };
@@ -100,7 +108,7 @@ export const getSentAuthEmails = (email?: Ref<string | undefined>) => {
     queryKey: ["sent-emails", "auth", email],
     queryFn: async () => {
       return handleClientMethod(
-        emailClient.GET("/email/sent", {
+        getEmailClient().GET("/email/sent", {
           params: { query: { userEmail: email?.value } },
         }),
       );

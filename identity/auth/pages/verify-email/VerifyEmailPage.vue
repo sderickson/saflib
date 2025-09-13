@@ -105,7 +105,7 @@ import {
   getProfile,
 } from "../../requests/auth";
 import { TanstackError } from "@saflib/sdk";
-import { linkToHref } from "@saflib/links";
+import { linkToHrefWithHost } from "@saflib/vue";
 import { authLinks } from "@saflib/auth-links";
 import { useQuery } from "@tanstack/vue-query";
 import { useReverseT } from "../../i18n.ts";
@@ -189,7 +189,7 @@ const handleResend = async () => {
 
 const thisUrlEncoded = btoa(window.location.href);
 
-const loginLink = linkToHref(authLinks.login, {
+const loginLink = linkToHrefWithHost(authLinks.login, {
   params: { redirect: thisUrlEncoded },
 });
 

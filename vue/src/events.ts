@@ -1,5 +1,5 @@
 import { useRoute } from "vue-router";
-
+import { getClientName } from "./utils.ts";
 /**
  * A function that receives product events as they're emitted.
  */
@@ -29,21 +29,6 @@ export const makeProductEventLogger = <T extends ProductEventCommon>() => {
   };
 };
 
-let clientName = "unknown";
-/**
- * Call when the SPA starts, providing the name of the client. It should be the same as the package name, without the org prefix, so "web-auth" or "web-landing".
- */
-export const setClientName = (client: string) => {
-  clientName = client;
-};
-
-/**
- * Getter for the client name.
- */
-export const getClientName = () => {
-  return clientName;
-};
-
 /**
  * Common fields for all product events.
  */
@@ -68,7 +53,7 @@ export type ProductEventCommon = {
 export const useClientCommon = (componentName: string): ProductEventCommon => {
   const route = useRoute();
   return {
-    client: clientName,
+    client: getClientName(),
     view: route && route.name ? String(route.name) : "unnamed-route",
     component: componentName,
   };

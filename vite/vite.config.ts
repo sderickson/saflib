@@ -10,8 +10,9 @@ import { typedEnv } from "./env.ts";
 import fs from "fs";
 
 const subdomains = typedEnv.CLIENT_SUBDOMAINS?.split(",") ?? [];
+const domain = typedEnv.DOMAIN;
 const hosts = subdomains.map((subdomain) =>
-  subdomain === "" ? "docker.localhost" : `${subdomain}.docker.localhost`,
+  subdomain === "" ? domain : `${subdomain}.${domain}`,
 );
 
 const subDomainProxyPlugin: Plugin = {
@@ -24,7 +25,11 @@ const subDomainProxyPlugin: Plugin = {
       }
       for (const host of hosts) {
         if (req.headers.host === host) {
-          const subdomain = host.split(".").slice(0, -2).join(".");
+          const subdomain = host
+            .replace(`${domain}`, "")
+            .split(".")
+            .filter(Boolean)
+            .join(".");
           req.url = `/${subdomain}/index.html`;
           next();
           return;
