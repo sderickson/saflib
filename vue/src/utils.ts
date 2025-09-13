@@ -6,7 +6,6 @@ import { type Link, type LinkOptions, linkToHref } from "@saflib/links";
 export const getHost = () => {
   let host = "localhost:3000";
   if (typeof document !== "undefined" && process.env.NODE_ENV !== "test") {
-    console.log("node env?", process.env.NODE_ENV);
     if (!getClientName()) {
       throw new Error(
         "You must call setClientName with your subdomain before using getHost",
