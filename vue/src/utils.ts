@@ -38,7 +38,8 @@ let clientName = "";
 export const setClientName = (client: string) => {
   if (
     client !== "root" &&
-    !document.location.hostname.startsWith(`${client}.`)
+    !document.location.hostname.startsWith(`${client}.`) &&
+    process.env.NODE_ENV !== "test"
   ) {
     throw new Error(
       `Client name ${client} does not match hostname ${document.location.hostname}`,
@@ -64,7 +65,7 @@ export const getClientName = () => {
  */
 export const linkToProps = (link: Link) => {
   let currentSubdomain = getClientName();
-  if (process.env.NODE_ENV === "test") {
+  if (process.env.NODE_ENV === "test" && !currentSubdomain) {
     currentSubdomain = "test";
   }
   if (!currentSubdomain) {

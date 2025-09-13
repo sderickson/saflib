@@ -1,39 +1,44 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { linkToHref } from "./index.ts";
 import { typedEnv } from "@saflib/env";
+import { setClientName } from "@saflib/vue";
 beforeEach(() => {
   globalThis.document = {
-    location: { hostname: "subdomain-a.docker.localhost", protocol: "http:" },
+    location: { hostname: "test.docker.localhost", protocol: "http:" },
   } as unknown as Document;
+  setClientName("test");
 });
 
 describe("linkToHref", () => {
   it("returns the correct href for a link", () => {
-    expect(linkToHref({ subdomain: "test", path: "/" })).toBe(
-      "http://test.docker.localhost/",
-    );
+    expect(
+      linkToHref(
+        { subdomain: "test", path: "/" },
+        { domain: "docker.localhost" },
+      ),
+    ).toBe("http://test.docker.localhost/");
   });
 
   it("adds query params to the href", () => {
     expect(
       linkToHref(
         { subdomain: "test", path: "/", params: ["a", "b"] },
-        { params: { a: "1", b: "2" } },
+        { params: { a: "1", b: "2" }, domain: "docker.localhost" },
       ),
     ).toBe("http://test.docker.localhost/?a=1&b=2");
   });
 
   it("handles an empty subdomain", () => {
-    expect(linkToHref({ subdomain: "", path: "/" })).toBe(
-      "http://docker.localhost/",
-    );
+    expect(
+      linkToHref({ subdomain: "", path: "/" }, { domain: "docker.localhost" }),
+    ).toBe("http://docker.localhost/");
   });
 
   it("throws an error if a param is not found in the link", () => {
     expect(() =>
       linkToHref(
         { subdomain: "test", path: "/", params: ["a", "b"] },
-        { params: { a: "1", c: "2" } },
+        { params: { a: "1", c: "2" }, domain: "docker.localhost" },
       ),
     ).toThrow("Param c not found in link /");
   });
