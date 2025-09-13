@@ -1,4 +1,4 @@
-import { linkToProps, setClientName, getHost } from "./utils";
+import { linkToProps, setClientName, getHost } from "./utils.ts";
 import { describe, it, expect } from "vitest";
 
 describe("linkToProps", () => {
