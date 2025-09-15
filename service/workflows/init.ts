@@ -111,15 +111,15 @@ export const InitWorkflowDefinition = defineWorkflow<
       path: path.join(context.serviceGroupDir, `${context.serviceName}-db`),
     })),
 
+    // Initialize the common package
+    step(makeWorkflowMachine(InitCommonWorkflowDefinition), ({ context }) => ({
+      path: context.serviceGroupDir,
+    })),
+
     // Initialize the HTTP service package
     step(makeWorkflowMachine(ExpressInitWorkflowDefinition), ({ context }) => ({
       name: context.httpPackageName,
       path: path.join(context.serviceGroupDir, `${context.serviceName}-http`),
-    })),
-
-    // Initialize the common package
-    step(makeWorkflowMachine(InitCommonWorkflowDefinition), ({ context }) => ({
-      path: context.serviceGroupDir,
     })),
 
     // Copy the service template files

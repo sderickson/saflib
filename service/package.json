@@ -1,5 +1,5 @@
 {
-  "name": "service",
+  "name": "@saflib/service",
   "description": "Workflows and utilities for bootstrapping and initializing services",
   "private": true,
   "type": "module",

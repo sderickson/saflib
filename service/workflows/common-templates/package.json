@@ -12,10 +12,7 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "@saflib/identity-rpcs": "*",
     "@saflib/monorepo": "*",
-    "@saflib/node": "*",
-    "@vendata/caller-db": "*",
-    "@vendata/retellai": "*"
+    "@saflib/node": "*"
   }
 }

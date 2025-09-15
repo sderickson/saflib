@@ -46,7 +46,11 @@ export const InitCommonWorkflowDefinition = defineWorkflow<
 
   context: ({ input }) => {
     const serviceName = path.basename(input.path);
-    const targetDir = path.join(input.cwd, input.path, `${serviceName}-common`);
+    const targetDir = path.join(
+      input.cwd,
+      input.path,
+      `${serviceName}-service-common`,
+    );
     const currentPackageName = getCurrentPackageName();
     let orgString = "";
     if (
@@ -55,7 +59,7 @@ export const InitCommonWorkflowDefinition = defineWorkflow<
     ) {
       orgString = currentPackageName.split("/")[0] + "/";
     }
-    const packageName = `${orgString}${serviceName}-common`;
+    const packageName = `${orgString}${serviceName}-service-common`;
 
     return {
       serviceName,

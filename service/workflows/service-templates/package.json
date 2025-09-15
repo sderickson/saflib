@@ -12,10 +12,7 @@
   },
   "dependencies": {
     "@saflib/env": "*",
-    "@saflib/monorepo": "*",
-    "template-file-db": "*",
-    "template-file-http": "*",
-    "template-file-spec": "*"
+    "@saflib/monorepo": "*"
   },
   "devDependencies": {
     "@saflib/vitest": "*"
