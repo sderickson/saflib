@@ -1,71 +1,79 @@
 import {
   CopyStepMachine,
   UpdateStepMachine,
-  PromptStepMachine,
-  TestStepMachine,
   defineWorkflow,
   step,
+  makeWorkflowMachine,
+  CommandStepMachine,
+  CwdStepMachine,
 } from "@saflib/workflows";
 import path from "node:path";
+import { InitWorkflowDefinition as DrizzleInitWorkflowDefinition } from "@saflib/drizzle/workflows";
+import { InitWorkflowDefinition as ExpressInitWorkflowDefinition } from "@saflib/express/workflows";
+import { InitWorkflowDefinition as OpenapiInitWorkflowDefinition } from "@saflib/openapi/workflows";
 
 const sourceDir = path.join(import.meta.dirname, "templates");
 
-// TODO: replace this with the actual input for your workflow
 const input = [
   {
-    name: "name",
+    name: "path",
     description:
-      "The name of the thing to create (e.g., 'my-component' or 'my-service')",
-    exampleValue: "example-thingy",
+      "The path to the target directory for the service package (e.g., './services/example')",
+    exampleValue: "./services/example",
   },
 ] as const;
 
-// TODO: Remove exampleProperty and replace it with the actual context properties your workflow needs
 interface InitWorkflowContext {
-  name: string;
+  serviceName: string;
   targetDir: string;
-  exampleProperty: string;
+  packageName: string;
+  dbPackageName: string;
+  httpPackageName: string;
+  specPackageName: string;
 }
 
 export const InitWorkflowDefinition = defineWorkflow<
   typeof input,
   InitWorkflowContext
 >({
-  // TODO: replace "todo/" with the name of the package that contains the template files
-  id: "todo/init",
+  id: "service/init",
 
-  // TODO: replace with a description based on the context, also in the present tense like a good commit message.
-  description: "Create a new thing",
+  description:
+    "Create a new complete service package with database, HTTP server, API spec, and service orchestration",
 
-  // TODO: replace with a description based on the context, also in the present tense like a good commit message.
-  checklistDescription: ({ name }) => `Create a new ${name} thing.`,
+  checklistDescription: ({ serviceName }) =>
+    `Create a new ${serviceName} service package with all components.`,
 
   input,
 
   sourceUrl: import.meta.url,
 
   context: ({ input }) => {
-    // TODO: replace "output" with where the files should actually go based on the input
-    // This will probably be based on the inputs, such as the name of what is being created
-    const targetDir = path.join(input.cwd, "output");
+    const serviceName = path.basename(input.path);
+    const targetDir = path.join(input.cwd, input.path);
+    const packageName = `@vendata/${serviceName}-service`;
+    const dbPackageName = `@vendata/${serviceName}-db`;
+    const httpPackageName = `@vendata/${serviceName}-http`;
+    const specPackageName = `@vendata/${serviceName}-spec`;
 
     return {
-      name: input.name,
+      serviceName,
       targetDir,
-      exampleProperty: "example value",
+      packageName,
+      dbPackageName,
+      httpPackageName,
+      specPackageName,
     };
   },
 
-  // TODO: create the inits dir and add template files
-  // Include TODOs like this file does.
-  // Instances of "init" in the file name and content will be replaced with the "name" given to CopyStepMachine
-   templateFiles: {
-    main: path.join(sourceDir, "main.ts"),
-    config: path.join(sourceDir, "config.ts"),
-    test: path.join(sourceDir, "test.ts"),
+  templateFiles: {
+    packageJson: path.join(sourceDir, "package.json"),
+    tsconfig: path.join(sourceDir, "tsconfig.json"),
+    vitestConfig: path.join(sourceDir, "vitest.config.js"),
+    dockerfile: path.join(sourceDir, "Dockerfile.template"),
+    runScript: path.join(sourceDir, "bin/run.ts"),
   },
 
-  // TODO: add documentation file references
   docFiles: {},
 
   // TODO: update the steps to match the actual workflow you're creating. It will usually involve some combination of copying template files, updating files, prompting, running scripts, and running tests.
