@@ -32,6 +32,10 @@ export interface IdentityHttpEnvSchema {
    * Whether to disable rate limiting. Set to 'true' to disable.
    */
   IDENTITY_SERVICE_DISABLE_RATE_LIMITING?: string;
+  /**
+   * Host URL for the identity service
+   */
+  IDENTITY_SERVICE_HOST: string;
   IDENTITY_SERVICE_HTTP_PORT: string;
   /**
    * Whether to mock 3rd party integrations. Set to 'true' to mock. And integration packages should respect this setting.
