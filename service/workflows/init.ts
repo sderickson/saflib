@@ -11,6 +11,7 @@ import path from "node:path";
 import { InitWorkflowDefinition as DrizzleInitWorkflowDefinition } from "@saflib/drizzle/workflows";
 import { InitWorkflowDefinition as ExpressInitWorkflowDefinition } from "@saflib/express/workflows";
 import { InitWorkflowDefinition as OpenapiInitWorkflowDefinition } from "@saflib/openapi/workflows";
+import { InitCommonWorkflowDefinition } from "./init-common.ts";
 import { getCurrentPackageName } from "@saflib/dev-tools";
 
 const sourceDir = path.join(import.meta.dirname, "service-templates");
@@ -114,6 +115,11 @@ export const InitWorkflowDefinition = defineWorkflow<
     step(makeWorkflowMachine(ExpressInitWorkflowDefinition), ({ context }) => ({
       name: context.httpPackageName,
       path: path.join(context.serviceGroupDir, `${context.serviceName}-http`),
+    })),
+
+    // Initialize the common package
+    step(makeWorkflowMachine(InitCommonWorkflowDefinition), ({ context }) => ({
+      path: context.serviceGroupDir,
     })),
 
     // Copy the service template files
