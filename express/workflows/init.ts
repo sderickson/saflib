@@ -88,12 +88,15 @@ export const InitWorkflowDefinition = defineWorkflow<
       name: context.name,
       targetDir: context.targetDir,
       lineReplace: (line) =>
-        line.replace("@template/file-http", context.packageName),
+        line
+          .replace("@template/file-http", context.packageName)
     })),
 
     step(UpdateStepMachine, () => ({
       fileId: "http",
-      promptMessage: `Update **http.ts** to use the common and db packages for this service.`,
+      promptMessage: `Update **http.ts** to use the common and db packages for this service.
+      
+      Make sure to "npm install" the common and db packages first.`,
     })),
 
     step(CwdStepMachine, ({ context }) => ({

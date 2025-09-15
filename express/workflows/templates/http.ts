@@ -11,7 +11,7 @@ import express from "express";
  * Creates the HTTP server for the template-file service.
  */
 export function createApp() {
-  // TODO: Set up database connections if needed
+  // TODO: Set up database connections
   // let dbKey = options.dbKey;
   // if (!dbKey) {
   //   dbKey = serviceDb.connect();
