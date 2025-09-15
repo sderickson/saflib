@@ -13,7 +13,8 @@
   },
   "dependencies": {
     "@saflib/env": "*",
-    "@saflib/grpc-specs": "*"
+    "@saflib/grpc-specs": "*",
+    "@saflib/identity-common": "*"
   },
   "devDependencies": {
     "@saflib/monorepo": "*",
