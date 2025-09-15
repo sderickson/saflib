@@ -12,7 +12,7 @@ import { InitWorkflowDefinition as DrizzleInitWorkflowDefinition } from "@saflib
 import { InitWorkflowDefinition as ExpressInitWorkflowDefinition } from "@saflib/express/workflows";
 import { InitWorkflowDefinition as OpenapiInitWorkflowDefinition } from "@saflib/openapi/workflows";
 
-const sourceDir = path.join(import.meta.dirname, "templates");
+const sourceDir = path.join(import.meta.dirname, "..", "templates");
 
 const input = [
   {
@@ -72,38 +72,96 @@ export const InitWorkflowDefinition = defineWorkflow<
     vitestConfig: path.join(sourceDir, "vitest.config.js"),
     dockerfile: path.join(sourceDir, "Dockerfile.template"),
     runScript: path.join(sourceDir, "bin/run.ts"),
+    envSchema: path.join(sourceDir, "env.schema.combined.json"),
   },
 
   docFiles: {},
 
-  // TODO: update the steps to match the actual workflow you're creating. It will usually involve some combination of copying template files, updating files, prompting, running scripts, and running tests.
   steps: [
+    // Initialize the API spec package
+    step(makeWorkflowMachine(OpenapiInitWorkflowDefinition), ({ context }) => ({
+      name: context.specPackageName,
+      path: path.join(context.targetDir, "..", `${context.serviceName}-spec`),
+    })),
+
+    // Initialize the database package
+    step(makeWorkflowMachine(DrizzleInitWorkflowDefinition), ({ context }) => ({
+      name: context.dbPackageName,
+    })),
+
+    // Initialize the HTTP service package
+    step(makeWorkflowMachine(ExpressInitWorkflowDefinition), ({ context }) => ({
+      name: context.httpPackageName,
+      path: path.join(context.targetDir, "..", `${context.serviceName}-http`),
+    })),
+
+    // Copy the service template files
     step(CopyStepMachine, ({ context }) => ({
-      name: context.name,
+      name: context.serviceName,
       targetDir: context.targetDir,
+      lineReplace: (line) => {
+        return line
+          .replace(/@template\/template-file/g, context.packageName)
+          .replace(/@template\/template-file-db/g, context.dbPackageName)
+          .replace(/@template\/template-file-http/g, context.httpPackageName)
+          .replace(/@template\/template-file-spec/g, context.specPackageName)
+          .replace(
+            /@TEMPLATE_SERVICE_HTTP_PORT/g,
+            `${context.serviceName.toUpperCase()}_SERVICE_HTTP_PORT`,
+          );
+      },
     })),
 
+    // Update package.json with correct dependencies
     step(UpdateStepMachine, ({ context }) => ({
-      fileId: "main",
-      promptMessage: `Update **${path.basename(context.copiedFiles!.main)}** to implement the main functionality. Replace any TODO comments with actual implementation.`,
+      fileId: "packageJson",
+      promptMessage: `Update **package.json** with the correct package name "${context.packageName}" and dependencies for ${context.serviceName} service.`,
     })),
 
+    // Update the run script
     step(UpdateStepMachine, ({ context }) => ({
-      fileId: "config",
-      promptMessage: `Update **${path.basename(context.copiedFiles!.config)}** with the appropriate configuration for this workflow.`,
+      fileId: "runScript",
+      promptMessage: `Update **bin/run.ts** to properly initialize the ${context.serviceName} service with the correct database connections and HTTP server setup.`,
     })),
 
-    step(UpdateStepMachine, ({ context }) => ({
-      fileId: "test",
-      promptMessage: `Update **${path.basename(context.copiedFiles!.test)}** to test the functionality you implemented. Make sure to mock any external dependencies.`,
+    // Install dependencies for the service package
+    step(CwdStepMachine, ({ context }) => ({
+      path: context.targetDir,
     })),
 
-    step(TestStepMachine, () => ({
-      fileId: "test",
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["install"],
     })),
 
-    step(PromptStepMachine, ({ context }) => ({
-      promptText: `Verify that the ${context.name} workflow is working correctly. Test the functionality manually and ensure all files are properly configured.`,
+    // Install dependencies for the database package
+    step(CwdStepMachine, ({ context }) => ({
+      path: path.join(context.targetDir, "..", `${context.serviceName}-db`),
+    })),
+
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["install"],
+    })),
+
+    // Install dependencies for the HTTP package
+    step(CwdStepMachine, ({ context }) => ({
+      path: path.join(context.targetDir, "..", `${context.serviceName}-http`),
+    })),
+
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["install"],
+    })),
+
+    // Generate environment files
+    step(CwdStepMachine, ({ context }) => ({
+      path: context.targetDir,
+    })),
+
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["exec", "saf-env", "generate", "--", "-c"],
     })),
   ],
 });

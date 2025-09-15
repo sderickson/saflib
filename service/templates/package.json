@@ -1,6 +1,6 @@
 {
-  "name": "@template/service-name",
-  "description": "Service package for @template/service-name",
+  "name": "@template/template-file",
+  "description": "Service package for @template/template-file",
   "type": "module",
   "scripts": {
     "start": "node --experimental-strip-types ./bin/run.ts",
@@ -16,9 +16,9 @@
     "@saflib/links": "*",
     "@saflib/monorepo": "*",
     "@saflib/xstate": "*",
-    "@template/db": "*",
-    "@template/http": "*",
-    "@template/spec": "*"
+    "@template/template-file-db": "*",
+    "@template/template-file-http": "*",
+    "@template/template-file-spec": "*"
   },
   "devDependencies": {
     "@saflib/vitest": "*"

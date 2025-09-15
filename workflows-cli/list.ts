@@ -9,6 +9,7 @@ import expressWorkflows from "@saflib/express/workflows";
 import emailWorkflows from "@saflib/email/workflows";
 import envWorkflows from "@saflib/env/workflows";
 import commanderWorkflows from "@saflib/commander/workflows";
+import serviceWorkflows from "../service/workflows/index.ts";
 import type { WorkflowDefinition } from "@saflib/workflows";
 
 const workflowClasses: WorkflowDefinition[] = [
@@ -23,6 +24,7 @@ const workflowClasses: WorkflowDefinition[] = [
   ...emailWorkflows,
   ...envWorkflows,
   ...commanderWorkflows,
+  ...serviceWorkflows,
 ];
 
 export const workflows = workflowClasses;
