@@ -13,7 +13,7 @@ import { InitWorkflowDefinition as ExpressInitWorkflowDefinition } from "@saflib
 import { InitWorkflowDefinition as OpenapiInitWorkflowDefinition } from "@saflib/openapi/workflows";
 import { getCurrentPackageName } from "@saflib/dev-tools";
 
-const sourceDir = path.join(import.meta.dirname, "templates");
+const sourceDir = path.join(import.meta.dirname, "service-templates");
 
 const input = [
   {
