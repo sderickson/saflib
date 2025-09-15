@@ -48,13 +48,16 @@ export const InitWorkflowDefinition = defineWorkflow<
   sourceUrl: import.meta.url,
 
   context: ({ input }) => {
-    let packageName = input.name;
+    let name = input.name;
     // make sure packageName ends with -http
     if (!input.name.endsWith("-http")) {
-      packageName = input.name + "-http";
+      name = input.name + "-http";
+    }
+    const packageName = name;
+    if (name.startsWith("@")) {
+      name = name.split("/")[1];
     }
     const targetDir = path.join(input.cwd, input.path);
-
     return {
       targetDir,
       packageName,

@@ -1,9 +1,4 @@
-import {
-  CopyStepMachine,
-  UpdateStepMachine,
-  defineWorkflow,
-  step,
-} from "@saflib/workflows";
+import { CopyStepMachine, defineWorkflow, step } from "@saflib/workflows";
 import path from "node:path";
 
 const sourceDir = path.join(import.meta.dirname, "templates");
@@ -48,9 +43,11 @@ export const InitWorkflowDefinition = defineWorkflow<
     if (!input.name.endsWith("-db")) {
       name = input.name + "-db";
     }
-    const targetDir = path.join(input.cwd, input.path, name);
-    const packageName = `@saflib/${name}`;
-
+    const packageName = name;
+    if (name.startsWith("@")) {
+      name = name.split("/")[1];
+    }
+    const targetDir = path.join(input.cwd, input.path);
     return {
       name,
       targetDir,
@@ -79,35 +76,8 @@ export const InitWorkflowDefinition = defineWorkflow<
     step(CopyStepMachine, ({ context }) => ({
       name: context.name,
       targetDir: context.targetDir,
-    })),
-
-    step(UpdateStepMachine, ({ context }) => ({
-      fileId: "packageJson",
-      promptMessage: `Update **package.json** with the correct package name "${context.packageName}" and any specific dependencies needed for this database package.`,
-    })),
-
-    step(UpdateStepMachine, ({ context }) => ({
-      fileId: "schema",
-      promptMessage: `Update **schema.ts** to define the database tables and types for the ${context.name} database.
-      
-      Replace the example table with actual tables needed for this service.`,
-    })),
-
-    step(UpdateStepMachine, ({ context }) => ({
-      fileId: "types",
-      promptMessage: `Update **types.ts** to export the appropriate types for the ${context.name} database, including any custom types derived from the schema.`,
-    })),
-
-    step(UpdateStepMachine, ({ context }) => ({
-      fileId: "errors",
-      promptMessage: `Update **errors.ts** to define the specific error classes for the ${context.name} database.
-      
-      Replace the example errors with actual errors that might occur in this database.`,
-    })),
-
-    step(UpdateStepMachine, ({ context }) => ({
-      fileId: "index",
-      promptMessage: `Update **index.ts** to properly export the database interface, types, and errors for the ${context.name} database package.`,
+      lineReplace: (line) =>
+        line.replace("@template/file-db", context.packageName),
     })),
   ],
 });

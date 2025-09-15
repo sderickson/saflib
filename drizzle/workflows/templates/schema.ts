@@ -16,7 +16,6 @@ export const templateFileTable = sqliteTable("template_file_table", {
   updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
 });
 
-// TODO: Add type assertion to ensure the interface matches the schema
 export type TemplateFileEntityTest = Expect<
   Equal<TemplateFileEntity, typeof templateFileTable.$inferSelect>
 >;

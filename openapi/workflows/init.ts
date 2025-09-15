@@ -29,7 +29,6 @@ interface InitWorkflowContext {
   name: string;
   targetDir: string;
   packageName: string;
-  serviceName: string;
 }
 
 export const InitWorkflowDefinition = defineWorkflow<
@@ -54,13 +53,11 @@ export const InitWorkflowDefinition = defineWorkflow<
       name = input.name + "-spec";
     }
     const targetDir = path.join(input.cwd, input.path);
-    const serviceName = name.replace("-spec", "");
 
     return {
       name,
       targetDir,
       packageName: name,
-      serviceName,
     };
   },
 

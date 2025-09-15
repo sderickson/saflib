@@ -77,7 +77,7 @@ export const InitWorkflowDefinition = defineWorkflow<
     return {
       serviceName,
       targetDir,
-      serviceGroupDir: path.join(input.cwd, input.path),
+      serviceGroupDir: input.path,
       packageName,
       dbPackageName,
       httpPackageName,
