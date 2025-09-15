@@ -29,6 +29,10 @@ export interface IdentityRpcsEnvSchema {
    */
   IDENTITY_SERVICE_GRPC_PORT: string;
   /**
+   * Host URL for the identity service
+   */
+  IDENTITY_SERVICE_HOST: string;
+  /**
    * Whether to mock 3rd party integrations. Set to 'true' to mock. And integration packages should respect this setting.
    */
   MOCK_INTEGRATIONS?: "true" | "false";
