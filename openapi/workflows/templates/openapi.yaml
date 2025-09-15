@@ -1,6 +1,6 @@
 openapi: 3.0.0
 info:
-  title: Template Service API
+  title: Service Name API
   version: 1.0.0
   description: API specification for template-service service
 

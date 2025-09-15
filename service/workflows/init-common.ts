@@ -9,7 +9,7 @@ import {
 import path from "node:path";
 import { getCurrentPackageName } from "@saflib/dev-tools";
 
-const sourceDir = path.join(import.meta.dirname, "templates");
+const sourceDir = path.join(import.meta.dirname, "common-templates");
 
 const input = [
   {

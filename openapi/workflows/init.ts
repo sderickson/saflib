@@ -29,6 +29,8 @@ interface InitWorkflowContext {
   name: string;
   targetDir: string;
   packageName: string;
+  serviceName: string;
+  serviceNameCapitalized: string;
 }
 
 export const InitWorkflowDefinition = defineWorkflow<
@@ -52,12 +54,20 @@ export const InitWorkflowDefinition = defineWorkflow<
     if (!input.name.endsWith("-spec")) {
       name = input.name + "-spec";
     }
+    let serviceName = name.replace("-spec", "");
+    if (serviceName.startsWith("@")) {
+      serviceName = serviceName.split("/")[1];
+    }
+    const serviceNameCapitalized =
+      serviceName.charAt(0).toUpperCase() + serviceName.slice(1);
     const targetDir = path.join(input.cwd, input.path);
 
     return {
       name,
       targetDir,
       packageName: name,
+      serviceName,
+      serviceNameCapitalized,
     };
   },
 
@@ -81,7 +91,10 @@ export const InitWorkflowDefinition = defineWorkflow<
       name: context.name,
       targetDir: context.targetDir,
       lineReplace: (line) =>
-        line.replace("@template/file-spec", context.packageName),
+        line
+          .replace("@template/file-spec", context.packageName)
+          .replace("service-name", context.serviceName)
+          .replace("Service Name", context.serviceNameCapitalized),
     })),
 
     step(CwdStepMachine, ({ context }) => ({

@@ -91,9 +91,9 @@ export const InitWorkflowDefinition = defineWorkflow<
         line.replace("@template/file-http", context.packageName),
     })),
 
-    step(UpdateStepMachine, ({ context }) => ({
+    step(UpdateStepMachine, () => ({
       fileId: "http",
-      promptMessage: `Update **http.ts** to implement the HTTP server for ${context.packageName}.`,
+      promptMessage: `Update **http.ts** to use the common and db packages for this service.`,
     })),
 
     step(CwdStepMachine, ({ context }) => ({
