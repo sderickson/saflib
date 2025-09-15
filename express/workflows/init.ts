@@ -27,6 +27,7 @@ const input = [
 ] as const;
 
 interface InitWorkflowContext {
+  name: string;
   targetDir: string;
   packageName: string;
 }
@@ -59,6 +60,7 @@ export const InitWorkflowDefinition = defineWorkflow<
     }
     const targetDir = path.join(input.cwd, input.path);
     return {
+      name,
       targetDir,
       packageName,
     };
@@ -83,7 +85,7 @@ export const InitWorkflowDefinition = defineWorkflow<
     })),
 
     step(CopyStepMachine, ({ context }) => ({
-      name: context.packageName,
+      name: context.name,
       targetDir: context.targetDir,
       lineReplace: (line) =>
         line.replace("@template/file-http", context.packageName),

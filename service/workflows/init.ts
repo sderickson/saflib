@@ -113,7 +113,7 @@ export const InitWorkflowDefinition = defineWorkflow<
     // Initialize the HTTP service package
     step(makeWorkflowMachine(ExpressInitWorkflowDefinition), ({ context }) => ({
       name: context.httpPackageName,
-      path: path.join(context.targetDir, "..", `${context.serviceName}-http`),
+      path: path.join(context.serviceGroupDir, `${context.serviceName}-http`),
     })),
 
     // Copy the service template files
