@@ -11,6 +11,7 @@ import path from "node:path";
 import { InitWorkflowDefinition as DrizzleInitWorkflowDefinition } from "@saflib/drizzle/workflows";
 import { InitWorkflowDefinition as ExpressInitWorkflowDefinition } from "@saflib/express/workflows";
 import { InitWorkflowDefinition as OpenapiInitWorkflowDefinition } from "@saflib/openapi/workflows";
+import { getCurrentPackageName } from "@saflib/dev-tools";
 
 const sourceDir = path.join(import.meta.dirname, "..", "templates");
 
@@ -30,6 +31,8 @@ interface InitWorkflowContext {
   dbPackageName: string;
   httpPackageName: string;
   specPackageName: string;
+  serviceGroupDir: string;
+  orgString: string;
 }
 
 export const InitWorkflowDefinition = defineWorkflow<
@@ -49,20 +52,37 @@ export const InitWorkflowDefinition = defineWorkflow<
   sourceUrl: import.meta.url,
 
   context: ({ input }) => {
-    const serviceName = path.basename(input.path);
-    const targetDir = path.join(input.cwd, input.path);
-    const packageName = `@vendata/${serviceName}-service`;
-    const dbPackageName = `@vendata/${serviceName}-db`;
-    const httpPackageName = `@vendata/${serviceName}-http`;
-    const specPackageName = `@vendata/${serviceName}-spec`;
+    let serviceName = path.basename(input.path);
+    if (serviceName.endsWith("-service")) {
+      serviceName = serviceName.slice(0, -8);
+    }
+    const targetDir = path.join(
+      input.cwd,
+      input.path,
+      serviceName + "-service",
+    );
+    const currentPackageName = getCurrentPackageName();
+    let orgString = "";
+    if (
+      currentPackageName.startsWith("@") &&
+      currentPackageName.includes("/")
+    ) {
+      orgString = currentPackageName.split("/")[0] + "/";
+    }
+    const packageName = `${orgString}${serviceName}-service`;
+    const dbPackageName = `${orgString}${serviceName}-db`;
+    const httpPackageName = `${orgString}${serviceName}-http`;
+    const specPackageName = `${orgString}${serviceName}-spec`;
 
     return {
       serviceName,
       targetDir,
+      serviceGroupDir: path.join(input.cwd, input.path),
       packageName,
       dbPackageName,
       httpPackageName,
       specPackageName,
+      orgString,
     };
   },
 
@@ -71,7 +91,7 @@ export const InitWorkflowDefinition = defineWorkflow<
     tsconfig: path.join(sourceDir, "tsconfig.json"),
     vitestConfig: path.join(sourceDir, "vitest.config.js"),
     dockerfile: path.join(sourceDir, "Dockerfile.template"),
-    runScript: path.join(sourceDir, "bin/run.ts"),
+    runScript: path.join(sourceDir, "run.ts"),
     envSchema: path.join(sourceDir, "env.schema.combined.json"),
   },
 
@@ -81,12 +101,13 @@ export const InitWorkflowDefinition = defineWorkflow<
     // Initialize the API spec package
     step(makeWorkflowMachine(OpenapiInitWorkflowDefinition), ({ context }) => ({
       name: context.specPackageName,
-      path: path.join(context.targetDir, "..", `${context.serviceName}-spec`),
+      path: path.join(context.serviceGroupDir, `${context.serviceName}-spec`),
     })),
 
     // Initialize the database package
     step(makeWorkflowMachine(DrizzleInitWorkflowDefinition), ({ context }) => ({
       name: context.dbPackageName,
+      path: path.join(context.serviceGroupDir, `${context.serviceName}-db`),
     })),
 
     // Initialize the HTTP service package
@@ -100,43 +121,23 @@ export const InitWorkflowDefinition = defineWorkflow<
       name: context.serviceName,
       targetDir: context.targetDir,
       lineReplace: (line) => {
-        return line
-          .replace(/@template\/template-file/g, context.packageName)
-          .replace(/@template\/template-file-db/g, context.dbPackageName)
-          .replace(/@template\/template-file-http/g, context.httpPackageName)
-          .replace(/@template\/template-file-spec/g, context.specPackageName)
-          .replace(
-            /@TEMPLATE_SERVICE_HTTP_PORT/g,
-            `${context.serviceName.toUpperCase()}_SERVICE_HTTP_PORT`,
-          );
+        return line.replace("@your-org/", context.orgString);
       },
     })),
 
-    // Update package.json with correct dependencies
-    step(UpdateStepMachine, ({ context }) => ({
-      fileId: "packageJson",
-      promptMessage: `Update **package.json** with the correct package name "${context.packageName}" and dependencies for ${context.serviceName} service.`,
+    // Generate the environment schema
+    step(CwdStepMachine, ({ context }) => ({
+      path: context.targetDir,
+    })),
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["exec", "saf-env", "generate", "--", "-c"],
     })),
 
     // Update the run script
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "runScript",
-      promptMessage: `Update **bin/run.ts** to properly initialize the ${context.serviceName} service with the correct database connections and HTTP server setup.`,
-    })),
-
-    // Install dependencies for the service package
-    step(CwdStepMachine, ({ context }) => ({
-      path: context.targetDir,
-    })),
-
-    step(CommandStepMachine, () => ({
-      command: "npm",
-      args: ["install"],
-    })),
-
-    // Install dependencies for the database package
-    step(CwdStepMachine, ({ context }) => ({
-      path: path.join(context.targetDir, "..", `${context.serviceName}-db`),
+      promptMessage: `Update **run.ts** to use ${context.dbPackageName} and ${context.httpPackageName}.`,
     })),
 
     step(CommandStepMachine, () => ({
@@ -152,16 +153,6 @@ export const InitWorkflowDefinition = defineWorkflow<
     step(CommandStepMachine, () => ({
       command: "npm",
       args: ["install"],
-    })),
-
-    // Generate environment files
-    step(CwdStepMachine, ({ context }) => ({
-      path: context.targetDir,
-    })),
-
-    step(CommandStepMachine, () => ({
-      command: "npm",
-      args: ["exec", "saf-env", "generate", "--", "-c"],
     })),
   ],
 });

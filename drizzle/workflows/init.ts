@@ -15,6 +15,12 @@ const input = [
       "The name of the database package to create (e.g., 'user-db' or 'analytics-db')",
     exampleValue: "example-db",
   },
+  {
+    name: "path",
+    description:
+      "The path to the target directory for the database package (e.g., './services/example-db')",
+    exampleValue: "./services/example-service/example-db",
+  },
 ] as const;
 
 interface InitWorkflowContext {
@@ -42,7 +48,7 @@ export const InitWorkflowDefinition = defineWorkflow<
     if (!input.name.endsWith("-db")) {
       name = input.name + "-db";
     }
-    const targetDir = path.join(input.cwd, name);
+    const targetDir = path.join(input.cwd, input.path, name);
     const packageName = `@saflib/${name}`;
 
     return {

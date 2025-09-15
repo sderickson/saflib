@@ -1,9 +1,9 @@
 {
-  "name": "@template/template-file",
-  "description": "Service package for @template/template-file",
+  "name": "template-file-service",
+  "description": "Service package for template-file",
   "type": "module",
   "scripts": {
-    "start": "node --experimental-strip-types ./bin/run.ts",
+    "start": "node --experimental-strip-types ./run.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
@@ -12,13 +12,10 @@
   },
   "dependencies": {
     "@saflib/env": "*",
-    "@saflib/express": "*",
-    "@saflib/links": "*",
     "@saflib/monorepo": "*",
-    "@saflib/xstate": "*",
-    "@template/template-file-db": "*",
-    "@template/template-file-http": "*",
-    "@template/template-file-spec": "*"
+    "template-file-db": "*",
+    "template-file-http": "*",
+    "template-file-spec": "*"
   },
   "devDependencies": {
     "@saflib/vitest": "*"
