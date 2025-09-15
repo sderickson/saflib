@@ -1,0 +1,19 @@
+{
+  "name": "service",
+  "description": "Workflows and utilities for bootstrapping and initializing services",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@saflib/vitest": "*",
+    "@saflib/monorepo": "*"
+  }
+}

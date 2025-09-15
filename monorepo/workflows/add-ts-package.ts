@@ -6,6 +6,7 @@ import {
   defineWorkflow,
   step,
   TestStepMachine,
+  CwdStepMachine,
 } from "@saflib/workflows";
 import path from "node:path";
 
@@ -85,6 +86,10 @@ export const AddTsPackageWorkflowDefinition = defineWorkflow<
       promptText: `Ensure the new package path '${context.path}' is included in the "workspaces" array in the root \`package.json\`.
       
       For example: \`"workspaces": ["${context.path}", "other-packages/*"]\``,
+    })),
+
+    step(CwdStepMachine, ({ context }) => ({
+      path: context.targetDir,
     })),
 
     step(CommandStepMachine, () => ({

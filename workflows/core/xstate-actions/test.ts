@@ -15,7 +15,7 @@ const getTestCommandAndArgs = () => {
   return { command, args };
 };
 
-export const doesTestPass = (pathString: string) => {
+export const doesTestPass = (pathString: string, { cwd }: { cwd: string }) => {
   const { command, args } = getTestCommandAndArgs();
-  return runCommandAsync(command, [...args, pathString]);
+  return runCommandAsync(command, [...args, pathString], { cwd });
 };

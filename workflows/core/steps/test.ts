@@ -62,14 +62,14 @@ export const TestStepMachine = setup({
       invoke: {
         src: fromPromise(
           async ({
-            input: { fileName, dryRun },
+            input: { fileName, dryRun, cwd },
           }: {
-            input: { fileName: string; dryRun: boolean };
+            input: { fileName: string; dryRun: boolean; cwd: string };
           }) => {
             if (dryRun) {
               return true;
             }
-            return await doesTestPass(fileName);
+            return await doesTestPass(fileName, { cwd });
           },
         ),
         input: ({ context }) => {
@@ -78,6 +78,7 @@ export const TestStepMachine = setup({
               ? path.basename(context.copiedFiles![context.fileId])
               : "",
             dryRun: context.dryRun,
+            cwd: context.cwd,
           };
         },
         onDone: {
