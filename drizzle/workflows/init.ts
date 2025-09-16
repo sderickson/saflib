@@ -100,6 +100,11 @@ export const DrizzleInitWorkflowDefinition = defineWorkflow<
 
     step(CommandStepMachine, () => ({
       command: "npm",
+      args: ["run", "generate"],
+    })),
+
+    step(CommandStepMachine, () => ({
+      command: "npm",
       args: ["test"],
     })),
   ],
