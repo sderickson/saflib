@@ -60,7 +60,7 @@ export const AddCommandWorkflowDefinition = defineWorkflow<
 
     const targetDir = dirname(input.path);
 
-    if (!input.dryRun && !existsSync(targetDir)) {
+    if (input.runMode !== "dry" && !existsSync(targetDir)) {
       throw new Error(`Target directory ${targetDir} does not exist`);
     }
 

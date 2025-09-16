@@ -42,6 +42,7 @@ const TestDrizzleWorkflowsDefinition = defineWorkflow<
       - Clean up`,
     })),
     step(makeWorkflowMachine(InitWorkflowDefinition), () => ({
+      path: "test-database",
       name: "test-database",
     })),
     step(CwdStepMachine, () => ({
