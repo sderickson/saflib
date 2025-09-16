@@ -39,11 +39,11 @@ export const InitWorkflowDefinition = defineWorkflow<
 
   context: ({ input }) => {
     let name = input.name;
-    // make sure name ends with -db
-    if (!input.name.endsWith("-db")) {
-      name = input.name + "-db";
+    // make sure name doesn't end with -db
+    if (input.name.endsWith("-db")) {
+      name = input.name.slice(0, -3);
     }
-    const packageName = name;
+    const packageName = name + "-db";
     if (name.startsWith("@")) {
       name = name.split("/")[1];
     }

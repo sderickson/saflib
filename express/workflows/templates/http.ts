@@ -9,7 +9,7 @@ import {
 /**
  * Creates the HTTP server for the template-file service.
  */
-export function createTemplateFileApp(
+export function createTemplateFileHttpApp(
   options: TemplateFileServiceContextOptions,
 ) {
   let dbKey = options.templateFileDbKey;

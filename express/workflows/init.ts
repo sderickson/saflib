@@ -50,11 +50,11 @@ export const InitWorkflowDefinition = defineWorkflow<
 
   context: ({ input }) => {
     let name = input.name;
-    // make sure packageName ends with -http
-    if (!input.name.endsWith("-http")) {
-      name = input.name + "-http";
+    // make sure name doesn't end with -http
+    if (input.name.endsWith("-http")) {
+      name = input.name.slice(0, -5);
     }
-    const packageName = name;
+    const packageName = name + "-http";
     if (name.startsWith("@")) {
       name = name.split("/")[1];
     }
@@ -88,8 +88,10 @@ export const InitWorkflowDefinition = defineWorkflow<
       name: context.name,
       targetDir: context.targetDir,
       lineReplace: (line) =>
-        line
-          .replace("@template/file-http", context.packageName)
+        line.replace(
+          "@template/file-",
+          context.packageName.replace("-http", "-"),
+        ),
     })),
 
     step(UpdateStepMachine, () => ({

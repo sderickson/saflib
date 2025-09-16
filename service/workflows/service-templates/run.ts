@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { startExpressServer } from "@saflib/express";
-import { createTemplateFileApp } from "@template/file-http";
+import { createTemplateFileHttpApp } from "@template/file-http";
 import { templateFileDb } from "@template/file-db";
 import {
   addLokiTransport,
@@ -27,7 +27,7 @@ async function main() {
     log.info("template-file-db connection complete.");
 
     log.info("Starting template-file-http...");
-    const expressApp = createTemplateFileApp({ templateFileDbKey: dbKey });
+    const expressApp = createTemplateFileHttpApp({ templateFileDbKey: dbKey });
     startExpressServer(expressApp, {
       port: parseInt(typedEnv.TEMPLATE_FILE_SERVICE_HTTP_PORT || "3000", 10),
     });
