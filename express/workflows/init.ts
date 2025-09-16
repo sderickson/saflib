@@ -1,6 +1,5 @@
 import {
   CopyStepMachine,
-  UpdateStepMachine,
   DocStepMachine,
   defineWorkflow,
   step,
@@ -92,13 +91,6 @@ export const InitWorkflowDefinition = defineWorkflow<
           "@template/file-",
           context.packageName.replace("-http", "-"),
         ),
-    })),
-
-    step(UpdateStepMachine, () => ({
-      fileId: "http",
-      promptMessage: `Update **http.ts** to use the common and db packages for this service.
-      
-      Make sure to "npm install" the common and db packages first.`,
     })),
 
     step(CwdStepMachine, ({ context }) => ({

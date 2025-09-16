@@ -1,6 +1,5 @@
 import {
   CopyStepMachine,
-  UpdateStepMachine,
   defineWorkflow,
   step,
   makeWorkflowMachine,
@@ -100,30 +99,30 @@ export const InitWorkflowDefinition = defineWorkflow<
   docFiles: {},
 
   steps: [
-    // Initialize the API spec package
+    // openapi
     step(makeWorkflowMachine(OpenapiInitWorkflowDefinition), ({ context }) => ({
       name: context.specPackageName,
       path: path.join(context.serviceGroupDir, `${context.serviceName}-spec`),
     })),
 
-    // Initialize the database package
+    // drizzle
     step(makeWorkflowMachine(DrizzleInitWorkflowDefinition), ({ context }) => ({
       name: context.dbPackageName,
       path: path.join(context.serviceGroupDir, `${context.serviceName}-db`),
     })),
 
-    // Initialize the common package
+    // common
     step(makeWorkflowMachine(InitCommonWorkflowDefinition), ({ context }) => ({
       path: context.serviceGroupDir,
     })),
 
-    // Initialize the HTTP service package
+    // express
     step(makeWorkflowMachine(ExpressInitWorkflowDefinition), ({ context }) => ({
       name: context.httpPackageName,
       path: path.join(context.serviceGroupDir, `${context.serviceName}-http`),
     })),
 
-    // Copy the service template files
+    // service itself
     step(CopyStepMachine, ({ context }) => ({
       name: context.serviceName,
       targetDir: context.targetDir,
@@ -132,19 +131,13 @@ export const InitWorkflowDefinition = defineWorkflow<
       },
     })),
 
-    // Generate the environment schema
+    // generate env
     step(CwdStepMachine, ({ context }) => ({
       path: context.targetDir,
     })),
     step(CommandStepMachine, () => ({
       command: "npm",
       args: ["exec", "saf-env", "generate", "--", "-c"],
-    })),
-
-    // Update the run script
-    step(UpdateStepMachine, ({ context }) => ({
-      fileId: "runScript",
-      promptMessage: `Update **run.ts** to use ${context.dbPackageName} and ${context.httpPackageName}.`,
     })),
 
     step(CommandStepMachine, () => ({

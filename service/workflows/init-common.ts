@@ -1,6 +1,5 @@
 import {
   CopyStepMachine,
-  UpdateStepMachine,
   defineWorkflow,
   step,
   CwdStepMachine,
@@ -76,6 +75,7 @@ export const InitCommonWorkflowDefinition = defineWorkflow<
     packageJson: path.join(sourceDir, "package.json"),
     tsconfig: path.join(sourceDir, "tsconfig.json"),
     vitestConfig: path.join(sourceDir, "vitest.config.js"),
+    test: path.join(sourceDir, "index.test.ts"),
   },
 
   // TODO: add documentation file references
@@ -99,9 +99,14 @@ export const InitCommonWorkflowDefinition = defineWorkflow<
       args: ["exec", "saf-env", "generate"],
     })),
 
-    step(UpdateStepMachine, ({ context }) => ({
-      fileId: "context",
-      promptMessage: `Update **${path.basename(context.copiedFiles!.context)}**, making sure the database package is integrated.`,
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["install"],
+    })),
+
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["test"],
     })),
   ],
 });

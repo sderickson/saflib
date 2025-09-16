@@ -1,4 +1,4 @@
-import { CopyStepMachine, defineWorkflow, step } from "@saflib/workflows";
+import { CopyStepMachine, defineWorkflow, step, CwdStepMachine, CommandStepMachine } from "@saflib/workflows";
 import path from "node:path";
 
 const sourceDir = path.join(import.meta.dirname, "templates");
@@ -66,6 +66,7 @@ export const InitWorkflowDefinition = defineWorkflow<
     tsconfig: path.join(sourceDir, "tsconfig.json"),
     vitestConfig: path.join(sourceDir, "vitest.config.js"),
     gitignore: path.join(sourceDir, ".gitignore"),
+    test: path.join(sourceDir, "index.test.ts"),
   },
 
   docFiles: {
@@ -78,6 +79,20 @@ export const InitWorkflowDefinition = defineWorkflow<
       targetDir: context.targetDir,
       lineReplace: (line) =>
         line.replace("@template/file-db", context.packageName),
+    })),
+
+    step(CwdStepMachine, ({ context }) => ({
+      path: context.targetDir,
+    })),
+
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["install"],
+    })),
+
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["test"],
     })),
   ],
 });
