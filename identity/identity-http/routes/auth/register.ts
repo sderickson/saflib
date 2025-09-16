@@ -70,7 +70,11 @@ export const registerHandler = createHandler(async (req, res) => {
   });
   if (callbacks.onVerificationTokenCreated) {
     promises.push(
-      callbacks.onVerificationTokenCreated({ user, verificationUrl, isResend: false }),
+      callbacks.onVerificationTokenCreated({
+        user,
+        verificationUrl,
+        isResend: false,
+      }),
     );
   }
 

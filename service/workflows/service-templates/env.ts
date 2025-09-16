@@ -50,4 +50,6 @@ export interface TemplateFileServiceEnvSchema {
 /**
  * `process.env` casted to the `TemplateFileServiceEnvSchema` type.
  */
-export const typedEnv = (globalThis.process ? process.env : {}) as unknown as TemplateFileServiceEnvSchema;
+export const typedEnv = (globalThis.process
+  ? process.env
+  : {}) as unknown as TemplateFileServiceEnvSchema;

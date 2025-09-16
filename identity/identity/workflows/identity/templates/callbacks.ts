@@ -1,7 +1,11 @@
 import { mockingOn } from "@saflib/email";
 import { getSafReporters } from "@saflib/node";
 import type { IdentityServiceCallbacks } from "@saflib/identity";
-import type { VerificationTokenCreatedPayload, PasswordResetPayload, PasswordUpdatedPayload } from "@saflib/identity-common";
+import type {
+  VerificationTokenCreatedPayload,
+  PasswordResetPayload,
+  PasswordUpdatedPayload,
+} from "@saflib/identity-common";
 async function onVerificationTokenCreated(
   payload: VerificationTokenCreatedPayload,
 ) {
