@@ -1,5 +1,5 @@
 import {
-  InitWorkflowDefinition,
+  DrizzleInitWorkflowDefinition,
   UpdateSchemaWorkflowDefinition,
   AddQueryWorkflowDefinition,
 } from "./index.ts";
@@ -41,7 +41,8 @@ const TestDrizzleWorkflowsDefinition = defineWorkflow<
       - Test the database functionality
       - Clean up`,
     })),
-    step(makeWorkflowMachine(InitWorkflowDefinition), () => ({
+    step(makeWorkflowMachine(DrizzleInitWorkflowDefinition), () => ({
+      path: "test-database",
       name: "test-database",
     })),
     step(CwdStepMachine, () => ({

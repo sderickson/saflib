@@ -1,7 +1,5 @@
 import {
   CopyStepMachine,
-  UpdateStepMachine,
-  DocStepMachine,
   defineWorkflow,
   step,
   CommandStepMachine,
@@ -26,36 +24,40 @@ const input = [
   },
 ] as const;
 
-interface InitWorkflowContext {
+interface ExpressInitWorkflowContext {
+  name: string;
   targetDir: string;
   packageName: string;
 }
 
-export const InitWorkflowDefinition = defineWorkflow<
+export const ExpressInitWorkflowDefinition = defineWorkflow<
   typeof input,
-  InitWorkflowContext
+  ExpressInitWorkflowContext
 >({
   id: "express/init",
 
-  description:
-    "Create a new HTTP service package following @saflib/express structure and conventions",
+  description: "Create an Express HTTP service package",
 
   checklistDescription: ({ packageName }) =>
-    `Create a new ${packageName} HTTP service package.`,
+    `Create the ${packageName} Express HTTP service package.`,
 
   input,
 
   sourceUrl: import.meta.url,
 
   context: ({ input }) => {
-    let packageName = input.name;
-    // make sure packageName ends with -http
-    if (!input.name.endsWith("-http")) {
-      packageName = input.name + "-http";
+    let name = input.name;
+    // make sure name doesn't end with -http
+    if (input.name.endsWith("-http")) {
+      name = input.name.slice(0, -5);
+    }
+    const packageName = name + "-http";
+    if (name.startsWith("@")) {
+      name = name.split("/")[1];
     }
     const targetDir = path.join(input.cwd, input.path);
-
     return {
+      name,
       targetDir,
       packageName,
     };
@@ -75,20 +77,14 @@ export const InitWorkflowDefinition = defineWorkflow<
   },
 
   steps: [
-    step(DocStepMachine, () => ({
-      docId: "overview",
-    })),
-
     step(CopyStepMachine, ({ context }) => ({
-      name: context.packageName,
+      name: context.name,
       targetDir: context.targetDir,
       lineReplace: (line) =>
-        line.replace("@template/file-http", context.packageName),
-    })),
-
-    step(UpdateStepMachine, ({ context }) => ({
-      fileId: "http",
-      promptMessage: `Update **http.ts** to implement the HTTP server for ${context.packageName}.`,
+        line.replace(
+          "@template/file-",
+          context.packageName.replace("-http", "-"),
+        ),
     })),
 
     step(CwdStepMachine, ({ context }) => ({

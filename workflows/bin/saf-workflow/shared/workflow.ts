@@ -3,6 +3,7 @@ import type {
   ChecklistItem,
   WorkflowOutput,
   WorkflowDefinition,
+  WorkflowRunMode,
 } from "../../../core/types.ts";
 import type { WorkflowBlob } from "./types.ts";
 import type { AnyStateMachine, AnyActor } from "xstate";
@@ -46,7 +47,7 @@ export abstract class AbstractWorkflowRunner {
 interface XStateWorkflowOptions<I extends readonly WorkflowArgument[], C> {
   definition: WorkflowDefinition<I, C>;
   args?: string[];
-  dryRun?: boolean;
+  workflowRunMode?: WorkflowRunMode;
 }
 
 /**
@@ -60,7 +61,7 @@ interface XStateWorkflowOptions<I extends readonly WorkflowArgument[], C> {
  */
 export class XStateWorkflowRunner extends AbstractWorkflowRunner {
   private machine: AnyStateMachine;
-  private input: { [key: string]: string } & { dryRun?: boolean };
+  private input: { [key: string]: string } & { runMode?: WorkflowRunMode };
   private args: string[];
   private actor: AnyActor | undefined;
   definition: WorkflowDefinition<any, any>;
@@ -82,7 +83,7 @@ export class XStateWorkflowRunner extends AbstractWorkflowRunner {
       this.input[arg.name] = options.args?.[i] || "";
     }
 
-    this.input.dryRun = options.dryRun;
+    this.input.runMode = options.workflowRunMode;
     this.machine = makeWorkflowMachine(this.definition);
   }
 

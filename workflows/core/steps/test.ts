@@ -11,6 +11,7 @@ import {
   type WorkflowContext,
   type WorkflowInput,
   type WorkflowOutput,
+  type WorkflowRunMode,
 } from "../types.ts";
 import path from "node:path";
 import { raise } from "xstate";
@@ -62,14 +63,14 @@ export const TestStepMachine = setup({
       invoke: {
         src: fromPromise(
           async ({
-            input: { fileName, dryRun },
+            input: { fileName, runMode, cwd },
           }: {
-            input: { fileName: string; dryRun: boolean };
+            input: { fileName: string; runMode: WorkflowRunMode; cwd: string };
           }) => {
-            if (dryRun) {
+            if (runMode === "dry" || runMode === "script") {
               return true;
             }
-            return await doesTestPass(fileName);
+            return await doesTestPass(fileName, { cwd });
           },
         ),
         input: ({ context }) => {
@@ -77,7 +78,8 @@ export const TestStepMachine = setup({
             fileName: context.fileId
               ? path.basename(context.copiedFiles![context.fileId])
               : "",
-            dryRun: context.dryRun,
+            runMode: context.runMode,
+            cwd: context.cwd,
           };
         },
         onDone: {

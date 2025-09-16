@@ -1,0 +1,21 @@
+{
+  "name": "template-file-service",
+  "description": "Service package for template-file",
+  "type": "module",
+  "scripts": {
+    "start": "node --experimental-strip-types ./run.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "healthcheck": "node --experimental-strip-types ./bin/healthcheck",
+    "typecheck": "tsc"
+  },
+  "dependencies": {
+    "@saflib/env": "*",
+    "@saflib/monorepo": "*",
+    "@template/file-service-common": "*"
+  },
+  "devDependencies": {
+    "@saflib/vitest": "*"
+  }
+}

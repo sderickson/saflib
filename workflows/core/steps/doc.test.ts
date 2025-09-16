@@ -11,7 +11,7 @@ describe("DocStepMachine", () => {
         docFiles: {
           "test-doc": "/path/to/test-doc.md",
         },
-        dryRun: true,
+        runMode: "dry",
       },
     });
     actor.start();

@@ -113,10 +113,7 @@ export interface ActionParam<C, E extends AnyEventObject> {
  * Inputs every workflow machine receives.
  */
 export interface WorkflowInput {
-  /**
-   * Flag to skip all execution of the workflow. Used mainly to get a checklist.
-   */
-  dryRun?: boolean;
+  runMode?: WorkflowRunMode;
 
   systemPrompt?: string;
 
@@ -147,6 +144,8 @@ export interface WorkflowOutput {
   newCwd?: string;
 }
 
+export type WorkflowRunMode = "dry" | "print" | "script";
+
 /**
  * Context shared across all workflow machines.
  */
@@ -165,11 +164,12 @@ export interface WorkflowContext {
   systemPrompt?: string;
 
   /**
-   * Flag to skip all execution of the workflow. Use to return before doing things
-   * like file operations. This is necessary to get a checklist from a workflow
-   * without actually operating it.
+   * The mode to run the workflow in.
+   * - "dry": do not print out logs or prompts, do not halt, just run the whole workflow and return the output. Useful for getting a checklist.
+   * - "print": print out logs and prompts, halt at prompts. "Normal" execution mode.
+   * - "script": skip prompts and checks, just run command and copy steps. Useful for debugging templates and scripts.
    */
-  dryRun?: boolean;
+  runMode: WorkflowRunMode;
 
   /**
    * Currently unused. I had a plan to use this to orchestrate halt events, or perhaps a mutex setup so that async work (such as Promise actors) can communicate to the runner that there's async work happening and the workflow should wait until it's done before exiting the program or whatever the runner will end up doing. But I've run into a few problems including that the ref doesn't properly get unserialized (possibly because it's the root node?), and I can't just send a signal directly to a consistently named actor (I tried passing "workflow-actor" as the id when kicking off and dehydrating, no dice).

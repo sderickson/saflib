@@ -1,12 +1,12 @@
 import { AddHandlerWorkflowDefinition } from "./add-handler.ts";
-import { InitWorkflowDefinition } from "./init.ts";
+import { ExpressInitWorkflowDefinition } from "./init.ts";
 import type { WorkflowDefinition } from "@saflib/workflows";
 
-export { AddHandlerWorkflowDefinition, InitWorkflowDefinition };
+export { AddHandlerWorkflowDefinition, ExpressInitWorkflowDefinition };
 
 const workflowDefinitions: WorkflowDefinition[] = [
   AddHandlerWorkflowDefinition,
-  InitWorkflowDefinition,
+  ExpressInitWorkflowDefinition,
 ];
 
 export default workflowDefinitions;

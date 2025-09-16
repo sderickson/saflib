@@ -1,8 +1,8 @@
-import { InitWorkflowDefinition as ExpressInitWorkflowDefinition } from "./init.ts";
+import { ExpressInitWorkflowDefinition as ExpressInitWorkflowDefinition } from "./init.ts";
 import { AddHandlerWorkflowDefinition } from "./add-handler.ts";
 
 import {
-  InitWorkflowDefinition as OpenapiInitWorkflowDefinition,
+  OpenapiInitWorkflowDefinition,
   AddSchemaWorkflowDefinition,
   AddRouteWorkflowDefinition,
 } from "@saflib/openapi/workflows";

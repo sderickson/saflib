@@ -2,17 +2,21 @@ import type {
   WorkflowOutput,
   WorkflowDefinition,
   WorkflowArgument,
+  WorkflowRunMode,
 } from "../../../core/types.ts";
 import { XStateWorkflowRunner } from "./workflow.ts";
 import path from "node:path";
 import { existsSync, readFileSync } from "node:fs";
-import { saveWorkflow } from "./file-io.ts";
+import { saveWorkflow, loadWorkflowDefinitionFromFile } from "./file-io.ts";
+import { resolve } from "node:path";
+import { getWorkflowLogger } from "../../../core/store.ts";
 
 /**
- * Convenience function to take a WorkflowDefinition, dry run it, and return the output. The output in particular includes the checklist.
+ * Convenience function to take a WorkflowDefinition, run it in the specified mode, and return the output.
  */
-export const dryRunWorkflow = async (
+export const runWorkflow = async (
   definition: WorkflowDefinition<any, any>,
+  runMode: WorkflowRunMode,
 ): Promise<WorkflowOutput> => {
   const cliArguments = definition.input as WorkflowArgument[];
   const exampleArgs = cliArguments.map(
@@ -21,28 +25,20 @@ export const dryRunWorkflow = async (
   const workflow = new XStateWorkflowRunner({
     definition,
     args: exampleArgs,
-    dryRun: true,
+    workflowRunMode: runMode,
   });
   await workflow.kickoff();
-  let lastStateName = workflow.getCurrentStateName();
-
-  while (!workflow.done()) {
-    await workflow.goToNextStep();
-    const error = workflow.getError();
-    if (error) {
-      console.error("Workflow errored", error);
-      process.exit(1);
-    }
-    const currentStateName = workflow.getCurrentStateName();
-    if (currentStateName === lastStateName) {
-      throw new Error(
-        `Workflow ${definition.id} is stuck on state ${currentStateName}.`,
-      );
-    }
-    lastStateName = currentStateName;
-  }
-
   return workflow.getOutput();
+};
+
+/**
+ * Convenience function to take a WorkflowDefinition, dry run it, and return the output. The output in particular includes the checklist.
+ * @deprecated Use runWorkflow with runMode: "dry" instead
+ */
+export const dryRunWorkflow = async (
+  definition: WorkflowDefinition<any, any>,
+): Promise<WorkflowOutput> => {
+  return runWorkflow(definition, "dry");
 };
 
 /**
@@ -79,11 +75,49 @@ export const kickoffWorkflow = async (
   const workflow = new XStateWorkflowRunner({
     definition: Workflow,
     args: args.slice(0, Workflow.input.length),
-    dryRun: false,
+    workflowRunMode: "print",
   });
   await workflow.kickoff();
   console.log("--- To continue, run 'npm exec saf-workflow next' ---\n");
   saveWorkflow(workflow);
+};
+
+/**
+ * Load a workflow definition from either a workflow ID or a file path.
+ * This is shared logic used by multiple commands.
+ */
+export const loadWorkflowDefinition = async (
+  workflowIdOrPath: string,
+  workflows: WorkflowDefinition[],
+): Promise<WorkflowDefinition> => {
+  const log = getWorkflowLogger();
+  log.info(`Loading workflow from path: ${workflowIdOrPath}`);
+  let workflowDefinition: WorkflowDefinition | undefined;
+
+  // Check if it's a file path (contains a dot or slash)
+  if (workflowIdOrPath.startsWith("./") || workflowIdOrPath.endsWith(".ts")) {
+    const resolvedPath = resolve(process.cwd(), workflowIdOrPath);
+    log.info(`Loading workflow from file: ${resolvedPath}`);
+    workflowDefinition = await loadWorkflowDefinitionFromFile(resolvedPath);
+    if (!workflowDefinition) {
+      process.exit(1);
+    }
+    log.info(`Loaded workflow from file: ${workflowIdOrPath}`);
+  } else {
+    // Look for workflow by ID
+    workflowDefinition = workflows.find((w) => w.id === workflowIdOrPath);
+    if (!workflowDefinition) {
+      log.error(`Error: Workflow with ID "${workflowIdOrPath}" not found`);
+      log.info("Available workflows:");
+      workflows.forEach((w) => {
+        log.info(`  - ${w.id}: ${w.description}`);
+      });
+      process.exit(1);
+    }
+    log.info(`Found workflow: ${workflowDefinition.id}`);
+  }
+
+  return workflowDefinition;
 };
 
 /**

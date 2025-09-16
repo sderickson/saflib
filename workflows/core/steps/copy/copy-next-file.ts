@@ -19,7 +19,7 @@ export const copyNextFile = fromPromise(
   }: {
     input: CopyStepContext;
   }): Promise<CopyNextFileOutput> => {
-    const { filesToCopy, dryRun, templateFiles, name, targetDir } = input;
+    const { filesToCopy, runMode, templateFiles, name, targetDir } = input;
 
     if (filesToCopy.length === 0) {
       throw new Error("No files to copy");
@@ -40,7 +40,7 @@ export const copyNextFile = fromPromise(
       filePath: targetPath,
     };
 
-    if (dryRun) {
+    if (runMode === "dry") {
       return response;
     }
 

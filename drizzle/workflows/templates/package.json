@@ -1,6 +1,6 @@
 {
-  "name": "@saflib/template-file",
-  "description": "TODO: Add description for template-file database",
+  "name": "@template/file-db",
+  "description": "Standard database package.",
   "private": true,
   "type": "module",
   "exports": {

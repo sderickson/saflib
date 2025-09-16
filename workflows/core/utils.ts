@@ -94,7 +94,7 @@ export function contextFromInput(
   return {
     checklist: [],
     systemPrompt: input.systemPrompt,
-    dryRun: input.dryRun,
+    runMode: input.runMode || "print",
     templateFiles: input.templateFiles,
     copiedFiles: input.copiedFiles,
     docFiles: input.docFiles,

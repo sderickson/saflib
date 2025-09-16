@@ -50,7 +50,7 @@ export const loadWorkflow = async (workflows: WorkflowDefinition[]) => {
   const instance = new XStateWorkflowRunner({
     definition: workflow,
     args: blob.args,
-    dryRun: false,
+    workflowRunMode: "print",
   });
   instance.hydrate(blob);
   return instance;

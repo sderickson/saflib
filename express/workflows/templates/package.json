@@ -13,7 +13,8 @@
   },
   "dependencies": {
     "@saflib/express": "*",
-    "@saflib/monorepo": "*"
+    "@saflib/monorepo": "*",
+    "@template/file-service-common": "*"
   },
   "devDependencies": {
     "@saflib/vitest": "*"

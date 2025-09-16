@@ -7,6 +7,7 @@ import type {
   WorkflowInput,
   WorkflowContext,
   WorkflowOutput,
+  WorkflowRunMode,
 } from "./types.ts";
 import { workflowActions, workflowActors } from "./xstate.ts";
 import {
@@ -33,7 +34,7 @@ export function defineWorkflow<
 >(config: {
   input: I;
   context: (arg: {
-    input: CreateArgsType<I> & { dryRun?: boolean; cwd: string };
+    input: CreateArgsType<I> & { runMode?: WorkflowRunMode; cwd: string };
   }) => C;
   id: string;
   description: string;
@@ -86,7 +87,7 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
             ...step.input({ context }),
             // don't need checklist; the machine will compose their own
             systemPrompt: context.systemPrompt,
-            dryRun: context.dryRun,
+            runMode: context.runMode,
             rootRef: context.rootRef,
             templateFiles: context.templateFiles,
             copiedFiles: context.copiedFiles,

@@ -1,8 +1,9 @@
 import {
   CopyStepMachine,
-  UpdateStepMachine,
   defineWorkflow,
   step,
+  CwdStepMachine,
+  CommandStepMachine,
 } from "@saflib/workflows";
 import path from "node:path";
 
@@ -15,22 +16,30 @@ const input = [
       "The name of the database package to create (e.g., 'user-db' or 'analytics-db')",
     exampleValue: "example-db",
   },
+  {
+    name: "path",
+    description:
+      "The path to the target directory for the database package (e.g., './services/example-db')",
+    exampleValue: "./services/example-service/example-db",
+  },
 ] as const;
 
-interface InitWorkflowContext {
+interface DrizzleInitWorkflowContext {
   name: string;
   targetDir: string;
   packageName: string;
 }
 
-export const InitWorkflowDefinition = defineWorkflow<
+export const DrizzleInitWorkflowDefinition = defineWorkflow<
   typeof input,
-  InitWorkflowContext
+  DrizzleInitWorkflowContext
 >({
   id: "drizzle/init",
 
-  description:
-    "Create a new database package following the @saflib/drizzle structure and conventions",
+  description: "Create a Drizzle/SQLite database package",
+
+  checklistDescription: ({ packageName }) =>
+    `Create the ${packageName} Drizzle/SQLite database package.`,
 
   input,
 
@@ -38,13 +47,15 @@ export const InitWorkflowDefinition = defineWorkflow<
 
   context: ({ input }) => {
     let name = input.name;
-    // make sure name ends with -db
-    if (!input.name.endsWith("-db")) {
-      name = input.name + "-db";
+    // make sure name doesn't end with -db
+    if (input.name.endsWith("-db")) {
+      name = input.name.slice(0, -3);
     }
-    const targetDir = path.join(input.cwd, name);
-    const packageName = `@saflib/${name}`;
-
+    const packageName = name + "-db";
+    if (name.startsWith("@")) {
+      name = name.split("/")[1];
+    }
+    const targetDir = path.join(input.cwd, input.path);
     return {
       name,
       targetDir,
@@ -63,6 +74,7 @@ export const InitWorkflowDefinition = defineWorkflow<
     tsconfig: path.join(sourceDir, "tsconfig.json"),
     vitestConfig: path.join(sourceDir, "vitest.config.js"),
     gitignore: path.join(sourceDir, ".gitignore"),
+    test: path.join(sourceDir, "index.test.ts"),
   },
 
   docFiles: {
@@ -73,35 +85,22 @@ export const InitWorkflowDefinition = defineWorkflow<
     step(CopyStepMachine, ({ context }) => ({
       name: context.name,
       targetDir: context.targetDir,
+      lineReplace: (line) =>
+        line.replace("@template/file-db", context.packageName),
     })),
 
-    step(UpdateStepMachine, ({ context }) => ({
-      fileId: "packageJson",
-      promptMessage: `Update **package.json** with the correct package name "${context.packageName}" and any specific dependencies needed for this database package.`,
+    step(CwdStepMachine, ({ context }) => ({
+      path: context.targetDir,
     })),
 
-    step(UpdateStepMachine, ({ context }) => ({
-      fileId: "schema",
-      promptMessage: `Update **schema.ts** to define the database tables and types for the ${context.name} database.
-      
-      Replace the example table with actual tables needed for this service.`,
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["install"],
     })),
 
-    step(UpdateStepMachine, ({ context }) => ({
-      fileId: "types",
-      promptMessage: `Update **types.ts** to export the appropriate types for the ${context.name} database, including any custom types derived from the schema.`,
-    })),
-
-    step(UpdateStepMachine, ({ context }) => ({
-      fileId: "errors",
-      promptMessage: `Update **errors.ts** to define the specific error classes for the ${context.name} database.
-      
-      Replace the example errors with actual errors that might occur in this database.`,
-    })),
-
-    step(UpdateStepMachine, ({ context }) => ({
-      fileId: "index",
-      promptMessage: `Update **index.ts** to properly export the database interface, types, and errors for the ${context.name} database package.`,
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["test"],
     })),
   ],
 });

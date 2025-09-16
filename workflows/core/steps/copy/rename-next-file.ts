@@ -10,13 +10,13 @@ import {
 
 export const renameNextFile = fromPromise(
   async ({ input }: { input: CopyStepContext }) => {
-    const { name, filesToCopy, dryRun, lineReplace, copiedFiles } = input;
+    const { name, filesToCopy, runMode, lineReplace, copiedFiles } = input;
 
     const currentFileId = filesToCopy[0];
     const targetPath = copiedFiles[currentFileId];
     const targetFileName = path.basename(targetPath);
 
-    if (dryRun) {
+    if (runMode === "dry") {
       return { fileName: targetFileName };
     }
 

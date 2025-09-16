@@ -1,14 +1,14 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import request from "supertest";
 import express from "express";
-import { createApp } from "../../http.ts";
+import { createTemplateFileHttpApp } from "../../http.ts";
 import { makeUserHeaders } from "@saflib/express";
 
 describe("templateFile", () => {
   let app: express.Express;
 
   beforeEach(() => {
-    app = createApp();
+    app = createTemplateFileHttpApp({});
   });
 
   // TODO: unskip this test
