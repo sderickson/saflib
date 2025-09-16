@@ -1,0 +1,23 @@
+{
+  "name": "@template/file-sdk",
+  "description": "Tanstack queries and shared components for @template/file service",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts",
+    "./mocks": "./fakes.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
+  },
+  "devDependencies": {
+    "@saflib/vitest": "*",
+    "@testing-library/vue": "^8.1.0"
+  },
+  "dependencies": {
+    "@saflib/sdk": "*",
+    "@saflib/vue": "*"
+  }
+}
