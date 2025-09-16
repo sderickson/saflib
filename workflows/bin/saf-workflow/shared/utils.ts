@@ -24,24 +24,6 @@ export const dryRunWorkflow = async (
     workflowRunMode: "dry",
   });
   await workflow.kickoff();
-  let lastStateName = workflow.getCurrentStateName();
-
-  while (!workflow.done()) {
-    await workflow.goToNextStep();
-    const error = workflow.getError();
-    if (error) {
-      console.error("Workflow errored", error);
-      process.exit(1);
-    }
-    const currentStateName = workflow.getCurrentStateName();
-    if (currentStateName === lastStateName) {
-      throw new Error(
-        `Workflow ${definition.id} is stuck on state ${currentStateName}.`,
-      );
-    }
-    lastStateName = currentStateName;
-  }
-
   return workflow.getOutput();
 };
 
