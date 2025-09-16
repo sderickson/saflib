@@ -48,7 +48,7 @@ export const resetPasswordHandler = createHandler(async (req, res) => {
 
   if (callbacks && callbacks.onPasswordUpdated) {
     const user = await throwError(usersDb.getById(dbKey, emailAuth.userId));
-    await callbacks.onPasswordUpdated(user);
+    await callbacks.onPasswordUpdated({ user });
   }
 
   const successResponse: IdentityResponseBody["resetPassword"][200] = {

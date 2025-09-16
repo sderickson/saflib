@@ -1,19 +1,36 @@
 import type { User } from "@saflib/identity-db";
 import type { DbKey } from "@saflib/drizzle";
 
+export interface UserCreatedPayload {
+  user: User;
+}
+
+export interface VerificationTokenCreatedPayload {
+  user: User;
+  verificationUrl: string;
+  isResend: boolean;
+}
+
+export interface PasswordResetPayload {
+  user: User;
+  resetUrl: string;
+}
+
+export interface PasswordUpdatedPayload {
+  user: User;
+}
+
 /**
  * Callbacks for events which occur in the identity service.
  * This is the main way to hook into the identity service.
  */
 export interface IdentityServiceCallbacks {
-  onUserCreated?: (user: User) => Promise<void>;
+  onUserCreated?: (payload: UserCreatedPayload) => Promise<void>;
   onVerificationTokenCreated?: (
-    user: User,
-    verificationUrl: string,
-    isResend: boolean,
+    payload: VerificationTokenCreatedPayload,
   ) => Promise<void>;
-  onPasswordReset?: (user: User, resetUrl: string) => Promise<void>;
-  onPasswordUpdated?: (user: User) => Promise<void>;
+  onPasswordReset?: (payload: PasswordResetPayload) => Promise<void>;
+  onPasswordUpdated?: (payload: PasswordUpdatedPayload) => Promise<void>;
 }
 
 /**

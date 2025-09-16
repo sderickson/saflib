@@ -39,7 +39,7 @@ export const forgotPasswordHandler = createHandler(async (req, res) => {
   });
 
   if (callbacks.onPasswordReset) {
-    await callbacks.onPasswordReset(user, resetUrl);
+    await callbacks.onPasswordReset({ user, resetUrl });
   }
 
   res.status(200).json(commonResponse);
