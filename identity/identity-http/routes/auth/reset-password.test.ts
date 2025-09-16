@@ -64,7 +64,11 @@ describe("Reset Password Route", () => {
 
     expect(loginResponse.status).toBe(200);
     expect(onPasswordUpdatedSpy).toHaveBeenCalledWith(
-      expect.objectContaining({ email: userData.email }),
+      expect.objectContaining({
+        user: expect.objectContaining({
+          email: userData.email,
+        }),
+      }),
     );
     expect(onPasswordUpdatedSpy).toHaveBeenCalledTimes(1);
   });

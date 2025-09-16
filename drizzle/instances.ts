@@ -50,7 +50,11 @@ export class DbManager<S extends Schema, C extends Config> {
         `db-${typedEnv.DEPLOYMENT_NAME}.sqlite`,
       );
       const exists = fs.existsSync(dbStorage);
-      if (!exists && typedEnv.ALLOW_DB_CREATION !== "true") {
+      if (
+        !exists &&
+        typedEnv.ALLOW_DB_CREATION !== "true" &&
+        typedEnv.NODE_ENV !== "test"
+      ) {
         throw new Error(`Database file does not exist: ${dbStorage}`);
       } else if (!exists) {
         log.warn(`Creating database file: ${dbStorage}`);

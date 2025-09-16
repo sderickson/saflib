@@ -61,16 +61,20 @@ describe("Register Route", () => {
 
     expect(onCreateSpy).toHaveBeenCalledWith(
       expect.objectContaining({
-        email: userData.email,
+        user: expect.objectContaining({
+          email: userData.email,
+        }),
       }),
     );
 
     expect(onVerificationTokenCreatedSpy).toHaveBeenCalledWith(
       expect.objectContaining({
-        email: userData.email,
+        user: expect.objectContaining({
+          email: userData.email,
+        }),
+        verificationUrl: expect.any(String),
+        isResend: false,
       }),
-      expect.any(String),
-      false,
     );
   });
 

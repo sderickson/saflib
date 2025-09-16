@@ -44,9 +44,11 @@ describe("Forgot Password Route", () => {
 
     expect(onPasswordResetSpy).toHaveBeenCalledWith(
       expect.objectContaining({
-        email: userData.email,
+        user: expect.objectContaining({
+          email: userData.email,
+        }),
+        resetUrl: expect.any(String),
       }),
-      expect.any(String),
     );
   });
 
