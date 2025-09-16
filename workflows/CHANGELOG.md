@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `pollingWaitFor` for wait for workflow machines to halt.
 - `skipIf` option to `CommandStepMachine`.
 - `valid` option to `CopyStepMachine`.
+- `run-scripts` command in CLI tool
+- `runWorkflow`, a more generic version and the replacement of `dryRunWorkflow`
 
 ### Fixed
 
