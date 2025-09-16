@@ -75,7 +75,7 @@ export const SdkInitWorkflowDefinition = defineWorkflow<
   },
 
   docFiles: {
-    overview: path.join(import.meta.dirname, "../docs/01-overview.md"),
+    overview: path.join(import.meta.dirname, "../../docs/01-overview.md"),
   },
 
   steps: [
