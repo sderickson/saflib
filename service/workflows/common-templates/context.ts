@@ -13,7 +13,6 @@ export interface TemplateFileServiceContextOptions {
   templateFileDbKey?: DbKey;
 }
 
-// TODO: Uncomment this and make sure it's correct
 export const makeContext = (
   options: TemplateFileServiceContextOptions = {},
 ): TemplateFileServiceContext => {
