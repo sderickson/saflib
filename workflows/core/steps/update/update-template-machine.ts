@@ -81,7 +81,7 @@ export const UpdateStepMachine = setup({
   },
   guards: {
     invalid: ({ context }: { context: UpdateStepContext }) => {
-      if (context.runMode === "dry" || !context.valid.length) {
+      if (!context.valid.length) {
         return false;
       }
       const resolvedPath = context.filePath;
@@ -103,9 +103,6 @@ export const UpdateStepMachine = setup({
       return true;
     },
     todosRemain: ({ context }: { context: UpdateStepContext }) => {
-      if (context.runMode === "dry") {
-        return false;
-      }
       const resolvedPath = context.filePath;
       const content = readFileSync(resolvedPath, "utf-8");
       const hasTodos = /\s*(?:#|\/\/).*todo/i.test(content);
@@ -143,7 +140,7 @@ export const UpdateStepMachine = setup({
         prompt: [
           {
             guard: "shouldSkipForMode",
-            actions: [raise({ type: "continue" })],
+            target: "done",
           },
           {
             actions: [
