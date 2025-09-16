@@ -33,7 +33,7 @@ interface InitWorkflowContext {
   httpPackageName: string;
   specPackageName: string;
   serviceGroupDir: string;
-  orgString: string;
+  packagePrefix: string;
 }
 
 export const InitWorkflowDefinition = defineWorkflow<
@@ -70,10 +70,11 @@ export const InitWorkflowDefinition = defineWorkflow<
     ) {
       orgString = currentPackageName.split("/")[0] + "/";
     }
-    const packageName = `${orgString}${serviceName}-service`;
-    const dbPackageName = `${orgString}${serviceName}-db`;
-    const httpPackageName = `${orgString}${serviceName}-http`;
-    const specPackageName = `${orgString}${serviceName}-spec`;
+    const packagePrefix = `${orgString}${serviceName}-`;
+    const packageName = `${packagePrefix}service`;
+    const dbPackageName = `${packagePrefix}db`;
+    const httpPackageName = `${packagePrefix}http`;
+    const specPackageName = `${packagePrefix}spec`;
 
     return {
       serviceName,
@@ -83,7 +84,7 @@ export const InitWorkflowDefinition = defineWorkflow<
       dbPackageName,
       httpPackageName,
       specPackageName,
-      orgString,
+      packagePrefix,
     };
   },
 
@@ -127,7 +128,7 @@ export const InitWorkflowDefinition = defineWorkflow<
       name: context.serviceName,
       targetDir: context.targetDir,
       lineReplace: (line) => {
-        return line.replace("@your-org/", context.orgString);
+        return line.replace("@template/file-", context.packagePrefix);
       },
     })),
 
