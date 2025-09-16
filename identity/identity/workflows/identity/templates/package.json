@@ -1,0 +1,12 @@
+{
+  "name": "@template/file-identity",
+  "type": "module",
+  "scripts": {
+    "start": "node --experimental-strip-types ./run.ts"
+  },
+  "exports": {},
+  "dependencies": {
+    "@saflib/identity": "*",
+    "@saflib/links": "*"
+  }
+}

@@ -3,7 +3,8 @@
   "description": "Authentication service library for SAF applications",
   "type": "module",
   "exports": {
-    ".": "./index.ts"
+    ".": "./index.ts",
+    "./workflows": "./workflows/index.ts"
   },
   "scripts": {
     "start": "node --experimental-strip-types ./bin/run.ts",

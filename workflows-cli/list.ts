@@ -11,6 +11,7 @@ import envWorkflows from "@saflib/env/workflows";
 import commanderWorkflows from "@saflib/commander/workflows";
 import sdkWorkflows from "@saflib/sdk/workflows";
 import serviceWorkflows from "../service/workflows/index.ts";
+import identityWorkflows from "@saflib/identity/workflows";
 import type { WorkflowDefinition } from "@saflib/workflows";
 
 const workflowClasses: WorkflowDefinition[] = [
@@ -27,6 +28,7 @@ const workflowClasses: WorkflowDefinition[] = [
   ...commanderWorkflows,
   ...sdkWorkflows,
   ...serviceWorkflows,
+  ...identityWorkflows,
 ];
 
 export const workflows = workflowClasses;
