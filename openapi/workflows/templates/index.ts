@@ -10,15 +10,15 @@ import {
 /**
  * For typing Express responses for template-service API routes.
  */
-export type TemplateServiceResponseBody = ExtractResponseBody<operations>;
+export type ServiceNameServiceResponseBody = ExtractResponseBody<operations>;
 
 /**
  * For typing Express requests for template-service API routes.
  */
-export type TemplateServiceRequestBody = ExtractRequestBody<operations>;
+export type ServiceNameServiceRequestBody = ExtractRequestBody<operations>;
 
 // Export your schema types here
-export type TemplateResource = components["schemas"]["Error"];
+export type Error = components["schemas"]["Error"];
 
 import * as json from "./dist/openapi.json" with { type: "json" };
 

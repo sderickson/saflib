@@ -1,36 +1,35 @@
 import { createErrorMiddleware, createGlobalMiddleware } from "@saflib/express";
 import express from "express";
-
-// TODO: npm install and import any database library for this service.
-// import { serviceDb } from "@your-org/service-db";
-
-// TODO: npm install and import your service-specific context and storage
-// import { serviceStorage, type ServiceOptions } from "@your-org/service-common";
+import { templateFileDb } from "@template/file-db";
+import {
+  templateFileServiceStorage,
+  type TemplateFileServiceContextOptions,
+} from "@template/file-service-common";
 
 /**
  * Creates the HTTP server for the template-file service.
  */
-export function createApp() {
-  // TODO: Set up database connections
-  // let dbKey = options.dbKey;
-  // if (!dbKey) {
-  //   dbKey = serviceDb.connect();
-  // }
+export function createTemplateFileApp(
+  options: TemplateFileServiceContextOptions,
+) {
+  let dbKey = options.templateFileDbKey;
+  if (!dbKey) {
+    dbKey = templateFileDb.connect();
+  }
 
   const app = express();
   app.use(createGlobalMiddleware());
   app.set("trust proxy", 1);
 
-  // TODO: Set up service context
-  // const context = { dbKey };
-  // app.use((_req, _res, next) => {
-  //   serviceStorage.run(context, () => {
-  //     next();
-  //   });
-  // });
+  const context = { templateFileDbKey: dbKey };
+  app.use((_req, _res, next) => {
+    templateFileServiceStorage.run(context, () => {
+      next();
+    });
+  });
 
   // Add route handlers here. Do not prefix the routes; the router will handle the prefix.
-  // app.use(createResourceNameRouter())
+  // app.use(createTemplateFileRouter());
 
   app.use(createErrorMiddleware());
 

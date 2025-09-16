@@ -12,7 +12,8 @@
   },
   "dependencies": {
     "@saflib/env": "*",
-    "@saflib/monorepo": "*"
+    "@saflib/monorepo": "*",
+    "@template/file-service-common": "*"
   },
   "devDependencies": {
     "@saflib/vitest": "*"

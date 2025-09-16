@@ -1,5 +1,5 @@
 {
-  "name": "@your-org/template-file-service-common",
+  "name": "@template/file-service-common",
   "description": "Shared types and utilities for the caller service",
   "private": true,
   "type": "module",

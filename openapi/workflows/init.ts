@@ -94,7 +94,8 @@ export const InitWorkflowDefinition = defineWorkflow<
         line
           .replace("@template/file-spec", context.packageName)
           .replace("service-name", context.serviceName)
-          .replace("Service Name", context.serviceNameCapitalized),
+          .replace("Service Name", context.serviceNameCapitalized)
+          .replace("ServiceName", context.serviceNameCapitalized),
     })),
 
     step(CwdStepMachine, ({ context }) => ({
