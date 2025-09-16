@@ -18,6 +18,7 @@
   },
   "dependencies": {
     "@saflib/sdk": "*",
-    "@saflib/vue": "*"
+    "@saflib/vue": "*",
+    "@template/file-spec": "*"
   }
 }

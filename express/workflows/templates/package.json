@@ -14,7 +14,9 @@
   "dependencies": {
     "@saflib/express": "*",
     "@saflib/monorepo": "*",
-    "@template/file-service-common": "*"
+    "@template/file-db": "*",
+    "@template/file-service-common": "*",
+    "@template/file-spec": "*"
   },
   "devDependencies": {
     "@saflib/vitest": "*"

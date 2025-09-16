@@ -13,6 +13,8 @@
   "dependencies": {
     "@saflib/env": "*",
     "@saflib/monorepo": "*",
+    "@template/file-db": "*",
+    "@template/file-http": "*",
     "@template/file-service-common": "*"
   },
   "devDependencies": {
