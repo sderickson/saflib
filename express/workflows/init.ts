@@ -1,6 +1,5 @@
 import {
   CopyStepMachine,
-  DocStepMachine,
   defineWorkflow,
   step,
   CommandStepMachine,
@@ -79,10 +78,6 @@ export const InitWorkflowDefinition = defineWorkflow<
   },
 
   steps: [
-    step(DocStepMachine, () => ({
-      docId: "overview",
-    })),
-
     step(CopyStepMachine, ({ context }) => ({
       name: context.name,
       targetDir: context.targetDir,
