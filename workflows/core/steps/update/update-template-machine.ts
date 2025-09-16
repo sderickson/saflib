@@ -81,7 +81,7 @@ export const UpdateStepMachine = setup({
   },
   guards: {
     invalid: ({ context }: { context: UpdateStepContext }) => {
-      if (context.dryRun || !context.valid.length) {
+      if (context.runMode === "dry" || !context.valid.length) {
         return false;
       }
       const resolvedPath = context.filePath;
@@ -103,7 +103,7 @@ export const UpdateStepMachine = setup({
       return true;
     },
     todosRemain: ({ context }: { context: UpdateStepContext }) => {
-      if (context.dryRun) {
+      if (context.runMode === "dry") {
         return false;
       }
       const resolvedPath = context.filePath;
@@ -111,7 +111,7 @@ export const UpdateStepMachine = setup({
       const hasTodos = /\s*(?:#|\/\/).*todo/i.test(content);
       return hasTodos;
     },
-    dryRun: ({ context }) => context.dryRun || false,
+    dryRun: ({ context }) => context.runMode === "dry" || false,
   },
 }).createMachine({
   id: "update-step",

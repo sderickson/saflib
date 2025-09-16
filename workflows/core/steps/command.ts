@@ -89,7 +89,7 @@ export const CommandStepMachine = setup({
     runCommand: {
       invoke: {
         src: fromPromise(async ({ input }: { input: CommandStepContext }) => {
-          if (input.dryRun) {
+          if (input.runMode === "dry") {
             return "Dry run";
           }
           if (input.skipIf && (await input.skipIf(input))) {

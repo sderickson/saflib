@@ -35,7 +35,7 @@ export const PromptStepMachine = setup({
     ...workflowActors,
   },
   guards: {
-    dryRun: ({ context }) => context.dryRun || false,
+    dryRun: ({ context }) => context.runMode === "dry" || false,
   },
 }).createMachine({
   id: "prompt-step",

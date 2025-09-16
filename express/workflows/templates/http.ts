@@ -22,7 +22,7 @@ export function createApp() {
   app.set("trust proxy", 1);
 
   // TODO: Set up service context
-  // const context = { dbKey, callbacks: options.callbacks };
+  // const context = { dbKey };
   // app.use((_req, _res, next) => {
   //   serviceStorage.run(context, () => {
   //     next();

@@ -21,7 +21,7 @@ export const dryRunWorkflow = async (
   const workflow = new XStateWorkflowRunner({
     definition,
     args: exampleArgs,
-    dryRun: true,
+    workflowRunMode: "dry",
   });
   await workflow.kickoff();
   let lastStateName = workflow.getCurrentStateName();
@@ -79,7 +79,7 @@ export const kickoffWorkflow = async (
   const workflow = new XStateWorkflowRunner({
     definition: Workflow,
     args: args.slice(0, Workflow.input.length),
-    dryRun: false,
+    workflowRunMode: "print",
   });
   await workflow.kickoff();
   console.log("--- To continue, run 'npm exec saf-workflow next' ---\n");

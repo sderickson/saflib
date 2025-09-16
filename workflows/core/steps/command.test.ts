@@ -9,7 +9,7 @@ describe("CommandStepMachine", () => {
       input: {
         command: "echo",
         args: ["hello", "world"],
-        dryRun: true,
+        runMode: "dry",
       },
     });
     actor.start();
@@ -22,7 +22,7 @@ describe("CommandStepMachine", () => {
       input: {
         command: "echo",
         args: ["test"],
-        dryRun: false,
+        runMode: "print",
       },
     });
     actor.start();
@@ -34,7 +34,7 @@ describe("CommandStepMachine", () => {
     const actor = createActor(CommandStepMachine, {
       input: {
         command: "pwd",
-        dryRun: true,
+        runMode: "dry",
       },
     });
     actor.start();

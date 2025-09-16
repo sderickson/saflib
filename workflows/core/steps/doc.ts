@@ -9,6 +9,7 @@ import {
   type WorkflowContext,
   type WorkflowInput,
   type WorkflowOutput,
+  type WorkflowRunMode,
 } from "../types.ts";
 import { contextFromInput } from "../utils.ts";
 import { raise } from "xstate";
@@ -48,7 +49,7 @@ export const DocStepMachine = setup({
     ...workflowActors,
   },
   guards: {
-    dryRun: ({ context }) => context.dryRun || false,
+    dryRun: ({ context }) => context.runMode === "dry" || false,
   },
 }).createMachine({
   id: "doc-step",
@@ -64,15 +65,15 @@ export const DocStepMachine = setup({
       invoke: {
         src: fromPromise(
           async ({
-            input: { docId, docFiles, dryRun },
+            input: { docId, docFiles, runMode },
           }: {
             input: {
               docId: string;
               docFiles: Record<string, string>;
-              dryRun: boolean;
+              runMode: WorkflowRunMode;
             };
           }) => {
-            if (dryRun) {
+            if (runMode === "dry") {
               return "Dry run - would review documentation";
             }
 
@@ -92,7 +93,7 @@ export const DocStepMachine = setup({
           return {
             docId: context.docId,
             docFiles: context.docFiles || {},
-            dryRun: context.dryRun,
+            runMode: context.runMode,
           };
         },
         onDone: [
