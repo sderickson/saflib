@@ -1,5 +1,5 @@
 {
-  "name": "template-file-service",
+  "name": "@template/file-service",
   "description": "Service package for template-file",
   "type": "module",
   "scripts": {
