@@ -98,9 +98,20 @@ export const DrizzleInitWorkflowDefinition = defineWorkflow<
       args: ["install"],
     })),
 
+    // initialize drizzle sqlite migrations
     step(CommandStepMachine, () => ({
       command: "npm",
       args: ["run", "generate"],
+    })),
+
+    // make a data dir
+    step(CommandStepMachine, () => ({
+      command: "mkdir",
+      args: ["-p", "data"],
+    })),
+    step(CommandStepMachine, () => ({
+      command: "touch",
+      args: ["data/.gitkeep"],
     })),
 
     step(CommandStepMachine, () => ({
