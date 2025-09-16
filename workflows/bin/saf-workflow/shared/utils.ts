@@ -2,6 +2,7 @@ import type {
   WorkflowOutput,
   WorkflowDefinition,
   WorkflowArgument,
+  WorkflowRunMode,
 } from "../../../core/types.ts";
 import { XStateWorkflowRunner } from "./workflow.ts";
 import path from "node:path";
@@ -9,10 +10,11 @@ import { existsSync, readFileSync } from "node:fs";
 import { saveWorkflow } from "./file-io.ts";
 
 /**
- * Convenience function to take a WorkflowDefinition, dry run it, and return the output. The output in particular includes the checklist.
+ * Convenience function to take a WorkflowDefinition, run it in the specified mode, and return the output.
  */
-export const dryRunWorkflow = async (
+export const runWorkflow = async (
   definition: WorkflowDefinition<any, any>,
+  runMode: WorkflowRunMode,
 ): Promise<WorkflowOutput> => {
   const cliArguments = definition.input as WorkflowArgument[];
   const exampleArgs = cliArguments.map(
@@ -21,10 +23,20 @@ export const dryRunWorkflow = async (
   const workflow = new XStateWorkflowRunner({
     definition,
     args: exampleArgs,
-    workflowRunMode: "dry",
+    workflowRunMode: runMode,
   });
   await workflow.kickoff();
   return workflow.getOutput();
+};
+
+/**
+ * Convenience function to take a WorkflowDefinition, dry run it, and return the output. The output in particular includes the checklist.
+ * @deprecated Use runWorkflow with runMode: "dry" instead
+ */
+export const dryRunWorkflow = async (
+  definition: WorkflowDefinition<any, any>,
+): Promise<WorkflowOutput> => {
+  return runWorkflow(definition, "dry");
 };
 
 /**

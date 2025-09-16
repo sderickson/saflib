@@ -1,21 +1,20 @@
 import type { Command } from "commander";
-import { checklistToString } from "../../core/utils.ts";
-import type { WorkflowDefinition } from "../../core/types.ts";
 import { addNewLinesToString } from "../../strings.ts";
+import type { WorkflowDefinition } from "../../core/types.ts";
 import { runWorkflow } from "./shared/utils.ts";
 import { loadWorkflowDefinitionFromFile } from "./shared/file-io.ts";
 import { resolve } from "node:path";
 import { getWorkflowLogger } from "../../core/store.ts";
 
-export const addChecklistCommand = (
+export const addRunScriptsCommand = (
   program: Command,
   workflows: WorkflowDefinition[],
 ) => {
   program
-    .command("checklist")
+    .command("run-scripts")
     .description(
       addNewLinesToString(
-        "Show the checklist for a workflow. Can be called with a workflow ID or a file path to a workflow definition.",
+        "Run a workflow in script mode. Can be called with a workflow ID or a file path to a workflow definition.",
       ),
     )
     .argument("<workflowIdOrPath>", "Workflow ID or path to workflow file")
@@ -50,15 +49,12 @@ export const addChecklistCommand = (
         log.info(`Found workflow: ${workflowDefinition.id}`);
       }
 
-      await printChecklist(workflowDefinition);
+      await runWorkflowScript(workflowDefinition);
     });
 };
 
-export const printChecklist = async (Workflow: WorkflowDefinition) => {
-  const workflow = await runWorkflow(Workflow, "dry");
-  console.log(
-    checklistToString(
-      workflow.checklist.subitems || [{ description: "No checklist output" }],
-    ),
-  );
+export const runWorkflowScript = async (Workflow: WorkflowDefinition) => {
+  const workflow = await runWorkflow(Workflow, "script");
+  console.log("Workflow executed in script mode");
+  console.log("Output:", workflow);
 };

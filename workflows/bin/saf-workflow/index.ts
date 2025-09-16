@@ -14,6 +14,7 @@ import { addStatusCommand } from "./status.ts";
 import { addNextCommand } from "./next.ts";
 import { addListCommand } from "./list.ts";
 import { addSourceCommand } from "./source.ts";
+import { addRunScriptsCommand } from "./run-scripts.ts";
 
 /**
  * Options for configuring the workflow CLI
@@ -52,6 +53,7 @@ export async function runWorkflowCli(
   addChecklistCommand(program, workflows);
   addListCommand(program, workflows);
   addSourceCommand(program, workflows);
+  addRunScriptsCommand(program, workflows);
 
   // Set up workflow context
   const silentLogging = process.argv.includes("checklist");
@@ -69,4 +71,4 @@ export async function runWorkflowCli(
   await program.parseAsync(process.argv);
 }
 
-export { dryRunWorkflow } from "./shared/utils.ts";
+export { dryRunWorkflow, runWorkflow } from "./shared/utils.ts";
