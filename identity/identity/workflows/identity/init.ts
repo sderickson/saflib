@@ -62,6 +62,9 @@ export const IdentityInitWorkflowDefinition = defineWorkflow<
     runScript: path.join(sourceDir, "run.ts"),
     envSchema: path.join(sourceDir, "env.schema.combined.json"),
     dockerfile: path.join(sourceDir, "Dockerfile.template"),
+    index: path.join(sourceDir, "index.ts"),
+    test: path.join(sourceDir, "index.test.ts"),
+    vitestConfig: path.join(sourceDir, "vitest.config.js"),
   },
 
   docFiles: {},
