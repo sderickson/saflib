@@ -19,7 +19,6 @@ const input = [
   },
 ] as const;
 
-// TODO: Remove exampleProperty and replace it with the actual context properties your workflow needs
 interface InitCommonWorkflowContext {
   serviceName: string;
   targetDir: string;
@@ -77,10 +76,8 @@ export const InitCommonWorkflowDefinition = defineWorkflow<
     test: path.join(sourceDir, "index.test.ts"),
   },
 
-  // TODO: add documentation file references
   docFiles: {},
 
-  // TODO: update the steps to match the actual workflow you're creating. It will usually involve some combination of copying template files, updating files, prompting, running scripts, and running tests.
   steps: [
     step(CopyStepMachine, ({ context }) => ({
       name: context.serviceName,
