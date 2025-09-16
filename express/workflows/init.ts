@@ -24,15 +24,15 @@ const input = [
   },
 ] as const;
 
-interface InitWorkflowContext {
+interface ExpressInitWorkflowContext {
   name: string;
   targetDir: string;
   packageName: string;
 }
 
-export const InitWorkflowDefinition = defineWorkflow<
+export const ExpressInitWorkflowDefinition = defineWorkflow<
   typeof input,
-  InitWorkflowContext
+  ExpressInitWorkflowContext
 >({
   id: "express/init",
 

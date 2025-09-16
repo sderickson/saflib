@@ -25,7 +25,7 @@ const input = [
   },
 ] as const;
 
-interface InitWorkflowContext {
+interface OpenapiInitWorkflowContext {
   name: string;
   targetDir: string;
   packageName: string;
@@ -33,9 +33,9 @@ interface InitWorkflowContext {
   serviceNameCapitalized: string;
 }
 
-export const InitWorkflowDefinition = defineWorkflow<
+export const OpenapiInitWorkflowDefinition = defineWorkflow<
   typeof input,
-  InitWorkflowContext
+  OpenapiInitWorkflowContext
 >({
   id: "openapi/init",
 

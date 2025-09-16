@@ -7,9 +7,10 @@ import {
   CwdStepMachine,
 } from "@saflib/workflows";
 import path from "node:path";
-import { InitWorkflowDefinition as DrizzleInitWorkflowDefinition } from "@saflib/drizzle/workflows";
-import { InitWorkflowDefinition as ExpressInitWorkflowDefinition } from "@saflib/express/workflows";
-import { InitWorkflowDefinition as OpenapiInitWorkflowDefinition } from "@saflib/openapi/workflows";
+import { DrizzleInitWorkflowDefinition } from "@saflib/drizzle/workflows";
+import { ExpressInitWorkflowDefinition } from "@saflib/express/workflows";
+import { OpenapiInitWorkflowDefinition } from "@saflib/openapi/workflows";
+import { SdkInitWorkflowDefinition } from "@saflib/sdk/workflows";
 import { InitCommonWorkflowDefinition } from "./init-common.ts";
 import { getCurrentPackageName } from "@saflib/dev-tools";
 
@@ -33,6 +34,7 @@ interface InitWorkflowContext {
   specPackageName: string;
   serviceGroupDir: string;
   packagePrefix: string;
+  sdkPackageName: string;
 }
 
 export const InitWorkflowDefinition = defineWorkflow<
@@ -74,7 +76,7 @@ export const InitWorkflowDefinition = defineWorkflow<
     const dbPackageName = `${packagePrefix}db`;
     const httpPackageName = `${packagePrefix}http`;
     const specPackageName = `${packagePrefix}spec`;
-
+    const sdkPackageName = `${packagePrefix}sdk`;
     return {
       serviceName,
       targetDir,
@@ -84,6 +86,7 @@ export const InitWorkflowDefinition = defineWorkflow<
       httpPackageName,
       specPackageName,
       packagePrefix,
+      sdkPackageName,
     };
   },
 
@@ -109,6 +112,12 @@ export const InitWorkflowDefinition = defineWorkflow<
     step(makeWorkflowMachine(DrizzleInitWorkflowDefinition), ({ context }) => ({
       name: context.dbPackageName,
       path: path.join(context.serviceGroupDir, `${context.serviceName}-db`),
+    })),
+
+    // sdk
+    step(makeWorkflowMachine(SdkInitWorkflowDefinition), ({ context }) => ({
+      name: context.sdkPackageName,
+      path: path.join(context.serviceGroupDir, `${context.serviceName}-sdk`),
     })),
 
     // common

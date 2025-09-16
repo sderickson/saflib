@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { InitWorkflowDefinition } from "./init.ts";
+import { OpenapiInitWorkflowDefinition } from "./init.ts";
 import { runWorkflow } from "@saflib/workflows";
 
 describe("openapi/init", () => {
   it("should successfully dry run", async () => {
-    const result = await runWorkflow(InitWorkflowDefinition, "dry");
+    const result = await runWorkflow(OpenapiInitWorkflowDefinition, "dry");
     expect(result.checklist).toBeDefined();
   });
 });

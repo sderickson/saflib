@@ -1,4 +1,4 @@
-import { InitWorkflowDefinition as ExpressInitWorkflowDefinition } from "./init.ts";
+import { ExpressInitWorkflowDefinition as ExpressInitWorkflowDefinition } from "./init.ts";
 import { AddHandlerWorkflowDefinition } from "./add-handler.ts";
 
 import {

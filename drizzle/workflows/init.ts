@@ -1,4 +1,10 @@
-import { CopyStepMachine, defineWorkflow, step, CwdStepMachine, CommandStepMachine } from "@saflib/workflows";
+import {
+  CopyStepMachine,
+  defineWorkflow,
+  step,
+  CwdStepMachine,
+  CommandStepMachine,
+} from "@saflib/workflows";
 import path from "node:path";
 
 const sourceDir = path.join(import.meta.dirname, "templates");
@@ -18,15 +24,15 @@ const input = [
   },
 ] as const;
 
-interface InitWorkflowContext {
+interface DrizzleInitWorkflowContext {
   name: string;
   targetDir: string;
   packageName: string;
 }
 
-export const InitWorkflowDefinition = defineWorkflow<
+export const DrizzleInitWorkflowDefinition = defineWorkflow<
   typeof input,
-  InitWorkflowContext
+  DrizzleInitWorkflowContext
 >({
   id: "drizzle/init",
 
