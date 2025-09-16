@@ -49,15 +49,13 @@ export class DbManager<S extends Schema, C extends Config> {
         "data",
         `db-${typedEnv.DEPLOYMENT_NAME}.sqlite`,
       );
-      if (options?.doNotCreate) {
-        const exists = fs.existsSync(dbStorage);
-        if (!exists && typedEnv.ALLOW_DB_CREATION !== "true") {
-          throw new Error(`Database file does not exist: ${dbStorage}`);
-        } else if (!exists) {
-          log.warn(`Creating database file: ${dbStorage}`);
-        } else {
-          log.info(`Database file found at: ${dbStorage}`);
-        }
+      const exists = fs.existsSync(dbStorage);
+      if (!exists && typedEnv.ALLOW_DB_CREATION !== "true") {
+        throw new Error(`Database file does not exist: ${dbStorage}`);
+      } else if (!exists) {
+        log.warn(`Creating database file: ${dbStorage}`);
+      } else {
+        log.info(`Database file found at: ${dbStorage}`);
       }
     } else if (options?.onDisk) {
       dbStorage = options.onDisk;

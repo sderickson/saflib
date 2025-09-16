@@ -24,7 +24,7 @@ async function main() {
   try {
     log.info("Starting up TemplateFile service...");
     log.info("Connecting to template-file-db...");
-    const dbKey = templateFileDb.connect({ onDisk: true, doNotCreate: true });
+    const dbKey = templateFileDb.connect({ onDisk: true });
     const context = makeContext({ templateFileDbKey: dbKey });
     log.info("template-file-db connection complete.");
 

@@ -14,7 +14,6 @@ collectSystemMetrics();
 startIdentityService({
   dbOptions: {
     onDisk: true,
-    doNotCreate: true,
   },
   callbacks,
 });
