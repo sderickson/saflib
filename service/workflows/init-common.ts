@@ -33,11 +33,10 @@ export const InitCommonWorkflowDefinition = defineWorkflow<
 >({
   id: "service/init-common",
 
-  description: "Create a shared package for all packages in a service",
+  description: "Create a shared service package",
 
-  // TODO: replace with a description based on the context, also in the present tense like a good commit message.
   checklistDescription: ({ packageName }) =>
-    `Create the ${packageName} package.`,
+    `Create the ${packageName} shared service package.`,
 
   input,
 

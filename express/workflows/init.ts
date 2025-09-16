@@ -36,11 +36,10 @@ export const ExpressInitWorkflowDefinition = defineWorkflow<
 >({
   id: "express/init",
 
-  description:
-    "Create a new HTTP service package following @saflib/express structure and conventions",
+  description: "Create an Express HTTP service package",
 
   checklistDescription: ({ packageName }) =>
-    `Create a new ${packageName} HTTP service package.`,
+    `Create the ${packageName} Express HTTP service package.`,
 
   input,
 

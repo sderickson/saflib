@@ -36,11 +36,10 @@ export const SdkInitWorkflowDefinition = defineWorkflow<
 >({
   id: "sdk/init",
 
-  description:
-    "Create a new SDK package following @saflib/sdk structure and conventions",
+  description: "Create an Tanstack/Vue SDK package",
 
   checklistDescription: ({ packageName }) =>
-    `Create a new ${packageName} SDK package.`,
+    `Create the ${packageName} Tanstack/Vue SDK package.`,
 
   input,
 
@@ -83,10 +82,7 @@ export const SdkInitWorkflowDefinition = defineWorkflow<
       name: context.name,
       targetDir: context.targetDir,
       lineReplace: (line) =>
-        line.replace(
-          "@template/file-",
-          context.packageName.replace("-sdk", "-"),
-        ),
+        line.replace("@template/file", context.packageName.replace("-sdk", "")),
     })),
 
     step(CwdStepMachine, ({ context }) => ({

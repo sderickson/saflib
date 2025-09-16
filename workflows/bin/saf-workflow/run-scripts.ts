@@ -2,6 +2,7 @@ import type { Command } from "commander";
 import { addNewLinesToString } from "../../strings.ts";
 import type { WorkflowDefinition } from "../../core/types.ts";
 import { runWorkflow, loadWorkflowDefinition } from "./shared/utils.ts";
+import { checklistToString } from "../../core/utils.ts";
 
 export const addRunScriptsCommand = (
   program: Command,
@@ -27,5 +28,8 @@ export const addRunScriptsCommand = (
 export const runWorkflowScript = async (Workflow: WorkflowDefinition) => {
   const workflow = await runWorkflow(Workflow, "script");
   console.log("Workflow executed in script mode");
-  console.log("Output:", workflow);
+  console.log(
+    "Output:\n",
+    checklistToString(workflow.checklist.subitems || []),
+  );
 };

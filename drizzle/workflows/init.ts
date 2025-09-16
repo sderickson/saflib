@@ -36,8 +36,10 @@ export const DrizzleInitWorkflowDefinition = defineWorkflow<
 >({
   id: "drizzle/init",
 
-  description:
-    "Create a new database package following the @saflib/drizzle structure and conventions",
+  description: "Create a Drizzle/SQLite database package",
+
+  checklistDescription: ({ packageName }) =>
+    `Create the ${packageName} Drizzle/SQLite database package.`,
 
   input,
 

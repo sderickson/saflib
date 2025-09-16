@@ -39,10 +39,9 @@ export const OpenapiInitWorkflowDefinition = defineWorkflow<
 >({
   id: "openapi/init",
 
-  description:
-    "Create a new API spec package following the @saflib/openapi structure and conventions",
+  description: "Create an OpenAPI package",
 
-  checklistDescription: ({ name }) => `Create a new ${name} API spec package.`,
+  checklistDescription: ({ name }) => `Create the ${name} OpenAPI package.`,
 
   input,
 
