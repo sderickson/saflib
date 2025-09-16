@@ -35,7 +35,8 @@ export const PromptStepMachine = setup({
     ...workflowActors,
   },
   guards: {
-    dryRun: ({ context }) => context.runMode === "dry" || false,
+    shouldSkipForMode: ({ context }) =>
+      context.runMode === "dry" || context.runMode === "script",
   },
 }).createMachine({
   id: "prompt-step",
@@ -50,7 +51,7 @@ export const PromptStepMachine = setup({
       on: {
         prompt: [
           {
-            guard: "dryRun",
+            guard: "shouldSkipForMode",
             actions: [raise({ type: "continue" })],
           },
           {

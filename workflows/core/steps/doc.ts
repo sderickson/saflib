@@ -49,7 +49,8 @@ export const DocStepMachine = setup({
     ...workflowActors,
   },
   guards: {
-    dryRun: ({ context }) => context.runMode === "dry" || false,
+    shouldSkipForMode: ({ context }) =>
+      context.runMode === "dry" || context.runMode === "script",
   },
 }).createMachine({
   id: "doc-step",
@@ -98,7 +99,7 @@ export const DocStepMachine = setup({
         },
         onDone: [
           {
-            guard: "dryRun",
+            guard: "shouldSkipForMode",
             target: "done",
           },
           {

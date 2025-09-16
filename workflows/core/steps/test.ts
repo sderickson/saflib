@@ -67,7 +67,7 @@ export const TestStepMachine = setup({
           }: {
             input: { fileName: string; runMode: WorkflowRunMode; cwd: string };
           }) => {
-            if (runMode === "dry") {
+            if (runMode === "dry" || runMode === "script") {
               return true;
             }
             return await doesTestPass(fileName, { cwd });

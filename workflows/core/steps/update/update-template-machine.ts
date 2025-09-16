@@ -111,7 +111,8 @@ export const UpdateStepMachine = setup({
       const hasTodos = /\s*(?:#|\/\/).*todo/i.test(content);
       return hasTodos;
     },
-    dryRun: ({ context }) => context.runMode === "dry" || false,
+    shouldSkipForMode: ({ context }) =>
+      context.runMode === "dry" || context.runMode === "script",
   },
 }).createMachine({
   id: "update-step",
@@ -140,7 +141,10 @@ export const UpdateStepMachine = setup({
       entry: raise({ type: "prompt" }),
       on: {
         prompt: [
-          { guard: "dryRun", actions: [raise({ type: "continue" })] },
+          {
+            guard: "shouldSkipForMode",
+            actions: [raise({ type: "continue" })],
+          },
           {
             actions: [
               promptAgent(({ context }) => {
