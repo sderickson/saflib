@@ -1,0 +1,25 @@
+{
+  "name": "@template/file-grpc",
+  "description": "gRPC server for template-file service",
+  "type": "module",
+  "exports": {
+    ".": "./grpc.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc"
+  },
+  "dependencies": {
+    "@saflib/grpc": "*",
+    "@template/file-service-common": "*",
+    "@template/file-db": "*",
+    "@template/file-protos": "*",
+    "@saflib/monorepo": "*"
+  },
+  "devDependencies": {
+    "@saflib/monorepo": "*",
+    "@saflib/vitest": "*"
+  }
+}
