@@ -60,8 +60,14 @@ export const InitWorkflowDefinition = defineWorkflow<
 
   templateFiles: {
     package: path.join(sourceDir, "package.json"),
-    proto: path.join(sourceDir, "init.proto"),
     index: path.join(sourceDir, "index.ts"),
+    protos: path.join(sourceDir, "protos"),
+    dist: path.join(sourceDir, "dist"),
+    envSchema: path.join(sourceDir, "env.schema.json"),
+    env: path.join(sourceDir, "env.ts"),
+    generate: path.join(sourceDir, "generate.sh"),
+    tsconfig: path.join(sourceDir, "tsconfig.json"),
+    typedoc: path.join(sourceDir, "typedoc.json"),
   },
 
   // TODO: add documentation file references
