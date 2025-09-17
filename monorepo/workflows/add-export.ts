@@ -5,6 +5,7 @@ import {
   TestStepMachine,
   defineWorkflow,
   step,
+  CommandStepMachine,
 } from "@saflib/workflows";
 import path from "node:path";
 
@@ -61,19 +62,14 @@ export const AddExportWorkflowDefinition = defineWorkflow<
     };
   },
 
-  // TODO: create the add-exports dir and add template files
-  // Include TODOs like this file does.
-  // Instances of "add-export" in the file name and content will be replaced with the "name" given to CopyStepMachine
   templateFiles: {
-    main: path.join(sourceDir, "main.ts"),
-    config: path.join(sourceDir, "config.ts"),
-    test: path.join(sourceDir, "test.ts"),
+    export: path.join(sourceDir, "template-file.ts"),
+    test: path.join(sourceDir, "template-file.test.ts"),
   },
 
   // TODO: add documentation file references
   docFiles: {},
 
-  // TODO: update the steps to match the actual workflow you're creating. It will usually involve some combination of copying template files, updating files, prompting, running scripts, and running tests.
   steps: [
     step(CopyStepMachine, ({ context }) => ({
       name: context.name,
@@ -81,18 +77,13 @@ export const AddExportWorkflowDefinition = defineWorkflow<
     })),
 
     step(UpdateStepMachine, ({ context }) => ({
-      fileId: "main",
-      promptMessage: `Update **${path.basename(context.copiedFiles!.main)}** to implement the main functionality. Replace any TODO comments with actual implementation.`,
-    })),
-
-    step(UpdateStepMachine, ({ context }) => ({
-      fileId: "config",
-      promptMessage: `Update **${path.basename(context.copiedFiles!.config)}** with the appropriate configuration for this workflow.`,
+      fileId: "export",
+      promptMessage: `Update **${path.basename(context.copiedFiles!.export)}** to implement the ${context.name} export.`,
     })),
 
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "test",
-      promptMessage: `Update **${path.basename(context.copiedFiles!.test)}** to test the functionality you implemented. Make sure to mock any external dependencies.`,
+      promptMessage: `Update **${path.basename(context.copiedFiles!.test)}** to test the ${context.name} functionality.`,
     })),
 
     step(TestStepMachine, () => ({
@@ -100,7 +91,12 @@ export const AddExportWorkflowDefinition = defineWorkflow<
     })),
 
     step(PromptStepMachine, ({ context }) => ({
-      promptText: `Verify that the ${context.name} workflow is working correctly. Test the functionality manually and ensure all files are properly configured.`,
+      promptText: `Add the ${context.name} export to the package's index.ts file. Import and export the new functionality from ${context.exportPath}.`,
+    })),
+
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["exec", "saf-docs", "generate"],
     })),
   ],
 });

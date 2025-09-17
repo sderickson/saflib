@@ -4,7 +4,7 @@
   "args": [],
   "snapshotState": {
     "status": "active",
-    "value": "step_4",
+    "value": "step_7",
     "historyValue": {},
     "context": {
       "checklist": [
@@ -19,6 +19,67 @@
         },
         {
           "description": "Change working directory to monorepo"
+        },
+        {
+          "description": "Add add-export to the CLI tool.",
+          "subitems": [
+            {
+              "description": "Copy template files and rename placeholders.",
+              "subitems": [
+                {
+                  "description": "Upsert **add-export.ts** from [template](https://github.com/sderickson/saflib/blob/main/workflows/workflows/templates/template-file.ts)"
+                },
+                {
+                  "description": "Upsert **add-export.test.ts** from [template](https://github.com/sderickson/saflib/blob/main/workflows/workflows/templates/template-file.test.ts)"
+                },
+                {
+                  "description": "Upsert **index.ts** from [template](https://github.com/sderickson/saflib/blob/main/workflows/workflows/templates/index.ts)"
+                }
+              ]
+            },
+            {
+              "description": "Add name, description, and cliArguments to the newly created workflows/add-export.ts."
+            },
+            {
+              "description": "Export **add-export** from **@saflib/monorepo**."
+            },
+            {
+              "description": "Find the file which gathers all workflows to include them in the saf-workflow CLI tool."
+            },
+            {
+              "description": "If needed, install `@saflib/monorepo` as a dependency of the package that contains that file you found."
+            },
+            {
+              "description": "Add `@saflib/monorepo`'s exported workflows to the CLI file's list of workflows."
+            },
+            {
+              "description": "Check that the new workflow appears in the saf-workflow CLI tool."
+            },
+            {
+              "description": "Review documentation: [README.md](https://github.com/sderickson/saflib/blob/main/workflows/docs/README.md)"
+            },
+            {
+              "description": "Create template files for add-export workflow."
+            },
+            {
+              "description": "Run `npx tsc --noEmit`"
+            },
+            {
+              "description": "Add documentation links to the workflow."
+            },
+            {
+              "description": "Add steps to workflows/add-export.ts."
+            },
+            {
+              "description": "Review the checklist and verify that the workflow was added correctly."
+            }
+          ]
+        },
+        {
+          "description": "Next, we will add the protos/init workflow. This workflow should:"
+        },
+        {
+          "description": "Change working directory to grpc/grpc-specs"
         }
       ],
       "runMode": "print",
@@ -26,56 +87,35 @@
       "docFiles": {
         "spec": "/Users/scotterickson/src/saf-2025/saflib/notes/2025-09-17-add-secret-store/spec.md"
       },
-      "cwd": "/Users/scotterickson/src/saf-2025/saflib/monorepo"
+      "cwd": "/Users/scotterickson/src/saf-2025/saflib/grpc/grpc-specs"
     },
     "children": {
-      "0.secrets/add-prereq-workflows.step_4": {
+      "0.secrets/add-prereq-workflows.step_7": {
         "snapshot": {
           "status": "active",
-          "value": "step_8",
+          "value": "step_1",
           "historyValue": {},
           "context": {
-            "workflowName": "add-export",
-            "workflowPath": "workflows/add-export.ts",
+            "workflowName": "init",
+            "workflowPath": "workflows/init.ts",
             "workflowPackageName": "@saflib/workflows",
-            "packageName": "@saflib/monorepo",
-            "targetDir": "/Users/scotterickson/src/saf-2025/saflib/monorepo/workflows",
-            "namespace": "monorepo",
+            "packageName": "@saflib/grpc-specs",
+            "targetDir": "/Users/scotterickson/src/saf-2025/saflib/grpc/grpc-specs/workflows",
+            "namespace": "protos",
             "checklist": [
               {
                 "description": "Copy template files and rename placeholders.",
                 "subitems": [
                   {
-                    "description": "Upsert **add-export.ts** from [template](https://github.com/sderickson/saflib/blob/main/workflows/workflows/templates/template-file.ts)"
+                    "description": "Upsert **init.ts** from [template](https://github.com/sderickson/saflib/blob/main/workflows/workflows/templates/template-file.ts)"
                   },
                   {
-                    "description": "Upsert **add-export.test.ts** from [template](https://github.com/sderickson/saflib/blob/main/workflows/workflows/templates/template-file.test.ts)"
+                    "description": "Upsert **init.test.ts** from [template](https://github.com/sderickson/saflib/blob/main/workflows/workflows/templates/template-file.test.ts)"
                   },
                   {
                     "description": "Upsert **index.ts** from [template](https://github.com/sderickson/saflib/blob/main/workflows/workflows/templates/index.ts)"
                   }
                 ]
-              },
-              {
-                "description": "Add name, description, and cliArguments to the newly created workflows/add-export.ts."
-              },
-              {
-                "description": "Export **add-export** from **@saflib/monorepo**."
-              },
-              {
-                "description": "Find the file which gathers all workflows to include them in the saf-workflow CLI tool."
-              },
-              {
-                "description": "If needed, install `@saflib/monorepo` as a dependency of the package that contains that file you found."
-              },
-              {
-                "description": "Add `@saflib/monorepo`'s exported workflows to the CLI file's list of workflows."
-              },
-              {
-                "description": "Check that the new workflow appears in the saf-workflow CLI tool."
-              },
-              {
-                "description": "Review documentation: [README.md](https://github.com/sderickson/saflib/blob/main/workflows/docs/README.md)"
               }
             ],
             "runMode": "print",
@@ -85,17 +125,21 @@
               "index": "/Users/scotterickson/src/saf-2025/saflib/workflows/workflows/templates/index.ts"
             },
             "copiedFiles": {
-              "workflow": "/Users/scotterickson/src/saf-2025/saflib/monorepo/workflows/add-export.ts",
-              "test": "/Users/scotterickson/src/saf-2025/saflib/monorepo/workflows/add-export.test.ts",
-              "index": "/Users/scotterickson/src/saf-2025/saflib/monorepo/workflows/index.ts"
+              "workflow": "/Users/scotterickson/src/saf-2025/saflib/grpc/grpc-specs/workflows/init.ts",
+              "test": "/Users/scotterickson/src/saf-2025/saflib/grpc/grpc-specs/workflows/init.test.ts",
+              "index": "/Users/scotterickson/src/saf-2025/saflib/grpc/grpc-specs/workflows/index.ts"
             },
             "docFiles": {
               "readme": "/Users/scotterickson/src/saf-2025/saflib/workflows/docs/README.md"
             },
-            "cwd": "/Users/scotterickson/src/saf-2025/saflib/monorepo"
+            "rootRef": {
+              "xstate$$type": 1,
+              "id": "0.secrets/add-prereq-workflows.step_7"
+            },
+            "cwd": "/Users/scotterickson/src/saf-2025/saflib/grpc/grpc-specs"
           },
           "children": {
-            "0.workflows/add-workflow.step_8": {
+            "0.workflows/add-workflow.step_1": {
               "snapshot": {
                 "status": "active",
                 "value": "running",
@@ -109,28 +153,28 @@
                     "index": "/Users/scotterickson/src/saf-2025/saflib/workflows/workflows/templates/index.ts"
                   },
                   "copiedFiles": {
-                    "workflow": "/Users/scotterickson/src/saf-2025/saflib/monorepo/workflows/add-export.ts",
-                    "test": "/Users/scotterickson/src/saf-2025/saflib/monorepo/workflows/add-export.test.ts",
-                    "index": "/Users/scotterickson/src/saf-2025/saflib/monorepo/workflows/index.ts"
+                    "workflow": "/Users/scotterickson/src/saf-2025/saflib/grpc/grpc-specs/workflows/init.ts",
+                    "test": "/Users/scotterickson/src/saf-2025/saflib/grpc/grpc-specs/workflows/init.test.ts",
+                    "index": "/Users/scotterickson/src/saf-2025/saflib/grpc/grpc-specs/workflows/index.ts"
                   },
                   "docFiles": {
                     "readme": "/Users/scotterickson/src/saf-2025/saflib/workflows/docs/README.md"
                   },
                   "rootRef": {
                     "xstate$$type": 1,
-                    "id": "0.workflows/add-workflow.step_8"
+                    "id": "0.secrets/add-prereq-workflows.step_7"
                   },
-                  "cwd": "/Users/scotterickson/src/saf-2025/saflib/monorepo",
-                  "promptText": "Create template files for add-export workflow.\n\n      Create a folder named `templates` next to the workflow file if it doesn't already exist. Add any template files you need to the folder. Make sure the organization of those template files matches the organization recommended by the package. Check if you're not sure how to organize them. And if you don't have them already, ask for samples to base the template files on.\n\n      **Important**: Use \"template-file\" as the base name in your template files (not {{...}} placeholders). The system will automatically replace \"template-file\", \"template_file\", \"TemplateFile\", and \"templateFile\" with the actual name during workflow execution. This keeps template files valid TypeScript/JavaScript.\n\n      This goes for file names as well. You may well create a file named `template-file.ts` or something like that and it will get renamed based on the name passed into `CopyStepMachine`."
+                  "cwd": "/Users/scotterickson/src/saf-2025/saflib/grpc/grpc-specs",
+                  "promptText": "Add name, description, and cliArguments to the newly created workflows/init.ts.\n      \n      Don't worry about the other TODOs for now; currently we're just making sure the stub workflow is properly installed into the CLI tool.\n      You should namespace the id, though. Make sure it starts with the name of the package (sans organization), e.g. workflows/add-workflow"
                 },
                 "children": {}
               },
-              "src": "actor_8",
+              "src": "actor_1",
               "syncSnapshot": false
             }
           }
         },
-        "src": "actor_4",
+        "src": "actor_7",
         "syncSnapshot": false
       }
     }
