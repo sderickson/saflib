@@ -101,14 +101,6 @@ export const InitWorkflowDefinition = defineWorkflow<
       path: context.targetDir,
     })),
 
-    step(CommandStepMachine, ({ context }) => ({
-      command: "sed",
-      args: [
-        `'s/template\.file/${context.protoPackageName}/g'`,
-        "protos/health.proto",
-      ],
-    })),
-
     step(CommandStepMachine, () => ({
       command: "npm",
       args: ["run", "generate"],
