@@ -7,6 +7,7 @@ import {
   step,
 } from "@saflib/workflows";
 import path from "node:path";
+import { kebabCaseToPascalCase, kebabCaseToCamelCase } from "@saflib/utils";
 
 const sourceDir = path.join(import.meta.dirname, "templates");
 
@@ -20,9 +21,13 @@ const input = [
 ] as const;
 
 interface AddHandlerWorkflowContext {
-  path: string;
-  serviceDir: string;
-  handlerName: string;
+  name: string; // e.g. "get-secret"
+  camelName: string; // e.g. getSecret
+  targetDir: string;
+  serviceName: string; // e.g. "secrets"
+  indexPath: string; // e.g. "/rpcs/secrets/index.ts"
+  pascalServiceName: string; // e.g. "Secrets"
+  grpcPath: string; // e.g. "/grpc.ts"
 }
 
 export const AddHandlerWorkflowDefinition = defineWorkflow<
@@ -31,68 +36,79 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
 >({
   id: "grpc/add-handler",
 
-  // TODO: replace with a description based on the context, also in the present tense like a good commit message.
-  description: "Create a new thing",
+  description: "Add gRPC handler implementations",
 
-  // TODO: replace with a description based on the context, also in the present tense like a good commit message.
-  checklistDescription: ({ name }) => `Create a new ${name} thing.`,
+  checklistDescription: ({ name }) => `Add gRPC handler ${name}.`,
 
   input,
 
   sourceUrl: import.meta.url,
 
   context: ({ input }) => {
-    // TODO: replace "output" with where the files should actually go based on the input
-    // This will probably be based on the inputs, such as the name of what is being created
-    const targetDir = path.join(input.cwd, "output");
+    const targetDir = path.dirname(path.join(input.cwd, input.path));
+    const [rpcName, serviceName, methodName] = input.path.split("/");
+    if (rpcName !== "rpcs") {
+      throw new Error(
+        "Path should be of the form rpcs/{service-name}/{method-name}.ts",
+      );
+    }
+
+    const cwd = input.cwd;
+    const indexPath = path.join(targetDir, "index.ts").replace(cwd, "");
+    const pascalServiceName = kebabCaseToPascalCase(serviceName);
+    const grpcPath = path.join(cwd, "grpc.ts").replace(cwd, "");
+    const name = methodName.split(".")[0];
 
     return {
-      name: input.name,
+      name,
+      camelName: kebabCaseToCamelCase(name),
       targetDir,
-      exampleProperty: "example value",
+      serviceName,
+      indexPath,
+      pascalServiceName,
+      grpcPath,
     };
   },
 
-  // TODO: create the add-handlers dir and add template files
-  // Include TODOs like this file does.
-  // Instances of "add-handler" in the file name and content will be replaced with the "name" given to CopyStepMachine
-   templateFiles: {
-    main: path.join(sourceDir, "main.ts"),
-    config: path.join(sourceDir, "config.ts"),
-    test: path.join(sourceDir, "test.ts"),
+  templateFiles: {
+    handler: path.join(sourceDir, "template-file.ts"),
+    index: path.join(sourceDir, "index.ts"),
   },
 
-  // TODO: add documentation file references
   docFiles: {},
 
-  // TODO: update the steps to match the actual workflow you're creating. It will usually involve some combination of copying template files, updating files, prompting, running scripts, and running tests.
   steps: [
     step(CopyStepMachine, ({ context }) => ({
       name: context.name,
       targetDir: context.targetDir,
+      lineReplace: (line) =>
+        line
+          .replace("templateService", context.serviceName + "Service")
+          .replace("TemplateService", context.pascalServiceName + "Service"),
     })),
 
     step(UpdateStepMachine, ({ context }) => ({
-      fileId: "main",
-      promptMessage: `Update **${path.basename(context.copiedFiles!.main)}** to implement the main functionality. Replace any TODO comments with actual implementation.`,
-    })),
-
-    step(UpdateStepMachine, ({ context }) => ({
-      fileId: "config",
-      promptMessage: `Update **${path.basename(context.copiedFiles!.config)}** with the appropriate configuration for this workflow.`,
-    })),
-
-    step(UpdateStepMachine, ({ context }) => ({
-      fileId: "test",
-      promptMessage: `Update **${path.basename(context.copiedFiles!.test)}** to test the functionality you implemented. Make sure to mock any external dependencies.`,
-    })),
-
-    step(TestStepMachine, () => ({
-      fileId: "test",
+      fileId: "handler",
+      promptMessage: `Implement the ${context.camelName} gRPC handler. Make sure to:
+        1. Use proper gRPC types from your proto package
+        2. Handle expected errors from service/DB layers
+        3. Let unexpected errors propagate to central error handler (no try/catch)
+        4. Export the handler from the folder's "index.ts" file`,
     })),
 
     step(PromptStepMachine, ({ context }) => ({
-      promptText: `Verify that the ${context.name} workflow is working correctly. Test the functionality manually and ensure all files are properly configured.`,
+      promptText: `Update the main grpc.ts file to register the ${context.serviceName} service if it's not already there.
+        1. Import the handler: \`import { ${context.pascalServiceName}Service } from "./rpcs/${context.serviceName}/index.ts"\`
+        2. Add the service to the server: \`server.addService(${context.pascalServiceName}Service.definition, ...)\`
+        3. Make sure to use the proper context wrapper, something like this:
+        
+        server.addService(
+          ${context.pascalServiceName}Service.definition,
+          addSafContext(
+            addStoreContext(new ${context.pascalServiceName}Service()),
+            ${context.pascalServiceName}ServiceDefinition,
+          ),
+        );`,
     })),
   ],
 });

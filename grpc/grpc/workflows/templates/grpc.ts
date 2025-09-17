@@ -1,6 +1,9 @@
 import { templateFileDb } from "@template/file-db";
 import { templateFileServiceStorage } from "@template/file-service-common";
-import { makeGrpcServerContextWrapper } from "@saflib/grpc";
+import {
+  makeGrpcServerContextWrapper,
+  // addSafContext
+} from "@saflib/grpc";
 import * as grpc from "@grpc/grpc-js";
 import type { TemplateFileServiceContextOptions } from "@template/file-service-common";
 
@@ -14,13 +17,13 @@ export function makeGrpcServer(
   if (!templateFileDbKey) {
     templateFileDbKey = templateFileDb.connect();
   }
-  const addTemplateFileServiceContext = makeGrpcServerContextWrapper(
+  const addStoreContext = makeGrpcServerContextWrapper(
     templateFileServiceStorage,
     { templateFileDbKey },
   );
   // TODO: remove this check once context is being used for a service
-  if (!addTemplateFileServiceContext) {
-    throw new Error("addTemplateFileServiceContext is not defined");
+  if (!addStoreContext) {
+    throw new Error("addStoreContext is not defined");
   }
 
   const server = new grpc.Server();
