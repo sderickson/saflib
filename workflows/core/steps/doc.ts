@@ -103,7 +103,6 @@ export const DocStepMachine = setup({
             target: "done",
           },
           {
-            target: "done",
             actions: [
               promptAgent(({ context }) => {
                 const docPath = context.docFiles![context.docId];
@@ -131,7 +130,7 @@ export const DocStepMachine = setup({
         },
         continue: {
           reenter: true,
-          target: "reviewDoc",
+          target: "done",
         },
       },
     },
