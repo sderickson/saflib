@@ -93,7 +93,7 @@
       "0.secrets/add-prereq-workflows.step_7": {
         "snapshot": {
           "status": "active",
-          "value": "step_1",
+          "value": "step_8",
           "historyValue": {},
           "context": {
             "workflowName": "init",
@@ -116,6 +116,27 @@
                     "description": "Upsert **index.ts** from [template](https://github.com/sderickson/saflib/blob/main/workflows/workflows/templates/index.ts)"
                   }
                 ]
+              },
+              {
+                "description": "Add name, description, and cliArguments to the newly created workflows/init.ts."
+              },
+              {
+                "description": "Export **init** from **@saflib/grpc-specs**."
+              },
+              {
+                "description": "Find the file which gathers all workflows to include them in the saf-workflow CLI tool."
+              },
+              {
+                "description": "If needed, install `@saflib/grpc-specs` as a dependency of the package that contains that file you found."
+              },
+              {
+                "description": "Add `@saflib/grpc-specs`'s exported workflows to the CLI file's list of workflows."
+              },
+              {
+                "description": "Check that the new workflow appears in the saf-workflow CLI tool."
+              },
+              {
+                "description": "Review documentation: [README.md](https://github.com/sderickson/saflib/blob/main/workflows/docs/README.md)"
               }
             ],
             "runMode": "print",
@@ -132,14 +153,10 @@
             "docFiles": {
               "readme": "/Users/scotterickson/src/saf-2025/saflib/workflows/docs/README.md"
             },
-            "rootRef": {
-              "xstate$$type": 1,
-              "id": "0.secrets/add-prereq-workflows.step_7"
-            },
             "cwd": "/Users/scotterickson/src/saf-2025/saflib/grpc/grpc-specs"
           },
           "children": {
-            "0.workflows/add-workflow.step_1": {
+            "0.workflows/add-workflow.step_8": {
               "snapshot": {
                 "status": "active",
                 "value": "running",
@@ -162,14 +179,14 @@
                   },
                   "rootRef": {
                     "xstate$$type": 1,
-                    "id": "0.secrets/add-prereq-workflows.step_7"
+                    "id": "0.workflows/add-workflow.step_8"
                   },
                   "cwd": "/Users/scotterickson/src/saf-2025/saflib/grpc/grpc-specs",
-                  "promptText": "Add name, description, and cliArguments to the newly created workflows/init.ts.\n      \n      Don't worry about the other TODOs for now; currently we're just making sure the stub workflow is properly installed into the CLI tool.\n      You should namespace the id, though. Make sure it starts with the name of the package (sans organization), e.g. workflows/add-workflow"
+                  "promptText": "Create template files for init workflow.\n\n      Create a folder named `templates` next to the workflow file if it doesn't already exist. Add any template files you need to the folder. Make sure the organization of those template files matches the organization recommended by the package. Check if you're not sure how to organize them. And if you don't have them already, ask for samples to base the template files on.\n\n      **Important**: Use \"template-file\" as the base name in your template files (not {{...}} placeholders). The system will automatically replace \"template-file\", \"template_file\", \"TemplateFile\", and \"templateFile\" with the actual name during workflow execution. This keeps template files valid TypeScript/JavaScript.\n\n      This goes for file names as well. You may well create a file named `template-file.ts` or something like that and it will get renamed based on the name passed into `CopyStepMachine`."
                 },
                 "children": {}
               },
-              "src": "actor_1",
+              "src": "actor_8",
               "syncSnapshot": false
             }
           }
