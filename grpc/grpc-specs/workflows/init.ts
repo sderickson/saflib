@@ -34,7 +34,7 @@ export const InitWorkflowDefinition = defineWorkflow<
   typeof input,
   InitWorkflowContext
 >({
-  id: "protos/init",
+  id: "proto/init",
 
   description: "Create a new protocol buffer package",
 
@@ -68,6 +68,7 @@ export const InitWorkflowDefinition = defineWorkflow<
     package: path.join(sourceDir, "package.json"),
     index: path.join(sourceDir, "index.ts"),
     protos: path.join(sourceDir, "protos"),
+    clients: path.join(sourceDir, "clients"),
     dist: path.join(sourceDir, "dist"),
     envSchema: path.join(sourceDir, "env.schema.json"),
     env: path.join(sourceDir, "env.ts"),

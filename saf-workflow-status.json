@@ -4,7 +4,7 @@
   "args": [],
   "snapshotState": {
     "status": "active",
-    "value": "step_8",
+    "value": "step_9",
     "historyValue": {},
     "context": {
       "checklist": [
@@ -135,6 +135,9 @@
               "description": "Review the checklist and verify that the workflow was added correctly."
             }
           ]
+        },
+        {
+          "description": "Next, we will add the protos/add-method workflow. This workflow should:"
         }
       ],
       "runMode": "print",
@@ -145,28 +148,120 @@
       "cwd": "/Users/scotterickson/src/saf-2025/saflib/grpc/grpc-specs"
     },
     "children": {
-      "0.secrets/add-prereq-workflows.step_8": {
+      "0.secrets/add-prereq-workflows.step_9": {
         "snapshot": {
           "status": "active",
-          "value": "running",
+          "value": "step_12",
           "historyValue": {},
           "context": {
-            "checklist": [],
+            "workflowName": "add-method",
+            "workflowPath": "workflows/add-method.ts",
+            "workflowPackageName": "@saflib/workflows",
+            "packageName": "@saflib/grpc-specs",
+            "targetDir": "/Users/scotterickson/src/saf-2025/saflib/grpc/grpc-specs/workflows",
+            "namespace": "protos",
+            "checklist": [
+              {
+                "description": "Copy template files and rename placeholders.",
+                "subitems": [
+                  {
+                    "description": "Upsert **add-method.ts** from [template](https://github.com/sderickson/saflib/blob/main/workflows/workflows/templates/template-file.ts)"
+                  },
+                  {
+                    "description": "Upsert **add-method.test.ts** from [template](https://github.com/sderickson/saflib/blob/main/workflows/workflows/templates/template-file.test.ts)"
+                  },
+                  {
+                    "description": "Upsert **index.ts** from [template](https://github.com/sderickson/saflib/blob/main/workflows/workflows/templates/index.ts)"
+                  }
+                ]
+              },
+              {
+                "description": "Add name, description, and cliArguments to the newly created workflows/add-method.ts."
+              },
+              {
+                "description": "Export **add-method** from **@saflib/grpc-specs**."
+              },
+              {
+                "description": "Find the file which gathers all workflows to include them in the saf-workflow CLI tool."
+              },
+              {
+                "description": "If needed, install `@saflib/grpc-specs` as a dependency of the package that contains that file you found."
+              },
+              {
+                "description": "Add `@saflib/grpc-specs`'s exported workflows to the CLI file's list of workflows."
+              },
+              {
+                "description": "Check that the new workflow appears in the saf-workflow CLI tool."
+              },
+              {
+                "description": "Review documentation: [README.md](https://github.com/sderickson/saflib/blob/main/workflows/docs/README.md)"
+              },
+              {
+                "description": "Create template files for add-method workflow."
+              },
+              {
+                "description": "Run `npx tsc --noEmit`"
+              },
+              {
+                "description": "Add documentation links to the workflow."
+              },
+              {
+                "description": "Add steps to workflows/add-method.ts."
+              }
+            ],
             "runMode": "print",
-            "templateFiles": {},
+            "templateFiles": {
+              "workflow": "/Users/scotterickson/src/saf-2025/saflib/workflows/workflows/templates/template-file.ts",
+              "test": "/Users/scotterickson/src/saf-2025/saflib/workflows/workflows/templates/template-file.test.ts",
+              "index": "/Users/scotterickson/src/saf-2025/saflib/workflows/workflows/templates/index.ts"
+            },
+            "copiedFiles": {
+              "workflow": "/Users/scotterickson/src/saf-2025/saflib/grpc/grpc-specs/workflows/add-method.ts",
+              "test": "/Users/scotterickson/src/saf-2025/saflib/grpc/grpc-specs/workflows/add-method.test.ts",
+              "index": "/Users/scotterickson/src/saf-2025/saflib/grpc/grpc-specs/workflows/index.ts"
+            },
             "docFiles": {
-              "spec": "/Users/scotterickson/src/saf-2025/saflib/notes/2025-09-17-add-secret-store/spec.md"
+              "readme": "/Users/scotterickson/src/saf-2025/saflib/workflows/docs/README.md"
             },
-            "rootRef": {
-              "xstate$$type": 1,
-              "id": "0.secrets/add-prereq-workflows.step_8"
-            },
-            "cwd": "/Users/scotterickson/src/saf-2025/saflib/grpc/grpc-specs",
-            "promptText": "Next, we will add the protos/add-method workflow. This workflow should:\n- Take inputs: path (to the proto service file)\n- Add the prompted method to the proto file (not provided as an input)\n- Regenerate from proto (npm run generate)\n\nThis will be used to add GetSecret, RegisterToken, etc. to the secrets proto."
+            "cwd": "/Users/scotterickson/src/saf-2025/saflib/grpc/grpc-specs"
           },
-          "children": {}
+          "children": {
+            "0.workflows/add-workflow.step_12": {
+              "snapshot": {
+                "status": "active",
+                "value": "running",
+                "historyValue": {},
+                "context": {
+                  "checklist": [],
+                  "runMode": "print",
+                  "templateFiles": {
+                    "workflow": "/Users/scotterickson/src/saf-2025/saflib/workflows/workflows/templates/template-file.ts",
+                    "test": "/Users/scotterickson/src/saf-2025/saflib/workflows/workflows/templates/template-file.test.ts",
+                    "index": "/Users/scotterickson/src/saf-2025/saflib/workflows/workflows/templates/index.ts"
+                  },
+                  "copiedFiles": {
+                    "workflow": "/Users/scotterickson/src/saf-2025/saflib/grpc/grpc-specs/workflows/add-method.ts",
+                    "test": "/Users/scotterickson/src/saf-2025/saflib/grpc/grpc-specs/workflows/add-method.test.ts",
+                    "index": "/Users/scotterickson/src/saf-2025/saflib/grpc/grpc-specs/workflows/index.ts"
+                  },
+                  "docFiles": {
+                    "readme": "/Users/scotterickson/src/saf-2025/saflib/workflows/docs/README.md"
+                  },
+                  "rootRef": {
+                    "xstate$$type": 1,
+                    "id": "0.workflows/add-workflow.step_12"
+                  },
+                  "cwd": "/Users/scotterickson/src/saf-2025/saflib/grpc/grpc-specs",
+                  "promptText": "Review the checklist and verify that the workflow was added correctly.\n\n      Run `npm exec saf-workflow checklist add-method` to see the checklist."
+                },
+                "children": {}
+              },
+              "src": "actor_12",
+              "syncSnapshot": false
+            }
+          }
         },
-        "src": "actor_8",
+        "src": "actor_9",
         "syncSnapshot": false
       }
     }

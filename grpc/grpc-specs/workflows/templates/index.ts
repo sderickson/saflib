@@ -1,7 +1,8 @@
+import { getHealthClient, health } from "./clients/health.ts";
 import { typedEnv } from "./env.ts";
 
 const templateFileAddress = `${typedEnv.TEMPLATE_FILE_SERVICE_HOST}:${typedEnv.TEMPLATE_FILE_SERVICE_GRPC_PORT}`;
 
-// import, create, and export clients here
+const healthClient = getHealthClient(templateFileAddress);
 
-export { templateFileAddress };
+export { templateFileAddress, healthClient, health };
