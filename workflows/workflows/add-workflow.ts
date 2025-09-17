@@ -49,8 +49,9 @@ export const AddWorkflowDefinition = defineWorkflow<
     const workflowName = input.name || "";
     const workflowPath = `workflows/${workflowName}.ts`;
     let packageName =
-      readFileSync("package.json", "utf8").match(/name": "(.+)"/)?.[1] ||
-      "@your/target-package";
+      readFileSync(path.join(input.cwd, "package.json"), "utf8").match(
+        /name": "(.+)"/,
+      )?.[1] || "@your/target-package";
     if (input.runMode === "dry") {
       packageName = "@example/package";
     }
