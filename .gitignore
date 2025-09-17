@@ -1,7 +1,7 @@
 **/node_modules
 **/coverage
 **/data/*.sqlite
-**/saf-workflow-status.json
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
