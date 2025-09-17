@@ -18,7 +18,7 @@ const getHealthClient = (address: string) => {
     healthClient = {
       HealthCheck: async (_request: health.HealthCheckRequest) => {
         return new health.HealthCheckResponse({
-          status: "Test User",
+          status: "OK",
           current_time: new timestamp.Timestamp({
             seconds: 1718239200,
             nanos: 0,

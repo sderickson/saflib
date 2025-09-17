@@ -75,6 +75,7 @@ export const InitWorkflowDefinition = defineWorkflow<
     generate: path.join(sourceDir, "generate.sh"),
     tsconfig: path.join(sourceDir, "tsconfig.json"),
     typedoc: path.join(sourceDir, "typedoc.json"),
+    vitestConfig: path.join(sourceDir, "vitest.config.js"),
   },
 
   // TODO: add documentation file references
