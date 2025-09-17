@@ -64,7 +64,7 @@ This is the most fundamental workflow for free-form packages like env and secret
     })),
 
     step(CwdStepMachine, () => ({
-      path: "./saflib/monorepo",
+      path: "./monorepo",
     })),
 
     // Add monorepo/add-export workflow
@@ -84,7 +84,7 @@ This will be used to create @saflib/secrets-proto.`,
     })),
 
     step(CwdStepMachine, () => ({
-      path: "./saflib/grpc/grpc-specs",
+      path: "./grpc/grpc-specs",
     })),
 
     // Add protos/init workflow
@@ -117,7 +117,7 @@ This will be used to create @saflib/secrets-grpc.`,
     })),
 
     step(CwdStepMachine, () => ({
-      path: "./saflib/grpc/grpc",
+      path: "./grpc/grpc",
     })),
 
     // Add grpc/init workflow
@@ -151,7 +151,7 @@ This will be used to create SecretForm.vue.`,
     })),
 
     step(CwdStepMachine, () => ({
-      path: "./saflib/sdk",
+      path: "./sdk",
     })),
 
     // Add sdk/add-form workflow
@@ -199,7 +199,7 @@ This will be used to add documentation for the secrets service.`,
     })),
 
     step(CwdStepMachine, () => ({
-      path: "./saflib/monorepo",
+      path: "./monorepo",
     })),
 
     // Add monorepo/add-doc workflow
