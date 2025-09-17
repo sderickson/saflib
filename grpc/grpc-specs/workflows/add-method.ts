@@ -5,6 +5,7 @@ import {
   step,
 } from "@saflib/workflows";
 import path from "node:path";
+import { kebabCaseToCamelCase } from "../../../utils/index.ts";
 
 const input = [
   {
@@ -16,9 +17,8 @@ const input = [
 ] as const;
 
 interface AddMethodWorkflowContext {
-  path: string;
+  serviceName: string;
   protoFile: string;
-  packageDir: string;
 }
 
 export const AddMethodWorkflowDefinition = defineWorkflow<
@@ -29,7 +29,8 @@ export const AddMethodWorkflowDefinition = defineWorkflow<
 
   description: "Add new gRPC methods to proto files",
 
-  checklistDescription: ({ path }) => `Add new gRPC method to ${path}.`,
+  checklistDescription: ({ serviceName }) =>
+    `Add new gRPC method to ${serviceName}.`,
 
   input,
 
@@ -37,12 +38,13 @@ export const AddMethodWorkflowDefinition = defineWorkflow<
 
   context: ({ input }) => {
     const protoFile = path.join(input.cwd, input.path);
-    const packageDir = path.dirname(path.dirname(protoFile)); // Go up two levels from protos/file.proto
+    const serviceName = kebabCaseToCamelCase(
+      path.basename(input.path).split(".")[0],
+    );
 
     return {
-      path: input.path,
       protoFile,
-      packageDir,
+      serviceName,
     };
   },
 
@@ -59,33 +61,43 @@ export const AddMethodWorkflowDefinition = defineWorkflow<
     step(PromptStepMachine, ({ context }) => ({
       promptText: `Add the new gRPC method to **${context.protoFile}**.
 
-      If the proto file is empty, see how "health.proto" is structured and follow that format.
-
-Please add the method definition to the service in the proto file. Include:
-1. The RPC method definition in the service
-2. The request message definition
-3. The response message definition
-
-Example format:
-\`\`\`proto
-service YourService {
-  rpc YourMethod(YourMethodRequest) returns (YourMethodResponse);
-}
-
-message YourMethodRequest {
-  // Add request fields here
-}
-
-message YourMethodResponse {
-  // Add response fields here
-}
+      If the proto file is empty, see how "health.proto" is structured and follow that format and include SafAuth and SafRequest.
 \`\`\``,
     })),
 
-    step(CommandStepMachine, ({ context }) => ({
+    step(CommandStepMachine, () => ({
       command: "npm",
       args: ["run", "generate"],
-      cwd: context.packageDir,
+    })),
+
+    step(PromptStepMachine, ({ context }) => ({
+      promptText: `Upsert a ${context.serviceName}.ts client to the clients folder.
+      
+      If it does not exist, see how "health.ts" is structured and follow that format. Make sure to include a mocked client when testing.
+      
+      Whether or not it exists, include the mock implementation of the new method.`,
+    })),
+
+    step(PromptStepMachine, () => ({
+      promptText: `Update the index.ts file to export the new method.`,
+    })),
+
+    step(PromptStepMachine, ({ context }) => ({
+      promptText: `Upsert a ${context.serviceName}.test.ts file to the clients folder.
+      
+      If it does not exist, see how "health.ts" is structured and follow that format.
+      
+      Whether or not it exists, test each mock implementation works, and demonstrate how the client can be called with type safety.`,
+    })),
+
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["run", "typecheck"],
+    })),
+
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["run", "test"],
     })),
   ],
 });
