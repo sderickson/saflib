@@ -1,0 +1,22 @@
+{
+  "name": "@saflib/template-file",
+  "description": "Protocol buffer definitions and generated code for template-file service",
+  "type": "module",
+  "private": true,
+  "exports": {
+    ".": "./index.ts"
+  },
+  "scripts": {
+    "clean": "rm -rf dist/*",
+    "generate": "npm run clean && ./generate.sh",
+    "typecheck": "tsc"
+  },
+  "dependencies": {
+    "@saflib/env": "*",
+    "@saflib/grpc-specs": "*"
+  },
+  "devDependencies": {
+    "@saflib/monorepo": "*",
+    "@types/google-protobuf": "*"
+  }
+}

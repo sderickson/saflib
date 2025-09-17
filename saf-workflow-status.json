@@ -4,7 +4,7 @@
   "args": [],
   "snapshotState": {
     "status": "active",
-    "value": "step_7",
+    "value": "step_8",
     "historyValue": {},
     "context": {
       "checklist": [
@@ -80,6 +80,61 @@
         },
         {
           "description": "Change working directory to grpc/grpc-specs"
+        },
+        {
+          "description": "Add init to the CLI tool.",
+          "subitems": [
+            {
+              "description": "Copy template files and rename placeholders.",
+              "subitems": [
+                {
+                  "description": "Upsert **init.ts** from [template](https://github.com/sderickson/saflib/blob/main/workflows/workflows/templates/template-file.ts)"
+                },
+                {
+                  "description": "Upsert **init.test.ts** from [template](https://github.com/sderickson/saflib/blob/main/workflows/workflows/templates/template-file.test.ts)"
+                },
+                {
+                  "description": "Upsert **index.ts** from [template](https://github.com/sderickson/saflib/blob/main/workflows/workflows/templates/index.ts)"
+                }
+              ]
+            },
+            {
+              "description": "Add name, description, and cliArguments to the newly created workflows/init.ts."
+            },
+            {
+              "description": "Export **init** from **@saflib/grpc-specs**."
+            },
+            {
+              "description": "Find the file which gathers all workflows to include them in the saf-workflow CLI tool."
+            },
+            {
+              "description": "If needed, install `@saflib/grpc-specs` as a dependency of the package that contains that file you found."
+            },
+            {
+              "description": "Add `@saflib/grpc-specs`'s exported workflows to the CLI file's list of workflows."
+            },
+            {
+              "description": "Check that the new workflow appears in the saf-workflow CLI tool."
+            },
+            {
+              "description": "Review documentation: [README.md](https://github.com/sderickson/saflib/blob/main/workflows/docs/README.md)"
+            },
+            {
+              "description": "Create template files for init workflow."
+            },
+            {
+              "description": "Run `npx tsc --noEmit`"
+            },
+            {
+              "description": "Add documentation links to the workflow."
+            },
+            {
+              "description": "Add steps to workflows/init.ts."
+            },
+            {
+              "description": "Review the checklist and verify that the workflow was added correctly."
+            }
+          ]
         }
       ],
       "runMode": "print",
@@ -90,108 +145,28 @@
       "cwd": "/Users/scotterickson/src/saf-2025/saflib/grpc/grpc-specs"
     },
     "children": {
-      "0.secrets/add-prereq-workflows.step_7": {
+      "0.secrets/add-prereq-workflows.step_8": {
         "snapshot": {
           "status": "active",
-          "value": "step_8",
+          "value": "running",
           "historyValue": {},
           "context": {
-            "workflowName": "init",
-            "workflowPath": "workflows/init.ts",
-            "workflowPackageName": "@saflib/workflows",
-            "packageName": "@saflib/grpc-specs",
-            "targetDir": "/Users/scotterickson/src/saf-2025/saflib/grpc/grpc-specs/workflows",
-            "namespace": "protos",
-            "checklist": [
-              {
-                "description": "Copy template files and rename placeholders.",
-                "subitems": [
-                  {
-                    "description": "Upsert **init.ts** from [template](https://github.com/sderickson/saflib/blob/main/workflows/workflows/templates/template-file.ts)"
-                  },
-                  {
-                    "description": "Upsert **init.test.ts** from [template](https://github.com/sderickson/saflib/blob/main/workflows/workflows/templates/template-file.test.ts)"
-                  },
-                  {
-                    "description": "Upsert **index.ts** from [template](https://github.com/sderickson/saflib/blob/main/workflows/workflows/templates/index.ts)"
-                  }
-                ]
-              },
-              {
-                "description": "Add name, description, and cliArguments to the newly created workflows/init.ts."
-              },
-              {
-                "description": "Export **init** from **@saflib/grpc-specs**."
-              },
-              {
-                "description": "Find the file which gathers all workflows to include them in the saf-workflow CLI tool."
-              },
-              {
-                "description": "If needed, install `@saflib/grpc-specs` as a dependency of the package that contains that file you found."
-              },
-              {
-                "description": "Add `@saflib/grpc-specs`'s exported workflows to the CLI file's list of workflows."
-              },
-              {
-                "description": "Check that the new workflow appears in the saf-workflow CLI tool."
-              },
-              {
-                "description": "Review documentation: [README.md](https://github.com/sderickson/saflib/blob/main/workflows/docs/README.md)"
-              }
-            ],
+            "checklist": [],
             "runMode": "print",
-            "templateFiles": {
-              "workflow": "/Users/scotterickson/src/saf-2025/saflib/workflows/workflows/templates/template-file.ts",
-              "test": "/Users/scotterickson/src/saf-2025/saflib/workflows/workflows/templates/template-file.test.ts",
-              "index": "/Users/scotterickson/src/saf-2025/saflib/workflows/workflows/templates/index.ts"
-            },
-            "copiedFiles": {
-              "workflow": "/Users/scotterickson/src/saf-2025/saflib/grpc/grpc-specs/workflows/init.ts",
-              "test": "/Users/scotterickson/src/saf-2025/saflib/grpc/grpc-specs/workflows/init.test.ts",
-              "index": "/Users/scotterickson/src/saf-2025/saflib/grpc/grpc-specs/workflows/index.ts"
-            },
+            "templateFiles": {},
             "docFiles": {
-              "readme": "/Users/scotterickson/src/saf-2025/saflib/workflows/docs/README.md"
+              "spec": "/Users/scotterickson/src/saf-2025/saflib/notes/2025-09-17-add-secret-store/spec.md"
             },
-            "cwd": "/Users/scotterickson/src/saf-2025/saflib/grpc/grpc-specs"
+            "rootRef": {
+              "xstate$$type": 1,
+              "id": "0.secrets/add-prereq-workflows.step_8"
+            },
+            "cwd": "/Users/scotterickson/src/saf-2025/saflib/grpc/grpc-specs",
+            "promptText": "Next, we will add the protos/add-method workflow. This workflow should:\n- Take inputs: path (to the proto service file)\n- Add the prompted method to the proto file (not provided as an input)\n- Regenerate from proto (npm run generate)\n\nThis will be used to add GetSecret, RegisterToken, etc. to the secrets proto."
           },
-          "children": {
-            "0.workflows/add-workflow.step_8": {
-              "snapshot": {
-                "status": "active",
-                "value": "running",
-                "historyValue": {},
-                "context": {
-                  "checklist": [],
-                  "runMode": "print",
-                  "templateFiles": {
-                    "workflow": "/Users/scotterickson/src/saf-2025/saflib/workflows/workflows/templates/template-file.ts",
-                    "test": "/Users/scotterickson/src/saf-2025/saflib/workflows/workflows/templates/template-file.test.ts",
-                    "index": "/Users/scotterickson/src/saf-2025/saflib/workflows/workflows/templates/index.ts"
-                  },
-                  "copiedFiles": {
-                    "workflow": "/Users/scotterickson/src/saf-2025/saflib/grpc/grpc-specs/workflows/init.ts",
-                    "test": "/Users/scotterickson/src/saf-2025/saflib/grpc/grpc-specs/workflows/init.test.ts",
-                    "index": "/Users/scotterickson/src/saf-2025/saflib/grpc/grpc-specs/workflows/index.ts"
-                  },
-                  "docFiles": {
-                    "readme": "/Users/scotterickson/src/saf-2025/saflib/workflows/docs/README.md"
-                  },
-                  "rootRef": {
-                    "xstate$$type": 1,
-                    "id": "0.workflows/add-workflow.step_8"
-                  },
-                  "cwd": "/Users/scotterickson/src/saf-2025/saflib/grpc/grpc-specs",
-                  "promptText": "Create template files for init workflow.\n\n      Create a folder named `templates` next to the workflow file if it doesn't already exist. Add any template files you need to the folder. Make sure the organization of those template files matches the organization recommended by the package. Check if you're not sure how to organize them. And if you don't have them already, ask for samples to base the template files on.\n\n      **Important**: Use \"template-file\" as the base name in your template files (not {{...}} placeholders). The system will automatically replace \"template-file\", \"template_file\", \"TemplateFile\", and \"templateFile\" with the actual name during workflow execution. This keeps template files valid TypeScript/JavaScript.\n\n      This goes for file names as well. You may well create a file named `template-file.ts` or something like that and it will get renamed based on the name passed into `CopyStepMachine`."
-                },
-                "children": {}
-              },
-              "src": "actor_8",
-              "syncSnapshot": false
-            }
-          }
+          "children": {}
         },
-        "src": "actor_7",
+        "src": "actor_8",
         "syncSnapshot": false
       }
     }
