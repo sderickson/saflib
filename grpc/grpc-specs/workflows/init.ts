@@ -14,13 +14,13 @@ const input = [
     name: "name",
     description:
       "The name of the protocol buffer package to create (e.g., 'secrets-proto')",
-    exampleValue: "secrets-proto",
+    exampleValue: "@example-org/example-proto",
   },
   {
     name: "path",
     description:
-      "The relative path where the package should be created (e.g., 'grpc/secrets-proto')",
-    exampleValue: "grpc/secrets-proto",
+      "The relative path where the package should be created (e.g., 'grpc/example-proto')",
+    exampleValue: "grpc/example-proto",
   },
 ] as const;
 
@@ -48,10 +48,10 @@ export const InitWorkflowDefinition = defineWorkflow<
   context: ({ input }) => {
     let name = input.name;
     // make sure name doesn't end with -protos
-    if (input.name.endsWith("-protos")) {
-      name = input.name.slice(0, -7);
+    if (input.name.endsWith("-proto")) {
+      name = input.name.slice(0, -6);
     }
-    const packageName = name + "-protos";
+    const packageName = name + "-proto";
     if (name.startsWith("@")) {
       name = name.split("/")[1];
     }
@@ -84,17 +84,24 @@ export const InitWorkflowDefinition = defineWorkflow<
       name: context.name,
       targetDir: context.targetDir,
       lineReplace: (line) =>
-        line.replace("@template/file-protos", context.packageName),
+        line.replace(
+          "@template/file-",
+          context.packageName.replace("-proto", "-"),
+        ),
     })),
 
     step(CwdStepMachine, ({ context }) => ({
       path: context.targetDir,
     })),
 
-    step(CommandStepMachine, ({ context }) => ({
+    step(CommandStepMachine, () => ({
       command: "npm",
       args: ["run", "generate"],
-      cwd: context.targetDir,
+    })),
+
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["exec", "saf-env", "generate"],
     })),
   ],
 });
