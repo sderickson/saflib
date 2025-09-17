@@ -1,9 +1,9 @@
 import {
   CopyStepMachine,
-  UpdateStepMachine,
   CommandStepMachine,
   defineWorkflow,
   step,
+  CwdStepMachine,
 } from "@saflib/workflows";
 import path from "node:path";
 
@@ -26,7 +26,6 @@ const input = [
 
 interface InitWorkflowContext {
   name: string;
-  path: string;
   targetDir: string;
   packageName: string;
 }
@@ -39,20 +38,27 @@ export const InitWorkflowDefinition = defineWorkflow<
 
   description: "Create a new protocol buffer package",
 
-  checklistDescription: ({ name, path }) =>
-    `Create a new ${name} protocol buffer package at ${path}.`,
+  checklistDescription: ({ name }) =>
+    `Create a new ${name} protocol buffer package.`,
 
   input,
 
   sourceUrl: import.meta.url,
 
   context: ({ input }) => {
+    let name = input.name;
+    // make sure name doesn't end with -protos
+    if (input.name.endsWith("-protos")) {
+      name = input.name.slice(0, -7);
+    }
+    const packageName = name + "-protos";
+    if (name.startsWith("@")) {
+      name = name.split("/")[1];
+    }
     const targetDir = path.join(input.cwd, input.path);
-    const packageName = `@saflib/${input.name}`;
 
     return {
-      name: input.name,
-      path: input.path,
+      name,
       targetDir,
       packageName,
     };
@@ -77,21 +83,12 @@ export const InitWorkflowDefinition = defineWorkflow<
     step(CopyStepMachine, ({ context }) => ({
       name: context.name,
       targetDir: context.targetDir,
+      lineReplace: (line) =>
+        line.replace("@template/file-protos", context.packageName),
     })),
 
-    step(UpdateStepMachine, ({ context }) => ({
-      fileId: "package",
-      promptMessage: `Update **${path.basename(context.copiedFiles!.package)}** with the correct package name and dependencies.`,
-    })),
-
-    step(UpdateStepMachine, ({ context }) => ({
-      fileId: "proto",
-      promptMessage: `Update **${path.basename(context.copiedFiles!.proto)}** with the service definition.`,
-    })),
-
-    step(UpdateStepMachine, ({ context }) => ({
-      fileId: "index",
-      promptMessage: `Update **${path.basename(context.copiedFiles!.index)}** to export the generated types.`,
+    step(CwdStepMachine, ({ context }) => ({
+      path: context.targetDir,
     })),
 
     step(CommandStepMachine, ({ context }) => ({
