@@ -8,6 +8,7 @@ import type { WorkflowDefinition } from "../../../core/types.ts";
 import type { WorkflowBlob } from "./types.ts";
 import { isWorkflowDefinition } from "./utils.ts";
 import { getWorkflowLogger } from "../../../core/store.ts";
+import { execSync } from "node:child_process";
 
 export const getPlanStatusFilePath = () => {
   return resolve(process.cwd(), "saf-workflow-status.json");
@@ -27,6 +28,8 @@ export const saveWorkflow = (workflow: AbstractWorkflowRunner) => {
     planStatusFilePath,
     JSON.stringify(workflow.dehydrate(), null, 2),
   );
+  execSync("git add saf-workflow-status.json");
+  execSync("git commit -m 'Update workflow status'");
 };
 
 export const loadWorkflow = async (workflows: WorkflowDefinition[]) => {
