@@ -10,8 +10,8 @@ const input = [
   {
     name: "path",
     description:
-      "The path to the proto service file (e.g., 'grpc/secrets-proto/protos/secrets.proto')",
-    exampleValue: "grpc/secrets-proto/protos/secrets.proto",
+      "The path to the proto service file (e.g., 'protos/example.proto')",
+    exampleValue: "protos/example.proto",
   },
 ] as const;
 
@@ -51,8 +51,15 @@ export const AddMethodWorkflowDefinition = defineWorkflow<
   docFiles: {},
 
   steps: [
+    step(CommandStepMachine, ({ context }) => ({
+      command: "touch",
+      args: [context.protoFile],
+    })),
+
     step(PromptStepMachine, ({ context }) => ({
       promptText: `Add the new gRPC method to **${context.protoFile}**.
+
+      If the proto file is empty, see how "health.proto" is structured and follow that format.
 
 Please add the method definition to the service in the proto file. Include:
 1. The RPC method definition in the service

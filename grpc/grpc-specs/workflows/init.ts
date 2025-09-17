@@ -28,6 +28,7 @@ interface InitWorkflowContext {
   name: string;
   targetDir: string;
   packageName: string;
+  protoPackageName: string;
 }
 
 export const InitWorkflowDefinition = defineWorkflow<
@@ -52,15 +53,19 @@ export const InitWorkflowDefinition = defineWorkflow<
       name = input.name.slice(0, -6);
     }
     const packageName = name + "-proto";
+    let org = "";
     if (name.startsWith("@")) {
       name = name.split("/")[1];
+      org = name.split("/")[0];
     }
     const targetDir = path.join(input.cwd, input.path);
+    const protoPackageName = [org, name, "v1"].filter(Boolean).join(".");
 
     return {
       name,
       targetDir,
       packageName,
+      protoPackageName,
     };
   },
 
@@ -94,6 +99,14 @@ export const InitWorkflowDefinition = defineWorkflow<
 
     step(CwdStepMachine, ({ context }) => ({
       path: context.targetDir,
+    })),
+
+    step(CommandStepMachine, ({ context }) => ({
+      command: "sed",
+      args: [
+        `'s/template\.file/${context.protoPackageName}/g'`,
+        "protos/health.proto",
+      ],
     })),
 
     step(CommandStepMachine, () => ({
