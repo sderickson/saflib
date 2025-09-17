@@ -13,7 +13,7 @@ import { contextFromInput } from "../../utils.ts";
 
 import type { CopyStepContext, CopyStepInput } from "./types.ts";
 import { parseChecklist, parseCopiedFiles } from "./helpers.ts";
-import { execSync } from "node:child_process";
+// import { execSync } from "node:child_process";
 
 export type { CopyStepInput };
 

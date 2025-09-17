@@ -8,7 +8,7 @@ import type { WorkflowDefinition } from "../../../core/types.ts";
 import type { WorkflowBlob } from "./types.ts";
 import { isWorkflowDefinition } from "./utils.ts";
 import { getWorkflowLogger } from "../../../core/store.ts";
-import { execSync } from "node:child_process";
+// import { execSync } from "node:child_process";
 
 export const getPlanStatusFilePath = () => {
   return resolve(process.cwd(), "saf-workflow-status.json");
