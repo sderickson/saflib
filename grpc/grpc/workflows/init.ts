@@ -70,7 +70,6 @@ export const InitWorkflowDefinition = defineWorkflow<
   templateFiles: {
     package: path.join(sourceDir, "package.json"),
     grpc: path.join(sourceDir, "grpc.ts"),
-    rpcs: path.join(sourceDir, "rpcs"),
     tsconfig: path.join(sourceDir, "tsconfig.json"),
     vitestConfig: path.join(sourceDir, "vitest.config.js"),
   },
