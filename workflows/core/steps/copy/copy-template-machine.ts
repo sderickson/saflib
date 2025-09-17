@@ -39,6 +39,7 @@ export const CopyStepMachine = setup({
       return context.filesToCopy.length > 0;
     },
     skipped: ({ event }) => event.output.skipped,
+    wasDirectory: ({ event }) => event.output.isDirectory,
   },
 }).createMachine({
   id: "copy-template",
@@ -72,6 +73,20 @@ export const CopyStepMachine = setup({
               logWarn(
                 ({ event }) =>
                   `File ${event.output.fileName} already exists, skipping`,
+              ),
+              assign({
+                checklist: parseChecklist,
+                copiedFiles: parseCopiedFiles,
+              }),
+            ],
+          },
+          {
+            guard: "wasDirectory",
+            target: "popFile",
+            actions: [
+              logWarn(
+                ({ event }) =>
+                  `Warning: ${event.output.fileName} is a directory, did not rename`,
               ),
               assign({
                 checklist: parseChecklist,

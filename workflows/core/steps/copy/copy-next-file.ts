@@ -2,7 +2,8 @@ import path from "node:path";
 import { fromPromise } from "xstate";
 import { access } from "node:fs/promises";
 import { constants } from "node:fs";
-import { copyFile } from "node:fs/promises";
+import { stat } from "node:fs/promises";
+import { copyFile, cp } from "node:fs/promises";
 import { transformName } from "./utils.ts";
 import type { CopyStepContext } from "./types.ts";
 
@@ -11,6 +12,7 @@ export interface CopyNextFileOutput {
   fileName: string;
   fileId: string;
   filePath: string;
+  isDirectory: boolean;
 }
 
 export const copyNextFile = fromPromise(
@@ -32,12 +34,15 @@ export const copyNextFile = fromPromise(
     }
     const targetFileName = transformName(path.basename(sourcePath), name);
     const targetPath = path.join(targetDir, targetFileName);
+    const stats = await stat(sourcePath);
+    const isDirectory = stats.isDirectory();
 
     const response: CopyNextFileOutput = {
       skipped: false,
       fileName: targetFileName,
       fileId: currentFileId,
       filePath: targetPath,
+      isDirectory,
     };
 
     if (runMode === "dry") {
@@ -58,7 +63,12 @@ export const copyNextFile = fromPromise(
       fs.mkdir(path.dirname(targetPath), { recursive: true }),
     );
 
-    await copyFile(sourcePath, targetPath);
+    if (isDirectory) {
+      await cp(sourcePath, targetPath, { recursive: true });
+    } else {
+      await copyFile(sourcePath, targetPath);
+    }
+
     return response;
   },
 );
