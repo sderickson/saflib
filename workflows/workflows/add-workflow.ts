@@ -27,6 +27,7 @@ interface AddWorkflowContext {
   workflowPackageName: string;
   packageName: string;
   targetDir: string;
+  namespace: string;
 }
 
 export const AddWorkflowDefinition = defineWorkflow<
@@ -46,7 +47,10 @@ export const AddWorkflowDefinition = defineWorkflow<
   sourceUrl: import.meta.url,
 
   context: ({ input }) => {
-    const workflowName = input.name || "";
+    if (!input.name.includes("/")) {
+      throw new Error("Workflow name must include a slash (namespace)");
+    }
+    const [namespace, workflowName] = input.name.split("/");
     const workflowPath = `workflows/${workflowName}.ts`;
     let packageName =
       readFileSync(path.join(input.cwd, "package.json"), "utf8").match(
@@ -65,6 +69,7 @@ export const AddWorkflowDefinition = defineWorkflow<
       workflowPackageName,
       packageName,
       targetDir,
+      namespace,
     };
   },
 
@@ -86,7 +91,9 @@ export const AddWorkflowDefinition = defineWorkflow<
         // Internal use uses @saflib/workflows, but published package uses saflib-workflows.
         // Adjust the produced workflow depending on what the name of the workflow package is.
         lineReplace: (line) =>
-          line.replace("@saflib/workflows", context.workflowPackageName),
+          line
+            .replace("@saflib/workflows", context.workflowPackageName)
+            .replace("template-namespace", context.namespace),
         runMode: context.runMode,
       };
     }),

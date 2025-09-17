@@ -31,8 +31,7 @@ export const TemplateFileWorkflowDefinition = defineWorkflow<
   typeof input,
   TemplateFileWorkflowContext
 >({
-  // TODO: replace "todo/" with the name of the package that contains the template files
-  id: "todo/template-file",
+  id: "template-namespace/template-file",
 
   // TODO: replace with a description based on the context, also in the present tense like a good commit message.
   description: "Create a new thing",
