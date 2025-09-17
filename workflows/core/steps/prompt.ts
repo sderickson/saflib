@@ -70,12 +70,12 @@ export const PromptStepMachine = setup({
   },
   output: ({ context }) => {
     const result = execSync("git status").toString();
-    if (!result.includes("nothing to commit, working tree clean")) {
-      execSync("git add .");
-      execSync(
-        `git commit -m '${context.promptText.split("\n")[0].replace("'", "\\'")}'`,
-      );
-    }
+    // if (!result.includes("nothing to commit, working tree clean")) {
+    //   execSync("git add .");
+    //   execSync(
+    //     `git commit -m '${context.promptText.split("\n")[0].replace("'", "\\'")}'`,
+    //   );
+    // }
     return {
       checklist: {
         description: context.promptText.split("\n")[0],

@@ -28,11 +28,11 @@ export const saveWorkflow = (workflow: AbstractWorkflowRunner) => {
     planStatusFilePath,
     JSON.stringify(workflow.dehydrate(), null, 2),
   );
-  const result = execSync("git status").toString();
-  if (!result.includes("nothing to commit, working tree clean")) {
-    execSync("git add saf-workflow-status.json");
-    execSync("git commit -m 'Update workflow status'");
-  }
+  // const result = execSync("git status").toString();
+  // if (!result.includes("nothing to commit, working tree clean")) {
+  //   execSync("git add saf-workflow-status.json");
+  //   execSync("git commit -m 'Update workflow status'");
+  // }
 };
 
 export const loadWorkflow = async (workflows: WorkflowDefinition[]) => {

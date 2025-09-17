@@ -132,8 +132,8 @@ export const CopyStepMachine = setup({
     },
   },
   output: ({ context }) => {
-    execSync("git add .");
-    execSync(`git commit -m 'Copy template files and rename placeholders'`);
+    // execSync("git add .");
+    // execSync(`git commit -m 'Copy template files and rename placeholders'`);
 
     return {
       checklist: {
