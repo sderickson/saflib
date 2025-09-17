@@ -97,6 +97,8 @@ export const InitWorkflowDefinition = defineWorkflow<
     dockerfile: path.join(sourceDir, "Dockerfile.template"),
     runScript: path.join(sourceDir, "run.ts"),
     envSchema: path.join(sourceDir, "env.schema.combined.json"),
+    index: path.join(sourceDir, "index.ts"),
+    test: path.join(sourceDir, "index.test.ts"),
   },
 
   docFiles: {},
@@ -140,7 +142,6 @@ export const InitWorkflowDefinition = defineWorkflow<
       },
     })),
 
-    // generate env
     step(CwdStepMachine, ({ context }) => ({
       path: context.targetDir,
     })),
@@ -154,14 +155,9 @@ export const InitWorkflowDefinition = defineWorkflow<
       args: ["install"],
     })),
 
-    // Install dependencies for the HTTP package
-    step(CwdStepMachine, ({ context }) => ({
-      path: path.join(context.targetDir, "..", `${context.serviceName}-http`),
-    })),
-
     step(CommandStepMachine, () => ({
       command: "npm",
-      args: ["install"],
+      args: ["test"],
     })),
   ],
 });

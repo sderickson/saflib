@@ -63,7 +63,7 @@ export const setPassword = createHandler(async (req, res) => {
   );
 
   if (callbacks && typeof callbacks.onPasswordUpdated === "function") {
-    await callbacks.onPasswordUpdated(req.user);
+    await callbacks.onPasswordUpdated({ user: req.user });
   }
 
   const response: IdentityResponseBody["setPassword"][200] = {

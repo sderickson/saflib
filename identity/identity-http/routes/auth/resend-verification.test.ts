@@ -57,10 +57,11 @@ describe("Resend Verification Route", () => {
     });
     expect(onVerificationTokenCreatedSpy).toHaveBeenCalledWith(
       expect.objectContaining({
-        email: userData.email,
+        user: expect.objectContaining({
+          email: userData.email,
+        }),
+        verificationUrl: expect.any(String),
       }),
-      expect.any(String),
-      true,
     );
   });
 

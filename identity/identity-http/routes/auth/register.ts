@@ -62,7 +62,7 @@ export const registerHandler = createHandler(async (req, res) => {
   const promises = [];
   const { callbacks } = authServiceStorage.getStore()!;
   if (callbacks.onUserCreated) {
-    promises.push(callbacks.onUserCreated(user));
+    promises.push(callbacks.onUserCreated({ user }));
   }
 
   const verificationUrl = linkToHref(authLinks.verifyEmail, {
@@ -70,7 +70,11 @@ export const registerHandler = createHandler(async (req, res) => {
   });
   if (callbacks.onVerificationTokenCreated) {
     promises.push(
-      callbacks.onVerificationTokenCreated(user, verificationUrl, false),
+      callbacks.onVerificationTokenCreated({
+        user,
+        verificationUrl,
+        isResend: false,
+      }),
     );
   }
 

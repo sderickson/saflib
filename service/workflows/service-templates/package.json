@@ -1,7 +1,10 @@
 {
-  "name": "template-file-service",
+  "name": "@template/file-service",
   "description": "Service package for template-file",
   "type": "module",
+  "exports": {
+    ".": "./index.ts"
+  },
   "scripts": {
     "start": "node --experimental-strip-types ./run.ts",
     "test": "vitest run",
@@ -13,6 +16,8 @@
   "dependencies": {
     "@saflib/env": "*",
     "@saflib/monorepo": "*",
+    "@template/file-db": "*",
+    "@template/file-http": "*",
     "@template/file-service-common": "*"
   },
   "devDependencies": {

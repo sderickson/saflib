@@ -25,14 +25,6 @@ export interface DbOptions {
    * the given (absolute) path.
    */
   onDisk?: boolean | string;
-  /**
-   * If this is true, `connect` will throw an error if a new database file would
-   * be created. This is mainly useful for production environments, where if
-   * a configuration is incorrect and doesn't point to a database that you know
-   * should exist, you wouldn't want it to just start a new one, but instead to
-   * fail fast.
-   */
-  doNotCreate?: boolean;
 }
 
 /**

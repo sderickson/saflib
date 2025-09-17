@@ -83,7 +83,10 @@ export const InitCommonWorkflowDefinition = defineWorkflow<
       name: context.serviceName,
       targetDir: context.targetDir,
       lineReplace: (line) =>
-        line.replace("@template/file", context.packageName.replace("-service-common", "")),
+        line.replace(
+          "@template/file",
+          context.packageName.replace("-service-common", ""),
+        ),
     })),
 
     step(CwdStepMachine, ({ context }) => ({

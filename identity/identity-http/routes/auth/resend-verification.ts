@@ -33,7 +33,11 @@ export const resendVerificationHandler = createHandler(async (req, res) => {
   });
   const { callbacks } = authServiceStorage.getStore()!;
   if (callbacks.onVerificationTokenCreated) {
-    await callbacks.onVerificationTokenCreated(req.user, verificationUrl, true);
+    await callbacks.onVerificationTokenCreated({
+      user: req.user,
+      verificationUrl,
+      isResend: true,
+    });
   }
 
   const response: IdentityResponseBody["resendVerification"][200] = {

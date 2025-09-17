@@ -73,7 +73,11 @@ describe("Set Password Route", () => {
     expect(oldLoginResponse.status).toBe(401);
 
     expect(onPasswordUpdatedSpy).toHaveBeenCalledWith(
-      expect.objectContaining({ email: userData.email }),
+      expect.objectContaining({
+        user: expect.objectContaining({
+          email: userData.email,
+        }),
+      }),
     );
     expect(onPasswordUpdatedSpy).toHaveBeenCalledTimes(1);
   });
