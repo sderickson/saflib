@@ -52,39 +52,6 @@ export const ImplementSecretsDbWorkflowDefinition = defineWorkflow<
       Use proper Drizzle SQLite types and add the type inference test.`,
     })),
 
-    step(makeWorkflowMachine(UpdateSchemaWorkflowDefinition), () => ({
-      systemPrompt: `Add the service_tokens table:
-
-      - id: TEXT PRIMARY KEY
-      - service_name: TEXT NOT NULL
-      - token_hash: TEXT UNIQUE NOT NULL (SHA-256 hash of token)
-      - service_version: TEXT
-      - requested_at: INTEGER NOT NULL
-      - approved: BOOLEAN DEFAULT false
-      - approved_at: INTEGER
-      - approved_by: TEXT
-      - last_used_at: INTEGER
-      - access_count: INTEGER DEFAULT 0
-
-      Use proper Drizzle SQLite types and add the type inference test.`,
-    })),
-
-    step(makeWorkflowMachine(UpdateSchemaWorkflowDefinition), () => ({
-      systemPrompt: `Add the access_requests table:
-
-      - id: TEXT PRIMARY KEY
-      - secret_id: TEXT NOT NULL REFERENCES secrets(id)
-      - service_name: TEXT NOT NULL
-      - requested_at: INTEGER NOT NULL
-      - status: TEXT NOT NULL ('pending', 'granted', 'denied')
-      - granted_at: INTEGER
-      - granted_by: TEXT
-      - access_count: INTEGER DEFAULT 0
-      - last_accessed_at: INTEGER
-
-      Use proper Drizzle SQLite types and add the type inference test.`,
-    })),
-
     step(makeWorkflowMachine(AddQueryWorkflowDefinition), () => ({
       path: "queries/secrets/create",
       systemPrompt: `Implement the \`create\` query for the secrets table.`,
@@ -115,6 +82,23 @@ export const ImplementSecretsDbWorkflowDefinition = defineWorkflow<
       systemPrompt: `Implement the \`list\` query for the secrets table.`,
     })),
 
+    step(makeWorkflowMachine(UpdateSchemaWorkflowDefinition), () => ({
+      systemPrompt: `Add the service_tokens table:
+
+      - id: TEXT PRIMARY KEY
+      - service_name: TEXT NOT NULL
+      - token_hash: TEXT UNIQUE NOT NULL (SHA-256 hash of token)
+      - service_version: TEXT
+      - requested_at: INTEGER NOT NULL
+      - approved: BOOLEAN DEFAULT false
+      - approved_at: INTEGER
+      - approved_by: TEXT
+      - last_used_at: INTEGER
+      - access_count: INTEGER DEFAULT 0
+
+      Use proper Drizzle SQLite types and add the type inference test.`,
+    })),
+
     step(makeWorkflowMachine(AddQueryWorkflowDefinition), () => ({
       path: "queries/service-tokens/create",
       systemPrompt: `Implement the \`create\` query for the service_tokens table.`,
@@ -138,6 +122,22 @@ export const ImplementSecretsDbWorkflowDefinition = defineWorkflow<
     step(makeWorkflowMachine(AddQueryWorkflowDefinition), () => ({
       path: "queries/service-tokens/list",
       systemPrompt: `Implement the \`list\` query for the service_tokens table.`,
+    })),
+
+    step(makeWorkflowMachine(UpdateSchemaWorkflowDefinition), () => ({
+      systemPrompt: `Add the access_requests table:
+
+      - id: TEXT PRIMARY KEY
+      - secret_id: TEXT NOT NULL REFERENCES secrets(id)
+      - service_name: TEXT NOT NULL
+      - requested_at: INTEGER NOT NULL
+      - status: TEXT NOT NULL ('pending', 'granted', 'denied')
+      - granted_at: INTEGER
+      - granted_by: TEXT
+      - access_count: INTEGER DEFAULT 0
+      - last_accessed_at: INTEGER
+
+      Use proper Drizzle SQLite types and add the type inference test.`,
     })),
 
     step(makeWorkflowMachine(AddQueryWorkflowDefinition), () => ({

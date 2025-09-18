@@ -4,13 +4,6 @@ When defining Drizzle schemas, please follow these more-specific guidelines.
 
 ## Data Types
 
-- **IDs**: Use `integer` type for primary keys and foreign keys
-
-  ```typescript
-  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
-  userId: integer("user_id").notNull().references(() => users.id),
-  ```
-
 - **JSON Data**: Use `text` with `{ mode: "json" }` for JSON data
 
   ```typescript
@@ -31,12 +24,6 @@ When defining Drizzle schemas, please follow these more-specific guidelines.
   ```
 
 ## Relationships
-
-- **User IDs**: For external user IDs (from auth service), use `integer` type
-
-  ```typescript
-  userId: integer("user_id").notNull().unique(),
-  ```
 
 - **One-to-One Relationships**: Add unique constraints
   ```typescript
@@ -59,7 +46,7 @@ When defining Drizzle schemas, please follow these more-specific guidelines.
   export const user = sqliteTable(
     "user",
     {
-      id: integer("id").primaryKey({ autoIncrement: true }),
+      id: text("id").primaryKey({ autoIncrement: true }),
       name: text("name"),
       email: text("email"),
     },
