@@ -26,3 +26,9 @@ export type CreateServiceTokenParams = Omit<
   | "lastUsedAt"
   | "accessCount"
 >;
+
+export type UpdateServiceTokenApprovalParams = {
+  id: string;
+  approved: boolean;
+  approvedBy: string;
+};
