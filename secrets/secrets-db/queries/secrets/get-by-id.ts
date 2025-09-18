@@ -5,7 +5,7 @@ import type { ReturnsError } from "@saflib/monorepo";
 
 import { queryWrapper } from "@saflib/drizzle";
 import type { DbKey } from "@saflib/drizzle";
-import { secretsTable } from "../../schemas/secrets.ts";
+import { secretTable } from "../../schemas/secret.ts";
 import { eq } from "drizzle-orm";
 
 export type GetByIdError = SecretNotFoundError;
@@ -18,8 +18,8 @@ export const getById = queryWrapper(
     const db = secretsDbManager.get(dbKey)!;
     const result = await db
       .select()
-      .from(secretsTable)
-      .where(eq(secretsTable.id, id))
+      .from(secretTable)
+      .where(eq(secretTable.id, id))
       .limit(1);
 
     if (result.length === 0) {

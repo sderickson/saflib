@@ -1,22 +1,22 @@
 import { secretsDbManager } from "../../instances.ts";
 import { ServiceTokenAlreadyExistsError } from "../../errors.ts";
 import type {
-  CreateServiceTokensParams,
-  ServiceTokensEntity,
+  CreateServiceTokenParams,
+  ServiceTokenEntity,
 } from "../../types.ts";
 import type { ReturnsError } from "@saflib/monorepo";
 
 import { queryWrapper } from "@saflib/drizzle";
 import type { DbKey } from "@saflib/drizzle";
-import { serviceTokensTable } from "../../schemas/service-tokens.ts";
+import { serviceTokensTable } from "../../schemas/service-token.ts";
 
 export type CreateError = ServiceTokenAlreadyExistsError;
 
 export const create = queryWrapper(
   async (
     dbKey: DbKey,
-    params: CreateServiceTokensParams,
-  ): Promise<ReturnsError<ServiceTokensEntity, CreateError>> => {
+    params: CreateServiceTokenParams,
+  ): Promise<ReturnsError<ServiceTokenEntity, CreateError>> => {
     const db = secretsDbManager.get(dbKey)!;
     try {
       const result = await db

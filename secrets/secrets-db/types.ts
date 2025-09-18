@@ -1,7 +1,7 @@
 export type * from "./schema.ts";
 
 // Re-export commonly used types for convenience
-import type { SecretEntity } from "./schemas/secrets.ts";
+import type { SecretEntity } from "./schemas/secret.ts";
 export type { SecretEntity };
 
 export type CreateSecretParams = Omit<
@@ -14,10 +14,10 @@ export type UpdateSecretParams = {
 } & Partial<Omit<SecretEntity, "id" | "createdAt" | "updatedAt">>;
 
 // Re-export commonly used types for service-tokens
-import type { ServiceTokensEntity } from "./schemas/service-tokens.ts";
+import type { ServiceTokenEntity } from "./schemas/service-token.ts";
 
-export type CreateServiceTokensParams = Omit<
-  ServiceTokensEntity,
+export type CreateServiceTokenParams = Omit<
+  ServiceTokenEntity,
   | "id"
   | "requestedAt"
   | "approved"

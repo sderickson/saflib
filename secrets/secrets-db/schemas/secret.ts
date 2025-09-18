@@ -12,7 +12,7 @@ export interface SecretEntity {
   isActive: boolean;
 }
 
-export const secretsTable = sqliteTable("secrets", {
+export const secretTable = sqliteTable("secrets", {
   id: text("id")
     .primaryKey()
     .$defaultFn(() => crypto.randomUUID()),
@@ -26,5 +26,5 @@ export const secretsTable = sqliteTable("secrets", {
 });
 
 export type SecretEntityTest = Expect<
-  Equal<SecretEntity, typeof secretsTable.$inferSelect>
+  Equal<SecretEntity, typeof secretTable.$inferSelect>
 >;

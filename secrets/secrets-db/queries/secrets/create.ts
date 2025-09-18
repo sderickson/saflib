@@ -5,7 +5,7 @@ import type { ReturnsError } from "@saflib/monorepo";
 
 import { queryWrapper } from "@saflib/drizzle";
 import type { DbKey } from "@saflib/drizzle";
-import { secretsTable } from "../../schemas/secrets.ts";
+import { secretTable } from "../../schemas/secret.ts";
 
 export type CreateError = SecretAlreadyExistsError;
 
@@ -17,7 +17,7 @@ export const create = queryWrapper(
     const db = secretsDbManager.get(dbKey)!;
     try {
       const result = await db
-        .insert(secretsTable)
+        .insert(secretTable)
         .values({
           ...params,
           createdAt: new Date(),

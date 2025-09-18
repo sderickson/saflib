@@ -5,7 +5,7 @@ import type { ReturnsError } from "@saflib/monorepo";
 
 import { queryWrapper } from "@saflib/drizzle";
 import type { DbKey } from "@saflib/drizzle";
-import { secretsTable } from "../../schemas/secrets.ts";
+import { secretTable } from "../../schemas/secret.ts";
 import { eq } from "drizzle-orm";
 
 export type RemoveError = SecretNotFoundError;
@@ -17,8 +17,8 @@ export const remove = queryWrapper(
   ): Promise<ReturnsError<SecretEntity, RemoveError>> => {
     const db = secretsDbManager.get(dbKey)!;
     const result = await db
-      .delete(secretsTable)
-      .where(eq(secretsTable.id, id))
+      .delete(secretTable)
+      .where(eq(secretTable.id, id))
       .returning();
 
     if (result.length === 0) {

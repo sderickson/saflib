@@ -5,7 +5,7 @@ import type { ReturnsError } from "@saflib/monorepo";
 
 import { queryWrapper } from "@saflib/drizzle";
 import type { DbKey } from "@saflib/drizzle";
-import { secretsTable } from "../../schemas/secrets.ts";
+import { secretTable } from "../../schemas/secret.ts";
 import { eq } from "drizzle-orm";
 
 export type UpdateError = SecretNotFoundError | SecretAlreadyExistsError;
@@ -19,12 +19,12 @@ export const update = queryWrapper(
 
     try {
       const result = await db
-        .update(secretsTable)
+        .update(secretTable)
         .set({
           ...params,
           updatedAt: new Date(),
         })
-        .where(eq(secretsTable.id, params.id))
+        .where(eq(secretTable.id, params.id))
         .returning();
 
       if (result.length === 0) {

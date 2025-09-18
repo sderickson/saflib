@@ -1,7 +1,7 @@
 import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
 import type { Expect, Equal } from "@saflib/drizzle";
 
-export interface ServiceTokensEntity {
+export interface ServiceTokenEntity {
   id: string;
   serviceName: string;
   tokenHash: string;
@@ -29,6 +29,6 @@ export const serviceTokensTable = sqliteTable("service_tokens", {
   accessCount: integer("access_count").default(0).notNull(),
 });
 
-export type ServiceTokensEntityTest = Expect<
-  Equal<ServiceTokensEntity, typeof serviceTokensTable.$inferSelect>
+export type ServiceTokenEntityTest = Expect<
+  Equal<ServiceTokenEntity, typeof serviceTokensTable.$inferSelect>
 >;
