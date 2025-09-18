@@ -21,6 +21,7 @@ export type SecretsServiceRequestBody = ExtractRequestBody<operations>;
 export type Error = components["schemas"]["Error"];
 export type Secret = components["schemas"]["Secret"];
 export type SecretCreateRequest = components["schemas"]["SecretCreateRequest"];
+export type SecretUpdateRequest = components["schemas"]["SecretUpdateRequest"];
 
 import * as json from "./dist/openapi.json" with { type: "json" };
 

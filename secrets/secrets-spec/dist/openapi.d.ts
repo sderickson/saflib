@@ -3,22 +3,51 @@
  * Do not make direct changes to the file.
  */
 
-export type paths = Record<string, never>;
+export interface paths {
+    "/secrets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List all secrets */
+        get: operations["listSecrets"];
+        put?: never;
+        /** Create a new secret */
+        post: operations["createSecret"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/secrets/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Update an existing secret */
+        put: operations["updateSecret"];
+        post?: never;
+        /** Delete a secret (soft delete) */
+        delete: operations["deleteSecret"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+}
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
         Error: components["schemas"]["error"];
         Secret: components["schemas"]["secret"];
         SecretCreateRequest: components["schemas"]["secret-create-request"];
-        error: {
-            /** @description A short, machine-readable error code, for when HTTP status codes are not sufficient. */
-            code?: string;
-            /**
-             * @description A human-readable description of the error.
-             * @example The requested resource could not be found.
-             */
-            message?: string;
-        };
+        SecretUpdateRequest: components["schemas"]["secret-update-request"];
         secret: {
             /**
              * @description Unique identifier for the secret
@@ -56,6 +85,15 @@ export interface components {
              */
             is_active: boolean;
         };
+        error: {
+            /** @description A short, machine-readable error code, for when HTTP status codes are not sufficient. */
+            code?: string;
+            /**
+             * @description A human-readable description of the error.
+             * @example The requested resource could not be found.
+             */
+            message?: string;
+        };
         "secret-create-request": {
             /**
              * @description Unique name for the secret
@@ -73,6 +111,23 @@ export interface components {
              */
             value: string;
         };
+        "secret-update-request": {
+            /**
+             * @description Updated description of the secret
+             * @example Updated Stripe API key for payment processing
+             */
+            description?: string;
+            /**
+             * @description New secret value to be encrypted
+             * @example sk_test_9876543210fedcba
+             */
+            value?: string;
+            /**
+             * @description Whether to activate or deactivate the secret
+             * @example true
+             */
+            is_active?: boolean;
+        };
     };
     responses: never;
     parameters: never;
@@ -81,4 +136,201 @@ export interface components {
     pathItems: never;
 }
 export type $defs = Record<string, never>;
-export type operations = Record<string, never>;
+export interface operations {
+    listSecrets: {
+        parameters: {
+            query?: {
+                /** @description Maximum number of secrets to return */
+                limit?: number;
+                /** @description Number of secrets to skip */
+                offset?: number;
+                /** @description Filter by active status */
+                is_active?: boolean;
+                /** @description Sort order */
+                sort?: "created_at" | "updated_at" | "name";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description List of secrets */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["secret"][];
+                };
+            };
+            /** @description Unauthorized - missing or invalid auth headers, or not logged in. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Forbidden - user does not have required privileges. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+        };
+    };
+    createSecret: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["secret-create-request"];
+            };
+        };
+        responses: {
+            /** @description Secret created successfully */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["secret"];
+                };
+            };
+            /** @description Unauthorized - missing or invalid auth headers, or not logged in. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Forbidden - user does not have required privileges. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+        };
+    };
+    updateSecret: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Secret ID */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["secret-update-request"];
+            };
+        };
+        responses: {
+            /** @description Secret updated successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["secret"];
+                };
+            };
+            /** @description Unauthorized - missing or invalid auth headers, or not logged in. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Forbidden - user does not have required privileges. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Secret not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+        };
+    };
+    deleteSecret: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Secret ID */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Secret deleted successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @example Secret deleted successfully */
+                        message?: string;
+                    };
+                };
+            };
+            /** @description Unauthorized - missing or invalid auth headers, or not logged in. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Forbidden - user does not have required privileges. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Secret not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+        };
+    };
+}
