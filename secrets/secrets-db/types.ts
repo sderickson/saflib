@@ -8,3 +8,7 @@ export type CreateSecretsParams = Omit<
   SecretsEntity,
   "id" | "createdAt" | "updatedAt"
 >;
+
+export type UpdateSecretsParams = {
+  id: string;
+} & Partial<Omit<SecretsEntity, "id" | "createdAt" | "updatedAt">>;

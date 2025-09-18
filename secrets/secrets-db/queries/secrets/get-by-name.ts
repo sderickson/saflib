@@ -8,23 +8,23 @@ import type { DbKey } from "@saflib/drizzle";
 import { secretsTable } from "../../schemas/secrets.ts";
 import { eq } from "drizzle-orm";
 
-export type GetByIdError = SecretsNotFoundError;
+export type GetByNameError = SecretsNotFoundError;
 
-export const getById = queryWrapper(
+export const getByName = queryWrapper(
   async (
     dbKey: DbKey,
-    id: string,
-  ): Promise<ReturnsError<SecretsEntity, GetByIdError>> => {
+    name: string,
+  ): Promise<ReturnsError<SecretsEntity, GetByNameError>> => {
     const db = secretsDbManager.get(dbKey)!;
     const result = await db
       .select()
       .from(secretsTable)
-      .where(eq(secretsTable.id, id))
+      .where(eq(secretsTable.name, name))
       .limit(1);
 
     if (result.length === 0) {
       return {
-        error: new SecretsNotFoundError(`Secret with id '${id}' not found`),
+        error: new SecretsNotFoundError(`Secret with name '${name}' not found`),
       };
     }
 
