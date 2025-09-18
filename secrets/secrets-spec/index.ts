@@ -23,6 +23,7 @@ export type Secret = components["schemas"]["Secret"];
 export type SecretCreateRequest = components["schemas"]["SecretCreateRequest"];
 export type SecretUpdateRequest = components["schemas"]["SecretUpdateRequest"];
 export type ServiceToken = components["schemas"]["ServiceToken"];
+export type AccessRequest = components["schemas"]["AccessRequest"];
 
 import * as json from "./dist/openapi.json" with { type: "json" };
 

@@ -49,6 +49,7 @@ export interface components {
         SecretCreateRequest: components["schemas"]["secret-create-request"];
         SecretUpdateRequest: components["schemas"]["secret-update-request"];
         ServiceToken: components["schemas"]["service-token"];
+        AccessRequest: components["schemas"]["access-request"];
         secret: {
             /**
              * @description Unique identifier for the secret
@@ -180,6 +181,59 @@ export interface components {
              * @example 42
              */
             access_count: number;
+        };
+        "access-request": {
+            /**
+             * @description Unique identifier for the access request
+             * @example 123e4567-e89b-12d3-a456-426614174000
+             */
+            id: string;
+            /**
+             * @description ID of the secret being requested
+             * @example secret-123
+             */
+            secret_id: string;
+            /**
+             * @description Name of the secret for display purposes
+             * @example STRIPE_API_KEY
+             */
+            secret_name: string;
+            /**
+             * @description Name of the service requesting access
+             * @example identity-service
+             */
+            service_name: string;
+            /**
+             * @description Timestamp when access was requested
+             * @example 1640995200000
+             */
+            requested_at: number;
+            /**
+             * @description Status of the access request
+             * @example pending
+             * @enum {string}
+             */
+            status: "pending" | "granted" | "denied";
+            /**
+             * @description Timestamp when granted, null if not granted
+             * @example 1640995200000
+             */
+            granted_at?: number | null;
+            /**
+             * @description User who granted access, null if not granted
+             * @example admin@example.com
+             */
+            granted_by?: string | null;
+            /**
+             * @description Number of times access has been used
+             * @example 5
+             */
+            access_count: number;
+            /**
+             * @description Timestamp of last access, null if never accessed
+             * @example 1640995200000
+             */
+            last_accessed_at?: number | null;
         };
     };
     responses: never;
