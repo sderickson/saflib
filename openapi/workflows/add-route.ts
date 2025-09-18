@@ -40,9 +40,17 @@ export const AddRouteWorkflowDefinition = defineWorkflow<
   sourceUrl: import.meta.url,
 
   context: ({ input }) => {
-    const targetDir = input.cwd;
-    const resource = path.basename(targetDir);
-    const name = path.basename(input.path).split(".")[0];
+    const resource = path.basename(input.path);
+    let p = input.path;
+    if (!p.startsWith("routes")) {
+      p = "routes/" + p;
+    }
+    if (!p.endsWith(".yaml")) {
+      p = p + ".yaml";
+    }
+    let targetDir = path.dirname(path.join(input.cwd, p));
+    const name = path.basename(p).split(".")[0];
+    console.log({ targetDir, resource, name });
 
     return {
       resource,
@@ -62,7 +70,7 @@ export const AddRouteWorkflowDefinition = defineWorkflow<
   steps: [
     step(CopyStepMachine, ({ context }) => ({
       name: context.operationId,
-      targetDir: path.join(context.targetDir, "routes", context.resource),
+      targetDir: path.join(context.targetDir),
     })),
 
     step(UpdateStepMachine, ({ context }) => ({
