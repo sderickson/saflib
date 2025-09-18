@@ -40,6 +40,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/access-requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List all access requests */
+        get: operations["listAccessRequests"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/access-requests/{id}/approve": {
         parameters: {
             query?: never;
@@ -51,6 +68,40 @@ export interface paths {
         put?: never;
         /** Approve or deny an access request */
         post: operations["approveAccessRequest"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/service-tokens": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List all service tokens */
+        get: operations["listServiceTokens"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/service-tokens/{id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Approve or deny a service token */
+        post: operations["approveServiceToken"];
         delete?: never;
         options?: never;
         head?: never;
@@ -148,23 +199,6 @@ export interface components {
              */
             is_active?: boolean;
         };
-        "approval-request": {
-            /**
-             * @description True to approve, false to deny
-             * @example true
-             */
-            approved: boolean;
-            /**
-             * @description User making the approval decision
-             * @example admin@example.com
-             */
-            approved_by: string;
-            /**
-             * @description Optional reason for approval/denial
-             * @example Approved for production use
-             */
-            reason?: string;
-        };
         "access-request": {
             /**
              * @description Unique identifier for the access request
@@ -217,6 +251,23 @@ export interface components {
              * @example 1640995200000
              */
             last_accessed_at?: number | null;
+        };
+        "approval-request": {
+            /**
+             * @description True to approve, false to deny
+             * @example true
+             */
+            approved: boolean;
+            /**
+             * @description User making the approval decision
+             * @example admin@example.com
+             */
+            approved_by: string;
+            /**
+             * @description Optional reason for approval/denial
+             * @example Approved for production use
+             */
+            reason?: string;
         };
         "service-token": {
             /**
@@ -475,6 +526,55 @@ export interface operations {
             };
         };
     };
+    listAccessRequests: {
+        parameters: {
+            query?: {
+                /** @description Maximum number of access requests to return */
+                limit?: number;
+                /** @description Number of access requests to skip */
+                offset?: number;
+                /** @description Filter by status */
+                status?: "pending" | "granted" | "denied";
+                /** @description Filter by service name */
+                service_name?: string;
+                /** @description Sort order */
+                sort?: "requested_at" | "status";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description List of access requests */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["access-request"][];
+                };
+            };
+            /** @description Unauthorized - missing or invalid auth headers, or not logged in. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Forbidden - user does not have required privileges. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+        };
+    };
     approveAccessRequest: {
         parameters: {
             query?: never;
@@ -519,6 +619,109 @@ export interface operations {
                 };
             };
             /** @description Access request not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+        };
+    };
+    listServiceTokens: {
+        parameters: {
+            query?: {
+                /** @description Maximum number of service tokens to return */
+                limit?: number;
+                /** @description Number of service tokens to skip */
+                offset?: number;
+                /** @description Filter by approval status */
+                approved?: boolean;
+                /** @description Filter by service name */
+                service_name?: string;
+                /** @description Sort order */
+                sort?: "requested_at" | "approved" | "service_name";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description List of service tokens */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["service-token"][];
+                };
+            };
+            /** @description Unauthorized - missing or invalid auth headers, or not logged in. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Forbidden - user does not have required privileges. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+        };
+    };
+    approveServiceToken: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Service token ID */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["approval-request"];
+            };
+        };
+        responses: {
+            /** @description Service token updated successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["service-token"];
+                };
+            };
+            /** @description Unauthorized - missing or invalid auth headers, or not logged in. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Forbidden - user does not have required privileges. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Service token not found */
             404: {
                 headers: {
                     [name: string]: unknown;
