@@ -8,6 +8,7 @@ export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
         Error: components["schemas"]["error"];
+        Secret: components["schemas"]["secret"];
         error: {
             /** @description A short, machine-readable error code, for when HTTP status codes are not sufficient. */
             code?: string;
@@ -16,6 +17,43 @@ export interface components {
              * @example The requested resource could not be found.
              */
             message?: string;
+        };
+        secret: {
+            /**
+             * @description Unique identifier for the secret
+             * @example 123e4567-e89b-12d3-a456-426614174000
+             */
+            id: string;
+            /**
+             * @description Unique name for the secret
+             * @example STRIPE_API_KEY
+             */
+            name: string;
+            /**
+             * @description Optional description of the secret
+             * @example Stripe API key for payment processing
+             */
+            description?: string;
+            /**
+             * @description Masked value for admin display (shows as ***)
+             * @example ***
+             */
+            masked_value: string;
+            /**
+             * @description Timestamp when the secret was created
+             * @example 1640995200000
+             */
+            created_at: number;
+            /**
+             * @description Timestamp when the secret was last updated
+             * @example 1640995200000
+             */
+            updated_at: number;
+            /**
+             * @description Whether the secret is active
+             * @example true
+             */
+            is_active: boolean;
         };
     };
     responses: never;
