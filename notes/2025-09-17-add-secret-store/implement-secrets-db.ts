@@ -29,10 +29,6 @@ export const ImplementSecretsDbWorkflowDefinition = defineWorkflow<
     spec: path.join(import.meta.dirname, "spec.md"),
   },
   steps: [
-    step(DocStepMachine, () => ({
-      docId: "spec",
-    })),
-
     step(CwdStepMachine, () => ({
       path: "./secrets/secrets-db",
     })),
