@@ -39,8 +39,8 @@ export const ImplementSecretsDbWorkflowDefinition = defineWorkflow<
     })),
 
     step(makeWorkflowMachine(UpdateSchemaWorkflowDefinition), () => ({
-      path: "schemas/secrets.ts",
-      systemPrompt: `Add the secrets table:
+      path: "schemas/secret.ts",
+      systemPrompt: `Add the secret table:
 
       - id: TEXT PRIMARY KEY (random UUID)
       - name: TEXT UNIQUE NOT NULL  
@@ -55,38 +55,38 @@ export const ImplementSecretsDbWorkflowDefinition = defineWorkflow<
     })),
 
     step(makeWorkflowMachine(AddQueryWorkflowDefinition), () => ({
-      path: "queries/secrets/create",
-      systemPrompt: `Implement the \`create\` query for the secrets table.`,
+      path: "queries/secret/create",
+      systemPrompt: `Implement the \`create\` query for the secret table.`,
     })),
 
     step(makeWorkflowMachine(AddQueryWorkflowDefinition), () => ({
-      path: "queries/secrets/get-by-id",
-      systemPrompt: `Implement the \`getById\` query for the secrets table.`,
+      path: "queries/secret/get-by-id",
+      systemPrompt: `Implement the \`getById\` query for the secret table.`,
     })),
 
     step(makeWorkflowMachine(AddQueryWorkflowDefinition), () => ({
-      path: "queries/secrets/get-by-name",
-      systemPrompt: `Implement the \`getByName\` query for the secrets table.`,
+      path: "queries/secret/get-by-name",
+      systemPrompt: `Implement the \`getByName\` query for the secret table.`,
     })),
 
     step(makeWorkflowMachine(AddQueryWorkflowDefinition), () => ({
-      path: "queries/secrets/update",
-      systemPrompt: `Implement the \`update\` query for the secrets table.`,
+      path: "queries/secret/update",
+      systemPrompt: `Implement the \`update\` query for the secret table.`,
     })),
 
     step(makeWorkflowMachine(AddQueryWorkflowDefinition), () => ({
-      path: "queries/secrets/remove",
-      systemPrompt: `Implement the \`delete\` query for the secrets table.`,
+      path: "queries/secret/remove",
+      systemPrompt: `Implement the \`delete\` query for the secret table.`,
     })),
 
     step(makeWorkflowMachine(AddQueryWorkflowDefinition), () => ({
-      path: "queries/secrets/list",
-      systemPrompt: `Implement the \`list\` query for the secrets table.`,
+      path: "queries/secret/list",
+      systemPrompt: `Implement the \`list\` query for the secret table.`,
     })),
 
     step(makeWorkflowMachine(UpdateSchemaWorkflowDefinition), () => ({
-      path: "schemas/service-tokens.ts",
-      systemPrompt: `Add the service_tokens table:
+      path: "schemas/service-token.ts",
+      systemPrompt: `Add the service_token table:
 
       - id: TEXT PRIMARY KEY (random UUID)
       - service_name: TEXT NOT NULL
@@ -103,33 +103,33 @@ export const ImplementSecretsDbWorkflowDefinition = defineWorkflow<
     })),
 
     step(makeWorkflowMachine(AddQueryWorkflowDefinition), () => ({
-      path: "queries/service-tokens/create",
-      systemPrompt: `Implement the \`create\` query for the service_tokens table.`,
+      path: "queries/service-token/create",
+      systemPrompt: `Implement the \`create\` query for the service_token table.`,
     })),
 
     step(makeWorkflowMachine(AddQueryWorkflowDefinition), () => ({
-      path: "queries/service-tokens/get-by-hash",
-      systemPrompt: `Implement the \`getByHash\` query for the service_tokens table.`,
+      path: "queries/service-token/get-by-hash",
+      systemPrompt: `Implement the \`getByHash\` query for the service_token table.`,
     })),
 
     step(makeWorkflowMachine(AddQueryWorkflowDefinition), () => ({
-      path: "queries/service-tokens/update-approval",
-      systemPrompt: `Implement the \`updateApproval\` query for the service_tokens table.`,
+      path: "queries/service-token/update-approval",
+      systemPrompt: `Implement the \`updateApproval\` query for the service_token table.`,
     })),
 
     step(makeWorkflowMachine(AddQueryWorkflowDefinition), () => ({
-      path: "queries/service-tokens/update-usage",
-      systemPrompt: `Implement the \`updateUsage\` query for the service_tokens table.`,
+      path: "queries/service-token/update-usage",
+      systemPrompt: `Implement the \`updateUsage\` query for the service_token table.`,
     })),
 
     step(makeWorkflowMachine(AddQueryWorkflowDefinition), () => ({
-      path: "queries/service-tokens/list",
-      systemPrompt: `Implement the \`list\` query for the service_tokens table.`,
+      path: "queries/service-token/list",
+      systemPrompt: `Implement the \`list\` query for the service_token table.`,
     })),
 
     step(makeWorkflowMachine(UpdateSchemaWorkflowDefinition), () => ({
-      path: "schemas/access-requests.ts",
-      systemPrompt: `Add the access_requests table:
+      path: "schemas/access-request.ts",
+      systemPrompt: `Add the access_request table:
 
       - id: TEXT PRIMARY KEY (random UUID)
       - secret_id: TEXT NOT NULL REFERENCES secrets(id)
@@ -145,33 +145,33 @@ export const ImplementSecretsDbWorkflowDefinition = defineWorkflow<
     })),
 
     step(makeWorkflowMachine(AddQueryWorkflowDefinition), () => ({
-      path: "queries/access-requests/create",
-      systemPrompt: `Implement the \`create\` query for the access_requests table.`,
+      path: "queries/access-request/create",
+      systemPrompt: `Implement the \`create\` query for the access_request table.`,
     })),
 
     step(makeWorkflowMachine(AddQueryWorkflowDefinition), () => ({
-      path: "queries/access-requests/get-by-id",
-      systemPrompt: `Implement the \`getById\` query for the access_requests table.`,
+      path: "queries/access-request/get-by-id",
+      systemPrompt: `Implement the \`getById\` query for the access_request table.`,
     })),
 
     step(makeWorkflowMachine(AddQueryWorkflowDefinition), () => ({
-      path: "queries/access-requests/update-status",
-      systemPrompt: `Implement the \`updateStatus\` query for the access_requests table.`,
+      path: "queries/access-request/update-status",
+      systemPrompt: `Implement the \`updateStatus\` query for the access_request table.`,
     })),
 
     step(makeWorkflowMachine(AddQueryWorkflowDefinition), () => ({
-      path: "queries/access-requests/update-usage",
-      systemPrompt: `Implement the \`updateUsage\` query for the access_requests table.`,
+      path: "queries/access-request/update-usage",
+      systemPrompt: `Implement the \`updateUsage\` query for the access_request table.`,
     })),
 
     step(makeWorkflowMachine(AddQueryWorkflowDefinition), () => ({
-      path: "queries/access-requests/list-pending",
-      systemPrompt: `Implement the \`listPending\` query for the access_requests table.`,
+      path: "queries/access-request/list-pending",
+      systemPrompt: `Implement the \`listPending\` query for the access_request table.`,
     })),
 
     step(makeWorkflowMachine(AddQueryWorkflowDefinition), () => ({
-      path: "queries/access-requests/list-by-service",
-      systemPrompt: `Implement the \`listByService\` query for the access_requests table.`,
+      path: "queries/access-request/list-by-service",
+      systemPrompt: `Implement the \`listByService\` query for the access_request table.`,
     })),
   ],
 });

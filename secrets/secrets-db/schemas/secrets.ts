@@ -1,7 +1,7 @@
 import { sqliteTable, text, integer, blob } from "drizzle-orm/sqlite-core";
 import type { Expect, Equal } from "@saflib/drizzle";
 
-export interface SecretsEntity {
+export interface SecretEntity {
   id: string;
   name: string;
   description: string | null;
@@ -25,6 +25,6 @@ export const secretsTable = sqliteTable("secrets", {
   isActive: integer("is_active", { mode: "boolean" }).default(true).notNull(),
 });
 
-export type SecretsEntityTest = Expect<
-  Equal<SecretsEntity, typeof secretsTable.$inferSelect>
+export type SecretEntityTest = Expect<
+  Equal<SecretEntity, typeof secretsTable.$inferSelect>
 >;

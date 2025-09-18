@@ -1,9 +1,6 @@
 import { secretsDbManager } from "../../instances.ts";
-import {
-  SecretsNotFoundError,
-  SecretAlreadyExistsError,
-} from "../../errors.ts";
-import type { UpdateSecretsParams, SecretsEntity } from "../../types.ts";
+import { SecretNotFoundError, SecretAlreadyExistsError } from "../../errors.ts";
+import type { UpdateSecretParams, SecretEntity } from "../../types.ts";
 import type { ReturnsError } from "@saflib/monorepo";
 
 import { queryWrapper } from "@saflib/drizzle";
@@ -11,13 +8,13 @@ import type { DbKey } from "@saflib/drizzle";
 import { secretsTable } from "../../schemas/secrets.ts";
 import { eq } from "drizzle-orm";
 
-export type UpdateError = SecretsNotFoundError | SecretAlreadyExistsError;
+export type UpdateError = SecretNotFoundError | SecretAlreadyExistsError;
 
 export const update = queryWrapper(
   async (
     dbKey: DbKey,
-    params: UpdateSecretsParams,
-  ): Promise<ReturnsError<SecretsEntity, UpdateError>> => {
+    params: UpdateSecretParams,
+  ): Promise<ReturnsError<SecretEntity, UpdateError>> => {
     const db = secretsDbManager.get(dbKey)!;
 
     try {
@@ -32,7 +29,7 @@ export const update = queryWrapper(
 
       if (result.length === 0) {
         return {
-          error: new SecretsNotFoundError(
+          error: new SecretNotFoundError(
             `Secret with id '${params.id}' not found`,
           ),
         };

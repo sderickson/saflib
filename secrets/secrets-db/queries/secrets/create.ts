@@ -1,6 +1,6 @@
 import { secretsDbManager } from "../../instances.ts";
 import { SecretAlreadyExistsError } from "../../errors.ts";
-import type { CreateSecretsParams, SecretsEntity } from "../../types.ts";
+import type { CreateSecretParams, SecretEntity } from "../../types.ts";
 import type { ReturnsError } from "@saflib/monorepo";
 
 import { queryWrapper } from "@saflib/drizzle";
@@ -12,8 +12,8 @@ export type CreateError = SecretAlreadyExistsError;
 export const create = queryWrapper(
   async (
     dbKey: DbKey,
-    params: CreateSecretsParams,
-  ): Promise<ReturnsError<SecretsEntity, CreateError>> => {
+    params: CreateSecretParams,
+  ): Promise<ReturnsError<SecretEntity, CreateError>> => {
     const db = secretsDbManager.get(dbKey)!;
     try {
       const result = await db

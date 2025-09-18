@@ -3,7 +3,7 @@ import type { DbKey } from "@saflib/drizzle";
 import { secretsDb } from "../../index.ts";
 import { getById } from "./get-by-id.ts";
 import { create } from "./create.ts";
-import { SecretsNotFoundError } from "../../errors.ts";
+import { SecretNotFoundError } from "../../errors.ts";
 
 describe("getById", () => {
   let dbKey: DbKey;
@@ -42,6 +42,6 @@ describe("getById", () => {
   it("should return error for non-existent id", async () => {
     const { error } = await getById(dbKey, "non-existent-id");
     expect(error).toBeDefined();
-    expect(error).toBeInstanceOf(SecretsNotFoundError);
+    expect(error).toBeInstanceOf(SecretNotFoundError);
   });
 });

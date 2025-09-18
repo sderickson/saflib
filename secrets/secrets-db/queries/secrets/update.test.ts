@@ -3,10 +3,7 @@ import type { DbKey } from "@saflib/drizzle";
 import { secretsDb } from "../../index.ts";
 import { update } from "./update.ts";
 import { create } from "./create.ts";
-import {
-  SecretsNotFoundError,
-  SecretAlreadyExistsError,
-} from "../../errors.ts";
+import { SecretNotFoundError, SecretAlreadyExistsError } from "../../errors.ts";
 
 describe("update", () => {
   let dbKey: DbKey;
@@ -54,7 +51,7 @@ describe("update", () => {
     });
 
     expect(error).toBeDefined();
-    expect(error).toBeInstanceOf(SecretsNotFoundError);
+    expect(error).toBeInstanceOf(SecretNotFoundError);
   });
 
   it("should handle duplicate name error when updating name", async () => {
