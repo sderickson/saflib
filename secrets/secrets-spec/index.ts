@@ -20,6 +20,7 @@ export type SecretsServiceRequestBody = ExtractRequestBody<operations>;
 // Export your schema types here
 export type Error = components["schemas"]["Error"];
 export type Secret = components["schemas"]["Secret"];
+export type SecretCreateRequest = components["schemas"]["SecretCreateRequest"];
 
 import * as json from "./dist/openapi.json" with { type: "json" };
 

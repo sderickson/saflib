@@ -9,6 +9,7 @@ export interface components {
     schemas: {
         Error: components["schemas"]["error"];
         Secret: components["schemas"]["secret"];
+        SecretCreateRequest: components["schemas"]["secret-create-request"];
         error: {
             /** @description A short, machine-readable error code, for when HTTP status codes are not sufficient. */
             code?: string;
@@ -54,6 +55,23 @@ export interface components {
              * @example true
              */
             is_active: boolean;
+        };
+        "secret-create-request": {
+            /**
+             * @description Unique name for the secret
+             * @example STRIPE_API_KEY
+             */
+            name: string;
+            /**
+             * @description Optional description of the secret
+             * @example Stripe API key for payment processing
+             */
+            description?: string;
+            /**
+             * @description The actual secret value to be encrypted
+             * @example sk_test_1234567890abcdef
+             */
+            value: string;
         };
     };
     responses: never;
