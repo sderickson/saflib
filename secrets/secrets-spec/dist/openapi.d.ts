@@ -50,6 +50,7 @@ export interface components {
         SecretUpdateRequest: components["schemas"]["secret-update-request"];
         ServiceToken: components["schemas"]["service-token"];
         AccessRequest: components["schemas"]["access-request"];
+        ApprovalRequest: components["schemas"]["approval-request"];
         secret: {
             /**
              * @description Unique identifier for the secret
@@ -234,6 +235,23 @@ export interface components {
              * @example 1640995200000
              */
             last_accessed_at?: number | null;
+        };
+        "approval-request": {
+            /**
+             * @description True to approve, false to deny
+             * @example true
+             */
+            approved: boolean;
+            /**
+             * @description User making the approval decision
+             * @example admin@example.com
+             */
+            approved_by: string;
+            /**
+             * @description Optional reason for approval/denial
+             * @example Approved for production use
+             */
+            reason?: string;
         };
     };
     responses: never;
