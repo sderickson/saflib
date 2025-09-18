@@ -132,8 +132,8 @@ export const CommandStepMachine = setup({
         onError: {
           actions: [
             logError(
-              ({ event, context }) =>
-                `Command failed: ${(event.error as Error).message} ${context.promptOnError ? `\n${context.promptOnError}` : ""}`,
+              ({ event }) =>
+                `Command failed: ${(event.error as Error).message}`,
             ),
             raise({ type: "prompt" }),
           ],
