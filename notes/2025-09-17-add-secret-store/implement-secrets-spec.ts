@@ -41,74 +41,121 @@ export const ImplementSecretsSpecWorkflowDefinition = defineWorkflow<
     // Secret Schema
     step(makeWorkflowMachine(AddSchemaWorkflowDefinition), () => ({
       name: "secret",
-      systemPrompt: `Create a Secret schema based on the database table definition:
+      systemPrompt: `The Secret schema has the following properties:
 
-      Fields to include:
       - id: string (UUID)
       - name: string (unique secret name)
       - description: string (optional description)
-      - masked_value: string (base64 encoded encrypted value - for admin display, show as masked)
+      - masked_value: string (masked value for admin display, shows as "***")
       - created_at: number (timestamp)
       - updated_at: number (timestamp)
-      - created_by: string (user who created the secret)
-      - is_active: boolean (whether the secret is active)
-
-      For the masked_value field, consider that this will be displayed in admin interfaces as masked (e.g., "***") for security.`,
+      - is_active: boolean (whether the secret is active)`,
     })),
 
     // SecretCreateRequest Schema
     step(makeWorkflowMachine(AddSchemaWorkflowDefinition), () => ({
       name: "secret-create-request",
-      systemPrompt: `Create a SecretCreateRequest schema for creating new secrets:
+      systemPrompt: `The SecretCreateRequest schema has the following properties:
 
-      Fields to include:
       - name: string (required, unique secret name)
       - description: string (optional description)
-      - value: string (required, the actual secret value to be encrypted)
-      - created_by: string (required, user creating the secret)
-
-      This schema is used for POST /secrets endpoint.`,
+      - value: string (required, the actual secret value to be encrypted)`,
     })),
 
     // SecretUpdateRequest Schema
     step(makeWorkflowMachine(AddSchemaWorkflowDefinition), () => ({
       name: "secret-update-request",
-      systemPrompt: `Create a SecretUpdateRequest schema for updating existing secrets:
+      systemPrompt: `The SecretUpdateRequest schema has the following properties:
 
-      Fields to include:
       - description: string (optional, updated description)
       - value: string (optional, new secret value to be encrypted)
-      - is_active: boolean (optional, whether to activate/deactivate the secret)
+      - is_active: boolean (optional, whether to activate/deactivate the secret)`,
+    })),
 
-      This schema is used for PUT /secrets/:id endpoint.`,
+    // GET /secrets route
+    step(makeWorkflowMachine(AddRouteWorkflowDefinition), () => ({
+      path: "secrets/list",
+      systemPrompt: `The GET /secrets endpoint has the following requirements:
+
+      - Returns array of Secret objects
+      - Include pagination parameters (limit, offset)
+      - Include filtering by is_active status
+      - Include sorting options (created_at, updated_at, name)
+      - Return 200 with array of secrets
+      - Return 401 if not authenticated
+      - Return 403 if not authorized (admin only)
+      - Use error.yaml for error responses`,
+    })),
+
+    // POST /secrets route
+    step(makeWorkflowMachine(AddRouteWorkflowDefinition), () => ({
+      path: "secrets/create",
+      systemPrompt: `The POST /secrets endpoint has the following requirements:
+
+      - Accepts SecretCreateRequest in request body
+      - Validates that secret name is unique
+      - Encrypts the secret value before storing
+      - Returns created Secret object (with masked value)
+      - Return 201 with created secret
+      - Return 401 if not authenticated
+      - Return 403 if not authorized (admin only)
+      - Use error.yaml for error responses`,
+    })),
+
+    // PUT /secrets/:id route
+    step(makeWorkflowMachine(AddRouteWorkflowDefinition), () => ({
+      path: "secrets/update",
+      systemPrompt: `The PUT /secrets/:id endpoint has the following requirements:
+
+      - Accepts secret ID as path parameter
+      - Accepts SecretUpdateRequest in request body
+      - Updates only provided fields
+      - Re-encrypts value if provided
+      - Returns updated Secret object (with masked value)
+      - Return 200 with updated secret
+      - Return 401 if not authenticated
+      - Return 403 if not authorized (admin only)
+      - Return 404 if secret not found
+      - Use error.yaml for error responses`,
+    })),
+
+    // DELETE /secrets/:id route
+    step(makeWorkflowMachine(AddRouteWorkflowDefinition), () => ({
+      path: "secrets/delete",
+      systemPrompt: `The DELETE /secrets/:id endpoint has the following requirements:
+
+      - Accepts secret ID as path parameter
+      - Soft delete by setting is_active to false (don't actually delete)
+      - Returns success message
+      - Return 200 with success message
+      - Return 401 if not authenticated
+      - Return 403 if not authorized (admin only)
+      - Return 404 if secret not found
+      - Use error.yaml for error responses`,
     })),
 
     // ServiceToken Schema
     step(makeWorkflowMachine(AddSchemaWorkflowDefinition), () => ({
       name: "service-token",
-      systemPrompt: `Create a ServiceToken schema based on the database table definition:
+      systemPrompt: `The ServiceToken schema has the following properties:
 
-      Fields to include:
       - id: string (UUID)
       - service_name: string (name of the service)
-      - token_hash: string (SHA-256 hash of the token - for admin display)
+      - token_hash: string (SHA-256 hash of the token - truncated for admin display)
       - service_version: string (optional version of the service)
       - requested_at: number (timestamp when token was requested)
       - approved: boolean (whether the token is approved)
       - approved_at: number (timestamp when approved, null if not approved)
       - approved_by: string (user who approved the token, null if not approved)
       - last_used_at: number (timestamp of last usage, null if never used)
-      - access_count: number (number of times the token has been used)
-
-      For the token_hash field, consider that this will be displayed in admin interfaces as a truncated hash for security.`,
+      - access_count: number (number of times the token has been used)`,
     })),
 
     // AccessRequest Schema
     step(makeWorkflowMachine(AddSchemaWorkflowDefinition), () => ({
       name: "access-request",
-      systemPrompt: `Create an AccessRequest schema based on the database table definition:
+      systemPrompt: `The AccessRequest schema has the following properties:
 
-      Fields to include:
       - id: string (UUID)
       - secret_id: string (ID of the secret being requested)
       - secret_name: string (name of the secret for display purposes)
@@ -118,102 +165,23 @@ export const ImplementSecretsSpecWorkflowDefinition = defineWorkflow<
       - granted_at: number (timestamp when granted, null if not granted)
       - granted_by: string (user who granted access, null if not granted)
       - access_count: number (number of times access has been used)
-      - last_accessed_at: number (timestamp of last access, null if never accessed)
-
-      Include the secret_name field for easier display in admin interfaces.`,
+      - last_accessed_at: number (timestamp of last access, null if never accessed)`,
     })),
 
     // ApprovalRequest Schema
     step(makeWorkflowMachine(AddSchemaWorkflowDefinition), () => ({
       name: "approval-request",
-      systemPrompt: `Create an ApprovalRequest schema for approving/denying requests:
+      systemPrompt: `The ApprovalRequest schema has the following properties:
 
-      Fields to include:
       - approved: boolean (true to approve, false to deny)
       - approved_by: string (user making the approval decision)
-      - reason: string (optional reason for approval/denial)
-
-      This schema is used for POST /access-requests/:id/approve and POST /service-tokens/:id/approve endpoints.`,
-    })),
-
-    // Error Schema
-    step(makeWorkflowMachine(AddSchemaWorkflowDefinition), () => ({
-      name: "error",
-      systemPrompt: `Create an Error schema for error responses:
-
-      Fields to include:
-      - error: string (error code or type)
-      - message: string (human-readable error message)
-      - details: object (optional additional error details)
-
-      This schema is used for all error responses (400, 401, 403, 404, 500).`,
-    })),
-
-    // GET /secrets route
-    step(makeWorkflowMachine(AddRouteWorkflowDefinition), () => ({
-      path: "secrets/list",
-      systemPrompt: `Create a GET /secrets route for listing all secrets:
-
-      - Returns array of Secret objects
-      - Values should be masked for security (show as "***")
-      - Include pagination parameters (limit, offset)
-      - Include filtering by is_active status
-      - Include sorting options (created_at, updated_at, name)
-      - Return 200 with array of secrets
-      - Return 401 if not authenticated
-      - Return 403 if not authorized (admin only)`,
-    })),
-
-    // POST /secrets route
-    step(makeWorkflowMachine(AddRouteWorkflowDefinition), () => ({
-      path: "secrets/create",
-      systemPrompt: `Create a POST /secrets route for creating new secrets:
-
-      - Accepts SecretCreateRequest in request body
-      - Validates that secret name is unique
-      - Encrypts the secret value before storing
-      - Returns created Secret object (with masked value)
-      - Return 201 with created secret
-      - Return 400 for validation errors (duplicate name, missing required fields)
-      - Return 401 if not authenticated
-      - Return 403 if not authorized (admin only)`,
-    })),
-
-    // PUT /secrets/:id route
-    step(makeWorkflowMachine(AddRouteWorkflowDefinition), () => ({
-      path: "secrets/update",
-      systemPrompt: `Create a PUT /secrets/:id route for updating existing secrets:
-
-      - Accepts secret ID as path parameter
-      - Accepts SecretUpdateRequest in request body
-      - Updates only provided fields
-      - Re-encrypts value if provided
-      - Returns updated Secret object (with masked value)
-      - Return 200 with updated secret
-      - Return 400 for validation errors
-      - Return 401 if not authenticated
-      - Return 403 if not authorized (admin only)
-      - Return 404 if secret not found`,
-    })),
-
-    // DELETE /secrets/:id route
-    step(makeWorkflowMachine(AddRouteWorkflowDefinition), () => ({
-      path: "secrets/delete",
-      systemPrompt: `Create a DELETE /secrets/:id route for deleting secrets:
-
-      - Accepts secret ID as path parameter
-      - Soft delete by setting is_active to false (don't actually delete)
-      - Returns success message
-      - Return 200 with success message
-      - Return 401 if not authenticated
-      - Return 403 if not authorized (admin only)
-      - Return 404 if secret not found`,
+      - reason: string (optional reason for approval/denial)`,
     })),
 
     // GET /access-requests route
     step(makeWorkflowMachine(AddRouteWorkflowDefinition), () => ({
       path: "access-requests/list",
-      systemPrompt: `Create a GET /access-requests route for listing access requests:
+      systemPrompt: `The GET /access-requests endpoint has the following requirements:
 
       - Returns array of AccessRequest objects
       - Include filtering by status (pending, granted, denied)
@@ -222,13 +190,14 @@ export const ImplementSecretsSpecWorkflowDefinition = defineWorkflow<
       - Include sorting options (requested_at, status)
       - Return 200 with array of access requests
       - Return 401 if not authenticated
-      - Return 403 if not authorized (admin only)`,
+      - Return 403 if not authorized (admin only)
+      - Use error.yaml for error responses`,
     })),
 
     // POST /access-requests/:id/approve route
     step(makeWorkflowMachine(AddRouteWorkflowDefinition), () => ({
       path: "access-requests/approve",
-      systemPrompt: `Create a POST /access-requests/:id/approve route for approving access requests:
+      systemPrompt: `The POST /access-requests/:id/approve endpoint has the following requirements:
 
       - Accepts access request ID as path parameter
       - Accepts ApprovalRequest in request body
@@ -236,16 +205,16 @@ export const ImplementSecretsSpecWorkflowDefinition = defineWorkflow<
       - Records approval details (approved_by, granted_at)
       - Returns updated AccessRequest object
       - Return 200 with updated access request
-      - Return 400 for validation errors
       - Return 401 if not authenticated
       - Return 403 if not authorized (admin only)
-      - Return 404 if access request not found`,
+      - Return 404 if access request not found
+      - Use error.yaml for error responses`,
     })),
 
     // GET /service-tokens route
     step(makeWorkflowMachine(AddRouteWorkflowDefinition), () => ({
       path: "service-tokens/list",
-      systemPrompt: `Create a GET /service-tokens route for listing service tokens:
+      systemPrompt: `The GET /service-tokens endpoint has the following requirements:
 
       - Returns array of ServiceToken objects
       - Include filtering by approved status
@@ -254,13 +223,14 @@ export const ImplementSecretsSpecWorkflowDefinition = defineWorkflow<
       - Include sorting options (requested_at, approved, service_name)
       - Return 200 with array of service tokens
       - Return 401 if not authenticated
-      - Return 403 if not authorized (admin only)`,
+      - Return 403 if not authorized (admin only)
+      - Use error.yaml for error responses`,
     })),
 
     // POST /service-tokens/:id/approve route
     step(makeWorkflowMachine(AddRouteWorkflowDefinition), () => ({
       path: "service-tokens/approve",
-      systemPrompt: `Create a POST /service-tokens/:id/approve route for approving service tokens:
+      systemPrompt: `The POST /service-tokens/:id/approve endpoint has the following requirements:
 
       - Accepts service token ID as path parameter
       - Accepts ApprovalRequest in request body
@@ -268,10 +238,10 @@ export const ImplementSecretsSpecWorkflowDefinition = defineWorkflow<
       - Records approval details (approved_by, approved_at)
       - Returns updated ServiceToken object
       - Return 200 with updated service token
-      - Return 400 for validation errors
       - Return 401 if not authenticated
       - Return 403 if not authorized (admin only)
-      - Return 404 if service token not found`,
+      - Return 404 if service token not found
+      - Use error.yaml for error responses`,
     })),
   ],
 });
