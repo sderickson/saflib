@@ -3,3 +3,11 @@
 // or altered versions of those using Pick or Omit
 
 export type * from "./schema.ts";
+
+// Re-export commonly used types for convenience
+// Example:
+// import type { ExampleEntity } from "./schemas/example.ts";
+// export type CreateExampleParams = Omit<
+//   ExampleEntity,
+//   "id" | "createdAt" | "updatedAt"
+// >;
