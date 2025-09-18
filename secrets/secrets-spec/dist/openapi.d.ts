@@ -48,6 +48,7 @@ export interface components {
         Secret: components["schemas"]["secret"];
         SecretCreateRequest: components["schemas"]["secret-create-request"];
         SecretUpdateRequest: components["schemas"]["secret-update-request"];
+        ServiceToken: components["schemas"]["service-token"];
         secret: {
             /**
              * @description Unique identifier for the secret
@@ -127,6 +128,58 @@ export interface components {
              * @example true
              */
             is_active?: boolean;
+        };
+        "service-token": {
+            /**
+             * @description Unique identifier for the service token
+             * @example 123e4567-e89b-12d3-a456-426614174000
+             */
+            id: string;
+            /**
+             * @description Name of the service
+             * @example identity-service
+             */
+            service_name: string;
+            /**
+             * @description SHA-256 hash of the token (truncated for admin display)
+             * @example a1b2c3d4e5f6...
+             */
+            token_hash: string;
+            /**
+             * @description Optional version of the service
+             * @example 1.2.3
+             */
+            service_version?: string;
+            /**
+             * @description Timestamp when token was requested
+             * @example 1640995200000
+             */
+            requested_at: number;
+            /**
+             * @description Whether the token is approved
+             * @example true
+             */
+            approved: boolean;
+            /**
+             * @description Timestamp when approved, null if not approved
+             * @example 1640995200000
+             */
+            approved_at?: number | null;
+            /**
+             * @description User who approved the token, null if not approved
+             * @example admin@example.com
+             */
+            approved_by?: string | null;
+            /**
+             * @description Timestamp of last usage, null if never used
+             * @example 1640995200000
+             */
+            last_used_at?: number | null;
+            /**
+             * @description Number of times the token has been used
+             * @example 42
+             */
+            access_count: number;
         };
     };
     responses: never;
