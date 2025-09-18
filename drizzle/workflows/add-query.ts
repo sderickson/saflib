@@ -35,6 +35,7 @@ interface AddQueryWorkflowContext {
   pascalTableName: string; // e.g. "Contacts"
   camelTableName: string; // e.g. "contacts"
   packageIndexPath: string; // e.g. "/<abs-path>/index.ts"
+  packageName: string; // e.g. "@foobar/identity-db"
 }
 
 function toCamelCase(name: string) {
@@ -84,6 +85,7 @@ export const AddQueryWorkflowDefinition = defineWorkflow<
       camelServiceName: kebabCaseToCamelCase(serviceName),
       pascalTableName: kebabCaseToPascalCase(tableName),
       camelTableName: kebabCaseToCamelCase(tableName),
+      packageName,
     };
   },
 
@@ -107,10 +109,7 @@ export const AddQueryWorkflowDefinition = defineWorkflow<
       // the templating system to handle cases like this better.
       lineReplace: (line) =>
         line
-          .replace(
-            "templateFileDbManager",
-            context.camelServiceName + "DbManager",
-          )
+          .replace("templateFileDb", context.camelServiceName + "Db")
           .replace(
             "TemplateFileNotFoundError",
             context.pascalTableName + "NotFoundError",
@@ -125,7 +124,8 @@ export const AddQueryWorkflowDefinition = defineWorkflow<
           .replace(
             "schemas/template-file.ts",
             "schemas/" + context.tableName + ".ts",
-          ),
+          )
+          .replace("@template/file-db", context.packageName),
     })),
 
     step(PromptStepMachine, ({ context }) => ({

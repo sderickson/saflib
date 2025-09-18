@@ -15,9 +15,8 @@ describe("templateFile", () => {
   });
 
   it("should execute successfully", async () => {
-    const { result } = await templateFile(dbKey, {
-      name: "test",
-    });
+    // @ts-expect-error - TODO: remove this line and provide valid input
+    const { result } = await templateFile(dbKey, {});
     expect(result).toBeDefined();
     assert(result);
     expect(result.name).toBe("test");
