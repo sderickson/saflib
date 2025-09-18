@@ -3,14 +3,16 @@ import type { Expect, Equal } from "@saflib/drizzle";
 
 // TODO: Replace this example table with actual tables for your database
 export interface SecretsEntity {
-  id: number;
+  id: string;
   name: string;
   createdAt: Date;
   updatedAt: Date;
 }
 
 export const secretsTable = sqliteTable("secrets_table", {
-  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
   name: text("name").notNull(),
   createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
   updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
