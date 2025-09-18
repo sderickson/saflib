@@ -11,20 +11,26 @@ import { saveWorkflow, loadWorkflowDefinitionFromFile } from "./file-io.ts";
 import { resolve } from "node:path";
 import { getWorkflowLogger } from "../../../core/store.ts";
 
+export interface RunWorkflowOptions {
+  definition: WorkflowDefinition<any, any>;
+  runMode: WorkflowRunMode;
+  args?: string[];
+}
+
 /**
  * Convenience function to take a WorkflowDefinition, run it in the specified mode, and return the output.
  */
 export const runWorkflow = async (
-  definition: WorkflowDefinition<any, any>,
-  runMode: WorkflowRunMode,
+  options: RunWorkflowOptions,
 ): Promise<WorkflowOutput> => {
+  const { definition, runMode, args } = options;
   const cliArguments = definition.input as WorkflowArgument[];
   const exampleArgs = cliArguments.map(
     (arg) => arg.exampleValue || "example-value-missing",
   );
   const workflow = new XStateWorkflowRunner({
     definition,
-    args: exampleArgs,
+    args: args || exampleArgs,
     workflowRunMode: runMode,
   });
   await workflow.kickoff();
@@ -38,7 +44,7 @@ export const runWorkflow = async (
 export const dryRunWorkflow = async (
   definition: WorkflowDefinition<any, any>,
 ): Promise<WorkflowOutput> => {
-  return runWorkflow(definition, "dry");
+  return runWorkflow({ definition, runMode: "dry" });
 };
 
 /**
