@@ -1,3 +1,4 @@
 import { create } from "./create.ts";
+import { getById } from "./get-by-id.ts";
 
-export const accessRequest = { create };
+export const accessRequest = { create, getById };
