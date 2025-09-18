@@ -1,13 +1,11 @@
 export type * from "./types.ts";
 export * from "./errors.ts";
+export * from "./queries/secrets/index.ts";
+export * from "./queries/service-token/index.ts";
+export * from "./queries/access-request/index.ts";
 
 import { secretsDbManager } from "./instances.ts";
-// TODO: Import query modules as you create them
-// import * as secretss from "./queries/secretss/index.ts";
 
 export const secretsDb = {
   ...secretsDbManager.publicInterface(),
-  // TODO: Add query modules as you create them
-  // TODO: Remove todos once any queries are added
-  // secretss,
 };

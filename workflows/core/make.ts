@@ -20,6 +20,9 @@ import {
 import { contextFromInput } from "./utils.ts";
 import type { WorkflowArgument } from "./types.ts";
 import { existsSync } from "fs";
+import { addNewLinesToString } from "@saflib/utils";
+
+let lastSystemPrompt: string | undefined;
 
 /**
  * Helper, identity function to infer types.
@@ -34,7 +37,11 @@ export function defineWorkflow<
 >(config: {
   input: I;
   context: (arg: {
-    input: CreateArgsType<I> & { runMode?: WorkflowRunMode; cwd: string };
+    input: CreateArgsType<I> & {
+      runMode?: WorkflowRunMode;
+      cwd: string;
+      systemPrompt?: string;
+    };
   }) => C;
   id: string;
   description: string;
@@ -43,6 +50,7 @@ export function defineWorkflow<
   templateFiles: Record<string, string>;
   docFiles: Record<string, string>;
   steps: Array<WorkflowStep<C, AnyStateMachine>>;
+  afterEach?: (context: C) => void;
 }): WorkflowDefinition<I, C> {
   return config;
 }
@@ -81,12 +89,16 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
     const step = workflow.steps[i];
     const stateName = `step_${i}`;
     states[stateName] = {
+      entry: [
+        {
+          type: "systemPrompt",
+        },
+      ],
       invoke: {
         input: ({ context }: { context: Context }) => {
           return {
             ...step.input({ context }),
             // don't need checklist; the machine will compose their own
-            systemPrompt: context.systemPrompt,
             runMode: context.runMode,
             rootRef: context.rootRef,
             templateFiles: context.templateFiles,
@@ -99,6 +111,9 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
         onDone: {
           target: `step_${i + 1}`,
           actions: [
+            {
+              type: "afterEach",
+            },
             assign({
               checklist: ({ context, event }) => {
                 const output: WorkflowOutput = event.output;
@@ -136,6 +151,21 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
     },
     actions: {
       ...workflowActions,
+      afterEach: ({ context }) => {
+        if (workflow.afterEach) {
+          workflow.afterEach(context);
+        }
+      },
+      systemPrompt: ({ context }) => {
+        if (context.systemPrompt) {
+          if (context.systemPrompt !== lastSystemPrompt) {
+            console.log("");
+            console.log(addNewLinesToString(context.systemPrompt));
+            console.log("");
+            lastSystemPrompt = context.systemPrompt;
+          }
+        }
+      },
     },
     actors: {
       ...workflowActors,

@@ -16,17 +16,31 @@ export const addRunScriptsCommand = (
       ),
     )
     .argument("<workflowIdOrPath>", "Workflow ID or path to workflow file")
-    .action(async (workflowIdOrPath: string) => {
+    .argument("[args...]", "Arguments for the workflow")
+    .action(async (workflowIdOrPath: string, args: string[]) => {
       const workflowDefinition = await loadWorkflowDefinition(
         workflowIdOrPath,
         workflows,
       );
-      await runWorkflowScript(workflowDefinition);
+      await runWorkflowScript({
+        definition: workflowDefinition,
+        args,
+      });
     });
 };
 
-export const runWorkflowScript = async (Workflow: WorkflowDefinition) => {
-  const workflow = await runWorkflow(Workflow, "script");
+interface RunWorkflowScriptOptions {
+  definition: WorkflowDefinition;
+  args: string[];
+}
+
+export const runWorkflowScript = async (options: RunWorkflowScriptOptions) => {
+  const { definition, args } = options;
+  const workflow = await runWorkflow({
+    definition,
+    args,
+    runMode: "script",
+  });
   console.log("Workflow executed in script mode");
   console.log(
     "Output:\n",

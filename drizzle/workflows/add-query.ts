@@ -8,7 +8,9 @@ import {
   step,
   CommandStepMachine,
 } from "@saflib/workflows";
+import { readFileSync } from "node:fs";
 import path from "node:path";
+import { kebabCaseToCamelCase, kebabCaseToPascalCase } from "@saflib/utils";
 
 const sourceDir = path.join(
   import.meta.dirname,
@@ -27,9 +29,13 @@ interface AddQueryWorkflowContext {
   name: string;
   camelName: string; // e.g. getById
   targetDir: string;
-  featureName: string; // e.g. "contacts"
-  featureIndexPath: string; // e.g. "/<abs-path>/queries/contacts/index.ts"
+  tableName: string; // e.g. "contacts"
+  tableIndexPath: string; // e.g. "/<abs-path>/queries/contacts/index.ts"
+  camelServiceName: string; // e.g. "foobarIdentity"
+  pascalTableName: string; // e.g. "Contacts"
+  camelTableName: string; // e.g. "contacts"
   packageIndexPath: string; // e.g. "/<abs-path>/index.ts"
+  packageName: string; // e.g. "@foobar/identity-db"
 }
 
 function toCamelCase(name: string) {
@@ -57,20 +63,29 @@ export const AddQueryWorkflowDefinition = defineWorkflow<
 
   context: ({ input }) => {
     const targetDir = path.dirname(path.join(input.cwd, input.path));
-    const featureName = path.basename(targetDir);
-    const featureIndexPath = path
+    const tableName = path.basename(targetDir);
+    const tableIndexPath = path
       .join(targetDir, "index.ts")
       .replace(input.cwd, "");
     const packageIndexPath = path.join(input.cwd, "index.ts");
     const name = path.basename(input.path).split(".")[0];
+    const packageName =
+      readFileSync(path.join(input.cwd, "package.json"), "utf8").match(
+        /name": "(.+)"/,
+      )?.[1] || "@your/target-package";
+    let serviceName = (packageName.split("/").pop() || "").replace("-db", "");
 
     return {
       name,
       camelName: toCamelCase(name),
       targetDir,
-      featureName,
-      featureIndexPath,
+      tableName,
+      tableIndexPath,
       packageIndexPath,
+      camelServiceName: kebabCaseToCamelCase(serviceName),
+      pascalTableName: kebabCaseToPascalCase(tableName),
+      camelTableName: kebabCaseToCamelCase(tableName),
+      packageName,
     };
   },
 
@@ -89,17 +104,39 @@ export const AddQueryWorkflowDefinition = defineWorkflow<
     step(CopyStepMachine, ({ context }) => ({
       name: context.name,
       targetDir: context.targetDir,
+      // This is super brittle.
+      // If this works though... I might try to figure out a way for
+      // the templating system to handle cases like this better.
+      lineReplace: (line) =>
+        line
+          .replace("templateFileDb", context.camelServiceName + "Db")
+          .replace(
+            "TemplateFileNotFoundError",
+            context.pascalTableName + "NotFoundError",
+          )
+          .replace(
+            "CreateTemplateFileParams",
+            "Create" + context.pascalTableName + "Params",
+          )
+          .replace("TemplateFileEntity", context.pascalTableName + "Entity")
+          .replace("TemplateFileError", context.pascalTableName + "Error")
+          .replace("templateFileTable", context.camelTableName + "Table")
+          .replace(
+            "schemas/template-file.ts",
+            "schemas/" + context.tableName + ".ts",
+          )
+          .replace("@template/file-db", context.packageName),
     })),
 
     step(PromptStepMachine, ({ context }) => ({
-      promptText: `Check if \`${context.featureIndexPath}\` exists. If it doesn't exist, create it.`,
+      promptText: `Check if \`${context.tableIndexPath}\` exists. If it doesn't exist, create it.`,
     })),
 
     step(PromptStepMachine, ({ context }) => ({
-      promptText: `Update \`${context.featureIndexPath}\` to include the new query.
+      promptText: `Update \`${context.tableIndexPath}\` to include the new query.
         1. Import the new query from \`./${context.name}.ts\`
         2. Add the query to the collection object using the camelCase name
-        3. Make sure to export a \`${context.featureName}\` object that contains all queries for this domain`,
+        3. Make sure to export a \`${context.tableName}\` object that contains all queries for this domain`,
     })),
 
     step(PromptStepMachine, ({ context }) => ({
@@ -108,7 +145,7 @@ export const AddQueryWorkflowDefinition = defineWorkflow<
       Do it like so:
 
       \`\`\`ts
-      export * from "./queries/${context.featureName}/index.ts";
+      export * from "./queries/${context.tableName}/index.ts";
       \`\`\`
       `,
     })),
@@ -138,6 +175,11 @@ export const AddQueryWorkflowDefinition = defineWorkflow<
       promptMessage: `Implement the \`${context.camelName}\` query following the documentation guidelines.`,
     })),
 
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["run", "typecheck"],
+    })),
+
     step(DocStepMachine, () => ({
       docId: "testingGuide",
     })),
@@ -147,6 +189,12 @@ export const AddQueryWorkflowDefinition = defineWorkflow<
       promptMessage: `Implement \`${context.name}.test.ts\`.
       
       Aim for 100% coverage; there should be a known way to achieve every handled error.`,
+    })),
+
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["run", "typecheck"],
+      promptOnError: `You may have forgotten to provide all fields necessary. Do NOT decouple the types from the inferred types in types.ts. Instead fix the test.`,
     })),
 
     step(TestStepMachine, () => ({

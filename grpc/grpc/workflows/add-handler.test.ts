@@ -4,7 +4,10 @@ import { runWorkflow } from "@saflib/workflows";
 
 describe("add-handler", () => {
   it("should successfully dry run", async () => {
-    const result = await runWorkflow(AddHandlerWorkflowDefinition, "dry");
+    const result = await runWorkflow({
+      definition: AddHandlerWorkflowDefinition,
+      runMode: "dry",
+    });
     expect(result.checklist).toBeDefined();
   });
 });

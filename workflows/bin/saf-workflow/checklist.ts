@@ -26,7 +26,10 @@ export const addChecklistCommand = (
 };
 
 export const printChecklist = async (Workflow: WorkflowDefinition) => {
-  const workflow = await runWorkflow(Workflow, "dry");
+  const workflow = await runWorkflow({
+    definition: Workflow,
+    runMode: "dry",
+  });
   console.log(
     checklistToString(
       workflow.checklist.subitems || [{ description: "No checklist output" }],

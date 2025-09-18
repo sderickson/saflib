@@ -4,7 +4,10 @@ import { runWorkflow } from "@saflib/workflows";
 
 describe("init", () => {
   it("should successfully dry run", async () => {
-    const result = await runWorkflow(InitWorkflowDefinition, "dry");
+    const result = await runWorkflow({
+      definition: InitWorkflowDefinition,
+      runMode: "dry",
+    });
     expect(result.checklist).toBeDefined();
   });
 });

@@ -3,3 +3,12 @@
 // or altered versions of those using Pick or Omit
 
 export type * from "./schema.ts";
+
+// Re-export commonly used types for convenience
+// Example:
+import type { TemplateFileEntity } from "./schemas/template-file.ts";
+export type { TemplateFileEntity };
+export type CreateTemplateFileParams = Omit<
+  TemplateFileEntity,
+  "id" | "createdAt" | "updatedAt"
+>;

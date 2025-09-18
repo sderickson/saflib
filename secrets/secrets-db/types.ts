@@ -1,5 +1,61 @@
-// TODO: Add types for your database package
-// These are typically re-exports of Drizzle's $inferInsert or $inferSelect,
-// or altered versions of those using Pick or Omit
-
 export type * from "./schema.ts";
+
+// Re-export commonly used types for convenience
+import type { SecretEntity } from "./schemas/secret.ts";
+export type { SecretEntity };
+
+export type CreateSecretParams = Omit<
+  SecretEntity,
+  "id" | "createdAt" | "updatedAt"
+>;
+
+export type UpdateSecretParams = {
+  id: string;
+} & Partial<Omit<SecretEntity, "id" | "createdAt" | "updatedAt">>;
+
+// Re-export commonly used types for service-tokens
+import type { ServiceTokenEntity } from "./schemas/service-token.ts";
+
+export type CreateServiceTokenParams = Omit<
+  ServiceTokenEntity,
+  | "id"
+  | "requestedAt"
+  | "approved"
+  | "approvedAt"
+  | "approvedBy"
+  | "lastUsedAt"
+  | "accessCount"
+>;
+
+export type UpdateServiceTokenApprovalParams = {
+  id: string;
+  approved: boolean;
+  approvedBy: string;
+};
+
+export type UpdateServiceTokenUsageParams = {
+  id: string;
+};
+
+// Re-export commonly used types for access-requests
+import type { AccessRequestEntity } from "./schemas/access-request.ts";
+
+export type CreateAccessRequestParams = Omit<
+  AccessRequestEntity,
+  | "id"
+  | "requestedAt"
+  | "grantedAt"
+  | "grantedBy"
+  | "accessCount"
+  | "lastAccessedAt"
+>;
+
+export type UpdateAccessRequestStatusParams = {
+  id: string;
+  status: string;
+  grantedBy: string;
+};
+
+export type UpdateAccessRequestUsageParams = {
+  id: string;
+};
