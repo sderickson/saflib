@@ -55,3 +55,7 @@ export type UpdateAccessRequestStatusParams = {
   status: string;
   grantedBy: string;
 };
+
+export type UpdateAccessRequestUsageParams = {
+  id: string;
+};
