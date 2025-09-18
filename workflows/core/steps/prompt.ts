@@ -2,7 +2,6 @@ import { setup, raise } from "xstate";
 import { workflowActions, workflowActors, promptAgent } from "../xstate.ts";
 import { type WorkflowContext, type WorkflowInput } from "../types.ts";
 import { contextFromInput } from "../utils.ts";
-// import { execSync } from "node:child_process";
 
 /**
  * Input for the PromptStepMachine.
@@ -69,13 +68,6 @@ export const PromptStepMachine = setup({
     },
   },
   output: ({ context }) => {
-    // const result = execSync("git status").toString();
-    // if (!result.includes("nothing to commit, working tree clean")) {
-    //   execSync("git add .");
-    //   execSync(
-    //     `git commit -m '${context.promptText.split("\n")[0].replace("'", "\\'")}'`,
-    //   );
-    // }
     return {
       checklist: {
         description: context.promptText.split("\n")[0],

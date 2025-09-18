@@ -13,7 +13,6 @@ import { contextFromInput } from "../../utils.ts";
 
 import type { CopyStepContext, CopyStepInput } from "./types.ts";
 import { parseChecklist, parseCopiedFiles } from "./helpers.ts";
-// import { execSync } from "node:child_process";
 
 export type { CopyStepInput };
 
@@ -147,9 +146,6 @@ export const CopyStepMachine = setup({
     },
   },
   output: ({ context }) => {
-    // execSync("git add .");
-    // execSync(`git commit -m 'Copy template files and rename placeholders'`);
-
     return {
       checklist: {
         description: `Copy template files and rename placeholders.`,
