@@ -138,6 +138,11 @@ export const AddQueryWorkflowDefinition = defineWorkflow<
       promptMessage: `Implement the \`${context.camelName}\` query following the documentation guidelines.`,
     })),
 
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["run", "typecheck"],
+    })),
+
     step(DocStepMachine, () => ({
       docId: "testingGuide",
     })),
@@ -147,6 +152,12 @@ export const AddQueryWorkflowDefinition = defineWorkflow<
       promptMessage: `Implement \`${context.name}.test.ts\`.
       
       Aim for 100% coverage; there should be a known way to achieve every handled error.`,
+    })),
+
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["run", "typecheck"],
+      promptOnError: `You may have forgotten to provide all fields necessary. Do NOT decouple the types from the inferred types in types.ts. Instead fix the test.`,
     })),
 
     step(TestStepMachine, () => ({
