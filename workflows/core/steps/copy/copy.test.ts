@@ -82,6 +82,7 @@ export default {
   it("should skip existing files and log warning", async () => {
     // Create an existing file
     await writeFile(path.join(targetDir, "foo-bar.ts"), "existing content");
+    await writeFile(path.join(sourceDir, "foo-bar.ts"), "template content");
 
     const actor = createActor(CopyStepMachine, {
       input: {

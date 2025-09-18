@@ -17,7 +17,7 @@ const input = [
     name: "name",
     description:
       "The name of the new workflow to create (e.g., 'refactor-component')",
-    exampleValue: "example-workflow",
+    exampleValue: "example-package/example-workflow",
   },
 ] as const;
 
