@@ -28,10 +28,7 @@ export const templateFile = queryWrapper(
       .returning();
     return {
       result: {
-        id: result[0].id,
-        name: result[0].name,
-        createdAt: result[0].createdAt,
-        updatedAt: result[0].updatedAt,
+        ...result[0],
       },
     };
   },

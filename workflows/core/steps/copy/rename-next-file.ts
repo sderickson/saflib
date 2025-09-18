@@ -42,6 +42,9 @@ export const renameNextFile = fromPromise(
         continue;
       }
 
+      if (lineReplace) {
+        updatedContent[i] = lineReplace(updatedContent[i]);
+      }
       updatedContent[i] = updatedContent[i].replace(/template-file/g, name);
       updatedContent[i] = updatedContent[i].replace(
         /template_file/g,
@@ -56,9 +59,6 @@ export const renameNextFile = fromPromise(
         /TEMPLATE_FILE/g,
         snakeName.toUpperCase(),
       );
-      if (lineReplace) {
-        updatedContent[i] = lineReplace(updatedContent[i]);
-      }
     }
 
     await writeFile(targetPath, updatedContent.join("\n"));
