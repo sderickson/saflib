@@ -1,3 +1,4 @@
+import { kebabCaseToCamelCase, kebabCaseToPascalCase } from "@saflib/utils";
 import {
   CopyStepMachine,
   UpdateStepMachine,
@@ -22,6 +23,7 @@ interface AddRouteWorkflowContext {
   resource: string;
   targetDir: string;
   operationId: string;
+  name: string;
 }
 
 export const AddRouteWorkflowDefinition = defineWorkflow<
@@ -40,14 +42,26 @@ export const AddRouteWorkflowDefinition = defineWorkflow<
   sourceUrl: import.meta.url,
 
   context: ({ input }) => {
-    const targetDir = input.cwd;
+    let p = input.path;
+    if (!p.startsWith("routes")) {
+      p = "routes/" + p;
+    }
+    if (!p.endsWith(".yaml")) {
+      p = p + ".yaml";
+    }
+    let targetDir = path.dirname(path.join(input.cwd, p));
     const resource = path.basename(targetDir);
-    const name = path.basename(input.path).split(".")[0];
+    const name = path.basename(p).split(".")[0];
+    const operationName =
+      kebabCaseToCamelCase(path.basename(p).split(".")[0]) +
+      kebabCaseToPascalCase(resource);
+    console.log({ targetDir, resource, name });
 
     return {
       resource,
       targetDir,
-      operationId: name,
+      operationId: operationName,
+      name,
     };
   },
 
@@ -61,8 +75,10 @@ export const AddRouteWorkflowDefinition = defineWorkflow<
 
   steps: [
     step(CopyStepMachine, ({ context }) => ({
-      name: context.operationId,
-      targetDir: path.join(context.targetDir, "routes", context.resource),
+      name: context.name,
+      targetDir: path.join(context.targetDir),
+      lineReplace: (line) =>
+        line.replace("templateOperationId", context.operationId),
     })),
 
     step(UpdateStepMachine, ({ context }) => ({
