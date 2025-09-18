@@ -34,7 +34,11 @@ export function defineWorkflow<
 >(config: {
   input: I;
   context: (arg: {
-    input: CreateArgsType<I> & { runMode?: WorkflowRunMode; cwd: string };
+    input: CreateArgsType<I> & {
+      runMode?: WorkflowRunMode;
+      cwd: string;
+      systemPrompt?: string;
+    };
   }) => C;
   id: string;
   description: string;
