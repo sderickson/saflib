@@ -39,11 +39,6 @@ export const UpdateSchemaWorkflowDefinition = defineWorkflow<
     const p = path.join(input.cwd, input.path);
     const name = path.basename(p).split(".")[0];
     const targetDir = path.dirname(p);
-    console.log({
-      name,
-      targetDir,
-      path: p,
-    });
     return {
       name,
       targetDir,
