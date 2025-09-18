@@ -73,7 +73,7 @@ export const ImplementSecretsDbWorkflowDefinition = defineWorkflow<
     })),
 
     step(makeWorkflowMachine(AddQueryWorkflowDefinition), () => ({
-      path: "queries/secrets/delete",
+      path: "queries/secrets/remove",
       systemPrompt: `Implement the \`delete\` query for the secrets table.`,
     })),
 
