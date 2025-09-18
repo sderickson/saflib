@@ -11,6 +11,11 @@ export interface PromptStepInput {
    * The text to be shown to the agent or user. The machine will then stop until the workflow is continued.
    */
   promptText: string;
+
+  /**
+   * A function that determines if the prompt should be skipped. Given the context and cwd.
+   */
+  skipIf?: boolean;
 }
 
 /**
@@ -18,6 +23,7 @@ export interface PromptStepInput {
  */
 export interface PromptStepContext extends WorkflowContext {
   promptText: string;
+  skipIf?: (context: PromptStepContext & { cwd: string }) => boolean;
 }
 
 /**
@@ -35,8 +41,15 @@ export const PromptStepMachine = setup({
     ...workflowActors,
   },
   guards: {
-    shouldSkipForMode: ({ context }) =>
-      context.runMode === "dry" || context.runMode === "script",
+    shouldSkip: ({ context }) => {
+      if (context.runMode === "dry" || context.runMode === "script") {
+        return true;
+      }
+      if (context.skipIf !== undefined) {
+        return !!context.skipIf;
+      }
+      return false;
+    },
   },
 }).createMachine({
   id: "prompt-step",
@@ -51,8 +64,8 @@ export const PromptStepMachine = setup({
       on: {
         prompt: [
           {
-            guard: "shouldSkipForMode",
-            actions: [raise({ type: "continue" })],
+            guard: "shouldSkip",
+            target: "done",
           },
           {
             actions: [promptAgent(({ context }) => context.promptText)],
