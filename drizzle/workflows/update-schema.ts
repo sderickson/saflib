@@ -87,13 +87,13 @@ export const UpdateSchemaWorkflowDefinition = defineWorkflow<
       * If the field may be null, the type should include \`... | null\`.`,
     })),
 
+    step(PromptStepMachine, () => ({
+      promptText: `If any new tables were created, make sure to export everything from the new schema file in the root \`./schemas.ts\` file.`,
+    })),
+
     step(CommandStepMachine, () => ({
       command: "npm",
       args: ["run", "generate"],
-    })),
-
-    step(PromptStepMachine, () => ({
-      promptText: `If any new tables were created, make sure to export everything from the new schema file in \`./index.ts\`.`,
     })),
   ],
 });

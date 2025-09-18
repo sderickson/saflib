@@ -1,22 +1,25 @@
-// @ts-nocheck - TODO remove this line as part of workflow
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, assert } from "vitest";
 import type { DbKey } from "@saflib/drizzle";
-// TODO: Uncomment and fix this import
-// import { someDb, someQueryDb } from "@own/package";
+import { templateFileDb } from "@template/file-db";
+import { templateFile } from "./template-file.ts";
 
 describe("templateFile", () => {
   let dbKey: DbKey;
 
   beforeEach(() => {
-    dbKey = someDb.connect();
+    dbKey = templateFileDb.connect();
   });
 
   afterEach(async () => {
-    someDb.disconnect(dbKey);
+    templateFileDb.disconnect(dbKey);
   });
 
-  it.skip("should execute successfully", async () => {
-    const { result } = await someQueryDb.templateFile(dbKey, {});
+  it("should execute successfully", async () => {
+    const { result } = await templateFile(dbKey, {
+      name: "test",
+    });
     expect(result).toBeDefined();
+    assert(result);
+    expect(result.name).toBe("test");
   });
 });

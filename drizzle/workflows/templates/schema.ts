@@ -1,1 +1,1 @@
-// export * from each schema file in the schemas directory
+export * from "./schemas/template-file.ts";
