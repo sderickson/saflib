@@ -86,12 +86,16 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
     const step = workflow.steps[i];
     const stateName = `step_${i}`;
     states[stateName] = {
+      entry: [
+        {
+          type: "systemPrompt",
+        },
+      ],
       invoke: {
         input: ({ context }: { context: Context }) => {
           return {
             ...step.input({ context }),
             // don't need checklist; the machine will compose their own
-            systemPrompt: context.systemPrompt,
             runMode: context.runMode,
             rootRef: context.rootRef,
             templateFiles: context.templateFiles,
@@ -147,6 +151,11 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
       afterEach: ({ context }) => {
         if (workflow.afterEach) {
           workflow.afterEach(context);
+        }
+      },
+      systemPrompt: ({ context }) => {
+        if (context.systemPrompt) {
+          console.log(context.systemPrompt);
         }
       },
     },
