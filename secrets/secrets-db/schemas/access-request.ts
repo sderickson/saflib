@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
+import { sqliteTable, text, integer, unique } from "drizzle-orm/sqlite-core";
 import type { Expect, Equal } from "@saflib/drizzle";
 
 export interface AccessRequestEntity {
@@ -25,7 +25,9 @@ export const accessRequestTable = sqliteTable("access_request", {
   grantedBy: text("granted_by"),
   accessCount: integer("access_count").default(0).notNull(),
   lastAccessedAt: integer("last_accessed_at", { mode: "timestamp" }),
-});
+}, (table) => ({
+  uniqueSecretService: unique().on(table.secretId, table.serviceName),
+}));
 
 export type AccessRequestEntityTest = Expect<
   Equal<AccessRequestEntity, typeof accessRequestTable.$inferSelect>

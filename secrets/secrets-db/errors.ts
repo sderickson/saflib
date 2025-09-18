@@ -15,3 +15,8 @@ export class SecretAccessDeniedError extends SecretDatabaseError {}
 export class ServiceTokenNotFoundError extends SecretDatabaseError {}
 export class ServiceTokenAlreadyExistsError extends SecretDatabaseError {}
 export class InvalidServiceTokenDataError extends SecretDatabaseError {}
+
+// Specific error classes for access-request operations
+export class AccessRequestNotFoundError extends SecretDatabaseError {}
+export class AccessRequestAlreadyExistsError extends SecretDatabaseError {}
+export class InvalidAccessRequestDataError extends SecretDatabaseError {}

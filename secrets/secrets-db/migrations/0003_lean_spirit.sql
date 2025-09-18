@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX `access_request_secret_id_service_name_unique` ON `access_request` (`secret_id`,`service_name`);
