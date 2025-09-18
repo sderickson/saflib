@@ -20,6 +20,9 @@ import {
 import { contextFromInput } from "./utils.ts";
 import type { WorkflowArgument } from "./types.ts";
 import { existsSync } from "fs";
+import { addNewLinesToString } from "@saflib/utils";
+
+let lastSystemPrompt: string | undefined;
 
 /**
  * Helper, identity function to infer types.
@@ -155,7 +158,12 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
       },
       systemPrompt: ({ context }) => {
         if (context.systemPrompt) {
-          console.log(context.systemPrompt);
+          if (context.systemPrompt !== lastSystemPrompt) {
+            console.log("");
+            console.log(addNewLinesToString(context.systemPrompt));
+            console.log("");
+            lastSystemPrompt = context.systemPrompt;
+          }
         }
       },
     },

@@ -58,10 +58,12 @@ export const UpdateSchemaWorkflowDefinition = defineWorkflow<
   },
 
   steps: [
-    step(PromptStepMachine, ({ context }) => ({
-      promptText: `The table ends with "s". Table names should not be plural; if the table name is actually plural, please stop and rerun the workflow with a singular name. Otherwise, continue.`,
-      skipIf: !context.name.endsWith("s"),
-    })),
+    step(PromptStepMachine, ({ context }) => {
+      return {
+        promptText: `The table ends with "s". Table names should not be plural; if the table name is actually plural, please stop and rerun the workflow with a singular name. Otherwise, continue.`,
+        skipIf: !context.name.endsWith("s"),
+      };
+    }),
 
     step(CopyStepMachine, ({ context }) => ({
       name: context.name,

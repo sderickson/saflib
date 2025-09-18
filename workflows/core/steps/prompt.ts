@@ -23,7 +23,7 @@ export interface PromptStepInput {
  */
 export interface PromptStepContext extends WorkflowContext {
   promptText: string;
-  skipIf?: (context: PromptStepContext & { cwd: string }) => boolean;
+  skipIf?: boolean;
 }
 
 /**
@@ -56,6 +56,7 @@ export const PromptStepMachine = setup({
   context: ({ input, self }) => ({
     ...contextFromInput(input, self),
     promptText: input.promptText,
+    skipIf: input.skipIf,
   }),
   initial: "running",
   states: {
