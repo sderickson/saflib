@@ -1,4 +1,4 @@
-import { IdentityInitWorkflowDefinition } from "./identity/init.ts";
+import { IdentityInitWorkflowDefinition } from "./init.ts";
 import type { WorkflowDefinition } from "@saflib/workflows";
 
 export {

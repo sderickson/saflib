@@ -15,6 +15,7 @@
     "@saflib/links": "*"
   },
   "devDependencies": {
-    "@saflib/vitest": "*"
+    "@saflib/vitest": "*",
+    "@saflib/monorepo": "*"
   }
 }
