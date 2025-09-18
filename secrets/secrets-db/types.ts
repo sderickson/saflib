@@ -32,3 +32,7 @@ export type UpdateServiceTokenApprovalParams = {
   approved: boolean;
   approvedBy: string;
 };
+
+export type UpdateServiceTokenUsageParams = {
+  id: string;
+};
