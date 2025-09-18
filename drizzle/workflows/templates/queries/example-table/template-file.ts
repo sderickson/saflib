@@ -18,6 +18,8 @@ export const templateFile = queryWrapper(
     params: CreateTemplateFileParams,
   ): Promise<ReturnsError<TemplateFileEntity, TemplateFileError>> => {
     const db = templateFileDbManager.get(dbKey)!;
+    // TODO: replace this logic with your actual logic
+    // For reference, this is standard "create" logic
     const result = await db
       .insert(templateFileTable)
       .values({
