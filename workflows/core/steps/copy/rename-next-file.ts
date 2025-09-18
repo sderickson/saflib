@@ -15,10 +15,14 @@ export const renameNextFile = fromPromise(
     const currentFileId = filesToCopy[0];
     const targetPath = copiedFiles[currentFileId];
     const targetFileName = path.basename(targetPath);
+
+    if (runMode === "dry") {
+      return { fileName: targetFileName };
+    }
+
     const stats = await stat(targetPath);
     const isDirectory = stats.isDirectory();
-
-    if (runMode === "dry" || isDirectory) {
+    if (isDirectory) {
       return { fileName: targetFileName };
     }
 

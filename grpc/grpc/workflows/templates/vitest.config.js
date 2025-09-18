@@ -1,3 +1,3 @@
-import { baseVitestConfig } from "@saflib/vitest";
+import { defaultConfig } from "@saflib/vitest/vitest.config.js";
 
-export default baseVitestConfig;
+export default defaultConfig;
