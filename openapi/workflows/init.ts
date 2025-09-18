@@ -1,6 +1,5 @@
 import {
   CopyStepMachine,
-  DocStepMachine,
   defineWorkflow,
   step,
   CommandStepMachine,
@@ -77,15 +76,9 @@ export const OpenapiInitWorkflowDefinition = defineWorkflow<
     tsconfig: path.join(sourceDir, "tsconfig.json"),
   },
 
-  docFiles: {
-    overview: path.join(import.meta.dirname, "../docs/01-overview.md"),
-  },
+  docFiles: {},
 
   steps: [
-    step(DocStepMachine, () => ({
-      docId: "overview",
-    })),
-
     step(CopyStepMachine, ({ context }) => ({
       name: context.name,
       targetDir: context.targetDir,
