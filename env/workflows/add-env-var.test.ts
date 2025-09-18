@@ -1,10 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { AddEnvVarWorkflowDefinition } from "./add-env-var.ts";
-import { dryRunWorkflow } from "@saflib/workflows";
+import { runWorkflow } from "@saflib/workflows";
 
 describe("add-env-var", () => {
   it("should successfully dry run", async () => {
-    const result = await dryRunWorkflow(AddEnvVarWorkflowDefinition);
+    const result = await runWorkflow({
+      definition: AddEnvVarWorkflowDefinition,
+      runMode: "dry",
+    });
     expect(result.checklist).toBeDefined();
   });
 });

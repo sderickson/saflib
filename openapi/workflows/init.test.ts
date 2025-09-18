@@ -4,7 +4,10 @@ import { runWorkflow } from "@saflib/workflows";
 
 describe("openapi/init", () => {
   it("should successfully dry run", async () => {
-    const result = await runWorkflow(OpenapiInitWorkflowDefinition, "dry");
+    const result = await runWorkflow({
+      definition: OpenapiInitWorkflowDefinition,
+      runMode: "dry",
+    });
     expect(result.checklist).toBeDefined();
   });
 });
