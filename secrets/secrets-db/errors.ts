@@ -5,5 +5,8 @@ import { HandledDatabaseError } from "@saflib/drizzle";
  */
 export class SecretsDatabaseError extends HandledDatabaseError {}
 
-// TODO: Add specific error classes for your database
+// Specific error classes for secrets operations
 export class SecretsNotFoundError extends SecretsDatabaseError {}
+export class SecretAlreadyExistsError extends SecretsDatabaseError {}
+export class InvalidSecretDataError extends SecretsDatabaseError {}
+export class SecretAccessDeniedError extends SecretsDatabaseError {}
