@@ -47,6 +47,7 @@ export function defineWorkflow<
   templateFiles: Record<string, string>;
   docFiles: Record<string, string>;
   steps: Array<WorkflowStep<C, AnyStateMachine>>;
+  afterEach?: (context: C) => void;
 }): WorkflowDefinition<I, C> {
   return config;
 }
@@ -103,6 +104,9 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
         onDone: {
           target: `step_${i + 1}`,
           actions: [
+            {
+              type: "afterEach",
+            },
             assign({
               checklist: ({ context, event }) => {
                 const output: WorkflowOutput = event.output;
@@ -140,6 +144,11 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
     },
     actions: {
       ...workflowActions,
+      afterEach: ({ context }) => {
+        if (workflow.afterEach) {
+          workflow.afterEach(context);
+        }
+      },
     },
     actors: {
       ...workflowActors,

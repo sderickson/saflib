@@ -70,6 +70,11 @@ export interface WorkflowDefinition<
    * An array of steps to be executed in the workflow. Each step is a state machine, and a function which takes the context and returns the input for the state machine.
    */
   steps: Array<WorkflowStep<C, AnyStateMachine>>;
+
+  /**
+   * A function to be executed after the workflow has completed.
+   */
+  afterEach?: (context: C) => void;
 }
 
 type ArrayElementType<T extends readonly unknown[]> = T[number];
