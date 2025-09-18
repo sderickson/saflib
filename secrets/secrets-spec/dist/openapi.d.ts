@@ -40,6 +40,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/access-requests/{id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Approve or deny an access request */
+        post: operations["approveAccessRequest"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -131,57 +148,22 @@ export interface components {
              */
             is_active?: boolean;
         };
-        "service-token": {
+        "approval-request": {
             /**
-             * @description Unique identifier for the service token
-             * @example 123e4567-e89b-12d3-a456-426614174000
-             */
-            id: string;
-            /**
-             * @description Name of the service
-             * @example identity-service
-             */
-            service_name: string;
-            /**
-             * @description SHA-256 hash of the token (truncated for admin display)
-             * @example a1b2c3d4e5f6...
-             */
-            token_hash: string;
-            /**
-             * @description Optional version of the service
-             * @example 1.2.3
-             */
-            service_version?: string;
-            /**
-             * @description Timestamp when token was requested
-             * @example 1640995200000
-             */
-            requested_at: number;
-            /**
-             * @description Whether the token is approved
+             * @description True to approve, false to deny
              * @example true
              */
             approved: boolean;
             /**
-             * @description Timestamp when approved, null if not approved
-             * @example 1640995200000
-             */
-            approved_at?: number | null;
-            /**
-             * @description User who approved the token, null if not approved
+             * @description User making the approval decision
              * @example admin@example.com
              */
-            approved_by?: string | null;
+            approved_by: string;
             /**
-             * @description Timestamp of last usage, null if never used
-             * @example 1640995200000
+             * @description Optional reason for approval/denial
+             * @example Approved for production use
              */
-            last_used_at?: number | null;
-            /**
-             * @description Number of times the token has been used
-             * @example 42
-             */
-            access_count: number;
+            reason?: string;
         };
         "access-request": {
             /**
@@ -236,22 +218,57 @@ export interface components {
              */
             last_accessed_at?: number | null;
         };
-        "approval-request": {
+        "service-token": {
             /**
-             * @description True to approve, false to deny
+             * @description Unique identifier for the service token
+             * @example 123e4567-e89b-12d3-a456-426614174000
+             */
+            id: string;
+            /**
+             * @description Name of the service
+             * @example identity-service
+             */
+            service_name: string;
+            /**
+             * @description SHA-256 hash of the token (truncated for admin display)
+             * @example a1b2c3d4e5f6...
+             */
+            token_hash: string;
+            /**
+             * @description Optional version of the service
+             * @example 1.2.3
+             */
+            service_version?: string;
+            /**
+             * @description Timestamp when token was requested
+             * @example 1640995200000
+             */
+            requested_at: number;
+            /**
+             * @description Whether the token is approved
              * @example true
              */
             approved: boolean;
             /**
-             * @description User making the approval decision
+             * @description Timestamp when approved, null if not approved
+             * @example 1640995200000
+             */
+            approved_at?: number | null;
+            /**
+             * @description User who approved the token, null if not approved
              * @example admin@example.com
              */
-            approved_by: string;
+            approved_by?: string | null;
             /**
-             * @description Optional reason for approval/denial
-             * @example Approved for production use
+             * @description Timestamp of last usage, null if never used
+             * @example 1640995200000
              */
-            reason?: string;
+            last_used_at?: number | null;
+            /**
+             * @description Number of times the token has been used
+             * @example 42
+             */
+            access_count: number;
         };
     };
     responses: never;
@@ -448,6 +465,60 @@ export interface operations {
                 };
             };
             /** @description Secret not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+        };
+    };
+    approveAccessRequest: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Access request ID */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["approval-request"];
+            };
+        };
+        responses: {
+            /** @description Access request updated successfully */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["access-request"];
+                };
+            };
+            /** @description Unauthorized - missing or invalid auth headers, or not logged in. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Forbidden - user does not have required privileges. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Access request not found */
             404: {
                 headers: {
                     [name: string]: unknown;
