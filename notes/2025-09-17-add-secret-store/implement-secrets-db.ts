@@ -34,7 +34,7 @@ export const ImplementSecretsDbWorkflowDefinition = defineWorkflow<
     })),
 
     step(CwdStepMachine, () => ({
-      path: "/Users/scotterickson/src/saf-2025/saflib/secrets/secrets-db",
+      path: "./secrets/secrets-db",
     })),
 
     step(makeWorkflowMachine(UpdateSchemaWorkflowDefinition), () => ({

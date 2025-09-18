@@ -36,17 +36,26 @@ export const UpdateSchemaWorkflowDefinition = defineWorkflow<
   sourceUrl: import.meta.url,
 
   context: ({ input }) => {
-    const name = path.basename(input.path);
-    const targetDir = path.dirname(input.path);
+    const p = path.join(input.cwd, input.path);
+    const name = path.basename(p).split(".")[0];
+    const targetDir = path.dirname(p);
+    console.log({
+      name,
+      targetDir,
+      path: p,
+    });
     return {
       name,
       targetDir,
-      path: input.path,
+      path: p,
     };
   },
 
   templateFiles: {
-    schema: path.join(import.meta.dirname, "templates/schema.ts"),
+    schema: path.join(
+      import.meta.dirname,
+      "templates/schemas/template-file.ts",
+    ),
   },
 
   docFiles: {
@@ -56,7 +65,7 @@ export const UpdateSchemaWorkflowDefinition = defineWorkflow<
   steps: [
     step(CopyStepMachine, ({ context }) => ({
       name: context.name,
-      targetDir: path.join(context.targetDir, "schemas"),
+      targetDir: context.targetDir,
     })),
 
     step(DocStepMachine, () => ({
@@ -65,7 +74,7 @@ export const UpdateSchemaWorkflowDefinition = defineWorkflow<
 
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "schema",
-      promptMessage: `Update ${context.path} to add the new table.`,
+      promptMessage: `Update ${context.path} to add the new table, or modify it.`,
     })),
 
     step(CommandStepMachine, () => ({
@@ -74,7 +83,7 @@ export const UpdateSchemaWorkflowDefinition = defineWorkflow<
     })),
 
     step(PromptStepMachine, () => ({
-      promptText: `If any new tables were created, make sure to add the inferred types to \`./types.ts\` so they're exported in \`./index.ts\`.`,
+      promptText: `If any new tables were created, make sure to export everything from the new schema file in \`./index.ts\`.`,
     })),
   ],
 });
