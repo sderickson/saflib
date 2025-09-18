@@ -48,7 +48,9 @@ const TestDrizzleWorkflowsDefinition = defineWorkflow<
     step(CwdStepMachine, () => ({
       path: "test-database",
     })),
-    step(makeWorkflowMachine(UpdateSchemaWorkflowDefinition), () => ({})),
+    step(makeWorkflowMachine(UpdateSchemaWorkflowDefinition), () => ({
+      path: "schemas/users.ts",
+    })),
     step(makeWorkflowMachine(AddQueryWorkflowDefinition), () => ({
       path: "queries/users/create",
     })),

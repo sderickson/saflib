@@ -79,6 +79,16 @@ export const UpdateSchemaWorkflowDefinition = defineWorkflow<
 
     step(CommandStepMachine, () => ({
       command: "npm",
+      args: ["run", "typecheck"],
+      promptOnError: `If the interface and inferred types are not equal, you'll need to iteratively disable the new fields to find the one that is causing the issue. Run \`npm run typecheck\` again to see the error.
+      
+      Some common issues:
+      * If one of the fields is a blob, you should specify a mode like "buffer" in the \`blob\` function.
+      * If the field may be null, the type should include \`... | null\`.`,
+    })),
+
+    step(CommandStepMachine, () => ({
+      command: "npm",
       args: ["run", "generate"],
     })),
 

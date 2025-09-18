@@ -37,6 +37,11 @@ export interface CommandStepInput {
   args?: string[];
 
   skipIf?: CommandStepSkipIf;
+
+  /**
+   * The environment variables to set for the command.
+   */
+  promptOnError?: string;
 }
 
 /**
@@ -46,6 +51,7 @@ export interface CommandStepContext extends WorkflowContext {
   command: string;
   args: string[];
   skipIf?: CommandStepSkipIf;
+  promptOnError?: string;
 }
 
 /**
@@ -70,6 +76,7 @@ export const CommandStepMachine = setup({
       ...contextFromInput(input, self),
       command: input.command,
       args: input.args || [],
+      promptOnError: input.promptOnError,
     };
   },
   initial: "printBefore",
@@ -125,8 +132,8 @@ export const CommandStepMachine = setup({
         onError: {
           actions: [
             logError(
-              ({ event }) =>
-                `Command failed: ${(event.error as Error).message}`,
+              ({ event, context }) =>
+                `Command failed: ${(event.error as Error).message} ${context.promptOnError ? `\n${context.promptOnError}` : ""}`,
             ),
             raise({ type: "prompt" }),
           ],
@@ -136,7 +143,7 @@ export const CommandStepMachine = setup({
         prompt: {
           actions: promptAgent(
             ({ context }) =>
-              `The command \`${context.command} ${context.args.join(" ")}\` failed. Please fix the issues and continue.`,
+              `The command \`${context.command} ${context.args.join(" ")}\` failed. Please fix the issues and continue. ${context.promptOnError ? `\n${context.promptOnError}` : ""}`,
           ),
         },
         continue: {

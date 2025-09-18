@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import type { DbKey } from "@saflib/drizzle";
 import { secretsDb, SecretAlreadyExistsError } from "@saflib/secrets-db";
 import type { CreateSecretsParams } from "@saflib/secrets-db";
+import { assert } from "vitest";
 
 describe("create", () => {
   let dbKey: DbKey;
@@ -26,10 +27,12 @@ describe("create", () => {
     const { result } = await secretsDb.secrets.create(dbKey, params);
 
     expect(result).toBeDefined();
+    assert(result);
     expect(result.name).toBe(params.name);
     expect(result.description).toBe(params.description);
     expect(result.createdBy).toBe(params.createdBy);
     expect(result.isActive).toBe(params.isActive);
+    expect(result.valueEncrypted).toBe(params.valueEncrypted);
     expect(result.id).toBeDefined();
     expect(result.createdAt).toBeDefined();
     expect(result.updatedAt).toBeDefined();
@@ -47,6 +50,7 @@ describe("create", () => {
     const { result } = await secretsDb.secrets.create(dbKey, params);
 
     expect(result).toBeDefined();
+    assert(result);
     expect(result.name).toBe(params.name);
     expect(result.description).toBeNull();
     expect(result.valueEncrypted).toBeNull();

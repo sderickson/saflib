@@ -9,7 +9,7 @@ export interface SecretsEntity {
   createdAt: Date;
   updatedAt: Date;
   createdBy: string;
-  isActive: boolean;
+  isActive: boolean | null;
 }
 
 export const secretsTable = sqliteTable("secrets", {
@@ -18,7 +18,7 @@ export const secretsTable = sqliteTable("secrets", {
     .$defaultFn(() => crypto.randomUUID()),
   name: text("name").unique().notNull(),
   description: text("description"),
-  valueEncrypted: blob("value_encrypted"), // AES-256 encrypted secret value
+  valueEncrypted: blob("value_encrypted", { mode: "buffer" }), // AES-256 encrypted secret value
   createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
   updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
   createdBy: text("created_by").notNull(),

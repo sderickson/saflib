@@ -18,7 +18,7 @@ export const create = queryWrapper(
     dbKey: DbKey,
     params: CreateSecretsParams,
   ): Promise<ReturnsError<SecretsEntity, CreateError>> => {
-    const db = secretsDbManager.get(dbKey);
+    const db = secretsDbManager.get(dbKey)!;
 
     const now = new Date();
     try {
