@@ -1,6 +1,6 @@
 import { fromPromise } from "xstate";
 import type { CopyStepContext } from "./types.ts";
-import { readFile, writeFile } from "node:fs/promises";
+import { readFile, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import {
   kebabCaseToSnakeCase,
@@ -17,6 +17,12 @@ export const renameNextFile = fromPromise(
     const targetFileName = path.basename(targetPath);
 
     if (runMode === "dry") {
+      return { fileName: targetFileName };
+    }
+
+    const stats = await stat(targetPath);
+    const isDirectory = stats.isDirectory();
+    if (isDirectory) {
       return { fileName: targetFileName };
     }
 

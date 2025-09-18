@@ -1,13 +1,16 @@
-import { IdentityInitWorkflowDefinition } from "./init.ts";
+import { InitWorkflowDefinition } from "./init.ts";
+import { AddHandlerWorkflowDefinition } from "./add-handler.ts";
 import type { WorkflowDefinition } from "@saflib/workflows";
 
 export {
   // Export each workflow definition separately
-  IdentityInitWorkflowDefinition,
+  InitWorkflowDefinition,
+  AddHandlerWorkflowDefinition,
 };
 
 const workflowDefinitions: WorkflowDefinition[] = [
   // And have the default export be the array of all of them
-  IdentityInitWorkflowDefinition,
+  InitWorkflowDefinition,
+  AddHandlerWorkflowDefinition,
 ];
 export default workflowDefinitions;

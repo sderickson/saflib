@@ -1,6 +1,7 @@
 {
   "name": "@saflib/saflib",
   "description": "Full-featured web application framework using my preferred libraries and services.",
+  "type": "module",
   "scripts": {
     "test:coverage": "npm run test:coverage --workspaces --if-present --parallel",
     "test": "vitest run",
