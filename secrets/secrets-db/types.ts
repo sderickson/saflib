@@ -49,3 +49,9 @@ export type CreateAccessRequestParams = Omit<
   | "accessCount"
   | "lastAccessedAt"
 >;
+
+export type UpdateAccessRequestStatusParams = {
+  id: string;
+  status: string;
+  grantedBy: string;
+};
