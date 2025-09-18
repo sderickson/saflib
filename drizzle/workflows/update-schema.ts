@@ -4,12 +4,24 @@ import {
   DocStepMachine,
   defineWorkflow,
   step,
+  CopyStepMachine,
+  UpdateStepMachine,
 } from "@saflib/workflows";
 import path from "path";
 
-const input = [] as const;
+const input = [
+  {
+    name: "path",
+    description: "The path to the schema file to update",
+    exampleValue: "./schemas/example.ts",
+  },
+] as const;
 
-interface UpdateSchemaWorkflowContext {}
+interface UpdateSchemaWorkflowContext {
+  name: string;
+  targetDir: string;
+  path: string;
+}
 
 export const UpdateSchemaWorkflowDefinition = defineWorkflow<
   typeof input,
@@ -23,21 +35,37 @@ export const UpdateSchemaWorkflowDefinition = defineWorkflow<
 
   sourceUrl: import.meta.url,
 
-  context: () => ({}),
+  context: ({ input }) => {
+    const name = path.basename(input.path);
+    const targetDir = path.dirname(input.path);
+    return {
+      name,
+      targetDir,
+      path: input.path,
+    };
+  },
 
-  templateFiles: {},
+  templateFiles: {
+    schema: path.join(import.meta.dirname, "templates/schema.ts"),
+  },
 
   docFiles: {
     schemaDoc: path.join(import.meta.dirname, "../docs/02-schema.md"),
   },
 
   steps: [
+    step(CopyStepMachine, ({ context }) => ({
+      name: context.name,
+      targetDir: path.join(context.targetDir, "schemas"),
+    })),
+
     step(DocStepMachine, () => ({
       docId: "schemaDoc",
     })),
 
-    step(PromptStepMachine, () => ({
-      promptText: `Find the right schema file in this folder and update it based on the spec.`,
+    step(UpdateStepMachine, ({ context }) => ({
+      fileId: "schema",
+      promptMessage: `Update ${context.path} to add the new table.`,
     })),
 
     step(CommandStepMachine, () => ({

@@ -38,6 +38,7 @@ export const ImplementSecretsDbWorkflowDefinition = defineWorkflow<
     })),
 
     step(makeWorkflowMachine(UpdateSchemaWorkflowDefinition), () => ({
+      path: "schemas/secrets.ts",
       systemPrompt: `Add the secrets table:
 
       - id: TEXT PRIMARY KEY (random UUID)
@@ -83,6 +84,7 @@ export const ImplementSecretsDbWorkflowDefinition = defineWorkflow<
     })),
 
     step(makeWorkflowMachine(UpdateSchemaWorkflowDefinition), () => ({
+      path: "schemas/service-tokens.ts",
       systemPrompt: `Add the service_tokens table:
 
       - id: TEXT PRIMARY KEY (random UUID)
@@ -125,6 +127,7 @@ export const ImplementSecretsDbWorkflowDefinition = defineWorkflow<
     })),
 
     step(makeWorkflowMachine(UpdateSchemaWorkflowDefinition), () => ({
+      path: "schemas/access-requests.ts",
       systemPrompt: `Add the access_requests table:
 
       - id: TEXT PRIMARY KEY (random UUID)
