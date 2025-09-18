@@ -40,7 +40,7 @@ export const ImplementSecretsDbWorkflowDefinition = defineWorkflow<
     step(makeWorkflowMachine(UpdateSchemaWorkflowDefinition), () => ({
       systemPrompt: `Add the secrets table:
 
-      - id: TEXT PRIMARY KEY
+      - id: TEXT PRIMARY KEY (random UUID)
       - name: TEXT UNIQUE NOT NULL  
       - description: TEXT
       - value_encrypted: BLOB (for AES-256 encrypted secret value)
@@ -85,7 +85,7 @@ export const ImplementSecretsDbWorkflowDefinition = defineWorkflow<
     step(makeWorkflowMachine(UpdateSchemaWorkflowDefinition), () => ({
       systemPrompt: `Add the service_tokens table:
 
-      - id: TEXT PRIMARY KEY
+      - id: TEXT PRIMARY KEY (random UUID)
       - service_name: TEXT NOT NULL
       - token_hash: TEXT UNIQUE NOT NULL (SHA-256 hash of token)
       - service_version: TEXT
@@ -127,7 +127,7 @@ export const ImplementSecretsDbWorkflowDefinition = defineWorkflow<
     step(makeWorkflowMachine(UpdateSchemaWorkflowDefinition), () => ({
       systemPrompt: `Add the access_requests table:
 
-      - id: TEXT PRIMARY KEY
+      - id: TEXT PRIMARY KEY (random UUID)
       - secret_id: TEXT NOT NULL REFERENCES secrets(id)
       - service_name: TEXT NOT NULL
       - requested_at: INTEGER NOT NULL
