@@ -9,6 +9,7 @@ import {
 } from "@saflib/workflows";
 import path from "node:path";
 import { kebabCaseToPascalCase, kebabCaseToCamelCase } from "@saflib/utils";
+import { readFileSync } from "node:fs";
 
 const sourceDir = path.join(import.meta.dirname, "templates/routes/example");
 
@@ -28,6 +29,7 @@ interface AddHandlerWorkflowContext {
   indexPath: string; // e.g. "/routes/call-series/index.ts"
   pascalResourceName: string; // e.g. "CallSeries"
   httpAppPath: string; // e.g. "/http.ts"
+  pascalServiceName: string; // e.g. "Example"
 }
 
 export const AddHandlerWorkflowDefinition = defineWorkflow<
@@ -51,6 +53,11 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
     const pascalFeatureName = kebabCaseToPascalCase(featureName);
     const httpAppPath = path.join(cwd, "http.ts").replace(cwd, "");
     const name = path.basename(input.path).split(".")[0];
+    const packageName =
+      readFileSync(path.join(cwd, "package.json"), "utf8").match(
+        /name": "(.+)"/,
+      )?.[1] || "@your/target-package";
+    const serviceName = packageName.split("/").pop() || "";
 
     return {
       name,
@@ -60,6 +67,7 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
       indexPath,
       pascalResourceName: pascalFeatureName,
       httpAppPath,
+      pascalServiceName: kebabCaseToPascalCase(serviceName),
     };
   },
 
@@ -85,6 +93,11 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
     step(CopyStepMachine, ({ context }) => ({
       name: context.name,
       targetDir: context.targetDir,
+      lineReplace: (line) =>
+        line.replace(
+          "createTemplateFileHttpApp",
+          `create${context.pascalServiceName}HttpApp`,
+        ),
     })),
 
     step(PromptStepMachine, ({ context }) => ({
