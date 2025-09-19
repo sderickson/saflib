@@ -1,5 +1,5 @@
 import express from "express";
-import { templateFileHandler } from "./template-file.ts";
+import { templateFileFeatureNameHandler } from "./template-file.ts";
 import { createScopedMiddleware } from "@saflib/express";
 // TODO: import the appropriate spec package
 // import { jsonSpec } from "@saflib/cron-spec";
@@ -15,7 +15,7 @@ export const createResourceNameRouter = () => {
       // apiSpec: jsonSpec,
     }),
   );
-  router.get("/resource-name/route-name", templateFileHandler);
+  router.get("/resource-name/route-name", templateFileFeatureNameHandler);
 
   return router;
 };
