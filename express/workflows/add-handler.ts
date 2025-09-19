@@ -104,15 +104,22 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
       docId: "refDoc",
     })),
 
+    step(PromptStepMachine, ({ context }) => ({
+      promptText: `Check if routes/_helpers.ts has mapper functions for converting database models to API response types for this ${context.name} handler.
+
+If mapper functions don't exist for the database models used by this endpoint, add them to routes/_helpers.ts following patterns shown there.`,
+    })),
+
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "handler",
       promptMessage: `Implement the ${context.camelName} route handler. Make sure to:
         1. Use createHandler from @saflib/express
         2. Use types from your OpenAPI spec for request/response bodies
-        3. Handle expected errors from service/DB layers
-        4. Let unexpected errors propagate to central error handler (no try/catch)
-        5. Follow the pattern in the reference doc
-        6. Export the handler from the folder's "index.ts" file`,
+        3. Use mapper functions from routes/_helpers.ts to convert database models to API responses
+        4. Handle expected errors from service/DB layers
+        5. Let unexpected errors propagate to central error handler (no try/catch)
+        6. Follow the pattern in the reference doc
+        7. Export the handler from the folder's "index.ts" file`,
     })),
 
     step(DocStepMachine, () => ({
