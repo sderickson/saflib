@@ -8,6 +8,6 @@ describe("add-command", () => {
       definition: AddCommandWorkflowDefinition,
       runMode: "dry",
     });
-    expect(result.checklist).toBeDefined();
+    expect(result?.checklist).toBeDefined();
   });
 });

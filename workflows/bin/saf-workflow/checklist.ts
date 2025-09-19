@@ -32,7 +32,7 @@ export const printChecklist = async (Workflow: WorkflowDefinition) => {
   });
   console.log(
     checklistToString(
-      workflow.checklist.subitems || [{ description: "No checklist output" }],
+      workflow?.checklist.subitems || [{ description: "No checklist output" }],
     ),
   );
 };

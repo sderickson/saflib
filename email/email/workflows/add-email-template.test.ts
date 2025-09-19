@@ -8,6 +8,6 @@ describe("add-email-template", () => {
       definition: AddEmailTemplateWorkflowDefinition,
       runMode: "dry",
     });
-    expect(result.checklist).toBeDefined();
+    expect(result?.checklist).toBeDefined();
   });
 });

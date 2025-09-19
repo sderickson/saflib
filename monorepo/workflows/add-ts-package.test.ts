@@ -8,6 +8,6 @@ describe("add-ts-package", () => {
       definition: AddTsPackageWorkflowDefinition,
       runMode: "dry",
     });
-    expect(result.checklist).toBeDefined();
+    expect(result?.checklist).toBeDefined();
   });
 });

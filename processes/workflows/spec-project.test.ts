@@ -8,6 +8,6 @@ describe("spec-project", () => {
       definition: SpecProjectWorkflowDefinition,
       runMode: "dry",
     });
-    expect(result.checklist).toBeDefined();
+    expect(result?.checklist).toBeDefined();
   });
 });

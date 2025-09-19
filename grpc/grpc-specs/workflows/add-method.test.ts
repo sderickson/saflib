@@ -8,6 +8,6 @@ describe("add-method", () => {
       definition: AddMethodWorkflowDefinition,
       runMode: "dry",
     });
-    expect(result.checklist).toBeDefined();
+    expect(result?.checklist).toBeDefined();
   });
 });

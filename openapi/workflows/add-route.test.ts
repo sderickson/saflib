@@ -8,6 +8,6 @@ describe("add-route", () => {
       definition: AddRouteWorkflowDefinition,
       runMode: "dry",
     });
-    expect(result.checklist).toBeDefined();
+    expect(result?.checklist).toBeDefined();
   });
 });

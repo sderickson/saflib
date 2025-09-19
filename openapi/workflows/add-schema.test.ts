@@ -8,6 +8,6 @@ describe("openapi/add-schema", () => {
       definition: AddSchemaWorkflowDefinition,
       runMode: "dry",
     });
-    expect(result.checklist).toBeDefined();
+    expect(result?.checklist).toBeDefined();
   });
 });
