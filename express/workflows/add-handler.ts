@@ -122,8 +122,9 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
           .replace("operationId", context.operationId),
     })),
 
-    step(PromptStepMachine, ({ context }) => ({
-      promptText: `Update the feature router at \`${context.indexPath}\` to include the new route handler.
+    step(UpdateStepMachine, ({ context }) => ({
+      fileId: "index",
+      promptMessage: `Update the feature router at \`${context.indexPath}\` to include the new route handler.
         1. Import the new handler from "./${context.name}.ts"
         2. Add the route to the router using the appropriate HTTP method`,
     })),

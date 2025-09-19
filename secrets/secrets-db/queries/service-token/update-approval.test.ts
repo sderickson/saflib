@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, assert } from "vitest";
 import type { DbKey } from "@saflib/drizzle";
 import { secretsDb } from "../../index.ts";
 import { updateApproval } from "./update-approval.ts";
-import { create } from "../service-tokens/create.ts";
+import { create } from "./create.ts";
 import { ServiceTokenNotFoundError } from "../../errors.ts";
 
 describe("updateApproval", () => {
