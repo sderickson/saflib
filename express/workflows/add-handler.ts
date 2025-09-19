@@ -40,6 +40,9 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
 
   description: "Add a new route to an Express.js service.",
 
+  checklistDescription: ({ name, resourceName }) =>
+    `Add ${name} route handler for ${resourceName}.`,
+
   input,
 
   sourceUrl: import.meta.url,

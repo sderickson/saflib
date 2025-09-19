@@ -4,6 +4,7 @@ import type {
   WorkflowOutput,
   WorkflowDefinition,
   WorkflowRunMode,
+  WorkflowContext,
 } from "../../../core/types.ts";
 import type { WorkflowBlob } from "./types.ts";
 import type { AnyStateMachine, AnyActor } from "xstate";
@@ -114,7 +115,21 @@ export class XStateWorkflowRunner extends AbstractWorkflowRunner {
       log.info("Workflow has been completed.");
       return;
     }
-    log.info("Workflow is in progress. Re-emitting prompt.");
+    log.info("In-progress workflow loaded.");
+    const snapshot = this.actor.getPersistedSnapshot() as unknown as {
+      context: WorkflowContext;
+    };
+    if (snapshot.context && snapshot.context.checklist.length > 0) {
+      console.log("");
+      console.log("Completed work:");
+
+      snapshot.context.checklist.forEach((item) =>
+        console.log(`- ${item.description}`),
+      );
+      console.log("");
+    }
+
+    console.log("Prompt for next step:");
     promptWorkflow(this.actor);
     await pollingWaitFor(this.actor, workflowAllSettled);
   };
