@@ -38,7 +38,6 @@ export const createSecretHandler = createHandler(async (req, res) => {
   if (error) {
     switch (true) {
       case error instanceof SecretAlreadyExistsError:
-        console.log("SecretAlreadyExistsError");
         throw createError(
           409,
           `Secret with name '${data.name}' already exists`,

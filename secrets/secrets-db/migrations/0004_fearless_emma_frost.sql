@@ -1,0 +1,1 @@
+CREATE INDEX `secrets_updated_at_idx` ON `secrets` (`updated_at`);

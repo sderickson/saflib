@@ -339,8 +339,6 @@ export interface operations {
                 offset?: number;
                 /** @description Filter by active status */
                 is_active?: boolean;
-                /** @description Sort order */
-                sort?: "created_at" | "updated_at" | "name";
             };
             header?: never;
             path?: never;
