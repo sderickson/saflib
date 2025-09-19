@@ -96,7 +96,7 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
       lineReplace: (line) =>
         line.replace(
           "createTemplateFileHttpApp",
-          `create${context.pascalServiceName}HttpApp`,
+          `create${context.pascalServiceName}App`,
         ),
     })),
 
