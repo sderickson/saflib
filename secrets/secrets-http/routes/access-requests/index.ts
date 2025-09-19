@@ -12,6 +12,7 @@ export const createAccessRequestsRouter = () => {
     "/",
     createScopedMiddleware({
       apiSpec: jsonSpec,
+      adminRequired: true,
     }),
   );
   router.get("/", listHandler);
