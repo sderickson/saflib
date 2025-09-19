@@ -43,7 +43,7 @@ describe("create", () => {
     const { error } = await create(dbKey, {
       secretId: "test-secret-id",
       serviceName: "test-service",
-      status: "approved",
+      status: "granted",
     });
 
     expect(error).toBeDefined();

@@ -562,8 +562,6 @@ export interface operations {
                 status?: "pending" | "granted" | "denied";
                 /** @description Filter by service name */
                 service_name?: string;
-                /** @description Sort order */
-                sort?: "requested_at" | "status";
             };
             header?: never;
             path?: never;
@@ -665,8 +663,6 @@ export interface operations {
                 approved?: boolean;
                 /** @description Filter by service name */
                 service_name?: string;
-                /** @description Sort order */
-                sort?: "requested_at" | "approved" | "service_name";
             };
             header?: never;
             path?: never;

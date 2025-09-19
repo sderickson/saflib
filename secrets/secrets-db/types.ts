@@ -38,7 +38,10 @@ export type UpdateServiceTokenUsageParams = {
 };
 
 // Re-export commonly used types for access-requests
-import type { AccessRequestEntity } from "./schemas/access-request.ts";
+import type {
+  AccessRequestEntity,
+  AccessRequestStatus,
+} from "./schemas/access-request.ts";
 
 export type CreateAccessRequestParams = Omit<
   AccessRequestEntity,
@@ -52,7 +55,7 @@ export type CreateAccessRequestParams = Omit<
 
 export type UpdateAccessRequestStatusParams = {
   id: string;
-  status: string;
+  status: AccessRequestStatus;
   grantedBy: string;
 };
 

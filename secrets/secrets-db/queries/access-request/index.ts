@@ -4,6 +4,7 @@ import { updateStatus } from "./update-status.ts";
 import { updateUsage } from "./update-usage.ts";
 import { listPending } from "./list-pending.ts";
 import { listByService } from "./list-by-service.ts";
+import { list } from "./list.ts";
 
 export const accessRequest = {
   create,
@@ -12,4 +13,5 @@ export const accessRequest = {
   updateUsage,
   listPending,
   listByService,
+  list,
 };

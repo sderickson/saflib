@@ -1,16 +1,16 @@
 import { secretsDbManager } from "../../instances.ts";
-import type { ServiceTokenEntity } from "../../types.ts";
+import type { AccessRequestEntity } from "../../types.ts";
 import type { ReturnsError } from "@saflib/monorepo";
 
 import { queryWrapper } from "@saflib/drizzle";
 import type { DbKey } from "@saflib/drizzle";
-import { serviceTokensTable } from "../../schemas/service-token.ts";
+import { accessRequestTable } from "../../schemas/access-request.ts";
 import { desc, eq, and } from "drizzle-orm";
 
-export interface ListServiceTokensParams {
+export interface ListAccessRequestsParams {
   limit?: number;
   offset?: number;
-  approved?: boolean;
+  status?: "pending" | "granted" | "denied";
   serviceName?: string;
 }
 
@@ -19,22 +19,22 @@ export type ListError = never;
 export const list = queryWrapper(
   async (
     dbKey: DbKey,
-    params: ListServiceTokensParams = {},
-  ): Promise<ReturnsError<ServiceTokenEntity[], ListError>> => {
+    params: ListAccessRequestsParams = {},
+  ): Promise<ReturnsError<AccessRequestEntity[], ListError>> => {
     const db = secretsDbManager.get(dbKey)!;
 
     const query = db
       .select()
-      .from(serviceTokensTable)
-      .orderBy(desc(serviceTokensTable.requestedAt));
+      .from(accessRequestTable)
+      .orderBy(desc(accessRequestTable.requestedAt));
 
     // Apply filters if specified
     const conditions = [];
-    if (params.approved !== undefined) {
-      conditions.push(eq(serviceTokensTable.approved, params.approved));
+    if (params.status !== undefined) {
+      conditions.push(eq(accessRequestTable.status, params.status));
     }
     if (params.serviceName !== undefined) {
-      conditions.push(eq(serviceTokensTable.serviceName, params.serviceName));
+      conditions.push(eq(accessRequestTable.serviceName, params.serviceName));
     }
 
     if (conditions.length > 0) {
