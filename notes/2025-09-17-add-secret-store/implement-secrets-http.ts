@@ -66,7 +66,8 @@ Make sure to handle errors appropriately and add proper TypeScript types.`,
     })),
 
     step(CommandStepMachine, () => ({
-      command: "npm run typecheck",
+      command: "npm",
+      args: ["run", "typecheck"],
     })),
 
     step(PromptStepMachine, () => ({
@@ -88,11 +89,13 @@ Make sure to handle errors appropriately and add proper TypeScript types.`,
     })),
 
     step(CommandStepMachine, () => ({
-      command: "npm run typecheck",
+      command: "npm",
+      args: ["run", "typecheck"],
     })),
 
     step(CommandStepMachine, () => ({
-      command: "npm run test",
+      command: "npm",
+      args: ["run", "test"],
     })),
 
     // Create secrets routes
