@@ -1,6 +1,6 @@
 import type { Command } from "commander";
 import { addNewLinesToString } from "../../strings.ts";
-import type { WorkflowDefinition } from "../../core/types.ts";
+import type { WorkflowArgument, WorkflowDefinition } from "../../core/types.ts";
 import { runWorkflow, loadWorkflowDefinition } from "./shared/utils.ts";
 import { checklistToString } from "../../core/utils.ts";
 
@@ -24,7 +24,12 @@ export const addRunScriptsCommand = (
       );
       await runWorkflowScript({
         definition: workflowDefinition,
-        args,
+        args:
+          args.length > 0
+            ? args
+            : workflowDefinition.input.map(
+                (input: WorkflowArgument) => input.exampleValue,
+              ),
       });
     });
 };

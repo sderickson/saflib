@@ -8,9 +8,10 @@ import {
   defineWorkflow,
   step,
 } from "@saflib/workflows";
+import { readFileSync } from "node:fs";
 import path from "node:path";
 
-const sourceDir = path.join(import.meta.dirname, "templates");
+const sourceDir = path.join(import.meta.dirname, "templates/requests/example");
 
 const input = [
   {
@@ -29,6 +30,8 @@ interface AddQueryWorkflowContext {
   resourceDir: string;
   pascalExtendedName: string;
   camelExtendedName: string;
+  camelServiceName: string;
+  pascalServiceName: string;
 }
 
 export const AddQueryWorkflowDefinition = defineWorkflow<
@@ -55,7 +58,15 @@ export const AddQueryWorkflowDefinition = defineWorkflow<
       kebabCaseToPascalCase(operationName) +
       kebabCaseToPascalCase(resourceName);
     const camelExtendedName =
-      kebabCaseToCamelCase(operationName) + kebabCaseToCamelCase(resourceName);
+      kebabCaseToCamelCase(operationName) + kebabCaseToPascalCase(resourceName);
+    const packageName =
+      readFileSync(path.join(input.cwd, "package.json"), "utf8").match(
+        /name": "(.+)"/,
+      )?.[1] || "@your/target-package";
+    const serviceName =
+      packageName.split("/").pop()?.replace("-sdk", "") || "service";
+    const camelServiceName = kebabCaseToCamelCase(serviceName);
+    const pascalServiceName = kebabCaseToPascalCase(serviceName);
 
     const targetDir = input.cwd;
     const resourceDir = path.join(targetDir, "requests", resourceName);
@@ -68,6 +79,8 @@ export const AddQueryWorkflowDefinition = defineWorkflow<
       resourceDir,
       pascalExtendedName,
       camelExtendedName,
+      camelServiceName,
+      pascalServiceName,
     };
   },
 
@@ -98,7 +111,12 @@ export const AddQueryWorkflowDefinition = defineWorkflow<
           .replace("__ExtendedName__", context.pascalExtendedName)
           .replace("__extendedName__", context.camelExtendedName)
           .replace("__operation-name__", context.operationName)
-          .replace("__resource-name__", context.resourceName);
+          .replace("__resource-name__", context.resourceName)
+          .replace("__serviceName__", context.camelServiceName)
+          .replace(
+            "ServiceNameServiceRequestBody",
+            context.pascalServiceName + "ServiceRequestBody",
+          );
       },
     })),
 
@@ -140,13 +158,15 @@ export const AddQueryWorkflowDefinition = defineWorkflow<
     })),
 
     step(CommandStepMachine, () => ({
-      command: "npm run typecheck",
+      command: "npm",
+      args: ["run", "typecheck"],
       description:
         "Run TypeScript type checking to ensure all types are correct.",
     })),
 
     step(CommandStepMachine, () => ({
-      command: "npm run test",
+      command: "npm",
+      args: ["run", "test"],
       description:
         "Run tests to ensure the new API query/mutation works correctly.",
     })),
