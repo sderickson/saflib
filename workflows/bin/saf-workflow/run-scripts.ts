@@ -47,8 +47,10 @@ export const runWorkflowScript = async (options: RunWorkflowScriptOptions) => {
     runMode: "script",
   });
   console.log("Workflow executed in script mode");
-  console.log(
-    "Output:\n",
-    checklistToString(workflow.checklist.subitems || []),
-  );
+  if (workflow) {
+    console.log(
+      "Output:\n",
+      checklistToString(workflow.checklist.subitems || []),
+    );
+  }
 };
