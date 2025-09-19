@@ -4,6 +4,7 @@ import {
   PromptStepMachine,
   TestStepMachine,
   DocStepMachine,
+  CommandStepMachine,
   defineWorkflow,
   step,
 } from "@saflib/workflows";
@@ -163,6 +164,11 @@ If mapper functions don't exist for the database models used by this endpoint, a
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "test",
       promptMessage: `Update the generated ${context.name}.test.ts file following the testing guide patterns. Make sure to implement proper test cases that cover both success and error scenarios.`,
+    })),
+
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["run", "typecheck"],
     })),
 
     step(TestStepMachine, () => ({

@@ -1,5 +1,6 @@
 import express from "express";
 import { listHandler } from "./list.ts";
+import { approveAccessRequestHandler } from "./approve.ts";
 import { createScopedMiddleware } from "@saflib/express";
 import { jsonSpec } from "@saflib/secrets-spec";
 
@@ -14,6 +15,7 @@ export const createAccessRequestsRouter = () => {
     }),
   );
   router.get("/", listHandler);
+  router.post("/:id/approve", approveAccessRequestHandler);
 
   return router;
 };
