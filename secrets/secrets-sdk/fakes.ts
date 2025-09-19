@@ -1,3 +1,9 @@
-import { listSecretsHandler } from "./requests/secrets/index.fakes.ts";
+import {
+  listSecretsHandler,
+  createSecretsHandler,
+} from "./requests/secrets/index.fakes.ts";
 
-export const secretsServiceFakeHandlers = [listSecretsHandler];
+export const secretsServiceFakeHandlers = [
+  listSecretsHandler,
+  createSecretsHandler,
+];

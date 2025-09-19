@@ -120,9 +120,10 @@ export const AddQueryWorkflowDefinition = defineWorkflow<
       },
     })),
 
-    step(PromptStepMachine, ({ context }) => ({
-      promptText: `Check that the resource "${context.resourceName}" is included in requests/fake-store.ts (and that the file exists at all). Add it if not.`,
-    })),
+    // Maybe don't need this?
+    // step(PromptStepMachine, ({ context }) => ({
+    //   promptText: `Check that the resource "${context.resourceName}" is included in requests/fake-store.ts (and that the file exists at all). Add it if not.`,
+    // })),
 
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "templateFile",
@@ -131,12 +132,16 @@ export const AddQueryWorkflowDefinition = defineWorkflow<
 
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "templateFileFake",
-      promptMessage: `Update **${context.operationName}.fake.ts** to implement the fake handlers for testing.`,
+      promptMessage: `Update **${context.operationName}.fake.ts** to implement the fake handlers for testing.
+      
+      Mainly it should reflect what is given to it. Have it respect query parameters and request bodies.`,
     })),
 
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "templateFileTest",
-      promptMessage: `Update **${context.operationName}.test.ts** to implement comprehensive tests for the API query/mutation.`,
+      promptMessage: `Update **${context.operationName}.test.ts** to implement simple tests for the API query/mutation.
+      
+      Mainly this should just test that the fake works, and that the query parameters and request bodies are getting through.`,
     })),
 
     step(UpdateStepMachine, ({ context }) => ({
