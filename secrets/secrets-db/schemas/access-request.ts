@@ -7,7 +7,8 @@ import {
 } from "drizzle-orm/sqlite-core";
 import type { Expect, Equal } from "@saflib/drizzle";
 
-export type AccessRequestStatus = "pending" | "granted" | "denied";
+const statusEnum = ["pending", "granted", "denied"] as const;
+export type AccessRequestStatus = (typeof statusEnum)[number];
 
 export interface AccessRequestEntity {
   id: string;
@@ -30,7 +31,7 @@ export const accessRequestTable = sqliteTable(
     secretId: text("secret_id").notNull(),
     serviceName: text("service_name").notNull(),
     requestedAt: integer("requested_at", { mode: "timestamp" }).notNull(),
-    status: text("status").notNull().$type<AccessRequestStatus>(),
+    status: text("status", { enum: statusEnum }).notNull(),
     grantedAt: integer("granted_at", { mode: "timestamp" }),
     grantedBy: text("granted_by"),
     accessCount: integer("access_count").default(0).notNull(),

@@ -1,14 +1,16 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import request from "supertest";
 import express from "express";
-import { createTemplateFileHttpApp } from "../../http.ts";
+// @ts-expect-error - TODO: remove this line as part of workflow
+import { createServiceNameHttpApp } from "../../http.ts";
 import { makeUserHeaders } from "@saflib/express";
+import type { ServiceNameServiceRequestBody } from "@template/file-spec";
 
-describe("templateFile", () => {
+describe("operationId", () => {
   let app: express.Express;
 
   beforeEach(() => {
-    app = createTemplateFileHttpApp({});
+    app = createServiceNameHttpApp({});
   });
 
   // TODO: unskip this test
@@ -17,27 +19,29 @@ describe("templateFile", () => {
       .post("/resource-name/template-file")
       .set(makeUserHeaders())
       .send({
-        // TODO: Add test request body
-      });
+        // @ts-expect-error - TODO: remove this line as part of workflow
+      } satisfies ServiceNameServiceRequestBody["operationId"]);
 
     expect(response.status).toBe(201);
-    expect(response.body).toEqual({
+    expect(response.body).toMatchObject({
       // TODO: Add expected response structure
       // Focus on identifiers and important data fields
       // Avoid asserting on fields that might change frequently
+      // Use expect.any(...) for fields which change with each test
     });
   });
 
   // TODO: unskip this test
-  it.skip("should handle validation errors", async () => {
+  it.skip("should return 4xx for ...", async () => {
+    // make a request which will return the targeted error
     const response = await request(app)
       .post("/resource-name/template-file")
       .set(makeUserHeaders())
       .send({
-        // TODO: Add invalid request body
+        // ...
       });
 
-    expect(response.status).toBe(400);
+    expect(response.status).toBe(409); // or other 4xx status code
     // Don't assert on response.body.message
   });
 });

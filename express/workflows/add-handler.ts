@@ -30,6 +30,10 @@ interface AddHandlerWorkflowContext {
   pascalResourceName: string; // e.g. "CallSeries"
   httpAppPath: string; // e.g. "/http.ts"
   pascalServiceName: string; // e.g. "Example"
+  camelServiceName: string; // e.g. "example"
+  specPackageName: string; // e.g. "@template/file-spec"
+  commonPackageName: string; // e.g. "@template/file-service-common"
+  operationId: string; // e.g. "createExample"
 }
 
 export const AddHandlerWorkflowDefinition = defineWorkflow<
@@ -60,7 +64,14 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
       readFileSync(path.join(cwd, "package.json"), "utf8").match(
         /name": "(.+)"/,
       )?.[1] || "@your/target-package";
-    const serviceName = packageName.split("/").pop() || "";
+    const specPackageName = packageName.replace("-http", "-spec");
+    const commonPackageName = packageName.replace("-http", "-service-common");
+    const serviceName =
+      packageName.split("/").pop()?.replace("-http", "") || "";
+
+    const resource = path.basename(targetDir);
+    const operationId =
+      kebabCaseToCamelCase(name) + kebabCaseToPascalCase(resource);
 
     return {
       name,
@@ -71,6 +82,10 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
       pascalResourceName: pascalFeatureName,
       httpAppPath,
       pascalServiceName: kebabCaseToPascalCase(serviceName),
+      camelServiceName: kebabCaseToCamelCase(serviceName),
+      specPackageName,
+      commonPackageName,
+      operationId,
     };
   },
 
@@ -97,10 +112,13 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
       name: context.name,
       targetDir: context.targetDir,
       lineReplace: (line) =>
-        line.replace(
-          "createTemplateFileHttpApp",
-          `create${context.pascalServiceName}App`,
-        ),
+        line
+          .replace("ServiceName", `${context.pascalServiceName}`)
+          .replace("serviceName", `${context.camelServiceName}`)
+          .replace("FeatureName", `${context.pascalResourceName}`)
+          .replace("@template/file-spec", context.specPackageName)
+          .replace("@template/file-service-common", context.commonPackageName)
+          .replace("operationId", context.operationId),
     })),
 
     step(PromptStepMachine, ({ context }) => ({
