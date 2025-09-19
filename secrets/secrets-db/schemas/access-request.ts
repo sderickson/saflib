@@ -1,12 +1,14 @@
 import { sqliteTable, text, integer, unique } from "drizzle-orm/sqlite-core";
 import type { Expect, Equal } from "@saflib/drizzle";
 
+export type AccessRequestStatus = "pending" | "granted" | "denied";
+
 export interface AccessRequestEntity {
   id: string;
   secretId: string;
   serviceName: string;
   requestedAt: Date;
-  status: string;
+  status: AccessRequestStatus;
   grantedAt: Date | null;
   grantedBy: string | null;
   accessCount: number;
@@ -22,7 +24,7 @@ export const accessRequestTable = sqliteTable(
     secretId: text("secret_id").notNull(),
     serviceName: text("service_name").notNull(),
     requestedAt: integer("requested_at", { mode: "timestamp" }).notNull(),
-    status: text("status").notNull(),
+    status: text("status").notNull().$type<AccessRequestStatus>(),
     grantedAt: integer("granted_at", { mode: "timestamp" }),
     grantedBy: text("granted_by"),
     accessCount: integer("access_count").default(0).notNull(),

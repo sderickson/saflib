@@ -480,6 +480,15 @@ export interface operations {
                     "application/json": components["schemas"]["error"];
                 };
             };
+            /** @description Conflict - secret name already exists */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
         };
     };
     deleteSecret: {
@@ -526,6 +535,15 @@ export interface operations {
             };
             /** @description Secret not found */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Conflict - operation conflicts with current state */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };
