@@ -1,44 +1,50 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/vue-query";
-import { createSafClient, handleClientMethod } from "@saflib/sdk";
-import type { Paths } from "@saflib/secrets-spec";
+import { useMutation, useQueryClient, queryOptions } from "@tanstack/vue-query";
+import { handleClientMethod } from "@saflib/sdk";
+import { client } from "../../client.ts";
+import type { ServiceNameServiceRequestBody } from "@template/file-spec";
 
-const client = createSafClient<Paths>("secrets");
+// TODO: Delete whichever implementation is not being used; the file should either have a query or a mutation, but not both.
 
-// Example Query: List secrets
-export const useListSecrets = () => {
-  return useQuery({
-    queryKey: ["secrets", "list"],
-    queryFn: async () => {
-      const result = await client.GET("/secrets");
-      return handleClientMethod(result);
-    },
+interface __ExtendedName__QueryOptions {
+  // TODO: Define the interface for the query. Use vue Ref types, e.g.
+  // offset: Ref<number>;
+  // limit: Ref<number>;
+}
+
+export const __extendedName__Query = (
+  // @ts-expect-error
+  options: __ExtendedName__QueryOptions,
+) => {
+  return queryOptions({
+    // TODO: as appropriate, define query key based on the options
+    queryKey: ["__resource-name__", "__operation-name__"],
+    queryFn: async () =>
+      handleClientMethod(
+        // @ts-expect-error TODO: define the interface for the query
+        client.GET("/__resource-name__/__operation-name__", {
+          // use options passed in
+          params: {
+            // limit: options.limit?.value,
+          },
+        }),
+      ),
   });
 };
 
-// Example Mutation: Create secret
-export const useCreateSecret = () => {
+export const use__ExtendedName__Mutation = () => {
   const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: async (
-      data: Paths["/secrets"]["post"]["requestBody"]["content"]["application/json"],
+      data: ServiceNameServiceRequestBody["/__resource-name__/__operation-name__"],
     ) => {
-      const result = await client.POST("/secrets", {
-        body: data,
-      });
-      return handleClientMethod(result);
+      return handleClientMethod(
+        // @ts-expect-error TODO: update to the actual route verb/name
+        client.POST("/__resource-name__/__operation-name__", { body: data }),
+      );
     },
     onSuccess: () => {
-      // Invalidate and refetch secrets list
-      queryClient.invalidateQueries({ queryKey: ["secrets", "list"] });
+      // TODO: Update to invalidate
+      queryClient.invalidateQueries({ queryKey: ["__resource-name__"] });
     },
   });
 };
-
-// TODO: Replace with your actual API query/mutation
-// Follow the pattern above:
-// 1. Use useQuery for GET operations (queries)
-// 2. Use useMutation for POST/PUT/DELETE operations (mutations)
-// 3. Use createSafClient with your service subdomain
-// 4. Use handleClientMethod to handle responses
-// 5. Use queryClient.invalidateQueries to refresh related data after mutations

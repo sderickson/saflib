@@ -1,3 +1,4 @@
+import { kebabCaseToCamelCase, kebabCaseToPascalCase } from "@saflib/utils";
 import {
   CopyStepMachine,
   UpdateStepMachine,
@@ -26,6 +27,8 @@ interface AddQueryWorkflowContext {
   operationName: string;
   targetDir: string;
   resourceDir: string;
+  pascalExtendedName: string;
+  camelExtendedName: string;
 }
 
 export const AddQueryWorkflowDefinition = defineWorkflow<
@@ -48,6 +51,11 @@ export const AddQueryWorkflowDefinition = defineWorkflow<
     const pathParts = templateFilePath.split("/");
     const resourceName = pathParts[1]; // e.g., "secrets" from "requests/secrets/list.ts"
     const operationName = pathParts[2]?.replace(".ts", "") || "unknown"; // e.g., "list" from "requests/secrets/list.ts"
+    const pascalExtendedName =
+      kebabCaseToPascalCase(operationName) +
+      kebabCaseToPascalCase(resourceName);
+    const camelExtendedName =
+      kebabCaseToCamelCase(operationName) + kebabCaseToCamelCase(resourceName);
 
     const targetDir = input.cwd;
     const resourceDir = path.join(targetDir, "requests", resourceName);
@@ -58,6 +66,8 @@ export const AddQueryWorkflowDefinition = defineWorkflow<
       operationName,
       targetDir,
       resourceDir,
+      pascalExtendedName,
+      camelExtendedName,
     };
   },
 
@@ -83,6 +93,13 @@ export const AddQueryWorkflowDefinition = defineWorkflow<
     step(CopyStepMachine, ({ context }) => ({
       name: context.operationName,
       targetDir: context.resourceDir,
+      lineReplace: (line) => {
+        return line
+          .replace("__ExtendedName__", context.pascalExtendedName)
+          .replace("__extendedName__", context.camelExtendedName)
+          .replace("__operation-name__", context.operationName)
+          .replace("__resource-name__", context.resourceName);
+      },
     })),
 
     step(PromptStepMachine, ({ context }) => ({
