@@ -22,7 +22,7 @@ export interface RunWorkflowOptions {
  */
 export const runWorkflow = async (
   options: RunWorkflowOptions,
-): Promise<WorkflowOutput> => {
+): Promise<WorkflowOutput | undefined> => {
   const { definition, runMode, args } = options;
   const cliArguments = definition.input as WorkflowArgument[];
   const exampleArgs = cliArguments.map(
@@ -43,7 +43,7 @@ export const runWorkflow = async (
  */
 export const dryRunWorkflow = async (
   definition: WorkflowDefinition<any, any>,
-): Promise<WorkflowOutput> => {
+): Promise<WorkflowOutput | undefined> => {
   return runWorkflow({ definition, runMode: "dry" });
 };
 

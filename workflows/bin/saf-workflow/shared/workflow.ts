@@ -42,7 +42,7 @@ export abstract class AbstractWorkflowRunner {
   abstract done(): boolean;
   abstract getChecklist(): ChecklistItem;
   abstract getError(): Error | undefined;
-  abstract getOutput(): WorkflowOutput;
+  abstract getOutput(): WorkflowOutput | undefined;
 }
 
 interface XStateWorkflowOptions<I extends readonly WorkflowArgument[], C> {
@@ -183,9 +183,9 @@ export class XStateWorkflowRunner extends AbstractWorkflowRunner {
     return this.actor.getSnapshot().output.checklist;
   };
 
-  getOutput = (): WorkflowOutput => {
+  getOutput = (): WorkflowOutput | undefined => {
     if (!this.actor) {
-      return { checklist: { description: "" } };
+      return undefined;
     }
     return this.actor.getSnapshot().output;
   };
