@@ -339,8 +339,6 @@ export interface operations {
                 offset?: number;
                 /** @description Filter by active status */
                 is_active?: boolean;
-                /** @description Sort order */
-                sort?: "created_at" | "updated_at" | "name";
             };
             header?: never;
             path?: never;
@@ -417,6 +415,15 @@ export interface operations {
                     "application/json": components["schemas"]["error"];
                 };
             };
+            /** @description Conflict - secret with this name already exists */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
         };
     };
     updateSecret: {
@@ -464,6 +471,15 @@ export interface operations {
             };
             /** @description Secret not found */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Conflict - secret name already exists */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -524,6 +540,15 @@ export interface operations {
                     "application/json": components["schemas"]["error"];
                 };
             };
+            /** @description Conflict - operation conflicts with current state */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
         };
     };
     listAccessRequests: {
@@ -537,8 +562,6 @@ export interface operations {
                 status?: "pending" | "granted" | "denied";
                 /** @description Filter by service name */
                 service_name?: string;
-                /** @description Sort order */
-                sort?: "requested_at" | "status";
             };
             header?: never;
             path?: never;
@@ -640,8 +663,6 @@ export interface operations {
                 approved?: boolean;
                 /** @description Filter by service name */
                 service_name?: string;
-                /** @description Sort order */
-                sort?: "requested_at" | "approved" | "service_name";
             };
             header?: never;
             path?: never;

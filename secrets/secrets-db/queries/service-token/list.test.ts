@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, assert } from "vitest";
 import type { DbKey } from "@saflib/drizzle";
 import { secretsDb } from "../../index.ts";
 import { list } from "./list.ts";
-import { create } from "../service-tokens/create.ts";
+import { create } from "./create.ts";
 
 describe("list", () => {
   let dbKey: DbKey;

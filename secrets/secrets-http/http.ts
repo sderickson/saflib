@@ -5,13 +5,14 @@ import {
   secretsServiceStorage,
   type SecretsServiceContextOptions,
 } from "@saflib/secrets-service-common";
+import { createSecretsRouter } from "./routes/secrets/index.ts";
+import { createAccessRequestsRouter } from "./routes/access-requests/index.ts";
+import { createServiceTokensRouter } from "./routes/service-tokens/index.ts";
 
 /**
  * Creates the HTTP server for the secrets service.
  */
-export function createSecretsHttpApp(
-  options: SecretsServiceContextOptions,
-) {
+export function createSecretsHttpApp(options: SecretsServiceContextOptions) {
   let dbKey = options.secretsDbKey;
   if (!dbKey) {
     dbKey = secretsDb.connect();
@@ -29,7 +30,9 @@ export function createSecretsHttpApp(
   });
 
   // Add route handlers here. Do not prefix the routes; the router will handle the prefix.
-  // app.use(createSecretsRouter());
+  app.use("/secrets", createSecretsRouter());
+  app.use("/access-requests", createAccessRequestsRouter());
+  app.use("/service-tokens", createServiceTokensRouter());
 
   app.use(createErrorMiddleware());
 

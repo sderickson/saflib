@@ -34,7 +34,7 @@ describe("listByService", () => {
     const { result: request2 } = await create(dbKey, {
       secretId: "test-secret-2",
       serviceName: "test-service",
-      status: "approved",
+      status: "granted",
     });
 
     const { result: request3 } = await create(dbKey, {

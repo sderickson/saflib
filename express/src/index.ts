@@ -18,4 +18,4 @@ export {
 // route handler utilities
 export { createHandler } from "./handler.ts";
 
-export { makeUserHeaders } from "./vitest-helpers.ts";
+export { makeUserHeaders, makeAdminHeaders } from "./vitest-helpers.ts";

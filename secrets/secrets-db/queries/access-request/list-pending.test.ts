@@ -44,7 +44,7 @@ describe("listPending", () => {
     // Approve one request
     await updateStatus(dbKey, {
       id: approvedRequest.id,
-      status: "approved",
+      status: "granted",
       grantedBy: "admin-user",
     });
 
