@@ -1,7 +1,6 @@
 import type { Handler } from "express";
 import { json, urlencoded } from "express";
 import type { OpenAPIV3 } from "express-openapi-validator/dist/framework/types.ts";
-import { auth } from "./auth.ts";
 import { corsRouter } from "./cors.ts";
 import { errorHandler, notFoundHandler } from "./errors.ts";
 import { everyRequestLogger, unsafeRequestLogger } from "./httpLogger.ts";
@@ -12,6 +11,7 @@ import { makeContextMiddleware } from "./context.ts";
 import { blockHtml } from "./blockHtml.ts";
 import { createScopeValidator } from "./scopes.ts";
 import { metricsMiddleware } from "./metrics.ts";
+import { makeAuthMiddleware } from "./auth.ts";
 
 /**
  * Options for creating global middleware.
@@ -53,6 +53,7 @@ export const createGlobalMiddleware = (
 export interface ScopedMiddlewareOptions {
   apiSpec?: OpenAPIV3.DocumentV3;
   authRequired?: boolean;
+  adminRequired?: boolean;
 }
 
 /**
@@ -62,7 +63,7 @@ export interface ScopedMiddlewareOptions {
 export const createScopedMiddleware = (
   options: ScopedMiddlewareOptions,
 ): Handler[] => {
-  const { apiSpec, authRequired } = options;
+  const { apiSpec, authRequired, adminRequired } = options;
 
   let openApiValidatorMiddleware: Handler[] = [];
   if (apiSpec) {
@@ -71,7 +72,7 @@ export const createScopedMiddleware = (
 
   let authMiddleware: Handler[] = [];
   if (authRequired !== false) {
-    authMiddleware = [auth];
+    authMiddleware = [makeAuthMiddleware({ adminRequired })];
   }
 
   return [
