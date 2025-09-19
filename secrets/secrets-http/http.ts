@@ -5,6 +5,8 @@ import {
   secretsServiceStorage,
   type SecretsServiceContextOptions,
 } from "@saflib/secrets-service-common";
+import { createSecretsRouter } from "./routes/secrets/index.ts";
+import { createAccessRequestsRouter } from "./routes/access-requests/index.ts";
 
 /**
  * Creates the HTTP server for the secrets service.
@@ -29,7 +31,8 @@ export function createSecretsHttpApp(
   });
 
   // Add route handlers here. Do not prefix the routes; the router will handle the prefix.
-  // app.use(createSecretsRouter());
+  app.use("/secrets", createSecretsRouter());
+  app.use("/access-requests", createAccessRequestsRouter());
 
   app.use(createErrorMiddleware());
 

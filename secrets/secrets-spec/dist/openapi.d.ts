@@ -417,6 +417,15 @@ export interface operations {
                     "application/json": components["schemas"]["error"];
                 };
             };
+            /** @description Conflict - secret with this name already exists */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
         };
     };
     updateSecret: {
