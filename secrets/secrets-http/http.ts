@@ -11,9 +11,7 @@ import { createAccessRequestsRouter } from "./routes/access-requests/index.ts";
 /**
  * Creates the HTTP server for the secrets service.
  */
-export function createSecretsHttpApp(
-  options: SecretsServiceContextOptions,
-) {
+export function createSecretsHttpApp(options: SecretsServiceContextOptions) {
   let dbKey = options.secretsDbKey;
   if (!dbKey) {
     dbKey = secretsDb.connect();
