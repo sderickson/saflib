@@ -7,12 +7,14 @@ import createError from "http-errors";
 import { secretsServiceStorage } from "@saflib/secrets-service-common";
 import { accessRequest } from "@saflib/secrets-db";
 import { mapAccessRequestToResponse } from "../_helpers.js";
+import { getSafContextWithAuth } from "@saflib/node";
 
 export const approveAccessRequestHandler = createHandler(async (req, res) => {
   const ctx = secretsServiceStorage.getStore()!;
   const data: SecretsServiceRequestBody["approveAccessRequest"] =
     req.body || {};
   const id = req.params.id as string;
+  const { auth } = getSafContextWithAuth();
 
   // Get the access request first to check if it exists
   const { result: existingRequest, error: getError } =
@@ -30,7 +32,7 @@ export const approveAccessRequestHandler = createHandler(async (req, res) => {
   const { result, error } = await accessRequest.updateStatus(ctx.secretsDbKey, {
     id,
     status: data.approved ? "granted" : "denied",
-    grantedBy: data.approved_by,
+    grantedBy: auth.userEmail ?? auth.userId.toString(),
   });
 
   if (error) {

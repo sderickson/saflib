@@ -12,7 +12,7 @@ export const approveAccessRequestsHandler = secretsHandler({
       service_name: "test-service-1",
       status: body.approved ? ("granted" as const) : ("denied" as const),
       requested_at: 1640995200000,
-      granted_by: body.approved_by,
+      granted_by: "admin@example.com", // Fake identity-provided email
       granted_at: Date.now(),
       access_count: 0,
     };

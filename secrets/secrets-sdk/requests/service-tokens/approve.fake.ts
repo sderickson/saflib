@@ -11,7 +11,7 @@ export const approveServiceTokensHandler = secretsHandler({
       token_hash: "test-hash-1-very-long-hash-value",
       service_version: "1.0.0",
       approved: body.approved,
-      approved_by: body.approved_by,
+      approved_by: "admin@example.com", // Fake identity-provided email
       approved_at: Date.now(),
       requested_at: 1640995200000,
       access_count: 0,

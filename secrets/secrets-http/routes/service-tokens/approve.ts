@@ -7,11 +7,13 @@ import createError from "http-errors";
 import { secretsServiceStorage } from "@saflib/secrets-service-common";
 import { serviceToken } from "@saflib/secrets-db";
 import { mapServiceTokenToResponse } from "../_helpers.js";
+import { getSafContextWithAuth } from "@saflib/node";
 
 export const approveServiceTokensHandler = createHandler(async (req, res) => {
   const ctx = secretsServiceStorage.getStore()!;
   const data: SecretsServiceRequestBody["approveServiceToken"] = req.body || {};
   const id = req.params.id as string;
+  const { auth } = getSafContextWithAuth();
 
   // Update the service token approval status
   const { result, error } = await serviceToken.updateApproval(
@@ -19,7 +21,7 @@ export const approveServiceTokensHandler = createHandler(async (req, res) => {
     {
       id,
       approved: data.approved,
-      approvedBy: data.approved_by,
+      approvedBy: auth.userEmail ?? auth.userId.toString(),
     },
   );
 

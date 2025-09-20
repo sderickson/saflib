@@ -12,7 +12,6 @@ describe("approveServiceToken", () => {
     const approveData = {
       id: "token-1",
       approved: true,
-      approved_by: "admin@example.com",
       reason: "Approved for testing",
     };
 
@@ -39,7 +38,6 @@ describe("approveServiceToken", () => {
     const denyData = {
       id: "token-1",
       approved: false,
-      approved_by: "admin@example.com",
       reason: "Denied for security reasons",
     };
 
