@@ -51,4 +51,6 @@ export interface FileServiceCommonEnvSchema {
 /**
  * `process.env` casted to the `FileServiceCommonEnvSchema` type.
  */
-export const typedEnv = (globalThis.process ? process.env : {}) as unknown as FileServiceCommonEnvSchema;
+export const typedEnv = (globalThis.process
+  ? process.env
+  : {}) as unknown as FileServiceCommonEnvSchema;

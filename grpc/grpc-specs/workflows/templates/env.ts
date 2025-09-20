@@ -55,4 +55,6 @@ export interface FileProtosEnvSchema {
 /**
  * `process.env` casted to the `FileProtosEnvSchema` type.
  */
-export const typedEnv = (globalThis.process ? process.env : {}) as unknown as FileProtosEnvSchema;
+export const typedEnv = (globalThis.process
+  ? process.env
+  : {}) as unknown as FileProtosEnvSchema;
