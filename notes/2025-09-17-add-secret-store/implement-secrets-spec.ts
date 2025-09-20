@@ -174,7 +174,9 @@ export const ImplementSecretsSpecWorkflowDefinition = defineWorkflow<
       systemPrompt: `The ApprovalRequest schema has the following properties:
 
       - approved: boolean (true to approve, false to deny)
-      - reason: string (optional reason for approval/denial)`,
+      - reason: string (optional reason for approval/denial)
+      
+      Note that approved_by is not included in the schema because it is set by the auth context.`,
     })),
 
     // GET /access-requests route
