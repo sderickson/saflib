@@ -31,7 +31,6 @@ describe("POST /access-requests/:id/approve", () => {
   it("should approve access request successfully", async () => {
     const requestBody: SecretsServiceRequestBody["approveAccessRequest"] = {
       approved: true,
-      approved_by: "admin@example.com",
       reason: "Approved for testing",
     };
 
@@ -46,7 +45,7 @@ describe("POST /access-requests/:id/approve", () => {
       secret_id: "test-secret-id",
       service_name: "test-service",
       status: "granted",
-      granted_by: "admin@example.com",
+      granted_by: "admin1@example.com", // Identity-provided email
     });
     expect(response.body.granted_at).toBeDefined();
   });
@@ -54,7 +53,6 @@ describe("POST /access-requests/:id/approve", () => {
   it("should deny access request successfully", async () => {
     const requestBody: SecretsServiceRequestBody["approveAccessRequest"] = {
       approved: false,
-      approved_by: "admin@example.com",
       reason: "Denied for security reasons",
     };
 
@@ -69,7 +67,7 @@ describe("POST /access-requests/:id/approve", () => {
       secret_id: "test-secret-id",
       service_name: "test-service",
       status: "denied",
-      granted_by: "admin@example.com",
+      granted_by: "admin2@example.com", // Identity-provided email
     });
     expect(response.body.granted_at).toBeDefined();
   });
@@ -78,7 +76,7 @@ describe("POST /access-requests/:id/approve", () => {
     const nonExistentId = "non-existent-id";
     const requestBody: SecretsServiceRequestBody["approveAccessRequest"] = {
       approved: true,
-      approved_by: "admin@example.com",
+      reason: "Approved for testing",
     };
 
     const response = await request(app)
@@ -92,7 +90,7 @@ describe("POST /access-requests/:id/approve", () => {
   it("should require authentication", async () => {
     const requestBody: SecretsServiceRequestBody["approveAccessRequest"] = {
       approved: true,
-      approved_by: "admin@example.com",
+      reason: "Approved for testing",
     };
 
     const response = await request(app)

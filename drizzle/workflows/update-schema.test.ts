@@ -8,6 +8,6 @@ describe("update-schema", () => {
       definition: UpdateSchemaWorkflowDefinition,
       runMode: "dry",
     });
-    expect(result.checklist).toBeDefined();
+    expect(result?.checklist).toBeDefined();
   });
 });

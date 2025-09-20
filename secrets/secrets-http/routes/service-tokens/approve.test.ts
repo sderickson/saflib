@@ -31,7 +31,6 @@ describe("POST /service-tokens/:id/approve", () => {
   it("should approve service token successfully", async () => {
     const requestBody: SecretsServiceRequestBody["approveServiceToken"] = {
       approved: true,
-      approved_by: "admin@example.com",
       reason: "Approved for testing",
     };
 
@@ -47,7 +46,7 @@ describe("POST /service-tokens/:id/approve", () => {
       token_hash: "test-tok...", // Should be truncated
       service_version: "1.0.0",
       approved: true,
-      approved_by: "admin@example.com",
+      approved_by: "admin1@example.com", // Identity-provided email
     });
     expect(response.body.approved_at).toBeDefined();
   });
@@ -55,7 +54,6 @@ describe("POST /service-tokens/:id/approve", () => {
   it("should deny service token successfully", async () => {
     const requestBody: SecretsServiceRequestBody["approveServiceToken"] = {
       approved: false,
-      approved_by: "admin@example.com",
       reason: "Denied for security reasons",
     };
 
@@ -71,7 +69,7 @@ describe("POST /service-tokens/:id/approve", () => {
       token_hash: "test-tok...", // Should be truncated
       service_version: "1.0.0",
       approved: false,
-      approved_by: "admin@example.com",
+      approved_by: "admin2@example.com", // Identity-provided email
     });
     expect(response.body.approved_at).toBeDefined();
   });
@@ -80,7 +78,7 @@ describe("POST /service-tokens/:id/approve", () => {
     const nonExistentId = "non-existent-id";
     const requestBody: SecretsServiceRequestBody["approveServiceToken"] = {
       approved: true,
-      approved_by: "admin@example.com",
+      reason: "Approved for testing",
     };
 
     const response = await request(app)
@@ -94,7 +92,7 @@ describe("POST /service-tokens/:id/approve", () => {
   it("should require authentication", async () => {
     const requestBody: SecretsServiceRequestBody["approveServiceToken"] = {
       approved: true,
-      approved_by: "admin@example.com",
+      reason: "Approved for testing",
     };
 
     const response = await request(app)

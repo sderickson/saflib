@@ -51,4 +51,6 @@ export interface SecretsServiceCommonEnvSchema {
 /**
  * `process.env` casted to the `SecretsServiceCommonEnvSchema` type.
  */
-export const typedEnv = (globalThis.process ? process.env : {}) as unknown as SecretsServiceCommonEnvSchema;
+export const typedEnv = (globalThis.process
+  ? process.env
+  : {}) as unknown as SecretsServiceCommonEnvSchema;

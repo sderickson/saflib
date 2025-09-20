@@ -8,6 +8,6 @@ describe("sdk/init", () => {
       definition: SdkInitWorkflowDefinition,
       runMode: "dry",
     });
-    expect(result.checklist).toBeDefined();
+    expect(result?.checklist).toBeDefined();
   });
 });

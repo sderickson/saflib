@@ -9,6 +9,10 @@ type ExtractRequestParams<Op extends Record<string, any>> =
     ? Op["parameters"]["path"]
     : never;
 
+export type ExtractRequestQuery<Op extends Record<string, any>> = Partial<
+  Record<keyof NonNullable<Op["parameters"]["query"]>, string>
+>;
+
 type ExtractResponseBody<
   Op extends Record<string, any>,
   StatusCode extends number,
@@ -47,6 +51,9 @@ export const typedCreateHandler = <Paths extends Record<string, any>>({
     verb: V;
     status: S;
     handler: (request: {
+      query: ExtractRequestQuery<
+        Paths[P][V] extends Record<string, any> ? Paths[P][V] : never
+      >;
       params: ExtractRequestParams<
         Paths[P][V] extends Record<string, any> ? Paths[P][V] : never
       >;
@@ -61,6 +68,9 @@ export const typedCreateHandler = <Paths extends Record<string, any>>({
       | undefined
     >;
   }) => {
+    type query = ExtractRequestQuery<
+      Paths[P][V] extends Record<string, any> ? Paths[P][V] : never
+    >;
     // translate instances of "{id}" (the openapi spec format) with ":id" (the msw format)
     const pathString = String(path).replace(/{(\w+)}/g, ":$1");
     return http[verb as keyof typeof http](
@@ -74,6 +84,13 @@ export const typedCreateHandler = <Paths extends Record<string, any>>({
             body = undefined;
           }
         }
+        const query = request.request.url.split("?")[1];
+        let queryParams: query = {};
+        if (query) {
+          queryParams = Object.fromEntries(
+            new URLSearchParams(query).entries(),
+          ) as query;
+        }
         const params = { ...request.params };
         for (const key in params) {
           if (key.toLowerCase().endsWith("id")) {
@@ -83,6 +100,7 @@ export const typedCreateHandler = <Paths extends Record<string, any>>({
         }
         return HttpResponse.json(
           await handler({
+            query: queryParams,
             params,
             body,
           }),

@@ -8,6 +8,6 @@ describe("add-cli", () => {
       definition: AddCLIWorkflowDefinition,
       runMode: "dry",
     });
-    expect(result.checklist).toBeDefined();
+    expect(result?.checklist).toBeDefined();
   });
 });

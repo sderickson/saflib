@@ -8,6 +8,6 @@ describe("add-handler", () => {
       definition: AddHandlerWorkflowDefinition,
       runMode: "dry",
     });
-    expect(result.checklist).toBeDefined();
+    expect(result?.checklist).toBeDefined();
   });
 });

@@ -174,8 +174,9 @@ export const ImplementSecretsSpecWorkflowDefinition = defineWorkflow<
       systemPrompt: `The ApprovalRequest schema has the following properties:
 
       - approved: boolean (true to approve, false to deny)
-      - approved_by: string (user making the approval decision)
-      - reason: string (optional reason for approval/denial)`,
+      - reason: string (optional reason for approval/denial)
+      
+      Note that approved_by is not included in the schema because it is set by the auth context.`,
     })),
 
     // GET /access-requests route
@@ -202,7 +203,7 @@ export const ImplementSecretsSpecWorkflowDefinition = defineWorkflow<
       - Accepts access request ID as path parameter
       - Accepts ApprovalRequest in request body
       - Updates access request status to 'granted' or 'denied'
-      - Records approval details (approved_by, granted_at)
+      - Records approval details (granted_at)
       - Returns updated AccessRequest object
       - Return 200 with updated access request
       - Return 401 if not authenticated
@@ -235,7 +236,7 @@ export const ImplementSecretsSpecWorkflowDefinition = defineWorkflow<
       - Accepts service token ID as path parameter
       - Accepts ApprovalRequest in request body
       - Updates service token approval status
-      - Records approval details (approved_by, approved_at)
+      - Records approval details (approved_at)
       - Returns updated ServiceToken object
       - Return 200 with updated service token
       - Return 401 if not authenticated

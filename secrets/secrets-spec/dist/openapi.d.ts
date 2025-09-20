@@ -259,11 +259,6 @@ export interface components {
              */
             approved: boolean;
             /**
-             * @description User making the approval decision
-             * @example admin@example.com
-             */
-            approved_by: string;
-            /**
              * @description Optional reason for approval/denial
              * @example Approved for production use
              */

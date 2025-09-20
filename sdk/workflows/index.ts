@@ -1,7 +1,11 @@
-import { SdkInitWorkflowDefinition } from "./sdk/init.ts";
+import { SdkInitWorkflowDefinition } from "./init.ts";
+import { AddQueryWorkflowDefinition } from "./add-query.ts";
 import type { WorkflowDefinition } from "@saflib/workflows";
 
-export { SdkInitWorkflowDefinition };
+export { SdkInitWorkflowDefinition, AddQueryWorkflowDefinition };
 
-const workflowDefinitions: WorkflowDefinition[] = [SdkInitWorkflowDefinition];
+const workflowDefinitions: WorkflowDefinition[] = [
+  SdkInitWorkflowDefinition,
+  AddQueryWorkflowDefinition,
+];
 export default workflowDefinitions;
