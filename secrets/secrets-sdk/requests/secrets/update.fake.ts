@@ -4,7 +4,7 @@ export const updateSecretsHandler = secretsHandler({
   verb: "put",
   path: "/secrets/{id}",
   status: 200,
-  handler: async ({ params, body }) => {
+  handler: async ({ body }) => {
     return {
       id: "secret-1", // For now, hardcode the ID since path params aren't working as expected
       name: "updated-secret",

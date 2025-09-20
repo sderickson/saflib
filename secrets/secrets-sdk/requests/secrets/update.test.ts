@@ -16,7 +16,7 @@ describe("updateSecret", () => {
     };
 
     await mutation.mutateAsync(updateData);
-    
+
     expect(mutation.data).toBeDefined();
     const data = mutation.data?.value;
     assert(data);

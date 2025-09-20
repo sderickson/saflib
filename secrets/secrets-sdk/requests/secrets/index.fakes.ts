@@ -2,3 +2,4 @@
 export * from "./list.fake.ts";
 export * from "./create.fake.ts";
 export * from "./update.fake.ts";
+export * from "./delete.fake.ts";
