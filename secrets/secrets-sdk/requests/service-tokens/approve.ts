@@ -6,7 +6,9 @@ import type { SecretsServiceRequestBody } from "@saflib/secrets-spec";
 export const useApproveServiceToken = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (data: { id: string } & SecretsServiceRequestBody["approveServiceToken"]) => {
+    mutationFn: async (
+      data: { id: string } & SecretsServiceRequestBody["approveServiceToken"],
+    ) => {
       const { id, ...approveData } = data;
       return handleClientMethod(
         client.POST("/service-tokens/{id}/approve", {

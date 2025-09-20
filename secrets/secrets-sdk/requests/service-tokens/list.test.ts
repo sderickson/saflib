@@ -9,7 +9,9 @@ describe("listServiceTokens", () => {
   setupMockServer(secretsServiceFakeHandlers);
 
   it("should fetch and return service tokens list", async () => {
-    const [query, app] = withVueQuery(() => useQuery(listServiceTokensQuery({})));
+    const [query, app] = withVueQuery(() =>
+      useQuery(listServiceTokensQuery({})),
+    );
 
     await query.refetch();
     expect(query.data).toBeDefined();
@@ -34,7 +36,9 @@ describe("listServiceTokens", () => {
     const serviceName = ref("test-service-2");
 
     const [query, app] = withVueQuery(() =>
-      useQuery(listServiceTokensQuery({ limit, approved, service_name: serviceName })),
+      useQuery(
+        listServiceTokensQuery({ limit, approved, service_name: serviceName }),
+      ),
     );
 
     await query.refetch();

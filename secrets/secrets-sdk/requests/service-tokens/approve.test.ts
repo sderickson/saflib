@@ -17,7 +17,7 @@ describe("approveServiceToken", () => {
     };
 
     await mutation.mutateAsync(approveData);
-    
+
     expect(mutation.data).toBeDefined();
     const data = mutation.data?.value;
     assert(data);
@@ -44,7 +44,7 @@ describe("approveServiceToken", () => {
     };
 
     await mutation.mutateAsync(denyData);
-    
+
     expect(mutation.data).toBeDefined();
     const data = mutation.data?.value;
     assert(data);

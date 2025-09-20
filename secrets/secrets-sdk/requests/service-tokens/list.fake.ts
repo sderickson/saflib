@@ -8,7 +8,7 @@ export const listServiceTokensHandler = secretsHandler({
     const limit = query?.limit ? parseInt(query.limit) : 10;
     const approved = query?.approved;
     const serviceName = query?.service_name;
-    
+
     let tokens = [
       {
         id: "token-1",
@@ -44,18 +44,18 @@ export const listServiceTokensHandler = secretsHandler({
         access_count: 0,
       },
     ];
-    
+
     // Filter by approved status if provided
     if (approved !== undefined) {
       const isApproved = approved === "true";
-      tokens = tokens.filter(t => t.approved === isApproved);
+      tokens = tokens.filter((t) => t.approved === isApproved);
     }
-    
+
     // Filter by service name if provided
     if (serviceName) {
-      tokens = tokens.filter(t => t.service_name === serviceName);
+      tokens = tokens.filter((t) => t.service_name === serviceName);
     }
-    
+
     return tokens.slice(0, limit);
   },
 });

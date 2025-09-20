@@ -10,7 +10,9 @@ interface ListServiceTokensQueryOptions {
   service_name?: Ref<string>;
 }
 
-export const listServiceTokensQuery = (options: ListServiceTokensQueryOptions) => {
+export const listServiceTokensQuery = (
+  options: ListServiceTokensQueryOptions,
+) => {
   return queryOptions({
     queryKey: [
       "service-tokens",
@@ -37,6 +39,8 @@ export const listServiceTokensQuery = (options: ListServiceTokensQueryOptions) =
   });
 };
 
-export const useListServiceTokens = (options: ListServiceTokensQueryOptions) => {
+export const useListServiceTokens = (
+  options: ListServiceTokensQueryOptions,
+) => {
   return useQuery(listServiceTokensQuery(options));
 };
