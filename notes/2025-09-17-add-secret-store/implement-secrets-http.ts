@@ -163,9 +163,9 @@ Make sure to handle errors appropriately and add proper TypeScript types.`,
       systemPrompt: `This handler implements POST /access-requests/:id/approve endpoint. Use these database queries:
       
       - Import updateAccessRequestStatus and getAccessRequestById queries from @secrets/secrets-db
-      - Accept ApprovalRequest in request body (approved: boolean, approved_by: string, reason?: string)
+      - Accept ApprovalRequest in request body (approved: boolean, reason?: string)
       - Update access request status to 'granted' or 'denied'
-      - Record approval details (approved_by, granted_at)
+      - Record approval details (approved_by (email/id gotten from auth), granted_at)
       - Return updated access request object
       - Ensure proper error handling and admin-only access`,
     })),
@@ -187,9 +187,9 @@ Make sure to handle errors appropriately and add proper TypeScript types.`,
       systemPrompt: `This handler implements POST /service-tokens/:id/approve endpoint. Use these database queries:
       
       - Import updateServiceTokenApproval and getServiceTokenByHash queries from @secrets/secrets-db
-      - Accept ApprovalRequest in request body (approved: boolean, approved_by: string, reason?: string)
+      - Accept ApprovalRequest in request body (approved: boolean, reason?: string)
       - Update service token approval status
-      - Record approval details (approved_by, approved_at)
+      - Record approval details (approved_by (email/id gotten from auth), approved_at)
       - Return updated service token object
       - Ensure proper error handling and admin-only access`,
     })),
