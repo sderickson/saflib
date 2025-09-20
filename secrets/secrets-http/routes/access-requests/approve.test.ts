@@ -76,7 +76,7 @@ describe("POST /access-requests/:id/approve", () => {
     const nonExistentId = "non-existent-id";
     const requestBody: SecretsServiceRequestBody["approveAccessRequest"] = {
       approved: true,
-      approved_by: "admin@example.com",
+      reason: "Approved for testing",
     };
 
     const response = await request(app)
@@ -90,7 +90,7 @@ describe("POST /access-requests/:id/approve", () => {
   it("should require authentication", async () => {
     const requestBody: SecretsServiceRequestBody["approveAccessRequest"] = {
       approved: true,
-      approved_by: "admin@example.com",
+      reason: "Approved for testing",
     };
 
     const response = await request(app)
