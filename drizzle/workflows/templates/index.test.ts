@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
-import * as exports from "@template/file-db";
+import * as exports from "__shared-package-prefix__-db";
 
-describe("@template/file-db", () => {
+describe("__shared-package-prefix__-db", () => {
   it("should be defined", () => {
     expect(exports).toBeDefined();
   });

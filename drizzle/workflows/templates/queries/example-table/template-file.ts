@@ -8,7 +8,7 @@ import type { ReturnsError } from "@saflib/monorepo";
 
 import { queryWrapper } from "@saflib/drizzle";
 import type { DbKey } from "@saflib/drizzle";
-import { templateFileTable } from "../../schemas/template-file.ts";
+import { templateFileTable } from "../../schemas/__target-file__.ts";
 
 export type TemplateFileError = TemplateFileNotFoundError;
 

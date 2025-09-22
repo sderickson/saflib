@@ -6,9 +6,9 @@ export type * from "./schema.ts";
 
 // Re-export commonly used types for convenience
 // Example:
-import type { TemplateFileEntity } from "./schemas/template-file.ts";
-export type { TemplateFileEntity };
-export type CreateTemplateFileParams = Omit<
-  TemplateFileEntity,
-  "id" | "createdAt" | "updatedAt"
->;
+// import type { ExampleEntity } from "./schemas/example.ts";
+// export type { ExampleEntity };
+// export type CreateExampleParams = Omit<
+//   ExampleEntity,
+//   "id" | "createdAt" | "updatedAt"
+// >;

@@ -1,6 +1,6 @@
 {
-  "name": "@template/file-db",
-  "description": "Standard database package.",
+  "name": "__shared-package-prefix__-db",
+  "description": "Database package for __service-name__.",
   "private": true,
   "type": "module",
   "exports": {

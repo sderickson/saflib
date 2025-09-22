@@ -1,8 +1,8 @@
 export type * from "./types.ts";
 export * from "./errors.ts";
 
-import { templateFileDbManager } from "./instances.ts";
-// TODO: Import query modules as you create them
-// import * as templateFiles from "./queries/template-files/index.ts";
+import { __serviceName__DbManager } from "./instances.ts";
+export const __serviceName__Db = __serviceName__DbManager.publicInterface();
 
-export const templateFileDb = templateFileDbManager.publicInterface();
+// TODO: Import query modules as you create them, e.g.:
+// export * from "./queries/example/index.ts";

@@ -4,6 +4,9 @@ import {
   step,
   CwdStepMachine,
   CommandStepMachine,
+  type ParsePackageNameOutput,
+  parsePackageName,
+  makeLineReplace,
 } from "@saflib/workflows";
 import path from "node:path";
 
@@ -24,10 +27,8 @@ const input = [
   },
 ] as const;
 
-interface DrizzleInitWorkflowContext {
-  name: string;
+interface DrizzleInitWorkflowContext extends ParsePackageNameOutput {
   targetDir: string;
-  packageName: string;
 }
 
 export const DrizzleInitWorkflowDefinition = defineWorkflow<
@@ -46,20 +47,9 @@ export const DrizzleInitWorkflowDefinition = defineWorkflow<
   sourceUrl: import.meta.url,
 
   context: ({ input }) => {
-    let name = input.name;
-    // make sure name doesn't end with -db
-    if (input.name.endsWith("-db")) {
-      name = input.name.slice(0, -3);
-    }
-    const packageName = name + "-db";
-    if (name.startsWith("@")) {
-      name = name.split("/")[1];
-    }
-    const targetDir = path.join(input.cwd, input.path);
     return {
-      name,
-      targetDir,
-      packageName,
+      ...parsePackageName(input.name, { requiredSuffix: "-db" }),
+      targetDir: input.path,
     };
   },
 
@@ -83,10 +73,9 @@ export const DrizzleInitWorkflowDefinition = defineWorkflow<
 
   steps: [
     step(CopyStepMachine, ({ context }) => ({
-      name: context.name,
+      name: "", // needed?
       targetDir: context.targetDir,
-      lineReplace: (line) =>
-        line.replace("@template/file-db", context.packageName),
+      lineReplace: makeLineReplace(context),
     })),
 
     step(CwdStepMachine, ({ context }) => ({

@@ -22,7 +22,7 @@ export const templateFileTable = sqliteTable("template_file_table", {
   name: text("name").notNull(),
   createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
   updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
-  someEnum: text("some_enum", { enum: someEnum }).notNull(),
+  someEnum: text("stub_enum", { enum: someEnum }).notNull(),
 });
 
 export type TemplateFileEntityTest = Expect<
