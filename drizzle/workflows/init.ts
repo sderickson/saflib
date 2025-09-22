@@ -49,7 +49,7 @@ export const DrizzleInitWorkflowDefinition = defineWorkflow<
   context: ({ input }) => {
     return {
       ...parsePackageName(input.name, { requiredSuffix: "-db" }),
-      targetDir: input.path,
+      targetDir: path.join(input.cwd, input.path),
     };
   },
 

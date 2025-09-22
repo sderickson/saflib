@@ -1,6 +1,6 @@
 {
-  "name": "@template/file-grpc",
-  "description": "gRPC server for template-file service",
+  "name": "template-package-grpc",
+  "description": "gRPC server for the __service-name__ service",
   "type": "module",
   "exports": {
     ".": "./grpc.ts"
@@ -13,9 +13,9 @@
   },
   "dependencies": {
     "@saflib/grpc": "*",
-    "@template/file-service-common": "*",
-    "@template/file-db": "*",
-    "@template/file-protos": "*",
+    "template-package-common": "*",
+    "template-package-db": "*",
+    "template-package-protos": "*",
     "@saflib/monorepo": "*"
   },
   "devDependencies": {

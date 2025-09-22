@@ -4,6 +4,9 @@ import {
   defineWorkflow,
   step,
   CwdStepMachine,
+  type ParsePackageNameOutput,
+  parsePackageName,
+  makeLineReplace,
 } from "@saflib/workflows";
 import path from "node:path";
 
@@ -24,11 +27,8 @@ const input = [
   },
 ] as const;
 
-interface InitWorkflowContext {
-  name: string;
+interface InitWorkflowContext extends ParsePackageNameOutput {
   targetDir: string;
-  packageName: string;
-  serviceName: string;
 }
 
 export const InitWorkflowDefinition = defineWorkflow<
@@ -39,31 +39,19 @@ export const InitWorkflowDefinition = defineWorkflow<
 
   description: "Create a new gRPC service package",
 
-  checklistDescription: ({ name }) =>
-    `Create a new ${name} gRPC service package.`,
+  checklistDescription: ({ serviceName }) =>
+    `Create a new ${serviceName} gRPC service package.`,
 
   input,
 
   sourceUrl: import.meta.url,
 
   context: ({ input }) => {
-    let name = input.name;
-    // make sure name doesn't end with -grpc
-    if (input.name.endsWith("-grpc")) {
-      name = input.name.slice(0, -5);
-    }
-    const packageName = name + "-grpc";
-    if (name.startsWith("@")) {
-      name = name.split("/")[1];
-    }
-    const targetDir = path.join(input.cwd, input.path);
-    const serviceName = name.charAt(0).toUpperCase() + name.slice(1);
-
     return {
-      name,
-      targetDir,
-      packageName,
-      serviceName,
+      ...parsePackageName(input.name, {
+        requiredSuffix: "-grpc",
+      }),
+      targetDir: path.join(input.cwd, input.path),
     };
   },
 
@@ -78,13 +66,9 @@ export const InitWorkflowDefinition = defineWorkflow<
 
   steps: [
     step(CopyStepMachine, ({ context }) => ({
-      name: context.name,
+      name: "",
       targetDir: context.targetDir,
-      lineReplace: (line) =>
-        line.replace(
-          "@template/file-",
-          context.packageName.replace("-grpc", "-"),
-        ),
+      lineReplace: makeLineReplace(context),
     })),
 
     step(CwdStepMachine, ({ context }) => ({
