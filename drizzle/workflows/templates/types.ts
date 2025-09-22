@@ -4,6 +4,10 @@
 
 export type * from "./schema.ts";
 
+// Stubs are used as placeholders for templates
+export type StubEntity = any;
+export type StubParams = any;
+
 // Re-export commonly used types for convenience
 // Example:
 // import type { ExampleEntity } from "./schemas/example.ts";

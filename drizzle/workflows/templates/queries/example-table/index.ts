@@ -1,4 +1,3 @@
-import { templateFile } from "./template-file.ts";
+import { __targetName____GroupName__ } from "./__target-name__.ts";
 
-// TODO: replace "exampleTable" with the actual name of the table
-export const exampleTable = { templateFile };
+export const __groupName__Table = { __targetName____GroupName__ };

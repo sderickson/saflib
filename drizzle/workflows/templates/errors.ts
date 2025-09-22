@@ -6,4 +6,4 @@ import { HandledDatabaseError } from "@saflib/drizzle";
 export class __ServiceName__DatabaseError extends HandledDatabaseError {}
 
 // TODO: Add specific error classes for your database
-export class ExampleError extends __ServiceName__DatabaseError {}
+export class StubError extends __ServiceName__DatabaseError {}

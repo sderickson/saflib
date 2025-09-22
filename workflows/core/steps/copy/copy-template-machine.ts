@@ -116,6 +116,7 @@ export const parsePath = (
   let targetName = "";
   if (parts.length === 1) {
     targetName = parts[0];
+    groupName = targetName; // for workflows that set up the group
   } else if (parts.length === 2) {
     groupName = parts[0];
     targetName = parts[1];
