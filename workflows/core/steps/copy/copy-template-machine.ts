@@ -89,9 +89,9 @@ export const parsePath = (
   input: ParsePathInput,
 ): ParsePathOutput => {
   if (input.requiredPrefix) {
-    if (!input.requiredPrefix.endsWith("/")) {
+    if (!input.requiredPrefix.startsWith("./")) {
       throw new Error(
-        `Required prefix must end with /: ${input.requiredPrefix}`,
+        `Required prefix must start with ./: ${input.requiredPrefix}`,
       );
     }
     if (!path.startsWith(input.requiredPrefix)) {
@@ -127,7 +127,7 @@ export const parsePath = (
   return {
     groupName,
     targetName,
-    targetDir: node_path.join(input.cwd, path),
+    targetDir: node_path.dirname(node_path.join(input.cwd, path)),
   };
 };
 
@@ -147,11 +147,9 @@ export const makeLineReplace = (context: { [key: string]: any }) => {
     replaceMap[`__${pascalKey}__`] = kebabCaseToPascalCase(context[camelKey]);
   });
   if (context["sharedPackagePrefix"]) {
-    console.log("sharedPackagePrefix:", context["sharedPackagePrefix"]);
     // special case, because npm doesn't allow package names to start with an underscore
     replaceMap[`template-package`] = context["sharedPackagePrefix"];
   }
-  console.log("replaceMap:", JSON.stringify(replaceMap, null, 2));
   const interpolationRegex = /__(.+?)__/g;
   return (line: string) => {
     let newLine = line;
@@ -170,7 +168,7 @@ export const makeLineReplace = (context: { [key: string]: any }) => {
           throw new Error(`Missing replacement for ${match}`);
         }
         newLine = newLine.replaceAll(match, replaceMap[match]);
-        console.log(`Before/after replace:\n  ${line}\n  -> ${newLine}`);
+        // console.log(`Before/after replace:\n  ${line}\n  -> ${newLine}`);
       });
     }
     return newLine;

@@ -6,6 +6,9 @@ import {
   step,
   CopyStepMachine,
   UpdateStepMachine,
+  type ParsePathOutput,
+  parsePath,
+  makeLineReplace,
 } from "@saflib/workflows";
 import path from "path";
 
@@ -17,11 +20,7 @@ const input = [
   },
 ] as const;
 
-interface UpdateSchemaWorkflowContext {
-  name: string;
-  targetDir: string;
-  path: string;
-}
+interface UpdateSchemaWorkflowContext extends ParsePathOutput {}
 
 export const UpdateSchemaWorkflowDefinition = defineWorkflow<
   typeof input,
@@ -36,20 +35,19 @@ export const UpdateSchemaWorkflowDefinition = defineWorkflow<
   sourceUrl: import.meta.url,
 
   context: ({ input }) => {
-    const p = path.join(input.cwd, input.path);
-    const name = path.basename(p).split(".")[0];
-    const targetDir = path.dirname(p);
     return {
-      name,
-      targetDir,
-      path: p,
+      ...parsePath(input.path, {
+        requiredPrefix: "./schemas/",
+        requiredSuffix: ".ts",
+        cwd: input.cwd,
+      }),
     };
   },
 
   templateFiles: {
     schema: path.join(
       import.meta.dirname,
-      "templates/schemas/template-file.ts",
+      "templates/schemas/__group-name__.ts",
     ),
   },
 
@@ -61,14 +59,17 @@ export const UpdateSchemaWorkflowDefinition = defineWorkflow<
     step(PromptStepMachine, ({ context }) => {
       return {
         promptText: `The table ends with "s". Table names should not be plural; if the table name is actually plural, please stop and rerun the workflow with a singular name. Otherwise, continue.`,
-        skipIf: !context.name.endsWith("s"),
+        skipIf: !context.targetName.endsWith("s"),
       };
     }),
 
-    step(CopyStepMachine, ({ context }) => ({
-      name: context.name,
-      targetDir: context.targetDir,
-    })),
+    step(CopyStepMachine, ({ context }) => {
+      return {
+        name: context.targetName,
+        targetDir: context.targetDir,
+        lineReplace: makeLineReplace(context),
+      };
+    }),
 
     step(DocStepMachine, () => ({
       docId: "schemaDoc",
@@ -76,7 +77,7 @@ export const UpdateSchemaWorkflowDefinition = defineWorkflow<
 
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "schema",
-      promptMessage: `Update ${context.path} to add the new table, or modify it.`,
+      promptMessage: `Update ${context.targetName}.ts to add the new table, or modify it.`,
     })),
 
     step(CommandStepMachine, () => ({
