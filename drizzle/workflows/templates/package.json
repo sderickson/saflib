@@ -1,5 +1,5 @@
 {
-  "name": "__shared-package-prefix__-db",
+  "name": "template-package-db",
   "description": "Database package for __service-name__.",
   "private": true,
   "type": "module",

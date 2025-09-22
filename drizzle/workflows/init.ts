@@ -17,7 +17,7 @@ const input = [
     name: "name",
     description:
       "The name of the database package to create (e.g., 'user-db' or 'analytics-db')",
-    exampleValue: "example-db",
+    exampleValue: "@example-org/example-db",
   },
   {
     name: "path",

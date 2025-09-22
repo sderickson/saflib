@@ -1,1 +1,1 @@
-// export * from "./schemas/__target-file__.ts";
+// export * from "./schemas/example-table.ts";

@@ -47,7 +47,7 @@ export const parsePackageName = (
       throw new Error(`Package name must end with ${input.requiredSuffix}`);
     }
   }
-  const parts = packageName.split("/");
+  const parts = packageName.replace(input.requiredSuffix || "", "").split("/");
   let organizationName = "";
   let serviceName = "";
   let sharedPackagePrefix = "";
@@ -136,20 +136,32 @@ export const makeLineReplace = (context: { [key: string]: any }) => {
   // expect keys to be camelCase
   Object.keys(context).forEach((camelKey) => {
     if (typeof context[camelKey] !== "string") {
-      throw new Error(`Context value for ${camelKey} is not a string`);
+      return;
     }
     const kebabKey = camelCaseToKebabCase(camelKey);
-    const snakeKey = kebabCaseToSnakeCase(camelKey);
-    const pascalKey = kebabCaseToPascalCase(camelKey);
-    replaceMap[`{{${camelKey}}}`] = kebabCaseToCamelCase(context[camelKey]);
-    replaceMap[`{{${kebabKey}}}`] = context[camelKey];
-    replaceMap[`{{${snakeKey}}}`] = kebabCaseToSnakeCase(context[camelKey]);
-    replaceMap[`{{${pascalKey}}}`] = kebabCaseToPascalCase(context[camelKey]);
+    const snakeKey = kebabCaseToSnakeCase(kebabKey);
+    const pascalKey = kebabCaseToPascalCase(kebabKey);
+    replaceMap[`__${kebabKey}__`] = context[camelKey];
+    replaceMap[`__${camelKey}__`] = kebabCaseToCamelCase(context[camelKey]);
+    replaceMap[`__${snakeKey}__`] = kebabCaseToSnakeCase(context[camelKey]);
+    replaceMap[`__${pascalKey}__`] = kebabCaseToPascalCase(context[camelKey]);
   });
-  const interpolationRegex = /__{{.*?}}__/g;
+  if (context["sharedPackagePrefix"]) {
+    console.log("sharedPackagePrefix:", context["sharedPackagePrefix"]);
+    // special case, because npm doesn't allow package names to start with an underscore
+    replaceMap[`template-package`] = context["sharedPackagePrefix"];
+  }
+  console.log("replaceMap:", JSON.stringify(replaceMap, null, 2));
+  const interpolationRegex = /__(.+?)__/g;
   return (line: string) => {
-    const matches = line.match(interpolationRegex);
     let newLine = line;
+    if (line.includes("template-package") && context["sharedPackagePrefix"]) {
+      newLine = line.replace(
+        "template-package",
+        context["sharedPackagePrefix"],
+      );
+    }
+    const matches = line.match(interpolationRegex);
     if (matches) {
       matches.forEach((match) => {
         if (!replaceMap[match]) {
@@ -157,7 +169,8 @@ export const makeLineReplace = (context: { [key: string]: any }) => {
           console.error("replaceMap:", JSON.stringify(replaceMap, null, 2));
           throw new Error(`Missing replacement for ${match}`);
         }
-        newLine = newLine.replace(`__{{${match}}}__`, replaceMap[match]);
+        newLine = newLine.replaceAll(match, replaceMap[match]);
+        console.log(`Before/after replace:\n  ${line}\n  -> ${newLine}`);
       });
     }
     return newLine;
