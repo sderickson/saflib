@@ -10,12 +10,13 @@ import {
 /**
  * For typing Express responses for template-service API routes.
  */
-export type ServiceNameServiceResponseBody = ExtractResponseBody<operations>;
+export type __ServiceName__ServiceResponseBody =
+  ExtractResponseBody<operations>;
 
 /**
  * For typing Express requests for template-service API routes.
  */
-export type ServiceNameServiceRequestBody = ExtractRequestBody<operations>;
+export type __ServiceName__ServiceRequestBody = ExtractRequestBody<operations>;
 
 // Export your schema types here
 export type Error = components["schemas"]["Error"];

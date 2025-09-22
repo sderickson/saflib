@@ -1,8 +1,8 @@
 openapi: 3.0.0
 info:
-  title: Service Name API
+  title: __service-name__ API
   version: 1.0.0
-  description: API specification for template-service service
+  description: API specification for the __service-name__ service
 
 paths:
   # Add your API routes here

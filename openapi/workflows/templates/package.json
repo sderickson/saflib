@@ -1,6 +1,6 @@
 {
-  "name": "@template/file-spec",
-  "description": "API specs for service-name service",
+  "name": "template-package-spec",
+  "description": "API specs for the __service-name__ service",
   "type": "module",
   "exports": {
     ".": "./index.ts"
