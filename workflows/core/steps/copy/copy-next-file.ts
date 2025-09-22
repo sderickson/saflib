@@ -21,7 +21,14 @@ export const copyNextFile = fromPromise(
   }: {
     input: CopyStepContext;
   }): Promise<CopyNextFileOutput> => {
-    const { filesToCopy, runMode, templateFiles, name, targetDir } = input;
+    const {
+      filesToCopy,
+      runMode,
+      templateFiles,
+      name,
+      targetDir,
+      lineReplace,
+    } = input;
 
     if (filesToCopy.length === 0) {
       throw new Error("No files to copy");
@@ -32,7 +39,11 @@ export const copyNextFile = fromPromise(
     if (!sourcePath) {
       throw new Error(`Template file ${currentFileId} not found`);
     }
-    const targetFileName = transformName(path.basename(sourcePath), name);
+    const targetFileName = transformName(
+      path.basename(sourcePath),
+      name,
+      lineReplace,
+    );
     const targetPath = path.join(targetDir, targetFileName);
     const stats = await stat(sourcePath);
     const isDirectory = stats.isDirectory();
