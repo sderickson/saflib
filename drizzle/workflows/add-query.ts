@@ -25,7 +25,7 @@ const input = [
   {
     name: "path",
     description: "Path of the new query (e.g. 'queries/contacts/get-by-id')",
-    exampleValue: "queries/example-table/example-query",
+    exampleValue: "./queries/example/example-query.ts",
   },
 ] as const;
 
@@ -60,8 +60,8 @@ export const AddQueryWorkflowDefinition = defineWorkflow<
   },
 
   templateFiles: {
-    query: path.join(sourceDir, "template-file.ts"),
-    test: path.join(sourceDir, "template-file.test.ts"),
+    query: path.join(sourceDir, "__target-name__.ts"),
+    test: path.join(sourceDir, "__target-name__.test.ts"),
     index: path.join(sourceDir, "index.ts"),
   },
 
