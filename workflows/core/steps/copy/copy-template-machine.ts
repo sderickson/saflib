@@ -19,6 +19,8 @@ import {
   kebabCaseToPascalCase,
   kebabCaseToCamelCase,
 } from "../../../strings.ts";
+import { readFileSync } from "node:fs";
+import path from "node:path";
 
 export type { CopyStepInput };
 
@@ -32,6 +34,16 @@ export interface ParsePackageNameOutput {
   organizationName: string; // e.g. "foobar" or ""
   sharedPackagePrefix: string; // e.g. "@foobar/identity"
 }
+
+export const getPackageName = (cwd: string): string => {
+  const result = readFileSync(path.join(cwd, "package.json"), "utf8").match(
+    /name": "(.+)"/,
+  )?.[1];
+  if (!result) {
+    throw new Error(`Package name not found in package.json in ${cwd}`);
+  }
+  return result;
+};
 
 export const parsePackageName = (
   packageName: string,

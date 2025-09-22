@@ -7,10 +7,14 @@ import {
   defineWorkflow,
   step,
   CommandStepMachine,
+  type ParsePathOutput,
+  parsePath,
+  parsePackageName,
+  getPackageName,
+  type ParsePackageNameOutput,
+  makeLineReplace,
 } from "@saflib/workflows";
-import { readFileSync } from "node:fs";
 import path from "node:path";
-import { kebabCaseToCamelCase, kebabCaseToPascalCase } from "@saflib/utils";
 
 const sourceDir = path.join(
   import.meta.dirname,
@@ -25,28 +29,9 @@ const input = [
   },
 ] as const;
 
-interface AddQueryWorkflowContext {
-  name: string;
-  camelName: string; // e.g. getById
-  targetDir: string;
-  tableName: string; // e.g. "contacts"
-  tableIndexPath: string; // e.g. "/<abs-path>/queries/contacts/index.ts"
-  camelServiceName: string; // e.g. "foobarIdentity"
-  pascalTableName: string; // e.g. "Contacts"
-  camelTableName: string; // e.g. "contacts"
-  packageIndexPath: string; // e.g. "/<abs-path>/index.ts"
-  packageName: string; // e.g. "@foobar/identity-db"
-}
-
-function toCamelCase(name: string) {
-  return name
-    .split("-")
-    .map((part, index) => {
-      if (index === 0) return part;
-      return part.charAt(0).toUpperCase() + part.slice(1);
-    })
-    .join("");
-}
+interface AddQueryWorkflowContext
+  extends ParsePathOutput,
+    ParsePackageNameOutput {}
 
 export const AddQueryWorkflowDefinition = defineWorkflow<
   typeof input,
@@ -62,30 +47,15 @@ export const AddQueryWorkflowDefinition = defineWorkflow<
   sourceUrl: import.meta.url,
 
   context: ({ input }) => {
-    const targetDir = path.dirname(path.join(input.cwd, input.path));
-    const tableName = path.basename(targetDir);
-    const tableIndexPath = path
-      .join(targetDir, "index.ts")
-      .replace(input.cwd, "");
-    const packageIndexPath = path.join(input.cwd, "index.ts");
-    const name = path.basename(input.path).split(".")[0];
-    const packageName =
-      readFileSync(path.join(input.cwd, "package.json"), "utf8").match(
-        /name": "(.+)"/,
-      )?.[1] || "@your/target-package";
-    let serviceName = (packageName.split("/").pop() || "").replace("-db", "");
-
     return {
-      name,
-      camelName: toCamelCase(name),
-      targetDir,
-      tableName,
-      tableIndexPath,
-      packageIndexPath,
-      camelServiceName: kebabCaseToCamelCase(serviceName),
-      pascalTableName: kebabCaseToPascalCase(tableName),
-      camelTableName: kebabCaseToCamelCase(tableName),
-      packageName,
+      ...parsePackageName(getPackageName(input.cwd), {
+        requiredSuffix: "-db",
+      }),
+      ...parsePath(input.path, {
+        requiredPrefix: "./queries/",
+        requiredSuffix: ".ts",
+        cwd: input.cwd,
+      }),
     };
   },
 
@@ -102,56 +72,30 @@ export const AddQueryWorkflowDefinition = defineWorkflow<
 
   steps: [
     step(CopyStepMachine, ({ context }) => ({
-      name: context.name,
+      name: context.targetName,
       targetDir: context.targetDir,
-      // This is super brittle.
-      // If this works though... I might try to figure out a way for
-      // the templating system to handle cases like this better.
-      lineReplace: (line) =>
-        line
-          .replace("templateFileDb", context.camelServiceName + "Db")
-          .replace(
-            "TemplateFileNotFoundError",
-            context.pascalTableName + "NotFoundError",
-          )
-          .replace(
-            "CreateTemplateFileParams",
-            "Create" + context.pascalTableName + "Params",
-          )
-          .replace("TemplateFileEntity", context.pascalTableName + "Entity")
-          .replace("TemplateFileError", context.pascalTableName + "Error")
-          .replace("templateFileTable", context.camelTableName + "Table")
-          .replace(
-            "schemas/template-file.ts",
-            "schemas/" + context.tableName + ".ts",
-          )
-          .replace("@template/file-db", context.packageName),
+      lineReplace: makeLineReplace(context),
     })),
 
     step(PromptStepMachine, ({ context }) => ({
-      promptText: `Check if \`${context.tableIndexPath}\` exists. If it doesn't exist, create it.`,
+      promptText: `Update \`${context.targetDir}/index.ts\` to include the new query.
+        1. Import the new query from \`./${context.targetName}.ts\`
+        2. Add it to the others being exported`,
     })),
 
     step(PromptStepMachine, ({ context }) => ({
-      promptText: `Update \`${context.tableIndexPath}\` to include the new query.
-        1. Import the new query from \`./${context.name}.ts\`
-        2. Add the query to the collection object using the camelCase name
-        3. Make sure to export a \`${context.tableName}\` object that contains all queries for this domain`,
-    })),
-
-    step(PromptStepMachine, ({ context }) => ({
-      promptText: `Update the package's \`index.ts\` to export the query collection if it doesn't already.
+      promptText: `Update the package's root \`index.ts\` to export the query collection if it doesn't already.
       
       Do it like so:
 
       \`\`\`ts
-      export * from "./queries/${context.tableName}/index.ts";
+      export * from "./queries/${context.groupName}/index.ts";
       \`\`\`
       `,
     })),
 
-    step(PromptStepMachine, ({ context }) => ({
-      promptText: `Add any new parameter or result types needed for \`${context.camelName}\` to the main \`types.ts\` file.
+    step(PromptStepMachine, () => ({
+      promptText: `Add any new parameter or result types needed for the new query to the main \`types.ts\` file.
 
         As much as possible, these should be based on the types that drizzle provides. For example, if when creating a row, the database handles the id, createdAt, and updatedAt fields, have a "InsertTableRowParams" type that Omits those fields.
 
@@ -170,9 +114,9 @@ export const AddQueryWorkflowDefinition = defineWorkflow<
       docId: "refDoc",
     })),
 
-    step(UpdateStepMachine, ({ context }) => ({
+    step(UpdateStepMachine, () => ({
       fileId: "query",
-      promptMessage: `Implement the \`${context.camelName}\` query following the documentation guidelines.`,
+      promptMessage: `Implement the new query following the documentation guidelines.`,
     })),
 
     step(CommandStepMachine, () => ({
@@ -184,11 +128,11 @@ export const AddQueryWorkflowDefinition = defineWorkflow<
       docId: "testingGuide",
     })),
 
-    step(UpdateStepMachine, ({ context }) => ({
+    step(UpdateStepMachine, () => ({
       fileId: "test",
-      promptMessage: `Implement \`${context.name}.test.ts\`.
+      promptMessage: `Implement the generated test file.
       
-      Aim for 100% coverage; there should be a known way to achieve every handled error.`,
+      Aim for 100% coverage; there should be a known way to achieve every handled error. If it's not possible to cause a returned error, it should not be in the implementation.`,
     })),
 
     step(CommandStepMachine, () => ({
