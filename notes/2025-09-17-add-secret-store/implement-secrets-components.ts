@@ -49,9 +49,14 @@ export const ImplementSecretsComponentsWorkflowDefinition = defineWorkflow<
       path: "./displays/missing-secrets-table",
     })),
 
-    // Form component for creating/editing secrets
+    // Form component for creating secrets
     step(makeWorkflowMachine(AddComponentWorkflowDefinition), () => ({
-      path: "./forms/secret-form",
+      path: "./forms/create-secret-form",
+    })),
+
+    // Form component for updating secrets
+    step(makeWorkflowMachine(AddComponentWorkflowDefinition), () => ({
+      path: "./forms/update-secret-form",
     })),
   ],
 });

@@ -110,7 +110,8 @@ saflib/secrets/
     │   ├── SecretsTable.vue
     │   ├── PendingApprovalsTable.vue
     │   ├── MissingSecretsTable.vue
-    │   └── SecretForm.vue
+    │   ├── CreateSecretForm.vue
+    │   └── UpdateSecretForm.vue
     ├── queries/
     │   └── secrets.ts
     └── package.json
@@ -338,9 +339,14 @@ message GetSecretResponse {
 - Add secret action
 - Service that requested it
 
-### SecretForm.vue
+### CreateSecretForm.vue
 
-- Add/edit secret form
+- Add secret form
+- Validation
+
+### UpdateSecretForm.vue
+
+- Edit secret form
 - Validation
 
 ## Workflow
