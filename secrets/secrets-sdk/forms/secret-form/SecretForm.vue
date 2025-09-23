@@ -10,29 +10,74 @@
 
     <v-card-text>
       <!-- Loading skeleton -->
-      <div v-if="loading" class="mb-4">
+      <div v-if="createMutation.isPending.value" class="mb-4">
         <v-skeleton-loader
           type="table-heading, table-thead, table-tbody, table-tbody, table-tbody"
           class="elevation-1"
         ></v-skeleton-loader>
       </div>
 
-      <v-alert v-else-if="error" type="error" variant="tonal" class="mb-4">
-        {{ getTanstackErrorMessage(error) }}
-      </v-alert>
-
       <v-alert
-        v-else-if="items.length === 0"
-        type="info"
+        v-else-if="createMutation.error.value"
+        type="error"
         variant="tonal"
         class="mb-4"
       >
-        {{ t(strings.empty) }}
+        {{ getErrorMessage(createMutation.error.value) }}
       </v-alert>
 
-      <!-- TODO: Implement the main component content here -->
-      <!-- TODO: Use props that match the schemas exported by the adjacent "spec" package -->
-      <!-- TODO: Add any strings to the strings.ts file, not directly in the component -->
+      <v-form v-else ref="form" v-model="isValid" @submit.prevent="onSubmit">
+        <v-text-field
+          v-model="formData.name"
+          :label="t(strings.nameLabel)"
+          :rules="nameRules"
+          :disabled="createMutation.isPending.value"
+          required
+          class="mb-4"
+        ></v-text-field>
+
+        <v-textarea
+          v-model="formData.description"
+          :label="t(strings.descriptionLabel)"
+          :rules="descriptionRules"
+          :disabled="createMutation.isPending.value"
+          rows="3"
+          class="mb-4"
+        ></v-textarea>
+
+        <v-text-field
+          v-model="formData.value"
+          :label="t(strings.valueLabel)"
+          :rules="valueRules"
+          :disabled="createMutation.isPending.value"
+          :type="showPassword ? 'text' : 'password'"
+          :append-inner-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
+          @click:append-inner="showPassword = !showPassword"
+          data-testid="password-toggle"
+          required
+          class="mb-4"
+        ></v-text-field>
+
+        <div class="d-flex gap-2">
+          <v-btn
+            type="submit"
+            color="primary"
+            :loading="createMutation.isPending.value"
+            :disabled="!isValid"
+          >
+            {{ t(strings.submitButton) }}
+          </v-btn>
+
+          <v-btn
+            type="button"
+            variant="outlined"
+            :disabled="createMutation.isPending.value"
+            @click="onCancel"
+          >
+            {{ t(strings.cancelButton) }}
+          </v-btn>
+        </div>
+      </v-form>
     </v-card-text>
   </v-card>
 </template>
@@ -40,25 +85,74 @@
 <script setup lang="ts">
 import { secret_form_strings as strings } from "./SecretForm.strings.ts";
 import { useReverseT } from "../../i18n.ts";
-import { TanstackError, getTanstackErrorMessage } from "@saflib/sdk";
-// @ts-expect-error - TODO: replace with the actual schema, use with defineModel and defineProps
-import { type TODO } from "@saflib/secrets-spec";
+import { getTanstackErrorMessage } from "@saflib/sdk";
+import { useCreateSecret } from "../../requests/secrets/create.ts";
+import { ref, reactive } from "vue";
 
 const { t } = useReverseT();
 
-defineProps<{
-  items: TODO[]; // TODO: Replace with actual data type from spec package. Do not load data in this component! Data fetching is handled separately.
-  loading?: boolean;
-  error?: TanstackError;
+interface Props {
+  // No props needed - this is a self-contained create form
+}
+
+const props = defineProps<Props>();
+
+const emit = defineEmits<{
+  success: [secret: any];
+  cancel: [];
 }>();
 
-// If this is a form, also use defineModel
+const form = ref();
+const isValid = ref(false);
+const showPassword = ref(false);
 
-// TODO: Add emits for component actions
-// const emit = defineEmits<{
-//   // Add emit events here based on component functionality, for things such as navigations or successful form submissions
-// }>();
+// Use the create mutation
+const createMutation = useCreateSecret();
 
-// TODO: Add component-specific functions here
-// TODO: Add mutations (not queries!) here if they are needed for the component
+const formData = reactive({
+  name: "",
+  description: "",
+  value: "",
+});
+
+const nameRules = [
+  (v: string) => !!v || t(strings.nameRequired),
+  (v: string) => (v && v.length >= 3) || t(strings.nameMinLength),
+];
+
+const descriptionRules = [
+  (v: string) => !v || v.length <= 500 || t(strings.descriptionMaxLength),
+];
+
+const valueRules = [
+  (v: string) => !!v || t(strings.valueRequired),
+  (v: string) => (v && v.length >= 8) || t(strings.valueMinLength),
+];
+
+const onSubmit = async () => {
+  if (form.value?.validate()) {
+    try {
+      const result = await createMutation.mutateAsync({
+        name: formData.name,
+        description: formData.description,
+        value: formData.value,
+      });
+      emit("success", result);
+    } catch (error) {
+      // Error is handled by the mutation's error state
+      console.error("Failed to create secret:", error);
+    }
+  }
+};
+
+const onCancel = () => {
+  emit("cancel");
+};
+
+const getErrorMessage = (error: any) => {
+  if (!error) return "";
+  if (typeof error === "string") return error;
+  if (error.message) return error.message;
+  return getTanstackErrorMessage(error);
+};
 </script>
