@@ -5,10 +5,6 @@ import {
   defineWorkflow,
   DocStepMachine,
   CommandStepMachine,
-  type ParsePathOutput,
-  type ParsePackageNameOutput,
-  parsePath,
-  parsePackageName,
   getPackageName,
   makeLineReplace,
 } from "../core/index.ts";
