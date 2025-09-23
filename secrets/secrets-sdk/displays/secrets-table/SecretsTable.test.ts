@@ -6,6 +6,7 @@ import { secrets_table_strings as strings } from "./SecretsTable.strings.ts";
 import { mountTestApp, testAppHandlers } from "../../test-app.ts";
 import { setupMockServer } from "@saflib/sdk/testing";
 import type { Secret } from "@saflib/secrets-spec";
+import { TanstackError } from "@saflib/sdk";
 
 describe("SecretsTable", () => {
   stubGlobals();
@@ -72,20 +73,25 @@ describe("SecretsTable", () => {
       },
     });
 
-    expect(getLoadingText(wrapper).exists()).toBe(true);
+    // Check for skeleton loader
+    expect(wrapper.findComponent({ name: "VSkeletonLoader" }).exists()).toBe(
+      true,
+    );
   });
 
   it("should show error state", async () => {
+    const error = new TanstackError(404, "NOT_FOUND");
     const wrapper = mountTestApp(SecretsTable, {
       props: {
         secrets: [],
         loading: false,
-        error: "Failed to load secrets",
+        error,
       },
     });
 
-    expect(wrapper.text()).toContain(strings.error);
-    expect(wrapper.text()).toContain("Failed to load secrets");
+    expect(wrapper.text()).toContain(
+      "Not Found - The requested resource was not found",
+    );
   });
 
   it("should show empty state when no secrets", async () => {
