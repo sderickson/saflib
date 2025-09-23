@@ -67,6 +67,8 @@ export const SdkInitWorkflowDefinition = defineWorkflow<
     vitestConfig: path.join(sourceDir, "vitest.config.js"),
     test: path.join(sourceDir, "index.test.ts"),
     client: path.join(sourceDir, "client.ts"),
+    strings: path.join(sourceDir, "strings.ts"),
+    testApp: path.join(sourceDir, "test-app.ts"),
   },
 
   docFiles: {
