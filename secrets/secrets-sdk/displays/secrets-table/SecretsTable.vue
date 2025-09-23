@@ -18,7 +18,7 @@
       </div>
 
       <v-alert v-else-if="error" type="error" variant="tonal" class="mb-4">
-        {{ getTanstackErrorMessage(error) }}
+        {{ getErrorMessage(error) }}
       </v-alert>
 
       <v-alert
@@ -94,13 +94,18 @@
 import { secrets_table_strings as strings } from "./SecretsTable.strings.ts";
 import { useReverseT } from "../../i18n.ts";
 import { getTanstackErrorMessage } from "@saflib/sdk";
-import { useListSecrets } from "../../requests/secrets/list.ts";
 import { useDeleteSecret } from "../../requests/secrets/delete.ts";
+import type { Secret } from "@saflib/secrets-spec";
 
 const { t } = useReverseT();
 
-// Use Tanstack Query to fetch secrets
-const { data: secrets, isLoading: loading, error } = useListSecrets({});
+interface Props {
+  secrets: Secret[];
+  loading?: boolean;
+  error?: any;
+}
+
+const props = defineProps<Props>();
 
 // Use mutation for deleting secrets
 const deleteMutation = useDeleteSecret();
@@ -118,8 +123,10 @@ const formatDate = (timestamp: number) => {
   return new Date(timestamp).toLocaleString();
 };
 
-const getErrorMessage = (error: TanstackError | undefined) => {
+const getErrorMessage = (error: any) => {
   if (!error) return "";
+  if (typeof error === "string") return error;
+  if (error.message) return error.message;
   return getTanstackErrorMessage(error);
 };
 

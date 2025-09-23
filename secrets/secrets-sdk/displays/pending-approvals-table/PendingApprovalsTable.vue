@@ -18,7 +18,7 @@
       </div>
 
       <v-alert v-else-if="error" type="error" variant="tonal" class="mb-4">
-        {{ getTanstackErrorMessage(error) }}
+        {{ getErrorMessage(error) }}
       </v-alert>
 
       <v-alert
@@ -101,17 +101,18 @@
 import { pending_approvals_table_strings as strings } from "./PendingApprovalsTable.strings.ts";
 import { useReverseT } from "../../i18n.ts";
 import { getTanstackErrorMessage } from "@saflib/sdk";
-import { useListAccessRequests } from "../../requests/access-requests/list.ts";
 import { useApproveAccessRequest } from "../../requests/access-requests/approve.ts";
+import type { AccessRequest } from "@saflib/secrets-spec";
 
 const { t } = useReverseT();
 
-// Use Tanstack Query to fetch access requests
-const {
-  data: accessRequests,
-  isLoading: loading,
-  error,
-} = useListAccessRequests({});
+interface Props {
+  accessRequests: AccessRequest[];
+  loading?: boolean;
+  error?: any;
+}
+
+const props = defineProps<Props>();
 
 // Use mutation for approving/denying requests
 const approveMutation = useApproveAccessRequest();
@@ -160,6 +161,13 @@ const getStatusText = (status: string) => {
     default:
       return status;
   }
+};
+
+const getErrorMessage = (error: any) => {
+  if (!error) return "";
+  if (typeof error === "string") return error;
+  if (error.message) return error.message;
+  return getTanstackErrorMessage(error);
 };
 
 const headers = [

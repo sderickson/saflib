@@ -5,6 +5,8 @@ import PendingApprovalsTable from "./PendingApprovalsTable.vue";
 import { pending_approvals_table_strings as strings } from "./PendingApprovalsTable.strings.ts";
 import { mountTestApp, testAppHandlers } from "../../test-app.ts";
 import { setupMockServer } from "@saflib/sdk/testing";
+import { mockAccessRequests } from "../../requests/access-requests/list.fake.ts";
+import type { AccessRequest } from "@saflib/secrets-spec";
 
 describe("PendingApprovalsTable", () => {
   stubGlobals();
@@ -18,25 +20,62 @@ describe("PendingApprovalsTable", () => {
     return getElementByString(wrapper, strings.description);
   };
 
-  const waitUntilLoaded = async (wrapper: VueWrapper) => {
-    // Wait until skeleton loader is gone and data is loaded
-    await vi.waitUntil(() => {
-      const skeletonLoader = wrapper.findComponent({ name: "VSkeletonLoader" });
-      return !skeletonLoader.exists() && wrapper.text().includes(strings.secretName);
-    }, { timeout: 5000 });
-  };
 
   it("should render the component with title and description", async () => {
-    const wrapper = mountTestApp(PendingApprovalsTable);
+    const wrapper = mountTestApp(PendingApprovalsTable, {
+      props: {
+        accessRequests: [],
+        loading: false,
+      },
+    });
 
     expect(getTitle(wrapper).exists()).toBe(true);
     expect(getDescription(wrapper).exists()).toBe(true);
   });
 
-  it("should display access requests in table", async () => {
-    const wrapper = mountTestApp(PendingApprovalsTable);
+  it("should show loading state", async () => {
+    const wrapper = mountTestApp(PendingApprovalsTable, {
+      props: {
+        accessRequests: [],
+        loading: true,
+      },
+    });
 
-    await waitUntilLoaded(wrapper);
+    // Check for skeleton loader
+    expect(wrapper.findComponent({ name: "VSkeletonLoader" }).exists()).toBe(true);
+  });
+
+  it("should show error state", async () => {
+    const error = new Error("Test error");
+    const wrapper = mountTestApp(PendingApprovalsTable, {
+      props: {
+        accessRequests: [],
+        loading: false,
+        error,
+      },
+    });
+
+    expect(wrapper.text()).toContain("Test error");
+  });
+
+  it("should show empty state when no access requests", async () => {
+    const wrapper = mountTestApp(PendingApprovalsTable, {
+      props: {
+        accessRequests: [],
+        loading: false,
+      },
+    });
+
+    expect(wrapper.text()).toContain(strings.empty);
+  });
+
+  it("should display access requests in table", async () => {
+    const wrapper = mountTestApp(PendingApprovalsTable, {
+      props: {
+        accessRequests: mockAccessRequests,
+        loading: false,
+      },
+    });
 
     // Check table headers
     expect(wrapper.text()).toContain(strings.secretName);
@@ -54,9 +93,12 @@ describe("PendingApprovalsTable", () => {
   });
 
   it("should show correct status badges", async () => {
-    const wrapper = mountTestApp(PendingApprovalsTable);
-
-    await waitUntilLoaded(wrapper);
+    const wrapper = mountTestApp(PendingApprovalsTable, {
+      props: {
+        accessRequests: mockAccessRequests,
+        loading: false,
+      },
+    });
 
     // Check for status badges
     expect(wrapper.text()).toContain(strings.pending);
@@ -65,9 +107,12 @@ describe("PendingApprovalsTable", () => {
   });
 
   it("should show approve/deny buttons for pending requests", async () => {
-    const wrapper = mountTestApp(PendingApprovalsTable);
-
-    await waitUntilLoaded(wrapper);
+    const wrapper = mountTestApp(PendingApprovalsTable, {
+      props: {
+        accessRequests: mockAccessRequests,
+        loading: false,
+      },
+    });
 
     const approveButtons = wrapper.findAll(`[title="${strings.approve}"]`);
     const denyButtons = wrapper.findAll(`[title="${strings.deny}"]`);
@@ -78,18 +123,24 @@ describe("PendingApprovalsTable", () => {
   });
 
   it("should show processed status for non-pending requests", async () => {
-    const wrapper = mountTestApp(PendingApprovalsTable);
-
-    await waitUntilLoaded(wrapper);
+    const wrapper = mountTestApp(PendingApprovalsTable, {
+      props: {
+        accessRequests: mockAccessRequests,
+        loading: false,
+      },
+    });
 
     // Check that processed requests show "Processed" instead of action buttons
     expect(wrapper.text()).toContain(strings.processed);
   });
 
   it("should format dates correctly", async () => {
-    const wrapper = mountTestApp(PendingApprovalsTable);
-
-    await waitUntilLoaded(wrapper);
+    const wrapper = mountTestApp(PendingApprovalsTable, {
+      props: {
+        accessRequests: mockAccessRequests,
+        loading: false,
+      },
+    });
 
     // Check that dates are formatted (should contain the formatted date)
     const formattedDate = new Date(1640995200000).toLocaleString();
