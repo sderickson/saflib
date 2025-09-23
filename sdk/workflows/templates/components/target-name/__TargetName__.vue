@@ -1,5 +1,5 @@
 <template>
-  <div class="display-component">
+  <div>
     <h2>{{ t(strings.title) }}</h2>
     <p>{{ t(strings.description) }}</p>
     <!-- TODO: Implement the display component based on the schemas from the spec package -->
@@ -16,9 +16,10 @@ import { type TODO } from "template-package-spec";
 
 const { t } = useReverseT();
 
-// TODO: Define props based on the schemas from the spec package
+// TODO: Define props/models based on the schemas from the spec package
 // interface Props {
 //   // Add props here based on the schemas exported by the adjacent "spec" package
 // }
 // const props = defineProps<Props>();
+// const model = defineModel<TODO[]>();
 </script>
