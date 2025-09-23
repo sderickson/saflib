@@ -4,6 +4,9 @@ import {
   step,
   CommandStepMachine,
   CwdStepMachine,
+  type ParsePackageNameOutput,
+  parsePackageName,
+  makeLineReplace,
 } from "@saflib/workflows";
 import path from "node:path";
 
@@ -24,10 +27,8 @@ const input = [
   },
 ] as const;
 
-interface ExpressInitWorkflowContext {
-  name: string;
+interface ExpressInitWorkflowContext extends ParsePackageNameOutput {
   targetDir: string;
-  packageName: string;
 }
 
 export const ExpressInitWorkflowDefinition = defineWorkflow<
@@ -46,20 +47,11 @@ export const ExpressInitWorkflowDefinition = defineWorkflow<
   sourceUrl: import.meta.url,
 
   context: ({ input }) => {
-    let name = input.name;
-    // make sure name doesn't end with -http
-    if (input.name.endsWith("-http")) {
-      name = input.name.slice(0, -5);
-    }
-    const packageName = name + "-http";
-    if (name.startsWith("@")) {
-      name = name.split("/")[1];
-    }
-    const targetDir = path.join(input.cwd, input.path);
     return {
-      name,
-      targetDir,
-      packageName,
+      ...parsePackageName(input.name, {
+        requiredSuffix: "-http",
+      }),
+      targetDir: path.join(input.cwd, input.path),
     };
   },
 
@@ -78,13 +70,9 @@ export const ExpressInitWorkflowDefinition = defineWorkflow<
 
   steps: [
     step(CopyStepMachine, ({ context }) => ({
-      name: context.name,
+      name: "",
       targetDir: context.targetDir,
-      lineReplace: (line) =>
-        line.replace(
-          "@template/file-",
-          context.packageName.replace("-http", "-"),
-        ),
+      lineReplace: makeLineReplace(context),
     })),
 
     step(CwdStepMachine, ({ context }) => ({
