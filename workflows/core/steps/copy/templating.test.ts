@@ -106,7 +106,7 @@ describe("templating", () => {
     };
 
     it("should parse simple path without prefix or suffix", () => {
-      const result = parsePath("./target-name", baseInput);
+      const result = parsePath("target-name", baseInput);
 
       expect(result).toEqual({
         groupName: "target-name",
@@ -116,7 +116,7 @@ describe("templating", () => {
     });
 
     it("should parse path with group and target", () => {
-      const result = parsePath("./group-name/target-name", baseInput);
+      const result = parsePath("group-name/target-name", baseInput);
 
       expect(result).toEqual({
         groupName: "group-name",
@@ -144,7 +144,7 @@ describe("templating", () => {
         ...baseInput,
         requiredSuffix: ".ts",
       };
-      const result = parsePath("./contacts/get-by-id.ts", input);
+      const result = parsePath("contacts/get-by-id.ts", input);
 
       expect(result).toEqual({
         groupName: "contacts",
