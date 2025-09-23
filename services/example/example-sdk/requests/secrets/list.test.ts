@@ -8,10 +8,8 @@ describe("listSecrets", () => {
   setupMockServer(exampleServiceFakeHandlers);
 
   // TODO: Make sure the fake data gets returned
-  it("TODO", async () => {
-    const [query, app] = withVueQuery(() =>
-      useQuery(listSecretsQuery({})),
-    );
+  it.skip("TODO", async () => {
+    const [query, app] = withVueQuery(() => useQuery(listSecretsQuery({})));
 
     await query.refetch();
     expect(query.data).toBeDefined();

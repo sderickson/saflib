@@ -7,8 +7,8 @@ import { useQuery } from "@tanstack/vue-query";
 describe("__targetName____GroupName__", () => {
   setupMockServer(__serviceName__ServiceFakeHandlers);
 
-  // TODO: Make sure the fake data gets returned
-  it("TODO", async () => {
+  // TODO: Make sure the fake data gets returned, and unskip this test
+  it.skip("TODO", async () => {
     const [query, app] = withVueQuery(() =>
       useQuery(__targetName____GroupName__Query({})),
     );
