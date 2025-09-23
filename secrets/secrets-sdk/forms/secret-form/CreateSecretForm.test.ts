@@ -1,12 +1,12 @@
 import { describe, it, expect, vi } from "vitest";
 import { stubGlobals, getElementByString } from "@saflib/vue/testing";
 import { type VueWrapper } from "@vue/test-utils";
-import SecretForm from "./SecretForm.vue";
-import { secret_form_strings as strings } from "./SecretForm.strings.ts";
+import CreateSecretForm from "./CreateSecretForm.vue";
+import { secret_form_strings as strings } from "./CreateSecretForm.strings.ts";
 import { mountTestApp } from "../../test-app.ts";
 import type { SecretCreateRequest } from "@saflib/secrets-spec";
 
-describe("SecretForm", () => {
+describe("CreateSecretForm", () => {
   stubGlobals();
 
   const getTitle = (wrapper: VueWrapper) => {
@@ -18,14 +18,14 @@ describe("SecretForm", () => {
   };
 
   it("should render the component with title and description", async () => {
-    const wrapper = mountTestApp(SecretForm);
+    const wrapper = mountTestApp(CreateSecretForm);
 
     expect(getTitle(wrapper).exists()).toBe(true);
     expect(getDescription(wrapper).exists()).toBe(true);
   });
 
   it("should show loading state when mutation is pending", async () => {
-    const wrapper = mountTestApp(SecretForm);
+    const wrapper = mountTestApp(CreateSecretForm);
 
     // Mock the mutation to be pending
     vi.spyOn(wrapper.vm.createMutation, "isPending", "get").mockReturnValue({
@@ -41,7 +41,7 @@ describe("SecretForm", () => {
   });
 
   it("should show error state when mutation fails", async () => {
-    const wrapper = mountTestApp(SecretForm);
+    const wrapper = mountTestApp(CreateSecretForm);
 
     // Mock the mutation to have an error
     vi.spyOn(wrapper.vm.createMutation, "error", "get").mockReturnValue({
@@ -54,7 +54,7 @@ describe("SecretForm", () => {
   });
 
   it("should render form fields", async () => {
-    const wrapper = mountTestApp(SecretForm);
+    const wrapper = mountTestApp(CreateSecretForm);
 
     // Check form fields are present
     expect(wrapper.text()).toContain(strings.nameLabel);
@@ -63,14 +63,14 @@ describe("SecretForm", () => {
   });
 
   it("should render submit and cancel buttons", async () => {
-    const wrapper = mountTestApp(SecretForm);
+    const wrapper = mountTestApp(CreateSecretForm);
 
     expect(wrapper.text()).toContain(strings.submitButton);
     expect(wrapper.text()).toContain(strings.cancelButton);
   });
 
   it("should initialize with default values", async () => {
-    const wrapper = mountTestApp(SecretForm);
+    const wrapper = mountTestApp(CreateSecretForm);
 
     // Check default values
     const nameInput = wrapper.find('input[type="text"]');
@@ -81,7 +81,7 @@ describe("SecretForm", () => {
   });
 
   it("should initialize with empty form data", async () => {
-    const wrapper = mountTestApp(SecretForm);
+    const wrapper = mountTestApp(CreateSecretForm);
 
     const nameInput = wrapper.find('input[type="text"]');
     const descriptionInput = wrapper.find("textarea");
@@ -91,14 +91,14 @@ describe("SecretForm", () => {
   });
 
   it("should validate required fields", async () => {
-    const wrapper = mountTestApp(SecretForm);
+    const wrapper = mountTestApp(CreateSecretForm);
 
     const submitButton = wrapper.find(`button[type="submit"]`);
     expect(submitButton.attributes("disabled")).toBeDefined();
   });
 
   it("should emit success event when secret is created", async () => {
-    const wrapper = mountTestApp(SecretForm);
+    const wrapper = mountTestApp(CreateSecretForm);
 
     // Mock successful mutation
     const mockResult = { id: "secret-1", name: "test-secret" };
@@ -124,7 +124,7 @@ describe("SecretForm", () => {
   });
 
   it("should emit cancel event when cancel button is clicked", async () => {
-    const wrapper = mountTestApp(SecretForm);
+    const wrapper = mountTestApp(CreateSecretForm);
 
     const cancelButton = wrapper
       .findAll("button")
@@ -135,7 +135,7 @@ describe("SecretForm", () => {
   });
 
   it("should toggle password visibility", async () => {
-    const wrapper = mountTestApp(SecretForm);
+    const wrapper = mountTestApp(CreateSecretForm);
 
     // Initially password should be hidden
     expect(wrapper.vm.showPassword).toBe(false);
@@ -148,7 +148,7 @@ describe("SecretForm", () => {
   });
 
   it("should disable form fields when mutation is pending", async () => {
-    const wrapper = mountTestApp(SecretForm);
+    const wrapper = mountTestApp(CreateSecretForm);
 
     // Mock the mutation to be pending
     vi.spyOn(wrapper.vm.createMutation, "isPending", "get").mockReturnValue({

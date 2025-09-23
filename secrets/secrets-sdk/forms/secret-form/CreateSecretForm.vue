@@ -83,7 +83,7 @@
 </template>
 
 <script setup lang="ts">
-import { secret_form_strings as strings } from "./SecretForm.strings.ts";
+import { secret_form_strings as strings } from "./CreateSecretForm.strings.ts";
 import { useReverseT } from "../../i18n.ts";
 import { getTanstackErrorMessage } from "@saflib/sdk";
 import { useCreateSecret } from "../../requests/secrets/create.ts";
