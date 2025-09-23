@@ -1,13 +1,13 @@
-import { TemplateFileWorkflowDefinition } from "./template-file.ts";
+import { __TargetName__WorkflowDefinition } from "./__target-name__.ts";
 import type { WorkflowDefinition } from "@saflib/workflows";
 
 export {
   // Export each workflow definition separately
-  TemplateFileWorkflowDefinition,
+  __TargetName__WorkflowDefinition,
 };
 
 const workflowDefinitions: WorkflowDefinition[] = [
   // And have the default export be the array of all of them
-  TemplateFileWorkflowDefinition,
+  __TargetName__WorkflowDefinition,
 ];
 export default workflowDefinitions;
