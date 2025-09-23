@@ -20,6 +20,14 @@ describe("PendingApprovalsTable", () => {
     return getElementByString(wrapper, strings.description);
   };
 
+  const waitUntilLoaded = async (wrapper: VueWrapper) => {
+    // Wait until skeleton loader is gone and data is loaded
+    await vi.waitUntil(() => {
+      const skeletonLoader = wrapper.findComponent({ name: "VSkeletonLoader" });
+      return !skeletonLoader.exists() && wrapper.text().includes(strings.secretName);
+    }, { timeout: 5000 });
+  };
+
   it("should render the component with title and description", async () => {
     const wrapper = mountTestApp(PendingApprovalsTable);
 
@@ -28,14 +36,9 @@ describe("PendingApprovalsTable", () => {
   });
 
   it("should display access requests in table", async () => {
-    const wrapper = mountTestApp(PendingApprovalsTable, {
-      props: {
-        accessRequests: mockAccessRequests,
-      },
-    });
+    const wrapper = mountTestApp(PendingApprovalsTable);
 
-    // Wait for data to load
-    await vi.waitUntil(() => wrapper.text().includes(strings.secretName));
+    await waitUntilLoaded(wrapper);
 
     // Check table headers
     expect(wrapper.text()).toContain(strings.secretName);
@@ -55,8 +58,7 @@ describe("PendingApprovalsTable", () => {
   it("should show correct status badges", async () => {
     const wrapper = mountTestApp(PendingApprovalsTable);
 
-    // Wait for data to load
-    await vi.waitUntil(() => wrapper.text().includes(strings.secretName));
+    await waitUntilLoaded(wrapper);
 
     // Check for status badges
     expect(wrapper.text()).toContain(strings.pending);
@@ -67,8 +69,7 @@ describe("PendingApprovalsTable", () => {
   it("should show approve/deny buttons for pending requests", async () => {
     const wrapper = mountTestApp(PendingApprovalsTable);
 
-    // Wait for data to load
-    await vi.waitUntil(() => wrapper.text().includes(strings.secretName));
+    await waitUntilLoaded(wrapper);
 
     const approveButtons = wrapper.findAll(`[title="${strings.approve}"]`);
     const denyButtons = wrapper.findAll(`[title="${strings.deny}"]`);
@@ -81,8 +82,7 @@ describe("PendingApprovalsTable", () => {
   it("should show processed status for non-pending requests", async () => {
     const wrapper = mountTestApp(PendingApprovalsTable);
 
-    // Wait for data to load
-    await vi.waitUntil(() => wrapper.text().includes(strings.secretName));
+    await waitUntilLoaded(wrapper);
 
     // Check that processed requests show "Processed" instead of action buttons
     expect(wrapper.text()).toContain(strings.processed);
@@ -91,8 +91,7 @@ describe("PendingApprovalsTable", () => {
   it("should format dates correctly", async () => {
     const wrapper = mountTestApp(PendingApprovalsTable);
 
-    // Wait for data to load
-    await vi.waitUntil(() => wrapper.text().includes(strings.secretName));
+    await waitUntilLoaded(wrapper);
 
     // Check that dates are formatted (should contain the formatted date)
     const formattedDate = new Date(1640995200000).toLocaleString();

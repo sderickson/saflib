@@ -18,11 +18,11 @@
       </div>
 
       <v-alert v-else-if="error" type="error" variant="tonal" class="mb-4">
-        {{ getErrorMessage(error) }}
+        {{ getTanstackErrorMessage(error) }}
       </v-alert>
 
       <v-alert
-        v-else-if="secrets.length === 0"
+        v-else-if="!secrets || secrets.length === 0"
         type="info"
         variant="tonal"
         class="mb-4"
@@ -93,30 +93,25 @@
 <script setup lang="ts">
 import { secrets_table_strings as strings } from "./SecretsTable.strings.ts";
 import { useReverseT } from "../../i18n.ts";
-import type { Secret } from "@saflib/secrets-spec";
-import { TanstackError, getTanstackErrorMessage } from "@saflib/sdk";
+import { getTanstackErrorMessage } from "@saflib/sdk";
+import { useListSecrets } from "../../requests/secrets/list.ts";
+import { useDeleteSecret } from "../../requests/secrets/delete.ts";
 
 const { t } = useReverseT();
 
-interface Props {
-  secrets: Secret[];
-  loading?: boolean;
-  error?: TanstackError;
-}
+// Use Tanstack Query to fetch secrets
+const { data: secrets, isLoading: loading, error } = useListSecrets({});
 
-const props = defineProps<Props>();
+// Use mutation for deleting secrets
+const deleteMutation = useDeleteSecret();
 
-const emit = defineEmits<{
-  edit: [secret: Secret];
-  delete: [secret: Secret];
-}>();
-
-const onEdit = (secret: Secret) => {
-  emit("edit", secret);
+const onEdit = (secret: any) => {
+  // TODO: Implement edit functionality
+  console.log("Edit secret:", secret);
 };
 
-const onDelete = (secret: Secret) => {
-  emit("delete", secret);
+const onDelete = async (secret: any) => {
+  await deleteMutation.mutateAsync(secret.id);
 };
 
 const formatDate = (timestamp: number) => {
