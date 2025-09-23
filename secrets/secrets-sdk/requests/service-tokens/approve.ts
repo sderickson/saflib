@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/vue-query";
 import { handleClientMethod } from "@saflib/sdk";
-import { client } from "../../client.ts";
+import { getClient } from "../../client.ts";
 import type { SecretsServiceRequestBody } from "@saflib/secrets-spec";
 
 export const useApproveServiceToken = () => {
@@ -11,7 +11,7 @@ export const useApproveServiceToken = () => {
     ) => {
       const { id, ...approveData } = data;
       return handleClientMethod(
-        client.POST("/service-tokens/{id}/approve", {
+        getClient().POST("/service-tokens/{id}/approve", {
           params: { path: { id } },
           body: approveData,
         }),

@@ -1,6 +1,6 @@
 import { useQuery, queryOptions } from "@tanstack/vue-query";
 import { handleClientMethod } from "@saflib/sdk";
-import { client } from "../../client.ts";
+import { getClient } from "../../client.ts";
 import type { Ref } from "vue";
 
 interface ListSecretsQueryOptions {
@@ -20,7 +20,7 @@ export const listSecretsQuery = (options: ListSecretsQueryOptions) => {
     ],
     queryFn: async () => {
       return handleClientMethod(
-        client.GET("/secrets", {
+        getClient().GET("/secrets", {
           params: {
             query: {
               limit: options.limit?.value,

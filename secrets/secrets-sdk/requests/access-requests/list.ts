@@ -1,6 +1,6 @@
 import { useQuery, queryOptions } from "@tanstack/vue-query";
 import { handleClientMethod } from "@saflib/sdk";
-import { client } from "../../client.ts";
+import { getClient } from "../../client.ts";
 import type { Ref } from "vue";
 
 interface ListAccessRequestsQueryOptions {
@@ -22,9 +22,9 @@ export const listAccessRequestsQuery = (
       options.status,
       options.service_name,
     ],
-    queryFn: async () => {
-      return handleClientMethod(
-        client.GET("/access-requests", {
+    queryFn: async () =>
+      handleClientMethod(
+        getClient().GET("/access-requests", {
           params: {
             query: {
               limit: options.limit?.value,
@@ -34,8 +34,7 @@ export const listAccessRequestsQuery = (
             },
           },
         }),
-      );
-    },
+      ),
   });
 };
 

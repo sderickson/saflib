@@ -35,7 +35,12 @@ export function mountWithPlugins(
     pluginOptions.router ||
     createRouter({
       history: createMemoryHistory(),
-      routes: [],
+      routes: [
+        {
+          path: "/",
+          component,
+        },
+      ],
     });
 
   const queryClient = new QueryClient({

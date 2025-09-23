@@ -1,6 +1,6 @@
 import { useQuery, queryOptions } from "@tanstack/vue-query";
 import { handleClientMethod } from "@saflib/sdk";
-import { client } from "../../client.ts";
+import { getClient } from "../../client.ts";
 import type { Ref } from "vue";
 
 interface ListServiceTokensQueryOptions {
@@ -24,7 +24,7 @@ export const listServiceTokensQuery = (
     ],
     queryFn: async () => {
       return handleClientMethod(
-        client.GET("/service-tokens", {
+        getClient().GET("/service-tokens", {
           params: {
             query: {
               limit: options.limit?.value,
