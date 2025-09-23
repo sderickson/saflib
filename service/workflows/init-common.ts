@@ -4,26 +4,30 @@ import {
   step,
   CwdStepMachine,
   CommandStepMachine,
+  type ParsePackageNameOutput,
+  parsePackageName,
 } from "@saflib/workflows";
 import path from "node:path";
-import { getCurrentPackageName } from "@saflib/dev-tools";
 
 const sourceDir = path.join(import.meta.dirname, "common-templates");
 
 const input = [
   {
+    name: "name",
+    description:
+      "The name of the shared service package to create (e.g., 'example-service-common')",
+    exampleValue: "@example/example-service-common",
+  },
+  {
     name: "path",
     description:
       "The path to the target directory which houses all service packages.",
-    exampleValue: "./services/example-service",
+    exampleValue: "services/example-service-common",
   },
 ] as const;
 
-interface InitCommonWorkflowContext {
-  serviceName: string;
+interface InitCommonWorkflowContext extends ParsePackageNameOutput {
   targetDir: string;
-  packageName: string;
-  orgString: string;
 }
 
 export const InitCommonWorkflowDefinition = defineWorkflow<
@@ -42,27 +46,11 @@ export const InitCommonWorkflowDefinition = defineWorkflow<
   sourceUrl: import.meta.url,
 
   context: ({ input }) => {
-    const serviceName = path.basename(input.path);
-    const targetDir = path.join(
-      input.cwd,
-      input.path,
-      `${serviceName}-service-common`,
-    );
-    const currentPackageName = getCurrentPackageName();
-    let orgString = "";
-    if (
-      currentPackageName.startsWith("@") &&
-      currentPackageName.includes("/")
-    ) {
-      orgString = currentPackageName.split("/")[0] + "/";
-    }
-    const packageName = `${orgString}${serviceName}-service-common`;
-
     return {
-      serviceName,
-      targetDir,
-      packageName,
-      orgString,
+      ...parsePackageName(input.name, {
+        requiredSuffix: "-service-common",
+      }),
+      targetDir: path.join(input.cwd, input.path),
     };
   },
 

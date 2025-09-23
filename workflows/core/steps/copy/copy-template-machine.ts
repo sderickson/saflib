@@ -157,6 +157,9 @@ export const makeLineReplace = (context: { [key: string]: any }) => {
     replaceMap[`__${camelKey}__`] = kebabCaseToCamelCase(context[camelKey]);
     replaceMap[`__${snakeKey}__`] = kebabCaseToSnakeCase(context[camelKey]);
     replaceMap[`__${pascalKey}__`] = kebabCaseToPascalCase(context[camelKey]);
+    replaceMap[`__${snakeKey.toUpperCase()}__`] = kebabCaseToSnakeCase(
+      context[camelKey],
+    ).toUpperCase();
   });
   if (context["sharedPackagePrefix"]) {
     // special case, because npm doesn't allow package names to start with an underscore
