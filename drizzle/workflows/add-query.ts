@@ -48,9 +48,7 @@ export const AddQueryWorkflowDefinition = defineWorkflow<
 
   context: ({ input }) => {
     return {
-      ...parsePackageName(getPackageName(input.cwd), {
-        requiredSuffix: "-db",
-      }),
+      ...parsePackageName(getPackageName(input.cwd), {}),
       ...parsePath(input.path, {
         requiredPrefix: "./queries/",
         requiredSuffix: ".ts",

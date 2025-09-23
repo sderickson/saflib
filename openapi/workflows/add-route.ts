@@ -48,9 +48,7 @@ export const AddRouteWorkflowDefinition = defineWorkflow<
 
   context: ({ input }) => {
     const context = {
-      ...parsePackageName(getPackageName(input.cwd), {
-        requiredSuffix: "-spec",
-      }),
+      ...parsePackageName(getPackageName(input.cwd), {}),
       ...parsePath(input.path, {
         requiredSuffix: ".yaml",
         cwd: input.cwd,

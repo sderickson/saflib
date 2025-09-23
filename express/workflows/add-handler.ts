@@ -22,7 +22,7 @@ const input = [
   {
     name: "path",
     description: "Path of the new handler (e.g. 'routes/todos/create')",
-    exampleValue: "routes/example-subpath/example-handler",
+    exampleValue: "./routes/example-subpath/example-handler.ts",
   },
 ] as const;
 
@@ -47,9 +47,7 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
 
   context: ({ input }) => {
     return {
-      ...parsePackageName(getPackageName(input.cwd), {
-        requiredSuffix: "-http",
-      }),
+      ...parsePackageName(getPackageName(input.cwd), {}),
       ...parsePath(input.path, {
         requiredSuffix: ".ts",
         cwd: input.cwd,

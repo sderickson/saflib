@@ -47,9 +47,7 @@ export const AddSchemaWorkflowDefinition = defineWorkflow<
     const schemaPath = `./schemas/${input.name}.yaml`;
 
     return {
-      ...parsePackageName(getPackageName(input.cwd), {
-        requiredSuffix: "-spec",
-      }),
+      ...parsePackageName(getPackageName(input.cwd), {}),
       ...parsePath(schemaPath, {
         requiredSuffix: ".yaml",
         cwd: input.cwd,
