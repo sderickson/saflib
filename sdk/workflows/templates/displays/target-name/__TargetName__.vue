@@ -9,8 +9,10 @@
 </template>
 
 <script setup lang="ts">
-import { __target_name__ as strings } from "./__TargetName__.strings";
+import { __target_name___strings as strings } from "./__TargetName__.strings.ts";
 import { useReverseT } from "../../i18n.ts";
+// @ts-expect-error - TODO: replace with the actual schema, use for props
+import { type TODO } from "template-package-spec";
 
 const { t } = useReverseT();
 

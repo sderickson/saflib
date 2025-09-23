@@ -5,6 +5,12 @@ import {
   TestStepMachine,
   defineWorkflow,
   step,
+  parsePath,
+  type ParsePathOutput,
+  makeLineReplace,
+  type ParsePackageNameOutput,
+  parsePackageName,
+  getPackageName,
 } from "@saflib/workflows";
 import path from "node:path";
 
@@ -17,14 +23,14 @@ const input = [
   {
     name: "path",
     description:
-      "Path of the new display component (e.g., './displays/secret-table')",
-    exampleValue: "./displays/secret-table",
+      "Path of the new display component (e.g., './displays/example-table')",
+    exampleValue: "./displays/example-table",
   },
 ] as const;
 
-interface AddDisplayWorkflowContext {
-  displayName: string;
-  componentName: string;
+interface AddDisplayWorkflowContext
+  extends ParsePathOutput,
+    ParsePackageNameOutput {
   targetDir: string;
 }
 
@@ -36,8 +42,8 @@ export const AddDisplayWorkflowDefinition = defineWorkflow<
 
   description: "Create a new display component in the SDK package",
 
-  checklistDescription: ({ displayName }) =>
-    `Create a new ${displayName} display component.`,
+  checklistDescription: ({ targetName }) =>
+    `Create a new ${targetName} display component.`,
 
   input,
 
@@ -49,29 +55,27 @@ export const AddDisplayWorkflowDefinition = defineWorkflow<
       throw new Error("Path must start with './displays/'");
     }
 
-    // Extract the display name from the path
-    const displayName = input.path.replace("./displays/", "");
-
     // Validate display name (no extension, all lowercase)
-    if (displayName.includes(".")) {
-      throw new Error("Display name should not include file extensions");
+    if (path.basename(input.path).includes(".")) {
+      throw new Error(
+        "Path should not include file extensions (just the directory the display files will go in)",
+      );
     }
 
-    if (displayName !== displayName.toLowerCase()) {
-      throw new Error("Display name must be all lowercase");
+    if (input.path !== input.path.toLowerCase()) {
+      throw new Error("Path must be all lowercase");
     }
 
-    // Convert kebab-case to PascalCase for component name
-    const componentName = displayName
-      .split("-")
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join("");
-
-    const targetDir = path.join(input.cwd, "displays", displayName);
+    const targetDir = path.join(input.cwd, input.path);
 
     return {
-      displayName,
-      componentName,
+      ...parsePath(input.path, {
+        requiredPrefix: "./displays/",
+        cwd: input.cwd,
+      }),
+      ...parsePackageName(getPackageName(input.cwd), {
+        requiredSuffix: "-sdk",
+      }),
       targetDir,
     };
   },
@@ -87,8 +91,9 @@ export const AddDisplayWorkflowDefinition = defineWorkflow<
 
   steps: [
     step(CopyStepMachine, ({ context }) => ({
-      name: context.displayName,
+      name: context.targetName,
       targetDir: context.targetDir,
+      lineReplace: makeLineReplace(context),
     })),
 
     step(PromptStepMachine, () => ({

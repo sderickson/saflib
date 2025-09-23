@@ -1,4 +1,4 @@
-export const __target_name__ = {
+export const __target_name___strings = {
   // TODO: Replace strings with strings from the actual design
   // Use descriptive keys that work well with translation systems
   title: "__TargetName__ Component",
