@@ -53,10 +53,14 @@ export const AddComponentWorkflowDefinition = defineWorkflow<
     // Validate the path format
     if (
       !input.path.startsWith("./displays/") &&
-      !input.path.startsWith("./forms/")
+      !input.path.startsWith("./forms/") &&
+      !input.path.startsWith("./components/")
     ) {
-      throw new Error("Path must start with './displays/' or './forms/'");
+      throw new Error(
+        "Path must start with './displays/' or './forms/' or './components/'",
+      );
     }
+    const firstDir = `./${input.path.split("/")[1]}/`;
 
     // Validate component name (no extension, all lowercase)
     if (path.basename(input.path).includes(".")) {
@@ -73,9 +77,7 @@ export const AddComponentWorkflowDefinition = defineWorkflow<
 
     return {
       ...parsePath(input.path, {
-        requiredPrefix: input.path.startsWith("./displays/")
-          ? "./displays/"
-          : "./forms/",
+        requiredPrefix: firstDir,
         cwd: input.cwd,
       }),
       ...parsePackageName(getPackageName(input.cwd), {
