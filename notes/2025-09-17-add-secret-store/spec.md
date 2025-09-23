@@ -342,7 +342,6 @@ message GetSecretResponse {
 
 - Add/edit secret form
 - Validation
-- Encryption handling
 
 ## Workflow
 
