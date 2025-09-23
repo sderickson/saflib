@@ -69,6 +69,7 @@ export const SdkInitWorkflowDefinition = defineWorkflow<
     client: path.join(sourceDir, "client.ts"),
     strings: path.join(sourceDir, "strings.ts"),
     testApp: path.join(sourceDir, "test-app.ts"),
+    i18n: path.join(sourceDir, "i18n.ts"),
   },
 
   docFiles: {
