@@ -18,7 +18,7 @@ describe("__TargetName__", () => {
     return getElementByString(wrapper, strings.description);
   };
 
-  it("should render the display component", async () => {
+  it("should render the component", async () => {
     const wrapper = mountTestApp(__TargetName__);
 
     // Check that the component renders with the expected strings
