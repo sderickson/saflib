@@ -16,34 +16,34 @@ import path from "node:path";
 
 const sourceDir = path.join(
   import.meta.dirname,
-  "templates/displays/target-name",
+  "templates/components/target-name",
 );
 
 const input = [
   {
     name: "path",
     description:
-      "Path of the new display component (e.g., './displays/example-table')",
+      "Path of the new component (e.g., './displays/example-table' or './forms/user-form')",
     exampleValue: "./displays/example-table",
   },
 ] as const;
 
-interface AddDisplayWorkflowContext
+interface AddComponentWorkflowContext
   extends ParsePathOutput,
     ParsePackageNameOutput {
   targetDir: string;
 }
 
-export const AddDisplayWorkflowDefinition = defineWorkflow<
+export const AddComponentWorkflowDefinition = defineWorkflow<
   typeof input,
-  AddDisplayWorkflowContext
+  AddComponentWorkflowContext
 >({
-  id: "sdk/add-display",
+  id: "sdk/add-component",
 
-  description: "Create a new display component in the SDK package",
+  description: "Create a new component in the SDK package",
 
   checklistDescription: ({ targetName }) =>
-    `Create a new ${targetName} display component.`,
+    `Create a new ${targetName} component.`,
 
   input,
 
@@ -51,14 +51,17 @@ export const AddDisplayWorkflowDefinition = defineWorkflow<
 
   context: ({ input }) => {
     // Validate the path format
-    if (!input.path.startsWith("./displays/")) {
-      throw new Error("Path must start with './displays/'");
+    if (
+      !input.path.startsWith("./displays/") &&
+      !input.path.startsWith("./forms/")
+    ) {
+      throw new Error("Path must start with './displays/' or './forms/'");
     }
 
-    // Validate display name (no extension, all lowercase)
+    // Validate component name (no extension, all lowercase)
     if (path.basename(input.path).includes(".")) {
       throw new Error(
-        "Path should not include file extensions (just the directory the display files will go in)",
+        "Path should not include file extensions (just the directory the component files will go in)",
       );
     }
 
@@ -70,7 +73,9 @@ export const AddDisplayWorkflowDefinition = defineWorkflow<
 
     return {
       ...parsePath(input.path, {
-        requiredPrefix: "./displays/",
+        requiredPrefix: input.path.startsWith("./displays/")
+          ? "./displays/"
+          : "./forms/",
         cwd: input.cwd,
       }),
       ...parsePackageName(getPackageName(input.cwd), {
@@ -106,14 +111,14 @@ export const AddDisplayWorkflowDefinition = defineWorkflow<
 
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "vue",
-      promptMessage: `Update **${path.basename(context.copiedFiles!.vue)}** to implement the display component.
+      promptMessage: `Update **${path.basename(context.copiedFiles!.vue)}** to implement the component.
       
-      The component should take as props some combination of the schemas exported by the adjacent "spec" package. Add any strings to the "strings.ts" file, not directly in the component.`,
+      The component should take as props some combination of the schemas exported by the adjacent "spec" package. For form components, consider using defineModel() with the schemas from the spec package for two-way data binding. Add any strings to the "strings.ts" file, not directly in the component.`,
     })),
 
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "test",
-      promptMessage: `Update **${path.basename(context.copiedFiles!.test)}** to test the display component.
+      promptMessage: `Update **${path.basename(context.copiedFiles!.test)}** to test the component.
       
       Structure it similar to the add-spa-page test template, using the mock server, the dedicated test app, and the getElementByString helper function.`,
     })),
