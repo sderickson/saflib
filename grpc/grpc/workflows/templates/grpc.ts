@@ -1,25 +1,25 @@
-import { templateFileDb } from "@template/file-db";
-import { templateFileServiceStorage } from "@template/file-service-common";
+import { __serviceName__Db } from "template-package-db";
+import { __serviceName__ServiceStorage } from "template-package-service-common";
 import {
   makeGrpcServerContextWrapper,
   // addSafContext
 } from "@saflib/grpc";
 import * as grpc from "@grpc/grpc-js";
-import type { TemplateFileServiceContextOptions } from "@template/file-service-common";
+import type { __ServiceName__ServiceContextOptions } from "template-package-service-common";
 
 /**
- * Starts the gRPC server for the template-file service.
+ * Starts the gRPC server for the template-package service.
  */
 export function makeGrpcServer(
-  options: TemplateFileServiceContextOptions,
+  options: __ServiceName__ServiceContextOptions,
 ): grpc.Server {
-  let { templateFileDbKey } = options;
-  if (!templateFileDbKey) {
-    templateFileDbKey = templateFileDb.connect();
+  let { __serviceName__DbKey } = options;
+  if (!__serviceName__DbKey) {
+    __serviceName__DbKey = __serviceName__Db.connect();
   }
   const addStoreContext = makeGrpcServerContextWrapper(
-    templateFileServiceStorage,
-    { templateFileDbKey },
+    __serviceName__ServiceStorage,
+    { __serviceName__DbKey },
   );
   // TODO: remove this check once context is being used for a service
   if (!addStoreContext) {

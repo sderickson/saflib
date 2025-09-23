@@ -6,6 +6,12 @@ import {
   defineWorkflow,
   step,
   PromptStepMachine,
+  type ParsePackageNameOutput,
+  type ParsePathOutput,
+  parsePath,
+  parsePackageName,
+  getPackageName,
+  makeLineReplace,
 } from "@saflib/workflows";
 import path from "node:path";
 
@@ -15,15 +21,14 @@ const input = [
   {
     name: "path",
     description: "The path for the route (e.g., 'users' or 'products')",
-    exampleValue: "routes/example-resource/example-route",
+    exampleValue: "./routes/example/example.yaml",
   },
 ] as const;
 
-interface AddRouteWorkflowContext {
-  resource: string;
-  targetDir: string;
+interface AddRouteWorkflowContext
+  extends ParsePackageNameOutput,
+    ParsePathOutput {
   operationId: string;
-  name: string;
 }
 
 export const AddRouteWorkflowDefinition = defineWorkflow<
@@ -34,33 +39,29 @@ export const AddRouteWorkflowDefinition = defineWorkflow<
 
   description: "Add a new route to an existing OpenAPI specification package",
 
-  checklistDescription: ({ resource, operationId }) =>
-    `Add a new ${operationId} route for ${resource} resource to the OpenAPI specification.`,
+  checklistDescription: ({ groupName, targetName }) =>
+    `Add a new ${targetName} route for ${groupName} resource to the OpenAPI specification.`,
 
   input,
 
   sourceUrl: import.meta.url,
 
   context: ({ input }) => {
-    let p = input.path;
-    if (!p.startsWith("routes")) {
-      p = "routes/" + p;
-    }
-    if (!p.endsWith(".yaml")) {
-      p = p + ".yaml";
-    }
-    let targetDir = path.dirname(path.join(input.cwd, p));
-    const resource = path.basename(targetDir);
-    const name = path.basename(p).split(".")[0];
-    const operationName =
-      kebabCaseToCamelCase(path.basename(p).split(".")[0]) +
-      kebabCaseToPascalCase(resource);
+    const context = {
+      ...parsePackageName(getPackageName(input.cwd), {}),
+      ...parsePath(input.path, {
+        requiredSuffix: ".yaml",
+        cwd: input.cwd,
+        requiredPrefix: "./routes/",
+      }),
+    };
+    const operationId =
+      kebabCaseToCamelCase(context.targetName.split(".")[0]) +
+      kebabCaseToPascalCase(context.groupName);
 
     return {
-      resource,
-      targetDir,
-      operationId: operationName,
-      name,
+      ...context,
+      operationId,
     };
   },
 
@@ -74,10 +75,9 @@ export const AddRouteWorkflowDefinition = defineWorkflow<
 
   steps: [
     step(CopyStepMachine, ({ context }) => ({
-      name: context.name,
+      name: context.targetName,
       targetDir: path.join(context.targetDir),
-      lineReplace: (line) =>
-        line.replace("templateOperationId", context.operationId),
+      lineReplace: makeLineReplace(context),
     })),
 
     step(UpdateStepMachine, ({ context }) => ({

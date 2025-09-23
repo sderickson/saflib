@@ -42,20 +42,20 @@ const TestDrizzleWorkflowsDefinition = defineWorkflow<
       - Clean up`,
     })),
     step(makeWorkflowMachine(DrizzleInitWorkflowDefinition), () => ({
-      path: "test-database",
-      name: "test-database",
+      path: "./test-db",
+      name: "test-db",
     })),
     step(CwdStepMachine, () => ({
-      path: "test-database",
+      path: "./test-db",
     })),
     step(makeWorkflowMachine(UpdateSchemaWorkflowDefinition), () => ({
-      path: "schemas/users.ts",
+      path: "./schemas/users.ts",
     })),
     step(makeWorkflowMachine(AddQueryWorkflowDefinition), () => ({
-      path: "queries/users/create",
+      path: "./queries/users/create.ts",
     })),
     step(makeWorkflowMachine(AddQueryWorkflowDefinition), () => ({
-      path: "queries/users/get-by-id",
+      path: "./queries/users/get-by-id.ts",
     })),
     step(CommandStepMachine, () => ({
       command: "npm",

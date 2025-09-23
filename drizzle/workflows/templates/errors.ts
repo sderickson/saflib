@@ -1,9 +1,9 @@
 import { HandledDatabaseError } from "@saflib/drizzle";
 
 /**
- * Superclass for all handled template-file db errors
+ * Superclass for all handled __service-name__ db errors
  */
-export class TemplateFileDatabaseError extends HandledDatabaseError {}
+export class __ServiceName__DatabaseError extends HandledDatabaseError {}
 
 // TODO: Add specific error classes for your database
-export class TemplateFileNotFoundError extends TemplateFileDatabaseError {}
+export class StubError extends __ServiceName__DatabaseError {}

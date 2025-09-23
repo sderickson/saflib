@@ -5,6 +5,12 @@ import {
   defineWorkflow,
   step,
   PromptStepMachine,
+  type ParsePathOutput,
+  type ParsePackageNameOutput,
+  parsePackageName,
+  parsePath,
+  makeLineReplace,
+  getPackageName,
 } from "@saflib/workflows";
 import path from "node:path";
 
@@ -14,15 +20,13 @@ const input = [
   {
     name: "name",
     description: "The name of the schema to create (e.g., 'user' or 'product')",
-    exampleValue: "example-schema",
+    exampleValue: "example",
   },
 ] as const;
 
-interface AddSchemaWorkflowContext {
-  name: string;
-  targetDir: string;
-  schemaFileName: string;
-}
+interface AddSchemaWorkflowContext
+  extends ParsePackageNameOutput,
+    ParsePathOutput {}
 
 export const AddSchemaWorkflowDefinition = defineWorkflow<
   typeof input,
@@ -32,21 +36,23 @@ export const AddSchemaWorkflowDefinition = defineWorkflow<
 
   description: "Add a new schema to an existing OpenAPI specification package",
 
-  checklistDescription: ({ name }) =>
-    `Add a new ${name} schema to the OpenAPI specification.`,
+  checklistDescription: ({ groupName }) =>
+    `Add a new ${groupName} schema to the OpenAPI specification.`,
 
   input,
 
   sourceUrl: import.meta.url,
 
   context: ({ input }) => {
-    const targetDir = input.cwd;
-    const schemaFileName = `${input.name}.yaml`;
+    const schemaPath = `./schemas/${input.name}.yaml`;
 
     return {
-      name: input.name,
-      targetDir,
-      schemaFileName,
+      ...parsePackageName(getPackageName(input.cwd), {}),
+      ...parsePath(schemaPath, {
+        requiredSuffix: ".yaml",
+        cwd: input.cwd,
+        requiredPrefix: "./schemas/",
+      }),
     };
   },
 
@@ -58,13 +64,14 @@ export const AddSchemaWorkflowDefinition = defineWorkflow<
 
   steps: [
     step(CopyStepMachine, ({ context }) => ({
-      name: context.name,
-      targetDir: path.join(context.targetDir, "schemas"),
+      name: context.targetName,
+      targetDir: context.targetDir,
+      lineReplace: makeLineReplace(context),
     })),
 
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "schema",
-      promptMessage: `Update **${context.schemaFileName}** to define the schema for the ${context.name} resource.
+      promptMessage: `Update **${context.targetName}** to define the schema for the ${context.groupName} resource.
       
       Replace the template properties with actual properties for your schema:
       - Define the object properties and their types

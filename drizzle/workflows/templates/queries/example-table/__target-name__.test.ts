@@ -1,23 +1,22 @@
 import { describe, it, expect, beforeEach, afterEach, assert } from "vitest";
 import type { DbKey } from "@saflib/drizzle";
-import { templateFileDb } from "@template/file-db";
-import { templateFile } from "./template-file.ts";
+import { __serviceName__DbManager } from "../../instances.ts";
+import { __targetName____GroupName__ } from "./__target-name__.ts";
 
-describe("templateFile", () => {
+describe("__targetName____GroupName__", () => {
   let dbKey: DbKey;
 
   beforeEach(() => {
-    dbKey = templateFileDb.connect();
+    dbKey = __serviceName__DbManager.connect();
   });
 
   afterEach(async () => {
-    templateFileDb.disconnect(dbKey);
+    __serviceName__DbManager.disconnect(dbKey);
   });
 
   // TODO: unskip this test
   it.skip("should execute successfully", async () => {
-    // @ts-expect-error - TODO: remove this line and provide valid input
-    const { result } = await templateFile(dbKey, {});
+    const { result } = await __targetName____GroupName__(dbKey, {});
     expect(result).toBeDefined();
     assert(result);
     expect(result.name).toBe("test");

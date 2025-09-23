@@ -4,6 +4,9 @@ import {
   step,
   CommandStepMachine,
   CwdStepMachine,
+  type ParsePackageNameOutput,
+  parsePackageName,
+  makeLineReplace,
 } from "@saflib/workflows";
 import path from "node:path";
 
@@ -24,12 +27,8 @@ const input = [
   },
 ] as const;
 
-interface OpenapiInitWorkflowContext {
-  name: string;
+interface OpenapiInitWorkflowContext extends ParsePackageNameOutput {
   targetDir: string;
-  packageName: string;
-  serviceName: string;
-  serviceNameCapitalized: string;
 }
 
 export const OpenapiInitWorkflowDefinition = defineWorkflow<
@@ -40,32 +39,19 @@ export const OpenapiInitWorkflowDefinition = defineWorkflow<
 
   description: "Create an OpenAPI package",
 
-  checklistDescription: ({ name }) => `Create the ${name} OpenAPI package.`,
+  checklistDescription: ({ serviceName }) =>
+    `Create the ${serviceName} OpenAPI package.`,
 
   input,
 
   sourceUrl: import.meta.url,
 
   context: ({ input }) => {
-    let name = input.name;
-    // make sure name ends with -spec
-    if (!input.name.endsWith("-spec")) {
-      name = input.name + "-spec";
-    }
-    let serviceName = name.replace("-spec", "");
-    if (serviceName.startsWith("@")) {
-      serviceName = serviceName.split("/")[1];
-    }
-    const serviceNameCapitalized =
-      serviceName.charAt(0).toUpperCase() + serviceName.slice(1);
-    const targetDir = path.join(input.cwd, input.path);
-
     return {
-      name,
-      targetDir,
-      packageName: name,
-      serviceName,
-      serviceNameCapitalized,
+      ...parsePackageName(input.name, {
+        requiredSuffix: "-spec",
+      }),
+      targetDir: path.join(input.cwd, input.path),
     };
   },
 
@@ -80,14 +66,9 @@ export const OpenapiInitWorkflowDefinition = defineWorkflow<
 
   steps: [
     step(CopyStepMachine, ({ context }) => ({
-      name: context.name,
+      name: "",
       targetDir: context.targetDir,
-      lineReplace: (line) =>
-        line
-          .replace("@template/file-spec", context.packageName)
-          .replace("service-name", context.serviceName)
-          .replace("Service Name", context.serviceNameCapitalized)
-          .replace("ServiceName", context.serviceNameCapitalized),
+      lineReplace: makeLineReplace(context),
     })),
 
     step(CwdStepMachine, ({ context }) => ({

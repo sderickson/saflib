@@ -1,2 +1,2 @@
 // export everything from each fake file
-export * from "./template-file.fake.ts";
+export * from "./__target-name__.fake.ts";

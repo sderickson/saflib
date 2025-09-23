@@ -6,6 +6,7 @@ import {
 export function transformName(
   originalName: string,
   targetName: string,
+  lineReplace?: (str: string) => string,
 ): string {
   // Handle different naming conventions using utility functions
   const pascalTargetName = kebabCaseToPascalCase(targetName);
@@ -17,6 +18,10 @@ export function transformName(
   result = result.replace(/template-file/g, targetName);
   result = result.replace(/template_file/g, snakeTargetName);
   result = result.replace(/TemplateFile/g, pascalTargetName);
+
+  if (lineReplace) {
+    result = lineReplace(result);
+  }
 
   return result;
 }

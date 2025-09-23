@@ -1,9 +1,9 @@
 # TODO: Replace this example route with actual route definition for your API.
 # The top-level key should be the operationId (e.g., "listUsers", "createUser", etc.)
 
-templateOperationId:
+__operationId__:
   summary: "TODO: Brief description of what this operation does"
-  operationId: "templateOperationId"
+  operationId: "__operationId__"
 
   # TODO: Update request parameters (if any)
   parameters:

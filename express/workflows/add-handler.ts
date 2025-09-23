@@ -7,10 +7,14 @@ import {
   CommandStepMachine,
   defineWorkflow,
   step,
+  type ParsePackageNameOutput,
+  type ParsePathOutput,
+  parsePath,
+  parsePackageName,
+  getPackageName,
+  makeLineReplace,
 } from "@saflib/workflows";
 import path from "node:path";
-import { kebabCaseToPascalCase, kebabCaseToCamelCase } from "@saflib/utils";
-import { readFileSync } from "node:fs";
 
 const sourceDir = path.join(import.meta.dirname, "templates/routes/example");
 
@@ -18,24 +22,13 @@ const input = [
   {
     name: "path",
     description: "Path of the new handler (e.g. 'routes/todos/create')",
-    exampleValue: "routes/example-subpath/example-handler",
+    exampleValue: "./routes/example-subpath/example-handler.ts",
   },
 ] as const;
 
-interface AddHandlerWorkflowContext {
-  name: string; // e.g. "create"
-  camelName: string; // e.g. createCallSeries
-  targetDir: string;
-  resourceName: string; // e.g. "call-series"
-  indexPath: string; // e.g. "/routes/call-series/index.ts"
-  pascalResourceName: string; // e.g. "CallSeries"
-  httpAppPath: string; // e.g. "/http.ts"
-  pascalServiceName: string; // e.g. "Example"
-  camelServiceName: string; // e.g. "example"
-  specPackageName: string; // e.g. "@template/file-spec"
-  commonPackageName: string; // e.g. "@template/file-service-common"
-  operationId: string; // e.g. "createExample"
-}
+interface AddHandlerWorkflowContext
+  extends ParsePackageNameOutput,
+    ParsePathOutput {}
 
 export const AddHandlerWorkflowDefinition = defineWorkflow<
   typeof input,
@@ -45,54 +38,27 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
 
   description: "Add a new route to an Express.js service.",
 
-  checklistDescription: ({ name, resourceName }) =>
-    `Add ${name} route handler for ${resourceName}.`,
+  checklistDescription: ({ packageName, targetName }) =>
+    `Add ${targetName} route handler to ${packageName}.`,
 
   input,
 
   sourceUrl: import.meta.url,
 
   context: ({ input }) => {
-    const targetDir = path.dirname(path.join(input.cwd, input.path));
-    const featureName = path.basename(targetDir);
-
-    const cwd = input.cwd;
-    const indexPath = path.join(targetDir, "index.ts").replace(cwd, "");
-    const pascalFeatureName = kebabCaseToPascalCase(featureName);
-    const httpAppPath = path.join(cwd, "http.ts").replace(cwd, "");
-    const name = path.basename(input.path).split(".")[0];
-    const packageName =
-      readFileSync(path.join(cwd, "package.json"), "utf8").match(
-        /name": "(.+)"/,
-      )?.[1] || "@your/target-package";
-    const specPackageName = packageName.replace("-http", "-spec");
-    const commonPackageName = packageName.replace("-http", "-service-common");
-    const serviceName =
-      packageName.split("/").pop()?.replace("-http", "") || "";
-
-    const resource = path.basename(targetDir);
-    const operationId =
-      kebabCaseToCamelCase(name) + kebabCaseToPascalCase(resource);
-
     return {
-      name,
-      camelName: kebabCaseToCamelCase(name),
-      targetDir,
-      resourceName: featureName,
-      indexPath,
-      pascalResourceName: pascalFeatureName,
-      httpAppPath,
-      pascalServiceName: kebabCaseToPascalCase(serviceName),
-      camelServiceName: kebabCaseToCamelCase(serviceName),
-      specPackageName,
-      commonPackageName,
-      operationId,
+      ...parsePackageName(getPackageName(input.cwd), {}),
+      ...parsePath(input.path, {
+        requiredSuffix: ".ts",
+        cwd: input.cwd,
+        requiredPrefix: "./routes/",
+      }),
     };
   },
 
   templateFiles: {
-    handler: path.join(sourceDir, "template-file.ts"),
-    test: path.join(sourceDir, "template-file.test.ts"),
+    handler: path.join(sourceDir, "__target-name__.ts"),
+    test: path.join(sourceDir, "__target-name__.test.ts"),
     index: path.join(sourceDir, "index.ts"),
   },
 
@@ -110,29 +76,23 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
     })),
 
     step(CopyStepMachine, ({ context }) => ({
-      name: context.name,
+      name: context.targetName,
       targetDir: context.targetDir,
-      lineReplace: (line) =>
-        line
-          .replace("ServiceName", `${context.pascalServiceName}`)
-          .replace("serviceName", `${context.camelServiceName}`)
-          .replace("FeatureName", `${context.pascalResourceName}`)
-          .replace("@template/file-spec", context.specPackageName)
-          .replace("@template/file-service-common", context.commonPackageName)
-          .replace("operationId", context.operationId),
+      lineReplace: makeLineReplace(context),
     })),
 
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "index",
-      promptMessage: `Update the feature router at \`${context.indexPath}\` to include the new route handler.
-        1. Import the new handler from "./${context.name}.ts"
+      promptMessage: `Update the feature router to include the new route handler.
+      It is located at \`${context.copiedFiles!.index}\`.
+        1. Import the new handler from "./${context.targetName}.ts"
         2. Add the route to the router using the appropriate HTTP method`,
     })),
 
-    step(PromptStepMachine, ({ context }) => ({
-      promptText: `Update the HTTP app to include the feature router, if not already there.
-        1. Import the feature router: \`import { create${context.pascalResourceName}Router } from "./routes/${context.resourceName}/index.ts"\`
-        2. Add the router to the app: \`app.use("/${context.resourceName}", create${context.pascalResourceName}Router())\`
+    step(PromptStepMachine, () => ({
+      promptText: `Update the root http.ts file to include the feature router, if not already there.
+        1. Import the feature router that was just exported from the index.ts file
+        2. Add the router to the app with "app.use"
         3. Make sure to add this before the error handlers`,
     })),
 
@@ -141,14 +101,14 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
     })),
 
     step(PromptStepMachine, ({ context }) => ({
-      promptText: `Check if routes/_helpers.ts has mapper functions for converting database models to API response types for this ${context.name} handler.
+      promptText: `Check if routes/_helpers.ts has mapper functions for converting database models to API response types for this ${context.targetName} handler.
 
 If mapper functions don't exist for the database models used by this endpoint, add them to routes/_helpers.ts following patterns shown there.`,
     })),
 
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "handler",
-      promptMessage: `Implement the ${context.camelName} route handler. Make sure to:
+      promptMessage: `Implement the ${context.targetName} route handler. Make sure to:
         1. Use createHandler from @saflib/express
         2. Use types from your OpenAPI spec for request/response bodies
         3. Use mapper functions from routes/_helpers.ts to convert database models to API responses
@@ -164,7 +124,7 @@ If mapper functions don't exist for the database models used by this endpoint, a
 
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "test",
-      promptMessage: `Update the generated ${context.name}.test.ts file following the testing guide patterns. Make sure to implement proper test cases that cover both success and error scenarios.`,
+      promptMessage: `Update the generated ${context.targetName}.test.ts file following the testing guide patterns. Make sure to implement proper test cases that cover both success and error scenarios.`,
     })),
 
     step(CommandStepMachine, () => ({

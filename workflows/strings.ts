@@ -59,3 +59,10 @@ export function kebabCaseToCamelCase(name: string) {
 export function kebabCaseToSnakeCase(name: string) {
   return name.replace(/-/g, "_");
 }
+
+/**
+ * Convert from camelCase to kebab-case.
+ */
+export function camelCaseToKebabCase(name: string) {
+  return name.replace(/([A-Z])/g, "-$1").toLowerCase();
+}

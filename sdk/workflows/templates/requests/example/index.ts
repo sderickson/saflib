@@ -1,1 +1,1 @@
-export * from "./template-file.ts";
+export * from "./__target-name__.ts";

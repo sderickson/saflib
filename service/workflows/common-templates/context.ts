@@ -1,23 +1,23 @@
 import { AsyncLocalStorage } from "async_hooks";
 import type { DbKey } from "@saflib/drizzle";
-import { templateFileDb } from "@template/file-db";
+import { __serviceName__Db } from "template-package-db";
 
-export interface TemplateFileServiceContext {
-  templateFileDbKey: DbKey;
+export interface __ServiceName__ServiceContext {
+  __serviceName__DbKey: DbKey;
 }
 
-export const templateFileServiceStorage =
-  new AsyncLocalStorage<TemplateFileServiceContext>();
+export const __serviceName__ServiceStorage =
+  new AsyncLocalStorage<__ServiceName__ServiceContext>();
 
-export interface TemplateFileServiceContextOptions {
-  templateFileDbKey?: DbKey;
+export interface __ServiceName__ServiceContextOptions {
+  __serviceName__DbKey?: DbKey;
 }
 
 export const makeContext = (
-  options: TemplateFileServiceContextOptions = {},
-): TemplateFileServiceContext => {
-  const dbKey = options.templateFileDbKey ?? templateFileDb.connect();
+  options: __ServiceName__ServiceContextOptions = {},
+): __ServiceName__ServiceContext => {
+  const dbKey = options.__serviceName__DbKey ?? __serviceName__Db.connect();
   return {
-    templateFileDbKey: dbKey,
+    __serviceName__DbKey: dbKey,
   };
 };

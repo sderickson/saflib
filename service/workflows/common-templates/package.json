@@ -1,6 +1,6 @@
 {
-  "name": "@template/file-service-common",
-  "description": "Shared types and utilities for the caller service",
+  "name": "template-package-service-common",
+  "description": "Shared types and utilities for the __service-name__ service",
   "private": true,
   "type": "module",
   "exports": {

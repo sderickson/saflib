@@ -1,6 +1,6 @@
 {
-  "name": "@template/file-sdk",
-  "description": "Tanstack queries and shared components for @template/file service",
+  "name": "template-package-sdk",
+  "description": "Tanstack queries and shared components for __service-name__ service",
   "private": true,
   "type": "module",
   "exports": {
@@ -20,6 +20,6 @@
   "dependencies": {
     "@saflib/sdk": "*",
     "@saflib/vue": "*",
-    "@template/file-spec": "*"
+    "template-package-spec": "*"
   }
 }
