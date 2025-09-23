@@ -100,10 +100,9 @@
 <script setup lang="ts">
 import { pending_approvals_table_strings as strings } from "./PendingApprovalsTable.strings.ts";
 import { useReverseT } from "../../i18n.ts";
-import { TanstackError, getTanstackErrorMessage } from "@saflib/sdk";
+import { getTanstackErrorMessage } from "@saflib/sdk";
 import { useListAccessRequests } from "../../requests/access-requests/list.ts";
 import { useApproveAccessRequest } from "../../requests/access-requests/approve.ts";
-import { watch } from "vue";
 
 const { t } = useReverseT();
 
@@ -161,11 +160,6 @@ const getStatusText = (status: string) => {
     default:
       return status;
   }
-};
-
-const getErrorMessage = (error: TanstackError | undefined) => {
-  if (!error) return "";
-  return getTanstackErrorMessage(error);
 };
 
 const headers = [
