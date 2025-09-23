@@ -17,7 +17,7 @@ const input = [
     name: "name",
     description:
       "The name of the shared service package to create (e.g., 'example-service-common')",
-    exampleValue: "@example/example-service-common",
+    exampleValue: "example-service-common",
   },
   {
     name: "path",

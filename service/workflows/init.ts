@@ -15,7 +15,6 @@ import { ExpressInitWorkflowDefinition } from "@saflib/express/workflows";
 import { OpenapiInitWorkflowDefinition } from "@saflib/openapi/workflows";
 import { SdkInitWorkflowDefinition } from "@saflib/sdk/workflows";
 import { InitCommonWorkflowDefinition } from "./init-common.ts";
-import { getCurrentPackageName } from "@saflib/dev-tools";
 
 const sourceDir = path.join(import.meta.dirname, "service-templates");
 
@@ -24,7 +23,7 @@ const input = [
     name: "name",
     description:
       "The name of the service package to create (e.g., '@foo/identity' or '@bar/analytics')",
-    exampleValue: "example",
+    exampleValue: "example-service",
   },
   {
     name: "path",
@@ -35,16 +34,8 @@ const input = [
 ] as const;
 
 interface InitWorkflowContext extends ParsePackageNameOutput {
-  // serviceName: string;
   targetDir: string;
-  // packageName: string;
-  // dbPackageName: string;
-  // httpPackageName: string;
-  // specPackageName: string;
-  // commonPackageName: string;
   serviceGroupDir: string;
-  // packagePrefix: string;
-  // sdkPackageName: string;
 }
 
 export const InitWorkflowDefinition = defineWorkflow<
@@ -119,7 +110,10 @@ export const InitWorkflowDefinition = defineWorkflow<
     // common
     step(makeWorkflowMachine(InitCommonWorkflowDefinition), ({ context }) => ({
       name: context.sharedPackagePrefix + "-service-common",
-      path: context.serviceGroupDir,
+      path: path.join(
+        context.serviceGroupDir,
+        `${context.serviceName}-service-common`,
+      ),
     })),
 
     // express
@@ -128,7 +122,7 @@ export const InitWorkflowDefinition = defineWorkflow<
       path: path.join(context.serviceGroupDir, `${context.serviceName}-http`),
     })),
 
-    // service itself
+    // // service itself
     step(CopyStepMachine, ({ context }) => ({
       name: context.serviceName,
       targetDir: context.targetDir,
