@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import { stubGlobals, getElementByString } from "@saflib/vue/testing";
 import { type VueWrapper } from "@vue/test-utils";
 import PendingApprovalsTable from "./PendingApprovalsTable.vue";
@@ -31,30 +31,30 @@ describe("PendingApprovalsTable", () => {
     expect(getDescription(wrapper).exists()).toBe(true);
   });
 
-  // it("should display access requests in table", async () => {
-  //   const wrapper = mountTestApp(PendingApprovalsTable, {
-  //     props: {
-  //       accessRequests: mockAccessRequests,
-  //     },
-  //   });
+  it("should display access requests in table", async () => {
+    const wrapper = mountTestApp(PendingApprovalsTable, {
+      props: {
+        accessRequests: mockAccessRequests,
+      },
+    });
 
-  //   // Wait for data to load
-  //   await wrapper.vm.$nextTick();
+    // Wait for data to load
+    await vi.waitUntil(() => wrapper.text().includes(strings.secretName));
 
-  //   // Check table headers
-  //   expect(wrapper.text()).toContain(strings.secretName);
-  //   expect(wrapper.text()).toContain(strings.serviceName);
-  //   expect(wrapper.text()).toContain(strings.status);
-  //   expect(wrapper.text()).toContain(strings.requested);
-  //   expect(wrapper.text()).toContain(strings.accessCount);
-  //   expect(wrapper.text()).toContain(strings.actions);
+    // Check table headers
+    expect(wrapper.text()).toContain(strings.secretName);
+    expect(wrapper.text()).toContain(strings.serviceName);
+    expect(wrapper.text()).toContain(strings.status);
+    expect(wrapper.text()).toContain(strings.requested);
+    expect(wrapper.text()).toContain(strings.accessCount);
+    expect(wrapper.text()).toContain(strings.actions);
 
-  //   // Check access request data from mock
-  //   expect(wrapper.text()).toContain("database-password");
-  //   expect(wrapper.text()).toContain("test-service-1");
-  //   expect(wrapper.text()).toContain("api-key");
-  //   expect(wrapper.text()).toContain("test-service-2");
-  // });
+    // Check access request data from mock
+    expect(wrapper.text()).toContain("database-password");
+    expect(wrapper.text()).toContain("test-service-1");
+    expect(wrapper.text()).toContain("api-key");
+    expect(wrapper.text()).toContain("test-service-2");
+  });
 
   // it("should show correct status badges", async () => {
   //   const wrapper = mountTestApp(PendingApprovalsTable);

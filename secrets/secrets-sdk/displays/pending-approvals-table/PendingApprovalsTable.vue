@@ -103,6 +103,7 @@ import { useReverseT } from "../../i18n.ts";
 import { TanstackError, getTanstackErrorMessage } from "@saflib/sdk";
 import { useListAccessRequests } from "../../requests/access-requests/list.ts";
 import { useApproveAccessRequest } from "../../requests/access-requests/approve.ts";
+import { watch } from "vue";
 
 const { t } = useReverseT();
 
