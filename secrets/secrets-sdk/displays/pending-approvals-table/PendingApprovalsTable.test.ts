@@ -1,16 +1,13 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect } from "vitest";
 import { stubGlobals, getElementByString } from "@saflib/vue/testing";
 import { type VueWrapper } from "@vue/test-utils";
 import PendingApprovalsTable from "./PendingApprovalsTable.vue";
 import { pending_approvals_table_strings as strings } from "./PendingApprovalsTable.strings.ts";
-import { mountTestApp, testAppHandlers } from "../../test-app.ts";
-import { setupMockServer } from "@saflib/sdk/testing";
+import { mountTestApp } from "../../test-app.ts";
 import { mockAccessRequests } from "../../requests/access-requests/list.fake.ts";
-import type { AccessRequest } from "@saflib/secrets-spec";
 
 describe("PendingApprovalsTable", () => {
   stubGlobals();
-  setupMockServer(testAppHandlers);
 
   const getTitle = (wrapper: VueWrapper) => {
     return getElementByString(wrapper, strings.title);

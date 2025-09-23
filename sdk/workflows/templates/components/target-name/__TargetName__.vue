@@ -47,7 +47,7 @@ import { type TODO } from "template-package-spec";
 const { t } = useReverseT();
 
 defineProps<{
-  items: TODO[]; // TODO: Replace with actual data type from spec package
+  items: TODO[]; // TODO: Replace with actual data type from spec package. Do not load data in this component! Data fetching is handled separately.
   loading?: boolean;
   error?: TanstackError;
 }>();
@@ -60,4 +60,5 @@ defineProps<{
 // }>();
 
 // TODO: Add component-specific functions here
+// TODO: Add mutations (not queries!) here if they are needed for the component
 </script>

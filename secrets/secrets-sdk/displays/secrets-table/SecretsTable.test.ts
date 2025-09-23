@@ -1,16 +1,13 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect } from "vitest";
 import { stubGlobals, getElementByString } from "@saflib/vue/testing";
 import { type VueWrapper } from "@vue/test-utils";
 import SecretsTable from "./SecretsTable.vue";
 import { secrets_table_strings as strings } from "./SecretsTable.strings.ts";
-import { mountTestApp, testAppHandlers } from "../../test-app.ts";
-import { setupMockServer } from "@saflib/sdk/testing";
+import { mountTestApp } from "../../test-app.ts";
 import { mockSecrets } from "../../requests/secrets/list.fake.ts";
-import type { Secret } from "@saflib/secrets-spec";
 
 describe("SecretsTable", () => {
   stubGlobals();
-  setupMockServer(testAppHandlers);
 
 
   const getTitle = (wrapper: VueWrapper) => {
