@@ -1,26 +1,25 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import request from "supertest";
 import express from "express";
-// @ts-expect-error - TODO: remove this line as part of workflow
-import { createServiceNameHttpApp } from "../../http.ts";
+import { create__ServiceName__HttpApp } from "../../http.ts";
 import { makeUserHeaders } from "@saflib/express";
-import type { ServiceNameServiceRequestBody } from "@template/file-spec";
+import type { __ServiceName__ServiceRequestBody } from "template-package-spec";
 
-describe("operationId", () => {
+describe("__targetName____GroupName__", () => {
   let app: express.Express;
 
   beforeEach(() => {
-    app = createServiceNameHttpApp({});
+    app = create__ServiceName__HttpApp({});
   });
 
   // TODO: unskip this test
   it.skip("should handle successful requests", async () => {
     const response = await request(app)
-      .post("/resource-name/template-file")
+      .post("/__group-name__/__target-name__")
       .set(makeUserHeaders())
       .send({
         // @ts-expect-error - TODO: remove this line as part of workflow
-      } satisfies ServiceNameServiceRequestBody["operationId"]);
+      } satisfies __ServiceName__ServiceRequestBody["__targetName____GroupName__"]);
 
     expect(response.status).toBe(201);
     expect(response.body).toMatchObject({
@@ -35,7 +34,7 @@ describe("operationId", () => {
   it.skip("should return 4xx for ...", async () => {
     // make a request which will return the targeted error
     const response = await request(app)
-      .post("/resource-name/template-file")
+      .post("/__group-name__/__target-name__")
       .set(makeUserHeaders())
       .send({
         // ...

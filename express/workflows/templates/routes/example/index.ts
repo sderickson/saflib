@@ -1,21 +1,21 @@
 import express from "express";
-import { templateFileFeatureNameHandler } from "./template-file.ts";
+import { __targetName__Handler } from "./__target-name__.ts";
 import { createScopedMiddleware } from "@saflib/express";
 // TODO: import the appropriate spec package
 // import { jsonSpec } from "@saflib/cron-spec";
 
-export const createResourceNameRouter = () => {
+export const create__GroupName__Router = () => {
   const router = express.Router();
 
   // Define routes based on cron_routes.yaml
   router.use(
-    "/resource-name",
+    "/__group-name__",
     createScopedMiddleware({
       // TODO: uncomment this once the right jsonSpec is imported
       // apiSpec: jsonSpec,
     }),
   );
-  router.get("/resource-name/route-name", templateFileFeatureNameHandler);
+  router.get("/__group-name__/__target-name__", __targetName__Handler);
 
   return router;
 };
