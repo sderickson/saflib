@@ -3,6 +3,6 @@
 // This also allows the fake in-memory store to automatically refresh the data after each test
 
 // TODO: Export the main mock handlers array
-export const __serviceName__ServiceFakeHandlers = [
+export const exampleServiceFakeHandlers = [
   // add fake handlers here
 ];

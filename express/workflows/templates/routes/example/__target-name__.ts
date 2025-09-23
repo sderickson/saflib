@@ -9,8 +9,7 @@ import createError from "http-errors";
 import { __serviceName__ServiceStorage } from "template-package-service-common";
 import { getSafContextWithAuth } from "@saflib/node";
 // TODO: Import neccessary db functions and error classes, as well as any other deps
-// @ts-expect-error
-import { __serviceName__Db } from "template-package-db";
+// import { __serviceName__Db } from "template-package-db";
 
 export const __targetName__Handler = createHandler(async (req, res) => {
   // @ts-expect-error

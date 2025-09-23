@@ -4,6 +4,9 @@ import {
   CwdStepMachine,
   defineWorkflow,
   step,
+  type ParsePackageNameOutput,
+  parsePackageName,
+  makeLineReplace,
 } from "@saflib/workflows";
 import path from "node:path";
 
@@ -24,10 +27,11 @@ const input = [
   },
 ] as const;
 
-interface SdkInitWorkflowContext {
-  name: string;
+interface SdkInitWorkflowContext extends ParsePackageNameOutput {
   targetDir: string;
-  packageName: string;
+  // name: string;
+  // targetDir: string;
+  // packageName: string;
 }
 
 export const SdkInitWorkflowDefinition = defineWorkflow<
@@ -46,20 +50,11 @@ export const SdkInitWorkflowDefinition = defineWorkflow<
   sourceUrl: import.meta.url,
 
   context: ({ input }) => {
-    let name = input.name;
-    // make sure name doesn't end with -sdk
-    if (input.name.endsWith("-sdk")) {
-      name = input.name.slice(0, -4);
-    }
-    const packageName = name + "-sdk";
-    if (name.startsWith("@")) {
-      name = name.split("/")[1];
-    }
-    const targetDir = path.join(input.cwd, input.path);
     return {
-      name,
-      targetDir,
-      packageName,
+      ...parsePackageName(input.name, {
+        requiredSuffix: "-sdk",
+      }),
+      targetDir: path.join(input.cwd, input.path),
     };
   },
 
@@ -79,10 +74,9 @@ export const SdkInitWorkflowDefinition = defineWorkflow<
 
   steps: [
     step(CopyStepMachine, ({ context }) => ({
-      name: context.name,
+      name: "",
       targetDir: context.targetDir,
-      lineReplace: (line) =>
-        line.replace("@template/file", context.packageName.replace("-sdk", "")),
+      lineReplace: makeLineReplace(context),
     })),
 
     step(CwdStepMachine, ({ context }) => ({
