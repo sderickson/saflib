@@ -32,6 +32,7 @@ interface InitWorkflowContext {
   dbPackageName: string;
   httpPackageName: string;
   specPackageName: string;
+  commonPackageName: string;
   serviceGroupDir: string;
   packagePrefix: string;
   sdkPackageName: string;
@@ -77,6 +78,7 @@ export const InitWorkflowDefinition = defineWorkflow<
     const httpPackageName = `${packagePrefix}http`;
     const specPackageName = `${packagePrefix}spec`;
     const sdkPackageName = `${packagePrefix}sdk`;
+    const commonPackageName = `${packagePrefix}service-common`;
     return {
       serviceName,
       targetDir,
@@ -87,6 +89,7 @@ export const InitWorkflowDefinition = defineWorkflow<
       specPackageName,
       packagePrefix,
       sdkPackageName,
+      commonPackageName,
     };
   },
 
@@ -124,6 +127,7 @@ export const InitWorkflowDefinition = defineWorkflow<
 
     // common
     step(makeWorkflowMachine(InitCommonWorkflowDefinition), ({ context }) => ({
+      name: context.commonPackageName,
       path: context.serviceGroupDir,
     })),
 

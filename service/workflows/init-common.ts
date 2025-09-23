@@ -6,6 +6,7 @@ import {
   CommandStepMachine,
   type ParsePackageNameOutput,
   parsePackageName,
+  makeLineReplace,
 } from "@saflib/workflows";
 import path from "node:path";
 
@@ -70,11 +71,7 @@ export const InitCommonWorkflowDefinition = defineWorkflow<
     step(CopyStepMachine, ({ context }) => ({
       name: context.serviceName,
       targetDir: context.targetDir,
-      lineReplace: (line) =>
-        line.replace(
-          "@template/file",
-          context.packageName.replace("-service-common", ""),
-        ),
+      lineReplace: makeLineReplace(context),
     })),
 
     step(CwdStepMachine, ({ context }) => ({
