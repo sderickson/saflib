@@ -1,6 +1,6 @@
 {
-  "name": "@template/file-service",
-  "description": "Service package for template-file",
+  "name": "template-package-service",
+  "description": "Service package for __service-name__",
   "type": "module",
   "exports": {
     ".": "./index.ts"
@@ -16,9 +16,9 @@
   "dependencies": {
     "@saflib/env": "*",
     "@saflib/monorepo": "*",
-    "@template/file-db": "*",
-    "@template/file-http": "*",
-    "@template/file-service-common": "*"
+    "template-package-db": "*",
+    "template-package-http": "*",
+    "template-package-service-common": "*"
   },
   "devDependencies": {
     "@saflib/vitest": "*"

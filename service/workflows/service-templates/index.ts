@@ -1,25 +1,25 @@
 import { startExpressServer } from "@saflib/express";
-import { createTemplateFileHttpApp } from "@template/file-http";
-import { templateFileDb } from "@template/file-db";
+import { create__ServiceName__HttpApp } from "template-package-http";
+import { __serviceName__Db } from "template-package-db";
 import { makeSubsystemReporters } from "@saflib/node";
 import { typedEnv } from "./env.ts";
-import { makeContext } from "@template/file-service-common";
+import { makeContext } from "template-package-service-common";
 
-export function startTemplateFileService() {
+export function start__ServiceName__Service() {
   const { log, logError } = makeSubsystemReporters("init", "main");
   try {
-    log.info("Starting up TemplateFile service...");
-    log.info("Connecting to template-file-db...");
-    const dbKey = templateFileDb.connect({ onDisk: true });
-    const context = makeContext({ templateFileDbKey: dbKey });
-    log.info("template-file-db connection complete.");
+    log.info("Starting up __service-name__ service...");
+    log.info("Connecting to __service-name__-db...");
+    const dbKey = __serviceName__Db.connect({ onDisk: true });
+    const context = makeContext({ __serviceName__DbKey: dbKey });
+    log.info("__service-name__-db connection complete.");
 
-    log.info("Starting template-file-http...");
-    const expressApp = createTemplateFileHttpApp(context);
+    log.info("Starting __service-name__-http...");
+    const expressApp = create__ServiceName__HttpApp(context);
     startExpressServer(expressApp, {
-      port: parseInt(typedEnv.TEMPLATE_FILE_SERVICE_HTTP_PORT || "3000", 10),
+      port: parseInt(typedEnv.__SERVICE_NAME___SERVICE_HTTP_PORT || "3000", 10),
     });
-    log.info("template-file-http startup complete.");
+    log.info("__service-name__-http startup complete.");
   } catch (error) {
     logError(error);
   }

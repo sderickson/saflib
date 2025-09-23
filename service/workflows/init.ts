@@ -5,6 +5,9 @@ import {
   makeWorkflowMachine,
   CommandStepMachine,
   CwdStepMachine,
+  type ParsePackageNameOutput,
+  parsePackageName,
+  makeLineReplace,
 } from "@saflib/workflows";
 import path from "node:path";
 import { DrizzleInitWorkflowDefinition } from "@saflib/drizzle/workflows";
@@ -18,24 +21,30 @@ const sourceDir = path.join(import.meta.dirname, "service-templates");
 
 const input = [
   {
+    name: "name",
+    description:
+      "The name of the service package to create (e.g., '@foo/identity' or '@bar/analytics')",
+    exampleValue: "example",
+  },
+  {
     name: "path",
     description:
-      "The path to the target directory for the service package (e.g., './services/example')",
+      "The path to the target directory for the service package (e.g., './services/example').",
     exampleValue: "./services/example",
   },
 ] as const;
 
-interface InitWorkflowContext {
-  serviceName: string;
+interface InitWorkflowContext extends ParsePackageNameOutput {
+  // serviceName: string;
   targetDir: string;
-  packageName: string;
-  dbPackageName: string;
-  httpPackageName: string;
-  specPackageName: string;
-  commonPackageName: string;
+  // packageName: string;
+  // dbPackageName: string;
+  // httpPackageName: string;
+  // specPackageName: string;
+  // commonPackageName: string;
   serviceGroupDir: string;
-  packagePrefix: string;
-  sdkPackageName: string;
+  // packagePrefix: string;
+  // sdkPackageName: string;
 }
 
 export const InitWorkflowDefinition = defineWorkflow<
@@ -55,41 +64,23 @@ export const InitWorkflowDefinition = defineWorkflow<
   sourceUrl: import.meta.url,
 
   context: ({ input }) => {
-    let serviceName = path.basename(input.path);
-    if (serviceName.endsWith("-service")) {
-      serviceName = serviceName.slice(0, -8);
+    const parsed = parsePackageName(input.name, {
+      requiredSuffix: "-service",
+    });
+    if (!input.path.endsWith(`/${parsed.serviceName}`)) {
+      throw new Error(
+        `The path must end with the service name, e.g. ${path.dirname(input.path)}/${parsed.serviceName}`,
+      );
     }
     const targetDir = path.join(
       input.cwd,
       input.path,
-      serviceName + "-service",
+      parsed.serviceName + "-service",
     );
-    const currentPackageName = getCurrentPackageName();
-    let orgString = "";
-    if (
-      currentPackageName.startsWith("@") &&
-      currentPackageName.includes("/")
-    ) {
-      orgString = currentPackageName.split("/")[0] + "/";
-    }
-    const packagePrefix = `${orgString}${serviceName}-`;
-    const packageName = `${packagePrefix}service`;
-    const dbPackageName = `${packagePrefix}db`;
-    const httpPackageName = `${packagePrefix}http`;
-    const specPackageName = `${packagePrefix}spec`;
-    const sdkPackageName = `${packagePrefix}sdk`;
-    const commonPackageName = `${packagePrefix}service-common`;
     return {
-      serviceName,
+      ...parsed,
       targetDir,
       serviceGroupDir: input.path,
-      packageName,
-      dbPackageName,
-      httpPackageName,
-      specPackageName,
-      packagePrefix,
-      sdkPackageName,
-      commonPackageName,
     };
   },
 
@@ -109,31 +100,31 @@ export const InitWorkflowDefinition = defineWorkflow<
   steps: [
     // openapi
     step(makeWorkflowMachine(OpenapiInitWorkflowDefinition), ({ context }) => ({
-      name: context.specPackageName,
+      name: context.sharedPackagePrefix + "-spec",
       path: path.join(context.serviceGroupDir, `${context.serviceName}-spec`),
     })),
 
     // drizzle
     step(makeWorkflowMachine(DrizzleInitWorkflowDefinition), ({ context }) => ({
-      name: context.dbPackageName,
+      name: context.sharedPackagePrefix + "-db",
       path: path.join(context.serviceGroupDir, `${context.serviceName}-db`),
     })),
 
     // sdk
     step(makeWorkflowMachine(SdkInitWorkflowDefinition), ({ context }) => ({
-      name: context.sdkPackageName,
+      name: context.sharedPackagePrefix + "-sdk",
       path: path.join(context.serviceGroupDir, `${context.serviceName}-sdk`),
     })),
 
     // common
     step(makeWorkflowMachine(InitCommonWorkflowDefinition), ({ context }) => ({
-      name: context.commonPackageName,
+      name: context.sharedPackagePrefix + "-service-common",
       path: context.serviceGroupDir,
     })),
 
     // express
     step(makeWorkflowMachine(ExpressInitWorkflowDefinition), ({ context }) => ({
-      name: context.httpPackageName,
+      name: context.sharedPackagePrefix + "-http",
       path: path.join(context.serviceGroupDir, `${context.serviceName}-http`),
     })),
 
@@ -141,9 +132,7 @@ export const InitWorkflowDefinition = defineWorkflow<
     step(CopyStepMachine, ({ context }) => ({
       name: context.serviceName,
       targetDir: context.targetDir,
-      lineReplace: (line) => {
-        return line.replace("@template/file-", context.packagePrefix);
-      },
+      lineReplace: makeLineReplace(context),
     })),
 
     step(CwdStepMachine, ({ context }) => ({

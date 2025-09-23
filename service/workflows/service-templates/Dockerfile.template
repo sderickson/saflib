@@ -7,5 +7,5 @@ WORKDIR /app
 RUN npm install --omit=dev
 #{ copy_src }#
 
-WORKDIR /app/services/template-file/template-file-service
+WORKDIR /app/__service-group-dir__/__service-name__-service
 CMD ["npm", "start"]

@@ -3,9 +3,9 @@ FROM node:alpine3.19
 
 WORKDIR /app
 
-COPY --parents ./package.json ./package-lock.json ./saflib/drizzle/package.json ./saflib/env/package.json ./saflib/express/package.json ./saflib/monorepo/package.json ./saflib/node/package.json ./saflib/openapi/package.json ./saflib/utils/package.json ./saflib/drizzle/workflows/templates/package.json ./saflib/express/workflows/templates/package.json ./saflib/service/workflows/service-templates/package.json ./saflib/service/workflows/common-templates/package.json ./saflib/openapi/workflows/templates/package.json ./
+COPY --parents ./package.json ./package-lock.json ./drizzle/package.json ./env/package.json ./express/package.json ./monorepo/package.json ./node/package.json ./openapi/package.json ./utils/package.json ./drizzle/workflows/templates/package.json ./express/workflows/templates/package.json ./service/workflows/service-templates/package.json ./service/workflows/common-templates/package.json ./openapi/workflows/templates/package.json ./
 RUN npm install --omit=dev
-COPY --parents ./saflib/drizzle ./saflib/env ./saflib/express ./saflib/monorepo ./saflib/node ./saflib/openapi ./saflib/utils ./saflib/drizzle/workflows/templates ./saflib/express/workflows/templates ./saflib/service/workflows/service-templates ./saflib/service/workflows/common-templates ./saflib/openapi/workflows/templates ./
+COPY --parents ./drizzle ./env ./express ./monorepo ./node ./openapi ./utils ./drizzle/workflows/templates ./express/workflows/templates ./service/workflows/service-templates ./service/workflows/common-templates ./openapi/workflows/templates ./
 
-WORKDIR /app/services/template-file/template-file-service
+WORKDIR /app/__service-group-dir__/__service-name__-service
 CMD ["npm", "start"]
