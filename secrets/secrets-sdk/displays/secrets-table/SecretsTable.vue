@@ -9,15 +9,16 @@
     </v-card-subtitle>
 
     <v-card-text>
-      <v-progress-circular
-        v-if="loading"
-        indeterminate
-        color="primary"
-        class="mx-auto d-block"
-      ></v-progress-circular>
+      <!-- Loading skeleton -->
+      <div v-if="loading" class="mb-4">
+        <v-skeleton-loader
+          type="table-heading, table-thead, table-tbody, table-tbody, table-tbody"
+          class="elevation-1"
+        ></v-skeleton-loader>
+      </div>
 
       <v-alert v-else-if="error" type="error" variant="tonal" class="mb-4">
-        {{ t(strings.error) }}: {{ error }}
+        {{ getErrorMessage(error) }}
       </v-alert>
 
       <v-alert
@@ -93,13 +94,14 @@
 import { secrets_table_strings as strings } from "./SecretsTable.strings.ts";
 import { useReverseT } from "../../i18n.ts";
 import type { Secret } from "@saflib/secrets-spec";
+import { TanstackError, getTanstackErrorMessage } from "@saflib/sdk";
 
 const { t } = useReverseT();
 
 interface Props {
   secrets: Secret[];
   loading?: boolean;
-  error?: string;
+  error?: TanstackError;
 }
 
 const props = defineProps<Props>();
@@ -119,6 +121,11 @@ const onDelete = (secret: Secret) => {
 
 const formatDate = (timestamp: number) => {
   return new Date(timestamp).toLocaleString();
+};
+
+const getErrorMessage = (error: TanstackError | undefined) => {
+  if (!error) return "";
+  return getTanstackErrorMessage(error);
 };
 
 const headers = [

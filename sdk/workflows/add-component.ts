@@ -104,7 +104,7 @@ export const AddComponentWorkflowDefinition = defineWorkflow<
     })),
 
     step(PromptStepMachine, () => ({
-      promptText: `Export the new Vue component in the root "index.ts" file.`,
+      promptText: `Export the new Vue component in the root "components.ts" file.`,
     })),
 
     step(PromptStepMachine, () => ({
@@ -115,14 +115,16 @@ export const AddComponentWorkflowDefinition = defineWorkflow<
       fileId: "vue",
       promptMessage: `Update **${path.basename(context.copiedFiles!.vue)}** to implement the component.
       
-      The component should take as props some combination of the schemas exported by the adjacent "spec" package. For form components, consider using defineModel() with the schemas from the spec package for two-way data binding. Add any strings to the "strings.ts" file, not directly in the component.`,
+      * The component should take as props some combination of the schemas exported by the adjacent "spec" package. For form components, consider using defineModel() with the schemas from the spec package for two-way data binding. Add any strings to the "strings.ts" file, not directly in the component.
+      * Do not use any custom styles; use Vuetify components and styling exclusively.
+      * Use Vuetify skeletons for loading states.`,
     })),
 
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "test",
       promptMessage: `Update **${path.basename(context.copiedFiles!.test)}** to test the component.
       
-      Structure it similar to the add-spa-page test template, using the mock server, the dedicated test app, and the getElementByString helper function.`,
+      Make sure to use the mock server, the dedicated test app, and the getElementByString helper function.`,
     })),
 
     step(TestStepMachine, () => ({

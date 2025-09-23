@@ -1,11 +1,12 @@
 export const __target_name___strings = {
-  // TODO: Replace strings with strings from the actual design
-  // Use descriptive keys that work well with translation systems
-  title: "__TargetName__ Component",
+  title: "__TargetName__",
   description: "This is a component for the SDK",
 
-  // Add more strings as needed for the component
+  // Standard states
+  empty: "No items found",
+
+  // TODO: Add component-specific strings here
   // Example:
   // button_text: "Click me",
-  // error_message: "Something went wrong",
+  // action_confirm: "Are you sure?",
 };
