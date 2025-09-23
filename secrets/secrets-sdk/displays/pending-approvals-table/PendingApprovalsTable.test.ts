@@ -1,12 +1,10 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { stubGlobals, getElementByString } from "@saflib/vue/testing";
 import { type VueWrapper } from "@vue/test-utils";
 import PendingApprovalsTable from "./PendingApprovalsTable.vue";
 import { pending_approvals_table_strings as strings } from "./PendingApprovalsTable.strings.ts";
 import { mountTestApp, testAppHandlers } from "../../test-app.ts";
 import { setupMockServer } from "@saflib/sdk/testing";
-import { TanstackError } from "@saflib/sdk";
-import { mockAccessRequests } from "../../requests/access-requests/list.fake.ts";
 
 describe("PendingApprovalsTable", () => {
   stubGlobals();
