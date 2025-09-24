@@ -15,7 +15,6 @@ export const approveServiceTokensHandler = secretsHandler({
         approved_by: "admin@example.com", // Fake identity-provided email
         approved_at: Date.now(),
       };
-      console.log("serviceTokenStubs after approve", serviceTokenStubs);
       return serviceTokenStubs[index];
     }
 

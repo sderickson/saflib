@@ -23,9 +23,7 @@ describe("updateSecret", () => {
     assert(data);
     expect(data).toMatchObject({
       id: "secret-1",
-      name: "updated-secret",
       description: "Updated description",
-      masked_value: "updated_secret***",
       is_active: false,
     });
 

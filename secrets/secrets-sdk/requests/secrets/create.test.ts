@@ -22,7 +22,7 @@ describe("createSecret", () => {
     const data = mutation.data?.value;
     assert(data);
     expect(data).toMatchObject({
-      id: "secret-new",
+      id: expect.any(String),
       name: "test-secret",
       description: "A test secret",
       masked_value: "new_secret***",

@@ -15,7 +15,6 @@ export const approveAccessRequestsHandler = secretsHandler({
         granted_by: "admin@example.com", // Fake identity-provided email
         granted_at: Date.now(),
       };
-      console.log("accessRequestStubs after approve", accessRequestStubs);
       return accessRequestStubs[index];
     }
 

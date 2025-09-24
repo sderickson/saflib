@@ -17,8 +17,8 @@ export const updateSecretsHandler = secretsHandler({
             ? body.is_active
             : secretStubs[index].is_active,
         updated_at: Date.now(),
+        masked_value: secretStubs[index].masked_value,
       };
-      console.log("secretStubs after update", secretStubs);
       return secretStubs[index];
     }
 

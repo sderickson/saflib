@@ -9,7 +9,6 @@ export const deleteSecretsHandler = secretsHandler({
     const index = secretStubs.findIndex((stub) => stub.id === params.id);
     if (index !== -1) {
       secretStubs.splice(index, 1);
-      console.log("secretStubs", secretStubs);
     }
     return {
       message: "Secret deleted successfully",

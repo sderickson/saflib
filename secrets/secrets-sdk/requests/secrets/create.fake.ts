@@ -19,7 +19,6 @@ export const createSecretsHandler = secretsHandler({
 
     // Add to in-memory list
     secretStubs.push(newSecret);
-    console.log("secretStubs after create", secretStubs);
 
     return newSecret;
   },

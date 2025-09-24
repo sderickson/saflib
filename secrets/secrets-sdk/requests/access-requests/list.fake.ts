@@ -68,7 +68,6 @@ export const listAccessRequestsHandler = secretsHandler({
       requests = requests.filter((r) => r.service_name === serviceName);
     }
 
-    console.log("requests", { requests, limit });
     return requests.slice(0, limit);
   },
 });

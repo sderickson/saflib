@@ -91,17 +91,6 @@ const missingSecrets = computed(() => {
   const existingSecretNames = new Set(secrets.map((secret) => secret.name));
 
   // Find access requests for secrets that don't exist
-  console.log(
-    "accessRequests",
-    accessRequests.map((request) => request.secret_name),
-  );
-  console.log(
-    "existingSecretNames",
-    existingSecretNames,
-    accessRequests.filter(
-      (request) => !existingSecretNames.has(request.secret_name),
-    ),
-  );
   return accessRequests.filter(
     (request) => !existingSecretNames.has(request.secret_name),
   );

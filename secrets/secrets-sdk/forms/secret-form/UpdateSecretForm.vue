@@ -153,7 +153,6 @@ const onSubmit = async () => {
   if (form.value?.validate()) {
     try {
       const updateData: SecretUpdateRequest = {
-        name: formData.name,
         description: formData.description,
         is_active: formData.is_active,
       };
