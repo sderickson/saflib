@@ -1,12 +1,12 @@
 import { describe, it, expect } from "vitest";
 import { stubGlobals, getElementByString } from "@saflib/vue/testing";
 import { type VueWrapper } from "@vue/test-utils";
-import PendingApprovalsTable from "./PendingApprovalsTable.vue";
-import { pending_approvals_table_strings as strings } from "./PendingApprovalsTable.strings.ts";
+import AccessRequestsTable from "./AccessRequestsTable.vue";
+import { access_requests_table_strings as strings } from "./AccessRequestsTable.strings.ts";
 import { mountTestApp } from "../../test-app.ts";
 import { accessRequestStubs } from "../../requests/access-requests/list.fake.ts";
 
-describe("PendingApprovalsTable", () => {
+describe("AccessRequestsTable", () => {
   stubGlobals();
 
   const getTitle = (wrapper: VueWrapper) => {
@@ -18,7 +18,7 @@ describe("PendingApprovalsTable", () => {
   };
 
   it("should render the component with title and description", async () => {
-    const wrapper = mountTestApp(PendingApprovalsTable, {
+    const wrapper = mountTestApp(AccessRequestsTable, {
       props: {
         accessRequests: [],
         loading: false,
@@ -30,7 +30,7 @@ describe("PendingApprovalsTable", () => {
   });
 
   it("should show loading state", async () => {
-    const wrapper = mountTestApp(PendingApprovalsTable, {
+    const wrapper = mountTestApp(AccessRequestsTable, {
       props: {
         accessRequests: [],
         loading: true,
@@ -45,7 +45,7 @@ describe("PendingApprovalsTable", () => {
 
   it("should show error state", async () => {
     const error = new Error("Test error");
-    const wrapper = mountTestApp(PendingApprovalsTable, {
+    const wrapper = mountTestApp(AccessRequestsTable, {
       props: {
         accessRequests: [],
         loading: false,
@@ -57,7 +57,7 @@ describe("PendingApprovalsTable", () => {
   });
 
   it("should show empty state when no access requests", async () => {
-    const wrapper = mountTestApp(PendingApprovalsTable, {
+    const wrapper = mountTestApp(AccessRequestsTable, {
       props: {
         accessRequests: [],
         loading: false,
@@ -68,7 +68,7 @@ describe("PendingApprovalsTable", () => {
   });
 
   it("should display access requests in table", async () => {
-    const wrapper = mountTestApp(PendingApprovalsTable, {
+    const wrapper = mountTestApp(AccessRequestsTable, {
       props: {
         accessRequests: accessRequestStubs,
         loading: false,
@@ -91,7 +91,7 @@ describe("PendingApprovalsTable", () => {
   });
 
   it("should show correct status badges", async () => {
-    const wrapper = mountTestApp(PendingApprovalsTable, {
+    const wrapper = mountTestApp(AccessRequestsTable, {
       props: {
         accessRequests: accessRequestStubs,
         loading: false,
@@ -104,8 +104,8 @@ describe("PendingApprovalsTable", () => {
     expect(wrapper.text()).toContain(strings.denied);
   });
 
-  it("should show approve/deny buttons for pending requests", async () => {
-    const wrapper = mountTestApp(PendingApprovalsTable, {
+  it("should show approve/deny buttons for all requests", async () => {
+    const wrapper = mountTestApp(AccessRequestsTable, {
       props: {
         accessRequests: accessRequestStubs,
         loading: false,
@@ -115,25 +115,29 @@ describe("PendingApprovalsTable", () => {
     const approveButtons = wrapper.findAll(`[title="${strings.approve}"]`);
     const denyButtons = wrapper.findAll(`[title="${strings.deny}"]`);
 
-    // Should have one pending request with action buttons
-    expect(approveButtons).toHaveLength(2);
-    expect(denyButtons).toHaveLength(2);
+    // Should have buttons for all requests (4 requests = 4 buttons each)
+    expect(approveButtons).toHaveLength(4);
+    expect(denyButtons).toHaveLength(4);
   });
 
-  it("should show processed status for non-pending requests", async () => {
-    const wrapper = mountTestApp(PendingApprovalsTable, {
+  it("should show action buttons for all requests regardless of status", async () => {
+    const wrapper = mountTestApp(AccessRequestsTable, {
       props: {
         accessRequests: accessRequestStubs,
         loading: false,
       },
     });
 
-    // Check that processed requests show "Processed" instead of action buttons
-    expect(wrapper.text()).toContain(strings.processed);
+    // Check that all requests have action buttons (approve/deny)
+    const approveButtons = wrapper.findAll(`[title="${strings.approve}"]`);
+    const denyButtons = wrapper.findAll(`[title="${strings.deny}"]`);
+
+    expect(approveButtons).toHaveLength(4);
+    expect(denyButtons).toHaveLength(4);
   });
 
   it("should format dates correctly", async () => {
-    const wrapper = mountTestApp(PendingApprovalsTable, {
+    const wrapper = mountTestApp(AccessRequestsTable, {
       props: {
         accessRequests: accessRequestStubs,
         loading: false,

@@ -71,26 +71,21 @@
 
         <template v-slot:item.actions="{ item }">
           <v-btn
-            v-if="item.status === 'pending'"
             icon="mdi-check"
             size="small"
-            variant="text"
-            color="success"
+            :variant="item.status === 'granted' ? 'flat' : 'text'"
+            :color="item.status === 'granted' ? 'success' : 'success'"
             @click="onApprove(item)"
             :title="t(strings.approve)"
           ></v-btn>
           <v-btn
-            v-if="item.status === 'pending'"
             icon="mdi-close"
             size="small"
-            variant="text"
-            color="error"
+            :variant="item.status === 'denied' ? 'flat' : 'text'"
+            :color="item.status === 'denied' ? 'error' : 'error'"
             @click="onDeny(item)"
             :title="t(strings.deny)"
           ></v-btn>
-          <span v-else class="text-caption text-grey">
-            {{ t(strings.processed) }}
-          </span>
         </template>
       </v-data-table>
     </v-card-text>
@@ -98,7 +93,7 @@
 </template>
 
 <script setup lang="ts">
-import { pending_approvals_table_strings as strings } from "./PendingApprovalsTable.strings.ts";
+import { access_requests_table_strings as strings } from "./AccessRequestsTable.strings.ts";
 import { useReverseT } from "../../i18n.ts";
 import { getTanstackErrorMessage } from "@saflib/sdk";
 import { useApproveAccessRequest } from "../../requests/access-requests/approve.ts";

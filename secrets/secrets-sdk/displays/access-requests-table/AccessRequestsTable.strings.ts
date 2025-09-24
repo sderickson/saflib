@@ -1,4 +1,4 @@
-export const pending_approvals_table_strings = {
+export const access_requests_table_strings = {
   title: "Pending Approvals",
   description: "Review and approve access requests for secrets",
 

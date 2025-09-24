@@ -30,16 +30,11 @@
       </v-window-item>
 
       <v-window-item value="access-requests">
-        <AccessRequestTable
-          :access-request="accessRequestsQuery.data.value?.[0]"
-          v-if="
-            accessRequestsQuery.data.value &&
-            accessRequestsQuery.data.value.length > 0
-          "
+        <AccessRequestsTable
+          :access-requests="accessRequestsQuery.data.value || []"
+          :loading="accessRequestsQuery.isLoading.value"
+          :error="accessRequestsQuery.error.value"
         />
-        <v-alert v-else type="info" variant="tonal">
-          {{ t(strings.noAccessRequests) }}
-        </v-alert>
       </v-window-item>
 
       <v-window-item value="service-tokens">
@@ -62,7 +57,7 @@ import { useReverseT } from "../../i18n.ts";
 import { ref, computed } from "vue";
 import SecretsTable from "../../displays/secrets-table/SecretsTable.vue";
 import MissingSecretsTable from "../../displays/missing-secrets-table/MissingSecretsTable.vue";
-import AccessRequestTable from "../../displays/access-request-table/AccessRequestTable.vue";
+import AccessRequestsTable from "../../displays/access-requests-table/AccessRequestsTable.vue";
 import ServiceTokensTable from "../../displays/service-tokens-table/ServiceTokensTable.vue";
 
 const { t } = useReverseT();
