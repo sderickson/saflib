@@ -6,6 +6,7 @@ import {
   type ParsePackageNameOutput,
   parsePackageName,
   makeLineReplace,
+  CommandStepMachine,
 } from "@saflib/workflows";
 import path from "node:path";
 
@@ -58,7 +59,6 @@ export const AddSpaWorkflowDefinition = defineWorkflow<
     i18n: path.join(sourceDir, "i18n.ts"),
     main: path.join(sourceDir, "main.ts"),
     packageJson: path.join(sourceDir, "package.json"),
-    pages: path.join(sourceDir, "pages"),
     router: path.join(sourceDir, "router.ts"),
     strings: path.join(sourceDir, "strings.ts"),
     testApp: path.join(sourceDir, "test-app.ts"),
@@ -73,6 +73,20 @@ export const AddSpaWorkflowDefinition = defineWorkflow<
       name: context.serviceName,
       targetDir: context.targetDir,
       lineReplace: makeLineReplace(context),
+    })),
+
+    step(CommandStepMachine, ({ context }) => ({
+      command: "mkdir",
+      args: ["-p", path.join(context.targetDir, "pages")],
+    })),
+
+    step(CommandStepMachine, ({ context }) => ({
+      command: "cp",
+      args: [
+        "-r",
+        path.join(sourceDir, "pages/home-page"),
+        path.join(context.targetDir, "pages"),
+      ],
     })),
 
     step(PromptStepMachine, ({ context }) => ({
