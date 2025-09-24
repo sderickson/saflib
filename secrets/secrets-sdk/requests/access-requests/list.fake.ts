@@ -34,6 +34,17 @@ export const accessRequestStubs = [
     granted_at: 1640995400000,
     access_count: 0,
   },
+  {
+    id: "request-4",
+    secret_id: "secret-3",
+    secret_name: "new-secret",
+    service_name: "test-service-2",
+    status: "pending" as const,
+    requested_at: 1640995200000,
+    granted_by: null,
+    granted_at: null,
+    access_count: 0,
+  },
 ];
 
 export const listAccessRequestsHandler = secretsHandler({
@@ -57,6 +68,7 @@ export const listAccessRequestsHandler = secretsHandler({
       requests = requests.filter((r) => r.service_name === serviceName);
     }
 
+    console.log("requests", { requests, limit });
     return requests.slice(0, limit);
   },
 });

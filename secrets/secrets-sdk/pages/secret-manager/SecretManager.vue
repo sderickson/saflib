@@ -13,14 +13,14 @@
       <v-window-item value="secrets">
         <div class="mb-4">
           <SecretsTable
-            :secrets="secrets"
+            :secrets="secretsQuery.data.value || []"
             :loading="secretsQuery.isLoading.value"
             :error="secretsQuery.error.value"
           />
         </div>
         <div>
           <MissingSecretsTable
-            :missing-secrets="accessRequests"
+            :missing-secrets="missingSecrets"
             :loading="accessRequestsQuery.isLoading.value"
             :error="accessRequestsQuery.error.value"
             @create-secret="onCreateSecret"
@@ -31,8 +31,11 @@
 
       <v-window-item value="access-requests">
         <AccessRequestTable
-          :access-request="accessRequests[0]"
-          v-if="accessRequests.length > 0"
+          :access-request="accessRequestsQuery.data.value?.[0]"
+          v-if="
+            accessRequestsQuery.data.value &&
+            accessRequestsQuery.data.value.length > 0
+          "
         />
         <v-alert v-else type="info" variant="tonal">
           {{ t(strings.noAccessRequests) }}
@@ -41,7 +44,7 @@
 
       <v-window-item value="service-tokens">
         <ServiceTokensTable
-          :service-tokens="serviceTokens"
+          :service-tokens="serviceTokensQuery.data.value || []"
           :loading="serviceTokensQuery.isLoading.value"
           :error="serviceTokensQuery.error.value"
           @approve="onApproveToken"
@@ -56,7 +59,7 @@
 import { secret_manager_page as strings } from "./SecretManager.strings";
 import { useSecretManagerLoader } from "./SecretManager.loader";
 import { useReverseT } from "../../i18n.ts";
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import SecretsTable from "../../displays/secrets-table/SecretsTable.vue";
 import MissingSecretsTable from "../../displays/missing-secrets-table/MissingSecretsTable.vue";
 import AccessRequestTable from "../../displays/access-request-table/AccessRequestTable.vue";
@@ -79,9 +82,30 @@ if (!serviceTokensQuery.data.value) {
   throw new Error("Failed to load service tokens");
 }
 
-const secrets = secretsQuery.data.value;
-const accessRequests = accessRequestsQuery.data.value;
-const serviceTokens = serviceTokensQuery.data.value;
+// Compute missing secrets: access requests for secrets that don't exist
+const missingSecrets = computed(() => {
+  const secrets = secretsQuery.data.value || [];
+  const accessRequests = accessRequestsQuery.data.value || [];
+
+  // Get all secret names that exist
+  const existingSecretNames = new Set(secrets.map((secret) => secret.name));
+
+  // Find access requests for secrets that don't exist
+  console.log(
+    "accessRequests",
+    accessRequests.map((request) => request.secret_name),
+  );
+  console.log(
+    "existingSecretNames",
+    existingSecretNames,
+    accessRequests.filter(
+      (request) => !existingSecretNames.has(request.secret_name),
+    ),
+  );
+  return accessRequests.filter(
+    (request) => !existingSecretNames.has(request.secret_name),
+  );
+});
 
 const activeTab = ref("secrets");
 

@@ -12,17 +12,14 @@ export function useSecretManagerLoader() {
     secretsQuery: useListSecrets({
       limit,
       offset,
-      is_active: ref(true), // Only show active secrets
     }),
     accessRequestsQuery: useListAccessRequests({
       limit,
-      offset,
-      status: ref("pending"), // Only show pending requests
+      offset, // Only show pending requests
     }),
     serviceTokensQuery: useListServiceTokens({
       limit,
       offset,
-      approved: ref(undefined), // Show both approved and pending
     }),
   };
 }
