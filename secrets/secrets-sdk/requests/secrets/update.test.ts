@@ -1,7 +1,8 @@
 import { describe, it, expect, assert } from "vitest";
 import { useUpdateSecret } from "./update.ts";
 import { secretsServiceFakeHandlers } from "../../fakes.ts";
-import { setupMockServer, withVueQuery } from "@saflib/sdk/testing";
+import { withVueQuery } from "@saflib/sdk/testing";
+import { setupMockServer } from "@saflib/sdk/testing/mock";
 
 describe("updateSecret", () => {
   setupMockServer(secretsServiceFakeHandlers);
