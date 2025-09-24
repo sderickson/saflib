@@ -11,39 +11,42 @@
 
     <v-window v-model="activeTab">
       <v-window-item value="secrets">
+        <div class="mb-4">
+          <SecretsTable
+            :secrets="secrets"
+            :loading="secretsQuery.isLoading.value"
+            :error="secretsQuery.error.value"
+          />
+        </div>
         <div>
-          <h3>{{ t(strings.secretsTitle) }}</h3>
-          <i18n-t :keypath="lookupTKey(strings.secretsCount)" scope="global">
-            <template #count>{{ secrets.length }}</template>
-          </i18n-t>
-          <pre>{{ JSON.stringify(secrets, null, 2) }}</pre>
+          <MissingSecretsTable
+            :missing-secrets="accessRequests"
+            :loading="accessRequestsQuery.isLoading.value"
+            :error="accessRequestsQuery.error.value"
+            @create-secret="onCreateSecret"
+            @view-details="onViewDetails"
+          />
         </div>
       </v-window-item>
 
       <v-window-item value="access-requests">
-        <div>
-          <h3>{{ t(strings.accessRequestsTitle) }}</h3>
-          <i18n-t
-            :keypath="lookupTKey(strings.accessRequestsCount)"
-            scope="global"
-          >
-            <template #count>{{ accessRequests.length }}</template>
-          </i18n-t>
-          <pre>{{ JSON.stringify(accessRequests, null, 2) }}</pre>
-        </div>
+        <AccessRequestTable
+          :access-request="accessRequests[0]"
+          v-if="accessRequests.length > 0"
+        />
+        <v-alert v-else type="info" variant="tonal">
+          {{ t(strings.noAccessRequests) }}
+        </v-alert>
       </v-window-item>
 
       <v-window-item value="service-tokens">
-        <div>
-          <h3>{{ t(strings.serviceTokensTitle) }}</h3>
-          <i18n-t
-            :keypath="lookupTKey(strings.serviceTokensCount)"
-            scope="global"
-          >
-            <template #count>{{ serviceTokens.length }}</template>
-          </i18n-t>
-          <pre>{{ JSON.stringify(serviceTokens, null, 2) }}</pre>
-        </div>
+        <ServiceTokensTable
+          :service-tokens="serviceTokens"
+          :loading="serviceTokensQuery.isLoading.value"
+          :error="serviceTokensQuery.error.value"
+          @approve="onApproveToken"
+          @delete="onDeleteToken"
+        />
       </v-window-item>
     </v-window>
   </v-container>
@@ -54,8 +57,12 @@ import { secret_manager_page as strings } from "./SecretManager.strings";
 import { useSecretManagerLoader } from "./SecretManager.loader";
 import { useReverseT } from "../../i18n.ts";
 import { ref } from "vue";
+import SecretsTable from "../../displays/secrets-table/SecretsTable.vue";
+import MissingSecretsTable from "../../displays/missing-secrets-table/MissingSecretsTable.vue";
+import AccessRequestTable from "../../displays/access-request-table/AccessRequestTable.vue";
+import ServiceTokensTable from "../../displays/service-tokens-table/ServiceTokensTable.vue";
 
-const { t, lookupTKey } = useReverseT();
+const { t } = useReverseT();
 
 const { secretsQuery, accessRequestsQuery, serviceTokensQuery } =
   useSecretManagerLoader();
@@ -77,4 +84,25 @@ const accessRequests = accessRequestsQuery.data.value;
 const serviceTokens = serviceTokensQuery.data.value;
 
 const activeTab = ref("secrets");
+
+// Event handlers
+const onCreateSecret = (request: any) => {
+  console.log("Create secret for request:", request);
+  // TODO: Implement secret creation logic
+};
+
+const onViewDetails = (request: any) => {
+  console.log("View details for request:", request);
+  // TODO: Implement view details logic
+};
+
+const onApproveToken = (token: any) => {
+  console.log("Approve token:", token);
+  // TODO: Implement token approval logic
+};
+
+const onDeleteToken = (token: any) => {
+  console.log("Delete token:", token);
+  // TODO: Implement token deletion logic
+};
 </script>

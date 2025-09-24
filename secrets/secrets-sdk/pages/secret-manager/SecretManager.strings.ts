@@ -16,4 +16,7 @@ export const secret_manager_page = {
   secretsCount: "Found {count} secrets",
   accessRequestsCount: "Found {count} access requests",
   serviceTokensCount: "Found {count} service tokens",
+
+  // Empty states
+  noAccessRequests: "No access requests found",
 };
