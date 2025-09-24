@@ -1,6 +1,7 @@
 import { secretsHandler } from "../../typed-fake.ts";
+import type { Secret } from "@saflib/secrets-spec";
 
-export const secretStubs = [
+export const secretStubs: Secret[] = [
   {
     id: "secret-1",
     name: "database-password",
