@@ -7,7 +7,7 @@ import { secretsServiceFakeHandlers } from "./fakes.ts";
 import { http, bypass } from "msw";
 import { router } from "./router.ts";
 
-export const main = () => {
+export const main = async () => {
   setClientName("root");
   const server = setupWorker(
     ...secretsServiceFakeHandlers,
@@ -19,7 +19,7 @@ export const main = () => {
       return fetch(bypass(proxyRequest));
     }),
   );
-  server.start({ onUnhandledRequest: "error" });
+  await server.start({ onUnhandledRequest: "error" });
   createVueApp(App, {
     i18nMessages: {
       ...secretsSdkStrings,

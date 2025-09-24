@@ -3,12 +3,12 @@ import {
   createRouter,
   type RouteRecordRaw,
 } from "vue-router";
-import SecretManager from "./pages/secret-manager/SecretManager.vue";
+import SecretManagerAsync from "./pages/secret-manager/SecretManagerAsync.vue";
 
 const routes: RouteRecordRaw[] = [
   {
     path: "/",
-    component: SecretManager,
+    component: SecretManagerAsync,
   },
 ];
 
