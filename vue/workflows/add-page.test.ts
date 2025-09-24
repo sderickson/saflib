@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { AddSpaPageWorkflowDefinition } from "./add-spa-page.ts";
+import { AddSpaPageWorkflowDefinition } from "./add-page.ts";
 import { runWorkflow } from "@saflib/workflows";
 
 describe("add-spa-page", () => {
