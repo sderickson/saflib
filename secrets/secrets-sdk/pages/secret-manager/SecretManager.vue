@@ -42,8 +42,6 @@
           :service-tokens="serviceTokensQuery.data.value || []"
           :loading="serviceTokensQuery.isLoading.value"
           :error="serviceTokensQuery.error.value"
-          @approve="onApproveToken"
-          @delete="onDeleteToken"
         />
       </v-window-item>
     </v-window>
@@ -102,15 +100,5 @@ const onCreateSecret = (request: any) => {
 const onViewDetails = (request: any) => {
   console.log("View details for request:", request);
   // TODO: Implement view details logic
-};
-
-const onApproveToken = (token: any) => {
-  console.log("Approve token:", token);
-  // TODO: Implement token approval logic
-};
-
-const onDeleteToken = (token: any) => {
-  console.log("Delete token:", token);
-  // TODO: Implement token deletion logic
 };
 </script>

@@ -43,10 +43,6 @@
           </v-chip>
         </template>
 
-        <template v-slot:item.token_hash="{ item }">
-          <span class="font-mono text-caption">{{ item.token_hash }}</span>
-        </template>
-
         <template v-slot:item.approved="{ item }">
           <v-chip
             :color="item.approved ? 'success' : 'warning'"
@@ -88,21 +84,12 @@
 
         <template v-slot:item.actions="{ item }">
           <v-btn
-            v-if="!item.approved"
             icon="mdi-check"
             size="small"
-            variant="text"
-            color="success"
+            :variant="item.approved ? 'flat' : 'text'"
+            :color="item.approved ? 'success' : 'success'"
             @click="onApprove(item)"
             :title="t(strings.approveToken)"
-          ></v-btn>
-          <v-btn
-            icon="mdi-delete"
-            size="small"
-            variant="text"
-            color="error"
-            @click="onDelete(item)"
-            :title="t(strings.deleteToken)"
           ></v-btn>
         </template>
       </v-data-table>
@@ -114,6 +101,7 @@
 import { service_tokens_table_strings as strings } from "./ServiceTokensTable.strings.ts";
 import { useReverseT } from "../../i18n.ts";
 import { getTanstackErrorMessage } from "@saflib/sdk";
+import { useApproveServiceToken } from "../../requests/service-tokens/approve.ts";
 import type { ServiceToken } from "@saflib/secrets-spec";
 
 const { t } = useReverseT();
@@ -126,21 +114,21 @@ interface Props {
 
 defineProps<Props>();
 
-const emit = defineEmits<{
-  approve: [token: ServiceToken];
-  delete: [token: ServiceToken];
-}>();
+// Use mutation for approving service tokens
+const approveMutation = useApproveServiceToken();
 
 const formatDate = (timestamp: number) => {
   return new Date(timestamp).toLocaleString();
 };
 
-const onApprove = (token: ServiceToken) => {
-  emit("approve", token);
-};
-
-const onDelete = (token: ServiceToken) => {
-  emit("delete", token);
+const onApprove = async (token: ServiceToken) => {
+  await approveMutation.mutateAsync({
+    id: token.id,
+    approved: !token.approved, // Toggle approval status
+    reason: token.approved
+      ? "Revoked via admin interface"
+      : "Approved via admin interface",
+  });
 };
 
 const getErrorMessage = (error: any) => {
@@ -152,7 +140,6 @@ const getErrorMessage = (error: any) => {
 
 const headers = [
   { title: t(strings.serviceName), key: "service_name", sortable: true },
-  { title: t(strings.tokenHash), key: "token_hash", sortable: false },
   { title: t(strings.approved), key: "approved", sortable: true },
   { title: t(strings.requested), key: "requested_at", sortable: true },
   { title: t(strings.approvedAt), key: "approved_at", sortable: true },
