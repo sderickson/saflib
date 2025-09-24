@@ -7,6 +7,7 @@ import { secretsServiceFakeHandlers } from "./fakes.ts";
 import { http, bypass } from "msw";
 
 export const main = () => {
+  setClientName("root");
   const server = setupWorker(
     ...secretsServiceFakeHandlers,
     http.get("*", ({ request }) => {
@@ -18,7 +19,6 @@ export const main = () => {
     }),
   );
   server.start({ onUnhandledRequest: "error" });
-  setClientName("root");
   createVueApp(App, {
     i18nMessages: {
       ...secretsSdkStrings,

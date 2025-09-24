@@ -5,6 +5,13 @@ import { type Link, type LinkOptions, linkToHref } from "@saflib/links";
  */
 export const getHost = () => {
   let host = "localhost:3000";
+  if (
+    typeof document !== "undefined" &&
+    document.location.host.startsWith("localhost")
+  ) {
+    // just to ease local development - specifically running vite in sdk
+    return document.location.host;
+  }
   if (typeof document !== "undefined" && process.env.NODE_ENV !== "test") {
     if (!getClientName()) {
       throw new Error(
