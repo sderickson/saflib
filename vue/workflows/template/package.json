@@ -1,5 +1,5 @@
 {
-  "name": "@your-org/web-template-file",
+  "name": "template-package-spa",
   "private": true,
   "type": "module",
   "exports": {

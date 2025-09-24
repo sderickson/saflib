@@ -5,6 +5,12 @@ import {
   defineWorkflow,
   step,
   TestStepMachine,
+  parsePath,
+  type ParsePathOutput,
+  makeLineReplace,
+  type ParsePackageNameOutput,
+  parsePackageName,
+  getPackageName,
 } from "@saflib/workflows";
 import path from "node:path";
 
@@ -15,14 +21,15 @@ const sourceDir = path.join(
 
 const input = [
   {
-    name: "name",
-    description: "Name of the new page in kebab-case (e.g. 'welcome-new-user')",
-    exampleValue: "example-page",
+    name: "path",
+    description: "Path of the new page (e.g., './pages/welcome-new-user')",
+    exampleValue: "./pages/welcome-new-user",
   },
 ] as const;
 
-interface AddSpaPageWorkflowContext {
-  name: string;
+interface AddSpaPageWorkflowContext
+  extends ParsePathOutput,
+    ParsePackageNameOutput {
   targetDir: string;
 }
 
@@ -40,27 +47,35 @@ export const AddSpaPageWorkflowDefinition = defineWorkflow<
   sourceUrl: import.meta.url,
 
   context: ({ input }) => {
-    const pageName = input.name.endsWith("-page")
-      ? input.name
-      : input.name + "-page";
-    const targetDir = path.join(input.cwd, "pages", pageName);
-    return { name: pageName, targetDir };
+    const targetDir = path.join(input.cwd, input.path);
+
+    return {
+      ...parsePath(input.path, {
+        requiredPrefix: "./pages/",
+        cwd: input.cwd,
+      }),
+      ...parsePackageName(getPackageName(input.cwd), {
+        requiredSuffix: "-spa",
+      }),
+      targetDir,
+    };
   },
 
   templateFiles: {
-    loader: path.join(sourceDir, "TemplateFile.loader.ts"),
-    vue: path.join(sourceDir, "TemplateFile.vue"),
-    async: path.join(sourceDir, "TemplateFileAsync.vue"),
-    strings: path.join(sourceDir, "TemplateFile.strings.ts"),
-    test: path.join(sourceDir, "TemplateFile.test.ts"),
+    loader: path.join(sourceDir, "__TargetName__.loader.ts"),
+    vue: path.join(sourceDir, "__TargetName__.vue"),
+    async: path.join(sourceDir, "__TargetName__Async.vue"),
+    strings: path.join(sourceDir, "__TargetName__.strings.ts"),
+    test: path.join(sourceDir, "__TargetName__.test.ts"),
   },
 
   docFiles: {},
 
   steps: [
     step(CopyStepMachine, ({ context }) => ({
-      name: context.name,
+      name: context.targetName,
       targetDir: context.targetDir,
+      lineReplace: makeLineReplace(context),
     })),
 
     step(UpdateStepMachine, ({ context }) => ({

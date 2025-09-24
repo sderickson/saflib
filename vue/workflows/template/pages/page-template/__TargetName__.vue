@@ -10,13 +10,13 @@
 </template>
 
 <script setup lang="ts">
-import { template_file_page as strings } from "./TemplateFile.strings";
-import { useTemplateFileLoader } from "./TemplateFile.loader";
-import { useReverseT } from "../spa-template/i18n.ts";
+import { __target_name___page as strings } from "./__TargetName__.strings";
+import { use__TargetName__Loader } from "./__TargetName__.loader";
+import { useReverseT } from "../../i18n.ts";
 
 const { t } = useReverseT();
 
-const { profileQuery } = useTemplateFileLoader();
+const { profileQuery } = use__TargetName__Loader();
 
 // the Async component will not render if the data is not loaded
 // check to make sure the data is loaded before rendering

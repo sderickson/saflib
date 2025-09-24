@@ -1,13 +1,13 @@
 import { describe, it, expect, vi } from "vitest";
 import { stubGlobals, getElementByString } from "@saflib/vue/testing";
 import { type VueWrapper } from "@vue/test-utils";
-import TemplateFileAsync from "./TemplateFileAsync.vue";
-import { template_file_page as strings } from "./TemplateFile.strings.ts";
+import __TargetName__Async from "./__TargetName__Async.vue";
+import { __target_name___page as strings } from "./__TargetName__.strings.ts";
 // TODO: Fix this import to point to the actual one for this package
-import { mountTestApp, testAppHandlers } from "../spa-template/test-app.ts";
-import { setupMockServer } from "@saflib/sdk/testing";
+import { mountTestApp, testAppHandlers } from "../../test-app.ts";
+import { setupMockServer } from "@saflib/sdk/testing/mock";
 
-describe("TemplateFile", () => {
+describe("__TargetName__", () => {
   stubGlobals();
   setupMockServer(testAppHandlers);
 
@@ -20,7 +20,7 @@ describe("TemplateFile", () => {
   };
 
   it("should render the example strings", async () => {
-    const wrapper = mountTestApp(TemplateFileAsync);
+    const wrapper = mountTestApp(__TargetName__Async);
     // first expectation should "waitFor" since this test includes loading code and fetching data
     await vi.waitFor(() => getExampleHeader(wrapper).exists());
     expect(getExampleHeader(wrapper).exists()).toBe(true);

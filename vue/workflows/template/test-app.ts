@@ -2,7 +2,7 @@ import { mountWithPlugins } from "@saflib/vue/testing";
 import type { ComponentMountingOptions } from "@vue/test-utils";
 import type { Component } from "vue";
 import { router } from "./router.ts";
-import { templateFileStrings } from "./strings.ts";
+import { __target_name___strings } from "./strings.ts";
 import { identityServiceMockHandlers } from "@saflib/auth/mocks";
 
 export const mountTestApp = <C extends Component>(
@@ -12,7 +12,7 @@ export const mountTestApp = <C extends Component>(
   return mountWithPlugins(Component, options, {
     router,
     i18nMessages: {
-      ...templateFileStrings,
+      ...__target_name___strings,
     },
   });
 };
