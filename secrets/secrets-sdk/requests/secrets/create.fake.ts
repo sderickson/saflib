@@ -11,7 +11,7 @@ export const createSecretsHandler = secretsHandler({
       id: `secret-${Date.now()}`, // Generate unique ID
       name: body.name,
       description: body.description,
-      masked_value: "new_secret***",
+      masked_value: body.value.slice(0, 6) + "***",
       created_at: Date.now(),
       updated_at: Date.now(),
       is_active: true,
