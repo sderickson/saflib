@@ -1,6 +1,6 @@
 import { secretsHandler } from "../../typed-fake.ts";
 
-export const mockSecrets = [
+export const secretStubs = [
   {
     id: "secret-1",
     name: "database-password",
@@ -28,6 +28,6 @@ export const listSecretsHandler = secretsHandler({
   handler: async ({ query }) => {
     type query = typeof query;
     const limit = query?.limit ? parseInt(query.limit) : 10;
-    return [...mockSecrets].slice(0, limit);
+    return [...secretStubs].slice(0, limit);
   },
 });

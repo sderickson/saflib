@@ -4,11 +4,10 @@ import { type VueWrapper } from "@vue/test-utils";
 import SecretsTable from "./SecretsTable.vue";
 import { secrets_table_strings as strings } from "./SecretsTable.strings.ts";
 import { mountTestApp } from "../../test-app.ts";
-import { mockSecrets } from "../../requests/secrets/list.fake.ts";
+import { secretStubs } from "../../requests/secrets/list.fake.ts";
 
 describe("SecretsTable", () => {
   stubGlobals();
-
 
   const getTitle = (wrapper: VueWrapper) => {
     return getElementByString(wrapper, strings.title);
@@ -18,11 +17,10 @@ describe("SecretsTable", () => {
     return getElementByString(wrapper, strings.description);
   };
 
-
   it("should render the component with title and description", async () => {
     const wrapper = mountTestApp(SecretsTable, {
       props: {
-        secrets: [],
+        secrets: secretStubs,
         loading: false,
       },
     });
@@ -34,20 +32,22 @@ describe("SecretsTable", () => {
   it("should show loading state", async () => {
     const wrapper = mountTestApp(SecretsTable, {
       props: {
-        secrets: [],
+        secrets: secretStubs,
         loading: true,
       },
     });
 
     // Check for skeleton loader
-    expect(wrapper.findComponent({ name: "VSkeletonLoader" }).exists()).toBe(true);
+    expect(wrapper.findComponent({ name: "VSkeletonLoader" }).exists()).toBe(
+      true,
+    );
   });
 
   it("should show error state", async () => {
     const error = new Error("Test error");
     const wrapper = mountTestApp(SecretsTable, {
       props: {
-        secrets: [],
+        secrets: secretStubs,
         loading: false,
         error,
       },
@@ -70,7 +70,7 @@ describe("SecretsTable", () => {
   it("should display secrets in table", async () => {
     const wrapper = mountTestApp(SecretsTable, {
       props: {
-        secrets: mockSecrets,
+        secrets: secretStubs,
         loading: false,
       },
     });
@@ -91,7 +91,7 @@ describe("SecretsTable", () => {
   it("should show correct status badges", async () => {
     const wrapper = mountTestApp(SecretsTable, {
       props: {
-        secrets: mockSecrets,
+        secrets: secretStubs,
         loading: false,
       },
     });
@@ -104,14 +104,14 @@ describe("SecretsTable", () => {
   it("should show edit/delete buttons", async () => {
     const wrapper = mountTestApp(SecretsTable, {
       props: {
-        secrets: mockSecrets,
+        secrets: secretStubs,
         loading: false,
       },
     });
 
     const editButtons = wrapper.findAll(`[title="${strings.editSecret}"]`);
     const deleteButtons = wrapper.findAll(`[title="${strings.deleteSecret}"]`);
-    
+
     // Should have buttons for each secret
     expect(editButtons.length).toBeGreaterThan(0);
     expect(deleteButtons.length).toBeGreaterThan(0);
@@ -120,7 +120,7 @@ describe("SecretsTable", () => {
   it("should format dates correctly", async () => {
     const wrapper = mountTestApp(SecretsTable, {
       props: {
-        secrets: mockSecrets,
+        secrets: secretStubs,
         loading: false,
       },
     });

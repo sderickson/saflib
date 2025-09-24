@@ -5,6 +5,7 @@ import { secretsSdkStrings } from "./strings";
 import { setupWorker } from "msw/browser";
 import { secretsServiceFakeHandlers } from "./fakes.ts";
 import { http, bypass } from "msw";
+import { router } from "./router.ts";
 
 export const main = () => {
   setClientName("root");
@@ -23,6 +24,7 @@ export const main = () => {
     i18nMessages: {
       ...secretsSdkStrings,
     },
+    router,
   });
 };
 
