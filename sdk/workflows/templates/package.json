@@ -13,15 +13,24 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "dev": "vite"
   },
   "devDependencies": {
     "@saflib/vitest": "*",
     "@testing-library/vue": "^8.1.0"
   },
   "dependencies": {
+    "@saflib/monorepo": "*",
     "@saflib/sdk": "*",
+    "template-package-spec": "*",
+    "@saflib/vite": "*",
     "@saflib/vue": "*",
-    "template-package-spec": "*"
+    "msw": "^2.11.3"
+  },
+  "msw": {
+    "workerDirectory": [
+      "public"
+    ]
   }
 }
