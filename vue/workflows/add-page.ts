@@ -55,7 +55,7 @@ export const AddSpaPageWorkflowDefinition = defineWorkflow<
         cwd: input.cwd,
       }),
       ...parsePackageName(getPackageName(input.cwd), {
-        requiredSuffix: "-spa",
+        requiredSuffix: ["-spa", "-sdk"],
       }),
       targetDir,
     };
