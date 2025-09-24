@@ -109,7 +109,7 @@ import { getTanstackErrorMessage } from "@saflib/sdk";
 import type { AccessRequest } from "@saflib/secrets-spec";
 import { ref } from "vue";
 import AccessRequestTable from "../access-request-table/AccessRequestTable.vue";
-import CreateSecretForm from "../../forms/secret-form/CreateSecretForm.vue";
+import CreateSecretForm from "../../forms/create-secret-form/CreateSecretForm.vue";
 
 const { t } = useReverseT();
 

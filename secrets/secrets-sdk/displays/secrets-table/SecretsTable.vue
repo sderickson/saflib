@@ -107,7 +107,7 @@ import { getTanstackErrorMessage } from "@saflib/sdk";
 import { useDeleteSecret } from "../../requests/secrets/delete.ts";
 import type { Secret } from "@saflib/secrets-spec";
 import { ref } from "vue";
-import UpdateSecretForm from "../../forms/secret-form/UpdateSecretForm.vue";
+import UpdateSecretForm from "../../forms/update-secret-form/UpdateSecretForm.vue";
 
 const { t } = useReverseT();
 
