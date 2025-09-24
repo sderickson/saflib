@@ -5,6 +5,7 @@
   "exports": {
     ".": "./index.ts",
     "./testing": "./testing/index.ts",
+    "./testing/mock": "./testing/mock.ts",
     "./workflows": "./workflows/index.ts"
   },
   "dependencies": {

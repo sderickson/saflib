@@ -4,7 +4,7 @@ import { type VueWrapper } from "@vue/test-utils";
 import PendingApprovalsTable from "./PendingApprovalsTable.vue";
 import { pending_approvals_table_strings as strings } from "./PendingApprovalsTable.strings.ts";
 import { mountTestApp } from "../../test-app.ts";
-import { mockAccessRequests } from "../../requests/access-requests/list.fake.ts";
+import { accessRequestStubs } from "../../requests/access-requests/list.fake.ts";
 
 describe("PendingApprovalsTable", () => {
   stubGlobals();
@@ -16,7 +16,6 @@ describe("PendingApprovalsTable", () => {
   const getDescription = (wrapper: VueWrapper) => {
     return getElementByString(wrapper, strings.description);
   };
-
 
   it("should render the component with title and description", async () => {
     const wrapper = mountTestApp(PendingApprovalsTable, {
@@ -39,7 +38,9 @@ describe("PendingApprovalsTable", () => {
     });
 
     // Check for skeleton loader
-    expect(wrapper.findComponent({ name: "VSkeletonLoader" }).exists()).toBe(true);
+    expect(wrapper.findComponent({ name: "VSkeletonLoader" }).exists()).toBe(
+      true,
+    );
   });
 
   it("should show error state", async () => {
@@ -69,7 +70,7 @@ describe("PendingApprovalsTable", () => {
   it("should display access requests in table", async () => {
     const wrapper = mountTestApp(PendingApprovalsTable, {
       props: {
-        accessRequests: mockAccessRequests,
+        accessRequests: accessRequestStubs,
         loading: false,
       },
     });
@@ -92,7 +93,7 @@ describe("PendingApprovalsTable", () => {
   it("should show correct status badges", async () => {
     const wrapper = mountTestApp(PendingApprovalsTable, {
       props: {
-        accessRequests: mockAccessRequests,
+        accessRequests: accessRequestStubs,
         loading: false,
       },
     });
@@ -106,7 +107,7 @@ describe("PendingApprovalsTable", () => {
   it("should show approve/deny buttons for pending requests", async () => {
     const wrapper = mountTestApp(PendingApprovalsTable, {
       props: {
-        accessRequests: mockAccessRequests,
+        accessRequests: accessRequestStubs,
         loading: false,
       },
     });
@@ -122,7 +123,7 @@ describe("PendingApprovalsTable", () => {
   it("should show processed status for non-pending requests", async () => {
     const wrapper = mountTestApp(PendingApprovalsTable, {
       props: {
-        accessRequests: mockAccessRequests,
+        accessRequests: accessRequestStubs,
         loading: false,
       },
     });
@@ -134,7 +135,7 @@ describe("PendingApprovalsTable", () => {
   it("should format dates correctly", async () => {
     const wrapper = mountTestApp(PendingApprovalsTable, {
       props: {
-        accessRequests: mockAccessRequests,
+        accessRequests: accessRequestStubs,
         loading: false,
       },
     });

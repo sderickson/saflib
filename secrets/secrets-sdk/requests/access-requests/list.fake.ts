@@ -1,6 +1,6 @@
 import { secretsHandler } from "../../typed-fake.ts";
 
-export const mockAccessRequests = [
+export const accessRequestStubs = [
   {
     id: "request-1",
     secret_id: "secret-1",
@@ -45,7 +45,7 @@ export const listAccessRequestsHandler = secretsHandler({
     const status = query?.status;
     const serviceName = query?.service_name;
 
-    let requests = [...mockAccessRequests];
+    let requests = [...accessRequestStubs];
 
     // Filter by status if provided
     if (status) {
