@@ -87,6 +87,16 @@
         </template>
       </v-data-table>
     </v-card-text>
+
+    <!-- Update Secret Modal -->
+    <v-dialog v-model="showUpdateModal" max-width="600px">
+      <UpdateSecretForm
+        v-if="selectedSecret"
+        :secret="selectedSecret"
+        @success="onSecretUpdated"
+        @cancel="onSecretUpdateCancelled"
+      />
+    </v-dialog>
   </v-card>
 </template>
 
@@ -96,6 +106,8 @@ import { useReverseT } from "../../i18n.ts";
 import { getTanstackErrorMessage } from "@saflib/sdk";
 import { useDeleteSecret } from "../../requests/secrets/delete.ts";
 import type { Secret } from "@saflib/secrets-spec";
+import { ref } from "vue";
+import UpdateSecretForm from "../../forms/secret-form/UpdateSecretForm.vue";
 
 const { t } = useReverseT();
 
@@ -110,13 +122,27 @@ defineProps<Props>();
 // Use mutation for deleting secrets
 const deleteMutation = useDeleteSecret();
 
-const onEdit = (secret: any) => {
-  // TODO: Implement edit functionality
-  console.log("Edit secret:", secret);
+// Modal state
+const showUpdateModal = ref(false);
+const selectedSecret = ref<Secret | null>(null);
+
+const onEdit = (secret: Secret) => {
+  selectedSecret.value = secret;
+  showUpdateModal.value = true;
 };
 
 const onDelete = async (secret: any) => {
   await deleteMutation.mutateAsync(secret.id);
+};
+
+const onSecretUpdated = (_updatedSecret: Secret) => {
+  showUpdateModal.value = false;
+  selectedSecret.value = null;
+};
+
+const onSecretUpdateCancelled = () => {
+  showUpdateModal.value = false;
+  selectedSecret.value = null;
 };
 
 const formatDate = (timestamp: number) => {
