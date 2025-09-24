@@ -48,7 +48,6 @@ export const AddSpaPageWorkflowDefinition = defineWorkflow<
 
   context: ({ input }) => {
     const targetDir = path.join(input.cwd, input.path);
-
     return {
       ...parsePath(input.path, {
         requiredPrefix: "./pages/",

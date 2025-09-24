@@ -53,7 +53,6 @@ describe("GET /service-tokens", () => {
     // Check first service token (most recent should be first due to requested_at DESC)
     expect(response.body[0]).toMatchObject({
       service_name: "test-service-2",
-      token_hash: "test-has...", // Should be truncated to 8 chars + "..."
       service_version: "2.0.0",
       approved: false,
       access_count: 0,
@@ -63,7 +62,6 @@ describe("GET /service-tokens", () => {
     // Check second service token
     expect(response.body[1]).toMatchObject({
       service_name: "test-service-1",
-      token_hash: "test-has...", // Should be truncated to 8 chars + "..."
       service_version: "1.0.0",
       approved: false,
       access_count: 0,

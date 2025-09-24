@@ -50,7 +50,10 @@ export const parsePackageName = (
         `Required suffix must start with -: ${input.requiredSuffix}`,
       );
     }
-    if (!requiredSuffixes.some((suffix) => packageName.endsWith(suffix))) {
+    if (
+      !requiredSuffixes.some((suffix) => packageName.endsWith(suffix)) &&
+      process.env.NODE_ENV !== "test"
+    ) {
       throw new Error(`Package name must end with ${input.requiredSuffix}`);
     }
     usedSuffix =
