@@ -13,7 +13,7 @@ import { type I18nMessages } from "./strings.ts";
  * Options for createVueApp.
  */
 export interface CreateVueAppOptions {
-  router: Router;
+  router?: Router;
   vuetifyConfig?: VuetifyOptions;
   callback?: (app: ReturnType<typeof createApp>) => void;
   i18nMessages?: I18nMessages;
@@ -31,7 +31,7 @@ export interface CreateVueAppOptions {
  */
 export const createVueApp = (
   Application: Component,
-  { router, vuetifyConfig, callback, i18nMessages }: CreateVueAppOptions,
+  { router, vuetifyConfig, callback, i18nMessages }: CreateVueAppOptions = {},
 ) => {
   const vuetify = createVuetify(vuetifyConfig);
   const app = createApp(Application);
@@ -64,6 +64,7 @@ export const createVueApp = (
   if (callback) {
     callback(app);
   }
+  console.log("app.mount", "#app");
 
   app.mount("#app");
   return app;

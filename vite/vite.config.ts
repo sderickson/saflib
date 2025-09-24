@@ -2,7 +2,7 @@ import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 import vuetify from "vite-plugin-vuetify";
 import vueDevTools from "vite-plugin-vue-devtools";
-import type { Plugin } from "vite";
+import type { Plugin, PluginOption } from "vite";
 import path from "path";
 import ignore from "rollup-plugin-ignore";
 // import { htmlHeaderPlugin } from "../../clients/spas/html-header-plugin.ts";
@@ -65,32 +65,29 @@ export interface MakeConfigProps {
   /**
    * Additional plugins to include in the Vite config. Vue, Vuetify, VueDevTools, and a SPA proxy plugin are included by default.
    */
-  plugins?: Plugin[];
+  plugins?: PluginOption[];
   /**
    * A relative path (from process.cwd()) to the Vuetify style configFile override.
    */
-  vuetifyOverrides: string;
+  vuetifyOverrides?: string;
   /**
    * The absolute path of the root of the monorepo, to ensure vite has access to saflib packages.
    */
-  monorepoRoot: string;
+  monorepoRoot?: string;
 }
 
 /**
  * Make a Vite config for a multi-SPA, SAF project. Includes all the expected plugins.
  */
-export function makeConfig(config: MakeConfigProps) {
+export function makeConfig(config: MakeConfigProps = {}) {
   const { plugins = [], vuetifyOverrides, monorepoRoot } = config;
+  if (vuetifyOverrides) {
+    plugins.unshift(vuetify({ styles: { configFile: vuetifyOverrides } }));
+  }
   return defineConfig({
     base: "/",
     appType: "mpa",
-    plugins: [
-      vue(),
-      vuetify({ styles: { configFile: vuetifyOverrides } }),
-      vueDevTools(),
-      ...plugins,
-      subDomainProxyPlugin,
-    ],
+    plugins: [vue(), vueDevTools(), ...plugins, subDomainProxyPlugin],
     build: {
       rollupOptions: {
         input,
@@ -101,7 +98,7 @@ export function makeConfig(config: MakeConfigProps) {
 
     server: {
       fs: {
-        allow: [monorepoRoot], // works inside and outside of docker
+        allow: [monorepoRoot ?? "."], // works inside and outside of docker
       },
       strictPort: true,
       host: true,
