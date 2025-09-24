@@ -98,7 +98,7 @@ interface Props {
   error?: any;
 }
 
-const props = defineProps<Props>();
+defineProps<Props>();
 
 const emit = defineEmits<{
   createSecret: [request: AccessRequest];
