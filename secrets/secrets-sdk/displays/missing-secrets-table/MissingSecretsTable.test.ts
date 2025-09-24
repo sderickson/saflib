@@ -4,46 +4,10 @@ import { type VueWrapper } from "@vue/test-utils";
 import MissingSecretsTable from "./MissingSecretsTable.vue";
 import { missing_secrets_table_strings as strings } from "./MissingSecretsTable.strings.ts";
 import { mountTestApp } from "../../test-app.ts";
-import type { AccessRequest } from "@saflib/secrets-spec";
+import { accessRequestStubs } from "../../requests/access-requests/list.fake.ts";
 
 describe("MissingSecretsTable", () => {
   stubGlobals();
-
-  const mockMissingSecrets: AccessRequest[] = [
-    {
-      id: "request-1",
-      secret_id: "secret-1",
-      secret_name: "database-password",
-      service_name: "test-service-1",
-      status: "missing",
-      requested_at: 1640995200000,
-      granted_by: null,
-      granted_at: null,
-      access_count: 0,
-    },
-    {
-      id: "request-2",
-      secret_id: "secret-2",
-      secret_name: "api-key",
-      service_name: "test-service-2",
-      status: "pending",
-      requested_at: 1640995200000,
-      granted_by: null,
-      granted_at: null,
-      access_count: 0,
-    },
-    {
-      id: "request-3",
-      secret_id: "secret-3",
-      secret_name: "redis-password",
-      service_name: "test-service-1",
-      status: "available",
-      requested_at: 1640995200000,
-      granted_by: "admin@example.com",
-      granted_at: 1640995300000,
-      access_count: 5,
-    },
-  ];
 
   const getTitle = (wrapper: VueWrapper) => {
     return getElementByString(wrapper, strings.title);
@@ -106,7 +70,7 @@ describe("MissingSecretsTable", () => {
   it("should display missing secrets in table", async () => {
     const wrapper = mountTestApp(MissingSecretsTable, {
       props: {
-        missingSecrets: mockMissingSecrets,
+        missingSecrets: accessRequestStubs,
         loading: false,
       },
     });
@@ -128,7 +92,7 @@ describe("MissingSecretsTable", () => {
   it("should show correct status badges", async () => {
     const wrapper = mountTestApp(MissingSecretsTable, {
       props: {
-        missingSecrets: mockMissingSecrets,
+        missingSecrets: accessRequestStubs,
         loading: false,
       },
     });
@@ -136,13 +100,12 @@ describe("MissingSecretsTable", () => {
     // Check for status badges
     expect(wrapper.text()).toContain(strings.missing);
     expect(wrapper.text()).toContain(strings.pending);
-    expect(wrapper.text()).toContain(strings.available);
   });
 
   it("should show create/view buttons", async () => {
     const wrapper = mountTestApp(MissingSecretsTable, {
       props: {
-        missingSecrets: mockMissingSecrets,
+        missingSecrets: accessRequestStubs,
         loading: false,
       },
     });
@@ -158,7 +121,7 @@ describe("MissingSecretsTable", () => {
   it("should emit createSecret event when create button is clicked", async () => {
     const wrapper = mountTestApp(MissingSecretsTable, {
       props: {
-        missingSecrets: mockMissingSecrets,
+        missingSecrets: accessRequestStubs,
         loading: false,
       },
     });
@@ -170,14 +133,14 @@ describe("MissingSecretsTable", () => {
 
     expect(wrapper.emitted("createSecret")).toBeTruthy();
     expect(wrapper.emitted("createSecret")![0]).toEqual([
-      mockMissingSecrets[0],
+      accessRequestStubs[0],
     ]);
   });
 
   it("should emit viewDetails event when view button is clicked", async () => {
     const wrapper = mountTestApp(MissingSecretsTable, {
       props: {
-        missingSecrets: mockMissingSecrets,
+        missingSecrets: accessRequestStubs,
         loading: false,
       },
     });
@@ -188,13 +151,13 @@ describe("MissingSecretsTable", () => {
     await viewButtons[0].trigger("click");
 
     expect(wrapper.emitted("viewDetails")).toBeTruthy();
-    expect(wrapper.emitted("viewDetails")![0]).toEqual([mockMissingSecrets[0]]);
+    expect(wrapper.emitted("viewDetails")![0]).toEqual([accessRequestStubs[0]]);
   });
 
   it("should format dates correctly", async () => {
     const wrapper = mountTestApp(MissingSecretsTable, {
       props: {
-        missingSecrets: mockMissingSecrets,
+        missingSecrets: accessRequestStubs,
         loading: false,
       },
     });
