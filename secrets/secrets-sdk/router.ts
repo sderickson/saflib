@@ -3,19 +3,12 @@ import {
   createRouter,
   type RouteRecordRaw,
 } from "vue-router";
-import { SecretsTable } from "./components";
-import { secretStubs } from "./requests/secrets/list.fake";
+import SecretManager from "./pages/secret-manager/SecretManager.vue";
 
 const routes: RouteRecordRaw[] = [
   {
     path: "/",
-    component: SecretsTable,
-    name: "secrets-table",
-    props: {
-      loading: false,
-      error: null,
-      secrets: secretStubs,
-    },
+    component: SecretManager,
   },
 ];
 

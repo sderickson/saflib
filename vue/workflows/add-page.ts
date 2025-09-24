@@ -92,8 +92,9 @@ export const AddSpaPageWorkflowDefinition = defineWorkflow<
       * Do not add any sort of loading state or skeleton; that's the job of the "Async" component.`,
     })),
 
-    step(PromptStepMachine, () => ({
+    step(PromptStepMachine, ({ context }) => ({
       promptText: `Find the "links" package adjacent to this package. Add the link for the new page there along with the others.`,
+      skipIf: context.serviceName.endsWith("-sdk"),
     })),
 
     step(PromptStepMachine, ({ context }) => ({

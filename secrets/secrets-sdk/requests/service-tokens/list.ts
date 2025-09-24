@@ -6,7 +6,7 @@ import type { Ref } from "vue";
 interface ListServiceTokensQueryOptions {
   limit?: Ref<number>;
   offset?: Ref<number>;
-  approved?: Ref<boolean>;
+  approved?: Ref<boolean | undefined>;
   service_name?: Ref<string>;
 }
 

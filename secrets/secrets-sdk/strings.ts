@@ -4,6 +4,7 @@ import { access_request_table_strings } from "./displays/access-request-table/Ac
 import { service_tokens_table_strings } from "./displays/service-tokens-table/ServiceTokensTable.strings.ts";
 import { secret_form_strings } from "./forms/secret-form/CreateSecretForm.strings.ts";
 import { update_secret_form_strings } from "./forms/secret-form/UpdateSecretForm.strings.ts";
+import { secret_manager_page } from "./pages/secret-manager/SecretManager.strings.ts";
 
 export const secretsSdkStrings = {
   secrets_table_strings,
@@ -12,4 +13,5 @@ export const secretsSdkStrings = {
   service_tokens_table_strings,
   secret_form_strings,
   update_secret_form_strings,
+  secret_manager_page,
 };
