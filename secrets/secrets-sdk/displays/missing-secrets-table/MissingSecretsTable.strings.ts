@@ -18,6 +18,14 @@ export const missing_secrets_table_strings = {
   createSecret: "Create this secret",
   viewDetails: "View details",
 
+  // Modal
+  detailsTitle: "Request Details",
+  grantedAt: "Granted At",
+  grantedBy: "Granted By",
+  accessCount: "Access Count",
+  lastAccessed: "Last Accessed",
+  close: "Close",
+
   // States
   empty: "No missing secrets found",
 };

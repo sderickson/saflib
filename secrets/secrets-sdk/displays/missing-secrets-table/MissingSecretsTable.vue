@@ -81,6 +81,79 @@
         </template>
       </v-data-table>
     </v-card-text>
+
+    <!-- Details Modal -->
+    <v-dialog v-model="showDetailsModal" max-width="600px">
+      <v-card>
+        <v-card-title>
+          <span class="text-h5">{{ t(strings.detailsTitle) }}</span>
+        </v-card-title>
+
+        <v-card-text v-if="selectedRequest">
+          <v-table>
+            <tbody>
+              <tr>
+                <td class="font-weight-medium">{{ t(strings.secretName) }}</td>
+                <td>{{ selectedRequest.secret_name }}</td>
+              </tr>
+              <tr>
+                <td class="font-weight-medium">{{ t(strings.serviceName) }}</td>
+                <td>
+                  <v-chip color="primary" size="small" variant="outlined">
+                    {{ selectedRequest.service_name }}
+                  </v-chip>
+                </td>
+              </tr>
+              <tr>
+                <td class="font-weight-medium">{{ t(strings.status) }}</td>
+                <td>
+                  <v-chip
+                    :color="getStatusColor(selectedRequest.status)"
+                    size="small"
+                    variant="flat"
+                  >
+                    {{ getStatusText(selectedRequest.status) }}
+                  </v-chip>
+                </td>
+              </tr>
+              <tr>
+                <td class="font-weight-medium">{{ t(strings.requested) }}</td>
+                <td>{{ formatDate(selectedRequest.requested_at) }}</td>
+              </tr>
+              <tr v-if="selectedRequest.granted_at">
+                <td class="font-weight-medium">{{ t(strings.grantedAt) }}</td>
+                <td>{{ formatDate(selectedRequest.granted_at) }}</td>
+              </tr>
+              <tr v-if="selectedRequest.granted_by">
+                <td class="font-weight-medium">{{ t(strings.grantedBy) }}</td>
+                <td>{{ selectedRequest.granted_by }}</td>
+              </tr>
+              <tr>
+                <td class="font-weight-medium">{{ t(strings.accessCount) }}</td>
+                <td>{{ selectedRequest.access_count }}</td>
+              </tr>
+              <tr v-if="selectedRequest.last_accessed_at">
+                <td class="font-weight-medium">
+                  {{ t(strings.lastAccessed) }}
+                </td>
+                <td>{{ formatDate(selectedRequest.last_accessed_at) }}</td>
+              </tr>
+            </tbody>
+          </v-table>
+        </v-card-text>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn
+            color="primary"
+            variant="text"
+            @click="showDetailsModal = false"
+          >
+            {{ t(strings.close) }}
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-card>
 </template>
 
@@ -89,6 +162,7 @@ import { missing_secrets_table_strings as strings } from "./MissingSecretsTable.
 import { useReverseT } from "../../i18n.ts";
 import { getTanstackErrorMessage } from "@saflib/sdk";
 import type { AccessRequest } from "@saflib/secrets-spec";
+import { ref } from "vue";
 
 const { t } = useReverseT();
 
@@ -105,11 +179,17 @@ const emit = defineEmits<{
   viewDetails: [request: AccessRequest];
 }>();
 
+// Modal state
+const showDetailsModal = ref(false);
+const selectedRequest = ref<AccessRequest | null>(null);
+
 const onCreateSecret = (request: AccessRequest) => {
   emit("createSecret", request);
 };
 
 const onViewDetails = (request: AccessRequest) => {
+  selectedRequest.value = request;
+  showDetailsModal.value = true;
   emit("viewDetails", request);
 };
 
