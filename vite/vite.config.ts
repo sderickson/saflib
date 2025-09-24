@@ -81,13 +81,18 @@ export interface MakeConfigProps {
  */
 export function makeConfig(config: MakeConfigProps = {}) {
   const { plugins = [], vuetifyOverrides, monorepoRoot } = config;
-  if (vuetifyOverrides) {
-    plugins.unshift(vuetify({ styles: { configFile: vuetifyOverrides } }));
-  }
   return defineConfig({
     base: "/",
     appType: "mpa",
-    plugins: [vue(), vueDevTools(), ...plugins, subDomainProxyPlugin],
+    plugins: [
+      vue(),
+      vueDevTools(),
+      vuetify(
+        vuetifyOverrides ? { styles: { configFile: vuetifyOverrides } } : {},
+      ),
+      ...plugins,
+      subDomainProxyPlugin,
+    ],
     build: {
       rollupOptions: {
         input,

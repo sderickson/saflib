@@ -1,3 +1,5 @@
 import { makeConfig } from "@saflib/vite";
 
-export default makeConfig();
+export default makeConfig({
+  monorepoRoot: "../../",
+});
