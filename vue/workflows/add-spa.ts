@@ -14,14 +14,14 @@ const sourceDir = path.join(import.meta.dirname, "template");
 const input = [
   {
     name: "name",
-    description: "Name of the new SPA (e.g. 'admin' for web-admin)",
+    description: "Name of the new SPA (e.g. 'admin' for admin-spa)",
     exampleValue: "example-spa",
   },
   {
     name: "path",
     description:
-      "The path to the target directory for the SPA (e.g., './clients/web-admin')",
-    exampleValue: "./clients/web-admin",
+      "The path to the target directory for the SPA (e.g., './clients/admin-spa')",
+    exampleValue: "./clients/admin-spa",
   },
 ] as const;
 
@@ -54,7 +54,7 @@ export const AddSpaWorkflowDefinition = defineWorkflow<
   },
 
   templateFiles: {
-    app: path.join(sourceDir, "__TargetName__App.vue"),
+    app: path.join(sourceDir, "__ServiceName__App.vue"),
     i18n: path.join(sourceDir, "i18n.ts"),
     main: path.join(sourceDir, "main.ts"),
     packageJson: path.join(sourceDir, "package.json"),
