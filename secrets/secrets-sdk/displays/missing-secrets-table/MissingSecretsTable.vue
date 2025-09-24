@@ -89,6 +89,15 @@
         :access-request="selectedRequest"
       />
     </v-dialog>
+
+    <!-- Create Secret Modal -->
+    <v-dialog v-model="showCreateSecretModal" max-width="600px">
+      <CreateSecretForm
+        v-if="selectedRequest"
+        @success="onSecretCreated"
+        @cancel="onSecretCreateCancelled"
+      />
+    </v-dialog>
   </v-card>
 </template>
 
@@ -99,6 +108,7 @@ import { getTanstackErrorMessage } from "@saflib/sdk";
 import type { AccessRequest } from "@saflib/secrets-spec";
 import { ref } from "vue";
 import AccessRequestTable from "../access-request-table/AccessRequestTable.vue";
+import CreateSecretForm from "../../forms/secret-form/CreateSecretForm.vue";
 
 const { t } = useReverseT();
 
@@ -117,9 +127,12 @@ const emit = defineEmits<{
 
 // Modal state
 const showDetailsModal = ref(false);
+const showCreateSecretModal = ref(false);
 const selectedRequest = ref<AccessRequest | null>(null);
 
 const onCreateSecret = (request: AccessRequest) => {
+  selectedRequest.value = request;
+  showCreateSecretModal.value = true;
   emit("createSecret", request);
 };
 
@@ -127,6 +140,21 @@ const onViewDetails = (request: AccessRequest) => {
   selectedRequest.value = request;
   showDetailsModal.value = true;
   emit("viewDetails", request);
+};
+
+const onSecretCreated = (_secret: any) => {
+  const request = selectedRequest.value;
+  showCreateSecretModal.value = false;
+  selectedRequest.value = null;
+  // The parent component can handle refreshing the data
+  if (request) {
+    emit("createSecret", request);
+  }
+};
+
+const onSecretCreateCancelled = () => {
+  showCreateSecretModal.value = false;
+  selectedRequest.value = null;
 };
 
 const formatDate = (timestamp: number) => {
