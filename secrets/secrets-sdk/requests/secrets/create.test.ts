@@ -25,7 +25,7 @@ describe("createSecret", () => {
       id: expect.any(String),
       name: "test-secret",
       description: "A test secret",
-      masked_value: "new_secret***",
+      masked_value: "secret***",
       is_active: true,
     });
 

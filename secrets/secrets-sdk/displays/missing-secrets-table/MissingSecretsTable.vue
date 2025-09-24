@@ -94,6 +94,7 @@
     <v-dialog v-model="showCreateSecretModal" max-width="600px">
       <CreateSecretForm
         v-if="selectedRequest"
+        :secret-name="selectedRequest.secret_name"
         @success="onSecretCreated"
         @cancel="onSecretCreateCancelled"
       />

@@ -31,7 +31,7 @@
           v-model="formData.name"
           :label="t(strings.nameLabel)"
           :rules="nameRules"
-          :disabled="createMutation.isPending.value"
+          :disabled="createMutation.isPending.value || !!props.secretName"
           required
           class="mb-4"
         ></v-text-field>
@@ -92,7 +92,7 @@ import { ref, reactive } from "vue";
 const { t } = useReverseT();
 
 interface Props {
-  // No props needed - this is a self-contained create form
+  secretName?: string; // Optional secret name to pre-fill and disable
 }
 
 const props = defineProps<Props>();
@@ -110,7 +110,7 @@ const showPassword = ref(false);
 const createMutation = useCreateSecret();
 
 const formData = reactive({
-  name: "",
+  name: props.secretName || "",
   description: "",
   value: "",
 });
