@@ -7,7 +7,7 @@ import {
 import path from "node:path";
 import { readFileSync } from "node:fs";
 
-const sourceDir = path.join(import.meta.dirname, "spa-template");
+const sourceDir = path.join(import.meta.dirname, "template");
 
 const input = [
   {
