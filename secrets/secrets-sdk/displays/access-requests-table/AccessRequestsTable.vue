@@ -107,7 +107,7 @@ interface Props {
   error?: any;
 }
 
-const props = defineProps<Props>();
+defineProps<Props>();
 
 // Use mutation for approving/denying requests
 const approveMutation = useApproveAccessRequest();

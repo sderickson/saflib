@@ -4,7 +4,6 @@ export const serviceTokenStubs = [
   {
     id: "token-1",
     service_name: "test-service-1",
-    token_hash: "test-hash-1-very-long-hash-value",
     service_version: "1.0.0",
     approved: false,
     approved_by: null,
@@ -15,7 +14,6 @@ export const serviceTokenStubs = [
   {
     id: "token-2",
     service_name: "test-service-2",
-    token_hash: "test-hash-2-very-long-hash-value",
     service_version: "2.0.0",
     approved: true,
     approved_by: "admin@example.com",
@@ -26,7 +24,6 @@ export const serviceTokenStubs = [
   {
     id: "token-3",
     service_name: "test-service-1",
-    token_hash: "test-hash-3-very-long-hash-value",
     service_version: "1.1.0",
     approved: false,
     approved_by: null,

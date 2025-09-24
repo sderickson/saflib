@@ -23,7 +23,6 @@ describe("listServiceTokens", () => {
     expect(data[0]).toMatchObject({
       id: "token-1",
       service_name: "test-service-1",
-      token_hash: "test-hash-1-very-long-hash-value",
       service_version: "1.0.0",
       approved: false,
     });

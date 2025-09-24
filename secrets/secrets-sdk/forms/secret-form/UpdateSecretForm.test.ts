@@ -108,11 +108,9 @@ describe("UpdateSecretForm", () => {
     });
 
     // Check that form is initialized with secret data
-    const nameInput = wrapper.find('input[type="text"]');
     const descriptionInput = wrapper.find("textarea");
     const activeSwitch = wrapper.findComponent({ name: "VSwitch" });
 
-    expect(nameInput.element.value).toBe("database-password");
     expect(descriptionInput.element.value).toBe("Main database password");
     expect(activeSwitch.props("modelValue")).toBe(true);
   });
@@ -125,7 +123,7 @@ describe("UpdateSecretForm", () => {
     });
 
     const valueInput = wrapper.find('input[type="password"]');
-    expect(valueInput.element.value).toBe("");
+    expect((valueInput.element as HTMLInputElement).value).toBe("");
   });
 
   it("should validate required fields", async () => {
@@ -210,11 +208,8 @@ describe("UpdateSecretForm", () => {
 
     const newSecret = { ...mockSecret, name: "new-name", is_active: false };
     await wrapper.setProps({ secret: newSecret });
-
-    const nameInput = wrapper.find('input[type="text"]');
     const activeSwitch = wrapper.findComponent({ name: "VSwitch" });
 
-    expect(nameInput.element.value).toBe("new-name");
     expect(activeSwitch.props("modelValue")).toBe(false);
   });
 

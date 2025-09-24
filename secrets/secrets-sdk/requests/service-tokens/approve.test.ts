@@ -24,7 +24,6 @@ describe("approveServiceToken", () => {
     expect(data).toMatchObject({
       id: "token-1",
       service_name: "test-service-1",
-      token_hash: "test-hash-1-very-long-hash-value",
       service_version: "1.0.0",
       approved: true,
       approved_by: "admin@example.com",
@@ -50,7 +49,6 @@ describe("approveServiceToken", () => {
     expect(data).toMatchObject({
       id: "token-1",
       service_name: "test-service-1",
-      token_hash: "test-hash-1-very-long-hash-value",
       service_version: "1.0.0",
       approved: false,
       approved_by: "admin@example.com",

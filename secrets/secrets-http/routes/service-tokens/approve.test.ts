@@ -43,7 +43,6 @@ describe("POST /service-tokens/:id/approve", () => {
     expect(response.body).toMatchObject({
       id: testServiceTokenId,
       service_name: "test-service",
-      token_hash: "test-tok...", // Should be truncated
       service_version: "1.0.0",
       approved: true,
       approved_by: "admin1@example.com", // Identity-provided email
@@ -66,7 +65,6 @@ describe("POST /service-tokens/:id/approve", () => {
     expect(response.body).toMatchObject({
       id: testServiceTokenId,
       service_name: "test-service",
-      token_hash: "test-tok...", // Should be truncated
       service_version: "1.0.0",
       approved: false,
       approved_by: "admin2@example.com", // Identity-provided email

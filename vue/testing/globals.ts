@@ -1,4 +1,4 @@
-import { afterAll, afterEach, beforeEach, vi } from "vitest";
+import { afterEach, beforeEach, vi } from "vitest";
 
 /**
  * Call during test setup to stub browser globals like ResizeObserver, matchMedia, location, and visualViewport.

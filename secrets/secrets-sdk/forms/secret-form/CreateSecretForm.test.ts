@@ -4,7 +4,6 @@ import { type VueWrapper } from "@vue/test-utils";
 import CreateSecretForm from "./CreateSecretForm.vue";
 import { secret_form_strings as strings } from "./CreateSecretForm.strings.ts";
 import { mountTestApp } from "../../test-app.ts";
-import type { SecretCreateRequest } from "@saflib/secrets-spec";
 
 describe("CreateSecretForm", () => {
   stubGlobals();
@@ -76,8 +75,8 @@ describe("CreateSecretForm", () => {
     const nameInput = wrapper.find('input[type="text"]');
     const descriptionInput = wrapper.find("textarea");
 
-    expect(nameInput.element.value).toBe("");
-    expect(descriptionInput.element.value).toBe("");
+    expect((nameInput.element as HTMLInputElement).value).toBe("");
+    expect((descriptionInput.element as HTMLTextAreaElement).value).toBe("");
   });
 
   it("should initialize with empty form data", async () => {
@@ -86,8 +85,8 @@ describe("CreateSecretForm", () => {
     const nameInput = wrapper.find('input[type="text"]');
     const descriptionInput = wrapper.find("textarea");
 
-    expect(nameInput.element.value).toBe("");
-    expect(descriptionInput.element.value).toBe("");
+    expect((nameInput.element as HTMLInputElement).value).toBe("");
+    expect((descriptionInput.element as HTMLTextAreaElement).value).toBe("");
   });
 
   it("should validate required fields", async () => {
