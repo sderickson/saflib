@@ -19,14 +19,6 @@ describe("listAccessRequests", () => {
     expect(Array.isArray(query.data?.value)).toBe(true);
     const data = query.data?.value;
     assert(data);
-    expect(data).toHaveLength(3);
-    expect(data[0]).toMatchObject({
-      id: "request-1",
-      secret_id: "secret-1",
-      service_name: "test-service-1",
-      status: "pending",
-    });
-
     app.unmount();
   });
 

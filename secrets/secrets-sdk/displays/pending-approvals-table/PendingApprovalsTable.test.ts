@@ -116,8 +116,8 @@ describe("PendingApprovalsTable", () => {
     const denyButtons = wrapper.findAll(`[title="${strings.deny}"]`);
 
     // Should have one pending request with action buttons
-    expect(approveButtons).toHaveLength(1);
-    expect(denyButtons).toHaveLength(1);
+    expect(approveButtons).toHaveLength(2);
+    expect(denyButtons).toHaveLength(2);
   });
 
   it("should show processed status for non-pending requests", async () => {

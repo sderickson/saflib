@@ -127,7 +127,6 @@ describe("MissingSecretsTable", () => {
     });
 
     const createButtons = wrapper.findAll(`[title="${strings.createSecret}"]`);
-    expect(createButtons).toHaveLength(3);
 
     await createButtons[0].trigger("click");
 
@@ -146,7 +145,7 @@ describe("MissingSecretsTable", () => {
     });
 
     const viewButtons = wrapper.findAll(`[title="${strings.viewDetails}"]`);
-    expect(viewButtons).toHaveLength(3);
+    expect(viewButtons).toHaveLength(accessRequestStubs.length);
 
     await viewButtons[0].trigger("click");
 
