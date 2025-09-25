@@ -75,7 +75,6 @@ export const createVueApp = (
   if (callback) {
     callback(app);
   }
-  console.log("app.mount", "#app");
 
   app.mount("#app");
   return app;

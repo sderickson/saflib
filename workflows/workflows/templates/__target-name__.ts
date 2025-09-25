@@ -55,7 +55,6 @@ export const __TargetName__WorkflowDefinition = defineWorkflow<
   sourceUrl: import.meta.url,
 
   context: ({ input }) => {
-    console.log("input", input);
     // TODO: replace with actual path parsing logic
     // If the package name is provided as an input, use input.name instead of getPackageName(input.cwd)
     const pathResult = parsePath(input.path, {

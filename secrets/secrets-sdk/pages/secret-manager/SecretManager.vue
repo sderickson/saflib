@@ -23,8 +23,6 @@
             :missing-secrets="missingSecrets"
             :loading="accessRequestsQuery.isLoading.value"
             :error="accessRequestsQuery.error.value"
-            @create-secret="onCreateSecret"
-            @view-details="onViewDetails"
           />
         </div>
       </v-window-item>
@@ -90,15 +88,4 @@ const missingSecrets = computed(() => {
 });
 
 const activeTab = ref("secrets");
-
-// Event handlers
-const onCreateSecret = (request: any) => {
-  console.log("Create secret for request:", request);
-  // TODO: Implement secret creation logic
-};
-
-const onViewDetails = (request: any) => {
-  console.log("View details for request:", request);
-  // TODO: Implement view details logic
-};
 </script>
