@@ -56,6 +56,9 @@ export const InitGrpcServerWorkflowDefinition = defineWorkflow<
   },
 
   templateFiles: {
+    healthTest: path.join(sourceDir, "handlers/health/health-check.test.ts"),
+    healthHandler: path.join(sourceDir, "handlers/health/health-check.ts"),
+    healthIndex: path.join(sourceDir, "handlers/health/index.ts"),
     package: path.join(sourceDir, "package.json"),
     grpc: path.join(sourceDir, "grpc.ts"),
     tsconfig: path.join(sourceDir, "tsconfig.json"),
@@ -73,6 +76,11 @@ export const InitGrpcServerWorkflowDefinition = defineWorkflow<
 
     step(CwdStepMachine, ({ context }) => ({
       path: context.targetDir,
+    })),
+
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["install"],
     })),
 
     step(CommandStepMachine, () => ({

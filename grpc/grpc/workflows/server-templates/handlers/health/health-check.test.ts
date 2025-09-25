@@ -1,7 +1,6 @@
 import { describe, it, beforeEach, expect } from "vitest";
 import {
   makeContext,
-  type __ServiceName__ServiceContext,
   __serviceName__ServiceStorage,
 } from "template-package-service-common";
 import { testContext, safContextStorage } from "@saflib/node";
