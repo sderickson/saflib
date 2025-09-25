@@ -59,18 +59,26 @@ export const SdkInitWorkflowDefinition = defineWorkflow<
   },
 
   templateFiles: {
+    public: path.join(sourceDir, "public"),
+    app: path.join(sourceDir, "App.vue"),
     client: path.join(sourceDir, "client.ts"),
+    components: path.join(sourceDir, "components.ts"),
+    dockerCompose: path.join(sourceDir, "docker-compose.yaml"),
+    Dockerfile: path.join(sourceDir, "Dockerfile"),
     fakes: path.join(sourceDir, "fakes.ts"),
     i18n: path.join(sourceDir, "i18n.ts"),
-    test: path.join(sourceDir, "index.test.ts"),
+    indexHtml: path.join(sourceDir, "index.html"),
+    indexTest: path.join(sourceDir, "index.test.ts"),
     index: path.join(sourceDir, "index.ts"),
+    mainTs: path.join(sourceDir, "main.ts"),
     packageJson: path.join(sourceDir, "package.json"),
+    router: path.join(sourceDir, "router.ts"),
     strings: path.join(sourceDir, "strings.ts"),
     testApp: path.join(sourceDir, "test-app.ts"),
     tsconfig: path.join(sourceDir, "tsconfig.json"),
     typedFake: path.join(sourceDir, "typed-fake.ts"),
+    viteConfig: path.join(sourceDir, "vite.config.ts"),
     vitestConfig: path.join(sourceDir, "vitest.config.js"),
-    components: path.join(sourceDir, "components.ts"),
   },
 
   docFiles: {
