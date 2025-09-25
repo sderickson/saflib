@@ -1,7 +1,7 @@
 #!/bin/bash
 protoc --ts_out=./dist/ \
   --proto_path=./protos \
-  --proto_path=../../../saflib/grpc-specs/protos \
+  --proto_path=../../grpc/grpc-specs/protos \
   --ts_opt=no_namespace \
   --ts_opt=unary_rpc_promise=true \
   protos/*.proto

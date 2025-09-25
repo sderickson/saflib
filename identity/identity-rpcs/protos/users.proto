@@ -12,7 +12,7 @@ service Users {
 message GetUserProfileRequest {
   saflib.common.v1.SafAuth auth = 1;
   saflib.common.v1.SafRequest request = 2;
-  int64 user_id = 3;
+  string user_id = 3;
 }
 
 message GetUserProfileResponse {
@@ -20,7 +20,7 @@ message GetUserProfileResponse {
 }
 
 message UserProfile {
-  int64 user_id = 1;
+  string user_id = 1;
   string email = 2;
   bool email_verified = 3;
   string name = 4;
