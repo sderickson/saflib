@@ -10,20 +10,20 @@ import {
 } from "@saflib/workflows";
 import path from "node:path";
 
-const sourceDir = path.join(import.meta.dirname, "templates");
+const sourceDir = path.join(import.meta.dirname, "server-templates");
 
 const input = [
   {
     name: "name",
     description:
-      "The name of the gRPC service package to create (e.g., 'secrets-grpc')",
-    exampleValue: "@example-org/example-grpc",
+      "The name of the gRPC service package to create (e.g., 'secrets-grpc-server')",
+    exampleValue: "@example-org/example-grpc-server",
   },
   {
     name: "path",
     description:
-      "The relative path where the package should be created (e.g., 'grpc/example-grpc')",
-    exampleValue: "grpc/example-grpc",
+      "The relative path where the package should be created (e.g., 'grpc/example-grpc-server')",
+    exampleValue: "grpc/example-grpc-server",
   },
 ] as const;
 
@@ -35,12 +35,12 @@ export const InitWorkflowDefinition = defineWorkflow<
   typeof input,
   InitWorkflowContext
 >({
-  id: "grpc/init",
+  id: "grpc/init-server",
 
   description: "Create a new gRPC service package",
 
   checklistDescription: ({ serviceName }) =>
-    `Create a new ${serviceName} gRPC service package.`,
+    `Create a new ${serviceName} gRPC server package.`,
 
   input,
 
@@ -49,7 +49,7 @@ export const InitWorkflowDefinition = defineWorkflow<
   context: ({ input }) => {
     return {
       ...parsePackageName(input.name, {
-        requiredSuffix: "-grpc",
+        requiredSuffix: "-grpc-server",
       }),
       targetDir: path.join(input.cwd, input.path),
     };

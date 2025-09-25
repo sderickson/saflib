@@ -1,4 +1,4 @@
-import { InitWorkflowDefinition } from "./init.ts";
+import { InitWorkflowDefinition } from "./init-server.ts";
 import { AddHandlerWorkflowDefinition } from "./add-handler.ts";
 import type { WorkflowDefinition } from "@saflib/workflows";
 
