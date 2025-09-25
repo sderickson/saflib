@@ -9,7 +9,7 @@ import type { SelectEmailAuth } from "../../types.ts";
 export const verifyEmail = queryWrapper(
   async (
     dbKey: DbKey,
-    userId: number,
+    userId: string,
   ): Promise<ReturnsError<SelectEmailAuth, EmailAuthNotFoundError>> => {
     const db = identityDbManager.get(dbKey)!;
     const result = await db

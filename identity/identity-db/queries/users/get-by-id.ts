@@ -10,7 +10,7 @@ import type { ReturnsError } from "@saflib/monorepo";
 export const getById = queryWrapper(
   async (
     dbKey: DbKey,
-    id: number,
+    id: string,
   ): Promise<ReturnsError<User, UserNotFoundError>> => {
     const db = identityDbManager.get(dbKey)!;
     const result = await db.query.users.findFirst({

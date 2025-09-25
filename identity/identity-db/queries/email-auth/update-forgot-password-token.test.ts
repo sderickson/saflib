@@ -43,7 +43,7 @@ describe("updateForgotPasswordToken", () => {
   it("should throw EmailAuthNotFoundError when user not found", async () => {
     const { error } = await emailAuthDb.updateForgotPasswordToken(
       dbKey,
-      999,
+      "999",
       "token",
       new Date(),
     );

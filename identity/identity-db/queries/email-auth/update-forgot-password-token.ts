@@ -10,7 +10,7 @@ import type { ReturnsError } from "@saflib/monorepo";
 export const updateForgotPasswordToken = queryWrapper(
   async (
     dbKey: DbKey,
-    userId: number,
+    userId: string,
     forgotPasswordToken: string | null,
     forgotPasswordTokenExpiresAt: Date | null,
   ): Promise<ReturnsError<SelectEmailAuth, EmailAuthNotFoundError>> => {

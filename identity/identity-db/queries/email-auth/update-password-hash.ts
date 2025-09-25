@@ -10,7 +10,7 @@ import type { ReturnsError } from "@saflib/monorepo";
 export const updatePasswordHash = queryWrapper(
   async (
     dbKey: DbKey,
-    userId: number,
+    userId: string,
     passwordHash: Uint8Array,
   ): Promise<ReturnsError<SelectEmailAuth, EmailAuthNotFoundError>> => {
     const db = identityDbManager.get(dbKey)!;

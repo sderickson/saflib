@@ -68,7 +68,7 @@ describe("updateProfile", () => {
       name: "Updated Name",
     };
 
-    const { error } = await usersDb.updateProfile(dbKey, 999, updateParams);
+    const { error } = await usersDb.updateProfile(dbKey, "999", updateParams);
     expect(error).toBeInstanceOf(UserNotFoundError);
   });
 });

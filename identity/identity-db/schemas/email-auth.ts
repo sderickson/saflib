@@ -3,7 +3,7 @@ import { users } from "./users.ts";
 
 // Email authentication
 export const emailAuth = sqliteTable("email_auth", {
-  userId: int("user_id")
+  userId: text("user_id")
     .notNull()
     .references(() => users.id)
     .unique(),

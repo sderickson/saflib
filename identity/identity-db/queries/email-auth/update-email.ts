@@ -13,7 +13,7 @@ export type UpdateEmailResult = {
 export const updateEmail = queryWrapper(
   async (
     dbKey: DbKey,
-    userId: number,
+    userId: string,
     newEmail: string,
   ): Promise<
     ReturnsError<UpdateEmailResult, EmailAuthNotFoundError | EmailTakenError>

@@ -11,7 +11,7 @@ import type { ReturnsError } from "@saflib/monorepo";
 export const updateProfile = queryWrapper(
   async (
     dbKey: DbKey,
-    userId: number,
+    userId: string,
     params: UpdateProfileParams,
   ): Promise<ReturnsError<User, UserNotFoundError>> => {
     const db = identityDbManager.get(dbKey)!;

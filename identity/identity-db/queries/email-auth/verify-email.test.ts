@@ -43,7 +43,7 @@ describe("verifyEmail", () => {
   });
 
   it("should throw EmailAuthNotFoundError when user not found", async () => {
-    const { error } = await emailAuthDb.verifyEmail(dbKey, 999);
+    const { error } = await emailAuthDb.verifyEmail(dbKey, "999");
     expect(error).toBeInstanceOf(EmailAuthNotFoundError);
   });
 });

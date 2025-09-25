@@ -9,7 +9,7 @@ import type { ReturnsError } from "@saflib/monorepo";
 export const updateVerificationToken = queryWrapper(
   async (
     dbKey: DbKey,
-    userId: number,
+    userId: string,
     verificationToken: string,
     verificationTokenExpiresAt: Date,
   ): Promise<ReturnsError<SelectEmailAuth, EmailAuthNotFoundError>> => {

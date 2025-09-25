@@ -20,7 +20,7 @@ describe("create", () => {
 
     expect(result).toMatchObject({
       ...newUser,
-      id: expect.any(Number),
+      id: expect.any(String),
       createdAt: expect.any(Date),
       lastLoginAt: expect.any(Date),
     });

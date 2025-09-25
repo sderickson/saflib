@@ -4,7 +4,7 @@ import { Logger } from "winston";
  * Auth object passed in with every authenticated request.
  */
 export interface Auth {
-  userId: number;
+  userId: string;
   userEmail: string;
   userScopes: string[];
 }

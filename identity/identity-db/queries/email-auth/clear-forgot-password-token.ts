@@ -9,7 +9,7 @@ import type { ReturnsError } from "@saflib/monorepo";
 export const clearForgotPasswordToken = queryWrapper(
   async (
     dbKey: DbKey,
-    userId: number,
+    userId: string,
   ): Promise<ReturnsError<SelectEmailAuth, EmailAuthNotFoundError>> => {
     const db = identityDbManager.get(dbKey)!;
     const result = await db

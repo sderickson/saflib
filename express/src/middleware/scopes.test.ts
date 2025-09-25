@@ -20,7 +20,7 @@ interface MockOpenApiMetadata extends Partial<OpenApiRequestMetadata> {
 interface MockRequest extends Partial<Request> {
   openapi?: MockOpenApiMetadata; // Use our mock type
   auth?: {
-    userId: number;
+    userId: string;
     userEmail: string;
     scopes: string[];
   };
@@ -31,7 +31,7 @@ describe("createScopeValidator", () => {
   let mockRes: Partial<Response>;
   let mockNext: NextFunction;
   let scopeValidator: (req: Request, res: Response, next: NextFunction) => void;
-  const defaultUserId = 1;
+  const defaultUserId = "1";
   const defaultUserEmail = "test@example.com";
   // Default mock values for OpenApiRequestMetadata fields (can be simple placeholders)
   const defaultOpenApiMetadata: MockOpenApiMetadata = {

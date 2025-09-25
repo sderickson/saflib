@@ -51,7 +51,7 @@ describe("Verify Route", () => {
       .set("x-csrf-token", csrfToken);
     expect(response.status).toBe(200);
     expect(response.body).toEqual({
-      id: expect.any(Number),
+      id: expect.any(String),
       email: userData.email,
       name: userData.name,
       scopes: ["none"],
@@ -97,7 +97,7 @@ describe("Verify Route", () => {
         .set("x-csrf-token", csrfToken);
       expect(response.status).toBe(200);
       expect(response.body).toEqual({
-        id: expect.any(Number),
+        id: expect.any(String),
         email: userData.email,
         scopes: ["none"],
       });
@@ -120,7 +120,7 @@ describe("Verify Route", () => {
       .set("x-csrf-token", csrfToken);
     expect(response.status).toBe(200);
     expect(response.body).toEqual({
-      id: expect.any(Number),
+      id: expect.any(String),
       email: userData.email,
       scopes: ["*"],
     });
