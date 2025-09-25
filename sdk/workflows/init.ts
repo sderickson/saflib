@@ -64,7 +64,6 @@ export const SdkInitWorkflowDefinition = defineWorkflow<
     client: path.join(sourceDir, "client.ts"),
     components: path.join(sourceDir, "components.ts"),
     dockerCompose: path.join(sourceDir, "docker-compose.yaml"),
-    Dockerfile: path.join(sourceDir, "Dockerfile"),
     fakes: path.join(sourceDir, "fakes.ts"),
     i18n: path.join(sourceDir, "i18n.ts"),
     indexHtml: path.join(sourceDir, "index.html"),

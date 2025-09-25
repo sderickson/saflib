@@ -30,7 +30,7 @@ describe("Login Route", () => {
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual({
-      id: expect.any(Number),
+      id: expect.any(String),
       email: userData.email,
       emailVerified: false,
       name: userData.name,

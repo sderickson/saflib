@@ -31,7 +31,7 @@ describe("Auth Middleware", () => {
 
     expect(response.status).toBe(200);
     expect(response.body.authFromMiddleware).toEqual({
-      userId: 123,
+      userId: "123",
       userEmail: "test@example.com",
       userScopes: [],
     });
@@ -49,7 +49,7 @@ describe("Auth Middleware", () => {
 
     expect(response.status).toBe(200);
     expect(response.body.authFromMiddleware).toEqual({
-      userId: 123,
+      userId: "123",
       userEmail: "test@example.com",
       userScopes: ["admin", "write"],
     });
@@ -67,7 +67,7 @@ describe("Auth Middleware", () => {
 
     expect(response.status).toBe(200);
     expect(response.body.authFromMiddleware).toEqual({
-      userId: 123,
+      userId: "123",
       userEmail: "test@example.com",
       userScopes: [],
     });

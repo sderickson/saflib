@@ -59,7 +59,7 @@ describe("Update Profile Route", () => {
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual({
-      id: expect.any(Number),
+      id: expect.any(String),
       email: userData.email,
       emailVerified: false,
       name: updateData.name,
@@ -103,7 +103,7 @@ describe("Update Profile Route", () => {
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual({
-      id: expect.any(Number),
+      id: expect.any(String),
       email: updateData.email,
       emailVerified: false,
       name: userData.name,
@@ -151,7 +151,7 @@ describe("Update Profile Route", () => {
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual({
-      id: expect.any(Number),
+      id: expect.any(String),
       email: updateData.email,
       emailVerified: false,
       name: updateData.name,
@@ -196,7 +196,7 @@ describe("Update Profile Route", () => {
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual({
-      id: expect.any(Number),
+      id: expect.any(String),
       email: userData.email,
       emailVerified: false,
       name: updateData.name,
@@ -244,7 +244,7 @@ describe("Update Profile Route", () => {
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual({
-      id: expect.any(Number),
+      id: expect.any(String),
       email: userData.email,
       emailVerified: false,
       name: userData.name,
@@ -275,7 +275,7 @@ describe("Update Profile Route", () => {
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual({
-      id: expect.any(Number),
+      id: expect.any(String),
       email: userData.email,
       emailVerified: true,
       name: userData.name,
@@ -289,7 +289,7 @@ describe("Update Profile Route", () => {
 
     expect(updateResponse.status).toBe(200);
     expect(updateResponse.body).toEqual({
-      id: expect.any(Number),
+      id: expect.any(String),
       email: updateData.email,
       emailVerified: false,
       name: userData.name,
