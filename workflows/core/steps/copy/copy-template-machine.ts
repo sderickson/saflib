@@ -15,7 +15,6 @@ import { parseChecklist, parseCopiedFiles } from "./helpers.ts";
 
 export type { CopyStepInput };
 
-
 /**
  * Copies all `templateFiles` to the given directory, renaming all instances of `"template-file"` to the given `name`. Also replaces other variants of the string: camelCase, snake_case, and PascalCase.
  */
@@ -48,6 +47,24 @@ export const CopyStepMachine = setup({
     if (!input.templateFiles) {
       throw new Error("templateFiles is required");
     }
+    const templateKeys = Object.values(input.templateFiles);
+    let sharedPrefixIndex = 0;
+    for (let i = 0; i < templateKeys[0].length; i++) {
+      let allMatch = true;
+      for (let j = 0; j < templateKeys.length; j++) {
+        if (templateKeys[j][i] !== templateKeys[0][i]) {
+          allMatch = false;
+          break;
+        }
+      }
+      sharedPrefixIndex = i;
+      if (!allMatch) {
+        break;
+      }
+    }
+    const sharedPrefix = templateKeys[0].slice(0, sharedPrefixIndex);
+    console.log("sharedPrefix", sharedPrefix);
+
     return {
       ...contextFromInput(input, self),
       filesToCopy: Object.keys(input.templateFiles || {}),
@@ -55,6 +72,7 @@ export const CopyStepMachine = setup({
       targetDir: input.targetDir,
       copiedFiles: input.copiedFiles || {},
       lineReplace: input.lineReplace,
+      sharedPrefix,
     };
   },
   states: {

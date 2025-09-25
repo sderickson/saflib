@@ -29,4 +29,5 @@ export interface CopyStepContext extends WorkflowContext {
   targetDir: string;
   copiedFiles: Record<string, string>;
   lineReplace?: (line: string) => string;
+  sharedPrefix: string;
 }

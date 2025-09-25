@@ -56,7 +56,8 @@ export const InitGrpcProtoWorkflowDefinition = defineWorkflow<
   },
 
   templateFiles: {
-    protos: path.join(sourceDir, "protos"),
+    envelopeProto: path.join(sourceDir, "protos/envelope.proto"),
+    healthProto: path.join(sourceDir, "protos/health.proto"),
     envSchema: path.join(sourceDir, "env.schema.json"),
     generate: path.join(sourceDir, "generate.sh"),
     index: path.join(sourceDir, "index.ts"),
@@ -78,6 +79,11 @@ export const InitGrpcProtoWorkflowDefinition = defineWorkflow<
 
     step(CwdStepMachine, ({ context }) => ({
       path: context.targetDir,
+    })),
+
+    step(CommandStepMachine, () => ({
+      command: "mkdir",
+      args: ["-p", "protos"],
     })),
 
     step(CommandStepMachine, () => ({

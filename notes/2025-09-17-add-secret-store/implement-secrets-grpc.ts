@@ -13,6 +13,7 @@ import { execSync } from "child_process";
 import {
   AddGrpcServerHandlerWorkflowDefinition,
   InitGrpcServerWorkflowDefinition,
+  InitGrpcProtoWorkflowDefinition,
 } from "@saflib/grpc/workflows";
 
 const input = [] as const;
@@ -33,19 +34,23 @@ export const ImplementSecretsGrpcServerWorkflowDefinition = defineWorkflow<
     spec: path.join(import.meta.dirname, "spec.md"),
   },
 
-  afterEach: () => {
-    execSync("git add -A");
-  },
+  // afterEach: () => {
+  //   execSync("git add -A");
+  // },
 
   steps: [
+    step(makeWorkflowMachine(InitGrpcProtoWorkflowDefinition), () => ({
+      name: "@saflib/secrets-grpc-proto",
+      path: "./secrets/secrets-grpc-proto",
+    })),
     step(makeWorkflowMachine(InitGrpcServerWorkflowDefinition), () => ({
       name: "@saflib/secrets-grpc-server",
       path: "./secrets/secrets-grpc-server",
     })),
-    step(makeWorkflowMachine(AddGrpcServerHandlerWorkflowDefinition), () => ({
-      path: "./secrets/secrets-grpc-server",
-      name: "get-secret",
-    })),
+    // step(makeWorkflowMachine(AddGrpcServerHandlerWorkflowDefinition), () => ({
+    //   path: "./secrets/secrets-grpc-server",
+    //   name: "get-secret",
+    // })),
   ],
 });
 
