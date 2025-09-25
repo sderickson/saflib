@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package __service_name__.health.v1;
+
+import "envelope.proto";
+import "google/protobuf/timestamp.proto";
+
+service __ServiceName__Health {
+  rpc HealthCheck(__ServiceName__HealthCheckRequest) returns (__ServiceName__HealthCheckResponse);
+}
+
+message __ServiceName__HealthCheckRequest {
+  saflib.common.v1.SafAuth auth = 1;
+  saflib.common.v1.SafRequest request = 2;
+}
+
+message __ServiceName__HealthCheckResponse {
+  string status = 1;
+  google.protobuf.Timestamp current_time = 2;
+}

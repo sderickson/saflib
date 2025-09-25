@@ -1,5 +1,5 @@
 {
-  "name": "template-package-grpc",
+  "name": "template-package-grpc-server",
   "description": "gRPC server for the __service-name__ service",
   "type": "module",
   "exports": {
