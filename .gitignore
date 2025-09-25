@@ -2,6 +2,7 @@
 **/coverage
 **/data/*.sqlite
 **/saf-workflow-status.json
+Dockerfile
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
