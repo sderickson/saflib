@@ -43,7 +43,7 @@ describe("updateVerificationToken", () => {
   it("should throw EmailAuthNotFoundError when user not found", async () => {
     const { error } = await emailAuthDb.updateVerificationToken(
       dbKey,
-      999,
+      "999",
       "token",
       new Date(),
     );

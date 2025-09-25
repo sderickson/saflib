@@ -10,7 +10,7 @@ export const listUsersHandler = createHandler(async (_, res) => {
   const userIds = users.map((u) => u.id);
   const emailAuths = await emailAuthDb.getEmailAuthByUserIds(dbKey, userIds);
 
-  const emailMap = new Map<number, string>();
+  const emailMap = new Map<string, string>();
   emailAuths.forEach((auth) => {
     emailMap.set(auth.userId, auth.email);
   });

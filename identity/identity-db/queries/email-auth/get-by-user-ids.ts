@@ -6,7 +6,7 @@ import { identityDbManager } from "../../instances.ts";
 import type { DbKey } from "@saflib/drizzle";
 
 export const getEmailAuthByUserIds = queryWrapper(
-  async (dbKey: DbKey, ids: number[]): Promise<SelectEmailAuth[]> => {
+  async (dbKey: DbKey, ids: string[]): Promise<SelectEmailAuth[]> => {
     if (ids.length === 0) {
       return [];
     }

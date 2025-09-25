@@ -37,7 +37,7 @@ describe("updatePasswordHash", () => {
   it("should throw EmailAuthNotFoundError when user not found", async () => {
     const { error } = await emailAuthDb.updatePasswordHash(
       dbKey,
-      999,
+      "999",
       Buffer.from([4, 5, 6]),
     );
     expect(error).toBeInstanceOf(EmailAuthNotFoundError);

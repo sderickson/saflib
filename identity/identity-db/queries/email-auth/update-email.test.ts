@@ -59,7 +59,7 @@ describe("updateEmail", () => {
   it("should return EmailAuthNotFoundError when user not found", async () => {
     const { error } = await emailAuthDb.updateEmail(
       dbKey,
-      999,
+      "999",
       "new@example.com",
     );
     expect(error).toBeInstanceOf(EmailAuthNotFoundError);

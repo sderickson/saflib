@@ -27,7 +27,7 @@ describe("getById", () => {
   });
 
   it("should return UserNotFoundError when id not found", async () => {
-    const { error } = await usersDb.getById(dbKey, 999);
+    const { error } = await usersDb.getById(dbKey, "999");
     expect(error).toBeInstanceOf(UserNotFoundError);
   });
 });

@@ -31,7 +31,7 @@ describe("updateLastLogin", () => {
   });
 
   it("should throw UserNotFoundError when id not found", async () => {
-    const { error } = await usersDb.updateLastLogin(dbKey, 999);
+    const { error } = await usersDb.updateLastLogin(dbKey, "999");
     expect(error).toBeInstanceOf(UserNotFoundError);
   });
 });

@@ -9,7 +9,7 @@ import { identityDbManager } from "../../instances.ts";
 export const updatePassword = queryWrapper(
   async (
     dbKey: DbKey,
-    userId: number,
+    userId: string,
     passwordHash: Uint8Array,
   ): Promise<ReturnsError<SelectEmailAuth, EmailAuthNotFoundError>> => {
     const db = identityDbManager.get(dbKey)!;

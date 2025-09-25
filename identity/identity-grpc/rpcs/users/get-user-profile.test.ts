@@ -81,7 +81,7 @@ describe("handleGetUserProfile", () => {
   it("should return NOT_FOUND for non-existent user", async () => {
     try {
       await client.GetUserProfile(
-        new users.GetUserProfileRequest({ user_id: 999 }),
+        new users.GetUserProfileRequest({ user_id: "999" }),
       );
       expect.fail("Should have thrown an error");
     } catch (error: any) {
