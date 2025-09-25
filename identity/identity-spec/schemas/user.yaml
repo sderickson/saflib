@@ -2,7 +2,7 @@ type: object
 additionalProperties: false
 properties:
   id:
-    type: number
+    type: string
   email:
     type: string
     format: email
