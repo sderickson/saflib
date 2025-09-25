@@ -10,7 +10,7 @@ describe("health", () => {
     const response = await client.HealthCheck(
       new health.HealthCheckRequest({
         auth: new SafAuth({
-          user_id: 123,
+          user_id: "123",
           user_email: "test@test.com",
           user_scopes: ["test"],
         }),

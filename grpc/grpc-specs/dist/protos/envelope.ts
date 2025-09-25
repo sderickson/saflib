@@ -8,7 +8,7 @@ import * as pb_1 from "google-protobuf";
 export class SafAuth extends pb_1.Message {
     #one_of_decls: number[][] = [];
     constructor(data?: any[] | {
-        user_id?: number;
+        user_id?: string;
         user_email?: string;
         user_scopes?: string[];
     }) {
@@ -27,9 +27,9 @@ export class SafAuth extends pb_1.Message {
         }
     }
     get user_id() {
-        return pb_1.Message.getFieldWithDefault(this, 1, 0) as number;
+        return pb_1.Message.getFieldWithDefault(this, 1, "") as string;
     }
-    set user_id(value: number) {
+    set user_id(value: string) {
         pb_1.Message.setField(this, 1, value);
     }
     get user_email() {
@@ -45,7 +45,7 @@ export class SafAuth extends pb_1.Message {
         pb_1.Message.setField(this, 3, value);
     }
     static fromObject(data: {
-        user_id?: number;
+        user_id?: string;
         user_email?: string;
         user_scopes?: string[];
     }): SafAuth {
@@ -63,7 +63,7 @@ export class SafAuth extends pb_1.Message {
     }
     toObject() {
         const data: {
-            user_id?: number;
+            user_id?: string;
             user_email?: string;
             user_scopes?: string[];
         } = {};
@@ -82,8 +82,8 @@ export class SafAuth extends pb_1.Message {
     serialize(w: pb_1.BinaryWriter): void;
     serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
         const writer = w || new pb_1.BinaryWriter();
-        if (this.user_id != 0)
-            writer.writeInt64(1, this.user_id);
+        if (this.user_id.length)
+            writer.writeString(1, this.user_id);
         if (this.user_email.length)
             writer.writeString(2, this.user_email);
         if (this.user_scopes.length)
@@ -98,7 +98,7 @@ export class SafAuth extends pb_1.Message {
                 break;
             switch (reader.getFieldNumber()) {
                 case 1:
-                    message.user_id = reader.readInt64();
+                    message.user_id = reader.readString();
                     break;
                 case 2:
                     message.user_email = reader.readString();
