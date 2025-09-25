@@ -28,7 +28,7 @@ export const makeContextMiddleware = () => {
     const scopes = userScopes ? (userScopes as string).split(",") : [];
     if (userId && userEmail && scopes) {
       auth = {
-        userId: parseInt(userId as string),
+        userId: userId as string,
         userEmail: userEmail as string,
         userScopes: scopes,
       };
