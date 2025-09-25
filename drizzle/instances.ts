@@ -76,9 +76,17 @@ export class DbManager<S extends Schema, C extends Config> {
       if (migrationsPath.startsWith("./")) {
         migrationsPath = path.join(this.rootPath, migrationsPath);
       }
-      migrate(db, {
-        migrationsFolder: migrationsPath,
-      });
+      try {
+        migrate(db, {
+          migrationsFolder: migrationsPath,
+        });
+      } catch (error) {
+        if (error instanceof Error && error.cause) {
+          log.error(error.stack);
+          log.error(`Cause:\n\n${error.cause}\n\n`);
+        }
+        throw error;
+      }
     }
 
     const key: DbKey = Symbol(`db-${Date.now()}-${Math.random()}`);
