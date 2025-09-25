@@ -106,14 +106,24 @@ saflib/secrets/
 │   └── package.json
 └── secrets-sdk/                # SDK with Vue components and TanStack queries
     ├── index.ts
-    ├── components/
-    │   ├── SecretsTable.vue
-    │   ├── PendingApprovalsTable.vue
-    │   ├── MissingSecretsTable.vue
-    │   ├── CreateSecretForm.vue
-    │   └── UpdateSecretForm.vue
-    ├── queries/
-    │   └── secrets.ts
+    ├── displays/
+    │   ├── secrets-table/
+    │   ├── access-requests-table/
+    │   ├── missing-secrets-table/
+    │   ├── access-request-table/
+    │   └── service-tokens-table/
+    ├── forms/
+    │   ├── create-secret-form/
+    │   └── update-secret-form/
+    ├── pages/
+    │   └── secret-manager/
+    ├── requests/
+    │   ├── secrets/
+    │   ├── access-requests/
+    │   └── service-tokens/
+    ├── components.ts
+    ├── strings.ts
+    ├── fakes.ts
     └── package.json
 ```
 
@@ -325,29 +335,54 @@ message GetSecretResponse {
 
 - Display secrets with masked values
 - Show creation/update timestamps
-- Edit/delete actions
+- Edit/delete actions with modal integration
+- UpdateSecretForm modal for editing secrets
 
-### PendingApprovalsTable.vue
+### AccessRequestsTable.vue
 
-- Show requests needing approval
-- Approve/deny actions
-- Service information
+- Show all access requests (pending, granted, denied)
+- Approve/deny actions with visual feedback
+- Service information and request details
+- Always show action buttons regardless of status
 
 ### MissingSecretsTable.vue
 
 - Show requested but missing secrets
-- Add secret action
+- CreateSecretForm modal for adding secrets
+- Pre-fills secret name from access request
 - Service that requested it
+
+### AccessRequestTable.vue
+
+- Detailed view of individual access request
+- Used within MissingSecretsTable modal
+- Shows access request details in table format
+
+### ServiceTokensTable.vue
+
+- Display service tokens with approval status
+- Approve/revoke actions with visual feedback
+- Service information and usage statistics
+- Always show action buttons regardless of status
 
 ### CreateSecretForm.vue
 
-- Add secret form
-- Validation
+- Add secret form with validation
+- Optional secret name pre-fill and field disabling
+- Success/cancel event handling
 
 ### UpdateSecretForm.vue
 
-- Edit secret form
-- Validation
+- Edit secret form with validation
+- Pre-populated with existing secret data
+- Success/cancel event handling
+
+### SecretManager.vue
+
+- Main management interface with v-tabs
+- Three tabs: secrets, access-requests, service-tokens
+- Integrates all display components
+- Centralized data loading and state management
 
 ## Workflow
 
@@ -438,6 +473,59 @@ const keyRotationInterval = 30 * 24 * 60 * 60 * 1000; // 30 days
 4. **Integration**: Follows existing patterns, making it familiar to implement
 5. **Compliance**: Meets security framework requirements for secret management
 6. **Operational**: Centralized management, approval workflows, rotation capabilities
+
+## Implementation Status
+
+### ✅ Completed Components
+
+**SDK Package Structure:**
+
+- Complete secrets-sdk package with proper organization
+- TanStack Query integration for all API endpoints
+- MSW fake handlers for testing and development
+- Vue Router setup with proper navigation
+- i18n internationalization support
+
+**Display Components:**
+
+- `SecretsTable.vue` - Full CRUD operations with modal editing
+- `AccessRequestsTable.vue` - Approve/deny workflow with visual feedback
+- `MissingSecretsTable.vue` - Missing secret detection and creation
+- `AccessRequestTable.vue` - Detailed access request view
+- `ServiceTokensTable.vue` - Service token management
+
+**Form Components:**
+
+- `CreateSecretForm.vue` - Secret creation with pre-fill support
+- `UpdateSecretForm.vue` - Secret editing with validation
+
+**Page Components:**
+
+- `SecretManager.vue` - Main management interface with tabbed interface
+
+**API Integration:**
+
+- Complete OpenAPI specification with all endpoints
+- HTTP handlers for all CRUD operations
+- Database schema with proper indexing
+- Error handling with appropriate HTTP status codes
+- Pagination and filtering support
+
+### 🔄 In Progress
+
+**Service Layer:**
+
+- gRPC service implementation (planned)
+- Service token authentication (planned)
+- Encryption at rest implementation (planned)
+
+### 📋 Pending
+
+**Migration & Testing:**
+
+- Migration scripts for existing secrets
+- Comprehensive integration testing
+- Documentation and deployment guides
 
 ## Success Metrics
 
