@@ -1,16 +1,16 @@
 import { InitGrpcServerWorkflowDefinition } from "./init-server.ts";
-import { AddHandlerWorkflowDefinition } from "./add-handler.ts";
+import { AddGrpcServerHandlerWorkflowDefinition } from "./add-handler.ts";
 import type { WorkflowDefinition } from "@saflib/workflows";
 
 export {
   // Export each workflow definition separately
   InitGrpcServerWorkflowDefinition,
-  AddHandlerWorkflowDefinition,
+  AddGrpcServerHandlerWorkflowDefinition,
 };
 
 const workflowDefinitions: WorkflowDefinition[] = [
   // And have the default export be the array of all of them
   InitGrpcServerWorkflowDefinition,
-  AddHandlerWorkflowDefinition,
+  AddGrpcServerHandlerWorkflowDefinition,
 ];
 export default workflowDefinitions;

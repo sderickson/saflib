@@ -10,7 +10,10 @@ import {
 } from "@saflib/drizzle/workflows";
 import path from "path";
 import { execSync } from "child_process";
-import { InitGrpcServerWorkflowDefinition } from "@saflib/grpc/workflows";
+import {
+  AddGrpcServerHandlerWorkflowDefinition,
+  InitGrpcServerWorkflowDefinition,
+} from "@saflib/grpc/workflows";
 
 const input = [] as const;
 
@@ -38,6 +41,10 @@ export const ImplementSecretsGrpcServerWorkflowDefinition = defineWorkflow<
     step(makeWorkflowMachine(InitGrpcServerWorkflowDefinition), () => ({
       name: "@saflib/secrets-grpc-server",
       path: "./secrets/secrets-grpc-server",
+    })),
+    step(makeWorkflowMachine(AddGrpcServerHandlerWorkflowDefinition), () => ({
+      path: "./secrets/secrets-grpc-server",
+      name: "get-secret",
     })),
   ],
 });
