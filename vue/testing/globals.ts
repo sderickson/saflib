@@ -1,12 +1,14 @@
-import { afterAll, vi } from "vitest";
+import { afterEach, beforeEach, vi } from "vitest";
 
 /**
  * Call during test setup to stub browser globals like ResizeObserver, matchMedia, location, and visualViewport.
  */
 export const stubGlobals = () => {
-  stubGlobalsSetup();
+  beforeEach(() => {
+    stubGlobalsSetup();
+  });
 
-  afterAll(() => {
+  afterEach(() => {
     stubGlobalsTeardown();
   });
 };

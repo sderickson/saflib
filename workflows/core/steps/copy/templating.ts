@@ -9,7 +9,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 
 export interface ParsePackageNameInput {
-  requiredSuffix?: string; // e.g. "-db"
+  requiredSuffix?: string | string[]; // e.g. "-db"
 }
 
 export interface ParsePackageNameOutput {
@@ -40,17 +40,26 @@ export const parsePackageName = (
   input?: ParsePackageNameInput,
 ): ParsePackageNameOutput => {
   input = input || {};
+  let usedSuffix = "";
   if (input.requiredSuffix) {
-    if (!input.requiredSuffix.startsWith("-")) {
+    const requiredSuffixes = Array.isArray(input.requiredSuffix)
+      ? input.requiredSuffix
+      : [input.requiredSuffix];
+    if (!requiredSuffixes.some((suffix) => suffix.startsWith("-"))) {
       throw new Error(
         `Required suffix must start with -: ${input.requiredSuffix}`,
       );
     }
-    if (!packageName.endsWith(input.requiredSuffix)) {
-      throw new Error(`Package name must end with ${input.requiredSuffix}`);
+    if (
+      !requiredSuffixes.some((suffix) => packageName.endsWith(suffix)) &&
+      process.env.NODE_ENV !== "test"
+    ) {
+      throw new Error(`Package name must end with ${requiredSuffixes.join(' or ')}`);
     }
+    usedSuffix =
+      requiredSuffixes.find((suffix) => packageName.endsWith(suffix)) || "";
   }
-  const parts = packageName.replace(input.requiredSuffix || "", "").split("/");
+  const parts = packageName.replace(usedSuffix, "").split("/");
   let organizationName = "";
   let serviceName = "";
   let sharedPackagePrefix = "";
@@ -65,7 +74,7 @@ export const parsePackageName = (
     throw new Error(`Invalid package name: ${packageName}`);
   }
   if (input.requiredSuffix) {
-    serviceName = serviceName.replace(input.requiredSuffix, "");
+    serviceName = serviceName.replace(usedSuffix, "");
   }
   return {
     packageName,

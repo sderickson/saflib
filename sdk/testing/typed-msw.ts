@@ -1,6 +1,5 @@
-import { http, HttpHandler, HttpResponse } from "msw";
-import { setupServer } from "msw/node";
-import { afterAll, afterEach, beforeAll } from "vitest";
+import { getHost } from "@saflib/vue";
+import { http, HttpResponse } from "msw";
 
 type ExtractRequestParams<Op extends Record<string, any>> =
   Op["parameters"] extends {
@@ -71,10 +70,14 @@ export const typedCreateHandler = <Paths extends Record<string, any>>({
     type query = ExtractRequestQuery<
       Paths[P][V] extends Record<string, any> ? Paths[P][V] : never
     >;
+    let domain = "localhost:3000";
+    if (typeof document !== "undefined") {
+      domain = getHost();
+    }
     // translate instances of "{id}" (the openapi spec format) with ":id" (the msw format)
     const pathString = String(path).replace(/{(\w+)}/g, ":$1");
     return http[verb as keyof typeof http](
-      `http://${subdomain}.localhost:3000${pathString}`,
+      `http://${subdomain}.${domain}${pathString}`,
       async (request) => {
         let body: any;
         if (verb === "post" || verb === "put" || verb === "patch") {
@@ -92,12 +95,6 @@ export const typedCreateHandler = <Paths extends Record<string, any>>({
           ) as query;
         }
         const params = { ...request.params };
-        for (const key in params) {
-          if (key.toLowerCase().endsWith("id")) {
-            // @ts-expect-error - coercing to number
-            params[key] = parseInt(params[key]);
-          }
-        }
         return HttpResponse.json(
           await handler({
             query: queryParams,
@@ -111,23 +108,3 @@ export const typedCreateHandler = <Paths extends Record<string, any>>({
   };
   return { createHandler };
 };
-
-/**
- * Simple wrapper around `msw`'s `setupServer` function.
- */
-export function setupMockServer(handlers: HttpHandler[]) {
-  const server = setupServer(...handlers);
-
-  // Start server before all tests
-  beforeAll(() => {
-    server.listen({ onUnhandledRequest: "error" });
-  });
-
-  // Reset handlers between tests
-  afterEach(() => server.resetHandlers());
-
-  // Clean up after all tests
-  afterAll(() => server.close());
-
-  return server;
-}

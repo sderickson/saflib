@@ -1,7 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { __targetName____GroupName__Query } from "./__target-name__.ts";
 import { __serviceName__ServiceFakeHandlers } from "../../fakes.ts";
-import { setupMockServer, withVueQuery } from "@saflib/sdk/testing";
+import { withVueQuery } from "@saflib/sdk/testing";
+import { setupMockServer } from "@saflib/sdk/testing/mock";
 import { useQuery } from "@tanstack/vue-query";
 
 describe("__targetName____GroupName__", () => {

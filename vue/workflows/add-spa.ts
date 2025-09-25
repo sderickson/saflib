@@ -3,25 +3,31 @@ import {
   PromptStepMachine,
   defineWorkflow,
   step,
+  type ParsePackageNameOutput,
+  parsePackageName,
+  makeLineReplace,
+  CommandStepMachine,
 } from "@saflib/workflows";
 import path from "node:path";
-import { readFileSync } from "node:fs";
 
-const sourceDir = path.join(import.meta.dirname, "spa-template");
+const sourceDir = path.join(import.meta.dirname, "template");
 
 const input = [
   {
     name: "name",
-    description: "Name of the new SPA (e.g. 'admin' for web-admin)",
+    description: "Name of the new SPA (e.g. 'admin' for admin-spa)",
     exampleValue: "example-spa",
+  },
+  {
+    name: "path",
+    description:
+      "The path to the target directory for the SPA (e.g., './clients/admin-spa')",
+    exampleValue: "./clients/admin-spa",
   },
 ] as const;
 
-interface AddSpaWorkflowContext {
-  name: string;
-  pascalName: string;
+interface AddSpaWorkflowContext extends ParsePackageNameOutput {
   targetDir: string;
-  packageName: string;
 }
 
 export const AddSpaWorkflowDefinition = defineWorkflow<
@@ -38,27 +44,21 @@ export const AddSpaWorkflowDefinition = defineWorkflow<
   sourceUrl: import.meta.url,
 
   context: ({ input }) => {
-    const thisPackagePath = path.join(input.cwd, "package.json");
-    const thisPackage = JSON.parse(readFileSync(thisPackagePath, "utf8"));
-    const thisPackageName = thisPackage.name;
-    const thisPackageOrg = thisPackageName.split("/")[0];
-
-    const targetDir = path.join(input.cwd, "..", "web-" + input.name);
+    const targetDir = path.join(input.cwd, input.path);
 
     return {
-      name: input.name,
-      pascalName: input.name.charAt(0).toUpperCase() + input.name.slice(1),
+      ...parsePackageName(input.name, {
+        requiredSuffix: "-spa",
+      }),
       targetDir,
-      packageName: `${thisPackageOrg}/web-${input.name}`,
     };
   },
 
   templateFiles: {
-    app: path.join(sourceDir, "TemplateFileApp.vue"),
+    app: path.join(sourceDir, "__ServiceName__App.vue"),
     i18n: path.join(sourceDir, "i18n.ts"),
     main: path.join(sourceDir, "main.ts"),
     packageJson: path.join(sourceDir, "package.json"),
-    pages: path.join(sourceDir, "pages"),
     router: path.join(sourceDir, "router.ts"),
     strings: path.join(sourceDir, "strings.ts"),
     testApp: path.join(sourceDir, "test-app.ts"),
@@ -70,8 +70,23 @@ export const AddSpaWorkflowDefinition = defineWorkflow<
 
   steps: [
     step(CopyStepMachine, ({ context }) => ({
-      name: context.name,
+      name: context.serviceName,
       targetDir: context.targetDir,
+      lineReplace: makeLineReplace(context),
+    })),
+
+    step(CommandStepMachine, ({ context }) => ({
+      command: "mkdir",
+      args: ["-p", path.join(context.targetDir, "pages")],
+    })),
+
+    step(CommandStepMachine, ({ context }) => ({
+      command: "cp",
+      args: [
+        "-r",
+        path.join(sourceDir, "pages/home-page"),
+        path.join(context.targetDir, "pages"),
+      ],
     })),
 
     step(PromptStepMachine, ({ context }) => ({
@@ -79,7 +94,7 @@ export const AddSpaWorkflowDefinition = defineWorkflow<
     })),
 
     step(PromptStepMachine, ({ context }) => ({
-      promptText: `Create \`index.html\` and \`main.ts\` files in \`clients/spas/${context.name}\` similar to other SPAs already there.`,
+      promptText: `Create \`index.html\` and \`main.ts\` files in \`clients/spas/${context.serviceName}\` similar to other SPAs already there.`,
     })),
 
     step(PromptStepMachine, () => ({
@@ -87,7 +102,7 @@ export const AddSpaWorkflowDefinition = defineWorkflow<
     })),
 
     step(PromptStepMachine, ({ context }) => ({
-      promptText: `Update all \`Caddyfiles\` in the repo; add the new SPA in a similar fashion with the subdomain \`${context.name}\`.`,
+      promptText: `Update all \`Caddyfiles\` in the repo; add the new SPA in a similar fashion with the subdomain \`${context.serviceName}\`.`,
     })),
 
     step(PromptStepMachine, () => ({

@@ -1,7 +1,8 @@
 import { describe, it, expect, assert } from "vitest";
 import { useCreateSecret } from "./create.ts";
 import { secretsServiceFakeHandlers } from "../../fakes.ts";
-import { setupMockServer, withVueQuery } from "@saflib/sdk/testing";
+import { withVueQuery } from "@saflib/sdk/testing";
+import { setupMockServer } from "@saflib/sdk/testing/mock";
 
 describe("createSecret", () => {
   setupMockServer(secretsServiceFakeHandlers);
@@ -21,10 +22,10 @@ describe("createSecret", () => {
     const data = mutation.data?.value;
     assert(data);
     expect(data).toMatchObject({
-      id: "secret-new",
+      id: expect.any(String),
       name: "test-secret",
       description: "A test secret",
-      masked_value: "new_secret***",
+      masked_value: "secret***",
       is_active: true,
     });
 

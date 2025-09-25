@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient, queryOptions } from "@tanstack/vue-query";
 import { handleClientMethod } from "@saflib/sdk";
-import { client } from "../../client.ts";
+import { getClient } from "../../client.ts";
 import type { __ServiceName__ServiceRequestBody } from "template-package-spec";
 
 // TODO: Delete whichever implementation is not being used; the file should either have a query or a mutation, but not both.
@@ -20,8 +20,8 @@ export const __targetName____GroupName__Query = (
     queryKey: ["__group-name__", "__target-name__"],
     queryFn: async () =>
       handleClientMethod(
-        // @ts-expect-error TODO: define the interface for the query
-        client.GET("/__group-name__/__target-name__", {
+        // @ts-expect-error
+        getClient().GET("/__group-name__/__target-name__", {
           // use options passed in
           params: {
             // limit: options.limit?.value,
@@ -38,8 +38,8 @@ export const use__TargetName____GroupName__Mutation = () => {
       data: __ServiceName__ServiceRequestBody["/__group-name__/__target-name__"],
     ) => {
       return handleClientMethod(
-        // @ts-expect-error TODO: update to the actual route verb/name
-        client.POST("/__group-name__/__target-name__", { body: data }),
+        // @ts-expect-error
+        getClient().POST("/__group-name__/__target-name__", { body: data }),
       );
     },
     onSuccess: () => {

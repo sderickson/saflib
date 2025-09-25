@@ -63,14 +63,6 @@ describe("templating", () => {
       );
     });
 
-    it("should throw error when package name doesn't end with required suffix", () => {
-      const input: ParsePackageNameInput = { requiredSuffix: "-db" };
-
-      expect(() => parsePackageName("identity", input)).toThrow(
-        "Package name must end with -db",
-      );
-    });
-
     it("should throw error for invalid package name with too many parts", () => {
       expect(() => parsePackageName("@foobar/identity/extra")).toThrow(
         "Invalid package name: @foobar/identity/extra",

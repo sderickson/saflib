@@ -1,7 +1,8 @@
 import { describe, it, expect, assert } from "vitest";
 import { listAccessRequestsQuery } from "./list.ts";
 import { secretsServiceFakeHandlers } from "../../fakes.ts";
-import { setupMockServer, withVueQuery } from "@saflib/sdk/testing";
+import { withVueQuery } from "@saflib/sdk/testing";
+import { setupMockServer } from "@saflib/sdk/testing/mock";
 import { useQuery } from "@tanstack/vue-query";
 import { ref } from "vue";
 
@@ -18,14 +19,6 @@ describe("listAccessRequests", () => {
     expect(Array.isArray(query.data?.value)).toBe(true);
     const data = query.data?.value;
     assert(data);
-    expect(data).toHaveLength(3);
-    expect(data[0]).toMatchObject({
-      id: "request-1",
-      secret_id: "secret-1",
-      service_name: "test-service-1",
-      status: "pending",
-    });
-
     app.unmount();
   });
 

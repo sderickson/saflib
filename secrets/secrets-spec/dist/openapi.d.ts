@@ -276,11 +276,6 @@ export interface components {
              */
             service_name: string;
             /**
-             * @description SHA-256 hash of the token (truncated for admin display)
-             * @example a1b2c3d4e5f6...
-             */
-            token_hash: string;
-            /**
              * @description Optional version of the service
              * @example 1.2.3
              */

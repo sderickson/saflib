@@ -8,16 +8,27 @@ import {
 import type { Router } from "vue-router";
 import { createI18n } from "vue-i18n";
 import { type I18nMessages } from "./strings.ts";
+import { aliases, mdi } from "vuetify/iconsets/mdi";
 
 /**
  * Options for createVueApp.
  */
 export interface CreateVueAppOptions {
-  router: Router;
+  router?: Router;
   vuetifyConfig?: VuetifyOptions;
   callback?: (app: ReturnType<typeof createApp>) => void;
   i18nMessages?: I18nMessages;
 }
+
+const defaultVuetifyConfig: VuetifyOptions = {
+  icons: {
+    defaultSet: "mdi",
+    aliases,
+    sets: {
+      mdi,
+    },
+  },
+};
 
 /**
  * Wrapper around vue's `createApp` function. Handles SAF-required plugins.
@@ -31,9 +42,9 @@ export interface CreateVueAppOptions {
  */
 export const createVueApp = (
   Application: Component,
-  { router, vuetifyConfig, callback, i18nMessages }: CreateVueAppOptions,
+  { router, vuetifyConfig, callback, i18nMessages }: CreateVueAppOptions = {},
 ) => {
-  const vuetify = createVuetify(vuetifyConfig);
+  const vuetify = createVuetify(vuetifyConfig ?? defaultVuetifyConfig);
   const app = createApp(Application);
   app.use(vuetify);
   if (router) {

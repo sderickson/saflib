@@ -33,7 +33,6 @@ export function mapServiceTokenToResponse(
   return {
     id: token.id,
     service_name: token.serviceName,
-    token_hash: token.tokenHash.substring(0, 8) + "...", // Truncate for security
     service_version: token.serviceVersion ?? undefined,
     requested_at: token.requestedAt.getTime(),
     approved: token.approved,

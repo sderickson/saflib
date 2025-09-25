@@ -1,7 +1,8 @@
 import { describe, it, expect, assert } from "vitest";
 import { useApproveServiceToken } from "./approve.ts";
 import { secretsServiceFakeHandlers } from "../../fakes.ts";
-import { setupMockServer, withVueQuery } from "@saflib/sdk/testing";
+import { withVueQuery } from "@saflib/sdk/testing";
+import { setupMockServer } from "@saflib/sdk/testing/mock";
 
 describe("approveServiceToken", () => {
   setupMockServer(secretsServiceFakeHandlers);
@@ -23,7 +24,6 @@ describe("approveServiceToken", () => {
     expect(data).toMatchObject({
       id: "token-1",
       service_name: "test-service-1",
-      token_hash: "test-hash-1-very-long-hash-value",
       service_version: "1.0.0",
       approved: true,
       approved_by: "admin@example.com",
@@ -49,7 +49,6 @@ describe("approveServiceToken", () => {
     expect(data).toMatchObject({
       id: "token-1",
       service_name: "test-service-1",
-      token_hash: "test-hash-1-very-long-hash-value",
       service_version: "1.0.0",
       approved: false,
       approved_by: "admin@example.com",

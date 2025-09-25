@@ -1,7 +1,8 @@
 import { describe, it, expect, assert } from "vitest";
 import { listServiceTokensQuery } from "./list.ts";
 import { secretsServiceFakeHandlers } from "../../fakes.ts";
-import { setupMockServer, withVueQuery } from "@saflib/sdk/testing";
+import { withVueQuery } from "@saflib/sdk/testing";
+import { setupMockServer } from "@saflib/sdk/testing/mock";
 import { useQuery } from "@tanstack/vue-query";
 import { ref } from "vue";
 
@@ -22,7 +23,6 @@ describe("listServiceTokens", () => {
     expect(data[0]).toMatchObject({
       id: "token-1",
       service_name: "test-service-1",
-      token_hash: "test-hash-1-very-long-hash-value",
       service_version: "1.0.0",
       approved: false,
     });

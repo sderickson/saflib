@@ -5,6 +5,8 @@ import {
   defineWorkflow,
   DocStepMachine,
   CommandStepMachine,
+  getPackageName,
+  makeLineReplace,
 } from "../core/index.ts";
 import { readFileSync } from "fs";
 import path from "node:path";
@@ -22,12 +24,11 @@ const input = [
 ] as const;
 
 interface AddWorkflowContext {
-  workflowName: string;
-  workflowPath: string;
-  workflowPackageName: string;
-  packageName: string;
+  targetName: string;
+  workflowNamespace: string;
   targetDir: string;
-  namespace: string;
+  packageName: string;
+  workflowPackageName: string;
 }
 
 export const AddWorkflowDefinition = defineWorkflow<
@@ -39,8 +40,8 @@ export const AddWorkflowDefinition = defineWorkflow<
   description:
     "Create a new workflow and adds it to the CLI tool. Stops after setup to wait for implementation requirements.",
 
-  checklistDescription: ({ workflowName }) =>
-    `Add ${workflowName} to the CLI tool.`,
+  checklistDescription: ({ workflowNamespace, targetName }) =>
+    `Add ${workflowNamespace}/${targetName} to the CLI tool.`,
 
   input,
 
@@ -50,32 +51,23 @@ export const AddWorkflowDefinition = defineWorkflow<
     if (!input.name.includes("/")) {
       throw new Error("Workflow name must include a slash (namespace)");
     }
-    const [namespace, workflowName] = input.name.split("/");
-    const workflowPath = `workflows/${workflowName}.ts`;
-    let packageName =
-      readFileSync(path.join(input.cwd, "package.json"), "utf8").match(
-        /name": "(.+)"/,
-      )?.[1] || "@your/target-package";
-    if (input.runMode === "dry") {
-      packageName = "@example/package";
-    }
+    const [workflowNamespace, targetName] = input.name.split("/");
+    const targetDir = path.join(input.cwd, "workflows");
+    const packageName = getPackageName(input.cwd);
     const workflowPackageName = findWorkflowPackageName();
 
-    const targetDir = input.cwd + "/workflows";
-
     return {
-      workflowName,
-      workflowPath,
-      workflowPackageName,
-      packageName,
+      targetName,
+      workflowNamespace,
       targetDir,
-      namespace,
+      packageName,
+      workflowPackageName,
     };
   },
 
   templateFiles: {
-    workflow: path.join(sourceDir, "template-file.ts"),
-    test: path.join(sourceDir, "template-file.test.ts"),
+    workflow: path.join(sourceDir, "__target-name__.ts"),
+    test: path.join(sourceDir, "__target-name__.test.ts"),
     index: path.join(sourceDir, "index.ts"),
   },
 
@@ -85,29 +77,28 @@ export const AddWorkflowDefinition = defineWorkflow<
 
   steps: [
     step(CopyStepMachine, ({ context }) => {
+      const lineReplace = makeLineReplace(context);
+      const wrappedLineReplace = (line: string) => {
+        return lineReplace(
+          line.replace("@saflib/workflows", context.workflowPackageName),
+        );
+      };
       return {
-        name: context.workflowName,
+        name: context.targetName,
         targetDir: context.targetDir,
-        // Internal use uses @saflib/workflows, but published package uses saflib-workflows.
-        // Adjust the produced workflow depending on what the name of the workflow package is.
-        lineReplace: (line) =>
-          line
-            .replace("@saflib/workflows", context.workflowPackageName)
-            .replace("template-namespace", context.namespace),
-        runMode: context.runMode,
+        lineReplace: wrappedLineReplace,
       };
     }),
 
     step(PromptStepMachine, ({ context }) => ({
-      promptText: `Add name, description, and cliArguments to the newly created ${context.workflowPath}.
+      promptText: `Add name, description, and cliArguments to the newly created ${path.join(context.targetName + ".ts")}.
       
       Don't worry about the other TODOs for now; currently we're just making sure the stub workflow is properly installed into the CLI tool.
       You should namespace the id, though. Make sure it starts with the name of the package (sans organization), e.g. workflows/add-workflow`,
-      runMode: context.runMode,
     })),
 
     step(PromptStepMachine, ({ context }) => ({
-      promptText: `Export **${context.workflowName}** from **${context.packageName}**.
+      promptText: `Export **${context.targetName}** from **${context.packageName}**.
         1. An adjacent 'index.ts' file should already exist, check that it does.
         2. Import the new workflow class into 'workflows/index.ts' if it's not already there.
         3. Add the new workflow *class* (not an instance) to the default exported array in 'workflows/index.ts'.
@@ -133,7 +124,7 @@ export const AddWorkflowDefinition = defineWorkflow<
     step(PromptStepMachine, ({ context }) => ({
       promptText: `Check that the new workflow appears in the saf-workflow CLI tool.
 
-      Run the command \`npm exec saf-workflow help kickoff\` in your terminal (any directory). Ensure that your new workflow "${context.workflowName}" appears in the list.`,
+      Run the command \`npm exec saf-workflow help kickoff\` in your terminal (any directory). Ensure that your new workflow "${context.targetName}" appears in the list.`,
     })),
 
     step(DocStepMachine, () => ({
@@ -141,13 +132,13 @@ export const AddWorkflowDefinition = defineWorkflow<
     })),
 
     step(PromptStepMachine, ({ context }) => ({
-      promptText: `Create template files for ${context.workflowName} workflow.
+      promptText: `Create template files for ${context.targetName} workflow.
 
       Create a folder named \`templates\` next to the workflow file if it doesn't already exist. Add any template files you need to the folder. Make sure the organization of those template files matches the organization recommended by the package. Check if you're not sure how to organize them. And if you don't have them already, ask for samples to base the template files on.
 
-      **Important**: Use "template-file" as the base name in your template files (not {{...}} placeholders). The system will automatically replace "template-file", "template_file", "TemplateFile", and "templateFile" with the actual name during workflow execution. This keeps template files valid TypeScript/JavaScript.
+      **Important**: Use "__target-name__" as the base name in your template files (not {{...}} placeholders). The system will automatically replace "__target-name__", "__target_name__", "__TargetName__", and "__targetName__" with the actual name during workflow execution. This keeps template files valid TypeScript/JavaScript.
 
-      This goes for file names as well. You may well create a file named \`template-file.ts\` or something like that and it will get renamed based on the name passed into \`CopyStepMachine\`.`,
+      This goes for file names as well. You may well create a file named \`__target-name__.ts\` or something like that and it will get renamed based on the name passed into \`CopyStepMachine\`.`,
     })),
 
     step(CommandStepMachine, () => ({
@@ -163,7 +154,7 @@ export const AddWorkflowDefinition = defineWorkflow<
     })),
 
     step(PromptStepMachine, ({ context }) => ({
-      promptText: `Add steps to ${context.workflowPath}.
+      promptText: `Add steps to ${path.join(context.targetDir, context.targetName + ".ts")}.
 
       The steps will normally include:
       1. First copying the template files
@@ -175,7 +166,7 @@ export const AddWorkflowDefinition = defineWorkflow<
     step(PromptStepMachine, ({ context }) => ({
       promptText: `Review the checklist and verify that the workflow was added correctly.
 
-      Run \`npm exec saf-workflow checklist ${context.workflowName}\` to see the checklist.`,
+      Run \`npm exec saf-workflow checklist ${context.targetName}\` to see the checklist.`,
     })),
   ],
 });

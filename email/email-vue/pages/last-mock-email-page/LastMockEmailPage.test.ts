@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { stubGlobals } from "@saflib/vue/testing";
-import { setupMockServer } from "@saflib/sdk/testing";
+import { setupMockServer } from "@saflib/sdk/testing/mock";
 import LastMockEmailPageAsync from "./LastMockEmailPageAsync.vue";
 import type { Component } from "vue";
 import { http, HttpResponse } from "msw";
