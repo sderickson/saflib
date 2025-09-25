@@ -15,7 +15,7 @@
     "@saflib/grpc": "*",
     "template-package-service-common": "*",
     "template-package-db": "*",
-    "@template/file-protos": "*",
+    "template-package-grpc-proto": "*",
     "@saflib/monorepo": "*"
   },
   "devDependencies": {

@@ -1,4 +1,5 @@
 export * from "./dist/health.ts";
+export * from "./dist/google/protobuf/timestamp.ts";
 
 import { typedEnv } from "./env.ts";
 
