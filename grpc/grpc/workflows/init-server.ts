@@ -27,13 +27,13 @@ const input = [
   },
 ] as const;
 
-interface InitWorkflowContext extends ParsePackageNameOutput {
+interface InitGrpcServerWorkflowContext extends ParsePackageNameOutput {
   targetDir: string;
 }
 
-export const InitWorkflowDefinition = defineWorkflow<
+export const InitGrpcServerWorkflowDefinition = defineWorkflow<
   typeof input,
-  InitWorkflowContext
+  InitGrpcServerWorkflowContext
 >({
   id: "grpc/init-server",
 
