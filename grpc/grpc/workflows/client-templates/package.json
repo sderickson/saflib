@@ -8,18 +8,14 @@
     ".": "./index.ts"
   },
   "dependencies": {
-    "@grpc/grpc-js": "^1.13.3",
     "@saflib/env": "*",
+    "@saflib/grpc": "*",
     "template-package-grpc-proto": "*"
   },
   "devDependencies": {
-    "@saflib/dev-tools": "*",
-    "@types/node": "^22.10.2",
-    "typescript": "^5.7.2",
-    "vitest": "^2.1.8"
+    "@saflib/monorepo": "*"
   },
   "scripts": {
-    "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "typecheck": "tsc --noEmit"
   }
 }

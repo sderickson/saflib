@@ -6,7 +6,7 @@ import {
 import { testContext, safContextStorage } from "@saflib/node";
 import { handleHealthCheck } from "./health-check.ts";
 import { __ServiceName__HealthCheckRequest } from "template-package-grpc-proto";
-import { SafAuth } from "@saflib/grpc-specs";
+import { SafAuth } from "@saflib/grpc";
 
 describe("handleHealthCheck", () => {
   beforeEach(async () => {

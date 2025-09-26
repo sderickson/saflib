@@ -9,14 +9,13 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "typecheck": "vue-tsc"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@saflib/grpc": "*",
     "template-package-service-common": "*",
     "template-package-db": "*",
-    "template-package-grpc-proto": "*",
-    "@saflib/monorepo": "*"
+    "template-package-grpc-proto": "*"
   },
   "devDependencies": {
     "@saflib/monorepo": "*",

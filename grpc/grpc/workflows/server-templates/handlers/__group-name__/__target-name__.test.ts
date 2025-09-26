@@ -6,7 +6,7 @@ import {
 import { testContext, safContextStorage } from "@saflib/node";
 import { handle__TargetName__ } from "./__target-name__.ts";
 import { __TargetName__Request } from "template-package-grpc-proto";
-import { SafAuth } from "@saflib/grpc-specs";
+import { SafAuth } from "@saflib/grpc";
 
 describe("handle__TargetName__", () => {
   beforeEach(async () => {

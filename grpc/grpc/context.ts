@@ -13,7 +13,7 @@ import {
   safReportersStorage,
   getServiceName,
 } from "@saflib/node";
-import { SafAuth } from "@saflib/grpc-specs";
+import { SafAuth } from "@saflib/grpc";
 import { createLogger } from "@saflib/node";
 import { AsyncLocalStorage } from "async_hooks";
 import { defaultErrorReporter } from "@saflib/node";
