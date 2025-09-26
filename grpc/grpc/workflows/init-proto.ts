@@ -56,6 +56,7 @@ export const InitGrpcProtoWorkflowDefinition = defineWorkflow<
   },
 
   templateFiles: {
+    distKeep: path.join(sourceDir, "dist/.gitkeep"),
     envelopeProto: path.join(sourceDir, "protos/envelope.proto"),
     healthIndexProto: path.join(sourceDir, "protos/health/index.proto"),
     getHealthProto: path.join(sourceDir, "protos/health/get-health.proto"),
@@ -80,11 +81,6 @@ export const InitGrpcProtoWorkflowDefinition = defineWorkflow<
 
     step(CwdStepMachine, ({ context }) => ({
       path: context.targetDir,
-    })),
-
-    step(CommandStepMachine, () => ({
-      command: "mkdir",
-      args: ["-p", "protos"],
     })),
 
     step(CommandStepMachine, () => ({

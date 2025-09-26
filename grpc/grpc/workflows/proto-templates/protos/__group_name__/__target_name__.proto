@@ -5,12 +5,12 @@ package __service_name__.__group_name__.v1;
 import "envelope.proto";
 import "google/protobuf/timestamp.proto";
 
-message __ServiceName____TargetName____GroupName__Request {
+message __TargetName__Request {
   saflib.common.v1.SafAuth auth = 1;
   saflib.common.v1.SafRequest request = 2;
 }
 
-message __ServiceName____TargetName____GroupName__Response {
+message __TargetName__Response {
   // TODO: Add response fields as needed
   string status = 1;
   google.protobuf.Timestamp timestamp = 2;
