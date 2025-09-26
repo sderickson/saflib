@@ -7,8 +7,22 @@ import "envelope.proto";
 message __TargetName__Request {
   saflib.common.v1.SafAuth auth = 1;
   saflib.common.v1.SafRequest request = 2;
+  // TODO: Add request fields as needed
 }
 
 message __TargetName__Response {
+  oneof result {
+    __TargetName__Success success = 1;
+    __TargetName__Error error = 2;
+  }
+}
+
+message __TargetName__Success {
   // TODO: Add response fields as needed
+}
+
+enum __TargetName__Error {
+  __TARGET_NAME___INVALID_REQUEST = 0;
+  __TARGET_NAME___UNKNOWN_ERROR = 1;
+  // TODO: Add error fields as needed
 }

@@ -34,7 +34,7 @@ export const renameNextFile = fromPromise(
     const camelName = kebabCaseToCamelCase(name);
 
     for (var i = 0; i < updatedContent.length; i++) {
-      if (updatedContent[i].includes("// DELETE_THIS_LINE")) {
+      if (updatedContent[i].includes("DELETE_THIS_LINE")) {
         updatedContent[i] = "";
         continue;
       }
