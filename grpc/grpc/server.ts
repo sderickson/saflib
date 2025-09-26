@@ -1,6 +1,7 @@
 import * as grpc from "@grpc/grpc-js";
 import type { UntypedServiceImplementation } from "@grpc/grpc-js";
 import { typedEnv } from "@saflib/env";
+import type { sendUnaryData, ServerUnaryCall } from "@grpc/grpc-js";
 
 /**
  * Options when starting a gRPC server.
@@ -75,3 +76,15 @@ export async function startGrpcServer(
   process.on("SIGTERM", shutdown);
   process.on("SIGINT", shutdown);
 }
+
+export const wrapSimpleHandler = <Request, Response>(
+  handler: (request: Request) => Response,
+) => {
+  return async (
+    call: ServerUnaryCall<Request, Response>,
+    callback: sendUnaryData<Response>,
+  ) => {
+    const response = handler(call.request as Request);
+    callback(null, response);
+  };
+};

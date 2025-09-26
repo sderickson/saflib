@@ -12,7 +12,10 @@ import {
 import path from "node:path";
 import { parsePath, parsePackageName } from "@saflib/workflows";
 
-const sourceDir = path.join(import.meta.dirname, "server-templates");
+const sourceDir = path.join(
+  import.meta.dirname,
+  "server-templates/handlers/__group-name__",
+);
 
 const input = [
   {
@@ -56,7 +59,8 @@ export const AddGrpcServerHandlerWorkflowDefinition = defineWorkflow<
   },
 
   templateFiles: {
-    handler: path.join(sourceDir, "template-file.ts"),
+    handler: path.join(sourceDir, "__target-name__.ts"),
+    test: path.join(sourceDir, "__target-name__.test.ts"),
     index: path.join(sourceDir, "index.ts"),
   },
 

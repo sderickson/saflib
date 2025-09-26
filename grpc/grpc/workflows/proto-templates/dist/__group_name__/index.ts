@@ -30,30 +30,30 @@ interface GrpcPromiseServiceInterface<P, R> {
     (message: P, metadata: grpc_1.Metadata, options?: grpc_1.CallOptions): Promise<R>;
     (message: P, options?: grpc_1.CallOptions): Promise<R>;
 }
-export abstract class Unimplemented__ServiceName____GroupName__Service {
+export abstract class Unimplemented__GroupName__Service {
     static definition = {
-        __TargetName____GroupName__: {
-            path: "/__service_name__.__group_name__.v1.__ServiceName____GroupName__/__TargetName____GroupName__",
+        __TargetName__: {
+            path: "/__service_name__.__group_name__.v1.__GroupName__/__TargetName__",
             requestStream: false,
             responseStream: false,
-            requestSerialize: (message: dependency_1.__ServiceName____TargetName____GroupName__Request) => Buffer.from(message.serialize()),
-            requestDeserialize: (bytes: Buffer) => dependency_1.__ServiceName____TargetName____GroupName__Request.deserialize(new Uint8Array(bytes)),
-            responseSerialize: (message: dependency_1.__ServiceName____TargetName____GroupName__Response) => Buffer.from(message.serialize()),
-            responseDeserialize: (bytes: Buffer) => dependency_1.__ServiceName____TargetName____GroupName__Response.deserialize(new Uint8Array(bytes))
+            requestSerialize: (message: dependency_1.__TargetName__Request) => Buffer.from(message.serialize()),
+            requestDeserialize: (bytes: Buffer) => dependency_1.__TargetName__Request.deserialize(new Uint8Array(bytes)),
+            responseSerialize: (message: dependency_1.__TargetName__Response) => Buffer.from(message.serialize()),
+            responseDeserialize: (bytes: Buffer) => dependency_1.__TargetName__Response.deserialize(new Uint8Array(bytes))
         }
     };
     [method: string]: grpc_1.UntypedHandleCall;
-    abstract __TargetName____GroupName__(call: grpc_1.ServerUnaryCall<dependency_1.__ServiceName____TargetName____GroupName__Request, dependency_1.__ServiceName____TargetName____GroupName__Response>, callback: grpc_1.sendUnaryData<dependency_1.__ServiceName____TargetName____GroupName__Response>): void;
+    abstract __TargetName__(call: grpc_1.ServerUnaryCall<dependency_1.__TargetName__Request, dependency_1.__TargetName__Response>, callback: grpc_1.sendUnaryData<dependency_1.__TargetName__Response>): void;
 }
-export class __ServiceName____GroupName__Client extends grpc_1.makeGenericClientConstructor(Unimplemented__ServiceName____GroupName__Service.definition, "__ServiceName____GroupName__", {}) {
+export class __GroupName__Client extends grpc_1.makeGenericClientConstructor(Unimplemented__GroupName__Service.definition, "__GroupName__", {}) {
     constructor(address: string, credentials: grpc_1.ChannelCredentials, options?: Partial<grpc_1.ChannelOptions>) {
         super(address, credentials, options);
     }
-    __TargetName____GroupName__: GrpcPromiseServiceInterface<dependency_1.__ServiceName____TargetName____GroupName__Request, dependency_1.__ServiceName____TargetName____GroupName__Response> = (message: dependency_1.__ServiceName____TargetName____GroupName__Request, metadata?: grpc_1.Metadata | grpc_1.CallOptions, options?: grpc_1.CallOptions): Promise<dependency_1.__ServiceName____TargetName____GroupName__Response> => { if (!metadata) {
+    __TargetName__: GrpcPromiseServiceInterface<dependency_1.__TargetName__Request, dependency_1.__TargetName__Response> = (message: dependency_1.__TargetName__Request, metadata?: grpc_1.Metadata | grpc_1.CallOptions, options?: grpc_1.CallOptions): Promise<dependency_1.__TargetName__Response> => { if (!metadata) {
         metadata = new grpc_1.Metadata;
     } if (!options) {
         options = {};
-    } return new Promise((resolve, reject) => super.__TargetName____GroupName__(message, metadata, options, (error: grpc_1.ServiceError, response: dependency_1.__ServiceName____TargetName____GroupName__Response) => {
+    } return new Promise((resolve, reject) => super.__TargetName__(message, metadata, options, (error: grpc_1.ServiceError, response: dependency_1.__TargetName__Response) => {
         if (error) {
             reject(error);
         }

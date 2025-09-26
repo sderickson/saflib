@@ -54,7 +54,9 @@ export const parsePackageName = (
       !requiredSuffixes.some((suffix) => packageName.endsWith(suffix)) &&
       process.env.NODE_ENV !== "test"
     ) {
-      throw new Error(`Package name must end with ${requiredSuffixes.join(' or ')}`);
+      throw new Error(
+        `Package name must end with ${requiredSuffixes.join(" or ")}`,
+      );
     }
     usedSuffix =
       requiredSuffixes.find((suffix) => packageName.endsWith(suffix)) || "";
@@ -142,6 +144,7 @@ export const parsePath = (
   } else {
     throw new Error(`Invalid path: ${path}`);
   }
+  console.log("groupName", groupName);
 
   return {
     groupName,

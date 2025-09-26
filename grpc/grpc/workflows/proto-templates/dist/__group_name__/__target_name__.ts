@@ -7,7 +7,7 @@
 import * as dependency_1 from "@saflib/grpc-specs";
 import * as dependency_2 from "./../google/protobuf/timestamp.ts";
 import * as pb_1 from "google-protobuf";
-export class __ServiceName____TargetName____GroupName__Request extends pb_1.Message {
+export class __TargetName__Request extends pb_1.Message {
     #one_of_decls: number[][] = [];
     constructor(data?: any[] | {
         auth?: dependency_1.SafAuth;
@@ -45,8 +45,8 @@ export class __ServiceName____TargetName____GroupName__Request extends pb_1.Mess
     static fromObject(data: {
         auth?: ReturnType<typeof dependency_1.SafAuth.prototype.toObject>;
         request?: ReturnType<typeof dependency_1.SafRequest.prototype.toObject>;
-    }): __ServiceName____TargetName____GroupName__Request {
-        const message = new __ServiceName____TargetName____GroupName__Request({});
+    }): __TargetName__Request {
+        const message = new __TargetName__Request({});
         if (data.auth != null) {
             message.auth = dependency_1.SafAuth.fromObject(data.auth);
         }
@@ -79,8 +79,8 @@ export class __ServiceName____TargetName____GroupName__Request extends pb_1.Mess
         if (!w)
             return writer.getResultBuffer();
     }
-    static deserialize(bytes: Uint8Array | pb_1.BinaryReader): __ServiceName____TargetName____GroupName__Request {
-        const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes), message = new __ServiceName____TargetName____GroupName__Request();
+    static deserialize(bytes: Uint8Array | pb_1.BinaryReader): __TargetName__Request {
+        const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes), message = new __TargetName__Request();
         while (reader.nextField()) {
             if (reader.isEndGroup())
                 break;
@@ -99,11 +99,11 @@ export class __ServiceName____TargetName____GroupName__Request extends pb_1.Mess
     serializeBinary(): Uint8Array {
         return this.serialize();
     }
-    static deserializeBinary(bytes: Uint8Array): __ServiceName____TargetName____GroupName__Request {
-        return __ServiceName____TargetName____GroupName__Request.deserialize(bytes);
+    static deserializeBinary(bytes: Uint8Array): __TargetName__Request {
+        return __TargetName__Request.deserialize(bytes);
     }
 }
-export class __ServiceName____TargetName____GroupName__Response extends pb_1.Message {
+export class __TargetName__Response extends pb_1.Message {
     #one_of_decls: number[][] = [];
     constructor(data?: any[] | {
         status?: string;
@@ -138,8 +138,8 @@ export class __ServiceName____TargetName____GroupName__Response extends pb_1.Mes
     static fromObject(data: {
         status?: string;
         timestamp?: ReturnType<typeof dependency_2.Timestamp.prototype.toObject>;
-    }): __ServiceName____TargetName____GroupName__Response {
-        const message = new __ServiceName____TargetName____GroupName__Response({});
+    }): __TargetName__Response {
+        const message = new __TargetName__Response({});
         if (data.status != null) {
             message.status = data.status;
         }
@@ -172,8 +172,8 @@ export class __ServiceName____TargetName____GroupName__Response extends pb_1.Mes
         if (!w)
             return writer.getResultBuffer();
     }
-    static deserialize(bytes: Uint8Array | pb_1.BinaryReader): __ServiceName____TargetName____GroupName__Response {
-        const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes), message = new __ServiceName____TargetName____GroupName__Response();
+    static deserialize(bytes: Uint8Array | pb_1.BinaryReader): __TargetName__Response {
+        const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes), message = new __TargetName__Response();
         while (reader.nextField()) {
             if (reader.isEndGroup())
                 break;
@@ -192,7 +192,7 @@ export class __ServiceName____TargetName____GroupName__Response extends pb_1.Mes
     serializeBinary(): Uint8Array {
         return this.serialize();
     }
-    static deserializeBinary(bytes: Uint8Array): __ServiceName____TargetName____GroupName__Response {
-        return __ServiceName____TargetName____GroupName__Response.deserialize(bytes);
+    static deserializeBinary(bytes: Uint8Array): __TargetName__Response {
+        return __TargetName__Response.deserialize(bytes);
     }
 }
