@@ -26,17 +26,17 @@ describe("listByService", () => {
   it("should return only access requests for the specified service", async () => {
     // Create some test access requests
     const { result: request1 } = await create(dbKey, {
-      secretId: "test-secret-1",
+      secretName: "test-secret-1",
       serviceName: "test-service",
     });
 
     const { result: request2 } = await create(dbKey, {
-      secretId: "test-secret-2",
+      secretName: "test-secret-2",
       serviceName: "test-service",
     });
 
     const { result: request3 } = await create(dbKey, {
-      secretId: "test-secret-3",
+      secretName: "test-secret-3",
       serviceName: "other-service",
     });
 

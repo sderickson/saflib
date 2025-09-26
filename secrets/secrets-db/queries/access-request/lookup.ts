@@ -12,7 +12,7 @@ export type LookupAccessRequestError = AccessRequestNotFoundError;
 
 export interface LookupAccessRequestParams {
   serviceName: string;
-  secretId: string;
+  secretName: string;
 }
 
 export const lookup = queryWrapper(
@@ -29,7 +29,7 @@ export const lookup = queryWrapper(
       .where(
         and(
           eq(accessRequestTable.serviceName, params.serviceName),
-          eq(accessRequestTable.secretId, params.secretId),
+          eq(accessRequestTable.secretName, params.secretName),
         ),
       )
       .limit(1);
@@ -37,7 +37,7 @@ export const lookup = queryWrapper(
     if (result.length === 0) {
       return {
         error: new AccessRequestNotFoundError(
-          `No access request found for service '${params.serviceName}' and secret '${params.secretId}'`,
+          `No access request found for service '${params.serviceName}' and secret '${params.secretName}'`,
         ),
       };
     }

@@ -11,7 +11,7 @@ describe("lookup", () => {
     dbKey = secretsDbManager.connect();
     const { result: createdRequest } = await create(dbKey, {
       serviceName: "test-service",
-      secretId: "test-secret-id",
+      secretName: "test-secret-name",
     });
     assert(createdRequest);
   });
@@ -23,11 +23,11 @@ describe("lookup", () => {
   it("should execute successfully", async () => {
     const { result } = await lookup(dbKey, {
       serviceName: "test-service",
-      secretId: "test-secret-id",
+      secretName: "test-secret-name",
     });
     expect(result).toBeDefined();
     assert(result);
     expect(result.serviceName).toBe("test-service");
-    expect(result.secretId).toBe("test-secret-id");
+    expect(result.secretName).toBe("test-secret-name");
   });
 });

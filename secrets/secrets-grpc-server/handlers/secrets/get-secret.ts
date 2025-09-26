@@ -1,6 +1,8 @@
 import {
   GetSecretResponse,
+  GetSecretError,
   GetSecretRequest,
+  GetSecretSuccess,
 } from "@saflib/secrets-grpc-proto";
 import { getSafContext, getSafReporters } from "@saflib/node";
 import {
@@ -33,6 +35,12 @@ export const handleGetSecret = async (
 
   const { secret_name, token } = request;
 
+  if (!secret_name || !token) {
+    return new GetSecretResponse({
+      error: GetSecretError.GET_SECRET_INVALID_REQUEST,
+    });
+  }
+
   // Check token first
   const { result: tokenResult, error: tokenError } =
     await serviceTokenQueries.getByHash(secretsDbKey, hashToken(token));
@@ -40,9 +48,7 @@ export const handleGetSecret = async (
     switch (true) {
       case tokenError instanceof ServiceTokenNotFoundError:
         return new GetSecretResponse({
-          value: "",
-          success: false,
-          error_message: "Invalid service token",
+          error: GetSecretError.GET_SECRET_INVALID_TOKEN,
         });
       default:
         throw tokenError satisfies never;
@@ -51,9 +57,46 @@ export const handleGetSecret = async (
 
   if (!tokenResult.approved) {
     return new GetSecretResponse({
-      value: "",
-      success: false,
-      error_message: "Service token not approved",
+      error: GetSecretError.GET_SECRET_TOKEN_NOT_APPROVED,
+    });
+  }
+
+  const { result: accessRequest, error: accessRequestError } =
+    await accessRequestQueries.lookup(secretsDbKey, {
+      serviceName: tokenResult.serviceName,
+      secretName: secret_name,
+    });
+  if (accessRequestError) {
+    switch (true) {
+      case accessRequestError instanceof AccessRequestNotFoundError:
+        const { error: createError } = await accessRequestQueries.create(
+          secretsDbKey,
+          {
+            serviceName: tokenResult.serviceName,
+            secretName: secret_name,
+          },
+        );
+        if (createError) {
+          switch (true) {
+            case createError instanceof AccessRequestAlreadyExistsError:
+              return new GetSecretResponse({
+                error: GetSecretError.GET_SECRET_UNKNOWN_ERROR,
+              });
+            default:
+              throw createError satisfies never;
+          }
+        }
+        return new GetSecretResponse({
+          error: GetSecretError.GET_SECRET_ACCESS_NOT_GRANTED,
+        });
+      default:
+        throw accessRequestError satisfies never;
+    }
+  }
+
+  if (accessRequest.status !== "granted") {
+    return new GetSecretResponse({
+      error: GetSecretError.GET_SECRET_ACCESS_NOT_GRANTED,
     });
   }
 
@@ -66,9 +109,7 @@ export const handleGetSecret = async (
     switch (true) {
       case getError instanceof SecretNotFoundError:
         return new GetSecretResponse({
-          value: "",
-          success: false,
-          error_message: `Secret '${secret_name}' not found. Access request created for approval.`,
+          error: GetSecretError.GET_SECRET_NOT_FOUND,
         });
       default:
         throw getError satisfies never;
@@ -76,62 +117,13 @@ export const handleGetSecret = async (
   }
   if (!secret.isActive) {
     return new GetSecretResponse({
-      value: "",
-      success: false,
-      error_message: "Secret is not active",
-    });
-  }
-
-  const { result: accessRequest, error: accessRequestError } =
-    await accessRequestQueries.lookup(secretsDbKey, {
-      serviceName: tokenResult.serviceName,
-      secretId: secret.id,
-    });
-  if (accessRequestError) {
-    switch (true) {
-      case accessRequestError instanceof AccessRequestNotFoundError:
-        const { error: createError } = await accessRequestQueries.create(
-          secretsDbKey,
-          {
-            serviceName: tokenResult.serviceName,
-            secretId: secret.id,
-          },
-        );
-        if (createError) {
-          switch (true) {
-            case createError instanceof AccessRequestAlreadyExistsError:
-              return new GetSecretResponse({
-                value: "",
-                success: false,
-                error_message: "Access request already exists",
-              });
-            default:
-              throw createError satisfies never;
-          }
-        }
-        return new GetSecretResponse({
-          value: "",
-          success: false,
-          error_message: "Access request created for approval",
-        });
-      default:
-        throw accessRequestError satisfies never;
-    }
-  }
-
-  if (accessRequest.status !== "granted") {
-    return new GetSecretResponse({
-      value: "",
-      success: false,
-      error_message: "Access request not granted. Awaiting approval.",
+      error: GetSecretError.GET_SECRET_NOT_ACTIVE,
     });
   }
 
   if (!secret.valueEncrypted) {
     return new GetSecretResponse({
-      value: "",
-      success: false,
-      error_message: "Secret value not set yet.",
+      error: GetSecretError.GET_SECRET_UNKNOWN_ERROR,
     });
   }
 
@@ -139,8 +131,8 @@ export const handleGetSecret = async (
   const decryptedValue = decryptSecret(encryptionKey, secret.valueEncrypted);
 
   return new GetSecretResponse({
-    value: decryptedValue,
-    success: true,
-    error_message: "",
+    success: new GetSecretSuccess({
+      value: decryptedValue,
+    }),
   });
 };

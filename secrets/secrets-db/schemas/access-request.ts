@@ -12,7 +12,7 @@ export type AccessRequestStatus = (typeof statusEnum)[number];
 
 export interface AccessRequestEntity {
   id: string;
-  secretId: string;
+  secretName: string;
   serviceName: string;
   requestedAt: Date;
   status: AccessRequestStatus;
@@ -28,7 +28,7 @@ export const accessRequestTable = sqliteTable(
     id: text("id")
       .primaryKey()
       .$defaultFn(() => crypto.randomUUID()),
-    secretId: text("secret_id").notNull(),
+    secretName: text("secret_name").notNull(),
     serviceName: text("service_name").notNull(),
     requestedAt: integer("requested_at", { mode: "timestamp" }).notNull(),
     status: text("status", { enum: statusEnum }).notNull(),
@@ -38,7 +38,7 @@ export const accessRequestTable = sqliteTable(
     lastAccessedAt: integer("last_accessed_at", { mode: "timestamp" }),
   },
   (table) => [
-    unique().on(table.secretId, table.serviceName),
+    unique().on(table.secretName, table.serviceName),
     index("access_request_requested_at_idx").on(table.requestedAt),
   ],
 );

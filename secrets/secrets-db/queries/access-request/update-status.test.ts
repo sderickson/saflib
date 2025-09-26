@@ -19,7 +19,7 @@ describe("updateStatus", () => {
   it("should execute successfully", async () => {
     // First create an access request
     const { result: createdRequest } = await create(dbKey, {
-      secretId: "test-secret-id",
+      secretName: "test-secret-name",
       serviceName: "test-service",
     });
 
@@ -38,7 +38,7 @@ describe("updateStatus", () => {
     expect(result.status).toBe("granted");
     expect(result.grantedBy).toBe("admin-user");
     expect(result.grantedAt).toBeDefined();
-    expect(result.secretId).toBe("test-secret-id"); // unchanged
+    expect(result.secretName).toBe("test-secret-name"); // unchanged
     expect(result.serviceName).toBe("test-service"); // unchanged
   });
 

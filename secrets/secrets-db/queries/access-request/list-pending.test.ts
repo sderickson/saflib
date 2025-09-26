@@ -27,12 +27,12 @@ describe("listPending", () => {
   it("should return only pending access requests", async () => {
     // Create some test access requests
     const { result: pendingRequest } = await create(dbKey, {
-      secretId: "test-secret-1",
+      secretName: "test-secret-1",
       serviceName: "test-service-1",
     });
 
     const { result: approvedRequest } = await create(dbKey, {
-      secretId: "test-secret-2",
+      secretName: "test-secret-2",
       serviceName: "test-service-2",
     });
 
