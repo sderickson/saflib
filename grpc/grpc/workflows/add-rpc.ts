@@ -48,7 +48,9 @@ export const AddGrpcCallWorkflowDefinition = defineWorkflow<
 
   context: ({ input }) => {
     return {
-      ...parsePackageName(getPackageName(input.cwd)),
+      ...parsePackageName(getPackageName(input.cwd), {
+        requiredSuffix: "-grpc-client",
+      }),
       ...parsePath(input.path, {
         requiredSuffix: ".ts",
         cwd: input.cwd,
