@@ -136,10 +136,7 @@ export const handleGetSecret = async (
   }
 
   const encryptionKey = upsertSecretEncryptionKey();
-  const decryptedValue = decryptSecret(
-    encryptionKey,
-    secret.valueEncrypted.,
-  );
+  const decryptedValue = decryptSecret(encryptionKey, secret.valueEncrypted);
 
   return new GetSecretResponse({
     value: decryptedValue,

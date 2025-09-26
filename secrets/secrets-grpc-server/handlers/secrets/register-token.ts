@@ -1,42 +1,76 @@
 import {
   RegisterTokenResponse,
   RegisterTokenRequest,
+  RegisterTokenError,
+  Success,
 } from "@saflib/secrets-grpc-proto";
-import { getSafContext, getSafReporters } from "@saflib/node";
-import { serviceTokenQueries } from "@saflib/secrets-db";
+import { getSafReporters } from "@saflib/node";
+import {
+  ServiceTokenNotFoundError,
+  serviceTokenQueries,
+  ServiceTokenAlreadyExistsError,
+} from "@saflib/secrets-db";
+import { secretsServiceStorage } from "@saflib/secrets-service-common";
+import { hashToken } from "./hash.ts";
 
 export const handleRegisterToken = async (
   request: RegisterTokenRequest,
 ): Promise<RegisterTokenResponse> => {
   const { log } = getSafReporters();
-  const { subsystemName, operationName } = getSafContext();
   const { secretsDbKey } = secretsServiceStorage.getStore()!;
-  log.info(`Call to ${subsystemName} - ${operationName}`);
 
   const { service_name, service_version, token } = request;
 
-  try {
-    // Create service token record in database
-    const serviceToken = await serviceTokenQueries.create(secretsDbKey, {
-      serviceName: service_name,
-      serviceVersion: service_version,
-      tokenHash: token, // This should be hashed before storing
-      requestedAt: new Date(),
-      approved: false, // Requires admin approval
-    });
-
-    log.info(`Service token registered for ${service_name}, awaiting approval`);
-
+  if (!service_name || !service_version || !token) {
     return new RegisterTokenResponse({
-      status: "pending_approval",
-      message: `Service token registered for ${service_name}. Awaiting admin approval.`,
-    });
-  } catch (error) {
-    log.error(`Failed to register service token for ${service_name}:`, error);
-
-    return new RegisterTokenResponse({
-      status: "denied",
-      message: `Failed to register service token: ${error instanceof Error ? error.message : "Unknown error"}`,
+      error: RegisterTokenError.INVALID_REQUEST,
     });
   }
+
+  log.info(`Registering service token for ${service_name}`);
+
+  const tokenHash = hashToken(token);
+
+  // same response for all cases
+  const response = new RegisterTokenResponse({
+    success: new Success(),
+  });
+
+  const { result: serviceToken, error: serviceTokenError } =
+    await serviceTokenQueries.getByHash(secretsDbKey, tokenHash);
+  if (serviceTokenError) {
+    switch (true) {
+      case serviceTokenError instanceof ServiceTokenNotFoundError:
+        // expected
+        break;
+      default:
+        throw serviceTokenError satisfies never;
+    }
+  }
+
+  if (serviceToken) {
+    log.info(`This token already exists for ${serviceToken.serviceName}`);
+    return response;
+  }
+
+  const { error: createError } = await serviceTokenQueries.create(
+    secretsDbKey,
+    {
+      serviceName: service_name,
+      serviceVersion: service_version,
+      tokenHash,
+    },
+  );
+
+  if (createError) {
+    switch (true) {
+      case createError instanceof ServiceTokenAlreadyExistsError:
+        log.warn(`Unexpected error, race condition?`);
+        return response;
+      default:
+        throw createError satisfies never;
+    }
+  }
+
+  return response;
 };
