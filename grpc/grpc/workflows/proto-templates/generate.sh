@@ -3,20 +3,20 @@ protoc --ts_out=./dist/ \
   --proto_path=./protos \
   --ts_opt=no_namespace \
   --ts_opt=unary_rpc_promise=true \
-  protos/*.proto
+  $(find ./protos -name "*.proto")
 
 # Hack to add .ts extension to dependency imports, because node requires them
-for file in ./dist/*.ts; do
+find ./dist -name "*.ts" -type f | while read file; do
   sed 's/from "\.\([^"]*\)"/from "\.\1.ts"/' "$file" > "$file.tmp" && mv "$file.tmp" "$file"
 done
 
 # Hack to import envelope.ts from @saflib/grpc-specs
-for file in ./dist/*.ts; do
-  sed 's/\"\.\/envelope\.ts\"/\"@saflib\/grpc-specs\"/' "$file" > "$file.tmp" && mv "$file.tmp" "$file"
+find ./dist -name "*.ts" -type f | while read file; do
+  sed 's/".*envelope\.ts"/"@saflib\/grpc-specs"/' "$file" > "$file.tmp" && mv "$file.tmp" "$file"
 done
 
 # Hack to skip typechecking for generated files
-for file in ./dist/*.ts; do
+find ./dist -name "*.ts" -type f | while read file; do
   echo "// @ts-nocheck" > "$file.tmp" && cat "$file" >> "$file.tmp" && mv "$file.tmp" "$file"
 done
 
