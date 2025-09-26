@@ -8,6 +8,7 @@ import {
   makeLineReplace,
   type ParsePathOutput,
   type ParsePackageNameOutput,
+  CwdStepMachine,
 } from "@saflib/workflows";
 import path from "node:path";
 
@@ -17,20 +18,20 @@ const input = [
   {
     name: "name",
     description:
-      "The name of the gRPC client package to create (e.g., 'identity-rpcs' or 'secrets-rpcs')",
-    exampleValue: "example-rpcs",
+      "The name of the gRPC client package to create (e.g., 'identity-grpc-client' or 'secrets-grpc-client')",
+    exampleValue: "example-grpc-client",
   },
   {
     name: "path",
     description:
-      "The path to the target directory for the gRPC client package (e.g., './identity/identity-rpcs')",
-    exampleValue: "./identity/identity-rpcs",
+      "The path to the target directory for the gRPC client package (e.g., './identity/identity-grpc-client')",
+    exampleValue: "./identity/identity-grpc-client",
   },
 ] as const;
 
-interface InitClientWorkflowContext
-  extends ParsePathOutput,
-    ParsePackageNameOutput {}
+interface InitClientWorkflowContext extends ParsePackageNameOutput {
+  targetDir: string;
+}
 
 export const InitClientWorkflowDefinition = defineWorkflow<
   typeof input,
@@ -50,13 +51,9 @@ export const InitClientWorkflowDefinition = defineWorkflow<
   context: ({ input }) => {
     return {
       ...parsePackageName(input.name, {
-        requiredSuffix: "-rpcs",
+        requiredSuffix: "-grpc-client",
       }),
-      ...parsePath(input.path, {
-        requiredSuffix: "",
-        cwd: input.cwd,
-        requiredPrefix: "./",
-      }),
+      targetDir: path.join(input.cwd, input.path),
     };
   },
 
@@ -76,6 +73,10 @@ export const InitClientWorkflowDefinition = defineWorkflow<
       name: "",
       targetDir: context.targetDir,
       lineReplace: makeLineReplace(context),
+    })),
+
+    step(CwdStepMachine, ({ context }) => ({
+      path: context.targetDir,
     })),
 
     step(CommandStepMachine, () => ({
