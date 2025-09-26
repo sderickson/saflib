@@ -57,7 +57,8 @@ export const InitGrpcProtoWorkflowDefinition = defineWorkflow<
 
   templateFiles: {
     envelopeProto: path.join(sourceDir, "protos/envelope.proto"),
-    healthProto: path.join(sourceDir, "protos/health.proto"),
+    healthIndexProto: path.join(sourceDir, "protos/health/index.proto"),
+    getHealthProto: path.join(sourceDir, "protos/health/get-health.proto"),
     envSchema: path.join(sourceDir, "env.schema.json"),
     generate: path.join(sourceDir, "generate.sh"),
     index: path.join(sourceDir, "index.ts"),
