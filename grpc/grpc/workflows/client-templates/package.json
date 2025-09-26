@@ -1,0 +1,25 @@
+{
+  "name": "template-package-grpc-client",
+  "description": "gRPC client package for __service-name__",
+  "private": true,
+  "type": "module",
+  "main": ".",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "dependencies": {
+    "@grpc/grpc-js": "^1.13.3",
+    "@saflib/env": "*",
+    "template-package-grpc-proto": "*"
+  },
+  "devDependencies": {
+    "@saflib/dev-tools": "*",
+    "@types/node": "^22.10.2",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  }
+}
