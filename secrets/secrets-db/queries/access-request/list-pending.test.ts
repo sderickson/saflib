@@ -29,13 +29,11 @@ describe("listPending", () => {
     const { result: pendingRequest } = await create(dbKey, {
       secretId: "test-secret-1",
       serviceName: "test-service-1",
-      status: "pending",
     });
 
     const { result: approvedRequest } = await create(dbKey, {
       secretId: "test-secret-2",
       serviceName: "test-service-2",
-      status: "pending",
     });
 
     assert(pendingRequest);

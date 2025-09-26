@@ -10,7 +10,7 @@ import { mapSecretToResponse } from "../_helpers.js";
 import {
   upsertSecretEncryptionKey,
   encryptSecret,
-} from "../../lib/encryption.js";
+} from "@saflib/secrets-service-common";
 import { getSafContextWithAuth } from "@saflib/node";
 
 export const createSecretHandler = createHandler(async (req, res) => {

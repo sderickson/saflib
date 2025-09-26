@@ -6,7 +6,6 @@ import type { ReturnsError } from "@saflib/monorepo";
 import { queryWrapper } from "@saflib/drizzle";
 import type { DbKey } from "@saflib/drizzle";
 import { accessRequestTable } from "../../schemas/access-request.ts";
-import { secretTable } from "../../schemas/secret.ts";
 import { eq, and } from "drizzle-orm";
 
 export type LookupAccessRequestError = AccessRequestNotFoundError;

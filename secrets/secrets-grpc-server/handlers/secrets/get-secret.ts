@@ -10,8 +10,13 @@ import {
   ServiceTokenNotFoundError,
   accessRequestQueries,
   AccessRequestNotFoundError,
+  AccessRequestAlreadyExistsError,
 } from "@saflib/secrets-db";
-import { secretsServiceStorage } from "@saflib/secrets-service-common";
+import {
+  secretsServiceStorage,
+  decryptSecret,
+  upsertSecretEncryptionKey,
+} from "@saflib/secrets-service-common";
 import crypto from "crypto";
 
 const hashToken = (token: string) => {
@@ -77,10 +82,67 @@ export const handleGetSecret = async (
     });
   }
 
-  // TODO: Fetch access request and check if it is granted. Create request if not found.
-  // TODO: decrypt the secret value
+  const { result: accessRequest, error: accessRequestError } =
+    await accessRequestQueries.lookup(secretsDbKey, {
+      serviceName: tokenResult.serviceName,
+      secretId: secret.id,
+    });
+  if (accessRequestError) {
+    switch (true) {
+      case accessRequestError instanceof AccessRequestNotFoundError:
+        const { error: createError } = await accessRequestQueries.create(
+          secretsDbKey,
+          {
+            serviceName: tokenResult.serviceName,
+            secretId: secret.id,
+          },
+        );
+        if (createError) {
+          switch (true) {
+            case createError instanceof AccessRequestAlreadyExistsError:
+              return new GetSecretResponse({
+                value: "",
+                success: false,
+                error_message: "Access request already exists",
+              });
+            default:
+              throw createError satisfies never;
+          }
+        }
+        return new GetSecretResponse({
+          value: "",
+          success: false,
+          error_message: "Access request created for approval",
+        });
+      default:
+        throw accessRequestError satisfies never;
+    }
+  }
+
+  if (accessRequest.status !== "granted") {
+    return new GetSecretResponse({
+      value: "",
+      success: false,
+      error_message: "Access request not granted. Awaiting approval.",
+    });
+  }
+
+  if (!secret.valueEncrypted) {
+    return new GetSecretResponse({
+      value: "",
+      success: false,
+      error_message: "Secret value not set yet.",
+    });
+  }
+
+  const encryptionKey = upsertSecretEncryptionKey();
+  const decryptedValue = decryptSecret(
+    encryptionKey,
+    secret.valueEncrypted.,
+  );
+
   return new GetSecretResponse({
-    value: "", // This should be decrypted
+    value: decryptedValue,
     success: true,
     error_message: "",
   });

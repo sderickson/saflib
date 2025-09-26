@@ -28,19 +28,16 @@ describe("listByService", () => {
     const { result: request1 } = await create(dbKey, {
       secretId: "test-secret-1",
       serviceName: "test-service",
-      status: "pending",
     });
 
     const { result: request2 } = await create(dbKey, {
       secretId: "test-secret-2",
       serviceName: "test-service",
-      status: "granted",
     });
 
     const { result: request3 } = await create(dbKey, {
       secretId: "test-secret-3",
       serviceName: "other-service",
-      status: "pending",
     });
 
     assert(request1);

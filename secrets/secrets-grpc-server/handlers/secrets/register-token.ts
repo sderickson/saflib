@@ -3,20 +3,21 @@ import {
   RegisterTokenRequest,
 } from "@saflib/secrets-grpc-proto";
 import { getSafContext, getSafReporters } from "@saflib/node";
-import { createServiceToken } from "@saflib/secrets-db";
+import { serviceTokenQueries } from "@saflib/secrets-db";
 
 export const handleRegisterToken = async (
   request: RegisterTokenRequest,
 ): Promise<RegisterTokenResponse> => {
   const { log } = getSafReporters();
   const { subsystemName, operationName } = getSafContext();
+  const { secretsDbKey } = secretsServiceStorage.getStore()!;
   log.info(`Call to ${subsystemName} - ${operationName}`);
 
   const { service_name, service_version, token } = request;
 
   try {
     // Create service token record in database
-    const serviceToken = await createServiceToken({
+    const serviceToken = await serviceTokenQueries.create(secretsDbKey, {
       serviceName: service_name,
       serviceVersion: service_version,
       tokenHash: token, // This should be hashed before storing

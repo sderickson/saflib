@@ -21,7 +21,6 @@ describe("updateStatus", () => {
     const { result: createdRequest } = await create(dbKey, {
       secretId: "test-secret-id",
       serviceName: "test-service",
-      status: "pending",
     });
 
     assert(createdRequest);

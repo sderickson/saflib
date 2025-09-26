@@ -12,7 +12,6 @@ describe("lookup", () => {
     const { result: createdRequest } = await create(dbKey, {
       serviceName: "test-service",
       secretId: "test-secret-id",
-      status: "pending",
     });
     assert(createdRequest);
   });

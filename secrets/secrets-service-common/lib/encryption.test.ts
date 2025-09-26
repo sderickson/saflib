@@ -4,9 +4,9 @@ import {
   upsertSecretEncryptionKey,
   encryptSecret,
   decryptSecret,
-} from "./encryption.js";
+} from "./encryption.ts";
 
-const TEST_KEY_PATH = "data/encryption-key.txt";
+const TEST_KEY_PATH = "../data/encryption-key.txt";
 
 describe("upsertSecretEncryptionKey", () => {
   beforeEach(() => {
@@ -96,11 +96,11 @@ describe("encryptSecret and decryptSecret", () => {
 
   it("should throw error on invalid encrypted data", () => {
     expect(() => {
-      decryptSecret(testKey, "invalid-base64-data");
+      decryptSecret(testKey, Buffer.from("invalid-base64-data"));
     }).toThrow("Failed to decrypt secret");
 
     expect(() => {
-      decryptSecret(testKey, "dGVzdA=="); // "test" in base64, but not valid encrypted data
+      decryptSecret(testKey, Buffer.from("dGVzdA==")); // "test" in base64, but not valid encrypted data
     }).toThrow("Failed to decrypt secret");
   });
 
@@ -139,7 +139,6 @@ describe("integration test", () => {
     // Encrypt
     const encrypted = encryptSecret(key, originalValue);
     expect(encrypted).not.toBe(originalValue);
-    expect(encrypted).toMatch(/^[A-Za-z0-9+/]+=*$/); // Should be base64
 
     // Decrypt
     const decrypted = decryptSecret(key, encrypted);

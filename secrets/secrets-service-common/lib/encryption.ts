@@ -3,7 +3,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import { typedEnv } from "@saflib/env";
 
-const ENCRYPTION_KEY_PATH = "data/encryption-key.txt";
+const ENCRYPTION_KEY_PATH = "../data/encryption-key.txt";
 const TEST_KEY =
   "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"; // 64 chars = 32 bytes hex
 
@@ -39,7 +39,7 @@ export function upsertSecretEncryptionKey(): string {
  * Encrypts a secret value using AES-256-GCM.
  * Returns base64 encoded string containing IV + authTag + encrypted data.
  */
-export function encryptSecret(key: string, value: string): string {
+export function encryptSecret(key: string, value: string): Buffer {
   try {
     // Convert hex key to buffer
     const keyBuffer = Buffer.from(key, "hex");
@@ -59,7 +59,7 @@ export function encryptSecret(key: string, value: string): string {
     // Combine IV + authTag + encrypted data
     const combined = Buffer.concat([iv, authTag, encrypted]);
 
-    return combined.toString("base64");
+    return combined;
   } catch (error) {
     throw new Error(
       `Failed to encrypt secret: ${error instanceof Error ? error.message : "Unknown error"}`,
@@ -71,13 +71,13 @@ export function encryptSecret(key: string, value: string): string {
  * Decrypts a secret value using AES-256-GCM.
  * Expects base64 encoded string containing IV + authTag + encrypted data.
  */
-export function decryptSecret(key: string, encryptedValue: string): string {
+export function decryptSecret(key: string, encryptedValue: Buffer): string {
   try {
     // Convert hex key to buffer
     const keyBuffer = Buffer.from(key, "hex");
 
     // Decode base64
-    const combined = Buffer.from(encryptedValue, "base64");
+    const combined = encryptedValue;
 
     // Extract components
     const iv = combined.subarray(0, 12); // First 12 bytes

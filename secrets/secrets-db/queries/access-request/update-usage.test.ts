@@ -21,7 +21,6 @@ describe("updateUsage", () => {
     const { result: createdRequest } = await create(dbKey, {
       secretId: "test-secret-id",
       serviceName: "test-service",
-      status: "granted",
     });
 
     assert(createdRequest);
