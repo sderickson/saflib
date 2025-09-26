@@ -25,4 +25,5 @@ if (typedEnv.NODE_ENV === "test") {
   };
 }
 
+export { healthClient };
 export { Timestamp } from "template-package-grpc-proto";

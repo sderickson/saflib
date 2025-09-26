@@ -3,6 +3,7 @@ import { AddGrpcServerHandlerWorkflowDefinition } from "./add-handler.ts";
 import { InitGrpcProtoWorkflowDefinition } from "./init-proto.ts";
 import { AddProtoWorkflowDefinition } from "./add-proto.ts";
 import { InitClientWorkflowDefinition } from "./init-client.ts";
+import { AddRpcWorkflowDefinition } from "./add-rpc.ts";
 import type { WorkflowDefinition } from "@saflib/workflows";
 
 export {
@@ -12,6 +13,7 @@ export {
   InitGrpcProtoWorkflowDefinition,
   AddProtoWorkflowDefinition,
   InitClientWorkflowDefinition,
+  AddRpcWorkflowDefinition,
 };
 
 const workflowDefinitions: WorkflowDefinition[] = [
@@ -21,5 +23,6 @@ const workflowDefinitions: WorkflowDefinition[] = [
   InitGrpcProtoWorkflowDefinition,
   AddProtoWorkflowDefinition,
   InitClientWorkflowDefinition,
+  AddRpcWorkflowDefinition,
 ];
 export default workflowDefinitions;

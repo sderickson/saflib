@@ -3,10 +3,8 @@ import {
   CommandStepMachine,
   defineWorkflow,
   step,
-  parsePath,
   parsePackageName,
   makeLineReplace,
-  type ParsePathOutput,
   type ParsePackageNameOutput,
   CwdStepMachine,
 } from "@saflib/workflows";
@@ -63,6 +61,7 @@ export const InitClientWorkflowDefinition = defineWorkflow<
     env: path.join(sourceDir, "env.ts"),
     healthIndex: path.join(sourceDir, "rpcs/health/index.ts"),
     healthFake: path.join(sourceDir, "rpcs/health/get-health.fake.ts"),
+    tsconfig: path.join(sourceDir, "tsconfig.json"),
   },
 
   // TODO: add documentation file references
@@ -77,12 +76,6 @@ export const InitClientWorkflowDefinition = defineWorkflow<
 
     step(CwdStepMachine, ({ context }) => ({
       path: context.targetDir,
-    })),
-
-    step(CommandStepMachine, () => ({
-      command: "npm",
-      args: ["install"],
-      description: "Install dependencies for the gRPC client package.",
     })),
 
     step(CommandStepMachine, () => ({

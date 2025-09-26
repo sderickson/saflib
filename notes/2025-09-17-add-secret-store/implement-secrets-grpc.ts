@@ -4,12 +4,7 @@ import {
   makeWorkflowMachine,
   CwdStepMachine,
 } from "@saflib/workflows";
-import {
-  UpdateSchemaWorkflowDefinition,
-  AddQueryWorkflowDefinition,
-} from "@saflib/drizzle/workflows";
 import path from "path";
-import { execSync } from "child_process";
 import {
   AddGrpcServerHandlerWorkflowDefinition,
   InitGrpcServerWorkflowDefinition,

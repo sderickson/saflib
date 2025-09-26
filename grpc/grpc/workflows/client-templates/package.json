@@ -1,6 +1,6 @@
 {
   "name": "template-package-grpc-client",
-  "description": "gRPC client package for __service-name__",
+  "description": "__package_description__",
   "private": true,
   "type": "module",
   "main": ".",

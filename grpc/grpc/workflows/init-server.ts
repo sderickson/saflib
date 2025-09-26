@@ -80,11 +80,6 @@ export const InitGrpcServerWorkflowDefinition = defineWorkflow<
 
     step(CommandStepMachine, () => ({
       command: "npm",
-      args: ["install"],
-    })),
-
-    step(CommandStepMachine, () => ({
-      command: "npm",
       args: ["run", "typecheck"],
     })),
   ],
