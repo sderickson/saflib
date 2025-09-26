@@ -53,9 +53,3 @@ It should not start the server.
 This directory contains the gRPC service implementations. Each service should have its own directory.
 
 Each service should have an `index.ts` file which exports the service definition and implementation. Each method should have its own file which exports a function typed to the method.
-
-## Related Packages
-
-### Public
-
-To specify the gRPC services a service provides, use [`@saflib/grpc-specs`](../../grpc-specs/docs/overview.md).

@@ -4,7 +4,7 @@
  * compiler version: 5.29.3
  * source: health/get-health.proto
  * git: https://github.com/thesayyn/protoc-gen-ts */
-import * as dependency_1 from "@saflib/grpc-specs";
+import * as dependency_1 from "@saflib/grpc";
 import * as dependency_2 from "./../google/protobuf/timestamp.ts";
 import * as pb_1 from "google-protobuf";
 export class __ServiceName__HealthCheckRequest extends pb_1.Message {

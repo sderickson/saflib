@@ -13,7 +13,6 @@
     "@saflib/env": "*",
     "@saflib/express": "*",
     "@saflib/grpc": "*",
-    "@saflib/grpc-specs": "*",
     "@saflib/monorepo": "*",
     "@saflib/openapi": "*",
     "@saflib/processes": "*",

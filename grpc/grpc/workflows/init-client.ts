@@ -31,7 +31,7 @@ interface InitClientWorkflowContext extends ParsePackageNameOutput {
   targetDir: string;
 }
 
-export const InitClientWorkflowDefinition = defineWorkflow<
+export const InitGrpcClientWorkflowDefinition = defineWorkflow<
   typeof input,
   InitClientWorkflowContext
 >({
