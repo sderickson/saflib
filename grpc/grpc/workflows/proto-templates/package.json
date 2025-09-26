@@ -1,0 +1,23 @@
+{
+  "name": "template-package-grpc-proto",
+  "description": "Protocol buffer definitions and generated code for __service-name__ service",
+  "type": "module",
+  "private": true,
+  "exports": {
+    ".": "./index.ts"
+  },
+  "scripts": {
+    "clean": "rm -rf dist/*",
+    "generate": "npm run clean && ./generate.sh",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@saflib/env": "*",
+    "@saflib/grpc": "*",
+    "template-package-service-common": "*"
+  },
+  "devDependencies": {
+    "@saflib/monorepo": "*",
+    "@types/google-protobuf": "*"
+  }
+}

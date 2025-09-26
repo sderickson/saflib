@@ -28,6 +28,7 @@ export const copyNextFile = fromPromise(
       name,
       targetDir,
       lineReplace,
+      sharedPrefix,
     } = input;
 
     if (filesToCopy.length === 0) {
@@ -39,12 +40,18 @@ export const copyNextFile = fromPromise(
     if (!sourcePath) {
       throw new Error(`Template file ${currentFileId} not found`);
     }
+    const relativePath = path.relative(sharedPrefix, sourcePath);
+
+    let intermediaryDir = relativePath.includes("/")
+      ? path.dirname(relativePath)
+      : "";
+
     const targetFileName = transformName(
       path.basename(sourcePath),
       name,
       lineReplace,
     );
-    const targetPath = path.join(targetDir, targetFileName);
+    const targetPath = path.join(targetDir, intermediaryDir, targetFileName);
     const stats = await stat(sourcePath);
     const isDirectory = stats.isDirectory();
 

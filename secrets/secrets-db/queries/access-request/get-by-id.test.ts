@@ -19,9 +19,8 @@ describe("getById", () => {
   it("should execute successfully", async () => {
     // First create an access request
     const { result: createdRequest } = await create(dbKey, {
-      secretId: "test-secret-id",
+      secretName: "test-secret-id",
       serviceName: "test-service",
-      status: "pending",
     });
 
     assert(createdRequest);
@@ -31,7 +30,7 @@ describe("getById", () => {
     expect(result).toBeDefined();
     assert(result);
     expect(result.id).toBe(createdRequest.id);
-    expect(result.secretId).toBe("test-secret-id");
+    expect(result.secretName).toBe("test-secret-id");
     expect(result.serviceName).toBe("test-service");
     expect(result.status).toBe("pending");
   });

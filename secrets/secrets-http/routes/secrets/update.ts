@@ -6,7 +6,7 @@ import type {
 import createError from "http-errors";
 import { secretsServiceStorage } from "@saflib/secrets-service-common";
 import {
-  secrets,
+  secretQueries,
   SecretNotFoundError,
   SecretAlreadyExistsError,
 } from "@saflib/secrets-db";
@@ -14,7 +14,7 @@ import { mapSecretToResponse } from "../_helpers.js";
 import {
   upsertSecretEncryptionKey,
   encryptSecret,
-} from "../../lib/encryption.js";
+} from "@saflib/secrets-service-common";
 
 export const updateHandler = createHandler(async (req, res) => {
   const ctx = secretsServiceStorage.getStore()!;
@@ -39,11 +39,11 @@ export const updateHandler = createHandler(async (req, res) => {
   if (data.value !== undefined) {
     const encryptionKey = upsertSecretEncryptionKey();
     const encryptedValue = encryptSecret(encryptionKey, data.value);
-    updateParams.valueEncrypted = Buffer.from(encryptedValue, "base64");
+    updateParams.valueEncrypted = encryptedValue;
   }
 
   // Call the database to update the secret
-  const { result, error } = await secrets.update(
+  const { result, error } = await secretQueries.update(
     ctx.secretsDbKey,
     updateParams,
   );

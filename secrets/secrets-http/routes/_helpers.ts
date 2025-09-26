@@ -50,12 +50,10 @@ export function mapServiceTokenToResponse(
  */
 export function mapAccessRequestToResponse(
   request: AccessRequestEntity,
-  secretName?: string,
 ): AccessRequest {
   return {
     id: request.id,
-    secret_id: request.secretId,
-    secret_name: secretName ?? `secret-${request.secretId}`, // Fallback if name not provided
+    secret_name: request.secretName,
     service_name: request.serviceName,
     requested_at: request.requestedAt.getTime(),
     status: request.status,

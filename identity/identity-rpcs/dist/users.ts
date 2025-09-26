@@ -4,7 +4,7 @@
  * compiler version: 5.29.3
  * source: users.proto
  * git: https://github.com/thesayyn/protoc-gen-ts */
-import * as dependency_1 from "@saflib/grpc-specs";
+import * as dependency_1 from "@saflib/grpc";
 import * as dependency_2 from "./google/protobuf/timestamp.ts";
 import * as pb_1 from "google-protobuf";
 import * as grpc_1 from "@grpc/grpc-js";

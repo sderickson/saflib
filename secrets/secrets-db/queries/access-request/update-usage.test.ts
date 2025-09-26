@@ -19,9 +19,8 @@ describe("updateUsage", () => {
   it("should execute successfully", async () => {
     // First create an access request
     const { result: createdRequest } = await create(dbKey, {
-      secretId: "test-secret-id",
+      secretName: "test-secret-name",
       serviceName: "test-service",
-      status: "granted",
     });
 
     assert(createdRequest);
@@ -38,7 +37,7 @@ describe("updateUsage", () => {
     expect(result.id).toBe(createdRequest.id);
     expect(result.accessCount).toBe(1);
     expect(result.lastAccessedAt).toBeDefined();
-    expect(result.secretId).toBe("test-secret-id"); // unchanged
+    expect(result.secretName).toBe("test-secret-name"); // unchanged
     expect(result.serviceName).toBe("test-service"); // unchanged
   });
 

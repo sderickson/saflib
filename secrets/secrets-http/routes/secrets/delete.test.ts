@@ -3,7 +3,7 @@ import request from "supertest";
 import express from "express";
 import { createSecretsHttpApp } from "../../http.ts";
 import { makeAdminHeaders } from "@saflib/express";
-import { secretsDb, secrets } from "@saflib/secrets-db";
+import { secretsDb, secretQueries } from "@saflib/secrets-db";
 
 describe("DELETE /secrets/:id", () => {
   let app: express.Express;
@@ -15,7 +15,7 @@ describe("DELETE /secrets/:id", () => {
     app = createSecretsHttpApp({ secretsDbKey: dbKey });
 
     // Create a test secret for deleting
-    const { result } = await secrets.create(dbKey, {
+    const { result } = await secretQueries.create(dbKey, {
       name: "test-secret-to-delete",
       description: "Secret to be deleted",
       valueEncrypted: Buffer.from("encrypted-value"),
@@ -40,7 +40,7 @@ describe("DELETE /secrets/:id", () => {
     });
 
     // Verify the secret is soft deleted (is_active = false)
-    const { result: updatedSecret } = await secrets.getById(
+    const { result: updatedSecret } = await secretQueries.getById(
       dbKey,
       testSecretId,
     );

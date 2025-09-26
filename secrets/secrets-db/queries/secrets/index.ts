@@ -5,4 +5,11 @@ import { update } from "./update.ts";
 import { remove } from "./remove.ts";
 import { list } from "./list.ts";
 
-export const secrets = { create, getById, getByName, update, remove, list };
+export const secretQueries = {
+  create,
+  getById,
+  getByName,
+  update,
+  remove,
+  list,
+};

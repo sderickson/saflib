@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@saflib/env": "*",
-    "@saflib/grpc-specs": "*",
+    "@saflib/grpc": "*",
     "@saflib/identity-common": "*"
   },
   "devDependencies": {

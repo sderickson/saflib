@@ -11,9 +11,9 @@ for file in ./dist/*.ts; do
   sed 's/from "\.\([^"]*\)"/from "\.\1.ts"/' "$file" > "$file.tmp" && mv "$file.tmp" "$file"
 done
 
-# Hack to import envelope.ts from @saflib/grpc-specs
+# Hack to import envelope.ts from @saflib/grpc
 for file in ./dist/*.ts; do
-  sed 's/\"\.\/envelope\.ts\"/\"@saflib\/grpc-specs\"/' "$file" > "$file.tmp" && mv "$file.tmp" "$file"
+  sed 's/\"\.\/envelope\.ts\"/\"@saflib\/grpc\"/' "$file" > "$file.tmp" && mv "$file.tmp" "$file"
 done
 
 # Hack to skip typechecking for generated files

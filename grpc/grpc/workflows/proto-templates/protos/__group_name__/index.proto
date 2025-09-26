@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package __service_name__.__group_name__.v1;
+
+import "__group-name__/__target-name__.proto";
+
+service __GroupName__ {
+  rpc __TargetName__(__TargetName__Request) returns (__TargetName__Response);
+}

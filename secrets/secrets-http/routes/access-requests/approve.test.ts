@@ -4,7 +4,7 @@ import express from "express";
 import { createSecretsHttpApp } from "../../http.ts";
 import { makeAdminHeaders } from "@saflib/express";
 import type { SecretsServiceRequestBody } from "@saflib/secrets-spec";
-import { secretsDb, accessRequest } from "@saflib/secrets-db";
+import { secretsDb, accessRequestQueries } from "@saflib/secrets-db";
 
 describe("POST /access-requests/:id/approve", () => {
   let app: express.Express;
@@ -16,10 +16,9 @@ describe("POST /access-requests/:id/approve", () => {
     app = createSecretsHttpApp({ secretsDbKey: dbKey });
 
     // Create a test access request for approving
-    const { result } = await accessRequest.create(dbKey, {
-      secretId: "test-secret-id",
+    const { result } = await accessRequestQueries.create(dbKey, {
+      secretName: "test-secret-name",
       serviceName: "test-service",
-      status: "pending",
     });
     testAccessRequestId = result!.id;
   });
@@ -34,18 +33,19 @@ describe("POST /access-requests/:id/approve", () => {
       reason: "Approved for testing",
     };
 
+    const adminHeaders = makeAdminHeaders();
     const response = await request(app)
       .post(`/access-requests/${testAccessRequestId}/approve`)
-      .set(makeAdminHeaders())
+      .set(adminHeaders)
       .send(requestBody);
 
     expect(response.status).toBe(200);
     expect(response.body).toMatchObject({
       id: testAccessRequestId,
-      secret_id: "test-secret-id",
+      secret_name: "test-secret-name",
       service_name: "test-service",
       status: "granted",
-      granted_by: "admin1@example.com", // Identity-provided email
+      granted_by: adminHeaders["x-user-email"],
     });
     expect(response.body.granted_at).toBeDefined();
   });
@@ -56,18 +56,19 @@ describe("POST /access-requests/:id/approve", () => {
       reason: "Denied for security reasons",
     };
 
+    const adminHeaders = makeAdminHeaders();
     const response = await request(app)
       .post(`/access-requests/${testAccessRequestId}/approve`)
-      .set(makeAdminHeaders())
+      .set(adminHeaders)
       .send(requestBody);
 
     expect(response.status).toBe(200);
     expect(response.body).toMatchObject({
       id: testAccessRequestId,
-      secret_id: "test-secret-id",
+      secret_name: "test-secret-name",
       service_name: "test-service",
       status: "denied",
-      granted_by: "admin2@example.com", // Identity-provided email
+      granted_by: adminHeaders["x-user-email"],
     });
     expect(response.body.granted_at).toBeDefined();
   });

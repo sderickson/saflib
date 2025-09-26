@@ -3,17 +3,24 @@
   "description": "gRPC servicer utilities",
   "private": true,
   "type": "module",
-  "main": ".",
   "exports": {
     ".": "./index.ts",
     "./workflows": "./workflows/index.ts",
     "./testing": "./test-service.ts"
   },
+  "scripts": {
+    "clean": "rm -rf dist/*",
+    "generate": "./generate.sh"
+  },
   "dependencies": {
     "@grpc/grpc-js": "^1.13.3",
     "@saflib/env": "*",
-    "@saflib/grpc-specs": "*",
     "@saflib/node": "*",
-    "google-protobuf": "^3.21.4"
+    "google-protobuf": "^3.21.4",
+    "protoc-gen-ts": "^0.8.7"
+  },
+  "devDependencies": {
+    "@types/google-protobuf": "*",
+    "@saflib/monorepo": "*"
   }
 }

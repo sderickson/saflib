@@ -25,6 +25,7 @@ export const create = queryWrapper(
           ...params,
           requestedAt: new Date(),
           accessCount: 0,
+          status: "pending",
         })
         .returning();
       return {
