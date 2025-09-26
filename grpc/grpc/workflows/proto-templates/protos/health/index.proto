@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package __service_name__.health.v1;
 
-import "health/health.proto";
+import "health/get-health.proto";
 
 service __ServiceName__Health {
   rpc HealthCheck(__ServiceName__HealthCheckRequest) returns (__ServiceName__HealthCheckResponse);
