@@ -44,15 +44,15 @@ export const ImplementSecretsGrpcServerWorkflowDefinition = defineWorkflow<
       name: "@saflib/secrets-grpc-proto",
       path: "./secrets/secrets-grpc-proto",
     })),
-    // step(CwdStepMachine, () => ({
-    //   path: "./secrets/secrets-grpc-proto",
-    // })),
-    // step(makeWorkflowMachine(AddProtoWorkflowDefinition), () => ({
-    //   path: "./protos/secrets/get-secret.proto",
-    // })),
-    // step(makeWorkflowMachine(AddProtoWorkflowDefinition), () => ({
-    //   path: "./protos/secrets/register-token.proto",
-    // })),
+    step(CwdStepMachine, () => ({
+      path: "./secrets/secrets-grpc-proto",
+    })),
+    step(makeWorkflowMachine(AddProtoWorkflowDefinition), () => ({
+      path: "./protos/secrets/get-secret.proto",
+    })),
+    step(makeWorkflowMachine(AddProtoWorkflowDefinition), () => ({
+      path: "./protos/secrets/register-token.proto",
+    })),
     // step(makeWorkflowMachine(InitGrpcServerWorkflowDefinition), () => ({
     //   name: "@saflib/secrets-grpc-server",
     //   path: "./secrets/secrets-grpc-server",

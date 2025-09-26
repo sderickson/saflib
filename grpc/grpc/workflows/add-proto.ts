@@ -16,7 +16,7 @@ import path from "node:path";
 
 const sourceDir = path.join(
   import.meta.dirname,
-  "proto-templates/protos/template",
+  "proto-templates/protos/__group_name__/",
 );
 
 const input = [
@@ -60,7 +60,7 @@ export const AddProtoWorkflowDefinition = defineWorkflow<
 
   templateFiles: {
     index: path.join(sourceDir, "index.proto"),
-    templateFile: path.join(sourceDir, "__target-name__.proto"),
+    templateFile: path.join(sourceDir, "__target_name__.proto"),
   },
 
   // TODO: add documentation file references
