@@ -7,7 +7,6 @@
 import * as dependency_1 from "@saflib/grpc-specs";
 import * as dependency_2 from "./../google/protobuf/timestamp.ts";
 import * as pb_1 from "google-protobuf";
-import * as grpc_1 from "@grpc/grpc-js";
 export class __ServiceName__HealthCheckRequest extends pb_1.Message {
     #one_of_decls: number[][] = [];
     constructor(data?: any[] | {
@@ -196,60 +195,4 @@ export class __ServiceName__HealthCheckResponse extends pb_1.Message {
     static deserializeBinary(bytes: Uint8Array): __ServiceName__HealthCheckResponse {
         return __ServiceName__HealthCheckResponse.deserialize(bytes);
     }
-}
-interface GrpcUnaryServiceInterface<P, R> {
-    (message: P, metadata: grpc_1.Metadata, options: grpc_1.CallOptions, callback: grpc_1.requestCallback<R>): grpc_1.ClientUnaryCall;
-    (message: P, metadata: grpc_1.Metadata, callback: grpc_1.requestCallback<R>): grpc_1.ClientUnaryCall;
-    (message: P, options: grpc_1.CallOptions, callback: grpc_1.requestCallback<R>): grpc_1.ClientUnaryCall;
-    (message: P, callback: grpc_1.requestCallback<R>): grpc_1.ClientUnaryCall;
-}
-interface GrpcStreamServiceInterface<P, R> {
-    (message: P, metadata: grpc_1.Metadata, options?: grpc_1.CallOptions): grpc_1.ClientReadableStream<R>;
-    (message: P, options?: grpc_1.CallOptions): grpc_1.ClientReadableStream<R>;
-}
-interface GrpWritableServiceInterface<P, R> {
-    (metadata: grpc_1.Metadata, options: grpc_1.CallOptions, callback: grpc_1.requestCallback<R>): grpc_1.ClientWritableStream<P>;
-    (metadata: grpc_1.Metadata, callback: grpc_1.requestCallback<R>): grpc_1.ClientWritableStream<P>;
-    (options: grpc_1.CallOptions, callback: grpc_1.requestCallback<R>): grpc_1.ClientWritableStream<P>;
-    (callback: grpc_1.requestCallback<R>): grpc_1.ClientWritableStream<P>;
-}
-interface GrpcChunkServiceInterface<P, R> {
-    (metadata: grpc_1.Metadata, options?: grpc_1.CallOptions): grpc_1.ClientDuplexStream<P, R>;
-    (options?: grpc_1.CallOptions): grpc_1.ClientDuplexStream<P, R>;
-}
-interface GrpcPromiseServiceInterface<P, R> {
-    (message: P, metadata: grpc_1.Metadata, options?: grpc_1.CallOptions): Promise<R>;
-    (message: P, options?: grpc_1.CallOptions): Promise<R>;
-}
-export abstract class Unimplemented__ServiceName__HealthService {
-    static definition = {
-        HealthCheck: {
-            path: "/__service_name__.health.v1.__ServiceName__Health/HealthCheck",
-            requestStream: false,
-            responseStream: false,
-            requestSerialize: (message: __ServiceName__HealthCheckRequest) => Buffer.from(message.serialize()),
-            requestDeserialize: (bytes: Buffer) => __ServiceName__HealthCheckRequest.deserialize(new Uint8Array(bytes)),
-            responseSerialize: (message: __ServiceName__HealthCheckResponse) => Buffer.from(message.serialize()),
-            responseDeserialize: (bytes: Buffer) => __ServiceName__HealthCheckResponse.deserialize(new Uint8Array(bytes))
-        }
-    };
-    [method: string]: grpc_1.UntypedHandleCall;
-    abstract HealthCheck(call: grpc_1.ServerUnaryCall<__ServiceName__HealthCheckRequest, __ServiceName__HealthCheckResponse>, callback: grpc_1.sendUnaryData<__ServiceName__HealthCheckResponse>): void;
-}
-export class __ServiceName__HealthClient extends grpc_1.makeGenericClientConstructor(Unimplemented__ServiceName__HealthService.definition, "__ServiceName__Health", {}) {
-    constructor(address: string, credentials: grpc_1.ChannelCredentials, options?: Partial<grpc_1.ChannelOptions>) {
-        super(address, credentials, options);
-    }
-    HealthCheck: GrpcPromiseServiceInterface<__ServiceName__HealthCheckRequest, __ServiceName__HealthCheckResponse> = (message: __ServiceName__HealthCheckRequest, metadata?: grpc_1.Metadata | grpc_1.CallOptions, options?: grpc_1.CallOptions): Promise<__ServiceName__HealthCheckResponse> => { if (!metadata) {
-        metadata = new grpc_1.Metadata;
-    } if (!options) {
-        options = {};
-    } return new Promise((resolve, reject) => super.HealthCheck(message, metadata, options, (error: grpc_1.ServiceError, response: __ServiceName__HealthCheckResponse) => {
-        if (error) {
-            reject(error);
-        }
-        else {
-            resolve(response);
-        }
-    })); };
 }

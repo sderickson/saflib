@@ -5,10 +5,6 @@ package __service_name__.health.v1;
 import "envelope.proto";
 import "google/protobuf/timestamp.proto";
 
-service __ServiceName__Health {
-  rpc HealthCheck(__ServiceName__HealthCheckRequest) returns (__ServiceName__HealthCheckResponse);
-}
-
 message __ServiceName__HealthCheckRequest {
   saflib.common.v1.SafAuth auth = 1;
   saflib.common.v1.SafRequest request = 2;
