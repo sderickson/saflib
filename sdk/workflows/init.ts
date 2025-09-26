@@ -29,9 +29,6 @@ const input = [
 
 interface SdkInitWorkflowContext extends ParsePackageNameOutput {
   targetDir: string;
-  // name: string;
-  // targetDir: string;
-  // packageName: string;
 }
 
 export const SdkInitWorkflowDefinition = defineWorkflow<
