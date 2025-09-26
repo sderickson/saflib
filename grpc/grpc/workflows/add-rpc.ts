@@ -31,7 +31,7 @@ interface AddRpcWorkflowContext
   extends ParsePathOutput,
     ParsePackageNameOutput {}
 
-export const AddRpcWorkflowDefinition = defineWorkflow<
+export const AddGrpcCallWorkflowDefinition = defineWorkflow<
   typeof input,
   AddRpcWorkflowContext
 >({

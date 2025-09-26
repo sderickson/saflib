@@ -10,7 +10,7 @@ import {
   InitGrpcServerWorkflowDefinition,
   InitGrpcProtoWorkflowDefinition,
   AddProtoWorkflowDefinition,
-  AddRpcWorkflowDefinition,
+  AddRpcWorkflowDefinition as AddGrpcCallWorkflowDefinition,
   InitGrpcClientWorkflowDefinition,
 } from "@saflib/grpc/workflows";
 
@@ -76,10 +76,10 @@ export const ImplementSecretsGrpcServerWorkflowDefinition = defineWorkflow<
     step(CwdStepMachine, () => ({
       path: "./secrets/secrets-grpc-client",
     })),
-    step(makeWorkflowMachine(AddRpcWorkflowDefinition), () => ({
+    step(makeWorkflowMachine(AddGrpcCallWorkflowDefinition), () => ({
       path: "./rpcs/secrets/get-secret.ts",
     })),
-    step(makeWorkflowMachine(AddRpcWorkflowDefinition), () => ({
+    step(makeWorkflowMachine(AddGrpcCallWorkflowDefinition), () => ({
       path: "./rpcs/secrets/register-token.ts",
     })),
   ],
