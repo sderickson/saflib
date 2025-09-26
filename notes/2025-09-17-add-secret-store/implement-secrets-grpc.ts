@@ -46,9 +46,11 @@ export const ImplementSecretsGrpcServerWorkflowDefinition = defineWorkflow<
     })),
     step(makeWorkflowMachine(AddProtoWorkflowDefinition), () => ({
       path: "./protos/secrets/get-secret.proto",
+      systemPrompt: `Given a token, a service name, and a secret name, return the secret value if the secret exists and the token is valid. The response should indicate if the token is available or not.`,
     })),
     step(makeWorkflowMachine(AddProtoWorkflowDefinition), () => ({
       path: "./protos/secrets/register-token.proto",
+      systemPrompt: `Given a token and a secret name, register the token for the secret. The response should indicate if the token was registered successfully.`,
     })),
     step(CwdStepMachine, () => ({
       path: ".",
@@ -62,9 +64,11 @@ export const ImplementSecretsGrpcServerWorkflowDefinition = defineWorkflow<
     })),
     step(makeWorkflowMachine(AddGrpcServerHandlerWorkflowDefinition), () => ({
       path: "./handlers/secrets/get-secret.ts",
+      systemPrompt: `Implement the GetSecret gRPC handler. It should validate the token and return a reasonable response.`,
     })),
     step(makeWorkflowMachine(AddGrpcServerHandlerWorkflowDefinition), () => ({
       path: "./handlers/secrets/register-token.ts",
+      systemPrompt: `Implement the RegisterToken gRPC handler.`,
     })),
     step(CwdStepMachine, () => ({
       path: ".",
@@ -78,9 +82,11 @@ export const ImplementSecretsGrpcServerWorkflowDefinition = defineWorkflow<
     })),
     step(makeWorkflowMachine(AddGrpcCallWorkflowDefinition), () => ({
       path: "./rpcs/secrets/get-secret.ts",
+      systemPrompt: `The fake implementation should always return a successful response.`,
     })),
     step(makeWorkflowMachine(AddGrpcCallWorkflowDefinition), () => ({
       path: "./rpcs/secrets/register-token.ts",
+      systemPrompt: `The fake implementation should always return a successful response.`,
     })),
   ],
 });
