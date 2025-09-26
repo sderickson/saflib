@@ -63,7 +63,6 @@ export const CopyStepMachine = setup({
       }
     }
     const sharedPrefix = templateKeys[0].slice(0, sharedPrefixIndex);
-    console.log("sharedPrefix", sharedPrefix);
 
     return {
       ...contextFromInput(input, self),

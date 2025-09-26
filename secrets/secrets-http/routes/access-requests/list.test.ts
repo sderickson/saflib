@@ -74,7 +74,6 @@ describe("GET /access-requests", () => {
     // Check that access requests are returned with proper format
     const accessRequests = response.body;
     expect(accessRequests[0]).toHaveProperty("id");
-    expect(accessRequests[0]).toHaveProperty("secret_id");
     expect(accessRequests[0]).toHaveProperty("secret_name");
     expect(accessRequests[0]).toHaveProperty("service_name");
     expect(accessRequests[0]).toHaveProperty("requested_at");

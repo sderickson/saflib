@@ -144,7 +144,6 @@ export const parsePath = (
   } else {
     throw new Error(`Invalid path: ${path}`);
   }
-  console.log("groupName", groupName);
 
   return {
     groupName,

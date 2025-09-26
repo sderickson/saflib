@@ -33,9 +33,10 @@ describe("POST /access-requests/:id/approve", () => {
       reason: "Approved for testing",
     };
 
+    const adminHeaders = makeAdminHeaders();
     const response = await request(app)
       .post(`/access-requests/${testAccessRequestId}/approve`)
-      .set(makeAdminHeaders())
+      .set(adminHeaders)
       .send(requestBody);
 
     expect(response.status).toBe(200);
@@ -44,7 +45,7 @@ describe("POST /access-requests/:id/approve", () => {
       secret_name: "test-secret-name",
       service_name: "test-service",
       status: "granted",
-      granted_by: "admin1@example.com", // Identity-provided email
+      granted_by: adminHeaders["x-user-email"],
     });
     expect(response.body.granted_at).toBeDefined();
   });
@@ -55,9 +56,10 @@ describe("POST /access-requests/:id/approve", () => {
       reason: "Denied for security reasons",
     };
 
+    const adminHeaders = makeAdminHeaders();
     const response = await request(app)
       .post(`/access-requests/${testAccessRequestId}/approve`)
-      .set(makeAdminHeaders())
+      .set(adminHeaders)
       .send(requestBody);
 
     expect(response.status).toBe(200);
@@ -66,7 +68,7 @@ describe("POST /access-requests/:id/approve", () => {
       secret_name: "test-secret-name",
       service_name: "test-service",
       status: "denied",
-      granted_by: "admin2@example.com", // Identity-provided email
+      granted_by: adminHeaders["x-user-email"],
     });
     expect(response.body.granted_at).toBeDefined();
   });
