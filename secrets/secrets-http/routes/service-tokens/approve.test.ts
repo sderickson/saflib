@@ -4,7 +4,7 @@ import express from "express";
 import { createSecretsHttpApp } from "../../http.ts";
 import { makeAdminHeaders } from "@saflib/express";
 import type { SecretsServiceRequestBody } from "@saflib/secrets-spec";
-import { secretQueries, serviceTokenQueries } from "@saflib/secrets-db";
+import { secretsDb, serviceTokenQueries } from "@saflib/secrets-db";
 
 describe("POST /service-tokens/:id/approve", () => {
   let app: express.Express;
@@ -12,7 +12,7 @@ describe("POST /service-tokens/:id/approve", () => {
   let testServiceTokenId: string;
 
   beforeEach(async () => {
-    dbKey = secretQueries.connect();
+    dbKey = secretsDb.connect();
     app = createSecretsHttpApp({ secretsDbKey: dbKey });
 
     // Create a test service token for approving
@@ -25,7 +25,7 @@ describe("POST /service-tokens/:id/approve", () => {
   });
 
   afterEach(() => {
-    secretQueries.disconnect(dbKey);
+    secretsDb.disconnect(dbKey);
   });
 
   it("should approve service token successfully", async () => {

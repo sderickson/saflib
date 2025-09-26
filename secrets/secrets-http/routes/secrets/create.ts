@@ -29,7 +29,7 @@ export const createSecretHandler = createHandler(async (req, res) => {
   const { result, error } = await secretQueries.create(ctx.secretsDbKey, {
     name: data.name,
     description: data.description || null,
-    valueEncrypted: Buffer.from(encryptedValue, "base64"),
+    valueEncrypted: encryptedValue,
     createdBy: auth.userEmail,
     isActive: true,
   });

@@ -1,6 +1,8 @@
 import {
   GetSecretRequest,
   GetSecretResponse,
+  GetSecretError,
+  GetSecretSuccess,
 } from "@saflib/secrets-grpc-proto";
 
 /**
@@ -14,41 +16,32 @@ export const getSecretFake = async (
   // Simulate different responses based on the request
   if (token === "invalid-token") {
     return new GetSecretResponse({
-      value: "",
-      success: false,
-      error_message: "Invalid service token",
+      error: GetSecretError.GET_SECRET_INVALID_TOKEN,
     });
   }
 
   if (token === "unapproved-token") {
     return new GetSecretResponse({
-      value: "",
-      success: false,
-      error_message: "Service token not approved",
+      error: GetSecretError.GET_SECRET_TOKEN_NOT_APPROVED,
     });
   }
 
   if (secret_name === "missing-secret") {
     return new GetSecretResponse({
-      value: "",
-      success: false,
-      error_message:
-        "Secret 'missing-secret' not found. Access request created for approval.",
+      error: GetSecretError.GET_SECRET_NOT_FOUND,
     });
   }
 
   if (secret_name === "inactive-secret") {
     return new GetSecretResponse({
-      value: "",
-      success: false,
-      error_message: "Secret is not active",
+      error: GetSecretError.GET_SECRET_NOT_ACTIVE,
     });
   }
 
   // Return a fake secret value for valid requests
   return new GetSecretResponse({
-    value: `fake-secret-value-for-${secret_name}`,
-    success: true,
-    error_message: "",
+    success: new GetSecretSuccess({
+      value: `fake-secret-value-for-${secret_name}`,
+    }),
   });
 };

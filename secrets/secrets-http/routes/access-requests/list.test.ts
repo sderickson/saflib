@@ -4,7 +4,7 @@ import express from "express";
 import { createSecretsHttpApp } from "../../http.ts";
 import { makeAdminHeaders } from "@saflib/express";
 import {
-  secretQueries,
+  secretsDb,
   accessRequestQueries,
   secretQueries,
 } from "@saflib/secrets-db";
@@ -14,12 +14,12 @@ describe("GET /access-requests", () => {
   let dbKey: symbol;
 
   beforeEach(() => {
-    dbKey = secretQueries.connect();
+    dbKey = secretsDb.connect();
     app = createSecretsHttpApp({ secretsDbKey: dbKey });
   });
 
   afterEach(() => {
-    secretQueries.disconnect(dbKey);
+    secretsDb.disconnect(dbKey);
   });
 
   it("should return empty array when no access requests exist", async () => {
@@ -44,22 +44,20 @@ describe("GET /access-requests", () => {
     assert(secret, "Failed to create secret");
 
     // Create test access requests
-    await accessRequests.create(dbKey, {
-      secretId: secret.id,
+    await accessRequestQueries.create(dbKey, {
+      secretName: secret.name,
       serviceName: "test-service-1",
-      status: "pending",
     });
 
-    const { result: request2 } = await accessRequests.create(dbKey, {
-      secretId: secret.id,
+    const { result: request2 } = await accessRequestQueries.create(dbKey, {
+      secretName: secret.name,
       serviceName: "test-service-2",
-      status: "pending",
     });
 
     assert(request2, "Failed to create access request");
 
     // Update the second request to granted status
-    await accessRequests.updateStatus(dbKey, {
+    await accessRequestQueries.updateStatus(dbKey, {
       id: request2.id,
       status: "granted",
       grantedBy: "admin-user",
@@ -101,24 +99,21 @@ describe("GET /access-requests", () => {
 
     // Create access requests with different statuses
     await accessRequestQueries.create(dbKey, {
-      secretId: secret.id,
+      secretName: secret.name,
       serviceName: "pending-service",
-      status: "pending",
     });
 
     const { result: grantedRequest } = await accessRequestQueries.create(
       dbKey,
       {
-        secretId: secret.id,
+        secretName: secret.name,
         serviceName: "granted-service",
-        status: "pending",
       },
     );
 
     const { result: deniedRequest } = await accessRequestQueries.create(dbKey, {
-      secretId: secret.id,
+      secretName: secret.name,
       serviceName: "denied-service",
-      status: "pending",
     });
 
     assert(grantedRequest, "Failed to create granted request");
@@ -182,17 +177,15 @@ describe("GET /access-requests", () => {
 
     // Create access requests for different services
     await accessRequestQueries.create(dbKey, {
-      secretId: secret.id,
+      secretName: secret.name,
       serviceName: "service-a",
-      status: "pending",
     });
 
     const { result: serviceBRequest } = await accessRequestQueries.create(
       dbKey,
       {
-        secretId: secret.id,
+        secretName: secret.name,
         serviceName: "service-b",
-        status: "pending",
       },
     );
 
@@ -238,9 +231,8 @@ describe("GET /access-requests", () => {
     // Create multiple test access requests
     for (let i = 0; i < 5; i++) {
       await accessRequestQueries.create(dbKey, {
-        secretId: secret.id,
+        secretName: secret.name,
         serviceName: `service-${i}`,
-        status: "pending",
       });
     }
 
@@ -267,9 +259,8 @@ describe("GET /access-requests", () => {
 
     // Create first access request
     await accessRequestQueries.create(dbKey, {
-      secretId: secret.id,
+      secretName: secret.name,
       serviceName: "first-service",
-      status: "pending",
     });
 
     // Wait a moment to ensure different timestamps
@@ -277,9 +268,8 @@ describe("GET /access-requests", () => {
 
     // Create second access request (should appear first due to more recent requested_at)
     await accessRequestQueries.create(dbKey, {
-      secretId: secret.id,
+      secretName: secret.name,
       serviceName: "second-service",
-      status: "pending",
     });
 
     const response = await request(app)

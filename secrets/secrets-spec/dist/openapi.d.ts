@@ -206,11 +206,6 @@ export interface components {
              */
             id: string;
             /**
-             * @description ID of the secret being requested
-             * @example secret-123
-             */
-            secret_id: string;
-            /**
              * @description Name of the secret for display purposes
              * @example STRIPE_API_KEY
              */

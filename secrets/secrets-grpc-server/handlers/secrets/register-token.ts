@@ -2,7 +2,7 @@ import {
   RegisterTokenResponse,
   RegisterTokenRequest,
   RegisterTokenError,
-  Success,
+  RegisterTokenSuccess,
 } from "@saflib/secrets-grpc-proto";
 import { getSafReporters } from "@saflib/node";
 import {
@@ -23,7 +23,7 @@ export const handleRegisterToken = async (
 
   if (!service_name || !service_version || !token) {
     return new RegisterTokenResponse({
-      error: RegisterTokenError.INVALID_REQUEST,
+      error: RegisterTokenError.REGISTER_TOKEN_INVALID_REQUEST,
     });
   }
 
@@ -33,7 +33,7 @@ export const handleRegisterToken = async (
 
   // same response for all cases
   const response = new RegisterTokenResponse({
-    success: new Success(),
+    success: new RegisterTokenSuccess(),
   });
 
   const { result: serviceToken, error: serviceTokenError } =

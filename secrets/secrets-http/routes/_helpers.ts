@@ -54,8 +54,7 @@ export function mapAccessRequestToResponse(
 ): AccessRequest {
   return {
     id: request.id,
-    secret_id: request.secretId,
-    secret_name: secretName ?? `secret-${request.secretId}`, // Fallback if name not provided
+    secret_name: secretName ?? `secret-${request.secretName}`, // Fallback if name not provided
     service_name: request.serviceName,
     requested_at: request.requestedAt.getTime(),
     status: request.status,

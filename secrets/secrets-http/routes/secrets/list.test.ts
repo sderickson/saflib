@@ -3,19 +3,19 @@ import request from "supertest";
 import express from "express";
 import { createSecretsHttpApp } from "../../http.ts";
 import { makeAdminHeaders } from "@saflib/express";
-import { secretQueries, secretQueries } from "@saflib/secrets-db";
+import { secretsDb, secretQueries } from "@saflib/secrets-db";
 
 describe("GET /secrets", () => {
   let app: express.Express;
   let dbKey: symbol;
 
   beforeEach(() => {
-    dbKey = secretQueries.connect();
+    dbKey = secretsDb.connect();
     app = createSecretsHttpApp({ secretsDbKey: dbKey });
   });
 
   afterEach(() => {
-    secretQueries.disconnect(dbKey);
+    secretsDb.disconnect(dbKey);
   });
 
   it("should return empty array when no secrets exist", async () => {

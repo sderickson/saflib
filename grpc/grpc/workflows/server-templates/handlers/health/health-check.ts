@@ -5,9 +5,9 @@ import {
 } from "template-package-grpc-proto";
 import { getSafContext, getSafReporters } from "@saflib/node";
 
-export const handleHealthCheck = (
+export const handleHealthCheck = async (
   _request: __ServiceName__HealthCheckRequest,
-): __ServiceName__HealthCheckResponse => {
+): Promise<__ServiceName__HealthCheckResponse> => {
   const { log } = getSafReporters();
   const { subsystemName, operationName } = getSafContext();
   log.info(`Health check for ${subsystemName} ${operationName}`);

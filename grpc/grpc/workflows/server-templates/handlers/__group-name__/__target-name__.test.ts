@@ -22,7 +22,7 @@ describe("handle__TargetName__", () => {
         user_scopes: ["test"],
       }),
     });
-    const response = handle__TargetName__(request);
+    const response = await handle__TargetName__(request);
     expect(response).toBeDefined();
     expect(response.status).toBe("OK");
     expect(response.timestamp).toBeDefined();

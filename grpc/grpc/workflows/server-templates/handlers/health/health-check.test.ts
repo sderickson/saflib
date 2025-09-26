@@ -22,7 +22,7 @@ describe("handleHealthCheck", () => {
         user_scopes: ["test"],
       }),
     });
-    const response = handleHealthCheck(request);
+    const response = await handleHealthCheck(request);
     expect(response).toBeDefined();
     expect(response.status).toBe("OK");
     expect(response.current_time).toBeDefined();

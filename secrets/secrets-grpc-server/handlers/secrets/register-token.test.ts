@@ -5,7 +5,10 @@ import {
 } from "@saflib/secrets-service-common";
 import { testContext, safContextStorage } from "@saflib/node";
 import { handleRegisterToken } from "./register-token.ts";
-import { RegisterTokenRequest, RegisterTokenError } from "@saflib/secrets-grpc-proto";
+import {
+  RegisterTokenRequest,
+  RegisterTokenError,
+} from "@saflib/secrets-grpc-proto";
 import type { DbKey } from "@saflib/drizzle";
 import { accessRequestQueries, serviceTokenQueries } from "@saflib/secrets-db";
 
@@ -50,7 +53,7 @@ describe("handleRegisterToken", () => {
       service_version: "test-version",
       token: "test-token",
     });
-    await handleRegisterToken(request)
+    await handleRegisterToken(request);
     const response = await handleRegisterToken(request);
     expect(response).toBeDefined();
     expect(response.result).toBe("success");
@@ -65,6 +68,8 @@ describe("handleRegisterToken", () => {
     const response = await handleRegisterToken(request);
     expect(response).toBeDefined();
     expect(response.result).toBe("error");
-    expect(response.error).toBe(RegisterTokenError.INVALID_REQUEST);
+    expect(response.error).toBe(
+      RegisterTokenError.REGISTER_TOKEN_INVALID_REQUEST,
+    );
   });
 });

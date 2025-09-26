@@ -4,7 +4,7 @@ import express from "express";
 import { createSecretsHttpApp } from "../../http.ts";
 import { makeAdminHeaders } from "@saflib/express";
 import type { SecretsServiceRequestBody } from "@saflib/secrets-spec";
-import { secretQueries, accessRequestQueries } from "@saflib/secrets-db";
+import { secretsDb, accessRequestQueries } from "@saflib/secrets-db";
 
 describe("POST /access-requests/:id/approve", () => {
   let app: express.Express;
@@ -12,20 +12,19 @@ describe("POST /access-requests/:id/approve", () => {
   let testAccessRequestId: string;
 
   beforeEach(async () => {
-    dbKey = secretQueries.connect();
+    dbKey = secretsDb.connect();
     app = createSecretsHttpApp({ secretsDbKey: dbKey });
 
     // Create a test access request for approving
     const { result } = await accessRequestQueries.create(dbKey, {
-      secretId: "test-secret-id",
+      secretName: "test-secret-name",
       serviceName: "test-service",
-      status: "pending",
     });
     testAccessRequestId = result!.id;
   });
 
   afterEach(() => {
-    secretQueries.disconnect(dbKey);
+    secretsDb.disconnect(dbKey);
   });
 
   it("should approve access request successfully", async () => {
@@ -42,7 +41,7 @@ describe("POST /access-requests/:id/approve", () => {
     expect(response.status).toBe(200);
     expect(response.body).toMatchObject({
       id: testAccessRequestId,
-      secret_id: "test-secret-id",
+      secret_name: "test-secret-name",
       service_name: "test-service",
       status: "granted",
       granted_by: "admin1@example.com", // Identity-provided email
@@ -64,7 +63,7 @@ describe("POST /access-requests/:id/approve", () => {
     expect(response.status).toBe(200);
     expect(response.body).toMatchObject({
       id: testAccessRequestId,
-      secret_id: "test-secret-id",
+      secret_name: "test-secret-name",
       service_name: "test-service",
       status: "denied",
       granted_by: "admin2@example.com", // Identity-provided email

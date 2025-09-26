@@ -3,7 +3,7 @@ import request from "supertest";
 import express from "express";
 import { createSecretsHttpApp } from "../../http.ts";
 import { makeAdminHeaders, makeUserHeaders } from "@saflib/express";
-import { secretQueries, secretQueries } from "@saflib/secrets-db";
+import { secretsDb, secretQueries } from "@saflib/secrets-db";
 import type { SecretsServiceRequestBody } from "@saflib/secrets-spec";
 
 describe("POST /secrets", () => {
@@ -11,12 +11,12 @@ describe("POST /secrets", () => {
   let dbKey: symbol;
 
   beforeEach(() => {
-    dbKey = secretQueries.connect();
+    dbKey = secretsDb.connect();
     app = createSecretsHttpApp({ secretsDbKey: dbKey });
   });
 
   afterEach(() => {
-    secretQueries.disconnect(dbKey);
+    secretsDb.disconnect(dbKey);
   });
 
   it("should create a new secret successfully", async () => {

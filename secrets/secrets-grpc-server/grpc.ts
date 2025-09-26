@@ -1,4 +1,4 @@
-import { secretQueries } from "@saflib/secrets-db";
+import { secretsDb } from "@saflib/secrets-db";
 import { secretsServiceStorage } from "@saflib/secrets-service-common";
 import { makeGrpcServerContextWrapper, addSafContext } from "@saflib/grpc";
 import * as grpc from "@grpc/grpc-js";
@@ -17,7 +17,7 @@ export function makeGrpcServer(
 ): grpc.Server {
   let { secretsDbKey } = options;
   if (!secretsDbKey) {
-    secretsDbKey = secretQueries.connect();
+    secretsDbKey = secretsDb.connect();
   }
   const addStoreContext = makeGrpcServerContextWrapper(secretsServiceStorage, {
     secretsDbKey,

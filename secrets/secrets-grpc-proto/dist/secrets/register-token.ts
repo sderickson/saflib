@@ -7,7 +7,7 @@
 import * as dependency_1 from "@saflib/grpc";
 import * as pb_1 from "google-protobuf";
 export enum RegisterTokenError {
-    INVALID_REQUEST = 0
+    REGISTER_TOKEN_INVALID_REQUEST = 0
 }
 export class RegisterTokenRequest extends pb_1.Message {
     #one_of_decls: number[][] = [];
@@ -177,7 +177,7 @@ export class RegisterTokenRequest extends pb_1.Message {
 export class RegisterTokenResponse extends pb_1.Message {
     #one_of_decls: number[][] = [[1, 2]];
     constructor(data?: any[] | ({} & (({
-        success?: Success;
+        success?: RegisterTokenSuccess;
         error?: never;
     } | {
         success?: never;
@@ -195,16 +195,16 @@ export class RegisterTokenResponse extends pb_1.Message {
         }
     }
     get success() {
-        return pb_1.Message.getWrapperField(this, Success, 1) as Success;
+        return pb_1.Message.getWrapperField(this, RegisterTokenSuccess, 1) as RegisterTokenSuccess;
     }
-    set success(value: Success) {
+    set success(value: RegisterTokenSuccess) {
         pb_1.Message.setOneofWrapperField(this, 1, this.#one_of_decls[0], value);
     }
     get has_success() {
         return pb_1.Message.getField(this, 1) != null;
     }
     get error() {
-        return pb_1.Message.getFieldWithDefault(this, 2, RegisterTokenError.INVALID_REQUEST) as RegisterTokenError;
+        return pb_1.Message.getFieldWithDefault(this, 2, RegisterTokenError.REGISTER_TOKEN_INVALID_REQUEST) as RegisterTokenError;
     }
     set error(value: RegisterTokenError) {
         pb_1.Message.setOneofField(this, 2, this.#one_of_decls[0], value);
@@ -223,12 +223,12 @@ export class RegisterTokenResponse extends pb_1.Message {
         return cases[pb_1.Message.computeOneofCase(this, [1, 2])];
     }
     static fromObject(data: {
-        success?: ReturnType<typeof Success.prototype.toObject>;
+        success?: ReturnType<typeof RegisterTokenSuccess.prototype.toObject>;
         error?: RegisterTokenError;
     }): RegisterTokenResponse {
         const message = new RegisterTokenResponse({});
         if (data.success != null) {
-            message.success = Success.fromObject(data.success);
+            message.success = RegisterTokenSuccess.fromObject(data.success);
         }
         if (data.error != null) {
             message.error = data.error;
@@ -237,7 +237,7 @@ export class RegisterTokenResponse extends pb_1.Message {
     }
     toObject() {
         const data: {
-            success?: ReturnType<typeof Success.prototype.toObject>;
+            success?: ReturnType<typeof RegisterTokenSuccess.prototype.toObject>;
             error?: RegisterTokenError;
         } = {};
         if (this.success != null) {
@@ -266,7 +266,7 @@ export class RegisterTokenResponse extends pb_1.Message {
                 break;
             switch (reader.getFieldNumber()) {
                 case 1:
-                    reader.readMessage(message.success, () => message.success = Success.deserialize(reader));
+                    reader.readMessage(message.success, () => message.success = RegisterTokenSuccess.deserialize(reader));
                     break;
                 case 2:
                     message.error = reader.readEnum();
@@ -283,15 +283,15 @@ export class RegisterTokenResponse extends pb_1.Message {
         return RegisterTokenResponse.deserialize(bytes);
     }
 }
-export class Success extends pb_1.Message {
+export class RegisterTokenSuccess extends pb_1.Message {
     #one_of_decls: number[][] = [];
     constructor(data?: any[] | {}) {
         super();
         pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [], this.#one_of_decls);
         if (!Array.isArray(data) && typeof data == "object") { }
     }
-    static fromObject(data: {}): Success {
-        const message = new Success({});
+    static fromObject(data: {}): RegisterTokenSuccess {
+        const message = new RegisterTokenSuccess({});
         return message;
     }
     toObject() {
@@ -305,8 +305,8 @@ export class Success extends pb_1.Message {
         if (!w)
             return writer.getResultBuffer();
     }
-    static deserialize(bytes: Uint8Array | pb_1.BinaryReader): Success {
-        const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes), message = new Success();
+    static deserialize(bytes: Uint8Array | pb_1.BinaryReader): RegisterTokenSuccess {
+        const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes), message = new RegisterTokenSuccess();
         while (reader.nextField()) {
             if (reader.isEndGroup())
                 break;
@@ -319,7 +319,7 @@ export class Success extends pb_1.Message {
     serializeBinary(): Uint8Array {
         return this.serialize();
     }
-    static deserializeBinary(bytes: Uint8Array): Success {
-        return Success.deserialize(bytes);
+    static deserializeBinary(bytes: Uint8Array): RegisterTokenSuccess {
+        return RegisterTokenSuccess.deserialize(bytes);
     }
 }

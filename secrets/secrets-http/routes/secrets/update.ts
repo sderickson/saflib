@@ -39,7 +39,7 @@ export const updateHandler = createHandler(async (req, res) => {
   if (data.value !== undefined) {
     const encryptionKey = upsertSecretEncryptionKey();
     const encryptedValue = encryptSecret(encryptionKey, data.value);
-    updateParams.valueEncrypted = Buffer.from(encryptedValue, "base64");
+    updateParams.valueEncrypted = encryptedValue;
   }
 
   // Call the database to update the secret
