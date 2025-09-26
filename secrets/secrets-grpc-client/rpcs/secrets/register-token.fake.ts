@@ -1,7 +1,8 @@
 import {
   RegisterTokenRequest,
   RegisterTokenResponse,
-  Success,
+  RegisterTokenError,
+    Success,
 } from "@saflib/secrets-grpc-proto";
 
 /**
@@ -15,7 +16,7 @@ export const registerTokenFake = async (
   // Simulate different responses based on the request
   if (!service_name || !service_version || !token) {
     return new RegisterTokenResponse({
-      error: "INVALID_REQUEST",
+      error: RegisterTokenError.INVALID_REQUEST,
     });
   }
 
