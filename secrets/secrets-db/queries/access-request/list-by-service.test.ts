@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, assert } from "vitest";
 import type { DbKey } from "@saflib/drizzle";
-import { secretsDb } from "../../index.ts";
+import { secretQueries } from "../../index.ts";
 import { listByService } from "./list-by-service.ts";
 import { create } from "./create.ts";
 
@@ -8,11 +8,11 @@ describe("listByService", () => {
   let dbKey: DbKey;
 
   beforeEach(() => {
-    dbKey = secretsDb.connect();
+    dbKey = secretQueries.connect();
   });
 
   afterEach(async () => {
-    secretsDb.disconnect(dbKey);
+    secretQueries.disconnect(dbKey);
   });
 
   it("should execute successfully and return empty array when no requests for service", async () => {

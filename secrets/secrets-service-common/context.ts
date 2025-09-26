@@ -1,6 +1,6 @@
 import { AsyncLocalStorage } from "async_hooks";
 import type { DbKey } from "@saflib/drizzle";
-import { secretsDb } from "@saflib/secrets-db";
+import { secretQueries } from "@saflib/secrets-db";
 
 export interface SecretsServiceContext {
   secretsDbKey: DbKey;
@@ -16,7 +16,7 @@ export interface SecretsServiceContextOptions {
 export const makeContext = (
   options: SecretsServiceContextOptions = {},
 ): SecretsServiceContext => {
-  const dbKey = options.secretsDbKey ?? secretsDb.connect();
+  const dbKey = options.secretsDbKey ?? secretQueries.connect();
   return {
     secretsDbKey: dbKey,
   };

@@ -3,7 +3,7 @@ import request from "supertest";
 import express from "express";
 import { createSecretsHttpApp } from "../../http.ts";
 import { makeAdminHeaders, makeUserHeaders } from "@saflib/express";
-import { secretsDb, secrets } from "@saflib/secrets-db";
+import { secretQueries, secretQueries } from "@saflib/secrets-db";
 
 describe("PUT /secrets/:id", () => {
   let app: express.Express;
@@ -11,11 +11,11 @@ describe("PUT /secrets/:id", () => {
   let testSecretId: string;
 
   beforeEach(async () => {
-    dbKey = secretsDb.connect();
+    dbKey = secretQueries.connect();
     app = createSecretsHttpApp({ secretsDbKey: dbKey });
 
     // Create a test secret for updating
-    const { result } = await secrets.create(dbKey, {
+    const { result } = await secretQueries.create(dbKey, {
       name: "test-secret",
       description: "Original description",
       valueEncrypted: Buffer.from("encrypted-value"),
@@ -26,7 +26,7 @@ describe("PUT /secrets/:id", () => {
   });
 
   afterEach(() => {
-    secretsDb.disconnect(dbKey);
+    secretQueries.disconnect(dbKey);
   });
 
   it("should update secret description successfully", async () => {

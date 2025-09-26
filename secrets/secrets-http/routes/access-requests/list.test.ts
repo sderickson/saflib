@@ -3,19 +3,23 @@ import request from "supertest";
 import express from "express";
 import { createSecretsHttpApp } from "../../http.ts";
 import { makeAdminHeaders } from "@saflib/express";
-import { secretsDb, accessRequest, secrets } from "@saflib/secrets-db";
+import {
+  secretQueries,
+  accessRequestQueries,
+  secretQueries,
+} from "@saflib/secrets-db";
 
 describe("GET /access-requests", () => {
   let app: express.Express;
   let dbKey: symbol;
 
   beforeEach(() => {
-    dbKey = secretsDb.connect();
+    dbKey = secretQueries.connect();
     app = createSecretsHttpApp({ secretsDbKey: dbKey });
   });
 
   afterEach(() => {
-    secretsDb.disconnect(dbKey);
+    secretQueries.disconnect(dbKey);
   });
 
   it("should return empty array when no access requests exist", async () => {
@@ -29,7 +33,7 @@ describe("GET /access-requests", () => {
 
   it("should return list of access requests", async () => {
     // Create a test secret first
-    const { result: secret } = await secrets.create(dbKey, {
+    const { result: secret } = await secretQueries.create(dbKey, {
       name: "test-secret",
       description: "Test secret",
       valueEncrypted: Buffer.from("encrypted-value"),
@@ -40,13 +44,13 @@ describe("GET /access-requests", () => {
     assert(secret, "Failed to create secret");
 
     // Create test access requests
-    await accessRequest.create(dbKey, {
+    await accessRequests.create(dbKey, {
       secretId: secret.id,
       serviceName: "test-service-1",
       status: "pending",
     });
 
-    const { result: request2 } = await accessRequest.create(dbKey, {
+    const { result: request2 } = await accessRequests.create(dbKey, {
       secretId: secret.id,
       serviceName: "test-service-2",
       status: "pending",
@@ -55,7 +59,7 @@ describe("GET /access-requests", () => {
     assert(request2, "Failed to create access request");
 
     // Update the second request to granted status
-    await accessRequest.updateStatus(dbKey, {
+    await accessRequests.updateStatus(dbKey, {
       id: request2.id,
       status: "granted",
       grantedBy: "admin-user",
@@ -85,7 +89,7 @@ describe("GET /access-requests", () => {
 
   it("should filter by status parameter", async () => {
     // Create a test secret first
-    const { result: secret } = await secrets.create(dbKey, {
+    const { result: secret } = await secretQueries.create(dbKey, {
       name: "test-secret",
       description: "Test secret",
       valueEncrypted: Buffer.from("encrypted-value"),
@@ -96,19 +100,22 @@ describe("GET /access-requests", () => {
     assert(secret, "Failed to create secret");
 
     // Create access requests with different statuses
-    await accessRequest.create(dbKey, {
+    await accessRequestQueries.create(dbKey, {
       secretId: secret.id,
       serviceName: "pending-service",
       status: "pending",
     });
 
-    const { result: grantedRequest } = await accessRequest.create(dbKey, {
-      secretId: secret.id,
-      serviceName: "granted-service",
-      status: "pending",
-    });
+    const { result: grantedRequest } = await accessRequestQueries.create(
+      dbKey,
+      {
+        secretId: secret.id,
+        serviceName: "granted-service",
+        status: "pending",
+      },
+    );
 
-    const { result: deniedRequest } = await accessRequest.create(dbKey, {
+    const { result: deniedRequest } = await accessRequestQueries.create(dbKey, {
       secretId: secret.id,
       serviceName: "denied-service",
       status: "pending",
@@ -118,13 +125,13 @@ describe("GET /access-requests", () => {
     assert(deniedRequest, "Failed to create denied request");
 
     // Update statuses
-    await accessRequest.updateStatus(dbKey, {
+    await accessRequestQueries.updateStatus(dbKey, {
       id: grantedRequest.id,
       status: "granted",
       grantedBy: "admin-user",
     });
 
-    await accessRequest.updateStatus(dbKey, {
+    await accessRequestQueries.updateStatus(dbKey, {
       id: deniedRequest.id,
       status: "denied",
       grantedBy: "admin-user",
@@ -163,7 +170,7 @@ describe("GET /access-requests", () => {
 
   it("should filter by service_name parameter", async () => {
     // Create a test secret first
-    const { result: secret } = await secrets.create(dbKey, {
+    const { result: secret } = await secretQueries.create(dbKey, {
       name: "test-secret",
       description: "Test secret",
       valueEncrypted: Buffer.from("encrypted-value"),
@@ -174,22 +181,25 @@ describe("GET /access-requests", () => {
     assert(secret, "Failed to create secret");
 
     // Create access requests for different services
-    await accessRequest.create(dbKey, {
+    await accessRequestQueries.create(dbKey, {
       secretId: secret.id,
       serviceName: "service-a",
       status: "pending",
     });
 
-    const { result: serviceBRequest } = await accessRequest.create(dbKey, {
-      secretId: secret.id,
-      serviceName: "service-b",
-      status: "pending",
-    });
+    const { result: serviceBRequest } = await accessRequestQueries.create(
+      dbKey,
+      {
+        secretId: secret.id,
+        serviceName: "service-b",
+        status: "pending",
+      },
+    );
 
     assert(serviceBRequest, "Failed to create service B request");
 
     // Update service B to granted
-    await accessRequest.updateStatus(dbKey, {
+    await accessRequestQueries.updateStatus(dbKey, {
       id: serviceBRequest.id,
       status: "granted",
       grantedBy: "admin-user",
@@ -215,7 +225,7 @@ describe("GET /access-requests", () => {
 
   it("should support pagination with limit and offset", async () => {
     // Create a test secret first
-    const { result: secret } = await secrets.create(dbKey, {
+    const { result: secret } = await secretQueries.create(dbKey, {
       name: "test-secret",
       description: "Test secret",
       valueEncrypted: Buffer.from("encrypted-value"),
@@ -227,7 +237,7 @@ describe("GET /access-requests", () => {
 
     // Create multiple test access requests
     for (let i = 0; i < 5; i++) {
-      await accessRequest.create(dbKey, {
+      await accessRequestQueries.create(dbKey, {
         secretId: secret.id,
         serviceName: `service-${i}`,
         status: "pending",
@@ -245,7 +255,7 @@ describe("GET /access-requests", () => {
 
   it("should sort by requested_at descending (most recent first)", async () => {
     // Create a test secret first
-    const { result: secret } = await secrets.create(dbKey, {
+    const { result: secret } = await secretQueries.create(dbKey, {
       name: "test-secret",
       description: "Test secret",
       valueEncrypted: Buffer.from("encrypted-value"),
@@ -256,7 +266,7 @@ describe("GET /access-requests", () => {
     assert(secret, "Failed to create secret");
 
     // Create first access request
-    await accessRequest.create(dbKey, {
+    await accessRequestQueries.create(dbKey, {
       secretId: secret.id,
       serviceName: "first-service",
       status: "pending",
@@ -266,7 +276,7 @@ describe("GET /access-requests", () => {
     await new Promise((resolve) => setTimeout(resolve, 100));
 
     // Create second access request (should appear first due to more recent requested_at)
-    await accessRequest.create(dbKey, {
+    await accessRequestQueries.create(dbKey, {
       secretId: secret.id,
       serviceName: "second-service",
       status: "pending",

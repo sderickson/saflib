@@ -1,6 +1,6 @@
 import { createErrorMiddleware, createGlobalMiddleware } from "@saflib/express";
 import express from "express";
-import { secretsDb } from "@saflib/secrets-db";
+import { secretQueries } from "@saflib/secrets-db";
 import {
   secretsServiceStorage,
   type SecretsServiceContextOptions,
@@ -15,7 +15,7 @@ import { createServiceTokensRouter } from "./routes/service-tokens/index.ts";
 export function createSecretsHttpApp(options: SecretsServiceContextOptions) {
   let dbKey = options.secretsDbKey;
   if (!dbKey) {
-    dbKey = secretsDb.connect();
+    dbKey = secretQueries.connect();
   }
 
   const app = express();

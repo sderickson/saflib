@@ -5,7 +5,7 @@ import type {
 } from "@saflib/secrets-spec";
 import createError from "http-errors";
 import { secretsServiceStorage } from "@saflib/secrets-service-common";
-import { serviceToken } from "@saflib/secrets-db";
+import { serviceTokenQueries } from "@saflib/secrets-db";
 import { mapServiceTokenToResponse } from "../_helpers.js";
 import { getSafContextWithAuth } from "@saflib/node";
 
@@ -16,7 +16,7 @@ export const approveServiceTokensHandler = createHandler(async (req, res) => {
   const { auth } = getSafContextWithAuth();
 
   // Update the service token approval status
-  const { result, error } = await serviceToken.updateApproval(
+  const { result, error } = await serviceTokenQueries.updateApproval(
     ctx.secretsDbKey,
     {
       id,

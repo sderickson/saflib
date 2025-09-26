@@ -3,7 +3,6 @@ syntax = "proto3";
 package __service_name__.__group_name__.v1;
 
 import "envelope.proto";
-import "google/protobuf/timestamp.proto";
 
 message __TargetName__Request {
   saflib.common.v1.SafAuth auth = 1;
@@ -12,6 +11,4 @@ message __TargetName__Request {
 
 message __TargetName__Response {
   // TODO: Add response fields as needed
-  string status = 1;
-  google.protobuf.Timestamp timestamp = 2;
 }

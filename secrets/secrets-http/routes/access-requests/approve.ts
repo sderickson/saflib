@@ -5,7 +5,7 @@ import type {
 } from "@saflib/secrets-spec";
 import createError from "http-errors";
 import { secretsServiceStorage } from "@saflib/secrets-service-common";
-import { accessRequest } from "@saflib/secrets-db";
+import { accessRequestQueries } from "@saflib/secrets-db";
 import { mapAccessRequestToResponse } from "../_helpers.js";
 import { getSafContextWithAuth } from "@saflib/node";
 
@@ -18,7 +18,7 @@ export const approveAccessRequestHandler = createHandler(async (req, res) => {
 
   // Get the access request first to check if it exists
   const { result: existingRequest, error: getError } =
-    await accessRequest.getById(ctx.secretsDbKey, id);
+    await accessRequestQueries.getById(ctx.secretsDbKey, id);
 
   if (getError) {
     throw createError(404, "Access request not found");
@@ -29,11 +29,14 @@ export const approveAccessRequestHandler = createHandler(async (req, res) => {
   }
 
   // Update the access request status
-  const { result, error } = await accessRequest.updateStatus(ctx.secretsDbKey, {
-    id,
-    status: data.approved ? "granted" : "denied",
-    grantedBy: auth.userEmail ?? auth.userId.toString(),
-  });
+  const { result, error } = await accessRequestQueries.updateStatus(
+    ctx.secretsDbKey,
+    {
+      id,
+      status: data.approved ? "granted" : "denied",
+      grantedBy: auth.userEmail ?? auth.userId.toString(),
+    },
+  );
 
   if (error) {
     switch (error.constructor.name) {

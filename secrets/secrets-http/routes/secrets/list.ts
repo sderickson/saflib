@@ -1,7 +1,7 @@
 import { createHandler } from "@saflib/express";
 import type { SecretsServiceResponseBody } from "@saflib/secrets-spec";
 import { secretsServiceStorage } from "@saflib/secrets-service-common";
-import { secrets } from "@saflib/secrets-db";
+import { secretQueries } from "@saflib/secrets-db";
 import { mapSecretToResponse } from "../_helpers.js";
 
 export const listHandler = createHandler(async (req, res) => {
@@ -18,7 +18,7 @@ export const listHandler = createHandler(async (req, res) => {
   }
 
   // Call the database query with parameters
-  const { result, error } = await secrets.list(ctx.secretsDbKey, {
+  const { result, error } = await secretQueries.list(ctx.secretsDbKey, {
     limit,
     offset,
     isActive,

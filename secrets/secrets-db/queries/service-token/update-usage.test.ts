@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, assert } from "vitest";
 import type { DbKey } from "@saflib/drizzle";
-import { secretsDb } from "../../index.ts";
+import { secretQueries } from "../../index.ts";
 import { updateUsage } from "./update-usage.ts";
 import { create } from "./create.ts";
 import { ServiceTokenNotFoundError } from "../../errors.ts";
@@ -9,11 +9,11 @@ describe("updateUsage", () => {
   let dbKey: DbKey;
 
   beforeEach(() => {
-    dbKey = secretsDb.connect();
+    dbKey = secretQueries.connect();
   });
 
   afterEach(async () => {
-    secretsDb.disconnect(dbKey);
+    secretQueries.disconnect(dbKey);
   });
 
   it("should execute successfully", async () => {

@@ -6,7 +6,7 @@ import type {
 import createError from "http-errors";
 import { secretsServiceStorage } from "@saflib/secrets-service-common";
 import {
-  secrets,
+  secretQueries,
   SecretNotFoundError,
   SecretAlreadyExistsError,
 } from "@saflib/secrets-db";
@@ -43,7 +43,7 @@ export const updateHandler = createHandler(async (req, res) => {
   }
 
   // Call the database to update the secret
-  const { result, error } = await secrets.update(
+  const { result, error } = await secretQueries.update(
     ctx.secretsDbKey,
     updateParams,
   );

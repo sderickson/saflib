@@ -1,6 +1,6 @@
 import { startExpressServer } from "@saflib/express";
 import { createSecretsHttpApp } from "@saflib/secrets-http";
-import { secretsDb } from "@saflib/secrets-db";
+import { secretQueries } from "@saflib/secrets-db";
 import { makeSubsystemReporters } from "@saflib/node";
 import { typedEnv } from "./env.ts";
 import { makeContext } from "@saflib/secrets-service-common";
@@ -10,7 +10,7 @@ export function startSecretsService() {
   try {
     log.info("Starting up Secrets service...");
     log.info("Connecting to secrets-db...");
-    const dbKey = secretsDb.connect({ onDisk: true });
+    const dbKey = secretQueries.connect({ onDisk: true });
     const context = makeContext({ secretsDbKey: dbKey });
     log.info("secrets-db connection complete.");
 

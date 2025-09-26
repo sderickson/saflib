@@ -3,7 +3,7 @@ import type { SecretsServiceResponseBody } from "@saflib/secrets-spec";
 import createError from "http-errors";
 import { secretsServiceStorage } from "@saflib/secrets-service-common";
 import {
-  secrets,
+  secretQueries,
   SecretNotFoundError,
   SecretAlreadyExistsError,
 } from "@saflib/secrets-db";
@@ -13,7 +13,7 @@ export const deleteHandler = createHandler(async (req, res) => {
   const secretId = req.params.id;
 
   // Perform soft delete by setting is_active to false
-  const { error } = await secrets.update(ctx.secretsDbKey, {
+  const { error } = await secretQueries.update(ctx.secretsDbKey, {
     id: secretId,
     isActive: false,
   });

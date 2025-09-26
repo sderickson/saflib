@@ -1,7 +1,7 @@
 import { createHandler } from "@saflib/express";
 import type { SecretsServiceResponseBody } from "@saflib/secrets-spec";
 import { secretsServiceStorage } from "@saflib/secrets-service-common";
-import { accessRequest } from "@saflib/secrets-db";
+import { accessRequestQueries } from "@saflib/secrets-db";
 import { mapAccessRequestToResponse } from "../_helpers.js";
 
 export const listHandler = createHandler(async (req, res) => {
@@ -18,7 +18,7 @@ export const listHandler = createHandler(async (req, res) => {
   const serviceName = req.query.service_name as string | undefined;
 
   // Call the database query with parameters
-  const { result, error } = await accessRequest.list(ctx.secretsDbKey, {
+  const { result, error } = await accessRequestQueries.list(ctx.secretsDbKey, {
     limit,
     offset,
     status,

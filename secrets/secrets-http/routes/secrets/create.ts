@@ -5,7 +5,7 @@ import type {
 } from "@saflib/secrets-spec";
 import createError from "http-errors";
 import { secretsServiceStorage } from "@saflib/secrets-service-common";
-import { secrets, SecretAlreadyExistsError } from "@saflib/secrets-db";
+import { secretQueries, SecretAlreadyExistsError } from "@saflib/secrets-db";
 import { mapSecretToResponse } from "../_helpers.js";
 import {
   upsertSecretEncryptionKey,
@@ -26,7 +26,7 @@ export const createSecretHandler = createHandler(async (req, res) => {
   const encryptedValue = encryptSecret(encryptionKey, data.value);
 
   // Call the database to create the secret
-  const { result, error } = await secrets.create(ctx.secretsDbKey, {
+  const { result, error } = await secretQueries.create(ctx.secretsDbKey, {
     name: data.name,
     description: data.description || null,
     valueEncrypted: Buffer.from(encryptedValue, "base64"),

@@ -6,7 +6,7 @@ import { listPending } from "./list-pending.ts";
 import { listByService } from "./list-by-service.ts";
 import { list } from "./list.ts";
 
-export const accessRequest = {
+export const accessRequestQueries = {
   create,
   getById,
   updateStatus,

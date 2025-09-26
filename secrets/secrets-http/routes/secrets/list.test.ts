@@ -3,19 +3,19 @@ import request from "supertest";
 import express from "express";
 import { createSecretsHttpApp } from "../../http.ts";
 import { makeAdminHeaders } from "@saflib/express";
-import { secretsDb, secrets } from "@saflib/secrets-db";
+import { secretQueries, secretQueries } from "@saflib/secrets-db";
 
 describe("GET /secrets", () => {
   let app: express.Express;
   let dbKey: symbol;
 
   beforeEach(() => {
-    dbKey = secretsDb.connect();
+    dbKey = secretQueries.connect();
     app = createSecretsHttpApp({ secretsDbKey: dbKey });
   });
 
   afterEach(() => {
-    secretsDb.disconnect(dbKey);
+    secretQueries.disconnect(dbKey);
   });
 
   it("should return empty array when no secrets exist", async () => {
@@ -27,7 +27,7 @@ describe("GET /secrets", () => {
 
   it("should return list of secrets with masked values", async () => {
     // Create test secrets
-    await secrets.create(dbKey, {
+    await secretQueries.create(dbKey, {
       name: "test-secret-1",
       description: "Test secret 1",
       valueEncrypted: Buffer.from("encrypted-value-1"),
@@ -35,7 +35,7 @@ describe("GET /secrets", () => {
       isActive: true,
     });
 
-    await secrets.create(dbKey, {
+    await secretQueries.create(dbKey, {
       name: "test-secret-2",
       description: "Test secret 2",
       valueEncrypted: Buffer.from("encrypted-value-2"),
@@ -72,7 +72,7 @@ describe("GET /secrets", () => {
 
   it("should filter by is_active parameter", async () => {
     // Create test secrets
-    await secrets.create(dbKey, {
+    await secretQueries.create(dbKey, {
       name: "active-secret",
       description: "Active secret",
       valueEncrypted: Buffer.from("encrypted-value"),
@@ -80,7 +80,7 @@ describe("GET /secrets", () => {
       isActive: true,
     });
 
-    await secrets.create(dbKey, {
+    await secretQueries.create(dbKey, {
       name: "inactive-secret",
       description: "Inactive secret",
       valueEncrypted: Buffer.from("encrypted-value"),
@@ -122,7 +122,7 @@ describe("GET /secrets", () => {
   it("should support pagination with limit and offset", async () => {
     // Create multiple test secrets
     for (let i = 0; i < 5; i++) {
-      await secrets.create(dbKey, {
+      await secretQueries.create(dbKey, {
         name: `secret-${i}`,
         description: `Test secret ${i}`,
         valueEncrypted: Buffer.from(`encrypted-value-${i}`),
@@ -142,7 +142,7 @@ describe("GET /secrets", () => {
 
   it("should sort by updated_at descending (most recent first)", async () => {
     // Create first secret
-    await secrets.create(dbKey, {
+    await secretQueries.create(dbKey, {
       name: "first-secret",
       description: "First secret",
       valueEncrypted: Buffer.from("encrypted-value"),
@@ -154,7 +154,7 @@ describe("GET /secrets", () => {
     await new Promise((resolve) => setTimeout(resolve, 100));
 
     // Create second secret (should appear first due to more recent updated_at)
-    await secrets.create(dbKey, {
+    await secretQueries.create(dbKey, {
       name: "second-secret",
       description: "Second secret",
       valueEncrypted: Buffer.from("encrypted-value"),

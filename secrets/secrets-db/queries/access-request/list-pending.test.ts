@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, assert } from "vitest";
 import type { DbKey } from "@saflib/drizzle";
-import { secretsDb } from "../../index.ts";
+import { secretQueries } from "../../index.ts";
 import { listPending } from "./list-pending.ts";
 import { create } from "./create.ts";
 import { updateStatus } from "./update-status.ts";
@@ -9,11 +9,11 @@ describe("listPending", () => {
   let dbKey: DbKey;
 
   beforeEach(() => {
-    dbKey = secretsDb.connect();
+    dbKey = secretQueries.connect();
   });
 
   afterEach(async () => {
-    secretsDb.disconnect(dbKey);
+    secretQueries.disconnect(dbKey);
   });
 
   it("should execute successfully and return empty array when no pending requests", async () => {

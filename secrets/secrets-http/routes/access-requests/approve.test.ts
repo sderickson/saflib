@@ -4,7 +4,7 @@ import express from "express";
 import { createSecretsHttpApp } from "../../http.ts";
 import { makeAdminHeaders } from "@saflib/express";
 import type { SecretsServiceRequestBody } from "@saflib/secrets-spec";
-import { secretsDb, accessRequest } from "@saflib/secrets-db";
+import { secretQueries, accessRequestQueries } from "@saflib/secrets-db";
 
 describe("POST /access-requests/:id/approve", () => {
   let app: express.Express;
@@ -12,11 +12,11 @@ describe("POST /access-requests/:id/approve", () => {
   let testAccessRequestId: string;
 
   beforeEach(async () => {
-    dbKey = secretsDb.connect();
+    dbKey = secretQueries.connect();
     app = createSecretsHttpApp({ secretsDbKey: dbKey });
 
     // Create a test access request for approving
-    const { result } = await accessRequest.create(dbKey, {
+    const { result } = await accessRequestQueries.create(dbKey, {
       secretId: "test-secret-id",
       serviceName: "test-service",
       status: "pending",
@@ -25,7 +25,7 @@ describe("POST /access-requests/:id/approve", () => {
   });
 
   afterEach(() => {
-    secretsDb.disconnect(dbKey);
+    secretQueries.disconnect(dbKey);
   });
 
   it("should approve access request successfully", async () => {

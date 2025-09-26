@@ -3,7 +3,7 @@ import request from "supertest";
 import express from "express";
 import { createSecretsHttpApp } from "../../http.ts";
 import { makeAdminHeaders, makeUserHeaders } from "@saflib/express";
-import { secretsDb, secrets } from "@saflib/secrets-db";
+import { secretQueries, secretQueries } from "@saflib/secrets-db";
 import type { SecretsServiceRequestBody } from "@saflib/secrets-spec";
 
 describe("POST /secrets", () => {
@@ -11,12 +11,12 @@ describe("POST /secrets", () => {
   let dbKey: symbol;
 
   beforeEach(() => {
-    dbKey = secretsDb.connect();
+    dbKey = secretQueries.connect();
     app = createSecretsHttpApp({ secretsDbKey: dbKey });
   });
 
   afterEach(() => {
-    secretsDb.disconnect(dbKey);
+    secretQueries.disconnect(dbKey);
   });
 
   it("should create a new secret successfully", async () => {
@@ -66,7 +66,7 @@ describe("POST /secrets", () => {
 
   it("should return 409 when secret name already exists", async () => {
     // Create a secret first
-    await secrets.create(dbKey, {
+    await secretQueries.create(dbKey, {
       name: "existing-secret",
       description: "Already exists",
       valueEncrypted: Buffer.from("encrypted-value"),

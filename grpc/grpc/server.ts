@@ -78,13 +78,13 @@ export async function startGrpcServer(
 }
 
 export const wrapSimpleHandler = <Request, Response>(
-  handler: (request: Request) => Response,
+  handler: (request: Request) => Promise<Response>,
 ) => {
   return async (
     call: ServerUnaryCall<Request, Response>,
     callback: sendUnaryData<Response>,
   ) => {
-    const response = handler(call.request as Request);
+    const response = await handler(call.request);
     callback(null, response);
   };
 };

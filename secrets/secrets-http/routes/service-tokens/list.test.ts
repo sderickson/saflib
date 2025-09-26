@@ -3,19 +3,19 @@ import request from "supertest";
 import express from "express";
 import { createSecretsHttpApp } from "../../http.ts";
 import { makeAdminHeaders } from "@saflib/express";
-import { secretsDb, serviceToken } from "@saflib/secrets-db";
+import { secretQueries, serviceTokenQueries } from "@saflib/secrets-db";
 
 describe("GET /service-tokens", () => {
   let app: express.Express;
   let dbKey: symbol;
 
   beforeEach(async () => {
-    dbKey = secretsDb.connect();
+    dbKey = secretQueries.connect();
     app = createSecretsHttpApp({ secretsDbKey: dbKey });
   });
 
   afterEach(() => {
-    secretsDb.disconnect(dbKey);
+    secretQueries.disconnect(dbKey);
   });
 
   it("should return empty array when no service tokens exist", async () => {
@@ -30,13 +30,13 @@ describe("GET /service-tokens", () => {
 
   it("should return list of service tokens with truncated token hashes", async () => {
     // Create test service tokens
-    await serviceToken.create(dbKey, {
+    await serviceTokenQueries.create(dbKey, {
       serviceName: "test-service-1",
       tokenHash: "test-hash-1-very-long-hash-value",
       serviceVersion: "1.0.0",
     });
 
-    await serviceToken.create(dbKey, {
+    await serviceTokenQueries.create(dbKey, {
       serviceName: "test-service-2",
       tokenHash: "test-hash-2-very-long-hash-value",
       serviceVersion: "2.0.0",
@@ -71,25 +71,25 @@ describe("GET /service-tokens", () => {
 
   it("should filter by approved status", async () => {
     // Create approved and unapproved service tokens
-    await serviceToken.create(dbKey, {
+    await serviceTokenQueries.create(dbKey, {
       serviceName: "approved-service",
       tokenHash: "approved-hash",
       serviceVersion: "1.0.0",
     });
 
-    await serviceToken.create(dbKey, {
+    await serviceTokenQueries.create(dbKey, {
       serviceName: "unapproved-service",
       tokenHash: "unapproved-hash",
       serviceVersion: "1.0.0",
     });
 
     // Approve the first token
-    const { result: tokens } = await serviceToken.list(dbKey);
+    const { result: tokens } = await serviceTokenQueries.list(dbKey);
     const approvedToken = tokens?.find(
       (t) => t.serviceName === "approved-service",
     );
     if (approvedToken) {
-      await serviceToken.updateApproval(dbKey, {
+      await serviceTokenQueries.updateApproval(dbKey, {
         id: approvedToken.id,
         approved: true,
         approvedBy: "admin@example.com",
@@ -116,13 +116,13 @@ describe("GET /service-tokens", () => {
   });
 
   it("should filter by service name", async () => {
-    await serviceToken.create(dbKey, {
+    await serviceTokenQueries.create(dbKey, {
       serviceName: "alpha-service",
       tokenHash: "alpha-hash",
       serviceVersion: "1.0.0",
     });
 
-    await serviceToken.create(dbKey, {
+    await serviceTokenQueries.create(dbKey, {
       serviceName: "beta-service",
       tokenHash: "beta-hash",
       serviceVersion: "1.0.0",
@@ -140,7 +140,7 @@ describe("GET /service-tokens", () => {
   it("should support pagination with limit and offset", async () => {
     // Create multiple service tokens
     for (let i = 1; i <= 5; i++) {
-      await serviceToken.create(dbKey, {
+      await serviceTokenQueries.create(dbKey, {
         serviceName: `service-${i}`,
         tokenHash: `hash-${i}`,
         serviceVersion: "1.0.0",

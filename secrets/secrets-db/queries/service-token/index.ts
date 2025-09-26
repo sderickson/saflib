@@ -4,7 +4,7 @@ import { updateUsage } from "./update-usage.ts";
 import { list } from "./list.ts";
 import { create } from "./create.ts";
 
-export const serviceToken = {
+export const serviceTokenQueries = {
   getByHash,
   updateApproval,
   updateUsage,
