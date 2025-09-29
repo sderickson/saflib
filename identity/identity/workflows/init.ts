@@ -4,12 +4,21 @@ import {
   step,
   CwdStepMachine,
   CommandStepMachine,
+  type ParsePackageNameOutput,
+  parsePackageName,
+  makeLineReplace,
 } from "@saflib/workflows";
 import path from "node:path";
 
 const sourceDir = path.join(import.meta.dirname, "templates");
 
 const input = [
+  {
+    name: "name",
+    description:
+      "The name of the identity service package to create (e.g., 'example-identity')",
+    exampleValue: "example-identity",
+  },
   {
     name: "path",
     description:
@@ -18,10 +27,8 @@ const input = [
   },
 ] as const;
 
-interface IdentityInitWorkflowContext {
-  name: string;
+interface IdentityInitWorkflowContext extends ParsePackageNameOutput {
   targetDir: string;
-  packageName: string;
 }
 
 export const IdentityInitWorkflowDefinition = defineWorkflow<
@@ -40,19 +47,11 @@ export const IdentityInitWorkflowDefinition = defineWorkflow<
   sourceUrl: import.meta.url,
 
   context: ({ input }) => {
-    let name = path.basename(input.path);
-    if (name.endsWith("-identity")) {
-      name = name.slice(0, -9);
-    }
-    const packageName = name + "-identity";
-    if (name.startsWith("@")) {
-      name = name.split("/")[1];
-    }
-    const targetDir = path.join(input.cwd, input.path);
     return {
-      name,
-      targetDir,
-      packageName,
+      ...parsePackageName(input.name, {
+        requiredSuffix: "-identity",
+      }),
+      targetDir: path.join(input.cwd, input.path),
     };
   },
 
@@ -71,10 +70,9 @@ export const IdentityInitWorkflowDefinition = defineWorkflow<
 
   steps: [
     step(CopyStepMachine, ({ context }) => ({
-      name: context.name,
+      name: context.packageName,
       targetDir: context.targetDir,
-      lineReplace: (line) =>
-        line.replace("@template/file-identity", context.packageName),
+      lineReplace: makeLineReplace(context),
     })),
 
     step(CwdStepMachine, ({ context }) => ({

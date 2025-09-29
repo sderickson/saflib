@@ -1,5 +1,5 @@
 {
-  "name": "@template/file-identity",
+  "name": "template-package-identity",
   "type": "module",
   "export": {
     ".": "./index.ts"
