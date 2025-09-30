@@ -41,6 +41,10 @@ export interface TemplatePackageGrpcProtoEnvSchema {
    */
   SERVICE_SUBDOMAINS: string;
   /**
+   * The trademark of the product provided at the domain, e.g. 'Hooli Chat'.
+   */
+  TRADEMARK?: string;
+  /**
    * The timezone of the deployment, e.g. 'America/New_York'. Must be UTC.
    */
   TZ: "UTC";
@@ -55,4 +59,6 @@ export interface TemplatePackageGrpcProtoEnvSchema {
 /**
  * `process.env` casted to the `TemplatePackageGrpcProtoEnvSchema` type.
  */
-export const typedEnv = (globalThis.process ? process.env : {}) as unknown as TemplatePackageGrpcProtoEnvSchema;
+export const typedEnv = (globalThis.process
+  ? process.env
+  : {}) as unknown as TemplatePackageGrpcProtoEnvSchema;

@@ -47,6 +47,10 @@ export interface SecretsGrpcProtoEnvSchema {
    */
   SERVICE_SUBDOMAINS: string;
   /**
+   * The trademark of the product provided at the domain, e.g. 'Hooli Chat'.
+   */
+  TRADEMARK?: string;
+  /**
    * The timezone of the deployment, e.g. 'America/New_York'. Must be UTC.
    */
   TZ: "UTC";
@@ -55,4 +59,6 @@ export interface SecretsGrpcProtoEnvSchema {
 /**
  * `process.env` casted to the `SecretsGrpcProtoEnvSchema` type.
  */
-export const typedEnv = (globalThis.process ? process.env : {}) as unknown as SecretsGrpcProtoEnvSchema;
+export const typedEnv = (globalThis.process
+  ? process.env
+  : {}) as unknown as SecretsGrpcProtoEnvSchema;

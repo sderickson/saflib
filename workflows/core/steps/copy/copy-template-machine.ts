@@ -12,6 +12,8 @@ import type { WorkflowOutput, WorkflowInput } from "../../types.ts";
 import { contextFromInput } from "../../utils.ts";
 import type { CopyStepContext, CopyStepInput } from "./types.ts";
 import { parseChecklist, parseCopiedFiles } from "./helpers.ts";
+import path from "node:path";
+import fs from "node:fs";
 
 export type { CopyStepInput };
 
@@ -62,7 +64,12 @@ export const CopyStepMachine = setup({
         break;
       }
     }
-    const sharedPrefix = templateKeys[0].slice(0, sharedPrefixIndex);
+
+    // Fix cases where the shared prefix includes a filename, or a partial filename
+    let sharedPrefix = templateKeys[0].slice(0, sharedPrefixIndex);
+    if (!fs.existsSync(sharedPrefix) || fs.statSync(sharedPrefix).isFile()) {
+      sharedPrefix = path.dirname(sharedPrefix);
+    }
 
     return {
       ...contextFromInput(input, self),
