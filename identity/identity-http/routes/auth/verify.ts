@@ -42,19 +42,7 @@ export const verifyHandler = createHandler(async (req, res) => {
     );
 
     if (req.app.get("saf:admin emails").has(user.email)) {
-      const { result: emailAuth, error } = await emailAuthDb.getByEmail(
-        dbKey,
-        user.email,
-      );
-      if (error) {
-        switch (true) {
-          case error instanceof EmailAuthNotFoundError:
-            throw error;
-          default:
-            throw error satisfies never;
-        }
-      }
-      if (emailAuth.verifiedAt) {
+      if (user.emailVerified) {
         scopes.push("*");
         // TODO: set up a way to map roles -> scopes.
       }
