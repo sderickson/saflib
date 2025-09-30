@@ -13,7 +13,6 @@ import {
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { contextFromInput } from "../../utils.ts";
-import { getWorkflowLogger } from "../../store.ts";
 
 /**
  * A simple test format on changes made, for checks beyond just "todo" string existence.
