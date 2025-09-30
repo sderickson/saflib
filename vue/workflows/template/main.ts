@@ -4,7 +4,7 @@ import { router } from "./router.ts";
 import { __subdomain_name___strings } from "./strings.ts";
 
 export const main = () => {
-  setClientName("__subdomain-name___");
+  setClientName("__subdomain-name__");
   createVueApp(App, {
     router,
     i18nMessages: {
