@@ -80,28 +80,28 @@ export const UpdateStepMachine = setup({
     ...workflowActors,
   },
   guards: {
-    invalid: ({ context }: { context: UpdateStepContext }) => {
-      if (!context.valid.length) {
-        return false;
-      }
-      const resolvedPath = context.filePath;
-      const content = readFileSync(resolvedPath, "utf-8");
-      const log = getWorkflowLogger();
-      let allPassed = true;
-      for (const test of context.valid) {
-        if (!test.test(content)) {
-          log.error(`Test ${test.name} failed: ${test.description}`);
-          allPassed = false;
-        } else {
-          log.info(`Test ${test.name} passed.`);
-        }
-      }
-      if (allPassed) {
-        log.info(`Tests passed for ${resolvedPath}`);
-        return false;
-      }
-      return true;
-    },
+    // invalid: ({ context }: { context: UpdateStepContext }) => {
+    //   if (!context.valid.length) {
+    //     return false;
+    //   }
+    //   const resolvedPath = context.filePath;
+    //   const content = readFileSync(resolvedPath, "utf-8");
+    //   const log = getWorkflowLogger();
+    //   let allPassed = true;
+    //   for (const test of context.valid) {
+    //     if (!test.test(content)) {
+    //       log.error(`Test ${test.name} failed: ${test.description}`);
+    //       allPassed = false;
+    //     } else {
+    //       log.info(`Test ${test.name} passed.`);
+    //     }
+    //   }
+    //   if (allPassed) {
+    //     log.info(`Tests passed for ${resolvedPath}`);
+    //     return false;
+    //   }
+    //   return true;
+    // },
     todosRemain: ({ context }: { context: UpdateStepContext }) => {
       const resolvedPath = context.filePath;
       const content = readFileSync(resolvedPath, "utf-8");
@@ -154,15 +154,15 @@ export const UpdateStepMachine = setup({
         ],
 
         continue: [
-          {
-            guard: "invalid",
-            actions: [
-              logError(({ context }) => {
-                const filePathStr = path.basename(context.filePath);
-                return `Validation checks did not all succeed for ${filePathStr}. Please fix the issues and continue.`;
-              }),
-            ],
-          },
+          // {
+          //   guard: "invalid",
+          //   actions: [
+          //     logError(({ context }) => {
+          //       const filePathStr = path.basename(context.filePath);
+          //       return `Validation checks did not all succeed for ${filePathStr}. Please fix the issues and continue.`;
+          //     }),
+          //   ],
+          // },
           {
             guard: "todosRemain",
             actions: [

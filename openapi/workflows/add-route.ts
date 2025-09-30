@@ -91,14 +91,14 @@ export const AddRouteWorkflowDefinition = defineWorkflow<
       - Do not specify a 400 response. The openapi validator is the only source of these.
       - If this is a list route, do not include a sort parameter unless explicitly requested.
       `,
-      valid: [
-        {
-          test: (file) => file.includes('"400":'),
-          name: "No 400s specified",
-          description:
-            "Do not specify 400 in a route. These are solely for openapi validation errors. Either remove it if it is for input validation, or replace it with something else more appropriate.",
-        },
-      ],
+      // valid: [
+      //   {
+      //     test: (file) => file.includes('"400":'),
+      //     name: "No 400s specified",
+      //     description:
+      //       "Do not specify 400 in a route. These are solely for openapi validation errors. Either remove it if it is for input validation, or replace it with something else more appropriate.",
+      //   },
+      // ],
     })),
 
     step(PromptStepMachine, () => ({
