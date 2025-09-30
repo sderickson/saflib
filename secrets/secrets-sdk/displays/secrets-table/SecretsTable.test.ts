@@ -5,6 +5,7 @@ import SecretsTable from "./SecretsTable.vue";
 import { secrets_table_strings as strings } from "./SecretsTable.strings.ts";
 import { mountTestApp } from "../../test-app.ts";
 import { secretStubs } from "../../requests/secrets/list.fake.ts";
+import { TanstackError } from "@saflib/sdk";
 
 describe("SecretsTable", () => {
   stubGlobals();
@@ -44,7 +45,7 @@ describe("SecretsTable", () => {
   });
 
   it("should show error state", async () => {
-    const error = new Error("Test error");
+    const error = new TanstackError(500);
     const wrapper = mountTestApp(SecretsTable, {
       props: {
         secrets: secretStubs,
@@ -53,7 +54,7 @@ describe("SecretsTable", () => {
       },
     });
 
-    expect(wrapper.text()).toContain("Test error");
+    expect(wrapper.text()).toContain("Network error");
   });
 
   it("should show empty state when no secrets", async () => {

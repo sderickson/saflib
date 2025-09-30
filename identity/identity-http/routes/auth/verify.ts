@@ -1,10 +1,7 @@
 import { createHandler } from "@saflib/express";
 import { type IdentityResponseBody } from "@saflib/identity-spec";
-import { emailAuthDb, EmailAuthNotFoundError } from "@saflib/identity-db";
-import { authServiceStorage } from "@saflib/identity-common";
 
 export const verifyHandler = createHandler(async (req, res) => {
-  const { dbKey } = authServiceStorage.getStore()!;
   // TODO: Figure out how to handle OPTIONS in caddy, or at the very least,
   // don't forward_auth OPTIONS requests.
 
