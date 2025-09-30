@@ -4,6 +4,12 @@ import {
   CommandStepMachine,
   defineWorkflow,
   step,
+  type ParsePackageNameOutput,
+  type ParsePathOutput,
+  parsePackageName,
+  getPackageName,
+  parsePath,
+  makeLineReplace,
 } from "@saflib/workflows";
 import path from "node:path";
 
@@ -14,14 +20,13 @@ const input = [
     name: "path",
     description:
       "Path of the new email template (e.g. './email-templates/weekly-report.ts')",
-    exampleValue: "./email-templates/example-email.ts",
+    exampleValue: "./emails/example-email.ts",
   },
 ] as const;
 
-interface AddEmailTemplateWorkflowContext {
-  name: string;
-  targetFilePath: string;
-}
+interface AddEmailTemplateWorkflowContext
+  extends ParsePathOutput,
+    ParsePackageNameOutput {}
 
 export const AddEmailTemplateWorkflowDefinition = defineWorkflow<
   typeof input,
@@ -36,14 +41,13 @@ export const AddEmailTemplateWorkflowDefinition = defineWorkflow<
   sourceUrl: import.meta.url,
 
   context: ({ input }) => {
-    const targetFilePath = path
-      .join(input.cwd, input.path)
-      .replace(input.cwd, "");
-    const name = path.basename(input.path).split(".")[0];
-
     return {
-      name,
-      targetFilePath,
+      ...parsePackageName(getPackageName(input.cwd)),
+      ...parsePath(input.path, {
+        requiredPrefix: "./emails/",
+        requiredSuffix: ".ts",
+        cwd: input.cwd,
+      }),
     };
   },
 
@@ -60,21 +64,22 @@ export const AddEmailTemplateWorkflowDefinition = defineWorkflow<
     })),
 
     step(CopyStepMachine, ({ context }) => ({
-      name: context.name,
-      targetDir: path.dirname(context.targetFilePath),
+      name: context.targetName,
+      targetDir: context.targetDir,
+      lineReplace: makeLineReplace(context),
     })),
 
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "template",
-      promptMessage: `Implement the email template at ${context.targetFilePath}:
-
-        1. Update the function signature and export name to match your use case
-        2. Define the email subject and HTML content
-        3. Follow the pattern from existing templates like verify-email.ts and password-reset.ts
-        4. Return an object with \`subject\` and \`html\` properties
-        5. Use proper TypeScript types
-
-        The template should export a function that takes the necessary parameters and returns EmailContent with subject and html properties.`,
+      promptMessage: `Implement the email template at ${context.copiedFiles!.template}:
+  
+          1. Update the function signature and export name to match your use case
+          2. Define the email subject and HTML content
+          3. Follow the pattern from existing templates like verify-email.ts and password-reset.ts
+          4. Return an object with \`subject\` and \`html\` properties
+          5. Use proper TypeScript types
+  
+          The template should export a function that takes the necessary parameters and returns EmailContent with subject and html properties.`,
     })),
   ],
 });
