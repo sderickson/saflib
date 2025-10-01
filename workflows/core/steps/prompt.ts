@@ -57,7 +57,9 @@ export const PromptStepMachine = setup({
           return { shouldContinue: true };
         }
         // printPrompt({ context: input, msg: input.promptText });
-        executePrompt({ context: input, msg: input.promptText });
+        console.log("invoking execute");
+        await executePrompt({ context: input, msg: input.promptText });
+        console.log("execute invoked");
         return { shouldContinue: false };
       },
     ),
