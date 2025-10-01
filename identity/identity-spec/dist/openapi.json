@@ -762,6 +762,10 @@
               "type": "string"
             },
             "description": "List of user's permission scopes"
+          },
+          "isAdmin": {
+            "type": "boolean",
+            "description": "Whether the user has admin privileges"
           }
         }
       },

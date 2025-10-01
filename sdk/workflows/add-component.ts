@@ -11,6 +11,7 @@ import {
   type ParsePackageNameOutput,
   parsePackageName,
   getPackageName,
+  CommandStepMachine,
 } from "@saflib/workflows";
 import path from "node:path";
 
@@ -129,6 +130,11 @@ export const AddComponentWorkflowDefinition = defineWorkflow<
 
     step(TestStepMachine, () => ({
       fileId: "test",
+    })),
+
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["run", "typecheck"],
     })),
 
     step(TestStepMachine, () => ({})),

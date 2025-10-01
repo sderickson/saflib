@@ -3,6 +3,12 @@ import createError from "http-errors";
 import { authServiceStorage } from "@saflib/identity-common";
 import { UserNotFoundError, usersDb } from "@saflib/identity-db";
 import type { IdentityResponseBody } from "@saflib/identity-spec";
+import { typedEnv } from "../../env.ts";
+
+const adminEmails =
+  typedEnv.IDENTITY_SERVICE_ADMIN_EMAILS?.split(",").map((email: string) =>
+    email.trim(),
+  ) || [];
 
 export const getProfileHandler = createHandler(async (req, res) => {
   const { dbKey } = authServiceStorage.getStore()!;
@@ -26,6 +32,11 @@ export const getProfileHandler = createHandler(async (req, res) => {
     }
   }
 
+  // Determine if user is admin
+  const isEmailVerified = result.emailVerified ?? false;
+  const isAdminEmail = adminEmails.includes(result.email);
+  const isAdmin = isEmailVerified && isAdminEmail;
+
   const response = {
     id: result.id,
     email: result.email,
@@ -34,6 +45,7 @@ export const getProfileHandler = createHandler(async (req, res) => {
     givenName: result.givenName ?? undefined,
     familyName: result.familyName ?? undefined,
     createdAt: result.createdAt.toISOString(),
+    isAdmin,
   } satisfies IdentityResponseBody["getUserProfile"][200];
 
   res.status(200).json(response);

@@ -103,7 +103,7 @@
 <script setup lang="ts">
 import { secrets_table_strings as strings } from "./SecretsTable.strings.ts";
 import { useReverseT } from "../../i18n.ts";
-import { getTanstackErrorMessage } from "@saflib/sdk";
+import { getTanstackErrorMessage, TanstackError } from "@saflib/sdk";
 import { useDeleteSecret } from "../../requests/secrets/delete.ts";
 import type { Secret } from "@saflib/secrets-spec";
 import { ref } from "vue";
@@ -114,7 +114,7 @@ const { t } = useReverseT();
 interface Props {
   secrets: Secret[];
   loading?: boolean;
-  error?: any;
+  error?: TanstackError;
 }
 
 defineProps<Props>();

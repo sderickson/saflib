@@ -15,7 +15,7 @@
           <SecretsTable
             :secrets="secretsQuery.data.value || []"
             :loading="secretsQuery.isLoading.value"
-            :error="secretsQuery.error.value"
+            :error="secretsQuery.error.value || undefined"
           />
         </div>
         <div>

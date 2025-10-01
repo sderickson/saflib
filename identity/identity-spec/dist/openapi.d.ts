@@ -236,6 +236,8 @@ export interface components {
             verifiedAt?: string;
             /** @description List of user's permission scopes */
             scopes?: string[];
+            /** @description Whether the user has admin privileges */
+            isAdmin?: boolean;
         };
         error: {
             /** @description A short, machine-readable error code, for when HTTP status codes are not sufficient. */

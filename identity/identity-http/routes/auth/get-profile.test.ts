@@ -51,6 +51,7 @@ describe("Get Profile Route", () => {
       givenName: userData.givenName,
       familyName: userData.familyName,
       createdAt: expect.any(String),
+      isAdmin: false,
     });
   });
 
