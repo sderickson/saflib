@@ -104,6 +104,7 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
             templateFiles: context.templateFiles,
             copiedFiles: context.copiedFiles,
             docFiles: context.docFiles,
+            agentConfig: context.agentConfig,
             cwd: context.cwd,
           };
         },
@@ -115,6 +116,13 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
               type: "afterEach",
             },
             assign({
+              agentConfig: ({ context, event }) => {
+                const output: WorkflowOutput = event.output;
+                if (output.agentConfig) {
+                  return output.agentConfig;
+                }
+                return context.agentConfig;
+              },
               checklist: ({ context, event }) => {
                 const output: WorkflowOutput = event.output;
                 return [...context.checklist, output.checklist];
@@ -197,6 +205,7 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
           workflow.checklistDescription?.(context) || workflow.description,
         subitems: context.checklist,
       },
+      agentConfig: context.agentConfig,
     }),
   });
 }

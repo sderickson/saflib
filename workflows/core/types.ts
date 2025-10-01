@@ -114,10 +114,19 @@ export interface ActionParam<C, E extends AnyEventObject> {
   event: E;
 }
 
+export type AgentCLI = "cursor-agent";
+
+export interface AgentConfig {
+  cli: AgentCLI;
+  sessionId?: string;
+}
+
 /**
  * Inputs every workflow machine receives.
  */
 export interface WorkflowInput {
+  agentConfig?: AgentConfig;
+
   runMode?: WorkflowRunMode;
 
   systemPrompt?: string;
@@ -147,14 +156,18 @@ export interface WorkflowOutput {
   copiedFiles?: Record<string, string>;
 
   newCwd?: string;
+
+  agentConfig?: AgentConfig;
 }
 
-export type WorkflowRunMode = "dry" | "print" | "script";
+export type WorkflowRunMode = "dry" | "print" | "script" | "run";
 
 /**
  * Context shared across all workflow machines.
  */
 export interface WorkflowContext {
+  agentConfig?: AgentConfig;
+
   /**
    * Short descriptions of every step taken in the workflow. Can be used
    * either to generate a sample checklist for a workflow, or a summary

@@ -44,3 +44,22 @@ export const promptImpl: WorkflowActionFunction<
     return {};
   },
 );
+
+interface PromptParam {
+  msg: string;
+  context: WorkflowContext;
+}
+
+export const printPrompt = ({ msg, context }: PromptParam) => {
+  if (process.env.NODE_ENV === "test") {
+    return {};
+  }
+  print("");
+  if (context.systemPrompt) {
+    print(context.systemPrompt);
+    print("");
+  }
+  print(msg);
+  print("");
+  return {};
+};

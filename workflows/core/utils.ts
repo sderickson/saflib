@@ -100,6 +100,7 @@ export function contextFromInput(
     docFiles: input.docFiles,
     rootRef: input.rootRef || rootRef,
     cwd: input.cwd || process.cwd(),
+    agentConfig: input.agentConfig,
   };
 }
 

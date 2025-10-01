@@ -1,7 +1,8 @@
-import { setup, raise } from "xstate";
-import { workflowActions, workflowActors, promptAgent } from "../xstate.ts";
+import { setup, raise, fromPromise } from "xstate";
+import { workflowActions, workflowActors } from "../xstate.ts";
 import { type WorkflowContext, type WorkflowInput } from "../types.ts";
 import { contextFromInput } from "../utils.ts";
+import { printPrompt } from "../xstate-actions/prompt.ts";
 
 /**
  * Input for the PromptStepMachine.
@@ -39,6 +40,26 @@ export const PromptStepMachine = setup({
   },
   actors: {
     ...workflowActors,
+
+    prompt: fromPromise(
+      async ({
+        input,
+      }: {
+        input: PromptStepContext;
+      }): Promise<{ shouldContinue: boolean }> => {
+        if (input.runMode === "dry" || input.runMode === "script") {
+          return { shouldContinue: true };
+        }
+        if (input.skipIf === true) {
+          return { shouldContinue: true };
+        }
+        if (process.env.NODE_ENV === "test") {
+          return { shouldContinue: true };
+        }
+        printPrompt({ context: input, msg: input.promptText });
+        return { shouldContinue: false };
+      },
+    ),
   },
   guards: {
     shouldSkip: ({ context }) => {
@@ -62,16 +83,19 @@ export const PromptStepMachine = setup({
   states: {
     running: {
       entry: raise({ type: "prompt" }),
-      on: {
-        prompt: [
+      invoke: {
+        src: "prompt",
+        input: ({ context }) => context,
+        onDone: [
           {
-            guard: "shouldSkip",
+            guard: ({ event }) => {
+              return event.output.shouldContinue;
+            },
             target: "done",
           },
-          {
-            actions: [promptAgent(({ context }) => context.promptText)],
-          },
         ],
+      },
+      on: {
         continue: {
           target: "done",
         },
