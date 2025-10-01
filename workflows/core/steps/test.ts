@@ -65,12 +65,14 @@ export const TestStepMachine = setup({
               shouldContinue: true,
             };
           } catch (error) {
+            const baseMsg = input.fileName
+              ? `The test \`${input.fileName}\` failed.`
+              : `Tests failed.`;
             const { shouldContinue } = await handlePrompt({
               context: input,
-              msg: input.fileName
-                ? `The test \`${input.fileName}\` failed.`
-                : `Tests failed.` +
-                  `\nPlease run with "npm run test" and fix the issues.`,
+              msg:
+                baseMsg +
+                `\nCwd: ${input.cwd}\nPlease run with "npm run test" and fix the issues.`,
             });
             if (!shouldContinue) {
               throw error;

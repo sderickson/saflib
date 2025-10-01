@@ -88,7 +88,7 @@ export const getServiceName = (): string => {
     return "test";
   }
   if (!serviceName) {
-    throw new Error("Service name is not set");
+    throw new Error(`Service name is not set (NODE_ENV: ${typedEnv.NODE_ENV})`);
   }
   return serviceName;
 };
