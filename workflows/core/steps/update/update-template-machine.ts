@@ -143,7 +143,7 @@ export const UpdateStepMachine = setup({
 }).createMachine({
   id: "update-step",
   initial: "update",
-  context: ({ input, self }) => {
+  context: ({ input }) => {
     if (!input.copiedFiles) {
       throw new Error(
         "`copiedFiles` not passed in. Did you run CopyStepMachine before UpdateStepMachine?",

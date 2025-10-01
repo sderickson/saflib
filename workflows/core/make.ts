@@ -179,7 +179,7 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
     entry: raise({ type: "start" }),
     id: workflow.id,
     description: workflow.description,
-    context: ({ input, self }) => {
+    context: ({ input }) => {
       const context: Context = {
         ...workflow.context({
           input: {

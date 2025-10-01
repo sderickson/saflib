@@ -1,50 +1,9 @@
 import { print } from "../utils.ts";
-import { assign, type AnyEventObject } from "xstate";
-import {
-  type ActionParam,
-  type WorkflowContext,
-  type WorkflowActionFunction,
-} from "../types.ts";
+import { type WorkflowContext } from "../types.ts";
 import { spawn } from "node:child_process";
 import { addNewLinesToString } from "../../strings.ts";
-/**
- * Action builder for prompting the agent.
- */
-export const promptAgent = <C, E extends AnyEventObject>(
-  cb: string | ((ctx: ActionParam<C, E>) => string),
-) => {
-  return {
-    type: "prompt" as const,
-    params: (event: ActionParam<C, E>) => ({
-      msg: typeof cb === "function" ? cb(event) : cb,
-    }),
-  };
-};
-
-export interface PromptParams {
-  msg: string;
-}
-
-export const promptImpl: WorkflowActionFunction<
-  any,
-  AnyEventObject,
-  PromptParams
-> = assign(
-  ({ context }: { context: WorkflowContext }, { msg }: PromptParams) => {
-    // space prompts from the original command, logs, and other prompts
-    if (process.env.NODE_ENV === "test") {
-      return {};
-    }
-    print("");
-    if (context.systemPrompt) {
-      print(context.systemPrompt);
-      print("");
-    }
-    print(msg);
-    print("");
-    return {};
-  },
-);
+import path from "node:path";
+import { writeFileSync } from "node:fs";
 
 interface PromptParam {
   msg: string;
@@ -144,6 +103,8 @@ export interface PromptResult {
   shouldContinue: boolean;
 }
 
+export const logFile = path.join(process.cwd(), "saf-workflow-prompt.log");
+
 export const executePrompt = async ({
   msg,
   context,
@@ -172,6 +133,10 @@ export const executePrompt = async ({
       buffer = buffer.slice(line.length + 1);
       try {
         const json = JSON.parse(line) as CursorLog;
+        // append to the log file
+        writeFileSync(logFile, JSON.stringify(json, null, 2) + "\n", {
+          flag: "a",
+        });
         if (json.type === "system") {
           sessionId = json.session_id;
           // console.log(JSON.stringify(json, null, 2));

@@ -5,6 +5,8 @@ import { runWorkflow } from "./shared/utils.ts";
 import { getWorkflowLogger } from "../../core/store.ts";
 import { loadWorkflowDefinitionFromFile } from "./shared/file-io.ts";
 import { resolve } from "node:path";
+import { logFile } from "../../core/xstate-actions/prompt.ts";
+import { writeFileSync } from "node:fs";
 
 export const addKickoffCommand = (
   program: Command,
@@ -26,9 +28,9 @@ export const addKickoffCommand = (
     .addOption(runModeOption)
     .action(
       async (filePath: string, args: string[], options: { run?: string }) => {
+        writeFileSync(logFile, "");
         const runMode = options.run;
         const givenRunMode = parseRunMode(runMode);
-        console.log("givenRunMode", givenRunMode, runMode);
 
         const log = getWorkflowLogger();
 

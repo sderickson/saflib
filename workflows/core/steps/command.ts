@@ -108,7 +108,7 @@ export const CommandStepMachine = setup({
   },
 }).createMachine({
   id: "command-step",
-  context: ({ input, self }) => {
+  context: ({ input }) => {
     return {
       ...contextFromInput(input),
       command: input.command,

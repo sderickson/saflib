@@ -45,7 +45,7 @@ export const CopyStepMachine = setup({
   id: "copy-template",
   description: "Copy template files and rename placeholders",
   initial: "copy",
-  context: ({ input, self }) => {
+  context: ({ input }) => {
     if (!input.templateFiles) {
       throw new Error("templateFiles is required");
     }

@@ -5,7 +5,6 @@ import {
   doesTestPass,
   logInfo,
   logError,
-  promptAgent,
 } from "../xstate.ts";
 import {
   type WorkflowContext,
@@ -85,7 +84,7 @@ export const TestStepMachine = setup({
   },
 }).createMachine({
   id: "test-step",
-  context: ({ input, self }) => {
+  context: ({ input }) => {
     return {
       ...contextFromInput(input),
       fileId: input.fileId,
@@ -136,11 +135,6 @@ export const TestStepMachine = setup({
         },
       },
       on: {
-        prompt: {
-          actions: promptAgent(
-            () => "Tests failed. Please fix the issues and continue.",
-          ),
-        },
         continue: {
           reenter: true,
           target: "test",
