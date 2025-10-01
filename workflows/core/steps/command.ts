@@ -164,7 +164,6 @@ export const CommandStepMachine = setup({
       },
       on: {
         continue: {
-          reenter: true,
           target: "runCommand",
         },
       },

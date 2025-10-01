@@ -187,6 +187,12 @@ export const UpdateStepMachine = setup({
       on: {
         continue: [
           {
+            target: "update",
+            guard: ({ context }) => {
+              return context.runMode === "run";
+            },
+          },
+          {
             target: "done",
           },
         ],

@@ -136,7 +136,6 @@ export const TestStepMachine = setup({
       },
       on: {
         continue: {
-          reenter: true,
           target: "test",
         },
       },

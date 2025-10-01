@@ -114,9 +114,17 @@ export const DocStepMachine = setup({
         },
       },
       on: {
-        continue: {
-          target: "done",
-        },
+        continue: [
+          {
+            target: "reviewDoc",
+            guard: ({ context }) => {
+              return context.runMode === "run";
+            },
+          },
+          {
+            target: "done",
+          },
+        ],
       },
     },
 
