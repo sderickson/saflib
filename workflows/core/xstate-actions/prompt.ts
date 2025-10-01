@@ -63,3 +63,15 @@ export const printPrompt = ({ msg, context }: PromptParam) => {
   print("");
   return {};
 };
+
+export const executePrompt = ({ msg, context }: PromptParam) => {
+  if (process.env.NODE_ENV === "test") {
+    return { shouldContinue: true };
+  }
+  console.log(
+    "executing prompt",
+    msg,
+    "with agent config",
+    context.agentConfig,
+  );
+};

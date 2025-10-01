@@ -2,7 +2,7 @@ import { setup, raise, fromPromise } from "xstate";
 import { workflowActions, workflowActors } from "../xstate.ts";
 import { type WorkflowContext, type WorkflowInput } from "../types.ts";
 import { contextFromInput } from "../utils.ts";
-import { printPrompt } from "../xstate-actions/prompt.ts";
+import { executePrompt, printPrompt } from "../xstate-actions/prompt.ts";
 
 /**
  * Input for the PromptStepMachine.
@@ -56,7 +56,8 @@ export const PromptStepMachine = setup({
         if (process.env.NODE_ENV === "test") {
           return { shouldContinue: true };
         }
-        printPrompt({ context: input, msg: input.promptText });
+        // printPrompt({ context: input, msg: input.promptText });
+        executePrompt({ context: input, msg: input.promptText });
         return { shouldContinue: false };
       },
     ),
