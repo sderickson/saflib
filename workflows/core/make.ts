@@ -67,7 +67,7 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
   for (const [key, value] of Object.entries(workflow.templateFiles)) {
     if (!existsSync(value)) {
       console.log("Invalid template file path:", value);
-      throw new Error(`Missing template file ${key} for ${workflow.id}`);
+      throw new Error(`Missing template file "${key}" for ${workflow.id}`);
     }
   }
   for (const [key, value] of Object.entries(workflow.docFiles)) {

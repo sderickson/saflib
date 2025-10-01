@@ -15,19 +15,21 @@ const sourceDir = path.join(import.meta.dirname, "template");
 const input = [
   {
     name: "name",
-    description: "Name of the new SPA (e.g. 'admin' for admin-spa)",
-    exampleValue: "example-spa",
+    description:
+      "Name of the new SPA (e.g. 'admin' for product-name-admin-spa)",
+    exampleValue: "product-name-example-spa",
   },
   {
     name: "path",
     description:
-      "The path to the target directory for the SPA (e.g., './clients/admin-spa')",
-    exampleValue: "./clients/admin-spa",
+      "The path to the target directory for the SPA (e.g., './clients/product-name/admin-spa')",
+    exampleValue: "./clients/product-name/product-name-admin-spa",
   },
 ] as const;
 
 interface AddSpaWorkflowContext extends ParsePackageNameOutput {
   targetDir: string;
+  subdomainName: string;
 }
 
 export const AddSpaWorkflowDefinition = defineWorkflow<
@@ -46,16 +48,34 @@ export const AddSpaWorkflowDefinition = defineWorkflow<
   context: ({ input }) => {
     const targetDir = path.join(input.cwd, input.path);
 
-    return {
+    const context = {
       ...parsePackageName(input.name, {
         requiredSuffix: "-spa",
       }),
       targetDir,
+      subdomainName: "",
     };
+
+    // Experimental: I'm trying out organizing SPAs by product, so one monorepo has multiple products.
+    // but then, the package name needs to be of the form "<product-name>-<subdomain>-spa"
+    // If we assume that's the case, then derive the subdomain name from the package name.
+    const productName = path.basename(path.dirname(targetDir));
+
+    // "service name" is just the name of the package minus the suffix "-spa".
+    // So, find the product name based on the parent dir, and then remove it from the service name
+    // to get the subdomain name.
+
+    // this is brittle... will think of a way to improve this.
+    let subdomainName = context.serviceName;
+    if (subdomainName.startsWith(productName + "-")) {
+      subdomainName = subdomainName.slice(productName.length + 1);
+    }
+    context.subdomainName = subdomainName;
+    return context;
   },
 
   templateFiles: {
-    app: path.join(sourceDir, "__ServiceName__App.vue"),
+    app: path.join(sourceDir, "__SubdomainName__App.vue"),
     i18n: path.join(sourceDir, "i18n.ts"),
     main: path.join(sourceDir, "main.ts"),
     packageJson: path.join(sourceDir, "package.json"),
@@ -90,19 +110,21 @@ export const AddSpaWorkflowDefinition = defineWorkflow<
     })),
 
     step(PromptStepMachine, ({ context }) => ({
-      promptText: `Add \`${context.packageName}\` as a dependency in \`clients/spas/package.json\`, then run \`npm install\` from the root of the monorepo (not from the \`clients/spas\` directory).`,
+      promptText: `Add \`${context.packageName}\` as a dependency in the adjacent "clients" or "spas" package, then run \`npm install\` from the root of the monorepo.`,
     })),
 
     step(PromptStepMachine, ({ context }) => ({
-      promptText: `Create \`index.html\` and \`main.ts\` files in \`clients/spas/${context.serviceName}\` similar to other SPAs already there.`,
+      promptText: `Create \`index.html\` and \`main.ts\` files in that "clients" or "spas" package similar to other SPAs already there.
+      
+      The folder should be named "${context.subdomainName}".`,
     })),
 
     step(PromptStepMachine, () => ({
-      promptText: `Update \`clients/spas/vite.config.ts\` to add proxy and input properties for the new SPA.`,
+      promptText: `Update \`clients/spas/vite.config.ts\` in the clients/spas package to add proxy and input properties for the new SPA.`,
     })),
 
     step(PromptStepMachine, ({ context }) => ({
-      promptText: `Update all \`Caddyfiles\` in the repo; add the new SPA in a similar fashion with the subdomain \`${context.serviceName}\`.`,
+      promptText: `Update all \`Caddyfiles\` in the repo; add the new SPA in a similar fashion with the subdomain \`${context.subdomainName}\`.`,
     })),
 
     step(PromptStepMachine, () => ({
