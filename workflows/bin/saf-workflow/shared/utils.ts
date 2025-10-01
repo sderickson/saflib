@@ -8,7 +8,7 @@ import type {
 import { XStateWorkflowRunner } from "./workflow.ts";
 import path from "node:path";
 import { existsSync, readFileSync } from "node:fs";
-import { loadWorkflowDefinitionFromFile } from "./file-io.ts";
+import { loadWorkflowDefinitionFromFile, saveWorkflow } from "./file-io.ts";
 import { resolve } from "node:path";
 import { getWorkflowLogger } from "../../../core/store.ts";
 
@@ -37,6 +37,10 @@ export const runWorkflow = async (
     agentConfig: options.agentConfig,
   });
   await workflow.kickoff();
+  if (runMode === "print") {
+    console.log("--- To continue, run 'npm exec saf-workflow next' ---\n");
+    saveWorkflow(workflow);
+  }
   return workflow.getOutput();
 };
 
