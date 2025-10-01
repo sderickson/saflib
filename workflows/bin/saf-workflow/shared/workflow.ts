@@ -8,7 +8,7 @@ import type {
   AgentConfig,
 } from "../../../core/types.ts";
 import type { WorkflowBlob } from "./types.ts";
-import type { AnyStateMachine, AnyActor } from "xstate";
+import type { AnyStateMachine, AnyActor, Snapshot } from "xstate";
 import { createActor } from "xstate";
 import { getWorkflowLogger } from "../../../core/store.ts";
 import {
@@ -30,14 +30,18 @@ type AbstractClassConstructor<T extends AbstractWorkflowRunner> = new (
 export type ConcreteWorkflowRunner =
   AbstractClassConstructor<AbstractWorkflowRunner>;
 
+export interface WorkflowRunOptions {
+  onSnapshot?: (snapshot: Snapshot<any>) => void;
+}
+
 /**
  * Abstract superclass for XStateWorkflow. Can probably be removed since SimpleWorkflows are gone.
  */
 export abstract class AbstractWorkflowRunner {
-  abstract kickoff(): Promise<boolean>;
+  abstract kickoff(options?: WorkflowRunOptions): Promise<boolean>;
   abstract printStatus(): Promise<void>;
   abstract getCurrentStateName(): string;
-  abstract goToNextStep(): Promise<void>;
+  abstract goToNextStep(options?: WorkflowRunOptions): Promise<void>;
   abstract dehydrate(): WorkflowBlob;
   abstract hydrate(blob: WorkflowBlob): void;
   abstract done(): boolean;
@@ -94,16 +98,22 @@ export class XStateWorkflowRunner extends AbstractWorkflowRunner {
     this.machine = makeWorkflowMachine(this.definition);
   }
 
-  kickoff = async (): Promise<boolean> => {
+  kickoff = async (options?: WorkflowRunOptions): Promise<boolean> => {
     const actor = createActor(this.machine, { input: this.input });
+    this.actor = actor;
     actor.start();
+    actor.subscribe(() => {
+      if (options?.onSnapshot) {
+        options.onSnapshot(actor.getPersistedSnapshot());
+      }
+    });
     const snapshot = actor.getSnapshot();
+
     if (snapshot.status === "error") {
       console.log("Actor started with error", snapshot.error);
       return false;
     }
     await pollingWaitFor(actor, workflowAllSettled);
-    this.actor = actor;
     return actor.getSnapshot().status !== "error";
   };
 

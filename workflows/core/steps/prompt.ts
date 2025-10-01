@@ -91,7 +91,7 @@ export const PromptStepMachine = setup({
   },
 }).createMachine({
   id: "prompt-step",
-  context: ({ input, self }) => ({
+  context: ({ input }) => ({
     ...contextFromInput(input),
     promptText: input.promptText,
     skipIf: input.skipIf,
@@ -121,9 +121,17 @@ export const PromptStepMachine = setup({
       },
 
       on: {
-        continue: {
-          target: "done",
-        },
+        continue: [
+          {
+            target: "running",
+            guard: ({ context }) => {
+              return context.runMode === "run";
+            },
+          },
+          {
+            target: "done",
+          },
+        ],
       },
     },
     standby: {

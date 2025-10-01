@@ -1,10 +1,6 @@
 import { type Command, Option } from "commander";
 import { addNewLinesToString } from "../../strings.ts";
-import type {
-  WorkflowDefinition,
-  WorkflowArgument,
-  WorkflowRunMode,
-} from "../../core/types.ts";
+import type { WorkflowDefinition, WorkflowRunMode } from "../../core/types.ts";
 import { runWorkflow } from "./shared/utils.ts";
 import { getWorkflowLogger } from "../../core/store.ts";
 import { loadWorkflowDefinitionFromFile } from "./shared/file-io.ts";
@@ -18,43 +14,11 @@ export const addKickoffCommand = (
     "-r, --run <mode>",
     'Directly command an agent instead of printing prompts. Currently only "cursor" is supported.',
   );
-  const kickoffProgram = program
+  program
     .command("kickoff")
     .description(
       addNewLinesToString(
         "Kick off a workflow. Takes a workflow name and then any arguments for the workflow. Names should be kebab-case, and paths should be ./relative/to/package/root.ts. All commands should be run in a folder with a package.json; the package the workflow is acting on. Example:\n\nnpm exec saf-workflow kickoff add-tests ./path/to/file.ts",
-      ),
-    );
-
-  workflows.sort((a, b) => a.id.localeCompare(b.id));
-
-  workflows.forEach((workflow) => {
-    let chain = kickoffProgram
-      .command(workflow.id)
-      .description(workflow.description)
-      .addOption(runModeOption);
-    workflow.input.forEach((arg: WorkflowArgument) => {
-      chain = chain.argument(arg.name, arg.description);
-    });
-    chain.action(async (...args) => {
-      const commandArgs = args.slice(0, workflow.input.length);
-      const runMode = args[workflow.input.length].run;
-      const givenRunMode = parseRunMode(runMode);
-      await runWorkflow({
-        definition: workflow,
-        runMode: givenRunMode,
-        args: commandArgs,
-        agentConfig: {
-          cli: "cursor-agent",
-        },
-      });
-    });
-  });
-
-  kickoffProgram
-    .description(
-      addNewLinesToString(
-        "Kick off a workflow from a file path. That path should export a definition as its default export.",
       ),
     )
     .argument("<path>", "Path to the workflow file")
@@ -64,12 +28,18 @@ export const addKickoffCommand = (
       async (filePath: string, args: string[], options: { run?: string }) => {
         const runMode = options.run;
         const givenRunMode = parseRunMode(runMode);
+        console.log("givenRunMode", givenRunMode, runMode);
 
         const log = getWorkflowLogger();
 
-        const resolvedPath = resolve(process.cwd(), filePath);
-        const workflowDefinition =
-          await loadWorkflowDefinitionFromFile(resolvedPath);
+        let workflowDefinition: WorkflowDefinition | undefined;
+        if (filePath.startsWith("./") || filePath.endsWith(".ts")) {
+          const resolvedPath = resolve(process.cwd(), filePath);
+          workflowDefinition =
+            await loadWorkflowDefinitionFromFile(resolvedPath);
+        } else {
+          workflowDefinition = workflows.find((w) => w.id === filePath);
+        }
         if (!workflowDefinition) {
           process.exit(1);
         }

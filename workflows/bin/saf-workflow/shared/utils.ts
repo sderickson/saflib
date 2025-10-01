@@ -36,7 +36,11 @@ export const runWorkflow = async (
     workflowRunMode: runMode,
     agentConfig: options.agentConfig,
   });
-  await workflow.kickoff();
+  await workflow.kickoff({
+    onSnapshot: () => {
+      saveWorkflow(workflow);
+    },
+  });
   if (runMode === "print") {
     console.log("--- To continue, run 'npm exec saf-workflow next' ---\n");
     saveWorkflow(workflow);
