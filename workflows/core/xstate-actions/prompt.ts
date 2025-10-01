@@ -51,9 +51,31 @@ interface PromptParam {
   context: WorkflowContext;
 }
 
+export const handlePrompt = async ({
+  msg,
+  context,
+}: PromptParam): Promise<PromptResult> => {
+  if (process.env.NODE_ENV === "test") {
+    return { code: 0, sessionId: "test-session-id", shouldContinue: true };
+  }
+  switch (context.runMode) {
+    case "run":
+      return await executePrompt({ msg, context });
+    case "dry":
+      return { code: 0, sessionId: undefined, shouldContinue: true };
+    case "script":
+      return { code: 0, sessionId: undefined, shouldContinue: true };
+    case "print":
+      printPrompt({ msg, context });
+      return { code: 0, sessionId: undefined, shouldContinue: false };
+    default:
+      throw context.runMode satisfies never;
+  }
+};
+
 export const printPrompt = ({ msg, context }: PromptParam) => {
   if (process.env.NODE_ENV === "test") {
-    return {};
+    return;
   }
   print("");
   if (context.systemPrompt) {
@@ -62,7 +84,7 @@ export const printPrompt = ({ msg, context }: PromptParam) => {
   }
   print(msg);
   print("");
-  return {};
+  return;
 };
 
 interface CursorSystemLog {
@@ -116,20 +138,21 @@ type CursorLog =
   | CursorToolCallLog
   | CursorResultLog;
 
-export interface ExecutePromptResult {
+export interface PromptResult {
   code: number | null;
-  sessionId: string;
+  sessionId?: string;
+  shouldContinue: boolean;
 }
 
 export const executePrompt = async ({
   msg,
   context,
-}: PromptParam): Promise<ExecutePromptResult> => {
+}: PromptParam): Promise<PromptResult> => {
   if (process.env.NODE_ENV === "test") {
-    return { code: 0, sessionId: "test-session-id" };
+    return { code: 0, sessionId: "test-session-id", shouldContinue: true };
   }
-  let resolve: (value: ExecutePromptResult) => void;
-  const p = new Promise<ExecutePromptResult>((r) => {
+  let resolve: (value: PromptResult) => void;
+  const p = new Promise<PromptResult>((r) => {
     resolve = r;
   });
   const args = ["-p", msg, "--output-format", "stream-json"];
@@ -184,7 +207,7 @@ export const executePrompt = async ({
     console.log("AGENT ERROR", data.toString());
   });
   agent.on("close", (code) => {
-    resolve({ code, sessionId });
+    resolve({ code, sessionId: sessionId ?? undefined, shouldContinue: true });
   });
   return p;
 };

@@ -2,7 +2,7 @@ import { setup, raise, fromPromise, assign } from "xstate";
 import { workflowActions, workflowActors } from "../xstate.ts";
 import { type WorkflowContext, type WorkflowInput } from "../types.ts";
 import { contextFromInput } from "../utils.ts";
-import { executePrompt, printPrompt } from "../xstate-actions/prompt.ts";
+import { handlePrompt } from "../xstate-actions/prompt.ts";
 
 /**
  * Input for the PromptStepMachine.
@@ -25,6 +25,7 @@ export interface PromptStepInput {
 export interface PromptStepContext extends WorkflowContext {
   promptText: string;
   skipIf?: boolean;
+  shouldContinue?: boolean;
 }
 
 export interface PromptStepOutput {
@@ -61,15 +62,11 @@ export const PromptStepMachine = setup({
         if (process.env.NODE_ENV === "test") {
           return { shouldContinue: true };
         }
-
-        console.log("executing prompt with agent config", input.agentConfig);
-        // printPrompt({ context: input, msg: input.promptText });
-        const { sessionId } = await executePrompt({
+        const { sessionId, shouldContinue } = await handlePrompt({
           context: input,
           msg: input.promptText,
         });
-        console.log("Got session id from executePrompt", sessionId);
-        return { shouldContinue: true, sessionId };
+        return { shouldContinue, sessionId };
       },
     ),
   },
@@ -100,47 +97,40 @@ export const PromptStepMachine = setup({
         input: ({ context }) => context,
         onDone: [
           {
-            guard: ({ event }) => {
-              return event.output.shouldContinue;
-            },
             actions: [
               assign({
                 agentConfig: ({ event, context }) => {
-                  console.log(
-                    "Assigning session id to agent config",
-                    event.output.sessionId,
-                  );
                   return {
                     ...context.agentConfig,
                     cli: "cursor-agent",
                     sessionId: event.output.sessionId,
                   };
                 },
-              }),
-            ],
-            target: "done",
-          },
-
-          {
-            actions: [
-              assign({
-                agentConfig: ({ event, context }) => {
-                  console.log(
-                    "Assigning session id to agent config",
-                    event.output.sessionId,
-                  );
-                  return {
-                    ...context.agentConfig,
-                    cli: "cursor-agent",
-                    sessionId: event.output.sessionId,
-                  };
+                shouldContinue: ({ event }) => {
+                  return event.output.shouldContinue;
                 },
               }),
             ],
+            target: "standby",
           },
         ],
       },
+
       on: {
+        continue: {
+          target: "done",
+        },
+      },
+    },
+    standby: {
+      entry: raise({ type: "maybeContinue" }),
+      on: {
+        maybeContinue: {
+          guard: ({ context }) => {
+            return !!context.shouldContinue;
+          },
+          target: "done",
+        },
         continue: {
           target: "done",
         },
