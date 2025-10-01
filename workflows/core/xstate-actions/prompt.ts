@@ -65,12 +65,70 @@ export const printPrompt = ({ msg, context }: PromptParam) => {
   return {};
 };
 
-export const executePrompt = async ({ msg }: PromptParam) => {
+interface CursorSystemLog {
+  type: "system";
+  session_id: string;
+}
+
+interface CursorUserLog {
+  type: "user";
+  message: {
+    content: [
+      {
+        type: "text";
+        text: string;
+      },
+    ];
+  };
+  session_id: string;
+}
+
+interface CursorAssistantLog {
+  type: "assistant";
+  message: {
+    content: [
+      {
+        type: "text";
+        text: string;
+      },
+    ];
+  };
+  session_id: string;
+}
+
+interface CursorToolCallLog {
+  type: "tool_call";
+  session_id: string;
+}
+
+interface CursorResultLog {
+  type: "result";
+  is_error: boolean;
+  result: string;
+  session_id: string;
+  request_id: string;
+}
+
+type CursorLog =
+  | CursorSystemLog
+  | CursorUserLog
+  | CursorAssistantLog
+  | CursorToolCallLog
+  | CursorResultLog;
+
+export interface ExecutePromptResult {
+  code: number | null;
+  sessionId: string;
+}
+
+export const executePrompt = async ({
+  msg,
+}: PromptParam): Promise<ExecutePromptResult> => {
   if (process.env.NODE_ENV === "test") {
-    return { shouldContinue: true };
+    return { code: 0, sessionId: "test-session-id" };
   }
-  let resolve: (value: unknown) => void;
-  const p = new Promise((r) => {
+  let resolve: (value: ExecutePromptResult) => void;
+  const p = new Promise<ExecutePromptResult>((r) => {
     resolve = r;
   });
   const agent = spawn("cursor-agent", [
@@ -81,6 +139,7 @@ export const executePrompt = async ({ msg }: PromptParam) => {
   ]);
   agent.stdin.end(); // or it hangs
   let buffer = "";
+  let sessionId = "";
   agent.stdout.on("data", (data) => {
     const s = data.toString();
     buffer += s;
@@ -88,10 +147,22 @@ export const executePrompt = async ({ msg }: PromptParam) => {
       const line = buffer.split("\n")[0];
       buffer = buffer.slice(line.length + 1);
       try {
-        const json = JSON.parse(line);
-        console.log("agent stdout line", JSON.stringify(json, null, 2), "\n");
+        const json = JSON.parse(line) as CursorLog;
+        if (json.type === "system") {
+          sessionId = json.session_id;
+        }
+        if (json.type === "assistant") {
+          json.message.content.forEach((content) => {
+            console.log(
+              "\n---------- AGENT OUTPUT ----------\n",
+              content.text,
+              "\n---------- END OUTPUT   ----------\n",
+            );
+          });
+        }
+        // console.log("agent stdout line", JSON.stringify(json, null, 2), "\n");
       } catch (error) {
-        console.log("agent stdout line", line, "\n");
+        console.error("Unable to parse agent stdout line", line, "\n");
       }
     }
   });
@@ -99,7 +170,7 @@ export const executePrompt = async ({ msg }: PromptParam) => {
     console.log("AGENT ERROR", data.toString());
   });
   agent.on("close", (code) => {
-    resolve({ code });
+    resolve({ code, sessionId });
   });
   return p;
 };
