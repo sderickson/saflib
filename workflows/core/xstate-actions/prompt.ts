@@ -6,7 +6,7 @@ import {
   type WorkflowActionFunction,
 } from "../types.ts";
 import { spawn } from "node:child_process";
-
+import { addNewLinesToString } from "../../strings.ts";
 /**
  * Action builder for prompting the agent.
  */
@@ -154,11 +154,24 @@ export const executePrompt = async ({
         }
         if (json.type === "assistant") {
           json.message.content.forEach((content) => {
-            console.log(
-              "\n---------- AGENT OUTPUT ----------\n",
-              content.text,
-              "\n---------- END OUTPUT   ----------\n",
-            );
+            const lines = addNewLinesToString(content.text)
+              .split("\n")
+              .map((line) => `> ${line}`)
+              .join("\n")
+              .trim();
+            console.log("\n---------- AGENT OUTPUT ----------");
+            console.log(lines);
+          });
+        }
+        if (json.type === "user") {
+          json.message.content.forEach((content) => {
+            const lines = addNewLinesToString(content.text)
+              .split("\n")
+              .map((line) => `> ${line}`)
+              .join("\n")
+              .trim();
+            console.log("\n---------- TOOL INPUT ----------");
+            console.log(lines);
           });
         }
         // console.log("agent stdout line", JSON.stringify(json, null, 2), "\n");
