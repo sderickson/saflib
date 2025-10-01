@@ -1,6 +1,10 @@
 import { setup, raise, fromPromise, assign } from "xstate";
 import { workflowActions, workflowActors } from "../xstate.ts";
-import { type WorkflowContext, type WorkflowInput } from "../types.ts";
+import {
+  type WorkflowContext,
+  type WorkflowInput,
+  type AgentConfig,
+} from "../types.ts";
 import { contextFromInput } from "../utils.ts";
 import { handlePrompt } from "../xstate-actions/prompt.ts";
 
@@ -30,7 +34,7 @@ export interface PromptStepContext extends WorkflowContext {
 
 export interface PromptStepOutput {
   shouldContinue: boolean;
-  sessionId?: string;
+  newConfig?: AgentConfig;
 }
 
 /**
@@ -66,7 +70,11 @@ export const PromptStepMachine = setup({
           context: input,
           msg: input.promptText,
         });
-        return { shouldContinue, sessionId };
+        const agentConfig = input.agentConfig;
+        return {
+          shouldContinue,
+          newConfig: agentConfig ? { ...agentConfig, sessionId } : undefined,
+        };
       },
     ),
   },
@@ -100,11 +108,7 @@ export const PromptStepMachine = setup({
             actions: [
               assign({
                 agentConfig: ({ event, context }) => {
-                  return {
-                    ...context.agentConfig,
-                    cli: "cursor-agent",
-                    sessionId: event.output.sessionId,
-                  };
+                  return event.output.newConfig || context.agentConfig;
                 },
                 shouldContinue: ({ event }) => {
                   return event.output.shouldContinue;

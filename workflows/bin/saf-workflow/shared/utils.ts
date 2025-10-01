@@ -81,7 +81,8 @@ export const kickoffWorkflow = async (
   const workflow = new XStateWorkflowRunner({
     definition: Workflow,
     args: args.slice(0, Workflow.input.length),
-    workflowRunMode: "print",
+    // workflowRunMode: "print", // TODO: set up separate command
+    workflowRunMode: "run",
   });
   await workflow.kickoff();
   console.log("--- To continue, run 'npm exec saf-workflow next' ---\n");
