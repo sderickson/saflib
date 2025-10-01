@@ -71,25 +71,6 @@ export function getPackageName(rootUrl: string) {
 }
 
 /**
- * Shared utility function to kick off a workflow with the given definition and arguments.
- * This is used by both the regular kickoff command and the kickoff-unlisted command.
- */
-export const kickoffWorkflow = async (
-  Workflow: WorkflowDefinition,
-  args: string[],
-) => {
-  const workflow = new XStateWorkflowRunner({
-    definition: Workflow,
-    args: args.slice(0, Workflow.input.length),
-    // workflowRunMode: "print", // TODO: set up separate command
-    workflowRunMode: "run",
-  });
-  await workflow.kickoff();
-  console.log("--- To continue, run 'npm exec saf-workflow next' ---\n");
-  saveWorkflow(workflow);
-};
-
-/**
  * Load a workflow definition from either a workflow ID or a file path.
  * This is shared logic used by multiple commands.
  */
