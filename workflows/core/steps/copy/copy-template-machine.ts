@@ -72,7 +72,7 @@ export const CopyStepMachine = setup({
     }
 
     return {
-      ...contextFromInput(input, self),
+      ...contextFromInput(input),
       filesToCopy: Object.keys(input.templateFiles || {}),
       name: input.name,
       targetDir: input.targetDir,

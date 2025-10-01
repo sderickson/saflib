@@ -156,7 +156,7 @@ export const UpdateStepMachine = setup({
     }
     const filePath = input.copiedFiles[input.fileId];
     return {
-      ...contextFromInput(input, self),
+      ...contextFromInput(input),
       filePath,
       promptMessage: input.promptMessage,
       valid: input.valid || [],

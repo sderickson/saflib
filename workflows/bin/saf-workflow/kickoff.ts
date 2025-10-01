@@ -44,6 +44,9 @@ export const addKickoffCommand = (
         definition: workflow,
         runMode: givenRunMode,
         args: commandArgs,
+        agentConfig: {
+          cli: "cursor-agent",
+        },
       });
     });
   });
@@ -99,6 +102,9 @@ export const addKickoffCommand = (
         await runWorkflow({
           definition: workflowDefinition,
           runMode: givenRunMode,
+          agentConfig: {
+            cli: "cursor-agent",
+          },
           args,
         });
       },

@@ -110,7 +110,7 @@ export const CommandStepMachine = setup({
   id: "command-step",
   context: ({ input, self }) => {
     return {
-      ...contextFromInput(input, self),
+      ...contextFromInput(input),
       command: input.command,
       args: input.args || [],
       promptOnError: input.promptOnError,

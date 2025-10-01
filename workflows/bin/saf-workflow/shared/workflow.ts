@@ -5,6 +5,7 @@ import type {
   WorkflowDefinition,
   WorkflowRunMode,
   WorkflowContext,
+  AgentConfig,
 } from "../../../core/types.ts";
 import type { WorkflowBlob } from "./types.ts";
 import type { AnyStateMachine, AnyActor } from "xstate";
@@ -49,6 +50,7 @@ interface XStateWorkflowOptions<I extends readonly WorkflowArgument[], C> {
   definition: WorkflowDefinition<I, C>;
   args?: string[];
   workflowRunMode?: WorkflowRunMode;
+  agentConfig?: AgentConfig;
 }
 
 /**
@@ -62,7 +64,10 @@ interface XStateWorkflowOptions<I extends readonly WorkflowArgument[], C> {
  */
 export class XStateWorkflowRunner extends AbstractWorkflowRunner {
   private machine: AnyStateMachine;
-  private input: { [key: string]: string } & { runMode?: WorkflowRunMode };
+  private input: { [key: string]: string } & {
+    runMode?: WorkflowRunMode;
+    agentConfig?: AgentConfig;
+  };
   private args: string[];
   private actor: AnyActor | undefined;
   definition: WorkflowDefinition<any, any>;
@@ -85,6 +90,7 @@ export class XStateWorkflowRunner extends AbstractWorkflowRunner {
     }
 
     this.input.runMode = options.workflowRunMode;
+    this.input.agentConfig = options.agentConfig;
     this.machine = makeWorkflowMachine(this.definition);
   }
 

@@ -3,11 +3,12 @@ import type {
   WorkflowDefinition,
   WorkflowArgument,
   WorkflowRunMode,
+  AgentConfig,
 } from "../../../core/types.ts";
 import { XStateWorkflowRunner } from "./workflow.ts";
 import path from "node:path";
 import { existsSync, readFileSync } from "node:fs";
-import { saveWorkflow, loadWorkflowDefinitionFromFile } from "./file-io.ts";
+import { loadWorkflowDefinitionFromFile } from "./file-io.ts";
 import { resolve } from "node:path";
 import { getWorkflowLogger } from "../../../core/store.ts";
 
@@ -15,6 +16,7 @@ export interface RunWorkflowOptions {
   definition: WorkflowDefinition<any, any>;
   runMode: WorkflowRunMode;
   args?: string[];
+  agentConfig?: AgentConfig;
 }
 
 /**
@@ -32,6 +34,7 @@ export const runWorkflow = async (
     definition,
     args: args || exampleArgs,
     workflowRunMode: runMode,
+    agentConfig: options.agentConfig,
   });
   await workflow.kickoff();
   return workflow.getOutput();

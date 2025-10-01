@@ -40,7 +40,7 @@ export const CwdStepMachine = setup({
       ? input.path
       : path.join(process.cwd(), input.path);
     return {
-      ...contextFromInput(input, self),
+      ...contextFromInput(input),
       newCwd,
     };
   },

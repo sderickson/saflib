@@ -15,7 +15,6 @@ import { addNextCommand } from "./next.ts";
 import { addListCommand } from "./list.ts";
 import { addSourceCommand } from "./source.ts";
 import { addRunScriptsCommand } from "./run-scripts.ts";
-import { addRunCommand } from "./run.ts";
 
 /**
  * Options for configuring the workflow CLI
@@ -49,7 +48,6 @@ export async function runWorkflowCli(
     );
 
   addKickoffCommand(program, workflows);
-  addRunCommand(program, workflows);
   addStatusCommand(program, workflows);
   addNextCommand(program, workflows);
   addChecklistCommand(program, workflows);

@@ -7,7 +7,6 @@ import {
   type InputFrom,
   type PromiseActorLogic,
   type MachineContext,
-  type AnyActorRef,
 } from "xstate";
 
 /**
@@ -131,8 +130,6 @@ export interface WorkflowInput {
 
   systemPrompt?: string;
 
-  rootRef?: AnyActorRef;
-
   templateFiles?: Record<string, string>;
 
   copiedFiles?: Record<string, string>;
@@ -188,13 +185,6 @@ export interface WorkflowContext {
    * - "script": skip prompts and checks, just run command and copy steps. Useful for debugging templates and scripts.
    */
   runMode: WorkflowRunMode;
-
-  /**
-   * Currently unused. I had a plan to use this to orchestrate halt events, or perhaps a mutex setup so that async work (such as Promise actors) can communicate to the runner that there's async work happening and the workflow should wait until it's done before exiting the program or whatever the runner will end up doing. But I've run into a few problems including that the ref doesn't properly get unserialized (possibly because it's the root node?), and I can't just send a signal directly to a consistently named actor (I tried passing "workflow-actor" as the id when kicking off and dehydrating, no dice).
-   *
-   * I may futz with this again later, but it seems unlikely to work. In the meantime, I'm polling with "pollingWaitFor".
-   */
-  rootRef: AnyActorRef;
 
   templateFiles?: Record<string, string>;
 
