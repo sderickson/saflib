@@ -1,4 +1,4 @@
-import { setup, raise, fromPromise } from "xstate";
+import { setup, raise, fromPromise, assign } from "xstate";
 import { workflowActions, workflowActors } from "../xstate.ts";
 import { type WorkflowContext, type WorkflowInput } from "../types.ts";
 import { contextFromInput } from "../utils.ts";
@@ -27,6 +27,11 @@ export interface PromptStepContext extends WorkflowContext {
   skipIf?: boolean;
 }
 
+export interface PromptStepOutput {
+  shouldContinue: boolean;
+  sessionId?: string;
+}
+
 /**
  * Prompts the agent or user to do something. Stops the workflow until the workflow is continued.
  */
@@ -46,7 +51,7 @@ export const PromptStepMachine = setup({
         input,
       }: {
         input: PromptStepContext;
-      }): Promise<{ shouldContinue: boolean }> => {
+      }): Promise<PromptStepOutput> => {
         if (input.runMode === "dry" || input.runMode === "script") {
           return { shouldContinue: true };
         }
@@ -56,9 +61,15 @@ export const PromptStepMachine = setup({
         if (process.env.NODE_ENV === "test") {
           return { shouldContinue: true };
         }
+
+        console.log("executing prompt with agent config", input.agentConfig);
         // printPrompt({ context: input, msg: input.promptText });
-        await executePrompt({ context: input, msg: input.promptText });
-        return { shouldContinue: true };
+        const { sessionId } = await executePrompt({
+          context: input,
+          msg: input.promptText,
+        });
+        console.log("Got session id from executePrompt", sessionId);
+        return { shouldContinue: true, sessionId };
       },
     ),
   },
@@ -92,7 +103,40 @@ export const PromptStepMachine = setup({
             guard: ({ event }) => {
               return event.output.shouldContinue;
             },
+            actions: [
+              assign({
+                agentConfig: ({ event, context }) => {
+                  console.log(
+                    "Assigning session id to agent config",
+                    event.output.sessionId,
+                  );
+                  return {
+                    ...context.agentConfig,
+                    cli: "cursor-agent",
+                    sessionId: event.output.sessionId,
+                  };
+                },
+              }),
+            ],
             target: "done",
+          },
+
+          {
+            actions: [
+              assign({
+                agentConfig: ({ event, context }) => {
+                  console.log(
+                    "Assigning session id to agent config",
+                    event.output.sessionId,
+                  );
+                  return {
+                    ...context.agentConfig,
+                    cli: "cursor-agent",
+                    sessionId: event.output.sessionId,
+                  };
+                },
+              }),
+            ],
           },
         ],
       },
@@ -108,6 +152,9 @@ export const PromptStepMachine = setup({
   },
   output: ({ context }) => {
     return {
+      agentConfig: {
+        ...context.agentConfig,
+      },
       checklist: {
         description: context.promptText.split("\n")[0],
       },

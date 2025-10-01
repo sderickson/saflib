@@ -123,6 +123,7 @@ export interface ExecutePromptResult {
 
 export const executePrompt = async ({
   msg,
+  context,
 }: PromptParam): Promise<ExecutePromptResult> => {
   if (process.env.NODE_ENV === "test") {
     return { code: 0, sessionId: "test-session-id" };
@@ -131,12 +132,12 @@ export const executePrompt = async ({
   const p = new Promise<ExecutePromptResult>((r) => {
     resolve = r;
   });
-  const agent = spawn("cursor-agent", [
-    "-p",
-    msg,
-    "--output-format",
-    "stream-json",
-  ]);
+  const args = ["-p", msg, "--output-format", "stream-json"];
+  if (context.agentConfig?.sessionId) {
+    args.push("--resume");
+    args.push(context.agentConfig.sessionId);
+  }
+  const agent = spawn("cursor-agent", args);
   agent.stdin.end(); // or it hangs
   let buffer = "";
   let sessionId = "";
