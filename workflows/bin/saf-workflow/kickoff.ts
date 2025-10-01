@@ -16,7 +16,7 @@ export const addKickoffCommand = (
 ) => {
   const runModeOption = new Option(
     "-r, --run <mode>",
-    'Use Cursor agent instead of printing prompts. Currently only "cursor" is supported.',
+    'Directly command an agent instead of printing prompts. Currently only "cursor" is supported.',
   );
   const kickoffProgram = program
     .command("kickoff")
@@ -39,10 +39,7 @@ export const addKickoffCommand = (
     chain.action(async (...args) => {
       const commandArgs = args.slice(0, workflow.input.length);
       const runMode = args[workflow.input.length].run;
-      if (runMode && runMode !== "cursor") {
-        throw new Error(`Unsupported run mode: ${runMode}`);
-      }
-      const givenRunMode = runMode === "cursor" ? "run" : runMode;
+      const givenRunMode = parseRunMode(runMode);
       await runWorkflow({
         definition: workflow,
         runMode: givenRunMode,
@@ -63,11 +60,7 @@ export const addKickoffCommand = (
     .action(
       async (filePath: string, args: string[], options: { run?: string }) => {
         const runMode = options.run;
-        if (runMode && runMode !== "cursor") {
-          throw new Error(`Unsupported run mode: ${runMode}`);
-        }
-        const givenRunMode: WorkflowRunMode =
-          runMode === "cursor" ? "run" : "print";
+        const givenRunMode = parseRunMode(runMode);
 
         const log = getWorkflowLogger();
 
@@ -110,4 +103,11 @@ export const addKickoffCommand = (
         });
       },
     );
+};
+
+const parseRunMode = (runMode: string | undefined): WorkflowRunMode => {
+  if (runMode && runMode !== "cursor") {
+    throw new Error(`Unsupported run mode: ${runMode}`);
+  }
+  return runMode === "cursor" ? "run" : "print";
 };
