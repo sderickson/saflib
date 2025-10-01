@@ -10,8 +10,8 @@ import {
   runCommandAsync,
   logInfo,
   logError,
-  promptAgent,
 } from "../xstate.ts";
+import { handlePrompt } from "../xstate-actions/prompt.ts";
 import { raise } from "xstate";
 import { contextFromInput } from "../utils.ts";
 
@@ -68,6 +68,43 @@ export const CommandStepMachine = setup({
   },
   actors: {
     ...workflowActors,
+    runCommand: fromPromise(
+      async ({ input }: { input: CommandStepContext }) => {
+        if (input.runMode === "dry") {
+          return "Dry run";
+        }
+        if (input.skipIf && (await input.skipIf(input))) {
+          logInfo(`Skipping command: ${input.command} ${input.args.join(" ")}`);
+          return "Skipped";
+        }
+        let tries = 0;
+        while (true) {
+          if (tries > 3) {
+            throw new Error(
+              `Agent failed to fix command: ${input.command} ${input.args.join(" ")}`,
+            );
+          }
+
+          try {
+            await runCommandAsync(input.command, input.args, {
+              cwd: input.cwd,
+            });
+            return {
+              shouldContinue: true,
+            };
+          } catch (error) {
+            const { shouldContinue } = await handlePrompt({
+              context: input,
+              msg: `The command \`${input.command} ${input.args.join(" ")}\` failed.\nCWD: ${input.cwd}.\n${input.promptOnError ? `\n${input.promptOnError}` : ""}`,
+            });
+            if (!shouldContinue) {
+              throw error;
+            }
+            tries++;
+          }
+        }
+      },
+    ),
   },
 }).createMachine({
   id: "command-step",
@@ -95,20 +132,7 @@ export const CommandStepMachine = setup({
     },
     runCommand: {
       invoke: {
-        src: fromPromise(async ({ input }: { input: CommandStepContext }) => {
-          if (input.runMode === "dry") {
-            return "Dry run";
-          }
-          if (input.skipIf && (await input.skipIf(input))) {
-            logInfo(
-              `Skipping command: ${input.command} ${input.args.join(" ")}`,
-            );
-            return "Skipped";
-          }
-          return await runCommandAsync(input.command, input.args, {
-            cwd: input.cwd,
-          });
-        }),
+        src: "runCommand",
         input: ({ context }) => context,
         onDone: {
           target: "done",
@@ -135,17 +159,10 @@ export const CommandStepMachine = setup({
               ({ event }) =>
                 `Command failed: ${(event.error as Error).message}`,
             ),
-            raise({ type: "prompt" }),
           ],
         },
       },
       on: {
-        prompt: {
-          actions: promptAgent(
-            ({ context }) =>
-              `The command \`${context.command} ${context.args.join(" ")}\` failed. Please fix the issues and continue. ${context.promptOnError ? `\n${context.promptOnError}` : ""}`,
-          ),
-        },
         continue: {
           reenter: true,
           target: "runCommand",

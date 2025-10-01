@@ -155,7 +155,7 @@ export const executePrompt = async ({
   const p = new Promise<PromptResult>((r) => {
     resolve = r;
   });
-  const args = ["-p", msg, "--output-format", "stream-json"];
+  const args = ["-p", msg, "--output-format", "stream-json", "-f"];
   if (context.agentConfig?.sessionId) {
     args.push("--resume");
     args.push(context.agentConfig.sessionId);
@@ -174,8 +174,8 @@ export const executePrompt = async ({
         const json = JSON.parse(line) as CursorLog;
         if (json.type === "system") {
           sessionId = json.session_id;
-        }
-        if (json.type === "assistant") {
+          console.log(JSON.stringify(json, null, 2));
+        } else if (json.type === "assistant") {
           json.message.content.forEach((content) => {
             const lines = addNewLinesToString(content.text)
               .split("\n")
@@ -185,8 +185,7 @@ export const executePrompt = async ({
             console.log("\n---------- AGENT OUTPUT ----------");
             console.log(lines);
           });
-        }
-        if (json.type === "user") {
+        } else if (json.type === "user") {
           json.message.content.forEach((content) => {
             const lines = addNewLinesToString(content.text)
               .split("\n")
@@ -196,6 +195,8 @@ export const executePrompt = async ({
             console.log("\n---------- TOOL INPUT ----------");
             console.log(lines);
           });
+        } else {
+          console.log(JSON.stringify(json, null, 2));
         }
         // console.log("agent stdout line", JSON.stringify(json, null, 2), "\n");
       } catch (error) {

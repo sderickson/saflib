@@ -11,11 +11,11 @@ import {
   type WorkflowContext,
   type WorkflowInput,
   type WorkflowOutput,
-  type WorkflowRunMode,
 } from "../types.ts";
 import path from "node:path";
 import { raise } from "xstate";
 import { contextFromInput } from "../utils.ts";
+import { handlePrompt } from "../xstate-actions/prompt.ts";
 
 /**
  * Input for the TestStepMachine.
@@ -48,6 +48,38 @@ export const TestStepMachine = setup({
   },
   actors: {
     ...workflowActors,
+    test: fromPromise(
+      async ({ input }: { input: TestStepContext & { fileName: string } }) => {
+        if (input.runMode === "dry" || input.runMode === "script") {
+          return true;
+        }
+        let tries = 0;
+        while (true) {
+          if (tries > 3) {
+            throw new Error(`Agent failed to fix test: ${input.fileName}`);
+          }
+
+          try {
+            await doesTestPass(input.fileName, { cwd: input.cwd });
+            return {
+              shouldContinue: true,
+            };
+          } catch (error) {
+            const { shouldContinue } = await handlePrompt({
+              context: input,
+              msg: input.fileName
+                ? `The test \`${input.fileName}\` failed.`
+                : `Tests failed.` +
+                  `\nPlease run with "npm run test" and fix the issues.`,
+            });
+            if (!shouldContinue) {
+              throw error;
+            }
+            tries++;
+          }
+        }
+      },
+    ),
   },
 }).createMachine({
   id: "test-step",
@@ -61,25 +93,13 @@ export const TestStepMachine = setup({
   states: {
     test: {
       invoke: {
-        src: fromPromise(
-          async ({
-            input: { fileName, runMode, cwd },
-          }: {
-            input: { fileName: string; runMode: WorkflowRunMode; cwd: string };
-          }) => {
-            if (runMode === "dry" || runMode === "script") {
-              return true;
-            }
-            return await doesTestPass(fileName, { cwd });
-          },
-        ),
+        src: "test",
         input: ({ context }) => {
           return {
+            ...context,
             fileName: context.fileId
               ? path.basename(context.copiedFiles![context.fileId])
               : "",
-            runMode: context.runMode,
-            cwd: context.cwd,
           };
         },
         onDone: {

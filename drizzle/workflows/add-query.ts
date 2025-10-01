@@ -85,7 +85,7 @@ export const AddQueryWorkflowDefinition = defineWorkflow<
 
     step(PromptStepMachine, ({ context }) => ({
       promptText: `Update the package's root \`index.ts\` to export the query collection if it doesn't already.
-      
+
       Do it like so:
 
       \`\`\`ts
@@ -131,7 +131,7 @@ export const AddQueryWorkflowDefinition = defineWorkflow<
     step(UpdateStepMachine, () => ({
       fileId: "test",
       promptMessage: `Implement the generated test file.
-      
+
       Aim for 100% coverage; there should be a known way to achieve every handled error. If it's not possible to cause a returned error, it should not be in the implementation.`,
     })),
 

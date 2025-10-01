@@ -1,15 +1,9 @@
 import { fromPromise, setup, assign } from "xstate";
-import {
-  workflowActions,
-  workflowActors,
-  logInfo,
-  promptAgent,
-} from "../xstate.ts";
+import { workflowActions, workflowActors, logInfo } from "../xstate.ts";
 import {
   type WorkflowContext,
   type WorkflowInput,
   type WorkflowOutput,
-  type WorkflowRunMode,
 } from "../types.ts";
 import { contextFromInput } from "../utils.ts";
 import { raise } from "xstate";
@@ -120,12 +114,6 @@ export const DocStepMachine = setup({
         },
       },
       on: {
-        prompt: {
-          actions: promptAgent(
-            ({ context }) =>
-              `Failed to load documentation for "${context.docId}". Please check that the document exists and is accessible.`,
-          ),
-        },
         continue: {
           target: "done",
         },

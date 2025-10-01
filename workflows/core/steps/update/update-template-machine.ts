@@ -1,18 +1,13 @@
-import { raise, setup } from "xstate";
+import { assign, fromPromise, raise, setup } from "xstate";
 import type {
   WorkflowContext,
   WorkflowInput,
   WorkflowOutput,
 } from "../../types.ts";
-import {
-  promptAgent,
-  workflowActions,
-  logError,
-  workflowActors,
-} from "../../xstate.ts";
+import { workflowActions, workflowActors } from "../../xstate.ts";
 import { readFileSync } from "node:fs";
-import path from "node:path";
 import { contextFromInput } from "../../utils.ts";
+import { handlePrompt } from "../../xstate-actions/prompt.ts";
 
 /**
  * A simple test format on changes made, for checks beyond just "todo" string existence.
@@ -61,6 +56,7 @@ export interface UpdateStepContext extends WorkflowContext {
   filePath: string;
   promptMessage: string | ((context: WorkflowContext) => string);
   valid: UpdateStepTest[];
+  shouldContinue?: boolean;
 }
 
 /**
@@ -77,6 +73,48 @@ export const UpdateStepMachine = setup({
   },
   actors: {
     ...workflowActors,
+
+    prompt: fromPromise(async ({ input }: { input: UpdateStepContext }) => {
+      if (input.runMode === "dry" || input.runMode === "script") {
+        return { shouldContinue: true };
+      }
+
+      const { sessionId, shouldContinue } = await handlePrompt({
+        context: input,
+        msg:
+          typeof input.promptMessage === "string"
+            ? input.promptMessage
+            : input.promptMessage(input),
+      });
+      const agentConfig = input.agentConfig;
+
+      let tries = 1;
+      while (true) {
+        const resolvedPath = input.filePath;
+        const content = readFileSync(resolvedPath, "utf-8");
+        const hasTodos = /\s*(?:#|\/\/).*todo/i.test(content);
+        if (!hasTodos) {
+          break;
+        }
+        if (hasTodos) {
+          if (tries > 3) {
+            throw new Error(
+              `Agent failed to remove TODOs from ${resolvedPath}.`,
+            );
+          }
+          await handlePrompt({
+            context: input,
+            msg: `File ${resolvedPath} was not properly updated - it still contains TODO strings. Please complete the implementation. If it's unclear what needs to be done, ask for help.`,
+          });
+          tries++;
+        }
+      }
+
+      return {
+        shouldContinue,
+        newConfig: agentConfig ? { ...agentConfig, sessionId } : undefined,
+      };
+    }),
   },
   guards: {
     // invalid: ({ context }: { context: UpdateStepContext }) => {
@@ -101,14 +139,6 @@ export const UpdateStepMachine = setup({
     //   }
     //   return true;
     // },
-    todosRemain: ({ context }: { context: UpdateStepContext }) => {
-      const resolvedPath = context.filePath;
-      const content = readFileSync(resolvedPath, "utf-8");
-      const hasTodos = /\s*(?:#|\/\/).*todo/i.test(content);
-      return hasTodos;
-    },
-    shouldSkipForMode: ({ context }) =>
-      context.runMode === "dry" || context.runMode === "script",
   },
 }).createMachine({
   id: "update-step",
@@ -135,46 +165,45 @@ export const UpdateStepMachine = setup({
   states: {
     update: {
       entry: raise({ type: "prompt" }),
+      invoke: {
+        src: "prompt",
+        input: ({ context }) => context,
+        onDone: [
+          {
+            actions: [
+              assign({
+                agentConfig: ({ event, context }) => {
+                  return event.output.newConfig || context.agentConfig;
+                },
+                shouldContinue: ({ event }) => {
+                  return event.output.shouldContinue;
+                },
+              }),
+            ],
+            target: "standby",
+          },
+        ],
+      },
       on: {
-        prompt: [
-          {
-            guard: "shouldSkipForMode",
-            target: "done",
-          },
-          {
-            actions: [
-              promptAgent(({ context }) => {
-                return typeof context.promptMessage === "string"
-                  ? context.promptMessage
-                  : context.promptMessage(context);
-              }),
-            ],
-          },
-        ],
-
         continue: [
-          // {
-          //   guard: "invalid",
-          //   actions: [
-          //     logError(({ context }) => {
-          //       const filePathStr = path.basename(context.filePath);
-          //       return `Validation checks did not all succeed for ${filePathStr}. Please fix the issues and continue.`;
-          //     }),
-          //   ],
-          // },
-          {
-            guard: "todosRemain",
-            actions: [
-              logError(({ context }) => {
-                const filePathStr = path.basename(context.filePath);
-                return `File ${filePathStr} was not properly updated - it still contains TODO strings. Please complete the implementation. If it's unclear what needs to be done, ask for help.`;
-              }),
-            ],
-          },
           {
             target: "done",
           },
         ],
+      },
+    },
+    standby: {
+      entry: raise({ type: "maybeContinue" }),
+      on: {
+        maybeContinue: {
+          guard: ({ context }) => {
+            return !!context.shouldContinue;
+          },
+          target: "done",
+        },
+        continue: {
+          target: "done",
+        },
       },
     },
     done: {
