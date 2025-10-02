@@ -15,7 +15,7 @@ export const handlePrompt = async ({
   context,
 }: PromptParam): Promise<PromptResult> => {
   if (process.env.NODE_ENV === "test") {
-    return { code: 0, sessionId: "test-session-id", shouldContinue: true };
+    return { code: 0, sessionId: "test-session-id", shouldContinue: false };
   }
   switch (context.runMode) {
     case "run":

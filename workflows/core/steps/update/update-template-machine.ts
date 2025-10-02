@@ -57,6 +57,7 @@ export interface UpdateStepContext extends WorkflowContext {
   promptMessage: string | ((context: WorkflowContext) => string);
   valid: UpdateStepTest[];
   shouldContinue?: boolean;
+  hasTodos?: boolean;
 }
 
 /**
@@ -89,10 +90,11 @@ export const UpdateStepMachine = setup({
       const agentConfig = input.agentConfig;
 
       let tries = 1;
+      let hasTodos = false;
       while (true) {
         const resolvedPath = input.filePath;
         const content = readFileSync(resolvedPath, "utf-8");
-        const hasTodos = /\s*(?:#|\/\/).*todo/i.test(content);
+        hasTodos = /\s*(?:#|\/\/).*todo/i.test(content);
         if (!hasTodos) {
           break;
         }
@@ -106,6 +108,9 @@ export const UpdateStepMachine = setup({
             context: input,
             msg: `File ${resolvedPath} was not properly updated - it still contains TODO strings. Please complete the implementation. If it's unclear what needs to be done, ask for help.`,
           });
+          if (!shouldContinue) {
+            break;
+          }
           tries++;
         }
       }
@@ -113,6 +118,7 @@ export const UpdateStepMachine = setup({
       return {
         shouldContinue,
         newConfig: agentConfig ? { ...agentConfig, sessionId } : undefined,
+        hasTodos,
       };
     }),
   },
@@ -178,6 +184,9 @@ export const UpdateStepMachine = setup({
                 shouldContinue: ({ event }) => {
                   return event.output.shouldContinue;
                 },
+                hasTodos: ({ event }) => {
+                  return event.output.hasTodos;
+                },
               }),
             ],
             target: "standby",
@@ -187,10 +196,10 @@ export const UpdateStepMachine = setup({
       on: {
         continue: [
           {
-            target: "update",
             guard: ({ context }) => {
               return context.runMode === "run";
             },
+            target: "update",
           },
           {
             target: "done",
@@ -207,9 +216,17 @@ export const UpdateStepMachine = setup({
           },
           target: "done",
         },
-        continue: {
-          target: "done",
-        },
+        continue: [
+          {
+            guard: ({ context }) => {
+              return !!context.hasTodos;
+            },
+            target: "update",
+          },
+          {
+            target: "done",
+          },
+        ],
       },
     },
     done: {

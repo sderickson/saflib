@@ -33,7 +33,7 @@ describe("updateTemplateFileFactory", () => {
     });
     actor.start();
     await pollingWaitFor(actor, workflowAllSettled);
-    expect(actor.getSnapshot().value).toBe("update");
+    expect(actor.getSnapshot().value).toBe("standby");
     actor.send({ type: "continue" });
     await pollingWaitFor(actor, workflowAllSettled);
     expect(actor.getSnapshot().value).toBe("done");
@@ -52,18 +52,18 @@ describe("updateTemplateFileFactory", () => {
         copiedFiles: {
           "test-file.txt": testFilePath,
         },
+        runMode: "print",
       },
     });
     actor.start();
-
-    actor.send({ type: "continue" });
+    await pollingWaitFor(actor, workflowAllSettled);
 
     // Wait a bit to ensure the state machine has processed
     await new Promise((resolve) => setTimeout(resolve, 100));
 
-    expect(actor.getSnapshot().value).toBe("update");
+    expect(actor.getSnapshot().value).toBe("standby");
     actor.send({ type: "continue" });
     await pollingWaitFor(actor, workflowAllSettled);
-    expect(actor.getSnapshot().value).toBe("update");
+    expect(actor.getSnapshot().value).toBe("standby");
   });
 });
