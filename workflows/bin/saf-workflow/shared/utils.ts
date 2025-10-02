@@ -3,11 +3,12 @@ import type {
   WorkflowDefinition,
   WorkflowArgument,
   WorkflowRunMode,
+  AgentConfig,
 } from "../../../core/types.ts";
 import { XStateWorkflowRunner } from "./workflow.ts";
 import path from "node:path";
 import { existsSync, readFileSync } from "node:fs";
-import { saveWorkflow, loadWorkflowDefinitionFromFile } from "./file-io.ts";
+import { loadWorkflowDefinitionFromFile, saveWorkflow } from "./file-io.ts";
 import { resolve } from "node:path";
 import { getWorkflowLogger } from "../../../core/store.ts";
 
@@ -15,6 +16,7 @@ export interface RunWorkflowOptions {
   definition: WorkflowDefinition<any, any>;
   runMode: WorkflowRunMode;
   args?: string[];
+  agentConfig?: AgentConfig;
 }
 
 /**
@@ -32,8 +34,17 @@ export const runWorkflow = async (
     definition,
     args: args || exampleArgs,
     workflowRunMode: runMode,
+    agentConfig: options.agentConfig,
   });
-  await workflow.kickoff();
+  await workflow.kickoff({
+    onSnapshot: () => {
+      saveWorkflow(workflow);
+    },
+  });
+  if (runMode === "print") {
+    console.log("--- To continue, run 'npm exec saf-workflow next' ---\n");
+    saveWorkflow(workflow);
+  }
   return workflow.getOutput();
 };
 
@@ -69,24 +80,6 @@ export function getPackageName(rootUrl: string) {
     currentDir = parentDir;
   }
 }
-
-/**
- * Shared utility function to kick off a workflow with the given definition and arguments.
- * This is used by both the regular kickoff command and the kickoff-unlisted command.
- */
-export const kickoffWorkflow = async (
-  Workflow: WorkflowDefinition,
-  args: string[],
-) => {
-  const workflow = new XStateWorkflowRunner({
-    definition: Workflow,
-    args: args.slice(0, Workflow.input.length),
-    workflowRunMode: "print",
-  });
-  await workflow.kickoff();
-  console.log("--- To continue, run 'npm exec saf-workflow next' ---\n");
-  saveWorkflow(workflow);
-};
 
 /**
  * Load a workflow definition from either a workflow ID or a file path.

@@ -1,5 +1,4 @@
 import { fromPromise } from "xstate";
-import { promptImpl } from "./xstate-actions/prompt.ts";
 import { logImpl } from "./xstate-actions/log.ts";
 
 /**
@@ -7,7 +6,6 @@ import { logImpl } from "./xstate-actions/log.ts";
  */
 export const workflowActions = {
   log: logImpl,
-  prompt: promptImpl,
 };
 
 /**
@@ -21,6 +19,5 @@ export const workflowActors = {
 };
 
 export { logInfo, logError, logWarn } from "./xstate-actions/log.ts";
-export { promptAgent } from "./xstate-actions/prompt.ts";
 export { doesTestPass } from "./xstate-actions/test.ts";
 export { runCommandAsync } from "./xstate-actions/utils.ts";

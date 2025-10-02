@@ -1,4 +1,5 @@
 import type { Snapshot } from "xstate";
+import type { WorkflowContext } from "../../../core/types.ts";
 
 /**
  * High-level status of the workflow.
@@ -17,5 +18,7 @@ export interface WorkflowBlob {
   workflowSourceUrl: string;
   args: string[];
   internalState?: WorkflowBlobInternalState;
-  snapshotState?: Snapshot<any>;
+  snapshotState?: Snapshot<any> & {
+    context: WorkflowContext;
+  };
 }

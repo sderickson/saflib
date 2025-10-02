@@ -7,7 +7,6 @@ import {
   type InputFrom,
   type PromiseActorLogic,
   type MachineContext,
-  type AnyActorRef,
 } from "xstate";
 
 /**
@@ -114,15 +113,22 @@ export interface ActionParam<C, E extends AnyEventObject> {
   event: E;
 }
 
+export type AgentCLI = "cursor-agent";
+
+export interface AgentConfig {
+  cli: AgentCLI;
+  sessionId?: string;
+}
+
 /**
  * Inputs every workflow machine receives.
  */
 export interface WorkflowInput {
+  agentConfig?: AgentConfig;
+
   runMode?: WorkflowRunMode;
 
   systemPrompt?: string;
-
-  rootRef?: AnyActorRef;
 
   templateFiles?: Record<string, string>;
 
@@ -147,14 +153,18 @@ export interface WorkflowOutput {
   copiedFiles?: Record<string, string>;
 
   newCwd?: string;
+
+  agentConfig?: AgentConfig;
 }
 
-export type WorkflowRunMode = "dry" | "print" | "script";
+export type WorkflowRunMode = "dry" | "print" | "script" | "run";
 
 /**
  * Context shared across all workflow machines.
  */
 export interface WorkflowContext {
+  agentConfig?: AgentConfig;
+
   /**
    * Short descriptions of every step taken in the workflow. Can be used
    * either to generate a sample checklist for a workflow, or a summary
@@ -175,13 +185,6 @@ export interface WorkflowContext {
    * - "script": skip prompts and checks, just run command and copy steps. Useful for debugging templates and scripts.
    */
   runMode: WorkflowRunMode;
-
-  /**
-   * Currently unused. I had a plan to use this to orchestrate halt events, or perhaps a mutex setup so that async work (such as Promise actors) can communicate to the runner that there's async work happening and the workflow should wait until it's done before exiting the program or whatever the runner will end up doing. But I've run into a few problems including that the ref doesn't properly get unserialized (possibly because it's the root node?), and I can't just send a signal directly to a consistently named actor (I tried passing "workflow-actor" as the id when kicking off and dehydrating, no dice).
-   *
-   * I may futz with this again later, but it seems unlikely to work. In the meantime, I'm polling with "pollingWaitFor".
-   */
-  rootRef: AnyActorRef;
 
   templateFiles?: Record<string, string>;
 

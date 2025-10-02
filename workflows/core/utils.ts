@@ -1,9 +1,5 @@
 import { addNewLinesToString } from "../strings.ts";
-import {
-  type AnyMachineSnapshot,
-  type AnyActor,
-  type AnyActorRef,
-} from "xstate";
+import { type AnyMachineSnapshot, type AnyActor } from "xstate";
 import type { ChecklistItem, WorkflowContext, WorkflowInput } from "./types.ts";
 
 /**
@@ -87,10 +83,7 @@ export const checklistToString = (
     .join("\n");
 };
 
-export function contextFromInput(
-  input: WorkflowInput,
-  rootRef: AnyActorRef,
-): WorkflowContext {
+export function contextFromInput(input: WorkflowInput): WorkflowContext {
   return {
     checklist: [],
     systemPrompt: input.systemPrompt,
@@ -98,8 +91,8 @@ export function contextFromInput(
     templateFiles: input.templateFiles,
     copiedFiles: input.copiedFiles,
     docFiles: input.docFiles,
-    rootRef: input.rootRef || rootRef,
     cwd: input.cwd || process.cwd(),
+    agentConfig: input.agentConfig,
   };
 }
 

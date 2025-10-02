@@ -1,18 +1,13 @@
-import { raise, setup } from "xstate";
+import { assign, fromPromise, raise, setup } from "xstate";
 import type {
   WorkflowContext,
   WorkflowInput,
   WorkflowOutput,
 } from "../../types.ts";
-import {
-  promptAgent,
-  workflowActions,
-  logError,
-  workflowActors,
-} from "../../xstate.ts";
+import { workflowActions, workflowActors } from "../../xstate.ts";
 import { readFileSync } from "node:fs";
-import path from "node:path";
 import { contextFromInput } from "../../utils.ts";
+import { handlePrompt } from "../../prompt.ts";
 
 /**
  * A simple test format on changes made, for checks beyond just "todo" string existence.
@@ -61,6 +56,8 @@ export interface UpdateStepContext extends WorkflowContext {
   filePath: string;
   promptMessage: string | ((context: WorkflowContext) => string);
   valid: UpdateStepTest[];
+  shouldContinue?: boolean;
+  hasTodos?: boolean;
 }
 
 /**
@@ -77,6 +74,53 @@ export const UpdateStepMachine = setup({
   },
   actors: {
     ...workflowActors,
+
+    prompt: fromPromise(async ({ input }: { input: UpdateStepContext }) => {
+      if (input.runMode === "dry" || input.runMode === "script") {
+        return { shouldContinue: true };
+      }
+
+      const { sessionId, shouldContinue } = await handlePrompt({
+        context: input,
+        msg:
+          typeof input.promptMessage === "string"
+            ? input.promptMessage
+            : input.promptMessage(input),
+      });
+      const agentConfig = input.agentConfig;
+
+      let tries = 1;
+      let hasTodos = false;
+      while (true) {
+        const resolvedPath = input.filePath;
+        const content = readFileSync(resolvedPath, "utf-8");
+        hasTodos = /\s*(?:#|\/\/).*todo/i.test(content);
+        if (!hasTodos) {
+          break;
+        }
+        if (hasTodos) {
+          if (tries > 3) {
+            throw new Error(
+              `Agent failed to remove TODOs from ${resolvedPath}.`,
+            );
+          }
+          await handlePrompt({
+            context: input,
+            msg: `File ${resolvedPath} was not properly updated - it still contains TODO strings. Please complete the implementation. If it's unclear what needs to be done, ask for help.`,
+          });
+          if (!shouldContinue) {
+            break;
+          }
+          tries++;
+        }
+      }
+
+      return {
+        shouldContinue,
+        newConfig: agentConfig ? { ...agentConfig, sessionId } : undefined,
+        hasTodos,
+      };
+    }),
   },
   guards: {
     // invalid: ({ context }: { context: UpdateStepContext }) => {
@@ -101,19 +145,11 @@ export const UpdateStepMachine = setup({
     //   }
     //   return true;
     // },
-    todosRemain: ({ context }: { context: UpdateStepContext }) => {
-      const resolvedPath = context.filePath;
-      const content = readFileSync(resolvedPath, "utf-8");
-      const hasTodos = /\s*(?:#|\/\/).*todo/i.test(content);
-      return hasTodos;
-    },
-    shouldSkipForMode: ({ context }) =>
-      context.runMode === "dry" || context.runMode === "script",
   },
 }).createMachine({
   id: "update-step",
   initial: "update",
-  context: ({ input, self }) => {
+  context: ({ input }) => {
     if (!input.copiedFiles) {
       throw new Error(
         "`copiedFiles` not passed in. Did you run CopyStepMachine before UpdateStepMachine?",
@@ -126,7 +162,7 @@ export const UpdateStepMachine = setup({
     }
     const filePath = input.copiedFiles[input.fileId];
     return {
-      ...contextFromInput(input, self),
+      ...contextFromInput(input),
       filePath,
       promptMessage: input.promptMessage,
       valid: input.valid || [],
@@ -135,41 +171,57 @@ export const UpdateStepMachine = setup({
   states: {
     update: {
       entry: raise({ type: "prompt" }),
-      on: {
-        prompt: [
-          {
-            guard: "shouldSkipForMode",
-            target: "done",
-          },
+      invoke: {
+        src: "prompt",
+        input: ({ context }) => context,
+        onDone: [
           {
             actions: [
-              promptAgent(({ context }) => {
-                return typeof context.promptMessage === "string"
-                  ? context.promptMessage
-                  : context.promptMessage(context);
+              assign({
+                agentConfig: ({ event, context }) => {
+                  return event.output.newConfig || context.agentConfig;
+                },
+                shouldContinue: ({ event }) => {
+                  return event.output.shouldContinue;
+                },
+                hasTodos: ({ event }) => {
+                  return event.output.hasTodos;
+                },
               }),
             ],
+            target: "standby",
           },
         ],
-
+      },
+      on: {
         continue: [
-          // {
-          //   guard: "invalid",
-          //   actions: [
-          //     logError(({ context }) => {
-          //       const filePathStr = path.basename(context.filePath);
-          //       return `Validation checks did not all succeed for ${filePathStr}. Please fix the issues and continue.`;
-          //     }),
-          //   ],
-          // },
           {
-            guard: "todosRemain",
-            actions: [
-              logError(({ context }) => {
-                const filePathStr = path.basename(context.filePath);
-                return `File ${filePathStr} was not properly updated - it still contains TODO strings. Please complete the implementation. If it's unclear what needs to be done, ask for help.`;
-              }),
-            ],
+            guard: ({ context }) => {
+              return context.runMode === "run";
+            },
+            target: "update",
+          },
+          {
+            target: "done",
+          },
+        ],
+      },
+    },
+    standby: {
+      entry: raise({ type: "maybeContinue" }),
+      on: {
+        maybeContinue: {
+          guard: ({ context }) => {
+            return !!context.shouldContinue;
+          },
+          target: "done",
+        },
+        continue: [
+          {
+            guard: ({ context }) => {
+              return !!context.hasTodos;
+            },
+            target: "update",
           },
           {
             target: "done",

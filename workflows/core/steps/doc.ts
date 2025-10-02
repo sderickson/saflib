@@ -1,20 +1,15 @@
-import { fromPromise, setup } from "xstate";
-import {
-  workflowActions,
-  workflowActors,
-  logInfo,
-  promptAgent,
-} from "../xstate.ts";
+import { fromPromise, setup, assign } from "xstate";
+import { workflowActions, workflowActors, logInfo } from "../xstate.ts";
 import {
   type WorkflowContext,
   type WorkflowInput,
   type WorkflowOutput,
-  type WorkflowRunMode,
 } from "../types.ts";
 import { contextFromInput } from "../utils.ts";
 import { raise } from "xstate";
 import path from "node:path";
 import { getSourceUrl } from "../store.ts";
+import { handlePrompt } from "../prompt.ts";
 
 /**
  * Input for the DocStepMachine.
@@ -31,6 +26,7 @@ export interface DocStepInput {
  */
 export interface DocStepContext extends WorkflowContext {
   docId: string;
+  shouldContinue?: boolean;
 }
 
 /**
@@ -47,16 +43,42 @@ export const DocStepMachine = setup({
   },
   actors: {
     ...workflowActors,
-  },
-  guards: {
-    shouldSkipForMode: ({ context }) =>
-      context.runMode === "dry" || context.runMode === "script",
+    reviewDoc: fromPromise(async ({ input }: { input: DocStepContext }) => {
+      if (input.runMode === "dry") {
+        return { shouldContinue: true };
+      }
+
+      const docPath = input.docFiles![input.docId];
+      if (!docPath) {
+        throw new Error(
+          `Document with id "${input.docId}" not found in docFiles`,
+        );
+      }
+
+      if (!docPath.endsWith(".md")) {
+        throw new Error(`Document "${input.docId}" is not a markdown file`);
+      }
+
+      if (input.runMode === "script") {
+        return { shouldContinue: true };
+      }
+
+      const { sessionId, shouldContinue } = await handlePrompt({
+        context: input,
+        msg: `Please review the following documentation: ${docPath}`,
+      });
+      const agentConfig = input.agentConfig;
+      return {
+        shouldContinue,
+        newConfig: agentConfig ? { ...agentConfig, sessionId } : undefined,
+      };
+    }),
   },
 }).createMachine({
   id: "doc-step",
-  context: ({ input, self }) => {
+  context: ({ input }) => {
     return {
-      ...contextFromInput(input, self),
+      ...contextFromInput(input),
       docId: input.docId,
     };
   },
@@ -64,51 +86,21 @@ export const DocStepMachine = setup({
   states: {
     reviewDoc: {
       invoke: {
-        src: fromPromise(
-          async ({
-            input: { docId, docFiles, runMode },
-          }: {
-            input: {
-              docId: string;
-              docFiles: Record<string, string>;
-              runMode: WorkflowRunMode;
-            };
-          }) => {
-            if (runMode === "dry") {
-              return "Dry run - would review documentation";
-            }
-
-            const docPath = docFiles[docId];
-            if (!docPath) {
-              throw new Error(
-                `Document with id "${docId}" not found in docFiles`,
-              );
-            }
-
-            if (!docPath.endsWith(".md")) {
-              throw new Error(`Document "${docId}" is not a markdown file`);
-            }
-          },
-        ),
-        input: ({ context }) => {
-          return {
-            docId: context.docId,
-            docFiles: context.docFiles || {},
-            runMode: context.runMode,
-          };
-        },
+        src: "reviewDoc",
+        input: ({ context }) => context,
         onDone: [
           {
-            guard: "shouldSkipForMode",
-            target: "done",
-          },
-          {
             actions: [
-              promptAgent(({ context }) => {
-                const docPath = context.docFiles![context.docId];
-                return `Please review the following documentation: ${docPath}`;
+              assign({
+                agentConfig: ({ event, context }) => {
+                  return event.output.newConfig || context.agentConfig;
+                },
+                shouldContinue: ({ event }) => {
+                  return event.output.shouldContinue;
+                },
               }),
             ],
+            target: "standby",
           },
         ],
         onError: {
@@ -122,14 +114,30 @@ export const DocStepMachine = setup({
         },
       },
       on: {
-        prompt: {
-          actions: promptAgent(
-            ({ context }) =>
-              `Failed to load documentation for "${context.docId}". Please check that the document exists and is accessible.`,
-          ),
+        continue: [
+          {
+            target: "reviewDoc",
+            guard: ({ context }) => {
+              return context.runMode === "run";
+            },
+          },
+          {
+            target: "done",
+          },
+        ],
+      },
+    },
+
+    standby: {
+      entry: raise({ type: "maybeContinue" }),
+      on: {
+        maybeContinue: {
+          guard: ({ context }) => {
+            return !!context.shouldContinue;
+          },
+          target: "done",
         },
         continue: {
-          reenter: true,
           target: "done",
         },
       },

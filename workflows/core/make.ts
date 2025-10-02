@@ -100,10 +100,10 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
             ...step.input({ context }),
             // don't need checklist; the machine will compose their own
             runMode: context.runMode,
-            rootRef: context.rootRef,
             templateFiles: context.templateFiles,
             copiedFiles: context.copiedFiles,
             docFiles: context.docFiles,
+            agentConfig: context.agentConfig,
             cwd: context.cwd,
           };
         },
@@ -115,6 +115,10 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
               type: "afterEach",
             },
             assign({
+              agentConfig: ({ context, event }) => {
+                const output: WorkflowOutput = event.output;
+                return output.agentConfig || context.agentConfig;
+              },
               checklist: ({ context, event }) => {
                 const output: WorkflowOutput = event.output;
                 return [...context.checklist, output.checklist];
@@ -175,7 +179,7 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
     entry: raise({ type: "start" }),
     id: workflow.id,
     description: workflow.description,
-    context: ({ input, self }) => {
+    context: ({ input }) => {
       const context: Context = {
         ...workflow.context({
           input: {
@@ -183,7 +187,7 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
             cwd: input.cwd || process.cwd(),
           },
         }),
-        ...contextFromInput(input, self),
+        ...contextFromInput(input),
         templateFiles: workflow.templateFiles,
         docFiles: workflow.docFiles,
       };
@@ -197,6 +201,7 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
           workflow.checklistDescription?.(context) || workflow.description,
         subitems: context.checklist,
       },
+      agentConfig: context.agentConfig,
     }),
   });
 }

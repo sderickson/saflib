@@ -1,7 +1,12 @@
-import { setup, raise } from "xstate";
-import { workflowActions, workflowActors, promptAgent } from "../xstate.ts";
-import { type WorkflowContext, type WorkflowInput } from "../types.ts";
+import { setup, raise, fromPromise, assign } from "xstate";
+import { workflowActions, workflowActors } from "../xstate.ts";
+import {
+  type WorkflowContext,
+  type WorkflowInput,
+  type AgentConfig,
+} from "../types.ts";
 import { contextFromInput } from "../utils.ts";
+import { handlePrompt } from "../prompt.ts";
 
 /**
  * Input for the PromptStepMachine.
@@ -24,6 +29,12 @@ export interface PromptStepInput {
 export interface PromptStepContext extends WorkflowContext {
   promptText: string;
   skipIf?: boolean;
+  shouldContinue?: boolean;
+}
+
+export interface PromptStepOutput {
+  shouldContinue: boolean;
+  newConfig?: AgentConfig;
 }
 
 /**
@@ -39,6 +50,33 @@ export const PromptStepMachine = setup({
   },
   actors: {
     ...workflowActors,
+
+    prompt: fromPromise(
+      async ({
+        input,
+      }: {
+        input: PromptStepContext;
+      }): Promise<PromptStepOutput> => {
+        if (input.runMode === "dry" || input.runMode === "script") {
+          return { shouldContinue: true };
+        }
+        if (input.skipIf === true) {
+          return { shouldContinue: true };
+        }
+        if (process.env.NODE_ENV === "test") {
+          return { shouldContinue: true };
+        }
+        const { sessionId, shouldContinue } = await handlePrompt({
+          context: input,
+          msg: input.promptText,
+        });
+        const agentConfig = input.agentConfig;
+        return {
+          shouldContinue,
+          newConfig: agentConfig ? { ...agentConfig, sessionId } : undefined,
+        };
+      },
+    ),
   },
   guards: {
     shouldSkip: ({ context }) => {
@@ -53,8 +91,8 @@ export const PromptStepMachine = setup({
   },
 }).createMachine({
   id: "prompt-step",
-  context: ({ input, self }) => ({
-    ...contextFromInput(input, self),
+  context: ({ input }) => ({
+    ...contextFromInput(input),
     promptText: input.promptText,
     skipIf: input.skipIf,
   }),
@@ -62,16 +100,49 @@ export const PromptStepMachine = setup({
   states: {
     running: {
       entry: raise({ type: "prompt" }),
-      on: {
-        prompt: [
+      invoke: {
+        src: "prompt",
+        input: ({ context }) => context,
+        onDone: [
           {
-            guard: "shouldSkip",
-            target: "done",
-          },
-          {
-            actions: [promptAgent(({ context }) => context.promptText)],
+            actions: [
+              assign({
+                agentConfig: ({ event, context }) => {
+                  return event.output.newConfig || context.agentConfig;
+                },
+                shouldContinue: ({ event }) => {
+                  return event.output.shouldContinue;
+                },
+              }),
+            ],
+            target: "standby",
           },
         ],
+      },
+
+      on: {
+        continue: [
+          {
+            target: "running",
+            guard: ({ context }) => {
+              return context.runMode === "run";
+            },
+          },
+          {
+            target: "done",
+          },
+        ],
+      },
+    },
+    standby: {
+      entry: raise({ type: "maybeContinue" }),
+      on: {
+        maybeContinue: {
+          guard: ({ context }) => {
+            return !!context.shouldContinue;
+          },
+          target: "done",
+        },
         continue: {
           target: "done",
         },
@@ -83,6 +154,9 @@ export const PromptStepMachine = setup({
   },
   output: ({ context }) => {
     return {
+      agentConfig: {
+        ...context.agentConfig,
+      },
       checklist: {
         description: context.promptText.split("\n")[0],
       },
