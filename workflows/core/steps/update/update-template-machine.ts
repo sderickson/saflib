@@ -7,7 +7,7 @@ import type {
 import { workflowActions, workflowActors } from "../../xstate.ts";
 import { readFileSync } from "node:fs";
 import { contextFromInput } from "../../utils.ts";
-import { handlePrompt } from "../../xstate-actions/prompt.ts";
+import { handlePrompt } from "../../prompt.ts";
 
 /**
  * A simple test format on changes made, for checks beyond just "todo" string existence.

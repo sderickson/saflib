@@ -6,7 +6,7 @@ import {
   type AgentConfig,
 } from "../types.ts";
 import { contextFromInput } from "../utils.ts";
-import { handlePrompt } from "../xstate-actions/prompt.ts";
+import { handlePrompt } from "../prompt.ts";
 
 /**
  * Input for the PromptStepMachine.

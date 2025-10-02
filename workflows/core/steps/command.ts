@@ -11,7 +11,7 @@ import {
   logInfo,
   logError,
 } from "../xstate.ts";
-import { handlePrompt } from "../xstate-actions/prompt.ts";
+import { handlePrompt } from "../prompt.ts";
 import { raise } from "xstate";
 import { contextFromInput } from "../utils.ts";
 

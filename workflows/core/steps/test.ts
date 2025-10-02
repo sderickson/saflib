@@ -14,7 +14,7 @@ import {
 import path from "node:path";
 import { raise } from "xstate";
 import { contextFromInput } from "../utils.ts";
-import { handlePrompt } from "../xstate-actions/prompt.ts";
+import { handlePrompt } from "../prompt.ts";
 
 /**
  * Input for the TestStepMachine.

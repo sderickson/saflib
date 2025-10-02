@@ -1,7 +1,7 @@
-import { print } from "../utils.ts";
-import { type WorkflowContext } from "../types.ts";
+import { print } from "./utils.ts";
+import { type WorkflowContext } from "./types.ts";
 import { spawn } from "node:child_process";
-import { addNewLinesToString } from "../../strings.ts";
+import { addNewLinesToString } from "../strings.ts";
 import path from "node:path";
 import { writeFileSync } from "node:fs";
 

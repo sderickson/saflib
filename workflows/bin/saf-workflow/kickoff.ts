@@ -5,7 +5,7 @@ import { runWorkflow } from "./shared/utils.ts";
 import { getWorkflowLogger } from "../../core/store.ts";
 import { loadWorkflowDefinitionFromFile } from "./shared/file-io.ts";
 import { resolve } from "node:path";
-import { logFile } from "../../core/xstate-actions/prompt.ts";
+import { logFile } from "../../core/prompt.ts";
 import { writeFileSync } from "node:fs";
 
 export const addKickoffCommand = (
