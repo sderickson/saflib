@@ -16,6 +16,7 @@ import {
   setup,
   type AnyStateMachine,
   type InputFrom,
+  type OutputFrom,
 } from "xstate";
 import { contextFromInput } from "./utils.ts";
 import type { WorkflowArgument } from "./types.ts";
@@ -223,9 +224,13 @@ export const makeWorkflowMachine = <C, I extends readonly WorkflowArgument[]>(
 export const step = <C, M extends AnyStateMachine>(
   machine: M,
   input: (arg: { context: C & WorkflowContext }) => InputFrom<M>,
+  options: {
+    validate?: (arg: { output: OutputFrom<M> }) => Promise<string | undefined>;
+  } = {},
 ): WorkflowStep<C, M> => {
   return {
     machine,
     input,
+    validate: options.validate || (() => Promise.resolve(undefined)),
   };
 };

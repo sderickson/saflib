@@ -61,7 +61,6 @@ export const SdkInitWorkflowDefinition = defineWorkflow<
       relDir,
       reversePath,
     };
-    console.log("ctx", ctx);
     return ctx;
   },
 

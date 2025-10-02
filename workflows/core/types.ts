@@ -7,6 +7,7 @@ import {
   type InputFrom,
   type PromiseActorLogic,
   type MachineContext,
+  type OutputFrom,
 } from "xstate";
 
 /**
@@ -15,6 +16,7 @@ import {
 export type WorkflowStep<C, M extends AnyStateMachine> = {
   machine: M;
   input: (arg: { context: C & WorkflowContext }) => InputFrom<M>;
+  validate: (arg: { output: OutputFrom<M> }) => Promise<string | undefined>;
 };
 
 /**

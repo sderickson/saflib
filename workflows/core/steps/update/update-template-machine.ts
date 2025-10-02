@@ -60,12 +60,16 @@ export interface UpdateStepContext extends WorkflowContext {
   hasTodos?: boolean;
 }
 
+export interface UpdateStepOutput extends WorkflowOutput {
+  filePath: string;
+}
+
 /**
  * Prompts the agent to update one of the templateFiles that was copied over by the CopyStepMachine.
  */
 export const UpdateStepMachine = setup({
   types: {
-    output: {} as WorkflowOutput,
+    output: {} as UpdateStepOutput,
     input: {} as UpdateStepInput & WorkflowInput,
     context: {} as UpdateStepContext,
   },
@@ -242,6 +246,7 @@ export const UpdateStepMachine = setup({
       checklist: {
         description: promptMessage.split("\n")[0],
       },
+      filePath: context.filePath,
     };
   },
 });
