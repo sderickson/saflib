@@ -117,6 +117,18 @@ interface CursorToolCallLog {
         success: {};
       };
     };
+    shellToolCall?: {
+      args: {
+        command: string;
+      };
+      result?: {
+        success: {};
+        failure: {
+          stdout: string;
+          stderr: string;
+        };
+      };
+    };
   };
 }
 
@@ -252,6 +264,21 @@ export const executePrompt = async ({
             console.log(`> Updating todos`);
           } else if (json.subtype === "completed") {
             console.log(`> Todos updated`);
+          }
+        } else if (json.tool_call.shellToolCall) {
+          if (json.subtype === "started") {
+            console.log(
+              `> Running command: ${json.tool_call.shellToolCall.args.command}`,
+            );
+          } else if (json.subtype === "completed") {
+            if (json.tool_call.shellToolCall.result?.success) {
+              console.log(`> Command successful`);
+            } else {
+              console.error(`> Command failed`);
+              console.error(
+                json.tool_call.shellToolCall.result?.failure.stderr,
+              );
+            }
           }
         } else {
           console.error(
