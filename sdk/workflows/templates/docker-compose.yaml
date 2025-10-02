@@ -9,5 +9,5 @@ services:
     command: npm run dev
     volumes:
       - ./:/app/__rel-dir__/
-      - __reverse-path__/vue/:/app/saflib/vue/
-      - __reverse-path__/sdk/:/app/saflib/sdk/
+      - __reverse-path__/saflib/vue/:/app/saflib/vue/
+      - __reverse-path__/saflib/sdk/:/app/saflib/sdk/

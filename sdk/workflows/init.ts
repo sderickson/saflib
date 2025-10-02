@@ -49,14 +49,15 @@ export const SdkInitWorkflowDefinition = defineWorkflow<
   sourceUrl: import.meta.url,
 
   context: ({ input }) => {
-    const relDir = path.relative(input.cwd, ctx.targetDir);
+    const targetDir = path.join(input.cwd, input.path);
+    const relDir = path.relative(input.cwd, targetDir);
     const numDirs = relDir.split(path.sep).length;
     const reversePath = "../".repeat(numDirs).slice(0, -1);
     const ctx: SdkInitWorkflowContext = {
       ...parsePackageName(input.name, {
         requiredSuffix: "-sdk",
       }),
-      targetDir: path.join(input.cwd, input.path),
+      targetDir,
       relDir,
       reversePath,
     };
