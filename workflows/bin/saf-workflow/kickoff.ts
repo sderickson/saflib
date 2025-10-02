@@ -28,6 +28,7 @@ export const addKickoffCommand = (
     .addOption(runModeOption)
     .action(
       async (filePath: string, args: string[], options: { run?: string }) => {
+        console.log("Kickoff command");
         writeFileSync(logFile, "");
         const runMode = options.run;
         const givenRunMode = parseRunMode(runMode);
@@ -43,6 +44,7 @@ export const addKickoffCommand = (
           workflowDefinition = workflows.find((w) => w.id === filePath);
         }
         if (!workflowDefinition) {
+          console.log("Workflow definition not found");
           process.exit(1);
         }
 
