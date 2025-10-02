@@ -101,7 +101,7 @@ interface CursorToolCallLog {
     };
     globToolCall?: {
       args: {
-        targetDirectory: string;
+        targetDirectory?: string;
         globPattern: string;
       };
       result?: {
@@ -266,7 +266,7 @@ export const executePrompt = async ({
         } else if (json.tool_call.globToolCall) {
           if (json.subtype === "started") {
             printLineSlowly(
-              `> Globbing files: ${relativePath(json.tool_call.globToolCall.args.globPattern)} in ${relativePath(json.tool_call.globToolCall.args.targetDirectory)}`,
+              `> Globbing files: ${relativePath(json.tool_call.globToolCall.args.globPattern)} in ${relativePath(json.tool_call.globToolCall.args.targetDirectory || "entire project")}`,
             );
           } else if (json.subtype === "completed") {
             if (json.tool_call.globToolCall.result?.success) {
