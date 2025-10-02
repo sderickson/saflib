@@ -129,6 +129,23 @@ interface CursorToolCallLog {
         };
       };
     };
+    grepToolCall?: {
+      args: {
+        pattern: string;
+        path: string;
+      };
+      result?: {
+        success: {
+          workspaceResults: {
+            [folderPath: string]: {
+              content: {
+                totalLines: number;
+              };
+            };
+          };
+        };
+      };
+    };
   };
 }
 
@@ -198,7 +215,7 @@ export const executePrompt = async ({
             .map((line) => `> ${line}`)
             .join("\n")
             .trim();
-          printLineSlowly("\n---------- AGENT OUTPUT ----------");
+          printLineSlowly("\n---------- AGENT ----------");
           printLineSlowly(lines);
         });
       } else if (json.type === "user") {
@@ -212,7 +229,7 @@ export const executePrompt = async ({
           printLineSlowly(lines);
         });
       } else if (json.type === "tool_call") {
-        printLineSlowly("\n---------- TOOL CALL ----------");
+        printLineSlowly("\n---------- TOOL ----------");
         if (json.tool_call.readToolCall) {
           if (json.subtype === "started") {
             printLineSlowly(
@@ -280,6 +297,24 @@ export const executePrompt = async ({
               printLineSlowly(
                 json.tool_call.shellToolCall.result?.failure.stderr ?? "",
               );
+            }
+          }
+        } else if (json.tool_call.grepToolCall) {
+          if (json.subtype === "started") {
+            printLineSlowly(
+              `> Grepping files: "${json.tool_call.grepToolCall.args.pattern}" in "${relativePath(json.tool_call.grepToolCall.args.path)}"`,
+            );
+          }
+          if (json.subtype === "completed") {
+            if (json.tool_call.grepToolCall.result?.success) {
+              const workspaces = Object.values(
+                json.tool_call.grepToolCall.result.success.workspaceResults,
+              );
+              const linesFound = workspaces.reduce(
+                (acc, workspace) => acc + workspace.content.totalLines,
+                0,
+              );
+              printLineSlowly(`> Grep successful: ${linesFound} lines found`);
             }
           }
         } else {
