@@ -164,6 +164,16 @@ interface CursorToolCallLog {
         };
       };
     };
+    semSearchToolCall?: {
+      args: {
+        query: string;
+      };
+      result?: {
+        success: {
+          results: string;
+        };
+      };
+    };
   };
 }
 
@@ -358,6 +368,19 @@ export const executePrompt = async ({
               }
               printLineSlowly(`> Files listed: ${numFiles}`);
               printLineSlowly(`> Dirs listed: ${numDirs}`);
+            }
+          }
+        } else if (json.tool_call.semSearchToolCall) {
+          if (json.subtype === "started") {
+            printLineSlowly(
+              `> Searching for: ${json.tool_call.semSearchToolCall.args.query}`,
+            );
+          }
+          if (json.subtype === "completed") {
+            if (json.tool_call.semSearchToolCall.result?.success) {
+              printLineSlowly(
+                `> Search results: ${json.tool_call.semSearchToolCall.result.success.results}`,
+              );
             }
           }
         } else {
