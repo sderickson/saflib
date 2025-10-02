@@ -104,12 +104,12 @@ export const AddComponentWorkflowDefinition = defineWorkflow<
       lineReplace: makeLineReplace(context),
     })),
 
-    step(PromptStepMachine, () => ({
-      promptText: `Export the new Vue component in the root "components.ts" file.`,
+    step(PromptStepMachine, ({ context }) => ({
+      promptText: `Make sure ${context.copiedFiles?.vue} is in the root "components.ts" file.`,
     })),
 
-    step(PromptStepMachine, () => ({
-      promptText: `Export the new strings in the root "strings.ts" file.`,
+    step(PromptStepMachine, ({ context }) => ({
+      promptText: `Make sure ${context.copiedFiles?.strings} is in the root "strings.ts" file.`,
     })),
 
     step(UpdateStepMachine, ({ context }) => ({
