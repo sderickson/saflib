@@ -1,9 +1,9 @@
 import {
   authMockConstants,
   authMockHandlers,
-  authMockScenarios,
+  authFakeScenarios,
 } from "./requests/mocks.ts";
 
 export const identityServiceFakeHandlers = [...authMockHandlers];
-export const identityServiceFakeScenarios = { ...authMockScenarios };
+export const identityServiceFakeScenarios = { ...authFakeScenarios };
 export const identityServiceFakeConstants = { ...authMockConstants };

@@ -126,7 +126,9 @@ export const AddComponentWorkflowDefinition = defineWorkflow<
       fileId: "test",
       promptMessage: `Update **${path.basename(context.copiedFiles!.test)}** to test the component.
       
-      Make sure to use the mock server, the dedicated test app, and the getElementByString helper function.`,
+      * Make sure to use the dedicated test app, and the getElementByString helper function.
+      * You don't really have to mock the server; the component should not load data directly itself. You also don't have to thoroughly test the component; just give it some sample inputs and make sure it renders correctly.
+      `,
     })),
 
     step(TestStepMachine, () => ({
