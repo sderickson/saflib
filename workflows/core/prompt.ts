@@ -198,8 +198,8 @@ export const executePrompt = async ({
             .map((line) => `> ${line}`)
             .join("\n")
             .trim();
-          console.log("\n---------- AGENT OUTPUT ----------");
-          console.log(lines);
+          printLineSlowly("\n---------- AGENT OUTPUT ----------");
+          printLineSlowly(lines);
         });
       } else if (json.type === "user") {
         json.message.content.forEach((content) => {
@@ -208,94 +208,124 @@ export const executePrompt = async ({
             .map((line) => `> ${line}`)
             .join("\n")
             .trim();
-          console.log("\n---------- PROMPT ----------");
-          console.log(lines);
+          printLineSlowly("\n---------- PROMPT ----------");
+          printLineSlowly(lines);
         });
       } else if (json.type === "tool_call") {
-        console.log("\n---------- TOOL CALL ----------");
+        printLineSlowly("\n---------- TOOL CALL ----------");
         if (json.tool_call.readToolCall) {
           if (json.subtype === "started") {
-            console.log(
+            printLineSlowly(
               `> Reading file: ${relativePath(json.tool_call.readToolCall.args.path)}`,
             );
           } else if (json.subtype === "completed") {
             if (json.tool_call.readToolCall.result?.success) {
-              console.log(
+              printLineSlowly(
                 `> File read: ${relativePath(json.tool_call.readToolCall.args.path)}`,
               );
             } else {
-              console.error(
+              printLineSlowly(
                 `> File read failed: ${relativePath(json.tool_call.readToolCall.args.path)}`,
               );
             }
           }
         } else if (json.tool_call.editToolCall) {
           if (json.subtype === "started") {
-            console.log(
+            printLineSlowly(
               `> Writing file: ${relativePath(json.tool_call.editToolCall.args.path)}`,
             );
           }
           if (json.subtype === "completed") {
             if (json.tool_call.editToolCall.result?.success) {
-              console.log(
+              printLineSlowly(
                 `> File written: ${relativePath(json.tool_call.editToolCall.args.path)}`,
               );
             } else {
-              console.error(
+              printLineSlowly(
                 `> File write failed: ${relativePath(json.tool_call.editToolCall.args.path)}`,
               );
             }
           }
         } else if (json.tool_call.globToolCall) {
           if (json.subtype === "started") {
-            console.log(
+            printLineSlowly(
               `> Globbing files: ${relativePath(json.tool_call.globToolCall.args.globPattern)} in ${relativePath(json.tool_call.globToolCall.args.targetDirectory)}`,
             );
           } else if (json.subtype === "completed") {
             if (json.tool_call.globToolCall.result?.success) {
-              console.log(
+              printLineSlowly(
                 `> Files globbed: ${json.tool_call.globToolCall.result.success.totalFiles}`,
+              );
+              printLineSlowly(
                 `> Files: ${json.tool_call.globToolCall.result.success.files.map((file) => relativePath(file)).join(", ")}`,
               );
             }
           }
         } else if (json.tool_call.updateTodosToolCall) {
           if (json.subtype === "started") {
-            console.log(`> Updating todos`);
+            printLineSlowly(`> Updating todos`);
           } else if (json.subtype === "completed") {
-            console.log(`> Todos updated`);
+            printLineSlowly(`> Todos updated`);
           }
         } else if (json.tool_call.shellToolCall) {
           if (json.subtype === "started") {
-            console.log(
+            printLineSlowly(
               `> Running command: ${json.tool_call.shellToolCall.args.command}`,
             );
           } else if (json.subtype === "completed") {
             if (json.tool_call.shellToolCall.result?.success) {
-              console.log(`> Command successful`);
+              printLineSlowly(`> Command successful`);
             } else {
-              console.error(`> Command failed`);
-              console.error(
-                json.tool_call.shellToolCall.result?.failure.stderr,
+              printLineSlowly(`> Command failed`);
+              printLineSlowly(
+                json.tool_call.shellToolCall.result?.failure.stderr ?? "",
               );
             }
           }
         } else {
-          console.error(
+          printLineSlowly(
             `> Unknown tool call: ${JSON.stringify(Object.keys(json.tool_call))}`,
           );
         }
       } else if (json.type === "result") {
-        console.log("\n---------- RESULT ----------");
-        console.log(`> ${json.is_error ? "Error" : "Success"}`);
+        printLineSlowly("\n---------- RESULT ----------");
+        printLineSlowly(`> ${json.is_error ? "Error" : "Success"}`);
       }
     }
   });
   agent.stderr.on("data", (data) => {
-    console.log("AGENT ERROR", data.toString());
+    printLineSlowly("AGENT ERROR: " + data.toString());
   });
   agent.on("close", (code) => {
     resolve({ code, sessionId: sessionId ?? undefined, shouldContinue: true });
   });
   return p;
 };
+
+let printerInterval: NodeJS.Timeout | undefined;
+let counter = 0;
+
+const printLineSlowly = (line: string) => {
+  printerBuffer.push(...line.split("\n"));
+  if (!printerInterval) {
+    printerInterval = setInterval(() => {
+      counter++;
+      const mod = Math.max(100 - printerBuffer.length * 8, 10);
+      if (counter % mod !== 0) {
+        return;
+      }
+
+      const line = printerBuffer.shift();
+      if (line !== undefined) {
+        counter = 0;
+        print(line);
+      }
+      if (printerBuffer.length === 0) {
+        clearInterval(printerInterval);
+        printerInterval = undefined;
+      }
+    }, 1);
+  }
+};
+
+const printerBuffer: string[] = [];
