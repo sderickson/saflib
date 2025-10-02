@@ -80,6 +80,44 @@ interface CursorAssistantLog {
 interface CursorToolCallLog {
   type: "tool_call";
   session_id: string;
+  subtype: "started" | "completed";
+  tool_call: {
+    readToolCall?: {
+      args: {
+        path: string;
+      };
+      result?: {
+        success: {};
+      };
+    };
+    editToolCall?: {
+      args: {
+        path: string;
+        content: string;
+      };
+      result?: {
+        success: {};
+      };
+    };
+    globToolCall?: {
+      args: {
+        targetDirectory: string;
+        globPattern: string;
+      };
+      result?: {
+        success: {
+          totalFiles: number;
+          files: string[];
+        };
+      };
+    };
+    updateTodosToolCall?: {
+      args: {};
+      result?: {
+        success: {};
+      };
+    };
+  };
 }
 
 interface CursorResultLog {
@@ -104,6 +142,10 @@ export interface PromptResult {
 }
 
 export const logFile = path.join(process.cwd(), "saf-workflow-prompt.log");
+
+const relativePath = (path: string) => {
+  return path.replace(process.cwd(), "");
+};
 
 export const executePrompt = async ({
   msg,
@@ -131,41 +173,94 @@ export const executePrompt = async ({
     while (buffer.includes("\n")) {
       const line = buffer.split("\n")[0];
       buffer = buffer.slice(line.length + 1);
-      try {
-        const json = JSON.parse(line) as CursorLog;
-        // append to the log file
-        writeFileSync(logFile, JSON.stringify(json, null, 2) + "\n", {
-          flag: "a",
+      const json = JSON.parse(line) as CursorLog;
+      writeFileSync(logFile, JSON.stringify(json, null, 2) + "\n", {
+        flag: "a",
+      });
+      if (json.type === "system") {
+        sessionId = json.session_id;
+      } else if (json.type === "assistant") {
+        json.message.content.forEach((content) => {
+          const lines = addNewLinesToString(content.text)
+            .split("\n")
+            .map((line) => `> ${line}`)
+            .join("\n")
+            .trim();
+          console.log("\n---------- AGENT OUTPUT ----------");
+          console.log(lines);
         });
-        if (json.type === "system") {
-          sessionId = json.session_id;
-          // console.log(JSON.stringify(json, null, 2));
-        } else if (json.type === "assistant") {
-          json.message.content.forEach((content) => {
-            const lines = addNewLinesToString(content.text)
-              .split("\n")
-              .map((line) => `> ${line}`)
-              .join("\n")
-              .trim();
-            console.log("\n---------- AGENT OUTPUT ----------");
-            console.log(lines);
-          });
-        } else if (json.type === "user") {
-          json.message.content.forEach((content) => {
-            const lines = addNewLinesToString(content.text)
-              .split("\n")
-              .map((line) => `> ${line}`)
-              .join("\n")
-              .trim();
-            console.log("\n---------- TOOL INPUT ----------");
-            console.log(lines);
-          });
+      } else if (json.type === "user") {
+        json.message.content.forEach((content) => {
+          const lines = addNewLinesToString(content.text)
+            .split("\n")
+            .map((line) => `> ${line}`)
+            .join("\n")
+            .trim();
+          console.log("\n---------- PROMPT ----------");
+          console.log(lines);
+        });
+      } else if (json.type === "tool_call") {
+        console.log("\n---------- TOOL CALL ----------");
+        if (json.tool_call.readToolCall) {
+          if (json.subtype === "started") {
+            console.log(
+              `> Reading file: ${relativePath(json.tool_call.readToolCall.args.path)}`,
+            );
+          } else if (json.subtype === "completed") {
+            if (json.tool_call.readToolCall.result?.success) {
+              console.log(
+                `> File read: ${relativePath(json.tool_call.readToolCall.args.path)}`,
+              );
+            } else {
+              console.error(
+                `> File read failed: ${relativePath(json.tool_call.readToolCall.args.path)}`,
+              );
+            }
+          }
+        } else if (json.tool_call.editToolCall) {
+          if (json.subtype === "started") {
+            console.log(
+              `> Writing file: ${relativePath(json.tool_call.editToolCall.args.path)}`,
+            );
+          }
+          if (json.subtype === "completed") {
+            if (json.tool_call.editToolCall.result?.success) {
+              console.log(
+                `> File written: ${relativePath(json.tool_call.editToolCall.args.path)}`,
+              );
+            } else {
+              console.error(
+                `> File write failed: ${relativePath(json.tool_call.editToolCall.args.path)}`,
+              );
+            }
+          }
+        } else if (json.tool_call.globToolCall) {
+          if (json.subtype === "started") {
+            console.log(
+              `> Globbing files: ${relativePath(json.tool_call.globToolCall.args.globPattern)} in ${relativePath(json.tool_call.globToolCall.args.targetDirectory)}`,
+            );
+          } else if (json.subtype === "completed") {
+            if (json.tool_call.globToolCall.result?.success) {
+              console.log(
+                `> Files globbed: ${json.tool_call.globToolCall.result.success.totalFiles}`,
+                `> Files: ${json.tool_call.globToolCall.result.success.files.map((file) => relativePath(file)).join(", ")}`,
+              );
+            }
+          }
+        } else if (json.tool_call.updateTodosToolCall) {
+          if (json.subtype === "started") {
+            console.log(`> Updating todos`);
+          } else if (json.subtype === "completed") {
+            console.log(`> Todos updated`);
+          }
         } else {
-          // console.log(JSON.stringify(json, null, 2));
+          console.error(
+            `> Unknown tool call: ${JSON.stringify(Object.keys(json.tool_call))}`,
+          );
         }
-        // console.log("agent stdout line", JSON.stringify(json, null, 2), "\n");
-      } catch (error) {
-        console.error("Unable to parse agent stdout line", line, "\n");
+      } else if (json.type === "result") {
+        console.log("\n---------- RESULT ----------");
+        console.log(`> ${json.is_error ? "Error" : "Success"}`);
       }
     }
   });
