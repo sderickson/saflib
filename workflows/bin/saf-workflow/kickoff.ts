@@ -28,7 +28,6 @@ export const addKickoffCommand = (
     .addOption(runModeOption)
     .action(
       async (filePath: string, args: string[], options: { run?: string }) => {
-        console.log("Kickoff command");
         writeFileSync(logFile, "");
         const runMode = options.run;
         const givenRunMode = parseRunMode(runMode);

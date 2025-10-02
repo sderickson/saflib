@@ -99,6 +99,7 @@ export class XStateWorkflowRunner extends AbstractWorkflowRunner {
   }
 
   kickoff = async (options?: WorkflowRunOptions): Promise<boolean> => {
+    const t0 = Date.now();
     const actor = createActor(this.machine, { input: this.input });
     this.actor = actor;
     actor.start();
@@ -114,6 +115,8 @@ export class XStateWorkflowRunner extends AbstractWorkflowRunner {
       return false;
     }
     await pollingWaitFor(actor, workflowAllSettled);
+    const t1 = Date.now();
+    console.log(`Time taken: ${(t1 - t0) / 1000 / 60}m`);
     return actor.getSnapshot().status !== "error";
   };
 
@@ -151,6 +154,7 @@ export class XStateWorkflowRunner extends AbstractWorkflowRunner {
   };
 
   goToNextStep = async (): Promise<void> => {
+    const t0 = Date.now();
     const log = getWorkflowLogger();
     if (!this.actor) {
       throw new Error("Workflow not started");
@@ -162,6 +166,8 @@ export class XStateWorkflowRunner extends AbstractWorkflowRunner {
 
     continueWorkflow(this.actor);
     await pollingWaitFor(this.actor, workflowAllSettled);
+    const t1 = Date.now();
+    console.log(`Time taken: ${(t1 - t0) / 1000 / 60}m`);
 
     if (this.actor.getSnapshot().status === "done") {
       console.log("\n--- This workflow has been completed. ---\n");
