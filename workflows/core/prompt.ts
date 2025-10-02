@@ -10,6 +10,10 @@ interface PromptParam {
   context: WorkflowContext;
 }
 
+const shortTimestamp = () => {
+  return new Date().toISOString().split("T")[1].slice(0, 5);
+};
+
 export const handlePrompt = async ({
   msg,
   context,
@@ -140,7 +144,7 @@ interface CursorToolCallLog {
     grepToolCall?: {
       args: {
         pattern: string;
-        path: string;
+        path?: string;
       };
       result?: {
         success: {
@@ -201,6 +205,9 @@ export interface PromptResult {
 export const logFile = path.join(process.cwd(), "saf-workflow-prompt.log");
 
 const relativePath = (path: string) => {
+  if (!path) {
+    return "root dir";
+  }
   return path.replace(process.cwd(), "");
 };
 
@@ -243,7 +250,7 @@ export const executePrompt = async ({
             .map((line) => `> ${line}`)
             .join("\n")
             .trim();
-          printLineSlowly("\n---------- AGENT ----------");
+          printLineSlowly("\n---------- AGENT ---------- " + shortTimestamp());
           printLineSlowly(lines);
         });
       } else if (json.type === "user") {
@@ -253,11 +260,11 @@ export const executePrompt = async ({
             .map((line) => `> ${line}`)
             .join("\n")
             .trim();
-          printLineSlowly("\n---------- PROMPT ----------");
+          printLineSlowly("\n---------- PROMPT ---------- " + shortTimestamp());
           printLineSlowly(lines);
         });
       } else if (json.type === "tool_call") {
-        printLineSlowly("\n---------- TOOL ----------");
+        printLineSlowly("\n---------- TOOL ---------- " + shortTimestamp());
         if (json.tool_call.readToolCall) {
           if (json.subtype === "started") {
             printLineSlowly(
@@ -330,7 +337,7 @@ export const executePrompt = async ({
         } else if (json.tool_call.grepToolCall) {
           if (json.subtype === "started") {
             printLineSlowly(
-              `> Grepping files: "${json.tool_call.grepToolCall.args.pattern}" in "${relativePath(json.tool_call.grepToolCall.args.path)}"`,
+              `> Grepping files: "${json.tool_call.grepToolCall.args.pattern}" in "${relativePath(json.tool_call.grepToolCall.args.path ?? "project root")}"`,
             );
           }
           if (json.subtype === "completed") {
@@ -389,13 +396,13 @@ export const executePrompt = async ({
           );
         }
       } else if (json.type === "result") {
-        printLineSlowly("\n---------- RESULT ----------");
+        printLineSlowly("\n---------- RESULT ---------- " + shortTimestamp());
         printLineSlowly(`> ${json.is_error ? "Error" : "Success"}`);
       }
     }
   });
   agent.stderr.on("data", (data) => {
-    printLineSlowly("AGENT ERROR: " + data.toString());
+    printLineSlowly("AGENT ERROR: " + shortTimestamp() + " " + data.toString());
   });
   agent.on("close", (code) => {
     resolve({ code, sessionId: sessionId ?? undefined, shouldContinue: true });
