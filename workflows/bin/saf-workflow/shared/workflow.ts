@@ -174,7 +174,9 @@ export class XStateWorkflowRunner extends AbstractWorkflowRunner {
       workflowName: this.machine.id,
       workflowSourceUrl: this.definition.sourceUrl,
       args: this.args,
-      snapshotState: this.actor?.getPersistedSnapshot(),
+      snapshotState: this.actor?.getPersistedSnapshot() as Snapshot<any> & {
+        context: WorkflowContext;
+      },
     };
   };
 
