@@ -339,21 +339,32 @@ export const executePrompt = async ({
 
 let printerInterval: NodeJS.Timeout | undefined;
 let counter = 0;
+const MAX_INTERVAL_MS = 100; // The maximum interval between prints
+const MIN_INTERVAL_MS = 10; // The minimum interval between prints
+const ACCELERATION_FACTOR = 8; // The higher the value, the faster the printing accelerates
 
+/**
+ * Appends text to a buffer and, if there isn't one already, sets up an interval to print the buffer
+ * gradually. It prints each line betwe
+ */
 const printLineSlowly = (line: string) => {
   printerBuffer.push(...line.split("\n"));
   if (!printerInterval) {
     printerInterval = setInterval(() => {
       counter++;
-      const mod = Math.max(100 - printerBuffer.length * 8, 10);
-      if (counter % mod !== 0) {
+      const mod = Math.max(
+        MAX_INTERVAL_MS - printerBuffer.length * ACCELERATION_FACTOR,
+        MIN_INTERVAL_MS,
+      );
+      if (counter < mod) {
         return;
       }
 
       const line = printerBuffer.shift();
       if (line !== undefined) {
-        counter = 0;
+        // Reset the counter, so
         print(line);
+        counter = 0;
       }
       if (printerBuffer.length === 0) {
         clearInterval(printerInterval);
