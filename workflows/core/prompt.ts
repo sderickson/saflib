@@ -77,6 +77,14 @@ interface CursorAssistantLog {
   session_id: string;
 }
 
+interface DirectoryTree {
+  absPath: string;
+  childrenDirs: DirectoryTree[];
+  childrenFiles: {
+    name: string;
+  }[];
+}
+
 interface CursorToolCallLog {
   type: "tool_call";
   session_id: string;
@@ -143,6 +151,16 @@ interface CursorToolCallLog {
               };
             };
           };
+        };
+      };
+    };
+    lsToolCall?: {
+      args: {
+        path: string;
+      };
+      result?: {
+        success: {
+          directoryTreeRoot: {};
         };
       };
     };
@@ -315,6 +333,31 @@ export const executePrompt = async ({
                 0,
               );
               printLineSlowly(`> Grep successful: ${linesFound} lines found`);
+            }
+          }
+        } else if (json.tool_call.lsToolCall) {
+          if (json.subtype === "started") {
+            printLineSlowly(
+              `> Listing files: ${relativePath(json.tool_call.lsToolCall.args.path)}`,
+            );
+          }
+          if (json.subtype === "completed") {
+            if (json.tool_call.lsToolCall.result?.success) {
+              const directoryTree = json.tool_call.lsToolCall.result.success
+                .directoryTreeRoot as DirectoryTree;
+              const dirs = [directoryTree];
+              let numFiles = 0;
+              let numDirs = 0;
+              while (dirs.length > 0) {
+                const dir = dirs.shift();
+                if (dir) {
+                  dirs.push(...dir.childrenDirs);
+                  numFiles += dir.childrenFiles.length;
+                  numDirs += 1;
+                }
+              }
+              printLineSlowly(`> Files listed: ${numFiles}`);
+              printLineSlowly(`> Dirs listed: ${numDirs}`);
             }
           }
         } else {
