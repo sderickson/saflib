@@ -23,6 +23,12 @@ const subDomainProxyPlugin: Plugin = {
         next();
         return;
       }
+      if (req.headers.host?.startsWith("localhost")) {
+        req.url = `/index.html`;
+        next();
+        return;
+      }
+
       for (const host of hosts) {
         if (req.headers.host === host) {
           const subdomain = host
@@ -38,6 +44,7 @@ const subDomainProxyPlugin: Plugin = {
       console.warn("Unhandled request", {
         "req.url": req.url,
         "req.headers.host": req.headers.host,
+        "startsWith('localhost')": req.headers.host?.startsWith("localhost"),
         hosts,
       });
       next();
