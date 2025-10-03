@@ -1,4 +1,4 @@
-#!/usr/bin/env node --experimental-strip-types
+#!/usr/bin/env -S node --experimental-strip-types
 
 // Run `TZ=UTC vitest run --coverage` in the current directory
 // and tee the output to a file.

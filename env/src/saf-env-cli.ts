@@ -1,4 +1,4 @@
-#!/usr/bin/env node --experimental-strip-types --disable-warning=ExperimentalWarning
+#!/usr/bin/env -S node --experimental-strip-types --disable-warning=ExperimentalWarning
 import { Command } from "commander";
 import { getCombinedEnvSchema, makeEnvParserSnippet } from "./env.ts";
 import { writeFileSync, existsSync } from "fs";
