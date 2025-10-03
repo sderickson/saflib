@@ -28,7 +28,7 @@ const getUsersHandler = createIdentityHandler({
 });
 
 export const authMockHandlers = [getProfileHandler, getUsersHandler];
-export const authMockScenarios = {
+export const authFakeScenarios = {
   userNotEmailVerified: [
     createIdentityHandler({
       verb: "get",
@@ -38,6 +38,20 @@ export const authMockScenarios = {
         return {
           ...defaultUser,
           emailVerified: false,
+        };
+      },
+    }),
+  ],
+  adminUser: [
+    createIdentityHandler({
+      verb: "get",
+      path: "/auth/profile",
+      status: 200,
+      handler: async () => {
+        return {
+          ...defaultUser,
+          emailVerified: true,
+          isAdmin: true,
         };
       },
     }),

@@ -88,7 +88,8 @@ export const AddSpaPageWorkflowDefinition = defineWorkflow<
       
       Other notes:
       * Don't create the UX just yet; focus on making sure the data is loading properly.
-      * Do not add any sort of loading state or skeleton; that's the job of the "Async" component.`,
+      * Do not add any sort of loading state or skeleton; that's the job of the "Async" component.
+      * Don't break reactivity! Render the data directly from the tanstack queries, or if necessary create a computed property.`,
     })),
 
     step(PromptStepMachine, ({ context }) => ({

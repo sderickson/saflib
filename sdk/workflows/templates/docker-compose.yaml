@@ -4,10 +4,10 @@ services:
     ports:
       - 5173:5173
     build:
-      context: ../..
-      dockerfile: ./__service-name__/__service-name__-sdk/Dockerfile
+      context: __reverse-path__
+      dockerfile: ./__rel-dir__/Dockerfile
     command: npm run dev
     volumes:
-      - ./:/app/__service-name__/__service-name__-sdk/
-      - ../../vue/:/app/vue/
-      - ../../sdk/:/app/sdk/
+      - ./:/app/__rel-dir__/
+      - __reverse-path__/saflib/vue/:/app/saflib/vue/
+      - __reverse-path__/saflib/sdk/:/app/saflib/sdk/

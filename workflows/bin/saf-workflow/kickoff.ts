@@ -43,6 +43,7 @@ export const addKickoffCommand = (
           workflowDefinition = workflows.find((w) => w.id === filePath);
         }
         if (!workflowDefinition) {
+          console.log("Workflow definition not found");
           process.exit(1);
         }
 

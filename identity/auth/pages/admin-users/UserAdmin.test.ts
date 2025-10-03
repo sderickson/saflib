@@ -5,11 +5,11 @@ import { type VueWrapper } from "@vue/test-utils";
 import UserAdmin from "./UserAdmin.vue";
 import { mountTestApp } from "../../test-app.ts";
 import {
-  identityServiceMockHandlers,
-  identityServiceMockConstants,
-} from "../../mocks.ts";
+  identityServiceFakeHandlers,
+  identityServiceFakeConstants,
+} from "../../fakes.ts";
 
-const handlers = [...identityServiceMockHandlers];
+const handlers = [...identityServiceFakeHandlers];
 
 describe("UserAdmin.vue", () => {
   stubGlobals();
@@ -51,7 +51,7 @@ describe("UserAdmin.vue", () => {
 
     // Check if user data is rendered (basic check)
     const tableHtml = table.html();
-    expect(tableHtml).toContain(identityServiceMockConstants.defaultUser.email);
+    expect(tableHtml).toContain(identityServiceFakeConstants.defaultUser.email);
     expect(tableHtml).toContain("Never"); // For the null lastLoginAt
   });
 });

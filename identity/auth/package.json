@@ -6,7 +6,7 @@
     ".": "./index.ts",
     "./strings": "./strings.ts",
     "./i18n": "./i18n.ts",
-    "./mocks": "./mocks.ts"
+    "./fakes": "./fakes.ts"
   },
   "scripts": {
     "test": "vitest run",

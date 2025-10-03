@@ -15,7 +15,8 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
     "verbatimModuleSyntax": true,
-    "skipDefaultLibCheck": true
+    "skipDefaultLibCheck": true,
+    "noImplicitAny": true
   },
   "exclude": ["**/node_modules/**", "**/dist/**"]
 }

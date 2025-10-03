@@ -104,12 +104,12 @@ export const AddComponentWorkflowDefinition = defineWorkflow<
       lineReplace: makeLineReplace(context),
     })),
 
-    step(PromptStepMachine, () => ({
-      promptText: `Export the new Vue component in the root "components.ts" file.`,
+    step(PromptStepMachine, ({ context }) => ({
+      promptText: `Make sure ${context.copiedFiles?.vue} is in the root "components.ts" file.`,
     })),
 
-    step(PromptStepMachine, () => ({
-      promptText: `Export the new strings in the root "strings.ts" file.`,
+    step(PromptStepMachine, ({ context }) => ({
+      promptText: `Make sure ${context.copiedFiles?.strings} is in the root "strings.ts" file.`,
     })),
 
     step(UpdateStepMachine, ({ context }) => ({
@@ -118,14 +118,17 @@ export const AddComponentWorkflowDefinition = defineWorkflow<
       
       * The component should take as props some combination of the schemas exported by the adjacent "spec" package. For form components, consider using defineModel() with the schemas from the spec package for two-way data binding. Add any strings to the "strings.ts" file, not directly in the component.
       * Do not use any custom styles; use Vuetify components and styling exclusively.
-      * Use Vuetify skeletons for loading states.`,
+      * Use Vuetify skeletons for loading states.
+      * If this is a form, don't use inputs for any uneditable fields. If this is not a form component, don't use input components at all!`,
     })),
 
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "test",
       promptMessage: `Update **${path.basename(context.copiedFiles!.test)}** to test the component.
       
-      Make sure to use the mock server, the dedicated test app, and the getElementByString helper function.`,
+      * Make sure to use the dedicated test app, and the getElementByString helper function.
+      * You don't really have to mock the server; the component should not load data directly itself. You also don't have to thoroughly test the component; just give it some sample inputs and make sure it renders correctly.
+      `,
     })),
 
     step(TestStepMachine, () => ({

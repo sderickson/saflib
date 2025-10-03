@@ -29,6 +29,8 @@ const input = [
 
 interface SdkInitWorkflowContext extends ParsePackageNameOutput {
   targetDir: string;
+  relDir: string;
+  reversePath: string;
 }
 
 export const SdkInitWorkflowDefinition = defineWorkflow<
@@ -47,12 +49,19 @@ export const SdkInitWorkflowDefinition = defineWorkflow<
   sourceUrl: import.meta.url,
 
   context: ({ input }) => {
-    return {
+    const targetDir = path.join(input.cwd, input.path);
+    const relDir = path.relative(input.cwd, targetDir);
+    const numDirs = relDir.split(path.sep).length;
+    const reversePath = "../".repeat(numDirs).slice(0, -1);
+    const ctx: SdkInitWorkflowContext = {
       ...parsePackageName(input.name, {
         requiredSuffix: "-sdk",
       }),
-      targetDir: path.join(input.cwd, input.path),
+      targetDir,
+      relDir,
+      reversePath,
     };
+    return ctx;
   },
 
   templateFiles: {
@@ -60,6 +69,7 @@ export const SdkInitWorkflowDefinition = defineWorkflow<
     app: path.join(sourceDir, "App.vue"),
     client: path.join(sourceDir, "client.ts"),
     components: path.join(sourceDir, "components.ts"),
+    dockerfile: path.join(sourceDir, "Dockerfile.template"),
     dockerCompose: path.join(sourceDir, "docker-compose.yaml"),
     fakes: path.join(sourceDir, "fakes.ts"),
     i18n: path.join(sourceDir, "i18n.ts"),
