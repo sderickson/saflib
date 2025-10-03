@@ -346,7 +346,7 @@ export const executePrompt = async ({
                 json.tool_call.grepToolCall.result.success.workspaceResults,
               );
               const linesFound = workspaces.reduce(
-                (acc, workspace) => acc + workspace.content.totalLines,
+                (acc, workspace) => acc + workspace.content.totalLines || 0,
                 0,
               );
               printLineSlowly(`> Grep successful: ${linesFound} lines found`);
