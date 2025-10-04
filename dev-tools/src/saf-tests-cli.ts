@@ -1,4 +1,4 @@
-#!/usr/bin/env node --experimental-strip-types --disable-warning=ExperimentalWarning
+#!/usr/bin/env -S node --experimental-strip-types --disable-warning=ExperimentalWarning
 
 import { Command } from "commander";
 import { gatherHealthAssets } from "./test-assets.ts";

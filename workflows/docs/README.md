@@ -37,7 +37,7 @@ To bootstrap workflows:
 3. Add the `workflow-cli.ts` file:
 
 ```ts
-#!/usr/bin/env node --experimental-strip-types --disable-warning=ExperimentalWarning
+#!/usr/bin/env -S node --experimental-strip-types --disable-warning=ExperimentalWarning
 
 import metaWorkflows from "saflib-workflows/workflows";
 import { runWorkflowCli } from "saflib-workflows";
