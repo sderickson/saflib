@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 protoc --ts_out=./dist/ \
   --proto_path=./protos \
   --ts_opt=no_namespace \

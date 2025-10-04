@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 protoc --ts_out=./dist/ \
   --proto_path=./protos \
   --proto_path=../../grpc/grpc-specs/protos \
