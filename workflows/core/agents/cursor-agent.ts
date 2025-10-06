@@ -217,7 +217,7 @@ export const executePrompt = async ({
         });
       } else if (json.type === "user") {
         json.message.content.forEach((content) => {
-          const lines = addNewLinesToString(content.text)
+          const lines = content.text
             .split("\n")
             .map((line) => `> ${line}`)
             .join("\n")
