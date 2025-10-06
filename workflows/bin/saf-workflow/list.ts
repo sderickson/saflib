@@ -1,14 +1,10 @@
-import type { Command } from "commander";
-import type { WorkflowDefinition } from "../../core/types.ts";
 import { addNewLinesToString } from "../../strings.ts";
 import { getCurrentPackage } from "../../workspace.ts";
 import { getPackageName } from "./shared/utils.ts";
+import type { WorkflowCommandOptions } from "./shared/types.ts";
 
-export const addListCommand = (
-  program: Command,
-  workflows: WorkflowDefinition[],
-) => {
-  program
+export const addListCommand = (commandOptions: WorkflowCommandOptions) => {
+  commandOptions.program
     .command("list")
     .description(
       addNewLinesToString(
@@ -17,9 +13,11 @@ export const addListCommand = (
     )
     .action(async () => {
       const currentPackage = getCurrentPackage();
-      const workflowsForPackage = workflows.filter((workflow) => {
-        return getPackageName(workflow.sourceUrl) === currentPackage;
-      });
+      const workflowsForPackage = commandOptions.workflows.filter(
+        (workflow) => {
+          return getPackageName(workflow.sourceUrl) === currentPackage;
+        },
+      );
       console.log(workflowsForPackage.map((w) => w.id).join("\n"));
     });
 };

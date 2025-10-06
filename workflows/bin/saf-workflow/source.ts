@@ -1,17 +1,14 @@
-import type { Command } from "commander";
 import { addNewLinesToString } from "../../strings.ts";
 import { getSourceUrl } from "../../core/store.ts";
 import type { WorkflowDefinition } from "../../core/types.ts";
+import type { WorkflowCommandOptions } from "./shared/types.ts";
 
-export const addSourceCommand = (
-  program: Command,
-  workflows: WorkflowDefinition[],
-) => {
-  const sourceProgram = program
+export const addSourceCommand = (commandOptions: WorkflowCommandOptions) => {
+  const sourceProgram = commandOptions.program
     .command("source")
     .description(addNewLinesToString("Print the GitHub url for a workflow."));
 
-  workflows.forEach((workflow) => {
+  commandOptions.workflows.forEach((workflow) => {
     let chain = sourceProgram
       .command(workflow.id)
       .description(workflow.description);

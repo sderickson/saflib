@@ -1,22 +1,23 @@
-import { type Command, Option } from "commander";
+import { Option } from "commander";
 import { addNewLinesToString } from "../../strings.ts";
 import type { WorkflowDefinition, WorkflowRunMode } from "../../core/types.ts";
 import { runWorkflow } from "./shared/utils.ts";
-import { getWorkflowLogger } from "../../core/store.ts";
+import {
+  createWorkflowLogger,
+  setupWorkflowContext,
+} from "../../core/store.ts";
 import { loadWorkflowDefinitionFromFile } from "./shared/file-io.ts";
 import { resolve } from "node:path";
-import { logFile } from "../../core/prompt.ts";
+import { logFile } from "../../core/agents/cursor-agent.ts";
 import { writeFileSync } from "node:fs";
+import type { WorkflowCommandOptions } from "./shared/types.ts";
 
-export const addKickoffCommand = (
-  program: Command,
-  workflows: WorkflowDefinition[],
-) => {
+export const addKickoffCommand = (commandOptions: WorkflowCommandOptions) => {
   const runModeOption = new Option(
     "-r, --run <mode>",
     'Directly command an agent instead of printing prompts. Currently only "cursor" is supported.',
   );
-  program
+  commandOptions.program
     .command("kickoff")
     .description(
       addNewLinesToString(
@@ -32,7 +33,14 @@ export const addKickoffCommand = (
         const runMode = options.run;
         const givenRunMode = parseRunMode(runMode);
 
-        const log = getWorkflowLogger();
+        const log = createWorkflowLogger({
+          printToAgent: givenRunMode === "run",
+          printToConsole: givenRunMode !== "run",
+        });
+        setupWorkflowContext({
+          logger: log,
+          getSourceUrl: commandOptions.getSourceUrl,
+        });
 
         let workflowDefinition: WorkflowDefinition | undefined;
         if (filePath.startsWith("./") || filePath.endsWith(".ts")) {
@@ -40,7 +48,9 @@ export const addKickoffCommand = (
           workflowDefinition =
             await loadWorkflowDefinitionFromFile(resolvedPath);
         } else {
-          workflowDefinition = workflows.find((w) => w.id === filePath);
+          workflowDefinition = commandOptions.workflows.find(
+            (w) => w.id === filePath,
+          );
         }
         if (!workflowDefinition) {
           console.log("Workflow definition not found");

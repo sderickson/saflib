@@ -1,14 +1,11 @@
-import type { Command } from "commander";
 import { checklistToString } from "../../core/utils.ts";
 import type { WorkflowDefinition } from "../../core/types.ts";
 import { addNewLinesToString } from "../../strings.ts";
 import { runWorkflow, loadWorkflowDefinition } from "./shared/utils.ts";
+import type { WorkflowCommandOptions } from "./shared/types.ts";
 
-export const addChecklistCommand = (
-  program: Command,
-  workflows: WorkflowDefinition[],
-) => {
-  program
+export const addChecklistCommand = (commandOptions: WorkflowCommandOptions) => {
+  commandOptions.program
     .command("checklist")
     .description(
       addNewLinesToString(
@@ -19,7 +16,7 @@ export const addChecklistCommand = (
     .action(async (workflowIdOrPath: string) => {
       const workflowDefinition = await loadWorkflowDefinition(
         workflowIdOrPath,
-        workflows,
+        commandOptions.workflows,
       );
       await printChecklist(workflowDefinition);
     });
