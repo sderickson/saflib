@@ -219,3 +219,14 @@ export type WorkflowActionFunction<
   never,
   E
 >;
+
+export interface PromptParam {
+  msg: string;
+  context: WorkflowContext;
+}
+
+export interface PromptResult {
+  code: number | null;
+  sessionId?: string;
+  shouldContinue: boolean;
+}
