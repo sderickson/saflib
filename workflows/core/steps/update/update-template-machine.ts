@@ -42,11 +42,6 @@ export interface UpdateStepInput {
    * The message to show to the user. The machine will then stop until the workflow is continued.
    */
   promptMessage: string | ((context: WorkflowContext) => string);
-
-  /**
-   * A list of tests to run on the resulting file.
-   */
-  valid?: UpdateStepTest[];
 }
 
 /**
@@ -55,7 +50,6 @@ export interface UpdateStepInput {
 export interface UpdateStepContext extends WorkflowContext {
   filePath: string;
   promptMessage: string | ((context: WorkflowContext) => string);
-  valid: UpdateStepTest[];
   shouldContinue?: boolean;
   hasTodos?: boolean;
 }
@@ -126,30 +120,6 @@ export const UpdateStepMachine = setup({
       };
     }),
   },
-  guards: {
-    // invalid: ({ context }: { context: UpdateStepContext }) => {
-    //   if (!context.valid.length) {
-    //     return false;
-    //   }
-    //   const resolvedPath = context.filePath;
-    //   const content = readFileSync(resolvedPath, "utf-8");
-    //   const log = getWorkflowLogger();
-    //   let allPassed = true;
-    //   for (const test of context.valid) {
-    //     if (!test.test(content)) {
-    //       log.error(`Test ${test.name} failed: ${test.description}`);
-    //       allPassed = false;
-    //     } else {
-    //       log.info(`Test ${test.name} passed.`);
-    //     }
-    //   }
-    //   if (allPassed) {
-    //     log.info(`Tests passed for ${resolvedPath}`);
-    //     return false;
-    //   }
-    //   return true;
-    // },
-  },
 }).createMachine({
   id: "update-step",
   initial: "update",
@@ -169,7 +139,6 @@ export const UpdateStepMachine = setup({
       ...contextFromInput(input),
       filePath,
       promptMessage: input.promptMessage,
-      valid: input.valid || [],
     };
   },
   states: {
