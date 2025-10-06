@@ -9,6 +9,7 @@ import {
 import { loadWorkflowDefinitionFromFile } from "./shared/file-io.ts";
 import { resolve } from "node:path";
 import { logFile } from "../../core/agents/cursor-agent.ts";
+import { addPendingMessage } from "../../core/agents/message.ts";
 import { writeFileSync } from "node:fs";
 import type { WorkflowCommandOptions } from "./shared/types.ts";
 
@@ -26,9 +27,14 @@ export const addKickoffCommand = (commandOptions: WorkflowCommandOptions) => {
     )
     .argument("<path>", "Path to the workflow file")
     .argument("[args...]", "Arguments for the workflow")
+    .option("-m, --message <message>", "Message to add to the workflow")
     .addOption(runModeOption)
     .action(
-      async (filePath: string, args: string[], options: { run?: string }) => {
+      async (
+        filePath: string,
+        args: string[],
+        options: { run?: string; message?: string },
+      ) => {
         writeFileSync(logFile, "");
         const runMode = options.run;
         const givenRunMode = parseRunMode(runMode);
@@ -37,6 +43,14 @@ export const addKickoffCommand = (commandOptions: WorkflowCommandOptions) => {
           printToAgent: givenRunMode === "run",
           printToConsole: givenRunMode !== "run",
         });
+        if (givenRunMode === "run") {
+          addPendingMessage(
+            "You are going through a well-defined developer workflow specific to this codebase and project. You will receive logs and prompts, please follow them to the best of your ability.\n",
+          );
+          if (options.message) {
+            addPendingMessage(`${options.message}\n`);
+          }
+        }
         setupWorkflowContext({
           logger: log,
           getSourceUrl: commandOptions.getSourceUrl,
