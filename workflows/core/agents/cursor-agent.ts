@@ -4,6 +4,7 @@ import { addNewLinesToString } from "../../strings.ts";
 import path from "node:path";
 import { writeFileSync } from "node:fs";
 import { type PromptParam, type PromptResult } from "../types.ts";
+import { popPendingMessages } from "./message.ts";
 
 interface CursorSystemLog {
   type: "system";
@@ -167,10 +168,20 @@ export const executePrompt = async ({
   if (process.env.NODE_ENV === "test") {
     return { code: 0, sessionId: "test-session-id", shouldContinue: true };
   }
+
+  // set up a promise to resolve when the agent is done
   let resolve: (value: PromptResult) => void;
   const p = new Promise<PromptResult>((r) => {
     resolve = r;
   });
+
+  // prepending pending messages to the message
+  const pendingMessages = popPendingMessages();
+  if (pendingMessages.length > 0) {
+    msg = pendingMessages.join("\n") + "\n" + msg;
+  }
+
+  // spawn the agent
   const args = ["-p", msg, "--output-format", "stream-json", "-f"];
   if (context.agentConfig?.sessionId) {
     args.push("--resume");
@@ -178,6 +189,8 @@ export const executePrompt = async ({
   }
   const agent = spawn("cursor-agent", args);
   agent.stdin.end(); // or it hangs
+
+  // receive the agent's output
   let buffer = "";
   let sessionId = "";
   agent.stdout.on("data", (data) => {
