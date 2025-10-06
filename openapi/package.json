@@ -5,6 +5,7 @@
   "main": "./index.ts",
   "exports": {
     ".": "./index.ts",
+    "./error": "./error.ts",
     "./workflows": "./workflows/index.ts"
   },
   "scripts": {
