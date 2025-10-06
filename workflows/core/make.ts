@@ -17,7 +17,6 @@ import {
   setup,
   type AnyStateMachine,
   type InputFrom,
-  type OutputFrom,
 } from "xstate";
 import { contextFromInput } from "./utils.ts";
 import type { WorkflowArgument } from "./types.ts";

@@ -1,14 +1,11 @@
-import type { Command } from "commander";
 import {
   loadPlanStatusContents,
   loadWorkflow,
   saveWorkflow,
 } from "./shared/file-io.ts";
 import { addNewLinesToString } from "../../strings.ts";
-import type { WorkflowDefinition } from "../../core/types.ts";
 import {
   createWorkflowLogger,
-  getWorkflowLogger,
   setupWorkflowContext,
 } from "../../core/store.ts";
 import { handlePrompt } from "../../core/prompt.ts";

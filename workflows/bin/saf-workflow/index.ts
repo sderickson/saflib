@@ -1,11 +1,6 @@
 import { Command } from "commander";
 import type { WorkflowDefinition } from "../../core/types.ts";
 import { addNewLinesToString } from "../../strings.ts";
-import {
-  createWorkflowLogger,
-  setupWorkflowContext,
-  type WorkflowLoggerOptions,
-} from "../../core/store.ts";
 import { addKickoffCommand } from "./kickoff.ts";
 import { addChecklistCommand } from "./checklist.ts";
 import { addStatusCommand } from "./status.ts";
@@ -52,19 +47,6 @@ export async function runWorkflowCli(
   addListCommand(commandOptions);
   addSourceCommand(commandOptions);
   addRunScriptsCommand(commandOptions);
-
-  // Set up workflow context
-  const silentLogging = process.argv.includes("checklist");
-  const loggerOptions: WorkflowLoggerOptions = {
-    silent: silentLogging,
-    ...options.loggerOptions,
-  };
-
-  const logger = options.logger || createWorkflowLogger(loggerOptions);
-  setupWorkflowContext({
-    logger,
-    getSourceUrl: options.getSourceUrl,
-  });
 
   await program.parseAsync(process.argv);
 }

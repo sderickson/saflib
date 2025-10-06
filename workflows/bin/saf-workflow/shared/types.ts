@@ -3,11 +3,7 @@ import type {
   WorkflowContext,
   WorkflowDefinition,
 } from "../../../core/types.ts";
-import type {
-  GetSourceUrlFunction,
-  WorkflowLogger,
-} from "../../../core/store.ts";
-import type { WorkflowLoggerOptions } from "../../../core/store.ts";
+import type { GetSourceUrlFunction } from "../../../core/store.ts";
 import type { Command } from "commander";
 
 /**
