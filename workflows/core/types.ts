@@ -18,6 +18,7 @@ export type WorkflowStep<C, M extends AnyStateMachine> = {
   validate: (arg: {
     context: C & WorkflowContext;
   }) => Promise<string | undefined>;
+  skipIf: (arg: { context: C & WorkflowContext }) => boolean;
 };
 
 /**
