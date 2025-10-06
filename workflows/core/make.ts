@@ -255,7 +255,9 @@ export const step = <C, M extends AnyStateMachine>(
   machine: M,
   input: (arg: { context: C & WorkflowContext }) => InputFrom<M>,
   options: {
-    validate?: (arg: { output: OutputFrom<M> }) => Promise<string | undefined>;
+    validate?: (arg: {
+      context: C & WorkflowContext;
+    }) => Promise<string | undefined>;
   } = {},
 ): WorkflowStep<C, M> => {
   return {

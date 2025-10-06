@@ -13,6 +13,7 @@ import {
   getPackageName,
   CommandStepMachine,
 } from "@saflib/workflows";
+import { readFileSync } from "node:fs";
 import path from "node:path";
 
 const sourceDir = path.join(
@@ -105,31 +106,43 @@ export const AddComponentWorkflowDefinition = defineWorkflow<
     })),
 
     step(PromptStepMachine, ({ context }) => ({
-      promptText: `Make sure ${context.copiedFiles?.vue} is in the root "components.ts" file.`,
-    })),
+      promptText: `If this is a new component, set up the appropriate exports.
 
-    step(PromptStepMachine, ({ context }) => ({
-      promptText: `Make sure ${context.copiedFiles?.strings} is in the root "strings.ts" file.`,
+      * Make sure ${context.copiedFiles?.vue} is in the root "components.ts" file.
+      * Make sure ${context.copiedFiles?.strings} is in the root "strings.ts" file.`,
     })),
 
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "vue",
       promptMessage: `Update **${path.basename(context.copiedFiles!.vue)}** to implement the component.
-      
+
       * The component should take as props some combination of the schemas exported by the adjacent "spec" package. For form components, consider using defineModel() with the schemas from the spec package for two-way data binding. Add any strings to the "strings.ts" file, not directly in the component.
       * Do not use any custom styles; use Vuetify components and styling exclusively.
       * Use Vuetify skeletons for loading states.
       * If this is a form, don't use inputs for any uneditable fields. If this is not a form component, don't use input components at all!`,
     })),
 
-    step(UpdateStepMachine, ({ context }) => ({
-      fileId: "test",
-      promptMessage: `Update **${path.basename(context.copiedFiles!.test)}** to test the component.
+    step(
+      UpdateStepMachine,
+      ({ context }) => ({
+        fileId: "test",
+        promptMessage: `Update **${path.basename(context.copiedFiles!.test)}** to test the component.
       
       * Make sure to use the dedicated test app, and the getElementByString helper function.
       * You don't really have to mock the server; the component should not load data directly itself. You also don't have to thoroughly test the component; just give it some sample inputs and make sure it renders correctly.
       `,
-    })),
+      }),
+      {
+        validate: async ({ context }) => {
+          const content = readFileSync(context.copiedFiles!.test, "utf-8");
+          const testLength = content.split("\n").length;
+          if (testLength > 300) {
+            return `Test file is too long at ${testLength} lines. Component tests should be short, ideally only one test making sure it renders. Look for ways to simplify the test.`;
+          }
+          return Promise.resolve(undefined);
+        },
+      },
+    ),
 
     step(TestStepMachine, () => ({
       fileId: "test",
