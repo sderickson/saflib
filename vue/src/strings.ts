@@ -7,11 +7,15 @@ const makeStringToKeyMap = (
 ) => {
   return Object.entries(strings).reduce((acc, [key, value]) => {
     if (typeof value === "string") {
-      if (acc.get(value) && process.env.NODE_ENV !== "test") {
-        console.warn(
-          `Duplicate string entries for "${value}" in ${prefix + key} and ${acc.get(value)}`,
-        );
-      }
+      // Need to think about this more.
+      // On the one hand, it's repetitive to use the same string in multiple places.
+      // On the other hand, it's harder to find the string you want for the component.
+      // For now, ignore duplicate values.
+      // if (acc.get(value) && process.env.NODE_ENV !== "test") {
+      //   console.warn(
+      //     `Duplicate string entries for "${value}" in ${prefix + key} and ${acc.get(value)}`,
+      //   );
+      // }
       acc.set(value, prefix + key);
     } else if (Array.isArray(value)) {
       acc.set(value, prefix + key);
