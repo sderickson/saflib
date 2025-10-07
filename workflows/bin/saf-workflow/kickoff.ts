@@ -40,8 +40,8 @@ export const addKickoffCommand = (commandOptions: WorkflowCommandOptions) => {
         const givenRunMode = parseRunMode(runMode);
 
         const log = createWorkflowLogger({
-          printToAgent: givenRunMode === "run",
-          printToConsole: givenRunMode !== "run",
+          // printToAgent: givenRunMode === "run",
+          // printToConsole: givenRunMode !== "run",
         });
         if (givenRunMode === "run") {
           addPendingMessage(

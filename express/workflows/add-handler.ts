@@ -15,6 +15,7 @@ import {
   makeLineReplace,
 } from "@saflib/workflows";
 import path from "node:path";
+import { readFileSync } from "node:fs";
 
 const sourceDir = path.join(import.meta.dirname, "templates/routes/example");
 
@@ -115,10 +116,23 @@ If mapper functions don't exist for the database models used by this endpoint, a
       docId: "testingGuide",
     })),
 
-    step(UpdateStepMachine, ({ context }) => ({
-      fileId: "test",
-      promptMessage: `Update the generated ${context.targetName}.test.ts file following the testing guide patterns. Make sure to implement proper test cases that cover both success and error scenarios.`,
-    })),
+    step(
+      UpdateStepMachine,
+      ({ context }) => ({
+        fileId: "test",
+        promptMessage: `Update the generated ${context.targetName}.test.ts file following the testing guide patterns. Make sure to implement proper test cases that cover both success and error scenarios.`,
+      }),
+      {
+        validate: async ({ context }) => {
+          const content = readFileSync(context.copiedFiles!.test, "utf-8");
+          const testLength = content.split("\n").length;
+          if (testLength > 300) {
+            return `Test file is too long at ${testLength} lines. Try to stick to one test per status code returned. Also look for ways to reduce repetitive code, for example by reusing stub data. Do not test 400 responses.`;
+          }
+          return Promise.resolve(undefined);
+        },
+      },
+    ),
 
     step(CommandStepMachine, () => ({
       command: "npm",

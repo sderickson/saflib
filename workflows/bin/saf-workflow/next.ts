@@ -33,7 +33,7 @@ export const addNextCommand = (commandOptions: WorkflowCommandOptions) => {
       }
       const runMode = blob.snapshotState?.context?.runMode;
       const log = createWorkflowLogger({
-        printToAgent: runMode === "run",
+        // printToAgent: runMode === "run",
       });
       setupWorkflowContext({
         logger: log,
