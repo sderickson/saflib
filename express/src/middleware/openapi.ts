@@ -6,6 +6,7 @@ import type {
 import type { OpenAPIV3 } from "express-openapi-validator/dist/framework/types.ts";
 import type { Request } from "express";
 import { typedEnv } from "@saflib/env";
+import multer from "multer";
 
 declare global {
   namespace Express {
@@ -46,6 +47,30 @@ export const createOpenApiValidator = (
       apiSpec: spec,
       validateRequests: true,
       validateResponses,
+      fileUploader: {
+        storage: multer.memoryStorage(),
+        limits: {
+          fileSize: 10 * 1024 * 1024, // 10MB limit
+        },
+        fileFilter: (_req, file, cb) => {
+          // Allow common file types
+          const allowedMimes = [
+            "application/pdf",
+            "image/jpeg",
+            "image/png",
+            "image/gif",
+            "application/msword",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            "text/plain",
+          ];
+
+          if (allowedMimes.includes(file.mimetype)) {
+            cb(null, true);
+          } else {
+            cb(new Error("Invalid file type"));
+          }
+        },
+      },
     }),
   ];
 };
