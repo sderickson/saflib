@@ -31,15 +31,23 @@ const validateResponses = {
   },
 };
 
+export interface OpenApiValidatorOptions {
+  apiSpec: string | OpenAPIV3.DocumentV3;
+  fileUploader?: multer.Options;
+}
+
 /**
  * Creates OpenAPI validation middleware with a custom specification.
  * Only use this if you need to validate against a different OpenAPI spec.
  */
 export const createOpenApiValidator = (
-  apiSpec: string | OpenAPIV3.DocumentV3,
+  options: OpenApiValidatorOptions,
 ): OpenApiRequestHandler[] => {
   // Parse spec if it's a string
-  const spec = typeof apiSpec === "string" ? require(apiSpec) : apiSpec;
+  const spec =
+    typeof options.apiSpec === "string"
+      ? require(options.apiSpec)
+      : options.apiSpec;
 
   return [
     // Request/response validation
@@ -47,30 +55,7 @@ export const createOpenApiValidator = (
       apiSpec: spec,
       validateRequests: true,
       validateResponses,
-      fileUploader: {
-        storage: multer.memoryStorage(),
-        limits: {
-          fileSize: 10 * 1024 * 1024, // 10MB limit
-        },
-        fileFilter: (_req, file, cb) => {
-          // Allow common file types
-          const allowedMimes = [
-            "application/pdf",
-            "image/jpeg",
-            "image/png",
-            "image/gif",
-            "application/msword",
-            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            "text/plain",
-          ];
-
-          if (allowedMimes.includes(file.mimetype)) {
-            cb(null, true);
-          } else {
-            cb(new Error("Invalid file type"));
-          }
-        },
-      },
+      fileUploader: options.fileUploader,
     }),
   ];
 };

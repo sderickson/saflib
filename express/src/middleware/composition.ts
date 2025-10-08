@@ -12,6 +12,7 @@ import { blockHtml } from "./blockHtml.ts";
 import { createScopeValidator } from "./scopes.ts";
 import { metricsMiddleware } from "./metrics.ts";
 import { makeAuthMiddleware } from "./auth.ts";
+import multer from "multer";
 
 /**
  * Options for creating global middleware.
@@ -52,6 +53,7 @@ export const createGlobalMiddleware = (
  */
 export interface ScopedMiddlewareOptions {
   apiSpec?: OpenAPIV3.DocumentV3;
+  fileUploader?: multer.Options;
   authRequired?: boolean;
   adminRequired?: boolean;
 }
@@ -63,11 +65,14 @@ export interface ScopedMiddlewareOptions {
 export const createScopedMiddleware = (
   options: ScopedMiddlewareOptions,
 ): Handler[] => {
-  const { apiSpec, authRequired, adminRequired } = options;
+  const { apiSpec, fileUploader, authRequired, adminRequired } = options;
 
   let openApiValidatorMiddleware: Handler[] = [];
   if (apiSpec) {
-    openApiValidatorMiddleware = createOpenApiValidator(apiSpec);
+    openApiValidatorMiddleware = createOpenApiValidator({
+      apiSpec,
+      fileUploader,
+    });
   }
 
   let authMiddleware: Handler[] = [];
