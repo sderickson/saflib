@@ -26,7 +26,11 @@ type ExtractRequestBody<Op extends Record<string, any>> =
     content: { "application/json": any };
   }
     ? Op["requestBody"]["content"]["application/json"]
-    : never;
+    : Op["requestBody"] extends {
+          content: { "multipart/form-data": any };
+        }
+      ? Op["requestBody"]["content"]["multipart/form-data"]
+      : never;
 
 /**
  * Use to create a typed helper function for creating typesafe mock API handlers.
