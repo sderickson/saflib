@@ -14,7 +14,7 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "typecheck": "vue-tsc",
-    "dev": "vite",
+    "dev": "NODE_OPTIONS='--experimental-strip-types --disable-warning=ExperimentalWarning' vite",
     "dev-docker": "npm exec saf-docker generate && docker compose up --build"
   },
   "devDependencies": {
