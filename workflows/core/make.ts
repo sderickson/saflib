@@ -193,9 +193,20 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
         onDone: {
           target: nextStateName,
         },
-        onError: {
-          target: stateName,
-        },
+        onError: [
+          {
+            guard: ({ context, event }: { context: Context; event: any }) => {
+              if (context.runMode === "dry" || context.runMode === "script") {
+                throw new Error(event.error);
+              }
+              return false;
+            },
+            target: nextStateName,
+          },
+          {
+            target: stateName,
+          },
+        ],
       },
     };
   }
@@ -348,12 +359,12 @@ const handleGitChanges = async ({
     const otherFiles = absoluteAllFiles.filter(
       (file) => !expectedFiles.has(file),
     );
-    console.log("Debug git changes", {
-      allFiles,
-      absoluteAllFiles,
-      otherFiles,
-      expectedFiles,
-    });
+    // console.log("Debug git changes", {
+    //   allFiles,
+    //   absoluteAllFiles,
+    //   otherFiles,
+    //   expectedFiles,
+    // });
 
     if (otherFiles.length > 0) {
       tries++;
@@ -374,7 +385,7 @@ const handleGitChanges = async ({
       
       If you have diverged from this goal, you need to undo the unscoped changes.`,
       });
-      if (!shouldContinue) {
+      if (!shouldContinue || context.runMode === "script") {
         return false;
       }
     } else {

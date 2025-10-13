@@ -15,6 +15,8 @@ export const handlePrompt = async ({
     case "dry":
       return { code: 0, sessionId: undefined, shouldContinue: true };
     case "script":
+      // mainly to see errors when running scripts
+      console.log(msg);
       return { code: 0, sessionId: undefined, shouldContinue: true };
     case "print":
       printPrompt({ msg, context });
