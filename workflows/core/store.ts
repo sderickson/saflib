@@ -1,5 +1,6 @@
 import { AsyncLocalStorage } from "async_hooks";
 import path from "node:path";
+import { addPendingMessage, setListening } from "./agents/message.ts";
 
 /**
  * Logger interface for workflow operations
@@ -29,25 +30,68 @@ export interface WorkflowContext {
  */
 export interface WorkflowLoggerOptions {
   silent?: boolean;
+  printToConsole?: boolean;
+  printToAgent?: boolean;
 }
 
 /**
- * Create a simple console-based logger with the specified options
+ * Create a simple console-based logger with the specified options.
+ *
+ * Should probably switch to winston at some point.
  */
 export function createWorkflowLogger(
   options: WorkflowLoggerOptions = {},
 ): WorkflowLogger {
-  const { silent = false } = options;
+  const {
+    silent = false,
+    printToConsole = true,
+    printToAgent = false,
+  } = options;
 
   if (silent) {
     return createSilentLogger();
   }
+  if (printToAgent) {
+    setListening(true);
+  }
 
   return {
-    info: (message: string) => console.log(`[✓] ${message}`),
-    error: (message: string) => console.error(`[✗] ${message}`),
-    warn: (message: string) => console.warn(`[⚠] ${message}`),
-    debug: (message: string) => console.debug(`[.] ${message}`),
+    info: (message: string) => {
+      const decoratedMessage = `[✓] ${message}`;
+      if (printToConsole) {
+        console.log(decoratedMessage);
+      }
+      if (printToAgent) {
+        addPendingMessage(decoratedMessage);
+      }
+    },
+    error: (message: string) => {
+      const decoratedMessage = `[✗] ${message}`;
+      if (printToConsole) {
+        console.error(decoratedMessage);
+      }
+      if (printToAgent) {
+        addPendingMessage(decoratedMessage);
+      }
+    },
+    warn: (message: string) => {
+      const decoratedMessage = `[⚠] ${message}`;
+      if (printToConsole) {
+        console.warn(decoratedMessage);
+      }
+      if (printToAgent) {
+        addPendingMessage(decoratedMessage);
+      }
+    },
+    debug: (message: string) => {
+      const decoratedMessage = `[.] ${message}`;
+      if (printToConsole) {
+        console.debug(decoratedMessage);
+      }
+      if (printToAgent) {
+        addPendingMessage(decoratedMessage);
+      }
+    },
   };
 }
 

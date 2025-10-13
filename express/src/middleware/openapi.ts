@@ -6,6 +6,7 @@ import type {
 import type { OpenAPIV3 } from "express-openapi-validator/dist/framework/types.ts";
 import type { Request } from "express";
 import { typedEnv } from "@saflib/env";
+import multer from "multer";
 
 declare global {
   namespace Express {
@@ -30,15 +31,23 @@ const validateResponses = {
   },
 };
 
+export interface OpenApiValidatorOptions {
+  apiSpec: string | OpenAPIV3.DocumentV3;
+  fileUploader?: multer.Options;
+}
+
 /**
  * Creates OpenAPI validation middleware with a custom specification.
  * Only use this if you need to validate against a different OpenAPI spec.
  */
 export const createOpenApiValidator = (
-  apiSpec: string | OpenAPIV3.DocumentV3,
+  options: OpenApiValidatorOptions,
 ): OpenApiRequestHandler[] => {
   // Parse spec if it's a string
-  const spec = typeof apiSpec === "string" ? require(apiSpec) : apiSpec;
+  const spec =
+    typeof options.apiSpec === "string"
+      ? require(options.apiSpec)
+      : options.apiSpec;
 
   return [
     // Request/response validation
@@ -46,6 +55,7 @@ export const createOpenApiValidator = (
       apiSpec: spec,
       validateRequests: true,
       validateResponses,
+      fileUploader: options.fileUploader,
     }),
   ];
 };

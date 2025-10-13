@@ -38,6 +38,8 @@ export interface CommandStepInput {
 
   skipIf?: CommandStepSkipIf;
 
+  ignoreError?: boolean;
+
   /**
    * The environment variables to set for the command.
    */
@@ -52,6 +54,7 @@ export interface CommandStepContext extends WorkflowContext {
   args: string[];
   skipIf?: CommandStepSkipIf;
   promptOnError?: string;
+  ignoreError?: boolean;
 }
 
 /**
@@ -93,6 +96,11 @@ export const CommandStepMachine = setup({
               shouldContinue: true,
             };
           } catch (error) {
+            if (input.ignoreError) {
+              return {
+                shouldContinue: true,
+              };
+            }
             const { shouldContinue } = await handlePrompt({
               context: input,
               msg: `The command \`${input.command} ${input.args.join(" ")}\` failed.\nCWD: ${input.cwd}.\n${input.promptOnError ? `\n${input.promptOnError}` : ""}`,
@@ -114,6 +122,7 @@ export const CommandStepMachine = setup({
       command: input.command,
       args: input.args || [],
       promptOnError: input.promptOnError,
+      ignoreError: input.ignoreError,
     };
   },
   initial: "printBefore",

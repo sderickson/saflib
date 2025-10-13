@@ -2,7 +2,7 @@ import type { Command } from "commander";
 import { addNewLinesToString } from "@saflib/utils";
 import { execSync } from "child_process";
 import { getSafReporters } from "@saflib/node";
-import { errorSchema } from "@saflib/openapi";
+import { errorSchema } from "@saflib/openapi/error";
 import { mkdirSync, writeFileSync } from "fs";
 import path from "path";
 

@@ -52,7 +52,11 @@ export const loadWorkflow = async (workflows: WorkflowDefinition[]) => {
     args: blob.args,
     workflowRunMode: "print",
   });
-  instance.hydrate(blob);
+  instance.hydrate(blob, {
+    onSnapshot: () => {
+      saveWorkflow(instance);
+    },
+  });
   return instance;
 };
 

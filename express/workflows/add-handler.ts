@@ -15,6 +15,7 @@ import {
   makeLineReplace,
 } from "@saflib/workflows";
 import path from "node:path";
+import { readFileSync } from "node:fs";
 
 const sourceDir = path.join(import.meta.dirname, "templates/routes/example");
 
@@ -96,29 +97,42 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
     step(PromptStepMachine, ({ context }) => ({
       promptText: `Check if routes/_helpers.ts has mapper functions for converting database models to API response types for this ${context.targetName} handler.
 
-If mapper functions don't exist for the database models used by this endpoint, add them to routes/_helpers.ts following patterns shown there.`,
+      If mapper functions don't exist for the database models used by this endpoint, add them to routes/_helpers.ts following patterns shown there.`,
     })),
 
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "handler",
       promptMessage: `Implement the ${context.targetName} route handler. Make sure to:
-        1. Use createHandler from @saflib/express
-        2. Use types from your OpenAPI spec for request/response bodies
-        3. Use mapper functions from routes/_helpers.ts to convert database models to API responses
-        4. Handle expected errors from service/DB layers
-        5. Let unexpected errors propagate to central error handler (no try/catch)
-        6. Follow the pattern in the reference doc
-        7. Export the handler from the folder's "index.ts" file`,
+            1. Use createHandler from @saflib/express
+            2. Use types from your OpenAPI spec for request/response bodies
+            3. Use mapper functions from routes/_helpers.ts to convert database models to API responses
+            4. Handle expected errors from service/DB layers
+            5. Let unexpected errors propagate to central error handler (no try/catch)
+            6. Follow the pattern in the reference doc
+            7. Export the handler from the folder's "index.ts" file`,
     })),
 
     step(DocStepMachine, () => ({
       docId: "testingGuide",
     })),
 
-    step(UpdateStepMachine, ({ context }) => ({
-      fileId: "test",
-      promptMessage: `Update the generated ${context.targetName}.test.ts file following the testing guide patterns. Make sure to implement proper test cases that cover both success and error scenarios.`,
-    })),
+    step(
+      UpdateStepMachine,
+      ({ context }) => ({
+        fileId: "test",
+        promptMessage: `Update the generated ${context.targetName}.test.ts file following the testing guide patterns. Make sure to implement proper test cases that cover both success and error scenarios.`,
+      }),
+      {
+        validate: async ({ context }) => {
+          const content = readFileSync(context.copiedFiles!.test, "utf-8");
+          const testLength = content.split("\n").length;
+          if (testLength > 300) {
+            return `Test file is too long at ${testLength} lines. Try to stick to one test per status code returned. Also look for ways to reduce repetitive code, for example by reusing stub data. Do not test 400 responses.`;
+          }
+          return Promise.resolve(undefined);
+        },
+      },
+    ),
 
     step(CommandStepMachine, () => ({
       command: "npm",

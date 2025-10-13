@@ -100,14 +100,16 @@ export class XStateWorkflowRunner extends AbstractWorkflowRunner {
 
   kickoff = async (options?: WorkflowRunOptions): Promise<boolean> => {
     const t0 = Date.now();
-    const actor = createActor(this.machine, { input: this.input });
+    const actor = createActor(this.machine, {
+      input: this.input,
+      inspect: (inspectionEvent) => {
+        if (inspectionEvent.type === "@xstate.snapshot") {
+          options?.onSnapshot?.(actor.getPersistedSnapshot());
+        }
+      },
+    });
     this.actor = actor;
     actor.start();
-    actor.subscribe(() => {
-      if (options?.onSnapshot) {
-        options.onSnapshot(actor.getPersistedSnapshot());
-      }
-    });
     const snapshot = actor.getSnapshot();
 
     if (snapshot.status === "error") {
@@ -186,9 +188,14 @@ export class XStateWorkflowRunner extends AbstractWorkflowRunner {
     };
   };
 
-  hydrate = (blob: WorkflowBlob): void => {
+  hydrate = (blob: WorkflowBlob, options?: WorkflowRunOptions): void => {
     this.actor = createActor(this.machine, {
       snapshot: blob.snapshotState,
+      inspect: (inspectionEvent) => {
+        if (inspectionEvent.type === "@xstate.snapshot") {
+          options?.onSnapshot?.(inspectionEvent.snapshot);
+        }
+      },
     });
     this.actor.start();
   };

@@ -77,7 +77,9 @@ export const UpdateSchemaWorkflowDefinition = defineWorkflow<
 
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "schema",
-      promptMessage: `Update ${context.targetName}.ts to add the new table, or modify it.`,
+      promptMessage: `Update ${context.targetName}.ts to add the new table, or modify it.
+      
+      ${context.systemPrompt ? `More context: ${context.systemPrompt}` : ""}`,
     })),
 
     step(CommandStepMachine, () => ({
@@ -90,8 +92,8 @@ export const UpdateSchemaWorkflowDefinition = defineWorkflow<
       * If the field may be null, the type should include \`... | null\`.`,
     })),
 
-    step(PromptStepMachine, () => ({
-      promptText: `If any new tables were created, make sure to export everything from the new schema file in the root \`./schemas.ts\` file.`,
+    step(PromptStepMachine, ({ context }) => ({
+      promptText: `Check that everything in ${context.targetName}.ts is exported in the root \`./schema.ts\` file.`,
     })),
 
     step(CommandStepMachine, () => ({

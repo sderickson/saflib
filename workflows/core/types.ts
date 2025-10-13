@@ -7,7 +7,6 @@ import {
   type InputFrom,
   type PromiseActorLogic,
   type MachineContext,
-  type OutputFrom,
 } from "xstate";
 
 /**
@@ -16,7 +15,10 @@ import {
 export type WorkflowStep<C, M extends AnyStateMachine> = {
   machine: M;
   input: (arg: { context: C & WorkflowContext }) => InputFrom<M>;
-  validate: (arg: { output: OutputFrom<M> }) => Promise<string | undefined>;
+  validate: (arg: {
+    context: C & WorkflowContext;
+  }) => Promise<string | undefined>;
+  skipIf: (arg: { context: C & WorkflowContext }) => boolean;
 };
 
 /**
@@ -219,3 +221,14 @@ export type WorkflowActionFunction<
   never,
   E
 >;
+
+export interface PromptParam {
+  msg: string;
+  context: WorkflowContext;
+}
+
+export interface PromptResult {
+  code: number | null;
+  sessionId?: string;
+  shouldContinue: boolean;
+}

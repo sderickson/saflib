@@ -1,13 +1,6 @@
 import { Command } from "commander";
 import type { WorkflowDefinition } from "../../core/types.ts";
 import { addNewLinesToString } from "../../strings.ts";
-import {
-  createWorkflowLogger,
-  setupWorkflowContext,
-  type WorkflowLoggerOptions,
-  type GetSourceUrlFunction,
-  type WorkflowLogger,
-} from "../../core/store.ts";
 import { addKickoffCommand } from "./kickoff.ts";
 import { addChecklistCommand } from "./checklist.ts";
 import { addStatusCommand } from "./status.ts";
@@ -15,16 +8,10 @@ import { addNextCommand } from "./next.ts";
 import { addListCommand } from "./list.ts";
 import { addSourceCommand } from "./source.ts";
 import { addRunScriptsCommand } from "./run-scripts.ts";
-
-/**
- * Options for configuring the workflow CLI
- */
-export interface WorkflowCliOptions {
-  logger?: WorkflowLogger;
-  loggerOptions?: WorkflowLoggerOptions;
-  getSourceUrl?: GetSourceUrlFunction;
-}
-
+import type {
+  WorkflowCliOptions,
+  WorkflowCommandOptions,
+} from "./shared/types.ts";
 /**
  * Given a list of workflow classes, runs a CLI for running workflows.
  *
@@ -47,26 +34,19 @@ export async function runWorkflowCli(
       ),
     );
 
-  addKickoffCommand(program, workflows);
-  addStatusCommand(program, workflows);
-  addNextCommand(program, workflows);
-  addChecklistCommand(program, workflows);
-  addListCommand(program, workflows);
-  addSourceCommand(program, workflows);
-  addRunScriptsCommand(program, workflows);
-
-  // Set up workflow context
-  const silentLogging = process.argv.includes("checklist");
-  const loggerOptions: WorkflowLoggerOptions = {
-    silent: silentLogging,
-    ...options.loggerOptions,
+  const commandOptions: WorkflowCommandOptions = {
+    program,
+    workflows,
+    ...options,
   };
 
-  const logger = options.logger || createWorkflowLogger(loggerOptions);
-  setupWorkflowContext({
-    logger,
-    getSourceUrl: options.getSourceUrl,
-  });
+  addKickoffCommand(commandOptions);
+  addStatusCommand(commandOptions);
+  addNextCommand(commandOptions);
+  addChecklistCommand(commandOptions);
+  addListCommand(commandOptions);
+  addSourceCommand(commandOptions);
+  addRunScriptsCommand(commandOptions);
 
   await program.parseAsync(process.argv);
 }

@@ -12,16 +12,18 @@ import type {
 import { workflowActions, workflowActors } from "./xstate.ts";
 import {
   assign,
+  fromPromise,
   raise,
   setup,
   type AnyStateMachine,
   type InputFrom,
-  type OutputFrom,
 } from "xstate";
 import { contextFromInput } from "./utils.ts";
 import type { WorkflowArgument } from "./types.ts";
 import { existsSync } from "fs";
 import { addNewLinesToString } from "@saflib/utils";
+import { getWorkflowLogger } from "./store.ts";
+import { addPendingMessage } from "./agents/message.ts";
 
 let lastSystemPrompt: string | undefined;
 
@@ -89,7 +91,20 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
   for (let i = 0; i < workflow.steps.length; i++) {
     const step = workflow.steps[i];
     const stateName = `step_${i}`;
+    const validateStateName = `${stateName}_validate`;
+    const nextStateName = `step_${i + 1}`;
+
+    const hasValidate = step.validate !== undefined;
+
     states[stateName] = {
+      always: [
+        {
+          guard: ({ context }: { context: Context }) => {
+            return step.skipIf({ context });
+          },
+          target: nextStateName,
+        },
+      ],
       entry: [
         {
           type: "systemPrompt",
@@ -110,7 +125,7 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
         },
         src: `actor_${i}`,
         onDone: {
-          target: `step_${i + 1}`,
+          target: hasValidate ? validateStateName : nextStateName,
           actions: [
             {
               type: "afterEach",
@@ -143,6 +158,32 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
         },
       },
     };
+
+    if (hasValidate) {
+      states[validateStateName] = {
+        invoke: {
+          src: fromPromise(async ({ input }: { input: Context }) => {
+            if (input.runMode === "dry") {
+              return;
+            }
+            const output = await step.validate({ context: input });
+            if (output) {
+              const log = getWorkflowLogger();
+              log.error(output);
+              throw new Error(output);
+            }
+            return;
+          }),
+          input: ({ context }: { context: Context }) => context,
+          onDone: {
+            target: nextStateName,
+          },
+          onError: {
+            target: stateName,
+          },
+        },
+      };
+    }
   }
   states[`step_${workflow.steps.length}`] = {
     type: "final",
@@ -164,6 +205,7 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
       systemPrompt: ({ context }) => {
         if (context.systemPrompt) {
           if (context.systemPrompt !== lastSystemPrompt) {
+            addPendingMessage(context.systemPrompt);
             console.log("");
             console.log(addNewLinesToString(context.systemPrompt));
             console.log("");
@@ -225,12 +267,16 @@ export const step = <C, M extends AnyStateMachine>(
   machine: M,
   input: (arg: { context: C & WorkflowContext }) => InputFrom<M>,
   options: {
-    validate?: (arg: { output: OutputFrom<M> }) => Promise<string | undefined>;
+    validate?: (arg: {
+      context: C & WorkflowContext;
+    }) => Promise<string | undefined>;
+    skipIf?: (arg: { context: C & WorkflowContext }) => boolean;
   } = {},
 ): WorkflowStep<C, M> => {
   return {
     machine,
     input,
     validate: options.validate || (() => Promise.resolve(undefined)),
+    skipIf: options.skipIf || (() => false),
   };
 };

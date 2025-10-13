@@ -1,14 +1,17 @@
-import type { Command } from "commander";
 import { addNewLinesToString } from "../../strings.ts";
 import type { WorkflowArgument, WorkflowDefinition } from "../../core/types.ts";
 import { runWorkflow, loadWorkflowDefinition } from "./shared/utils.ts";
 import { checklistToString } from "../../core/utils.ts";
+import type { WorkflowCommandOptions } from "./shared/types.ts";
+import {
+  createWorkflowLogger,
+  setupWorkflowContext,
+} from "../../core/store.ts";
 
 export const addRunScriptsCommand = (
-  program: Command,
-  workflows: WorkflowDefinition[],
+  commandOptions: WorkflowCommandOptions,
 ) => {
-  program
+  commandOptions.program
     .command("run-scripts")
     .description(
       addNewLinesToString(
@@ -18,9 +21,14 @@ export const addRunScriptsCommand = (
     .argument("<workflowIdOrPath>", "Workflow ID or path to workflow file")
     .argument("[args...]", "Arguments for the workflow")
     .action(async (workflowIdOrPath: string, args: string[]) => {
+      const log = createWorkflowLogger();
+      setupWorkflowContext({
+        logger: log,
+        getSourceUrl: commandOptions.getSourceUrl,
+      });
       const workflowDefinition = await loadWorkflowDefinition(
         workflowIdOrPath,
-        workflows,
+        commandOptions.workflows,
       );
       await runWorkflowScript({
         definition: workflowDefinition,
