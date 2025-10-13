@@ -53,7 +53,6 @@ export const SpecProjectWorkflowDefinition = defineWorkflow<
 
   templateFiles: {
     spec: path.join(sourceDir, "template-file.spec.md"),
-    checklist: path.join(sourceDir, "template-file.checklist.md"),
   },
 
   docFiles: {
