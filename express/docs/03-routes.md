@@ -47,7 +47,13 @@ The vast majority of errors responses should simply be [the error object](https:
 
 Note that `message` is _for debugging_. The `message` is _not_ intended to be shown to end users as part of normal use; it is not localized. Instead, the frontend should use the HTTP status and, if necessary, the `code` field to decide what to render to the user. The `@saflib/vue` package in fact logs the message and [only propagates](https://github.com/sderickson/saflib/blob/e75a8597ae497ea8d422dab1a1e96f41792b85ba/vue-spa/src/tanstack.ts#L63-L67) the http status and response code fields to Vue components. All SDKs should do the same.
 
-> TODO: Make sure message is actually console logged.
+To return a code, include it in the third parameter (the `properties` object, see [docs](https://www.npmjs.com/package/http-errors#createerrorstatus-message-properties)) to `createError`.
+
+```ts
+createError(400, "This file type is not supported", {
+  code: "FILE_TYPE_NOT_SUPPORTED",
+});
+```
 
 See for example [get-profile.ts](https://github.com/sderickson/saflib/blob/37d619bf41fe2922880dee7483b9fb9690d2ee1b/identity/identity-service/routes/auth/get-profile.ts).
 
