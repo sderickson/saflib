@@ -295,6 +295,17 @@ export const step = <C, M extends AnyStateMachine>(
   };
 };
 
+let gitRoot: string | undefined;
+
+const getGitRoot = () => {
+  if (!gitRoot) {
+    gitRoot = execSync("git rev-parse --show-toplevel", {
+      encoding: "utf8",
+    }).trim();
+  }
+  return gitRoot;
+};
+
 const handleGitChanges = async ({
   context,
   checklistDescription,
@@ -302,24 +313,30 @@ const handleGitChanges = async ({
   context: WorkflowContext;
   checklistDescription: string;
 }) => {
+  const gitRoot = getGitRoot();
   let tries = 0;
   while (true) {
-    const expectedFiles = new Set(Object.keys(context.copiedFiles || {}));
+    const expectedFiles = new Set(Object.values(context.copiedFiles || {}));
     const staged = execSync("git diff --cached --name-only", {
       encoding: "utf8",
+      cwd: gitRoot,
     })
       .trim()
       .split("\n")
       .filter(Boolean);
 
     // Get unstaged changes (modified files)
-    const unstaged = execSync("git diff --name-only", { encoding: "utf8" })
+    const unstaged = execSync("git diff --name-only", {
+      encoding: "utf8",
+      cwd: gitRoot,
+    })
       .trim()
       .split("\n")
       .filter(Boolean);
 
     // Get untracked files
     const untracked = execSync("git ls-files --others --exclude-standard", {
+      cwd: gitRoot,
       encoding: "utf8",
     })
       .trim()
@@ -327,9 +344,7 @@ const handleGitChanges = async ({
       .filter(Boolean);
 
     const allFiles = [...staged, ...unstaged, ...untracked];
-    const absoluteAllFiles = allFiles.map((file) =>
-      path.join(context.cwd, file),
-    );
+    const absoluteAllFiles = allFiles.map((file) => path.join(gitRoot, file));
     const otherFiles = absoluteAllFiles.filter(
       (file) => !expectedFiles.has(file),
     );

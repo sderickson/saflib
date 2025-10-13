@@ -16,10 +16,7 @@ import {
 } from "@saflib/workflows";
 import path from "node:path";
 
-const sourceDir = path.join(
-  import.meta.dirname,
-  "templates/queries/example-table",
-);
+const sourceDir = path.join(import.meta.dirname, "templates");
 
 const input = [
   {
@@ -56,14 +53,23 @@ export const AddQueryWorkflowDefinition = defineWorkflow<
         requiredSuffix: ".ts",
         cwd: input.cwd,
       }),
+      targetDir: input.cwd,
     };
   },
 
   templateFiles: {
-    query: path.join(sourceDir, "__target-name__.ts"),
-    test: path.join(sourceDir, "__target-name__.test.ts"),
-    index: path.join(sourceDir, "index.ts"),
+    query: path.join(sourceDir, "queries/__group-name__/__target-name__.ts"),
+    test: path.join(
+      sourceDir,
+      "queries/__group-name__/__target-name__.test.ts",
+    ),
+    groupIndex: path.join(sourceDir, "queries/__group-name__/index.ts"),
+    rootIndex: path.join(sourceDir, "index.ts"),
+    types: path.join(sourceDir, "types.ts"),
+    errors: path.join(sourceDir, "errors.ts"),
   },
+
+  manageGit: true,
 
   docFiles: {
     refDoc: path.join(import.meta.dirname, "../docs/03-queries.md"),
@@ -77,9 +83,12 @@ export const AddQueryWorkflowDefinition = defineWorkflow<
       lineReplace: makeLineReplace(context),
     })),
 
-    step(PromptStepMachine, ({ context }) => ({
-      promptText: `Update \`${context.targetDir}/index.ts\` to include the new query.
-        1. Import the new query from \`./${context.targetName}.ts\`
+    step(UpdateStepMachine, ({ context }) => ({
+      fileId: "groupIndex",
+      promptMessage: `Update the group index to include the new query.
+      Full path: ${context.copiedFiles?.groupIndex}
+
+        1. Import the new query from \`./${context.copiedFiles?.query}\`
         2. Add it to the others being exported
         3. Make sure this index file is being re-exported by the root index.ts file`,
     })),
@@ -88,8 +97,9 @@ export const AddQueryWorkflowDefinition = defineWorkflow<
       docId: "refDoc",
     })),
 
-    step(PromptStepMachine, () => ({
-      promptText: `Add inputs/outputs as needed to the root \`types.ts\` and \`errors.ts\` files.
+    step(PromptStepMachine, ({ context }) => ({
+      promptText: `Add inputs/outputs as needed to the root types.ts and errors.ts files.
+      Full paths: ${context.copiedFiles?.types}, ${context.copiedFiles?.errors}
 
         * As much as possible, types should be based on the types that drizzle provides.
         * A resource not being found by ID is an error.
@@ -98,9 +108,10 @@ export const AddQueryWorkflowDefinition = defineWorkflow<
         Note: Do NOT create a new \`types.ts\` or \`errors.ts\` files. Add to the existing ones next to the \`package.json\` file.`,
     })),
 
-    step(UpdateStepMachine, () => ({
+    step(UpdateStepMachine, ({ context }) => ({
       fileId: "query",
-      promptMessage: `Implement the new query following the documentation guidelines.`,
+      promptMessage: `Implement the new query following the documentation guidelines.
+      Full path: ${context.copiedFiles?.query}`,
     })),
 
     step(CommandStepMachine, () => ({
@@ -112,9 +123,11 @@ export const AddQueryWorkflowDefinition = defineWorkflow<
       docId: "testingGuide",
     })),
 
-    step(UpdateStepMachine, () => ({
+    step(UpdateStepMachine, ({ context }) => ({
       fileId: "test",
       promptMessage: `Implement the generated test file.
+
+      Full path: ${context.copiedFiles?.test}
 
       Aim for 100% coverage; there should be a known way to achieve every handled error. If it's not possible to cause a returned error, it should not be in the implementation.`,
     })),
