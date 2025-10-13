@@ -17,7 +17,7 @@ import {
 import path from "node:path";
 import { readFileSync } from "node:fs";
 
-const sourceDir = path.join(import.meta.dirname, "templates/routes/example");
+const sourceDir = path.join(import.meta.dirname, "templates");
 
 const input = [
   {
@@ -54,19 +54,24 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
         cwd: input.cwd,
         requiredPrefix: "./routes/",
       }),
+      targetDir: input.cwd,
     };
   },
 
   templateFiles: {
-    handler: path.join(sourceDir, "__target-name__.ts"),
-    test: path.join(sourceDir, "__target-name__.test.ts"),
-    index: path.join(sourceDir, "index.ts"),
+    handler: path.join(sourceDir, "routes/__group-name__/__target-name__.ts"),
+    test: path.join(sourceDir, "routes/__group-name__/__target-name__.test.ts"),
+    index: path.join(sourceDir, "routes/__group-name__/index.ts"),
+    http: path.join(sourceDir, "http.ts"),
+    helpers: path.join(sourceDir, "routes/_helpers.ts"),
   },
 
   docFiles: {
     refDoc: path.join(import.meta.dirname, "../docs/03-routes.md"),
     testingGuide: path.join(import.meta.dirname, "../docs/04-testing.md"),
   },
+
+  manageGit: true,
 
   steps: [
     step(CopyStepMachine, ({ context }) => ({

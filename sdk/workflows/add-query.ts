@@ -15,7 +15,7 @@ import {
 } from "@saflib/workflows";
 import path from "node:path";
 
-const sourceDir = path.join(import.meta.dirname, "templates/requests/example");
+const sourceDir = path.join(import.meta.dirname, "templates");
 
 const input = [
   {
@@ -55,20 +55,34 @@ export const AddQueryWorkflowDefinition = defineWorkflow<
         cwd: input.cwd,
         requiredPrefix: "./requests/",
       }),
+      targetDir: input.cwd,
     };
   },
 
   templateFiles: {
-    index: path.join(sourceDir, "index.ts"),
-    indexFakes: path.join(sourceDir, "index.fakes.ts"),
-    templateFile: path.join(sourceDir, "__target-name__.ts"),
-    templateFileFake: path.join(sourceDir, "__target-name__.fake.ts"),
-    templateFileTest: path.join(sourceDir, "__target-name__.test.ts"),
+    index: path.join(sourceDir, "requests/__group-name__/index.ts"),
+    indexFakes: path.join(sourceDir, "requests/__group-name__/index.fakes.ts"),
+    templateFile: path.join(
+      sourceDir,
+      "requests/__group-name__/__target-name__.ts",
+    ),
+    templateFileFake: path.join(
+      sourceDir,
+      "requests/__group-name__/__target-name__.fake.ts",
+    ),
+    templateFileTest: path.join(
+      sourceDir,
+      "requests/__group-name__/__target-name__.test.ts",
+    ),
+    rootIndex: path.join(sourceDir, "index.ts"),
+    rootFakes: path.join(sourceDir, "fakes.ts"),
   },
 
   docFiles: {
     overview: path.join(import.meta.dirname, "../docs/01-overview.md"),
   },
+
+  manageGit: true,
 
   steps: [
     step(DocStepMachine, () => ({

@@ -20,6 +20,8 @@ const input = [
   },
 ] as const;
 
+const sourceDir = path.join(import.meta.dirname, "templates");
+
 interface UpdateSchemaWorkflowContext extends ParsePathOutput {}
 
 export const UpdateSchemaWorkflowDefinition = defineWorkflow<
@@ -41,19 +43,20 @@ export const UpdateSchemaWorkflowDefinition = defineWorkflow<
         requiredSuffix: ".ts",
         cwd: input.cwd,
       }),
+      targetDir: input.cwd,
     };
   },
 
   templateFiles: {
-    schema: path.join(
-      import.meta.dirname,
-      "templates/schemas/__group-name__.ts",
-    ),
+    schema: path.join(sourceDir, "schemas/__group-name__.ts"),
+    schemaIndex: path.join(sourceDir, "schema.ts"),
   },
 
   docFiles: {
     schemaDoc: path.join(import.meta.dirname, "../docs/02-schema.md"),
   },
+
+  manageGit: true,
 
   steps: [
     step(PromptStepMachine, ({ context }) => {
