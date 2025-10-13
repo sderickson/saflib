@@ -101,12 +101,13 @@ export const AddQueryWorkflowDefinition = defineWorkflow<
     })),
 
     step(PromptStepMachine, ({ context }) => ({
-      promptText: `Add inputs/outputs as needed to the root types.ts and errors.ts files.
+      promptText: `Add parameters and results to the root types.ts file and errors to the errors.ts files.
       Full paths: ${context.copiedFiles?.types}, ${context.copiedFiles?.errors}
 
         * As much as possible, types should be based on the types that drizzle provides.
         * A resource not being found by ID is an error.
-        * Arrors should be simple, no special constructors or anything.
+        * Errors should be simple, no special constructors or anything.
+        * You don't need to export error types from the types.ts file.
 
         Note: Do NOT create a new \`types.ts\` or \`errors.ts\` files. Add to the existing ones next to the \`package.json\` file.`,
     })),
