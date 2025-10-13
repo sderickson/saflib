@@ -16,10 +16,7 @@ import {
 import { readFileSync } from "node:fs";
 import path from "node:path";
 
-const sourceDir = path.join(
-  import.meta.dirname,
-  "templates/components/target-name",
-);
+const sourceDir = path.join(import.meta.dirname, "templates");
 
 const input = [
   {
@@ -34,6 +31,7 @@ interface AddComponentWorkflowContext
   extends ParsePathOutput,
     ParsePackageNameOutput {
   targetDir: string;
+  prefixName: string;
 }
 
 export const AddComponentWorkflowDefinition = defineWorkflow<
@@ -77,7 +75,7 @@ export const AddComponentWorkflowDefinition = defineWorkflow<
       throw new Error("Path must be all lowercase");
     }
 
-    const targetDir = path.join(input.cwd, input.path);
+    // const targetDir = path.join(input.cwd, input.path);
 
     return {
       ...parsePath(input.path, {
@@ -87,14 +85,28 @@ export const AddComponentWorkflowDefinition = defineWorkflow<
       ...parsePackageName(getPackageName(input.cwd), {
         requiredSuffix: "-sdk",
       }),
-      targetDir,
+      targetDir: input.cwd,
+      prefixName: firstDir,
     };
   },
 
+  // TODO: Add strings and components files to list.
+
   templateFiles: {
-    vue: path.join(sourceDir, "__TargetName__.vue"),
-    strings: path.join(sourceDir, "__TargetName__.strings.ts"),
-    test: path.join(sourceDir, "__TargetName__.test.ts"),
+    vue: path.join(
+      sourceDir,
+      "__prefix-name__/__target-name__/__TargetName__.vue",
+    ),
+    strings: path.join(
+      sourceDir,
+      "__prefix-name__/__target-name__/__TargetName__.strings.ts",
+    ),
+    test: path.join(
+      sourceDir,
+      "__prefix-name__/__target-name__/__TargetName__.test.ts",
+    ),
+    packageStrings: path.join(sourceDir, "strings.ts"),
+    packageComponents: path.join(sourceDir, "components.ts"),
   },
 
   // TODO: add documentation file references
