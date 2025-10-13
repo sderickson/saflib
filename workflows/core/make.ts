@@ -27,6 +27,7 @@ import { addPendingMessage } from "./agents/message.ts";
 import { execSync } from "child_process";
 import path from "path";
 import { handlePrompt } from "./prompt.ts";
+import { checklistToString } from "./utils.ts";
 
 let lastSystemPrompt: string | undefined;
 
@@ -211,6 +212,32 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
     };
   }
   states[`step_${workflow.steps.length}`] = {
+    invoke: {
+      src: fromPromise(async ({ input }: { input: Context }) => {
+        if (input.runMode === "dry" || input.runMode === "script") {
+          return;
+        }
+        if (workflow.manageGit) {
+          const gitCommitHeader =
+            workflow.checklistDescription?.(input) || workflow.description;
+          const gitCommitBody = checklistToString(input.checklist);
+          const gitCommitMessage = `${gitCommitHeader}\n\n${gitCommitBody}`;
+          execSync(`git add -A`, {
+            cwd: gitRoot,
+          });
+          execSync(`git commit -m "${gitCommitMessage}"`, {
+            cwd: gitRoot,
+          });
+        }
+        return;
+      }),
+      input: ({ context }: { context: Context }) => context,
+      onDone: {
+        target: "end",
+      },
+    },
+  };
+  states["end"] = {
     type: "final",
   };
 
@@ -356,9 +383,9 @@ const handleGitChanges = async ({
 
     const allFiles = [...staged, ...unstaged, ...untracked];
     const absoluteAllFiles = allFiles.map((file) => path.join(gitRoot, file));
-    const otherFiles = absoluteAllFiles.filter(
-      (file) => !expectedFiles.has(file),
-    );
+    const otherFiles = absoluteAllFiles
+      .filter((file) => !expectedFiles.has(file))
+      .filter((file) => !file.endsWith("/saflib")); // tmp
     // console.log("Debug git changes", {
     //   allFiles,
     //   absoluteAllFiles,
