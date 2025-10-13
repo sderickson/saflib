@@ -163,6 +163,9 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
       states[validateStateName] = {
         invoke: {
           src: fromPromise(async ({ input }: { input: Context }) => {
+            if (input.runMode === "dry") {
+              return;
+            }
             const output = await step.validate({ context: input });
             if (output) {
               const log = getWorkflowLogger();
