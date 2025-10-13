@@ -83,7 +83,11 @@ export interface WorkflowDefinition<
    * Whether to manage git. If true, the workflow will commit and push the changes to the repository at the end of the workflow.
    * It will also prompt the agent if files *other* than template files were changed.
    */
-  manageGit?: boolean;
+  manageGit?:
+    | boolean
+    | {
+        ignorePaths?: string[];
+      };
 }
 
 type ArrayElementType<T extends readonly unknown[]> = T[number];

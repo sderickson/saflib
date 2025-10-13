@@ -56,7 +56,9 @@ export const UpdateSchemaWorkflowDefinition = defineWorkflow<
     schemaDoc: path.join(import.meta.dirname, "../docs/02-schema.md"),
   },
 
-  manageGit: true,
+  manageGit: {
+    ignorePaths: ["migrations/"],
+  },
 
   steps: [
     step(PromptStepMachine, ({ context }) => {

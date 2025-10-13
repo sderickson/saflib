@@ -59,7 +59,11 @@ export function defineWorkflow<
   docFiles: Record<string, string>;
   steps: Array<WorkflowStep<C, AnyStateMachine>>;
   afterEach?: (context: C) => void;
-  manageGit?: boolean;
+  manageGit?:
+    | boolean
+    | {
+        ignorePaths?: string[];
+      };
 }): WorkflowDefinition<I, C> {
   return config;
 }
@@ -175,6 +179,10 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
               context: input,
               checklistDescription:
                 workflow.checklistDescription?.(input) || workflow.description,
+              ignorePaths:
+                typeof workflow.manageGit === "object"
+                  ? workflow.manageGit.ignorePaths
+                  : undefined,
             });
             if (!successful) {
               throw new Error("Failed to handle git changes");
@@ -349,13 +357,17 @@ const getGitRoot = () => {
   return gitRoot;
 };
 
+interface HandleGitChangesOptions {
+  context: WorkflowContext;
+  checklistDescription: string;
+  ignorePaths?: string[];
+}
+
 const handleGitChanges = async ({
   context,
   checklistDescription,
-}: {
-  context: WorkflowContext;
-  checklistDescription: string;
-}) => {
+  ignorePaths,
+}: HandleGitChangesOptions) => {
   const gitRoot = getGitRoot();
   let tries = 0;
   while (true) {
@@ -388,15 +400,20 @@ const handleGitChanges = async ({
 
     const allFiles = [...staged, ...unstaged, ...untracked];
     const absoluteAllFiles = allFiles.map((file) => path.join(gitRoot, file));
-    const otherFiles = absoluteAllFiles
+    let otherFiles = absoluteAllFiles
       .filter((file) => !expectedFiles.has(file))
       .filter((file) => !file.endsWith("/saflib")); // tmp
-    // console.log("Debug git changes", {
-    //   allFiles,
-    //   absoluteAllFiles,
-    //   otherFiles,
-    //   expectedFiles,
-    // });
+    if (ignorePaths) {
+      const absoluteIgnorePaths = ignorePaths.map((ignorePath) =>
+        path.join(context.cwd, ignorePath),
+      );
+      otherFiles = otherFiles.filter(
+        (file) =>
+          !absoluteIgnorePaths.some((ignorePath) =>
+            file.startsWith(ignorePath),
+          ),
+      );
+    }
 
     if (otherFiles.length > 0) {
       tries++;
