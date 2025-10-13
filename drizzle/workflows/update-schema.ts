@@ -93,7 +93,9 @@ export const UpdateSchemaWorkflowDefinition = defineWorkflow<
     })),
 
     step(PromptStepMachine, ({ context }) => ({
-      promptText: `Check that everything in ${context.targetName}.ts is exported in the root \`./schema.ts\` file.`,
+      promptText: `Check that everything in ${context.targetName}.ts is exported in the root \`./schema.ts\` file.
+      
+      Don't overthink this. Just check quickly and be done with it.`,
     })),
 
     step(CommandStepMachine, () => ({

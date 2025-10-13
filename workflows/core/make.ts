@@ -24,6 +24,9 @@ import { existsSync } from "fs";
 import { addNewLinesToString } from "@saflib/utils";
 import { getWorkflowLogger } from "./store.ts";
 import { addPendingMessage } from "./agents/message.ts";
+import { execSync } from "child_process";
+import path from "path";
+import { handlePrompt } from "./prompt.ts";
 
 let lastSystemPrompt: string | undefined;
 
@@ -54,6 +57,7 @@ export function defineWorkflow<
   docFiles: Record<string, string>;
   steps: Array<WorkflowStep<C, AnyStateMachine>>;
   afterEach?: (context: C) => void;
+  manageGit?: boolean;
 }): WorkflowDefinition<I, C> {
   return config;
 }
@@ -94,8 +98,6 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
     const validateStateName = `${stateName}_validate`;
     const nextStateName = `step_${i + 1}`;
 
-    const hasValidate = step.validate !== undefined;
-
     states[stateName] = {
       always: [
         {
@@ -125,7 +127,7 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
         },
         src: `actor_${i}`,
         onDone: {
-          target: hasValidate ? validateStateName : nextStateName,
+          target: validateStateName,
           actions: [
             {
               type: "afterEach",
@@ -159,31 +161,43 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
       },
     };
 
-    if (hasValidate) {
-      states[validateStateName] = {
-        invoke: {
-          src: fromPromise(async ({ input }: { input: Context }) => {
-            if (input.runMode === "dry") {
-              return;
+    states[validateStateName] = {
+      invoke: {
+        src: fromPromise(async ({ input }: { input: Context }) => {
+          if (input.runMode === "dry") {
+            return;
+          }
+
+          if (workflow.manageGit) {
+            const successful = await handleGitChanges({
+              context: input,
+              checklistDescription:
+                workflow.checklistDescription?.(input) || workflow.description,
+            });
+            if (!successful) {
+              throw new Error("Failed to handle git changes");
             }
+          }
+
+          if (step.validate) {
             const output = await step.validate({ context: input });
             if (output) {
               const log = getWorkflowLogger();
               log.error(output);
               throw new Error(output);
             }
-            return;
-          }),
-          input: ({ context }: { context: Context }) => context,
-          onDone: {
-            target: nextStateName,
-          },
-          onError: {
-            target: stateName,
-          },
+          }
+          return;
+        }),
+        input: ({ context }: { context: Context }) => context,
+        onDone: {
+          target: nextStateName,
         },
-      };
-    }
+        onError: {
+          target: stateName,
+        },
+      },
+    };
   }
   states[`step_${workflow.steps.length}`] = {
     type: "final",
@@ -279,4 +293,77 @@ export const step = <C, M extends AnyStateMachine>(
     validate: options.validate || (() => Promise.resolve(undefined)),
     skipIf: options.skipIf || (() => false),
   };
+};
+
+const handleGitChanges = async ({
+  context,
+  checklistDescription,
+}: {
+  context: WorkflowContext;
+  checklistDescription: string;
+}) => {
+  let tries = 0;
+  while (true) {
+    const expectedFiles = new Set(Object.keys(context.copiedFiles || {}));
+    const staged = execSync("git diff --cached --name-only", {
+      encoding: "utf8",
+    })
+      .trim()
+      .split("\n")
+      .filter(Boolean);
+
+    // Get unstaged changes (modified files)
+    const unstaged = execSync("git diff --name-only", { encoding: "utf8" })
+      .trim()
+      .split("\n")
+      .filter(Boolean);
+
+    // Get untracked files
+    const untracked = execSync("git ls-files --others --exclude-standard", {
+      encoding: "utf8",
+    })
+      .trim()
+      .split("\n")
+      .filter(Boolean);
+
+    const allFiles = [...staged, ...unstaged, ...untracked];
+    const absoluteAllFiles = allFiles.map((file) =>
+      path.join(context.cwd, file),
+    );
+    const otherFiles = absoluteAllFiles.filter(
+      (file) => !expectedFiles.has(file),
+    );
+    console.log("Debug git changes", {
+      allFiles,
+      absoluteAllFiles,
+      otherFiles,
+      expectedFiles,
+    });
+
+    if (otherFiles.length > 0) {
+      tries++;
+      if (tries > 3) {
+        return false;
+      }
+      const { shouldContinue } = await handlePrompt({
+        context: context,
+        msg: `The following files had unexpected changes:
+      ${otherFiles.map((file) => `- ${file}`).join("\n")}.
+      
+      You need to do one of two things:
+      - If these changes were NOT in service to the original prompt, undo them.
+      - If these changes WERE in service of the original prompt, commit exactly these files with an explanatory message.
+      
+      Remember! The goal of this workflow is just to do the following:
+      ${checklistDescription}.
+      
+      If you have diverged from this goal, you need to undo the unscoped changes.`,
+      });
+      if (!shouldContinue) {
+        return false;
+      }
+    } else {
+      return true;
+    }
+  }
 };

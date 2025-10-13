@@ -78,6 +78,12 @@ export interface WorkflowDefinition<
    * A function to be executed after the workflow has completed.
    */
   afterEach?: (context: C) => void;
+
+  /**
+   * Whether to manage git. If true, the workflow will commit and push the changes to the repository at the end of the workflow.
+   * It will also prompt the agent if files *other* than template files were changed.
+   */
+  manageGit?: boolean;
 }
 
 type ArrayElementType<T extends readonly unknown[]> = T[number];
