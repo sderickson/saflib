@@ -6,6 +6,7 @@ export type {
   WorkflowStep,
   WorkflowOutput,
   WorkflowRunMode,
+  WorkflowContext,
 } from "./types.ts";
 export * from "./steps/copy/copy-template-machine.ts";
 export * from "./steps/copy/templating.ts";
