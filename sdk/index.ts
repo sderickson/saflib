@@ -10,6 +10,10 @@ import { getProtocol, getHost } from "@saflib/vue";
 
 export { isTestEnv };
 
+// Components
+export { default as AddressForm } from "./components/address-form/AddressForm.vue";
+export { address_form_strings } from "./components/address-form/AddressForm.strings.ts";
+
 /**
  * Given a "paths" openapi generated type and a subdomain, creates a typed `openapi-fetch` client which queries the given subdomain. Uses the current domain and protocol. Handles CSRF token injection, and works in tests.
  */

@@ -15,7 +15,8 @@
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "vue-tsc"
   },
   "devDependencies": {
     "@saflib/workflows": "*",
