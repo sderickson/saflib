@@ -80,38 +80,22 @@ export const AddQueryWorkflowDefinition = defineWorkflow<
     step(PromptStepMachine, ({ context }) => ({
       promptText: `Update \`${context.targetDir}/index.ts\` to include the new query.
         1. Import the new query from \`./${context.targetName}.ts\`
-        2. Add it to the others being exported`,
-    })),
-
-    step(PromptStepMachine, ({ context }) => ({
-      promptText: `Update the package's root \`index.ts\` to export the query collection if it doesn't already.
-
-      Do it like so:
-
-      \`\`\`ts
-      export * from "./queries/${context.groupName}/index.ts";
-      \`\`\`
-      `,
-    })),
-
-    step(PromptStepMachine, () => ({
-      promptText: `Add any new parameter or result types needed for the new query to the main \`types.ts\` file.
-
-        As much as possible, these should be based on the types that drizzle provides. For example, if when creating a row, the database handles the id, createdAt, and updatedAt fields, have a "InsertTableRowParams" type that Omits those fields.
-
-        Note: Do NOT create a new \`types.ts\` file. Add your types to the existing one next to the \`package.json\` file.`,
-    })),
-
-    step(PromptStepMachine, () => ({
-      promptText: `Add any error types the query will return to the main \`errors.ts\` file.
-      Make sure to:
-        1. Use simple extensions of the superclass for this package (which extends \`HandledDatabaseError\`)
-        2. Do NOT create a new \`errors.ts\` file
-        3. Add your errors to the existing one (beside the \`package.json\` file)`,
+        2. Add it to the others being exported
+        3. Make sure this index file is being re-exported by the root index.ts file`,
     })),
 
     step(DocStepMachine, () => ({
       docId: "refDoc",
+    })),
+
+    step(PromptStepMachine, () => ({
+      promptText: `Add inputs/outputs as needed to the root \`types.ts\` and \`errors.ts\` files.
+
+        * As much as possible, types should be based on the types that drizzle provides.
+        * A resource not being found by ID is an error.
+        * Arrors should be simple, no special constructors or anything.
+
+        Note: Do NOT create a new \`types.ts\` or \`errors.ts\` files. Add to the existing ones next to the \`package.json\` file.`,
     })),
 
     step(UpdateStepMachine, () => ({
