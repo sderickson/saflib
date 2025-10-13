@@ -32,6 +32,9 @@ export const UpdateSchemaWorkflowDefinition = defineWorkflow<
 
   description: "Update a drizzle/sqlite3 schema.",
 
+  checklistDescription: ({ targetName }) =>
+    `Update the ${targetName}.ts file to add the new table, or modify it.`,
+
   input,
 
   sourceUrl: import.meta.url,
