@@ -39,6 +39,9 @@ export const AddQueryWorkflowDefinition = defineWorkflow<
   description:
     "Add a new query to a database built off the drizzle-sqlite3 package.",
 
+  checklistDescription: ({ groupName, targetName }) =>
+    `Add new query ${groupName}/${targetName} to the database.`,
+
   input,
 
   sourceUrl: import.meta.url,
