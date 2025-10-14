@@ -111,8 +111,8 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
             1. Use createHandler from @saflib/express
             2. Use types from your OpenAPI spec for request/response bodies
             3. Use mapper functions from routes/_helpers.ts to convert database models to API responses
-            4. Handle expected errors from service/DB layers
-            5. Let unexpected errors propagate to central error handler (no try/catch)
+            4. Handle expected errors from service/DB layers, with "satisfies never" for exhaustive error handling
+            5. Let unexpected errors propagate to central error handler (no try/catch!)
             6. Follow the pattern in the reference doc
             7. Export the handler from the folder's "index.ts" file`,
     })),
@@ -125,7 +125,10 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
       UpdateStepMachine,
       ({ context }) => ({
         fileId: "test",
-        promptMessage: `Update the generated ${context.targetName}.test.ts file following the testing guide patterns. Make sure to implement proper test cases that cover both success and error scenarios.`,
+        promptMessage: `Update the generated ${context.targetName}.test.ts file following the testing guide patterns.
+        
+        * Make sure to implement proper test cases that cover both success and error scenarios.
+        * Do not do any mocking. Databases are in memory, and integrations have fake implementations. Do not use vitest's mock!`,
       }),
       {
         validate: async ({ context }) => {

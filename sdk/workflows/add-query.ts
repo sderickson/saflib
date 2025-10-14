@@ -106,7 +106,7 @@ export const AddQueryWorkflowDefinition = defineWorkflow<
       fileId: "templateFileFake",
       promptMessage: `Update **${context.targetName}.fake.ts** to implement the fake handlers for testing.
       
-      Mainly it should reflect what is given to it. Have it respect query parameters and request bodies.
+      Mainly it should reflect what is given to it. Have it respect query parameters and request bodies. Don't bother doing validation.
       If this is a list query, keep the resources in a separately exported array. Otherwise, import that array and modify/use it accordingly.
       This way operations affect one another (like creating or deleting resources) so that tanstack caching can be tested.`,
     })),

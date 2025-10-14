@@ -130,7 +130,9 @@ export const AddComponentWorkflowDefinition = defineWorkflow<
       fileId: "vue",
       promptMessage: `Update **${path.basename(context.copiedFiles!.vue)}** to implement the component.
 
-      * The component should take as props some combination of the schemas exported by the adjacent "spec" package. For form components, consider using defineModel() with the schemas from the spec package for two-way data binding. Add any strings to the "strings.ts" file, not directly in the component.
+      * The component should take as props some combination of the schemas exported by the adjacent "spec" package.
+      * For form components, make a ref for each field in the form, populated with the prop data.
+      * Add any strings to the "strings.ts" file, not directly in the component.
       * Do not use any custom styles; use Vuetify components and styling exclusively.
       * Use Vuetify skeletons for loading states.
       * If this is a form, don't use inputs for any uneditable fields. If this is not a form component, don't use input components at all!`,
