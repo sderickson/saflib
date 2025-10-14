@@ -10,8 +10,6 @@ import { getProtocol, getHost } from "@saflib/vue";
 
 export { isTestEnv };
 
-// Components
-export { default as AddressForm } from "./components/address-form/AddressForm.vue";
 export { address_form_strings } from "./components/address-form/AddressForm.strings.ts";
 
 /**
