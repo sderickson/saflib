@@ -3,7 +3,7 @@
     <h1>{{ t(strings.page_title) }}</h1>
 
     <v-breadcrumbs class="pl-0 mb-4">
-      <v-breadcrumbs-item>{{
+      <v-breadcrumbs-item to="/">{{
         t(strings.breadcrumb_account)
       }}</v-breadcrumbs-item>
       <v-breadcrumbs-divider>></v-breadcrumbs-divider>
