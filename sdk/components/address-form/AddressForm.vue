@@ -1,23 +1,19 @@
 <template>
-  <div class="address-form">
-    <v-text-field
-      v-model="formatted"
-      :label="t(strings.addressFormattedLabel)"
-      :placeholder="t(strings.addressFormattedPlaceholder)"
-      v-bind="commonInputProps"
-      :rules="[formattedRule]"
-    />
-
-    <v-text-field
-      v-model="streetAddress"
-      :label="t(strings.addressStreetLabel)"
-      :placeholder="t(strings.addressStreetPlaceholder)"
-      v-bind="commonInputProps"
-      :rules="[streetAddressRule]"
-    />
-
+  <v-container class="address-form">
     <v-row>
-      <v-col cols="6">
+      <v-col cols="12 py-0">
+        <v-text-field
+          v-model="streetAddress"
+          :label="t(strings.addressStreetLabel)"
+          :placeholder="t(strings.addressStreetPlaceholder)"
+          v-bind="commonInputProps"
+          :rules="[streetAddressRule]"
+        />
+      </v-col>
+    </v-row>
+
+    <v-row class="pa-0">
+      <v-col cols="6 py-0">
         <v-text-field
           v-model="locality"
           :label="t(strings.addressLocalityLabel)"
@@ -26,7 +22,7 @@
           :rules="[localityRule]"
         />
       </v-col>
-      <v-col cols="6">
+      <v-col cols="6 py-0">
         <v-text-field
           v-model="region"
           :label="t(strings.addressRegionLabel)"
@@ -38,7 +34,7 @@
     </v-row>
 
     <v-row>
-      <v-col cols="6">
+      <v-col cols="6 py-0">
         <v-text-field
           v-model="country"
           :label="t(strings.addressCountryLabel)"
@@ -47,7 +43,7 @@
           :rules="[countryRule]"
         />
       </v-col>
-      <v-col cols="6">
+      <v-col cols="6 py-0">
         <v-text-field
           v-model="postalCode"
           :label="t(strings.addressPostalCodeLabel)"
@@ -57,7 +53,7 @@
         />
       </v-col>
     </v-row>
-  </div>
+  </v-container>
 </template>
 
 <script setup lang="ts">
@@ -84,19 +80,17 @@ const commonInputProps = computed(() => ({
 }));
 
 // Form data refs
-const formatted = ref<string | undefined>(props.modelValue?.formatted ?? undefined);
-const streetAddress = ref<string | undefined>(props.modelValue?.street_address ?? undefined);
-const locality = ref<string | undefined>(props.modelValue?.locality ?? undefined);
+const streetAddress = ref<string | undefined>(
+  props.modelValue?.street_address ?? undefined,
+);
+const locality = ref<string | undefined>(
+  props.modelValue?.locality ?? undefined,
+);
 const region = ref<string | undefined>(props.modelValue?.region ?? undefined);
 const country = ref<string | undefined>(props.modelValue?.country ?? undefined);
-const postalCode = ref<string | undefined>(props.modelValue?.postal_code ?? undefined);
-
-// Validation rules
-const formattedRule = (v: string | undefined) => {
-  if (!v) return true;
-  if (v.length > 500) return strings.addressFormattedTooLong;
-  return true;
-};
+const postalCode = ref<string | undefined>(
+  props.modelValue?.postal_code ?? undefined,
+);
 
 const streetAddressRule = (v: string | undefined) => {
   if (!v) return true;
@@ -133,10 +127,9 @@ const t = (key: string) => key;
 
 // Watch for changes and emit updates
 watch(
-  [formatted, streetAddress, locality, region, country, postalCode],
+  [streetAddress, locality, region, country, postalCode],
   () => {
-    const hasAnyValue = 
-      formatted.value ||
+    const hasAnyValue =
       streetAddress.value ||
       locality.value ||
       region.value ||
@@ -145,7 +138,7 @@ watch(
 
     if (hasAnyValue) {
       const address: Address = {
-        formatted: formatted.value || null,
+        formatted: null,
         street_address: streetAddress.value || null,
         locality: locality.value || null,
         region: region.value || null,
@@ -157,7 +150,7 @@ watch(
       emit("update:modelValue", null);
     }
   },
-  { deep: true }
+  { deep: true },
 );
 
 // Watch for prop changes
@@ -165,14 +158,12 @@ watch(
   () => props.modelValue,
   (newValue) => {
     if (newValue) {
-      formatted.value = newValue.formatted ?? undefined;
       streetAddress.value = newValue.street_address ?? undefined;
       locality.value = newValue.locality ?? undefined;
       region.value = newValue.region ?? undefined;
       country.value = newValue.country ?? undefined;
       postalCode.value = newValue.postal_code ?? undefined;
     } else {
-      formatted.value = undefined;
       streetAddress.value = undefined;
       locality.value = undefined;
       region.value = undefined;
@@ -180,13 +171,12 @@ watch(
       postalCode.value = undefined;
     }
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 // Emit initial value
 onMounted(() => {
-  const hasAnyValue = 
-    formatted.value ||
+  const hasAnyValue =
     streetAddress.value ||
     locality.value ||
     region.value ||
@@ -195,7 +185,7 @@ onMounted(() => {
 
   if (hasAnyValue) {
     const address: Address = {
-      formatted: formatted.value || null,
+      formatted: null,
       street_address: streetAddress.value || null,
       locality: locality.value || null,
       region: region.value || null,
