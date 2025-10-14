@@ -13,5 +13,4 @@
 
 <script setup lang="ts">
 import { errors, info } from "@saflib/vue";
-// TODO: Move this to @saflib/vue
 </script>
