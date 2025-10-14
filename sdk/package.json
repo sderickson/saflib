@@ -7,7 +7,8 @@
     "./components": "./components/index.ts",
     "./testing": "./testing/index.ts",
     "./testing/mock": "./testing/mock.ts",
-    "./workflows": "./workflows/index.ts"
+    "./workflows": "./workflows/index.ts",
+    "./strings": "./strings.ts"
   },
   "dependencies": {
     "@tanstack/vue-query": "^5.85.9",
