@@ -16,10 +16,7 @@ import {
 import { readFileSync } from "node:fs";
 import path from "node:path";
 
-const sourceDir = path.join(
-  import.meta.dirname,
-  "templates/components/target-name",
-);
+const sourceDir = path.join(import.meta.dirname, "templates");
 
 const input = [
   {
@@ -34,6 +31,7 @@ interface AddComponentWorkflowContext
   extends ParsePathOutput,
     ParsePackageNameOutput {
   targetDir: string;
+  prefixName: string;
 }
 
 export const AddComponentWorkflowDefinition = defineWorkflow<
@@ -50,6 +48,8 @@ export const AddComponentWorkflowDefinition = defineWorkflow<
   input,
 
   sourceUrl: import.meta.url,
+
+  manageGit: true,
 
   context: ({ input }) => {
     // Validate the path format
@@ -75,7 +75,7 @@ export const AddComponentWorkflowDefinition = defineWorkflow<
       throw new Error("Path must be all lowercase");
     }
 
-    const targetDir = path.join(input.cwd, input.path);
+    // const targetDir = path.join(input.cwd, input.path);
 
     return {
       ...parsePath(input.path, {
@@ -85,14 +85,28 @@ export const AddComponentWorkflowDefinition = defineWorkflow<
       ...parsePackageName(getPackageName(input.cwd), {
         requiredSuffix: "-sdk",
       }),
-      targetDir,
+      targetDir: input.cwd,
+      prefixName: firstDir,
     };
   },
 
+  // TODO: Add strings and components files to list.
+
   templateFiles: {
-    vue: path.join(sourceDir, "__TargetName__.vue"),
-    strings: path.join(sourceDir, "__TargetName__.strings.ts"),
-    test: path.join(sourceDir, "__TargetName__.test.ts"),
+    vue: path.join(
+      sourceDir,
+      "__prefix-name__/__target-name__/__TargetName__.vue",
+    ),
+    strings: path.join(
+      sourceDir,
+      "__prefix-name__/__target-name__/__TargetName__.strings.ts",
+    ),
+    test: path.join(
+      sourceDir,
+      "__prefix-name__/__target-name__/__TargetName__.test.ts",
+    ),
+    packageStrings: path.join(sourceDir, "strings.ts"),
+    packageComponents: path.join(sourceDir, "components.ts"),
   },
 
   // TODO: add documentation file references
@@ -116,7 +130,9 @@ export const AddComponentWorkflowDefinition = defineWorkflow<
       fileId: "vue",
       promptMessage: `Update **${path.basename(context.copiedFiles!.vue)}** to implement the component.
 
-      * The component should take as props some combination of the schemas exported by the adjacent "spec" package. For form components, consider using defineModel() with the schemas from the spec package for two-way data binding. Add any strings to the "strings.ts" file, not directly in the component.
+      * The component should take as props some combination of the schemas exported by the adjacent "spec" package.
+      * For form components, make a ref for each field in the form, populated with the prop data.
+      * Add any strings to the "strings.ts" file, not directly in the component.
       * Do not use any custom styles; use Vuetify components and styling exclusively.
       * Use Vuetify skeletons for loading states.
       * If this is a form, don't use inputs for any uneditable fields. If this is not a form component, don't use input components at all!`,

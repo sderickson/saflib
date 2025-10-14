@@ -45,6 +45,9 @@ export const copyNextFile = fromPromise(
     let intermediaryDir = relativePath.includes("/")
       ? path.dirname(relativePath)
       : "";
+    if (lineReplace) {
+      intermediaryDir = lineReplace(intermediaryDir);
+    }
 
     const targetFileName = transformName(
       path.basename(sourcePath),

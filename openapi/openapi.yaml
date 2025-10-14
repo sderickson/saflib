@@ -1,0 +1,12 @@
+openapi: 3.0.0
+info:
+  title: "@saflib/openapi API"
+  version: 1.0.0
+  description: "Shared OpenAPI schemas and types for the platform"
+
+components:
+  schemas:
+    Error:
+      $ref: "./schemas/error.yaml"
+    Address:
+      $ref: "./schemas/address.yaml"

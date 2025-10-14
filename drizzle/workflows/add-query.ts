@@ -16,10 +16,7 @@ import {
 } from "@saflib/workflows";
 import path from "node:path";
 
-const sourceDir = path.join(
-  import.meta.dirname,
-  "templates/queries/example-table",
-);
+const sourceDir = path.join(import.meta.dirname, "templates");
 
 const input = [
   {
@@ -42,6 +39,9 @@ export const AddQueryWorkflowDefinition = defineWorkflow<
   description:
     "Add a new query to a database built off the drizzle-sqlite3 package.",
 
+  checklistDescription: ({ groupName, targetName }) =>
+    `Add new query ${groupName}/${targetName} to the database.`,
+
   input,
 
   sourceUrl: import.meta.url,
@@ -56,14 +56,23 @@ export const AddQueryWorkflowDefinition = defineWorkflow<
         requiredSuffix: ".ts",
         cwd: input.cwd,
       }),
+      targetDir: input.cwd,
     };
   },
 
   templateFiles: {
-    query: path.join(sourceDir, "__target-name__.ts"),
-    test: path.join(sourceDir, "__target-name__.test.ts"),
-    index: path.join(sourceDir, "index.ts"),
+    query: path.join(sourceDir, "queries/__group-name__/__target-name__.ts"),
+    test: path.join(
+      sourceDir,
+      "queries/__group-name__/__target-name__.test.ts",
+    ),
+    groupIndex: path.join(sourceDir, "queries/__group-name__/index.ts"),
+    rootIndex: path.join(sourceDir, "index.ts"),
+    types: path.join(sourceDir, "types.ts"),
+    errors: path.join(sourceDir, "errors.ts"),
   },
+
+  manageGit: true,
 
   docFiles: {
     refDoc: path.join(import.meta.dirname, "../docs/03-queries.md"),
@@ -77,46 +86,36 @@ export const AddQueryWorkflowDefinition = defineWorkflow<
       lineReplace: makeLineReplace(context),
     })),
 
-    step(PromptStepMachine, ({ context }) => ({
-      promptText: `Update \`${context.targetDir}/index.ts\` to include the new query.
-        1. Import the new query from \`./${context.targetName}.ts\`
-        2. Add it to the others being exported`,
-    })),
+    step(UpdateStepMachine, ({ context }) => ({
+      fileId: "groupIndex",
+      promptMessage: `Update the group index to include the new query.
+      Full path: ${context.copiedFiles?.groupIndex}
 
-    step(PromptStepMachine, ({ context }) => ({
-      promptText: `Update the package's root \`index.ts\` to export the query collection if it doesn't already.
-
-      Do it like so:
-
-      \`\`\`ts
-      export * from "./queries/${context.groupName}/index.ts";
-      \`\`\`
-      `,
-    })),
-
-    step(PromptStepMachine, () => ({
-      promptText: `Add any new parameter or result types needed for the new query to the main \`types.ts\` file.
-
-        As much as possible, these should be based on the types that drizzle provides. For example, if when creating a row, the database handles the id, createdAt, and updatedAt fields, have a "InsertTableRowParams" type that Omits those fields.
-
-        Note: Do NOT create a new \`types.ts\` file. Add your types to the existing one next to the \`package.json\` file.`,
-    })),
-
-    step(PromptStepMachine, () => ({
-      promptText: `Add any error types the query will return to the main \`errors.ts\` file.
-      Make sure to:
-        1. Use simple extensions of the superclass for this package (which extends \`HandledDatabaseError\`)
-        2. Do NOT create a new \`errors.ts\` file
-        3. Add your errors to the existing one (beside the \`package.json\` file)`,
+        1. Import the new query from \`./${context.copiedFiles?.query}\`
+        2. Add it to the others being exported
+        3. Make sure this index file is being re-exported by the root index.ts file`,
     })),
 
     step(DocStepMachine, () => ({
       docId: "refDoc",
     })),
 
-    step(UpdateStepMachine, () => ({
+    step(PromptStepMachine, ({ context }) => ({
+      promptText: `Add parameters and results to the root types.ts file and errors to the errors.ts files.
+      Full paths: ${context.copiedFiles?.types}, ${context.copiedFiles?.errors}
+
+        * As much as possible, types should be based on the types that drizzle provides.
+        * A resource not being found by ID is an error.
+        * Errors should be simple, no special constructors or anything.
+        * You don't need to export error types from the types.ts file.
+
+        Note: Do NOT create a new \`types.ts\` or \`errors.ts\` files. Add to the existing ones next to the \`package.json\` file.`,
+    })),
+
+    step(UpdateStepMachine, ({ context }) => ({
       fileId: "query",
-      promptMessage: `Implement the new query following the documentation guidelines.`,
+      promptMessage: `Implement the new query following the documentation guidelines.
+      Full path: ${context.copiedFiles?.query}`,
     })),
 
     step(CommandStepMachine, () => ({
@@ -128,9 +127,11 @@ export const AddQueryWorkflowDefinition = defineWorkflow<
       docId: "testingGuide",
     })),
 
-    step(UpdateStepMachine, () => ({
+    step(UpdateStepMachine, ({ context }) => ({
       fileId: "test",
       promptMessage: `Implement the generated test file.
+
+      Full path: ${context.copiedFiles?.test}
 
       Aim for 100% coverage; there should be a known way to achieve every handled error. If it's not possible to cause a returned error, it should not be in the implementation.`,
     })),

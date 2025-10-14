@@ -15,7 +15,7 @@ import {
 } from "@saflib/workflows";
 import path from "node:path";
 
-const sourceDir = path.join(import.meta.dirname, "templates/requests/example");
+const sourceDir = path.join(import.meta.dirname, "templates");
 
 const input = [
   {
@@ -55,20 +55,34 @@ export const AddQueryWorkflowDefinition = defineWorkflow<
         cwd: input.cwd,
         requiredPrefix: "./requests/",
       }),
+      targetDir: input.cwd,
     };
   },
 
   templateFiles: {
-    index: path.join(sourceDir, "index.ts"),
-    indexFakes: path.join(sourceDir, "index.fakes.ts"),
-    templateFile: path.join(sourceDir, "__target-name__.ts"),
-    templateFileFake: path.join(sourceDir, "__target-name__.fake.ts"),
-    templateFileTest: path.join(sourceDir, "__target-name__.test.ts"),
+    index: path.join(sourceDir, "requests/__group-name__/index.ts"),
+    indexFakes: path.join(sourceDir, "requests/__group-name__/index.fakes.ts"),
+    templateFile: path.join(
+      sourceDir,
+      "requests/__group-name__/__target-name__.ts",
+    ),
+    templateFileFake: path.join(
+      sourceDir,
+      "requests/__group-name__/__target-name__.fake.ts",
+    ),
+    templateFileTest: path.join(
+      sourceDir,
+      "requests/__group-name__/__target-name__.test.ts",
+    ),
+    rootIndex: path.join(sourceDir, "index.ts"),
+    rootFakes: path.join(sourceDir, "fakes.ts"),
   },
 
   docFiles: {
     overview: path.join(import.meta.dirname, "../docs/01-overview.md"),
   },
+
+  manageGit: true,
 
   steps: [
     step(DocStepMachine, () => ({
@@ -92,7 +106,7 @@ export const AddQueryWorkflowDefinition = defineWorkflow<
       fileId: "templateFileFake",
       promptMessage: `Update **${context.targetName}.fake.ts** to implement the fake handlers for testing.
       
-      Mainly it should reflect what is given to it. Have it respect query parameters and request bodies.
+      Mainly it should reflect what is given to it. Have it respect query parameters and request bodies. Don't bother doing validation.
       If this is a list query, keep the resources in a separately exported array. Otherwise, import that array and modify/use it accordingly.
       This way operations affect one another (like creating or deleting resources) so that tanstack caching can be tested.`,
     })),
@@ -101,7 +115,9 @@ export const AddQueryWorkflowDefinition = defineWorkflow<
       fileId: "templateFileTest",
       promptMessage: `Update **${context.targetName}.test.ts** to implement simple tests for the API query/mutation.
       
-      Mainly this should just test that the fake works, and that the query parameters and request bodies are getting through.`,
+      Include:
+      * One test that makes sure it works at all.
+      * Another test for (if it's a mutation) making sure the caching works.`,
     })),
 
     step(UpdateStepMachine, ({ context }) => ({

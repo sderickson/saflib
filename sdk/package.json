@@ -4,6 +4,7 @@
   "type": "module",
   "exports": {
     ".": "./index.ts",
+    "./components": "./components/index.ts",
     "./testing": "./testing/index.ts",
     "./testing/mock": "./testing/mock.ts",
     "./workflows": "./workflows/index.ts"
@@ -15,7 +16,8 @@
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "vue-tsc"
   },
   "devDependencies": {
     "@saflib/workflows": "*",

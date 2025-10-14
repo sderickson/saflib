@@ -20,6 +20,8 @@ const input = [
   },
 ] as const;
 
+const sourceDir = path.join(import.meta.dirname, "templates");
+
 interface UpdateSchemaWorkflowContext extends ParsePathOutput {}
 
 export const UpdateSchemaWorkflowDefinition = defineWorkflow<
@@ -29,6 +31,9 @@ export const UpdateSchemaWorkflowDefinition = defineWorkflow<
   id: "drizzle/update-schema",
 
   description: "Update a drizzle/sqlite3 schema.",
+
+  checklistDescription: ({ targetName }) =>
+    `Update the ${targetName}.ts file to add the new table, or modify it.`,
 
   input,
 
@@ -41,18 +46,21 @@ export const UpdateSchemaWorkflowDefinition = defineWorkflow<
         requiredSuffix: ".ts",
         cwd: input.cwd,
       }),
+      targetDir: input.cwd,
     };
   },
 
   templateFiles: {
-    schema: path.join(
-      import.meta.dirname,
-      "templates/schemas/__group-name__.ts",
-    ),
+    schema: path.join(sourceDir, "schemas/__group-name__.ts"),
+    schemaIndex: path.join(sourceDir, "schema.ts"),
   },
 
   docFiles: {
     schemaDoc: path.join(import.meta.dirname, "../docs/02-schema.md"),
+  },
+
+  manageGit: {
+    ignorePaths: ["migrations/"],
   },
 
   steps: [
@@ -93,7 +101,9 @@ export const UpdateSchemaWorkflowDefinition = defineWorkflow<
     })),
 
     step(PromptStepMachine, ({ context }) => ({
-      promptText: `Check that everything in ${context.targetName}.ts is exported in the root \`./schema.ts\` file.`,
+      promptText: `Check that everything in ${context.targetName}.ts is exported in the root \`./schema.ts\` file.
+      
+      Don't overthink this. Just check quickly and be done with it.`,
     })),
 
     step(CommandStepMachine, () => ({

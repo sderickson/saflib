@@ -30,6 +30,7 @@ const input = [
 interface AddSpaWorkflowContext extends ParsePackageNameOutput {
   targetDir: string;
   subdomainName: string;
+  linksPackageName: string;
 }
 
 export const AddSpaWorkflowDefinition = defineWorkflow<
@@ -54,6 +55,7 @@ export const AddSpaWorkflowDefinition = defineWorkflow<
       }),
       targetDir,
       subdomainName: "",
+      linksPackageName: "",
     };
 
     // Experimental: I'm trying out organizing SPAs by product, so one monorepo has multiple products.
@@ -70,7 +72,10 @@ export const AddSpaWorkflowDefinition = defineWorkflow<
     if (subdomainName.startsWith(productName + "-")) {
       subdomainName = subdomainName.slice(productName.length + 1);
     }
+
     context.subdomainName = subdomainName;
+
+    context.linksPackageName = `${context.packageName.replace("-spa", "-links")}`;
     return context;
   },
 
@@ -119,12 +124,19 @@ export const AddSpaWorkflowDefinition = defineWorkflow<
       The folder should be named "${context.subdomainName}".`,
     })),
 
-    step(PromptStepMachine, () => ({
-      promptText: `Update \`clients/spas/vite.config.ts\` in the clients/spas package to add proxy and input properties for the new SPA.`,
+    step(PromptStepMachine, ({ context }) => ({
+      promptText: `Create and integrate an adjacent "links" package (name should be ${context.linksPackageName}).
+      
+      * Create the links package (name should be ${context.linksPackageName})
+      * It should just have one "home" link right now, pointing to "/", and the subdomain should be ${context.subdomainName}.
+      * Add ${context.linksPackageName} as a dependency to ${context.packageName}.
+      * Use the links package in the router.ts file.`,
     })),
 
     step(PromptStepMachine, ({ context }) => ({
-      promptText: `Update all \`Caddyfiles\` in the repo; add the new SPA in a similar fashion with the subdomain \`${context.subdomainName}\`.`,
+      promptText: `Update \`Caddyfiles\` in the repo; add the new SPA in a similar fashion with the subdomain \`${context.subdomainName}\`.
+      
+      Usually you'll just need to update the dev one specific to the product, and the production one.`,
     })),
 
     step(PromptStepMachine, () => ({

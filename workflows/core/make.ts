@@ -20,10 +20,15 @@ import {
 } from "xstate";
 import { contextFromInput } from "./utils.ts";
 import type { WorkflowArgument } from "./types.ts";
-import { existsSync } from "fs";
+import { existsSync, writeFileSync, unlinkSync } from "fs";
 import { addNewLinesToString } from "@saflib/utils";
 import { getWorkflowLogger } from "./store.ts";
 import { addPendingMessage } from "./agents/message.ts";
+import { execSync } from "child_process";
+import path, { join } from "path";
+import { handlePrompt } from "./prompt.ts";
+import { checklistToString } from "./utils.ts";
+import { tmpdir } from "os";
 
 let lastSystemPrompt: string | undefined;
 
@@ -54,6 +59,11 @@ export function defineWorkflow<
   docFiles: Record<string, string>;
   steps: Array<WorkflowStep<C, AnyStateMachine>>;
   afterEach?: (context: C) => void;
+  manageGit?:
+    | boolean
+    | {
+        ignorePaths?: string[];
+      };
 }): WorkflowDefinition<I, C> {
   return config;
 }
@@ -94,8 +104,6 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
     const validateStateName = `${stateName}_validate`;
     const nextStateName = `step_${i + 1}`;
 
-    const hasValidate = step.validate !== undefined;
-
     states[stateName] = {
       always: [
         {
@@ -125,7 +133,7 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
         },
         src: `actor_${i}`,
         onDone: {
-          target: hasValidate ? validateStateName : nextStateName,
+          target: validateStateName,
           actions: [
             {
               type: "afterEach",
@@ -159,33 +167,90 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
       },
     };
 
-    if (hasValidate) {
-      states[validateStateName] = {
-        invoke: {
-          src: fromPromise(async ({ input }: { input: Context }) => {
-            if (input.runMode === "dry") {
-              return;
+    states[validateStateName] = {
+      invoke: {
+        src: fromPromise(async ({ input }: { input: Context }) => {
+          if (input.runMode === "dry") {
+            return;
+          }
+
+          if (workflow.manageGit) {
+            const successful = await handleGitChanges({
+              context: input,
+              checklistDescription:
+                workflow.checklistDescription?.(input) || workflow.description,
+              ignorePaths:
+                typeof workflow.manageGit === "object"
+                  ? workflow.manageGit.ignorePaths
+                  : undefined,
+            });
+            if (!successful) {
+              throw new Error("Failed to handle git changes");
             }
+          }
+
+          if (step.validate) {
             const output = await step.validate({ context: input });
             if (output) {
               const log = getWorkflowLogger();
               log.error(output);
               throw new Error(output);
             }
-            return;
-          }),
-          input: ({ context }: { context: Context }) => context,
-          onDone: {
+          }
+          return;
+        }),
+        input: ({ context }: { context: Context }) => context,
+        onDone: {
+          target: nextStateName,
+        },
+        onError: [
+          {
+            guard: ({ context, event }: { context: Context; event: any }) => {
+              if (context.runMode === "dry" || context.runMode === "script") {
+                throw new Error(event.error);
+              }
+              return false;
+            },
             target: nextStateName,
           },
-          onError: {
+          {
             target: stateName,
           },
-        },
-      };
-    }
+        ],
+      },
+    };
   }
   states[`step_${workflow.steps.length}`] = {
+    invoke: {
+      src: fromPromise(async ({ input }: { input: Context }) => {
+        if (input.runMode === "dry" || input.runMode === "script") {
+          return;
+        }
+        if (workflow.manageGit) {
+          execSync(`git add -A`, {
+            cwd: gitRoot,
+          });
+
+          const gitCommitHeader =
+            workflow.checklistDescription?.(input) || workflow.description;
+          const gitCommitBody = checklistToString(input.checklist);
+          const gitCommitMessage = `${gitCommitHeader}\n\n${gitCommitBody}`;
+          const msgFile = join(tmpdir(), `commit-msg-${Date.now()}.txt`);
+          writeFileSync(msgFile, gitCommitMessage);
+          execSync(`git commit -F "${msgFile}"`, {
+            cwd: gitRoot,
+          });
+          unlinkSync(msgFile);
+        }
+        return;
+      }),
+      input: ({ context }: { context: Context }) => context,
+      onDone: {
+        target: "end",
+      },
+    },
+  };
+  states["end"] = {
     type: "final",
   };
 
@@ -279,4 +344,101 @@ export const step = <C, M extends AnyStateMachine>(
     validate: options.validate || (() => Promise.resolve(undefined)),
     skipIf: options.skipIf || (() => false),
   };
+};
+
+let gitRoot: string | undefined;
+
+const getGitRoot = () => {
+  if (!gitRoot) {
+    gitRoot = execSync("git rev-parse --show-toplevel", {
+      encoding: "utf8",
+    }).trim();
+  }
+  return gitRoot;
+};
+
+interface HandleGitChangesOptions {
+  context: WorkflowContext;
+  checklistDescription: string;
+  ignorePaths?: string[];
+}
+
+const handleGitChanges = async ({
+  context,
+  checklistDescription,
+  ignorePaths,
+}: HandleGitChangesOptions) => {
+  const gitRoot = getGitRoot();
+  let tries = 0;
+  while (true) {
+    const expectedFiles = new Set(Object.values(context.copiedFiles || {}));
+    const staged = execSync("git diff --cached --name-only", {
+      encoding: "utf8",
+      cwd: gitRoot,
+    })
+      .trim()
+      .split("\n")
+      .filter(Boolean);
+
+    // Get unstaged changes (modified files)
+    const unstaged = execSync("git diff --name-only", {
+      encoding: "utf8",
+      cwd: gitRoot,
+    })
+      .trim()
+      .split("\n")
+      .filter(Boolean);
+
+    // Get untracked files
+    const untracked = execSync("git ls-files --others --exclude-standard", {
+      cwd: gitRoot,
+      encoding: "utf8",
+    })
+      .trim()
+      .split("\n")
+      .filter(Boolean);
+
+    const allFiles = [...staged, ...unstaged, ...untracked];
+    const absoluteAllFiles = allFiles.map((file) => path.join(gitRoot, file));
+    let otherFiles = absoluteAllFiles
+      .filter((file) => !expectedFiles.has(file))
+      .filter((file) => !file.endsWith("/saflib")); // tmp
+    if (ignorePaths) {
+      const absoluteIgnorePaths = ignorePaths.map((ignorePath) =>
+        path.join(context.cwd, ignorePath),
+      );
+      otherFiles = otherFiles.filter(
+        (file) =>
+          !absoluteIgnorePaths.some((ignorePath) =>
+            file.startsWith(ignorePath),
+          ),
+      );
+    }
+
+    if (otherFiles.length > 0) {
+      tries++;
+      if (tries > 3) {
+        return false;
+      }
+      const { shouldContinue } = await handlePrompt({
+        context: context,
+        msg: `The following files had unexpected changes:
+      ${otherFiles.map((file) => `- ${file}`).join("\n")}.
+      
+      You need to do one of two things:
+      - If these changes were NOT in service to the original prompt, undo them.
+      - If these changes WERE in service of the original prompt, commit exactly these files with an explanatory message.
+      
+      Remember! The goal of this workflow is just to do the following:
+      ${checklistDescription}.
+      
+      If you have diverged from this goal, you need to undo the unscoped changes.`,
+      });
+      if (!shouldContinue || context.runMode === "script") {
+        return false;
+      }
+    } else {
+      return true;
+    }
+  }
 };

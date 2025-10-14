@@ -15,7 +15,7 @@ import {
 } from "@saflib/workflows";
 import path from "node:path";
 
-const sourceDir = path.join(import.meta.dirname, "templates/routes");
+const sourceDir = path.join(import.meta.dirname, "templates");
 
 const input = [
   {
@@ -54,6 +54,7 @@ export const AddRouteWorkflowDefinition = defineWorkflow<
         cwd: input.cwd,
         requiredPrefix: "./routes/",
       }),
+      targetDir: input.cwd,
     };
     const operationId =
       kebabCaseToCamelCase(context.targetName.split(".")[0]) +
@@ -66,12 +67,18 @@ export const AddRouteWorkflowDefinition = defineWorkflow<
   },
 
   templateFiles: {
-    route: path.join(sourceDir, "template-file.yaml"),
+    route: path.join(sourceDir, "routes/template-file.yaml"),
+    openapi: path.join(sourceDir, "openapi.yaml"),
+    distTypes: path.join(sourceDir, "dist/openapi.d.ts"),
+    distJson: path.join(sourceDir, "dist/openapi.json"),
+    index: path.join(sourceDir, "index.ts"),
   },
 
   docFiles: {
     overview: path.join(import.meta.dirname, "../docs/01-overview.md"),
   },
+
+  manageGit: true,
 
   steps: [
     step(CopyStepMachine, ({ context }) => ({
@@ -91,14 +98,6 @@ export const AddRouteWorkflowDefinition = defineWorkflow<
       - Do not specify a 400 response. The openapi validator is the only source of these.
       - If this is a list route, do not include a sort parameter unless explicitly requested.
       `,
-      // valid: [
-      //   {
-      //     test: (file) => file.includes('"400":'),
-      //     name: "No 400s specified",
-      //     description:
-      //       "Do not specify 400 in a route. These are solely for openapi validation errors. Either remove it if it is for input validation, or replace it with something else more appropriate.",
-      //   },
-      // ],
     })),
 
     step(PromptStepMachine, () => ({
