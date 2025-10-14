@@ -115,7 +115,9 @@ export const AddQueryWorkflowDefinition = defineWorkflow<
       fileId: "templateFileTest",
       promptMessage: `Update **${context.targetName}.test.ts** to implement simple tests for the API query/mutation.
       
-      Mainly this should just test that the fake works, and that the query parameters and request bodies are getting through.`,
+      Include:
+      * One test that makes sure it works at all.
+      * Another test for (if it's a mutation) making sure the caching works.`,
     })),
 
     step(UpdateStepMachine, ({ context }) => ({
