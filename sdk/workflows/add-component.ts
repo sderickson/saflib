@@ -90,8 +90,6 @@ export const AddComponentWorkflowDefinition = defineWorkflow<
     };
   },
 
-  // TODO: Add strings and components files to list.
-
   templateFiles: {
     vue: path.join(
       sourceDir,
