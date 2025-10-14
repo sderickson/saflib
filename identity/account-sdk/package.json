@@ -5,6 +5,7 @@
   "exports": {
     ".": "./index.ts",
     "./components": "./components/index.ts",
+    "./pages": "./pages/index.ts",
     "./strings": "./strings.ts",
     "./i18n": "./i18n.ts"
   },
