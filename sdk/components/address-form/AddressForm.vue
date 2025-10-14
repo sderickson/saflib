@@ -60,6 +60,8 @@
 import { address_form_strings as strings } from "./AddressForm.strings.ts";
 import type { Address } from "@saflib/openapi";
 import { ref, computed, watch, onMounted } from "vue";
+import { useReverseT } from "../../i18n.ts";
+const { t } = useReverseT();
 
 // Props
 const props = defineProps<{
@@ -121,9 +123,6 @@ const postalCodeRule = (v: string | undefined) => {
   if (v.length > 20) return strings.addressPostalCodeTooLong;
   return true;
 };
-
-// Translation function (placeholder - should be injected from parent)
-const t = (key: string) => key;
 
 // Watch for changes and emit updates
 watch(
