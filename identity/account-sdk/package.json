@@ -1,13 +1,12 @@
 {
-  "name": "@saflib/auth",
-  "description": "The auth client. Sign up, sign in, and other authentication flows.",
+  "name": "@saflib/account-sdk",
+  "description": "SDK for account SPAs",
   "type": "module",
   "exports": {
     ".": "./index.ts",
     "./components": "./components/index.ts",
     "./strings": "./strings.ts",
-    "./i18n": "./i18n.ts",
-    "./fakes": "./fakes.ts"
+    "./i18n": "./i18n.ts"
   },
   "scripts": {
     "test": "vitest run",
@@ -16,7 +15,6 @@
     "typecheck": "vue-tsc -b"
   },
   "dependencies": {
-    "@saflib/auth-links": "*",
     "@saflib/identity-spec": "*",
     "@saflib/vue": "*"
   }
