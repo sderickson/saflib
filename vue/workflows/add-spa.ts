@@ -30,6 +30,7 @@ const input = [
 interface AddSpaWorkflowContext extends ParsePackageNameOutput {
   targetDir: string;
   subdomainName: string;
+  linksPackageName: string;
 }
 
 export const AddSpaWorkflowDefinition = defineWorkflow<
@@ -54,6 +55,7 @@ export const AddSpaWorkflowDefinition = defineWorkflow<
       }),
       targetDir,
       subdomainName: "",
+      linksPackageName: "",
     };
 
     // Experimental: I'm trying out organizing SPAs by product, so one monorepo has multiple products.
@@ -70,7 +72,10 @@ export const AddSpaWorkflowDefinition = defineWorkflow<
     if (subdomainName.startsWith(productName + "-")) {
       subdomainName = subdomainName.slice(productName.length + 1);
     }
+
     context.subdomainName = subdomainName;
+
+    context.linksPackageName = `${context.packageName.replace("-spa", "-links")}`;
     return context;
   },
 
@@ -120,11 +125,11 @@ export const AddSpaWorkflowDefinition = defineWorkflow<
     })),
 
     step(PromptStepMachine, ({ context }) => ({
-      promptText: `Create and integrate an adjacent "links" package.
+      promptText: `Create and integrate an adjacent "links" package (name should be ${context.linksPackageName}).
       
-      * Create the links package (name should be ${context.packageName}-links)
+      * Create the links package (name should be ${context.linksPackageName})
       * It should just have one "home" link right now, pointing to "/", and the subdomain should be ${context.subdomainName}.
-      * Add ${context.packageName}-links as a dependency to ${context.packageName}.
+      * Add ${context.linksPackageName} as a dependency to ${context.packageName}.
       * Use the links package in the router.ts file.`,
     })),
 
