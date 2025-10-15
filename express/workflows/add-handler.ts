@@ -102,7 +102,9 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
     step(PromptStepMachine, ({ context }) => ({
       promptText: `Check if routes/_helpers.ts has mapper functions for converting database models to API response types for this ${context.targetName} handler.
 
-      If mapper functions don't exist for the database models used by this endpoint, add them to routes/_helpers.ts following patterns shown there.`,
+      If mapper functions don't exist for the database models used by this endpoint, add them to routes/_helpers.ts following patterns shown there.
+      
+      Aside from mapping values, the helper should also do some basic validation of the data, in particular making sure enum values are valid. If the enum value is not valid, clear it out or set it to a default value.`,
     })),
 
     step(UpdateStepMachine, ({ context }) => ({
