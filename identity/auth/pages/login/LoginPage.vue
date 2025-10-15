@@ -1,5 +1,5 @@
 <template>
-  <v-form v-model="valid" validate-on="blur">
+  <v-form v-model="valid">
     <div class="float-right">
       <SpaLink
         :link="authLinks.register"
