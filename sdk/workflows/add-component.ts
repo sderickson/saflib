@@ -133,7 +133,8 @@ export const AddComponentWorkflowDefinition = defineWorkflow<
       * Add any strings to the "strings.ts" file, not directly in the component.
       * Do not use any custom styles; use Vuetify components and styling exclusively.
       * Use Vuetify skeletons for loading states.
-      * If this is a form, don't use inputs for any uneditable fields. If this is not a form component, don't use input components at all!`,
+      * If this is a form, don't use inputs for any uneditable fields. If this is not a form component, don't use input components at all!
+      * If the component uses mutations, make sure to use "showError" for network errors.`,
     })),
 
     step(
