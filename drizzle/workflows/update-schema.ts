@@ -86,6 +86,8 @@ export const UpdateSchemaWorkflowDefinition = defineWorkflow<
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "schema",
       promptMessage: `Update ${context.targetName}.ts to add the new table, or modify it.
+
+      If there's a foreign key relationship, DO NOT set it to cascade on delete.
       
       ${context.systemPrompt ? `More context: ${context.systemPrompt}` : ""}`,
     })),
