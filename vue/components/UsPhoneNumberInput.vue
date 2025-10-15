@@ -2,6 +2,8 @@
   <v-text-field
     v-model="displayValue"
     v-bind="$attrs"
+    :label="label"
+    :placeholder="placeholder"
     :rules="computedRules"
     :error-messages="errorMessages"
     @input="handleInput"
