@@ -59,6 +59,7 @@ export const AddSchemaWorkflowDefinition = defineWorkflow<
 
   templateFiles: {
     schema: path.join(sourceDir, "./schemas/template-file.yaml"),
+    error: path.join(sourceDir, "./schemas/error.yaml"),
     openapi: path.join(sourceDir, "openapi.yaml"),
     index: path.join(sourceDir, "index.ts"),
   },
