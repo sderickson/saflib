@@ -119,7 +119,7 @@ export class XStateWorkflowRunner extends AbstractWorkflowRunner {
     await pollingWaitFor(actor, workflowAllSettled);
     const t1 = Date.now();
     if (process.env.NODE_ENV !== "test") {
-      console.log(`Time taken: ${(t1 - t0) / 1000 / 60}m`);
+      console.log(`Time taken: ${((t1 - t0) / 1000 / 60).toFixed(2)}m`);
     }
     return actor.getSnapshot().status !== "error";
   };
@@ -171,7 +171,7 @@ export class XStateWorkflowRunner extends AbstractWorkflowRunner {
     continueWorkflow(this.actor);
     await pollingWaitFor(this.actor, workflowAllSettled);
     const t1 = Date.now();
-    console.log(`Time taken: ${(t1 - t0) / 1000 / 60}m`);
+    console.log(`Time taken: ${((t1 - t0) / 1000 / 60).toFixed(2)}m`);
 
     if (this.actor.getSnapshot().status === "done") {
       console.log("\n--- This workflow has been completed. ---\n");

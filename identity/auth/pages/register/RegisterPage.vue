@@ -49,6 +49,9 @@
       :autofocus="firstInput === 'email'"
     ></v-text-field>
 
+    <!-- Additional fields slot -->
+    <slot name="additional-fields"></slot>
+
     <v-text-field
       v-model="password"
       :append-inner-icon="passwordVisible ? 'mdi-eye-off' : 'mdi-eye'"
@@ -68,6 +71,7 @@
       prepend-inner-icon="mdi-lock-outline"
       class="mb-4"
     ></v-text-field>
+
     <v-btn
       class="my-5"
       color="primary"

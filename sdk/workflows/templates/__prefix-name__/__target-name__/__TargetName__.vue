@@ -61,4 +61,15 @@ defineProps<{
 
 // TODO: Add component-specific functions here
 // TODO: Add mutations (not queries!) here if they are needed for the component
+
+// For mutations, handle errors like so:
+/*
+import { showError } from "@saflib/vue";
+import { getTanstackErrorMessage, TanstackError } from "@saflib/sdk";
+if (error instanceof TanstackError) {
+  showError(getTanstackErrorMessage(error));
+} else {
+  showError(error instanceof Error ? error.message : "Unknown error");
+}
+*/
 </script>
