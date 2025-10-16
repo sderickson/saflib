@@ -3,7 +3,7 @@ export interface EmailContent {
   html: string;
 }
 
-export function templateFile(): EmailContent {
+export function __targetName__(): EmailContent {
   /* TODO: Add parameters here, e.g.:
   recipientName: string,
   data: any,
