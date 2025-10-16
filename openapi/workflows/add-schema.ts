@@ -14,7 +14,7 @@ import {
 } from "@saflib/workflows";
 import path from "node:path";
 
-const sourceDir = path.join(import.meta.dirname, "templates/schemas");
+const sourceDir = path.join(import.meta.dirname, "templates");
 
 const input = [
   {
@@ -53,14 +53,21 @@ export const AddSchemaWorkflowDefinition = defineWorkflow<
         cwd: input.cwd,
         requiredPrefix: "./schemas/",
       }),
+      targetDir: input.cwd,
     };
   },
 
   templateFiles: {
-    schema: path.join(sourceDir, "template-file.yaml"),
+    schema: path.join(sourceDir, "./schemas/template-file.yaml"),
+    openapi: path.join(sourceDir, "openapi.yaml"),
+    index: path.join(sourceDir, "index.ts"),
   },
 
   docFiles: {},
+
+  manageGit: {
+    ignorePaths: ["dist/"],
+  },
 
   steps: [
     step(CopyStepMachine, ({ context }) => ({
