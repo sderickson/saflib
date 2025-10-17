@@ -52,10 +52,12 @@ export const AddEmailTemplateWorkflowDefinition = defineWorkflow<
   },
 
   templateFiles: {
-    template: path.join(sourceDir, "template-file.ts"),
+    template: path.join(sourceDir, "./emails/__target-name__.ts"),
   },
 
   docFiles: {},
+
+  manageGit: true,
 
   steps: [
     step(CommandStepMachine, () => ({

@@ -5,4 +5,6 @@ const workflowDefinitions: WorkflowDefinition[] = [
   AddEmailTemplateWorkflowDefinition,
 ];
 
+export { AddEmailTemplateWorkflowDefinition };
+
 export default workflowDefinitions;

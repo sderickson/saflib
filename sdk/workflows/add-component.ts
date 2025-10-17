@@ -117,13 +117,6 @@ export const AddComponentWorkflowDefinition = defineWorkflow<
       lineReplace: makeLineReplace(context),
     })),
 
-    step(PromptStepMachine, ({ context }) => ({
-      promptText: `If this is a new component, set up the appropriate exports.
-
-      * Make sure ${context.copiedFiles?.vue} is in the root "components.ts" file.
-      * Make sure ${context.copiedFiles?.strings} is in the root "strings.ts" file.`,
-    })),
-
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "vue",
       promptMessage: `Update **${path.basename(context.copiedFiles!.vue)}** to implement the component.
@@ -158,6 +151,22 @@ export const AddComponentWorkflowDefinition = defineWorkflow<
         },
       },
     ),
+
+    step(TestStepMachine, () => ({
+      fileId: "test",
+    })),
+
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["run", "typecheck"],
+    })),
+
+    step(PromptStepMachine, ({ context }) => ({
+      promptText: `If this is a new component, set up the appropriate exports.
+
+      * Make sure ${context.copiedFiles?.vue} is in the root "components.ts" file.
+      * Make sure ${context.copiedFiles?.strings} is in the root "strings.ts" file.`,
+    })),
 
     step(TestStepMachine, () => ({
       fileId: "test",
