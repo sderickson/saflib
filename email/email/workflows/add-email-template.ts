@@ -48,7 +48,6 @@ export const AddEmailTemplateWorkflowDefinition = defineWorkflow<
         requiredSuffix: ".ts",
         cwd: input.cwd,
       }),
-      targetDir: input.cwd,
     };
   },
 
