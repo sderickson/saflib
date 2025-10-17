@@ -19,6 +19,7 @@ export const defaultConfig = defineConfig({
       TZ: "UTC",
       NODE_OPTIONS: "--disable-warning=DEP0040",
       NODE_ENV: "test",
+      TRADEMARK: "Some Product",
     },
     include: ["**/*.test.ts"],
     coverage: {
