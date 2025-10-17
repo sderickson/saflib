@@ -48,7 +48,9 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
 
   context: ({ input }) => {
     return {
-      ...parsePackageName(getPackageName(input.cwd), {}),
+      ...parsePackageName(getPackageName(input.cwd), {
+        requiredSuffix: "-http",
+      }),
       ...parsePath(input.path, {
         requiredSuffix: ".ts",
         cwd: input.cwd,
@@ -63,7 +65,7 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
     test: path.join(sourceDir, "routes/__group-name__/__target-name__.test.ts"),
     index: path.join(sourceDir, "routes/__group-name__/index.ts"),
     http: path.join(sourceDir, "http.ts"),
-    helpers: path.join(sourceDir, "routes/_helpers.ts"),
+    helpers: path.join(sourceDir, "routes/__group-name__/_helpers.ts"),
   },
 
   docFiles: {
