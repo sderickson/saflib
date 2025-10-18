@@ -1,15 +1,16 @@
 <template>
   <v-form v-model="valid">
-    <div class="float-right">
+    <div class="float-right mb-4">
       <SpaLink :link="authLinks.login" class="text-blue text-decoration-none">
         {{ t(register_page.already_have_account) }}
         <v-icon icon="mdi-chevron-right"></v-icon>
       </SpaLink>
     </div>
 
-    <div class="mb-4 font-weight-medium">
+    <div v-if="renderPrompt" class="mb-4 font-weight-medium">
       {{ t(register_page.create_your_account) }}
     </div>
+    <div style="clear: both"></div>
     <div v-if="firstNameInput">
       <v-text-field
         v-model="firstName"
@@ -113,6 +114,7 @@ const props = defineProps<{
   nameInput?: boolean;
   ctaText?: string;
   redirectTo?: string;
+  renderPrompt?: boolean;
 }>();
 
 const emit = defineEmits<{

@@ -1,16 +1,17 @@
 <template>
   <v-form v-model="valid">
-    <div class="mb-4 float-right">
+    <div class="float-right mb-4">
       <SpaLink :link="authLinks.login" class="text-blue text-decoration-none">
         {{ t(forgot_password_page.back_to_login) }}
         <v-icon icon="mdi-chevron-right"></v-icon>
       </SpaLink>
     </div>
-    <div class="mb-4 font-weight-medium">
+    <div v-if="renderPrompt" class="mb-4 font-weight-medium">
       {{ t(forgot_password_page.forgot_password) }}
     </div>
+    <div style="clear: both"></div>
 
-    <div class="text-body-2 text-medium-emphasis mb-4">
+    <div class="text-body-2 text-medium-emphasis mb-4" v-if="renderPrompt">
       {{ t(forgot_password_page.forgot_password_description) }}
     </div>
 
@@ -61,6 +62,10 @@ import { authLinks } from "@saflib/auth-links";
 import { useReverseT } from "../../i18n.ts";
 
 const { t } = useReverseT();
+
+defineProps<{
+  renderPrompt?: boolean;
+}>();
 
 const email = ref("");
 const valid = ref(null);
