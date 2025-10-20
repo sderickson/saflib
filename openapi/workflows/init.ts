@@ -60,6 +60,11 @@ export const OpenapiInitWorkflowDefinition = defineWorkflow<
     packageJson: path.join(sourceDir, "package.json"),
     index: path.join(sourceDir, "index.ts"),
     tsconfig: path.join(sourceDir, "tsconfig.json"),
+    events: path.join(sourceDir, "events/index.yaml"),
+    login: path.join(sourceDir, "events/login.yaml"),
+    signup: path.join(sourceDir, "events/signup.yaml"),
+    signup_view: path.join(sourceDir, "events/signup_view.yaml"),
+    verify_email: path.join(sourceDir, "events/verify_email.yaml"),
   },
 
   docFiles: {},
