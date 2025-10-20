@@ -1,6 +1,6 @@
 <template>
   <v-form v-model="valid">
-    <div class="float-right">
+    <div class="float-right mb-4">
       <SpaLink
         :link="authLinks.register"
         class="text-blue text-decoration-none"
@@ -10,10 +10,10 @@
       </SpaLink>
     </div>
 
-    <div class="mb-4 font-weight-medium">
+    <div v-if="renderPrompt" class="mb-4 font-weight-medium">
       {{ t(login_page.log_into_your_account) }}
     </div>
-
+    <div style="clear: both"></div>
     <v-text-field
       v-model="email"
       v-bind="t(login_page.email)"
@@ -84,6 +84,7 @@ const emit = defineEmits<{
 
 const props = defineProps<{
   redirectTo?: string;
+  renderPrompt?: boolean;
 }>();
 
 const { mutateAsync: login, isError, data: user, isPending } = useLogin();

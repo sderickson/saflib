@@ -76,7 +76,6 @@ const emit = defineEmits<{
 
 // Common input props
 const commonInputProps = computed(() => ({
-  variant: "outlined" as const,
   class: "mb-4",
   disabled: props.disabled,
 }));
