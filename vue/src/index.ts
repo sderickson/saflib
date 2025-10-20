@@ -10,3 +10,4 @@ export * from "./strings.ts";
 export * from "../types.ts";
 export * from "./utils.ts";
 export * from "./snackbar.ts";
+export * from "./test-mode.ts";
