@@ -1,4 +1,5 @@
-import { createVueApp, setClientName } from "@saflib/vue";
+import { createVueApp } from "@saflib/vue";
+import { setClientName } from "@saflib/links";
 import App from "./__SubdomainName__App.vue";
 import { router } from "./router.ts";
 import { __subdomain_name___strings } from "./strings.ts";

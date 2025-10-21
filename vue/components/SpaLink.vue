@@ -21,7 +21,7 @@
  */
 
 import { type Link } from "@saflib/links";
-import { linkToProps } from "@saflib/vue";
+import { linkToProps } from "@saflib/links";
 
 const { link } = defineProps<{ link: Link }>();
 const linkProps = linkToProps(link);

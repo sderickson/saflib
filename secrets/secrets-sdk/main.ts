@@ -1,5 +1,6 @@
 import App from "./App.vue";
-import { createVueApp, setClientName } from "@saflib/vue";
+import { createVueApp } from "@saflib/vue";
+import { setClientName } from "@saflib/links";
 import "@saflib/vue/components";
 import { secretsSdkStrings } from "./strings";
 import { setupWorker } from "msw/browser";

@@ -105,7 +105,7 @@ import {
   getProfile,
 } from "../../requests/auth";
 import { TanstackError } from "@saflib/sdk";
-import { linkToHrefWithHost } from "@saflib/vue";
+import { linkToHrefWithHost } from "@saflib/links";
 import { authLinks } from "@saflib/auth-links";
 import { useQuery } from "@tanstack/vue-query";
 import { useReverseT } from "../../i18n.ts";

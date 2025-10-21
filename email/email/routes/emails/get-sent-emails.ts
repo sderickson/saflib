@@ -23,7 +23,10 @@ export const getSentEmails = createHandler(async (req, res) => {
   let emails = sentEmails;
   if (userEmail) {
     emails = emails.filter(
-      (email) => email.to === userEmail || email.from === userEmail,
+      (email) =>
+        email.to === userEmail ||
+        email.from === userEmail ||
+        email.replyTo === userEmail,
     );
   }
 
@@ -40,7 +43,7 @@ const convertEmailOptionsToApiResponse = (
   sentEmail: NodeSentEmail,
 ): ApiSentEmail => {
   return {
-    from: convertEmailFieldToString(sentEmail.from)[0],
+    from: convertEmailFieldToString(sentEmail.from)[0] || "",
     to: convertEmailFieldToString(sentEmail.to),
     cc: convertEmailFieldToString(sentEmail.cc),
     bcc: convertEmailFieldToString(sentEmail.bcc),

@@ -6,6 +6,7 @@ export const last_mock_email_page = {
     cc: "CC",
     bcc: "BCC",
     from: "From",
+    replyTo: "Reply To",
     subject: "Subject",
     text: "Text",
     html: "HTML",

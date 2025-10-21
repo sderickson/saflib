@@ -9,6 +9,7 @@ import { throwError } from "@saflib/monorepo";
 export const verifyEmailHandler = createHandler(async (req, res) => {
   const { token } = req.body as { token: string };
   const { dbKey } = authServiceStorage.getStore()!;
+  const { callbacks } = authServiceStorage.getStore()!;
 
   const { result: emailAuth, error } = await emailAuthDb.getByVerificationToken(
     dbKey,
@@ -52,6 +53,9 @@ export const verifyEmailHandler = createHandler(async (req, res) => {
   }
 
   await emailAuthDb.verifyEmail(dbKey, emailAuth.userId);
+  if (callbacks.onUserVerified) {
+    await callbacks.onUserVerified({ user: req.user });
+  }
 
   const user = await throwError(usersDb.getById(dbKey, emailAuth.userId));
   const userResponse = await createUserResponse(dbKey, user);

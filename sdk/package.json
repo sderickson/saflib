@@ -11,6 +11,7 @@
     "./strings": "./strings.ts"
   },
   "dependencies": {
+    "@saflib/links": "*",
     "@tanstack/vue-query": "^5.85.9",
     "openapi-fetch": "^0.14.0"
   },
@@ -21,10 +22,10 @@
     "typecheck": "vue-tsc"
   },
   "devDependencies": {
-    "@saflib/workflows": "*",
-    "@saflib/vitest": "*",
     "@saflib/dev-tools": "*",
+    "@saflib/vitest": "*",
     "@saflib/vue": "*",
+    "@saflib/workflows": "*",
     "msw": "^2.0.0"
   }
 }

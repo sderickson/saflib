@@ -21,9 +21,11 @@ let router: Router;
 interface AuthRouterOptions {
   additionalRoutes?: RouteRecordRaw[];
   defaultRedirect: string;
+  renderPrompt?: boolean;
 }
 
 export const createAuthRouter = (options: AuthRouterOptions) => {
+  const renderPrompt = options?.renderPrompt !== false;
   if (router) {
     return router;
   }
@@ -32,17 +34,17 @@ export const createAuthRouter = (options: AuthRouterOptions) => {
     {
       path: authLinks.home.path,
       component: LoginPage,
-      props: { redirectTo: options?.defaultRedirect },
+      props: { redirectTo: options?.defaultRedirect, renderPrompt },
     },
     {
       path: authLinks.login.path,
       component: LoginPage,
-      props: { redirectTo: options?.defaultRedirect },
+      props: { redirectTo: options?.defaultRedirect, renderPrompt },
     },
     {
       path: authLinks.register.path,
       component: RegisterPage,
-      props: { redirectTo: options?.defaultRedirect },
+      props: { redirectTo: options?.defaultRedirect, renderPrompt },
     },
     { path: authLinks.forgot.path, component: ForgotPasswordPage },
     {

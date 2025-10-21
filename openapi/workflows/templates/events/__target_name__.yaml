@@ -1,0 +1,14 @@
+type: object
+properties:
+  event:
+    type: string
+    enum:
+      - __target_name__
+
+  context:
+    type: object
+    properties:
+    # TODO: Add context properties here
+required:
+  - event
+  - context
