@@ -43,7 +43,7 @@ const convertEmailOptionsToApiResponse = (
   sentEmail: NodeSentEmail,
 ): ApiSentEmail => {
   return {
-    from: convertEmailFieldToString(sentEmail.from)[0],
+    from: convertEmailFieldToString(sentEmail.from)[0] || "",
     to: convertEmailFieldToString(sentEmail.to),
     cc: convertEmailFieldToString(sentEmail.cc),
     bcc: convertEmailFieldToString(sentEmail.bcc),

@@ -26,6 +26,13 @@
             <strong>{{ strings.email_details.from }}</strong
             >: {{ formatRecipients(lastEmail.from) }}
           </div>
+          <div
+            v-if="lastEmail.replyTo && lastEmail.replyTo.length > 0"
+            class="mb-2"
+          >
+            <strong>{{ strings.email_details.replyTo }}</strong
+            >: {{ lastEmail.replyTo.join(", ") }}
+          </div>
           <hr />
           <div v-if="lastEmail.text" class="mb-2">
             <strong v-if="lastEmail.html"
