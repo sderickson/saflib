@@ -5,7 +5,9 @@ type TestMode = "e2e" | null;
 const testModeKey = "testMode";
 
 export const testMode = ref<TestMode>(
-  document.cookie.includes("testMode=e2e") ? "e2e" : null,
+  globalThis.document && document.cookie.includes("testMode=e2e")
+    ? "e2e"
+    : null,
 );
 
 export const setTestMode = (mode: TestMode) => {

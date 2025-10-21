@@ -22,6 +22,6 @@ describe("ForgotPasswordPage", () => {
     const wrapper = mountTestApp(ForgotPasswordPage);
     expect(getEmailInput(wrapper).exists()).toBe(true);
     expect(getSubmitButton(wrapper).exists()).toBe(true);
-    expect(wrapper.text()).toContain("Reset Password");
+    expect(wrapper.text()).toContain(forgot_password_page.send_reset_link);
   });
 });

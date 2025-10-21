@@ -70,9 +70,8 @@ const upsertSessionSecret = () => {
     currentSecretStorage = createNewStorage();
     writeFileSync(secretFile, JSON.stringify(currentSecretStorage));
   } else {
-    currentSecretStorage = JSON.parse(
-      readFileSync(secretFile, "utf8"),
-    ) as SessionSecretStorage;
+    const contents = readFileSync(secretFile, "utf8");
+    currentSecretStorage = JSON.parse(contents) as SessionSecretStorage;
     rotateIfNeeded();
   }
   return currentSecretStorage.secrets;

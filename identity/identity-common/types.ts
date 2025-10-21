@@ -11,6 +11,10 @@ export interface VerificationTokenCreatedPayload {
   isResend: boolean;
 }
 
+export interface UserVerifiedPayload {
+  user: User;
+}
+
 export interface PasswordResetPayload {
   user: User;
   resetUrl: string;
@@ -26,6 +30,7 @@ export interface PasswordUpdatedPayload {
  */
 export interface IdentityServiceCallbacks {
   onUserCreated?: (payload: UserCreatedPayload) => Promise<void>;
+  onUserVerified?: (payload: UserVerifiedPayload) => Promise<void>;
   onVerificationTokenCreated?: (
     payload: VerificationTokenCreatedPayload,
   ) => Promise<void>;

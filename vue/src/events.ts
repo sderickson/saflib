@@ -69,6 +69,9 @@ export const useClientCommon = (
 };
 
 export const getEvents = (): string[] => {
+  if (isTestEnv()) {
+    return [];
+  }
   const eventCookie =
     document.cookie.split(";").find((c) => c.trim().startsWith("events=")) ||
     "";
