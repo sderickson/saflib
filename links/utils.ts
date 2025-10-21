@@ -78,6 +78,7 @@ let clientName = "";
  */
 export const setClientName = (client: string) => {
   if (
+    process.env.NODE_ENV !== "test" &&
     client !== "root" &&
     !document.location.hostname.startsWith(`${client}.`) &&
     process.env.NODE_ENV !== "test"
