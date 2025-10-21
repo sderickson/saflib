@@ -6,7 +6,7 @@
 import { QueryClient } from "@tanstack/vue-query";
 import createClient from "openapi-fetch";
 import { isTestEnv } from "@saflib/vue";
-import { getProtocol, getHost } from "@saflib/vue";
+import { getProtocol, getHost } from "@saflib/links";
 
 export { isTestEnv };
 

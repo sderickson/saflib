@@ -1,4 +1,38 @@
-import { type Link, type LinkOptions, linkToHref } from "@saflib/links";
+import { type Link, type LinkOptions } from "./types.ts";
+import { typedEnv } from "@saflib/env";
+
+/**
+ * Given a Link object, return a fully-qualified url. Any provided params must
+ * be specified in the Link object.
+ */
+export const linkToHref = (link: Link, options?: LinkOptions): string => {
+  let domain = "";
+  let protocol = "";
+  if (globalThis.document) {
+    if (!options?.domain) {
+      throw new Error(
+        "domain is required when using linkToHref in the browser",
+      );
+    }
+    domain = options.domain;
+    protocol = document.location.protocol;
+  } else {
+    domain = typedEnv.DOMAIN;
+    protocol = typedEnv.PROTOCOL + ":";
+  }
+
+  let path = link.path;
+  if (options?.params) {
+    const linkParams = link.params ?? [];
+    for (const [param, _value] of Object.entries(options.params)) {
+      if (!linkParams.includes(param)) {
+        throw new Error(`Param ${param} not found in link ${link.path}`);
+      }
+    }
+    path = `${path}?${new URLSearchParams(options.params).toString()}`;
+  }
+  return `${protocol}//${link.subdomain ? `${link.subdomain}.` : ""}${domain}${path}`;
+};
 
 /**
  * Utility to get the current host, including the port, e.g. "localhost:3000".
