@@ -67,7 +67,7 @@ export const AddRouteWorkflowDefinition = defineWorkflow<
   },
 
   templateFiles: {
-    route: path.join(sourceDir, "routes/template-file.yaml"),
+    route: path.join(sourceDir, "routes/__group-name__/__target-name__.yaml"),
     openapi: path.join(sourceDir, "openapi.yaml"),
     distTypes: path.join(sourceDir, "dist/openapi.d.ts"),
     distJson: path.join(sourceDir, "dist/openapi.json"),
