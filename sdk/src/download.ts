@@ -11,8 +11,6 @@ export interface DownloadOptions {
   path: string;
   /** The filename for the downloaded file (e.g., "foobars.csv") */
   filename: string;
-  /** Optional MIME type for the request */
-  mimeType?: string;
 }
 
 /**
@@ -48,7 +46,6 @@ export function useDownload(options: DownloadOptions) {
         credentials: "include", // Include cookies
         headers: {
           "X-CSRF-Token": csrfToken,
-          Accept: options.mimeType || "application/octet-stream",
         },
       });
 

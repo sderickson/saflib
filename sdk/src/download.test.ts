@@ -90,7 +90,6 @@ describe("useDownload", () => {
         credentials: "include",
         headers: {
           "X-CSRF-Token": "test-token-123",
-          Accept: "application/octet-stream",
         },
       }),
     );
