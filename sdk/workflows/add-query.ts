@@ -2,7 +2,6 @@ import {
   CopyStepMachine,
   UpdateStepMachine,
   PromptStepMachine,
-  DocStepMachine,
   CommandStepMachine,
   defineWorkflow,
   step,
@@ -85,12 +84,6 @@ export const AddQueryWorkflowDefinition = defineWorkflow<
   manageGit: true,
 
   steps: [
-    step(DocStepMachine, () => ({
-      docId: "overview",
-      promptMessage:
-        "Review the SDK overview documentation to understand the structure and requirements for adding new API queries/mutations.",
-    })),
-
     step(CopyStepMachine, ({ context }) => ({
       name: context.targetName,
       targetDir: context.targetDir,
@@ -99,7 +92,9 @@ export const AddQueryWorkflowDefinition = defineWorkflow<
 
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "templateFile",
-      promptMessage: `Update **${context.targetName}.ts** to implement the API query/mutation. Include both a sample query and a sample mutation for reference.`,
+      promptMessage: `Update **${context.targetName}.ts** to implement the API query/mutation. Include both a sample query and a sample mutation for reference.
+      
+      Please review documentatino here first: ${context.docFiles?.overview}`,
     })),
 
     step(UpdateStepMachine, ({ context }) => ({
