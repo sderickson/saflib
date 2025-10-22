@@ -102,35 +102,34 @@ export const AddQueryWorkflowDefinition = defineWorkflow<
       promptMessage: `Update **${context.targetName}.fake.ts** to implement the fake handlers for testing.
       
       Mainly it should reflect what is given to it. Have it respect query parameters and request bodies. Don't bother doing validation.
-      If this is a list query, keep the resources in a separately exported array. Otherwise, import that array and modify/use it accordingly.
+      If this is a list query, keep the resources in a separately exported array. Otherwise, if it would affect that list, import that array and modify/use it accordingly.
       This way operations affect one another (like creating or deleting resources) so that tanstack caching can be tested.`,
     })),
 
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "templateFileTest",
-      promptMessage: `Update **${context.targetName}.test.ts** to implement simple tests for the API query/mutation.
+      promptMessage: `Update **${context.targetName}.test.ts** to implement simple tests for the API query or mutation.
       
       Include:
       * One test that makes sure it works at all.
-      * Another test for (if it's a mutation) making sure the caching works.`,
+      * Another test for (if it's a mutation and affects caching) making sure the caching works.`,
     })),
 
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "index",
-      promptMessage: `Update **${context.targetName}/index.ts** to export the new query/mutation functions.`,
+      promptMessage: `Update **${context.targetName}/index.ts** to export the new query/mutation function.`,
     })),
 
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "indexFakes",
-      promptMessage: `Update **${context.targetName}/index.fakes.ts** to export the new fake handlers.`,
+      promptMessage: `Update **${context.targetName}/index.fakes.ts** to export the new fake handler.`,
     })),
 
     step(PromptStepMachine, () => ({
-      promptText: `Update the root level index.ts to export the new query/mutation functions.`,
-    })),
-
-    step(PromptStepMachine, () => ({
-      promptText: `Update the root level fakes.ts to export the new fake handlers.`,
+      promptText: `Update the root level files for this package.
+      
+      * index.ts to export the new query/mutation function.
+      * index.fakes.ts to export the new fake handler`,
     })),
 
     step(CommandStepMachine, () => ({
