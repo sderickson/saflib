@@ -92,7 +92,7 @@ export const AddQueryWorkflowDefinition = defineWorkflow<
 
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "templateFile",
-      promptMessage: `Update **${context.targetName}.ts** to implement the API query/mutation. Include both a sample query and a sample mutation for reference.
+      promptMessage: `Update **${context.targetName}.ts** to implement the API query/mutation. Delete whichever one is not needed.
       
       Please review documentatino here first: ${context.docFiles?.overview}`,
     })),
