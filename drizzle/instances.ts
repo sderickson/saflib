@@ -24,12 +24,14 @@ export class DbManager<S extends Schema, C extends Config> {
   private schema: S;
   private rootPath: string;
   private activeBackups: Set<string>;
+  private dbPaths: Map<DbKey, string>;
 
   constructor(schema: S, c: C, rootUrl: string) {
     this.config = c;
     this.schema = schema;
     this.instances = new Map();
     this.activeBackups = new Set();
+    this.dbPaths = new Map();
     if (!rootUrl.startsWith("file://")) {
       throw new Error("Root URL must start with 'file://'");
     }
@@ -94,6 +96,7 @@ export class DbManager<S extends Schema, C extends Config> {
 
     const key: DbKey = Symbol(`db-${Date.now()}-${Math.random()}`);
     this.instances.set(key, db);
+    this.dbPaths.set(key, dbStorage);
     return key;
   };
 
@@ -118,16 +121,13 @@ export class DbManager<S extends Schema, C extends Config> {
       return Buffer.from("test backup");
     }
 
-    // Get the database file path from the SQLite instance
-    const db = (instance as any).$db;
-    if (!db || typeof db.name !== "string") {
-      log.warn(
-        "Cannot create backup: database is in-memory or path not accessible",
-      );
+    // Get the database file path from our stored paths
+    const originalPath = this.dbPaths.get(key);
+    if (!originalPath) {
+      log.warn("Cannot create backup: database path not found");
       return undefined;
     }
 
-    const originalPath = db.name;
     if (originalPath === ":memory:") {
       log.warn("Cannot create backup: database is in-memory");
       return undefined;
@@ -167,6 +167,7 @@ export class DbManager<S extends Schema, C extends Config> {
         log.info("Backup created with manual cleanup required");
       } else {
         // Use FinalizationRegistry for automatic cleanup
+        log.info("Using FinalizationRegistry for automatic cleanup");
         const registry = new FinalizationRegistry((backupPath: string) => {
           this.cleanupBackup(backupPath);
         });
@@ -238,6 +239,7 @@ export class DbManager<S extends Schema, C extends Config> {
     const instance = this.instances.get(key);
     if (instance) {
       this.instances.delete(key);
+      this.dbPaths.delete(key);
       return true;
     }
     return false;
