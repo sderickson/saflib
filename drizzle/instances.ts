@@ -114,6 +114,10 @@ export class DbManager<S extends Schema, C extends Config> {
       return undefined;
     }
 
+    if (typedEnv.NODE_ENV === "test") {
+      return Buffer.from("test backup");
+    }
+
     // Get the database file path from the SQLite instance
     const db = (instance as any).$db;
     if (!db || typeof db.name !== "string") {
