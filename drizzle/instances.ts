@@ -8,6 +8,7 @@ import fs from "fs";
 import { makeSubsystemReporters } from "@saflib/node";
 import { typedEnv } from "@saflib/env";
 import { randomUUID } from "crypto";
+import { Readable } from "stream";
 
 /**
  * A class which mainly manages "connections" to the sqlite3 database and drizzle
@@ -101,15 +102,15 @@ export class DbManager<S extends Schema, C extends Config> {
   };
 
   /**
-   * Creates a backup of the database file and returns a buffer with automatic cleanup.
+   * Creates a backup of the database file and returns a readable stream with automatic cleanup.
    * The backup file is created in the same directory as the original database file
-   * with a unique temporary name. The buffer will automatically clean up the temporary
+   * with a unique temporary name. The stream will automatically clean up the temporary
    * file when it's closed or garbage collected.
    *
    * @param key The database key to backup
-   * @returns A buffer containing the database backup, or undefined if the database doesn't exist
+   * @returns A readable stream containing the database backup, or undefined if the database doesn't exist
    */
-  createBackup(key: DbKey): Buffer | undefined {
+  async createBackup(key: DbKey): Promise<Readable | undefined> {
     const { log } = makeSubsystemReporters("init", "db.createBackup");
     const instance = this.instances.get(key);
     if (!instance) {
@@ -118,7 +119,7 @@ export class DbManager<S extends Schema, C extends Config> {
     }
 
     if (typedEnv.NODE_ENV === "test") {
-      return Buffer.from("test backup");
+      return Readable.from("test backup");
     }
 
     // Get the database file path from our stored paths
@@ -146,42 +147,44 @@ export class DbManager<S extends Schema, C extends Config> {
 
     try {
       log.info(`Creating backup: ${originalPath} -> ${backupPath}`);
-      fs.copyFileSync(originalPath, backupPath);
+      await fs.promises.copyFile(originalPath, backupPath);
       this.activeBackups.add(backupPath);
 
-      // Read the backup file into a buffer
-      const buffer = fs.readFileSync(backupPath);
+      // Create a readable stream from the backup file
+      const backupStream = fs.createReadStream(backupPath);
 
-      // Create a custom buffer that cleans up the file when closed
-      const backupBuffer = Buffer.from(buffer);
-
-      // Add cleanup method to the buffer
-      (backupBuffer as any).__cleanup = () => {
+      // Set up automatic cleanup when the stream is closed
+      backupStream.on("close", () => {
         this.cleanupBackup(backupPath);
-      };
+      });
 
-      // Set up automatic cleanup on garbage collection
+      backupStream.on("error", (error) => {
+        log.error(`Stream error: ${error}`);
+        this.cleanupBackup(backupPath);
+      });
+
+      // Set up automatic cleanup on garbage collection as a fallback
       if (global.gc) {
         // In environments with explicit GC, we can't rely on finalization
-        // The user should call cleanup manually or use the buffer quickly
-        log.info("Backup created with manual cleanup required");
+        // The stream cleanup should handle this, but log for awareness
+        log.info("Backup stream created with stream-based cleanup");
       } else {
-        // Use FinalizationRegistry for automatic cleanup
-        log.info("Using FinalizationRegistry for automatic cleanup");
+        // Use FinalizationRegistry for automatic cleanup as fallback
+        log.info("Using FinalizationRegistry for automatic cleanup fallback");
         const registry = new FinalizationRegistry((backupPath: string) => {
           this.cleanupBackup(backupPath);
         });
-        registry.register(backupBuffer, backupPath);
+        registry.register(backupStream, backupPath);
       }
 
-      log.info(`Backup created successfully: ${buffer.length} bytes`);
-      return backupBuffer;
+      log.info(`Backup stream created successfully for: ${backupPath}`);
+      return backupStream;
     } catch (error) {
       log.error(`Failed to create backup: ${error}`);
       // Clean up the backup file if it was created but something else failed
       if (fs.existsSync(backupPath)) {
         try {
-          fs.unlinkSync(backupPath);
+          await fs.promises.unlink(backupPath);
         } catch (cleanupError) {
           log.error(`Failed to cleanup backup file: ${cleanupError}`);
         }
@@ -191,8 +194,8 @@ export class DbManager<S extends Schema, C extends Config> {
   }
 
   /**
-   * Manually clean up a backup file. This is called automatically when the buffer
-   * is garbage collected, but can be called manually for immediate cleanup.
+   * Manually clean up a backup file. This is called automatically when the stream
+   * is closed or garbage collected, but can be called manually for immediate cleanup.
    */
   private cleanupBackup(backupPath: string): void {
     const { log } = makeSubsystemReporters("db", "db.cleanupBackup");
