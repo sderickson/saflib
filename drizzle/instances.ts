@@ -72,6 +72,12 @@ export class DbManager<S extends Schema, C extends Config> {
     } else {
       dbStorage = ":memory:";
     }
+
+    // by default, all tests should use in-memory databases, unless explicitly overridden
+    if (typedEnv.NODE_ENV === "test" && !options?.overrideTestDefault) {
+      dbStorage = ":memory:";
+    }
+
     log.info(`Connecting to database: ${dbStorage}`);
     const sqlite = new Database(dbStorage);
     const db = drizzle(sqlite, { schema: this.schema });

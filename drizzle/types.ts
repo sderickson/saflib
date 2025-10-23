@@ -25,6 +25,12 @@ export interface DbOptions {
    * the given (absolute) path.
    */
   onDisk?: boolean | string;
+
+  /**
+   * During tests, onDisk is ignored and the database will be created in memory.
+   * If you need to override this behavior, set this to true.
+   */
+  overrideTestDefault?: boolean;
 }
 
 /**
