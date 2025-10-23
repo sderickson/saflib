@@ -54,7 +54,9 @@ export const CronAddJobWorkflowDefinition = defineWorkflow<
 
     return {
       ...pathResult,
-      ...parsePackageName(getPackageName(input.cwd)),
+      ...parsePackageName(getPackageName(input.cwd), {
+        requiredSuffix: "-cron",
+      }),
       targetDir: input.cwd,
     };
   },

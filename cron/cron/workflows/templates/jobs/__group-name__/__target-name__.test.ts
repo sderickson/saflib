@@ -4,7 +4,6 @@ import {
   makeContext,
   __serviceName__ServiceStorage,
 } from "template-package-service-common";
-import { __serviceName__Db } from "template-package-db";
 import { __targetName__ } from "./__target-name__.ts";
 
 describe("RunScheduledCalls RPC", () => {
