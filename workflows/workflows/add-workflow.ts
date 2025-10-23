@@ -7,8 +7,11 @@ import {
   CommandStepMachine,
   getPackageName,
   makeLineReplace,
-} from "../core/index.ts";
-import { readFileSync } from "fs";
+  type ParsePackageNameOutput,
+  type ParsePathOutput,
+  parsePath,
+  parsePackageName,
+} from "@saflib/workflows";
 import path from "node:path";
 import { existsSync } from "node:fs";
 
@@ -23,11 +26,8 @@ const input = [
   },
 ] as const;
 
-interface AddWorkflowContext {
-  targetName: string;
+interface AddWorkflowContext extends ParsePackageNameOutput, ParsePathOutput {
   workflowNamespace: string;
-  targetDir: string;
-  packageName: string;
   workflowPackageName: string;
 }
 
@@ -52,17 +52,20 @@ export const AddWorkflowDefinition = defineWorkflow<
       throw new Error("Workflow name must include a slash (namespace)");
     }
     const [workflowNamespace, targetName] = input.name.split("/");
-    const targetDir = path.join(input.cwd, "workflows");
-    const packageName = getPackageName(input.cwd);
-    const workflowPackageName = findWorkflowPackageName();
+    const workflowPath = `./workflows/${targetName}.ts`;
 
-    return {
-      targetName,
+    const context = {
+      ...parsePackageName(getPackageName(input.cwd)),
+      ...parsePath(workflowPath, {
+        requiredSuffix: ".ts",
+        requiredPrefix: "./workflows/",
+        cwd: input.cwd,
+      }),
       workflowNamespace,
-      targetDir,
-      packageName,
-      workflowPackageName,
+      workflowPackageName: "@saflib/workflows",
     };
+
+    return context;
   },
 
   templateFiles: {
@@ -76,19 +79,11 @@ export const AddWorkflowDefinition = defineWorkflow<
   },
 
   steps: [
-    step(CopyStepMachine, ({ context }) => {
-      const lineReplace = makeLineReplace(context);
-      const wrappedLineReplace = (line: string) => {
-        return lineReplace(
-          line.replace("@saflib/workflows", context.workflowPackageName),
-        );
-      };
-      return {
-        name: context.targetName,
-        targetDir: context.targetDir,
-        lineReplace: wrappedLineReplace,
-      };
-    }),
+    step(CopyStepMachine, ({ context }) => ({
+      name: context.targetName,
+      targetDir: context.targetDir,
+      lineReplace: makeLineReplace(context),
+    })),
 
     step(PromptStepMachine, ({ context }) => ({
       promptText: `Add name, description, and cliArguments to the newly created ${path.join(context.targetName + ".ts")}.
@@ -170,19 +165,3 @@ export const AddWorkflowDefinition = defineWorkflow<
     })),
   ],
 });
-
-const findWorkflowPackageName = () => {
-  let workflowPackageName = "@saflib/workflows";
-  let currentDir = import.meta.dirname;
-  while (currentDir !== "/") {
-    const packageJsonFileName = path.join(currentDir, "package.json");
-    if (existsSync(packageJsonFileName)) {
-      workflowPackageName = JSON.parse(
-        readFileSync(packageJsonFileName, "utf8"),
-      ).name;
-      break;
-    }
-    currentDir = path.dirname(currentDir);
-  }
-  return workflowPackageName;
-};
