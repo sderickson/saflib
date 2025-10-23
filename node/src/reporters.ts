@@ -46,11 +46,7 @@ export const makeSubsystemReporters = (
     subsystemName,
     operationName,
   });
-  const logError = makeSubsystemErrorReporter(
-    subsystemName,
-    operationName,
-    logger,
-  );
+  const logError = makeSubsystemErrorReporter(subsystemName, operationName);
   return {
     log: logger,
     logError,

@@ -4,6 +4,7 @@ import { createCronRouter } from "./http.ts";
 import { makeSubsystemReporters } from "@saflib/node";
 import type { CronServiceOptions } from "./http.ts";
 import type { CronJob } from "cron";
+import { cronServiceStorage } from "./context.ts";
 
 export type { CronServiceOptions };
 
@@ -27,10 +28,16 @@ export async function runCron(
     log.info("Starting cron service...");
     log.info("Connecting to cron DB...");
     const dbKey = options.dbKey ?? cronDb.connect(options.dbOptions);
-    log.info("Starting jobs...");
-    const jobs = await startJobs(options.jobs, { dbKey });
-    log.info("Cron service startup complete.");
-    return jobs;
+    const result = await cronServiceStorage.run(
+      { dbKey, jobs: options.jobs },
+      async () => {
+        log.info("Starting jobs...");
+        const jobs = await startJobs(options.jobs, { dbKey });
+        log.info("Cron service startup complete.");
+        return jobs;
+      },
+    );
+    return result;
   } catch (error) {
     logError(error);
   }
