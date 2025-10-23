@@ -55,12 +55,11 @@ export const CronInitWorkflowDefinition = defineWorkflow<
 
   templateFiles: {
     cron: path.join(sourceDir, "cron.ts"),
+    cronTest: path.join(sourceDir, "cron.test.ts"),
     packageJson: path.join(sourceDir, "package.json"),
     tsconfig: path.join(sourceDir, "tsconfig.json"),
     vitestConfig: path.join(sourceDir, "vitest.config.js"),
   },
-
-  manageGit: true,
 
   docFiles: {},
 
