@@ -5,7 +5,7 @@ import {
 } from "template-package-service-common";
 
 // TODO: Import and add jobs here
-export const jobs: JobsMap = {
+export const __serviceName__Jobs: JobsMap = {
   // Add more jobs as needed
 };
 
@@ -14,7 +14,7 @@ export const run__ServiceName__Cron = (
 ) => {
   return __serviceName__ServiceStorage.run(context, () =>
     runCron({
-      jobs,
+      jobs: __serviceName__Jobs,
       dbKey: context.__serviceName__DbKey,
     }),
   );

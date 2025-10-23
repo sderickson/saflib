@@ -3,7 +3,7 @@
   "description": "Cron service for the __service-name__ service",
   "type": "module",
   "exports": {
-    ".": "./index.ts"
+    ".": "./cron.ts"
   },
   "scripts": {
     "test": "vitest run",
