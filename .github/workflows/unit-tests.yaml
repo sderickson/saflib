@@ -15,7 +15,7 @@ jobs:
         with:
           node-version: 22
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       # Tests fail to run if this one package isn't installed
       - name: Install rollup for linux
