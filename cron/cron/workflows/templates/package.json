@@ -1,0 +1,25 @@
+{
+  "name": "template-package-cron",
+  "description": "Cron service for the __service-name__ service",
+  "type": "module",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc"
+  },
+  "dependencies": {
+    "@saflib/cron": "*",
+    "@saflib/env": "*",
+    "@saflib/monorepo": "*",
+    "@saflib/node": "*",
+    "template-package-db": "*",
+    "template-package-service-common": "*"
+  },
+  "devDependencies": {
+    "@saflib/vitest": "*"
+  }
+}

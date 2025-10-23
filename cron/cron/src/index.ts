@@ -114,6 +114,7 @@ export const startJobs = async (
 ) => {
   const { log, logError } = makeSubsystemReporters("cron", "startJobs");
   const { dbKey } = config;
+  const jobs: CronJob[] = [];
   for (const [jobName, jobConfig] of Object.entries(jobsToStart)) {
     const { error } = await jobSettingsDb.getByName(dbKey, jobName);
     if (error) {
@@ -130,27 +131,30 @@ export const startJobs = async (
       }
     }
 
-    CronJob.from({
-      cronTime: jobConfig.schedule,
-      onTick: async () => {
-        // Use schedulerLogger for logs before entering job-specific context
-        try {
-          const { result: currentJobSetting, error } =
-            await jobSettingsDb.getByName(dbKey, jobName);
-          if (error) {
-            logError(error);
-            return;
-          }
-          if (!currentJobSetting.enabled) {
-            return;
-          }
+    jobs.push(
+      CronJob.from({
+        cronTime: jobConfig.schedule,
+        onTick: async () => {
+          // Use schedulerLogger for logs before entering job-specific context
+          try {
+            const { result: currentJobSetting, error } =
+              await jobSettingsDb.getByName(dbKey, jobName);
+            if (error) {
+              logError(error);
+              return;
+            }
+            if (!currentJobSetting.enabled) {
+              return;
+            }
 
-          await executeJobWithHandling(jobName, jobConfig, dbKey);
-        } catch (error) {
-          logError(error);
-        }
-      },
-      start: true,
-    });
+            await executeJobWithHandling(jobName, jobConfig, dbKey);
+          } catch (error) {
+            logError(error);
+          }
+        },
+        start: true,
+      }),
+    );
   }
+  return jobs;
 };

@@ -3,7 +3,7 @@ import { cronDb } from "@saflib/cron-db";
 import { createCronRouter } from "./http.ts";
 import { makeSubsystemReporters } from "@saflib/node";
 import type { CronServiceOptions } from "./http.ts";
-import type { DbKey } from "@saflib/drizzle";
+import type { CronJob } from "cron";
 
 export type { CronServiceOptions };
 
@@ -17,19 +17,20 @@ export type {
 } from "./src/types.ts";
 
 /**
- * Runs the cron jobs until the process is killed. Returns a DB key you can
- * provide to the cron router to share the same connection.
+ * Runs the cron jobs until the process is killed. Returns an array of cron jobs.
  */
-export function runCron(options: CronServiceOptions): DbKey | undefined {
+export async function runCron(
+  options: CronServiceOptions,
+): Promise<CronJob[] | undefined> {
   const { log, logError } = makeSubsystemReporters("init", "runCron");
   try {
     log.info("Starting cron service...");
     log.info("Connecting to cron DB...");
     const dbKey = options.dbKey ?? cronDb.connect(options.dbOptions);
     log.info("Starting jobs...");
-    startJobs(options.jobs, { dbKey });
+    const jobs = await startJobs(options.jobs, { dbKey });
     log.info("Cron service startup complete.");
-    return dbKey;
+    return jobs;
   } catch (error) {
     logError(error);
   }
