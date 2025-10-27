@@ -53,7 +53,7 @@ export class DbManager<S extends Schema, C extends Config> {
       dbStorage = path.join(
         this.rootPath,
         "data",
-        `db-${typedEnv.DEPLOYMENT_NAME}.sqlite`
+        `db-${typedEnv.DEPLOYMENT_NAME}.sqlite`,
       );
       const exists = fs.existsSync(dbStorage);
       if (
@@ -112,9 +112,6 @@ export class DbManager<S extends Schema, C extends Config> {
    * The backup file is created in the same directory as the original database file
    * with a unique temporary name. The stream will automatically clean up the temporary
    * file when it's closed or garbage collected.
-   *
-   * @param key The database key to backup
-   * @returns A readable stream containing the database backup, or undefined if the database doesn't exist
    */
   async createBackup(key: DbKey): Promise<Readable | undefined> {
     const { log } = makeSubsystemReporters("init", "db.createBackup");
@@ -140,9 +137,9 @@ export class DbManager<S extends Schema, C extends Config> {
       return undefined;
     }
 
-    if (!fs.existsSync(originalPath)) {
+    if (!(await fs.promises.stat(originalPath)).isFile()) {
       log.warn(
-        `Cannot create backup: database file does not exist at ${originalPath}`
+        `Cannot create backup: database file does not exist at ${originalPath}`,
       );
       return undefined;
     }
@@ -169,32 +166,11 @@ export class DbManager<S extends Schema, C extends Config> {
         this.cleanupBackup(backupPath);
       });
 
-      // Set up automatic cleanup on garbage collection as a fallback
-      if (global.gc) {
-        // In environments with explicit GC, we can't rely on finalization
-        // The stream cleanup should handle this, but log for awareness
-        log.info("Backup stream created with stream-based cleanup");
-      } else {
-        // Use FinalizationRegistry for automatic cleanup as fallback
-        log.info("Using FinalizationRegistry for automatic cleanup fallback");
-        const registry = new FinalizationRegistry((backupPath: string) => {
-          this.cleanupBackup(backupPath);
-        });
-        registry.register(backupStream, backupPath);
-      }
-
       log.info(`Backup stream created successfully for: ${backupPath}`);
       return backupStream;
     } catch (error) {
       log.error(`Failed to create backup: ${error}`);
-      // Clean up the backup file if it was created but something else failed
-      if (fs.existsSync(backupPath)) {
-        try {
-          await fs.promises.unlink(backupPath);
-        } catch (cleanupError) {
-          log.error(`Failed to cleanup backup file: ${cleanupError}`);
-        }
-      }
+      await this.cleanupBackup(backupPath);
       throw error;
     }
   }
@@ -203,13 +179,13 @@ export class DbManager<S extends Schema, C extends Config> {
    * Manually clean up a backup file. This is called automatically when the stream
    * is closed or garbage collected, but can be called manually for immediate cleanup.
    */
-  private cleanupBackup(backupPath: string): void {
+  private async cleanupBackup(backupPath: string) {
     const { log } = makeSubsystemReporters("db", "db.cleanupBackup");
 
     if (this.activeBackups.has(backupPath)) {
       try {
-        if (fs.existsSync(backupPath)) {
-          fs.unlinkSync(backupPath);
+        if ((await fs.promises.stat(backupPath)).isFile()) {
+          await fs.promises.unlink(backupPath);
           log.info(`Cleaned up backup file: ${backupPath}`);
         }
         this.activeBackups.delete(backupPath);
@@ -217,27 +193,6 @@ export class DbManager<S extends Schema, C extends Config> {
         log.error(`Failed to cleanup backup file ${backupPath}: ${error}`);
       }
     }
-  }
-
-  /**
-   * Clean up all active backup files. Useful for shutdown procedures.
-   */
-  cleanupAllBackups(): void {
-    const { log } = makeSubsystemReporters("db", "db.cleanupAllBackups");
-    log.info(`Cleaning up ${this.activeBackups.size} active backup files`);
-
-    for (const backupPath of this.activeBackups) {
-      try {
-        if (fs.existsSync(backupPath)) {
-          fs.unlinkSync(backupPath);
-        }
-      } catch (error) {
-        log.error(`Failed to cleanup backup file ${backupPath}: ${error}`);
-      }
-    }
-
-    this.activeBackups.clear();
-    log.info("All backup files cleaned up");
   }
 
   get(key: DbKey): DbConnection<S> | undefined {
@@ -259,7 +214,6 @@ export class DbManager<S extends Schema, C extends Config> {
       connect: this.connect,
       disconnect: this.disconnect,
       createBackup: this.createBackup.bind(this),
-      cleanupAllBackups: this.cleanupAllBackups.bind(this),
     };
   }
 }
