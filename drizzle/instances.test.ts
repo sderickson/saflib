@@ -14,7 +14,7 @@ import { typedEnv } from "@saflib/env";
 typedEnv.DEPLOYMENT_NAME = "arbitrary-name";
 const dbPath = path.join(
   import.meta.dirname,
-  "./data/db-arbitrary-name.sqlite",
+  "./data/db-arbitrary-name.sqlite"
 );
 
 const getTempDbPath = (name: string) =>
@@ -56,7 +56,10 @@ describe("Instance Manager", () => {
 
   it("should use a default database name if no name is provided", () => {
     expect(existsSync(dbPath)).toBe(false);
-    const keyResult = manager.connect({ onDisk: true });
+    const keyResult = manager.connect({
+      onDisk: true,
+      overrideTestDefault: true,
+    });
     expect(existsSync(dbPath)).toBe(true);
     expect(dbPath).toContain("db-arbitrary-name.sqlite");
     manager.disconnect(keyResult);
