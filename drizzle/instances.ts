@@ -8,7 +8,7 @@ import fs from "fs";
 import { makeSubsystemReporters } from "@saflib/node";
 import { typedEnv } from "@saflib/env";
 import { randomUUID } from "crypto";
-import { Readable } from "stream";
+import { Readable } from "node:stream";
 
 /**
  * A class which mainly manages "connections" to the sqlite3 database and drizzle
@@ -53,7 +53,7 @@ export class DbManager<S extends Schema, C extends Config> {
       dbStorage = path.join(
         this.rootPath,
         "data",
-        `db-${typedEnv.DEPLOYMENT_NAME}.sqlite`,
+        `db-${typedEnv.DEPLOYMENT_NAME}.sqlite`
       );
       const exists = fs.existsSync(dbStorage);
       if (
@@ -142,7 +142,7 @@ export class DbManager<S extends Schema, C extends Config> {
 
     if (!fs.existsSync(originalPath)) {
       log.warn(
-        `Cannot create backup: database file does not exist at ${originalPath}`,
+        `Cannot create backup: database file does not exist at ${originalPath}`
       );
       return undefined;
     }
