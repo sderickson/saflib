@@ -18,6 +18,7 @@ export type SubsystemName =
   | "cron" // a cron process running jobs in the background (no server)
   | "init" // code that's running on startup
   | "cli" // running as part of a CLI command
+  | "db" // database operations
   | "test"; // running as part of a test;
 
 /**

@@ -1,10 +1,10 @@
-import type { Logger } from "winston";
 import { getSafContext, getServiceName, safContextStorage } from "./context.ts";
 import { getSafReporters } from "./reporters.ts";
 import type {
   ErrorCollector,
   ErrorCollectorParam,
   ErrorReporter,
+  ErrorReportOptions,
 } from "./types.ts";
 import { typedEnv } from "@saflib/env";
 
@@ -33,7 +33,6 @@ export const defaultErrorReporter: ErrorReporter = (error, options) => {
   const e =
     error instanceof Error ? error : new Error("Thrown error was not an Error");
   const ctx = getSafContext();
-  const { log } = getSafReporters();
 
   const collectorUser: ErrorCollectorParam["user"] | undefined = ctx.auth
     ? {
@@ -54,7 +53,15 @@ export const defaultErrorReporter: ErrorReporter = (error, options) => {
       "user.id": ctx.auth?.userId?.toString() || "-",
     },
   };
+  broadcastError(e, collectorParam, options);
+};
 
+const broadcastError = (
+  e: Error,
+  collectorParam: ErrorCollectorParam,
+  options?: ErrorReportOptions,
+) => {
+  const { log } = getSafReporters();
   getErrorCollectors().forEach((collector) => collector(collectorParam));
 
   const winstonLevel =
@@ -86,7 +93,6 @@ export const defaultErrorReporter: ErrorReporter = (error, options) => {
 export const makeSubsystemErrorReporter = (
   subsystemName: string,
   operationName: string,
-  logger: Logger,
 ): ErrorReporter => {
   return (error, options) => {
     let e: Error;
@@ -110,13 +116,6 @@ export const makeSubsystemErrorReporter = (
       },
     };
 
-    getErrorCollectors().forEach((collector) => collector(collectorParam));
-
-    const winstonLevel =
-      collectorParam.level === "warning" ? "warn" : collectorParam.level;
-
-    logger.log(winstonLevel, e.message, {
-      ...options?.extra,
-    });
+    broadcastError(e, collectorParam, options);
   };
 };

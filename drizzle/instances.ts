@@ -7,6 +7,8 @@ import path from "path";
 import fs from "fs";
 import { makeSubsystemReporters } from "@saflib/node";
 import { typedEnv } from "@saflib/env";
+import { randomUUID } from "crypto";
+import { Readable } from "node:stream";
 
 /**
  * A class which mainly manages "connections" to the sqlite3 database and drizzle
@@ -22,11 +24,15 @@ export class DbManager<S extends Schema, C extends Config> {
   private config: C;
   private schema: S;
   private rootPath: string;
+  private activeBackups: Set<string>;
+  private dbPaths: Map<DbKey, string>;
 
   constructor(schema: S, c: C, rootUrl: string) {
     this.config = c;
     this.schema = schema;
     this.instances = new Map();
+    this.activeBackups = new Set();
+    this.dbPaths = new Map();
     if (!rootUrl.startsWith("file://")) {
       throw new Error("Root URL must start with 'file://'");
     }
@@ -66,6 +72,12 @@ export class DbManager<S extends Schema, C extends Config> {
     } else {
       dbStorage = ":memory:";
     }
+
+    // by default, all tests should use in-memory databases, unless explicitly overridden
+    if (typedEnv.NODE_ENV === "test" && !options?.overrideTestDefault) {
+      dbStorage = ":memory:";
+    }
+
     log.info(`Connecting to database: ${dbStorage}`);
     const sqlite = new Database(dbStorage);
     const db = drizzle(sqlite, { schema: this.schema });
@@ -91,8 +103,97 @@ export class DbManager<S extends Schema, C extends Config> {
 
     const key: DbKey = Symbol(`db-${Date.now()}-${Math.random()}`);
     this.instances.set(key, db);
+    this.dbPaths.set(key, dbStorage);
     return key;
   };
+
+  /**
+   * Creates a backup of the database file and returns a readable stream with automatic cleanup.
+   * The backup file is created in the same directory as the original database file
+   * with a unique temporary name. The stream will automatically clean up the temporary
+   * file when it's closed or garbage collected.
+   */
+  async createBackup(key: DbKey): Promise<Readable | undefined> {
+    const { log } = makeSubsystemReporters("init", "db.createBackup");
+    const instance = this.instances.get(key);
+    if (!instance) {
+      log.warn("Cannot create backup: database instance not found");
+      return undefined;
+    }
+
+    if (typedEnv.NODE_ENV === "test") {
+      return Readable.from("test backup");
+    }
+
+    // Get the database file path from our stored paths
+    const originalPath = this.dbPaths.get(key);
+    if (!originalPath) {
+      log.warn("Cannot create backup: database path not found");
+      return undefined;
+    }
+
+    if (originalPath === ":memory:") {
+      log.warn("Cannot create backup: database is in-memory");
+      return undefined;
+    }
+
+    if (!(await fs.promises.stat(originalPath)).isFile()) {
+      log.warn(
+        `Cannot create backup: database file does not exist at ${originalPath}`,
+      );
+      return undefined;
+    }
+
+    // Create a unique temporary backup file
+    const backupId = randomUUID();
+    const backupPath = `${originalPath}.backup.${backupId}`;
+
+    try {
+      log.info(`Creating backup: ${originalPath} -> ${backupPath}`);
+      await fs.promises.copyFile(originalPath, backupPath);
+      this.activeBackups.add(backupPath);
+
+      // Create a readable stream from the backup file
+      const backupStream = fs.createReadStream(backupPath);
+
+      // Set up automatic cleanup when the stream is closed
+      backupStream.on("close", () => {
+        this.cleanupBackup(backupPath);
+      });
+
+      backupStream.on("error", (error) => {
+        log.error(`Stream error: ${error}`);
+        this.cleanupBackup(backupPath);
+      });
+
+      log.info(`Backup stream created successfully for: ${backupPath}`);
+      return backupStream;
+    } catch (error) {
+      log.error(`Failed to create backup: ${error}`);
+      await this.cleanupBackup(backupPath);
+      throw error;
+    }
+  }
+
+  /**
+   * Manually clean up a backup file. This is called automatically when the stream
+   * is closed or garbage collected, but can be called manually for immediate cleanup.
+   */
+  private async cleanupBackup(backupPath: string) {
+    const { log } = makeSubsystemReporters("db", "db.cleanupBackup");
+
+    if (this.activeBackups.has(backupPath)) {
+      try {
+        if ((await fs.promises.stat(backupPath)).isFile()) {
+          await fs.promises.unlink(backupPath);
+          log.info(`Cleaned up backup file: ${backupPath}`);
+        }
+        this.activeBackups.delete(backupPath);
+      } catch (error) {
+        log.error(`Failed to cleanup backup file ${backupPath}: ${error}`);
+      }
+    }
+  }
 
   get(key: DbKey): DbConnection<S> | undefined {
     return this.instances.get(key);
@@ -102,6 +203,7 @@ export class DbManager<S extends Schema, C extends Config> {
     const instance = this.instances.get(key);
     if (instance) {
       this.instances.delete(key);
+      this.dbPaths.delete(key);
       return true;
     }
     return false;
@@ -111,6 +213,7 @@ export class DbManager<S extends Schema, C extends Config> {
     return {
       connect: this.connect,
       disconnect: this.disconnect,
+      createBackup: this.createBackup.bind(this),
     };
   }
 }

@@ -14,8 +14,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: "npm"
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       # Tests fail to run if this one package isn't installed
       - name: Install rollup for linux

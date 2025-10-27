@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "@saflib/commander": "*",
+    "@saflib/cron": "*",
     "@saflib/drizzle": "*",
     "@saflib/email": "*",
     "@saflib/env": "*",
