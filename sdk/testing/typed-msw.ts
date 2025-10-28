@@ -86,7 +86,14 @@ export const typedCreateHandler = <Paths extends Record<string, any>>({
         let body: any;
         if (verb === "post" || verb === "put" || verb === "patch") {
           try {
-            body = await request.request.json();
+            const contentType =
+              request.request.headers.get("content-type") || "";
+            if (contentType.startsWith("multipart/form-data")) {
+              // if you try to run json(), it doesn't crash... it just hangs. So don't parse it. Trying to call formData() also hangs.
+              body = undefined;
+            } else {
+              body = await request.request.json();
+            }
           } catch (e) {
             body = undefined;
           }
