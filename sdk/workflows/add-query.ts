@@ -94,7 +94,7 @@ export const AddQueryWorkflowDefinition = defineWorkflow<
       fileId: "templateFile",
       promptMessage: `Update **${context.targetName}.ts** to implement the API query/mutation. Delete whichever one is not needed.
       
-      Please review documentatino here first: ${context.docFiles?.overview}`,
+      Please review documentation here first: ${context.docFiles?.overview}`,
     })),
 
     step(UpdateStepMachine, ({ context }) => ({
