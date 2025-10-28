@@ -1,9 +1,7 @@
 import {
   CopyStepMachine,
   UpdateStepMachine,
-  PromptStepMachine,
   TestStepMachine,
-  DocStepMachine,
   CommandStepMachine,
   defineWorkflow,
   step,
