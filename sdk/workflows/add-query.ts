@@ -117,19 +117,12 @@ export const AddQueryWorkflowDefinition = defineWorkflow<
 
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "index",
-      promptMessage: `Update **${context.targetName}/index.ts** to export the new query/mutation function.`,
-    })),
-
-    step(UpdateStepMachine, ({ context }) => ({
-      fileId: "indexFakes",
-      promptMessage: `Update **${context.targetName}/index.fakes.ts** to export the new fake handler.`,
-    })),
-
-    step(PromptStepMachine, () => ({
-      promptText: `Update the root level files for this package.
+      promptMessage: `Update related files
       
-      * index.ts to export the new query/mutation function.
-      * index.fakes.ts to export the new fake handler`,
+      * Update **${context.targetName}/index.ts** to export the new query/mutation function.
+      * Update **${context.targetName}/index.fakes.ts** to export the new fake handler.
+      * Update the root level index.ts file to export all query/mutation functions for this group (if needed).
+      * Update the root level fakes.ts file to export all fake handlers for this group (if needed).`,
     })),
 
     step(CommandStepMachine, () => ({
