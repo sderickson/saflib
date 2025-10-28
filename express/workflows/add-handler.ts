@@ -83,46 +83,33 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
     })),
 
     step(UpdateStepMachine, ({ context }) => ({
+      fileId: "handler",
+      promptMessage: `Implement the ${context.targetName} route handler.
+      
+      Make sure to:
+      - Use createHandler from @saflib/express
+      - Use types from your OpenAPI spec for request/response bodies
+      - Use mapper functions from routes/_helpers.ts to convert database models to API responses
+      - Handle expected errors from service/DB layers, with "satisfies never" for exhaustive error handling
+      - Let unexpected errors propagate to central error handler (no try/catch!)
+      - Follow the pattern in the reference doc
+      - Export the handler from the folder's "index.ts
+      - Include db -> http mapper functions in the adjacent ${context.copiedFiles?.helpers} file." 
+      
+      Review ${context.docFiles?.refDoc} for more details.`,
+    })),
+
+    step(UpdateStepMachine, ({ context }) => ({
       fileId: "index",
       promptMessage: `Update the feature router to include the new route handler.
       It is located at \`${context.copiedFiles!.index}\`.
         1. Import the new handler from "./${context.targetName}.ts"
-        2. Add the route to the router using the appropriate HTTP method`,
-    })),
-
-    step(PromptStepMachine, () => ({
-      promptText: `Update the root http.ts file to include the feature router, if not already there.
+        2. Add the route to the router using the appropriate HTTP method
+      
+      Also make sure the root http.ts file includes the feature router, if not already there.
         1. Import the feature router that was just exported from the index.ts file
         2. Add the router to the app with "app.use"
         3. Make sure to add this before the error handlers`,
-    })),
-
-    step(DocStepMachine, () => ({
-      docId: "refDoc",
-    })),
-
-    step(PromptStepMachine, ({ context }) => ({
-      promptText: `Check if routes/_helpers.ts has mapper functions for converting database models to API response types for this ${context.targetName} handler.
-
-      If mapper functions don't exist for the database models used by this endpoint, add them to routes/_helpers.ts following patterns shown there.
-      
-      Aside from mapping values, the helper should also do some basic validation of the data, in particular making sure enum values are valid. If the enum value is not valid, clear it out or set it to a default value.`,
-    })),
-
-    step(UpdateStepMachine, ({ context }) => ({
-      fileId: "handler",
-      promptMessage: `Implement the ${context.targetName} route handler. Make sure to:
-            1. Use createHandler from @saflib/express
-            2. Use types from your OpenAPI spec for request/response bodies
-            3. Use mapper functions from routes/_helpers.ts to convert database models to API responses
-            4. Handle expected errors from service/DB layers, with "satisfies never" for exhaustive error handling
-            5. Let unexpected errors propagate to central error handler (no try/catch!)
-            6. Follow the pattern in the reference doc
-            7. Export the handler from the folder's "index.ts" file`,
-    })),
-
-    step(DocStepMachine, () => ({
-      docId: "testingGuide",
     })),
 
     step(
@@ -132,7 +119,9 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
         promptMessage: `Update the generated ${context.targetName}.test.ts file following the testing guide patterns.
         
         * Make sure to implement proper test cases that cover both success and error scenarios.
-        * Do not do any mocking. Databases are in memory, and integrations have fake implementations. Do not use vitest's mock!`,
+        * Do not do any mocking. Databases are in memory, and integrations have fake implementations. Do not use vitest's mock!
+        
+        Review ${context.docFiles?.testingGuide} for more details.`,
       }),
       {
         validate: async ({ context }) => {
