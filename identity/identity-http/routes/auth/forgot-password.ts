@@ -8,11 +8,13 @@ import { usersDb, UserNotFoundError, emailAuthDb } from "@saflib/identity-db";
 import { authServiceStorage } from "@saflib/identity-common";
 import { linkToHref } from "@saflib/links";
 import { authLinks } from "@saflib/auth-links";
+import { getSafReporters } from "@saflib/node";
 
 export const forgotPasswordHandler = createHandler(async (req, res) => {
   const { email } = req.body as IdentityRequestBody["forgotPassword"];
   const { dbKey, callbacks } = authServiceStorage.getStore()!;
   const { result: user, error } = await usersDb.getByEmail(dbKey, email);
+  const { log } = getSafReporters();
 
   const commonResponse: IdentityResponseBody["forgotPassword"][200] = {
     success: true,
@@ -22,6 +24,7 @@ export const forgotPasswordHandler = createHandler(async (req, res) => {
   if (error) {
     switch (true) {
       case error instanceof UserNotFoundError:
+        log.info(`User not found for email: ${email}`);
         res.status(200).json(commonResponse);
         return;
       default:

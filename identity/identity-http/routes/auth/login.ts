@@ -4,8 +4,11 @@ import { type IVerifyOptions } from "passport-local";
 import { createUserResponse } from "./_helpers.ts";
 import { type IdentityResponseBody } from "@saflib/identity-spec";
 import { authServiceStorage } from "@saflib/identity-common";
+import { getSafReporters } from "@saflib/node";
+
 export const loginHandler = createHandler(async function (req, res, next) {
   const { dbKey } = authServiceStorage.getStore()!;
+  const { log } = getSafReporters();
   passport.authenticate(
     "local",
     (
@@ -21,6 +24,7 @@ export const loginHandler = createHandler(async function (req, res, next) {
         const response: IdentityResponseBody["loginUser"][401] = {
           message: "Invalid credentials",
         };
+        log.info(`Invalid credentials for email: ${req.body.email}`);
         return res.status(401).json(response);
       }
 
