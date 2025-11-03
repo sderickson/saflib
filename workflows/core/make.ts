@@ -58,7 +58,6 @@ export function defineWorkflow<
   templateFiles: Record<string, string>;
   docFiles: Record<string, string>;
   steps: Array<WorkflowStep<C, AnyStateMachine>>;
-  afterEach?: (context: C) => void;
   manageGit?:
     | boolean
     | {
@@ -72,7 +71,7 @@ export function defineWorkflow<
  * Implementation of the makeMachineFromWorkflow function.
  */
 function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
-  workflow: WorkflowDefinition<I, C>,
+  workflow: WorkflowDefinition<I, C>
 ) {
   type Input = CreateArgsType<I> & WorkflowInput;
   type Context = C & WorkflowContext;
@@ -135,9 +134,6 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
         onDone: {
           target: validateStateName,
           actions: [
-            {
-              type: "afterEach",
-            },
             assign({
               agentConfig: ({ context, event }) => {
                 const output: WorkflowOutput = event.output;
@@ -262,11 +258,6 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
     },
     actions: {
       ...workflowActions,
-      afterEach: ({ context }) => {
-        if (workflow.afterEach) {
-          workflow.afterEach(context);
-        }
-      },
       systemPrompt: ({ context }) => {
         if (context.systemPrompt) {
           if (context.systemPrompt !== lastSystemPrompt) {
@@ -320,7 +311,7 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
  * This basically translates my simplified and scoped workflow machine definition to the full XState machine definition.
  */
 export const makeWorkflowMachine = <C, I extends readonly WorkflowArgument[]>(
-  config: WorkflowDefinition<I, C>,
+  config: WorkflowDefinition<I, C>
 ) => {
   return _makeWorkflowMachine(defineWorkflow(config));
 };
@@ -336,7 +327,7 @@ export const step = <C, M extends AnyStateMachine>(
       context: C & WorkflowContext;
     }) => Promise<string | undefined>;
     skipIf?: (arg: { context: C & WorkflowContext }) => boolean;
-  } = {},
+  } = {}
 ): WorkflowStep<C, M> => {
   return {
     machine,
@@ -405,13 +396,11 @@ const handleGitChanges = async ({
       .filter((file) => !file.endsWith("/saflib")); // tmp
     if (ignorePaths) {
       const absoluteIgnorePaths = ignorePaths.map((ignorePath) =>
-        path.join(context.cwd, ignorePath),
+        path.join(context.cwd, ignorePath)
       );
       otherFiles = otherFiles.filter(
         (file) =>
-          !absoluteIgnorePaths.some((ignorePath) =>
-            file.startsWith(ignorePath),
-          ),
+          !absoluteIgnorePaths.some((ignorePath) => file.startsWith(ignorePath))
       );
     }
 

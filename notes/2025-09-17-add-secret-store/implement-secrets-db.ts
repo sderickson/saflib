@@ -9,7 +9,6 @@ import {
   AddQueryWorkflowDefinition,
 } from "@saflib/drizzle/workflows";
 import path from "path";
-import { execSync } from "child_process";
 
 const input = [] as const;
 
@@ -27,10 +26,6 @@ export const ImplementSecretsDbWorkflowDefinition = defineWorkflow<
   templateFiles: {},
   docFiles: {
     spec: path.join(import.meta.dirname, "spec.md"),
-  },
-
-  afterEach: () => {
-    execSync("git add -A");
   },
 
   steps: [

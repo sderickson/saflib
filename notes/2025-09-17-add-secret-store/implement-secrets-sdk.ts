@@ -6,7 +6,6 @@ import {
 } from "@saflib/workflows";
 import { AddQueryWorkflowDefinition } from "@saflib/sdk/workflows";
 import path from "path";
-import { execSync } from "child_process";
 
 const input = [] as const;
 
@@ -24,9 +23,6 @@ export const ImplementSecretsSdkWorkflowDefinition = defineWorkflow<
   templateFiles: {},
   docFiles: {
     overview: path.join(import.meta.dirname, "../../sdk/docs/01-overview.md"),
-  },
-  afterEach: () => {
-    execSync("git add -A");
   },
 
   steps: [

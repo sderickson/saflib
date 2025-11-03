@@ -7,7 +7,6 @@ import {
 import { AddComponentWorkflowDefinition } from "@saflib/sdk/workflows";
 import { AddSpaPageWorkflowDefinition } from "@saflib/vue/workflows";
 import path from "path";
-import { execSync } from "child_process";
 
 const input = [] as const;
 
@@ -26,10 +25,6 @@ export const ImplementSecretsComponentsWorkflowDefinition = defineWorkflow<
   templateFiles: {},
   docFiles: {
     spec: path.join(import.meta.dirname, "spec.md"),
-  },
-
-  afterEach: () => {
-    execSync("git add -A");
   },
 
   steps: [
