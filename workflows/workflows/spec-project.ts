@@ -4,6 +4,7 @@ import {
   PromptStepMachine,
   defineWorkflow,
   step,
+  CommandStepMachine,
 } from "@saflib/workflows";
 import path from "node:path";
 
@@ -82,6 +83,11 @@ export const SpecProjectWorkflowDefinition = defineWorkflow<
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "test",
       promptMessage: `Update **${path.basename(context.copiedFiles!.test)}** to test the functionality you implemented. Make sure to mock any external dependencies.`,
+    })),
+
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["run", "typecheck"],
     })),
 
     step(CommandStepMachine, () => ({

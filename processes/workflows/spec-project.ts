@@ -4,7 +4,6 @@ import {
   CommandStepMachine,
   defineWorkflow,
   step,
-  DocStepMachine,
 } from "@saflib/workflows";
 import path from "path";
 
@@ -55,12 +54,7 @@ export const SpecProjectWorkflowDefinition = defineWorkflow<
     spec: path.join(sourceDir, "template-file.spec.md"),
   },
 
-  docFiles: {
-    writing: path.join(
-      import.meta.dirname,
-      "../docs/writing-spec-project-checklists.md",
-    ),
-  },
+  docFiles: {},
 
   steps: [
     step(CopyStepMachine, ({ context }) => ({
@@ -83,10 +77,6 @@ export const SpecProjectWorkflowDefinition = defineWorkflow<
 
     step(PromptStepMachine, () => ({
       promptText: `Discuss and iterate on the spec until it's approved.`,
-    })),
-
-    step(DocStepMachine, () => ({
-      docId: "writing",
     })),
 
     step(CommandStepMachine, () => ({

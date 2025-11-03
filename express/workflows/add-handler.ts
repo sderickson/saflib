@@ -1,7 +1,6 @@
 import {
   CopyStepMachine,
   UpdateStepMachine,
-  TestStepMachine,
   CommandStepMachine,
   defineWorkflow,
   step,
@@ -130,7 +129,7 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
           }
           return Promise.resolve(undefined);
         },
-      },
+      }
     ),
 
     step(CommandStepMachine, () => ({
@@ -138,8 +137,9 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
       args: ["run", "typecheck"],
     })),
 
-    step(TestStepMachine, () => ({
-      fileId: "test",
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["run", "test"],
     })),
   ],
 });
