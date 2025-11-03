@@ -2,7 +2,6 @@ import {
   CopyStepMachine,
   UpdateStepMachine,
   PromptStepMachine,
-  TestStepMachine,
   defineWorkflow,
   step,
   parsePath,
@@ -114,8 +113,9 @@ export const CronAddJobWorkflowDefinition = defineWorkflow<
       args: ["run", "typecheck"],
     })),
 
-    step(TestStepMachine, () => ({
-      fileId: "test",
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["run", "test"],
     })),
   ],
 });

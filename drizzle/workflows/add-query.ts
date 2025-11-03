@@ -2,7 +2,6 @@ import {
   CopyStepMachine,
   UpdateStepMachine,
   PromptStepMachine,
-  TestStepMachine,
   DocStepMachine,
   defineWorkflow,
   step,
@@ -64,7 +63,7 @@ export const AddQueryWorkflowDefinition = defineWorkflow<
     query: path.join(sourceDir, "queries/__group-name__/__target-name__.ts"),
     test: path.join(
       sourceDir,
-      "queries/__group-name__/__target-name__.test.ts",
+      "queries/__group-name__/__target-name__.test.ts"
     ),
     groupIndex: path.join(sourceDir, "queries/__group-name__/index.ts"),
     rootIndex: path.join(sourceDir, "index.ts"),
@@ -142,8 +141,9 @@ export const AddQueryWorkflowDefinition = defineWorkflow<
       promptOnError: `You may have forgotten to provide all fields necessary. Do NOT decouple the types from the inferred types in types.ts. Instead fix the test.`,
     })),
 
-    step(TestStepMachine, () => ({
-      fileId: "test",
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["run", "test"],
     })),
 
     step(CommandStepMachine, () => ({

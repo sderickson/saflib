@@ -2,7 +2,6 @@ import {
   CopyStepMachine,
   UpdateStepMachine,
   PromptStepMachine,
-  TestStepMachine,
   defineWorkflow,
   step,
   parsePath,
@@ -59,7 +58,7 @@ export const AddComponentWorkflowDefinition = defineWorkflow<
       !input.path.startsWith("./components/")
     ) {
       throw new Error(
-        "Path must start with './displays/' or './forms/' or './components/'",
+        "Path must start with './displays/' or './forms/' or './components/'"
       );
     }
     const firstDir = `./${input.path.split("/")[1]}/`;
@@ -67,7 +66,7 @@ export const AddComponentWorkflowDefinition = defineWorkflow<
     // Validate component name (no extension, all lowercase)
     if (path.basename(input.path).includes(".")) {
       throw new Error(
-        "Path should not include file extensions (just the directory the component files will go in)",
+        "Path should not include file extensions (just the directory the component files will go in)"
       );
     }
 
@@ -93,15 +92,15 @@ export const AddComponentWorkflowDefinition = defineWorkflow<
   templateFiles: {
     vue: path.join(
       sourceDir,
-      "__prefix-name__/__target-name__/__TargetName__.vue",
+      "__prefix-name__/__target-name__/__TargetName__.vue"
     ),
     strings: path.join(
       sourceDir,
-      "__prefix-name__/__target-name__/__TargetName__.strings.ts",
+      "__prefix-name__/__target-name__/__TargetName__.strings.ts"
     ),
     test: path.join(
       sourceDir,
-      "__prefix-name__/__target-name__/__TargetName__.test.ts",
+      "__prefix-name__/__target-name__/__TargetName__.test.ts"
     ),
     packageStrings: path.join(sourceDir, "strings.ts"),
     packageComponents: path.join(sourceDir, "components.ts"),
@@ -149,11 +148,12 @@ export const AddComponentWorkflowDefinition = defineWorkflow<
           }
           return Promise.resolve(undefined);
         },
-      },
+      }
     ),
 
-    step(TestStepMachine, () => ({
-      fileId: "test",
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["run", "test"],
     })),
 
     step(CommandStepMachine, () => ({
@@ -168,15 +168,14 @@ export const AddComponentWorkflowDefinition = defineWorkflow<
       * Make sure ${context.copiedFiles?.strings} is in the root "strings.ts" file.`,
     })),
 
-    step(TestStepMachine, () => ({
-      fileId: "test",
-    })),
-
     step(CommandStepMachine, () => ({
       command: "npm",
       args: ["run", "typecheck"],
     })),
 
-    step(TestStepMachine, () => ({})),
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["run", "test"],
+    })),
   ],
 });

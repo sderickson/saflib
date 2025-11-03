@@ -2,7 +2,6 @@ import {
   CopyStepMachine,
   UpdateStepMachine,
   PromptStepMachine,
-  TestStepMachine,
   defineWorkflow,
   step,
   CommandStepMachine,
@@ -86,8 +85,9 @@ export const AddExportWorkflowDefinition = defineWorkflow<
       promptMessage: `Update **${path.basename(context.copiedFiles!.test)}** to test the ${context.name} functionality.`,
     })),
 
-    step(TestStepMachine, () => ({
-      fileId: "test",
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["run", "test"],
     })),
 
     step(PromptStepMachine, ({ context }) => ({

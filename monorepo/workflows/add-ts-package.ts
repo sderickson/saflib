@@ -5,7 +5,6 @@ import {
   CommandStepMachine,
   defineWorkflow,
   step,
-  TestStepMachine,
   CwdStepMachine,
 } from "@saflib/workflows";
 import path from "node:path";
@@ -97,8 +96,9 @@ export const AddTsPackageWorkflowDefinition = defineWorkflow<
       args: ["install"],
     })),
 
-    step(TestStepMachine, () => ({
-      fileId: "test",
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["run", "test"],
     })),
   ],
 });

@@ -1,7 +1,6 @@
 import {
   CopyStepMachine,
   UpdateStepMachine,
-  TestStepMachine,
   defineWorkflow,
   step,
   parsePath,
@@ -123,8 +122,9 @@ export const __WorkflowNamespace____TargetName__WorkflowDefinition =
         args: ["run", "typecheck"],
       })),
 
-      step(TestStepMachine, () => ({
-        fileId: "test",
+      step(CommandStepMachine, () => ({
+        command: "npm",
+        args: ["run", "test"],
       })),
     ],
   });
