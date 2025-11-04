@@ -33,10 +33,10 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
       name: "user",
     })),
     step(makeWorkflowMachine(AddRouteWorkflowDefinition), () => ({
-      path: "routes/users/list.yaml",
+      path: "./routes/users/list.yaml",
     })),
     step(makeWorkflowMachine(AddEventWorkflowDefinition), () => ({
-      path: "events/signup.yaml",
+      path: "./events/signup.yaml",
     })),
     /*
     Workflows TODO:

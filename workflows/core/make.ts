@@ -119,6 +119,13 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
       ],
       invoke: {
         input: ({ context }: { context: Context }) => {
+          // bit of a hack
+          if (context.runMode === "script") {
+            console.log("-------------------------------------------------");
+            console.log(`${workflow.id} INVOKES ${step.machine.id}`);
+            console.log("-------------------------------------------------");
+          }
+
           return {
             ...step.input({ context }),
             // don't need checklist; the machine will compose their own
