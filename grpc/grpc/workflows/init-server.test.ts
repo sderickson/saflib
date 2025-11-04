@@ -8,6 +8,6 @@ describe("grpc/init-server", () => {
       definition: InitGrpcServerWorkflowDefinition,
       runMode: "dry",
     });
-    expect(result?.checklist).toBeDefined();
+    expect(result.output?.checklist).toBeDefined();
   });
 });

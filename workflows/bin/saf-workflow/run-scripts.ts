@@ -7,6 +7,7 @@ import {
   createWorkflowLogger,
   setupWorkflowContext,
 } from "../../core/store.ts";
+import type { Snapshot } from "xstate";
 
 export const addRunScriptsCommand = (
   commandOptions: WorkflowCommandOptions
@@ -41,6 +42,9 @@ export const addRunScriptsCommand = (
       });
       if (!result.success) {
         console.error("Workflow did not complete successfully");
+        if (result.state) {
+          console.error("State:", JSON.stringify(result.state, null, 2));
+        }
         process.exit(1);
       }
     });
@@ -53,26 +57,28 @@ interface RunWorkflowScriptOptions {
 
 interface RunWorkflowScriptResult {
   success: boolean;
+  state: Snapshot<any> | undefined;
 }
 
 export const runWorkflowScript = async (
   options: RunWorkflowScriptOptions
 ): Promise<RunWorkflowScriptResult> => {
   const { definition, args } = options;
-  const workflow = await runWorkflow({
+  const { output, state } = await runWorkflow({
     definition,
     args,
     runMode: "script",
   });
   console.log("Workflow executed in script mode");
-  if (workflow) {
+  if (output) {
     console.log(
       "Output:\n",
-      checklistToString(workflow.checklist.subitems || [])
+      checklistToString(output.checklist.subitems || [])
     );
   }
   // no output means the workflow did not complete successfully
   return {
-    success: !!workflow,
+    success: !!output,
+    state,
   };
 };

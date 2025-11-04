@@ -112,21 +112,25 @@ export const parsePath = (
   if (input.requiredPrefix) {
     if (!input.requiredPrefix.startsWith("./")) {
       throw new Error(
-        `Required prefix must start with ./: ${input.requiredPrefix}`
+        `Required prefix must start with ./. Given: "${input.requiredPrefix}"`
       );
     }
     if (!path.startsWith(input.requiredPrefix)) {
-      throw new Error(`Path must start with ${input.requiredPrefix}`);
+      throw new Error(
+        `Path must start with ${input.requiredPrefix}. Given: "${path}"`
+      );
     }
   }
   if (input.requiredSuffix) {
     if (!input.requiredSuffix.startsWith(".")) {
       throw new Error(
-        `Required suffix must start with .: ${input.requiredSuffix}`
+        `Required suffix must start with ".". Given: "${input.requiredSuffix}"`
       );
     }
     if (!path.endsWith(input.requiredSuffix)) {
-      throw new Error(`Path must end with ${input.requiredSuffix}`);
+      throw new Error(
+        `Path must end with ${input.requiredSuffix}. Given: "${path}"`
+      );
     }
   }
   let corePath = path

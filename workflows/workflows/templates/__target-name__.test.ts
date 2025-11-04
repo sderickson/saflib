@@ -8,6 +8,6 @@ describe("__target-name__", () => {
       definition: __WorkflowNamespace____TargetName__WorkflowDefinition,
       runMode: "dry",
     });
-    expect(result?.checklist).toBeDefined();
+    expect(result.output?.checklist).toBeDefined();
   });
 });

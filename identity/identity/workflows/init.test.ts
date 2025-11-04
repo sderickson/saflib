@@ -8,6 +8,6 @@ describe("identity/init", () => {
       definition: IdentityInitWorkflowDefinition,
       runMode: "dry",
     });
-    expect(result?.checklist).toBeDefined();
+    expect(result.output?.checklist).toBeDefined();
   });
 });

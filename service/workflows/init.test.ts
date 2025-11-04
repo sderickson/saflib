@@ -8,6 +8,6 @@ describe("init", () => {
       definition: InitServiceWorkflowDefinition,
       runMode: "dry",
     });
-    expect(result?.checklist).toBeDefined();
+    expect(result.output?.checklist).toBeDefined();
   });
 });

@@ -8,6 +8,6 @@ describe("init-client", () => {
       definition: InitGrpcClientWorkflowDefinition,
       runMode: "dry",
     });
-    expect(result?.checklist).toBeDefined();
+    expect(result.output?.checklist).toBeDefined();
   });
 });

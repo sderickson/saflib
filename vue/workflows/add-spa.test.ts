@@ -8,6 +8,6 @@ describe("add-spa", () => {
       definition: AddSpaWorkflowDefinition,
       runMode: "dry",
     });
-    expect(result?.checklist).toBeDefined();
+    expect(result.output?.checklist).toBeDefined();
   });
 });

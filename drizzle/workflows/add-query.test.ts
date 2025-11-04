@@ -8,6 +8,6 @@ describe("add-queries", () => {
       definition: AddQueryWorkflowDefinition,
       runMode: "dry",
     });
-    expect(result?.checklist).toBeDefined();
+    expect(result.output?.checklist).toBeDefined();
   });
 });

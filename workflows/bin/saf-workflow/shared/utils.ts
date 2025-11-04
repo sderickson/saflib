@@ -11,6 +11,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { loadWorkflowDefinitionFromFile, saveWorkflow } from "./file-io.ts";
 import { resolve } from "node:path";
 import { getWorkflowLogger } from "../../../core/store.ts";
+import type { Snapshot } from "xstate";
 
 export interface RunWorkflowOptions {
   definition: WorkflowDefinition<any, any>;
@@ -19,16 +20,21 @@ export interface RunWorkflowOptions {
   agentConfig?: AgentConfig;
 }
 
+export interface RunWorkflowResult {
+  output: WorkflowOutput | undefined;
+  state: Snapshot<any> | undefined;
+}
+
 /**
  * Convenience function to take a WorkflowDefinition, run it in the specified mode, and return the output.
  */
 export const runWorkflow = async (
-  options: RunWorkflowOptions,
-): Promise<WorkflowOutput | undefined> => {
+  options: RunWorkflowOptions
+): Promise<RunWorkflowResult> => {
   const { definition, runMode, args } = options;
   const cliArguments = definition.input as WorkflowArgument[];
   const exampleArgs = cliArguments.map(
-    (arg) => arg.exampleValue || "example-value-missing",
+    (arg) => arg.exampleValue || "example-value-missing"
   );
   const workflow = new XStateWorkflowRunner({
     definition,
@@ -45,7 +51,10 @@ export const runWorkflow = async (
     console.log("--- To continue, run 'npm exec saf-workflow next' ---\n");
     saveWorkflow(workflow);
   }
-  return workflow.getOutput();
+  return {
+    output: workflow.getOutput(),
+    state: workflow.dehydrate().snapshotState,
+  };
 };
 
 /**
@@ -53,9 +62,10 @@ export const runWorkflow = async (
  * @deprecated Use runWorkflow with runMode: "dry" instead
  */
 export const dryRunWorkflow = async (
-  definition: WorkflowDefinition<any, any>,
+  definition: WorkflowDefinition<any, any>
 ): Promise<WorkflowOutput | undefined> => {
-  return runWorkflow({ definition, runMode: "dry" });
+  const { output } = await runWorkflow({ definition, runMode: "dry" });
+  return output;
 };
 
 /**
@@ -87,7 +97,7 @@ export function getPackageName(rootUrl: string) {
  */
 export const loadWorkflowDefinition = async (
   workflowIdOrPath: string,
-  workflows: WorkflowDefinition[],
+  workflows: WorkflowDefinition[]
 ): Promise<WorkflowDefinition> => {
   const log = getWorkflowLogger();
   log.info(`Loading workflow from path: ${workflowIdOrPath}`);
