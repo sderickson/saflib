@@ -9,14 +9,14 @@ import {
 } from "../../core/store.ts";
 
 export const addRunScriptsCommand = (
-  commandOptions: WorkflowCommandOptions,
+  commandOptions: WorkflowCommandOptions
 ) => {
   commandOptions.program
     .command("run-scripts")
     .description(
       addNewLinesToString(
-        "Run a workflow in script mode. Can be called with a workflow ID or a file path to a workflow definition.",
-      ),
+        "Run a workflow in script mode. Can be called with a workflow ID or a file path to a workflow definition."
+      )
     )
     .argument("<workflowIdOrPath>", "Workflow ID or path to workflow file")
     .argument("[args...]", "Arguments for the workflow")
@@ -28,17 +28,21 @@ export const addRunScriptsCommand = (
       });
       const workflowDefinition = await loadWorkflowDefinition(
         workflowIdOrPath,
-        commandOptions.workflows,
+        commandOptions.workflows
       );
-      await runWorkflowScript({
+      const result = await runWorkflowScript({
         definition: workflowDefinition,
         args:
           args.length > 0
             ? args
             : workflowDefinition.input.map(
-                (input: WorkflowArgument) => input.exampleValue,
+                (input: WorkflowArgument) => input.exampleValue
               ),
       });
+      if (!result.success) {
+        console.error("Workflow did not complete successfully");
+        process.exit(1);
+      }
     });
 };
 
@@ -47,7 +51,13 @@ interface RunWorkflowScriptOptions {
   args: string[];
 }
 
-export const runWorkflowScript = async (options: RunWorkflowScriptOptions) => {
+interface RunWorkflowScriptResult {
+  success: boolean;
+}
+
+export const runWorkflowScript = async (
+  options: RunWorkflowScriptOptions
+): Promise<RunWorkflowScriptResult> => {
   const { definition, args } = options;
   const workflow = await runWorkflow({
     definition,
@@ -58,7 +68,11 @@ export const runWorkflowScript = async (options: RunWorkflowScriptOptions) => {
   if (workflow) {
     console.log(
       "Output:\n",
-      checklistToString(workflow.checklist.subitems || []),
+      checklistToString(workflow.checklist.subitems || [])
     );
   }
+  // no output means the workflow did not complete successfully
+  return {
+    success: !!workflow,
+  };
 };
