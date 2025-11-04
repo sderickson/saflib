@@ -22,5 +22,10 @@ jobs:
       - name: Install rollup for linux
         run: npm install @rollup/rollup-linux-x64-gnu
 
+      # Main test. If this fails, one of the workflows is broken.
       - name: Run Workflow Integration Test
         run: npm exec saf-workflow run-scripts ./test-all-workflows.ts
+
+      # just for debugging, checking all the files that got added/changed
+      - name: Git status
+        run: git status -uall
