@@ -14,9 +14,13 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Install submodules
-        run: git submodule update --init
+
       - name: Install dependencies
-        run: npm install
+        run: npm ci
+
+      # Tests fail to run if this one package isn't installed
+      - name: Install rollup for linux
+        run: npm install @rollup/rollup-linux-x64-gnu
+
       - name: Run Workflow Integration Test
         run: npm exec saf-workflow run-scripts ./test-all-workflows.ts
