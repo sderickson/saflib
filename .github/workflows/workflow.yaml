@@ -1,4 +1,4 @@
-name: Typecheck
+name: Workflow Integration Test
 
 on:
   pull_request:
@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  typecheck:
+  workflow-integration-test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -18,5 +18,5 @@ jobs:
         run: git submodule update --init
       - name: Install dependencies
         run: npm install
-      - name: Run Typecheck
-        run: npm run typecheck
+      - name: Run Workflow Integration Test
+        run: npm exec saf-workflow run-scripts ./test-all-workflows.ts
