@@ -192,6 +192,7 @@ export interface WorkflowContext {
    * - "dry": do not print out logs or prompts, do not halt, just run the whole workflow and return the output. Useful for getting a checklist.
    * - "print": print out logs and prompts, halt at prompts. "Normal" execution mode.
    * - "script": skip prompts and checks, just run command and copy steps. Useful for debugging templates and scripts.
+   * - "run": runs the workflow at the top level, so it invokes agents, rather than agents invoking the tool. agentConfig is included in this mode.
    */
   runMode: WorkflowRunMode;
 
@@ -205,6 +206,13 @@ export interface WorkflowContext {
   docFiles?: Record<string, string>;
 
   cwd: string;
+
+  /**
+   * Opt in to having the workflow tool check git changes are expected, and commit them if they are. If they aren't, the workflow tool prompts the agent to justify its changes, and either commit or revert them.
+   *
+   * This field is ignored in "dry" and "script" modes.
+   */
+  manageGit?: boolean;
 }
 
 export type WorkflowActionFunction<

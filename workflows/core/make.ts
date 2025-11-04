@@ -170,7 +170,8 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
             return;
           }
 
-          if (workflow.manageGit) {
+          // To manage version control, both the workflow and the runtime need to opt in. In all likelihood, eventually workflows will always be opted in.
+          if (workflow.manageGit && input.manageGit) {
             const successful = await handleGitChanges({
               context: input,
               checklistDescription:
@@ -222,7 +223,7 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
         if (input.runMode === "dry" || input.runMode === "script") {
           return;
         }
-        if (workflow.manageGit) {
+        if (workflow.manageGit && input.manageGit) {
           execSync(`git add -A`, {
             cwd: gitRoot,
           });
