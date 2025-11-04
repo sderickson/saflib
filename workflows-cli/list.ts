@@ -20,13 +20,13 @@ const workflowClasses: WorkflowDefinition[] = [
   // workflows/add-workflow HOOK - do not remove this line
   // TEMP: tested workflows
   ...serviceWorkflows,
+  ...openapiWorkflows,
 
   // TEMP: untested workflows
   ...metaWorkflows,
   ...monorepoWorkflows,
   ...processWorkflows,
   ...drizzleWorkflows,
-  ...openapiWorkflows,
   ...expressWorkflows,
   ...vueSpaWorkflows,
   ...emailWorkflows,
