@@ -18,6 +18,10 @@ export const addKickoffCommand = (commandOptions: WorkflowCommandOptions) => {
     "-r, --run <mode>",
     'Directly command an agent instead of printing prompts. Currently only "cursor" is supported.'
   );
+  const versionControlOption = new Option(
+    "-v, --version-control <mode>",
+    'Manage version control for the workflow. Currently only "git" is supported.'
+  );
   commandOptions.program
     .command("kickoff")
     .description(
@@ -29,11 +33,12 @@ export const addKickoffCommand = (commandOptions: WorkflowCommandOptions) => {
     .argument("[args...]", "Arguments for the workflow")
     .option("-m, --message <message>", "Message to add to the workflow")
     .addOption(runModeOption)
+    .addOption(versionControlOption)
     .action(
       async (
         filePath: string,
         args: string[],
-        options: { run?: string; message?: string }
+        options: { run?: string; message?: string; versionControl?: string }
       ) => {
         writeFileSync(logFile, "");
         const runMode = options.run;

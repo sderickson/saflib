@@ -62,15 +62,15 @@ export const AddQueryWorkflowDefinition = defineWorkflow<
     indexFakes: path.join(sourceDir, "requests/__group-name__/index.fakes.ts"),
     templateFile: path.join(
       sourceDir,
-      "requests/__group-name__/__target-name__.ts",
+      "requests/__group-name__/__target-name__.ts"
     ),
     templateFileFake: path.join(
       sourceDir,
-      "requests/__group-name__/__target-name__.fake.ts",
+      "requests/__group-name__/__target-name__.fake.ts"
     ),
     templateFileTest: path.join(
       sourceDir,
-      "requests/__group-name__/__target-name__.test.ts",
+      "requests/__group-name__/__target-name__.test.ts"
     ),
     rootIndex: path.join(sourceDir, "index.ts"),
     rootFakes: path.join(sourceDir, "fakes.ts"),
@@ -80,7 +80,7 @@ export const AddQueryWorkflowDefinition = defineWorkflow<
     overview: path.join(import.meta.dirname, "../docs/01-overview.md"),
   },
 
-  manageGit: true,
+  manageVersionControl: true,
 
   steps: [
     step(CopyStepMachine, ({ context }) => ({

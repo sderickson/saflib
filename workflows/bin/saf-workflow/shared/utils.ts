@@ -4,6 +4,7 @@ import type {
   WorkflowArgument,
   WorkflowRunMode,
   AgentConfig,
+  VersionControlMode,
 } from "../../../core/types.ts";
 import { XStateWorkflowRunner } from "./workflow.ts";
 import path from "node:path";
@@ -18,6 +19,7 @@ export interface RunWorkflowOptions {
   runMode: WorkflowRunMode;
   args?: string[];
   agentConfig?: AgentConfig;
+  manageVersionControl?: VersionControlMode;
 }
 
 export interface RunWorkflowResult {
@@ -41,6 +43,7 @@ export const runWorkflow = async (
     args: args || exampleArgs,
     workflowRunMode: runMode,
     agentConfig: options.agentConfig,
+    manageVersionControl: options.manageVersionControl,
   });
   await workflow.kickoff({
     onSnapshot: () => {

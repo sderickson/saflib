@@ -70,7 +70,7 @@ export const AddQueryWorkflowDefinition = defineWorkflow<
     errors: path.join(sourceDir, "errors.ts"),
   },
 
-  manageGit: true,
+  manageVersionControl: true,
 
   docFiles: {
     refDoc: path.join(import.meta.dirname, "../docs/03-queries.md"),

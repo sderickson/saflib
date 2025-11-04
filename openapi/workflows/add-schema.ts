@@ -66,7 +66,7 @@ export const AddSchemaWorkflowDefinition = defineWorkflow<
 
   docFiles: {},
 
-  manageGit: {
+  manageVersionControl: {
     ignorePaths: ["dist/"],
   },
 

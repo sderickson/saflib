@@ -78,7 +78,7 @@ export interface WorkflowDefinition<
    * Whether to manage git. If true, the workflow will commit and push the changes to the repository at the end of the workflow.
    * It will also prompt the agent if files *other* than template files were changed.
    */
-  manageGit?:
+  manageVersionControl?:
     | boolean
     | {
         ignorePaths?: string[];
@@ -129,6 +129,8 @@ export interface AgentConfig {
   sessionId?: string;
 }
 
+export type VersionControlMode = "git";
+
 /**
  * Inputs every workflow machine receives.
  */
@@ -146,6 +148,8 @@ export interface WorkflowInput {
   docFiles?: Record<string, string>;
 
   cwd?: string;
+
+  manageVersionControl?: VersionControlMode;
 }
 
 /**
@@ -212,7 +216,7 @@ export interface WorkflowContext {
    *
    * This field is ignored in "dry" and "script" modes.
    */
-  manageGit?: boolean;
+  manageVersionControl?: VersionControlMode;
 }
 
 export type WorkflowActionFunction<

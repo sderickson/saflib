@@ -6,6 +6,7 @@ import type {
   WorkflowRunMode,
   WorkflowContext,
   AgentConfig,
+  VersionControlMode,
 } from "../../../core/types.ts";
 import type { WorkflowBlob } from "./types.ts";
 import type { AnyStateMachine, AnyActor, Snapshot } from "xstate";
@@ -55,6 +56,7 @@ interface XStateWorkflowOptions<I extends readonly WorkflowArgument[], C> {
   args?: string[];
   workflowRunMode?: WorkflowRunMode;
   agentConfig?: AgentConfig;
+  manageVersionControl?: VersionControlMode;
 }
 
 /**
@@ -71,6 +73,7 @@ export class XStateWorkflowRunner extends AbstractWorkflowRunner {
   private input: { [key: string]: string } & {
     runMode?: WorkflowRunMode;
     agentConfig?: AgentConfig;
+    manageVersionControl?: VersionControlMode;
   };
   private args: string[];
   private actor: AnyActor | undefined;
@@ -85,7 +88,7 @@ export class XStateWorkflowRunner extends AbstractWorkflowRunner {
     const expectedInputLength = this.definition.input.length;
     if (expectedInputLength !== inputLength) {
       throw new Error(
-        `Expected ${expectedInputLength} arguments, got ${inputLength}`,
+        `Expected ${expectedInputLength} arguments, got ${inputLength}`
       );
     }
     for (let i = 0; i < expectedInputLength; i++) {
@@ -95,6 +98,7 @@ export class XStateWorkflowRunner extends AbstractWorkflowRunner {
 
     this.input.runMode = options.workflowRunMode;
     this.input.agentConfig = options.agentConfig;
+    this.input.manageVersionControl = options.manageVersionControl;
     this.machine = makeWorkflowMachine(this.definition);
   }
 
@@ -147,7 +151,7 @@ export class XStateWorkflowRunner extends AbstractWorkflowRunner {
       console.log("Completed work:");
 
       snapshot.context.checklist.forEach((item) =>
-        console.log(`- ${item.description}`),
+        console.log(`- ${item.description}`)
       );
       console.log("");
     }
