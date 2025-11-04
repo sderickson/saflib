@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { InitWorkflowDefinition } from "./init.ts";
+import { InitServiceWorkflowDefinition } from "./init.ts";
 import { runWorkflow } from "@saflib/workflows";
 
 describe("init", () => {
   it("should successfully dry run", async () => {
     const result = await runWorkflow({
-      definition: InitWorkflowDefinition,
+      definition: InitServiceWorkflowDefinition,
       runMode: "dry",
     });
     expect(result?.checklist).toBeDefined();
