@@ -24,15 +24,15 @@ const input = [
   },
 ] as const;
 
-interface AddQueryWorkflowContext
+interface AddDrizzleQueryWorkflowContext
   extends ParsePathOutput,
     ParsePackageNameOutput {}
 
-export const AddQueryWorkflowDefinition = defineWorkflow<
+export const AddDrizzleQueryWorkflowDefinition = defineWorkflow<
   typeof input,
-  AddQueryWorkflowContext
+  AddDrizzleQueryWorkflowContext
 >({
-  id: "drizzle/add-query",
+  id: "drizzle/add-drizzle-query",
 
   description:
     "Add a new query to a database built off the drizzle-sqlite3 package.",

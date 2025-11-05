@@ -4,7 +4,7 @@ import {
   makeWorkflowMachine,
   CwdStepMachine,
 } from "@saflib/workflows";
-import { AddQueryWorkflowDefinition } from "@saflib/sdk/workflows";
+import { AddSdkQueryWorkflowDefinition } from "@saflib/sdk/workflows";
 import path from "path";
 
 const input = [] as const;
@@ -31,37 +31,37 @@ export const ImplementSecretsSdkWorkflowDefinition = defineWorkflow<
     })),
 
     // Secrets resource queries
-    step(makeWorkflowMachine(AddQueryWorkflowDefinition), () => ({
+    step(makeWorkflowMachine(AddSdkQueryWorkflowDefinition), () => ({
       path: "requests/secrets/list.ts",
     })),
 
-    step(makeWorkflowMachine(AddQueryWorkflowDefinition), () => ({
+    step(makeWorkflowMachine(AddSdkQueryWorkflowDefinition), () => ({
       path: "requests/secrets/create.ts",
     })),
 
-    step(makeWorkflowMachine(AddQueryWorkflowDefinition), () => ({
+    step(makeWorkflowMachine(AddSdkQueryWorkflowDefinition), () => ({
       path: "requests/secrets/update.ts",
     })),
 
-    step(makeWorkflowMachine(AddQueryWorkflowDefinition), () => ({
+    step(makeWorkflowMachine(AddSdkQueryWorkflowDefinition), () => ({
       path: "requests/secrets/delete.ts",
     })),
 
     // Access requests resource queries
-    step(makeWorkflowMachine(AddQueryWorkflowDefinition), () => ({
+    step(makeWorkflowMachine(AddSdkQueryWorkflowDefinition), () => ({
       path: "requests/access-requests/list.ts",
     })),
 
-    step(makeWorkflowMachine(AddQueryWorkflowDefinition), () => ({
+    step(makeWorkflowMachine(AddSdkQueryWorkflowDefinition), () => ({
       path: "requests/access-requests/approve.ts",
     })),
 
     // Service tokens resource queries
-    step(makeWorkflowMachine(AddQueryWorkflowDefinition), () => ({
+    step(makeWorkflowMachine(AddSdkQueryWorkflowDefinition), () => ({
       path: "requests/service-tokens/list.ts",
     })),
 
-    step(makeWorkflowMachine(AddQueryWorkflowDefinition), () => ({
+    step(makeWorkflowMachine(AddSdkQueryWorkflowDefinition), () => ({
       path: "requests/service-tokens/approve.ts",
     })),
   ],

@@ -8,7 +8,7 @@ import {
 } from "@saflib/openapi/workflows";
 import {
   UpdateSchemaWorkflowDefinition,
-  AddQueryWorkflowDefinition,
+  AddDrizzleQueryWorkflowDefinition,
 } from "@saflib/drizzle/workflows";
 import { AddHandlerWorkflowDefinition } from "@saflib/express/workflows";
 import { AddEmailTemplateWorkflowDefinition } from "@saflib/email/workflows";
@@ -34,6 +34,10 @@ import {
   CronInitWorkflowDefinition,
   CronAddJobWorkflowDefinition,
 } from "@saflib/cron/workflows";
+import {
+  AddComponentWorkflowDefinition,
+  AddSdkQueryWorkflowDefinition,
+} from "@saflib/sdk/workflows";
 
 const input = [] as const;
 interface TestAllWorkflowsContext {}
@@ -77,7 +81,7 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
     step(makeWorkflowMachine(UpdateSchemaWorkflowDefinition), () => ({
       path: "./schemas/users.ts",
     })),
-    step(makeWorkflowMachine(AddQueryWorkflowDefinition), () => ({
+    step(makeWorkflowMachine(AddDrizzleQueryWorkflowDefinition), () => ({
       path: "./queries/users/list.ts",
     })),
 
@@ -178,6 +182,17 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
     })),
     step(makeWorkflowMachine(CronAddJobWorkflowDefinition), () => ({
       path: "./jobs/tmp-cron/give-time.ts",
+    })),
+
+    // Test @saflib/sdk workflows
+    step(CwdStepMachine, () => ({
+      path: "./services/tmp/tmp-sdk",
+    })),
+    step(makeWorkflowMachine(AddSdkQueryWorkflowDefinition), () => ({
+      path: "./requests/users/list.ts",
+    })),
+    step(makeWorkflowMachine(AddComponentWorkflowDefinition), () => ({
+      path: "./components/user-list",
     })),
   ],
 });

@@ -30,12 +30,12 @@ const workflowClasses: WorkflowDefinition[] = [
   ...grpcWorkflows,
   ...identityWorkflows,
   ...cronWorkflows,
+  ...sdkWorkflows,
 
   // TEMP: untested workflows
   ...metaWorkflows,
   ...processWorkflows,
   ...vueSpaWorkflows,
-  ...sdkWorkflows,
 ];
 
 export const workflows = workflowClasses;

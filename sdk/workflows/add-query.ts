@@ -28,7 +28,7 @@ interface AddQueryWorkflowContext
   extends ParsePackageNameOutput,
     ParsePathOutput {}
 
-export const AddQueryWorkflowDefinition = defineWorkflow<
+export const AddSdkQueryWorkflowDefinition = defineWorkflow<
   typeof input,
   AddQueryWorkflowContext
 >({

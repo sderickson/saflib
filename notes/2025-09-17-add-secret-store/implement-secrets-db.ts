@@ -6,7 +6,7 @@ import {
 } from "@saflib/workflows";
 import {
   UpdateSchemaWorkflowDefinition,
-  AddQueryWorkflowDefinition,
+  AddDrizzleQueryWorkflowDefinition,
 } from "@saflib/drizzle/workflows";
 import path from "path";
 
@@ -47,27 +47,27 @@ export const ImplementSecretsDbWorkflowDefinition = defineWorkflow<
       - is_active: BOOLEAN DEFAULT true`,
     })),
 
-    step(makeWorkflowMachine(AddQueryWorkflowDefinition), () => ({
+    step(makeWorkflowMachine(AddDrizzleQueryWorkflowDefinition), () => ({
       path: "queries/secret/create",
     })),
 
-    step(makeWorkflowMachine(AddQueryWorkflowDefinition), () => ({
+    step(makeWorkflowMachine(AddDrizzleQueryWorkflowDefinition), () => ({
       path: "queries/secret/get-by-id",
     })),
 
-    step(makeWorkflowMachine(AddQueryWorkflowDefinition), () => ({
+    step(makeWorkflowMachine(AddDrizzleQueryWorkflowDefinition), () => ({
       path: "queries/secret/get-by-name",
     })),
 
-    step(makeWorkflowMachine(AddQueryWorkflowDefinition), () => ({
+    step(makeWorkflowMachine(AddDrizzleQueryWorkflowDefinition), () => ({
       path: "queries/secret/update",
     })),
 
-    step(makeWorkflowMachine(AddQueryWorkflowDefinition), () => ({
+    step(makeWorkflowMachine(AddDrizzleQueryWorkflowDefinition), () => ({
       path: "queries/secret/remove",
     })),
 
-    step(makeWorkflowMachine(AddQueryWorkflowDefinition), () => ({
+    step(makeWorkflowMachine(AddDrizzleQueryWorkflowDefinition), () => ({
       path: "queries/secret/list",
     })),
 
@@ -87,23 +87,23 @@ export const ImplementSecretsDbWorkflowDefinition = defineWorkflow<
       - access_count: INTEGER DEFAULT 0`,
     })),
 
-    step(makeWorkflowMachine(AddQueryWorkflowDefinition), () => ({
+    step(makeWorkflowMachine(AddDrizzleQueryWorkflowDefinition), () => ({
       path: "queries/service-token/create",
     })),
 
-    step(makeWorkflowMachine(AddQueryWorkflowDefinition), () => ({
+    step(makeWorkflowMachine(AddDrizzleQueryWorkflowDefinition), () => ({
       path: "queries/service-token/get-by-hash",
     })),
 
-    step(makeWorkflowMachine(AddQueryWorkflowDefinition), () => ({
+    step(makeWorkflowMachine(AddDrizzleQueryWorkflowDefinition), () => ({
       path: "queries/service-token/update-approval",
     })),
 
-    step(makeWorkflowMachine(AddQueryWorkflowDefinition), () => ({
+    step(makeWorkflowMachine(AddDrizzleQueryWorkflowDefinition), () => ({
       path: "queries/service-token/update-usage",
     })),
 
-    step(makeWorkflowMachine(AddQueryWorkflowDefinition), () => ({
+    step(makeWorkflowMachine(AddDrizzleQueryWorkflowDefinition), () => ({
       path: "queries/service-token/list",
     })),
 
@@ -122,27 +122,27 @@ export const ImplementSecretsDbWorkflowDefinition = defineWorkflow<
       - last_accessed_at: INTEGER`,
     })),
 
-    step(makeWorkflowMachine(AddQueryWorkflowDefinition), () => ({
+    step(makeWorkflowMachine(AddDrizzleQueryWorkflowDefinition), () => ({
       path: "queries/access-request/create",
     })),
 
-    step(makeWorkflowMachine(AddQueryWorkflowDefinition), () => ({
+    step(makeWorkflowMachine(AddDrizzleQueryWorkflowDefinition), () => ({
       path: "queries/access-request/get-by-id",
     })),
 
-    step(makeWorkflowMachine(AddQueryWorkflowDefinition), () => ({
+    step(makeWorkflowMachine(AddDrizzleQueryWorkflowDefinition), () => ({
       path: "queries/access-request/update-status",
     })),
 
-    step(makeWorkflowMachine(AddQueryWorkflowDefinition), () => ({
+    step(makeWorkflowMachine(AddDrizzleQueryWorkflowDefinition), () => ({
       path: "queries/access-request/update-usage",
     })),
 
-    step(makeWorkflowMachine(AddQueryWorkflowDefinition), () => ({
+    step(makeWorkflowMachine(AddDrizzleQueryWorkflowDefinition), () => ({
       path: "queries/access-request/list-pending",
     })),
 
-    step(makeWorkflowMachine(AddQueryWorkflowDefinition), () => ({
+    step(makeWorkflowMachine(AddDrizzleQueryWorkflowDefinition), () => ({
       path: "queries/access-request/list-by-service",
     })),
   ],
