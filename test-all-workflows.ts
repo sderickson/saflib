@@ -6,6 +6,10 @@ import {
   AddRouteWorkflowDefinition,
   AddEventWorkflowDefinition,
 } from "@saflib/openapi/workflows";
+import {
+  UpdateSchemaWorkflowDefinition,
+  AddQueryWorkflowDefinition,
+} from "@saflib/drizzle/workflows";
 
 const input = [] as const;
 interface TestAllWorkflowsContext {}
@@ -22,10 +26,13 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
   templateFiles: {},
   docFiles: {},
   steps: [
+    // Covers various "init" workflows
     step(makeWorkflowMachine(InitServiceWorkflowDefinition), () => ({
       name: "tmp-service",
       path: "./services/tmp",
     })),
+
+    // Test "@saflib/openapi workflows"
     step(CwdStepMachine, () => ({
       path: "./services/tmp/tmp-spec",
     })),
@@ -38,13 +45,17 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
     step(makeWorkflowMachine(AddEventWorkflowDefinition), () => ({
       path: "./events/signup.yaml",
     })),
-    /*
-    Workflows TODO:
-    spec 
-    drizzle
-    express
-    sdk
-    */
+
+    // Test @saflib/drizzle workflows
+    step(CwdStepMachine, () => ({
+      path: "./services/tmp/tmp-db",
+    })),
+    step(makeWorkflowMachine(UpdateSchemaWorkflowDefinition), () => ({
+      path: "./schemas/users.ts",
+    })),
+    step(makeWorkflowMachine(AddQueryWorkflowDefinition), () => ({
+      path: "./queries/users/list.ts",
+    })),
   ],
 });
 
