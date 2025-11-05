@@ -18,7 +18,7 @@ const input = [
     name: "path",
     description:
       "Relative path to the new command file, e.g. bin/cli-name/command-name.ts",
-    exampleValue: "bin/example-cli/example-command.ts",
+    exampleValue: "./bin/example-cli/example-command.ts",
   },
 ] as const;
 
