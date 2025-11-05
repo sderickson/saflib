@@ -22,12 +22,12 @@ const workflowClasses: WorkflowDefinition[] = [
   ...serviceWorkflows,
   ...openapiWorkflows,
   ...drizzleWorkflows,
+  ...expressWorkflows,
 
   // TEMP: untested workflows
   ...metaWorkflows,
   ...monorepoWorkflows,
   ...processWorkflows,
-  ...expressWorkflows,
   ...vueSpaWorkflows,
   ...emailWorkflows,
   ...envWorkflows,

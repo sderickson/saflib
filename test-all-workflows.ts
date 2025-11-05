@@ -10,6 +10,7 @@ import {
   UpdateSchemaWorkflowDefinition,
   AddQueryWorkflowDefinition,
 } from "@saflib/drizzle/workflows";
+import { AddHandlerWorkflowDefinition } from "@saflib/express/workflows";
 
 const input = [] as const;
 interface TestAllWorkflowsContext {}
@@ -55,6 +56,14 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
     })),
     step(makeWorkflowMachine(AddQueryWorkflowDefinition), () => ({
       path: "./queries/users/list.ts",
+    })),
+
+    // Test @saflib/express workflows
+    step(CwdStepMachine, () => ({
+      path: "./services/tmp/tmp-http",
+    })),
+    step(makeWorkflowMachine(AddHandlerWorkflowDefinition), () => ({
+      path: "./routes/users/list.ts",
     })),
   ],
 });
