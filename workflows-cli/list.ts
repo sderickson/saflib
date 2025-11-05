@@ -25,13 +25,13 @@ const workflowClasses: WorkflowDefinition[] = [
   ...expressWorkflows,
   ...emailWorkflows,
   ...envWorkflows,
+  ...monorepoWorkflows,
+  ...commanderWorkflows,
 
   // TEMP: untested workflows
   ...metaWorkflows,
-  ...monorepoWorkflows,
   ...processWorkflows,
   ...vueSpaWorkflows,
-  ...commanderWorkflows,
   ...sdkWorkflows,
   ...identityWorkflows,
   ...grpcWorkflows,

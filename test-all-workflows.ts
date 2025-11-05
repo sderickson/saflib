@@ -13,6 +13,14 @@ import {
 import { AddHandlerWorkflowDefinition } from "@saflib/express/workflows";
 import { AddEmailTemplateWorkflowDefinition } from "@saflib/email/workflows";
 import { AddEnvVarWorkflowDefinition } from "@saflib/env/workflows";
+import {
+  AddExportWorkflowDefinition,
+  AddTsPackageWorkflowDefinition,
+} from "@saflib/monorepo/workflows";
+import {
+  AddCLIWorkflowDefinition,
+  AddCommandWorkflowDefinition,
+} from "@saflib/commander/workflows";
 
 const input = [] as const;
 interface TestAllWorkflowsContext {}
@@ -74,6 +82,28 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
     })),
     step(makeWorkflowMachine(AddEnvVarWorkflowDefinition), () => ({
       name: "API_KEY",
+    })),
+
+    // Test making a package with export and CLI
+    step(CwdStepMachine, () => ({
+      path: ".",
+    })),
+    step(makeWorkflowMachine(AddTsPackageWorkflowDefinition), () => ({
+      name: "tmp-lib",
+      path: "./services/tmp/tmp-lib",
+    })),
+    step(CwdStepMachine, () => ({
+      path: "./services/tmp/tmp-lib",
+    })),
+    step(makeWorkflowMachine(AddExportWorkflowDefinition), () => ({
+      name: "myFunction",
+      path: "./src/utils.ts",
+    })),
+    step(makeWorkflowMachine(AddCLIWorkflowDefinition), () => ({
+      name: "tmp-cli",
+    })),
+    step(makeWorkflowMachine(AddCommandWorkflowDefinition), () => ({
+      path: "./bin/tmp-cli/echo.ts",
     })),
   ],
 });

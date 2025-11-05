@@ -1,10 +1,9 @@
 import type { Command } from "commander";
-import { addNewLinesToString } from "@saflib/utils";
 
-export const addTemplateFileCommand = (program: Command) => {
+export const add__TargetName__Command = (program: Command) => {
   program
-    .command("template-file")
-    .description(addNewLinesToString("TODO: Describe what this command does"))
+    .command("__target-name__")
+    .description("TODO: Describe what this command does")
     .action(async () => {
       // TODO: Implement the command logic here
       // TODO: Add any necessary options or arguments

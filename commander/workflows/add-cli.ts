@@ -5,6 +5,8 @@ import {
   CommandStepMachine,
   defineWorkflow,
   step,
+  type ParsePathOutput,
+  makeLineReplace,
 } from "@saflib/workflows";
 import path from "node:path";
 
@@ -18,13 +20,7 @@ const input = [
   },
 ] as const;
 
-interface AddCLIWorkflowContext {
-  name: string;
-  pascalName: string;
-  cliName: string;
-  targetDir: string;
-  indexFilePath: string;
-}
+interface AddCLIWorkflowContext extends ParsePathOutput {}
 
 export const AddCLIWorkflowDefinition = defineWorkflow<
   typeof input,
@@ -35,36 +31,33 @@ export const AddCLIWorkflowDefinition = defineWorkflow<
   description:
     "Create  a new CLI with Commander.js, accessible through npm exec",
 
-  checklistDescription: ({ name }) => `Create a new CLI called ${name}.`,
+  checklistDescription: ({ groupName }) =>
+    `Create a new CLI called ${groupName}.`,
 
   input,
 
   sourceUrl: import.meta.url,
 
   context: ({ input }) => {
-    // The target directory will be bin/{input.name}
-    const targetDir = path.join("./bin", input.name);
-    const indexFilePath = path.join(targetDir, "index.ts");
-
+    const targetDir = path.join(input.cwd, "bin", input.name);
     return {
-      name: input.name,
-      pascalName: input.name.charAt(0).toUpperCase() + input.name.slice(1),
-      cliName: input.name,
       targetDir,
-      indexFilePath,
+      groupName: input.name,
+      targetName: input.name,
     };
   },
 
   templateFiles: {
-    index: path.join(sourceDir, "index.ts"),
+    index: path.join(sourceDir, "bin/__group-name__/index.ts"),
   },
 
   docFiles: {},
 
   steps: [
     step(CopyStepMachine, ({ context }) => ({
-      name: context.name,
+      name: context.groupName,
       targetDir: context.targetDir,
+      lineReplace: makeLineReplace(context),
     })),
 
     step(UpdateStepMachine, ({ context }) => ({
@@ -74,17 +67,23 @@ export const AddCLIWorkflowDefinition = defineWorkflow<
 
     step(CommandStepMachine, ({ context }) => ({
       command: "chmod",
-      args: ["+x", context.indexFilePath],
+      args: ["+x", context.copiedFiles!.index],
     })),
 
-    step(PromptStepMachine, ({ context }) => ({
-      promptText: `Add ${context.indexFilePath} to the package's bin folder.
-      
-      It should look like this:
-      "bin": {
-        "${context.name}": "${context.indexFilePath}"
-      }`,
-    })),
+    step(PromptStepMachine, ({ context }) => {
+      const relativePath = path.relative(
+        context.cwd,
+        context.copiedFiles!.index
+      );
+      return {
+        promptText: `Add ${relativePath} to the package's bin folder.
+        
+        It should look like this:
+        "bin": {
+          "${context.groupName}": "${relativePath}"
+        }`,
+      };
+    }),
 
     step(CommandStepMachine, () => ({
       command: "npm",
@@ -92,9 +91,9 @@ export const AddCLIWorkflowDefinition = defineWorkflow<
     })),
 
     step(PromptStepMachine, ({ context }) => ({
-      promptText: `Run the command \`npm exec ${context.name}\` to verify that the cli is working correctly.
+      promptText: `Run the command \`npm exec ${context.groupName}\` to verify that the cli is working correctly.
       
-      Run \`npm exec ${context.name}\` and it should display help information without errors.`,
+      Run \`npm exec ${context.groupName}\` and it should display help information without errors.`,
     })),
   ],
 });

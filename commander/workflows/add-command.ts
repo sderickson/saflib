@@ -5,6 +5,9 @@ import {
   defineWorkflow,
   step,
   CommandStepMachine,
+  parsePath,
+  type ParsePathOutput,
+  makeLineReplace,
 } from "@saflib/workflows";
 import path, { dirname } from "node:path";
 import { kebabCaseToPascalCase } from "@saflib/utils";
@@ -21,12 +24,7 @@ const input = [
   },
 ] as const;
 
-interface AddCommandWorkflowContext {
-  name: string;
-  cliName: string;
-  commandFunctionName: string;
-  targetDir: string;
-}
+interface AddCommandWorkflowContext extends ParsePathOutput {}
 
 export const AddCommandWorkflowDefinition = defineWorkflow<
   typeof input,
@@ -37,86 +35,53 @@ export const AddCommandWorkflowDefinition = defineWorkflow<
   description:
     "Create a new CLI command and add it to an existing Commander.js CLI",
 
-  checklistDescription: ({ name, cliName }) => `Add ${name} to ${cliName} CLI.`,
+  checklistDescription: ({ targetName, groupName }) =>
+    `Add ${targetName} to ${groupName} CLI.`,
 
   input,
 
   sourceUrl: import.meta.url,
 
   context: ({ input }) => {
-    // validate inputs
-    const parts = input.path
-      .split("/")
-      .filter((part) => part !== "" && part !== ".");
-    if (
-      parts.length < 3 ||
-      parts[0] !== "bin" ||
-      !parts[parts.length - 1].includes(".ts")
-    ) {
-      throw new Error(
-        "Path should be of the form bin/{cli-name}/{command-name}.ts",
-      );
-    }
-
-    const targetDir = dirname(input.path);
-
-    if (input.runMode !== "dry" && !existsSync(targetDir)) {
-      throw new Error(`Target directory ${targetDir} does not exist`);
-    }
-
-    const cliName = parts[1];
-    const commandName = parts[parts.length - 1].replace(".ts", "");
-    const commandFunctionName = `add${kebabCaseToPascalCase(commandName)}Command`;
-
     return {
-      name: commandName,
-      cliName,
-      commandFunctionName,
-      targetDir,
+      ...parsePath(input.path, {
+        requiredPrefix: "./bin/",
+        requiredSuffix: ".ts",
+        cwd: input.cwd,
+      }),
     };
   },
 
   templateFiles: {
-    command: path.join(sourceDir, "template-file.ts"),
+    command: path.join(sourceDir, "bin/__group-name__/__target-name__.ts"),
   },
 
   docFiles: {},
 
   steps: [
     step(CopyStepMachine, ({ context }) => ({
-      name: context.name,
+      name: context.targetName,
       targetDir: context.targetDir,
+      lineReplace: makeLineReplace(context),
     })),
 
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "command",
-      promptMessage: `Update **${path.basename(context.copiedFiles!.command)}**, resolving any TODOs.`,
+      promptMessage: `Update **${path.basename(context.copiedFiles!.command)}**
+      
+      Full path: ${context.copiedFiles!.command}
+      
+      Implement the command functionality.`,
     })),
 
     step(PromptStepMachine, ({ context }) => ({
       promptText: `Add the new command to the adjacent index.ts file.
       
-      Import the command function:
-      import { ${context.commandFunctionName} } from "./${context.name}.ts";
+      * Import the command function from ${context.copiedFiles!.command}
+      * Add it to the program before \`program.parse\` is called.
       
-      Add it to the program before \`program.parse\` is called:
-      ${context.commandFunctionName}(program);`,
-    })),
-
-    step(PromptStepMachine, ({ context }) => ({
-      promptText: `Test the new command.
-
-      Run the following command:
-      
-      npm exec ${context.cliName} ${context.name}
-      
-      The command should display help information without errors.`,
-    })),
-
-    step(PromptStepMachine, () => ({
-      promptText: `Implement the new command.
-      
-      Ask for implementation details if it's unclear what to implement or how to do it.`,
+      Test the command was added correctly by running:
+      npm exec ${context.groupName} ${context.targetName}`,
     })),
 
     step(CommandStepMachine, () => ({
