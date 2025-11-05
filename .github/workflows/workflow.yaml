@@ -22,6 +22,10 @@ jobs:
       - name: Install rollup for linux
         run: npm install @rollup/rollup-linux-x64-gnu
 
+      # For grpc proto workflows
+      - name: Install protoc
+        run: apt install -y protobuf-compiler
+
       # Main test. If this fails, one of the workflows is broken.
       - name: Run Workflow Integration Test
         run: npm exec saf-workflow run-scripts ./test-all-workflows.ts
