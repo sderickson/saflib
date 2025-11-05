@@ -133,20 +133,22 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
     step(CwdStepMachine, () => ({
       path: "./services/tmp/tmp-grpc-proto",
     })),
+
+    // NOTE: It has to be in the health group for types, and this test, to work.
     step(makeWorkflowMachine(AddProtoWorkflowDefinition), () => ({
-      path: "./protos/users/list.proto",
+      path: "./protos/health/example.proto",
     })),
     step(CwdStepMachine, () => ({
       path: "./services/tmp/tmp-grpc-server",
     })),
     step(makeWorkflowMachine(AddGrpcServerHandlerWorkflowDefinition), () => ({
-      path: "./handlers/users/list.ts",
+      path: "./handlers/health/example.ts",
     })),
     step(CwdStepMachine, () => ({
       path: "./services/tmp/tmp-grpc-client",
     })),
     step(makeWorkflowMachine(AddGrpcCallWorkflowDefinition), () => ({
-      path: "./rpcs/users/list.ts",
+      path: "./rpcs/health/example.ts",
     })),
   ],
 });
