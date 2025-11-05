@@ -30,35 +30,35 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
   docFiles: {},
   steps: [
     // Covers various "init" workflows
-    // step(makeWorkflowMachine(InitServiceWorkflowDefinition), () => ({
-    //   name: "tmp-service",
-    //   path: "./services/tmp",
-    // })),
+    step(makeWorkflowMachine(InitServiceWorkflowDefinition), () => ({
+      name: "tmp-service",
+      path: "./services/tmp",
+    })),
 
-    // // Test "@saflib/openapi workflows"
-    // step(CwdStepMachine, () => ({
-    //   path: "./services/tmp/tmp-spec",
-    // })),
-    // step(makeWorkflowMachine(AddSchemaWorkflowDefinition), () => ({
-    //   name: "user",
-    // })),
-    // step(makeWorkflowMachine(AddRouteWorkflowDefinition), () => ({
-    //   path: "./routes/users/list.yaml",
-    // })),
-    // step(makeWorkflowMachine(AddEventWorkflowDefinition), () => ({
-    //   path: "./events/signup.yaml",
-    // })),
+    // Test "@saflib/openapi workflows"
+    step(CwdStepMachine, () => ({
+      path: "./services/tmp/tmp-spec",
+    })),
+    step(makeWorkflowMachine(AddSchemaWorkflowDefinition), () => ({
+      name: "user",
+    })),
+    step(makeWorkflowMachine(AddRouteWorkflowDefinition), () => ({
+      path: "./routes/users/list.yaml",
+    })),
+    step(makeWorkflowMachine(AddEventWorkflowDefinition), () => ({
+      path: "./events/signup.yaml",
+    })),
 
-    // // Test @saflib/drizzle workflows
-    // step(CwdStepMachine, () => ({
-    //   path: "./services/tmp/tmp-db",
-    // })),
-    // step(makeWorkflowMachine(UpdateSchemaWorkflowDefinition), () => ({
-    //   path: "./schemas/users.ts",
-    // })),
-    // step(makeWorkflowMachine(AddQueryWorkflowDefinition), () => ({
-    //   path: "./queries/users/list.ts",
-    // })),
+    // Test @saflib/drizzle workflows
+    step(CwdStepMachine, () => ({
+      path: "./services/tmp/tmp-db",
+    })),
+    step(makeWorkflowMachine(UpdateSchemaWorkflowDefinition), () => ({
+      path: "./schemas/users.ts",
+    })),
+    step(makeWorkflowMachine(AddQueryWorkflowDefinition), () => ({
+      path: "./queries/users/list.ts",
+    })),
 
     // Test @saflib/express workflows
     step(CwdStepMachine, () => ({
