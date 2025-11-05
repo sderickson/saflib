@@ -28,14 +28,14 @@ const workflowClasses: WorkflowDefinition[] = [
   ...monorepoWorkflows,
   ...commanderWorkflows,
   ...grpcWorkflows,
+  ...identityWorkflows,
+  ...cronWorkflows,
 
   // TEMP: untested workflows
   ...metaWorkflows,
   ...processWorkflows,
   ...vueSpaWorkflows,
   ...sdkWorkflows,
-  ...identityWorkflows,
-  ...cronWorkflows,
 ];
 
 export const workflows = workflowClasses;
