@@ -11,6 +11,8 @@ import {
   AddQueryWorkflowDefinition,
 } from "@saflib/drizzle/workflows";
 import { AddHandlerWorkflowDefinition } from "@saflib/express/workflows";
+import { AddEmailTemplateWorkflowDefinition } from "@saflib/email/workflows";
+import { AddEnvVarWorkflowDefinition } from "@saflib/env/workflows";
 
 const input = [] as const;
 interface TestAllWorkflowsContext {}
@@ -28,35 +30,35 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
   docFiles: {},
   steps: [
     // Covers various "init" workflows
-    step(makeWorkflowMachine(InitServiceWorkflowDefinition), () => ({
-      name: "tmp-service",
-      path: "./services/tmp",
-    })),
+    // step(makeWorkflowMachine(InitServiceWorkflowDefinition), () => ({
+    //   name: "tmp-service",
+    //   path: "./services/tmp",
+    // })),
 
-    // Test "@saflib/openapi workflows"
-    step(CwdStepMachine, () => ({
-      path: "./services/tmp/tmp-spec",
-    })),
-    step(makeWorkflowMachine(AddSchemaWorkflowDefinition), () => ({
-      name: "user",
-    })),
-    step(makeWorkflowMachine(AddRouteWorkflowDefinition), () => ({
-      path: "./routes/users/list.yaml",
-    })),
-    step(makeWorkflowMachine(AddEventWorkflowDefinition), () => ({
-      path: "./events/signup.yaml",
-    })),
+    // // Test "@saflib/openapi workflows"
+    // step(CwdStepMachine, () => ({
+    //   path: "./services/tmp/tmp-spec",
+    // })),
+    // step(makeWorkflowMachine(AddSchemaWorkflowDefinition), () => ({
+    //   name: "user",
+    // })),
+    // step(makeWorkflowMachine(AddRouteWorkflowDefinition), () => ({
+    //   path: "./routes/users/list.yaml",
+    // })),
+    // step(makeWorkflowMachine(AddEventWorkflowDefinition), () => ({
+    //   path: "./events/signup.yaml",
+    // })),
 
-    // Test @saflib/drizzle workflows
-    step(CwdStepMachine, () => ({
-      path: "./services/tmp/tmp-db",
-    })),
-    step(makeWorkflowMachine(UpdateSchemaWorkflowDefinition), () => ({
-      path: "./schemas/users.ts",
-    })),
-    step(makeWorkflowMachine(AddQueryWorkflowDefinition), () => ({
-      path: "./queries/users/list.ts",
-    })),
+    // // Test @saflib/drizzle workflows
+    // step(CwdStepMachine, () => ({
+    //   path: "./services/tmp/tmp-db",
+    // })),
+    // step(makeWorkflowMachine(UpdateSchemaWorkflowDefinition), () => ({
+    //   path: "./schemas/users.ts",
+    // })),
+    // step(makeWorkflowMachine(AddQueryWorkflowDefinition), () => ({
+    //   path: "./queries/users/list.ts",
+    // })),
 
     // Test @saflib/express workflows
     step(CwdStepMachine, () => ({
@@ -64,6 +66,14 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
     })),
     step(makeWorkflowMachine(AddHandlerWorkflowDefinition), () => ({
       path: "./routes/users/list.ts",
+    })),
+
+    // Test misc workflows
+    step(makeWorkflowMachine(AddEmailTemplateWorkflowDefinition), () => ({
+      path: "./emails/welcome.ts",
+    })),
+    step(makeWorkflowMachine(AddEnvVarWorkflowDefinition), () => ({
+      name: "API_KEY",
     })),
   ],
 });

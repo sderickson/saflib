@@ -73,10 +73,5 @@ export const AddEnvVarWorkflowDefinition = defineWorkflow<
       command: "npm",
       args: ["exec", "saf-env", "generate"],
     })),
-
-    step(CommandStepMachine, () => ({
-      command: "npm",
-      args: ["exec", "saf-env", "generate-all"],
-    })),
   ],
 });
