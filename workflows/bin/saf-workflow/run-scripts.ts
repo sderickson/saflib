@@ -42,9 +42,9 @@ export const addRunScriptsCommand = (
       });
       if (!result.success) {
         console.error("Workflow did not complete successfully");
-        if (result.state) {
-          console.error("State:", JSON.stringify(result.state, null, 2));
-        }
+        // if (result.state) {
+        //   console.error("State:", JSON.stringify(result.state, null, 2));
+        // }
         process.exit(1);
       }
     });

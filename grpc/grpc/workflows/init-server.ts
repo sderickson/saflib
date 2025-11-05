@@ -78,6 +78,11 @@ export const InitGrpcServerWorkflowDefinition = defineWorkflow<
       path: context.targetDir,
     })),
 
+    step(CommandStepMachine, ({ context }) => ({
+      command: "npm",
+      args: ["install", context.serviceName + "-grpc-proto"],
+    })),
+
     step(CommandStepMachine, () => ({
       command: "npm",
       args: ["run", "typecheck"],

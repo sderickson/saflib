@@ -21,6 +21,11 @@ import {
   AddCLIWorkflowDefinition,
   AddCommandWorkflowDefinition,
 } from "@saflib/commander/workflows";
+import {
+  InitGrpcProtoWorkflowDefinition,
+  InitGrpcServerWorkflowDefinition,
+  InitGrpcClientWorkflowDefinition,
+} from "@saflib/grpc/workflows";
 
 const input = [] as const;
 interface TestAllWorkflowsContext {}
@@ -104,6 +109,23 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
     })),
     step(makeWorkflowMachine(AddCommandWorkflowDefinition), () => ({
       path: "./bin/tmp-cli/echo.ts",
+    })),
+
+    // Test @saflib/grpc workflows
+    step(CwdStepMachine, () => ({
+      path: ".",
+    })),
+    step(makeWorkflowMachine(InitGrpcProtoWorkflowDefinition), () => ({
+      name: "tmp-grpc-proto",
+      path: "./services/tmp/tmp-grpc-proto",
+    })),
+    step(makeWorkflowMachine(InitGrpcServerWorkflowDefinition), () => ({
+      name: "tmp-grpc-server",
+      path: "./services/tmp/tmp-grpc-server",
+    })),
+    step(makeWorkflowMachine(InitGrpcClientWorkflowDefinition), () => ({
+      name: "tmp-grpc-client",
+      path: "./services/tmp/tmp-grpc-client",
     })),
   ],
 });
