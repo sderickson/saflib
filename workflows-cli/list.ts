@@ -27,6 +27,7 @@ const workflowClasses: WorkflowDefinition[] = [
   ...envWorkflows,
   ...monorepoWorkflows,
   ...commanderWorkflows,
+  ...grpcWorkflows,
 
   // TEMP: untested workflows
   ...metaWorkflows,
@@ -34,7 +35,6 @@ const workflowClasses: WorkflowDefinition[] = [
   ...vueSpaWorkflows,
   ...sdkWorkflows,
   ...identityWorkflows,
-  ...grpcWorkflows,
   ...cronWorkflows,
 ];
 

@@ -10,7 +10,7 @@ import {
   InitGrpcServerWorkflowDefinition,
   InitGrpcProtoWorkflowDefinition,
   AddProtoWorkflowDefinition,
-  AddRpcWorkflowDefinition as AddGrpcCallWorkflowDefinition,
+  AddGrpcCallWorkflowDefinition,
   InitGrpcClientWorkflowDefinition,
 } from "@saflib/grpc/workflows";
 

@@ -9,9 +9,7 @@ import {
   type ParsePathOutput,
   makeLineReplace,
 } from "@saflib/workflows";
-import path, { dirname } from "node:path";
-import { kebabCaseToPascalCase } from "@saflib/utils";
-import { existsSync } from "node:fs";
+import path from "node:path";
 
 const sourceDir = path.join(import.meta.dirname, "templates");
 

@@ -25,6 +25,9 @@ import {
   InitGrpcProtoWorkflowDefinition,
   InitGrpcServerWorkflowDefinition,
   InitGrpcClientWorkflowDefinition,
+  AddGrpcServerHandlerWorkflowDefinition,
+  AddGrpcCallWorkflowDefinition,
+  AddProtoWorkflowDefinition,
 } from "@saflib/grpc/workflows";
 
 const input = [] as const;
@@ -126,6 +129,24 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
     step(makeWorkflowMachine(InitGrpcClientWorkflowDefinition), () => ({
       name: "tmp-grpc-client",
       path: "./services/tmp/tmp-grpc-client",
+    })),
+    step(CwdStepMachine, () => ({
+      path: "./services/tmp/tmp-grpc-proto",
+    })),
+    step(makeWorkflowMachine(AddProtoWorkflowDefinition), () => ({
+      path: "./protos/users/list.proto",
+    })),
+    step(CwdStepMachine, () => ({
+      path: "./services/tmp/tmp-grpc-server",
+    })),
+    step(makeWorkflowMachine(AddGrpcServerHandlerWorkflowDefinition), () => ({
+      path: "./handlers/users/list.ts",
+    })),
+    step(CwdStepMachine, () => ({
+      path: "./services/tmp/tmp-grpc-client",
+    })),
+    step(makeWorkflowMachine(AddGrpcCallWorkflowDefinition), () => ({
+      path: "./rpcs/users/list.ts",
     })),
   ],
 });
