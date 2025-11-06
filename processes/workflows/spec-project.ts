@@ -81,7 +81,7 @@ export const SpecProjectWorkflowDefinition = defineWorkflow<
 
     step(CommandStepMachine, () => ({
       command: "npm",
-      args: ["exec", "saf-workflow", "kickoff", "help"],
+      args: ["exec", "saf-workflow", "list", "--", "-ad"],
     })),
 
     step(PromptStepMachine, () => ({

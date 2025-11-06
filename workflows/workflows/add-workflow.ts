@@ -125,11 +125,6 @@ export const AddWorkflowDefinition = defineWorkflow<
       args: ["run", "typecheck"],
     })),
 
-    step(CommandStepMachine, ({ context }) => ({
-      command: "npm",
-      args: ["exec", "saf-workflow", "checklist", context.name],
-    })),
-
     step(CommandStepMachine, () => ({
       command: "npm",
       args: ["run", "test"],
