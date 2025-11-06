@@ -11,7 +11,6 @@ export const runWorkflow = (workflow: string) => {
   while (true) {
     const output = execSync(`npm exec saf-workflow next`).toString();
     console.log(output);
-    lastOutput = output;
     if (output.includes(endString)) {
       break;
     }
@@ -20,6 +19,7 @@ export const runWorkflow = (workflow: string) => {
       process.exit(1);
       break;
     }
+    lastOutput = output;
   }
 };
 
