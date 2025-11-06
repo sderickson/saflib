@@ -1,4 +1,4 @@
-name: Workflow Integration Test
+name: Workflows in Print Mode
 
 on:
   pull_request:
@@ -28,7 +28,7 @@ jobs:
 
       # Main test. If this fails, one of the workflows is broken.
       - name: Run Workflow Integration Test
-        run: npm exec saf-workflow run-scripts ./workflows-cli/test-all-workflows.ts
+        run: ./workflows-cli/workflow-runner.ts print
 
       # just for debugging, checking all the files that got added/changed
       - name: Git status

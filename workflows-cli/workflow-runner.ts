@@ -12,6 +12,7 @@ export const runWorkflow = (workflow: string) => {
     const output = execSync(`npm exec saf-workflow next`).toString();
     console.log(output);
     if (output.includes(endString)) {
+      console.log("Workflow has been completed.");
       break;
     }
     if (output === lastOutput) {
