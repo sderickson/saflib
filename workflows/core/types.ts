@@ -150,6 +150,8 @@ export interface WorkflowInput {
   cwd?: string;
 
   manageVersionControl?: VersionControlMode;
+
+  skipTodos?: boolean;
 }
 
 /**
@@ -217,6 +219,8 @@ export interface WorkflowContext {
    * This field is ignored in "dry" and "script" modes.
    */
   manageVersionControl?: VersionControlMode;
+
+  skipTodos?: boolean;
 }
 
 export type WorkflowActionFunction<

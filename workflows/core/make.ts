@@ -136,6 +136,7 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
             agentConfig: context.agentConfig,
             cwd: context.cwd,
             manageVersionControl: context.manageVersionControl,
+            skipTodos: context.skipTodos,
           };
         },
         src: `actor_${i}`,

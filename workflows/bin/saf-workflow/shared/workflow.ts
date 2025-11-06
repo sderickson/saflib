@@ -56,6 +56,7 @@ interface XStateWorkflowOptions<I extends readonly WorkflowArgument[], C> {
   args?: string[];
   workflowRunMode?: WorkflowRunMode;
   agentConfig?: AgentConfig;
+  skipTodos?: boolean;
   manageVersionControl?: VersionControlMode;
 }
 
@@ -74,6 +75,7 @@ export class XStateWorkflowRunner extends AbstractWorkflowRunner {
     runMode?: WorkflowRunMode;
     agentConfig?: AgentConfig;
     manageVersionControl?: VersionControlMode;
+    skipTodos?: boolean;
   };
   private args: string[];
   private actor: AnyActor | undefined;
@@ -99,6 +101,7 @@ export class XStateWorkflowRunner extends AbstractWorkflowRunner {
     this.input.runMode = options.workflowRunMode;
     this.input.agentConfig = options.agentConfig;
     this.input.manageVersionControl = options.manageVersionControl;
+    this.input.skipTodos = options.skipTodos;
     this.machine = makeWorkflowMachine(this.definition);
   }
 

@@ -93,7 +93,7 @@ export const UpdateStepMachine = setup({
         const resolvedPath = input.filePath;
         const content = readFileSync(resolvedPath, "utf-8");
         hasTodos = /\s*(?:#|\/\/).*todo/i.test(content);
-        if (!hasTodos) {
+        if (!hasTodos || input.skipTodos) {
           break;
         }
         if (hasTodos) {

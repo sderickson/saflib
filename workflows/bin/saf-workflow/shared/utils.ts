@@ -19,6 +19,7 @@ export interface RunWorkflowOptions {
   runMode: WorkflowRunMode;
   args?: string[];
   agentConfig?: AgentConfig;
+  skipTodos?: boolean;
   manageVersionControl?: VersionControlMode;
 }
 
@@ -44,6 +45,7 @@ export const runWorkflow = async (
     workflowRunMode: runMode,
     agentConfig: options.agentConfig,
     manageVersionControl: options.manageVersionControl,
+    skipTodos: options.skipTodos,
   });
   await workflow.kickoff({
     onSnapshot: () => {

@@ -22,6 +22,10 @@ export const addKickoffCommand = (commandOptions: WorkflowCommandOptions) => {
     "-v, --version-control <mode>",
     'Manage version control for the workflow. Currently only "git" is supported.'
   );
+  const skipTodosOption = new Option(
+    "-s, --skip-todos",
+    'Skip TODOs in the workflow. This is useful if you want to run the workflow without having to complete TODOs.'
+  );
   commandOptions.program
     .command("kickoff")
     .description(
@@ -34,16 +38,17 @@ export const addKickoffCommand = (commandOptions: WorkflowCommandOptions) => {
     .option("-m, --message <message>", "Message to add to the workflow")
     .addOption(runModeOption)
     .addOption(versionControlOption)
+    .addOption(skipTodosOption)
     .action(
       async (
         filePath: string,
         args: string[],
-        options: { run?: string; message?: string; versionControl?: string }
+        options: { run?: string; message?: string; versionControl?: string; skipTodos?: boolean }
       ) => {
         writeFileSync(logFile, "");
         const runMode = options.run;
         const givenRunMode = parseRunMode(runMode);
-
+        const skipTodos = options.skipTodos;
         const log = createWorkflowLogger({
           // printToAgent: givenRunMode === "run",
           // printToConsole: givenRunMode !== "run",
@@ -108,6 +113,7 @@ export const addKickoffCommand = (commandOptions: WorkflowCommandOptions) => {
             cli: "cursor-agent",
           },
           args,
+          skipTodos,
         });
       }
     );

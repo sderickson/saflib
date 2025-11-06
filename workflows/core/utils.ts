@@ -93,6 +93,7 @@ export function contextFromInput(input: WorkflowInput): WorkflowContext {
     docFiles: input.docFiles,
     cwd: input.cwd || process.cwd(),
     agentConfig: input.agentConfig,
+    skipTodos: input.skipTodos,
     manageVersionControl: input.manageVersionControl,
   };
 }
