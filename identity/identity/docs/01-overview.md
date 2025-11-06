@@ -9,7 +9,7 @@ To run both the HTTP and gRPC servers, use the `startIdentityService` function. 
 A startup script might look like this:
 
 ```ts
-#!/usr/bin/env node
+#!/usr/bin/env -S node --experimental-strip-types --disable-warning=ExperimentalWarning
 import { startIdentityService } from "@saflib/identity";
 import { callbacks } from "../callbacks.ts";
 import { addLokiTransport, collectSystemMetrics } from "@saflib/node";
