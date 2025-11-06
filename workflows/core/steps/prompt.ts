@@ -146,6 +146,13 @@ export const PromptStepMachine = setup({
         continue: {
           target: "done",
         },
+        prompt: {
+          actions: [
+            ({context}) => {
+              console.log(context.promptText);
+            }
+          ]
+        },
       },
     },
     done: {

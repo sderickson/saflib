@@ -90,10 +90,13 @@ export const UpdateStepMachine = setup({
       let tries = 1;
       let hasTodos = false;
       while (true) {
+        if (input.skipTodos) {
+          break;
+        }
         const resolvedPath = input.filePath;
         const content = readFileSync(resolvedPath, "utf-8");
         hasTodos = /\s*(?:#|\/\/).*todo/i.test(content);
-        if (!hasTodos || input.skipTodos) {
+        if (!hasTodos) {
           break;
         }
         if (hasTodos) {
@@ -200,6 +203,13 @@ export const UpdateStepMachine = setup({
             target: "done",
           },
         ],
+        prompt: {
+          actions: [
+            ({context}) => {
+              console.log(context.promptMessage);
+            }
+          ]
+        },
       },
     },
     done: {

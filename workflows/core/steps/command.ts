@@ -55,6 +55,11 @@ export interface CommandStepContext extends WorkflowContext {
   skipIf?: CommandStepSkipIf;
   promptOnError?: string;
   ignoreError?: boolean;
+  shouldContinue?: boolean;
+}
+
+const messageForContext = (ctx: CommandStepContext) => {
+  return `The command \`${ctx.command} ${ctx.args.join(" ")}\` failed.\nCWD: ${ctx.cwd}.\n${ctx.promptOnError ? `\n${ctx.promptOnError}` : ""}`;
 }
 
 /**
@@ -96,7 +101,6 @@ export const CommandStepMachine = setup({
               shouldContinue: true,
             };
           } catch (error) {
-            console.log("input", JSON.stringify(input, null, 2));
             if (input.ignoreError) {
               return {
                 shouldContinue: true,
@@ -104,7 +108,7 @@ export const CommandStepMachine = setup({
             }
             const { shouldContinue } = await handlePrompt({
               context: input,
-              msg: `The command \`${input.command} ${input.args.join(" ")}\` failed.\nCWD: ${input.cwd}.\n${input.promptOnError ? `\n${input.promptOnError}` : ""}`,
+              msg: messageForContext(input),
             });
             if (!shouldContinue) {
               throw error;
@@ -164,6 +168,7 @@ export const CommandStepMachine = setup({
           ],
         },
         onError: {
+          target: "standby",
           actions: [
             logError(
               ({ event }) => `Command failed: ${(event.error as Error).message}`
@@ -171,9 +176,18 @@ export const CommandStepMachine = setup({
           ],
         },
       },
+    },
+    standby: {
       on: {
         continue: {
-          target: "runCommand",
+          target: "printBefore",
+        },
+        prompt: {
+          actions: [
+            ({context}) => {
+              console.log(messageForContext(context));
+            }
+          ]
         },
       },
     },
