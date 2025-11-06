@@ -200,6 +200,8 @@ export const executePrompt = async ({
       const line = buffer.split("\n")[0];
       buffer = buffer.slice(line.length + 1);
       const json = JSON.parse(line) as CursorLog;
+      console.log("Why are we writing to the log file?");
+      console.trace();
       writeFileSync(logFile, JSON.stringify(json, null, 2) + "\n", {
         flag: "a",
       });

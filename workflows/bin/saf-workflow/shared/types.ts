@@ -1,4 +1,4 @@
-import type { AnyActorRef, Snapshot, SnapshotStatus } from "xstate";
+import type { SnapshotStatus } from "xstate";
 import type {
   WorkflowContext,
   WorkflowDefinition,

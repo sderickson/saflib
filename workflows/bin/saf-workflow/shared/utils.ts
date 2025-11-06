@@ -58,7 +58,7 @@ export const runWorkflow = async (
   }
   return {
     output: workflow.getOutput(),
-    state: workflow.dehydrate().snapshotState,
+    state: workflow.dehydrate().snapshotState as unknown as Snapshot<any>,
   };
 };
 
