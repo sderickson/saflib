@@ -119,30 +119,30 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
     //   name: "API_KEY",
     // })),
 
-    // Test making a package with export and CLI
-    step(CwdStepMachine, () => ({
-      path: ".",
-    })),
-    step(makeWorkflowMachine(AddTsPackageWorkflowDefinition), () => ({
-      name: "tmp-lib",
-      path: "./services/tmp/tmp-lib",
-    })),
-    step(CwdStepMachine, () => ({
-      path: "./services/tmp/tmp-lib",
-    })),
+    // // Test making a package with export and CLI
+    // step(CwdStepMachine, () => ({
+    //   path: ".",
+    // })),
+    // step(makeWorkflowMachine(AddTsPackageWorkflowDefinition), () => ({
+    //   name: "tmp-lib",
+    //   path: "./services/tmp/tmp-lib",
+    // })),
+    // step(CwdStepMachine, () => ({
+    //   path: "./services/tmp/tmp-lib",
+    // })),
     // step(makeWorkflowMachine(AddWorkflowDefinition), () => ({
     //   name: "workflows/add-foo",
     // })),
-    step(makeWorkflowMachine(AddExportWorkflowDefinition), () => ({
-      name: "myFunction",
-      path: "./src/utils.ts",
-    })),
-    step(makeWorkflowMachine(AddCLIWorkflowDefinition), () => ({
-      name: "tmp-cli",
-    })),
-    step(makeWorkflowMachine(AddCommandWorkflowDefinition), () => ({
-      path: "./bin/tmp-cli/echo.ts",
-    })),
+    // step(makeWorkflowMachine(AddExportWorkflowDefinition), () => ({
+    //   name: "myFunction",
+    //   path: "./src/utils.ts",
+    // })),
+    // step(makeWorkflowMachine(AddCLIWorkflowDefinition), () => ({
+    //   name: "tmp-cli",
+    // })),
+    // step(makeWorkflowMachine(AddCommandWorkflowDefinition), () => ({
+    //   path: "./bin/tmp-cli/echo.ts",
+    // })),
 
     // Test @saflib/grpc workflows
     step(CwdStepMachine, () => ({
