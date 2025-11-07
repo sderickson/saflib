@@ -6,7 +6,8 @@ git checkout -b test-git
 
 # Run the workflow - this should generate many branches
 # Save the status code
-status_code=$(npm exec saf-workflow kickoff ./test-all-workflows.ts -- --skip-todos -r mock -v git)
+npm exec saf-workflow kickoff ./test-all-workflows.ts -- --skip-todos -r mock -v git
+status_code=$?
 
 # Print the commits in the branch compared to main
 git log --oneline --left-right main...test-git
