@@ -72,7 +72,7 @@ export const DrizzleInitWorkflowDefinition = defineWorkflow<
   },
 
   versionControl: {
-    ignorePaths: ["./migrations/"],
+    ignorePaths: ["./migrations/", "./data/.gitkeep"],
   },
 
   steps: [
