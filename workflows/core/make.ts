@@ -209,14 +209,13 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
         onError: [
           {
             guard: ({ context, event }: { context: Context; event: any }) => {
-              if (context.runMode === "dry" || context.runMode === "script" || context.agentConfig?.cli === "mock-agent") {
+              // Only actually error the workflow if it's running in a state where it should never error.
+              // Otherwise, continue as normal.
+              if (context.runMode === "dry" || context.runMode === "script") {
                 throw new Error(event.error);
               }
-              return false;
+              return true;
             },
-            target: nextStateName,
-          },
-          {
             target: stateName,
           },
         ],
