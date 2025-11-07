@@ -114,6 +114,7 @@ export const addKickoffCommand = (commandOptions: WorkflowCommandOptions) => {
           agentConfig,
           args,
           skipTodos,
+          manageVersionControl: options.versionControl === "git" ? "git" : undefined,
         });
       }
     );

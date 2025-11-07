@@ -13,3 +13,4 @@ Dockerfile
 *.njsproj
 *.sln
 *.sw?
+.saf-workflow-prompt.log
