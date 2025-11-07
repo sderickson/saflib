@@ -209,9 +209,11 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
         onError: [
           {
             guard: ({ context, event }: { context: Context; event: any }) => {
-              // Only actually error the workflow if it's running in a state where it should never error.
-              // Otherwise, continue as normal.
-              if (context.runMode === "dry" || context.runMode === "script") {
+              // If validations failed, and we're running things in a way that *ought* to be correct each time, then error.
+              // Currently, this is an infinite loop, though when running with a real agent. I have various loops being handled
+              // internally by steps and here.
+              // TODO: Figure out a general way to handle validation in a way that will retry, but not forever.
+              if (context.runMode === "dry" || context.runMode === "script" || context.agentConfig?.cli === "mock-agent") {
                 throw new Error(event.error);
               }
               return true;
