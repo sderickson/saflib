@@ -72,11 +72,11 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
     //   name: "example-project",
     // })),  
 
-    // // Covers various "init" workflows
-    // step(makeWorkflowMachine(InitServiceWorkflowDefinition), () => ({
-    //   name: "tmp-service",
-    //   path: "./services/tmp",
-    // })),
+    // Covers various "init" workflows
+    step(makeWorkflowMachine(InitServiceWorkflowDefinition), () => ({
+      name: "tmp-service",
+      path: "./services/tmp",
+    })),
     
     // // Test "@saflib/openapi workflows"
     // step(CwdStepMachine, () => ({
