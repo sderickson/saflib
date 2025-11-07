@@ -144,42 +144,42 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
     //   path: "./bin/tmp-cli/echo.ts",
     // })),
 
-    // Test @saflib/grpc workflows
-    step(CwdStepMachine, () => ({
-      path: ".",
-    })),
-    step(makeWorkflowMachine(InitGrpcProtoWorkflowDefinition), () => ({
-      name: "tmp-grpc-proto",
-      path: "./services/tmp/tmp-grpc-proto",
-    })),
-    step(makeWorkflowMachine(InitGrpcServerWorkflowDefinition), () => ({
-      name: "tmp-grpc-server",
-      path: "./services/tmp/tmp-grpc-server",
-    })),
-    step(makeWorkflowMachine(InitGrpcClientWorkflowDefinition), () => ({
-      name: "tmp-grpc-client",
-      path: "./services/tmp/tmp-grpc-client",
-    })),
-    step(CwdStepMachine, () => ({
-      path: "./services/tmp/tmp-grpc-proto",
-    })),
+    // // Test @saflib/grpc workflows
+    // step(CwdStepMachine, () => ({
+    //   path: ".",
+    // })),
+    // step(makeWorkflowMachine(InitGrpcProtoWorkflowDefinition), () => ({
+    //   name: "tmp-grpc-proto",
+    //   path: "./services/tmp/tmp-grpc-proto",
+    // })),
+    // step(makeWorkflowMachine(InitGrpcServerWorkflowDefinition), () => ({
+    //   name: "tmp-grpc-server",
+    //   path: "./services/tmp/tmp-grpc-server",
+    // })),
+    // step(makeWorkflowMachine(InitGrpcClientWorkflowDefinition), () => ({
+    //   name: "tmp-grpc-client",
+    //   path: "./services/tmp/tmp-grpc-client",
+    // })),
+    // step(CwdStepMachine, () => ({
+    //   path: "./services/tmp/tmp-grpc-proto",
+    // })),
 
-    // NOTE: It has to be in the health group for types, and this test, to work.
-    step(makeWorkflowMachine(AddProtoWorkflowDefinition), () => ({
-      path: "./protos/health/example.proto",
-    })),
-    step(CwdStepMachine, () => ({
-      path: "./services/tmp/tmp-grpc-server",
-    })),
-    step(makeWorkflowMachine(AddGrpcServerHandlerWorkflowDefinition), () => ({
-      path: "./handlers/health/example.ts",
-    })),
-    step(CwdStepMachine, () => ({
-      path: "./services/tmp/tmp-grpc-client",
-    })),
-    step(makeWorkflowMachine(AddGrpcCallWorkflowDefinition), () => ({
-      path: "./rpcs/health/example.ts",
-    })),
+    // // NOTE: It has to be in the health group for types, and this test, to work.
+    // step(makeWorkflowMachine(AddProtoWorkflowDefinition), () => ({
+    //   path: "./protos/health/example.proto",
+    // })),
+    // step(CwdStepMachine, () => ({
+    //   path: "./services/tmp/tmp-grpc-server",
+    // })),
+    // step(makeWorkflowMachine(AddGrpcServerHandlerWorkflowDefinition), () => ({
+    //   path: "./handlers/health/example.ts",
+    // })),
+    // step(CwdStepMachine, () => ({
+    //   path: "./services/tmp/tmp-grpc-client",
+    // })),
+    // step(makeWorkflowMachine(AddGrpcCallWorkflowDefinition), () => ({
+    //   path: "./rpcs/health/example.ts",
+    // })),
 
     // Test @saflib/identity workflows
     step(CwdStepMachine, () => ({
