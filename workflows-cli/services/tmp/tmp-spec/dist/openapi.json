@@ -1,0 +1,140 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "tmp API",
+    "version": "1.0.0",
+    "description": "API specification for the tmp service"
+  },
+  "paths": null,
+  "components": {
+    "schemas": {
+      "Error": {
+        "$ref": "#/components/schemas/error"
+      },
+      "ProductEvent": {
+        "$ref": "#/components/schemas/index"
+      },
+      "error": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "A short, machine-readable error code, for when HTTP status codes are not sufficient."
+          },
+          "message": {
+            "type": "string",
+            "description": "A human-readable description of the error.",
+            "example": "The requested resource could not be found."
+          }
+        }
+      },
+      "login": {
+        "type": "object",
+        "properties": {
+          "event": {
+            "type": "string",
+            "enum": [
+              "login"
+            ]
+          },
+          "context": {
+            "type": "object",
+            "properties": {
+              "method": {
+                "type": "string",
+                "enum": [
+                  "email"
+                ]
+              }
+            }
+          }
+        },
+        "required": [
+          "event",
+          "context"
+        ]
+      },
+      "signup": {
+        "type": "object",
+        "properties": {
+          "event": {
+            "type": "string",
+            "enum": [
+              "signup"
+            ]
+          },
+          "context": {
+            "type": "object",
+            "properties": {
+              "method": {
+                "type": "string",
+                "enum": [
+                  "email"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "signup_view": {
+        "type": "object",
+        "properties": {
+          "event": {
+            "type": "string",
+            "enum": [
+              "signup_view"
+            ]
+          }
+        }
+      },
+      "verify_email": {
+        "type": "object",
+        "properties": {
+          "event": {
+            "type": "string",
+            "enum": [
+              "verify_email"
+            ]
+          }
+        }
+      },
+      "index": {
+        "type": "object",
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/login"
+          },
+          {
+            "$ref": "#/components/schemas/signup"
+          },
+          {
+            "$ref": "#/components/schemas/signup_view"
+          },
+          {
+            "$ref": "#/components/schemas/verify_email"
+          }
+        ],
+        "properties": {
+          "event": {
+            "type": "string"
+          },
+          "client": {
+            "type": "string",
+            "description": "The frontend client that triggered the event. For web, it should be \"web-{spa-name}\"."
+          },
+          "view": {
+            "type": "string",
+            "description": "The page that triggered the event. For vue, it should be the route name provided by vue router."
+          },
+          "component": {
+            "type": "string",
+            "description": "The component that triggered the event. For vue, it should be the component name."
+          }
+        },
+        "required": [
+          "event"
+        ]
+      }
+    }
+  }
+}
