@@ -71,6 +71,10 @@ export const DrizzleInitWorkflowDefinition = defineWorkflow<
     overview: path.join(import.meta.dirname, "../docs/01-overview.md"),
   },
 
+  versionControl: {
+    ignorePaths: ["./migrations/"],
+  },
+
   steps: [
     step(CopyStepMachine, ({ context }) => ({
       name: "", // needed?
