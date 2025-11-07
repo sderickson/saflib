@@ -56,7 +56,7 @@ export const OpenapiInitWorkflowDefinition = defineWorkflow<
   },
 
   versionControl: {
-    ignorePaths: ["./dist/"],
+    ignorePaths: ["./dist/", "./schemas/error.yaml"],
   },
 
   templateFiles: {
