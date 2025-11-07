@@ -9,6 +9,7 @@ const execAsync = promisify(exec);
 import { checklistToString } from "../utils.ts";
 import { tmpdir } from "os";
 import { execSync } from "child_process";
+import { getWorkflowLogger } from "../store.ts";
 
 let gitRoot: string | undefined;
 
@@ -127,6 +128,14 @@ export interface CommitChangesParam {
 
 export const commitChanges = async (param: CommitChangesParam) => {
   const { workflow, context } = param;
+  const logger = getWorkflowLogger();
+
+  const absoluteAllFiles = await getGitChanges();
+  if (absoluteAllFiles.length === 0) {
+    logger.info("No files to commit. Skipping commit.");
+    return;
+  }
+
   await execAsync(`git add -A`, {
     cwd: await getGitRoot(),
   });
@@ -140,6 +149,8 @@ export const commitChanges = async (param: CommitChangesParam) => {
   execSync(`git commit -F "${msgFile}"`, {
     cwd: await getGitRoot(),
   });
+  logger.info(`Committed ${absoluteAllFiles.length} files with message:
+${gitCommitMessage}`);
   unlinkSync(msgFile);
 
 }
