@@ -25,11 +25,11 @@ import { addNewLinesToString } from "@saflib/utils";
 import { getWorkflowLogger } from "./store.ts";
 import { addPendingMessage } from "./agents/message.ts";
 import { execSync } from "child_process";
-import path, { join } from "path";
-import { handlePrompt } from "./prompt.ts";
+
+import { join } from "path";
 import { checklistToString } from "./utils.ts";
 import { tmpdir } from "os";
-import { getGitChanges, getGitRoot } from "./version/git.ts";
+import { handleGitChanges, getGitRoot } from "./version/git.ts";
 import { promisify } from "node:util";
 import { exec } from "node:child_process";
 const execAsync = promisify(exec);
@@ -348,68 +348,4 @@ export const step = <C, M extends AnyStateMachine>(
     validate: options.validate || (() => Promise.resolve(undefined)),
     skipIf: options.skipIf || (() => false),
   };
-};
-
-interface HandleGitChangesOptions {
-  workflowId: string;
-  context: WorkflowContext;
-  checklistDescription: string;
-  ignorePaths?: string[];
-}
-
-const handleGitChanges = async ({
-  workflowId,
-  context,
-  checklistDescription,
-  ignorePaths,
-}: HandleGitChangesOptions) => {
-  let tries = 0;
-  while (true) {
-    const expectedFiles = new Set(Object.values(context.copiedFiles || {}));
-    const absoluteAllFiles = await getGitChanges();
-    let otherFiles = absoluteAllFiles
-      .filter((file) => !expectedFiles.has(file))
-      .filter((file) => !file.endsWith("package-lock.json"));
-    if (ignorePaths) {
-      const absoluteIgnorePaths = ignorePaths.map((ignorePath) =>
-        path.join(context.cwd, ignorePath)
-      );
-      otherFiles = otherFiles.filter(
-        (file) =>
-          !absoluteIgnorePaths.some((ignorePath) => file.startsWith(ignorePath))
-      );
-    }
-
-    if (otherFiles.length > 0) {
-      tries++;
-      if (tries > 3) {
-        return false;
-      }
-      const { shouldContinue } = await handlePrompt({
-        context: context,
-        msg: `The following files had unexpected changes:
-      ${otherFiles.map((file) => `- ${path.relative(context.cwd, file)}`).join("\n")}
-
-      These are not expected to be changed by the workflow ${workflowId}.
-      
-      You need to do one of two things:
-      - If these changes were NOT in service to the original prompt, undo them.
-      - If these changes WERE in service of the original prompt, commit exactly these files with an explanatory message.
-      
-      Remember! The goal of this workflow is just to do the following:
-      ${checklistDescription}.
-      
-      If you have diverged from this goal, you need to undo the unscoped changes.`,
-      });
-
-      // bit of a hack to make sure "slowly printing" is done
-      await new Promise(resolve => setTimeout(resolve, 10));
-      
-      if (!shouldContinue || context.runMode === "script") {
-        return false;
-      }
-    } else {
-      return true;
-    }
-  }
 };
