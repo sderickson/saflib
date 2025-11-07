@@ -28,7 +28,7 @@ jobs:
 
       # Main test. If this fails, one of the workflows is broken.
       - name: Run Workflow Integration Test
-        run: ./workflow-runner.ts
+        run: ./test-all-steps-runner.ts
         working-directory: ./workflows-cli
 
       # just for debugging, checking all the files that got added/changed
