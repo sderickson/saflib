@@ -67,6 +67,7 @@ export const handleGitChanges = async ({
   let tries = 0;
   while (true) {
     const expectedFiles = new Set(Object.values(context.copiedFiles || {}));
+    console.log("expectedFiles", expectedFiles);
     const absoluteAllFiles = await getGitChanges();
     let otherFiles = absoluteAllFiles
       .filter((file) => !expectedFiles.has(file))
