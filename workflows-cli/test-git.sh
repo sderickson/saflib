@@ -18,14 +18,12 @@ status_code=$?
 
 # Print the commits in the branch compared to main
 git --no-pager log --oneline --left-right main...test-git
+git reset --hard
+git clean -fd
 
 # Go back, delete the branch
 git checkout $current_branch
 git branch -D test-git
-
-# Clear any git changes
-git reset --hard
-git clean -fd
 
 # Exit with the status code
 exit $status_code
