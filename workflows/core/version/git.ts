@@ -104,7 +104,10 @@ export const handleGitChanges = async ({
       - If these changes WERE in service of the original prompt, commit exactly these files with an explanatory message.
       
       Remember! The goal of this workflow is just to do the following:
-      ${checklistDescription}.
+
+      ****
+      ${checklistDescription}
+      ****
       
       If you have diverged from this goal, you need to undo the unscoped changes.`,
       });
