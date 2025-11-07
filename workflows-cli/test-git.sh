@@ -24,7 +24,7 @@ git checkout $current_branch
 git branch -D test-git
 
 # Clear any git changes
-git reset --hard
+git clean -fd
 
 # Exit with the status code
 exit $status_code
