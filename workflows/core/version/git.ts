@@ -10,6 +10,7 @@ import { checklistToString } from "../utils.ts";
 import { tmpdir } from "os";
 import { execSync } from "child_process";
 import { getWorkflowLogger } from "../store.ts";
+import { minimatch } from "minimatch";
 
 let gitRoot: string | undefined;
 
@@ -160,4 +161,33 @@ export const commitChanges = async (param: CommitChangesParam) => {
 ${gitCommitMessage}`);
   unlinkSync(msgFile);
 
+}
+
+interface FilterMatchesOptions {
+  absolutePaths: string[];
+  allowedAbsolutePaths: string[];
+  allowedGlobs?: string[];
+  cwd: string;
+}
+
+const universalGlobs = [
+  "*/package-lock.json",
+]
+
+export const filterMatches = ({ absolutePaths, allowedAbsolutePaths, allowedGlobs: globs, cwd }: FilterMatchesOptions): string[] => {
+  // filter out paths which are explicitly allowed
+  const initialFilteredAbsolutePaths = absolutePaths.filter((absolutePath) => !allowedAbsolutePaths.some((allowedAbsolutePath) => absolutePath.startsWith(allowedAbsolutePath)));
+  
+  // filter out paths which match the globs
+  const relativePaths = initialFilteredAbsolutePaths.map((absolutePath) => path.relative(cwd, absolutePath));
+
+  const allGlobs = [...universalGlobs, ...(globs || [])];
+  const filteredRelativePaths = relativePaths.filter((relativePath) => {
+    return !allGlobs.some((glob) => minimatch(relativePath, glob));
+  });
+
+  // convert back to absolute paths
+  const filteredAbsolutePaths = filteredRelativePaths.map((relativePath) => path.join(cwd, relativePath));
+
+  return filteredAbsolutePaths;
 }
