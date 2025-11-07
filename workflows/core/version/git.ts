@@ -66,11 +66,11 @@ export const handleGitChanges = async ({
 }: HandleGitChangesOptions) => {
   let tries = 0;
   while (true) {
-    const expectedFiles = new Set(Object.values(context.copiedFiles || {}));
+    const expectedFiles = Object.values(context.copiedFiles || {});
     console.log("expectedFiles", expectedFiles);
     const absoluteAllFiles = await getGitChanges();
     let otherFiles = absoluteAllFiles
-      .filter((file) => !expectedFiles.has(file))
+      .filter((file) => !expectedFiles.some(expectedFile => file.startsWith(expectedFile)))
       .filter((file) => !file.endsWith("package-lock.json"));
     if (ignorePaths) {
       const absoluteIgnorePaths = ignorePaths.map((ignorePath) =>
