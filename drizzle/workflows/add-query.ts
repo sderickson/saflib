@@ -70,8 +70,6 @@ export const AddDrizzleQueryWorkflowDefinition = defineWorkflow<
     errors: path.join(sourceDir, "errors.ts"),
   },
 
-  versionControl: true,
-
   docFiles: {
     refDoc: path.join(import.meta.dirname, "../docs/03-queries.md"),
     testingGuide: path.join(import.meta.dirname, "../docs/04-testing.md"),

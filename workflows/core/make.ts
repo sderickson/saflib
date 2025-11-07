@@ -59,7 +59,6 @@ export function defineWorkflow<
   docFiles: Record<string, string>;
   steps: Array<WorkflowStep<C, AnyStateMachine>>;
   versionControl?:
-    | boolean
     | {
         ignorePaths?: string[];
       };
@@ -180,14 +179,14 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
           }
 
           // To manage version control, both the workflow and the runtime need to opt in. In all likelihood, eventually workflows will always be opted in.
-          if (workflow.manageVersionControl && input.manageVersionControl) {
+          if (workflow.versionControl && input.manageVersionControl) {
             const successful = await handleGitChanges({
               context: input,
               checklistDescription:
                 workflow.checklistDescription?.(input) || workflow.description,
               ignorePaths:
-                typeof workflow.manageVersionControl === "object"
-                  ? workflow.manageVersionControl.ignorePaths
+                typeof workflow.versionControl === "object"
+                  ? workflow.versionControl.ignorePaths
                   : undefined,
             });
             if (!successful) {
@@ -232,7 +231,7 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
         if (input.runMode === "dry" || input.runMode === "script") {
           return;
         }
-        if (workflow.manageVersionControl && input.manageVersionControl) {
+        if (workflow.versionControl && input.manageVersionControl) {
           execSync(`git add -A`, {
             cwd: gitRoot,
           });

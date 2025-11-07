@@ -75,11 +75,9 @@ export interface WorkflowDefinition<
   steps: Array<WorkflowStep<C, AnyStateMachine>>;
 
   /**
-   * Whether to manage git. If true, the workflow will commit and push the changes to the repository at the end of the workflow.
-   * It will also prompt the agent if files *other* than template files were changed.
+   * Configure version control for the workflow. Right now, just provide paths which the workflow will consider safe to change as part of the workflow.
    */
-  manageVersionControl?:
-    | boolean
+  versionControl?:
     | {
         ignorePaths?: string[];
       };

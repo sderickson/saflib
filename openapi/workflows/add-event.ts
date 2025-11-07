@@ -74,8 +74,6 @@ export const AddEventWorkflowDefinition = defineWorkflow<
     overview: path.join(import.meta.dirname, "../docs/01-overview.md"),
   },
 
-  versionControl: true,
-
   steps: [
     step(CopyStepMachine, ({ context }) => ({
       name: context.targetName,
