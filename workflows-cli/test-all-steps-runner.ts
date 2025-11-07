@@ -24,4 +24,4 @@ export const runWorkflow = (workflow: string) => {
   }
 };
 
-runWorkflow("./test-all-workflows.ts");
+runWorkflow("./test-all-steps.ts");

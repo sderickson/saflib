@@ -45,8 +45,10 @@ export const addKickoffCommand = (commandOptions: WorkflowCommandOptions) => {
         args: string[],
         options: { run?: string; message?: string; versionControl?: string; skipTodos?: boolean }
       ) => {
-        writeFileSync(logFile, "");
         const runMode = options.run;
+        if (runMode) {
+          writeFileSync(logFile, "");
+        }
         const givenRunMode = parseRunMode(runMode);
         const skipTodos = options.skipTodos;
         const log = createWorkflowLogger({
