@@ -17,7 +17,7 @@ npm exec saf-workflow kickoff ./test-all-workflows.ts -- --skip-todos -r mock -v
 status_code=$?
 
 # Print the commits in the branch compared to main
-git log --oneline --left-right main...test-git
+git --no-pager log --oneline --left-right main...test-git
 
 # Go back, delete the branch
 git checkout $current_branch
