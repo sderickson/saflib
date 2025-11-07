@@ -114,7 +114,7 @@ export const handleGitChanges = async ({
       ****
       
       If you have diverged from this goal, you need to undo the unscoped changes.`,
-      });console.log(, )
+      });
 
       // bit of a hack to make sure "slowly printing" is done
       await new Promise(resolve => setTimeout(resolve, 10));
