@@ -88,6 +88,10 @@ export const InitServiceWorkflowDefinition = defineWorkflow<
 
   docFiles: {},
 
+  versionControl: {
+    ignorePaths: ["./env.ts"],
+  },
+
   steps: [
     // openapi
     step(makeWorkflowMachine(OpenapiInitWorkflowDefinition), ({ context }) => ({
