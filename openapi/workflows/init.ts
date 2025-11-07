@@ -55,6 +55,10 @@ export const OpenapiInitWorkflowDefinition = defineWorkflow<
     };
   },
 
+  versionControl: {
+    ignorePaths: ["./dist/"],
+  },
+
   templateFiles: {
     openapi: path.join(sourceDir, "openapi.yaml"),
     packageJson: path.join(sourceDir, "package.json"),
