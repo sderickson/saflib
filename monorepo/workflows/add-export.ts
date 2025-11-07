@@ -66,6 +66,10 @@ export const AddExportWorkflowDefinition = defineWorkflow<
     test: path.join(sourceDir, "template-file.test.ts"),
   },
 
+  versionControl: {
+    ignorePaths: ["./docs/"],
+  },
+
   // TODO: add documentation file references
   docFiles: {},
 
