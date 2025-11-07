@@ -29,6 +29,10 @@ import path, { join } from "path";
 import { handlePrompt } from "./prompt.ts";
 import { checklistToString } from "./utils.ts";
 import { tmpdir } from "os";
+import { getGitChanges, getGitRoot } from "./version/git.ts";
+import { promisify } from "node:util";
+import { exec } from "node:child_process";
+const execAsync = promisify(exec);
 
 let lastSystemPrompt: string | undefined;
 
@@ -178,7 +182,6 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
             return;
           }
 
-          // To manage version control, both the workflow and the runtime need to opt in. In all likelihood, eventually workflows will always be opted in.
           if (input.manageVersionControl) {
             const successful = await handleGitChanges({
               context: input,
@@ -232,8 +235,8 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
           return;
         }
         if (input.manageVersionControl) {
-          execSync(`git add -A`, {
-            cwd: gitRoot,
+          await execAsync(`git add -A`, {
+            cwd: await getGitRoot(),
           });
 
           const gitCommitHeader =
@@ -243,7 +246,7 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
           const msgFile = join(tmpdir(), `commit-msg-${Date.now()}.txt`);
           writeFileSync(msgFile, gitCommitMessage);
           execSync(`git commit -F "${msgFile}"`, {
-            cwd: gitRoot,
+            cwd: await getGitRoot(),
           });
           unlinkSync(msgFile);
         }
@@ -346,17 +349,6 @@ export const step = <C, M extends AnyStateMachine>(
   };
 };
 
-let gitRoot: string | undefined;
-
-const getGitRoot = () => {
-  if (!gitRoot) {
-    gitRoot = execSync("git rev-parse --show-toplevel", {
-      encoding: "utf8",
-    }).trim();
-  }
-  return gitRoot;
-};
-
 interface HandleGitChangesOptions {
   context: WorkflowContext;
   checklistDescription: string;
@@ -368,41 +360,12 @@ const handleGitChanges = async ({
   checklistDescription,
   ignorePaths,
 }: HandleGitChangesOptions) => {
-  const gitRoot = getGitRoot();
   let tries = 0;
   while (true) {
     const expectedFiles = new Set(Object.values(context.copiedFiles || {}));
-    const staged = execSync("git diff --cached --name-only", {
-      encoding: "utf8",
-      cwd: gitRoot,
-    })
-      .trim()
-      .split("\n")
-      .filter(Boolean);
-
-    // Get unstaged changes (modified files)
-    const unstaged = execSync("git diff --name-only", {
-      encoding: "utf8",
-      cwd: gitRoot,
-    })
-      .trim()
-      .split("\n")
-      .filter(Boolean);
-
-    // Get untracked files
-    const untracked = execSync("git ls-files --others --exclude-standard", {
-      cwd: gitRoot,
-      encoding: "utf8",
-    })
-      .trim()
-      .split("\n")
-      .filter(Boolean);
-
-    const allFiles = [...staged, ...unstaged, ...untracked];
-    const absoluteAllFiles = allFiles.map((file) => path.join(gitRoot, file));
+    const absoluteAllFiles = await getGitChanges();
     let otherFiles = absoluteAllFiles
-      .filter((file) => !expectedFiles.has(file))
-      .filter((file) => !file.endsWith("/saflib")); // tmp
+      .filter((file) => !expectedFiles.has(file));
     if (ignorePaths) {
       const absoluteIgnorePaths = ignorePaths.map((ignorePath) =>
         path.join(context.cwd, ignorePath)
