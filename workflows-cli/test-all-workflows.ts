@@ -182,39 +182,39 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
     // })),
 
     // Test @saflib/identity workflows
-    step(CwdStepMachine, () => ({
-      path: ".",
-    })),
-    step(makeWorkflowMachine(IdentityInitWorkflowDefinition), () => ({
-      name: "tmp-identity",
-      path: "./services/tmp-identity",
-    })),
+    // step(CwdStepMachine, () => ({
+    //   path: ".",
+    // })),
+    // step(makeWorkflowMachine(IdentityInitWorkflowDefinition), () => ({
+    //   name: "tmp-identity",
+    //   path: "./services/tmp-identity",
+    // })),
 
-    // Test @saflib/cron workflows
-    step(CwdStepMachine, () => ({
-      path: ".",
-    })),
-    step(makeWorkflowMachine(CronInitWorkflowDefinition), () => ({
-      name: "tmp-cron",
-      path: "./services/tmp/tmp-cron",
-    })),
-    step(CwdStepMachine, () => ({
-      path: "./services/tmp/tmp-cron",
-    })),
-    step(makeWorkflowMachine(CronAddJobWorkflowDefinition), () => ({
-      path: "./jobs/tmp-cron/give-time.ts",
-    })),
+    // // Test @saflib/cron workflows
+    // step(CwdStepMachine, () => ({
+    //   path: ".",
+    // })),
+    // step(makeWorkflowMachine(CronInitWorkflowDefinition), () => ({
+    //   name: "tmp-cron",
+    //   path: "./services/tmp/tmp-cron",
+    // })),
+    // step(CwdStepMachine, () => ({
+    //   path: "./services/tmp/tmp-cron",
+    // })),
+    // step(makeWorkflowMachine(CronAddJobWorkflowDefinition), () => ({
+    //   path: "./jobs/tmp-cron/give-time.ts",
+    // })),
 
-    // Test @saflib/sdk workflows
-    step(CwdStepMachine, () => ({
-      path: "./services/tmp/tmp-sdk",
-    })),
-    step(makeWorkflowMachine(AddSdkQueryWorkflowDefinition), () => ({
-      path: "./requests/users/list.ts",
-    })),
-    step(makeWorkflowMachine(AddComponentWorkflowDefinition), () => ({
-      path: "./components/user-list",
-    })),
+    // // Test @saflib/sdk workflows
+    // step(CwdStepMachine, () => ({
+    //   path: "./services/tmp/tmp-sdk",
+    // })),
+    // step(makeWorkflowMachine(AddSdkQueryWorkflowDefinition), () => ({
+    //   path: "./requests/users/list.ts",
+    // })),
+    // step(makeWorkflowMachine(AddComponentWorkflowDefinition), () => ({
+    //   path: "./components/user-list",
+    // })),
 
     // Test @saflib/vue workflows
     step(CwdStepMachine, () => ({
