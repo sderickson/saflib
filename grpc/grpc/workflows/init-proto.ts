@@ -73,7 +73,7 @@ export const InitGrpcProtoWorkflowDefinition = defineWorkflow<
   docFiles: {},
 
   versionControl: {
-    ignorePaths: ["./dist/"],
+    ignorePaths: ["./dist/", "./env.ts"],
   },
 
   steps: [
