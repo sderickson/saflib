@@ -42,12 +42,24 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
       fileId: "list",
       promptMessage: "Update the list.ts file to list the files in the current directory.",
     })),
-    step(PromptStepMachine, () => ({
-      promptText: "Verify that the list.ts file is working correctly.",
-    })),
     step(CommandStepMachine, () => ({
       command: "echo",
       args: ["hello"],
+    })),
+    step(PromptStepMachine, () => ({
+      promptText: `Verify that the list.ts file is working correctly.
+      
+      - These
+      - lines
+      - are
+      - basically
+      - to
+      - test
+      - if
+      - lines
+      - are
+      - printed
+      - slowly`
     })),
   ],
 });

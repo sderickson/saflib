@@ -1,6 +1,6 @@
 import { Option } from "commander";
 import { addNewLinesToString } from "../../strings.ts";
-import type { WorkflowDefinition, WorkflowRunMode } from "../../core/types.ts";
+import type { AgentConfig, WorkflowDefinition, WorkflowRunMode } from "../../core/types.ts";
 import { runWorkflow } from "./shared/utils.ts";
 import {
   createWorkflowLogger,
@@ -16,7 +16,7 @@ import type { WorkflowCommandOptions } from "./shared/types.ts";
 export const addKickoffCommand = (commandOptions: WorkflowCommandOptions) => {
   const runModeOption = new Option(
     "-r, --run <mode>",
-    'Directly command an agent instead of printing prompts. Currently only "cursor" is supported.'
+    'Directly command an agent instead of printing prompts. Currently only "cursor" and "mock" are supported.'
   );
   const versionControlOption = new Option(
     "-v, --version-control <mode>",
@@ -49,7 +49,7 @@ export const addKickoffCommand = (commandOptions: WorkflowCommandOptions) => {
         if (runMode) {
           writeFileSync(logFile, "");
         }
-        const givenRunMode = parseRunMode(runMode);
+        const { runMode: givenRunMode, agentConfig } = parseRun(runMode);
         const skipTodos = options.skipTodos;
         const log = createWorkflowLogger({
           // printToAgent: givenRunMode === "run",
@@ -111,9 +111,7 @@ export const addKickoffCommand = (commandOptions: WorkflowCommandOptions) => {
         await runWorkflow({
           definition: workflowDefinition,
           runMode: givenRunMode,
-          agentConfig: {
-            cli: "cursor-agent",
-          },
+          agentConfig,
           args,
           skipTodos,
         });
@@ -121,9 +119,20 @@ export const addKickoffCommand = (commandOptions: WorkflowCommandOptions) => {
     );
 };
 
-const parseRunMode = (runMode: string | undefined): WorkflowRunMode => {
-  if (runMode && runMode !== "cursor") {
-    throw new Error(`Unsupported run mode: ${runMode}`);
+interface RunReturn {
+  runMode: WorkflowRunMode;
+  agentConfig?: AgentConfig;
+}
+
+const parseRun = (runMode: string | undefined): RunReturn => {
+  switch (runMode) {
+    case "cursor":
+      return { runMode: "run", agentConfig: { cli: "cursor-agent" } };
+    case "mock":
+      return { runMode: "run", agentConfig: { cli: "mock-agent" } };
+    case undefined:
+      return { runMode: "print" };
+    default:
+      throw new Error(`Unsupported run mode: ${runMode}`);
   }
-  return runMode === "cursor" ? "run" : "print";
 };
