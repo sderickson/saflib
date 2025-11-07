@@ -212,7 +212,7 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
         onError: [
           {
             guard: ({ context, event }: { context: Context; event: any }) => {
-              if (context.runMode === "dry" || context.runMode === "script") {
+              if (context.runMode === "dry" || context.runMode === "script" || context.agentConfig?.cli === "mock-agent") {
                 throw new Error(event.error);
               }
               return false;
@@ -433,6 +433,10 @@ const handleGitChanges = async ({
       
       If you have diverged from this goal, you need to undo the unscoped changes.`,
       });
+
+      // bit of a hack to make sure "slowly printing" is done
+      await new Promise(resolve => setTimeout(resolve, 10));
+      
       if (!shouldContinue || context.runMode === "script") {
         return false;
       }

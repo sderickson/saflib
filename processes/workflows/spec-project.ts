@@ -1,9 +1,8 @@
 import {
   CopyStepMachine,
-  PromptStepMachine,
-  CommandStepMachine,
   defineWorkflow,
   step,
+  UpdateStepMachine,
 } from "@saflib/workflows";
 import path from "path";
 
@@ -56,36 +55,17 @@ export const SpecProjectWorkflowDefinition = defineWorkflow<
 
   docFiles: {},
 
+  manageVersionControl: true,
+
   steps: [
     step(CopyStepMachine, ({ context }) => ({
       name: context.name,
       targetDir: context.targetDir,
     })),
 
-    step(CommandStepMachine, () => ({
-      command: "npm",
-      args: ["exec", "saf-docs", "print"],
-    })),
-
-    step(PromptStepMachine, () => ({
-      promptText: `Get familiar with the SAF packages available to you above. For more information about any given package, run \`npm exec saf-docs <package-name>\`.`,
-    })),
-
-    step(PromptStepMachine, ({ context }) => ({
-      promptText: `You are writing a product/technical specification for ${context.name}. Ask for an overview of the project if you haven't already gotten one, then given that description, fill the spec.md file which was just created.`,
-    })),
-
-    step(PromptStepMachine, () => ({
-      promptText: `Discuss and iterate on the spec until it's approved.`,
-    })),
-
-    step(CommandStepMachine, () => ({
-      command: "npm",
-      args: ["exec", "saf-workflow", "list", "--", "-ad"],
-    })),
-
-    step(PromptStepMachine, () => ({
-      promptText: `See the above list of available workflow commands. Please fill out the checklist.md file with these commands and arguments.`,
+    step(UpdateStepMachine, ({ context }) => ({
+      fileId: "spec",
+      promptMessage: `Update **${path.basename(context.copiedFiles!.spec)}**.`,
     })),
   ],
 });
