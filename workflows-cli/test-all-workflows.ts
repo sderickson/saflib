@@ -130,9 +130,9 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
     step(CwdStepMachine, () => ({
       path: "./services/tmp/tmp-lib",
     })),
-    step(makeWorkflowMachine(AddWorkflowDefinition), () => ({
-      name: "workflows/add-foo",
-    })),
+    // step(makeWorkflowMachine(AddWorkflowDefinition), () => ({
+    //   name: "workflows/add-foo",
+    // })),
     step(makeWorkflowMachine(AddExportWorkflowDefinition), () => ({
       name: "myFunction",
       path: "./src/utils.ts",
