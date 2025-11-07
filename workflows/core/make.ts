@@ -20,19 +20,13 @@ import {
 } from "xstate";
 import { contextFromInput } from "./utils.ts";
 import type { WorkflowArgument } from "./types.ts";
-import { existsSync, writeFileSync, unlinkSync } from "fs";
+import { existsSync } from "fs";
 import { addNewLinesToString } from "@saflib/utils";
 import { getWorkflowLogger } from "./store.ts";
 import { addPendingMessage } from "./agents/message.ts";
-import { execSync } from "child_process";
 
-import { join } from "path";
-import { checklistToString } from "./utils.ts";
-import { tmpdir } from "os";
-import { handleGitChanges, getGitRoot } from "./version/git.ts";
-import { promisify } from "node:util";
-import { exec } from "node:child_process";
-const execAsync = promisify(exec);
+
+import { handleGitChanges, commitChanges } from "./version/git.ts";
 
 let lastSystemPrompt: string | undefined;
 
@@ -236,20 +230,10 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
           return;
         }
         if (input.manageVersionControl) {
-          await execAsync(`git add -A`, {
-            cwd: await getGitRoot(),
+          await commitChanges({
+            workflow: workflow,
+            context: input,
           });
-
-          const gitCommitHeader =
-            workflow.checklistDescription?.(input) || workflow.description;
-          const gitCommitBody = checklistToString(input.checklist);
-          const gitCommitMessage = `${gitCommitHeader}\n\n${gitCommitBody}`;
-          const msgFile = join(tmpdir(), `commit-msg-${Date.now()}.txt`);
-          writeFileSync(msgFile, gitCommitMessage);
-          execSync(`git commit -F "${msgFile}"`, {
-            cwd: await getGitRoot(),
-          });
-          unlinkSync(msgFile);
         }
         return;
       }),

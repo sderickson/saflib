@@ -1,9 +1,14 @@
 import { exec } from "node:child_process";
 import { promisify } from "node:util";
-import path from "node:path";
+import path, { join } from "node:path";
 import type { WorkflowContext } from "../types.ts";
 import { handlePrompt } from "../prompt.ts";
+import { writeFileSync, unlinkSync } from "fs";
+import type { WorkflowDefinition } from "../types.ts";
 const execAsync = promisify(exec);
+import { checklistToString } from "../utils.ts";
+import { tmpdir } from "os";
+import { execSync } from "child_process";
 
 let gitRoot: string | undefined;
 
@@ -67,7 +72,6 @@ export const handleGitChanges = async ({
   let tries = 0;
   while (true) {
     const expectedFiles = Object.values(context.copiedFiles || {});
-    console.log("expectedFiles", expectedFiles);
     const absoluteAllFiles = await getGitChanges();
     let otherFiles = absoluteAllFiles
       .filter((file) => !expectedFiles.some(expectedFile => file.startsWith(expectedFile)))
@@ -115,3 +119,27 @@ export const handleGitChanges = async ({
     }
   }
 };
+
+export interface CommitChangesParam {
+  workflow: WorkflowDefinition;
+  context: WorkflowContext;
+}
+
+export const commitChanges = async (param: CommitChangesParam) => {
+  const { workflow, context } = param;
+  await execAsync(`git add -A`, {
+    cwd: await getGitRoot(),
+  });
+
+  const gitCommitHeader =
+    workflow.checklistDescription?.(context) || workflow.description;
+  const gitCommitBody = checklistToString(context.checklist);
+  const gitCommitMessage = `${gitCommitHeader}\n\n${gitCommitBody}`;
+  const msgFile = join(tmpdir(), `commit-msg-${Date.now()}.txt`);
+  writeFileSync(msgFile, gitCommitMessage);
+  execSync(`git commit -F "${msgFile}"`, {
+    cwd: await getGitRoot(),
+  });
+  unlinkSync(msgFile);
+
+}
