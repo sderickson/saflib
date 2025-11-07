@@ -16,36 +16,44 @@ let gitRoot: string | undefined;
 
 export const getGitRoot = async () => {
   if (!gitRoot) {
-    gitRoot = (await execAsync("git rev-parse --show-toplevel", {
-      encoding: "utf8",
-    })).stdout.trim();
+    gitRoot = (
+      await execAsync("git rev-parse --show-toplevel", {
+        encoding: "utf8",
+      })
+    ).stdout.trim();
   }
   return gitRoot;
 };
 
 export const getGitChanges = async () => {
-  const staged = (await execAsync("git diff --cached --name-only", {
-    encoding: "utf8",
-    cwd: await getGitRoot(),
-  })).stdout
+  const staged = (
+    await execAsync("git diff --cached --name-only", {
+      encoding: "utf8",
+      cwd: await getGitRoot(),
+    })
+  ).stdout
     .trim()
     .split("\n")
     .filter(Boolean);
-  
+
   // Get unstaged changes (modified files)
-  const unstaged = (await execAsync("git diff --name-only", {
+  const unstaged = (
+    await execAsync("git diff --name-only", {
       encoding: "utf8",
-    cwd: await getGitRoot(),
-  })).stdout
+      cwd: await getGitRoot(),
+    })
+  ).stdout
     .trim()
     .split("\n")
     .filter(Boolean);
 
   // Get untracked files
-  const untracked = (await execAsync("git ls-files --others --exclude-standard", {
-    cwd: await getGitRoot(),
-    encoding: "utf8",
-  })).stdout
+  const untracked = (
+    await execAsync("git ls-files --others --exclude-standard", {
+      cwd: await getGitRoot(),
+      encoding: "utf8",
+    })
+  ).stdout
     .trim()
     .split("\n")
     .filter(Boolean);
@@ -55,8 +63,7 @@ export const getGitChanges = async () => {
   const absoluteAllFiles = allFiles.map((file) => path.join(gitRoot, file));
 
   return absoluteAllFiles;
-}
-
+};
 
 interface HandleGitChangesOptions {
   workflowId: string;
@@ -76,16 +83,15 @@ export const handleGitChanges = async ({
     const expectedFiles = Object.values(context.copiedFiles || {});
     const absoluteAllFiles = await getGitChanges();
     let otherFiles = absoluteAllFiles
-      .filter((file) => !expectedFiles.some(expectedFile => file.startsWith(expectedFile)))
+      .filter(
+        (file) =>
+          !expectedFiles.some((expectedFile) => file.startsWith(expectedFile))
+      )
       .filter((file) => !file.endsWith("package-lock.json"));
     if (ignorePaths) {
       const absoluteIgnorePaths = ignorePaths.map((ignorePath) =>
         path.join(context.cwd, ignorePath)
       );
-      console.log({
-        absoluteIgnorePaths,
-        otherFiles,
-      });
       otherFiles = otherFiles.filter(
         (file) =>
           !absoluteIgnorePaths.some((ignorePath) => file.startsWith(ignorePath))
@@ -118,8 +124,8 @@ export const handleGitChanges = async ({
       });
 
       // bit of a hack to make sure "slowly printing" is done
-      await new Promise(resolve => setTimeout(resolve, 10));
-      
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
       if (!shouldContinue || context.runMode === "script") {
         return false;
       }
@@ -160,8 +166,7 @@ export const commitChanges = async (param: CommitChangesParam) => {
   logger.info(`Committed ${absoluteAllFiles.length} files with message:
 ${gitCommitMessage}`);
   unlinkSync(msgFile);
-
-}
+};
 
 interface FilterMatchesOptions {
   absolutePaths: string[];
@@ -170,24 +175,32 @@ interface FilterMatchesOptions {
   cwd: string;
 }
 
-const universalGlobs = [
-  "*/package-lock.json",
-]
+const universalGlobs = ["**/package-lock.json"];
 
-export const filterMatches = ({ absolutePaths, allowedAbsolutePaths, allowedGlobs: globs, cwd }: FilterMatchesOptions): string[] => {
+export const filterMatches = ({
+  absolutePaths,
+  allowedAbsolutePaths,
+  allowedGlobs: globs,
+  cwd,
+}: FilterMatchesOptions): string[] => {
   // filter out paths which are explicitly allowed
-  const initialFilteredAbsolutePaths = absolutePaths.filter((absolutePath) => !allowedAbsolutePaths.some((allowedAbsolutePath) => absolutePath.startsWith(allowedAbsolutePath)));
-  
-  // filter out paths which match the globs
-  const relativePaths = initialFilteredAbsolutePaths.map((absolutePath) => path.relative(cwd, absolutePath));
+  const initialFilteredAbsolutePaths = absolutePaths.filter(
+    (absolutePath) =>
+      !allowedAbsolutePaths.some((allowedAbsolutePath) =>
+        absolutePath.startsWith(allowedAbsolutePath)
+      )
+  );
 
   const allGlobs = [...universalGlobs, ...(globs || [])];
-  const filteredRelativePaths = relativePaths.filter((relativePath) => {
-    return !allGlobs.some((glob) => minimatch(relativePath, glob));
+  const absoluteGlobs = allGlobs.map((glob) => {
+    return glob.startsWith("./") ? path.join(cwd, glob) : glob;
   });
 
-  // convert back to absolute paths
-  const filteredAbsolutePaths = filteredRelativePaths.map((relativePath) => path.join(cwd, relativePath));
+  const filteredAbsolutePaths = initialFilteredAbsolutePaths.filter(
+    (absolutePath) => {
+      return !absoluteGlobs.some((glob) => minimatch(absolutePath, glob));
+    }
+  );
 
   return filteredAbsolutePaths;
-}
+};
