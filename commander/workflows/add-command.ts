@@ -56,6 +56,10 @@ export const AddCommandWorkflowDefinition = defineWorkflow<
 
   docFiles: {},
 
+  versionControl: {
+    ignorePaths: ["./package.json"],
+  },
+
   steps: [
     step(CopyStepMachine, ({ context }) => ({
       name: context.targetName,
