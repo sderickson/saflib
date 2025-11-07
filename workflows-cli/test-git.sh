@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-set -e
 
 # Checkout a new branch
 current_branch=$(git branch --show-current)
