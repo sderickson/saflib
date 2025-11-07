@@ -184,6 +184,7 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
 
           if (input.manageVersionControl) {
             const successful = await handleGitChanges({
+              workflowId: workflow.id,
               context: input,
               checklistDescription:
                 workflow.checklistDescription?.(input) || workflow.description,
@@ -350,12 +351,14 @@ export const step = <C, M extends AnyStateMachine>(
 };
 
 interface HandleGitChangesOptions {
+  workflowId: string;
   context: WorkflowContext;
   checklistDescription: string;
   ignorePaths?: string[];
 }
 
 const handleGitChanges = async ({
+  workflowId,
   context,
   checklistDescription,
   ignorePaths,
@@ -387,7 +390,9 @@ const handleGitChanges = async ({
       const { shouldContinue } = await handlePrompt({
         context: context,
         msg: `The following files had unexpected changes:
-      ${otherFiles.map((file) => `- ${file}`).join("\n")}.
+      ${otherFiles.map((file) => `- ${path.relative(context.cwd, file)}`).join("\n")}
+
+      These are not expected to be changed by the workflow ${workflowId}.
       
       You need to do one of two things:
       - If these changes were NOT in service to the original prompt, undo them.
