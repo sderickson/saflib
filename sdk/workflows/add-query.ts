@@ -80,7 +80,7 @@ export const AddSdkQueryWorkflowDefinition = defineWorkflow<
     overview: path.join(import.meta.dirname, "../docs/01-overview.md"),
   },
 
-  manageVersionControl: true,
+  versionControl: true,
 
   steps: [
     step(CopyStepMachine, ({ context }) => ({

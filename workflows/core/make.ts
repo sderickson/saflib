@@ -58,7 +58,7 @@ export function defineWorkflow<
   templateFiles: Record<string, string>;
   docFiles: Record<string, string>;
   steps: Array<WorkflowStep<C, AnyStateMachine>>;
-  manageVersionControl?:
+  versionControl?:
     | boolean
     | {
         ignorePaths?: string[];

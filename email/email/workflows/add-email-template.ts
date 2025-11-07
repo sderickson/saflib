@@ -57,7 +57,7 @@ export const AddEmailTemplateWorkflowDefinition = defineWorkflow<
 
   docFiles: {},
 
-  manageVersionControl: true,
+  versionControl: true,
 
   steps: [
     step(CommandStepMachine, () => ({

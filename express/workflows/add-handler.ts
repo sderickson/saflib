@@ -70,7 +70,7 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
     testingGuide: path.join(import.meta.dirname, "../docs/04-testing.md"),
   },
 
-  manageVersionControl: true,
+  versionControl: true,
 
   steps: [
     step(CopyStepMachine, ({ context }) => ({

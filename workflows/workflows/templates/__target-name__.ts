@@ -83,7 +83,7 @@ export const __WorkflowNamespace____TargetName__WorkflowDefinition =
     // TODO: Update "ignorePaths" to exclude any files or directories that are expected to change during the workflow.
     // It's important for files to either be excluded here, or included in templateFiles, because the agent will be
     // prompted to explain and justify unexpected changes.
-    manageVersionControl: {
+    versionControl: {
       ignorePaths: ["dist/"],
     },
 

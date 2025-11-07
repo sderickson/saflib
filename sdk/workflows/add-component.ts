@@ -48,7 +48,7 @@ export const AddComponentWorkflowDefinition = defineWorkflow<
 
   sourceUrl: import.meta.url,
 
-  manageVersionControl: true,
+  versionControl: true,
 
   context: ({ input }) => {
     // Validate the path format

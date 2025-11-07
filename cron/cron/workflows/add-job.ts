@@ -67,7 +67,7 @@ export const CronAddJobWorkflowDefinition = defineWorkflow<
     cron: path.join(sourceDir, "cron.ts"),
   },
 
-  manageVersionControl: true,
+  versionControl: true,
 
   docFiles: {
     overview: path.join(import.meta.dirname, "../docs/overview.md"),

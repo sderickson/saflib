@@ -55,7 +55,7 @@ export const SpecProjectWorkflowDefinition = defineWorkflow<
 
   docFiles: {},
 
-  manageVersionControl: true,
+  versionControl: true,
 
   steps: [
     step(CopyStepMachine, ({ context }) => ({
