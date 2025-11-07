@@ -68,6 +68,10 @@ export const IdentityInitWorkflowDefinition = defineWorkflow<
 
   docFiles: {},
 
+  versionControl: {
+    ignorePaths: ["./env.ts"],
+  },
+
   steps: [
     step(CopyStepMachine, ({ context }) => ({
       name: context.packageName,
