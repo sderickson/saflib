@@ -368,7 +368,8 @@ const handleGitChanges = async ({
     const expectedFiles = new Set(Object.values(context.copiedFiles || {}));
     const absoluteAllFiles = await getGitChanges();
     let otherFiles = absoluteAllFiles
-      .filter((file) => !expectedFiles.has(file));
+      .filter((file) => !expectedFiles.has(file))
+      .filter((file) => file.endsWith("package-lock.json"));
     if (ignorePaths) {
       const absoluteIgnorePaths = ignorePaths.map((ignorePath) =>
         path.join(context.cwd, ignorePath)
