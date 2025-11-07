@@ -26,4 +26,5 @@ git checkout $current_branch
 git branch -D test-git
 
 # Exit with the status code
+say done
 exit $status_code
