@@ -1,0 +1,13 @@
+# common elements between dev and test
+services:
+  clients:
+    ports:
+      - 5173:5173
+    build:
+      context: ../../..
+      dockerfile: ./services/tmp/tmp-sdk/Dockerfile
+    command: npm run dev
+    volumes:
+      - ./:/app/services/tmp/tmp-sdk/
+      - ../../../saflib/vue/:/app/saflib/vue/
+      - ../../../saflib/sdk/:/app/saflib/sdk/
