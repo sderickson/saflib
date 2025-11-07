@@ -122,7 +122,7 @@ export interface ActionParam<C, E extends AnyEventObject> {
   event: E;
 }
 
-export type AgentCLI = "cursor-agent";
+export type AgentCLI = "cursor-agent" | "mock-agent";
 
 export interface AgentConfig {
   cli: AgentCLI;

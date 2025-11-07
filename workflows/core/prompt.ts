@@ -1,6 +1,7 @@
 import { print } from "./utils.ts";
 import { type PromptParam, type PromptResult } from "./types.ts";
-import { executePrompt } from "./agents/cursor-agent.ts";
+import { executePromptWithCursor } from "./agents/cursor-agent.ts";
+import { executePromptWithMock } from "./agents/mock-agent.ts";
 
 export const handlePrompt = async ({
   msg,
@@ -11,7 +12,14 @@ export const handlePrompt = async ({
   }
   switch (context.runMode) {
     case "run":
-      return await executePrompt({ msg, context });
+      switch (context.agentConfig?.cli) {
+        case "cursor-agent":
+          return await executePromptWithCursor({ msg, context });
+        case "mock-agent":
+          return await executePromptWithMock({ msg, context });
+        case undefined:
+          throw new Error("Agent config is required for run mode");
+      }
     case "dry":
       return { code: 0, sessionId: undefined, shouldContinue: true };
     case "script":

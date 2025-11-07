@@ -1,10 +1,10 @@
 import { printLineSlowly, shortTimestamp } from "./print.ts";
 import { spawn } from "node:child_process";
 import { addNewLinesToString } from "../../strings.ts";
-import path from "node:path";
 import { writeFileSync } from "node:fs";
 import { type PromptParam, type PromptResult } from "../types.ts";
 import { popPendingMessages } from "./message.ts";
+import { logFile } from "./log.ts";
 
 interface CursorSystemLog {
   type: "system";
@@ -152,8 +152,6 @@ type CursorLog =
   | CursorToolCallLog
   | CursorResultLog;
 
-export const logFile = path.join(process.cwd(), "saf-workflow-prompt.log");
-
 const relativePath = (path: string) => {
   if (!path) {
     return "root dir";
@@ -161,7 +159,7 @@ const relativePath = (path: string) => {
   return path.replace(process.cwd(), "");
 };
 
-export const executePrompt = async ({
+export const executePromptWithCursor = async ({
   msg,
   context,
 }: PromptParam): Promise<PromptResult> => {

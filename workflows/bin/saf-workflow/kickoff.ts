@@ -8,7 +8,7 @@ import {
 } from "../../core/store.ts";
 import { loadWorkflowDefinitionFromFile } from "./shared/file-io.ts";
 import { resolve } from "node:path";
-import { logFile } from "../../core/agents/cursor-agent.ts";
+import { logFile } from "../../core/agents/log.ts";
 import { addPendingMessage } from "../../core/agents/message.ts";
 import { writeFileSync } from "node:fs";
 import type { WorkflowCommandOptions } from "./shared/types.ts";
