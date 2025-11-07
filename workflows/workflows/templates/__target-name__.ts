@@ -84,7 +84,7 @@ export const __WorkflowNamespace____TargetName__WorkflowDefinition =
     // It's important for files to either be excluded here, or included in templateFiles, because the agent will be
     // prompted to explain and justify unexpected changes.
     versionControl: {
-      ignorePaths: ["dist/"],
+      ignorePaths: ["./dist/"],
     },
 
     // TODO: add documentation file references
