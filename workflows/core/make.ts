@@ -366,7 +366,6 @@ const handleGitChanges = async ({
   let tries = 0;
   while (true) {
     const expectedFiles = new Set(Object.values(context.copiedFiles || {}));
-    console.log("expectedFiles", expectedFiles);
     const absoluteAllFiles = await getGitChanges();
     let otherFiles = absoluteAllFiles
       .filter((file) => !expectedFiles.has(file));
@@ -374,8 +373,6 @@ const handleGitChanges = async ({
       const absoluteIgnorePaths = ignorePaths.map((ignorePath) =>
         path.join(context.cwd, ignorePath)
       );
-      console.log("absoluteIgnorePaths", absoluteIgnorePaths);
-      console.log("from...", ignorePaths);
       otherFiles = otherFiles.filter(
         (file) =>
           !absoluteIgnorePaths.some((ignorePath) => file.startsWith(ignorePath))
