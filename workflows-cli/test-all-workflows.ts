@@ -38,7 +38,10 @@ import {
   AddComponentWorkflowDefinition,
   AddSdkQueryWorkflowDefinition,
 } from "@saflib/sdk/workflows";
-import { AddSpaPageWorkflowDefinition, AddSpaWorkflowDefinition } from "@saflib/vue/workflows";
+import {
+  AddSpaPageWorkflowDefinition,
+  AddSpaWorkflowDefinition,
+} from "@saflib/vue/workflows";
 import { AddWorkflowDefinition } from "@saflib/workflows/workflows";
 import { SpecProjectWorkflowDefinition } from "@saflib/processes/workflows";
 
@@ -49,10 +52,10 @@ interface TestAllWorkflowsContext {}
  * A workflow that incorporates every generic workflow in the repo.
  * It makes sure there are at least no logical errors preventing workflows from running,
  * and that workflows that depend on one another are working correctly.
- * 
+ *
  * Usage:
  * npm exec saf-workflow run-scripts ./test-all-workflows.ts
- * 
+ *
  * It also runs as part of github actions on PRs.
  */
 export const TestAllWorkflowsDefinition = defineWorkflow<
@@ -67,17 +70,16 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
   templateFiles: {},
   docFiles: {},
   steps: [
-
     step(makeWorkflowMachine(SpecProjectWorkflowDefinition), () => ({
       name: "example-project",
-    })),  
+    })),
 
     // Covers various "init" workflows
     step(makeWorkflowMachine(InitServiceWorkflowDefinition), () => ({
       name: "tmp-service",
       path: "./services/tmp",
     })),
-    
+
     // Test "@saflib/openapi workflows"
     step(CwdStepMachine, () => ({
       path: "./services/tmp/tmp-spec",
@@ -181,7 +183,7 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
       path: "./rpcs/health/example.ts",
     })),
 
-    Test @saflib/identity workflows
+    // Test @saflib/identity workflows
     step(CwdStepMachine, () => ({
       path: ".",
     })),
