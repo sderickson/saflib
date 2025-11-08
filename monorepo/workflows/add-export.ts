@@ -67,7 +67,7 @@ export const AddExportWorkflowDefinition = defineWorkflow<
   },
 
   versionControl: {
-    ignorePaths: ["./docs/"],
+    ignorePaths: ["./docs/**"],
   },
 
   // TODO: add documentation file references

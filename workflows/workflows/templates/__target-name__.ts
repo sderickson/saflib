@@ -84,7 +84,7 @@ export const __WorkflowNamespace____TargetName__WorkflowDefinition =
     // It's important for files to either be excluded here, or included in templateFiles, because the agent will be
     // prompted to explain and justify unexpected changes.
     versionControl: {
-      ignorePaths: ["./dist/"],
+      ignorePaths: ["./dist/**"],
     },
 
     // TODO: add documentation file references
@@ -102,14 +102,14 @@ export const __WorkflowNamespace____TargetName__WorkflowDefinition =
       // step(UpdateStepMachine, ({ context }) => ({
       //   fileId: "main",
       //   promptMessage: `Update **${path.basename(context.copiedFiles!.main)}** to implement the main functionality. Replace any TODO comments with actual implementation.
-        
+
       //   Please review documentation here first: ${context.docFiles?.overview}`,
       // })),
 
       // step(UpdateStepMachine, ({ context }) => ({
       //   fileId: "test",
       //   promptMessage: `Update **${path.basename(context.copiedFiles!.test)}** to test the functionality you implemented. Make sure to mock any external dependencies.
-        
+
       //   Please review documentation here first: ${context.docFiles?.testing}`,
       // })),
 
