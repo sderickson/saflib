@@ -24,17 +24,17 @@ jobs:
       - name: Install rollup for linux
         run: npm install @rollup/rollup-linux-x64-gnu
 
-      - name: Add package.json, package-lock.json
-        run: "git add package.json package-lock.json"
-
-      - name: Commit those changes
-        run: "git commit -m 'Add package.json, package-lock.json'"
-
       - name: Git config name
         run: git config --global user.name "saflib CI"
 
       - name: Git config email
         run: git config --global user.email "noreply@saf-demo.online"
+
+      - name: Add package.json, package-lock.json
+        run: "git add package.json package-lock.json"
+
+      - name: Commit those changes
+        run: "git commit -m 'Add package.json, package-lock.json'"
 
       - name: Run Workflow Integration Test
         run: ./test-git.sh
