@@ -1,7 +1,6 @@
 import {
   CopyStepMachine,
   UpdateStepMachine,
-  TestStepMachine,
   CommandStepMachine,
   defineWorkflow,
   step,
@@ -71,8 +70,6 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
     testingGuide: path.join(import.meta.dirname, "../docs/04-testing.md"),
   },
 
-  manageGit: true,
-
   steps: [
     step(CopyStepMachine, ({ context }) => ({
       name: context.targetName,
@@ -130,7 +127,7 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
           }
           return Promise.resolve(undefined);
         },
-      },
+      }
     ),
 
     step(CommandStepMachine, () => ({
@@ -138,8 +135,9 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
       args: ["run", "typecheck"],
     })),
 
-    step(TestStepMachine, () => ({
-      fileId: "test",
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["run", "test"],
     })),
   ],
 });

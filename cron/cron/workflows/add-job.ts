@@ -2,7 +2,6 @@ import {
   CopyStepMachine,
   UpdateStepMachine,
   PromptStepMachine,
-  TestStepMachine,
   defineWorkflow,
   step,
   parsePath,
@@ -68,8 +67,6 @@ export const CronAddJobWorkflowDefinition = defineWorkflow<
     cron: path.join(sourceDir, "cron.ts"),
   },
 
-  manageGit: true,
-
   docFiles: {
     overview: path.join(import.meta.dirname, "../docs/overview.md"),
   },
@@ -114,8 +111,9 @@ export const CronAddJobWorkflowDefinition = defineWorkflow<
       args: ["run", "typecheck"],
     })),
 
-    step(TestStepMachine, () => ({
-      fileId: "test",
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["run", "test"],
     })),
   ],
 });

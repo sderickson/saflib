@@ -11,7 +11,6 @@ import {
 export const renameNextFile = fromPromise(
   async ({ input }: { input: CopyStepContext }) => {
     const { name, filesToCopy, runMode, lineReplace, copiedFiles } = input;
-
     const currentFileId = filesToCopy[0];
     const targetPath = copiedFiles[currentFileId];
     const targetFileName = path.basename(targetPath);
@@ -32,41 +31,53 @@ export const renameNextFile = fromPromise(
     const snakeName = kebabCaseToSnakeCase(name);
     const pascalName = kebabCaseToPascalCase(name);
     const camelName = kebabCaseToCamelCase(name);
+    try {
+      for (var i = 0; i < updatedContent.length; i++) {
+        if (updatedContent[i].includes("DELETE_THIS_LINE")) {
+          updatedContent[i] = "";
+          continue;
+        }
+        if (updatedContent[i].includes("/* do not replace */")) {
+          updatedContent[i] = updatedContent[i].replace(
+            "/* do not replace */",
+            ""
+          );
+          continue;
+        }
 
-    for (var i = 0; i < updatedContent.length; i++) {
-      if (updatedContent[i].includes("DELETE_THIS_LINE")) {
-        updatedContent[i] = "";
-        continue;
-      }
-      if (updatedContent[i].includes("/* do not replace */")) {
+        if (lineReplace) {
+          updatedContent[i] = lineReplace(updatedContent[i]);
+        }
+        updatedContent[i] = updatedContent[i].replace(/template-file/g, name);
         updatedContent[i] = updatedContent[i].replace(
-          "/* do not replace */",
-          "",
+          /template_file/g,
+          snakeName
         );
-        continue;
+        updatedContent[i] = updatedContent[i].replace(
+          /TemplateFile/g,
+          pascalName
+        );
+        updatedContent[i] = updatedContent[i].replace(
+          /templateFile/g,
+          camelName
+        );
+        updatedContent[i] = updatedContent[i].replace(
+          /TEMPLATE_FILE/g,
+          snakeName.toUpperCase()
+        );
       }
 
-      if (lineReplace) {
-        updatedContent[i] = lineReplace(updatedContent[i]);
+      await writeFile(targetPath, updatedContent.join("\n"));
+
+      return { fileName: targetFileName };
+    } catch (error) {
+      if (!(error instanceof Error)) {
+        throw error;
       }
-      updatedContent[i] = updatedContent[i].replace(/template-file/g, name);
-      updatedContent[i] = updatedContent[i].replace(
-        /template_file/g,
-        snakeName,
+      console.error(
+        `Failed to rename file ${targetFileName} in ${targetPath}: ${error.message}`
       );
-      updatedContent[i] = updatedContent[i].replace(
-        /TemplateFile/g,
-        pascalName,
-      );
-      updatedContent[i] = updatedContent[i].replace(/templateFile/g, camelName);
-      updatedContent[i] = updatedContent[i].replace(
-        /TEMPLATE_FILE/g,
-        snakeName.toUpperCase(),
-      );
+      throw error;
     }
-
-    await writeFile(targetPath, updatedContent.join("\n"));
-
-    return { fileName: targetFileName };
-  },
+  }
 );

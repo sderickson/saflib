@@ -6,8 +6,9 @@ import type {
   WorkflowRunMode,
   WorkflowContext,
   AgentConfig,
+  VersionControlMode,
 } from "../../../core/types.ts";
-import type { WorkflowBlob } from "./types.ts";
+import type { PersistedSnapshot, WorkflowBlob } from "./types.ts";
 import type { AnyStateMachine, AnyActor, Snapshot } from "xstate";
 import { createActor } from "xstate";
 import { getWorkflowLogger } from "../../../core/store.ts";
@@ -55,6 +56,8 @@ interface XStateWorkflowOptions<I extends readonly WorkflowArgument[], C> {
   args?: string[];
   workflowRunMode?: WorkflowRunMode;
   agentConfig?: AgentConfig;
+  skipTodos?: boolean;
+  manageVersionControl?: VersionControlMode;
 }
 
 /**
@@ -71,6 +74,8 @@ export class XStateWorkflowRunner extends AbstractWorkflowRunner {
   private input: { [key: string]: string } & {
     runMode?: WorkflowRunMode;
     agentConfig?: AgentConfig;
+    manageVersionControl?: VersionControlMode;
+    skipTodos?: boolean;
   };
   private args: string[];
   private actor: AnyActor | undefined;
@@ -85,7 +90,7 @@ export class XStateWorkflowRunner extends AbstractWorkflowRunner {
     const expectedInputLength = this.definition.input.length;
     if (expectedInputLength !== inputLength) {
       throw new Error(
-        `Expected ${expectedInputLength} arguments, got ${inputLength}`,
+        `Expected ${expectedInputLength} arguments, got ${inputLength}`
       );
     }
     for (let i = 0; i < expectedInputLength; i++) {
@@ -95,6 +100,8 @@ export class XStateWorkflowRunner extends AbstractWorkflowRunner {
 
     this.input.runMode = options.workflowRunMode;
     this.input.agentConfig = options.agentConfig;
+    this.input.manageVersionControl = options.manageVersionControl;
+    this.input.skipTodos = options.skipTodos;
     this.machine = makeWorkflowMachine(this.definition);
   }
 
@@ -118,7 +125,7 @@ export class XStateWorkflowRunner extends AbstractWorkflowRunner {
     }
     await pollingWaitFor(actor, workflowAllSettled);
     const t1 = Date.now();
-    if (process.env.NODE_ENV !== "test") {
+    if (process.env.NODE_ENV !== "test" && this.input.runMode === "run") {
       console.log(`Time taken: ${((t1 - t0) / 1000 / 60).toFixed(2)}m`);
     }
     return actor.getSnapshot().status !== "error";
@@ -147,7 +154,7 @@ export class XStateWorkflowRunner extends AbstractWorkflowRunner {
       console.log("Completed work:");
 
       snapshot.context.checklist.forEach((item) =>
-        console.log(`- ${item.description}`),
+        console.log(`- ${item.description}`)
       );
       console.log("");
     }
@@ -171,7 +178,9 @@ export class XStateWorkflowRunner extends AbstractWorkflowRunner {
     continueWorkflow(this.actor);
     await pollingWaitFor(this.actor, workflowAllSettled);
     const t1 = Date.now();
-    console.log(`Time taken: ${((t1 - t0) / 1000 / 60).toFixed(2)}m`);
+    if (process.env.NODE_ENV !== "test" && this.input.runMode === "run") {
+      console.log(`Time taken: ${((t1 - t0) / 1000 / 60).toFixed(2)}m`);
+    }
 
     if (this.actor.getSnapshot().status === "done") {
       console.log("\n--- This workflow has been completed. ---\n");
@@ -184,15 +193,13 @@ export class XStateWorkflowRunner extends AbstractWorkflowRunner {
       workflowName: this.machine.id,
       workflowSourceUrl: this.definition.sourceUrl,
       args: this.args,
-      snapshotState: this.actor?.getPersistedSnapshot() as Snapshot<any> & {
-        context: WorkflowContext;
-      },
+      snapshotState: this.actor?.getPersistedSnapshot() as unknown as PersistedSnapshot,
     };
   };
 
   hydrate = (blob: WorkflowBlob, options?: WorkflowRunOptions): void => {
     this.actor = createActor(this.machine, {
-      snapshot: blob.snapshotState,
+      snapshot: blob.snapshotState as unknown as Snapshot<any>,
       inspect: (inspectionEvent) => {
         if (inspectionEvent.type === "@xstate.snapshot") {
           options?.onSnapshot?.(inspectionEvent.snapshot);

@@ -13,7 +13,7 @@ export {
   InitGrpcProtoWorkflowDefinition,
   AddProtoWorkflowDefinition,
   InitGrpcClientWorkflowDefinition,
-  AddGrpcCallWorkflowDefinition as AddRpcWorkflowDefinition,
+  AddGrpcCallWorkflowDefinition,
 };
 
 const workflowDefinitions: WorkflowDefinition[] = [

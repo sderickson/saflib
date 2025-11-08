@@ -10,7 +10,8 @@
     "dev": "vite",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest --coverage"
+    "test:coverage": "vitest --coverage",
+    "typecheck": "vue-tsc -b"
   },
   "dependencies": {
     "@saflib/vue": "*"

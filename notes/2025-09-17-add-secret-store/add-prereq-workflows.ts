@@ -3,7 +3,6 @@ import {
   step,
   makeWorkflowMachine,
   PromptStepMachine,
-  DocStepMachine,
   CwdStepMachine,
 } from "@saflib/workflows";
 import { AddWorkflowDefinition } from "@saflib/workflows/workflows";
@@ -28,10 +27,6 @@ const AddPrereqWorkflowsDefinition = defineWorkflow<
     spec: path.join(import.meta.dirname, "./spec.md"),
   },
   steps: [
-    step(DocStepMachine, () => ({
-      docId: "spec",
-    })),
-
     step(PromptStepMachine, () => ({
       promptText: `This workflow will add all the prerequisite workflows needed for the secrets service project.
 

@@ -1,7 +1,7 @@
 import {
   DrizzleInitWorkflowDefinition,
   UpdateSchemaWorkflowDefinition,
-  AddQueryWorkflowDefinition,
+  AddDrizzleQueryWorkflowDefinition,
 } from "./index.ts";
 
 import {
@@ -51,10 +51,10 @@ const TestDrizzleWorkflowsDefinition = defineWorkflow<
     step(makeWorkflowMachine(UpdateSchemaWorkflowDefinition), () => ({
       path: "./schemas/users.ts",
     })),
-    step(makeWorkflowMachine(AddQueryWorkflowDefinition), () => ({
+    step(makeWorkflowMachine(AddDrizzleQueryWorkflowDefinition), () => ({
       path: "./queries/users/create.ts",
     })),
-    step(makeWorkflowMachine(AddQueryWorkflowDefinition), () => ({
+    step(makeWorkflowMachine(AddDrizzleQueryWorkflowDefinition), () => ({
       path: "./queries/users/get-by-id.ts",
     })),
     step(CommandStepMachine, () => ({

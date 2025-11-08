@@ -3,10 +3,10 @@
 // This also allows the fake in-memory store to automatically refresh the data after each test
 
 import { identityServiceFakeHandlers } from "@saflib/auth/fakes";
-// import { __groupName__FakeHandlers } from "./requests/__group-name__/index.fakes.ts";
+// import { groupNameFakeHandlers } from "./requests/group-name/index.fakes.ts";
 
 export const __serviceName__ServiceFakeHandlers = [
   // add fake handlers here
   ...identityServiceFakeHandlers,
-  // ...__groupName__FakeHandlers,
+  // ...groupNameFakeHandlers,
 ];

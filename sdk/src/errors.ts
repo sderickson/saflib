@@ -15,7 +15,7 @@ export class TanstackError extends Error {
  * Returns a human-readable error message based on the TanstackError status code.
  */
 export function getTanstackErrorMessage(
-  error: TanstackError | undefined,
+  error: TanstackError | undefined
 ): string {
   if (!error) return "";
   switch (error.status) {

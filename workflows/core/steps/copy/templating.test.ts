@@ -59,13 +59,13 @@ describe("templating", () => {
       const input: ParsePackageNameInput = { requiredSuffix: "db" };
 
       expect(() => parsePackageName("identity-db", input)).toThrow(
-        "Required suffix must start with -: db",
+        "Required suffix must start with -: db"
       );
     });
 
     it("should throw error for invalid package name with too many parts", () => {
       expect(() => parsePackageName("@foobar/identity/extra")).toThrow(
-        "Invalid package name: @foobar/identity/extra",
+        "Invalid package name: @foobar/identity/extra"
       );
     });
 
@@ -167,7 +167,7 @@ describe("templating", () => {
       };
 
       expect(() => parsePath("./queries/target", input)).toThrow(
-        "Required prefix must start with ./: queries/",
+        `Required prefix must start with ./. Given: "queries/"`
       );
     });
 
@@ -178,7 +178,7 @@ describe("templating", () => {
       };
 
       expect(() => parsePath("./other/target", input)).toThrow(
-        "Path must start with ./queries/",
+        "Path must start with ./queries/"
       );
     });
 
@@ -189,7 +189,7 @@ describe("templating", () => {
       };
 
       expect(() => parsePath("./target.ts", input)).toThrow(
-        "Required suffix must start with .: ts",
+        `Required suffix must start with ".". Given: "ts"`
       );
     });
 
@@ -200,13 +200,13 @@ describe("templating", () => {
       };
 
       expect(() => parsePath("./target.js", input)).toThrow(
-        "Path must end with .ts",
+        "Path must end with .ts"
       );
     });
 
     it("should throw error for invalid path with too many parts", () => {
       expect(() => parsePath("./a/b/c/d", baseInput)).toThrow(
-        "Invalid path: ./a/b/c/d",
+        "Invalid path: ./a/b/c/d"
       );
     });
 
@@ -232,7 +232,7 @@ describe("templating", () => {
       const lineReplace = makeLineReplace(context);
 
       const result = lineReplace(
-        "import { __service-name__ } from './__service-name__'",
+        "import { __service-name__ } from './__service-name__'"
       );
 
       expect(result).toBe("import { identity-db } from './identity-db'");
@@ -279,7 +279,7 @@ describe("templating", () => {
       const lineReplace = makeLineReplace(context);
 
       const result = lineReplace(
-        "export const __targetName__ = (__serviceName__) => {}",
+        "export const __targetName__ = (__serviceName__) => {}"
       );
 
       expect(result).toBe("export const getById = (identityDb) => {}");
@@ -302,7 +302,7 @@ describe("templating", () => {
       const lineReplace = makeLineReplace(context);
 
       const result = lineReplace(
-        "import { __serviceName__ } from 'template-package'",
+        "import { __serviceName__ } from 'template-package'"
       );
 
       expect(result).toBe("import { identityDb } from '@foobar/identity'");
@@ -327,7 +327,7 @@ describe("templating", () => {
       const lineReplace = makeLineReplace(context);
 
       expect(() => lineReplace("const __missingVar__ = 'test'")).toThrow(
-        "Missing replacement for __missingVar__",
+        "Missing replacement for __missingVar__"
       );
     });
 

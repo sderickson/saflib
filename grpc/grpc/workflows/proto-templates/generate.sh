@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -e
 protoc --ts_out=./dist/ \
   --proto_path=./protos \
   --ts_opt=no_namespace \

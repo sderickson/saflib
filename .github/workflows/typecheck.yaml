@@ -14,8 +14,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Install submodules
-        run: git submodule update --init
       - name: Install dependencies
         run: npm install
       - name: Run Typecheck

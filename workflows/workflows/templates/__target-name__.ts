@@ -1,20 +1,19 @@
 import {
-  CopyStepMachine,
-  UpdateStepMachine,
-  TestStepMachine,
+  // CopyStepMachine,
+  // UpdateStepMachine,
   defineWorkflow,
   step,
   parsePath,
   parsePackageName,
   getPackageName,
-  makeLineReplace,
+  // makeLineReplace,
   type ParsePathOutput,
   type ParsePackageNameOutput,
   CommandStepMachine,
 } from "@saflib/workflows";
-import path from "node:path";
+// import path from "node:path";
 
-const sourceDir = path.join(import.meta.dirname, "../templates");
+// const sourceDir = path.join(import.meta.dirname, "../templates");
 
 // TODO: replace this with the actual input for your workflow
 // "init" workflows should take a "name" of the package and a "path" to the target directory
@@ -79,16 +78,13 @@ export const __WorkflowNamespace____TargetName__WorkflowDefinition =
     // Include TODOs like this file does.
     // Instances of "__target-name__" in the file name and content will be replaced with the "name" given to CopyStepMachine
     // Include **all** files that the agent is expected to modify.
-    /* do not replace */ templateFiles: {
-      main: path.join(sourceDir, "__target-name__.ts"),
-      test: path.join(sourceDir, "__target-name__.test.ts"),
-    },
+    /* do not replace */ templateFiles: {},
 
-    // TODO: Update "ignorePaths" to exclude any files or directories that are expected to change during the workflow.
+    // TODO: Update "allowPaths" to exclude any files or directories that are expected to change during the workflow.
     // It's important for files to either be excluded here, or included in templateFiles, because the agent will be
     // prompted to explain and justify unexpected changes.
-    manageGit: {
-      ignorePaths: ["dist/"],
+    versionControl: {
+      allowPaths: ["./dist/**"],
     },
 
     // TODO: add documentation file references
@@ -97,25 +93,25 @@ export const __WorkflowNamespace____TargetName__WorkflowDefinition =
 
     // TODO: update the steps to match the actual workflow you're creating. It will usually involve some combination of copying template files, updating files, prompting, running scripts, and running tests.
     steps: [
-      step(CopyStepMachine, ({ context }) => ({
-        name: context.targetName,
-        targetDir: context.targetDir,
-        lineReplace: makeLineReplace(context),
-      })),
+      // step(CopyStepMachine, ({ context }) => ({
+      //   name: context.targetName,
+      //   targetDir: context.targetDir,
+      //   lineReplace: makeLineReplace(context),
+      // })),
 
-      step(UpdateStepMachine, ({ context }) => ({
-        fileId: "main",
-        promptMessage: `Update **${path.basename(context.copiedFiles!.main)}** to implement the main functionality. Replace any TODO comments with actual implementation.
-        
-        Please review documentation here first: ${context.docFiles?.overview}`,
-      })),
+      // step(UpdateStepMachine, ({ context }) => ({
+      //   fileId: "main",
+      //   promptMessage: `Update **${path.basename(context.copiedFiles!.main)}** to implement the main functionality. Replace any TODO comments with actual implementation.
 
-      step(UpdateStepMachine, ({ context }) => ({
-        fileId: "test",
-        promptMessage: `Update **${path.basename(context.copiedFiles!.test)}** to test the functionality you implemented. Make sure to mock any external dependencies.
-        
-        Please review documentation here first: ${context.docFiles?.testing}`,
-      })),
+      //   Please review documentation here first: ${context.docFiles?.overview}`,
+      // })),
+
+      // step(UpdateStepMachine, ({ context }) => ({
+      //   fileId: "test",
+      //   promptMessage: `Update **${path.basename(context.copiedFiles!.test)}** to test the functionality you implemented. Make sure to mock any external dependencies.
+
+      //   Please review documentation here first: ${context.docFiles?.testing}`,
+      // })),
 
       // TODO: Remove this if the package does not have a typecheck script
       step(CommandStepMachine, () => ({
@@ -123,8 +119,9 @@ export const __WorkflowNamespace____TargetName__WorkflowDefinition =
         args: ["run", "typecheck"],
       })),
 
-      step(TestStepMachine, () => ({
-        fileId: "test",
+      step(CommandStepMachine, () => ({
+        command: "npm",
+        args: ["run", "test"],
       })),
     ],
   });

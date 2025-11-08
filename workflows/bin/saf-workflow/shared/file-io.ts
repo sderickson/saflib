@@ -8,9 +8,14 @@ import type { WorkflowDefinition } from "../../../core/types.ts";
 import type { WorkflowBlob } from "./types.ts";
 import { isWorkflowDefinition } from "./utils.ts";
 import { getWorkflowLogger } from "../../../core/store.ts";
+import path from "node:path";
 
 export const getPlanStatusFilePath = () => {
   return resolve(process.cwd(), "saf-workflow-status.json");
+};
+
+export const getErrorStatusFilePath = () => {
+  return resolve(process.cwd(), "saf-workflow-status.error.json");
 };
 
 export const loadPlanStatusContents = (): string | undefined => {
@@ -21,12 +26,41 @@ export const loadPlanStatusContents = (): string | undefined => {
   return readFileSync(planStatusFilePath, "utf8");
 };
 
+let announcedError = false;
+
 export const saveWorkflow = (workflow: AbstractWorkflowRunner) => {
-  const planStatusFilePath = getPlanStatusFilePath();
+  const blob = workflow.dehydrate();
+  const snapshots = [blob.snapshotState];
+  let anyErrors = false;
+  while (snapshots.length > 0) {
+    const snapshot = snapshots.shift();
+    if (snapshot?.status === "error") {
+      anyErrors = true;
+      break;
+    }
+    if (snapshot?.children) {
+      Object.values(snapshot.children).forEach((child) => {
+        snapshots.push(child.snapshot);
+      });
+    }
+  }
+  if (anyErrors) {
+    
+  }
+  const planStatusFilePath = anyErrors ? getErrorStatusFilePath() : getPlanStatusFilePath();
   writeFileSync(
     planStatusFilePath,
     JSON.stringify(workflow.dehydrate(), null, 2),
   );
+  if (anyErrors) {
+    if (!announcedError) {
+      console.error(`!!! Workflow has errors!        
+!!! Snapshot saved to ${path.basename(getErrorStatusFilePath())}.
+!!! Workflows whose machines are in error cannot continue, so fix the underlying issue.
+!!! Workflows should not enter the error state in normal operation.`);
+      announcedError = true;
+    }
+  }
 };
 
 export const loadWorkflow = async (workflows: WorkflowDefinition[]) => {

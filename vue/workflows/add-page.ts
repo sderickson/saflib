@@ -4,19 +4,19 @@ import {
   PromptStepMachine,
   defineWorkflow,
   step,
-  TestStepMachine,
   parsePath,
   type ParsePathOutput,
   makeLineReplace,
   type ParsePackageNameOutput,
   parsePackageName,
   getPackageName,
+  CommandStepMachine,
 } from "@saflib/workflows";
 import path from "node:path";
 
 const sourceDir = path.join(
   import.meta.dirname,
-  "template/pages/page-template",
+  "template/pages/page-template"
 );
 
 const input = [
@@ -109,8 +109,9 @@ export const AddSpaPageWorkflowDefinition = defineWorkflow<
       promptMessage: `Update **${path.basename(context.copiedFiles!.test)}**: test that the page renders.`,
     })),
 
-    step(TestStepMachine, () => ({
-      fileId: "test",
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["run", "test"],
     })),
 
     step(UpdateStepMachine, ({ context }) => ({
@@ -139,10 +140,14 @@ export const AddSpaPageWorkflowDefinition = defineWorkflow<
       * Only use "getElementByString" to locate elements, using the strings from the strings file as the argument.`,
     })),
 
-    step(TestStepMachine, () => ({
-      fileId: "test",
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["run", "typecheck"],
     })),
 
-    step(TestStepMachine, () => ({})),
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["run", "test"],
+    })),
   ],
 });

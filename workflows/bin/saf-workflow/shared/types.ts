@@ -1,4 +1,4 @@
-import type { Snapshot } from "xstate";
+import type { SnapshotStatus } from "xstate";
 import type {
   WorkflowContext,
   WorkflowDefinition,
@@ -18,14 +18,26 @@ export interface WorkflowBlobInternalState {
   params: Record<string, any>;
 }
 
+/**
+ * Can't seem to pull out the type of the persisted snapshot from xstate. So here's my own.
+ */
+export interface PersistedSnapshot {
+  status: SnapshotStatus;
+  value: string;
+  context: WorkflowContext;
+  children: Record<string, {
+    snapshot: PersistedSnapshot;
+    src: string;
+    syncSnapshot: boolean;
+  }>;
+}
+
 export interface WorkflowBlob {
   workflowName: string;
   workflowSourceUrl: string;
   args: string[];
   internalState?: WorkflowBlobInternalState;
-  snapshotState?: Snapshot<any> & {
-    context: WorkflowContext;
-  };
+  snapshotState: PersistedSnapshot;
 }
 
 /**

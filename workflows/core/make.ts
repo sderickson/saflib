@@ -20,15 +20,12 @@ import {
 } from "xstate";
 import { contextFromInput } from "./utils.ts";
 import type { WorkflowArgument } from "./types.ts";
-import { existsSync, writeFileSync, unlinkSync } from "fs";
+import { existsSync } from "fs";
 import { addNewLinesToString } from "@saflib/utils";
 import { getWorkflowLogger } from "./store.ts";
 import { addPendingMessage } from "./agents/message.ts";
-import { execSync } from "child_process";
-import path, { join } from "path";
-import { handlePrompt } from "./prompt.ts";
-import { checklistToString } from "./utils.ts";
-import { tmpdir } from "os";
+
+import { handleGitChanges, commitChanges } from "./version/git.ts";
 
 let lastSystemPrompt: string | undefined;
 
@@ -58,12 +55,9 @@ export function defineWorkflow<
   templateFiles: Record<string, string>;
   docFiles: Record<string, string>;
   steps: Array<WorkflowStep<C, AnyStateMachine>>;
-  afterEach?: (context: C) => void;
-  manageGit?:
-    | boolean
-    | {
-        ignorePaths?: string[];
-      };
+  versionControl?: {
+    allowPaths?: string[];
+  };
 }): WorkflowDefinition<I, C> {
   return config;
 }
@@ -72,7 +66,7 @@ export function defineWorkflow<
  * Implementation of the makeMachineFromWorkflow function.
  */
 function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
-  workflow: WorkflowDefinition<I, C>,
+  workflow: WorkflowDefinition<I, C>
 ) {
   type Input = CreateArgsType<I> & WorkflowInput;
   type Context = C & WorkflowContext;
@@ -120,6 +114,13 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
       ],
       invoke: {
         input: ({ context }: { context: Context }) => {
+          // bit of a hack
+          if (context.runMode === "script") {
+            console.log("-------------------------------------------------");
+            console.log(`${workflow.id} INVOKES ${step.machine.id}`);
+            console.log("-------------------------------------------------");
+          }
+
           return {
             ...step.input({ context }),
             // don't need checklist; the machine will compose their own
@@ -129,15 +130,14 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
             docFiles: context.docFiles,
             agentConfig: context.agentConfig,
             cwd: context.cwd,
+            manageVersionControl: context.manageVersionControl,
+            skipTodos: context.skipTodos,
           };
         },
         src: `actor_${i}`,
         onDone: {
           target: validateStateName,
           actions: [
-            {
-              type: "afterEach",
-            },
             assign({
               agentConfig: ({ context, event }) => {
                 const output: WorkflowOutput = event.output;
@@ -174,14 +174,15 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
             return;
           }
 
-          if (workflow.manageGit) {
+          if (input.manageVersionControl) {
             const successful = await handleGitChanges({
+              workflowId: workflow.id,
               context: input,
               checklistDescription:
                 workflow.checklistDescription?.(input) || workflow.description,
-              ignorePaths:
-                typeof workflow.manageGit === "object"
-                  ? workflow.manageGit.ignorePaths
+              allowPaths:
+                typeof workflow.versionControl === "object"
+                  ? workflow.versionControl.allowPaths
                   : undefined,
             });
             if (!successful) {
@@ -206,14 +207,19 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
         onError: [
           {
             guard: ({ context, event }: { context: Context; event: any }) => {
-              if (context.runMode === "dry" || context.runMode === "script") {
+              // If validations failed, and we're running things in a way that *ought* to be correct each time, then error.
+              // Currently, this is an infinite loop, though when running with a real agent. I have various loops being handled
+              // internally by steps and here.
+              // TODO: Figure out a general way to handle validation in a way that will retry, but not forever.
+              if (
+                context.runMode === "dry" ||
+                context.runMode === "script" ||
+                context.agentConfig?.cli === "mock-agent"
+              ) {
                 throw new Error(event.error);
               }
-              return false;
+              return true;
             },
-            target: nextStateName,
-          },
-          {
             target: stateName,
           },
         ],
@@ -226,21 +232,11 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
         if (input.runMode === "dry" || input.runMode === "script") {
           return;
         }
-        if (workflow.manageGit) {
-          execSync(`git add -A`, {
-            cwd: gitRoot,
+        if (input.manageVersionControl) {
+          await commitChanges({
+            workflow: workflow,
+            context: input,
           });
-
-          const gitCommitHeader =
-            workflow.checklistDescription?.(input) || workflow.description;
-          const gitCommitBody = checklistToString(input.checklist);
-          const gitCommitMessage = `${gitCommitHeader}\n\n${gitCommitBody}`;
-          const msgFile = join(tmpdir(), `commit-msg-${Date.now()}.txt`);
-          writeFileSync(msgFile, gitCommitMessage);
-          execSync(`git commit -F "${msgFile}"`, {
-            cwd: gitRoot,
-          });
-          unlinkSync(msgFile);
         }
         return;
       }),
@@ -262,11 +258,6 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
     },
     actions: {
       ...workflowActions,
-      afterEach: ({ context }) => {
-        if (workflow.afterEach) {
-          workflow.afterEach(context);
-        }
-      },
       systemPrompt: ({ context }) => {
         if (context.systemPrompt) {
           if (context.systemPrompt !== lastSystemPrompt) {
@@ -320,7 +311,7 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
  * This basically translates my simplified and scoped workflow machine definition to the full XState machine definition.
  */
 export const makeWorkflowMachine = <C, I extends readonly WorkflowArgument[]>(
-  config: WorkflowDefinition<I, C>,
+  config: WorkflowDefinition<I, C>
 ) => {
   return _makeWorkflowMachine(defineWorkflow(config));
 };
@@ -336,7 +327,7 @@ export const step = <C, M extends AnyStateMachine>(
       context: C & WorkflowContext;
     }) => Promise<string | undefined>;
     skipIf?: (arg: { context: C & WorkflowContext }) => boolean;
-  } = {},
+  } = {}
 ): WorkflowStep<C, M> => {
   return {
     machine,
@@ -344,101 +335,4 @@ export const step = <C, M extends AnyStateMachine>(
     validate: options.validate || (() => Promise.resolve(undefined)),
     skipIf: options.skipIf || (() => false),
   };
-};
-
-let gitRoot: string | undefined;
-
-const getGitRoot = () => {
-  if (!gitRoot) {
-    gitRoot = execSync("git rev-parse --show-toplevel", {
-      encoding: "utf8",
-    }).trim();
-  }
-  return gitRoot;
-};
-
-interface HandleGitChangesOptions {
-  context: WorkflowContext;
-  checklistDescription: string;
-  ignorePaths?: string[];
-}
-
-const handleGitChanges = async ({
-  context,
-  checklistDescription,
-  ignorePaths,
-}: HandleGitChangesOptions) => {
-  const gitRoot = getGitRoot();
-  let tries = 0;
-  while (true) {
-    const expectedFiles = new Set(Object.values(context.copiedFiles || {}));
-    const staged = execSync("git diff --cached --name-only", {
-      encoding: "utf8",
-      cwd: gitRoot,
-    })
-      .trim()
-      .split("\n")
-      .filter(Boolean);
-
-    // Get unstaged changes (modified files)
-    const unstaged = execSync("git diff --name-only", {
-      encoding: "utf8",
-      cwd: gitRoot,
-    })
-      .trim()
-      .split("\n")
-      .filter(Boolean);
-
-    // Get untracked files
-    const untracked = execSync("git ls-files --others --exclude-standard", {
-      cwd: gitRoot,
-      encoding: "utf8",
-    })
-      .trim()
-      .split("\n")
-      .filter(Boolean);
-
-    const allFiles = [...staged, ...unstaged, ...untracked];
-    const absoluteAllFiles = allFiles.map((file) => path.join(gitRoot, file));
-    let otherFiles = absoluteAllFiles
-      .filter((file) => !expectedFiles.has(file))
-      .filter((file) => !file.endsWith("/saflib")); // tmp
-    if (ignorePaths) {
-      const absoluteIgnorePaths = ignorePaths.map((ignorePath) =>
-        path.join(context.cwd, ignorePath),
-      );
-      otherFiles = otherFiles.filter(
-        (file) =>
-          !absoluteIgnorePaths.some((ignorePath) =>
-            file.startsWith(ignorePath),
-          ),
-      );
-    }
-
-    if (otherFiles.length > 0) {
-      tries++;
-      if (tries > 3) {
-        return false;
-      }
-      const { shouldContinue } = await handlePrompt({
-        context: context,
-        msg: `The following files had unexpected changes:
-      ${otherFiles.map((file) => `- ${file}`).join("\n")}.
-      
-      You need to do one of two things:
-      - If these changes were NOT in service to the original prompt, undo them.
-      - If these changes WERE in service of the original prompt, commit exactly these files with an explanatory message.
-      
-      Remember! The goal of this workflow is just to do the following:
-      ${checklistDescription}.
-      
-      If you have diverged from this goal, you need to undo the unscoped changes.`,
-      });
-      if (!shouldContinue || context.runMode === "script") {
-        return false;
-      }
-    } else {
-      return true;
-    }
-  }
 };

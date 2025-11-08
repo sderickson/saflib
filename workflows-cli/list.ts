@@ -18,21 +18,21 @@ import type { WorkflowDefinition } from "@saflib/workflows";
 
 const workflowClasses: WorkflowDefinition[] = [
   // workflows/add-workflow HOOK - do not remove this line
-  ...metaWorkflows,
-  ...monorepoWorkflows,
-  ...processWorkflows,
-  ...drizzleWorkflows,
+  ...serviceWorkflows,
   ...openapiWorkflows,
+  ...drizzleWorkflows,
   ...expressWorkflows,
-  ...vueSpaWorkflows,
   ...emailWorkflows,
   ...envWorkflows,
+  ...monorepoWorkflows,
   ...commanderWorkflows,
-  ...sdkWorkflows,
-  ...serviceWorkflows,
-  ...identityWorkflows,
   ...grpcWorkflows,
+  ...identityWorkflows,
   ...cronWorkflows,
+  ...sdkWorkflows,
+  ...vueSpaWorkflows,
+  ...metaWorkflows,
+  ...processWorkflows,
 ];
 
 export const workflows = workflowClasses;

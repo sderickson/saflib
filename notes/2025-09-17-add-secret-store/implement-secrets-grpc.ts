@@ -10,10 +10,9 @@ import {
   InitGrpcServerWorkflowDefinition,
   InitGrpcProtoWorkflowDefinition,
   AddProtoWorkflowDefinition,
-  AddRpcWorkflowDefinition as AddGrpcCallWorkflowDefinition,
+  AddGrpcCallWorkflowDefinition,
   InitGrpcClientWorkflowDefinition,
 } from "@saflib/grpc/workflows";
-import { execSync } from "child_process";
 
 const input = [] as const;
 
@@ -31,10 +30,6 @@ export const ImplementSecretsGrpcServerWorkflowDefinition = defineWorkflow<
   templateFiles: {},
   docFiles: {
     spec: path.join(import.meta.dirname, "spec.md"),
-  },
-
-  afterEach: () => {
-    execSync("git add -A");
   },
 
   steps: [

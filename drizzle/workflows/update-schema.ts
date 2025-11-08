@@ -1,7 +1,6 @@
 import {
   PromptStepMachine,
   CommandStepMachine,
-  DocStepMachine,
   defineWorkflow,
   step,
   CopyStepMachine,
@@ -59,8 +58,8 @@ export const UpdateSchemaWorkflowDefinition = defineWorkflow<
     schemaDoc: path.join(import.meta.dirname, "../docs/02-schema.md"),
   },
 
-  manageGit: {
-    ignorePaths: ["migrations/"],
+  versionControl: {
+    allowPaths: ["./migrations/**"],
   },
 
   steps: [
@@ -79,17 +78,15 @@ export const UpdateSchemaWorkflowDefinition = defineWorkflow<
       };
     }),
 
-    step(DocStepMachine, () => ({
-      docId: "schemaDoc",
-    })),
-
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "schema",
       promptMessage: `Update ${context.targetName}.ts to add the new table, or modify it.
 
       If there's a foreign key relationship, DO NOT set it to cascade on delete.
       
-      ${context.systemPrompt ? `More context: ${context.systemPrompt}` : ""}`,
+      ${context.systemPrompt ? `More context: ${context.systemPrompt}` : ""}
+      
+      Please reference the documentation here for more information: ${context.docFiles?.schemaDoc}`,
     })),
 
     step(CommandStepMachine, () => ({

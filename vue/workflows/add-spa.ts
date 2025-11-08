@@ -93,6 +93,10 @@ export const AddSpaWorkflowDefinition = defineWorkflow<
 
   docFiles: {},
 
+  versionControl: {
+    allowPaths: ["**/pages/home-page/**"],
+  },
+
   steps: [
     step(CopyStepMachine, ({ context }) => ({
       name: context.serviceName,

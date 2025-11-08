@@ -8,6 +8,6 @@ describe("add-env-var", () => {
       definition: AddEnvVarWorkflowDefinition,
       runMode: "dry",
     });
-    expect(result?.checklist).toBeDefined();
+    expect(result.output?.checklist).toBeDefined();
   });
 });

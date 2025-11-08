@@ -46,6 +46,10 @@ export const InitCommonWorkflowDefinition = defineWorkflow<
 
   sourceUrl: import.meta.url,
 
+  versionControl: {
+    allowPaths: ["./env.ts"],
+  },
+
   context: ({ input }) => {
     return {
       ...parsePackageName(input.name, {

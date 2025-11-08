@@ -16,7 +16,7 @@ import path from "node:path";
 
 const sourceDir = path.join(
   import.meta.dirname,
-  "proto-templates/protos/__group_name__/",
+  "proto-templates/protos/__group_name__/"
 );
 
 const input = [
@@ -65,6 +65,10 @@ export const AddProtoWorkflowDefinition = defineWorkflow<
 
   // TODO: add documentation file references
   docFiles: {},
+
+  versionControl: {
+    allowPaths: ["./dist/**"],
+  },
 
   steps: [
     step(CopyStepMachine, ({ context }) => ({

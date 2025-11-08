@@ -8,6 +8,6 @@ describe("add-handler", () => {
       definition: AddGrpcServerHandlerWorkflowDefinition,
       runMode: "dry",
     });
-    expect(result?.checklist).toBeDefined();
+    expect(result.output?.checklist).toBeDefined();
   });
 });

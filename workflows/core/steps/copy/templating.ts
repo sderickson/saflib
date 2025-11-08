@@ -21,7 +21,7 @@ export interface ParsePackageNameOutput {
 
 export const getPackageName = (cwd: string): string => {
   const result = readFileSync(path.join(cwd, "package.json"), "utf8").match(
-    /name": "(.+)"/,
+    /name": "(.+)"/
   )?.[1];
   if (!result) {
     throw new Error(`Package name not found in package.json in ${cwd}`);
@@ -37,7 +37,7 @@ export const getPackageName = (cwd: string): string => {
  */
 export const parsePackageName = (
   packageName: string,
-  input?: ParsePackageNameInput,
+  input?: ParsePackageNameInput
 ): ParsePackageNameOutput => {
   input = input || {};
   let usedSuffix = "";
@@ -47,7 +47,7 @@ export const parsePackageName = (
       : [input.requiredSuffix];
     if (!requiredSuffixes.some((suffix) => suffix.startsWith("-"))) {
       throw new Error(
-        `Required suffix must start with -: ${input.requiredSuffix}`,
+        `Required suffix must start with -: ${input.requiredSuffix}`
       );
     }
     if (
@@ -55,7 +55,7 @@ export const parsePackageName = (
       process.env.NODE_ENV !== "test"
     ) {
       throw new Error(
-        `Package name must end with ${requiredSuffixes.join(" or ")}`,
+        `Package name must end with ${requiredSuffixes.join(" or ")}`
       );
     }
     usedSuffix =
@@ -107,26 +107,30 @@ export interface ParsePathOutput {
  */
 export const parsePath = (
   path: string,
-  input: ParsePathInput,
+  input: ParsePathInput
 ): ParsePathOutput => {
   if (input.requiredPrefix) {
     if (!input.requiredPrefix.startsWith("./")) {
       throw new Error(
-        `Required prefix must start with ./: ${input.requiredPrefix}`,
+        `Required prefix must start with ./. Given: "${input.requiredPrefix}"`
       );
     }
     if (!path.startsWith(input.requiredPrefix)) {
-      throw new Error(`Path must start with ${input.requiredPrefix}`);
+      throw new Error(
+        `Path must start with ${input.requiredPrefix}. Given: "${path}"`
+      );
     }
   }
   if (input.requiredSuffix) {
     if (!input.requiredSuffix.startsWith(".")) {
       throw new Error(
-        `Required suffix must start with .: ${input.requiredSuffix}`,
+        `Required suffix must start with ".". Given: "${input.requiredSuffix}"`
       );
     }
     if (!path.endsWith(input.requiredSuffix)) {
-      throw new Error(`Path must end with ${input.requiredSuffix}`);
+      throw new Error(
+        `Path must end with ${input.requiredSuffix}. Given: "${path}"`
+      );
     }
   }
   let corePath = path
@@ -173,7 +177,7 @@ export const makeLineReplace = (context: { [key: string]: any }) => {
     replaceMap[`__${snakeKey}__`] = kebabCaseToSnakeCase(context[camelKey]);
     replaceMap[`__${pascalKey}__`] = kebabCaseToPascalCase(context[camelKey]);
     replaceMap[`__${snakeKey.toUpperCase()}__`] = kebabCaseToSnakeCase(
-      context[camelKey],
+      context[camelKey]
     ).toUpperCase();
   });
   if (context["sharedPackagePrefix"]) {
@@ -186,7 +190,7 @@ export const makeLineReplace = (context: { [key: string]: any }) => {
     if (line.includes("template-package") && context["sharedPackagePrefix"]) {
       newLine = line.replace(
         "template-package",
-        context["sharedPackagePrefix"],
+        context["sharedPackagePrefix"]
       );
     }
     const matches = line.match(interpolationRegex);

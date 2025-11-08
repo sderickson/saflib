@@ -75,19 +75,11 @@ export interface WorkflowDefinition<
   steps: Array<WorkflowStep<C, AnyStateMachine>>;
 
   /**
-   * A function to be executed after the workflow has completed.
+   * Configure version control for the workflow. Right now, just provide paths which the workflow will consider safe to change as part of the workflow.
    */
-  afterEach?: (context: C) => void;
-
-  /**
-   * Whether to manage git. If true, the workflow will commit and push the changes to the repository at the end of the workflow.
-   * It will also prompt the agent if files *other* than template files were changed.
-   */
-  manageGit?:
-    | boolean
-    | {
-        ignorePaths?: string[];
-      };
+  versionControl?: {
+    allowPaths?: string[];
+  };
 }
 
 type ArrayElementType<T extends readonly unknown[]> = T[number];
@@ -127,12 +119,14 @@ export interface ActionParam<C, E extends AnyEventObject> {
   event: E;
 }
 
-export type AgentCLI = "cursor-agent";
+export type AgentCLI = "cursor-agent" | "mock-agent";
 
 export interface AgentConfig {
   cli: AgentCLI;
   sessionId?: string;
 }
+
+export type VersionControlMode = "git";
 
 /**
  * Inputs every workflow machine receives.
@@ -151,6 +145,10 @@ export interface WorkflowInput {
   docFiles?: Record<string, string>;
 
   cwd?: string;
+
+  manageVersionControl?: VersionControlMode;
+
+  skipTodos?: boolean;
 }
 
 /**
@@ -197,6 +195,7 @@ export interface WorkflowContext {
    * - "dry": do not print out logs or prompts, do not halt, just run the whole workflow and return the output. Useful for getting a checklist.
    * - "print": print out logs and prompts, halt at prompts. "Normal" execution mode.
    * - "script": skip prompts and checks, just run command and copy steps. Useful for debugging templates and scripts.
+   * - "run": runs the workflow at the top level, so it invokes agents, rather than agents invoking the tool. agentConfig is included in this mode.
    */
   runMode: WorkflowRunMode;
 
@@ -210,6 +209,15 @@ export interface WorkflowContext {
   docFiles?: Record<string, string>;
 
   cwd: string;
+
+  /**
+   * Opt in to having the workflow tool check git changes are expected, and commit them if they are. If they aren't, the workflow tool prompts the agent to justify its changes, and either commit or revert them.
+   *
+   * This field is ignored in "dry" and "script" modes.
+   */
+  manageVersionControl?: VersionControlMode;
+
+  skipTodos?: boolean;
 }
 
 export type WorkflowActionFunction<

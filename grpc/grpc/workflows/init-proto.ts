@@ -72,6 +72,10 @@ export const InitGrpcProtoWorkflowDefinition = defineWorkflow<
   // TODO: add documentation file references
   docFiles: {},
 
+  versionControl: {
+    allowPaths: ["./dist/**", "./env.ts"],
+  },
+
   steps: [
     step(CopyStepMachine, ({ context }) => ({
       name: context.serviceName,

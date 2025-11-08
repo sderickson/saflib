@@ -1,0 +1,28 @@
+name: Workflows in Print Mode
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  workflow-integration-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Main test. Runs the basic tests in print mode, automatically getting the next prompt until done.
+      - name: Run Workflow Integration Test
+        run: ./test-all-steps-runner.ts
+        working-directory: ./workflows-cli
+
+      # just for debugging, checking all the files that got added/changed
+      - name: Git status
+        run: git status -uall

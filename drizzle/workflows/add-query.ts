@@ -2,8 +2,6 @@ import {
   CopyStepMachine,
   UpdateStepMachine,
   PromptStepMachine,
-  TestStepMachine,
-  DocStepMachine,
   defineWorkflow,
   step,
   CommandStepMachine,
@@ -26,15 +24,15 @@ const input = [
   },
 ] as const;
 
-interface AddQueryWorkflowContext
+interface AddDrizzleQueryWorkflowContext
   extends ParsePathOutput,
     ParsePackageNameOutput {}
 
-export const AddQueryWorkflowDefinition = defineWorkflow<
+export const AddDrizzleQueryWorkflowDefinition = defineWorkflow<
   typeof input,
-  AddQueryWorkflowContext
+  AddDrizzleQueryWorkflowContext
 >({
-  id: "drizzle/add-query",
+  id: "drizzle/add-drizzle-query",
 
   description:
     "Add a new query to a database built off the drizzle-sqlite3 package.",
@@ -64,15 +62,13 @@ export const AddQueryWorkflowDefinition = defineWorkflow<
     query: path.join(sourceDir, "queries/__group-name__/__target-name__.ts"),
     test: path.join(
       sourceDir,
-      "queries/__group-name__/__target-name__.test.ts",
+      "queries/__group-name__/__target-name__.test.ts"
     ),
     groupIndex: path.join(sourceDir, "queries/__group-name__/index.ts"),
     rootIndex: path.join(sourceDir, "index.ts"),
     types: path.join(sourceDir, "types.ts"),
     errors: path.join(sourceDir, "errors.ts"),
   },
-
-  manageGit: true,
 
   docFiles: {
     refDoc: path.join(import.meta.dirname, "../docs/03-queries.md"),
@@ -86,6 +82,26 @@ export const AddQueryWorkflowDefinition = defineWorkflow<
       lineReplace: makeLineReplace(context),
     })),
 
+    step(PromptStepMachine, ({ context }) => ({
+      promptText: `Add parameters and results to the root types.ts file and errors to the errors.ts files.
+      Full paths: ${context.copiedFiles?.types}, ${context.copiedFiles?.errors}
+
+        * As much as possible, types should be based on the types that drizzle provides.
+        * A resource not being found by ID is an error.
+        * Errors should be simple, no special constructors or anything.
+        * You don't need to export error types from the types.ts file.
+
+        Note: Do NOT create a new \`types.ts\` or \`errors.ts\` files. Add to the existing ones next to the \`package.json\` file.
+        
+        Please reference the documentation here for more information: ${context.docFiles?.refDoc}`,
+    })),
+
+    step(UpdateStepMachine, ({ context }) => ({
+      fileId: "query",
+      promptMessage: `Implement the new query following the documentation guidelines.
+      Full path: ${context.copiedFiles?.query}`,
+    })),
+
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "groupIndex",
       promptMessage: `Update the group index to include the new query.
@@ -96,35 +112,9 @@ export const AddQueryWorkflowDefinition = defineWorkflow<
         3. Make sure this index file is being re-exported by the root index.ts file`,
     })),
 
-    step(DocStepMachine, () => ({
-      docId: "refDoc",
-    })),
-
-    step(PromptStepMachine, ({ context }) => ({
-      promptText: `Add parameters and results to the root types.ts file and errors to the errors.ts files.
-      Full paths: ${context.copiedFiles?.types}, ${context.copiedFiles?.errors}
-
-        * As much as possible, types should be based on the types that drizzle provides.
-        * A resource not being found by ID is an error.
-        * Errors should be simple, no special constructors or anything.
-        * You don't need to export error types from the types.ts file.
-
-        Note: Do NOT create a new \`types.ts\` or \`errors.ts\` files. Add to the existing ones next to the \`package.json\` file.`,
-    })),
-
-    step(UpdateStepMachine, ({ context }) => ({
-      fileId: "query",
-      promptMessage: `Implement the new query following the documentation guidelines.
-      Full path: ${context.copiedFiles?.query}`,
-    })),
-
     step(CommandStepMachine, () => ({
       command: "npm",
       args: ["run", "typecheck"],
-    })),
-
-    step(DocStepMachine, () => ({
-      docId: "testingGuide",
     })),
 
     step(UpdateStepMachine, ({ context }) => ({
@@ -133,7 +123,9 @@ export const AddQueryWorkflowDefinition = defineWorkflow<
 
       Full path: ${context.copiedFiles?.test}
 
-      Aim for 100% coverage; there should be a known way to achieve every handled error. If it's not possible to cause a returned error, it should not be in the implementation.`,
+      Aim for 100% coverage; there should be a known way to achieve every handled error. If it's not possible to cause a returned error, it should not be in the implementation.
+      
+      Please reference the documentation here for more information: ${context.docFiles?.testingGuide}`,
     })),
 
     step(CommandStepMachine, () => ({
@@ -142,13 +134,9 @@ export const AddQueryWorkflowDefinition = defineWorkflow<
       promptOnError: `You may have forgotten to provide all fields necessary. Do NOT decouple the types from the inferred types in types.ts. Instead fix the test.`,
     })),
 
-    step(TestStepMachine, () => ({
-      fileId: "test",
-    })),
-
     step(CommandStepMachine, () => ({
       command: "npm",
-      args: ["run", "typecheck"],
+      args: ["run", "test"],
     })),
   ],
 });

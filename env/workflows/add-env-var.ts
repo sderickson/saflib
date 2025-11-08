@@ -51,6 +51,10 @@ export const AddEnvVarWorkflowDefinition = defineWorkflow<
 
   docFiles: {},
 
+  versionControl: {
+    allowPaths: ["./package.json", "./env.ts"],
+  },
+
   steps: [
     step(CopyStepMachine, ({ context }) => ({
       name: context.name,
@@ -72,11 +76,6 @@ export const AddEnvVarWorkflowDefinition = defineWorkflow<
     step(CommandStepMachine, () => ({
       command: "npm",
       args: ["exec", "saf-env", "generate"],
-    })),
-
-    step(CommandStepMachine, () => ({
-      command: "npm",
-      args: ["exec", "saf-env", "generate-all"],
     })),
   ],
 });
