@@ -24,6 +24,9 @@ jobs:
       - name: Install rollup for linux
         run: npm install @rollup/rollup-linux-x64-gnu
 
+      - name: Undo package.json, package-lock.json
+        run: git reset --hard
+
       - name: Run Workflow Integration Test
         run: ./test-git.sh
         working-directory: ./workflows-cli
