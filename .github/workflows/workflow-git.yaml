@@ -24,8 +24,11 @@ jobs:
       - name: Install rollup for linux
         run: npm install @rollup/rollup-linux-x64-gnu
 
-      - name: Undo package.json, package-lock.json
-        run: git reset --hard
+      - name: Add package.json, package-lock.json
+        run: "git add package.json package-lock.json"
+
+      - name: Commit those changes
+        run: "git commit -m 'Add package.json, package-lock.json'"
 
       - name: Git config name
         run: git config --global user.name "saflib CI"

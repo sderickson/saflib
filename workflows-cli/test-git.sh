@@ -10,6 +10,7 @@ fi
 
 # Checkout a new branch
 current_branch=$(git branch --show-current)
+echo "Checking out test-git branch from $current_branch"
 git checkout -b test-git
 
 # Run the workflow - this should generate many branches
@@ -27,5 +28,4 @@ git checkout $current_branch
 git branch -D test-git
 
 # Exit with the status code
-say done
 exit $status_code
