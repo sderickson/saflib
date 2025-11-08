@@ -77,10 +77,9 @@ export interface WorkflowDefinition<
   /**
    * Configure version control for the workflow. Right now, just provide paths which the workflow will consider safe to change as part of the workflow.
    */
-  versionControl?:
-    | {
-        ignorePaths?: string[];
-      };
+  versionControl?: {
+    allowPaths?: string[];
+  };
 }
 
 type ArrayElementType<T extends readonly unknown[]> = T[number];

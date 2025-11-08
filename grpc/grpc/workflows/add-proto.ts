@@ -67,7 +67,7 @@ export const AddProtoWorkflowDefinition = defineWorkflow<
   docFiles: {},
 
   versionControl: {
-    ignorePaths: ["./dist/**"],
+    allowPaths: ["./dist/**"],
   },
 
   steps: [

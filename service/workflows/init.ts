@@ -89,7 +89,7 @@ export const InitServiceWorkflowDefinition = defineWorkflow<
   docFiles: {},
 
   versionControl: {
-    ignorePaths: ["./env.ts"],
+    allowPaths: ["./env.ts"],
   },
 
   steps: [

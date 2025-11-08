@@ -54,7 +54,7 @@ export const AddCLIWorkflowDefinition = defineWorkflow<
   docFiles: {},
 
   versionControl: {
-    ignorePaths: ["./package.json"],
+    allowPaths: ["./package.json"],
   },
 
   steps: [

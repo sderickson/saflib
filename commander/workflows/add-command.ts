@@ -57,7 +57,7 @@ export const AddCommandWorkflowDefinition = defineWorkflow<
   docFiles: {},
 
   versionControl: {
-    ignorePaths: ["./package.json"],
+    allowPaths: ["./package.json"],
   },
 
   steps: [

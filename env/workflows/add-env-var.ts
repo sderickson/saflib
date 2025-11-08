@@ -52,7 +52,7 @@ export const AddEnvVarWorkflowDefinition = defineWorkflow<
   docFiles: {},
 
   versionControl: {
-    ignorePaths: ["./package.json", "./env.ts"],
+    allowPaths: ["./package.json", "./env.ts"],
   },
 
   steps: [

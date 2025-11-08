@@ -25,7 +25,6 @@ import { addNewLinesToString } from "@saflib/utils";
 import { getWorkflowLogger } from "./store.ts";
 import { addPendingMessage } from "./agents/message.ts";
 
-
 import { handleGitChanges, commitChanges } from "./version/git.ts";
 
 let lastSystemPrompt: string | undefined;
@@ -56,10 +55,9 @@ export function defineWorkflow<
   templateFiles: Record<string, string>;
   docFiles: Record<string, string>;
   steps: Array<WorkflowStep<C, AnyStateMachine>>;
-  versionControl?:
-    | {
-        ignorePaths?: string[];
-      };
+  versionControl?: {
+    allowPaths?: string[];
+  };
 }): WorkflowDefinition<I, C> {
   return config;
 }
@@ -182,9 +180,9 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
               context: input,
               checklistDescription:
                 workflow.checklistDescription?.(input) || workflow.description,
-              ignorePaths:
+              allowPaths:
                 typeof workflow.versionControl === "object"
-                  ? workflow.versionControl.ignorePaths
+                  ? workflow.versionControl.allowPaths
                   : undefined,
             });
             if (!successful) {
@@ -213,7 +211,11 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
               // Currently, this is an infinite loop, though when running with a real agent. I have various loops being handled
               // internally by steps and here.
               // TODO: Figure out a general way to handle validation in a way that will retry, but not forever.
-              if (context.runMode === "dry" || context.runMode === "script" || context.agentConfig?.cli === "mock-agent") {
+              if (
+                context.runMode === "dry" ||
+                context.runMode === "script" ||
+                context.agentConfig?.cli === "mock-agent"
+              ) {
                 throw new Error(event.error);
               }
               return true;

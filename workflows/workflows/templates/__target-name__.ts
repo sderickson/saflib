@@ -80,11 +80,11 @@ export const __WorkflowNamespace____TargetName__WorkflowDefinition =
     // Include **all** files that the agent is expected to modify.
     /* do not replace */ templateFiles: {},
 
-    // TODO: Update "ignorePaths" to exclude any files or directories that are expected to change during the workflow.
+    // TODO: Update "allowPaths" to exclude any files or directories that are expected to change during the workflow.
     // It's important for files to either be excluded here, or included in templateFiles, because the agent will be
     // prompted to explain and justify unexpected changes.
     versionControl: {
-      ignorePaths: ["./dist/**"],
+      allowPaths: ["./dist/**"],
     },
 
     // TODO: add documentation file references

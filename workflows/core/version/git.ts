@@ -69,14 +69,14 @@ interface HandleGitChangesOptions {
   workflowId: string;
   context: WorkflowContext;
   checklistDescription: string;
-  ignorePaths?: string[];
+  allowPaths?: string[];
 }
 
 export const handleGitChanges = async ({
   workflowId,
   context,
   checklistDescription,
-  ignorePaths,
+  allowPaths,
 }: HandleGitChangesOptions) => {
   let tries = 0;
   while (true) {
@@ -84,7 +84,7 @@ export const handleGitChanges = async ({
     let otherFiles = filterMatches({
       absolutePaths: absoluteAllFiles,
       allowedAbsolutePaths: Object.values(context.copiedFiles || {}),
-      allowedGlobs: ignorePaths,
+      allowedGlobs: allowPaths,
       cwd: context.cwd,
     });
 

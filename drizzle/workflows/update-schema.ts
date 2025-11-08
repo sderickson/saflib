@@ -59,7 +59,7 @@ export const UpdateSchemaWorkflowDefinition = defineWorkflow<
   },
 
   versionControl: {
-    ignorePaths: ["./migrations/**"],
+    allowPaths: ["./migrations/**"],
   },
 
   steps: [
