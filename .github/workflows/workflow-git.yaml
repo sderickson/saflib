@@ -27,6 +27,12 @@ jobs:
       - name: Undo package.json, package-lock.json
         run: git reset --hard
 
+      - name: Git config name
+        run: git config --global user.name "saflib CI"
+
+      - name: Git config email
+        run: git config --global user.email "noreply@saf-demo.online"
+
       - name: Run Workflow Integration Test
         run: ./test-git.sh
         working-directory: ./workflows-cli
