@@ -94,7 +94,7 @@ export const AddSpaWorkflowDefinition = defineWorkflow<
   docFiles: {},
 
   versionControl: {
-    ignorePaths: ["./pages/home-page/"],
+    ignorePaths: ["./pages/home-page/**"],
   },
 
   steps: [
