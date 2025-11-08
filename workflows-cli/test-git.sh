@@ -4,6 +4,7 @@
 
 if git status -uall | grep -q "modified:"; then
   echo "There are git changes. Please commit or stash them."
+  git status -uall
   exit 1
 fi
 
