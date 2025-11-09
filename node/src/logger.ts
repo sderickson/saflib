@@ -48,11 +48,8 @@ export interface LoggerOptions extends LoggerContext {
  * can be correlated.
  */
 export const createLogger = (options?: LoggerOptions): WinstonLogger => {
-  if (!options && typedEnv.NODE_ENV === "test") {
-    return baseLogger.child(testContext);
-  }
   if (!options) {
-    throw new Error("SAF Context is required outside of unit tests");
+    return baseLogger.child(testContext);
   }
   /*
    * I think I need to nail down my infra terminology here

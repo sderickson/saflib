@@ -27,7 +27,7 @@ export interface IdentityCommonEnvSchema {
   /**
    * Host URL for the identity service
    */
-  IDENTITY_SERVICE_HOST: string;
+  IDENTITY_SERVICE_HTTP_HOST: string;
   /**
    * Whether to mock 3rd party integrations. Set to 'true' to mock. And integration packages should respect this setting.
    */

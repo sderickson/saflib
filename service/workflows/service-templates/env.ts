@@ -48,7 +48,7 @@ export interface TemplatePackageServiceEnvSchema {
    * The timezone of the deployment, e.g. 'America/New_York'. Must be UTC.
    */
   TZ: "UTC";
-  __SERVICE_NAME___SERVICE_HOST: string;
+  __SERVICE_NAME___SERVICE_HTTP_HOST: string;
 }
 
 /**

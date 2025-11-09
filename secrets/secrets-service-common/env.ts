@@ -36,8 +36,7 @@ export interface SecretsServiceCommonEnvSchema {
    * The protocol of the deployment, e.g. 'https'
    */
   PROTOCOL: "https" | "http";
-  SECRETS_SERVICE_HOST: string;
-  SECRETS_SERVICE_HTTP_PORT: string;
+  SECRETS_SERVICE_HTTP_HOST: string;
   /**
    * Comma-separated list of service subdomains, e.g. 'revenue,geo,identity,core'.
    */

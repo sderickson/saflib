@@ -52,7 +52,7 @@ export interface TemplatePackageGrpcClientEnvSchema {
    * The port on which the gRPC server will listen, or the client will connect.
    */
   __SERVICE_NAME___SERVICE_GRPC_PORT: string;
-  __SERVICE_NAME___SERVICE_HOST: string;
+  __SERVICE_NAME___SERVICE_HTTP_HOST: string;
 }
 
 /**

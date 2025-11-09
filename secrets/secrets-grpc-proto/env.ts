@@ -40,8 +40,7 @@ export interface SecretsGrpcProtoEnvSchema {
    * The host on which the gRPC server will listen, or the client will connect.
    */
   SECRETS_SERVICE_GRPC_HOST: string;
-  SECRETS_SERVICE_HOST: string;
-  SECRETS_SERVICE_HTTP_PORT: string;
+  SECRETS_SERVICE_HTTP_HOST: string;
   /**
    * Comma-separated list of service subdomains, e.g. 'revenue,geo,identity,core'.
    */

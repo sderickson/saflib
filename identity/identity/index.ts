@@ -47,9 +47,8 @@ export async function startIdentityService(
 
     log.info("Starting express server...");
     const app = createApp({ dbKey, callbacks: options?.callbacks ?? {} });
-    startExpressServer(app, {
-      port: parseInt(typedEnv.IDENTITY_SERVICE_HTTP_PORT, 10),
-    });
+    const port = parseInt(typedEnv.IDENTITY_SERVICE_HOST.split(":")[1] || "80", 10);
+    startExpressServer(app, { port });
     log.info("Identity service startup complete.");
   } catch (error) {
     logError(error);
