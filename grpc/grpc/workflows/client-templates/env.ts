@@ -49,9 +49,9 @@ export interface TemplatePackageGrpcClientEnvSchema {
    */
   TZ: "UTC";
   /**
-   * The port on which the gRPC server will listen, or the client will connect.
+   * The host on which the gRPC server will listen, or the client will connect.
    */
-  __SERVICE_NAME___SERVICE_GRPC_PORT: string;
+  __SERVICE_NAME___SERVICE_GRPC_HOST: string;
   __SERVICE_NAME___SERVICE_HTTP_HOST: string;
 }
 

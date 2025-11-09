@@ -35,7 +35,7 @@ export interface IdentityEnvSchema {
   /**
    * The port on which the gRPC server will listen, or the client will connect.
    */
-  IDENTITY_SERVICE_GRPC_PORT: string;
+  IDENTITY_SERVICE_GRPC_HOST: string;
   /**
    * Host URL for the identity service
    */

@@ -12,7 +12,7 @@ export type LimitedUsersClient = Pick<users.UsersClient, "GetUserProfile">;
  * The global UsersClient for the identity service.
  */
 let usersClient: LimitedUsersClient = new users.UsersClient(
-  `${typedEnv.IDENTITY_SERVICE_HOST}:${typedEnv.IDENTITY_SERVICE_GRPC_PORT}`,
+  typedEnv.IDENTITY_SERVICE_GRPC_HOST,
   grpc.credentials.createInsecure(),
 );
 

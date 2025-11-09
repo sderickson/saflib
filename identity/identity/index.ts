@@ -42,12 +42,12 @@ export async function startIdentityService(
       callbacks: options?.callbacks ?? {},
     });
     startGrpcServer(grpcServer, {
-      port: parseInt(typedEnv.IDENTITY_SERVICE_GRPC_PORT, 10),
+      port: parseInt(typedEnv.IDENTITY_SERVICE_GRPC_HOST.split(":")[1] || "80", 10),
     });
 
     log.info("Starting express server...");
     const app = createApp({ dbKey, callbacks: options?.callbacks ?? {} });
-    const port = parseInt(typedEnv.IDENTITY_SERVICE_HOST.split(":")[1] || "80", 10);
+    const port = parseInt(typedEnv.IDENTITY_SERVICE_HTTP_HOST.split(":")[1] || "80", 10);
     startExpressServer(app, { port });
     log.info("Identity service startup complete.");
   } catch (error) {
