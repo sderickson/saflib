@@ -53,7 +53,6 @@ export interface TemplatePackageGrpcClientEnvSchema {
    */
   __SERVICE_NAME___SERVICE_GRPC_PORT: string;
   __SERVICE_NAME___SERVICE_HOST: string;
-  __SERVICE_NAME___SERVICE_HTTP_PORT: string;
 }
 
 /**

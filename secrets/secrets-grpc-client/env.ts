@@ -37,9 +37,9 @@ export interface SecretsGrpcClientEnvSchema {
    */
   PROTOCOL: "https" | "http";
   /**
-   * The port on which the gRPC server will listen, or the client will connect.
+   * The host on which the gRPC server will listen, or the client will connect.
    */
-  SECRETS_SERVICE_GRPC_PORT: string;
+  SECRETS_SERVICE_GRPC_HOST: string;
   SECRETS_SERVICE_HOST: string;
   SECRETS_SERVICE_HTTP_PORT: string;
   /**
