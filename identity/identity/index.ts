@@ -3,7 +3,6 @@ import { createApp } from "@saflib/identity-http";
 import { identityDb } from "@saflib/identity-db";
 import { makeGrpcServer } from "@saflib/identity-grpc";
 import { startGrpcServer } from "@saflib/grpc";
-import type { DbOptions } from "@saflib/drizzle";
 import type { User } from "@saflib/identity-db";
 import type { IdentityServiceCallbacks } from "@saflib/identity-common";
 import { makeSubsystemReporters } from "@saflib/node";
@@ -18,7 +17,7 @@ export type { IdentityServiceCallbacks };
  * Options for starting the auth service, including both HTTP and gRPC servers.
  */
 export interface StartIdentityServiceOptions {
-  dbOptions?: DbOptions;
+  dbPath: string;
   callbacks?: IdentityServiceCallbacks;
 }
 
@@ -35,7 +34,7 @@ export async function startIdentityService(
   try {
     log.info("Starting identity service...");
     log.info("Connecting to identity DB...");
-    const dbKey = identityDb.connect(options?.dbOptions);
+    const dbKey = identityDb.connect({ onDisk: options?.dbPath });
     log.info("Starting gRPC server...");
     const grpcServer = makeGrpcServer({
       dbKey,
