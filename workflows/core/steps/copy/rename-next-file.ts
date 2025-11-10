@@ -40,7 +40,7 @@ export const renameNextFile = fromPromise(
         if (updatedContent[i].includes("/* do not replace */")) {
           updatedContent[i] = updatedContent[i].replace(
             "/* do not replace */",
-            ""
+            "",
           );
           continue;
         }
@@ -51,19 +51,19 @@ export const renameNextFile = fromPromise(
         updatedContent[i] = updatedContent[i].replace(/template-file/g, name);
         updatedContent[i] = updatedContent[i].replace(
           /template_file/g,
-          snakeName
+          snakeName,
         );
         updatedContent[i] = updatedContent[i].replace(
           /TemplateFile/g,
-          pascalName
+          pascalName,
         );
         updatedContent[i] = updatedContent[i].replace(
           /templateFile/g,
-          camelName
+          camelName,
         );
         updatedContent[i] = updatedContent[i].replace(
           /TEMPLATE_FILE/g,
-          snakeName.toUpperCase()
+          snakeName.toUpperCase(),
         );
       }
 
@@ -75,9 +75,9 @@ export const renameNextFile = fromPromise(
         throw error;
       }
       console.error(
-        `Failed to rename file ${targetFileName} in ${targetPath}: ${error.message}`
+        `Failed to rename file ${targetFileName} in ${targetPath}: ${error.message}`,
       );
       throw error;
     }
-  }
+  },
 );

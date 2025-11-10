@@ -35,12 +35,19 @@ export interface IdentityEnvSchema {
   /**
    * The port on which the gRPC server will listen, or the client will connect.
    */
-  IDENTITY_SERVICE_GRPC_PORT: string;
+  IDENTITY_SERVICE_GRPC_HOST: string;
   /**
    * Host URL for the identity service
    */
-  IDENTITY_SERVICE_HOST: string;
-  IDENTITY_SERVICE_HTTP_PORT: string;
+  IDENTITY_SERVICE_HTTP_HOST: string;
+  /**
+   * The hostname or URL of the Loki instance to send logs to (e.g., http://loki:3100)
+   */
+  LOKI_HOSTNAME?: string;
+  /**
+   * The port number of the Loki instance to send logs to (e.g., 3100)
+   */
+  LOKI_PORT?: string;
   /**
    * Whether to mock 3rd party integrations. Set to 'true' to mock. And integration packages should respect this setting.
    */

@@ -32,12 +32,12 @@ export interface RunWorkflowResult {
  * Convenience function to take a WorkflowDefinition, run it in the specified mode, and return the output.
  */
 export const runWorkflow = async (
-  options: RunWorkflowOptions
+  options: RunWorkflowOptions,
 ): Promise<RunWorkflowResult> => {
   const { definition, runMode, args } = options;
   const cliArguments = definition.input as WorkflowArgument[];
   const exampleArgs = cliArguments.map(
-    (arg) => arg.exampleValue || "example-value-missing"
+    (arg) => arg.exampleValue || "example-value-missing",
   );
   const workflow = new XStateWorkflowRunner({
     definition,
@@ -67,7 +67,7 @@ export const runWorkflow = async (
  * @deprecated Use runWorkflow with runMode: "dry" instead
  */
 export const dryRunWorkflow = async (
-  definition: WorkflowDefinition<any, any>
+  definition: WorkflowDefinition<any, any>,
 ): Promise<WorkflowOutput | undefined> => {
   const { output } = await runWorkflow({ definition, runMode: "dry" });
   return output;
@@ -102,7 +102,7 @@ export function getPackageName(rootUrl: string) {
  */
 export const loadWorkflowDefinition = async (
   workflowIdOrPath: string,
-  workflows: WorkflowDefinition[]
+  workflows: WorkflowDefinition[],
 ): Promise<WorkflowDefinition> => {
   const log = getWorkflowLogger();
   log.info(`Loading workflow from path: ${workflowIdOrPath}`);

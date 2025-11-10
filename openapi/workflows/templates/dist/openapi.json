@@ -33,44 +33,33 @@
         "properties": {
           "event": {
             "type": "string",
-            "enum": [
-              "login"
-            ]
+            "enum": ["login"]
           },
           "context": {
             "type": "object",
             "properties": {
               "method": {
                 "type": "string",
-                "enum": [
-                  "email"
-                ]
+                "enum": ["email"]
               }
             }
           }
         },
-        "required": [
-          "event",
-          "context"
-        ]
+        "required": ["event", "context"]
       },
       "signup": {
         "type": "object",
         "properties": {
           "event": {
             "type": "string",
-            "enum": [
-              "signup"
-            ]
+            "enum": ["signup"]
           },
           "context": {
             "type": "object",
             "properties": {
               "method": {
                 "type": "string",
-                "enum": [
-                  "email"
-                ]
+                "enum": ["email"]
               }
             }
           }
@@ -81,9 +70,7 @@
         "properties": {
           "event": {
             "type": "string",
-            "enum": [
-              "signup_view"
-            ]
+            "enum": ["signup_view"]
           }
         }
       },
@@ -92,9 +79,7 @@
         "properties": {
           "event": {
             "type": "string",
-            "enum": [
-              "verify_email"
-            ]
+            "enum": ["verify_email"]
           }
         }
       },
@@ -131,9 +116,7 @@
             "description": "The component that triggered the event. For vue, it should be the component name."
           }
         },
-        "required": [
-          "event"
-        ]
+        "required": ["event"]
       }
     }
   }

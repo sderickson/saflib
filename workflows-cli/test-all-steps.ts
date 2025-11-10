@@ -1,8 +1,9 @@
-import { 
-  defineWorkflow, step, 
-  CopyStepMachine, 
-  UpdateStepMachine, 
-  CommandStepMachine, 
+import {
+  defineWorkflow,
+  step,
+  CopyStepMachine,
+  UpdateStepMachine,
+  CommandStepMachine,
   PromptStepMachine,
 } from "@saflib/workflows";
 import path from "node:path";
@@ -14,10 +15,10 @@ interface TestAllWorkflowsContext {}
  * A workflow that incorporates every generic workflow in the repo.
  * It makes sure there are at least no logical errors preventing workflows from running,
  * and that workflows that depend on one another are working correctly.
- * 
+ *
  * Usage:
  * npm exec saf-workflow run-scripts ./test-all-workflows.ts
- * 
+ *
  * It also runs as part of github actions on PRs.
  */
 export const TestAllWorkflowsDefinition = defineWorkflow<
@@ -30,7 +31,7 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
   context: () => ({}),
   sourceUrl: import.meta.url,
   templateFiles: {
-    "list": path.join(import.meta.dirname, "list.ts"),
+    list: path.join(import.meta.dirname, "list.ts"),
   },
   docFiles: {},
   steps: [
@@ -40,7 +41,8 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
     })),
     step(UpdateStepMachine, () => ({
       fileId: "list",
-      promptMessage: "Update the list.ts file to list the files in the current directory.",
+      promptMessage:
+        "Update the list.ts file to list the files in the current directory.",
     })),
     step(CommandStepMachine, () => ({
       command: "echo",
@@ -59,7 +61,7 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
       - lines
       - are
       - printed
-      - slowly`
+      - slowly`,
     })),
   ],
 });

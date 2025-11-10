@@ -19,7 +19,7 @@ import { contextFromInput } from "../utils.ts";
  * A function that determines if the command should be skipped. Given the context and cwd.
  */
 export type CommandStepSkipIf = (
-  context: CommandStepContext & { cwd: string }
+  context: CommandStepContext & { cwd: string },
 ) => Promise<boolean>;
 
 /**
@@ -60,7 +60,7 @@ export interface CommandStepContext extends WorkflowContext {
 
 const messageForContext = (ctx: CommandStepContext) => {
   return `The command \`${ctx.command} ${ctx.args.join(" ")}\` failed.\nCWD: ${ctx.cwd}.\n${ctx.promptOnError ? `\n${ctx.promptOnError}` : ""}`;
-}
+};
 
 /**
  * Runs a shell command as part of a workflow. Stops the workflow if the command fails.
@@ -89,7 +89,7 @@ export const CommandStepMachine = setup({
         while (true) {
           if (tries > 3) {
             throw new Error(
-              `Agent failed to fix command: ${input.command} ${input.args.join(" ")}`
+              `Agent failed to fix command: ${input.command} ${input.args.join(" ")}`,
             );
           }
 
@@ -116,7 +116,7 @@ export const CommandStepMachine = setup({
             tries++;
           }
         }
-      }
+      },
     ),
   },
 }).createMachine({
@@ -139,7 +139,7 @@ export const CommandStepMachine = setup({
           target: "runCommand",
           actions: logInfo(
             ({ context }) =>
-              `Running command: ${context.command} ${context.args.join(" ")}`
+              `Running command: ${context.command} ${context.args.join(" ")}`,
           ),
         },
       },
@@ -153,7 +153,7 @@ export const CommandStepMachine = setup({
           actions: [
             logInfo(
               ({ context }) =>
-                `Successfully ran \`${context.command} ${context.args.join(" ")}\``
+                `Successfully ran \`${context.command} ${context.args.join(" ")}\``,
             ),
             assign({
               checklist: ({ context }) => {
@@ -171,7 +171,8 @@ export const CommandStepMachine = setup({
           target: "standby",
           actions: [
             logError(
-              ({ event }) => `Command failed: ${(event.error as Error).message}`
+              ({ event }) =>
+                `Command failed: ${(event.error as Error).message}`,
             ),
           ],
         },
@@ -184,10 +185,10 @@ export const CommandStepMachine = setup({
         },
         prompt: {
           actions: [
-            ({context}) => {
+            ({ context }) => {
               console.log(messageForContext(context));
-            }
-          ]
+            },
+          ],
         },
       },
     },

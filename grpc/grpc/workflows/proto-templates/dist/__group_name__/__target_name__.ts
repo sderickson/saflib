@@ -8,191 +8,249 @@ import * as dependency_1 from "@saflib/grpc";
 import * as dependency_2 from "./../google/protobuf/timestamp.ts";
 import * as pb_1 from "google-protobuf";
 export class __TargetName__Request extends pb_1.Message {
-    #one_of_decls: number[][] = [];
-    constructor(data?: any[] | {
-        auth?: dependency_1.SafAuth;
-        request?: dependency_1.SafRequest;
-    }) {
-        super();
-        pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [], this.#one_of_decls);
-        if (!Array.isArray(data) && typeof data == "object") {
-            if ("auth" in data && data.auth != undefined) {
-                this.auth = data.auth;
-            }
-            if ("request" in data && data.request != undefined) {
-                this.request = data.request;
-            }
-        }
+  #one_of_decls: number[][] = [];
+  constructor(
+    data?:
+      | any[]
+      | {
+          auth?: dependency_1.SafAuth;
+          request?: dependency_1.SafRequest;
+        },
+  ) {
+    super();
+    pb_1.Message.initialize(
+      this,
+      Array.isArray(data) ? data : [],
+      0,
+      -1,
+      [],
+      this.#one_of_decls,
+    );
+    if (!Array.isArray(data) && typeof data == "object") {
+      if ("auth" in data && data.auth != undefined) {
+        this.auth = data.auth;
+      }
+      if ("request" in data && data.request != undefined) {
+        this.request = data.request;
+      }
     }
-    get auth() {
-        return pb_1.Message.getWrapperField(this, dependency_1.SafAuth, 1) as dependency_1.SafAuth;
+  }
+  get auth() {
+    return pb_1.Message.getWrapperField(
+      this,
+      dependency_1.SafAuth,
+      1,
+    ) as dependency_1.SafAuth;
+  }
+  set auth(value: dependency_1.SafAuth) {
+    pb_1.Message.setWrapperField(this, 1, value);
+  }
+  get has_auth() {
+    return pb_1.Message.getField(this, 1) != null;
+  }
+  get request() {
+    return pb_1.Message.getWrapperField(
+      this,
+      dependency_1.SafRequest,
+      2,
+    ) as dependency_1.SafRequest;
+  }
+  set request(value: dependency_1.SafRequest) {
+    pb_1.Message.setWrapperField(this, 2, value);
+  }
+  get has_request() {
+    return pb_1.Message.getField(this, 2) != null;
+  }
+  static fromObject(data: {
+    auth?: ReturnType<typeof dependency_1.SafAuth.prototype.toObject>;
+    request?: ReturnType<typeof dependency_1.SafRequest.prototype.toObject>;
+  }): __TargetName__Request {
+    const message = new __TargetName__Request({});
+    if (data.auth != null) {
+      message.auth = dependency_1.SafAuth.fromObject(data.auth);
     }
-    set auth(value: dependency_1.SafAuth) {
-        pb_1.Message.setWrapperField(this, 1, value);
+    if (data.request != null) {
+      message.request = dependency_1.SafRequest.fromObject(data.request);
     }
-    get has_auth() {
-        return pb_1.Message.getField(this, 1) != null;
+    return message;
+  }
+  toObject() {
+    const data: {
+      auth?: ReturnType<typeof dependency_1.SafAuth.prototype.toObject>;
+      request?: ReturnType<typeof dependency_1.SafRequest.prototype.toObject>;
+    } = {};
+    if (this.auth != null) {
+      data.auth = this.auth.toObject();
     }
-    get request() {
-        return pb_1.Message.getWrapperField(this, dependency_1.SafRequest, 2) as dependency_1.SafRequest;
+    if (this.request != null) {
+      data.request = this.request.toObject();
     }
-    set request(value: dependency_1.SafRequest) {
-        pb_1.Message.setWrapperField(this, 2, value);
+    return data;
+  }
+  serialize(): Uint8Array;
+  serialize(w: pb_1.BinaryWriter): void;
+  serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
+    const writer = w || new pb_1.BinaryWriter();
+    if (this.has_auth)
+      writer.writeMessage(1, this.auth, () => this.auth.serialize(writer));
+    if (this.has_request)
+      writer.writeMessage(2, this.request, () =>
+        this.request.serialize(writer),
+      );
+    if (!w) return writer.getResultBuffer();
+  }
+  static deserialize(
+    bytes: Uint8Array | pb_1.BinaryReader,
+  ): __TargetName__Request {
+    const reader =
+        bytes instanceof pb_1.BinaryReader
+          ? bytes
+          : new pb_1.BinaryReader(bytes),
+      message = new __TargetName__Request();
+    while (reader.nextField()) {
+      if (reader.isEndGroup()) break;
+      switch (reader.getFieldNumber()) {
+        case 1:
+          reader.readMessage(
+            message.auth,
+            () => (message.auth = dependency_1.SafAuth.deserialize(reader)),
+          );
+          break;
+        case 2:
+          reader.readMessage(
+            message.request,
+            () =>
+              (message.request = dependency_1.SafRequest.deserialize(reader)),
+          );
+          break;
+        default:
+          reader.skipField();
+      }
     }
-    get has_request() {
-        return pb_1.Message.getField(this, 2) != null;
-    }
-    static fromObject(data: {
-        auth?: ReturnType<typeof dependency_1.SafAuth.prototype.toObject>;
-        request?: ReturnType<typeof dependency_1.SafRequest.prototype.toObject>;
-    }): __TargetName__Request {
-        const message = new __TargetName__Request({});
-        if (data.auth != null) {
-            message.auth = dependency_1.SafAuth.fromObject(data.auth);
-        }
-        if (data.request != null) {
-            message.request = dependency_1.SafRequest.fromObject(data.request);
-        }
-        return message;
-    }
-    toObject() {
-        const data: {
-            auth?: ReturnType<typeof dependency_1.SafAuth.prototype.toObject>;
-            request?: ReturnType<typeof dependency_1.SafRequest.prototype.toObject>;
-        } = {};
-        if (this.auth != null) {
-            data.auth = this.auth.toObject();
-        }
-        if (this.request != null) {
-            data.request = this.request.toObject();
-        }
-        return data;
-    }
-    serialize(): Uint8Array;
-    serialize(w: pb_1.BinaryWriter): void;
-    serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
-        const writer = w || new pb_1.BinaryWriter();
-        if (this.has_auth)
-            writer.writeMessage(1, this.auth, () => this.auth.serialize(writer));
-        if (this.has_request)
-            writer.writeMessage(2, this.request, () => this.request.serialize(writer));
-        if (!w)
-            return writer.getResultBuffer();
-    }
-    static deserialize(bytes: Uint8Array | pb_1.BinaryReader): __TargetName__Request {
-        const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes), message = new __TargetName__Request();
-        while (reader.nextField()) {
-            if (reader.isEndGroup())
-                break;
-            switch (reader.getFieldNumber()) {
-                case 1:
-                    reader.readMessage(message.auth, () => message.auth = dependency_1.SafAuth.deserialize(reader));
-                    break;
-                case 2:
-                    reader.readMessage(message.request, () => message.request = dependency_1.SafRequest.deserialize(reader));
-                    break;
-                default: reader.skipField();
-            }
-        }
-        return message;
-    }
-    serializeBinary(): Uint8Array {
-        return this.serialize();
-    }
-    static deserializeBinary(bytes: Uint8Array): __TargetName__Request {
-        return __TargetName__Request.deserialize(bytes);
-    }
+    return message;
+  }
+  serializeBinary(): Uint8Array {
+    return this.serialize();
+  }
+  static deserializeBinary(bytes: Uint8Array): __TargetName__Request {
+    return __TargetName__Request.deserialize(bytes);
+  }
 }
 export class __TargetName__Response extends pb_1.Message {
-    #one_of_decls: number[][] = [];
-    constructor(data?: any[] | {
-        status?: string;
-        timestamp?: dependency_2.Timestamp;
-    }) {
-        super();
-        pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [], this.#one_of_decls);
-        if (!Array.isArray(data) && typeof data == "object") {
-            if ("status" in data && data.status != undefined) {
-                this.status = data.status;
-            }
-            if ("timestamp" in data && data.timestamp != undefined) {
-                this.timestamp = data.timestamp;
-            }
-        }
+  #one_of_decls: number[][] = [];
+  constructor(
+    data?:
+      | any[]
+      | {
+          status?: string;
+          timestamp?: dependency_2.Timestamp;
+        },
+  ) {
+    super();
+    pb_1.Message.initialize(
+      this,
+      Array.isArray(data) ? data : [],
+      0,
+      -1,
+      [],
+      this.#one_of_decls,
+    );
+    if (!Array.isArray(data) && typeof data == "object") {
+      if ("status" in data && data.status != undefined) {
+        this.status = data.status;
+      }
+      if ("timestamp" in data && data.timestamp != undefined) {
+        this.timestamp = data.timestamp;
+      }
     }
-    get status() {
-        return pb_1.Message.getFieldWithDefault(this, 1, "") as string;
+  }
+  get status() {
+    return pb_1.Message.getFieldWithDefault(this, 1, "") as string;
+  }
+  set status(value: string) {
+    pb_1.Message.setField(this, 1, value);
+  }
+  get timestamp() {
+    return pb_1.Message.getWrapperField(
+      this,
+      dependency_2.Timestamp,
+      2,
+    ) as dependency_2.Timestamp;
+  }
+  set timestamp(value: dependency_2.Timestamp) {
+    pb_1.Message.setWrapperField(this, 2, value);
+  }
+  get has_timestamp() {
+    return pb_1.Message.getField(this, 2) != null;
+  }
+  static fromObject(data: {
+    status?: string;
+    timestamp?: ReturnType<typeof dependency_2.Timestamp.prototype.toObject>;
+  }): __TargetName__Response {
+    const message = new __TargetName__Response({});
+    if (data.status != null) {
+      message.status = data.status;
     }
-    set status(value: string) {
-        pb_1.Message.setField(this, 1, value);
+    if (data.timestamp != null) {
+      message.timestamp = dependency_2.Timestamp.fromObject(data.timestamp);
     }
-    get timestamp() {
-        return pb_1.Message.getWrapperField(this, dependency_2.Timestamp, 2) as dependency_2.Timestamp;
+    return message;
+  }
+  toObject() {
+    const data: {
+      status?: string;
+      timestamp?: ReturnType<typeof dependency_2.Timestamp.prototype.toObject>;
+    } = {};
+    if (this.status != null) {
+      data.status = this.status;
     }
-    set timestamp(value: dependency_2.Timestamp) {
-        pb_1.Message.setWrapperField(this, 2, value);
+    if (this.timestamp != null) {
+      data.timestamp = this.timestamp.toObject();
     }
-    get has_timestamp() {
-        return pb_1.Message.getField(this, 2) != null;
+    return data;
+  }
+  serialize(): Uint8Array;
+  serialize(w: pb_1.BinaryWriter): void;
+  serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
+    const writer = w || new pb_1.BinaryWriter();
+    if (this.status.length) writer.writeString(1, this.status);
+    if (this.has_timestamp)
+      writer.writeMessage(2, this.timestamp, () =>
+        this.timestamp.serialize(writer),
+      );
+    if (!w) return writer.getResultBuffer();
+  }
+  static deserialize(
+    bytes: Uint8Array | pb_1.BinaryReader,
+  ): __TargetName__Response {
+    const reader =
+        bytes instanceof pb_1.BinaryReader
+          ? bytes
+          : new pb_1.BinaryReader(bytes),
+      message = new __TargetName__Response();
+    while (reader.nextField()) {
+      if (reader.isEndGroup()) break;
+      switch (reader.getFieldNumber()) {
+        case 1:
+          message.status = reader.readString();
+          break;
+        case 2:
+          reader.readMessage(
+            message.timestamp,
+            () =>
+              (message.timestamp = dependency_2.Timestamp.deserialize(reader)),
+          );
+          break;
+        default:
+          reader.skipField();
+      }
     }
-    static fromObject(data: {
-        status?: string;
-        timestamp?: ReturnType<typeof dependency_2.Timestamp.prototype.toObject>;
-    }): __TargetName__Response {
-        const message = new __TargetName__Response({});
-        if (data.status != null) {
-            message.status = data.status;
-        }
-        if (data.timestamp != null) {
-            message.timestamp = dependency_2.Timestamp.fromObject(data.timestamp);
-        }
-        return message;
-    }
-    toObject() {
-        const data: {
-            status?: string;
-            timestamp?: ReturnType<typeof dependency_2.Timestamp.prototype.toObject>;
-        } = {};
-        if (this.status != null) {
-            data.status = this.status;
-        }
-        if (this.timestamp != null) {
-            data.timestamp = this.timestamp.toObject();
-        }
-        return data;
-    }
-    serialize(): Uint8Array;
-    serialize(w: pb_1.BinaryWriter): void;
-    serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
-        const writer = w || new pb_1.BinaryWriter();
-        if (this.status.length)
-            writer.writeString(1, this.status);
-        if (this.has_timestamp)
-            writer.writeMessage(2, this.timestamp, () => this.timestamp.serialize(writer));
-        if (!w)
-            return writer.getResultBuffer();
-    }
-    static deserialize(bytes: Uint8Array | pb_1.BinaryReader): __TargetName__Response {
-        const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes), message = new __TargetName__Response();
-        while (reader.nextField()) {
-            if (reader.isEndGroup())
-                break;
-            switch (reader.getFieldNumber()) {
-                case 1:
-                    message.status = reader.readString();
-                    break;
-                case 2:
-                    reader.readMessage(message.timestamp, () => message.timestamp = dependency_2.Timestamp.deserialize(reader));
-                    break;
-                default: reader.skipField();
-            }
-        }
-        return message;
-    }
-    serializeBinary(): Uint8Array {
-        return this.serialize();
-    }
-    static deserializeBinary(bytes: Uint8Array): __TargetName__Response {
-        return __TargetName__Response.deserialize(bytes);
-    }
+    return message;
+  }
+  serializeBinary(): Uint8Array {
+    return this.serialize();
+  }
+  static deserializeBinary(bytes: Uint8Array): __TargetName__Response {
+    return __TargetName__Response.deserialize(bytes);
+  }
 }

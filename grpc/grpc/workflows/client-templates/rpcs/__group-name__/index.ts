@@ -15,7 +15,7 @@ export type Limited__GroupName__Client = Pick<
  * The global __TargetName____GroupName__Client for the __service_name__ service.
  */
 let __groupName__Client: Limited__GroupName__Client = new __GroupName__Client(
-  `${typedEnv.__SERVICE_NAME___SERVICE_HOST}:${typedEnv.__SERVICE_NAME___SERVICE_GRPC_PORT}`,
+  typedEnv.__SERVICE_NAME___SERVICE_GRPC_HOST,
   grpc.credentials.createInsecure(),
 );
 

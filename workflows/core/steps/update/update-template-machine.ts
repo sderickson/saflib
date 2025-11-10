@@ -205,10 +205,10 @@ export const UpdateStepMachine = setup({
         ],
         prompt: {
           actions: [
-            ({context}) => {
+            ({ context }) => {
               console.log(context.promptMessage);
-            }
-          ]
+            },
+          ],
         },
       },
     },

@@ -7,353 +7,421 @@
 import * as dependency_1 from "@saflib/grpc";
 import * as pb_1 from "google-protobuf";
 export enum GetSecretError {
-    GET_SECRET_INVALID_REQUEST = 0,
-    GET_SECRET_INVALID_TOKEN = 1,
-    GET_SECRET_TOKEN_NOT_APPROVED = 2,
-    GET_SECRET_ACCESS_NOT_GRANTED = 3,
-    GET_SECRET_NOT_FOUND = 4,
-    GET_SECRET_VALUE_NOT_SET = 5,
-    GET_SECRET_NOT_ACTIVE = 6,
-    GET_SECRET_UNKNOWN_ERROR = 7
+  GET_SECRET_INVALID_REQUEST = 0,
+  GET_SECRET_INVALID_TOKEN = 1,
+  GET_SECRET_TOKEN_NOT_APPROVED = 2,
+  GET_SECRET_ACCESS_NOT_GRANTED = 3,
+  GET_SECRET_NOT_FOUND = 4,
+  GET_SECRET_VALUE_NOT_SET = 5,
+  GET_SECRET_NOT_ACTIVE = 6,
+  GET_SECRET_UNKNOWN_ERROR = 7,
 }
 export class GetSecretRequest extends pb_1.Message {
-    #one_of_decls: number[][] = [];
-    constructor(data?: any[] | {
-        auth?: dependency_1.SafAuth;
-        request?: dependency_1.SafRequest;
-        secret_name?: string;
-        description?: string;
-        token?: string;
-    }) {
-        super();
-        pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [], this.#one_of_decls);
-        if (!Array.isArray(data) && typeof data == "object") {
-            if ("auth" in data && data.auth != undefined) {
-                this.auth = data.auth;
-            }
-            if ("request" in data && data.request != undefined) {
-                this.request = data.request;
-            }
-            if ("secret_name" in data && data.secret_name != undefined) {
-                this.secret_name = data.secret_name;
-            }
-            if ("description" in data && data.description != undefined) {
-                this.description = data.description;
-            }
-            if ("token" in data && data.token != undefined) {
-                this.token = data.token;
-            }
-        }
+  #one_of_decls: number[][] = [];
+  constructor(
+    data?:
+      | any[]
+      | {
+          auth?: dependency_1.SafAuth;
+          request?: dependency_1.SafRequest;
+          secret_name?: string;
+          description?: string;
+          token?: string;
+        },
+  ) {
+    super();
+    pb_1.Message.initialize(
+      this,
+      Array.isArray(data) ? data : [],
+      0,
+      -1,
+      [],
+      this.#one_of_decls,
+    );
+    if (!Array.isArray(data) && typeof data == "object") {
+      if ("auth" in data && data.auth != undefined) {
+        this.auth = data.auth;
+      }
+      if ("request" in data && data.request != undefined) {
+        this.request = data.request;
+      }
+      if ("secret_name" in data && data.secret_name != undefined) {
+        this.secret_name = data.secret_name;
+      }
+      if ("description" in data && data.description != undefined) {
+        this.description = data.description;
+      }
+      if ("token" in data && data.token != undefined) {
+        this.token = data.token;
+      }
     }
-    get auth() {
-        return pb_1.Message.getWrapperField(this, dependency_1.SafAuth, 1) as dependency_1.SafAuth;
+  }
+  get auth() {
+    return pb_1.Message.getWrapperField(
+      this,
+      dependency_1.SafAuth,
+      1,
+    ) as dependency_1.SafAuth;
+  }
+  set auth(value: dependency_1.SafAuth) {
+    pb_1.Message.setWrapperField(this, 1, value);
+  }
+  get has_auth() {
+    return pb_1.Message.getField(this, 1) != null;
+  }
+  get request() {
+    return pb_1.Message.getWrapperField(
+      this,
+      dependency_1.SafRequest,
+      2,
+    ) as dependency_1.SafRequest;
+  }
+  set request(value: dependency_1.SafRequest) {
+    pb_1.Message.setWrapperField(this, 2, value);
+  }
+  get has_request() {
+    return pb_1.Message.getField(this, 2) != null;
+  }
+  get secret_name() {
+    return pb_1.Message.getFieldWithDefault(this, 3, "") as string;
+  }
+  set secret_name(value: string) {
+    pb_1.Message.setField(this, 3, value);
+  }
+  get description() {
+    return pb_1.Message.getFieldWithDefault(this, 4, "") as string;
+  }
+  set description(value: string) {
+    pb_1.Message.setField(this, 4, value);
+  }
+  get token() {
+    return pb_1.Message.getFieldWithDefault(this, 5, "") as string;
+  }
+  set token(value: string) {
+    pb_1.Message.setField(this, 5, value);
+  }
+  static fromObject(data: {
+    auth?: ReturnType<typeof dependency_1.SafAuth.prototype.toObject>;
+    request?: ReturnType<typeof dependency_1.SafRequest.prototype.toObject>;
+    secret_name?: string;
+    description?: string;
+    token?: string;
+  }): GetSecretRequest {
+    const message = new GetSecretRequest({});
+    if (data.auth != null) {
+      message.auth = dependency_1.SafAuth.fromObject(data.auth);
     }
-    set auth(value: dependency_1.SafAuth) {
-        pb_1.Message.setWrapperField(this, 1, value);
+    if (data.request != null) {
+      message.request = dependency_1.SafRequest.fromObject(data.request);
     }
-    get has_auth() {
-        return pb_1.Message.getField(this, 1) != null;
+    if (data.secret_name != null) {
+      message.secret_name = data.secret_name;
     }
-    get request() {
-        return pb_1.Message.getWrapperField(this, dependency_1.SafRequest, 2) as dependency_1.SafRequest;
+    if (data.description != null) {
+      message.description = data.description;
     }
-    set request(value: dependency_1.SafRequest) {
-        pb_1.Message.setWrapperField(this, 2, value);
+    if (data.token != null) {
+      message.token = data.token;
     }
-    get has_request() {
-        return pb_1.Message.getField(this, 2) != null;
+    return message;
+  }
+  toObject() {
+    const data: {
+      auth?: ReturnType<typeof dependency_1.SafAuth.prototype.toObject>;
+      request?: ReturnType<typeof dependency_1.SafRequest.prototype.toObject>;
+      secret_name?: string;
+      description?: string;
+      token?: string;
+    } = {};
+    if (this.auth != null) {
+      data.auth = this.auth.toObject();
     }
-    get secret_name() {
-        return pb_1.Message.getFieldWithDefault(this, 3, "") as string;
+    if (this.request != null) {
+      data.request = this.request.toObject();
     }
-    set secret_name(value: string) {
-        pb_1.Message.setField(this, 3, value);
+    if (this.secret_name != null) {
+      data.secret_name = this.secret_name;
     }
-    get description() {
-        return pb_1.Message.getFieldWithDefault(this, 4, "") as string;
+    if (this.description != null) {
+      data.description = this.description;
     }
-    set description(value: string) {
-        pb_1.Message.setField(this, 4, value);
+    if (this.token != null) {
+      data.token = this.token;
     }
-    get token() {
-        return pb_1.Message.getFieldWithDefault(this, 5, "") as string;
+    return data;
+  }
+  serialize(): Uint8Array;
+  serialize(w: pb_1.BinaryWriter): void;
+  serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
+    const writer = w || new pb_1.BinaryWriter();
+    if (this.has_auth)
+      writer.writeMessage(1, this.auth, () => this.auth.serialize(writer));
+    if (this.has_request)
+      writer.writeMessage(2, this.request, () =>
+        this.request.serialize(writer),
+      );
+    if (this.secret_name.length) writer.writeString(3, this.secret_name);
+    if (this.description.length) writer.writeString(4, this.description);
+    if (this.token.length) writer.writeString(5, this.token);
+    if (!w) return writer.getResultBuffer();
+  }
+  static deserialize(bytes: Uint8Array | pb_1.BinaryReader): GetSecretRequest {
+    const reader =
+        bytes instanceof pb_1.BinaryReader
+          ? bytes
+          : new pb_1.BinaryReader(bytes),
+      message = new GetSecretRequest();
+    while (reader.nextField()) {
+      if (reader.isEndGroup()) break;
+      switch (reader.getFieldNumber()) {
+        case 1:
+          reader.readMessage(
+            message.auth,
+            () => (message.auth = dependency_1.SafAuth.deserialize(reader)),
+          );
+          break;
+        case 2:
+          reader.readMessage(
+            message.request,
+            () =>
+              (message.request = dependency_1.SafRequest.deserialize(reader)),
+          );
+          break;
+        case 3:
+          message.secret_name = reader.readString();
+          break;
+        case 4:
+          message.description = reader.readString();
+          break;
+        case 5:
+          message.token = reader.readString();
+          break;
+        default:
+          reader.skipField();
+      }
     }
-    set token(value: string) {
-        pb_1.Message.setField(this, 5, value);
-    }
-    static fromObject(data: {
-        auth?: ReturnType<typeof dependency_1.SafAuth.prototype.toObject>;
-        request?: ReturnType<typeof dependency_1.SafRequest.prototype.toObject>;
-        secret_name?: string;
-        description?: string;
-        token?: string;
-    }): GetSecretRequest {
-        const message = new GetSecretRequest({});
-        if (data.auth != null) {
-            message.auth = dependency_1.SafAuth.fromObject(data.auth);
-        }
-        if (data.request != null) {
-            message.request = dependency_1.SafRequest.fromObject(data.request);
-        }
-        if (data.secret_name != null) {
-            message.secret_name = data.secret_name;
-        }
-        if (data.description != null) {
-            message.description = data.description;
-        }
-        if (data.token != null) {
-            message.token = data.token;
-        }
-        return message;
-    }
-    toObject() {
-        const data: {
-            auth?: ReturnType<typeof dependency_1.SafAuth.prototype.toObject>;
-            request?: ReturnType<typeof dependency_1.SafRequest.prototype.toObject>;
-            secret_name?: string;
-            description?: string;
-            token?: string;
-        } = {};
-        if (this.auth != null) {
-            data.auth = this.auth.toObject();
-        }
-        if (this.request != null) {
-            data.request = this.request.toObject();
-        }
-        if (this.secret_name != null) {
-            data.secret_name = this.secret_name;
-        }
-        if (this.description != null) {
-            data.description = this.description;
-        }
-        if (this.token != null) {
-            data.token = this.token;
-        }
-        return data;
-    }
-    serialize(): Uint8Array;
-    serialize(w: pb_1.BinaryWriter): void;
-    serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
-        const writer = w || new pb_1.BinaryWriter();
-        if (this.has_auth)
-            writer.writeMessage(1, this.auth, () => this.auth.serialize(writer));
-        if (this.has_request)
-            writer.writeMessage(2, this.request, () => this.request.serialize(writer));
-        if (this.secret_name.length)
-            writer.writeString(3, this.secret_name);
-        if (this.description.length)
-            writer.writeString(4, this.description);
-        if (this.token.length)
-            writer.writeString(5, this.token);
-        if (!w)
-            return writer.getResultBuffer();
-    }
-    static deserialize(bytes: Uint8Array | pb_1.BinaryReader): GetSecretRequest {
-        const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes), message = new GetSecretRequest();
-        while (reader.nextField()) {
-            if (reader.isEndGroup())
-                break;
-            switch (reader.getFieldNumber()) {
-                case 1:
-                    reader.readMessage(message.auth, () => message.auth = dependency_1.SafAuth.deserialize(reader));
-                    break;
-                case 2:
-                    reader.readMessage(message.request, () => message.request = dependency_1.SafRequest.deserialize(reader));
-                    break;
-                case 3:
-                    message.secret_name = reader.readString();
-                    break;
-                case 4:
-                    message.description = reader.readString();
-                    break;
-                case 5:
-                    message.token = reader.readString();
-                    break;
-                default: reader.skipField();
-            }
-        }
-        return message;
-    }
-    serializeBinary(): Uint8Array {
-        return this.serialize();
-    }
-    static deserializeBinary(bytes: Uint8Array): GetSecretRequest {
-        return GetSecretRequest.deserialize(bytes);
-    }
+    return message;
+  }
+  serializeBinary(): Uint8Array {
+    return this.serialize();
+  }
+  static deserializeBinary(bytes: Uint8Array): GetSecretRequest {
+    return GetSecretRequest.deserialize(bytes);
+  }
 }
 export class GetSecretResponse extends pb_1.Message {
-    #one_of_decls: number[][] = [[1, 2]];
-    constructor(data?: any[] | ({} & (({
-        success?: GetSecretSuccess;
-        error?: never;
-    } | {
-        success?: never;
-        error?: GetSecretError;
-    })))) {
-        super();
-        pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [], this.#one_of_decls);
-        if (!Array.isArray(data) && typeof data == "object") {
-            if ("success" in data && data.success != undefined) {
-                this.success = data.success;
+  #one_of_decls: number[][] = [[1, 2]];
+  constructor(
+    data?:
+      | any[]
+      | ({} & (
+          | {
+              success?: GetSecretSuccess;
+              error?: never;
             }
-            if ("error" in data && data.error != undefined) {
-                this.error = data.error;
+          | {
+              success?: never;
+              error?: GetSecretError;
             }
-        }
+        )),
+  ) {
+    super();
+    pb_1.Message.initialize(
+      this,
+      Array.isArray(data) ? data : [],
+      0,
+      -1,
+      [],
+      this.#one_of_decls,
+    );
+    if (!Array.isArray(data) && typeof data == "object") {
+      if ("success" in data && data.success != undefined) {
+        this.success = data.success;
+      }
+      if ("error" in data && data.error != undefined) {
+        this.error = data.error;
+      }
     }
-    get success() {
-        return pb_1.Message.getWrapperField(this, GetSecretSuccess, 1) as GetSecretSuccess;
+  }
+  get success() {
+    return pb_1.Message.getWrapperField(
+      this,
+      GetSecretSuccess,
+      1,
+    ) as GetSecretSuccess;
+  }
+  set success(value: GetSecretSuccess) {
+    pb_1.Message.setOneofWrapperField(this, 1, this.#one_of_decls[0], value);
+  }
+  get has_success() {
+    return pb_1.Message.getField(this, 1) != null;
+  }
+  get error() {
+    return pb_1.Message.getFieldWithDefault(
+      this,
+      2,
+      GetSecretError.GET_SECRET_INVALID_REQUEST,
+    ) as GetSecretError;
+  }
+  set error(value: GetSecretError) {
+    pb_1.Message.setOneofField(this, 2, this.#one_of_decls[0], value);
+  }
+  get has_error() {
+    return pb_1.Message.getField(this, 2) != null;
+  }
+  get result() {
+    const cases: {
+      [index: number]: "none" | "success" | "error";
+    } = {
+      0: "none",
+      1: "success",
+      2: "error",
+    };
+    return cases[pb_1.Message.computeOneofCase(this, [1, 2])];
+  }
+  static fromObject(data: {
+    success?: ReturnType<typeof GetSecretSuccess.prototype.toObject>;
+    error?: GetSecretError;
+  }): GetSecretResponse {
+    const message = new GetSecretResponse({});
+    if (data.success != null) {
+      message.success = GetSecretSuccess.fromObject(data.success);
     }
-    set success(value: GetSecretSuccess) {
-        pb_1.Message.setOneofWrapperField(this, 1, this.#one_of_decls[0], value);
+    if (data.error != null) {
+      message.error = data.error;
     }
-    get has_success() {
-        return pb_1.Message.getField(this, 1) != null;
+    return message;
+  }
+  toObject() {
+    const data: {
+      success?: ReturnType<typeof GetSecretSuccess.prototype.toObject>;
+      error?: GetSecretError;
+    } = {};
+    if (this.success != null) {
+      data.success = this.success.toObject();
     }
-    get error() {
-        return pb_1.Message.getFieldWithDefault(this, 2, GetSecretError.GET_SECRET_INVALID_REQUEST) as GetSecretError;
+    if (this.error != null) {
+      data.error = this.error;
     }
-    set error(value: GetSecretError) {
-        pb_1.Message.setOneofField(this, 2, this.#one_of_decls[0], value);
+    return data;
+  }
+  serialize(): Uint8Array;
+  serialize(w: pb_1.BinaryWriter): void;
+  serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
+    const writer = w || new pb_1.BinaryWriter();
+    if (this.has_success)
+      writer.writeMessage(1, this.success, () =>
+        this.success.serialize(writer),
+      );
+    if (this.has_error) writer.writeEnum(2, this.error);
+    if (!w) return writer.getResultBuffer();
+  }
+  static deserialize(bytes: Uint8Array | pb_1.BinaryReader): GetSecretResponse {
+    const reader =
+        bytes instanceof pb_1.BinaryReader
+          ? bytes
+          : new pb_1.BinaryReader(bytes),
+      message = new GetSecretResponse();
+    while (reader.nextField()) {
+      if (reader.isEndGroup()) break;
+      switch (reader.getFieldNumber()) {
+        case 1:
+          reader.readMessage(
+            message.success,
+            () => (message.success = GetSecretSuccess.deserialize(reader)),
+          );
+          break;
+        case 2:
+          message.error = reader.readEnum();
+          break;
+        default:
+          reader.skipField();
+      }
     }
-    get has_error() {
-        return pb_1.Message.getField(this, 2) != null;
-    }
-    get result() {
-        const cases: {
-            [index: number]: "none" | "success" | "error";
-        } = {
-            0: "none",
-            1: "success",
-            2: "error"
-        };
-        return cases[pb_1.Message.computeOneofCase(this, [1, 2])];
-    }
-    static fromObject(data: {
-        success?: ReturnType<typeof GetSecretSuccess.prototype.toObject>;
-        error?: GetSecretError;
-    }): GetSecretResponse {
-        const message = new GetSecretResponse({});
-        if (data.success != null) {
-            message.success = GetSecretSuccess.fromObject(data.success);
-        }
-        if (data.error != null) {
-            message.error = data.error;
-        }
-        return message;
-    }
-    toObject() {
-        const data: {
-            success?: ReturnType<typeof GetSecretSuccess.prototype.toObject>;
-            error?: GetSecretError;
-        } = {};
-        if (this.success != null) {
-            data.success = this.success.toObject();
-        }
-        if (this.error != null) {
-            data.error = this.error;
-        }
-        return data;
-    }
-    serialize(): Uint8Array;
-    serialize(w: pb_1.BinaryWriter): void;
-    serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
-        const writer = w || new pb_1.BinaryWriter();
-        if (this.has_success)
-            writer.writeMessage(1, this.success, () => this.success.serialize(writer));
-        if (this.has_error)
-            writer.writeEnum(2, this.error);
-        if (!w)
-            return writer.getResultBuffer();
-    }
-    static deserialize(bytes: Uint8Array | pb_1.BinaryReader): GetSecretResponse {
-        const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes), message = new GetSecretResponse();
-        while (reader.nextField()) {
-            if (reader.isEndGroup())
-                break;
-            switch (reader.getFieldNumber()) {
-                case 1:
-                    reader.readMessage(message.success, () => message.success = GetSecretSuccess.deserialize(reader));
-                    break;
-                case 2:
-                    message.error = reader.readEnum();
-                    break;
-                default: reader.skipField();
-            }
-        }
-        return message;
-    }
-    serializeBinary(): Uint8Array {
-        return this.serialize();
-    }
-    static deserializeBinary(bytes: Uint8Array): GetSecretResponse {
-        return GetSecretResponse.deserialize(bytes);
-    }
+    return message;
+  }
+  serializeBinary(): Uint8Array {
+    return this.serialize();
+  }
+  static deserializeBinary(bytes: Uint8Array): GetSecretResponse {
+    return GetSecretResponse.deserialize(bytes);
+  }
 }
 export class GetSecretSuccess extends pb_1.Message {
-    #one_of_decls: number[][] = [];
-    constructor(data?: any[] | {
-        value?: string;
-    }) {
-        super();
-        pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [], this.#one_of_decls);
-        if (!Array.isArray(data) && typeof data == "object") {
-            if ("value" in data && data.value != undefined) {
-                this.value = data.value;
-            }
-        }
+  #one_of_decls: number[][] = [];
+  constructor(
+    data?:
+      | any[]
+      | {
+          value?: string;
+        },
+  ) {
+    super();
+    pb_1.Message.initialize(
+      this,
+      Array.isArray(data) ? data : [],
+      0,
+      -1,
+      [],
+      this.#one_of_decls,
+    );
+    if (!Array.isArray(data) && typeof data == "object") {
+      if ("value" in data && data.value != undefined) {
+        this.value = data.value;
+      }
     }
-    get value() {
-        return pb_1.Message.getFieldWithDefault(this, 1, "") as string;
+  }
+  get value() {
+    return pb_1.Message.getFieldWithDefault(this, 1, "") as string;
+  }
+  set value(value: string) {
+    pb_1.Message.setField(this, 1, value);
+  }
+  static fromObject(data: { value?: string }): GetSecretSuccess {
+    const message = new GetSecretSuccess({});
+    if (data.value != null) {
+      message.value = data.value;
     }
-    set value(value: string) {
-        pb_1.Message.setField(this, 1, value);
+    return message;
+  }
+  toObject() {
+    const data: {
+      value?: string;
+    } = {};
+    if (this.value != null) {
+      data.value = this.value;
     }
-    static fromObject(data: {
-        value?: string;
-    }): GetSecretSuccess {
-        const message = new GetSecretSuccess({});
-        if (data.value != null) {
-            message.value = data.value;
-        }
-        return message;
+    return data;
+  }
+  serialize(): Uint8Array;
+  serialize(w: pb_1.BinaryWriter): void;
+  serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
+    const writer = w || new pb_1.BinaryWriter();
+    if (this.value.length) writer.writeString(1, this.value);
+    if (!w) return writer.getResultBuffer();
+  }
+  static deserialize(bytes: Uint8Array | pb_1.BinaryReader): GetSecretSuccess {
+    const reader =
+        bytes instanceof pb_1.BinaryReader
+          ? bytes
+          : new pb_1.BinaryReader(bytes),
+      message = new GetSecretSuccess();
+    while (reader.nextField()) {
+      if (reader.isEndGroup()) break;
+      switch (reader.getFieldNumber()) {
+        case 1:
+          message.value = reader.readString();
+          break;
+        default:
+          reader.skipField();
+      }
     }
-    toObject() {
-        const data: {
-            value?: string;
-        } = {};
-        if (this.value != null) {
-            data.value = this.value;
-        }
-        return data;
-    }
-    serialize(): Uint8Array;
-    serialize(w: pb_1.BinaryWriter): void;
-    serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
-        const writer = w || new pb_1.BinaryWriter();
-        if (this.value.length)
-            writer.writeString(1, this.value);
-        if (!w)
-            return writer.getResultBuffer();
-    }
-    static deserialize(bytes: Uint8Array | pb_1.BinaryReader): GetSecretSuccess {
-        const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes), message = new GetSecretSuccess();
-        while (reader.nextField()) {
-            if (reader.isEndGroup())
-                break;
-            switch (reader.getFieldNumber()) {
-                case 1:
-                    message.value = reader.readString();
-                    break;
-                default: reader.skipField();
-            }
-        }
-        return message;
-    }
-    serializeBinary(): Uint8Array {
-        return this.serialize();
-    }
-    static deserializeBinary(bytes: Uint8Array): GetSecretSuccess {
-        return GetSecretSuccess.deserialize(bytes);
-    }
+    return message;
+  }
+  serializeBinary(): Uint8Array {
+    return this.serialize();
+  }
+  static deserializeBinary(bytes: Uint8Array): GetSecretSuccess {
+    return GetSecretSuccess.deserialize(bytes);
+  }
 }

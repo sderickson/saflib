@@ -9,14 +9,14 @@ export const addChecklistCommand = (commandOptions: WorkflowCommandOptions) => {
     .command("checklist")
     .description(
       addNewLinesToString(
-        "Show the checklist for a workflow. Can be called with a workflow ID or a file path to a workflow definition."
-      )
+        "Show the checklist for a workflow. Can be called with a workflow ID or a file path to a workflow definition.",
+      ),
     )
     .argument("<workflowIdOrPath>", "Workflow ID or path to workflow file")
     .action(async (workflowIdOrPath: string) => {
       const workflowDefinition = await loadWorkflowDefinition(
         workflowIdOrPath,
-        commandOptions.workflows
+        commandOptions.workflows,
       );
       await printChecklist(workflowDefinition);
     });
@@ -31,7 +31,7 @@ export const printChecklist = async (Workflow: WorkflowDefinition) => {
     checklistToString(
       workflow.output?.checklist.subitems || [
         { description: "No checklist output" },
-      ]
-    )
+      ],
+    ),
   );
 };

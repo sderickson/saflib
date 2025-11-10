@@ -60,13 +60,13 @@ export const InitServiceWorkflowDefinition = defineWorkflow<
     });
     if (!input.path.endsWith(`/${parsed.serviceName}`)) {
       throw new Error(
-        `The path must end with the service name, e.g. ${path.dirname(input.path)}/${parsed.serviceName}`
+        `The path must end with the service name, e.g. ${path.dirname(input.path)}/${parsed.serviceName}`,
       );
     }
     const targetDir = path.join(
       input.cwd,
       input.path,
-      parsed.serviceName + "-service"
+      parsed.serviceName + "-service",
     );
     return {
       ...parsed,
@@ -116,7 +116,7 @@ export const InitServiceWorkflowDefinition = defineWorkflow<
       name: context.sharedPackagePrefix + "-service-common",
       path: path.join(
         context.serviceGroupDir,
-        `${context.serviceName}-service-common`
+        `${context.serviceName}-service-common`,
       ),
     })),
 

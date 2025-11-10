@@ -10,14 +10,14 @@ import {
 import type { Snapshot } from "xstate";
 
 export const addRunScriptsCommand = (
-  commandOptions: WorkflowCommandOptions
+  commandOptions: WorkflowCommandOptions,
 ) => {
   commandOptions.program
     .command("run-scripts")
     .description(
       addNewLinesToString(
-        "Run a workflow in script mode. Can be called with a workflow ID or a file path to a workflow definition."
-      )
+        "Run a workflow in script mode. Can be called with a workflow ID or a file path to a workflow definition.",
+      ),
     )
     .argument("<workflowIdOrPath>", "Workflow ID or path to workflow file")
     .argument("[args...]", "Arguments for the workflow")
@@ -29,7 +29,7 @@ export const addRunScriptsCommand = (
       });
       const workflowDefinition = await loadWorkflowDefinition(
         workflowIdOrPath,
-        commandOptions.workflows
+        commandOptions.workflows,
       );
       const result = await runWorkflowScript({
         definition: workflowDefinition,
@@ -37,7 +37,7 @@ export const addRunScriptsCommand = (
           args.length > 0
             ? args
             : workflowDefinition.input.map(
-                (input: WorkflowArgument) => input.exampleValue
+                (input: WorkflowArgument) => input.exampleValue,
               ),
       });
       if (!result.success) {
@@ -61,7 +61,7 @@ interface RunWorkflowScriptResult {
 }
 
 export const runWorkflowScript = async (
-  options: RunWorkflowScriptOptions
+  options: RunWorkflowScriptOptions,
 ): Promise<RunWorkflowScriptResult> => {
   const { definition, args } = options;
   const { output, state } = await runWorkflow({
@@ -73,7 +73,7 @@ export const runWorkflowScript = async (
   if (output) {
     console.log(
       "Output:\n",
-      checklistToString(output.checklist.subitems || [])
+      checklistToString(output.checklist.subitems || []),
     );
   }
   // no output means the workflow did not complete successfully

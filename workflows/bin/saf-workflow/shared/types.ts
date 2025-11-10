@@ -25,11 +25,14 @@ export interface PersistedSnapshot {
   status: SnapshotStatus;
   value: string;
   context: WorkflowContext;
-  children: Record<string, {
-    snapshot: PersistedSnapshot;
-    src: string;
-    syncSnapshot: boolean;
-  }>;
+  children: Record<
+    string,
+    {
+      snapshot: PersistedSnapshot;
+      src: string;
+      syncSnapshot: boolean;
+    }
+  >;
 }
 
 export interface WorkflowBlob {

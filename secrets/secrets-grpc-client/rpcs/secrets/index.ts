@@ -16,7 +16,7 @@ export type LimitedSecretsClient = Pick<
  * The global SecretsClient for the secrets service.
  */
 let secretsClient: LimitedSecretsClient = new SecretsClient(
-  `${typedEnv.SECRETS_SERVICE_HOST}:${typedEnv.SECRETS_SERVICE_GRPC_PORT}`,
+  typedEnv.SECRETS_SERVICE_GRPC_HOST,
   grpc.credentials.createInsecure(),
 );
 

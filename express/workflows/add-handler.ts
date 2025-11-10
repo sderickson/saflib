@@ -127,7 +127,7 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
           }
           return Promise.resolve(undefined);
         },
-      }
+      },
     ),
 
     step(CommandStepMachine, () => ({

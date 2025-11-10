@@ -8,4 +8,4 @@ export * from "./dist/google/protobuf/timestamp.ts";
 
 import { typedEnv } from "./env.ts";
 
-export const secretsGrpcAddress = `${typedEnv.SECRETS_SERVICE_HOST}:${typedEnv.SECRETS_SERVICE_GRPC_PORT}`;
+export const secretsGrpcAddress = `${typedEnv.SECRETS_SERVICE_GRPC_HOST}`;

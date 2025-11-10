@@ -62,7 +62,7 @@ export const AddDrizzleQueryWorkflowDefinition = defineWorkflow<
     query: path.join(sourceDir, "queries/__group-name__/__target-name__.ts"),
     test: path.join(
       sourceDir,
-      "queries/__group-name__/__target-name__.test.ts"
+      "queries/__group-name__/__target-name__.test.ts",
     ),
     groupIndex: path.join(sourceDir, "queries/__group-name__/index.ts"),
     rootIndex: path.join(sourceDir, "index.ts"),

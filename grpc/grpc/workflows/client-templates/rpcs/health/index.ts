@@ -15,7 +15,7 @@ export type LimitedHealthClient = Pick<
  * The global HealthClient for the __service_name__ service.
  */
 let healthClient: LimitedHealthClient = new __ServiceName__HealthClient(
-  `${typedEnv.__SERVICE_NAME___SERVICE_HOST}:${typedEnv.__SERVICE_NAME___SERVICE_GRPC_PORT}`,
+  typedEnv.__SERVICE_NAME___SERVICE_GRPC_HOST,
   grpc.credentials.createInsecure(),
 );
 

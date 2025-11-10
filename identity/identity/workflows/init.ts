@@ -64,6 +64,9 @@ export const IdentityInitWorkflowDefinition = defineWorkflow<
     index: path.join(sourceDir, "index.ts"),
     test: path.join(sourceDir, "index.test.ts"),
     vitestConfig: path.join(sourceDir, "vitest.config.js"),
+    dataDir: path.join(sourceDir, "data"),
+    binDir: path.join(sourceDir, "bin"),
+    gitignore: path.join(sourceDir, ".gitignore"),
   },
 
   docFiles: {},

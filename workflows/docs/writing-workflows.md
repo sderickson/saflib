@@ -3,7 +3,6 @@
 Best practices notes. In flux.
 
 - Templates
-
   - Should work
   - Should be structured like the expected structure.
   - Should pass type checks

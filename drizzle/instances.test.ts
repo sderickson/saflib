@@ -14,7 +14,7 @@ import { typedEnv } from "@saflib/env";
 typedEnv.DEPLOYMENT_NAME = "arbitrary-name";
 const dbPath = path.join(
   import.meta.dirname,
-  "./data/db-arbitrary-name.sqlite"
+  "./data/db-arbitrary-name.sqlite",
 );
 
 const getTempDbPath = (name: string) =>

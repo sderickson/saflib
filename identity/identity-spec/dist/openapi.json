@@ -10,19 +10,14 @@
       "post": {
         "summary": "Register New User",
         "operationId": "registerUser",
-        "tags": [
-          "auth"
-        ],
+        "tags": ["auth"],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": [
-                  "email",
-                  "password"
-                ],
+                "required": ["email", "password"],
                 "additionalProperties": false,
                 "properties": {
                   "email": {
@@ -78,19 +73,14 @@
       "post": {
         "summary": "Authenticate User",
         "operationId": "loginUser",
-        "tags": [
-          "auth"
-        ],
+        "tags": ["auth"],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": [
-                  "email",
-                  "password"
-                ],
+                "required": ["email", "password"],
                 "additionalProperties": false,
                 "properties": {
                   "email": {
@@ -133,9 +123,7 @@
       "post": {
         "summary": "Logout User",
         "operationId": "logoutUser",
-        "tags": [
-          "auth"
-        ],
+        "tags": ["auth"],
         "responses": {
           "200": {
             "description": "Successful logout",
@@ -156,9 +144,7 @@
         "summary": "Verify Authentication Status",
         "description": "Used by Caddy for forward authentication. Verifies if the user is authenticated and adds user information headers for downstream services.",
         "operationId": "verifyAuth",
-        "tags": [
-          "auth"
-        ],
+        "tags": ["auth"],
         "responses": {
           "200": {
             "description": "User is authenticated",
@@ -185,10 +171,7 @@
               "X-User-Email-Verified": {
                 "schema": {
                   "type": "string",
-                  "enum": [
-                    "true",
-                    "false"
-                  ]
+                  "enum": ["true", "false"]
                 },
                 "description": "Whether the authenticated user's email is verified ('true' or 'false')"
               }
@@ -228,18 +211,14 @@
       "post": {
         "summary": "Request Password Reset",
         "operationId": "forgotPassword",
-        "tags": [
-          "auth"
-        ],
+        "tags": ["auth"],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": [
-                  "email"
-                ],
+                "required": ["email"],
                 "additionalProperties": false,
                 "properties": {
                   "email": {
@@ -258,10 +237,7 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "required": [
-                    "success",
-                    "message"
-                  ],
+                  "required": ["success", "message"],
                   "additionalProperties": false,
                   "properties": {
                     "success": {
@@ -293,19 +269,14 @@
       "post": {
         "summary": "Reset Password Using Token",
         "operationId": "resetPassword",
-        "tags": [
-          "auth"
-        ],
+        "tags": ["auth"],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": [
-                  "token",
-                  "newPassword"
-                ],
+                "required": ["token", "newPassword"],
                 "additionalProperties": false,
                 "properties": {
                   "token": {
@@ -329,9 +300,7 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "required": [
-                    "success"
-                  ],
+                  "required": ["success"],
                   "additionalProperties": false,
                   "properties": {
                     "success": {
@@ -359,18 +328,14 @@
       "post": {
         "summary": "Verify Email Address",
         "operationId": "verifyEmail",
-        "tags": [
-          "auth"
-        ],
+        "tags": ["auth"],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": [
-                  "token"
-                ],
+                "required": ["token"],
                 "additionalProperties": false,
                 "properties": {
                   "token": {
@@ -430,9 +395,7 @@
       "post": {
         "summary": "Resend Verification Email",
         "operationId": "resendVerification",
-        "tags": [
-          "auth"
-        ],
+        "tags": ["auth"],
         "responses": {
           "200": {
             "description": "Verification email sent successfully",
@@ -440,10 +403,7 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "required": [
-                    "success",
-                    "message"
-                  ],
+                  "required": ["success", "message"],
                   "additionalProperties": false,
                   "properties": {
                     "success": {
@@ -475,19 +435,14 @@
       "post": {
         "summary": "Change User Password",
         "operationId": "setPassword",
-        "tags": [
-          "auth"
-        ],
+        "tags": ["auth"],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
-                "required": [
-                  "currentPassword",
-                  "newPassword"
-                ],
+                "required": ["currentPassword", "newPassword"],
                 "additionalProperties": false,
                 "properties": {
                   "currentPassword": {
@@ -511,9 +466,7 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "required": [
-                    "success"
-                  ],
+                  "required": ["success"],
                   "additionalProperties": false,
                   "properties": {
                     "success": {
@@ -542,9 +495,7 @@
         "summary": "Get User Profile",
         "description": "Get the profile information for the currently logged in user. Returns an empty object if the user is not authenticated.",
         "operationId": "getUserProfile",
-        "tags": [
-          "auth"
-        ],
+        "tags": ["auth"],
         "responses": {
           "200": {
             "description": "User profile retrieved successfully",
@@ -562,9 +513,7 @@
         "summary": "Update User Profile",
         "description": "Update the profile information for the currently logged in user",
         "operationId": "updateUserProfile",
-        "tags": [
-          "auth"
-        ],
+        "tags": ["auth"],
         "requestBody": {
           "required": true,
           "content": {
@@ -650,14 +599,10 @@
       "get": {
         "summary": "List all users",
         "operationId": "listUsers",
-        "tags": [
-          "auth"
-        ],
+        "tags": ["auth"],
         "security": [
           {
-            "scopes": [
-              "users:read"
-            ]
+            "scopes": ["users:read"]
           }
         ],
         "responses": {
