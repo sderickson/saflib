@@ -2,6 +2,7 @@ import { createLogger } from "./logger.ts";
 import type { SafReporters, SubsystemName } from "./types.ts";
 import { AsyncLocalStorage } from "async_hooks";
 import { defaultErrorReporter, makeSubsystemErrorReporter } from "./errors.ts";
+import { typedEnv } from "@saflib/env";
 
 /**
  * AsyncLocalStorage for SafReporters.
@@ -19,7 +20,7 @@ const defaultReporters: SafReporters =
  */
 export const getSafReporters = (): SafReporters => {
   const store = safReportersStorage.getStore();
-  if (!store) {
+  if (!store || typedEnv.NODE_ENV === "test") {
     return defaultReporters;
   }
   return store;
@@ -32,6 +33,10 @@ export const makeSubsystemReporters = (
   subsystemName: SubsystemName,
   operationName: string,
 ): SafReporters => {
+
+  if (typedEnv.NODE_ENV === "test") {
+    return defaultReporters;
+  }
 
   const logger = createLogger({
     subsystemName,
