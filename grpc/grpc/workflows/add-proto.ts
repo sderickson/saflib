@@ -16,7 +16,7 @@ import path from "node:path";
 
 const sourceDir = path.join(
   import.meta.dirname,
-  "proto-templates/protos/__group_name__/"
+  "proto-templates/protos/__group_name__/",
 );
 
 const input = [

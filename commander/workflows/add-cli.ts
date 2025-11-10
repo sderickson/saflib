@@ -77,7 +77,7 @@ export const AddCLIWorkflowDefinition = defineWorkflow<
     step(PromptStepMachine, ({ context }) => {
       const relativePath = path.relative(
         context.cwd,
-        context.copiedFiles!.index
+        context.copiedFiles!.index,
       );
       return {
         promptText: `Add ${relativePath} to the package's bin folder.

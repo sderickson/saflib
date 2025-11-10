@@ -15,19 +15,26 @@ export const addListCommand = (commandOptions: WorkflowCommandOptions) => {
     )
     .action(async (options: { all?: boolean; details?: boolean }) => {
       const currentPackage = getCurrentPackage();
-      const workflows = options.all ? commandOptions.workflows : commandOptions.workflows.filter(
-        (workflow) => {
-          return getPackageName(workflow.sourceUrl) === currentPackage;
-        },
-      );
+      const workflows = options.all
+        ? commandOptions.workflows
+        : commandOptions.workflows.filter((workflow) => {
+            return getPackageName(workflow.sourceUrl) === currentPackage;
+          });
       workflows.sort((a, b) => a.id.localeCompare(b.id));
-      const longestId = workflows.reduce((max, w) => Math.max(max, w.id.length), 0);
-      console.log(workflows.map((w) => {
-        const id = w.id.padEnd(longestId, " ");
-        if (options.details) {
-          return `${id} - ${w.description}`;
-        }
-        return id;
-      }).join("\n"));
+      const longestId = workflows.reduce(
+        (max, w) => Math.max(max, w.id.length),
+        0,
+      );
+      console.log(
+        workflows
+          .map((w) => {
+            const id = w.id.padEnd(longestId, " ");
+            if (options.details) {
+              return `${id} - ${w.description}`;
+            }
+            return id;
+          })
+          .join("\n"),
+      );
     });
 };

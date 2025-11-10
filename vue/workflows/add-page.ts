@@ -16,7 +16,7 @@ import path from "node:path";
 
 const sourceDir = path.join(
   import.meta.dirname,
-  "template/pages/page-template"
+  "template/pages/page-template",
 );
 
 const input = [

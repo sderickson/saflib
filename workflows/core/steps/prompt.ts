@@ -148,10 +148,10 @@ export const PromptStepMachine = setup({
         },
         prompt: {
           actions: [
-            ({context}) => {
+            ({ context }) => {
               console.log(context.promptText);
-            }
-          ]
+            },
+          ],
         },
       },
     },
