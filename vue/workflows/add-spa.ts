@@ -6,6 +6,7 @@ import {
   type ParsePackageNameOutput,
   parsePackageName,
   makeLineReplace,
+  CwdStepMachine,
   CommandStepMachine,
   getPackageName,
 } from "@saflib/workflows";
@@ -52,7 +53,7 @@ export const AddSpaWorkflowDefinition = defineWorkflow<
   sourceUrl: import.meta.url,
 
   context: ({ input }) => {
-    const targetDir = path.join(input.cwd, "clients", input.productName, `${input.productName}-${input.subdomainName}-spa`);
+    const targetDir = path.join(input.cwd, "clients", input.productName);
     const currentPackageName = getPackageName(input.cwd);
     const currentPackageOrgName = parsePackageName(currentPackageName).organizationName;
     const spaPackageName = `${currentPackageOrgName}/${input.productName}-${input.subdomainName}-spa`;
@@ -81,6 +82,7 @@ export const AddSpaWorkflowDefinition = defineWorkflow<
     testApp: path.join(spaDir, "test-app.ts"),
     tsconfig: path.join(spaDir, "tsconfig.json"),
     vitestConfig: path.join(spaDir, "vitest.config.ts"),
+    homePage: path.join(spaDir, "pages/home-page"),
 
     linksPackageJson: path.join(linksDir, "package.json"),
     linksIndex: path.join(linksDir, "index.ts"),
@@ -112,19 +114,15 @@ export const AddSpaWorkflowDefinition = defineWorkflow<
       lineReplace: makeLineReplace(context),
     })),
 
-    // step(CommandStepMachine, ({ context }) => ({
-    //   command: "mkdir",
-    //   args: ["-p", path.join(context.targetDir, "pages")],
-    // })),
+    step(CwdStepMachine, ({ context }) => ({
+      path: path.dirname(context.copiedFiles!.packageJson),
+    })),
 
-    // step(CommandStepMachine, ({ context }) => ({
-    //   command: "cp",
-    //   args: [
-    //     "-r",
-    //     path.join(sourceDir, "pages/home-page"),
-    //     path.join(context.targetDir, "pages"),
-    //   ],
-    // })),
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["install"],
+    })),
+
 
     // step(PromptStepMachine, ({ context }) => ({
     //   promptText: `Add \`${context.packageName}\` as a dependency in the adjacent "clients" or "spas" package, then run \`npm install\` from the root of the monorepo.`,
