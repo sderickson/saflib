@@ -35,6 +35,7 @@ interface AddSpaWorkflowContext extends ParsePackageNameOutput {
   targetDir: string;
   subdomainName: string;
   productName: string;
+  spaPackageName: string;
   linksPackageName: string;
   clientsPackageName: string;
 }
@@ -99,6 +100,7 @@ export const AddSpaWorkflowDefinition = defineWorkflow<
     clientsTsConfigApp: path.join(clientsDir, "tsconfig.app.json"),
     clientsTsConfigNode: path.join(clientsDir, "tsconfig.node.json"),
     clientsViteConfig: path.join(clientsDir, "vite.config.ts"),
+    clientsSubdomainDir: path.join(clientsDir, "__subdomain-name__"),
   },
 
   docFiles: {},
@@ -123,26 +125,15 @@ export const AddSpaWorkflowDefinition = defineWorkflow<
       args: ["install"],
     })),
 
+    step(CwdStepMachine, ({ context }) => ({
+      path: path.dirname(context.copiedFiles!.clientsPackageJson),
+    })),
 
-    // step(PromptStepMachine, ({ context }) => ({
-    //   promptText: `Add \`${context.packageName}\` as a dependency in the adjacent "clients" or "spas" package, then run \`npm install\` from the root of the monorepo.`,
-    // })),
-
-    // step(PromptStepMachine, ({ context }) => ({
-    //   promptText: `Create \`index.html\` and \`main.ts\` files in that "clients" or "spas" package similar to other SPAs already there.
+    step(CommandStepMachine, ({ context }) => ({
+      command: "npm",
+      args: ["install", context.spaPackageName],
+    })),
       
-    //   The folder should be named "${context.subdomainName}".`,
-    // })),
-
-    // step(PromptStepMachine, ({ context }) => ({
-    //   promptText: `Create and integrate an adjacent "links" package (name should be ${context.linksPackageName}).
-      
-    //   * Create the links package (name should be ${context.linksPackageName})
-    //   * It should just have one "home" link right now, pointing to "/", and the subdomain should be ${context.subdomainName}.
-    //   * Add ${context.linksPackageName} as a dependency to ${context.packageName}.
-    //   * Use the links package in the router.ts file.`,
-    // })),
-
     // step(PromptStepMachine, ({ context }) => ({
     //   promptText: `Update \`Caddyfiles\` in the repo; add the new SPA in a similar fashion with the subdomain \`${context.subdomainName}\`.
       
