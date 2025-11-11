@@ -70,6 +70,7 @@ export const AddSpaWorkflowDefinition = defineWorkflow<
       subdomainName: input.subdomainName,
       linksPackageName,
       clientsPackageName,
+      spaPackageName,
     };
   },
 
@@ -100,7 +101,8 @@ export const AddSpaWorkflowDefinition = defineWorkflow<
     clientsTsConfigApp: path.join(clientsDir, "tsconfig.app.json"),
     clientsTsConfigNode: path.join(clientsDir, "tsconfig.node.json"),
     clientsViteConfig: path.join(clientsDir, "vite.config.ts"),
-    clientsSubdomainDir: path.join(clientsDir, "__subdomain-name__"),
+    clientsSubdomainHtml: path.join(clientsDir, "__subdomain-name__/index.html"),
+    clientsSubdomainMain: path.join(clientsDir, "__subdomain-name__/main.ts"),
   },
 
   docFiles: {},
