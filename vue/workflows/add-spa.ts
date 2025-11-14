@@ -38,6 +38,7 @@ interface AddSpaWorkflowContext extends ParsePackageNameOutput {
   spaPackageName: string;
   linksPackageName: string;
   clientsPackageName: string;
+  commonPackageName: string;
 }
 
 export const AddSpaWorkflowDefinition = defineWorkflow<
@@ -60,6 +61,7 @@ export const AddSpaWorkflowDefinition = defineWorkflow<
     const spaPackageName = `${currentPackageOrgName}/${input.productName}-${input.subdomainName}-spa`;
     const clientsPackageName = `${currentPackageOrgName}/${input.productName}-clients`;
     const linksPackageName = `${currentPackageOrgName}/${input.productName}-${input.subdomainName}-links`;
+    const commonPackageName = `${currentPackageOrgName}/${input.productName}-clients-common`;
 
     return {
       ...parsePackageName(spaPackageName, {
@@ -71,6 +73,7 @@ export const AddSpaWorkflowDefinition = defineWorkflow<
       linksPackageName,
       clientsPackageName,
       spaPackageName,
+      commonPackageName,
     };
   },
 
@@ -114,11 +117,18 @@ export const AddSpaWorkflowDefinition = defineWorkflow<
   },
 
   steps: [
-    step(CopyStepMachine, ({ context }) => ({
-      name: context.serviceName,
-      targetDir: context.targetDir,
-      lineReplace: makeLineReplace(context),
-    })),
+    step(CopyStepMachine, ({ context }) => {
+      const lineReplace = makeLineReplace(context);
+      const wrappedLineReplace = (line: string) => {
+          line.replace("template-package-clients-common", context.commonPackageName)
+          return lineReplace(line);
+      }
+      return {
+        name: context.serviceName,
+        targetDir: context.targetDir,
+        lineReplace: wrappedLineReplace,
+      }
+    }),
 
     step(CwdStepMachine, ({ context }) => ({
       path: path.dirname(context.copiedFiles!.packageJson),
