@@ -85,7 +85,7 @@ export const copyNextFile = fromPromise(
     );
 
     if (isDirectory) {
-      await cp(sourcePath, targetPath, { recursive: true });
+      throw new Error("Directories should not be provided to copy-next-file.");
     } else {
       await copyFile(sourcePath, targetPath);
     }
