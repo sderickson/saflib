@@ -13,7 +13,7 @@ import { contextFromInput } from "../../utils.ts";
 import type { CopyStepContext, CopyStepInput } from "./types.ts";
 import { parseChecklist, parseCopiedFiles } from "./helpers.ts";
 import path from "node:path";
-import fs from "node:fs";
+import fs, { readdirSync, statSync } from "node:fs";
 
 export type { CopyStepInput };
 
@@ -71,9 +71,34 @@ export const CopyStepMachine = setup({
       sharedPrefix = path.dirname(sharedPrefix);
     }
 
+    // Flatten template entries which are directories
+    let templateFiles: Record<string, string> = {};
+    for (const templateFileKey of Object.keys(input.templateFiles || {})) {
+      const sourcePath = input.templateFiles[templateFileKey];
+      const stats = statSync(sourcePath);
+      const isDirectory = stats.isDirectory();
+      if (isDirectory) {
+        // walk the directory, add all files to templateFiles
+        const files = readdirSync(sourcePath, { recursive: true, withFileTypes: true });
+        let i = 0;
+        for (const file of files) {
+          if (file.isFile()) {
+            const fullPath = path.join(file.parentPath, file.name)
+            if (fullPath.includes("/node_modules/")) {
+              continue;
+            }
+            templateFiles[`${templateFileKey}-${i++}`] = fullPath;            
+          }
+        }
+      } else {
+        templateFiles[templateFileKey] = sourcePath;
+      }
+    }
+
     return {
       ...contextFromInput(input),
-      filesToCopy: Object.keys(input.templateFiles || {}),
+      templateFiles,
+      filesToCopy: Object.keys(templateFiles || {}),
       name: input.name,
       targetDir: input.targetDir,
       copiedFiles: input.copiedFiles || {},

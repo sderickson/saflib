@@ -1,0 +1,12 @@
+{
+  "name": "template-package-links",
+  "description": "Links for the __product-name__ __subdomain-name__ client",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "dependencies": {
+    "@saflib/links": "*"
+  }
+}

@@ -76,7 +76,7 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
 
     // Covers various "init" workflows
     step(makeWorkflowMachine(InitServiceWorkflowDefinition), () => ({
-      name: "tmp-service",
+      name: "@saflib/tmp-service",
       path: "./services/tmp",
     })),
 
@@ -151,15 +151,15 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
       path: ".",
     })),
     step(makeWorkflowMachine(InitGrpcProtoWorkflowDefinition), () => ({
-      name: "tmp-grpc-proto",
+      name: "@saflib/tmp-grpc-proto",
       path: "./services/tmp/tmp-grpc-proto",
     })),
     step(makeWorkflowMachine(InitGrpcServerWorkflowDefinition), () => ({
-      name: "tmp-grpc-server",
+      name: "@saflib/tmp-grpc-server",
       path: "./services/tmp/tmp-grpc-server",
     })),
     step(makeWorkflowMachine(InitGrpcClientWorkflowDefinition), () => ({
-      name: "tmp-grpc-client",
+      name: "@saflib/tmp-grpc-client",
       path: "./services/tmp/tmp-grpc-client",
     })),
     step(CwdStepMachine, () => ({
@@ -188,7 +188,7 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
       path: ".",
     })),
     step(makeWorkflowMachine(IdentityInitWorkflowDefinition), () => ({
-      name: "tmp-identity",
+      name: "@saflib/tmp-identity",
       path: "./services/tmp-identity",
     })),
 
@@ -197,7 +197,7 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
       path: ".",
     })),
     step(makeWorkflowMachine(CronInitWorkflowDefinition), () => ({
-      name: "tmp-cron",
+      name: "@saflib/tmp-cron",
       path: "./services/tmp/tmp-cron",
     })),
     step(CwdStepMachine, () => ({
@@ -223,11 +223,11 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
       path: ".",
     })),
     step(makeWorkflowMachine(AddSpaWorkflowDefinition), () => ({
-      name: "tmp-spa",
-      path: "./clients/tmp/tmp-spa",
+      productName: "tmp",
+      subdomainName: "root",
     })),
     step(CwdStepMachine, () => ({
-      path: "./clients/tmp/tmp-spa",
+      path: "./clients/tmp/tmp-root-spa",
     })),
     step(makeWorkflowMachine(AddSpaPageWorkflowDefinition), () => ({
       path: "./pages/welcome-new-user",
