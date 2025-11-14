@@ -1,6 +1,5 @@
 import {
   CopyStepMachine,
-  PromptStepMachine,
   defineWorkflow,
   step,
   type ParsePackageNameOutput,
@@ -135,15 +134,5 @@ export const AddSpaWorkflowDefinition = defineWorkflow<
       command: "npm",
       args: ["install", context.spaPackageName],
     })),
-      
-    // step(PromptStepMachine, ({ context }) => ({
-    //   promptText: `Update \`Caddyfiles\` in the repo; add the new SPA in a similar fashion with the subdomain \`${context.subdomainName}\`.
-      
-    //   Usually you'll just need to update the dev one specific to the product, and the production one.`,
-    // })),
-
-    // step(PromptStepMachine, () => ({
-    //   promptText: `Test the new SPA by running 'npm run build' from \`deploy/prod\` and make sure there are no errors.`,
-    // })),
   ],
 });

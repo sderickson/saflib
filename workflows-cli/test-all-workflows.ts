@@ -223,11 +223,11 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
       path: ".",
     })),
     step(makeWorkflowMachine(AddSpaWorkflowDefinition), () => ({
-      name: "tmp-spa",
-      path: "./clients/tmp/tmp-spa",
+      productName: "tmp",
+      subdomainName: "root",
     })),
     step(CwdStepMachine, () => ({
-      path: "./clients/tmp/tmp-spa",
+      path: "./clients/tmp/test-root-spa",
     })),
     step(makeWorkflowMachine(AddSpaPageWorkflowDefinition), () => ({
       path: "./pages/welcome-new-user",
