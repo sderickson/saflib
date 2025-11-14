@@ -94,7 +94,7 @@ export const AddSpaWorkflowDefinition = defineWorkflow<
     clientsPackageJson: path.join(clientsDir, "package.json"),
     clientsPackage: clientsDir,
 
-    commonPackage: path.join(commonDir),
+    commonPackage: commonDir,
   },
 
   docFiles: {},
