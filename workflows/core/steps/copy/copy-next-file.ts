@@ -3,7 +3,7 @@ import { fromPromise } from "xstate";
 import { access } from "node:fs/promises";
 import { constants } from "node:fs";
 import { stat } from "node:fs/promises";
-import { copyFile, cp } from "node:fs/promises";
+import { copyFile } from "node:fs/promises";
 import { transformName } from "./utils.ts";
 import type { CopyStepContext } from "./types.ts";
 
