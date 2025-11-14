@@ -76,7 +76,7 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
 
     // Covers various "init" workflows
     step(makeWorkflowMachine(InitServiceWorkflowDefinition), () => ({
-      name: "tmp-service",
+      name: "@saflib/tmp-service",
       path: "./services/tmp",
     })),
 

@@ -14,6 +14,7 @@ import path from "node:path";
 const spaDir = path.join(import.meta.dirname, "template", "__product-name__-__subdomain-name__-spa");
 const linksDir = path.join(import.meta.dirname, "template", "__product-name__-__subdomain-name__-links");
 const clientsDir = path.join(import.meta.dirname, "template", "__product-name__-clients");
+const commonDir = path.join(import.meta.dirname, "template", "__product-name__-clients-common");
 
 const input = [
   {
@@ -102,6 +103,8 @@ export const AddSpaWorkflowDefinition = defineWorkflow<
     clientsViteConfig: path.join(clientsDir, "vite.config.ts"),
     clientsSubdomainHtml: path.join(clientsDir, "__subdomain-name__/index.html"),
     clientsSubdomainMain: path.join(clientsDir, "__subdomain-name__/main.ts"),
+
+    commonPackage: path.join(commonDir),
   },
 
   docFiles: {},
