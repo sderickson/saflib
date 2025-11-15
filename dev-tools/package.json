@@ -24,6 +24,7 @@
     "@saflib/vitest": "*",
     "memfs": "^4.17.0",
     "typedoc": "^0.28.10",
-    "typedoc-plugin-markdown": "^4.8.1"
+    "typedoc-plugin-markdown": "^4.8.1",
+    "typedoc-plugin-vue": "^1.5.1"
   }
 }

@@ -6,10 +6,7 @@ import { getHealthFake } from "./get-health.fake.ts";
 /**
  * A stripped down type of the HealthClient, for easier mocking.
  */
-export type LimitedHealthClient = Pick<
-  SecretsHealthClient,
-  "HealthCheck"
->;
+export type LimitedHealthClient = Pick<SecretsHealthClient, "HealthCheck">;
 
 /**
  * The global HealthClient for the secrets service.

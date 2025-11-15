@@ -16,7 +16,7 @@ import path from "node:path";
 
 const sourceDir = path.join(
   import.meta.dirname,
-  "template/__product-name__-__subdomain-name__-spa/pages/page-template"
+  "template/__product-name__-__subdomain-name__-spa/pages/page-template",
 );
 
 const input = [
@@ -54,6 +54,7 @@ export const AddSpaPageWorkflowDefinition = defineWorkflow<
         cwd: input.cwd,
       }),
       ...parsePackageName(getPackageName(input.cwd), {
+        silentError: true, // so checklists don't error
         requiredSuffix: ["-spa", "-sdk"],
       }),
       targetDir,

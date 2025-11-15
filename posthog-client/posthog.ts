@@ -9,7 +9,10 @@ import { ref, type Ref } from "vue";
 import type { User } from "@saflib/identity-spec";
 
 // Client features in use, and in need of mocking.
-type FocusedPostHog = Pick<PostHog, "getFeatureFlag" | "onFeatureFlags" | "identify" | "capture">;
+type FocusedPostHog = Pick<
+  PostHog,
+  "getFeatureFlag" | "onFeatureFlags" | "identify" | "capture"
+>;
 
 export function usePostHog(): FocusedPostHog {
   if ("posthog" in globalThis) {

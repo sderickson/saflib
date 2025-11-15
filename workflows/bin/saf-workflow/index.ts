@@ -8,6 +8,7 @@ import { addNextCommand } from "./next.ts";
 import { addListCommand } from "./list.ts";
 import { addSourceCommand } from "./source.ts";
 import { addRunScriptsCommand } from "./run-scripts.ts";
+import { addInfoCommand } from "./info.ts";
 import type {
   WorkflowCliOptions,
   WorkflowCommandOptions,
@@ -47,8 +48,15 @@ export async function runWorkflowCli(
   addListCommand(commandOptions);
   addSourceCommand(commandOptions);
   addRunScriptsCommand(commandOptions);
-
+  addInfoCommand(commandOptions);
   await program.parseAsync(process.argv);
 }
 
-export { dryRunWorkflow, runWorkflow } from "./shared/utils.ts";
+export {
+  dryRunWorkflow,
+  runWorkflow,
+  type RunWorkflowOptions,
+  type RunWorkflowResult,
+} from "./shared/utils.ts";
+
+export type { WorkflowCliOptions } from "./shared/types.ts";

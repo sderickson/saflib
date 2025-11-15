@@ -1,6 +1,6 @@
 import { onMounted, ref } from "vue";
 
-type TestMode = "e2e" | null;
+export type TestMode = "e2e" | null;
 
 const testModeKey = "testMode";
 

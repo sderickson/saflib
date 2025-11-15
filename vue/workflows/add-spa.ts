@@ -11,24 +11,38 @@ import {
 } from "@saflib/workflows";
 import path from "node:path";
 
-const spaDir = path.join(import.meta.dirname, "template", "__product-name__-__subdomain-name__-spa");
-const linksDir = path.join(import.meta.dirname, "template", "__product-name__-__subdomain-name__-links");
-const clientsDir = path.join(import.meta.dirname, "template", "__product-name__-clients");
-const commonDir = path.join(import.meta.dirname, "template", "__product-name__-clients-common");
+const spaDir = path.join(
+  import.meta.dirname,
+  "template",
+  "__product-name__-__subdomain-name__-spa",
+);
+const linksDir = path.join(
+  import.meta.dirname,
+  "template",
+  "__product-name__-__subdomain-name__-links",
+);
+const clientsDir = path.join(
+  import.meta.dirname,
+  "template",
+  "__product-name__-clients",
+);
+const commonDir = path.join(
+  import.meta.dirname,
+  "template",
+  "__product-name__-clients-common",
+);
 
 const input = [
   {
     name: "productName",
-    description:
-      "Name of the new or existing product (e.g. 'product-name')",
+    description: "Name of the new or existing product (e.g. 'product-name')",
     exampleValue: "product-name",
   },
   {
     name: "subdomainName",
-    description:
-      "Name of the new subdomain (e.g. 'admin')",
+    description: "Name of the new subdomain (e.g. 'admin')",
     exampleValue: "admin",
-  }
+  },
 ] as const;
 
 interface AddSpaWorkflowContext extends ParsePackageNameOutput {
@@ -57,7 +71,8 @@ export const AddSpaWorkflowDefinition = defineWorkflow<
   context: ({ input }) => {
     const targetDir = path.join(input.cwd, "clients", input.productName);
     const currentPackageName = getPackageName(input.cwd);
-    const currentPackageOrgName = parsePackageName(currentPackageName).organizationName;
+    const currentPackageOrgName =
+      parsePackageName(currentPackageName).organizationName;
     const spaPackageName = `${currentPackageOrgName}/${input.productName}-${input.subdomainName}-spa`;
     const clientsPackageName = `${currentPackageOrgName}/${input.productName}-clients`;
     const linksPackageName = `${currentPackageOrgName}/${input.productName}-${input.subdomainName}-links`;
@@ -107,14 +122,17 @@ export const AddSpaWorkflowDefinition = defineWorkflow<
     step(CopyStepMachine, ({ context }) => {
       const lineReplace = makeLineReplace(context);
       const wrappedLineReplace = (line: string) => {
-          line.replace("template-package-clients-common", context.commonPackageName)
-          return lineReplace(line);
-      }
+        line.replace(
+          "template-package-clients-common",
+          context.commonPackageName,
+        );
+        return lineReplace(line);
+      };
       return {
         name: context.serviceName,
         targetDir: context.targetDir,
         lineReplace: wrappedLineReplace,
-      }
+      };
     }),
 
     step(CwdStepMachine, ({ context }) => ({

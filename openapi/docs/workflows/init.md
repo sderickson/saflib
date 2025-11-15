@@ -20,30 +20,30 @@ To run this workflow automatically, tell the agent to:
 
 When run, the workflow will:
 
-- Review documentation: [01-overview.md](https://github.com/sderickson/saflib/blob/main/openapi/docs/01-overview.md)
 - Copy template files and rename placeholders.
   - Upsert **openapi.yaml** from [template](https://github.com/sderickson/saflib/blob/main/openapi/workflows/templates/openapi.yaml)
   - Upsert **package.json** from [template](https://github.com/sderickson/saflib/blob/main/openapi/workflows/templates/package.json)
   - Upsert **index.ts** from [template](https://github.com/sderickson/saflib/blob/main/openapi/workflows/templates/index.ts)
   - Upsert **tsconfig.json** from [template](https://github.com/sderickson/saflib/blob/main/openapi/workflows/templates/tsconfig.json)
+  - Upsert **index.yaml** from [template](https://github.com/sderickson/saflib/blob/main/openapi/workflows/templates/events/index.yaml)
+  - Upsert **login.yaml** from [template](https://github.com/sderickson/saflib/blob/main/openapi/workflows/templates/events/login.yaml)
+  - Upsert **signup.yaml** from [template](https://github.com/sderickson/saflib/blob/main/openapi/workflows/templates/events/signup.yaml)
+  - Upsert **signup_view.yaml** from [template](https://github.com/sderickson/saflib/blob/main/openapi/workflows/templates/events/signup_view.yaml)
+  - Upsert **verify_email.yaml** from [template](https://github.com/sderickson/saflib/blob/main/openapi/workflows/templates/events/verify_email.yaml)
 - Change working directory to specs/example
 - Run `npm exec saf-specs generate`
 
 ## Help Docs
 
 ```bash
-Usage: saf-workflow kickoff openapi/init [options] <name> <path>
+Usage: npm exec saf-workflow kickoff openapi/init <name> <path>
 
-Create a new API spec package following the @saflib/openapi structure and
-conventions
+Create an OpenAPI package
 
 Arguments:
-  name        The name of the API spec package to create (e.g., 'user-spec' or
-              'analytics-spec')
-  path        The path to the target directory for the API spec package (e.g.,
-              './specs/example')
-
-Options:
-  -h, --help  display help for command
+  name        The name of the API spec package to create (e.g., 'user-spec' or 'analytics-spec')
+              Example: "example-spec"
+  path        The path to the target directory for the API spec package (e.g., './specs/example')
+              Example: "./specs/example"
 
 ```

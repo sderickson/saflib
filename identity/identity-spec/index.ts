@@ -1,6 +1,13 @@
 import type { components, operations } from "./dist/openapi.d.ts";
 
-export type { paths } from "./dist/openapi.d.ts";
+import type { paths as _paths } from "./dist/openapi.d.ts";
+
+/**
+ * Hiding from documentation
+ * @hidden
+ */
+export type paths = _paths;
+
 import {
   type ExtractResponseBody,
   type ExtractRequestBody,

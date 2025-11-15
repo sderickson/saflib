@@ -90,7 +90,7 @@ export class XStateWorkflowRunner extends AbstractWorkflowRunner {
     const expectedInputLength = this.definition.input.length;
     if (expectedInputLength !== inputLength) {
       throw new Error(
-        `Expected ${expectedInputLength} arguments, got ${inputLength}`
+        `Expected ${expectedInputLength} arguments, got ${inputLength}`,
       );
     }
     for (let i = 0; i < expectedInputLength; i++) {
@@ -154,7 +154,7 @@ export class XStateWorkflowRunner extends AbstractWorkflowRunner {
       console.log("Completed work:");
 
       snapshot.context.checklist.forEach((item) =>
-        console.log(`- ${item.description}`)
+        console.log(`- ${item.description}`),
       );
       console.log("");
     }
@@ -193,7 +193,8 @@ export class XStateWorkflowRunner extends AbstractWorkflowRunner {
       workflowName: this.machine.id,
       workflowSourceUrl: this.definition.sourceUrl,
       args: this.args,
-      snapshotState: this.actor?.getPersistedSnapshot() as unknown as PersistedSnapshot,
+      snapshotState:
+        this.actor?.getPersistedSnapshot() as unknown as PersistedSnapshot,
     };
   };
 

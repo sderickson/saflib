@@ -55,6 +55,7 @@ export const CronAddJobWorkflowDefinition = defineWorkflow<
       ...pathResult,
       ...parsePackageName(getPackageName(input.cwd), {
         requiredSuffix: "-cron",
+        silentError: true, // so checklists don't error
       }),
       targetDir: input.cwd,
     };

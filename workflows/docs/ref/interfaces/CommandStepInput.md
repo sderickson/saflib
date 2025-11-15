@@ -24,6 +24,20 @@ The command to run, such as `npm` or `chmod`.
 
 ---
 
+### ignoreError?
+
+> `optional` **ignoreError**: `boolean`
+
+---
+
+### promptOnError?
+
+> `optional` **promptOnError**: `string`
+
+The environment variables to set for the command.
+
+---
+
 ### skipIf?
 
 > `optional` **skipIf**: [`CommandStepSkipIf`](../type-aliases/CommandStepSkipIf.md)

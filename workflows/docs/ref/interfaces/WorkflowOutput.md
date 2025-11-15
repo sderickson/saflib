@@ -6,7 +6,17 @@
 
 Outputs every workflow machine returns.
 
+## Extended by
+
+- [`UpdateStepOutput`](UpdateStepOutput.md)
+
 ## Properties
+
+### agentConfig?
+
+> `optional` **agentConfig**: [`AgentConfig`](AgentConfig.md)
+
+---
 
 ### checklist
 

@@ -21,7 +21,7 @@ To run this workflow automatically, tell the agent to:
 When run, the workflow will:
 
 - Copy template files and rename placeholders.
-  - Upsert **index.ts** from [template](https://github.com/sderickson/saflib/blob/main/commander/workflows/templates/index.ts)
+  - Upsert **index.ts** from [template](https://github.com/sderickson/saflib/blob/main/commander/workflows/templates/bin/__group-name__/index.ts)
 - Update **index.ts**, resolving any TODOs.
 - Run `chmod +x bin/example-cli/index.ts`
 - Add bin/example-cli/index.ts to the package's bin folder.
@@ -31,14 +31,12 @@ When run, the workflow will:
 ## Help Docs
 
 ```bash
-Usage: saf-workflow kickoff commander/add-cli [options] <name>
+Usage: npm exec saf-workflow kickoff commander/add-cli <name>
 
 Create  a new CLI with Commander.js, accessible through npm exec
 
 Arguments:
   name        The name of the cli to create (e.g., 'build' or 'deploy')
-
-Options:
-  -h, --help  display help for command
+              Example: "example-cli"
 
 ```

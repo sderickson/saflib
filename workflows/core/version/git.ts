@@ -177,8 +177,8 @@ export const filterMatches = ({
   const initialFilteredAbsolutePaths = absolutePaths.filter(
     (absolutePath) =>
       !allowedAbsolutePaths.some((allowedAbsolutePath) =>
-        absolutePath.startsWith(allowedAbsolutePath)
-      )
+        absolutePath.startsWith(allowedAbsolutePath),
+      ),
   );
 
   const allGlobs = [...universalGlobs, ...(globs || [])];
@@ -189,7 +189,7 @@ export const filterMatches = ({
   const filteredAbsolutePaths = initialFilteredAbsolutePaths.filter(
     (absolutePath) => {
       return !absoluteGlobs.some((glob) => minimatch(absolutePath, glob));
-    }
+    },
   );
 
   return filteredAbsolutePaths;

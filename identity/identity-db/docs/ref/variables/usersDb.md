@@ -13,7 +13,7 @@ similar to the OIDC Standard Claims.
 
 ### create()
 
-> **create**: (`dbKey`, `user`) => `Promise`\<`ReturnsError`\<\{ `createdAt`: `Date`; `email`: `string`; `emailVerified`: `null` \| `boolean`; `familyName`: `null` \| `string`; `givenName`: `null` \| `string`; `id`: `number`; `lastLoginAt`: `null` \| `Date`; `name`: `null` \| `string`; \}, [`EmailConflictError`](../classes/EmailConflictError.md)\>\>
+> **create**: (`dbKey`, `user`) => `Promise`\<`ReturnsError`\<\{ `createdAt`: `Date`; `email`: `string`; `emailVerified`: `null` \| `boolean`; `familyName`: `null` \| `string`; `givenName`: `null` \| `string`; `id`: `string`; `lastLoginAt`: `null` \| `Date`; `name`: `null` \| `string`; \}, [`EmailConflictError`](../classes/EmailConflictError.md)\>\>
 
 #### Parameters
 
@@ -24,7 +24,7 @@ similar to the OIDC Standard Claims.
 
 #### Returns
 
-`Promise`\<`ReturnsError`\<\{ `createdAt`: `Date`; `email`: `string`; `emailVerified`: `null` \| `boolean`; `familyName`: `null` \| `string`; `givenName`: `null` \| `string`; `id`: `number`; `lastLoginAt`: `null` \| `Date`; `name`: `null` \| `string`; \}, [`EmailConflictError`](../classes/EmailConflictError.md)\>\>
+`Promise`\<`ReturnsError`\<\{ `createdAt`: `Date`; `email`: `string`; `emailVerified`: `null` \| `boolean`; `familyName`: `null` \| `string`; `givenName`: `null` \| `string`; `id`: `string`; `lastLoginAt`: `null` \| `Date`; `name`: `null` \| `string`; \}, [`EmailConflictError`](../classes/EmailConflictError.md)\>\>
 
 ### getAll()
 
@@ -42,7 +42,7 @@ similar to the OIDC Standard Claims.
 
 ### getByEmail()
 
-> **getByEmail**: (`dbKey`, `email`) => `Promise`\<`ReturnsError`\<\{ `createdAt`: `Date`; `email`: `string`; `emailVerified`: `null` \| `boolean`; `familyName`: `null` \| `string`; `givenName`: `null` \| `string`; `id`: `number`; `lastLoginAt`: `null` \| `Date`; `name`: `null` \| `string`; \}, [`UserNotFoundError`](../classes/UserNotFoundError.md)\>\>
+> **getByEmail**: (`dbKey`, `email`) => `Promise`\<`ReturnsError`\<\{ `createdAt`: `Date`; `email`: `string`; `emailVerified`: `null` \| `boolean`; `familyName`: `null` \| `string`; `givenName`: `null` \| `string`; `id`: `string`; `lastLoginAt`: `null` \| `Date`; `name`: `null` \| `string`; \}, [`UserNotFoundError`](../classes/UserNotFoundError.md)\>\>
 
 #### Parameters
 
@@ -53,50 +53,50 @@ similar to the OIDC Standard Claims.
 
 #### Returns
 
-`Promise`\<`ReturnsError`\<\{ `createdAt`: `Date`; `email`: `string`; `emailVerified`: `null` \| `boolean`; `familyName`: `null` \| `string`; `givenName`: `null` \| `string`; `id`: `number`; `lastLoginAt`: `null` \| `Date`; `name`: `null` \| `string`; \}, [`UserNotFoundError`](../classes/UserNotFoundError.md)\>\>
+`Promise`\<`ReturnsError`\<\{ `createdAt`: `Date`; `email`: `string`; `emailVerified`: `null` \| `boolean`; `familyName`: `null` \| `string`; `givenName`: `null` \| `string`; `id`: `string`; `lastLoginAt`: `null` \| `Date`; `name`: `null` \| `string`; \}, [`UserNotFoundError`](../classes/UserNotFoundError.md)\>\>
 
 ### getById()
 
-> **getById**: (`dbKey`, `id`) => `Promise`\<`ReturnsError`\<\{ `createdAt`: `Date`; `email`: `string`; `emailVerified`: `null` \| `boolean`; `familyName`: `null` \| `string`; `givenName`: `null` \| `string`; `id`: `number`; `lastLoginAt`: `null` \| `Date`; `name`: `null` \| `string`; \}, [`UserNotFoundError`](../classes/UserNotFoundError.md)\>\>
+> **getById**: (`dbKey`, `id`) => `Promise`\<`ReturnsError`\<\{ `createdAt`: `Date`; `email`: `string`; `emailVerified`: `null` \| `boolean`; `familyName`: `null` \| `string`; `givenName`: `null` \| `string`; `id`: `string`; `lastLoginAt`: `null` \| `Date`; `name`: `null` \| `string`; \}, [`UserNotFoundError`](../classes/UserNotFoundError.md)\>\>
 
 #### Parameters
 
 | Parameter | Type     |
 | --------- | -------- |
 | `dbKey`   | `symbol` |
-| `id`      | `number` |
+| `id`      | `string` |
 
 #### Returns
 
-`Promise`\<`ReturnsError`\<\{ `createdAt`: `Date`; `email`: `string`; `emailVerified`: `null` \| `boolean`; `familyName`: `null` \| `string`; `givenName`: `null` \| `string`; `id`: `number`; `lastLoginAt`: `null` \| `Date`; `name`: `null` \| `string`; \}, [`UserNotFoundError`](../classes/UserNotFoundError.md)\>\>
+`Promise`\<`ReturnsError`\<\{ `createdAt`: `Date`; `email`: `string`; `emailVerified`: `null` \| `boolean`; `familyName`: `null` \| `string`; `givenName`: `null` \| `string`; `id`: `string`; `lastLoginAt`: `null` \| `Date`; `name`: `null` \| `string`; \}, [`UserNotFoundError`](../classes/UserNotFoundError.md)\>\>
 
 ### updateLastLogin()
 
-> **updateLastLogin**: (`dbKey`, `id`) => `Promise`\<`ReturnsError`\<\{ `createdAt`: `Date`; `email`: `string`; `emailVerified`: `null` \| `boolean`; `familyName`: `null` \| `string`; `givenName`: `null` \| `string`; `id`: `number`; `lastLoginAt`: `null` \| `Date`; `name`: `null` \| `string`; \}, [`UserNotFoundError`](../classes/UserNotFoundError.md)\>\>
+> **updateLastLogin**: (`dbKey`, `id`) => `Promise`\<`ReturnsError`\<\{ `createdAt`: `Date`; `email`: `string`; `emailVerified`: `null` \| `boolean`; `familyName`: `null` \| `string`; `givenName`: `null` \| `string`; `id`: `string`; `lastLoginAt`: `null` \| `Date`; `name`: `null` \| `string`; \}, [`UserNotFoundError`](../classes/UserNotFoundError.md)\>\>
 
 #### Parameters
 
 | Parameter | Type     |
 | --------- | -------- |
 | `dbKey`   | `symbol` |
-| `id`      | `number` |
+| `id`      | `string` |
 
 #### Returns
 
-`Promise`\<`ReturnsError`\<\{ `createdAt`: `Date`; `email`: `string`; `emailVerified`: `null` \| `boolean`; `familyName`: `null` \| `string`; `givenName`: `null` \| `string`; `id`: `number`; `lastLoginAt`: `null` \| `Date`; `name`: `null` \| `string`; \}, [`UserNotFoundError`](../classes/UserNotFoundError.md)\>\>
+`Promise`\<`ReturnsError`\<\{ `createdAt`: `Date`; `email`: `string`; `emailVerified`: `null` \| `boolean`; `familyName`: `null` \| `string`; `givenName`: `null` \| `string`; `id`: `string`; `lastLoginAt`: `null` \| `Date`; `name`: `null` \| `string`; \}, [`UserNotFoundError`](../classes/UserNotFoundError.md)\>\>
 
 ### updateProfile()
 
-> **updateProfile**: (`dbKey`, `userId`, `params`) => `Promise`\<`ReturnsError`\<\{ `createdAt`: `Date`; `email`: `string`; `emailVerified`: `null` \| `boolean`; `familyName`: `null` \| `string`; `givenName`: `null` \| `string`; `id`: `number`; `lastLoginAt`: `null` \| `Date`; `name`: `null` \| `string`; \}, [`UserNotFoundError`](../classes/UserNotFoundError.md)\>\>
+> **updateProfile**: (`dbKey`, `userId`, `params`) => `Promise`\<`ReturnsError`\<\{ `createdAt`: `Date`; `email`: `string`; `emailVerified`: `null` \| `boolean`; `familyName`: `null` \| `string`; `givenName`: `null` \| `string`; `id`: `string`; `lastLoginAt`: `null` \| `Date`; `name`: `null` \| `string`; \}, [`UserNotFoundError`](../classes/UserNotFoundError.md)\>\>
 
 #### Parameters
 
 | Parameter | Type                                                            |
 | --------- | --------------------------------------------------------------- |
 | `dbKey`   | `symbol`                                                        |
-| `userId`  | `number`                                                        |
+| `userId`  | `string`                                                        |
 | `params`  | [`UpdateProfileParams`](../type-aliases/UpdateProfileParams.md) |
 
 #### Returns
 
-`Promise`\<`ReturnsError`\<\{ `createdAt`: `Date`; `email`: `string`; `emailVerified`: `null` \| `boolean`; `familyName`: `null` \| `string`; `givenName`: `null` \| `string`; `id`: `number`; `lastLoginAt`: `null` \| `Date`; `name`: `null` \| `string`; \}, [`UserNotFoundError`](../classes/UserNotFoundError.md)\>\>
+`Promise`\<`ReturnsError`\<\{ `createdAt`: `Date`; `email`: `string`; `emailVerified`: `null` \| `boolean`; `familyName`: `null` \| `string`; `givenName`: `null` \| `string`; `id`: `string`; `lastLoginAt`: `null` \| `Date`; `name`: `null` \| `string`; \}, [`UserNotFoundError`](../classes/UserNotFoundError.md)\>\>

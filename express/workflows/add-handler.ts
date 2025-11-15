@@ -46,6 +46,7 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
   context: ({ input }) => {
     return {
       ...parsePackageName(getPackageName(input.cwd), {
+        silentError: true, // so checklists don't error
         requiredSuffix: "-http",
       }),
       ...parsePath(input.path, {
@@ -127,7 +128,7 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
           }
           return Promise.resolve(undefined);
         },
-      }
+      },
     ),
 
     step(CommandStepMachine, () => ({

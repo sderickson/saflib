@@ -16,12 +16,12 @@ const input = [
   {
     name: "name",
     description: "Name of the new cron service (e.g., 'my-cron-service')",
-    exampleValue: "my-cron-service",
+    exampleValue: "my-service-cron",
   },
   {
     name: "path",
     description: "Path where the cron service should be created",
-    exampleValue: "./services/my-cron-service",
+    exampleValue: "./services/my-service/my-service-cron",
   },
 ] as const;
 

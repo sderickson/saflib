@@ -20,30 +20,27 @@ To run this workflow automatically, tell the agent to:
 
 When run, the workflow will:
 
-- Make sure this package has the correct spec package installed.
 - Copy template files and rename placeholders.
-  - Upsert **example-handler.ts** from [template](https://github.com/sderickson/saflib/blob/main/express/workflows/templates/routes/example/template-file.ts)
-  - Upsert **example-handler.test.ts** from [template](https://github.com/sderickson/saflib/blob/main/express/workflows/templates/routes/example/template-file.test.ts)
-  - Upsert **index.ts** from [template](https://github.com/sderickson/saflib/blob/main/express/workflows/templates/routes/example/index.ts)
-- Update the feature router at `/routes/example-subpath/index.ts` to include the new route handler.
-- Update the HTTP app to include the feature router, if not already there.
-- Review documentation: [03-routes.md](https://github.com/sderickson/saflib/blob/main/express/docs/03-routes.md)
-- Implement the exampleHandler route handler. Make sure to:
-- Review documentation: [04-testing.md](https://github.com/sderickson/saflib/blob/main/express/docs/04-testing.md)
-- Update the generated example-handler.test.ts file following the testing guide patterns. Make sure to implement proper test cases that cover both success and error scenarios.
-- Run **example-handler.test.ts**, make sure it passes.
+  - Upsert **example-handler.ts** from [template](https://github.com/sderickson/saflib/blob/main/express/workflows/templates/routes/__group-name__/__target-name__.ts)
+  - Upsert **example-handler.test.ts** from [template](https://github.com/sderickson/saflib/blob/main/express/workflows/templates/routes/__group-name__/__target-name__.test.ts)
+  - Upsert **index.ts** from [template](https://github.com/sderickson/saflib/blob/main/express/workflows/templates/routes/__group-name__/index.ts)
+  - Upsert **http.ts** from [template](https://github.com/sderickson/saflib/blob/main/express/workflows/templates/http.ts)
+  - Upsert **\_helpers.ts** from [template](https://github.com/sderickson/saflib/blob/main/express/workflows/templates/routes/__group-name__/_helpers.ts)
+- Implement the example-handler route handler.
+- Update the feature router to include the new route handler.
+- Update the generated example-handler.test.ts file following the testing guide patterns.
+- Run `npm run typecheck`
+- Run `npm run test`
 
 ## Help Docs
 
 ```bash
-Usage: saf-workflow kickoff express/add-handler [options] <path>
+Usage: npm exec saf-workflow kickoff express/add-handler <path>
 
 Add a new route to an Express.js service.
 
 Arguments:
   path        Path of the new handler (e.g. 'routes/todos/create')
-
-Options:
-  -h, --help  display help for command
+              Example: "./routes/example-subpath/example-handler.ts"
 
 ```

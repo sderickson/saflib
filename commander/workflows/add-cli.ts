@@ -71,13 +71,13 @@ export const AddCLIWorkflowDefinition = defineWorkflow<
 
     step(CommandStepMachine, ({ context }) => ({
       command: "chmod",
-      args: ["+x", context.copiedFiles!.index],
+      args: ["+x", path.relative(context.cwd, context.copiedFiles!.index)],
     })),
 
     step(PromptStepMachine, ({ context }) => {
       const relativePath = path.relative(
         context.cwd,
-        context.copiedFiles!.index
+        context.copiedFiles!.index,
       );
       return {
         promptText: `Add ${relativePath} to the package's bin folder.

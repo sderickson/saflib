@@ -55,4 +55,6 @@ export interface PosthogClientEnvSchema {
 /**
  * `process.env` casted to the `PosthogClientEnvSchema` type.
  */
-export const typedEnv = (globalThis.process ? process.env : {}) as unknown as PosthogClientEnvSchema;
+export const typedEnv = (globalThis.process
+  ? process.env
+  : {}) as unknown as PosthogClientEnvSchema;

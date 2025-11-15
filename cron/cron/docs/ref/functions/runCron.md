@@ -4,10 +4,9 @@
 
 # Function: runCron()
 
-> **runCron**(`options`): `undefined` \| `symbol`
+> **runCron**(`options`): `Promise`\<`undefined` \| `CronJob`\<`null`, `null`\>[]\>
 
-Runs the cron jobs until the process is killed. Returns a DB key you can
-provide to the cron router to share the same connection.
+Runs the cron jobs until the process is killed. Returns an array of cron jobs.
 
 ## Parameters
 
@@ -17,4 +16,4 @@ provide to the cron router to share the same connection.
 
 ## Returns
 
-`undefined` \| `symbol`
+`Promise`\<`undefined` \| `CronJob`\<`null`, `null`\>[]\>

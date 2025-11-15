@@ -9,9 +9,7 @@ validateEnv(process.env, envSchema);
 const monorepoRoot = path.resolve(import.meta.dirname, "../../..");
 
 export default makeConfig({
-  plugins: [
-    htmlHeaderPlugin(),
-  ],
+  plugins: [htmlHeaderPlugin()],
 
   vuetifyOverrides: "./overrides.scss",
   monorepoRoot,

@@ -7,6 +7,8 @@ export type {
   WorkflowOutput,
   WorkflowRunMode,
   WorkflowContext,
+  AgentConfig,
+  AgentCLI,
 } from "./types.ts";
 export * from "./steps/copy/copy-template-machine.ts";
 export * from "./steps/copy/templating.ts";

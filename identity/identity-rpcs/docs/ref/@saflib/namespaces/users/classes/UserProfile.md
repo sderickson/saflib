@@ -18,7 +18,7 @@
 
 | Parameter | Type                                                                                                                                                                                                                               |
 | --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `data?`   | `any`[] \| \{ `created_at?`: [`Timestamp`](../../timestamp/classes/Timestamp.md); `email?`: `string`; `email_verified?`: `boolean`; `family_name?`: `string`; `given_name?`: `string`; `name?`: `string`; `user_id?`: `number`; \} |
+| `data?`   | `any`[] \| \{ `created_at?`: [`Timestamp`](../../timestamp/classes/Timestamp.md); `email?`: `string`; `email_verified?`: `boolean`; `family_name?`: `string`; `given_name?`: `string`; `name?`: `string`; `user_id?`: `string`; \} |
 
 #### Returns
 
@@ -230,11 +230,11 @@
 
 #### Get Signature
 
-> **get** **user_id**(): `number`
+> **get** **user_id**(): `string`
 
 ##### Returns
 
-`number`
+`string`
 
 #### Set Signature
 
@@ -244,7 +244,7 @@
 
 | Parameter | Type     |
 | --------- | -------- |
-| `value`   | `number` |
+| `value`   | `string` |
 
 ##### Returns
 
@@ -489,7 +489,7 @@
 
 ##### user_id?
 
-> `optional` **user_id**: `number`
+> `optional` **user_id**: `string`
 
 #### Overrides
 
@@ -893,7 +893,7 @@
 
 | Parameter                  | Type                                                                                                                                                                                                                |
 | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `data`                     | \{ `created_at?`: \{ `nanos?`: `number`; `seconds?`: `number`; \}; `email?`: `string`; `email_verified?`: `boolean`; `family_name?`: `string`; `given_name?`: `string`; `name?`: `string`; `user_id?`: `number`; \} |
+| `data`                     | \{ `created_at?`: \{ `nanos?`: `number`; `seconds?`: `number`; \}; `email?`: `string`; `email_verified?`: `boolean`; `family_name?`: `string`; `given_name?`: `string`; `name?`: `string`; `user_id?`: `string`; \} |
 | `data.created_at?`         | \{ `nanos?`: `number`; `seconds?`: `number`; \}                                                                                                                                                                     |
 | `data.created_at.nanos?`   | `number`                                                                                                                                                                                                            |
 | `data.created_at.seconds?` | `number`                                                                                                                                                                                                            |
@@ -902,7 +902,7 @@
 | `data.family_name?`        | `string`                                                                                                                                                                                                            |
 | `data.given_name?`         | `string`                                                                                                                                                                                                            |
 | `data.name?`               | `string`                                                                                                                                                                                                            |
-| `data.user_id?`            | `number`                                                                                                                                                                                                            |
+| `data.user_id?`            | `string`                                                                                                                                                                                                            |
 
 #### Returns
 

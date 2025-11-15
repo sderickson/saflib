@@ -4,7 +4,7 @@
 
 # Function: makeSubsystemErrorReporter()
 
-> **makeSubsystemErrorReporter**(`subsystemName`, `operationName`, `logger`): [`ErrorReporter`](../type-aliases/ErrorReporter.md)
+> **makeSubsystemErrorReporter**(`subsystemName`, `operationName`): [`ErrorReporter`](../type-aliases/ErrorReporter.md)
 
 During setup, subsystems should use this to create their own
 set of reporters. "Operation name" should be the name of the
@@ -16,7 +16,6 @@ function.
 | --------------- | -------- |
 | `subsystemName` | `string` |
 | `operationName` | `string` |
-| `logger`        | `Logger` |
 
 ## Returns
 

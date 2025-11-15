@@ -106,3 +106,15 @@ An array of steps to be executed in the workflow. Each step is a state machine, 
 > **templateFiles**: `Record`\<`string`, `string`\>
 
 A map of ids to template file absolute paths which will be copied and updated as part of the workflow.
+
+---
+
+### versionControl?
+
+> `optional` **versionControl**: `object`
+
+Configure version control for the workflow. Right now, just provide paths which the workflow will consider safe to change as part of the workflow.
+
+#### allowPaths?
+
+> `optional` **allowPaths**: `string`[]

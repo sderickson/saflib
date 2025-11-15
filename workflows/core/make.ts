@@ -66,7 +66,7 @@ export function defineWorkflow<
  * Implementation of the makeMachineFromWorkflow function.
  */
 function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
-  workflow: WorkflowDefinition<I, C>
+  workflow: WorkflowDefinition<I, C>,
 ) {
   type Input = CreateArgsType<I> & WorkflowInput;
   type Context = C & WorkflowContext;
@@ -311,7 +311,7 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
  * This basically translates my simplified and scoped workflow machine definition to the full XState machine definition.
  */
 export const makeWorkflowMachine = <C, I extends readonly WorkflowArgument[]>(
-  config: WorkflowDefinition<I, C>
+  config: WorkflowDefinition<I, C>,
 ) => {
   return _makeWorkflowMachine(defineWorkflow(config));
 };
@@ -327,7 +327,7 @@ export const step = <C, M extends AnyStateMachine>(
       context: C & WorkflowContext;
     }) => Promise<string | undefined>;
     skipIf?: (arg: { context: C & WorkflowContext }) => boolean;
-  } = {}
+  } = {},
 ): WorkflowStep<C, M> => {
   return {
     machine,

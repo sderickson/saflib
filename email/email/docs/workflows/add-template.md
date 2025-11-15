@@ -22,21 +22,18 @@ When run, the workflow will:
 
 - Run `npm install @saflib/email`
 - Copy template files and rename placeholders.
-  - Upsert **example-email.ts** from [template](https://github.com/sderickson/saflib/blob/main/email/email/workflows/templates/template-file.ts)
-- Implement the email template at /email-templates/example-email.ts:
+  - Upsert **example-email.ts** from [template](https://github.com/sderickson/saflib/blob/main/email/email/workflows/templates/emails/__target-name__.ts)
+- Implement the email template.
 
 ## Help Docs
 
 ```bash
-Usage: saf-workflow kickoff email/add-template [options] <path>
+Usage: npm exec saf-workflow kickoff email/add-template <path>
 
 Add email template infrastructure and templates to a project.
 
 Arguments:
-  path        Path of the new email template (e.g.
-              './email-templates/weekly-report.ts')
-
-Options:
-  -h, --help  display help for command
+  path        Path of the new email template (e.g. './email-templates/weekly-report.ts')
+              Example: "./emails/example-email.ts"
 
 ```

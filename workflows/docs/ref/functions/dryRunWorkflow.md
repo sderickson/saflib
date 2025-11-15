@@ -2,9 +2,9 @@
 
 ---
 
-# Function: dryRunWorkflow()
+# ~~Function: dryRunWorkflow()~~
 
-> **dryRunWorkflow**(`definition`): `Promise`\<[`WorkflowOutput`](../interfaces/WorkflowOutput.md)\>
+> **dryRunWorkflow**(`definition`): `Promise`\<`undefined` \| [`WorkflowOutput`](../interfaces/WorkflowOutput.md)\>
 
 Convenience function to take a WorkflowDefinition, dry run it, and return the output. The output in particular includes the checklist.
 
@@ -16,4 +16,8 @@ Convenience function to take a WorkflowDefinition, dry run it, and return the ou
 
 ## Returns
 
-`Promise`\<[`WorkflowOutput`](../interfaces/WorkflowOutput.md)\>
+`Promise`\<`undefined` \| [`WorkflowOutput`](../interfaces/WorkflowOutput.md)\>
+
+## Deprecated
+
+Use runWorkflow with runMode: "dry" instead
