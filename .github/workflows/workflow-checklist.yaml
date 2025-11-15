@@ -1,4 +1,4 @@
-name: Workflows in Print Mode
+name: Workflows Checklists
 
 on:
   pull_request:
