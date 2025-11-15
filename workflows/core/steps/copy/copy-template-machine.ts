@@ -18,7 +18,7 @@ import fs, { readdirSync, statSync } from "node:fs";
 export type { CopyStepInput };
 
 /**
- * Copies all `templateFiles` to the given directory, renaming all instances of `"template-file"` to the given `name`. Also replaces other variants of the string: camelCase, snake_case, and PascalCase.
+ * Copies all `templateFiles` to the given directory, performing string replacements for directories, file names, and file contents.
  */
 export const CopyStepMachine = setup({
   types: {

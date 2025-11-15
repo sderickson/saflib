@@ -6,6 +6,8 @@
 
 > **getPackageName**(`cwd`): `string`
 
+Reads the package.json for the given cwd and returns the package name.
+
 ## Parameters
 
 | Parameter | Type     |

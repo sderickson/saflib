@@ -4,6 +4,8 @@
 
 # Interface: AgentConfig
 
+When in "run" mode, specify which agent to use.
+
 ## Properties
 
 ### cli

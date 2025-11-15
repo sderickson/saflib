@@ -20,7 +20,7 @@ To run this workflow automatically, tell the agent to:
 
 When run, the workflow will:
 
-- The table ends with "s". Table names should not be plural; if the table name is actually plural, please stop and rerun the workflow with a singular name. Otherwise, continue.
+- Make sure the table name is singular.
 - Copy template files and rename placeholders.
   - Upsert **example.ts** from [template](https://github.com/sderickson/saflib/blob/main/drizzle/workflows/templates/schemas/__group-name__.ts)
   - Upsert **schema.ts** from [template](https://github.com/sderickson/saflib/blob/main/drizzle/workflows/templates/schema.ts)

@@ -10,8 +10,6 @@ Helper, identity function to infer types.
 
 By using this function on a Workflow object, it properly types the input object in the context function, and the context in the callbacks for the steps.
 
-I'm keeping this separate just because it's good to have the type inference piece separate where it can be messed with independently.
-
 ## Type Parameters
 
 | Type Parameter                                                                   | Default type |

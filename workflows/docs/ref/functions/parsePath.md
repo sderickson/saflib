@@ -6,7 +6,7 @@
 
 > **parsePath**(`path`, `input`): [`ParsePathOutput`](../interfaces/ParsePathOutput.md)
 
-Takes a target path to a file and breaks it down into conventional parts.
+Takes a target path to a file and breaks it down into conventional parts for templating.
 
 The path format is "./[required-prefix/][group-name/]target-name[required-suffix]".
 This function will enforce required prefixes and suffixes. The suffix will usually just be a file extension.

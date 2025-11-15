@@ -5,7 +5,7 @@ export type {
   WorkflowDefinition,
   WorkflowStep,
   WorkflowOutput,
-  WorkflowRunMode,
+  WorkflowExecutionMode,
   WorkflowContext,
   AgentConfig,
   AgentCLI,

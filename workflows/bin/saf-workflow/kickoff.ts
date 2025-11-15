@@ -3,7 +3,7 @@ import { addNewLinesToString } from "../../strings.ts";
 import type {
   AgentConfig,
   WorkflowDefinition,
-  WorkflowRunMode,
+  WorkflowExecutionMode,
 } from "../../core/types.ts";
 import { runWorkflow } from "./shared/utils.ts";
 import {
@@ -131,7 +131,7 @@ export const addKickoffCommand = (commandOptions: WorkflowCommandOptions) => {
 };
 
 interface RunReturn {
-  runMode: WorkflowRunMode;
+  runMode: WorkflowExecutionMode;
   agentConfig?: AgentConfig;
 }
 

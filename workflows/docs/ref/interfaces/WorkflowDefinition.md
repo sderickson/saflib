@@ -4,7 +4,7 @@
 
 # Interface: WorkflowDefinition\<I, C\>
 
-An interface that includes the inputs, files, steps, and everything else that makes up a workflow. Can be used to create an XState machine which can be used in other workflows, and an XStateWorkflowRunner which will execute just the workflow itself.
+An interface that includes everything that makes up a workflow.
 
 ## Type Parameters
 

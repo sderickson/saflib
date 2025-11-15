@@ -93,10 +93,17 @@ export const AddSpaPageWorkflowDefinition = defineWorkflow<
       * Don't break reactivity! Render the data directly from the tanstack queries, or if necessary create a computed property.`,
     })),
 
-    step(PromptStepMachine, ({ context }) => ({
-      promptText: `Find the "links" package adjacent to this package. Add the link for the new page there along with the others.`,
-      skipIf: context.serviceName.endsWith("-sdk"),
-    })),
+    step(
+      PromptStepMachine,
+      () => ({
+        promptText: `Find the "links" package adjacent to this package. Add the link for the new page there along with the others.`,
+      }),
+      {
+        skipIf: ({ context }) => {
+          return context.serviceName.endsWith("-sdk");
+        },
+      },
+    ),
 
     step(PromptStepMachine, ({ context }) => ({
       promptText: `Update the new page to **router.ts**.

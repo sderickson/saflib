@@ -5,7 +5,7 @@ import type { WorkflowContext } from "../../types.ts";
  */
 export interface CopyStepInput {
   /**
-   * kebab-case name of the thing being created from the template. Will be used to query replace instances of "template-file" and other variants like templateFile and template_file.
+   * kebab-case name of the thing being created from the template. Will be used to query replace instances of "template-file" and other variants like templateFile and template_file, though this behavior is deprecated and it's recommended to use the `lineReplace` function instead.
    */
   name: string;
 
@@ -15,7 +15,7 @@ export interface CopyStepInput {
   targetDir: string;
 
   /**
-   * Optional argument to do custom string transformations of the template file.
+   * Optional argument to do custom string transformations of template files and paths.
    */
   lineReplace?: (line: string) => string;
 }

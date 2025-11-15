@@ -7,7 +7,7 @@ import type {
   WorkflowInput,
   WorkflowContext,
   WorkflowOutput,
-  WorkflowRunMode,
+  WorkflowExecutionMode,
 } from "./types.ts";
 import { workflowActions, workflowActors } from "./xstate.ts";
 import {
@@ -33,8 +33,6 @@ let lastSystemPrompt: string | undefined;
  * Helper, identity function to infer types.
  *
  * By using this function on a Workflow object, it properly types the input object in the context function, and the context in the callbacks for the steps.
- *
- * I'm keeping this separate just because it's good to have the type inference piece separate where it can be messed with independently.
  */
 export function defineWorkflow<
   I extends readonly WorkflowArgument[],
@@ -43,7 +41,7 @@ export function defineWorkflow<
   input: I;
   context: (arg: {
     input: CreateArgsType<I> & {
-      runMode?: WorkflowRunMode;
+      runMode?: WorkflowExecutionMode;
       cwd: string;
       systemPrompt?: string;
     };

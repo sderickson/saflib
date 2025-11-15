@@ -10,26 +10,6 @@ import { contextFromInput } from "../../utils.ts";
 import { handlePrompt } from "../../prompt.ts";
 
 /**
- * A simple test format on changes made, for checks beyond just "todo" string existence.
- */
-export interface UpdateStepTest {
-  /**
-   * What to print if the test fails.
-   */
-  description: string;
-
-  /**
-   * The name of the test.
-   */
-  name: string;
-
-  /**
-   * An arbitrary test, given the contents of the file that was updated. Fails the test if it returns false.
-   */
-  test: (content: string) => boolean;
-}
-
-/**
  * Input for the UpdateStepMachine.
  */
 export interface UpdateStepInput {
@@ -54,6 +34,9 @@ export interface UpdateStepContext extends WorkflowContext {
   hasTodos?: boolean;
 }
 
+/**
+ * @internal
+ */
 export interface UpdateStepOutput extends WorkflowOutput {
   filePath: string;
 }

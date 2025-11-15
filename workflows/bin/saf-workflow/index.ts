@@ -53,7 +53,6 @@ export async function runWorkflowCli(
 }
 
 export {
-  dryRunWorkflow,
   runWorkflow,
   type RunWorkflowOptions,
   type RunWorkflowResult,
