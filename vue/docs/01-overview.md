@@ -85,7 +85,7 @@ _[Template file](../workflows/spa-template/main.ts)_
 
 Exports a `main` function which:
 
-1. Calls [`setClientName`](./ref/@saflib/vue/functions/setClientName.md)
+1. Calls [`setClientName`](../../links/docs/ref/functions/setClientName.md)
 2. Calls [`createVueApp`](./ref/@saflib/vue/functions/createVueApp.md)
 
 It will look something like [this](../workflows/spa-template/main.ts).
