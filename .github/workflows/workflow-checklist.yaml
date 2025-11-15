@@ -1,0 +1,23 @@
+name: Workflows in Print Mode
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  workflow-integration-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Run every workflow checklist. This should error if any error
+      - name: Run Workflow Integration Test
+        run: npm exec saf-workflow list -- -a | xargs -n 1 npm exec saf-workflow checklist
