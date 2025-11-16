@@ -6,11 +6,8 @@ import {
   defineWorkflow,
   step,
   PromptStepMachine,
-  type ParsePackageNameOutput,
   type ParsePathOutput,
   parsePath,
-  parsePackageName,
-  getPackageName,
   makeLineReplace,
 } from "@saflib/workflows";
 import path from "node:path";
@@ -26,7 +23,7 @@ const input = [
 ] as const;
 
 interface AddRouteWorkflowContext
-  extends ParsePackageNameOutput,
+  extends 
     ParsePathOutput {
   operationId: string;
 }
@@ -48,7 +45,6 @@ export const AddRouteWorkflowDefinition = defineWorkflow<
 
   context: ({ input }) => {
     const context = {
-      ...parsePackageName(getPackageName(input.cwd), {}),
       ...parsePath(input.path, {
         requiredSuffix: ".yaml",
         cwd: input.cwd,
