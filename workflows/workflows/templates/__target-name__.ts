@@ -74,20 +74,22 @@ export const __WorkflowNamespace____TargetName__WorkflowDefinition =
       };
     },
 
-    // TODO: Add template files to the adjacent templates directory
+    // TODO: Add template files to an adjacent "templates" directory. Create the directory if it doesn't exist.
     // Include TODOs like this file does.
     // Instances of "__target-name__" in the file name and content will be replaced with the "name" given to CopyStepMachine
+    // If you use parsePath and/or parsePackageName, they also provide variables for templating such as __group-name__ and __service-name__.
     // Include **all** files that the agent is expected to modify.
     /* do not replace */ templateFiles: {},
 
     // TODO: Update "allowPaths" to exclude any files or directories that are expected to change during the workflow.
     // It's important for files to either be excluded here, or included in templateFiles, because the agent will be
     // prompted to explain and justify unexpected changes.
+    // Values are minimatch patterns.
     versionControl: {
       allowPaths: ["./dist/**"],
     },
 
-    // TODO: add documentation file references
+    // TODO: add documentation file references, if you were provided any.
     // these will typically be in the "docs" directory adjacent to the "workflows" directory
     docFiles: {},
 
@@ -113,7 +115,7 @@ export const __WorkflowNamespace____TargetName__WorkflowDefinition =
       //   Please review documentation here first: ${context.docFiles?.testing}`,
       // })),
 
-      // TODO: Remove this if the package does not have a typecheck script
+      // TODO: Remove this if the package does not have a typecheck script, or it doesn't make sense as part of the workflow.
       step(CommandStepMachine, () => ({
         command: "npm",
         args: ["run", "typecheck"],

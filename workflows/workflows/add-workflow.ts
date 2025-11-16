@@ -86,22 +86,9 @@ export const AddWorkflowDefinition = defineWorkflow<
       lineReplace: makeLineReplace(context),
     })),
 
-    step(PromptStepMachine, ({ context }) => ({
-      promptText: `Create template files for ${context.targetName} workflow.
-
-      Create a folder named \`templates\` next to the workflow file if it doesn't already exist. Add any template files you need to the folder. Make sure the organization of those template files matches the organization recommended by the package. Check if you're not sure how to organize them. And if you don't have them already, ask for samples to base the template files on.
-
-      **Important**: Use "__target-name__" as the base name in your template files (not {{...}} placeholders). The system will automatically replace "__target-name__", "__target_name__", "__TargetName__", and "__targetName__" with the actual name during workflow execution. This keeps template files valid TypeScript/JavaScript.
-
-      This goes for file names as well. You may well create a file named \`__target-name__.ts\` or something like that and it will get renamed based on the name passed into \`CopyStepMachine\`.`,
-    })),
-
-    step(UpdateStepMachine, ({ context }) => ({
+    step(UpdateStepMachine, () => ({
       fileId: "workflow",
-      promptMessage: `Update the workflow file to implement the main functionality. Replace any TODO comments with actual implementation.
-
-      Please review the following documentation first:
-      - Overview: ${context.docFiles?.overview}`,
+      promptMessage: `Update the workflow file to implement the main functionality. Replace any TODO comments with actual implementation.`
     })),
 
     step(PromptStepMachine, ({ context }) => ({
@@ -118,16 +105,6 @@ export const AddWorkflowDefinition = defineWorkflow<
       * Look for the string "workflows/add-workflow HOOK", a file named "workflow-cli.ts", or a package which depends on @saflib/workflows that seems promising.
       * If not already included, install \`${context.packageName}\` as a dependency of the package that contains that file you found, and add the exported workflows to the list.
       * Check that it works by running "npm exec saf-workflow checklist ${context.name}"`,
-    })),
-
-    step(CommandStepMachine, () => ({
-      command: "npm",
-      args: ["run", "typecheck"],
-    })),
-
-    step(CommandStepMachine, () => ({
-      command: "npm",
-      args: ["run", "test"],
     })),
   ],
 });
