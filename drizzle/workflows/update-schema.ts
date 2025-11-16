@@ -74,7 +74,7 @@ export const UpdateSchemaWorkflowDefinition = defineWorkflow<
       },
       {
         skipIf: ({ context }) => {
-          return context.targetName.endsWith("s");
+          return !context.targetName.endsWith("s");
         },
       },
     ),

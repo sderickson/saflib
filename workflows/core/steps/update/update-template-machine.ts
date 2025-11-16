@@ -90,7 +90,7 @@ export const UpdateStepMachine = setup({
           }
           await handlePrompt({
             context: input,
-            msg: `File ${resolvedPath} was not properly updated - it still contains TODO strings. Please complete the implementation. If it's unclear what needs to be done, ask for help.`,
+            msg: `File ${resolvedPath} contains TODO strings. Make sure to resolve them before continuing.`,
           });
           if (!shouldContinue) {
             break;
@@ -114,7 +114,9 @@ export const UpdateStepMachine = setup({
       return !!context.shouldContinue;
     },
     hasTodos: ({ context }) => {
-      return !!context.hasTodos;
+      const resolvedPath = context.filePath;
+      const content = readFileSync(resolvedPath, "utf-8");
+      return /\s*(?:#|\/\/).*todo/i.test(content);
     },
   },
 }).createMachine({
