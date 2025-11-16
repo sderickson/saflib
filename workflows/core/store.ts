@@ -69,9 +69,8 @@ export function createWorkflowLogger(
     },
     error: (message: string) => {
       const decoratedMessage = `[✗] ${message}`;
-      if (printToConsole) {
-        console.error(decoratedMessage);
-      }
+      // Always print errors to console
+      console.error(decoratedMessage);
       if (printToAgent) {
         addPendingMessage(decoratedMessage);
       }

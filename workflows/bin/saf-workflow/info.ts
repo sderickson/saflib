@@ -13,7 +13,7 @@ export const addInfoCommand = (commandOptions: WorkflowCommandOptions) => {
     .description(
       addNewLinesToString("Prints usage information for the given workflow."),
     )
-    .argument("<path-or-id>", "Path to the workflow file, or the workflow ID")
+    .argument("<path-or-id>", "Workflow ID or path to workflow file")
     .action(async (workflowIdOrPath: string) => {
       const log = createWorkflowLogger({
         printToConsole: false,
