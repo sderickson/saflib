@@ -3,7 +3,6 @@ import {
   PromptStepMachine,
   step,
   defineWorkflow,
-  CommandStepMachine,
   getPackageName,
   makeLineReplace,
   UpdateStepMachine,
