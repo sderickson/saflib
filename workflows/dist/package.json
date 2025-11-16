@@ -1,0 +1,44 @@
+{
+  "name": "saflib-workflows",
+  "files": [
+    "src",
+    "package.json",
+    "LICENSE"
+  ],
+  "description": "Workflow engine and utilities for SAF",
+  "version": "0.1.2",
+  "type": "module",
+  "homepage": "https://docs.saf-demo.online/workflows/docs/README.html",
+  "author": "Scott Erickson <sderickson@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sderickson/saflib.git",
+    "directory": "saflib/workflows"
+  },
+  "bugs": {
+    "url": "https://github.com/sderickson/saflib/issues"
+  },
+  "keywords": [
+    "workflows",
+    "llm",
+    "agentic",
+    "cursor",
+    "claude",
+    "codex"
+  ],
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "import": "./src/index.js"
+    },
+    "./workflows": {
+      "types": "./src/workflows/index.d.ts",
+      "import": "./src/workflows/index.js"
+    }
+  },
+  "dependencies": {
+    "commander": "^14.0.0",
+    "xstate": "^5.19.3"
+  }
+}
