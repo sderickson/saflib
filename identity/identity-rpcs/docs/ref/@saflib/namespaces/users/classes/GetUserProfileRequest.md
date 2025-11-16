@@ -18,7 +18,7 @@
 
 | Parameter | Type                                                                                 |
 | --------- | ------------------------------------------------------------------------------------ |
-| `data?`   | `any`[] \| \{ `auth?`: `SafAuth`; `request?`: `SafRequest`; `user_id?`: `number`; \} |
+| `data?`   | `any`[] \| \{ `auth?`: `SafAuth`; `request?`: `SafRequest`; `user_id?`: `string`; \} |
 
 #### Returns
 
@@ -138,11 +138,11 @@
 
 #### Get Signature
 
-> **get** **user_id**(): `number`
+> **get** **user_id**(): `string`
 
 ##### Returns
 
-`number`
+`string`
 
 #### Set Signature
 
@@ -152,7 +152,7 @@
 
 | Parameter | Type     |
 | --------- | -------- |
-| `value`   | `number` |
+| `value`   | `string` |
 
 ##### Returns
 
@@ -373,7 +373,7 @@
 
 ###### auth.user_id?
 
-> `optional` **user_id**: `number`
+> `optional` **user_id**: `string`
 
 ###### auth.user_scopes?
 
@@ -389,7 +389,7 @@
 
 ##### user_id?
 
-> `optional` **user_id**: `number`
+> `optional` **user_id**: `string`
 
 #### Overrides
 
@@ -793,14 +793,14 @@
 
 | Parameter                | Type                                                                                                                                                       |
 | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `data`                   | \{ `auth?`: \{ `user_email?`: `string`; `user_id?`: `number`; `user_scopes?`: `string`[]; \}; `request?`: \{ `id?`: `string`; \}; `user_id?`: `number`; \} |
-| `data.auth?`             | \{ `user_email?`: `string`; `user_id?`: `number`; `user_scopes?`: `string`[]; \}                                                                           |
+| `data`                   | \{ `auth?`: \{ `user_email?`: `string`; `user_id?`: `string`; `user_scopes?`: `string`[]; \}; `request?`: \{ `id?`: `string`; \}; `user_id?`: `string`; \} |
+| `data.auth?`             | \{ `user_email?`: `string`; `user_id?`: `string`; `user_scopes?`: `string`[]; \}                                                                           |
 | `data.auth.user_email?`  | `string`                                                                                                                                                   |
-| `data.auth.user_id?`     | `number`                                                                                                                                                   |
+| `data.auth.user_id?`     | `string`                                                                                                                                                   |
 | `data.auth.user_scopes?` | `string`[]                                                                                                                                                 |
 | `data.request?`          | \{ `id?`: `string`; \}                                                                                                                                     |
 | `data.request.id?`       | `string`                                                                                                                                                   |
-| `data.user_id?`          | `number`                                                                                                                                                   |
+| `data.user_id?`          | `string`                                                                                                                                                   |
 
 #### Returns
 

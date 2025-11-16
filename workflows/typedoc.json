@@ -8,8 +8,6 @@
     "CreateArgsType",
     "Input",
     "LogParams",
-    "PromptParams",
-    "WorkflowInput",
-    "WorkflowContext"
+    "WorkflowInput"
   ]
 }

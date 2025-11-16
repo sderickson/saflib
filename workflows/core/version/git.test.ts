@@ -8,15 +8,17 @@ describe("filterMatches", () => {
       "/path/to/file2.txt",
       "/path/to/file3.txt",
     ];
-    const allowedAbsolutePaths = [
-      "/path/to/file1.txt",
-    ];
-    const filteredAbsolutePaths = filterMatches({ absolutePaths, allowedAbsolutePaths, cwd: "/" });
+    const allowedAbsolutePaths = ["/path/to/file1.txt"];
+    const filteredAbsolutePaths = filterMatches({
+      absolutePaths,
+      allowedAbsolutePaths,
+      cwd: "/",
+    });
     expect(filteredAbsolutePaths).toEqual([
       "/path/to/file2.txt",
       "/path/to/file3.txt",
     ]);
-  })
+  });
 
   it("filters relative paths with globs", () => {
     const absolutePaths = [
@@ -24,7 +26,12 @@ describe("filterMatches", () => {
       "/path/to/file2.txt",
       "/path/to/file3.txt",
     ];
-    const filteredAbsolutePaths = filterMatches({ absolutePaths, allowedAbsolutePaths: [], allowedGlobs: ["**/file1.txt"], cwd: "/" });
+    const filteredAbsolutePaths = filterMatches({
+      absolutePaths,
+      allowedAbsolutePaths: [],
+      allowedGlobs: ["**/file1.txt"],
+      cwd: "/",
+    });
     expect(filteredAbsolutePaths).toEqual([
       "/path/to/file2.txt",
       "/path/to/file3.txt",
@@ -41,14 +48,12 @@ describe("filterMatches", () => {
       absolutePaths,
       allowedAbsolutePaths: [],
       allowedGlobs: [
-        "./subdir1/file*.txt",   // This SHOULD match, based on cwd
-        "./to/subdir2/file*.txt" // this should NOT match, based on cwd
+        "./subdir1/file*.txt", // This SHOULD match, based on cwd
+        "./to/subdir2/file*.txt", // this should NOT match, based on cwd
       ],
       cwd: "/path/to",
     });
-    expect(filteredAbsolutePaths).toEqual([
-      "/path/to/subdir2/file3.txt",
-    ]);
+    expect(filteredAbsolutePaths).toEqual(["/path/to/subdir2/file3.txt"]);
   });
 
   it("filters out paths based on cwd and absolute globs", () => {
@@ -57,10 +62,13 @@ describe("filterMatches", () => {
       "/path/to/subdir1/file2.txt",
       "/path/to/subdir2/file3.txt",
     ];
-    const filteredAbsolutePaths = filterMatches({ absolutePaths, allowedAbsolutePaths: [], allowedGlobs: ["**/subdir1/file*.txt"], cwd: "/path/to" });
-    expect(filteredAbsolutePaths).toEqual([
-      "/path/to/subdir2/file3.txt",
-    ]);
+    const filteredAbsolutePaths = filterMatches({
+      absolutePaths,
+      allowedAbsolutePaths: [],
+      allowedGlobs: ["**/subdir1/file*.txt"],
+      cwd: "/path/to",
+    });
+    expect(filteredAbsolutePaths).toEqual(["/path/to/subdir2/file3.txt"]);
   });
 
   it("filters out universal globs", () => {
@@ -70,9 +78,11 @@ describe("filterMatches", () => {
       "/path/to/package-lock.json",
       "/path/to/subdir/package-lock.json",
     ];
-    const filteredAbsolutePaths = filterMatches({ absolutePaths, allowedAbsolutePaths: [], cwd: "/path/to" });
-    expect(filteredAbsolutePaths).toEqual([
-      "/package-lock.json.bak",
-    ]);
+    const filteredAbsolutePaths = filterMatches({
+      absolutePaths,
+      allowedAbsolutePaths: [],
+      cwd: "/path/to",
+    });
+    expect(filteredAbsolutePaths).toEqual(["/package-lock.json.bak"]);
   });
-})
+});

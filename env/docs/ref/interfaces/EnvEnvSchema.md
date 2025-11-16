@@ -81,6 +81,14 @@ Comma-separated list of service subdomains, e.g. 'revenue,geo,identity,core'.
 
 ---
 
+### TRADEMARK?
+
+> `optional` **TRADEMARK**: `string`
+
+The trademark of the product provided at the domain, e.g. 'Hooli Chat'.
+
+---
+
 ### TZ
 
 > **TZ**: `"UTC"`

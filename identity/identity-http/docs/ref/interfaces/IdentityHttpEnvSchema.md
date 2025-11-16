@@ -65,6 +65,14 @@ Whether to disable rate limiting. Set to 'true' to disable.
 
 ---
 
+### IDENTITY_SERVICE_HOST
+
+> **IDENTITY_SERVICE_HOST**: `string`
+
+Host URL for the identity service
+
+---
+
 ### IDENTITY_SERVICE_HTTP_PORT
 
 > **IDENTITY_SERVICE_HTTP_PORT**: `string`
@@ -108,6 +116,14 @@ The protocol of the deployment, e.g. 'https'
 > **SERVICE_SUBDOMAINS**: `string`
 
 Comma-separated list of service subdomains, e.g. 'revenue,geo,identity,core'.
+
+---
+
+### TRADEMARK?
+
+> `optional` **TRADEMARK**: `string`
+
+The trademark of the product provided at the domain, e.g. 'Hooli Chat'.
 
 ---
 

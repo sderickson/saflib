@@ -20,7 +20,6 @@ To run this workflow automatically, tell the agent to:
 
 When run, the workflow will:
 
-- Review documentation: [01-overview.md](https://github.com/sderickson/saflib/blob/main/express/docs/01-overview.md)
 - Copy template files and rename placeholders.
   - Upsert **http.ts** from [template](https://github.com/sderickson/saflib/blob/main/express/workflows/templates/http.ts)
   - Upsert **index.ts** from [template](https://github.com/sderickson/saflib/blob/main/express/workflows/templates/index.ts)
@@ -28,7 +27,6 @@ When run, the workflow will:
   - Upsert **tsconfig.json** from [template](https://github.com/sderickson/saflib/blob/main/express/workflows/templates/tsconfig.json)
   - Upsert **vitest.config.js** from [template](https://github.com/sderickson/saflib/blob/main/express/workflows/templates/vitest.config.js)
   - Upsert **index.test.ts** from [template](https://github.com/sderickson/saflib/blob/main/express/workflows/templates/index.test.ts)
-- Update **http.ts** to implement the HTTP server for example-http.
 - Change working directory to services/example
 - Run `npm install`
 - Run `npm test`
@@ -36,18 +34,14 @@ When run, the workflow will:
 ## Help Docs
 
 ```bash
-Usage: saf-workflow kickoff express/init [options] <name> <path>
+Usage: npm exec saf-workflow kickoff express/init <name> <path>
 
-Create a new HTTP service package following @saflib/express structure and
-conventions
+Create an Express HTTP service package
 
 Arguments:
-  name        The name of the HTTP service package to create (e.g., 'user-http'
-              or 'analytics-http')
-  path        The path to the target directory for the HTTP service package
-              (e.g., './services/example')
-
-Options:
-  -h, --help  display help for command
+  name        The name of the HTTP service package to create (e.g., 'user-http' or 'analytics-http')
+              Example: "example-http"
+  path        The path to the target directory for the HTTP service package (e.g., './services/example')
+              Example: "./services/example"
 
 ```

@@ -7,7 +7,7 @@
 ## Usage
 
 ```bash
-npm exec saf-workflow kickoff drizzle/update-schema [options]
+npm exec saf-workflow kickoff drizzle/update-schema <path>
 ```
 
 To run this workflow automatically, tell the agent to:
@@ -20,19 +20,24 @@ To run this workflow automatically, tell the agent to:
 
 When run, the workflow will:
 
-- Review documentation: [02-schema.md](https://github.com/sderickson/saflib/blob/main/drizzle/docs/02-schema.md)
-- Find the right schema file in this folder and update it based on the spec.
+- Make sure the table name is singular.
+- Copy template files and rename placeholders.
+  - Upsert **example.ts** from [template](https://github.com/sderickson/saflib/blob/main/drizzle/workflows/templates/schemas/__group-name__.ts)
+  - Upsert **schema.ts** from [template](https://github.com/sderickson/saflib/blob/main/drizzle/workflows/templates/schema.ts)
+- Update example.ts to add the new table, or modify it.
+- Run `npm run typecheck`
+- Check that everything in example.ts is exported in the root `./schema.ts` file.
 - Run `npm run generate`
-- If any new tables were created, make sure to add the inferred types to `./types.ts` so they're exported in `./index.ts`.
 
 ## Help Docs
 
 ```bash
-Usage: saf-workflow kickoff drizzle/update-schema [options]
+Usage: npm exec saf-workflow kickoff drizzle/update-schema <path>
 
 Update a drizzle/sqlite3 schema.
 
-Options:
-  -h, --help  display help for command
+Arguments:
+  path        The path to the schema file to update
+              Example: "./schemas/example.ts"
 
 ```

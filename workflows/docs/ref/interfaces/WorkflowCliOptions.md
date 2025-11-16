@@ -11,15 +11,3 @@ Options for configuring the workflow CLI
 ### getSourceUrl?
 
 > `optional` **getSourceUrl**: [`GetSourceUrlFunction`](../type-aliases/GetSourceUrlFunction.md)
-
----
-
-### logger?
-
-> `optional` **logger**: [`WorkflowLogger`](WorkflowLogger.md)
-
----
-
-### loggerOptions?
-
-> `optional` **loggerOptions**: [`WorkflowLoggerOptions`](WorkflowLoggerOptions.md)

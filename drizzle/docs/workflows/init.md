@@ -7,7 +7,7 @@
 ## Usage
 
 ```bash
-npm exec saf-workflow kickoff drizzle/init <name>
+npm exec saf-workflow kickoff drizzle/init <name> <path>
 ```
 
 To run this workflow automatically, tell the agent to:
@@ -31,25 +31,25 @@ When run, the workflow will:
   - Upsert **tsconfig.json** from [template](https://github.com/sderickson/saflib/blob/main/drizzle/workflows/templates/tsconfig.json)
   - Upsert **vitest.config.js** from [template](https://github.com/sderickson/saflib/blob/main/drizzle/workflows/templates/vitest.config.js)
   - Upsert **.gitignore** from [template](https://github.com/sderickson/saflib/blob/main/drizzle/workflows/templates/.gitignore)
-- Update **package.json** with the correct package name "@saflib/example-db" and any specific dependencies needed for this database package.
-- Update **schema.ts** to define the database tables and types for the example-db database.
-- Update **types.ts** to export the appropriate types for the example-db database, including any custom types derived from the schema.
-- Update **errors.ts** to define the specific error classes for the example-db database.
-- Update **index.ts** to properly export the database interface, types, and errors for the example-db database package.
+  - Upsert **index.test.ts** from [template](https://github.com/sderickson/saflib/blob/main/drizzle/workflows/templates/index.test.ts)
+- Change working directory to services/example-service/example-db
+- Run `npm install`
+- Run `npm run generate`
+- Run `mkdir -p data`
+- Run `touch data/.gitkeep`
+- Run `npm test`
 
 ## Help Docs
 
 ```bash
-Usage: saf-workflow kickoff drizzle/init [options] <name>
+Usage: npm exec saf-workflow kickoff drizzle/init <name> <path>
 
-Create a new database package following the @saflib/drizzle structure and
-conventions
+Create a Drizzle/SQLite database package
 
 Arguments:
-  name        The name of the database package to create (e.g., 'user-db' or
-              'analytics-db')
-
-Options:
-  -h, --help  display help for command
+  name        The name of the database package to create (e.g., 'user-db' or 'analytics-db')
+              Example: "@example-org/example-db"
+  path        The path to the target directory for the database package (e.g., './services/example-db')
+              Example: "./services/example-service/example-db"
 
 ```

@@ -30,9 +30,9 @@ Options for createVueApp.
 
 ---
 
-### router
+### router?
 
-> **router**: `Router`
+> `optional` **router**: `Router`
 
 ---
 

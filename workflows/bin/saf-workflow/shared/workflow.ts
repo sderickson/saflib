@@ -3,7 +3,7 @@ import type {
   ChecklistItem,
   WorkflowOutput,
   WorkflowDefinition,
-  WorkflowRunMode,
+  WorkflowExecutionMode,
   WorkflowContext,
   AgentConfig,
   VersionControlMode,
@@ -54,7 +54,7 @@ export abstract class AbstractWorkflowRunner {
 interface XStateWorkflowOptions<I extends readonly WorkflowArgument[], C> {
   definition: WorkflowDefinition<I, C>;
   args?: string[];
-  workflowRunMode?: WorkflowRunMode;
+  workflowExecutionMode?: WorkflowExecutionMode;
   agentConfig?: AgentConfig;
   skipTodos?: boolean;
   manageVersionControl?: VersionControlMode;
@@ -72,7 +72,7 @@ interface XStateWorkflowOptions<I extends readonly WorkflowArgument[], C> {
 export class XStateWorkflowRunner extends AbstractWorkflowRunner {
   private machine: AnyStateMachine;
   private input: { [key: string]: string } & {
-    runMode?: WorkflowRunMode;
+    runMode?: WorkflowExecutionMode;
     agentConfig?: AgentConfig;
     manageVersionControl?: VersionControlMode;
     skipTodos?: boolean;
@@ -90,7 +90,7 @@ export class XStateWorkflowRunner extends AbstractWorkflowRunner {
     const expectedInputLength = this.definition.input.length;
     if (expectedInputLength !== inputLength) {
       throw new Error(
-        `Expected ${expectedInputLength} arguments, got ${inputLength}`
+        `Expected ${expectedInputLength} arguments, got ${inputLength}`,
       );
     }
     for (let i = 0; i < expectedInputLength; i++) {
@@ -98,7 +98,7 @@ export class XStateWorkflowRunner extends AbstractWorkflowRunner {
       this.input[arg.name] = options.args?.[i] || "";
     }
 
-    this.input.runMode = options.workflowRunMode;
+    this.input.runMode = options.workflowExecutionMode;
     this.input.agentConfig = options.agentConfig;
     this.input.manageVersionControl = options.manageVersionControl;
     this.input.skipTodos = options.skipTodos;
@@ -154,7 +154,7 @@ export class XStateWorkflowRunner extends AbstractWorkflowRunner {
       console.log("Completed work:");
 
       snapshot.context.checklist.forEach((item) =>
-        console.log(`- ${item.description}`)
+        console.log(`- ${item.description}`),
       );
       console.log("");
     }
@@ -193,7 +193,8 @@ export class XStateWorkflowRunner extends AbstractWorkflowRunner {
       workflowName: this.machine.id,
       workflowSourceUrl: this.definition.sourceUrl,
       args: this.args,
-      snapshotState: this.actor?.getPersistedSnapshot() as unknown as PersistedSnapshot,
+      snapshotState:
+        this.actor?.getPersistedSnapshot() as unknown as PersistedSnapshot,
     };
   };
 

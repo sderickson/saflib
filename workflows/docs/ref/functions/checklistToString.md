@@ -6,7 +6,9 @@
 
 > **checklistToString**(`checklist`, `prefix`): `string`
 
-Convenience function to convert a checklist to a string. Checklist items are in markdown, so provide workflow documentation.
+Convenience function to convert a checklist to a string.
+
+This is mainly useful on the runWorkflow's `output` return value.
 
 ## Parameters
 

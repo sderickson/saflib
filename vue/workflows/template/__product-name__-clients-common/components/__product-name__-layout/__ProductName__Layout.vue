@@ -90,7 +90,7 @@ const links = computed<LinkWithName[]>(() => {
   return props.loggedIn
     ? [
         // Add links here for when logged in
-        // Use 
+        // Use
       ]
     : [
         // Add links here for when not logged in

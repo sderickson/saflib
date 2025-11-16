@@ -50,6 +50,7 @@ export const AddGrpcCallWorkflowDefinition = defineWorkflow<
     return {
       ...parsePackageName(getPackageName(input.cwd), {
         requiredSuffix: "-grpc-client",
+        silentError: true, // so checklists don't error
       }),
       ...parsePath(input.path, {
         requiredSuffix: ".ts",

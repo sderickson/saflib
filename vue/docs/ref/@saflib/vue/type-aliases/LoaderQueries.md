@@ -4,6 +4,6 @@
 
 # Type Alias: LoaderQueries
 
-> **LoaderQueries** = `Record`\<`string`, [`LoaderQuery`](LoaderQuery.md)\>
+> **LoaderQueries** = `Record`\<`string`, [`LoaderQuery`](LoaderQuery.md)\<`any`\>\>
 
 A record of loader queries.

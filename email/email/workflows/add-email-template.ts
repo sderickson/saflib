@@ -75,7 +75,8 @@ export const AddEmailTemplateWorkflowDefinition = defineWorkflow<
 
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "template",
-      promptMessage: `Implement the email template at ${context.copiedFiles!.template}:
+      promptMessage: `Implement the email template.
+      Full path: ${context.copiedFiles!.template}
   
           1. Update the function signature and export name to match your use case
           2. Define the email subject and HTML content

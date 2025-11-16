@@ -11,22 +11,13 @@ This is the main way to hook into the identity service.
 
 ### onPasswordReset()?
 
-> `optional` **onPasswordReset**: (`user`, `resetUrl`) => `Promise`\<`void`\>
+> `optional` **onPasswordReset**: (`payload`) => `Promise`\<`void`\>
 
 #### Parameters
 
-| Parameter            | Type                                                                                                                                                                                                                                |
-| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `user`               | \{ `createdAt`: `Date`; `email`: `string`; `emailVerified`: `null` \| `boolean`; `familyName`: `null` \| `string`; `givenName`: `null` \| `string`; `id`: `number`; `lastLoginAt`: `null` \| `Date`; `name`: `null` \| `string`; \} |
-| `user.createdAt`     | `Date`                                                                                                                                                                                                                              |
-| `user.email`         | `string`                                                                                                                                                                                                                            |
-| `user.emailVerified` | `null` \| `boolean`                                                                                                                                                                                                                 |
-| `user.familyName`    | `null` \| `string`                                                                                                                                                                                                                  |
-| `user.givenName`     | `null` \| `string`                                                                                                                                                                                                                  |
-| `user.id`            | `number`                                                                                                                                                                                                                            |
-| `user.lastLoginAt`   | `null` \| `Date`                                                                                                                                                                                                                    |
-| `user.name`          | `null` \| `string`                                                                                                                                                                                                                  |
-| `resetUrl`           | `string`                                                                                                                                                                                                                            |
+| Parameter | Type                   |
+| --------- | ---------------------- |
+| `payload` | `PasswordResetPayload` |
 
 #### Returns
 
@@ -36,21 +27,13 @@ This is the main way to hook into the identity service.
 
 ### onPasswordUpdated()?
 
-> `optional` **onPasswordUpdated**: (`user`) => `Promise`\<`void`\>
+> `optional` **onPasswordUpdated**: (`payload`) => `Promise`\<`void`\>
 
 #### Parameters
 
-| Parameter            | Type                                                                                                                                                                                                                                |
-| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `user`               | \{ `createdAt`: `Date`; `email`: `string`; `emailVerified`: `null` \| `boolean`; `familyName`: `null` \| `string`; `givenName`: `null` \| `string`; `id`: `number`; `lastLoginAt`: `null` \| `Date`; `name`: `null` \| `string`; \} |
-| `user.createdAt`     | `Date`                                                                                                                                                                                                                              |
-| `user.email`         | `string`                                                                                                                                                                                                                            |
-| `user.emailVerified` | `null` \| `boolean`                                                                                                                                                                                                                 |
-| `user.familyName`    | `null` \| `string`                                                                                                                                                                                                                  |
-| `user.givenName`     | `null` \| `string`                                                                                                                                                                                                                  |
-| `user.id`            | `number`                                                                                                                                                                                                                            |
-| `user.lastLoginAt`   | `null` \| `Date`                                                                                                                                                                                                                    |
-| `user.name`          | `null` \| `string`                                                                                                                                                                                                                  |
+| Parameter | Type                     |
+| --------- | ------------------------ |
+| `payload` | `PasswordUpdatedPayload` |
 
 #### Returns
 
@@ -60,21 +43,29 @@ This is the main way to hook into the identity service.
 
 ### onUserCreated()?
 
-> `optional` **onUserCreated**: (`user`) => `Promise`\<`void`\>
+> `optional` **onUserCreated**: (`payload`) => `Promise`\<`void`\>
 
 #### Parameters
 
-| Parameter            | Type                                                                                                                                                                                                                                |
-| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `user`               | \{ `createdAt`: `Date`; `email`: `string`; `emailVerified`: `null` \| `boolean`; `familyName`: `null` \| `string`; `givenName`: `null` \| `string`; `id`: `number`; `lastLoginAt`: `null` \| `Date`; `name`: `null` \| `string`; \} |
-| `user.createdAt`     | `Date`                                                                                                                                                                                                                              |
-| `user.email`         | `string`                                                                                                                                                                                                                            |
-| `user.emailVerified` | `null` \| `boolean`                                                                                                                                                                                                                 |
-| `user.familyName`    | `null` \| `string`                                                                                                                                                                                                                  |
-| `user.givenName`     | `null` \| `string`                                                                                                                                                                                                                  |
-| `user.id`            | `number`                                                                                                                                                                                                                            |
-| `user.lastLoginAt`   | `null` \| `Date`                                                                                                                                                                                                                    |
-| `user.name`          | `null` \| `string`                                                                                                                                                                                                                  |
+| Parameter | Type                 |
+| --------- | -------------------- |
+| `payload` | `UserCreatedPayload` |
+
+#### Returns
+
+`Promise`\<`void`\>
+
+---
+
+### onUserVerified()?
+
+> `optional` **onUserVerified**: (`payload`) => `Promise`\<`void`\>
+
+#### Parameters
+
+| Parameter | Type                  |
+| --------- | --------------------- |
+| `payload` | `UserVerifiedPayload` |
 
 #### Returns
 
@@ -84,23 +75,13 @@ This is the main way to hook into the identity service.
 
 ### onVerificationTokenCreated()?
 
-> `optional` **onVerificationTokenCreated**: (`user`, `verificationUrl`, `isResend`) => `Promise`\<`void`\>
+> `optional` **onVerificationTokenCreated**: (`payload`) => `Promise`\<`void`\>
 
 #### Parameters
 
-| Parameter            | Type                                                                                                                                                                                                                                |
-| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `user`               | \{ `createdAt`: `Date`; `email`: `string`; `emailVerified`: `null` \| `boolean`; `familyName`: `null` \| `string`; `givenName`: `null` \| `string`; `id`: `number`; `lastLoginAt`: `null` \| `Date`; `name`: `null` \| `string`; \} |
-| `user.createdAt`     | `Date`                                                                                                                                                                                                                              |
-| `user.email`         | `string`                                                                                                                                                                                                                            |
-| `user.emailVerified` | `null` \| `boolean`                                                                                                                                                                                                                 |
-| `user.familyName`    | `null` \| `string`                                                                                                                                                                                                                  |
-| `user.givenName`     | `null` \| `string`                                                                                                                                                                                                                  |
-| `user.id`            | `number`                                                                                                                                                                                                                            |
-| `user.lastLoginAt`   | `null` \| `Date`                                                                                                                                                                                                                    |
-| `user.name`          | `null` \| `string`                                                                                                                                                                                                                  |
-| `verificationUrl`    | `string`                                                                                                                                                                                                                            |
-| `isResend`           | `boolean`                                                                                                                                                                                                                           |
+| Parameter | Type                              |
+| --------- | --------------------------------- |
+| `payload` | `VerificationTokenCreatedPayload` |
 
 #### Returns
 

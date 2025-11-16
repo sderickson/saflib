@@ -13,7 +13,9 @@ export interface WorkflowLogger {
 }
 
 /**
- * Function type for getting source URLs from absolute file paths
+ * Function type for getting source URLs from absolute file paths.
+ *
+ * Used when constructing your own CLI so that checklists can link to source files.
  */
 export type GetSourceUrlFunction = (absolutePath: string) => string;
 

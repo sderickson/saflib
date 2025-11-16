@@ -4,7 +4,7 @@
 
 # Function: useClientCommon()
 
-> **useClientCommon**(`componentName`): [`ProductEventCommon`](../type-aliases/ProductEventCommon.md)
+> **useClientCommon**(`componentName`): `Omit`\<[`ProductEventCommon`](../type-aliases/ProductEventCommon.md), `"event"` \| `"context"`\>
 
 Get the common context for a product event.
 
@@ -24,4 +24,4 @@ emitProductEvent({ ...useClientCommon("MyComponent"), event: "my-event" });
 
 ## Returns
 
-[`ProductEventCommon`](../type-aliases/ProductEventCommon.md)
+`Omit`\<[`ProductEventCommon`](../type-aliases/ProductEventCommon.md), `"event"` \| `"context"`\>

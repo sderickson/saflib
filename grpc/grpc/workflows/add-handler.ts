@@ -21,8 +21,8 @@ const input = [
   {
     name: "path",
     description:
-      "The path to the gRPC service package (e.g., 'handlers/secrets/get-secret.ts')",
-    exampleValue: "handlers/secrets/get-secret.ts",
+      "The path to the gRPC service package (e.g., './handlers/secrets/get-secret.ts')",
+    exampleValue: "./handlers/secrets/get-secret.ts",
   },
 ] as const;
 
@@ -54,6 +54,7 @@ export const AddGrpcServerHandlerWorkflowDefinition = defineWorkflow<
       }),
       ...parsePackageName(getPackageName(input.cwd), {
         requiredSuffix: "-grpc-server",
+        silentError: true, // so checklists don't error
       }),
     };
   },

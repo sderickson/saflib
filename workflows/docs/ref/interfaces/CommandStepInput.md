@@ -4,7 +4,9 @@
 
 # Interface: CommandStepInput
 
-Input for the CommandStepMachine. These arguments are passed to Node's [`spawn`](https://nodejs.org/api/child_process.html#child_processspawncommand-args-options) function.
+Input for the CommandStepMachine.
+
+These arguments are passed to Node's [`spawn`](https://nodejs.org/api/child_process.html#child_processspawncommand-args-options) function.
 
 ## Properties
 
@@ -24,6 +26,14 @@ The command to run, such as `npm` or `chmod`.
 
 ---
 
-### skipIf?
+### ignoreError?
 
-> `optional` **skipIf**: [`CommandStepSkipIf`](../type-aliases/CommandStepSkipIf.md)
+> `optional` **ignoreError**: `boolean`
+
+---
+
+### promptOnError?
+
+> `optional` **promptOnError**: `string`
+
+The environment variables to set for the command.

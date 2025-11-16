@@ -45,9 +45,10 @@ export const saveWorkflow = (workflow: AbstractWorkflowRunner) => {
     }
   }
   if (anyErrors) {
-    
   }
-  const planStatusFilePath = anyErrors ? getErrorStatusFilePath() : getPlanStatusFilePath();
+  const planStatusFilePath = anyErrors
+    ? getErrorStatusFilePath()
+    : getPlanStatusFilePath();
   writeFileSync(
     planStatusFilePath,
     JSON.stringify(workflow.dehydrate(), null, 2),
@@ -84,7 +85,7 @@ export const loadWorkflow = async (workflows: WorkflowDefinition[]) => {
   const instance = new XStateWorkflowRunner({
     definition: workflow,
     args: blob.args,
-    workflowRunMode: "print",
+    workflowExecutionMode: "print",
   });
   instance.hydrate(blob, {
     onSnapshot: () => {

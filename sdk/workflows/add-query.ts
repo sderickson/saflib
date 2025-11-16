@@ -47,6 +47,7 @@ export const AddSdkQueryWorkflowDefinition = defineWorkflow<
     return {
       ...parsePackageName(getPackageName(input.cwd), {
         requiredSuffix: "-sdk",
+        silentError: true, // so checklists don't error
       }),
       ...parsePath(input.path, {
         requiredSuffix: ".ts",
@@ -62,15 +63,15 @@ export const AddSdkQueryWorkflowDefinition = defineWorkflow<
     indexFakes: path.join(sourceDir, "requests/__group-name__/index.fakes.ts"),
     templateFile: path.join(
       sourceDir,
-      "requests/__group-name__/__target-name__.ts"
+      "requests/__group-name__/__target-name__.ts",
     ),
     templateFileFake: path.join(
       sourceDir,
-      "requests/__group-name__/__target-name__.fake.ts"
+      "requests/__group-name__/__target-name__.fake.ts",
     ),
     templateFileTest: path.join(
       sourceDir,
-      "requests/__group-name__/__target-name__.test.ts"
+      "requests/__group-name__/__target-name__.test.ts",
     ),
     rootIndex: path.join(sourceDir, "index.ts"),
     rootFakes: path.join(sourceDir, "fakes.ts"),

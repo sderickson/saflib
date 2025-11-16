@@ -10,26 +10,6 @@ import { contextFromInput } from "../../utils.ts";
 import { handlePrompt } from "../../prompt.ts";
 
 /**
- * A simple test format on changes made, for checks beyond just "todo" string existence.
- */
-export interface UpdateStepTest {
-  /**
-   * What to print if the test fails.
-   */
-  description: string;
-
-  /**
-   * The name of the test.
-   */
-  name: string;
-
-  /**
-   * An arbitrary test, given the contents of the file that was updated. Fails the test if it returns false.
-   */
-  test: (content: string) => boolean;
-}
-
-/**
  * Input for the UpdateStepMachine.
  */
 export interface UpdateStepInput {
@@ -54,6 +34,9 @@ export interface UpdateStepContext extends WorkflowContext {
   hasTodos?: boolean;
 }
 
+/**
+ * @internal
+ */
 export interface UpdateStepOutput extends WorkflowOutput {
   filePath: string;
 }
@@ -123,6 +106,17 @@ export const UpdateStepMachine = setup({
       };
     }),
   },
+  guards: {
+    isRunMode: ({ context }) => {
+      return context.runMode === "run";
+    },
+    shouldContinue: ({ context }) => {
+      return !!context.shouldContinue;
+    },
+    hasTodos: ({ context }) => {
+      return !!context.hasTodos;
+    },
+  },
 }).createMachine({
   id: "update-step",
   initial: "update",
@@ -172,9 +166,7 @@ export const UpdateStepMachine = setup({
       on: {
         continue: [
           {
-            guard: ({ context }) => {
-              return context.runMode === "run";
-            },
+            guard: "isRunMode",
             target: "update",
           },
           {
@@ -187,16 +179,12 @@ export const UpdateStepMachine = setup({
       entry: raise({ type: "maybeContinue" }),
       on: {
         maybeContinue: {
-          guard: ({ context }) => {
-            return !!context.shouldContinue;
-          },
+          guard: "shouldContinue",
           target: "done",
         },
         continue: [
           {
-            guard: ({ context }) => {
-              return !!context.hasTodos;
-            },
+            guard: "hasTodos",
             target: "update",
           },
           {
@@ -205,10 +193,10 @@ export const UpdateStepMachine = setup({
         ],
         prompt: {
           actions: [
-            ({context}) => {
+            ({ context }) => {
               console.log(context.promptMessage);
-            }
-          ]
+            },
+          ],
         },
       },
     },

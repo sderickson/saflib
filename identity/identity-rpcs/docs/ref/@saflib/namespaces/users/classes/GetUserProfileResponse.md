@@ -337,7 +337,7 @@
 
 ###### profile.user_id?
 
-> `optional` **user_id**: `number`
+> `optional` **user_id**: `string`
 
 #### Overrides
 
@@ -741,8 +741,8 @@
 
 | Parameter                          | Type                                                                                                                                                                                                                                   |
 | ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `data`                             | \{ `profile?`: \{ `created_at?`: \{ `nanos?`: `number`; `seconds?`: `number`; \}; `email?`: `string`; `email_verified?`: `boolean`; `family_name?`: `string`; `given_name?`: `string`; `name?`: `string`; `user_id?`: `number`; \}; \} |
-| `data.profile?`                    | \{ `created_at?`: \{ `nanos?`: `number`; `seconds?`: `number`; \}; `email?`: `string`; `email_verified?`: `boolean`; `family_name?`: `string`; `given_name?`: `string`; `name?`: `string`; `user_id?`: `number`; \}                    |
+| `data`                             | \{ `profile?`: \{ `created_at?`: \{ `nanos?`: `number`; `seconds?`: `number`; \}; `email?`: `string`; `email_verified?`: `boolean`; `family_name?`: `string`; `given_name?`: `string`; `name?`: `string`; `user_id?`: `string`; \}; \} |
+| `data.profile?`                    | \{ `created_at?`: \{ `nanos?`: `number`; `seconds?`: `number`; \}; `email?`: `string`; `email_verified?`: `boolean`; `family_name?`: `string`; `given_name?`: `string`; `name?`: `string`; `user_id?`: `string`; \}                    |
 | `data.profile.created_at?`         | \{ `nanos?`: `number`; `seconds?`: `number`; \}                                                                                                                                                                                        |
 | `data.profile.created_at.nanos?`   | `number`                                                                                                                                                                                                                               |
 | `data.profile.created_at.seconds?` | `number`                                                                                                                                                                                                                               |
@@ -751,7 +751,7 @@
 | `data.profile.family_name?`        | `string`                                                                                                                                                                                                                               |
 | `data.profile.given_name?`         | `string`                                                                                                                                                                                                                               |
 | `data.profile.name?`               | `string`                                                                                                                                                                                                                               |
-| `data.profile.user_id?`            | `number`                                                                                                                                                                                                                               |
+| `data.profile.user_id?`            | `string`                                                                                                                                                                                                                               |
 
 #### Returns
 

@@ -1,5 +1,11 @@
 # Overview
 
+---
+
+***NOTE: I'm filling out more extensive workflow documentation [here](https://workflows.saf-demo.online/). This README is still accurate, but check the link for more information.***
+
+---
+
 `saflib-workflows` is a library for defining and running developer workflows, particularly with coding tools such as Cursor, Claude Code, or any similar agentic IDE or CLI-based coding tool. Workflows are written in TypeScript.
 
 The purpose of `saflib-workflows` is to make code generation more reliable for routine work. You can define a series of steps which the agent will follow, with checks and scripts along the way to make sure the work is done according to what is correct for your project or stack. And the workflow itself can be iterated on and optimized over time.
@@ -26,13 +32,15 @@ The CLI tool will run through the steps until a step prints out a prompt. Then i
 
 See a demo [here](https://www.youtube.com/watch?v=p6jfG5JH7_8).
 
+The command line interface can also dry run a workflow, run a workflow without an agent to test the scripts and commands, and can invoke Cursor's headless CLI (support for other agent tools is planned).
+
 ### Setup
 
 You will need a dedicated script which imports the workflow definitions from other packages or locations in your repository, and passes them to the [provided CLI function](https://docs.saf-demo.online/workflows/docs/ref/functions/runWorkflowCli.html). See for example this repository's [saflib-workflows-cli package](https://github.com/sderickson/saflib/tree/main/workflows-cli).
 
 To bootstrap workflows:
 
-1. Run `npm install saflib-workflows` or similar.
+1. Run `npm install saflib-workflows`.
 2. Add `"bin": { "saf-workflow": "./workflow-cli.ts" }` to your `package.json`.
 3. Add the `workflow-cli.ts` file:
 
@@ -55,6 +63,12 @@ Example setup in [this repo](https://github.com/sderickson/test-workflows-packag
 If you'd like to try workflows I've written for [my stack](https://docs.saf-demo.online/), see [saf-template](https://github.com/sderickson/saf-template).
 
 ## Adding Workflows
+
+--- 
+
+***NOTE: the workflow for creating other workflows is a work in progress. It's recommended you instead write your own based on examples, see below for more information.***
+
+---
 
 Once the CLI is set up, you can tell your preferred agent to navigate to the package you want to add a workflow to (assuming you're using npm [workspaces](https://docs.npmjs.com/cli/v11/using-npm/workspaces) or some other monorepo approach) and run `npm exec saf-workflow kickoff workflows/add-workflow <name>`. The workflow will create the workflow and integrate it into the CLI file you set up earlier.
 
@@ -80,7 +94,7 @@ Ideally, these documents should live in the same package or module as the workfl
 
 These represent the preferred way to structure whatever thing is being created or updated as part of the workflow. You're much more likely to have a reliable result if the agent (or developer!) doesn't have to start from scratch.
 
-The "copy" step in workflows will replace all instances of the string `template-file` with the provided name (usually passed from the CLI), as well as other variants of the string: templateFile, template_file, and TemplateFile.
+The "copy" step in workflows can take a string-replace function to run on file paths and contents. The workflow library provides utility functions which you may use, or create your own custom templating system.
 
 ## Example Workflows
 

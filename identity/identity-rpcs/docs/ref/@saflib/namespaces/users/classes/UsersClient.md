@@ -32,7 +32,7 @@
 
 #### Overrides
 
-`grpc_1.makeGenericClientConstructor( UnimplementedUsersService.definition, "Users", {}, ).constructor`
+`grpc_1.makeGenericClientConstructor(UnimplementedUsersService.definition, "Users", {}).constructor`
 
 ## Properties
 
@@ -48,7 +48,7 @@
 
 #### Inherited from
 
-`grpc_1.makeGenericClientConstructor( UnimplementedUsersService.definition, "Users", {}, ).service`
+`grpc_1.makeGenericClientConstructor(UnimplementedUsersService.definition, "Users", {}).service`
 
 ---
 
@@ -58,7 +58,7 @@
 
 #### Inherited from
 
-`grpc_1.makeGenericClientConstructor( UnimplementedUsersService.definition, "Users", {}, ).serviceName`
+`grpc_1.makeGenericClientConstructor(UnimplementedUsersService.definition, "Users", {}).serviceName`
 
 ## Methods
 
@@ -72,7 +72,7 @@
 
 #### Inherited from
 
-`grpc_1.makeGenericClientConstructor( UnimplementedUsersService.definition, "Users", {}, ).close`
+`grpc_1.makeGenericClientConstructor(UnimplementedUsersService.definition, "Users", {}).close`
 
 ---
 
@@ -86,7 +86,7 @@
 
 #### Inherited from
 
-`grpc_1.makeGenericClientConstructor( UnimplementedUsersService.definition, "Users", {}, ).getChannel`
+`grpc_1.makeGenericClientConstructor(UnimplementedUsersService.definition, "Users", {}).getChannel`
 
 ---
 
@@ -119,7 +119,7 @@
 
 ##### Inherited from
 
-`grpc_1.makeGenericClientConstructor( UnimplementedUsersService.definition, "Users", {}, ).makeBidiStreamRequest`
+`grpc_1.makeGenericClientConstructor(UnimplementedUsersService.definition, "Users", {}).makeBidiStreamRequest`
 
 #### Call Signature
 
@@ -147,7 +147,7 @@
 
 ##### Inherited from
 
-`grpc_1.makeGenericClientConstructor( UnimplementedUsersService.definition, "Users", {}, ).makeBidiStreamRequest`
+`grpc_1.makeGenericClientConstructor(UnimplementedUsersService.definition, "Users", {}).makeBidiStreamRequest`
 
 ---
 
@@ -181,7 +181,7 @@
 
 ##### Inherited from
 
-`grpc_1.makeGenericClientConstructor( UnimplementedUsersService.definition, "Users", {}, ).makeClientStreamRequest`
+`grpc_1.makeGenericClientConstructor(UnimplementedUsersService.definition, "Users", {}).makeClientStreamRequest`
 
 #### Call Signature
 
@@ -210,7 +210,7 @@
 
 ##### Inherited from
 
-`grpc_1.makeGenericClientConstructor( UnimplementedUsersService.definition, "Users", {}, ).makeClientStreamRequest`
+`grpc_1.makeGenericClientConstructor(UnimplementedUsersService.definition, "Users", {}).makeClientStreamRequest`
 
 #### Call Signature
 
@@ -239,7 +239,7 @@
 
 ##### Inherited from
 
-`grpc_1.makeGenericClientConstructor( UnimplementedUsersService.definition, "Users", {}, ).makeClientStreamRequest`
+`grpc_1.makeGenericClientConstructor(UnimplementedUsersService.definition, "Users", {}).makeClientStreamRequest`
 
 #### Call Signature
 
@@ -267,7 +267,7 @@
 
 ##### Inherited from
 
-`grpc_1.makeGenericClientConstructor( UnimplementedUsersService.definition, "Users", {}, ).makeClientStreamRequest`
+`grpc_1.makeGenericClientConstructor(UnimplementedUsersService.definition, "Users", {}).makeClientStreamRequest`
 
 ---
 
@@ -301,7 +301,7 @@
 
 ##### Inherited from
 
-`grpc_1.makeGenericClientConstructor( UnimplementedUsersService.definition, "Users", {}, ).makeServerStreamRequest`
+`grpc_1.makeGenericClientConstructor(UnimplementedUsersService.definition, "Users", {}).makeServerStreamRequest`
 
 #### Call Signature
 
@@ -330,7 +330,7 @@
 
 ##### Inherited from
 
-`grpc_1.makeGenericClientConstructor( UnimplementedUsersService.definition, "Users", {}, ).makeServerStreamRequest`
+`grpc_1.makeGenericClientConstructor(UnimplementedUsersService.definition, "Users", {}).makeServerStreamRequest`
 
 ---
 
@@ -365,7 +365,7 @@
 
 ##### Inherited from
 
-`grpc_1.makeGenericClientConstructor( UnimplementedUsersService.definition, "Users", {}, ).makeUnaryRequest`
+`grpc_1.makeGenericClientConstructor(UnimplementedUsersService.definition, "Users", {}).makeUnaryRequest`
 
 #### Call Signature
 
@@ -395,7 +395,7 @@
 
 ##### Inherited from
 
-`grpc_1.makeGenericClientConstructor( UnimplementedUsersService.definition, "Users", {}, ).makeUnaryRequest`
+`grpc_1.makeGenericClientConstructor(UnimplementedUsersService.definition, "Users", {}).makeUnaryRequest`
 
 #### Call Signature
 
@@ -425,7 +425,7 @@
 
 ##### Inherited from
 
-`grpc_1.makeGenericClientConstructor( UnimplementedUsersService.definition, "Users", {}, ).makeUnaryRequest`
+`grpc_1.makeGenericClientConstructor(UnimplementedUsersService.definition, "Users", {}).makeUnaryRequest`
 
 #### Call Signature
 
@@ -454,7 +454,7 @@
 
 ##### Inherited from
 
-`grpc_1.makeGenericClientConstructor( UnimplementedUsersService.definition, "Users", {}, ).makeUnaryRequest`
+`grpc_1.makeGenericClientConstructor(UnimplementedUsersService.definition, "Users", {}).makeUnaryRequest`
 
 ---
 
@@ -475,4 +475,4 @@
 
 #### Inherited from
 
-`grpc_1.makeGenericClientConstructor( UnimplementedUsersService.definition, "Users", {}, ).waitForReady`
+`grpc_1.makeGenericClientConstructor(UnimplementedUsersService.definition, "Users", {}).waitForReady`

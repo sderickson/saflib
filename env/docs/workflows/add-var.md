@@ -25,21 +25,17 @@ When run, the workflow will:
 - Add the environment variable 'EXAMPLE_ENV_VAR' to the env.schema.json file.
 - Run `npm install @saflib/env`
 - Run `npm exec saf-env generate`
-- Run `npm exec saf-env generate-all`
 
 ## Help Docs
 
 ```bash
-Usage: saf-workflow kickoff env/add-var [options] <name>
+Usage: npm exec saf-workflow kickoff env/add-var <name>
 
 Add a new environment variable to the schema and generate the corresponding
-TypeScript types
+   TypeScript types
 
 Arguments:
-  name        The name of the environment variable (in all upper case, e.g.,
-              'API_KEY' or 'DATABASE_URL')
-
-Options:
-  -h, --help  display help for command
+  name        The name of the environment variable (in all upper case, e.g., 'API_KEY' or 'DATABASE_URL')
+              Example: "EXAMPLE_ENV_VAR"
 
 ```

@@ -16,15 +16,15 @@ import path from "node:path";
 
 const sourceDir = path.join(
   import.meta.dirname,
-  "proto-templates/protos/__group_name__/"
+  "proto-templates/protos/__group_name__/",
 );
 
 const input = [
   {
     name: "path",
     description:
-      "The path to the proto file to be created (e.g., 'secrets/list.proto')",
-    exampleValue: "./secrets/list.proto",
+      "The path to the proto file to be created (e.g., './protos/secrets/list.proto')",
+    exampleValue: "./protos/secrets/list.proto",
   },
 ] as const;
 

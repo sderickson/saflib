@@ -18,7 +18,7 @@ import fs, { readdirSync, statSync } from "node:fs";
 export type { CopyStepInput };
 
 /**
- * Copies all `templateFiles` to the given directory, renaming all instances of `"template-file"` to the given `name`. Also replaces other variants of the string: camelCase, snake_case, and PascalCase.
+ * Copies all `templateFiles` to the given directory, performing string replacements for directories, file names, and file contents.
  */
 export const CopyStepMachine = setup({
   types: {
@@ -79,15 +79,18 @@ export const CopyStepMachine = setup({
       const isDirectory = stats.isDirectory();
       if (isDirectory) {
         // walk the directory, add all files to templateFiles
-        const files = readdirSync(sourcePath, { recursive: true, withFileTypes: true });
+        const files = readdirSync(sourcePath, {
+          recursive: true,
+          withFileTypes: true,
+        });
         let i = 0;
         for (const file of files) {
           if (file.isFile()) {
-            const fullPath = path.join(file.parentPath, file.name)
+            const fullPath = path.join(file.parentPath, file.name);
             if (fullPath.includes("/node_modules/")) {
               continue;
             }
-            templateFiles[`${templateFileKey}-${i++}`] = fullPath;            
+            templateFiles[`${templateFileKey}-${i++}`] = fullPath;
           }
         }
       } else {

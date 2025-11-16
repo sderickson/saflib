@@ -17,7 +17,7 @@ const input = [
   },
 ] as const;
 
-interface SpecProjectWorkflowContext {
+export interface SpecProjectWorkflowContext {
   name: string;
   targetDir: string;
   safDocOutput: string;

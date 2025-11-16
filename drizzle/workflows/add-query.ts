@@ -32,7 +32,7 @@ export const AddDrizzleQueryWorkflowDefinition = defineWorkflow<
   typeof input,
   AddDrizzleQueryWorkflowContext
 >({
-  id: "drizzle/add-drizzle-query",
+  id: "drizzle/add-query",
 
   description:
     "Add a new query to a database built off the drizzle-sqlite3 package.",
@@ -48,6 +48,7 @@ export const AddDrizzleQueryWorkflowDefinition = defineWorkflow<
     return {
       ...parsePackageName(getPackageName(input.cwd), {
         requiredSuffix: "-db",
+        silentError: true, // so checklists don't error
       }),
       ...parsePath(input.path, {
         requiredPrefix: "./queries/",
@@ -62,7 +63,7 @@ export const AddDrizzleQueryWorkflowDefinition = defineWorkflow<
     query: path.join(sourceDir, "queries/__group-name__/__target-name__.ts"),
     test: path.join(
       sourceDir,
-      "queries/__group-name__/__target-name__.test.ts"
+      "queries/__group-name__/__target-name__.test.ts",
     ),
     groupIndex: path.join(sourceDir, "queries/__group-name__/index.ts"),
     rootIndex: path.join(sourceDir, "index.ts"),

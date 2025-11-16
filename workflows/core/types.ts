@@ -13,16 +13,31 @@ import {
  * A step in a workflow with an actor and its corresponding input.
  */
 export type WorkflowStep<C, M extends AnyStateMachine> = {
+  /**
+   * The state machine for the step. Either a core step or a workflow definition which has been converted to a state machine with `makeWorkflowMachine`.
+   */
   machine: M;
+
+  /**
+   * The input for the step, based on the context for the invoking workflow.
+   */
   input: (arg: { context: C & WorkflowContext }) => InputFrom<M>;
+
+  /**
+   * A function that validates the step after it has been executed. If it returns a string, that string is prompted to the agent and the workflow is kept from moving forward until the validate function returns undefined.
+   */
   validate: (arg: {
     context: C & WorkflowContext;
   }) => Promise<string | undefined>;
+
+  /**
+   * A function that determines if the step should be skipped.
+   */
   skipIf: (arg: { context: C & WorkflowContext }) => boolean;
 };
 
 /**
- * An interface that includes the inputs, files, steps, and everything else that makes up a workflow. Can be used to create an XState machine which can be used in other workflows, and an XStateWorkflowRunner which will execute just the workflow itself.
+ * An interface that includes everything that makes up a workflow.
  */
 export interface WorkflowDefinition<
   I extends readonly WorkflowArgument[] = any,
@@ -119,8 +134,14 @@ export interface ActionParam<C, E extends AnyEventObject> {
   event: E;
 }
 
+/**
+ * The agent to use for the workflow.
+ */
 export type AgentCLI = "cursor-agent" | "mock-agent";
 
+/**
+ * When in "run" mode, specify which agent to use.
+ */
 export interface AgentConfig {
   cli: AgentCLI;
   sessionId?: string;
@@ -134,7 +155,7 @@ export type VersionControlMode = "git";
 export interface WorkflowInput {
   agentConfig?: AgentConfig;
 
-  runMode?: WorkflowRunMode;
+  runMode?: WorkflowExecutionMode;
 
   systemPrompt?: string;
 
@@ -153,6 +174,7 @@ export interface WorkflowInput {
 
 /**
  * Outputs every workflow machine returns.
+ * @internal
  */
 export interface WorkflowOutput {
   /**
@@ -169,10 +191,24 @@ export interface WorkflowOutput {
   agentConfig?: AgentConfig;
 }
 
-export type WorkflowRunMode = "dry" | "print" | "script" | "run";
+/**
+ * The mode to run the workflow in.
+ *
+ * ## Dry
+ * Runs the workflow as much as possible without making any file changes, running any commands, or prompting. Useful for checking that it basically works, and to generate a checklist.
+ * ## Script
+ * Skip prompts and TODO checks, just run commands and copy template files. Useful for debugging those, it's recommended you run this at least once before running in "print" or "run" modes, to make sure the agent doesn't get tripped up by the automations the workflow itself performs.
+ * ## Print
+ * Print out logs and prompts, halt the machine at prompts. The original execution mode which integrates well with any agent, but lacks guarantees.
+ * ## Run
+ * Invert control from "print": the tool invokes the agent. If the workflow tool exits successfully, the workflow has been completed successfully.
+ */
+export type WorkflowExecutionMode = "dry" | "script" | "print" | "run";
 
 /**
  * Context shared across all workflow machines.
+ *
+ * @internal
  */
 export interface WorkflowContext {
   agentConfig?: AgentConfig;
@@ -197,7 +233,7 @@ export interface WorkflowContext {
    * - "script": skip prompts and checks, just run command and copy steps. Useful for debugging templates and scripts.
    * - "run": runs the workflow at the top level, so it invokes agents, rather than agents invoking the tool. agentConfig is included in this mode.
    */
-  runMode: WorkflowRunMode;
+  runMode: WorkflowExecutionMode;
 
   templateFiles?: Record<string, string>;
 
