@@ -106,6 +106,17 @@ export const UpdateStepMachine = setup({
       };
     }),
   },
+  guards: {
+    isRunMode: ({ context }) => {
+      return context.runMode === "run";
+    },
+    shouldContinue: ({ context }) => {
+      return !!context.shouldContinue;
+    },
+    hasTodos: ({ context }) => {
+      return !!context.hasTodos;
+    },
+  },
 }).createMachine({
   id: "update-step",
   initial: "update",
@@ -155,9 +166,7 @@ export const UpdateStepMachine = setup({
       on: {
         continue: [
           {
-            guard: ({ context }) => {
-              return context.runMode === "run";
-            },
+            guard: "isRunMode",
             target: "update",
           },
           {
@@ -170,16 +179,12 @@ export const UpdateStepMachine = setup({
       entry: raise({ type: "maybeContinue" }),
       on: {
         maybeContinue: {
-          guard: ({ context }) => {
-            return !!context.shouldContinue;
-          },
+          guard: "shouldContinue",
           target: "done",
         },
         continue: [
           {
-            guard: ({ context }) => {
-              return !!context.hasTodos;
-            },
+            guard: "hasTodos",
             target: "update",
           },
           {

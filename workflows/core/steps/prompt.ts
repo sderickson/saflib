@@ -79,6 +79,12 @@ export const PromptStepMachine = setup({
       }
       return false;
     },
+    isRunMode: ({ context }) => {
+      return context.runMode === "run";
+    },
+    shouldContinue: ({ context }) => {
+      return !!context.shouldContinue;
+    },
   },
 }).createMachine({
   id: "prompt-step",
@@ -113,10 +119,8 @@ export const PromptStepMachine = setup({
       on: {
         continue: [
           {
+            guard: "isRunMode",
             target: "running",
-            guard: ({ context }) => {
-              return context.runMode === "run";
-            },
           },
           {
             target: "done",
@@ -128,9 +132,7 @@ export const PromptStepMachine = setup({
       entry: raise({ type: "maybeContinue" }),
       on: {
         maybeContinue: {
-          guard: ({ context }) => {
-            return !!context.shouldContinue;
-          },
+          guard: "shouldContinue",
           target: "done",
         },
         continue: {
