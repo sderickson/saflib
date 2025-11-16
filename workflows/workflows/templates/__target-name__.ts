@@ -127,3 +127,5 @@ export const __WorkflowNamespace____TargetName__WorkflowDefinition =
       })),
     ],
   });
+
+export default __WorkflowNamespace____TargetName__WorkflowDefinition;
