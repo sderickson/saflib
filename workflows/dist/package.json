@@ -6,7 +6,7 @@
     "LICENSE"
   ],
   "description": "Workflow engine and utilities for SAF",
-  "version": "0.1.2",
+  "version": "0.2.1",
   "type": "module",
   "homepage": "https://docs.saf-demo.online/workflows/docs/README.html",
   "author": "Scott Erickson <sderickson@gmail.com>",
@@ -39,6 +39,7 @@
   },
   "dependencies": {
     "commander": "^14.0.0",
+    "minimatch": "^10.1.1",
     "xstate": "^5.19.3"
   }
 }
