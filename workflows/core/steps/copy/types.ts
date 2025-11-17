@@ -25,7 +25,7 @@ export interface CopyStepInput {
  */
 export interface CopyStepContext extends WorkflowContext {
   filesToCopy: string[];
-  name: string;
+  name?: string;
   targetDir: string;
   copiedFiles: Record<string, string>;
   lineReplace?: (line: string) => string;
