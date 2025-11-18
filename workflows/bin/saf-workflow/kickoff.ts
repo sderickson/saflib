@@ -92,7 +92,7 @@ export const addKickoffCommand = (commandOptions: WorkflowCommandOptions) => {
           process.exit(1);
         }
 
-        log.info(`Workflow sucessfully loaded`);
+        log.info(`Workflow successfully loaded`);
         log.info(`- Workflow:     ${workflowDefinition.id}`);
         log.info(`- Description:  ${workflowDefinition.description}`);
         if (workflowDefinition.input.length > 0) {
