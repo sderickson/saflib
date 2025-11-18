@@ -88,7 +88,7 @@ export const checklistToString = (
 export function contextFromInput(input: WorkflowInput): WorkflowContext {
   return {
     checklist: [],
-    systemPrompt: input.systemPrompt,
+    prompt: input.prompt,
     runMode: input.runMode || "print",
     templateFiles: input.templateFiles,
     copiedFiles: input.copiedFiles,

@@ -157,7 +157,7 @@ export interface WorkflowInput {
 
   runMode?: WorkflowExecutionMode;
 
-  systemPrompt?: string;
+  prompt?: string;
 
   templateFiles?: Record<string, string>;
 
@@ -224,7 +224,7 @@ export interface WorkflowContext {
    * Optional prompt to be printed above every step prompt. Use to remind the
    * agent what the workflow is for, especially if it's a long one.
    */
-  systemPrompt?: string;
+  prompt?: string;
 
   /**
    * The mode to run the workflow in.
