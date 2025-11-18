@@ -25,7 +25,7 @@ describe("updateTemplateFileFactory", () => {
     const actor = createActor(UpdateStepMachine, {
       input: {
         fileId: "test-file.txt",
-        promptMessage: "Update the test file",
+        prompt: "Update the test file",
         copiedFiles: {
           "test-file.txt": testFilePath,
         },
@@ -48,7 +48,7 @@ describe("updateTemplateFileFactory", () => {
     const actor = createActor(UpdateStepMachine, {
       input: {
         fileId: "test-file.txt",
-        promptMessage: "Update the test file",
+        prompt: "Update the test file",
         copiedFiles: {
           "test-file.txt": testFilePath,
         },

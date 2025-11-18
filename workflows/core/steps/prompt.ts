@@ -14,15 +14,21 @@ import { handlePrompt } from "../prompt.ts";
 export interface PromptStepInput {
   /**
    * The text to be shown to the agent or user. The machine will then stop until the workflow is continued.
+   * @deprecated Use `prompt` instead.
    */
-  promptText: string;
+  promptText?: string;
+
+  /**
+   * The text to be shown to the agent or user. The machine will then stop until the workflow is continued.
+   */
+  prompt?: string;
 }
 
 /**
  * @internal
  */
 export interface PromptStepContext extends WorkflowContext {
-  promptText: string;
+  prompt: string;
   shouldContinue?: boolean;
 }
 
@@ -62,7 +68,7 @@ export const PromptStepMachine = setup({
         }
         const { sessionId, shouldContinue } = await handlePrompt({
           context: input,
-          msg: input.promptText,
+          msg: input.prompt,
         });
         const agentConfig = input.agentConfig;
         return {
@@ -90,7 +96,7 @@ export const PromptStepMachine = setup({
   id: "prompt-step",
   context: ({ input }) => ({
     ...contextFromInput(input),
-    promptText: input.promptText,
+    prompt: input.promptText ?? input.prompt ?? "",
   }),
   initial: "running",
   states: {
@@ -141,7 +147,7 @@ export const PromptStepMachine = setup({
         prompt: {
           actions: [
             ({ context }) => {
-              console.log(context.promptText);
+              console.log(context.prompt);
             },
           ],
         },
@@ -157,7 +163,7 @@ export const PromptStepMachine = setup({
         ...context.agentConfig,
       },
       checklist: {
-        description: context.promptText.split("\n")[0],
+        description: context.prompt.split("\n")[0],
       },
     };
   },
