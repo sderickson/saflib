@@ -35,7 +35,7 @@ export interface UpdateStepInput {
  */
 export interface UpdateStepContext extends WorkflowContext {
   filePath: string;
-  prompt: string | ((context: WorkflowContext) => string);
+  prompt: string;
   shouldContinue?: boolean;
   hasTodos?: boolean;
 }
@@ -69,10 +69,7 @@ export const UpdateStepMachine = setup({
 
       const { sessionId, shouldContinue } = await handlePrompt({
         context: input,
-        msg:
-          typeof input.prompt === "string"
-            ? input.prompt
-            : input.prompt(input),
+        msg: input.prompt,
       });
       const agentConfig = input.agentConfig;
 
@@ -143,7 +140,7 @@ export const UpdateStepMachine = setup({
     return {
       ...contextFromInput(input),
       filePath,
-      prompt: input.promptMessage ?? input.prompt ?? "",
+      prompt: typeof input.promptMessage === "string" ? input.promptMessage : input.prompt ?? "",
     };
   },
   states: {
@@ -213,13 +210,9 @@ export const UpdateStepMachine = setup({
     },
   },
   output: ({ context }) => {
-    const promptMessage =
-      typeof context.prompt === "string"
-        ? context.prompt
-        : context.prompt(context);
     return {
       checklist: {
-        description: promptMessage.split("\n")[0],
+        description: context.prompt.split("\n")[0],
       },
       filePath: context.filePath,
     };
