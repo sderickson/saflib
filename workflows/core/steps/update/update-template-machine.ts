@@ -20,8 +20,14 @@ export interface UpdateStepInput {
 
   /**
    * The message to show to the user. The machine will then stop until the workflow is continued.
+   * @deprecated Use `prompt` instead.
    */
-  promptMessage: string | ((context: WorkflowContext) => string);
+  promptMessage?: string | ((context: WorkflowContext) => string);
+
+  /**
+   * The message to show to the user. The machine will then stop until the workflow is continued.
+   */
+  prompt?: string;
 }
 
 /**
@@ -29,7 +35,7 @@ export interface UpdateStepInput {
  */
 export interface UpdateStepContext extends WorkflowContext {
   filePath: string;
-  promptMessage: string | ((context: WorkflowContext) => string);
+  prompt: string;
   shouldContinue?: boolean;
   hasTodos?: boolean;
 }
@@ -63,10 +69,7 @@ export const UpdateStepMachine = setup({
 
       const { sessionId, shouldContinue } = await handlePrompt({
         context: input,
-        msg:
-          typeof input.promptMessage === "string"
-            ? input.promptMessage
-            : input.promptMessage(input),
+        msg: input.prompt,
       });
       const agentConfig = input.agentConfig;
 
@@ -137,7 +140,7 @@ export const UpdateStepMachine = setup({
     return {
       ...contextFromInput(input),
       filePath,
-      promptMessage: input.promptMessage,
+      prompt: typeof input.promptMessage === "string" ? input.promptMessage : input.prompt ?? "",
     };
   },
   states: {
@@ -196,7 +199,7 @@ export const UpdateStepMachine = setup({
         prompt: {
           actions: [
             ({ context }) => {
-              console.log(context.promptMessage);
+              console.log(context.prompt);
             },
           ],
         },
@@ -207,13 +210,9 @@ export const UpdateStepMachine = setup({
     },
   },
   output: ({ context }) => {
-    const promptMessage =
-      typeof context.promptMessage === "string"
-        ? context.promptMessage
-        : context.promptMessage(context);
     return {
       checklist: {
-        description: promptMessage.split("\n")[0],
+        description: context.prompt.split("\n")[0],
       },
       filePath: context.filePath,
     };

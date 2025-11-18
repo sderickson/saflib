@@ -43,7 +43,7 @@ export function defineWorkflow<
     input: CreateArgsType<I> & {
       runMode?: WorkflowExecutionMode;
       cwd: string;
-      systemPrompt?: string;
+      prompt?: string;
     };
   }) => C;
   id: string;
@@ -107,7 +107,7 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
       ],
       entry: [
         {
-          type: "systemPrompt",
+          type: "prompt",
         },
       ],
       invoke: {
@@ -256,14 +256,14 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
     },
     actions: {
       ...workflowActions,
-      systemPrompt: ({ context }) => {
-        if (context.systemPrompt) {
-          if (context.systemPrompt !== lastSystemPrompt) {
-            addPendingMessage(context.systemPrompt);
+      prompt: ({ context }) => {
+        if (context.prompt) {
+          if (context.prompt !== lastSystemPrompt) {
+            addPendingMessage(context.prompt);
             console.log("");
-            console.log(addNewLinesToString(context.systemPrompt));
+            console.log(addNewLinesToString(context.prompt));
             console.log("");
-            lastSystemPrompt = context.systemPrompt;
+            lastSystemPrompt = context.prompt;
           }
         }
       },

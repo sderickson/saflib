@@ -35,8 +35,14 @@ export interface CommandStepInput {
 
   /**
    * The environment variables to set for the command.
+   * @deprecated Use `errorPrompt` instead.
    */
   promptOnError?: string;
+
+  /**
+   * The message to show to the agent if the command fails.
+   */
+  errorPrompt?: string;
 }
 
 /**
@@ -45,13 +51,13 @@ export interface CommandStepInput {
 export interface CommandStepContext extends WorkflowContext {
   command: string;
   args: string[];
-  promptOnError?: string;
+  errorPrompt?: string;
   ignoreError?: boolean;
   shouldContinue?: boolean;
 }
 
 const messageForContext = (ctx: CommandStepContext) => {
-  return `The command \`${ctx.command} ${ctx.args.join(" ")}\` failed.\nCWD: ${ctx.cwd}.\n${ctx.promptOnError ? `\n${ctx.promptOnError}` : ""}`;
+  return `The command \`${ctx.command} ${ctx.args.join(" ")}\` failed.\nCWD: ${ctx.cwd}.\n${ctx.errorPrompt ? `\n${ctx.errorPrompt}` : ""}`;
 };
 
 /**
@@ -114,7 +120,7 @@ export const CommandStepMachine = setup({
       ...contextFromInput(input),
       command: input.command,
       args: input.args || [],
-      promptOnError: input.promptOnError,
+      errorPrompt: input.promptOnError ?? input.errorPrompt ?? "",
       ignoreError: input.ignoreError,
     };
   },
