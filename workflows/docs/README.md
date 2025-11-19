@@ -3,7 +3,7 @@
 1. An npm package for doing routine coding work with LLMs reliably.
 2. An experiment in automating routine work with LLMs generally.
 
-This library came about while experimenting with LLMs in web development. It is a simple, portable way to get coding agents to follow a plan reliably with automated supervision. It uses developer-provided code templates, prompts, and validation checks to guide and contain the agent. These workflows are specific and tailored to your project, preferences, and stack.
+This library came about while exploring using LLMs in web development. It is a simple, portable way to get coding agents to follow a plan reliably with automated supervision. It uses developer-provided code templates, prompts, and validation checks to guide and contain the agent. These workflows are specific and tailored to your project, preferences, and stack.
 
 The library provides:
 
@@ -15,7 +15,9 @@ This library is written in conjunction with [my web framework](https://docs.saf-
 
 ----
 
-See the [dedicated docs](https://workflows.saf-demo.online/) for more information. Quick links:
+See the [dedicated docs](https://workflows.saf-demo.online/) for more information.
+
+Quick links:
 
 * [Introduction](https://workflows.saf-demo.online/)
 * [Quick Start](https://workflows.saf-demo.online/quick-start.html)
