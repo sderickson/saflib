@@ -5,7 +5,7 @@ import {
   CommandStepMachine,
   defineWorkflow,
   step,
-  CwdStepMachine,
+  CdStepMachine,
 } from "@saflib/workflows";
 import path from "node:path";
 
@@ -87,7 +87,7 @@ export const AddTsPackageWorkflowDefinition = defineWorkflow<
       For example: \`"workspaces": ["${context.path}", "other-packages/*"]\``,
     })),
 
-    step(CwdStepMachine, ({ context }) => ({
+    step(CdStepMachine, ({ context }) => ({
       path: context.targetDir,
     })),
 

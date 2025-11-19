@@ -5,7 +5,7 @@ import {
   type ParsePackageNameOutput,
   parsePackageName,
   makeLineReplace,
-  CwdStepMachine,
+  CdStepMachine,
   CommandStepMachine,
   getPackageName,
 } from "@saflib/workflows";
@@ -135,7 +135,7 @@ export const AddSpaWorkflowDefinition = defineWorkflow<
       };
     }),
 
-    step(CwdStepMachine, ({ context }) => ({
+    step(CdStepMachine, ({ context }) => ({
       path: path.dirname(context.copiedFiles!.packageJson),
     })),
 
@@ -144,7 +144,7 @@ export const AddSpaWorkflowDefinition = defineWorkflow<
       args: ["install"],
     })),
 
-    step(CwdStepMachine, ({ context }) => ({
+    step(CdStepMachine, ({ context }) => ({
       path: path.dirname(context.copiedFiles!.clientsPackageJson),
     })),
 

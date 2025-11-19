@@ -2,7 +2,7 @@ import {
   defineWorkflow,
   step,
   makeWorkflowMachine,
-  CwdStepMachine,
+  CdStepMachine,
 } from "@saflib/workflows";
 import { AddComponentWorkflowDefinition } from "@saflib/sdk/workflows";
 import { AddSpaPageWorkflowDefinition } from "@saflib/vue/workflows";
@@ -28,7 +28,7 @@ export const ImplementSecretsComponentsWorkflowDefinition = defineWorkflow<
   },
 
   steps: [
-    step(CwdStepMachine, () => ({
+    step(CdStepMachine, () => ({
       path: "./secrets/secrets-sdk",
     })),
 

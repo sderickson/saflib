@@ -5,7 +5,7 @@ import { workflowActions, workflowActors } from "../xstate.ts";
 import path from "node:path";
 
 /**
- * Input for the CwdStepMachine.
+ * Input for the CdStepMachine.
  */
 export interface CwdStepInput {
   path: string;
@@ -20,7 +20,7 @@ export interface CwdStepContext {
 /**
  * Updates the current working directory for subsequent steps, such as "copy", "update", and "command".
  */
-export const CwdStepMachine = setup({
+export const CdStepMachine = setup({
   types: {
     input: {} as CwdStepInput & WorkflowInput,
     context: {} as CwdStepContext,

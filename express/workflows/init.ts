@@ -3,7 +3,7 @@ import {
   defineWorkflow,
   step,
   CommandStepMachine,
-  CwdStepMachine,
+  CdStepMachine,
   type ParsePackageNameOutput,
   parsePackageName,
   makeLineReplace,
@@ -75,7 +75,7 @@ export const ExpressInitWorkflowDefinition = defineWorkflow<
       lineReplace: makeLineReplace(context),
     })),
 
-    step(CwdStepMachine, ({ context }) => ({
+    step(CdStepMachine, ({ context }) => ({
       path: context.targetDir,
     })),
 
