@@ -69,7 +69,7 @@ export const CdStepMachine = setup({
 });
 
 /**
- * Old name
- * @deprecated Use CdStepMachine instead.
+ * Old name. Use CdStepMachine instead.
+ * @deprecated.
  */
-export type CwdStepMachine = typeof CdStepMachine;
+export const CwdStepMachine = CdStepMachine;
