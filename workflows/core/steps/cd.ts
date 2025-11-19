@@ -12,11 +12,18 @@ export interface CdStepInput {
 }
 
 /**
+ * Old name
+ * @deprecated Use CdStepInput instead.
+ */
+export type CwdStepInput = CdStepInput;
+
+/**
  * @internal
  */
 export interface CdStepContext {
   newCwd: string;
 }
+
 /**
  * Updates the current working directory for subsequent steps, such as "copy", "update", and "command".
  */
@@ -60,3 +67,9 @@ export const CdStepMachine = setup({
     };
   },
 });
+
+/**
+ * Old name
+ * @deprecated Use CdStepMachine instead.
+ */
+export type CwdStepMachine = typeof CdStepMachine;
