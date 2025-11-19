@@ -9,9 +9,9 @@
 | Interface                                                      | Description                                                                              |
 | -------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
 | [AgentConfig](interfaces/AgentConfig.md)                       | When in "run" mode, specify which agent to use.                                          |
+| [CdStepInput](interfaces/CdStepInput.md)                       | Input for the CdStepMachine.                                                             |
 | [CommandStepInput](interfaces/CommandStepInput.md)             | Input for the CommandStepMachine.                                                        |
 | [CopyStepInput](interfaces/CopyStepInput.md)                   | Input for the CopyStepMachine.                                                           |
-| [CwdStepInput](interfaces/CwdStepInput.md)                     | Input for the CwdStepMachine.                                                            |
 | [ParsePackageNameInput](interfaces/ParsePackageNameInput.md)   | Argument for the parsePackageName function.                                              |
 | [ParsePackageNameOutput](interfaces/ParsePackageNameOutput.md) | Return value for the parsePackageName function.                                          |
 | [ParsePathInput](interfaces/ParsePathInput.md)                 | Argument for the parsePath function.                                                     |
@@ -31,6 +31,8 @@
 | Type Alias                                                     | Description                                                     |
 | -------------------------------------------------------------- | --------------------------------------------------------------- |
 | [AgentCLI](type-aliases/AgentCLI.md)                           | The agent to use for the workflow.                              |
+| [~~CwdStepInput~~](type-aliases/CwdStepInput.md)               | Old name                                                        |
+| [~~CwdStepMachine~~](type-aliases/CwdStepMachine.md)           | Old name                                                        |
 | [GetSourceUrlFunction](type-aliases/GetSourceUrlFunction.md)   | Function type for getting source URLs from absolute file paths. |
 | [WorkflowExecutionMode](type-aliases/WorkflowExecutionMode.md) | The mode to run the workflow in.                                |
 | [WorkflowStep](type-aliases/WorkflowStep.md)                   | A step in a workflow with an actor and its corresponding input. |
@@ -39,9 +41,9 @@
 
 | Variable                                              | Description                                                                                                                       |
 | ----------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| [CdStepMachine](variables/CdStepMachine.md)           | Updates the current working directory for subsequent steps, such as "copy", "update", and "command".                              |
 | [CommandStepMachine](variables/CommandStepMachine.md) | Runs a shell command as part of a workflow. Stops the workflow if the command fails.                                              |
 | [CopyStepMachine](variables/CopyStepMachine.md)       | Copies all `templateFiles` to the given directory, performing string replacements for directories, file names, and file contents. |
-| [CwdStepMachine](variables/CwdStepMachine.md)         | Updates the current working directory for subsequent steps, such as "copy", "update", and "command".                              |
 | [PromptStepMachine](variables/PromptStepMachine.md)   | Prompts the agent or user to do an arbitrary task.                                                                                |
 | [UpdateStepMachine](variables/UpdateStepMachine.md)   | Prompts the agent to update one of the templateFiles that was copied over by the CopyStepMachine.                                 |
 

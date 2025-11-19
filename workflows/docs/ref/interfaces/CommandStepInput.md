@@ -26,14 +26,26 @@ The command to run, such as `npm` or `chmod`.
 
 ---
 
+### errorPrompt?
+
+> `optional` **errorPrompt**: `string`
+
+The message to show to the agent if the command fails.
+
+---
+
 ### ignoreError?
 
 > `optional` **ignoreError**: `boolean`
 
 ---
 
-### promptOnError?
+### ~~promptOnError?~~
 
 > `optional` **promptOnError**: `string`
 
 The environment variables to set for the command.
+
+#### Deprecated
+
+Use `errorPrompt` instead.
