@@ -6,7 +6,7 @@ import {
   makeLineReplace,
   type ParsePackageNameOutput,
   CommandStepMachine,
-  CwdStepMachine,
+  CdStepMachine,
 } from "@saflib/workflows";
 import path from "node:path";
 
@@ -70,7 +70,7 @@ export const CronInitWorkflowDefinition = defineWorkflow<
       lineReplace: makeLineReplace(context),
     })),
 
-    step(CwdStepMachine, ({ context }) => ({
+    step(CdStepMachine, ({ context }) => ({
       path: context.targetDir,
     })),
 

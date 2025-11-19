@@ -2,9 +2,9 @@
 
 ---
 
-# Interface: CwdStepInput
+# Interface: CdStepInput
 
-Input for the CwdStepMachine.
+Input for the CdStepMachine.
 
 ## Properties
 

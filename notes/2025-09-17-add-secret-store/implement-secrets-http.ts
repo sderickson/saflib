@@ -2,7 +2,7 @@ import {
   defineWorkflow,
   step,
   makeWorkflowMachine,
-  CwdStepMachine,
+  CdStepMachine,
   PromptStepMachine,
   CommandStepMachine,
 } from "@saflib/workflows";
@@ -28,7 +28,7 @@ export const ImplementSecretsHttpWorkflowDefinition = defineWorkflow<
   },
 
   steps: [
-    step(CwdStepMachine, () => ({
+    step(CdStepMachine, () => ({
       path: "./secrets/secrets-http",
     })),
 

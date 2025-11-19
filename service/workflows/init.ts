@@ -4,7 +4,7 @@ import {
   step,
   makeWorkflowMachine,
   CommandStepMachine,
-  CwdStepMachine,
+  CdStepMachine,
   type ParsePackageNameOutput,
   parsePackageName,
   makeLineReplace,
@@ -133,7 +133,7 @@ export const InitServiceWorkflowDefinition = defineWorkflow<
       lineReplace: makeLineReplace(context),
     })),
 
-    step(CwdStepMachine, ({ context }) => ({
+    step(CdStepMachine, ({ context }) => ({
       path: context.targetDir,
     })),
     step(CommandStepMachine, () => ({

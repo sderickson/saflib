@@ -24,12 +24,9 @@ When run, the workflow will:
   - Upsert **example-workflow.ts** from [template](https://github.com/sderickson/saflib/blob/main/workflows/workflows/templates/__target-name__.ts)
   - Upsert **example-workflow.test.ts** from [template](https://github.com/sderickson/saflib/blob/main/workflows/workflows/templates/__target-name__.test.ts)
   - Upsert **index.ts** from [template](https://github.com/sderickson/saflib/blob/main/workflows/workflows/templates/index.ts)
-- Create template files for example-workflow workflow.
 - Update the workflow file to implement the main functionality. Replace any TODO comments with actual implementation.
-- Export **example-workflow** from **@saflib/saflib**.
-- Add `@saflib/saflib`'s exported workflows to the CLI tool.
-- Run `npm run typecheck`
-- Run `npm run test`
+- Export **example-workflow** from **blog-client**.
+- Add `blog-client`'s exported workflows to the CLI tool.
 
 ## Help Docs
 
