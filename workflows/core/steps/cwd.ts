@@ -7,14 +7,14 @@ import path from "node:path";
 /**
  * Input for the CdStepMachine.
  */
-export interface CwdStepInput {
+export interface CdStepInput {
   path: string;
 }
 
 /**
  * @internal
  */
-export interface CwdStepContext {
+export interface CdStepContext {
   newCwd: string;
 }
 /**
@@ -22,8 +22,8 @@ export interface CwdStepContext {
  */
 export const CdStepMachine = setup({
   types: {
-    input: {} as CwdStepInput & WorkflowInput,
-    context: {} as CwdStepContext,
+    input: {} as CdStepInput & WorkflowInput,
+    context: {} as CdStepContext,
     output: {} as WorkflowOutput,
   },
   actions: {
