@@ -8,7 +8,7 @@
   "description": "Workflow engine and utilities for SAF",
   "version": "0.2.4",
   "type": "module",
-  "homepage": "https://docs.saf-demo.online/workflows/docs/README.html",
+  "homepage": "https://workflows.saf-demo.online/",
   "author": "Scott Erickson <sderickson@gmail.com>",
   "license": "MIT",
   "repository": {
