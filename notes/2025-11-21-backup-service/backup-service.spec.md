@@ -30,29 +30,22 @@ The backup system will:
 
 - `/saflib/backup/backup-sdk`: Export a Vue component that provides a UI for managing backups using the HTTP endpoints.
 
-- `/saflib/object-store`: Define an abstract ObjectStore class with methods for listing, uploading, and deleting backups. Implement an AzureObjectStore subclass that uses Azure Blob Storage.
+- `/saflib/object-store`: Define an abstract ObjectStore class with generic file operations (uploadFile, listFiles, deleteFile, readFile). The interface should be scoped to a specific container/bucket and folder within that bucket, allowing nested directories but restricting access to that scope. Implement an AzureObjectStore subclass that uses Azure Blob Storage.
 
-## Database Schema Updates
+## Storage
 
-The backup system will need to track backup metadata in the backup-db database. This should include:
-- Backup ID (unique identifier)
-- Backup type (manual or automatic)
-- Created timestamp
-- Backup location/path in object store
-- Backup size
-- Status (pending, completed, failed)
-- Optional metadata (tags, description for manual backups)
+Backup metadata and files will be stored entirely in the remote object store (Azure Blob Storage or other provider). No local database is needed for backup tracking. Backup metadata can be stored as file metadata or in a separate metadata file alongside the backup files.
 
 ## API Endpoints
 
 1. GET `/backups`
 
    - Purpose: List all backups
-   - Request parameters: Optional query parameters for filtering (type, date range, etc.)
+   - Request parameters: None
    - Request body: None
-   - Response: Array of backup objects with metadata
+   - Response: Array of backup objects with metadata (type, timestamp, size, etc.)
    - Error responses: 500 for server errors
-   - Authorization requirements: Admin access required
+   - Authorization requirements: Admin access required (use getSafContextWithAuth and check scopes has "*")
 
 2. POST `/backups`
 
@@ -61,7 +54,7 @@ The backup system will need to track backup metadata in the backup-db database. 
    - Request body: Optional metadata (description, tags)
    - Response: Backup object with metadata including backup ID
    - Error responses: 500 for server errors, 400 for invalid requests
-   - Authorization requirements: Admin access required
+   - Authorization requirements: Admin access required (use getSafContextWithAuth and check scopes has "*")
 
 3. DELETE `/backups/:backupId`
 
@@ -70,7 +63,7 @@ The backup system will need to track backup metadata in the backup-db database. 
    - Request body: None
    - Response: Success confirmation
    - Error responses: 404 if backup not found, 400 if trying to delete automatic backup, 500 for server errors
-   - Authorization requirements: Admin access required
+   - Authorization requirements: Admin access required (use getSafContextWithAuth and check scopes has "*")
 
 4. POST `/backups/:backupId/restore`
 
@@ -79,8 +72,9 @@ The backup system will need to track backup metadata in the backup-db database. 
    - Request body: Optional confirmation flag
    - Response: Restore operation status
    - Error responses: 404 if backup not found, 500 for server errors
-   - Authorization requirements: Admin access required
+   - Authorization requirements: Admin access required (use getSafContextWithAuth and check scopes has "*")
    - Special behavior: Automatically creates a backup before restoring
+   - Response: Synchronous operation (since it's just a single SQLite file)
 
 ## Frontend Pages
 
@@ -92,7 +86,6 @@ The backup system will need to track backup metadata in the backup-db database. 
      - Create manual backup button
      - Delete manual backup button (disabled for automatic backups)
      - Restore from backup button with confirmation dialog
-     - Filter/search capabilities
      - Status indicators for backup operations
    - User interactions:
      - Click to create backup
@@ -102,21 +95,34 @@ The backup system will need to track backup metadata in the backup-db database. 
 
 ## Object Store Interface
 
-The object store abstraction should provide:
+The object store abstraction should provide a generic file storage interface:
 
-- `listBackups(prefix?: string)`: List all backup files, optionally filtered by prefix
-- `uploadBackup(backupId: string, stream: Readable)`: Upload a backup file
-- `deleteBackup(backupId: string)`: Delete a backup file
-- `downloadBackup(backupId: string)`: Get a readable stream for downloading a backup
+- `uploadFile(path: string, stream: Readable, metadata?: Record<string, string>)`: Upload a file to the specified path (supports nested directories)
+- `listFiles(prefix?: string)`: List all files, optionally filtered by prefix
+- `deleteFile(path: string)`: Delete a file at the specified path
+- `readFile(path: string)`: Get a readable stream for reading a file
 
-The AzureObjectStore implementation will use Azure Blob Storage with the existing client infrastructure.
+The interface is scoped to a specific container/bucket and folder within that bucket. It allows operations within nested directories of that scope but does not allow access outside the scoped area. This provides security and isolation while still allowing organized file structures.
+
+The AzureObjectStore implementation will use Azure Blob Storage with the existing client infrastructure, scoped to a specific container and folder path.
 
 ## Backup Function Interface
 
 The backup function passed to backup-http and backup-cron should:
-- Return a Readable stream containing the database backup
+- Return a Readable stream containing the database backup (SQLite binary file)
 - Be async and handle errors appropriately
 - Optionally accept parameters for backup configuration
+
+## Backup Naming Convention
+
+Backup files should be named: `backup-{timestamp}-{type}-{id}.db` where:
+- `timestamp` is an ISO 8601 timestamp
+- `type` is either "manual" or "automatic"
+- `id` is a unique identifier (e.g., UUID)
+
+## Retention Policy
+
+Automatic backups should be retained for 30 days. If a backup fails, existing backups should not be deleted. Only successful automatic backups older than 30 days should be cleaned up.
 
 ## Future Enhancements / Out of Scope
 
@@ -131,21 +137,15 @@ The backup function passed to backup-http and backup-cron should:
 - Backup export to different formats
 - Backup restoration to different environments
 
-## Questions and Clarifications
+## Error Handling
 
-- What should the backup file naming convention be? (e.g., `backup-{timestamp}-{type}-{id}.sql`)
-  - sgtm
-- What retention policy should be used for automatic backups? (e.g., keep last 30 days, keep weekly for 3 months, etc.)
-  - that retention policy sounds good, although if backups fail, don't delete the existing backups.
-- Should there be a maximum number of manual backups?
-   - no
-- What format should the database backup be in? (SQL dump, binary, etc.)
-  - binary is fine. It'll be an sqlite db file if that makes any difference
-- Should the restore operation be synchronous or asynchronous? (likely async with status polling)
-  - since it's just a single file, it should be synchronous
-- How should backup failures be handled and reported?
-  - use getReporters to get an error reporter and report there
-- Should there be backup size limits?
-  - no
-- What authentication/authorization mechanism should be used for the admin endpoints?
-  - use existing mechanisms. getSafContextWithAuth and check scopes has "*" in it
+Backup failures should be handled using `getSafReporters()` to get an error reporter and log errors appropriately. Failed backups should not trigger cleanup of existing backups.
+
+## Implementation Notes
+
+- No database is needed for backup metadata - all information is stored in the object store
+- Backup format: SQLite binary database file (.db extension)
+- Restore operations are synchronous since they involve a single file
+- No backup size limits
+- No maximum number of manual backups
+- Authentication: Use `getSafContextWithAuth` and check that scopes includes "*"
