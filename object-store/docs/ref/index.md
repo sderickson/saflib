@@ -10,6 +10,8 @@
 | --------------------------------------------------------------- | ----------- |
 | [AzureContainerError](classes/AzureContainerError.md)           | -           |
 | [AzureDeleteError](classes/AzureDeleteError.md)                 | -           |
+| [AzureObjectStore](classes/AzureObjectStore.md)                 | -           |
+| [AzureStorageError](classes/AzureStorageError.md)               | -           |
 | [BlobAlreadyExistsError](classes/BlobAlreadyExistsError.md)     | -           |
 | [BlobNotFoundError](classes/BlobNotFoundError.md)               | -           |
 | [ContainerCreationError](classes/ContainerCreationError.md)     | -           |

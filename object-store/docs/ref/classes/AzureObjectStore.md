@@ -2,17 +2,17 @@
 
 ---
 
-# Abstract Class: ObjectStore
+# Class: AzureObjectStore
 
-## Extended by
+## Extends
 
-- [`AzureObjectStore`](AzureObjectStore.md)
+- [`ObjectStore`](ObjectStore.md)
 
 ## Constructors
 
 ### Constructor
 
-> **new ObjectStore**(`containerName`, `folderPath`, `tier`): `ObjectStore`
+> **new AzureObjectStore**(`containerName`, `folderPath`, `tier`): `AzureObjectStore`
 
 #### Parameters
 
@@ -24,7 +24,11 @@
 
 #### Returns
 
-`ObjectStore`
+`AzureObjectStore`
+
+#### Inherited from
+
+[`ObjectStore`](ObjectStore.md).[`constructor`](ObjectStore.md#constructor)
 
 ## Properties
 
@@ -32,11 +36,19 @@
 
 > `protected` `readonly` **containerName**: `string`
 
+#### Inherited from
+
+[`ObjectStore`](ObjectStore.md).[`containerName`](ObjectStore.md#containername)
+
 ---
 
 ### folderPath
 
 > `protected` `readonly` **folderPath**: `string`
+
+#### Inherited from
+
+[`ObjectStore`](ObjectStore.md).[`folderPath`](ObjectStore.md#folderpath)
 
 ---
 
@@ -44,11 +56,15 @@
 
 > `protected` `readonly` **tier**: `AccessTier`
 
+#### Inherited from
+
+[`ObjectStore`](ObjectStore.md).[`tier`](ObjectStore.md#tier)
+
 ## Methods
 
 ### deleteFile()
 
-> `abstract` **deleteFile**(`path`): `Promise`\<`ReturnsError`\<\{ `success`: `boolean`; \}\>\>
+> **deleteFile**(`path`): `Promise`\<`ReturnsError`\<\{ `success`: `boolean`; \}\>\>
 
 #### Parameters
 
@@ -59,6 +75,10 @@
 #### Returns
 
 `Promise`\<`ReturnsError`\<\{ `success`: `boolean`; \}\>\>
+
+#### Overrides
+
+[`ObjectStore`](ObjectStore.md).[`deleteFile`](ObjectStore.md#deletefile)
 
 ---
 
@@ -76,11 +96,15 @@
 
 `string`
 
+#### Inherited from
+
+[`ObjectStore`](ObjectStore.md).[`getScopedPath`](ObjectStore.md#getscopedpath)
+
 ---
 
 ### listFiles()
 
-> `abstract` **listFiles**(`prefix?`): `Promise`\<`ReturnsError`\<`object`[]\>\>
+> **listFiles**(`prefix?`): `Promise`\<`ReturnsError`\<`object`[]\>\>
 
 #### Parameters
 
@@ -91,6 +115,10 @@
 #### Returns
 
 `Promise`\<`ReturnsError`\<`object`[]\>\>
+
+#### Overrides
+
+[`ObjectStore`](ObjectStore.md).[`listFiles`](ObjectStore.md#listfiles)
 
 ---
 
@@ -108,11 +136,15 @@
 
 `string`
 
+#### Inherited from
+
+[`ObjectStore`](ObjectStore.md).[`normalizePath`](ObjectStore.md#normalizepath)
+
 ---
 
 ### readFile()
 
-> `abstract` **readFile**(`path`): `Promise`\<`ReturnsError`\<`Readable`\>\>
+> **readFile**(`path`): `Promise`\<`ReturnsError`\<`Readable`\>\>
 
 #### Parameters
 
@@ -124,11 +156,15 @@
 
 `Promise`\<`ReturnsError`\<`Readable`\>\>
 
+#### Overrides
+
+[`ObjectStore`](ObjectStore.md).[`readFile`](ObjectStore.md#readfile)
+
 ---
 
 ### uploadFile()
 
-> `abstract` **uploadFile**(`path`, `stream`, `metadata?`): `Promise`\<`ReturnsError`\<\{ `success`: `boolean`; `url?`: `string`; \}\>\>
+> **uploadFile**(`path`, `stream`, `metadata?`): `Promise`\<`ReturnsError`\<\{ `success`: `boolean`; `url?`: `string`; \}\>\>
 
 #### Parameters
 
@@ -141,6 +177,10 @@
 #### Returns
 
 `Promise`\<`ReturnsError`\<\{ `success`: `boolean`; `url?`: `string`; \}\>\>
+
+#### Overrides
+
+[`ObjectStore`](ObjectStore.md).[`uploadFile`](ObjectStore.md#uploadfile)
 
 ---
 
@@ -157,3 +197,7 @@
 #### Returns
 
 `string`
+
+#### Inherited from
+
+[`ObjectStore`](ObjectStore.md).[`validatePath`](ObjectStore.md#validatepath)
