@@ -5,6 +5,16 @@ import {
   backupServiceStorage,
   type BackupServiceContextOptions,
 } from "@saflib/backup-service-common";
+import { createBackupsRouter } from "./routes/backups/index.ts";
+import type { ObjectStore } from "@saflib/object-store";
+import type { Readable } from "stream";
+
+export function createBackupRouter(
+  backupFn: () => Promise<Readable>,
+  objectStore: ObjectStore,
+) {
+  return createBackupsRouter(backupFn, objectStore);
+}
 
 /**
  * Creates the HTTP server for the backup service.
@@ -28,8 +38,9 @@ export function createBackupHttpApp(
     });
   });
 
-  // Add route handlers here. Do not prefix the routes; the router will handle the prefix.
-  // app.use(createBackupRouter());
+  if (options.backupFn && options.objectStore) {
+    app.use(createBackupRouter(options.backupFn, options.objectStore));
+  }
 
   app.use(createErrorMiddleware());
 
