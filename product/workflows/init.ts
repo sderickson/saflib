@@ -4,6 +4,7 @@ import {
   makeWorkflowMachine,
 } from "@saflib/workflows";
 import { AddSpaWorkflowDefinition } from "@saflib/vue/workflows";
+import { InitServiceWorkflowDefinition } from "@saflib/service/workflows";
 
 const input = [
   {
@@ -71,6 +72,11 @@ export const InitProductWorkflowDefinition = defineWorkflow<
     step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
       productName: context.productName,
       subdomainName: "account",
+    })),
+
+    step(makeWorkflowMachine(InitServiceWorkflowDefinition), ({ context }) => ({
+      name: `${context.productName}-service`,
+      path: `./services/${context.productName}`,
     })),
   ],
 });
