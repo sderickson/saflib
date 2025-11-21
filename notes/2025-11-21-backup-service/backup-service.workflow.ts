@@ -120,7 +120,7 @@ The class should validate that all paths stay within the scoped folder (prevent 
     })),
 
     step(makeWorkflowMachine(AddHandlerWorkflowDefinition), () => ({
-      path: "routes/backups/list",
+      path: "./routes/backups/list.ts",
       prompt: `Implement GET /backups handler:
 - Use object store's listFiles() to get all backup files
 - Parse backup metadata from filenames (backup-{timestamp}-{type}-{id}.db)
@@ -135,7 +135,7 @@ Pass these dependencies to each route handler.`,
     })),
 
     step(makeWorkflowMachine(AddHandlerWorkflowDefinition), () => ({
-      path: "routes/backups/create",
+      path: "./routes/backups/create.ts",
       prompt: `Implement POST /backups handler:
 - Accept optional metadata in request body (description, tags)
 - Call the backup function passed to the router to get a stream
@@ -147,7 +147,7 @@ Pass these dependencies to each route handler.`,
     })),
 
     step(makeWorkflowMachine(AddHandlerWorkflowDefinition), () => ({
-      path: "routes/backups/delete",
+      path: "./routes/backups/delete.ts",
       prompt: `Implement DELETE /backups/:backupId handler:
 - Extract backupId from URL
 - Check if backup is manual (from filename parsing)
@@ -158,7 +158,7 @@ Pass these dependencies to each route handler.`,
     })),
 
     step(makeWorkflowMachine(AddHandlerWorkflowDefinition), () => ({
-      path: "routes/backups/restore",
+      path: "./routes/backups/restore.ts",
       prompt: `Implement POST /backups/:backupId/restore handler:
 - First create a safety backup (same as POST /backups)
 - Then read the backup file from object store
@@ -179,7 +179,7 @@ Pass these dependencies to each route handler.`,
     })),
 
     step(makeWorkflowMachine(CronAddJobWorkflowDefinition), () => ({
-      path: "./jobs/backup/automatic",
+      path: "./jobs/backup/automatic.ts",
       prompt: `Create automatic backup cron job that runs daily:
 - Call the backup function to get a stream
 - Generate backup filename: backup-{timestamp}-automatic-{uuid}.db
@@ -191,7 +191,7 @@ The job will receive backupFn and objectStore as dependencies.`,
     })),
 
     step(makeWorkflowMachine(CronAddJobWorkflowDefinition), () => ({
-      path: "./jobs/backup/cleanup",
+      path: "./jobs/backup/cleanup.ts",
       prompt: `Create cleanup cron job that runs daily after backup:
 - List all automatic backup files from object store
 - Parse timestamps from filenames
@@ -212,22 +212,22 @@ The job will receive backupFn and objectStore as dependencies.`,
     })),
 
     step(makeWorkflowMachine(AddSdkQueryWorkflowDefinition), () => ({
-      path: "requests/backups/list",
+      path: "./requests/backups/list.ts",
       prompt: `Create listBackups() query function that calls GET /backups and returns an array of backup objects.`,
     })),
 
     step(makeWorkflowMachine(AddSdkQueryWorkflowDefinition), () => ({
-      path: "requests/backups/create",
+      path: "./requests/backups/create.ts",
       prompt: `Create createBackup() mutation function that calls POST /backups with optional metadata (description?: string, tags?: string[]) and returns a backup object.`,
     })),
 
     step(makeWorkflowMachine(AddSdkQueryWorkflowDefinition), () => ({
-      path: "requests/backups/delete",
+      path: "./requests/backups/delete.ts",
       prompt: `Create deleteBackup() mutation function that calls DELETE /backups/{backupId} with backupId as a parameter and returns success confirmation.`,
     })),
 
     step(makeWorkflowMachine(AddSdkQueryWorkflowDefinition), () => ({
-      path: "requests/backups/restore",
+      path: "./requests/backups/restore.ts",
       prompt: `Create restoreBackup() mutation function that calls POST /backups/{backupId}/restore with backupId as a parameter and returns success status.`,
     })),
 
