@@ -1,5 +1,5 @@
 {
-  "name": "backup-db",
+  "name": "@saflib/backup-db",
   "description": "Database package for backup.",
   "private": true,
   "type": "module",

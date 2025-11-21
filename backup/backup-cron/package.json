@@ -1,9 +1,9 @@
 {
-  "name": "@saflib/backup-http",
-  "description": "HTTP server for the backup service",
+  "name": "@saflib/backup-cron",
+  "description": "Cron service for the backup service",
   "type": "module",
   "exports": {
-    ".": "./index.ts"
+    ".": "./cron.ts"
   },
   "scripts": {
     "test": "vitest run",
@@ -12,11 +12,12 @@
     "typecheck": "tsc"
   },
   "dependencies": {
-    "@saflib/express": "*",
+    "@saflib/cron": "*",
+    "@saflib/env": "*",
     "@saflib/monorepo": "*",
+    "@saflib/node": "*",
     "@saflib/backup-db": "*",
-    "@saflib/backup-service-common": "*",
-    "@saflib/backup-spec": "*"
+    "@saflib/backup-service-common": "*"
   },
   "devDependencies": {
     "@saflib/vitest": "*"

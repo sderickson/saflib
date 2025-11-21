@@ -1,5 +1,5 @@
 import { createSafClient, TanstackError } from "@saflib/sdk";
-import type { paths } from "backup-spec";
+import type { paths } from "@saflib/backup-spec";
 
 let client: ReturnType<typeof createSafClient<paths>> | null = null;
 

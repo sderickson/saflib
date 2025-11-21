@@ -1,10 +1,10 @@
 import { createErrorMiddleware, createGlobalMiddleware } from "@saflib/express";
 import express from "express";
-import { backupDb } from "backup-db";
+import { backupDb } from "@saflib/backup-db";
 import {
   backupServiceStorage,
   type BackupServiceContextOptions,
-} from "backup-service-common";
+} from "@saflib/backup-service-common";
 
 /**
  * Creates the HTTP server for the backup service.

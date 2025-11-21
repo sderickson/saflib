@@ -1,9 +1,9 @@
 import { startExpressServer } from "@saflib/express";
-import { createBackupHttpApp } from "backup-http";
-import { backupDb } from "backup-db";
+import { createBackupHttpApp } from "@saflib/backup-http";
+import { backupDb } from "@saflib/backup-db";
 import { makeSubsystemReporters } from "@saflib/node";
 import { typedEnv } from "./env.ts";
-import { makeContext } from "backup-service-common";
+import { makeContext } from "@saflib/backup-service-common";
 
 export function startBackupService() {
   const { log, logError } = makeSubsystemReporters("init", "main");

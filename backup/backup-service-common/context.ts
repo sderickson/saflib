@@ -1,6 +1,6 @@
 import { AsyncLocalStorage } from "async_hooks";
 import type { DbKey } from "@saflib/drizzle";
-import { backupDb } from "backup-db";
+import { backupDb } from "@saflib/backup-db";
 
 export interface BackupServiceContext {
   backupDbKey: DbKey;

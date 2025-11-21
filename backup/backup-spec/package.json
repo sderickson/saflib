@@ -1,5 +1,5 @@
 {
-  "name": "backup-spec",
+  "name": "@saflib/backup-spec",
   "description": "API specs for the backup service",
   "type": "module",
   "exports": {

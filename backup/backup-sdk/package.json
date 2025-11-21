@@ -1,5 +1,5 @@
 {
-  "name": "backup-sdk",
+  "name": "@saflib/backup-sdk",
   "description": "Tanstack queries and shared components for backup service",
   "private": true,
   "type": "module",
@@ -24,7 +24,7 @@
   "dependencies": {
     "@saflib/monorepo": "*",
     "@saflib/sdk": "*",
-    "backup-spec": "*",
+    "@saflib/backup-spec": "*",
     "@saflib/vite": "*",
     "@saflib/vue": "*",
     "msw": "^2.11.3"

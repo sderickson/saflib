@@ -1,5 +1,5 @@
 {
-  "name": "backup-service-common",
+  "name": "@saflib/backup-service-common",
   "description": "Shared types and utilities for the backup service",
   "private": true,
   "type": "module",

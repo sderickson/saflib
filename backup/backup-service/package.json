@@ -1,5 +1,5 @@
 {
-  "name": "backup-service",
+  "name": "@saflib/backup-service",
   "description": "Service package for backup",
   "type": "module",
   "exports": {
@@ -16,9 +16,9 @@
   "dependencies": {
     "@saflib/env": "*",
     "@saflib/monorepo": "*",
-    "backup-db": "*",
-    "backup-http": "*",
-    "backup-service-common": "*"
+    "@saflib/backup-db": "*",
+    "@saflib/backup-http": "*",
+    "@saflib/backup-service-common": "*"
   },
   "devDependencies": {
     "@saflib/vitest": "*"
