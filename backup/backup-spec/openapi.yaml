@@ -8,6 +8,8 @@ paths:
   /backups:
     get:
       $ref: "./routes/backups/list.yaml#/listBackups"
+    post:
+      $ref: "./routes/backups/create.yaml#/createBackup"
 
 components:
   schemas:

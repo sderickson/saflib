@@ -14,7 +14,8 @@ export interface paths {
         /** List all backups */
         get: operations["listBackups"];
         put?: never;
-        post?: never;
+        /** Create a manual backup */
+        post: operations["createBackup"];
         delete?: never;
         options?: never;
         head?: never;
@@ -161,6 +162,71 @@ export interface operations {
             };
             /** @description Not Found */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+        };
+    };
+    createBackup: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": {
+                    /**
+                     * @description Optional description of the backup
+                     * @example Manual backup before major update
+                     */
+                    description?: string;
+                    /**
+                     * @description Optional tags for categorizing the backup
+                     * @example [
+                     *       "pre-update",
+                     *       "important"
+                     *     ]
+                     */
+                    tags?: string[];
+                };
+            };
+        };
+        responses: {
+            /** @description Backup created successfully */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["backup"];
+                };
+            };
+            /** @description Unauthorized - missing or invalid auth headers, or not logged in. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Forbidden - user does not have required privileges. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Conflict - backup with this ID already exists */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };
