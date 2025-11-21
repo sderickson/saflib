@@ -1,0 +1,14 @@
+{
+  "name": "backup-spec",
+  "description": "API specs for the backup service",
+  "type": "module",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc"
+  },
+  "dependencies": {
+    "@saflib/openapi": "*"
+  }
+}

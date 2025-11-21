@@ -1,0 +1,17 @@
+# Based on https://developers.google.com/analytics/devguides/collection/ga4/reference/events?sjid=1005351918400554708-NC&client_type=gtm#login
+type: object
+properties:
+  event:
+    type: string
+    enum:
+      - login
+  context:
+    type: object
+    properties:
+      method:
+        type: string
+        enum:
+          - email
+required:
+  - event
+  - context

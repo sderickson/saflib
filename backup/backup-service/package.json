@@ -1,0 +1,26 @@
+{
+  "name": "backup-service",
+  "description": "Service package for backup",
+  "type": "module",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "scripts": {
+    "start": "node --experimental-strip-types ./run.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "healthcheck": "node --experimental-strip-types ./bin/healthcheck",
+    "typecheck": "tsc"
+  },
+  "dependencies": {
+    "@saflib/env": "*",
+    "@saflib/monorepo": "*",
+    "backup-db": "*",
+    "backup-http": "*",
+    "backup-service-common": "*"
+  },
+  "devDependencies": {
+    "@saflib/vitest": "*"
+  }
+}
