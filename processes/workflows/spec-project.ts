@@ -71,7 +71,9 @@ export const SpecProjectWorkflowDefinition = defineWorkflow<
 
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "workflow",
-      promptMessage: `Update **${path.basename(context.copiedFiles!.workflow)}**.`,
+      promptMessage: `Update **${path.basename(context.copiedFiles!.workflow)}**.
+      
+      To see what workflows there are available, run \`npm exec saf-workflow list\`.`,
     })),
   ],
 });
