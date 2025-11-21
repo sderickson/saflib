@@ -10,6 +10,9 @@ paths:
       $ref: "./routes/backups/list.yaml#/listBackups"
     post:
       $ref: "./routes/backups/create.yaml#/createBackup"
+  /backups/{backupId}:
+    delete:
+      $ref: "./routes/backups/delete.yaml#/deleteBackup"
 
 components:
   schemas:
