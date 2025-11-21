@@ -3,7 +3,6 @@ import {
   step,
   makeWorkflowMachine,
   CdStepMachine,
-  PromptStepMachine,
   CommandStepMachine,
 } from "@saflib/workflows";
 import { AddSchemaWorkflowDefinition } from "@saflib/openapi/workflows";
@@ -11,6 +10,8 @@ import { AddRouteWorkflowDefinition } from "@saflib/openapi/workflows";
 import { AddHandlerWorkflowDefinition } from "@saflib/express/workflows";
 import { AddSdkQueryWorkflowDefinition } from "@saflib/sdk/workflows";
 import { AddSpaPageWorkflowDefinition } from "@saflib/vue/workflows";
+import { AddExportWorkflowDefinition } from "@saflib/monorepo/workflows";
+import { CronAddJobWorkflowDefinition } from "@saflib/cron/workflows";
 
 import path from "path";
 
@@ -37,8 +38,10 @@ export const BackupServiceWorkflowDefinition = defineWorkflow<
       path: "./object-store",
     })),
 
-    step(PromptStepMachine, () => ({
-      prompt: `Create an abstract ObjectStore class in object-store.ts with the following interface:
+    step(makeWorkflowMachine(AddExportWorkflowDefinition), () => ({
+      name: "ObjectStore",
+      path: ".",
+      prompt: `Create an abstract ObjectStore class with the following interface:
 
 1. Abstract class ObjectStore with methods:
    - uploadFile(path: string, stream: Readable, metadata?: Record<string, string>): Promise<ReturnsError<{ success: boolean; url?: string }>>
@@ -54,8 +57,10 @@ The class should be scoped to a specific container/bucket and folder path. The c
 The class should validate that all paths stay within the scoped folder (prevent directory traversal).`,
     })),
 
-    step(PromptStepMachine, () => ({
-      prompt: `Create AzureObjectStore class in azure/object-store.ts that extends ObjectStore:
+    step(makeWorkflowMachine(AddExportWorkflowDefinition), () => ({
+      name: "AzureObjectStore",
+      path: "azure",
+      prompt: `Create AzureObjectStore class that extends ObjectStore:
 
 1. Implement all abstract methods using the existing Azure blob storage functions
 2. Use getBlobServiceClient with the tier from constructor
@@ -121,7 +126,12 @@ The class should validate that all paths stay within the scoped folder (prevent 
 - Parse backup metadata from filenames (backup-{timestamp}-{type}-{id}.db)
 - Return array of backup objects with type, timestamp, size, id
 - Use getSafContextWithAuth and check scopes includes "*"
-- The router will receive backupFn and objectStore as dependencies`,
+- The router will receive backupFn and objectStore as dependencies
+
+After all handlers are created, update http.ts to export a function that creates and returns a router with all backup routes. The function should accept:
+- backupFn: () => Promise<Readable> - function that returns a backup stream
+- objectStore: ObjectStore - the object store instance
+Pass these dependencies to each route handler.`,
     })),
 
     step(makeWorkflowMachine(AddHandlerWorkflowDefinition), () => ({
@@ -159,14 +169,6 @@ The class should validate that all paths stay within the scoped folder (prevent 
 - The router will receive backupFn and objectStore as dependencies`,
     })),
 
-    step(PromptStepMachine, () => ({
-      prompt: `Update http.ts to export a function that creates and returns a router with all backup routes. The function should accept:
-- backupFn: () => Promise<Readable> - function that returns a backup stream
-- objectStore: ObjectStore - the object store instance
-
-Pass these dependencies to each route handler.`,
-    })),
-
     step(CommandStepMachine, () => ({
       command: "npm",
       args: ["run", "typecheck"],
@@ -176,28 +178,28 @@ Pass these dependencies to each route handler.`,
       path: "./backup/backup-cron",
     })),
 
-    step(PromptStepMachine, () => ({
-      prompt: `Create cron jobs in jobs/backup.ts:
+    step(makeWorkflowMachine(CronAddJobWorkflowDefinition), () => ({
+      path: "./jobs/backup/automatic",
+      prompt: `Create automatic backup cron job that runs daily:
+- Call the backup function to get a stream
+- Generate backup filename: backup-{timestamp}-automatic-{uuid}.db
+- Upload to object store
+- Use getSafReporters() to log success/failure
+- If backup fails, log error but don't delete existing backups
 
-1. Automatic backup job - runs daily
-   - Call the backup function to get a stream
-   - Generate backup filename: backup-{timestamp}-automatic-{uuid}.db
-   - Upload to object store
-   - Use getSafReporters() to log success/failure
-   - If backup fails, log error but don't delete existing backups
+The job will receive backupFn and objectStore as dependencies.`,
+    })),
 
-2. Cleanup job - runs daily after backup
-   - List all automatic backup files from object store
-   - Parse timestamps from filenames
-   - Delete automatic backups older than 30 days
-   - Only delete if backup was successful (check metadata or file existence)
-   - Use getSafReporters() to log cleanup actions
+    step(makeWorkflowMachine(CronAddJobWorkflowDefinition), () => ({
+      path: "./jobs/backup/cleanup",
+      prompt: `Create cleanup cron job that runs daily after backup:
+- List all automatic backup files from object store
+- Parse timestamps from filenames
+- Delete automatic backups older than 30 days
+- Only delete if backup was successful (check metadata or file existence)
+- Use getSafReporters() to log cleanup actions
 
-The jobs should accept:
-- backupFn: () => Promise<Readable> - function that returns a backup stream
-- objectStore: ObjectStore - the object store instance
-
-Update cron.ts to export a function that creates the jobs object with these jobs.`,
+The job will receive backupFn and objectStore as dependencies.`,
     })),
 
     step(CommandStepMachine, () => ({
