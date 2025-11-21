@@ -1,0 +1,25 @@
+{
+  "name": "@saflib/object-store",
+  "description": "Object store library for file storage operations",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc"
+  },
+  "dependencies": {
+    "@azure/identity": "^4.13.0",
+    "@azure/storage-blob": "^12.28.0",
+    "@saflib/env": "*",
+    "@saflib/node": "*"
+  },
+  "devDependencies": {
+    "@saflib/monorepo": "*",
+    "@saflib/vitest": "*"
+  }
+}
