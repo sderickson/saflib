@@ -20,6 +20,7 @@ export type BackupServiceRequestBody = ExtractRequestBody<operations>;
 
 // Export your schema types here
 export type Error = components["schemas"]["Error"];
+export type Backup = components["schemas"]["Backup"];
 export type ProductEvent = components["schemas"]["ProductEvent"];
 
 import * as json from "./dist/openapi.json" with { type: "json" };

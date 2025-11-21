@@ -8,6 +8,7 @@ export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
         Error: components["schemas"]["error"];
+        Backup: components["schemas"]["backup"];
         ProductEvent: components["schemas"]["index"];
         error: {
             /** @description A short, machine-readable error code, for when HTTP status codes are not sufficient. */
@@ -17,6 +18,50 @@ export interface components {
              * @example The requested resource could not be found.
              */
             message?: string;
+        };
+        backup: {
+            /**
+             * @description The backup ID parsed from the filename
+             * @example backup-20240101-120000
+             */
+            id: string;
+            /**
+             * @description The type of backup, parsed from the filename
+             * @example automatic
+             * @enum {string}
+             */
+            type: "manual" | "automatic";
+            /**
+             * Format: date-time
+             * @description ISO 8601 timestamp parsed from the filename
+             * @example 2024-01-01T12:00:00Z
+             */
+            timestamp: string;
+            /**
+             * @description File size in bytes
+             * @example 1048576
+             */
+            size: number;
+            /**
+             * @description Full path to the backup file in object store
+             * @example backups/automatic/backup-20240101-120000.sql
+             */
+            path: string;
+            /** @description Optional metadata fields for the backup */
+            metadata?: {
+                /**
+                 * @description Source of the backup
+                 * @example database
+                 */
+                source?: string;
+                /**
+                 * @description Version of the backup format
+                 * @example 1.0
+                 */
+                version?: string;
+            } & {
+                [key: string]: unknown;
+            };
         };
         login: {
             /** @enum {string} */

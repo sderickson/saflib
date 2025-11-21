@@ -25,5 +25,7 @@ components:
     # Add your shared schemas here
     Error:
       $ref: "./schemas/error.yaml"
+    Backup:
+      $ref: "./schemas/backup.yaml"
     ProductEvent:
       $ref: "./events/index.yaml"
