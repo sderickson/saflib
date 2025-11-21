@@ -5,6 +5,7 @@ import {
   defineWorkflow,
   step,
   CommandStepMachine,
+  makeLineReplace,
 } from "@saflib/workflows";
 import path from "node:path";
 
@@ -26,7 +27,7 @@ const input = [
 ] as const;
 
 interface AddExportWorkflowContext {
-  name: string;
+  targetName: string;
   path: string;
   targetDir: string;
   exportPath: string;
@@ -41,7 +42,7 @@ export const AddExportWorkflowDefinition = defineWorkflow<
 
   description: "Add new exports (functions, classes, interfaces) to packages",
 
-  checklistDescription: ({ name, path }) => `Add ${name} export to ${path}.`,
+  checklistDescription: ({ targetName, path }) => `Add ${targetName} export to ${path}.`,
 
   input,
 
@@ -53,7 +54,7 @@ export const AddExportWorkflowDefinition = defineWorkflow<
     const indexPath = path.join(input.cwd, "index.ts");
 
     return {
-      name: input.name,
+      targetName: input.name,
       path: input.path,
       targetDir,
       exportPath,
@@ -62,8 +63,8 @@ export const AddExportWorkflowDefinition = defineWorkflow<
   },
 
   templateFiles: {
-    export: path.join(sourceDir, "template-file.ts"),
-    test: path.join(sourceDir, "template-file.test.ts"),
+    export: path.join(sourceDir, "__target-name__.ts"),
+    test: path.join(sourceDir, "__target-name__.test.ts"),
   },
 
   versionControl: {
@@ -75,18 +76,18 @@ export const AddExportWorkflowDefinition = defineWorkflow<
 
   steps: [
     step(CopyStepMachine, ({ context }) => ({
-      name: context.name,
       targetDir: context.targetDir,
+      lineReplace: makeLineReplace(context),
     })),
 
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "export",
-      promptMessage: `Update **${path.basename(context.copiedFiles!.export)}** to implement the ${context.name} export.`,
+      promptMessage: `Update **${path.basename(context.copiedFiles!.export)}** to implement the ${context.targetName} export.`,
     })),
 
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "test",
-      promptMessage: `Update **${path.basename(context.copiedFiles!.test)}** to test the ${context.name} functionality.`,
+      promptMessage: `Update **${path.basename(context.copiedFiles!.test)}** to test the ${context.targetName} functionality.`,
     })),
 
     step(CommandStepMachine, () => ({
@@ -95,7 +96,7 @@ export const AddExportWorkflowDefinition = defineWorkflow<
     })),
 
     step(PromptStepMachine, ({ context }) => ({
-      promptText: `Add the ${context.name} export to the package's index.ts file. Import and export the new functionality from ${context.exportPath}.`,
+      promptText: `Add the ${context.targetName} export to the package's index.ts file. Import and export the new functionality from ${context.exportPath}.`,
     })),
 
     step(CommandStepMachine, () => ({
