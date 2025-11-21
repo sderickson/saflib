@@ -3,6 +3,8 @@ import {
   defineWorkflow,
   step,
   UpdateStepMachine,
+  PromptStepMachine,
+  makeLineReplace,
 } from "@saflib/workflows";
 import path from "path";
 
@@ -18,10 +20,8 @@ const input = [
 ] as const;
 
 export interface SpecProjectWorkflowContext {
-  name: string;
+  targetName: string;
   targetDir: string;
-  safDocOutput: string;
-  safWorkflowHelpOutput: string;
 }
 
 export const SpecProjectWorkflowDefinition = defineWorkflow<
@@ -42,28 +42,36 @@ export const SpecProjectWorkflowDefinition = defineWorkflow<
     const targetDir = path.resolve(input.cwd, "notes", projectDirName);
 
     return {
-      name: input.name,
+      targetName: input.name,
       targetDir,
-      safDocOutput: "",
-      safWorkflowHelpOutput: "",
     };
   },
 
   templateFiles: {
-    spec: path.join(sourceDir, "template-file.spec.md"),
+    spec: path.join(sourceDir, "__target-name__.spec.md"),
+    workflow: path.join(sourceDir, "__target-name__.workflow.ts"),
   },
 
   docFiles: {},
 
   steps: [
     step(CopyStepMachine, ({ context }) => ({
-      name: context.name,
       targetDir: context.targetDir,
+      lineReplace: makeLineReplace(context),  
     })),
 
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "spec",
       promptMessage: `Update **${path.basename(context.copiedFiles!.spec)}**.`,
+    })),
+
+    step(PromptStepMachine, () => ({
+      promptText: `Check with the user that the spec is complete and correct.`,
+    })),
+
+    step(UpdateStepMachine, ({ context }) => ({
+      fileId: "workflow",
+      promptMessage: `Update **${path.basename(context.copiedFiles!.workflow)}**.`,
     })),
   ],
 });
