@@ -13,6 +13,9 @@ paths:
   /backups/{backupId}:
     delete:
       $ref: "./routes/backups/delete.yaml#/deleteBackup"
+  /backups/{backupId}/restore:
+    post:
+      $ref: "./routes/backups/restore.yaml#/restoreBackup"
 
 components:
   schemas:

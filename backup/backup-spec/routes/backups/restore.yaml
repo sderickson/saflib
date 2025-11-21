@@ -1,0 +1,47 @@
+restoreBackup:
+  summary: "Restore from a backup"
+  operationId: "restoreBackup"
+
+  parameters:
+    - name: "backupId"
+      in: "path"
+      required: true
+      schema:
+        type: "string"
+      description: "The backup ID"
+
+  responses:
+    "200":
+      description: "Backup restored successfully"
+      content:
+        application/json:
+          schema:
+            type: "object"
+            properties:
+              success:
+                type: "boolean"
+                example: true
+              message:
+                type: "string"
+                example: "Backup restored successfully"
+
+    "401":
+      description: "Unauthorized - missing or invalid auth headers, or not logged in."
+      content:
+        application/json:
+          schema:
+            $ref: "../../schemas/error.yaml"
+
+    "403":
+      description: "Forbidden - user does not have required privileges."
+      content:
+        application/json:
+          schema:
+            $ref: "../../schemas/error.yaml"
+
+    "404":
+      description: "Backup not found"
+      content:
+        application/json:
+          schema:
+            $ref: "../../schemas/error.yaml"
