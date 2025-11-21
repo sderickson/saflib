@@ -21,6 +21,7 @@
     "@saflib/service": "*",
     "@saflib/vue": "*",
     "@saflib/workflows": "*",
-    "@saflib/xstate": "*"
+    "@saflib/xstate": "*",
+    "product": "*"
   }
 }
