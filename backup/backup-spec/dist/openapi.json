@@ -5,7 +5,59 @@
     "version": "1.0.0",
     "description": "API specification for the backup service"
   },
-  "paths": null,
+  "paths": {
+    "/backups": {
+      "get": {
+        "summary": "List all backups",
+        "operationId": "listBackups",
+        "responses": {
+          "200": {
+            "description": "List of backups",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/backup"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - missing or invalid auth headers, or not logged in.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - user does not have required privileges.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
   "components": {
     "schemas": {
       "Error": {
@@ -16,20 +68,6 @@
       },
       "ProductEvent": {
         "$ref": "#/components/schemas/index"
-      },
-      "error": {
-        "type": "object",
-        "properties": {
-          "code": {
-            "type": "string",
-            "description": "A short, machine-readable error code, for when HTTP status codes are not sufficient."
-          },
-          "message": {
-            "type": "string",
-            "description": "A human-readable description of the error.",
-            "example": "The requested resource could not be found."
-          }
-        }
       },
       "backup": {
         "type": "object",
@@ -90,6 +128,20 @@
           "size",
           "path"
         ]
+      },
+      "error": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "A short, machine-readable error code, for when HTTP status codes are not sufficient."
+          },
+          "message": {
+            "type": "string",
+            "description": "A human-readable description of the error.",
+            "example": "The requested resource could not be found."
+          }
+        }
       },
       "login": {
         "type": "object",

@@ -5,20 +5,9 @@ info:
   description: API specification for the backup service
 
 paths:
-  # Add your API routes here
-  # Example:
-  # /resource:
-  #   get:
-  #     $ref: "./routes/resource/list.yaml#/listResource"
-  #   post:
-  #     $ref: "./routes/resource/create.yaml#/createResource"
-  # /resource/{id}:
-  #   get:
-  #     $ref: "./routes/resource/get.yaml#/getResource"
-  #   put:
-  #     $ref: "./routes/resource/update.yaml#/updateResource"
-  #   delete:
-  #     $ref: "./routes/resource/delete.yaml#/deleteResource"
+  /backups:
+    get:
+      $ref: "./routes/backups/list.yaml#/listBackups"
 
 components:
   schemas:
