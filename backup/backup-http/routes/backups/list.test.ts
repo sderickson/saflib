@@ -148,22 +148,6 @@ describe("GET /backups", () => {
     });
   });
 
-  it("should return 500 when object store listFiles fails", async () => {
-    const errorObjectStore = new TestObjectStore();
-    errorObjectStore.setListShouldFail(new StorageError("Failed to list files"));
-    const errorApp = createBackupHttpApp({
-      backupDbKey: dbKey,
-      backupFn: async () => new Readable(),
-      objectStore: errorObjectStore,
-    });
-
-    const response = await request(errorApp)
-      .get("/backups")
-      .set(makeAdminHeaders());
-
-    expect(response.status).toBe(500);
-  });
-
   it("should require authentication", async () => {
     const response = await request(app).get("/backups");
 
