@@ -1,11 +1,12 @@
 import { Readable } from "stream";
-import { ObjectStore } from "../ObjectStore.ts";
+import { ObjectStore, PathTraversalError } from "../ObjectStore.ts";
 import { getBlobServiceClient } from "./client.ts";
 import { uploadFile } from "./upload-file.ts";
 import { deleteBlob } from "./delete-blob.ts";
 import { typedEnv } from "../env.ts";
 import type { ReturnsError } from "@saflib/monorepo";
 import { getSafReporters } from "@saflib/node";
+import type { AccessTier } from "@azure/storage-blob";
 
 export class AzureStorageError extends Error {
   public readonly cause?: Error;
@@ -18,13 +19,38 @@ export class AzureStorageError extends Error {
 }
 
 export class AzureObjectStore extends ObjectStore {
+  protected readonly containerName: string;
+  protected readonly tier: AccessTier;
+
+  constructor(
+    containerName: string,
+    folderPath: string = "",
+    tier: AccessTier = "Hot",
+  ) {
+    super(folderPath);
+    this.containerName = containerName;
+    this.tier = tier;
+  }
   async uploadFile(
     path: string,
     stream: Readable,
     metadata?: Record<string, string>,
   ): Promise<ReturnsError<{ success: boolean; url?: string }>> {
     try {
-      const blobName = this.getScopedPath(path);
+      let blobName: string;
+      try {
+        blobName = this.getScopedPath(path);
+      } catch (error) {
+        if (error instanceof PathTraversalError) {
+          return {
+            error: new AzureStorageError(
+              `Failed to upload file: ${error.message}`,
+              error,
+            ),
+          };
+        }
+        throw error;
+      }
 
       const uploadMetadata = {
         mimetype: metadata?.mimetype || "application/octet-stream",
@@ -130,7 +156,20 @@ export class AzureObjectStore extends ObjectStore {
     path: string,
   ): Promise<ReturnsError<{ success: boolean }>> {
     try {
-      const blobName = this.getScopedPath(path);
+      let blobName: string;
+      try {
+        blobName = this.getScopedPath(path);
+      } catch (error) {
+        if (error instanceof PathTraversalError) {
+          return {
+            error: new AzureStorageError(
+              `Failed to delete file: ${error.message}`,
+              error,
+            ),
+          };
+        }
+        throw error;
+      }
 
       const result = await deleteBlob({
         containerName: this.containerName,
@@ -162,7 +201,20 @@ export class AzureObjectStore extends ObjectStore {
 
   async readFile(path: string): Promise<ReturnsError<Readable>> {
     try {
-      const blobName = this.getScopedPath(path);
+      let blobName: string;
+      try {
+        blobName = this.getScopedPath(path);
+      } catch (error) {
+        if (error instanceof PathTraversalError) {
+          return {
+            error: new AzureStorageError(
+              `Failed to read file: ${error.message}`,
+              error,
+            ),
+          };
+        }
+        throw error;
+      }
 
       if (typedEnv.NODE_ENV === "test") {
         return { result: new Readable() };

@@ -1,5 +1,4 @@
 import { Readable } from "stream";
-import type { AccessTier } from "@azure/storage-blob";
 import type { ReturnsError } from "@saflib/monorepo";
 
 export class PathTraversalError extends Error {
@@ -12,18 +11,10 @@ export class PathTraversalError extends Error {
 }
 
 export abstract class ObjectStore {
-  protected readonly containerName: string;
   protected readonly folderPath: string;
-  protected readonly tier: AccessTier;
 
-  constructor(
-    containerName: string,
-    folderPath: string = "",
-    tier: AccessTier = "Hot",
-  ) {
-    this.containerName = containerName;
+  constructor(folderPath: string = "") {
     this.folderPath = this.normalizePath(folderPath);
-    this.tier = tier;
   }
 
   protected normalizePath(path: string): string {

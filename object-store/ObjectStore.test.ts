@@ -47,105 +47,100 @@ class TestObjectStore extends ObjectStore {
 
 describe("ObjectStore", () => {
   describe("constructor", () => {
-    it("should initialize with container name", () => {
-      const store = new TestObjectStore("test-container");
+    it("should initialize without folder path", () => {
+      const store = new TestObjectStore();
       expect(store).toBeInstanceOf(ObjectStore);
     });
 
-    it("should initialize with container name and folder path", () => {
-      const store = new TestObjectStore("test-container", "folder/subfolder");
-      expect(store).toBeInstanceOf(ObjectStore);
-    });
-
-    it("should initialize with container name, folder path, and tier", () => {
-      const store = new TestObjectStore("test-container", "folder", "Cool");
+    it("should initialize with folder path", () => {
+      const store = new TestObjectStore("folder/subfolder");
       expect(store).toBeInstanceOf(ObjectStore);
     });
   });
 
   describe("normalizePath", () => {
     it("should normalize paths with multiple slashes", () => {
-      const store = new TestObjectStore("test-container");
+      const store = new TestObjectStore();
       expect(store.normalizePath("a//b///c")).toBe("a/b/c");
     });
 
     it("should remove empty segments", () => {
-      const store = new TestObjectStore("test-container");
+      const store = new TestObjectStore();
       expect(store.normalizePath("a//b")).toBe("a/b");
     });
 
     it("should remove dot segments", () => {
-      const store = new TestObjectStore("test-container");
+      const store = new TestObjectStore();
       expect(store.normalizePath("a/./b")).toBe("a/b");
     });
 
     it("should handle empty string", () => {
-      const store = new TestObjectStore("test-container");
+      const store = new TestObjectStore();
       expect(store.normalizePath("")).toBe("");
     });
 
     it("should handle single dot", () => {
-      const store = new TestObjectStore("test-container");
+      const store = new TestObjectStore();
       expect(store.normalizePath(".")).toBe("");
     });
 
     it("should handle leading and trailing slashes", () => {
-      const store = new TestObjectStore("test-container");
+      const store = new TestObjectStore();
       expect(store.normalizePath("/a/b/")).toBe("a/b");
     });
   });
 
   describe("validatePath", () => {
     it("should validate paths within folder scope", () => {
-      const store = new TestObjectStore("test-container", "folder");
+      const store = new TestObjectStore("folder");
       expect(store.validatePath("file.txt")).toBe("folder/file.txt");
     });
 
     it("should validate paths without folder scope", () => {
-      const store = new TestObjectStore("test-container");
+      const store = new TestObjectStore();
       expect(store.validatePath("file.txt")).toBe("file.txt");
     });
 
     it("should throw PathTraversalError for paths with ..", () => {
-      const store = new TestObjectStore("test-container", "folder");
+      const store = new TestObjectStore("folder");
       expect(() => store.validatePath("../file.txt")).toThrow(
         PathTraversalError,
       );
     });
 
     it("should throw PathTraversalError for paths escaping folder scope", () => {
-      const store = new TestObjectStore("test-container", "folder");
+      const store = new TestObjectStore("folder");
       expect(() => store.validatePath("../../file.txt")).toThrow(
         PathTraversalError,
       );
     });
 
     it("should allow creating subdirectories within folder scope", () => {
-      const store = new TestObjectStore("test-container", "folder/subfolder");
+      const store = new TestObjectStore("folder/subfolder");
       expect(store.validatePath("other/file.txt")).toBe(
         "folder/subfolder/other/file.txt",
       );
     });
 
     it("should allow paths within nested folder scope", () => {
-      const store = new TestObjectStore("test-container", "folder/subfolder");
+      const store = new TestObjectStore("folder/subfolder");
       expect(store.validatePath("file.txt")).toBe("folder/subfolder/file.txt");
     });
 
     it("should normalize paths during validation", () => {
-      const store = new TestObjectStore("test-container", "folder");
+      const store = new TestObjectStore("folder");
       expect(store.validatePath("sub//file.txt")).toBe("folder/sub/file.txt");
     });
   });
 
   describe("getScopedPath", () => {
     it("should return scoped path", () => {
-      const store = new TestObjectStore("test-container", "folder");
+      const store = new TestObjectStore("folder");
       expect(store.getScopedPath("file.txt")).toBe("folder/file.txt");
     });
 
     it("should validate path before returning", () => {
-      const store = new TestObjectStore("test-container", "folder");
+      const store = new TestObjectStore("folder");
       expect(() => store.getScopedPath("../file.txt")).toThrow(
         PathTraversalError,
       );
