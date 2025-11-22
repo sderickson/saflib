@@ -1,49 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { Readable } from "stream";
 import { ObjectStore, PathTraversalError } from "./ObjectStore.ts";
-import type { ReturnsError } from "@saflib/monorepo";
-
-class TestObjectStore extends ObjectStore {
-  public normalizePath(path: string): string {
-    return super.normalizePath(path);
-  }
-
-  public validatePath(path: string): string {
-    return super.validatePath(path);
-  }
-
-  public getScopedPath(path: string): string {
-    return super.getScopedPath(path);
-  }
-
-  async uploadFile(
-    _path: string,
-    _stream: Readable,
-    _metadata?: Record<string, string>,
-  ): Promise<ReturnsError<{ success: boolean; url?: string }>> {
-    return { result: { success: true } };
-  }
-
-  async listFiles(
-    _prefix?: string,
-  ): Promise<
-    ReturnsError<
-      Array<{ path: string; size?: number; metadata?: Record<string, string> }>
-    >
-  > {
-    return { result: [] };
-  }
-
-  async deleteFile(
-    _path: string,
-  ): Promise<ReturnsError<{ success: boolean }>> {
-    return { result: { success: true } };
-  }
-
-  async readFile(_path: string): Promise<ReturnsError<Readable>> {
-    return { result: new Readable() };
-  }
-}
+import { TestObjectStore } from "./TestObjectStore.ts";
 
 describe("ObjectStore", () => {
   describe("constructor", () => {

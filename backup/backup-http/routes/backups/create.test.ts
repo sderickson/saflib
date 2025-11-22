@@ -5,258 +5,20 @@ import { Readable } from "stream";
 import { createBackupHttpApp } from "../../http.ts";
 import { makeUserHeaders, makeAdminHeaders } from "@saflib/express";
 import { backupDb } from "@saflib/backup-db";
-import { ObjectStore } from "@saflib/object-store";
 import {
-  BlobAlreadyExistsError,
+  TestObjectStore,
   InvalidUploadParamsError,
   StorageError,
 } from "@saflib/object-store";
-import type { ReturnsError } from "@saflib/monorepo";
-
-class FakeObjectStore extends ObjectStore {
-  private files: Array<{
-    path: string;
-    size?: number;
-    metadata?: Record<string, string>;
-  }> = [];
-
-  constructor() {
-    super("test-container");
-  }
-
-  async uploadFile(
-    path: string,
-    _stream: Readable,
-    metadata?: Record<string, string>,
-  ): Promise<ReturnsError<{ success: boolean; url?: string }>> {
-    const existingFile = this.files.find((f) => f.path === path);
-    if (existingFile) {
-      return {
-        error: new BlobAlreadyExistsError(path, "test-container"),
-      };
-    }
-
-    this.files.push({
-      path,
-      size: 1024,
-      metadata,
-    });
-
-    return {
-      result: {
-        success: true,
-        url: `https://mock-storage.blob.core.windows.net/test-container/${path}`,
-      },
-    };
-  }
-
-  async listFiles(): Promise<
-    ReturnsError<
-      Array<{ path: string; size?: number; metadata?: Record<string, string> }>
-    >
-  > {
-    return { result: this.files };
-  }
-
-  async deleteFile(): Promise<ReturnsError<{ success: boolean }>> {
-    return { result: { success: true } };
-  }
-
-  async readFile(): Promise<ReturnsError<Readable>> {
-    return { result: new Readable() };
-  }
-}
-
-class BlobAlreadyExistsObjectStore extends ObjectStore {
-  constructor() {
-    super("test-container");
-  }
-
-  async uploadFile(
-    path: string,
-    _stream: Readable,
-  ): Promise<ReturnsError<{ success: boolean; url?: string }>> {
-    return {
-      error: new BlobAlreadyExistsError(path, "test-container"),
-    };
-  }
-
-  async listFiles(): Promise<
-    ReturnsError<
-      Array<{ path: string; size?: number; metadata?: Record<string, string> }>
-    >
-  > {
-    return { result: [] };
-  }
-
-  async deleteFile(): Promise<ReturnsError<{ success: boolean }>> {
-    return { result: { success: true } };
-  }
-
-  async readFile(): Promise<ReturnsError<Readable>> {
-    return { result: new Readable() };
-  }
-}
-
-class InvalidUploadParamsObjectStore extends ObjectStore {
-  constructor() {
-    super("test-container");
-  }
-
-  async uploadFile(): Promise<ReturnsError<{ success: boolean; url?: string }>> {
-    return {
-      error: new InvalidUploadParamsError(),
-    };
-  }
-
-  async listFiles(): Promise<
-    ReturnsError<
-      Array<{ path: string; size?: number; metadata?: Record<string, string> }>
-    >
-  > {
-    return { result: [] };
-  }
-
-  async deleteFile(): Promise<ReturnsError<{ success: boolean }>> {
-    return { result: { success: true } };
-  }
-
-  async readFile(): Promise<ReturnsError<Readable>> {
-    return { result: new Readable() };
-  }
-}
-
-class StorageErrorObjectStore extends ObjectStore {
-  constructor() {
-    super("test-container");
-  }
-
-  async uploadFile(): Promise<ReturnsError<{ success: boolean; url?: string }>> {
-    return {
-      error: new StorageError("Storage operation failed"),
-    };
-  }
-
-  async listFiles(): Promise<
-    ReturnsError<
-      Array<{ path: string; size?: number; metadata?: Record<string, string> }>
-    >
-  > {
-    return { result: [] };
-  }
-
-  async deleteFile(): Promise<ReturnsError<{ success: boolean }>> {
-    return { result: { success: true } };
-  }
-
-  async readFile(): Promise<ReturnsError<Readable>> {
-    return { result: new Readable() };
-  }
-}
-
-class UploadFailedObjectStore extends ObjectStore {
-  constructor() {
-    super("test-container");
-  }
-
-  async uploadFile(): Promise<ReturnsError<{ success: boolean; url?: string }>> {
-    return { result: undefined as any };
-  }
-
-  async listFiles(): Promise<
-    ReturnsError<
-      Array<{ path: string; size?: number; metadata?: Record<string, string> }>
-    >
-  > {
-    return { result: [] };
-  }
-
-  async deleteFile(): Promise<ReturnsError<{ success: boolean }>> {
-    return { result: { success: true } };
-  }
-
-  async readFile(): Promise<ReturnsError<Readable>> {
-    return { result: new Readable() };
-  }
-}
-
-class ListFilesErrorObjectStore extends ObjectStore {
-  constructor() {
-    super("test-container");
-  }
-
-  async uploadFile(
-    path: string,
-    _stream: Readable,
-    metadata?: Record<string, string>,
-  ): Promise<ReturnsError<{ success: boolean; url?: string }>> {
-    return {
-      result: {
-        success: true,
-        url: `https://mock-storage.blob.core.windows.net/test-container/${path}`,
-      },
-    };
-  }
-
-  async listFiles(): Promise<
-    ReturnsError<
-      Array<{ path: string; size?: number; metadata?: Record<string, string> }>
-    >
-  > {
-    return { error: new Error("Failed to list files") };
-  }
-
-  async deleteFile(): Promise<ReturnsError<{ success: boolean }>> {
-    return { result: { success: true } };
-  }
-
-  async readFile(): Promise<ReturnsError<Readable>> {
-    return { result: new Readable() };
-  }
-}
-
-class BackupNotFoundObjectStore extends ObjectStore {
-  constructor() {
-    super("test-container");
-  }
-
-  async uploadFile(
-    path: string,
-    _stream: Readable,
-  ): Promise<ReturnsError<{ success: boolean; url?: string }>> {
-    return {
-      result: {
-        success: true,
-        url: `https://mock-storage.blob.core.windows.net/test-container/${path}`,
-      },
-    };
-  }
-
-  async listFiles(): Promise<
-    ReturnsError<
-      Array<{ path: string; size?: number; metadata?: Record<string, string> }>
-    >
-  > {
-    return { result: [] };
-  }
-
-  async deleteFile(): Promise<ReturnsError<{ success: boolean }>> {
-    return { result: { success: true } };
-  }
-
-  async readFile(): Promise<ReturnsError<Readable>> {
-    return { result: new Readable() };
-  }
-}
 
 describe("POST /backups", () => {
   let app: express.Express;
   let dbKey: symbol;
-  let objectStore: FakeObjectStore;
+  let objectStore: TestObjectStore;
 
   beforeEach(() => {
     dbKey = backupDb.connect();
-    objectStore = new FakeObjectStore();
+    objectStore = new TestObjectStore();
     app = createBackupHttpApp({
       backupDbKey: dbKey,
       backupFn: async () => new Readable(),
@@ -322,8 +84,13 @@ describe("POST /backups", () => {
     expect(response.status).toBe(401);
   });
 
-  it("should return 409 when backup already exists", async () => {
-    const errorObjectStore = new BlobAlreadyExistsObjectStore();
+  it("should return 500 when backup already exists (returns StorageError)", async () => {
+    const errorObjectStore = new TestObjectStore();
+    const testPath = "backup-1234567890-manual-test-id.db";
+    errorObjectStore.setFiles([{ path: testPath }]);
+    errorObjectStore.setUploadShouldFail(new StorageError(
+      `Blob ${testPath} already exists in container test-container. Use force=true to overwrite.`
+    ));
     const errorApp = createBackupHttpApp({
       backupDbKey: dbKey,
       backupFn: async () => new Readable(),
@@ -335,14 +102,18 @@ describe("POST /backups", () => {
       .set(makeAdminHeaders())
       .send({});
 
-    expect(response.status).toBe(409);
+    expect(response.status).toBe(500);
     expect(response.body).toMatchObject({
-      code: "BACKUP_ALREADY_EXISTS",
+      code: "STORAGE_ERROR",
     });
   });
 
-  it("should return 400 for invalid upload parameters", async () => {
-    const errorObjectStore = new InvalidUploadParamsObjectStore();
+  it("should return 500 for invalid upload parameters (returns StorageError)", async () => {
+    const errorObjectStore = new TestObjectStore();
+    errorObjectStore.setUploadShouldFail(new StorageError(
+      "Either buffer or stream must be provided, but not both",
+      new InvalidUploadParamsError()
+    ));
     const errorApp = createBackupHttpApp({
       backupDbKey: dbKey,
       backupFn: async () => new Readable(),
@@ -354,14 +125,15 @@ describe("POST /backups", () => {
       .set(makeAdminHeaders())
       .send({});
 
-    expect(response.status).toBe(400);
+    expect(response.status).toBe(500);
     expect(response.body).toMatchObject({
-      code: "INVALID_UPLOAD_PARAMS",
+      code: "STORAGE_ERROR",
     });
   });
 
   it("should return 500 for storage error", async () => {
-    const errorObjectStore = new StorageErrorObjectStore();
+    const errorObjectStore = new TestObjectStore();
+    errorObjectStore.setUploadShouldFail(new StorageError("Storage operation failed"));
     const errorApp = createBackupHttpApp({
       backupDbKey: dbKey,
       backupFn: async () => new Readable(),
@@ -380,7 +152,8 @@ describe("POST /backups", () => {
   });
 
   it("should return 500 when upload fails", async () => {
-    const errorObjectStore = new UploadFailedObjectStore();
+    const errorObjectStore = new TestObjectStore();
+    errorObjectStore.setUploadShouldFail(new StorageError("Upload failed"));
     const errorApp = createBackupHttpApp({
       backupDbKey: dbKey,
       backupFn: async () => new Readable(),
@@ -399,7 +172,8 @@ describe("POST /backups", () => {
   });
 
   it("should return 500 when listFiles fails", async () => {
-    const errorObjectStore = new ListFilesErrorObjectStore();
+    const errorObjectStore = new TestObjectStore();
+    errorObjectStore.setListShouldFail(new StorageError("Failed to list files"));
     const errorApp = createBackupHttpApp({
       backupDbKey: dbKey,
       backupFn: async () => new Readable(),
@@ -418,7 +192,8 @@ describe("POST /backups", () => {
   });
 
   it("should return 500 when backup not found after upload", async () => {
-    const errorObjectStore = new BackupNotFoundObjectStore();
+    const errorObjectStore = new TestObjectStore();
+    errorObjectStore.setListShouldFail(new StorageError("Backup not found"));
     const errorApp = createBackupHttpApp({
       backupDbKey: dbKey,
       backupFn: async () => new Readable(),

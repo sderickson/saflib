@@ -5,79 +5,16 @@ import { Readable } from "stream";
 import { createBackupHttpApp } from "../../http.ts";
 import { makeUserHeaders, makeAdminHeaders } from "@saflib/express";
 import { backupDb } from "@saflib/backup-db";
-import { ObjectStore } from "@saflib/object-store";
-import type { ReturnsError } from "@saflib/monorepo";
-
-class FakeObjectStore extends ObjectStore {
-  private files: Array<{
-    path: string;
-    size?: number;
-    metadata?: Record<string, string>;
-  }> = [];
-
-  constructor() {
-    super("test-container");
-  }
-
-  setFiles(files: Array<{ path: string; size?: number; metadata?: Record<string, string> }>) {
-    this.files = files;
-  }
-
-  async listFiles(): Promise<
-    ReturnsError<
-      Array<{ path: string; size?: number; metadata?: Record<string, string> }>
-    >
-  > {
-    return { result: this.files };
-  }
-
-  async uploadFile(): Promise<ReturnsError<{ success: boolean; url?: string }>> {
-    return { result: { success: true } };
-  }
-
-  async deleteFile(): Promise<ReturnsError<{ success: boolean }>> {
-    return { result: { success: true } };
-  }
-
-  async readFile(): Promise<ReturnsError<Readable>> {
-    return { result: new Readable() };
-  }
-}
-
-class ErrorObjectStore extends ObjectStore {
-  constructor() {
-    super("test-container");
-  }
-
-  async listFiles(): Promise<
-    ReturnsError<
-      Array<{ path: string; size?: number; metadata?: Record<string, string> }>
-    >
-  > {
-    return { error: new Error("Failed to list files") };
-  }
-
-  async uploadFile(): Promise<ReturnsError<{ success: boolean; url?: string }>> {
-    return { result: { success: true } };
-  }
-
-  async deleteFile(): Promise<ReturnsError<{ success: boolean }>> {
-    return { result: { success: true } };
-  }
-
-  async readFile(): Promise<ReturnsError<Readable>> {
-    return { result: new Readable() };
-  }
-}
+import { TestObjectStore, StorageError } from "@saflib/object-store";
 
 describe("GET /backups", () => {
   let app: express.Express;
   let dbKey: symbol;
-  let objectStore: FakeObjectStore;
+  let objectStore: TestObjectStore;
 
   beforeEach(() => {
     dbKey = backupDb.connect();
-    objectStore = new FakeObjectStore();
+    objectStore = new TestObjectStore();
     app = createBackupHttpApp({
       backupDbKey: dbKey,
       backupFn: async () => new Readable(),
@@ -212,7 +149,8 @@ describe("GET /backups", () => {
   });
 
   it("should return 500 when object store listFiles fails", async () => {
-    const errorObjectStore = new ErrorObjectStore();
+    const errorObjectStore = new TestObjectStore();
+    errorObjectStore.setListShouldFail(new StorageError("Failed to list files"));
     const errorApp = createBackupHttpApp({
       backupDbKey: dbKey,
       backupFn: async () => new Readable(),
