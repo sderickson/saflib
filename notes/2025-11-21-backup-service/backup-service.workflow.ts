@@ -134,17 +134,17 @@ export const BackupServiceWorkflowDefinition = defineWorkflow<
 // Pass these dependencies to each route handler.`,
 //     })),
 
-    step(makeWorkflowMachine(AddHandlerWorkflowDefinition), () => ({
-      path: "./routes/backups/create.ts",
-      prompt: `Implement POST /backups handler:
-- Accept optional metadata in request body (description, tags)
-- Call the backup function passed to the router to get a stream
-- Generate backup filename: backup-{timestamp}-manual-{uuid}.db
-- Upload to object store using uploadFile
-- Return backup metadata
-- Use getSafContextWithAuth and check scopes includes "*"
-- The router will receive backupFn and objectStore as dependencies`,
-    })),
+//     step(makeWorkflowMachine(AddHandlerWorkflowDefinition), () => ({
+//       path: "./routes/backups/create.ts",
+//       prompt: `Implement POST /backups handler:
+// - Accept optional metadata in request body (description, tags)
+// - Call the backup function passed to the router to get a stream
+// - Generate backup filename: backup-{timestamp}-manual-{uuid}.db
+// - Upload to object store using uploadFile
+// - Return backup metadata
+// - Use getSafContextWithAuth and check scopes includes "*"
+// - The router will receive backupFn and objectStore as dependencies`,
+//     })),
 
     step(makeWorkflowMachine(AddHandlerWorkflowDefinition), () => ({
       path: "./routes/backups/delete.ts",
