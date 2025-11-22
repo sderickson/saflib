@@ -20,11 +20,15 @@ import common.Caddyfile
 	reverse_proxy clients:5173
 }
 
-{$PROTOCOL}://admin.{$__PRODUCT_NAME__DOMAIN} {
-	reverse_proxy clients:5173
+{$PROTOCOL}://__product-name__.{$__PRODUCT_NAME__DOMAIN} {
+	import __product-name__-api-proxy __product-name__-monolith:{$__PRODUCT_NAME__SERVICE_HTTP_PORT}
 }
 
 {$PROTOCOL}://account.{$__PRODUCT_NAME__DOMAIN} {
+	reverse_proxy clients:5173
+}
+
+{$PROTOCOL}://admin.{$__PRODUCT_NAME__DOMAIN} {
 	reverse_proxy clients:5173
 }
 
@@ -33,18 +37,6 @@ import common.Caddyfile
 		header_up Host azurite:10000
 		header_up X-Forwarded-Host {host}
 	}
-}
-
-{$PROTOCOL}://grafana.{$__PRODUCT_NAME__DOMAIN} {
-	import __product-name__-admin-proxy grafana:3000
-}
-
-{$PROTOCOL}://prometheus.{$__PRODUCT_NAME__DOMAIN} {
-	import __product-name__-admin-proxy prometheus:9090
-}
-
-{$PROTOCOL}://__product-name__.{$__PRODUCT_NAME__DOMAIN} {
-	import __product-name__-api-proxy __product-name__-monolith:{$__PRODUCT_NAME__SERVICE_HTTP_PORT}
 }
 
 {$PROTOCOL}://identity.{$__PRODUCT_NAME__DOMAIN} {

@@ -8,7 +8,6 @@ services:
       - ./caddy-config:/etc/caddy/
       - caddy_data:/data
       - caddy_config:/config
-      - ../prod/remote-assets/health-assets:/srv/health-assets
     environment:
       - __PRODUCT_NAME__DOMAIN=${__PRODUCT_NAME__DOMAIN}
       - PROTOCOL=${PROTOCOL}
