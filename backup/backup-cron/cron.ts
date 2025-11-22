@@ -3,10 +3,10 @@ import {
   backupServiceStorage,
   type BackupServiceContext,
 } from "@saflib/backup-service-common";
+import { backupJobs as backupGroupJobs } from "./jobs/backup/index.ts";
 
-// TODO: Import and add jobs here
 export const backupJobs: JobsMap = {
-  // Add more jobs as needed
+  ...backupGroupJobs,
 };
 
 export const runBackupCron = (
