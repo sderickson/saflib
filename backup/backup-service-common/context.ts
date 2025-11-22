@@ -6,6 +6,8 @@ import type { Readable } from "stream";
 
 export interface BackupServiceContext {
   backupDbKey: DbKey;
+  backupFn?: () => Promise<Readable>;
+  objectStore?: ObjectStore;
 }
 
 export const backupServiceStorage =
@@ -23,5 +25,7 @@ export const makeContext = (
   const dbKey = options.backupDbKey ?? backupDb.connect();
   return {
     backupDbKey: dbKey,
+    backupFn: options.backupFn,
+    objectStore: options.objectStore,
   };
 };
