@@ -2,9 +2,12 @@ import {
   defineWorkflow,
   step,
   makeWorkflowMachine,
+  CopyStepMachine,
+  makeLineReplace,
 } from "@saflib/workflows";
 import { AddSpaWorkflowDefinition } from "@saflib/vue/workflows";
 import { InitServiceWorkflowDefinition } from "@saflib/service/workflows";
+import path from "node:path";
 
 const input = [
   {
@@ -40,7 +43,9 @@ export const InitProductWorkflowDefinition = defineWorkflow<
     return context;
   },
 
-  templateFiles: {},
+  templateFiles: {
+    deploy: path.join(import.meta.dirname, "templates/deploy/__product-name__-dev"),
+  },
 
   docFiles: {},
 
@@ -77,6 +82,12 @@ export const InitProductWorkflowDefinition = defineWorkflow<
     step(makeWorkflowMachine(InitServiceWorkflowDefinition), ({ context }) => ({
       name: `${context.productName}-service`,
       path: `./services/${context.productName}`,
+    })),
+
+    step(CopyStepMachine, ({ context }) => ({
+      name: context.productName,
+      targetDir: path.join(context.cwd, `./deploy/${context.productName}-dev`),
+      lineReplace: makeLineReplace(context),
     })),
   ],
 });

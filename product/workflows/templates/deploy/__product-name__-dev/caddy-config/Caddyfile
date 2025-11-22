@@ -1,0 +1,52 @@
+import common.Caddyfile
+
+# Curried snippets
+
+(__product-name__-api-proxy) {
+	import api-proxy {$__PRODUCT_NAME__IDENTITY_SERVICE_HOST}:{$__PRODUCT_NAME__IDENTITY_SERVICE_HTTP_PORT} {args[0]}
+}
+
+(__product-name__-admin-proxy) {
+	import admin-proxy {$__PRODUCT_NAME__IDENTITY_SERVICE_HOST}:{$__PRODUCT_NAME__IDENTITY_SERVICE_HTTP_PORT} {args[0]}
+}
+
+# Subdomains
+
+{$PROTOCOL}://{$__PRODUCT_NAME__DOMAIN} {
+	reverse_proxy clients:5173
+}
+
+{$PROTOCOL}://auth.{$__PRODUCT_NAME__DOMAIN} {
+	reverse_proxy clients:5173
+}
+
+{$PROTOCOL}://admin.{$__PRODUCT_NAME__DOMAIN} {
+	reverse_proxy clients:5173
+}
+
+{$PROTOCOL}://account.{$__PRODUCT_NAME__DOMAIN} {
+	reverse_proxy clients:5173
+}
+
+{$PROTOCOL}://azurite.{$__PRODUCT_NAME__DOMAIN} {
+	reverse_proxy azurite:10000 {
+		header_up Host azurite:10000
+		header_up X-Forwarded-Host {host}
+	}
+}
+
+{$PROTOCOL}://grafana.{$__PRODUCT_NAME__DOMAIN} {
+	import __product-name__-admin-proxy grafana:3000
+}
+
+{$PROTOCOL}://prometheus.{$__PRODUCT_NAME__DOMAIN} {
+	import __product-name__-admin-proxy prometheus:9090
+}
+
+{$PROTOCOL}://__product-name__.{$__PRODUCT_NAME__DOMAIN} {
+	import __product-name__-api-proxy __product-name__-monolith:{$__PRODUCT_NAME__SERVICE_HTTP_PORT}
+}
+
+{$PROTOCOL}://identity.{$__PRODUCT_NAME__DOMAIN} {
+	import identity {$__PRODUCT_NAME__DOMAIN} {$__PRODUCT_NAME__IDENTITY_SERVICE_HOST}:{$__PRODUCT_NAME__IDENTITY_SERVICE_HTTP_PORT}
+}

@@ -1,0 +1,12 @@
+{
+  "name": "@vendata/__product-name__-dev",
+  "description": "Docker compose setup for dev environment",
+  "type": "module",
+  "scripts": {
+    "dev": "saf-docker generate && docker compose --env-file .env.dev --env-file .env -f docker-compose.yaml up"
+  },
+  "dependencies": {
+    "@saflib/dev-tools": "*"
+  }
+}
+
