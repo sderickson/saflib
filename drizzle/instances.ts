@@ -209,11 +209,54 @@ export class DbManager<S extends Schema, C extends Config> {
     return false;
   };
 
+  async restore(key: DbKey, stream: Readable): Promise<void> {
+    const { log } = makeSubsystemReporters("init", "db.restore");
+    const instance = this.instances.get(key);
+    if (!instance) {
+      throw new Error("Cannot restore: database instance not found");
+    }
+
+    const dbPath = this.dbPaths.get(key);
+    if (!dbPath) {
+      throw new Error("Cannot restore: database path not found");
+    }
+
+    if (dbPath === ":memory:") {
+      throw new Error("Cannot restore: database is in-memory");
+    }
+
+    log.info(`Restoring database from stream to: ${dbPath}`);
+
+    const writeStream = fs.createWriteStream(dbPath);
+    
+    return new Promise((resolve, reject) => {
+      stream.on("error", (error) => {
+        writeStream.destroy();
+        log.error(`Stream error during restore: ${error}`);
+        reject(error);
+      });
+
+      writeStream.on("error", (error) => {
+        stream.destroy();
+        log.error(`Write error during restore: ${error}`);
+        reject(error);
+      });
+
+      writeStream.on("finish", () => {
+        log.info(`Database restored successfully to: ${dbPath}`);
+        resolve();
+      });
+
+      stream.pipe(writeStream);
+    });
+  }
+
   publicInterface() {
     return {
       connect: this.connect,
       disconnect: this.disconnect,
       createBackup: this.createBackup.bind(this),
+      restore: this.restore.bind(this),
     };
   }
 }
