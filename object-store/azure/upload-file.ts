@@ -4,6 +4,7 @@ import type { ReturnsError } from "@saflib/monorepo";
 import { getSafReporters } from "@saflib/node";
 import { Readable } from "stream";
 import type { AccessTier } from "@azure/storage-blob";
+import { StorageError } from "../ObjectStore.ts";
 
 export interface UploadFileParams {
   containerName: string;
@@ -37,16 +38,6 @@ export class BlobAlreadyExistsError extends Error {
       `Blob ${blobName} already exists in container ${containerName}. Use force=true to overwrite.`,
     );
     this.name = "BlobAlreadyExistsError";
-  }
-}
-
-export class StorageError extends Error {
-  public readonly cause?: Error;
-
-  constructor(message: string, cause?: Error) {
-    super(message);
-    this.name = "AzureStorageError";
-    this.cause = cause;
   }
 }
 

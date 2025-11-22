@@ -1,7 +1,11 @@
 import { describe, it, expect } from "vitest";
 import { Readable } from "stream";
-import { AzureObjectStore, AzureStorageError } from "./AzureObjectStore.ts";
-import { PathTraversalError } from "../ObjectStore.ts";
+import { AzureObjectStore } from "./AzureObjectStore.ts";
+import {
+  PathTraversalError,
+  StorageError,
+  FileNotFoundError,
+} from "../ObjectStore.ts";
 
 describe("AzureObjectStore", () => {
   describe("constructor", () => {
@@ -64,7 +68,7 @@ describe("AzureObjectStore", () => {
       }
     });
 
-    it("should return AzureStorageError for invalid paths", async () => {
+    it("should return StorageError for invalid paths", async () => {
       const store = new AzureObjectStore("test-container", "folder");
       const stream = Readable.from("test content");
 
@@ -72,7 +76,7 @@ describe("AzureObjectStore", () => {
 
       expect("error" in result).toBe(true);
       if ("error" in result && result.error) {
-        expect(result.error).toBeInstanceOf(AzureStorageError);
+        expect(result.error).toBeInstanceOf(StorageError);
         expect(result.error.cause).toBeInstanceOf(PathTraversalError);
       }
     });
@@ -128,14 +132,14 @@ describe("AzureObjectStore", () => {
       }
     });
 
-    it("should return AzureStorageError for invalid paths", async () => {
+    it("should return StorageError for invalid paths", async () => {
       const store = new AzureObjectStore("test-container", "folder");
 
       const result = await store.deleteFile("../file.txt");
 
       expect("error" in result).toBe(true);
       if ("error" in result && result.error) {
-        expect(result.error).toBeInstanceOf(AzureStorageError);
+        expect(result.error).toBeInstanceOf(StorageError);
         expect(result.error.cause).toBeInstanceOf(PathTraversalError);
       }
     });
@@ -162,14 +166,14 @@ describe("AzureObjectStore", () => {
       }
     });
 
-    it("should return AzureStorageError for invalid paths", async () => {
+    it("should return StorageError for invalid paths", async () => {
       const store = new AzureObjectStore("test-container", "folder");
 
       const result = await store.readFile("../file.txt");
 
       expect("error" in result).toBe(true);
       if ("error" in result && result.error) {
-        expect(result.error).toBeInstanceOf(AzureStorageError);
+        expect(result.error).toBeInstanceOf(StorageError);
         expect(result.error.cause).toBeInstanceOf(PathTraversalError);
       }
     });
@@ -212,54 +216,57 @@ describe("AzureObjectStore", () => {
   });
 
   describe("error handling", () => {
-    it("should return AzureStorageError on upload failure", async () => {
+    it("should return StorageError on upload failure", async () => {
       const store = new AzureObjectStore("test-container");
       const stream = Readable.from("test");
 
       const result = await store.uploadFile("test.txt", stream);
 
       if ("error" in result) {
-        expect(result.error).toBeInstanceOf(AzureStorageError);
+        expect(result.error).toBeInstanceOf(StorageError);
       } else {
         expect("result" in result).toBe(true);
       }
     });
 
-    it("should return AzureStorageError on delete failure", async () => {
+    it("should return StorageError on delete failure", async () => {
       const store = new AzureObjectStore("test-container");
       const result = await store.deleteFile("nonexistent.txt");
 
       if ("error" in result) {
-        expect(result.error).toBeInstanceOf(AzureStorageError);
+        expect(result.error).toBeInstanceOf(StorageError);
       } else {
         expect("result" in result).toBe(true);
       }
     });
 
-    it("should return AzureStorageError on read failure", async () => {
+    it("should return FileNotFoundError or StorageError on read failure", async () => {
       const store = new AzureObjectStore("test-container");
       const result = await store.readFile("nonexistent.txt");
 
       if ("error" in result) {
-        expect(result.error).toBeInstanceOf(AzureStorageError);
+        expect(
+          result.error instanceof FileNotFoundError ||
+            result.error instanceof StorageError,
+        ).toBe(true);
       } else {
         expect("result" in result).toBe(true);
       }
     });
   });
 
-  describe("AzureStorageError", () => {
+  describe("StorageError", () => {
     it("should create error with message", () => {
-      const error = new AzureStorageError("Test error");
+      const error = new StorageError("Test error");
       expect(error).toBeInstanceOf(Error);
-      expect(error).toBeInstanceOf(AzureStorageError);
-      expect(error.name).toBe("AzureStorageError");
+      expect(error).toBeInstanceOf(StorageError);
+      expect(error.name).toBe("StorageError");
       expect(error.message).toBe("Test error");
     });
 
     it("should create error with cause", () => {
       const cause = new Error("Original error");
-      const error = new AzureStorageError("Test error", cause);
+      const error = new StorageError("Test error", cause);
       expect(error.cause).toBe(cause);
     });
   });

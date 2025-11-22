@@ -10,6 +10,23 @@ export class PathTraversalError extends Error {
   }
 }
 
+export class StorageError extends Error {
+  public readonly cause?: Error;
+
+  constructor(message: string, cause?: Error) {
+    super(message);
+    this.name = "StorageError";
+    this.cause = cause;
+  }
+}
+
+export class FileNotFoundError extends Error {
+  constructor(path: string) {
+    super(`File not found: ${path}`);
+    this.name = "FileNotFoundError";
+  }
+}
+
 export abstract class ObjectStore {
   protected readonly folderPath: string;
 
@@ -54,19 +71,31 @@ export abstract class ObjectStore {
     path: string,
     stream: Readable,
     metadata?: Record<string, string>,
-  ): Promise<ReturnsError<{ success: boolean; url?: string }>>;
+  ): Promise<
+    ReturnsError<
+      { success: boolean; url?: string },
+      PathTraversalError | StorageError
+    >
+  >;
 
   abstract listFiles(
     prefix?: string,
   ): Promise<
     ReturnsError<
-      Array<{ path: string; size?: number; metadata?: Record<string, string> }>
+      Array<{ path: string; size?: number; metadata?: Record<string, string> }>,
+      PathTraversalError | StorageError
     >
   >;
 
   abstract deleteFile(
     path: string,
-  ): Promise<ReturnsError<{ success: boolean }>>;
+  ): Promise<
+    ReturnsError<{ success: boolean }, PathTraversalError | StorageError>
+  >;
 
-  abstract readFile(path: string): Promise<ReturnsError<Readable>>;
+  abstract readFile(
+    path: string,
+  ): Promise<
+    ReturnsError<Readable, PathTraversalError | StorageError | FileNotFoundError>
+  >;
 }

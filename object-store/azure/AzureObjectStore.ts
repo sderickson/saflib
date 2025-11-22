@@ -1,5 +1,10 @@
 import { Readable } from "stream";
-import { ObjectStore, PathTraversalError } from "../ObjectStore.ts";
+import {
+  ObjectStore,
+  PathTraversalError,
+  StorageError,
+  FileNotFoundError,
+} from "../ObjectStore.ts";
 import { getBlobServiceClient } from "./client.ts";
 import { uploadFile } from "./upload-file.ts";
 import { deleteBlob } from "./delete-blob.ts";
@@ -7,16 +12,6 @@ import { typedEnv } from "../env.ts";
 import type { ReturnsError } from "@saflib/monorepo";
 import { getSafReporters } from "@saflib/node";
 import type { AccessTier } from "@azure/storage-blob";
-
-export class AzureStorageError extends Error {
-  public readonly cause?: Error;
-
-  constructor(message: string, cause?: Error) {
-    super(message);
-    this.name = "AzureStorageError";
-    this.cause = cause;
-  }
-}
 
 export class AzureObjectStore extends ObjectStore {
   protected readonly containerName: string;
@@ -43,7 +38,7 @@ export class AzureObjectStore extends ObjectStore {
       } catch (error) {
         if (error instanceof PathTraversalError) {
           return {
-            error: new AzureStorageError(
+            error: new StorageError(
               `Failed to upload file: ${error.message}`,
               error,
             ),
@@ -74,7 +69,7 @@ export class AzureObjectStore extends ObjectStore {
 
       if ("error" in result && result.error) {
         return {
-          error: new AzureStorageError(
+          error: new StorageError(
             `Failed to upload file: ${result.error.message}`,
             result.error,
           ),
@@ -86,7 +81,7 @@ export class AzureObjectStore extends ObjectStore {
       const { logError } = getSafReporters();
       logError(error);
       return {
-        error: new AzureStorageError(
+        error: new StorageError(
           "Error uploading file",
           error instanceof Error ? error : undefined,
         ),
@@ -144,7 +139,7 @@ export class AzureObjectStore extends ObjectStore {
       const { logError } = getSafReporters();
       logError(error);
       return {
-        error: new AzureStorageError(
+        error: new StorageError(
           "Error listing files",
           error instanceof Error ? error : undefined,
         ),
@@ -162,7 +157,7 @@ export class AzureObjectStore extends ObjectStore {
       } catch (error) {
         if (error instanceof PathTraversalError) {
           return {
-            error: new AzureStorageError(
+            error: new StorageError(
               `Failed to delete file: ${error.message}`,
               error,
             ),
@@ -179,7 +174,7 @@ export class AzureObjectStore extends ObjectStore {
 
       if ("error" in result && result.error) {
         return {
-          error: new AzureStorageError(
+          error: new StorageError(
             `Failed to delete file: ${result.error.message}`,
             result.error,
           ),
@@ -191,7 +186,7 @@ export class AzureObjectStore extends ObjectStore {
       const { logError } = getSafReporters();
       logError(error);
       return {
-        error: new AzureStorageError(
+        error: new StorageError(
           "Error deleting file",
           error instanceof Error ? error : undefined,
         ),
@@ -207,7 +202,7 @@ export class AzureObjectStore extends ObjectStore {
       } catch (error) {
         if (error instanceof PathTraversalError) {
           return {
-            error: new AzureStorageError(
+            error: new StorageError(
               `Failed to read file: ${error.message}`,
               error,
             ),
@@ -228,14 +223,14 @@ export class AzureObjectStore extends ObjectStore {
       const exists = await blobClient.exists();
       if (!exists) {
         return {
-          error: new AzureStorageError(`File not found: ${path}`),
+          error: new FileNotFoundError(path),
         };
       }
 
       const downloadResponse = await blobClient.download();
       if (!downloadResponse.readableStreamBody) {
         return {
-          error: new AzureStorageError(`Failed to read file: ${path}`),
+          error: new StorageError(`Failed to read file: ${path}`),
         };
       }
 
@@ -245,7 +240,7 @@ export class AzureObjectStore extends ObjectStore {
       const { logError } = getSafReporters();
       logError(error);
       return {
-        error: new AzureStorageError(
+        error: new StorageError(
           "Error reading file",
           error instanceof Error ? error : undefined,
         ),

@@ -6,8 +6,7 @@ import createError from "http-errors";
 import { getSafContextWithAuth } from "@saflib/node";
 import type { ObjectStore } from "@saflib/object-store";
 import {
-  BlobAlreadyExistsError,
-  InvalidUploadParamsError,
+  PathTraversalError,
   StorageError,
 } from "@saflib/object-store";
 import type { Readable } from "stream";
@@ -51,34 +50,26 @@ export const createCreateHandler = (
       metadata.tags = JSON.stringify(data.tags);
     }
 
-    const { result: uploadResult, error: uploadError } =
+    const { error: uploadError } =
       await objectStore.uploadFile(filename, stream, metadata);
 
-    if (uploadError) {
-      if (uploadError instanceof BlobAlreadyExistsError) {
-        throw createError(409, "Backup with this ID already exists", {
-          code: "BACKUP_ALREADY_EXISTS",
-        });
+    if (uploadError) { 
+      switch (true) {
+        case uploadError instanceof StorageError:
+          res.status(500).json({
+            message: uploadError.message,
+            code: "STORAGE_ERROR",
+          });
+          return;
+        case uploadError instanceof PathTraversalError:
+          res.status(400).json({
+            message: uploadError.message,
+            code: "INVALID_PATH",
+          });
+          return;
+        default:
+          throw uploadError satisfies never;
       }
-      if (uploadError instanceof InvalidUploadParamsError) {
-        throw createError(400, "Invalid upload parameters", {
-          code: "INVALID_UPLOAD_PARAMS",
-        });
-      }
-      if (uploadError instanceof StorageError) {
-        throw createError(500, "Failed to upload backup", {
-          code: "STORAGE_ERROR",
-        });
-      }
-      throw createError(500, "Unexpected upload error", {
-        code: "UNEXPECTED_UPLOAD_ERROR",
-      });
-    }
-
-    if (!uploadResult) {
-      throw createError(500, "Upload failed", {
-        code: "UPLOAD_FAILED",
-      });
     }
 
     const { result: files, error: listError } = await objectStore.listFiles();
