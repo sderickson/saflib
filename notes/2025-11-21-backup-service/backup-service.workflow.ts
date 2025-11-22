@@ -115,9 +115,9 @@ export const BackupServiceWorkflowDefinition = defineWorkflow<
 //       args: ["exec", "saf-specs", "generate"],
 //     })),
 
-//     step(CdStepMachine, () => ({
-//       path: "./backup/backup-http",
-//     })),
+    step(CdStepMachine, () => ({
+      path: "./backup/backup-http",
+    })),
 
 //     step(makeWorkflowMachine(AddHandlerWorkflowDefinition), () => ({
 //       path: "./routes/backups/list.ts",
