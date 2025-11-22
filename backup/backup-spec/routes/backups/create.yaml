@@ -21,7 +21,6 @@ createBackup:
               example:
                 - "pre-update"
                 - "important"
-          required: []
 
   responses:
     "201":

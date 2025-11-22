@@ -9,7 +9,9 @@ import {
   TestObjectStore,
   InvalidUploadParamsError,
   StorageError,
+  ObjectStore,
 } from "@saflib/object-store";
+import type { ReturnsError } from "@saflib/monorepo";
 
 describe("POST /backups", () => {
   let app: express.Express;
@@ -167,7 +169,7 @@ describe("POST /backups", () => {
 
     expect(response.status).toBe(500);
     expect(response.body).toMatchObject({
-      code: "UPLOAD_FAILED",
+      code: "STORAGE_ERROR",
     });
   });
 
@@ -192,8 +194,48 @@ describe("POST /backups", () => {
   });
 
   it("should return 500 when backup not found after upload", async () => {
-    const errorObjectStore = new TestObjectStore();
-    errorObjectStore.setListShouldFail(new StorageError("Backup not found"));
+    class BackupNotFoundObjectStore extends ObjectStore {
+      private uploadedFiles: string[] = [];
+
+      constructor() {
+        super();
+      }
+
+      async uploadFile(
+        path: string,
+        _stream: Readable,
+        _metadata?: Record<string, string>,
+      ): Promise<
+        ReturnsError<{ success: boolean; url?: string }, StorageError>
+      > {
+        this.uploadedFiles.push(path);
+        return {
+          result: {
+            success: true,
+            url: `https://mock-storage.blob.core.windows.net/test-container/${path}`,
+          },
+        };
+      }
+
+      async listFiles(): Promise<
+        ReturnsError<
+          Array<{ path: string; size?: number; metadata?: Record<string, string> }>,
+          StorageError
+        >
+      > {
+        return { result: [] };
+      }
+
+      async deleteFile(): Promise<ReturnsError<{ success: boolean }, StorageError>> {
+        return { result: { success: true } };
+      }
+
+      async readFile(): Promise<ReturnsError<Readable, StorageError>> {
+        return { result: new Readable() };
+      }
+    }
+
+    const errorObjectStore = new BackupNotFoundObjectStore();
     const errorApp = createBackupHttpApp({
       backupDbKey: dbKey,
       backupFn: async () => new Readable(),
