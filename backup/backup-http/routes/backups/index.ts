@@ -2,11 +2,12 @@ import express from "express";
 import { createScopedMiddleware } from "@saflib/express";
 import { jsonSpec } from "@saflib/backup-spec";
 import { createListHandler } from "./list.ts";
+import { createCreateHandler } from "./create.ts";
 import type { ObjectStore } from "@saflib/object-store";
 import type { Readable } from "stream";
 
 export const createBackupsRouter = (
-  _backupFn: () => Promise<Readable>,
+  backupFn: () => Promise<Readable>,
   objectStore: ObjectStore,
 ) => {
   const router = express.Router();
@@ -18,6 +19,7 @@ export const createBackupsRouter = (
   );
 
   router.get("/backups", createListHandler(objectStore));
+  router.post("/backups", createCreateHandler(backupFn, objectStore));
 
   return router;
 };
