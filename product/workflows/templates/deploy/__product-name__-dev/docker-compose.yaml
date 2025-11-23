@@ -19,7 +19,7 @@ services:
 
   clients:
     # Named for local dev, but doesn't get published; not needed for prod
-    image: vendata-__product-name__-clients:latest
+    image: __organization-name__-__product-name__-clients:latest
     build:
       context: ../..
       dockerfile: ./clients/__product-name__/__product-name__-clients/Dockerfile
@@ -37,7 +37,7 @@ services:
     command: npm run dev
 
   __product-name__-monolith:
-    image: ghcr.io/vendata/vendata-__product-name__-monolith:latest
+    image: ghcr.io/__organization-name__/__organization-name__-__product-name__-monolith:latest
     volumes:
       - ../../services/__product-name__/__product-name__-db/data:/app/services/__product-name__/__product-name__-db/data
       - __product-name___identity_http_cache:/app/saflib/identity/identity-http/data
@@ -87,7 +87,7 @@ services:
     command: "azurite-blob --blobHost 0.0.0.0 --loose"
 
   # identity:
-  #   image: ghcr.io/vendata/vendata-__product-name__-identity:latest
+  #   image: ghcr.io/__organization-name__/__organization-name__-__product-name__-identity:latest
   #   volumes:
   #     - identity_db:/app/saflib/identity/identity-db/data
   #     - identity_http:/app/saflib/identity/identity-http/data

@@ -1,5 +1,5 @@
 {
-  "name": "@vendata/__product-name__-dev",
+  "name": "template-package-dev",
   "description": "Docker compose setup for dev environment",
   "type": "module",
   "scripts": {

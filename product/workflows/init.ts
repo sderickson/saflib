@@ -5,6 +5,10 @@ import {
   CopyStepMachine,
   makeLineReplace,
   CommandStepMachine,
+  CdStepMachine,
+  getPackageName,
+  parsePackageName,
+  type ParsePackageNameOutput,
 } from "@saflib/workflows";
 import { AddSpaWorkflowDefinition } from "@saflib/vue/workflows";
 import { InitServiceWorkflowDefinition } from "@saflib/service/workflows";
@@ -19,7 +23,7 @@ const input = [
   },
 ] as const;
 
-interface InitProductWorkflowContext  {
+interface InitProductWorkflowContext extends ParsePackageNameOutput {
   productName: string;
 }
 
@@ -37,15 +41,18 @@ export const InitProductWorkflowDefinition = defineWorkflow<
   sourceUrl: import.meta.url,
 
   context: ({ input }) => {
-    const context = {
+    const packageName = getPackageName(input.cwd);
+    const packageInfo = parsePackageName(packageName);
+    
+    return {
+      ...packageInfo,
       productName: input.name,
     };
-
-    return context;
   },
 
   templateFiles: {
     deploy: path.join(import.meta.dirname, "templates/deploy/__product-name__-dev"),
+    monolith: path.join(import.meta.dirname, "templates/services/__product-name__-monolith"),
   },
 
   docFiles: {},
@@ -55,45 +62,61 @@ export const InitProductWorkflowDefinition = defineWorkflow<
   },
 
   steps: [
-    // step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
-    //   productName: context.productName,
-    //   subdomainName: "root",
-    // })),
+    step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
+      productName: context.productName,
+      subdomainName: "root",
+    })),
 
-    // step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
-    //   productName: context.productName,
-    //   subdomainName: "admin",
-    // })),
+    step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
+      productName: context.productName,
+      subdomainName: "admin",
+    })),
 
-    // step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
-    //   productName: context.productName,
-    //   subdomainName: "app",
-    // })),
+    step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
+      productName: context.productName,
+      subdomainName: "app",
+    })),
 
-    // step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
-    //   productName: context.productName,
-    //   subdomainName: "auth",
-    // })),
+    step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
+      productName: context.productName,
+      subdomainName: "auth",
+    })),
 
-    // step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
-    //   productName: context.productName,
-    //   subdomainName: "account",
-    // })),
+    step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
+      productName: context.productName,
+      subdomainName: "account",
+    })),
 
-    // step(makeWorkflowMachine(InitServiceWorkflowDefinition), ({ context }) => ({
-    //   name: `${context.productName}-service`,
-    //   path: `./services/${context.productName}`,
-    // })),
+    step(makeWorkflowMachine(InitServiceWorkflowDefinition), ({ context }) => ({
+      name: `${context.productName}-service`,
+      path: `./services/${context.productName}`,
+    })),
 
     step(CopyStepMachine, ({ context }) => ({
       name: context.productName,
-      targetDir: path.join(context.cwd, `./deploy/`),
+      targetDir: path.join(context.cwd, `./services/${context.productName}-monolith`),
       lineReplace: makeLineReplace(context),
+      templateFiles: {
+        monolith: path.join(import.meta.dirname, "templates/services/__product-name__-monolith"),
+      },
     })),
 
-    step(CommandStepMachine, ({ context }) => ({
-      command: "touch",
-      args: [`./deploy/${context.productName}-dev/.env`],
+    step(CdStepMachine, ({ context }) => ({
+      path: path.join(context.cwd, `./services/${context.productName}-monolith`),
+    })),
+
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["exec", "saf-env", "generate", "--", "--combined"],
+    })),
+
+    step(CopyStepMachine, ({ context }) => ({
+      name: context.productName,
+      targetDir: path.join(context.cwd, `./deploy/${context.productName}-dev`),
+      lineReplace: makeLineReplace(context),
+      templateFiles: {
+        deploy: path.join(import.meta.dirname, "templates/deploy/__product-name__-dev"),
+      },
     })),
   ],
 });
