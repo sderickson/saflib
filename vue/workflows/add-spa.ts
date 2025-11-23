@@ -72,7 +72,7 @@ export const AddSpaWorkflowDefinition = defineWorkflow<
     const targetDir = path.join(input.cwd, "clients", input.productName);
     const currentPackageName = getPackageName(input.cwd);
     const currentPackageOrgName =
-      parsePackageName(currentPackageName).organizationName;
+      "@" +parsePackageName(currentPackageName).organizationName;
     const spaPackageName = `${currentPackageOrgName}/${input.productName}-${input.subdomainName}-spa`;
     const clientsPackageName = `${currentPackageOrgName}/${input.productName}-clients`;
     const linksPackageName = `${currentPackageOrgName}/${input.productName}-${input.subdomainName}-links`;

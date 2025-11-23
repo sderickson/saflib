@@ -47,7 +47,7 @@ export const InitProductWorkflowDefinition = defineWorkflow<
     return {
       ...packageInfo,
       productName: input.name,
-      sharedPackagePrefix: `${packageInfo.organizationName}/${input.name}`,
+      sharedPackagePrefix: `@${packageInfo.organizationName}/${input.name}`,
     };
   },
 
@@ -106,6 +106,15 @@ export const InitProductWorkflowDefinition = defineWorkflow<
     step(CommandStepMachine, () => ({
       command: "npm",
       args: ["exec", "saf-env", "generate", "--", "--combined"],
+    })),
+
+    step(CdStepMachine, ({ context }) => ({
+      path: `./deploy/${context.productName}-dev`,
+    })),
+
+    step(CommandStepMachine, () => ({
+      command: "touch",
+      args: ["./.env"],
     })),
 
     // step(CopyStepMachine, ({ context }) => ({

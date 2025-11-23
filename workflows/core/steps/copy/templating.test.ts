@@ -26,7 +26,7 @@ describe("templating", () => {
       expect(result).toEqual({
         packageName: "@foobar/identity",
         serviceName: "identity",
-        organizationName: "@foobar",
+        organizationName: "foobar",
         sharedPackagePrefix: "@foobar/identity",
       });
     });
@@ -38,7 +38,7 @@ describe("templating", () => {
       expect(result).toEqual({
         packageName: "@foobar/identity-db",
         serviceName: "identity",
-        organizationName: "@foobar",
+        organizationName: "foobar",
         sharedPackagePrefix: "@foobar/identity",
       });
     });
