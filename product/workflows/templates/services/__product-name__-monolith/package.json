@@ -10,7 +10,7 @@
     "template-package-identity": "*",
     "template-package-service": "*",
     "template-package-service-common": "*",
-    "@__organization-name__/sentry": "*"
+    "@saflib/sentry": "*"
   }
 }
 

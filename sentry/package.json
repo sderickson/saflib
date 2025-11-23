@@ -1,0 +1,16 @@
+{
+  "name": "@saflib/sentry",
+  "description": "Sentry for Node.js services",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "dependencies": {
+    "@saflib/env": "*",
+    "@sentry/node": "^9.32.0"
+  },
+  "devDependencies": {
+    "@saflib/vitest": "*"
+  }
+}
