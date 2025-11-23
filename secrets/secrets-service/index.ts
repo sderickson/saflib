@@ -17,7 +17,10 @@ export function startSecretsService() {
     log.info("Starting secrets-http...");
     const expressApp = createSecretsHttpApp(context);
     startExpressServer(expressApp, {
-      port: parseInt(typedEnv.SECRETS_SERVICE_HTTP_PORT || "3000", 10),
+      port: parseInt(
+        typedEnv.SECRETS_SERVICE_HTTP_HOST.split(":")[1] || "3000",
+        10,
+      ),
     });
     log.info("secrets-http startup complete.");
   } catch (error) {

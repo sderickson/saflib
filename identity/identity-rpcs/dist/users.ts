@@ -9,455 +9,592 @@ import * as dependency_2 from "./google/protobuf/timestamp.ts";
 import * as pb_1 from "google-protobuf";
 import * as grpc_1 from "@grpc/grpc-js";
 export class GetUserProfileRequest extends pb_1.Message {
-    #one_of_decls: number[][] = [];
-    constructor(data?: any[] | {
-        auth?: dependency_1.SafAuth;
-        request?: dependency_1.SafRequest;
-        user_id?: string;
-    }) {
-        super();
-        pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [], this.#one_of_decls);
-        if (!Array.isArray(data) && typeof data == "object") {
-            if ("auth" in data && data.auth != undefined) {
-                this.auth = data.auth;
-            }
-            if ("request" in data && data.request != undefined) {
-                this.request = data.request;
-            }
-            if ("user_id" in data && data.user_id != undefined) {
-                this.user_id = data.user_id;
-            }
-        }
+  #one_of_decls: number[][] = [];
+  constructor(
+    data?:
+      | any[]
+      | {
+          auth?: dependency_1.SafAuth;
+          request?: dependency_1.SafRequest;
+          user_id?: string;
+        },
+  ) {
+    super();
+    pb_1.Message.initialize(
+      this,
+      Array.isArray(data) ? data : [],
+      0,
+      -1,
+      [],
+      this.#one_of_decls,
+    );
+    if (!Array.isArray(data) && typeof data == "object") {
+      if ("auth" in data && data.auth != undefined) {
+        this.auth = data.auth;
+      }
+      if ("request" in data && data.request != undefined) {
+        this.request = data.request;
+      }
+      if ("user_id" in data && data.user_id != undefined) {
+        this.user_id = data.user_id;
+      }
     }
-    get auth() {
-        return pb_1.Message.getWrapperField(this, dependency_1.SafAuth, 1) as dependency_1.SafAuth;
+  }
+  get auth() {
+    return pb_1.Message.getWrapperField(
+      this,
+      dependency_1.SafAuth,
+      1,
+    ) as dependency_1.SafAuth;
+  }
+  set auth(value: dependency_1.SafAuth) {
+    pb_1.Message.setWrapperField(this, 1, value);
+  }
+  get has_auth() {
+    return pb_1.Message.getField(this, 1) != null;
+  }
+  get request() {
+    return pb_1.Message.getWrapperField(
+      this,
+      dependency_1.SafRequest,
+      2,
+    ) as dependency_1.SafRequest;
+  }
+  set request(value: dependency_1.SafRequest) {
+    pb_1.Message.setWrapperField(this, 2, value);
+  }
+  get has_request() {
+    return pb_1.Message.getField(this, 2) != null;
+  }
+  get user_id() {
+    return pb_1.Message.getFieldWithDefault(this, 3, "") as string;
+  }
+  set user_id(value: string) {
+    pb_1.Message.setField(this, 3, value);
+  }
+  static fromObject(data: {
+    auth?: ReturnType<typeof dependency_1.SafAuth.prototype.toObject>;
+    request?: ReturnType<typeof dependency_1.SafRequest.prototype.toObject>;
+    user_id?: string;
+  }): GetUserProfileRequest {
+    const message = new GetUserProfileRequest({});
+    if (data.auth != null) {
+      message.auth = dependency_1.SafAuth.fromObject(data.auth);
     }
-    set auth(value: dependency_1.SafAuth) {
-        pb_1.Message.setWrapperField(this, 1, value);
+    if (data.request != null) {
+      message.request = dependency_1.SafRequest.fromObject(data.request);
     }
-    get has_auth() {
-        return pb_1.Message.getField(this, 1) != null;
+    if (data.user_id != null) {
+      message.user_id = data.user_id;
     }
-    get request() {
-        return pb_1.Message.getWrapperField(this, dependency_1.SafRequest, 2) as dependency_1.SafRequest;
+    return message;
+  }
+  toObject() {
+    const data: {
+      auth?: ReturnType<typeof dependency_1.SafAuth.prototype.toObject>;
+      request?: ReturnType<typeof dependency_1.SafRequest.prototype.toObject>;
+      user_id?: string;
+    } = {};
+    if (this.auth != null) {
+      data.auth = this.auth.toObject();
     }
-    set request(value: dependency_1.SafRequest) {
-        pb_1.Message.setWrapperField(this, 2, value);
+    if (this.request != null) {
+      data.request = this.request.toObject();
     }
-    get has_request() {
-        return pb_1.Message.getField(this, 2) != null;
+    if (this.user_id != null) {
+      data.user_id = this.user_id;
     }
-    get user_id() {
-        return pb_1.Message.getFieldWithDefault(this, 3, "") as string;
+    return data;
+  }
+  serialize(): Uint8Array;
+  serialize(w: pb_1.BinaryWriter): void;
+  serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
+    const writer = w || new pb_1.BinaryWriter();
+    if (this.has_auth)
+      writer.writeMessage(1, this.auth, () => this.auth.serialize(writer));
+    if (this.has_request)
+      writer.writeMessage(2, this.request, () =>
+        this.request.serialize(writer),
+      );
+    if (this.user_id.length) writer.writeString(3, this.user_id);
+    if (!w) return writer.getResultBuffer();
+  }
+  static deserialize(
+    bytes: Uint8Array | pb_1.BinaryReader,
+  ): GetUserProfileRequest {
+    const reader =
+        bytes instanceof pb_1.BinaryReader
+          ? bytes
+          : new pb_1.BinaryReader(bytes),
+      message = new GetUserProfileRequest();
+    while (reader.nextField()) {
+      if (reader.isEndGroup()) break;
+      switch (reader.getFieldNumber()) {
+        case 1:
+          reader.readMessage(
+            message.auth,
+            () => (message.auth = dependency_1.SafAuth.deserialize(reader)),
+          );
+          break;
+        case 2:
+          reader.readMessage(
+            message.request,
+            () =>
+              (message.request = dependency_1.SafRequest.deserialize(reader)),
+          );
+          break;
+        case 3:
+          message.user_id = reader.readString();
+          break;
+        default:
+          reader.skipField();
+      }
     }
-    set user_id(value: string) {
-        pb_1.Message.setField(this, 3, value);
-    }
-    static fromObject(data: {
-        auth?: ReturnType<typeof dependency_1.SafAuth.prototype.toObject>;
-        request?: ReturnType<typeof dependency_1.SafRequest.prototype.toObject>;
-        user_id?: string;
-    }): GetUserProfileRequest {
-        const message = new GetUserProfileRequest({});
-        if (data.auth != null) {
-            message.auth = dependency_1.SafAuth.fromObject(data.auth);
-        }
-        if (data.request != null) {
-            message.request = dependency_1.SafRequest.fromObject(data.request);
-        }
-        if (data.user_id != null) {
-            message.user_id = data.user_id;
-        }
-        return message;
-    }
-    toObject() {
-        const data: {
-            auth?: ReturnType<typeof dependency_1.SafAuth.prototype.toObject>;
-            request?: ReturnType<typeof dependency_1.SafRequest.prototype.toObject>;
-            user_id?: string;
-        } = {};
-        if (this.auth != null) {
-            data.auth = this.auth.toObject();
-        }
-        if (this.request != null) {
-            data.request = this.request.toObject();
-        }
-        if (this.user_id != null) {
-            data.user_id = this.user_id;
-        }
-        return data;
-    }
-    serialize(): Uint8Array;
-    serialize(w: pb_1.BinaryWriter): void;
-    serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
-        const writer = w || new pb_1.BinaryWriter();
-        if (this.has_auth)
-            writer.writeMessage(1, this.auth, () => this.auth.serialize(writer));
-        if (this.has_request)
-            writer.writeMessage(2, this.request, () => this.request.serialize(writer));
-        if (this.user_id.length)
-            writer.writeString(3, this.user_id);
-        if (!w)
-            return writer.getResultBuffer();
-    }
-    static deserialize(bytes: Uint8Array | pb_1.BinaryReader): GetUserProfileRequest {
-        const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes), message = new GetUserProfileRequest();
-        while (reader.nextField()) {
-            if (reader.isEndGroup())
-                break;
-            switch (reader.getFieldNumber()) {
-                case 1:
-                    reader.readMessage(message.auth, () => message.auth = dependency_1.SafAuth.deserialize(reader));
-                    break;
-                case 2:
-                    reader.readMessage(message.request, () => message.request = dependency_1.SafRequest.deserialize(reader));
-                    break;
-                case 3:
-                    message.user_id = reader.readString();
-                    break;
-                default: reader.skipField();
-            }
-        }
-        return message;
-    }
-    serializeBinary(): Uint8Array {
-        return this.serialize();
-    }
-    static deserializeBinary(bytes: Uint8Array): GetUserProfileRequest {
-        return GetUserProfileRequest.deserialize(bytes);
-    }
+    return message;
+  }
+  serializeBinary(): Uint8Array {
+    return this.serialize();
+  }
+  static deserializeBinary(bytes: Uint8Array): GetUserProfileRequest {
+    return GetUserProfileRequest.deserialize(bytes);
+  }
 }
 export class GetUserProfileResponse extends pb_1.Message {
-    #one_of_decls: number[][] = [];
-    constructor(data?: any[] | {
-        profile?: UserProfile;
-    }) {
-        super();
-        pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [], this.#one_of_decls);
-        if (!Array.isArray(data) && typeof data == "object") {
-            if ("profile" in data && data.profile != undefined) {
-                this.profile = data.profile;
-            }
-        }
+  #one_of_decls: number[][] = [];
+  constructor(
+    data?:
+      | any[]
+      | {
+          profile?: UserProfile;
+        },
+  ) {
+    super();
+    pb_1.Message.initialize(
+      this,
+      Array.isArray(data) ? data : [],
+      0,
+      -1,
+      [],
+      this.#one_of_decls,
+    );
+    if (!Array.isArray(data) && typeof data == "object") {
+      if ("profile" in data && data.profile != undefined) {
+        this.profile = data.profile;
+      }
     }
-    get profile() {
-        return pb_1.Message.getWrapperField(this, UserProfile, 3) as UserProfile;
+  }
+  get profile() {
+    return pb_1.Message.getWrapperField(this, UserProfile, 3) as UserProfile;
+  }
+  set profile(value: UserProfile) {
+    pb_1.Message.setWrapperField(this, 3, value);
+  }
+  get has_profile() {
+    return pb_1.Message.getField(this, 3) != null;
+  }
+  static fromObject(data: {
+    profile?: ReturnType<typeof UserProfile.prototype.toObject>;
+  }): GetUserProfileResponse {
+    const message = new GetUserProfileResponse({});
+    if (data.profile != null) {
+      message.profile = UserProfile.fromObject(data.profile);
     }
-    set profile(value: UserProfile) {
-        pb_1.Message.setWrapperField(this, 3, value);
+    return message;
+  }
+  toObject() {
+    const data: {
+      profile?: ReturnType<typeof UserProfile.prototype.toObject>;
+    } = {};
+    if (this.profile != null) {
+      data.profile = this.profile.toObject();
     }
-    get has_profile() {
-        return pb_1.Message.getField(this, 3) != null;
+    return data;
+  }
+  serialize(): Uint8Array;
+  serialize(w: pb_1.BinaryWriter): void;
+  serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
+    const writer = w || new pb_1.BinaryWriter();
+    if (this.has_profile)
+      writer.writeMessage(3, this.profile, () =>
+        this.profile.serialize(writer),
+      );
+    if (!w) return writer.getResultBuffer();
+  }
+  static deserialize(
+    bytes: Uint8Array | pb_1.BinaryReader,
+  ): GetUserProfileResponse {
+    const reader =
+        bytes instanceof pb_1.BinaryReader
+          ? bytes
+          : new pb_1.BinaryReader(bytes),
+      message = new GetUserProfileResponse();
+    while (reader.nextField()) {
+      if (reader.isEndGroup()) break;
+      switch (reader.getFieldNumber()) {
+        case 3:
+          reader.readMessage(
+            message.profile,
+            () => (message.profile = UserProfile.deserialize(reader)),
+          );
+          break;
+        default:
+          reader.skipField();
+      }
     }
-    static fromObject(data: {
-        profile?: ReturnType<typeof UserProfile.prototype.toObject>;
-    }): GetUserProfileResponse {
-        const message = new GetUserProfileResponse({});
-        if (data.profile != null) {
-            message.profile = UserProfile.fromObject(data.profile);
-        }
-        return message;
-    }
-    toObject() {
-        const data: {
-            profile?: ReturnType<typeof UserProfile.prototype.toObject>;
-        } = {};
-        if (this.profile != null) {
-            data.profile = this.profile.toObject();
-        }
-        return data;
-    }
-    serialize(): Uint8Array;
-    serialize(w: pb_1.BinaryWriter): void;
-    serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
-        const writer = w || new pb_1.BinaryWriter();
-        if (this.has_profile)
-            writer.writeMessage(3, this.profile, () => this.profile.serialize(writer));
-        if (!w)
-            return writer.getResultBuffer();
-    }
-    static deserialize(bytes: Uint8Array | pb_1.BinaryReader): GetUserProfileResponse {
-        const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes), message = new GetUserProfileResponse();
-        while (reader.nextField()) {
-            if (reader.isEndGroup())
-                break;
-            switch (reader.getFieldNumber()) {
-                case 3:
-                    reader.readMessage(message.profile, () => message.profile = UserProfile.deserialize(reader));
-                    break;
-                default: reader.skipField();
-            }
-        }
-        return message;
-    }
-    serializeBinary(): Uint8Array {
-        return this.serialize();
-    }
-    static deserializeBinary(bytes: Uint8Array): GetUserProfileResponse {
-        return GetUserProfileResponse.deserialize(bytes);
-    }
+    return message;
+  }
+  serializeBinary(): Uint8Array {
+    return this.serialize();
+  }
+  static deserializeBinary(bytes: Uint8Array): GetUserProfileResponse {
+    return GetUserProfileResponse.deserialize(bytes);
+  }
 }
 export class UserProfile extends pb_1.Message {
-    #one_of_decls: number[][] = [];
-    constructor(data?: any[] | {
-        user_id?: string;
-        email?: string;
-        email_verified?: boolean;
-        name?: string;
-        given_name?: string;
-        family_name?: string;
-        created_at?: dependency_2.Timestamp;
-    }) {
-        super();
-        pb_1.Message.initialize(this, Array.isArray(data) ? data : [], 0, -1, [], this.#one_of_decls);
-        if (!Array.isArray(data) && typeof data == "object") {
-            if ("user_id" in data && data.user_id != undefined) {
-                this.user_id = data.user_id;
-            }
-            if ("email" in data && data.email != undefined) {
-                this.email = data.email;
-            }
-            if ("email_verified" in data && data.email_verified != undefined) {
-                this.email_verified = data.email_verified;
-            }
-            if ("name" in data && data.name != undefined) {
-                this.name = data.name;
-            }
-            if ("given_name" in data && data.given_name != undefined) {
-                this.given_name = data.given_name;
-            }
-            if ("family_name" in data && data.family_name != undefined) {
-                this.family_name = data.family_name;
-            }
-            if ("created_at" in data && data.created_at != undefined) {
-                this.created_at = data.created_at;
-            }
-        }
+  #one_of_decls: number[][] = [];
+  constructor(
+    data?:
+      | any[]
+      | {
+          user_id?: string;
+          email?: string;
+          email_verified?: boolean;
+          name?: string;
+          given_name?: string;
+          family_name?: string;
+          created_at?: dependency_2.Timestamp;
+        },
+  ) {
+    super();
+    pb_1.Message.initialize(
+      this,
+      Array.isArray(data) ? data : [],
+      0,
+      -1,
+      [],
+      this.#one_of_decls,
+    );
+    if (!Array.isArray(data) && typeof data == "object") {
+      if ("user_id" in data && data.user_id != undefined) {
+        this.user_id = data.user_id;
+      }
+      if ("email" in data && data.email != undefined) {
+        this.email = data.email;
+      }
+      if ("email_verified" in data && data.email_verified != undefined) {
+        this.email_verified = data.email_verified;
+      }
+      if ("name" in data && data.name != undefined) {
+        this.name = data.name;
+      }
+      if ("given_name" in data && data.given_name != undefined) {
+        this.given_name = data.given_name;
+      }
+      if ("family_name" in data && data.family_name != undefined) {
+        this.family_name = data.family_name;
+      }
+      if ("created_at" in data && data.created_at != undefined) {
+        this.created_at = data.created_at;
+      }
     }
-    get user_id() {
-        return pb_1.Message.getFieldWithDefault(this, 1, "") as string;
+  }
+  get user_id() {
+    return pb_1.Message.getFieldWithDefault(this, 1, "") as string;
+  }
+  set user_id(value: string) {
+    pb_1.Message.setField(this, 1, value);
+  }
+  get email() {
+    return pb_1.Message.getFieldWithDefault(this, 2, "") as string;
+  }
+  set email(value: string) {
+    pb_1.Message.setField(this, 2, value);
+  }
+  get email_verified() {
+    return pb_1.Message.getFieldWithDefault(this, 3, false) as boolean;
+  }
+  set email_verified(value: boolean) {
+    pb_1.Message.setField(this, 3, value);
+  }
+  get name() {
+    return pb_1.Message.getFieldWithDefault(this, 4, "") as string;
+  }
+  set name(value: string) {
+    pb_1.Message.setField(this, 4, value);
+  }
+  get given_name() {
+    return pb_1.Message.getFieldWithDefault(this, 5, "") as string;
+  }
+  set given_name(value: string) {
+    pb_1.Message.setField(this, 5, value);
+  }
+  get family_name() {
+    return pb_1.Message.getFieldWithDefault(this, 6, "") as string;
+  }
+  set family_name(value: string) {
+    pb_1.Message.setField(this, 6, value);
+  }
+  get created_at() {
+    return pb_1.Message.getWrapperField(
+      this,
+      dependency_2.Timestamp,
+      7,
+    ) as dependency_2.Timestamp;
+  }
+  set created_at(value: dependency_2.Timestamp) {
+    pb_1.Message.setWrapperField(this, 7, value);
+  }
+  get has_created_at() {
+    return pb_1.Message.getField(this, 7) != null;
+  }
+  static fromObject(data: {
+    user_id?: string;
+    email?: string;
+    email_verified?: boolean;
+    name?: string;
+    given_name?: string;
+    family_name?: string;
+    created_at?: ReturnType<typeof dependency_2.Timestamp.prototype.toObject>;
+  }): UserProfile {
+    const message = new UserProfile({});
+    if (data.user_id != null) {
+      message.user_id = data.user_id;
     }
-    set user_id(value: string) {
-        pb_1.Message.setField(this, 1, value);
+    if (data.email != null) {
+      message.email = data.email;
     }
-    get email() {
-        return pb_1.Message.getFieldWithDefault(this, 2, "") as string;
+    if (data.email_verified != null) {
+      message.email_verified = data.email_verified;
     }
-    set email(value: string) {
-        pb_1.Message.setField(this, 2, value);
+    if (data.name != null) {
+      message.name = data.name;
     }
-    get email_verified() {
-        return pb_1.Message.getFieldWithDefault(this, 3, false) as boolean;
+    if (data.given_name != null) {
+      message.given_name = data.given_name;
     }
-    set email_verified(value: boolean) {
-        pb_1.Message.setField(this, 3, value);
+    if (data.family_name != null) {
+      message.family_name = data.family_name;
     }
-    get name() {
-        return pb_1.Message.getFieldWithDefault(this, 4, "") as string;
+    if (data.created_at != null) {
+      message.created_at = dependency_2.Timestamp.fromObject(data.created_at);
     }
-    set name(value: string) {
-        pb_1.Message.setField(this, 4, value);
+    return message;
+  }
+  toObject() {
+    const data: {
+      user_id?: string;
+      email?: string;
+      email_verified?: boolean;
+      name?: string;
+      given_name?: string;
+      family_name?: string;
+      created_at?: ReturnType<typeof dependency_2.Timestamp.prototype.toObject>;
+    } = {};
+    if (this.user_id != null) {
+      data.user_id = this.user_id;
     }
-    get given_name() {
-        return pb_1.Message.getFieldWithDefault(this, 5, "") as string;
+    if (this.email != null) {
+      data.email = this.email;
     }
-    set given_name(value: string) {
-        pb_1.Message.setField(this, 5, value);
+    if (this.email_verified != null) {
+      data.email_verified = this.email_verified;
     }
-    get family_name() {
-        return pb_1.Message.getFieldWithDefault(this, 6, "") as string;
+    if (this.name != null) {
+      data.name = this.name;
     }
-    set family_name(value: string) {
-        pb_1.Message.setField(this, 6, value);
+    if (this.given_name != null) {
+      data.given_name = this.given_name;
     }
-    get created_at() {
-        return pb_1.Message.getWrapperField(this, dependency_2.Timestamp, 7) as dependency_2.Timestamp;
+    if (this.family_name != null) {
+      data.family_name = this.family_name;
     }
-    set created_at(value: dependency_2.Timestamp) {
-        pb_1.Message.setWrapperField(this, 7, value);
+    if (this.created_at != null) {
+      data.created_at = this.created_at.toObject();
     }
-    get has_created_at() {
-        return pb_1.Message.getField(this, 7) != null;
+    return data;
+  }
+  serialize(): Uint8Array;
+  serialize(w: pb_1.BinaryWriter): void;
+  serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
+    const writer = w || new pb_1.BinaryWriter();
+    if (this.user_id.length) writer.writeString(1, this.user_id);
+    if (this.email.length) writer.writeString(2, this.email);
+    if (this.email_verified != false) writer.writeBool(3, this.email_verified);
+    if (this.name.length) writer.writeString(4, this.name);
+    if (this.given_name.length) writer.writeString(5, this.given_name);
+    if (this.family_name.length) writer.writeString(6, this.family_name);
+    if (this.has_created_at)
+      writer.writeMessage(7, this.created_at, () =>
+        this.created_at.serialize(writer),
+      );
+    if (!w) return writer.getResultBuffer();
+  }
+  static deserialize(bytes: Uint8Array | pb_1.BinaryReader): UserProfile {
+    const reader =
+        bytes instanceof pb_1.BinaryReader
+          ? bytes
+          : new pb_1.BinaryReader(bytes),
+      message = new UserProfile();
+    while (reader.nextField()) {
+      if (reader.isEndGroup()) break;
+      switch (reader.getFieldNumber()) {
+        case 1:
+          message.user_id = reader.readString();
+          break;
+        case 2:
+          message.email = reader.readString();
+          break;
+        case 3:
+          message.email_verified = reader.readBool();
+          break;
+        case 4:
+          message.name = reader.readString();
+          break;
+        case 5:
+          message.given_name = reader.readString();
+          break;
+        case 6:
+          message.family_name = reader.readString();
+          break;
+        case 7:
+          reader.readMessage(
+            message.created_at,
+            () =>
+              (message.created_at = dependency_2.Timestamp.deserialize(reader)),
+          );
+          break;
+        default:
+          reader.skipField();
+      }
     }
-    static fromObject(data: {
-        user_id?: string;
-        email?: string;
-        email_verified?: boolean;
-        name?: string;
-        given_name?: string;
-        family_name?: string;
-        created_at?: ReturnType<typeof dependency_2.Timestamp.prototype.toObject>;
-    }): UserProfile {
-        const message = new UserProfile({});
-        if (data.user_id != null) {
-            message.user_id = data.user_id;
-        }
-        if (data.email != null) {
-            message.email = data.email;
-        }
-        if (data.email_verified != null) {
-            message.email_verified = data.email_verified;
-        }
-        if (data.name != null) {
-            message.name = data.name;
-        }
-        if (data.given_name != null) {
-            message.given_name = data.given_name;
-        }
-        if (data.family_name != null) {
-            message.family_name = data.family_name;
-        }
-        if (data.created_at != null) {
-            message.created_at = dependency_2.Timestamp.fromObject(data.created_at);
-        }
-        return message;
-    }
-    toObject() {
-        const data: {
-            user_id?: string;
-            email?: string;
-            email_verified?: boolean;
-            name?: string;
-            given_name?: string;
-            family_name?: string;
-            created_at?: ReturnType<typeof dependency_2.Timestamp.prototype.toObject>;
-        } = {};
-        if (this.user_id != null) {
-            data.user_id = this.user_id;
-        }
-        if (this.email != null) {
-            data.email = this.email;
-        }
-        if (this.email_verified != null) {
-            data.email_verified = this.email_verified;
-        }
-        if (this.name != null) {
-            data.name = this.name;
-        }
-        if (this.given_name != null) {
-            data.given_name = this.given_name;
-        }
-        if (this.family_name != null) {
-            data.family_name = this.family_name;
-        }
-        if (this.created_at != null) {
-            data.created_at = this.created_at.toObject();
-        }
-        return data;
-    }
-    serialize(): Uint8Array;
-    serialize(w: pb_1.BinaryWriter): void;
-    serialize(w?: pb_1.BinaryWriter): Uint8Array | void {
-        const writer = w || new pb_1.BinaryWriter();
-        if (this.user_id.length)
-            writer.writeString(1, this.user_id);
-        if (this.email.length)
-            writer.writeString(2, this.email);
-        if (this.email_verified != false)
-            writer.writeBool(3, this.email_verified);
-        if (this.name.length)
-            writer.writeString(4, this.name);
-        if (this.given_name.length)
-            writer.writeString(5, this.given_name);
-        if (this.family_name.length)
-            writer.writeString(6, this.family_name);
-        if (this.has_created_at)
-            writer.writeMessage(7, this.created_at, () => this.created_at.serialize(writer));
-        if (!w)
-            return writer.getResultBuffer();
-    }
-    static deserialize(bytes: Uint8Array | pb_1.BinaryReader): UserProfile {
-        const reader = bytes instanceof pb_1.BinaryReader ? bytes : new pb_1.BinaryReader(bytes), message = new UserProfile();
-        while (reader.nextField()) {
-            if (reader.isEndGroup())
-                break;
-            switch (reader.getFieldNumber()) {
-                case 1:
-                    message.user_id = reader.readString();
-                    break;
-                case 2:
-                    message.email = reader.readString();
-                    break;
-                case 3:
-                    message.email_verified = reader.readBool();
-                    break;
-                case 4:
-                    message.name = reader.readString();
-                    break;
-                case 5:
-                    message.given_name = reader.readString();
-                    break;
-                case 6:
-                    message.family_name = reader.readString();
-                    break;
-                case 7:
-                    reader.readMessage(message.created_at, () => message.created_at = dependency_2.Timestamp.deserialize(reader));
-                    break;
-                default: reader.skipField();
-            }
-        }
-        return message;
-    }
-    serializeBinary(): Uint8Array {
-        return this.serialize();
-    }
-    static deserializeBinary(bytes: Uint8Array): UserProfile {
-        return UserProfile.deserialize(bytes);
-    }
+    return message;
+  }
+  serializeBinary(): Uint8Array {
+    return this.serialize();
+  }
+  static deserializeBinary(bytes: Uint8Array): UserProfile {
+    return UserProfile.deserialize(bytes);
+  }
 }
 interface GrpcUnaryServiceInterface<P, R> {
-    (message: P, metadata: grpc_1.Metadata, options: grpc_1.CallOptions, callback: grpc_1.requestCallback<R>): grpc_1.ClientUnaryCall;
-    (message: P, metadata: grpc_1.Metadata, callback: grpc_1.requestCallback<R>): grpc_1.ClientUnaryCall;
-    (message: P, options: grpc_1.CallOptions, callback: grpc_1.requestCallback<R>): grpc_1.ClientUnaryCall;
-    (message: P, callback: grpc_1.requestCallback<R>): grpc_1.ClientUnaryCall;
+  (
+    message: P,
+    metadata: grpc_1.Metadata,
+    options: grpc_1.CallOptions,
+    callback: grpc_1.requestCallback<R>,
+  ): grpc_1.ClientUnaryCall;
+  (
+    message: P,
+    metadata: grpc_1.Metadata,
+    callback: grpc_1.requestCallback<R>,
+  ): grpc_1.ClientUnaryCall;
+  (
+    message: P,
+    options: grpc_1.CallOptions,
+    callback: grpc_1.requestCallback<R>,
+  ): grpc_1.ClientUnaryCall;
+  (message: P, callback: grpc_1.requestCallback<R>): grpc_1.ClientUnaryCall;
 }
 interface GrpcStreamServiceInterface<P, R> {
-    (message: P, metadata: grpc_1.Metadata, options?: grpc_1.CallOptions): grpc_1.ClientReadableStream<R>;
-    (message: P, options?: grpc_1.CallOptions): grpc_1.ClientReadableStream<R>;
+  (
+    message: P,
+    metadata: grpc_1.Metadata,
+    options?: grpc_1.CallOptions,
+  ): grpc_1.ClientReadableStream<R>;
+  (message: P, options?: grpc_1.CallOptions): grpc_1.ClientReadableStream<R>;
 }
 interface GrpWritableServiceInterface<P, R> {
-    (metadata: grpc_1.Metadata, options: grpc_1.CallOptions, callback: grpc_1.requestCallback<R>): grpc_1.ClientWritableStream<P>;
-    (metadata: grpc_1.Metadata, callback: grpc_1.requestCallback<R>): grpc_1.ClientWritableStream<P>;
-    (options: grpc_1.CallOptions, callback: grpc_1.requestCallback<R>): grpc_1.ClientWritableStream<P>;
-    (callback: grpc_1.requestCallback<R>): grpc_1.ClientWritableStream<P>;
+  (
+    metadata: grpc_1.Metadata,
+    options: grpc_1.CallOptions,
+    callback: grpc_1.requestCallback<R>,
+  ): grpc_1.ClientWritableStream<P>;
+  (
+    metadata: grpc_1.Metadata,
+    callback: grpc_1.requestCallback<R>,
+  ): grpc_1.ClientWritableStream<P>;
+  (
+    options: grpc_1.CallOptions,
+    callback: grpc_1.requestCallback<R>,
+  ): grpc_1.ClientWritableStream<P>;
+  (callback: grpc_1.requestCallback<R>): grpc_1.ClientWritableStream<P>;
 }
 interface GrpcChunkServiceInterface<P, R> {
-    (metadata: grpc_1.Metadata, options?: grpc_1.CallOptions): grpc_1.ClientDuplexStream<P, R>;
-    (options?: grpc_1.CallOptions): grpc_1.ClientDuplexStream<P, R>;
+  (
+    metadata: grpc_1.Metadata,
+    options?: grpc_1.CallOptions,
+  ): grpc_1.ClientDuplexStream<P, R>;
+  (options?: grpc_1.CallOptions): grpc_1.ClientDuplexStream<P, R>;
 }
 interface GrpcPromiseServiceInterface<P, R> {
-    (message: P, metadata: grpc_1.Metadata, options?: grpc_1.CallOptions): Promise<R>;
-    (message: P, options?: grpc_1.CallOptions): Promise<R>;
+  (
+    message: P,
+    metadata: grpc_1.Metadata,
+    options?: grpc_1.CallOptions,
+  ): Promise<R>;
+  (message: P, options?: grpc_1.CallOptions): Promise<R>;
 }
 export abstract class UnimplementedUsersService {
-    static definition = {
-        GetUserProfile: {
-            path: "/saflib.auth.v1.Users/GetUserProfile",
-            requestStream: false,
-            responseStream: false,
-            requestSerialize: (message: GetUserProfileRequest) => Buffer.from(message.serialize()),
-            requestDeserialize: (bytes: Buffer) => GetUserProfileRequest.deserialize(new Uint8Array(bytes)),
-            responseSerialize: (message: GetUserProfileResponse) => Buffer.from(message.serialize()),
-            responseDeserialize: (bytes: Buffer) => GetUserProfileResponse.deserialize(new Uint8Array(bytes))
-        }
-    };
-    [method: string]: grpc_1.UntypedHandleCall;
-    abstract GetUserProfile(call: grpc_1.ServerUnaryCall<GetUserProfileRequest, GetUserProfileResponse>, callback: grpc_1.sendUnaryData<GetUserProfileResponse>): void;
+  static definition = {
+    GetUserProfile: {
+      path: "/saflib.auth.v1.Users/GetUserProfile",
+      requestStream: false,
+      responseStream: false,
+      requestSerialize: (message: GetUserProfileRequest) =>
+        Buffer.from(message.serialize()),
+      requestDeserialize: (bytes: Buffer) =>
+        GetUserProfileRequest.deserialize(new Uint8Array(bytes)),
+      responseSerialize: (message: GetUserProfileResponse) =>
+        Buffer.from(message.serialize()),
+      responseDeserialize: (bytes: Buffer) =>
+        GetUserProfileResponse.deserialize(new Uint8Array(bytes)),
+    },
+  };
+  [method: string]: grpc_1.UntypedHandleCall;
+  abstract GetUserProfile(
+    call: grpc_1.ServerUnaryCall<GetUserProfileRequest, GetUserProfileResponse>,
+    callback: grpc_1.sendUnaryData<GetUserProfileResponse>,
+  ): void;
 }
-export class UsersClient extends grpc_1.makeGenericClientConstructor(UnimplementedUsersService.definition, "Users", {}) {
-    constructor(address: string, credentials: grpc_1.ChannelCredentials, options?: Partial<grpc_1.ChannelOptions>) {
-        super(address, credentials, options);
+export class UsersClient extends grpc_1.makeGenericClientConstructor(
+  UnimplementedUsersService.definition,
+  "Users",
+  {},
+) {
+  constructor(
+    address: string,
+    credentials: grpc_1.ChannelCredentials,
+    options?: Partial<grpc_1.ChannelOptions>,
+  ) {
+    super(address, credentials, options);
+  }
+  GetUserProfile: GrpcPromiseServiceInterface<
+    GetUserProfileRequest,
+    GetUserProfileResponse
+  > = (
+    message: GetUserProfileRequest,
+    metadata?: grpc_1.Metadata | grpc_1.CallOptions,
+    options?: grpc_1.CallOptions,
+  ): Promise<GetUserProfileResponse> => {
+    if (!metadata) {
+      metadata = new grpc_1.Metadata();
     }
-    GetUserProfile: GrpcPromiseServiceInterface<GetUserProfileRequest, GetUserProfileResponse> = (message: GetUserProfileRequest, metadata?: grpc_1.Metadata | grpc_1.CallOptions, options?: grpc_1.CallOptions): Promise<GetUserProfileResponse> => { if (!metadata) {
-        metadata = new grpc_1.Metadata;
-    } if (!options) {
-        options = {};
-    } return new Promise((resolve, reject) => super.GetUserProfile(message, metadata, options, (error: grpc_1.ServiceError, response: GetUserProfileResponse) => {
-        if (error) {
+    if (!options) {
+      options = {};
+    }
+    return new Promise((resolve, reject) =>
+      super.GetUserProfile(
+        message,
+        metadata,
+        options,
+        (error: grpc_1.ServiceError, response: GetUserProfileResponse) => {
+          if (error) {
             reject(error);
-        }
-        else {
+          } else {
             resolve(response);
-        }
-    })); };
+          }
+        },
+      ),
+    );
+  };
 }
