@@ -47,6 +47,7 @@ export const InitProductWorkflowDefinition = defineWorkflow<
     return {
       ...packageInfo,
       productName: input.name,
+      sharedPackagePrefix: `${packageInfo.organizationName}/${input.name}`,
     };
   },
 
@@ -62,43 +63,40 @@ export const InitProductWorkflowDefinition = defineWorkflow<
   },
 
   steps: [
-    step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
-      productName: context.productName,
-      subdomainName: "root",
-    })),
+    // step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
+    //   productName: context.productName,
+    //   subdomainName: "root",
+    // })),
 
-    step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
-      productName: context.productName,
-      subdomainName: "admin",
-    })),
+    // step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
+    //   productName: context.productName,
+    //   subdomainName: "admin",
+    // })),
 
-    step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
-      productName: context.productName,
-      subdomainName: "app",
-    })),
+    // step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
+    //   productName: context.productName,
+    //   subdomainName: "app",
+    // })),
 
-    step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
-      productName: context.productName,
-      subdomainName: "auth",
-    })),
+    // step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
+    //   productName: context.productName,
+    //   subdomainName: "auth",
+    // })),
 
-    step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
-      productName: context.productName,
-      subdomainName: "account",
-    })),
+    // step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
+    //   productName: context.productName,
+    //   subdomainName: "account",
+    // })),
 
-    step(makeWorkflowMachine(InitServiceWorkflowDefinition), ({ context }) => ({
-      name: `${context.productName}-service`,
-      path: `./services/${context.productName}`,
-    })),
+    // step(makeWorkflowMachine(InitServiceWorkflowDefinition), ({ context }) => ({
+    //   name: `${context.productName}-service`,
+    //   path: `./services/${context.productName}`,
+    // })),
 
     step(CopyStepMachine, ({ context }) => ({
       name: context.productName,
-      targetDir: path.join(context.cwd, `./services/${context.productName}-monolith`),
-      lineReplace: makeLineReplace(context),
-      templateFiles: {
-        monolith: path.join(import.meta.dirname, "templates/services/__product-name__-monolith"),
-      },
+      targetDir: context.cwd,
+      lineReplace: makeLineReplace(context)
     })),
 
     step(CdStepMachine, ({ context }) => ({
@@ -110,14 +108,14 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       args: ["exec", "saf-env", "generate", "--", "--combined"],
     })),
 
-    step(CopyStepMachine, ({ context }) => ({
-      name: context.productName,
-      targetDir: path.join(context.cwd, `./deploy/${context.productName}-dev`),
-      lineReplace: makeLineReplace(context),
-      templateFiles: {
-        deploy: path.join(import.meta.dirname, "templates/deploy/__product-name__-dev"),
-      },
-    })),
+    // step(CopyStepMachine, ({ context }) => ({
+    //   name: context.productName,
+    //   targetDir: path.join(context.cwd, `./deploy/${context.productName}-dev`),
+    //   lineReplace: makeLineReplace(context),
+    //   templateFiles: {
+    //     deploy: path.join(import.meta.dirname, "templates/deploy/__product-name__-dev"),
+    //   },
+    // })),
   ],
 });
 
