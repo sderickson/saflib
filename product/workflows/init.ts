@@ -63,35 +63,35 @@ export const InitProductWorkflowDefinition = defineWorkflow<
   },
 
   steps: [
-    // step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
-    //   productName: context.productName,
-    //   subdomainName: "root",
-    // })),
+    step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
+      productName: context.productName,
+      subdomainName: "root",
+    })),
 
-    // step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
-    //   productName: context.productName,
-    //   subdomainName: "admin",
-    // })),
+    step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
+      productName: context.productName,
+      subdomainName: "admin",
+    })),
 
-    // step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
-    //   productName: context.productName,
-    //   subdomainName: "app",
-    // })),
+    step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
+      productName: context.productName,
+      subdomainName: "app",
+    })),
 
-    // step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
-    //   productName: context.productName,
-    //   subdomainName: "auth",
-    // })),
+    step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
+      productName: context.productName,
+      subdomainName: "auth",
+    })),
 
-    // step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
-    //   productName: context.productName,
-    //   subdomainName: "account",
-    // })),
+    step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
+      productName: context.productName,
+      subdomainName: "account",
+    })),
 
-    // step(makeWorkflowMachine(InitServiceWorkflowDefinition), ({ context }) => ({
-    //   name: `${context.productName}-service`,
-    //   path: `./services/${context.productName}`,
-    // })),
+    step(makeWorkflowMachine(InitServiceWorkflowDefinition), ({ context }) => ({
+      name: `${context.productName}-service`,
+      path: `./services/${context.productName}`,
+    })),
 
     step(CopyStepMachine, ({ context }) => ({
       name: context.productName,
@@ -116,15 +116,6 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       command: "touch",
       args: ["./.env"],
     })),
-
-    // step(CopyStepMachine, ({ context }) => ({
-    //   name: context.productName,
-    //   targetDir: path.join(context.cwd, `./deploy/${context.productName}-dev`),
-    //   lineReplace: makeLineReplace(context),
-    //   templateFiles: {
-    //     deploy: path.join(import.meta.dirname, "templates/deploy/__product-name__-dev"),
-    //   },
-    // })),
   ],
 });
 
