@@ -1,0 +1,17 @@
+{
+  "name": "@vendata/posthog-client",
+  "description": "Posthog for web clients",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./posthog.ts",
+    "./html": "./html.ts"
+  },
+  "dependencies": {
+    "@saflib/env": "*",
+    "posthog-js": "^1.257.0"
+  },
+  "devDependencies": {
+    "@saflib/vitest": "*"
+  }
+}

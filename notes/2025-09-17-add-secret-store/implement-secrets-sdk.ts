@@ -2,7 +2,7 @@ import {
   defineWorkflow,
   step,
   makeWorkflowMachine,
-  CwdStepMachine,
+  CdStepMachine,
 } from "@saflib/workflows";
 import { AddSdkQueryWorkflowDefinition } from "@saflib/sdk/workflows";
 import path from "path";
@@ -26,7 +26,7 @@ export const ImplementSecretsSdkWorkflowDefinition = defineWorkflow<
   },
 
   steps: [
-    step(CwdStepMachine, () => ({
+    step(CdStepMachine, () => ({
       path: "./secrets/secrets-sdk",
     })),
 

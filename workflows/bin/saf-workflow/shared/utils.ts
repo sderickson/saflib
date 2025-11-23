@@ -2,7 +2,7 @@ import type {
   WorkflowOutput,
   WorkflowDefinition,
   WorkflowArgument,
-  WorkflowRunMode,
+  WorkflowExecutionMode,
   AgentConfig,
   VersionControlMode,
 } from "../../../core/types.ts";
@@ -14,22 +14,62 @@ import { resolve } from "node:path";
 import { getWorkflowLogger } from "../../../core/store.ts";
 import type { Snapshot } from "xstate";
 
+/**
+ * Argument for the runWorkflow function.
+ */
 export interface RunWorkflowOptions {
+  /**
+   * The workflow definition to run.
+   */
   definition: WorkflowDefinition<any, any>;
-  runMode: WorkflowRunMode;
+
+  /**
+   * The mode to run the workflow in.
+   */
+  runMode: WorkflowExecutionMode;
+
+  /**
+   * The arguments to pass to the workflow.
+   */
   args?: string[];
+
+  /**
+   * The agent config to use for the workflow. Required if runMode is "run".
+   */
   agentConfig?: AgentConfig;
+
+  /**
+   * Whether to skip TODOs in the workflow. They're already skipped in "dry" and "script" modes; this is mainly used to override the default behaviors, for example in automated testing of run and print modes.
+   */
   skipTodos?: boolean;
+
+  /**
+   * If included, the workflow tool will check file changes, push back on unexpected changes, and commit expected changes automatically.
+   */
   manageVersionControl?: VersionControlMode;
 }
 
+/**
+ * Return value of the runWorkflow function.
+ *
+ * These are used internally and so may change in the future.
+ */
 export interface RunWorkflowResult {
+  /**
+   * The output of the workflow state machine.
+   */
   output: WorkflowOutput | undefined;
+
+  /**
+   * The state of the workflow state machine.
+   */
   state: Snapshot<any> | undefined;
 }
 
 /**
  * Convenience function to take a WorkflowDefinition, run it in the specified mode, and return the output.
+ * Can be used to run a given workflow in checklist mode for a unit test. This is also used internally
+ * by the CLI tool.
  */
 export const runWorkflow = async (
   options: RunWorkflowOptions,
@@ -42,7 +82,7 @@ export const runWorkflow = async (
   const workflow = new XStateWorkflowRunner({
     definition,
     args: args || exampleArgs,
-    workflowRunMode: runMode,
+    workflowExecutionMode: runMode,
     agentConfig: options.agentConfig,
     manageVersionControl: options.manageVersionControl,
     skipTodos: options.skipTodos,
@@ -60,17 +100,6 @@ export const runWorkflow = async (
     output: workflow.getOutput(),
     state: workflow.dehydrate().snapshotState as unknown as Snapshot<any>,
   };
-};
-
-/**
- * Convenience function to take a WorkflowDefinition, dry run it, and return the output. The output in particular includes the checklist.
- * @deprecated Use runWorkflow with runMode: "dry" instead
- */
-export const dryRunWorkflow = async (
-  definition: WorkflowDefinition<any, any>,
-): Promise<WorkflowOutput | undefined> => {
-  const { output } = await runWorkflow({ definition, runMode: "dry" });
-  return output;
 };
 
 /**
@@ -114,6 +143,7 @@ export const loadWorkflowDefinition = async (
     log.info(`Loading workflow from file: ${resolvedPath}`);
     workflowDefinition = await loadWorkflowDefinitionFromFile(resolvedPath);
     if (!workflowDefinition) {
+      log.error(`Error: Workflow definition not found at ${resolvedPath}`);
       process.exit(1);
     }
     log.info(`Loaded workflow from file: ${workflowIdOrPath}`);

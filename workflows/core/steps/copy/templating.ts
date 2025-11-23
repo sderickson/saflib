@@ -8,17 +8,52 @@ import {
 import { readFileSync } from "node:fs";
 import path from "node:path";
 
+/**
+ * Argument for the parsePackageName function.
+ */
 export interface ParsePackageNameInput {
+  /**
+   * The required suffix to enforce on the package name. Everything prior to the suffix is considered the service name (not including the organization name).
+   */
   requiredSuffix?: string | string[]; // e.g. "-db"
+
+  /**
+   * If true, will not throw an error if the package name does not end with the required suffix. This is mainly used to suppress errors when generating checklists, since some workflows will parse the cwd's package name and in a checklist-generating context, the cwd package could be anything.
+   */
+  silentError?: boolean;
 }
 
+/**
+ * Return value for the parsePackageName function.
+ *
+ * These values are often used for string interpolation in templates.
+ */
 export interface ParsePackageNameOutput {
-  packageName: string; // e.g. "@foobar/identity-db"
-  serviceName: string; // e.g. "identity"
-  organizationName: string; // e.g. "foobar" or ""
-  sharedPackagePrefix: string; // e.g. "@foobar/identity"
+  /**
+   * The full package name, including the organization name and the suffix.
+   * Example: "@foobar/identity-db"
+   */
+  packageName: string;
+
+  /**
+   * The service name, not including the organization name. Example: "identity"
+   */
+  serviceName: string;
+
+  /**
+   * The organization name. Example: "foobar" or ""
+   */
+  organizationName: string;
+
+  /**
+   * The shared package prefix for packages which are considered part of the same "service". Example: "@foobar/identity"
+   */
+  sharedPackagePrefix: string;
 }
 
+/**
+ * Reads the package.json for the given cwd and returns the package name.
+ */
 export const getPackageName = (cwd: string): string => {
   const result = readFileSync(path.join(cwd, "package.json"), "utf8").match(
     /name": "(.+)"/,
@@ -30,7 +65,7 @@ export const getPackageName = (cwd: string): string => {
 };
 
 /**
- * Takes a package name and returns a breakdown based on conventions.
+ * Takes a package name and returns a breakdown into conventional parts for templating.
  *
  * The package name format is [@organization-name/]service-name[-required-suffix].
  * If provided a required suffix, this function will enforce that the name ends with it.
@@ -52,7 +87,8 @@ export const parsePackageName = (
     }
     if (
       !requiredSuffixes.some((suffix) => packageName.endsWith(suffix)) &&
-      process.env.NODE_ENV !== "test"
+      process.env.NODE_ENV !== "test" &&
+      !input.silentError
     ) {
       throw new Error(
         `Package name must end with ${requiredSuffixes.join(" or ")}`,
@@ -86,12 +122,34 @@ export const parsePackageName = (
   };
 };
 
+/**
+ * Argument for the parsePath function.
+ */
 export interface ParsePathInput {
-  requiredPrefix?: string; // e.g. "queries/"
-  requiredSuffix?: string; // e.g. ".ts"
+  /**
+   * The required prefix to enforce on the path. Must start with "./".
+   * Whatever is specified here will not be included in the groupName or targetName.
+   * Example: "./queries/"
+   */
+  requiredPrefix?: string;
+
+  /**
+   * The required suffix to enforce on the path.
+   * Must start with ".".
+   */
+  requiredSuffix?: string;
+
+  /**
+   * The current working directory. Used to determine the target directory as an absolute path.
+   */
   cwd: string; // e.g. "/<abs-path>"
 }
 
+/**
+ * Return value for the parsePath function.
+ *
+ * `groupName` is often used for templates, and `targetName` and `targetDir` are often fed directly to the CopyStepMachine.
+ */
 export interface ParsePathOutput {
   groupName: string; // e.g. "contacts"
   targetName: string; // e.g. "get-by-id"
@@ -99,7 +157,7 @@ export interface ParsePathOutput {
 }
 
 /**
- * Takes a target path to a file and breaks it down into conventional parts.
+ * Takes a target path to a file and breaks it down into conventional parts for templating.
  *
  * The path format is "./[required-prefix/][group-name/]target-name[required-suffix]".
  * This function will enforce required prefixes and suffixes. The suffix will usually just be a file extension.
@@ -158,9 +216,12 @@ export const parsePath = (
 
 /**
  * Creates a line-replace function which will handle template interpolation, given a context.
- * The context is an object of camelCase keys to kebab-case values. It looks for __variables__ and replaces them with the given context values.
+ *
+ * The context is expected to be an object of camelCase keys to kebab-case values. It looks for __variables__ and replaces them with the given context values.
  * It will automatically handle variant names, such as __kebab-case__, __snake_case__, __PascalCase__, __camelCase__, and __SNAKE_CASE__,
  * so you provide one variant of the string and it will automatically convert keys and values with the appropriate casing and connecting characters.
+ *
+ *
  */
 export const makeLineReplace = (context: { [key: string]: any }) => {
   const replaceMap: Record<string, string> = {};

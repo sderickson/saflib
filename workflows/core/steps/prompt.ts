@@ -14,31 +14,34 @@ import { handlePrompt } from "../prompt.ts";
 export interface PromptStepInput {
   /**
    * The text to be shown to the agent or user. The machine will then stop until the workflow is continued.
+   * @deprecated Use `prompt` instead.
    */
-  promptText: string;
+  promptText?: string;
 
   /**
-   * A function that determines if the prompt should be skipped. Given the context and cwd.
+   * The text to be shown to the agent or user. The machine will then stop until the workflow is continued.
    */
-  skipIf?: boolean;
+  prompt?: string;
 }
 
 /**
  * @internal
  */
 export interface PromptStepContext extends WorkflowContext {
-  promptText: string;
-  skipIf?: boolean;
+  prompt: string;
   shouldContinue?: boolean;
 }
 
+/**
+ * @internal
+ */
 export interface PromptStepOutput {
   shouldContinue: boolean;
   newConfig?: AgentConfig;
 }
 
 /**
- * Prompts the agent or user to do something. Stops the workflow until the workflow is continued.
+ * Prompts the agent or user to do an arbitrary task.
  */
 export const PromptStepMachine = setup({
   types: {
@@ -60,15 +63,12 @@ export const PromptStepMachine = setup({
         if (input.runMode === "dry" || input.runMode === "script") {
           return { shouldContinue: true };
         }
-        if (input.skipIf === true) {
-          return { shouldContinue: true };
-        }
         if (process.env.NODE_ENV === "test") {
           return { shouldContinue: true };
         }
         const { sessionId, shouldContinue } = await handlePrompt({
           context: input,
-          msg: input.promptText,
+          msg: input.prompt,
         });
         const agentConfig = input.agentConfig;
         return {
@@ -83,18 +83,20 @@ export const PromptStepMachine = setup({
       if (context.runMode === "dry" || context.runMode === "script") {
         return true;
       }
-      if (context.skipIf !== undefined) {
-        return !!context.skipIf;
-      }
       return false;
+    },
+    isRunMode: ({ context }) => {
+      return context.runMode === "run";
+    },
+    shouldContinue: ({ context }) => {
+      return !!context.shouldContinue;
     },
   },
 }).createMachine({
   id: "prompt-step",
   context: ({ input }) => ({
     ...contextFromInput(input),
-    promptText: input.promptText,
-    skipIf: input.skipIf,
+    prompt: input.promptText ?? input.prompt ?? "",
   }),
   initial: "running",
   states: {
@@ -123,10 +125,8 @@ export const PromptStepMachine = setup({
       on: {
         continue: [
           {
+            guard: "isRunMode",
             target: "running",
-            guard: ({ context }) => {
-              return context.runMode === "run";
-            },
           },
           {
             target: "done",
@@ -138,9 +138,7 @@ export const PromptStepMachine = setup({
       entry: raise({ type: "maybeContinue" }),
       on: {
         maybeContinue: {
-          guard: ({ context }) => {
-            return !!context.shouldContinue;
-          },
+          guard: "shouldContinue",
           target: "done",
         },
         continue: {
@@ -149,7 +147,7 @@ export const PromptStepMachine = setup({
         prompt: {
           actions: [
             ({ context }) => {
-              console.log(context.promptText);
+              console.log(context.prompt);
             },
           ],
         },
@@ -165,7 +163,7 @@ export const PromptStepMachine = setup({
         ...context.agentConfig,
       },
       checklist: {
-        description: context.promptText.split("\n")[0],
+        description: context.prompt.split("\n")[0],
       },
     };
   },

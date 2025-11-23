@@ -23,8 +23,8 @@ const input = [
   {
     name: "path",
     description:
-      "The path to the proto file to be created (e.g., 'secrets/list.proto')",
-    exampleValue: "./secrets/list.proto",
+      "The path to the proto file to be created (e.g., './protos/secrets/list.proto')",
+    exampleValue: "./protos/secrets/list.proto",
   },
 ] as const;
 

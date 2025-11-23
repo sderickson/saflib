@@ -7,7 +7,7 @@ import type {
   WorkflowInput,
   WorkflowContext,
   WorkflowOutput,
-  WorkflowRunMode,
+  WorkflowExecutionMode,
 } from "./types.ts";
 import { workflowActions, workflowActors } from "./xstate.ts";
 import {
@@ -33,8 +33,6 @@ let lastSystemPrompt: string | undefined;
  * Helper, identity function to infer types.
  *
  * By using this function on a Workflow object, it properly types the input object in the context function, and the context in the callbacks for the steps.
- *
- * I'm keeping this separate just because it's good to have the type inference piece separate where it can be messed with independently.
  */
 export function defineWorkflow<
   I extends readonly WorkflowArgument[],
@@ -43,9 +41,9 @@ export function defineWorkflow<
   input: I;
   context: (arg: {
     input: CreateArgsType<I> & {
-      runMode?: WorkflowRunMode;
+      runMode?: WorkflowExecutionMode;
       cwd: string;
-      systemPrompt?: string;
+      prompt?: string;
     };
   }) => C;
   id: string;
@@ -109,7 +107,7 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
       ],
       entry: [
         {
-          type: "systemPrompt",
+          type: "prompt",
         },
       ],
       invoke: {
@@ -258,14 +256,14 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
     },
     actions: {
       ...workflowActions,
-      systemPrompt: ({ context }) => {
-        if (context.systemPrompt) {
-          if (context.systemPrompt !== lastSystemPrompt) {
-            addPendingMessage(context.systemPrompt);
+      prompt: ({ context }) => {
+        if (context.prompt) {
+          if (context.prompt !== lastSystemPrompt) {
+            addPendingMessage(context.prompt);
             console.log("");
-            console.log(addNewLinesToString(context.systemPrompt));
+            console.log(addNewLinesToString(context.prompt));
             console.log("");
-            lastSystemPrompt = context.systemPrompt;
+            lastSystemPrompt = context.prompt;
           }
         }
       },

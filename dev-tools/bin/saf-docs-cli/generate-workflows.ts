@@ -14,7 +14,10 @@ export function generateWorkflowDocs(options: GenerateWorkflowDocsOptions) {
     cwd: currentDir,
   });
   const workflowListString = workflowList.toString();
-  const workflowNames = workflowListString.split("\n").filter(Boolean);
+  const workflowNames = workflowListString
+    .split("\n")
+    .filter(Boolean)
+    .map((name) => name.trim());
   if (workflowNames.length === 0) {
     return;
   }
@@ -46,18 +49,18 @@ ${workflowDocs.map(({ name, path }) => `- [${name}](${path})`).join("\n")}`;
 }
 
 const getWorkflowDoc = (workflowName: string) => {
-  const workflowHelp = execSync(
-    `npm exec saf-workflow kickoff ${workflowName} -- --help`,
-  );
-  const command = workflowHelp
-    .toString()
-    .split("\n")[0]
-    .replace("Usage: ", "npm exec ")
-    .replace("[command]", workflowName)
-    .replace("[options] ", "")
-    .replace("[args...]", "");
+  const workflowHelp = execSync(`npm exec saf-workflow info ${workflowName}`);
+  const command = workflowHelp.toString().split("\n")[0].replace("Usage: ", "");
 
-  const checklist = execSync(`npm exec saf-workflow checklist ${workflowName}`);
+  let checklist = "";
+  try {
+    checklist = execSync(
+      `npm exec saf-workflow checklist ${workflowName}`,
+    ).toString();
+  } catch (error) {
+    console.error(`\n\nError getting checklist for ${workflowName}`);
+    process.exit(1);
+  }
 
   const sourceUrl = execSync(`npm exec saf-workflow source ${workflowName}`)
     .toString()

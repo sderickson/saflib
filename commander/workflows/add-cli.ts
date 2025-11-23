@@ -71,7 +71,7 @@ export const AddCLIWorkflowDefinition = defineWorkflow<
 
     step(CommandStepMachine, ({ context }) => ({
       command: "chmod",
-      args: ["+x", context.copiedFiles!.index],
+      args: ["+x", path.relative(context.cwd, context.copiedFiles!.index)],
     })),
 
     step(PromptStepMachine, ({ context }) => {

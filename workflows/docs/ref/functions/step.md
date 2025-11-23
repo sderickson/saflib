@@ -4,7 +4,7 @@
 
 # Function: step()
 
-> **step**\<`C`, `M`\>(`machine`, `input`): [`WorkflowStep`](../type-aliases/WorkflowStep.md)\<`C`, `M`\>
+> **step**\<`C`, `M`\>(`machine`, `input`, `options`): [`WorkflowStep`](../type-aliases/WorkflowStep.md)\<`C`, `M`\>
 
 Helper function for defining a step in a workflow, enforcing types properly.
 
@@ -17,10 +17,13 @@ Helper function for defining a step in a workflow, enforcing types properly.
 
 ## Parameters
 
-| Parameter | Type                          |
-| --------- | ----------------------------- |
-| `machine` | `M`                           |
-| `input`   | (`arg`) => `InputFrom`\<`M`\> |
+| Parameter           | Type                                                                                                 |
+| ------------------- | ---------------------------------------------------------------------------------------------------- |
+| `machine`           | `M`                                                                                                  |
+| `input`             | (`arg`) => `InputFrom`\<`M`\>                                                                        |
+| `options`           | \{ `skipIf?`: (`arg`) => `boolean`; `validate?`: (`arg`) => `Promise`\<`undefined` \| `string`\>; \} |
+| `options.skipIf?`   | (`arg`) => `boolean`                                                                                 |
+| `options.validate?` | (`arg`) => `Promise`\<`undefined` \| `string`\>                                                      |
 
 ## Returns
 

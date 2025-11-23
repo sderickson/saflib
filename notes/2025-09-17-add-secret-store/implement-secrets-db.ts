@@ -2,7 +2,7 @@ import {
   defineWorkflow,
   step,
   makeWorkflowMachine,
-  CwdStepMachine,
+  CdStepMachine,
 } from "@saflib/workflows";
 import {
   UpdateSchemaWorkflowDefinition,
@@ -29,7 +29,7 @@ export const ImplementSecretsDbWorkflowDefinition = defineWorkflow<
   },
 
   steps: [
-    step(CwdStepMachine, () => ({
+    step(CdStepMachine, () => ({
       path: "./secrets/secrets-db",
     })),
 

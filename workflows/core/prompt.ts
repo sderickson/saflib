@@ -39,8 +39,8 @@ export const printPrompt = ({ msg, context }: PromptParam) => {
     return;
   }
   print("");
-  if (context.systemPrompt) {
-    print(context.systemPrompt);
+  if (context.prompt) {
+    print(context.prompt);
     print("");
   }
   print(msg);

@@ -1,5 +1,9 @@
 import { addNewLinesToString } from "../../strings.ts";
-import { getSourceUrl } from "../../core/store.ts";
+import {
+  createWorkflowLogger,
+  getSourceUrl,
+  setupWorkflowContext,
+} from "../../core/store.ts";
 import type { WorkflowDefinition } from "../../core/types.ts";
 import type { WorkflowCommandOptions } from "./shared/types.ts";
 
@@ -13,6 +17,12 @@ export const addSourceCommand = (commandOptions: WorkflowCommandOptions) => {
       .command(workflow.id)
       .description(workflow.description);
     chain.action(async () => {
+      const log = createWorkflowLogger();
+      setupWorkflowContext({
+        logger: log,
+        getSourceUrl: commandOptions.getSourceUrl,
+      });
+
       await printSourceUrl(workflow);
     });
   });

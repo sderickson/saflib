@@ -65,7 +65,9 @@ export const continueWorkflow = (actor: AnyActor) => {
 };
 
 /**
- * Convenience function to convert a checklist to a string. Checklist items are in markdown, so provide workflow documentation.
+ * Convenience function to convert a checklist to a string.
+ *
+ * This is mainly useful on the runWorkflow's `output` return value.
  */
 export const checklistToString = (
   checklist: ChecklistItem[],
@@ -86,7 +88,7 @@ export const checklistToString = (
 export function contextFromInput(input: WorkflowInput): WorkflowContext {
   return {
     checklist: [],
-    systemPrompt: input.systemPrompt,
+    prompt: input.prompt,
     runMode: input.runMode || "print",
     templateFiles: input.templateFiles,
     copiedFiles: input.copiedFiles,
@@ -101,7 +103,8 @@ export function contextFromInput(input: WorkflowInput): WorkflowContext {
 let timeout: NodeJS.Timeout | undefined;
 
 /**
- * Something's weird about "waitFor" in xstate. If I use that, Node exits because apparently there's no promise or interval pending to keep it from exiting. So I'm resorting to a polling interval instead.
+ * A hack to wait for workflows to halt. Periodically checks an actor based on a condition; used by runWorkflow.
+ * @internal
  */
 export const pollingWaitFor = (
   actor: AnyActor,

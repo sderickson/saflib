@@ -1,0 +1,8 @@
+{
+  // Has the vue config supercede the project's base tsconfig
+  "extends": ["@saflib/monorepo/tsconfig.json", "@vue/tsconfig"],
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo"
+  },
+  "exclude": ["node_modules", "vite.config.ts"]
+}

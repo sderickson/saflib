@@ -10,26 +10,6 @@ import { contextFromInput } from "../../utils.ts";
 import { handlePrompt } from "../../prompt.ts";
 
 /**
- * A simple test format on changes made, for checks beyond just "todo" string existence.
- */
-export interface UpdateStepTest {
-  /**
-   * What to print if the test fails.
-   */
-  description: string;
-
-  /**
-   * The name of the test.
-   */
-  name: string;
-
-  /**
-   * An arbitrary test, given the contents of the file that was updated. Fails the test if it returns false.
-   */
-  test: (content: string) => boolean;
-}
-
-/**
  * Input for the UpdateStepMachine.
  */
 export interface UpdateStepInput {
@@ -40,8 +20,14 @@ export interface UpdateStepInput {
 
   /**
    * The message to show to the user. The machine will then stop until the workflow is continued.
+   * @deprecated Use `prompt` instead.
    */
-  promptMessage: string | ((context: WorkflowContext) => string);
+  promptMessage?: string | ((context: WorkflowContext) => string);
+
+  /**
+   * The message to show to the user. The machine will then stop until the workflow is continued.
+   */
+  prompt?: string;
 }
 
 /**
@@ -49,11 +35,14 @@ export interface UpdateStepInput {
  */
 export interface UpdateStepContext extends WorkflowContext {
   filePath: string;
-  promptMessage: string | ((context: WorkflowContext) => string);
+  prompt: string;
   shouldContinue?: boolean;
   hasTodos?: boolean;
 }
 
+/**
+ * @internal
+ */
 export interface UpdateStepOutput extends WorkflowOutput {
   filePath: string;
 }
@@ -80,10 +69,7 @@ export const UpdateStepMachine = setup({
 
       const { sessionId, shouldContinue } = await handlePrompt({
         context: input,
-        msg:
-          typeof input.promptMessage === "string"
-            ? input.promptMessage
-            : input.promptMessage(input),
+        msg: input.prompt,
       });
       const agentConfig = input.agentConfig;
 
@@ -107,7 +93,7 @@ export const UpdateStepMachine = setup({
           }
           await handlePrompt({
             context: input,
-            msg: `File ${resolvedPath} was not properly updated - it still contains TODO strings. Please complete the implementation. If it's unclear what needs to be done, ask for help.`,
+            msg: `File ${resolvedPath} contains TODO strings. Make sure to resolve them before continuing.`,
           });
           if (!shouldContinue) {
             break;
@@ -122,6 +108,19 @@ export const UpdateStepMachine = setup({
         hasTodos,
       };
     }),
+  },
+  guards: {
+    isRunMode: ({ context }) => {
+      return context.runMode === "run";
+    },
+    shouldContinue: ({ context }) => {
+      return !!context.shouldContinue;
+    },
+    hasTodos: ({ context }) => {
+      const resolvedPath = context.filePath;
+      const content = readFileSync(resolvedPath, "utf-8");
+      return /\s*(?:#|\/\/).*todo/i.test(content);
+    },
   },
 }).createMachine({
   id: "update-step",
@@ -141,7 +140,7 @@ export const UpdateStepMachine = setup({
     return {
       ...contextFromInput(input),
       filePath,
-      promptMessage: input.promptMessage,
+      prompt: typeof input.promptMessage === "string" ? input.promptMessage : input.prompt ?? "",
     };
   },
   states: {
@@ -172,9 +171,7 @@ export const UpdateStepMachine = setup({
       on: {
         continue: [
           {
-            guard: ({ context }) => {
-              return context.runMode === "run";
-            },
+            guard: "isRunMode",
             target: "update",
           },
           {
@@ -187,16 +184,12 @@ export const UpdateStepMachine = setup({
       entry: raise({ type: "maybeContinue" }),
       on: {
         maybeContinue: {
-          guard: ({ context }) => {
-            return !!context.shouldContinue;
-          },
+          guard: "shouldContinue",
           target: "done",
         },
         continue: [
           {
-            guard: ({ context }) => {
-              return !!context.hasTodos;
-            },
+            guard: "hasTodos",
             target: "update",
           },
           {
@@ -206,7 +199,7 @@ export const UpdateStepMachine = setup({
         prompt: {
           actions: [
             ({ context }) => {
-              console.log(context.promptMessage);
+              console.log(context.prompt);
             },
           ],
         },
@@ -217,13 +210,9 @@ export const UpdateStepMachine = setup({
     },
   },
   output: ({ context }) => {
-    const promptMessage =
-      typeof context.promptMessage === "string"
-        ? context.promptMessage
-        : context.promptMessage(context);
     return {
       checklist: {
-        description: promptMessage.split("\n")[0],
+        description: context.prompt.split("\n")[0],
       },
       filePath: context.filePath,
     };

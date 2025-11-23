@@ -29,6 +29,7 @@ export function generateTypeDoc(options: GenerateTypeDocOptions) {
     .filter((entrypoint) => !entrypoint.includes("./workflows"))
     .filter((entrypoint) => !entrypoint.includes("./eslint.config.js"))
     .filter((entrypoint) => !entrypoint.includes("./tsconfig.json"))
+    .filter((entrypoint) => !entrypoint.includes("./components"))
     .map((entrypoint) => {
       return `--entryPoints ${entrypoint}`;
     });
@@ -41,6 +42,9 @@ export function generateTypeDoc(options: GenerateTypeDocOptions) {
   }
 
   console.log("\nGenerating typedoc...");
+  entrypointCommands.forEach((entrypoint) => {
+    console.log(`- ${entrypoint}`);
+  });
   const command = [
     "typedoc",
 

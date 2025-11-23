@@ -1,0 +1,16 @@
+{
+  "name": "template-package-clients-common",
+  "description": "Shared look-and-feel and utilities for web clients",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts",
+    "./strings": "./strings.ts",
+    "./i18n": "./i18n.ts",
+    "./playwright.config": "./playwright.config.ts"
+  },
+  "dependencies": {
+    "@saflib/vue": "*",
+    "@sentry/vue": "^10.21.0"
+  }
+}

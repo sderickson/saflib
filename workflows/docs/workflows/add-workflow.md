@@ -21,35 +21,23 @@ To run this workflow automatically, tell the agent to:
 When run, the workflow will:
 
 - Copy template files and rename placeholders.
-  - Upsert **example-workflow.ts** from [template](https://github.com/sderickson/saflib/blob/main/workflows/workflows/templates/template-file.ts)
-  - Upsert **example-workflow.test.ts** from [template](https://github.com/sderickson/saflib/blob/main/workflows/workflows/templates/template-file.test.ts)
+  - Upsert **example-workflow.ts** from [template](https://github.com/sderickson/saflib/blob/main/workflows/workflows/templates/__target-name__.ts)
+  - Upsert **example-workflow.test.ts** from [template](https://github.com/sderickson/saflib/blob/main/workflows/workflows/templates/__target-name__.test.ts)
   - Upsert **index.ts** from [template](https://github.com/sderickson/saflib/blob/main/workflows/workflows/templates/index.ts)
-- Add name, description, and cliArguments to the newly created workflows/example-workflow.ts.
-- Export **example-workflow** from **@example/package**.
-- Find the file which gathers all workflows to include them in the saf-workflow CLI tool.
-- If needed, install `@example/package` as a dependency of the package that contains that file you found.
-- Add `@example/package`'s exported workflows to the CLI file's list of workflows.
-- Check that the new workflow appears in the saf-workflow CLI tool.
-- Review documentation: [README.md](https://github.com/sderickson/saflib/blob/main/workflows/docs/README.md)
-- Create template files for example-workflow workflow.
-- Run `npx tsc --noEmit`
-- Add documentation links to the workflow.
-- Add steps to workflows/example-workflow.ts.
-- Review the checklist and verify that the workflow was added correctly.
+- Update the workflow file to implement the main functionality. Replace any TODO comments with actual implementation.
+- Export **example-workflow** from **blog-client**.
+- Add `blog-client`'s exported workflows to the CLI tool.
 
 ## Help Docs
 
 ```bash
-Usage: saf-workflow kickoff workflows/add-workflow [options] <name>
+Usage: npm exec saf-workflow kickoff workflows/add-workflow <name>
 
 Create a new workflow and adds it to the CLI tool. Stops after setup to wait for
-implementation requirements.
+   implementation requirements.
 
 Arguments:
-  name        The name of the new workflow to create (e.g.,
-              'refactor-component')
-
-Options:
-  -h, --help  display help for command
+  name        The name of the new workflow to create (e.g., 'refactor-component')
+              Example: "example-package/example-workflow"
 
 ```

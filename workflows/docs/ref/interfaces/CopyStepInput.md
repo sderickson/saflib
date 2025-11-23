@@ -12,7 +12,7 @@ Input for the CopyStepMachine.
 
 > `optional` **lineReplace**: (`line`) => `string`
 
-Optional argument to do custom string transformations of the template file.
+Optional argument to do custom string transformations of template files and paths.
 
 #### Parameters
 
@@ -26,11 +26,11 @@ Optional argument to do custom string transformations of the template file.
 
 ---
 
-### name
+### name?
 
-> **name**: `string`
+> `optional` **name**: `string`
 
-kebab-case name of the thing being created from the template. Will be used to query replace instances of "template-file" and other variants like templateFile and template_file.
+kebab-case name of the thing being created from the template. Will be used to query replace instances of "template-file" and other variants like templateFile and template_file, though this behavior is deprecated and it's recommended to use the `lineReplace` function instead.
 
 ---
 

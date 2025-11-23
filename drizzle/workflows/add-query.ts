@@ -12,6 +12,7 @@ import {
   type ParsePackageNameOutput,
   makeLineReplace,
 } from "@saflib/workflows";
+import { existsSync } from "node:fs";
 import path from "node:path";
 
 const sourceDir = path.join(import.meta.dirname, "templates");
@@ -32,7 +33,7 @@ export const AddDrizzleQueryWorkflowDefinition = defineWorkflow<
   typeof input,
   AddDrizzleQueryWorkflowContext
 >({
-  id: "drizzle/add-drizzle-query",
+  id: "drizzle/add-query",
 
   description:
     "Add a new query to a database built off the drizzle-sqlite3 package.",
@@ -45,9 +46,14 @@ export const AddDrizzleQueryWorkflowDefinition = defineWorkflow<
   sourceUrl: import.meta.url,
 
   context: ({ input }) => {
+    let packageName = "@mock/package-db";
+    if (existsSync(path.join(input.cwd, "package.json"))) {
+      packageName = getPackageName(input.cwd);
+    }
     return {
-      ...parsePackageName(getPackageName(input.cwd), {
+      ...parsePackageName(packageName, {
         requiredSuffix: "-db",
+        silentError: true, // so checklists don't error
       }),
       ...parsePath(input.path, {
         requiredPrefix: "./queries/",

@@ -12,7 +12,7 @@ import {
   step,
   makeWorkflowMachine,
   PromptStepMachine,
-  CwdStepMachine,
+  CdStepMachine,
 } from "@saflib/workflows";
 
 const input = [] as const;
@@ -54,7 +54,7 @@ const TestExpressWorkflowsDefinition = defineWorkflow<
     })),
 
     // Add a users schema to the spec
-    step(CwdStepMachine, () => ({
+    step(CdStepMachine, () => ({
       path: "test-spec",
     })),
     step(makeWorkflowMachine(AddSchemaWorkflowDefinition), () => ({
@@ -67,7 +67,7 @@ const TestExpressWorkflowsDefinition = defineWorkflow<
     })),
 
     // Go back to parent directory and initialize HTTP service
-    step(CwdStepMachine, () => ({
+    step(CdStepMachine, () => ({
       path: ".",
     })),
     step(makeWorkflowMachine(ExpressInitWorkflowDefinition), () => ({
@@ -76,7 +76,7 @@ const TestExpressWorkflowsDefinition = defineWorkflow<
     })),
 
     // Add a handler for the list users route
-    step(CwdStepMachine, () => ({
+    step(CdStepMachine, () => ({
       path: "test-http",
     })),
     step(makeWorkflowMachine(AddHandlerWorkflowDefinition), () => ({

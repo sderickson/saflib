@@ -29,6 +29,25 @@ If onDisk is a string, the database will be created at the given (absolute) path
 
 `symbol`
 
+### createBackup()
+
+> **createBackup**: (`key`) => `Promise`\<`undefined` \| `Readable`\>
+
+Creates a backup of the database file and returns a readable stream with automatic cleanup.
+The backup file is created in the same directory as the original database file
+with a unique temporary name. The stream will automatically clean up the temporary
+file when it's closed or garbage collected.
+
+#### Parameters
+
+| Parameter | Type     |
+| --------- | -------- |
+| `key`     | `symbol` |
+
+#### Returns
+
+`Promise`\<`undefined` \| `Readable`\>
+
 ### disconnect()
 
 > **disconnect**: (`key`) => `boolean`

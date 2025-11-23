@@ -19,7 +19,7 @@ export const addRunScriptsCommand = (
         "Run a workflow in script mode. Can be called with a workflow ID or a file path to a workflow definition.",
       ),
     )
-    .argument("<workflowIdOrPath>", "Workflow ID or path to workflow file")
+    .argument("<path-or-id>", "Workflow ID or path to workflow file")
     .argument("[args...]", "Arguments for the workflow")
     .action(async (workflowIdOrPath: string, args: string[]) => {
       const log = createWorkflowLogger();

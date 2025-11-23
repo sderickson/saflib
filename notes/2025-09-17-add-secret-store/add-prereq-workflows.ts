@@ -3,7 +3,7 @@ import {
   step,
   makeWorkflowMachine,
   PromptStepMachine,
-  CwdStepMachine,
+  CdStepMachine,
 } from "@saflib/workflows";
 import { AddWorkflowDefinition } from "@saflib/workflows/workflows";
 import path from "node:path";
@@ -58,7 +58,7 @@ These are all generic workflows that will be useful beyond just the secrets proj
 This is the most fundamental workflow for free-form packages like env and secrets.`,
     })),
 
-    step(CwdStepMachine, () => ({
+    step(CdStepMachine, () => ({
       path: "./monorepo",
     })),
 
@@ -78,7 +78,7 @@ See other "init" workflows for examples. It should be fully automatic (no prompt
 This will be used to create @saflib/secrets-proto.`,
     })),
 
-    step(CwdStepMachine, () => ({
+    step(CdStepMachine, () => ({
       path: "./grpc/grpc-specs",
     })),
 
@@ -111,7 +111,7 @@ See other "init" workflows for examples. It should be fully automatic (no prompt
 This will be used to create @saflib/secrets-grpc.`,
     })),
 
-    step(CwdStepMachine, () => ({
+    step(CdStepMachine, () => ({
       path: "./grpc/grpc",
     })),
 
@@ -145,7 +145,7 @@ This will be used to implement GetSecret, RegisterToken handlers.`,
 This will be used to create SecretForm.vue.`,
     })),
 
-    step(CwdStepMachine, () => ({
+    step(CdStepMachine, () => ({
       path: "./sdk",
     })),
 
@@ -193,7 +193,7 @@ This will be used to create queries for secrets API endpoints.`,
 This will be used to add documentation for the secrets service.`,
     })),
 
-    step(CwdStepMachine, () => ({
+    step(CdStepMachine, () => ({
       path: "./monorepo",
     })),
 

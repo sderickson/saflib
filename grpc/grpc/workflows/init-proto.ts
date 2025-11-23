@@ -3,7 +3,7 @@ import {
   CommandStepMachine,
   defineWorkflow,
   step,
-  CwdStepMachine,
+  CdStepMachine,
   type ParsePackageNameOutput,
   parsePackageName,
   makeLineReplace,
@@ -83,7 +83,7 @@ export const InitGrpcProtoWorkflowDefinition = defineWorkflow<
       lineReplace: makeLineReplace(context),
     })),
 
-    step(CwdStepMachine, ({ context }) => ({
+    step(CdStepMachine, ({ context }) => ({
       path: context.targetDir,
     })),
 

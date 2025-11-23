@@ -21,8 +21,12 @@ To run this workflow automatically, tell the agent to:
 When run, the workflow will:
 
 - Copy template files and rename placeholders.
-  - Upsert **example-route.yaml** from [template](https://github.com/sderickson/saflib/blob/main/openapi/workflows/templates/routes/template-file.yaml)
-- Update **example-route.yaml**. Resolve all TODOs.
+  - Upsert **example.yaml** from [template](https://github.com/sderickson/saflib/blob/main/openapi/workflows/templates/routes/__group-name__/__target-name__.yaml)
+  - Upsert **openapi.yaml** from [template](https://github.com/sderickson/saflib/blob/main/openapi/workflows/templates/openapi.yaml)
+  - Upsert **openapi.d.ts** from [template](https://github.com/sderickson/saflib/blob/main/openapi/workflows/templates/dist/openapi.d.ts)
+  - Upsert **openapi.json** from [template](https://github.com/sderickson/saflib/blob/main/openapi/workflows/templates/dist/openapi.json)
+  - Upsert **index.ts** from [template](https://github.com/sderickson/saflib/blob/main/openapi/workflows/templates/index.ts)
+- Update **example.yaml**. Resolve all TODOs.
 - Add the route to the openapi.yaml file in the paths section. Reference the route file using $ref.
 - Run `npm exec saf-specs generate`
 - Run `npx tsc --noEmit`
@@ -30,14 +34,12 @@ When run, the workflow will:
 ## Help Docs
 
 ```bash
-Usage: saf-workflow kickoff openapi/add-route [options] <path>
+Usage: npm exec saf-workflow kickoff openapi/add-route <path>
 
 Add a new route to an existing OpenAPI specification package
 
 Arguments:
   path        The path for the route (e.g., 'users' or 'products')
-
-Options:
-  -h, --help  display help for command
+              Example: "./routes/example/example.yaml"
 
 ```

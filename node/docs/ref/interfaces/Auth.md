@@ -16,7 +16,7 @@ Auth object passed in with every authenticated request.
 
 ### userId
 
-> **userId**: `number`
+> **userId**: `string`
 
 ---
 

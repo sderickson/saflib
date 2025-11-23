@@ -47,6 +47,7 @@ export const AddSdkQueryWorkflowDefinition = defineWorkflow<
     return {
       ...parsePackageName(getPackageName(input.cwd), {
         requiredSuffix: "-sdk",
+        silentError: true, // so checklists don't error
       }),
       ...parsePath(input.path, {
         requiredSuffix: ".ts",

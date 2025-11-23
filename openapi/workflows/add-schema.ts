@@ -12,6 +12,7 @@ import {
   makeLineReplace,
   getPackageName,
 } from "@saflib/workflows";
+import { existsSync } from "node:fs";
 import path from "node:path";
 
 const sourceDir = path.join(import.meta.dirname, "templates");
@@ -45,9 +46,12 @@ export const AddSchemaWorkflowDefinition = defineWorkflow<
 
   context: ({ input }) => {
     const schemaPath = `./schemas/${input.name}.yaml`;
-
+    let packageName = "@mock/package-openapi";
+    if (existsSync(path.join(input.cwd, "package.json"))) {
+      packageName = getPackageName(input.cwd);
+    }
     return {
-      ...parsePackageName(getPackageName(input.cwd), {}),
+      ...parsePackageName(packageName, {}),
       ...parsePath(schemaPath, {
         requiredSuffix: ".yaml",
         cwd: input.cwd,

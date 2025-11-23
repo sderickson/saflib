@@ -2,7 +2,7 @@ import {
   defineWorkflow,
   step,
   makeWorkflowMachine,
-  CwdStepMachine,
+  CdStepMachine,
 } from "@saflib/workflows";
 import path from "path";
 import {
@@ -37,7 +37,7 @@ export const ImplementSecretsGrpcServerWorkflowDefinition = defineWorkflow<
       name: "@saflib/secrets-grpc-proto",
       path: "./secrets/secrets-grpc-proto",
     })),
-    step(CwdStepMachine, () => ({
+    step(CdStepMachine, () => ({
       path: "./secrets/secrets-grpc-proto",
     })),
     step(makeWorkflowMachine(AddProtoWorkflowDefinition), () => ({
@@ -48,14 +48,14 @@ export const ImplementSecretsGrpcServerWorkflowDefinition = defineWorkflow<
       path: "./protos/secrets/register-token.proto",
       systemPrompt: `Given a token and a secret name, register the token for the secret. The response should indicate if the token was registered successfully.`,
     })),
-    step(CwdStepMachine, () => ({
+    step(CdStepMachine, () => ({
       path: ".",
     })),
     step(makeWorkflowMachine(InitGrpcServerWorkflowDefinition), () => ({
       name: "@saflib/secrets-grpc-server",
       path: "./secrets/secrets-grpc-server",
     })),
-    step(CwdStepMachine, () => ({
+    step(CdStepMachine, () => ({
       path: "./secrets/secrets-grpc-server",
     })),
     step(makeWorkflowMachine(AddGrpcServerHandlerWorkflowDefinition), () => ({
@@ -66,14 +66,14 @@ export const ImplementSecretsGrpcServerWorkflowDefinition = defineWorkflow<
       path: "./handlers/secrets/register-token.ts",
       systemPrompt: `Implement the RegisterToken gRPC handler.`,
     })),
-    step(CwdStepMachine, () => ({
+    step(CdStepMachine, () => ({
       path: ".",
     })),
     step(makeWorkflowMachine(InitGrpcClientWorkflowDefinition), () => ({
       name: "@saflib/secrets-grpc-client",
       path: "./secrets/secrets-grpc-client",
     })),
-    step(CwdStepMachine, () => ({
+    step(CdStepMachine, () => ({
       path: "./secrets/secrets-grpc-client",
     })),
     step(makeWorkflowMachine(AddGrpcCallWorkflowDefinition), () => ({

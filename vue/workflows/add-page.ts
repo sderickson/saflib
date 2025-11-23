@@ -16,7 +16,7 @@ import path from "node:path";
 
 const sourceDir = path.join(
   import.meta.dirname,
-  "template/pages/page-template",
+  "template/__product-name__-__subdomain-name__-spa/pages/page-template",
 );
 
 const input = [
@@ -54,6 +54,7 @@ export const AddSpaPageWorkflowDefinition = defineWorkflow<
         cwd: input.cwd,
       }),
       ...parsePackageName(getPackageName(input.cwd), {
+        silentError: true, // so checklists don't error
         requiredSuffix: ["-spa", "-sdk"],
       }),
       targetDir,
@@ -92,10 +93,17 @@ export const AddSpaPageWorkflowDefinition = defineWorkflow<
       * Don't break reactivity! Render the data directly from the tanstack queries, or if necessary create a computed property.`,
     })),
 
-    step(PromptStepMachine, ({ context }) => ({
-      promptText: `Find the "links" package adjacent to this package. Add the link for the new page there along with the others.`,
-      skipIf: context.serviceName.endsWith("-sdk"),
-    })),
+    step(
+      PromptStepMachine,
+      () => ({
+        promptText: `Find the "links" package adjacent to this package. Add the link for the new page there along with the others.`,
+      }),
+      {
+        skipIf: ({ context }) => {
+          return context.serviceName.endsWith("-sdk");
+        },
+      },
+    ),
 
     step(PromptStepMachine, ({ context }) => ({
       promptText: `Update the new page to **router.ts**.

@@ -8,14 +8,19 @@ import { join } from "node:path";
 export const addGenerateAllCommand = (program: Command) => {
   program
     .command("generate-all")
+    .option("-s, --start-from <package>", "Start from a specific package")
     .description(
       addNewLinesToString(
         "Generate documentation for all packages in the monorepo that have a docs directory",
       ),
     )
-    .action(async () => {
+    .action(async (options) => {
+      const { startFrom } = options;
       const monorepoContext = buildMonorepoContext();
-      const packagesWithDocs = findPackagesWithDocsDirectory(monorepoContext);
+      let packagesWithDocs = findPackagesWithDocsDirectory(monorepoContext);
+      if (startFrom) {
+        packagesWithDocs = packagesWithDocs.filter((pkg) => pkg >= startFrom);
+      }
 
       console.log(
         `Found ${packagesWithDocs.length} packages with docs directories:`,
@@ -23,13 +28,10 @@ export const addGenerateAllCommand = (program: Command) => {
       packagesWithDocs.forEach((pkg) => console.log(`- ${pkg}`));
 
       for (const packageName of packagesWithDocs) {
+        if (packageName === "@saflib/sdk") continue; // todo: fix
         console.log(`\n=== Generating docs for ${packageName} ===`);
-        try {
-          generateCommand({ monorepoContext, packageName });
-          console.log(`✓ Successfully generated docs for ${packageName}`);
-        } catch (error) {
-          console.error(`✗ Failed to generate docs for ${packageName}:`, error);
-        }
+        generateCommand({ monorepoContext, packageName });
+        console.log(`✓ Successfully generated docs for ${packageName}`);
       }
 
       console.log(

@@ -16,6 +16,7 @@
 
 | Interface                            | Description                                                    |
 | ------------------------------------ | -------------------------------------------------------------- |
+| [Address](interfaces/Address.md)     | A shared address type that can be used across the platform.    |
 | [DbOptions](interfaces/DbOptions.md) | When a "connection" is created, these parameters are provided. |
 
 ## Type Aliases
@@ -29,6 +30,12 @@
 | [Expect](type-aliases/Expect.md)                           | To be used with "Equal" to check explicit table interfaces match Drizzle's inferred interfaces.                                                                                                             |
 | [Schema](type-aliases/Schema.md)                           | Currently this package expects the schema to be an object where some values are the result of `sqliteTable` calls. Organize your schema in this fashion when creating your DbManager and such.              |
 | [TransactionCallback](type-aliases/TransactionCallback.md) | Convenience type; the first parameter of the `transaction` method, with a generic parameter for the schema.                                                                                                 |
+
+## Variables
+
+| Variable                                    | Description                                                                             |
+| ------------------------------------------- | --------------------------------------------------------------------------------------- |
+| [addressSchema](variables/addressSchema.md) | Drizzle schema for Address type. Use this in your table definitions for address fields. |
 
 ## Functions
 

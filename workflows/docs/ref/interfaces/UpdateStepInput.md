@@ -16,16 +16,20 @@ The id of the file the user is expected to update. Must match one of the keys in
 
 ---
 
-### promptMessage
+### prompt?
 
-> **promptMessage**: `string` \| (`context`) => `string`
+> `optional` **prompt**: `string`
 
 The message to show to the user. The machine will then stop until the workflow is continued.
 
 ---
 
-### valid?
+### ~~promptMessage?~~
 
-> `optional` **valid**: [`UpdateStepTest`](UpdateStepTest.md)[]
+> `optional` **promptMessage**: `string` \| (`context`) => `string`
 
-A list of tests to run on the resulting file.
+The message to show to the user. The machine will then stop until the workflow is continued.
+
+#### Deprecated
+
+Use `prompt` instead.
