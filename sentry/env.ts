@@ -54,4 +54,6 @@ export interface SentryEnvSchema {
 /**
  * `process.env` casted to the `SentryEnvSchema` type.
  */
-export const typedEnv = (globalThis.process ? process.env : {}) as unknown as SentryEnvSchema;
+export const typedEnv = (globalThis.process
+  ? process.env
+  : {}) as unknown as SentryEnvSchema;

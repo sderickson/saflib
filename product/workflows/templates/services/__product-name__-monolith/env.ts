@@ -35,12 +35,19 @@ export interface TemplatePackageMonolithEnvSchema {
   /**
    * The port on which the gRPC server will listen, or the client will connect.
    */
-  IDENTITY_SERVICE_GRPC_PORT: string;
+  IDENTITY_SERVICE_GRPC_HOST: string;
   /**
    * Host URL for the identity service
    */
-  IDENTITY_SERVICE_HOST: string;
-  IDENTITY_SERVICE_HTTP_PORT: string;
+  IDENTITY_SERVICE_HTTP_HOST: string;
+  /**
+   * The hostname or URL of the Loki instance to send logs to (e.g., http://loki:3100)
+   */
+  LOKI_HOSTNAME?: string;
+  /**
+   * The port number of the Loki instance to send logs to (e.g., 3100)
+   */
+  LOKI_PORT?: string;
   /**
    * Whether to mock 3rd party integrations. Set to 'true' to mock. And integration packages should respect this setting.
    */
@@ -70,11 +77,12 @@ export interface TemplatePackageMonolithEnvSchema {
    * The timezone of the deployment, e.g. 'America/New_York'. Must be UTC.
    */
   TZ: "UTC";
-  __SERVICE_NAME___SERVICE_HOST: string;
-  __SERVICE_NAME___SERVICE_HTTP_PORT: string;
+  __SERVICE_NAME___SERVICE_HTTP_HOST: string;
 }
 
 /**
  * `process.env` casted to the `TemplatePackageMonolithEnvSchema` type.
  */
-export const typedEnv = (globalThis.process ? process.env : {}) as unknown as TemplatePackageMonolithEnvSchema;
+export const typedEnv = (globalThis.process
+  ? process.env
+  : {}) as unknown as TemplatePackageMonolithEnvSchema;

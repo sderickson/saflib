@@ -41,6 +41,14 @@ export interface ObjectStoreEnvSchema {
    */
   DOMAIN_REDIRECTS?: string;
   /**
+   * The hostname or URL of the Loki instance to send logs to (e.g., http://loki:3100)
+   */
+  LOKI_HOSTNAME?: string;
+  /**
+   * The port number of the Loki instance to send logs to (e.g., 3100)
+   */
+  LOKI_PORT?: string;
+  /**
    * Whether to mock 3rd party integrations. Set to 'true' to mock. And integration packages should respect this setting.
    */
   MOCK_INTEGRATIONS?: "true" | "false";
@@ -69,4 +77,6 @@ export interface ObjectStoreEnvSchema {
 /**
  * `process.env` casted to the `ObjectStoreEnvSchema` type.
  */
-export const typedEnv = (globalThis.process ? process.env : {}) as unknown as ObjectStoreEnvSchema;
+export const typedEnv = (globalThis.process
+  ? process.env
+  : {}) as unknown as ObjectStoreEnvSchema;
