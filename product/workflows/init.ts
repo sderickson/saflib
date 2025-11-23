@@ -13,6 +13,7 @@ import {
 import { AddSpaWorkflowDefinition } from "@saflib/vue/workflows";
 import { InitServiceWorkflowDefinition } from "@saflib/service/workflows";
 import path from "node:path";
+import { IdentityInitWorkflowDefinition } from "@saflib/identity/workflows";
 
 const input = [
   {
@@ -45,9 +46,11 @@ export const InitProductWorkflowDefinition = defineWorkflow<
     const packageInfo = parsePackageName(packageName);
     
     return {
-      ...packageInfo,
       productName: input.name,
       sharedPackagePrefix: `@${packageInfo.organizationName}/${input.name}`,
+      organizationName: packageInfo.organizationName,
+      packageName: "PACKAGE_NAME_UNUSED",
+      serviceName: input.name,
     };
   },
 
@@ -89,8 +92,13 @@ export const InitProductWorkflowDefinition = defineWorkflow<
     })),
 
     step(makeWorkflowMachine(InitServiceWorkflowDefinition), ({ context }) => ({
-      name: `${context.productName}-service`,
+      name: `${context.sharedPackagePrefix}-service`,
       path: `./services/${context.productName}`,
+    })),
+
+    step(makeWorkflowMachine(IdentityInitWorkflowDefinition), ({ context }) => ({
+      name: `${context.sharedPackagePrefix}-identity`,
+      path: `./services/${context.productName}-identity`,
     })),
 
     step(CopyStepMachine, ({ context }) => ({

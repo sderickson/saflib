@@ -86,67 +86,9 @@ services:
       - "10002:10002"
     command: "azurite-blob --blobHost 0.0.0.0 --loose"
 
-  # identity:
-  #   image: ghcr.io/__organization-name__/__organization-name__-__product-name__-identity:latest
-  #   volumes:
-  #     - identity_db:/app/saflib/identity/identity-db/data
-  #     - identity_http:/app/saflib/identity/identity-http/data
-  #   build:
-  #     context: ../..
-  #     dockerfile: services/identity/Dockerfile
-  #   environment:
-  #     - ALLOW_DB_CREATION=true
-  #     - CLIENT_SUBDOMAINS=${CLIENT_SUBDOMAINS}
-  #     - DEPLOYMENT_NAME=${DEPLOYMENT_NAME}
-  #     - DOMAIN=${DOMAIN}
-  #     - DOMAIN_REDIRECTS=${DOMAIN_REDIRECTS}
-  #     - MOCK_INTEGRATIONS=${MOCK_INTEGRATIONS}
-  #     - NODE_ENV=${NODE_ENV}
-  #     - PROTOCOL=${PROTOCOL}
-  #     - SERVICE_SUBDOMAINS=${SERVICE_SUBDOMAINS}
-  #     - TZ=${TZ}
-
-  #     - IDENTITY_SERVICE_GRPC_PORT=${IDENTITY_SERVICE_GRPC_PORT}
-
-  #     - IDENTITY_SERVICE_ADMIN_EMAILS=${IDENTITY_SERVICE_ADMIN_EMAILS}
-  #     - IDENTITY_SERVICE_HTTP_PORT=${IDENTITY_SERVICE_HTTP_PORT}
-  #     - IDENTITY_SERVICE_DISABLE_RATE_LIMITING=${IDENTITY_SERVICE_DISABLE_RATE_LIMITING}
-
-  #     - NODEMAILER_TRANSPORT_CONFIG=${NODEMAILER_TRANSPORT_CONFIG}
-
-  # prometheus:
-  #   image: prom/prometheus:v2.46.0
-  #   volumes:
-  #     - ./prometheus.yml:/etc/prometheus/prometheus.yml
-
-  # grafana:
-  #   image: grafana/grafana:latest
-  #   volumes:
-  #     - grafana_storage:/var/lib/grafana
-  #   environment:
-  #     - GF_AUTH_ANONYMOUS_ENABLED=true
-  #     - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
-  #     - GF_AUTH_DISABLE_LOGIN_FORM=true
-
-  # node_exporter:
-  #   image: prom/node-exporter:latest
-  #   volumes:
-  #     - /proc:/host/proc:ro
-  #     - /sys:/host/sys:ro
-  #     - /:/rootfs:ro
-  #   command:
-  #     - "--path.procfs=/host/proc"
-  #     - "--path.sysfs=/host/sys"
-  #     - "--path.rootfs=/rootfs"
-  #     - "--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($|/)"
-
 volumes:
   caddy_data:
   caddy_config:
-  # grafana_storage:
-  identity_db:
-  identity_http:
-  __product-name___db_data:
   __product-name___identity_http_cache:
-  __product-name___identity_db:
+  
 
