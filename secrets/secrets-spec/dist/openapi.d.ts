@@ -4,738 +4,738 @@
  */
 
 export interface paths {
-    "/secrets": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List all secrets */
-        get: operations["listSecrets"];
-        put?: never;
-        /** Create a new secret */
-        post: operations["createSecret"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+  "/secrets": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/secrets/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        /** Update an existing secret */
-        put: operations["updateSecret"];
-        post?: never;
-        /** Delete a secret (soft delete) */
-        delete: operations["deleteSecret"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    /** List all secrets */
+    get: operations["listSecrets"];
+    put?: never;
+    /** Create a new secret */
+    post: operations["createSecret"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/secrets/{id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/access-requests": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List all access requests */
-        get: operations["listAccessRequests"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    /** Update an existing secret */
+    put: operations["updateSecret"];
+    post?: never;
+    /** Delete a secret (soft delete) */
+    delete: operations["deleteSecret"];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/access-requests": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/access-requests/{id}/approve": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Approve or deny an access request */
-        post: operations["approveAccessRequest"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    /** List all access requests */
+    get: operations["listAccessRequests"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/access-requests/{id}/approve": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/service-tokens": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List all service tokens */
-        get: operations["listServiceTokens"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    /** Approve or deny an access request */
+    post: operations["approveAccessRequest"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/service-tokens": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/service-tokens/{id}/approve": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Approve or deny a service token */
-        post: operations["approveServiceToken"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    /** List all service tokens */
+    get: operations["listServiceTokens"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/service-tokens/{id}/approve": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
+    get?: never;
+    put?: never;
+    /** Approve or deny a service token */
+    post: operations["approveServiceToken"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
-    schemas: {
-        Error: components["schemas"]["error"];
-        Secret: components["schemas"]["secret"];
-        SecretCreateRequest: components["schemas"]["secret-create-request"];
-        SecretUpdateRequest: components["schemas"]["secret-update-request"];
-        ServiceToken: components["schemas"]["service-token"];
-        AccessRequest: components["schemas"]["access-request"];
-        ApprovalRequest: components["schemas"]["approval-request"];
-        secret: {
-            /**
-             * @description Unique identifier for the secret
-             * @example 123e4567-e89b-12d3-a456-426614174000
-             */
-            id: string;
-            /**
-             * @description Unique name for the secret
-             * @example STRIPE_API_KEY
-             */
-            name: string;
-            /**
-             * @description Optional description of the secret
-             * @example Stripe API key for payment processing
-             */
-            description?: string;
-            /**
-             * @description Masked value for admin display (shows as ***)
-             * @example ***
-             */
-            masked_value: string;
-            /**
-             * @description Timestamp when the secret was created
-             * @example 1640995200000
-             */
-            created_at: number;
-            /**
-             * @description Timestamp when the secret was last updated
-             * @example 1640995200000
-             */
-            updated_at: number;
-            /**
-             * @description Whether the secret is active
-             * @example true
-             */
-            is_active: boolean;
-        };
-        error: {
-            /** @description A short, machine-readable error code, for when HTTP status codes are not sufficient. */
-            code?: string;
-            /**
-             * @description A human-readable description of the error.
-             * @example The requested resource could not be found.
-             */
-            message?: string;
-        };
-        "secret-create-request": {
-            /**
-             * @description Unique name for the secret
-             * @example STRIPE_API_KEY
-             */
-            name: string;
-            /**
-             * @description Optional description of the secret
-             * @example Stripe API key for payment processing
-             */
-            description?: string;
-            /**
-             * @description The actual secret value to be encrypted
-             * @example sk_test_1234567890abcdef
-             */
-            value: string;
-        };
-        "secret-update-request": {
-            /**
-             * @description Updated description of the secret
-             * @example Updated Stripe API key for payment processing
-             */
-            description?: string;
-            /**
-             * @description New secret value to be encrypted
-             * @example sk_test_9876543210fedcba
-             */
-            value?: string;
-            /**
-             * @description Whether to activate or deactivate the secret
-             * @example true
-             */
-            is_active?: boolean;
-        };
-        "access-request": {
-            /**
-             * @description Unique identifier for the access request
-             * @example 123e4567-e89b-12d3-a456-426614174000
-             */
-            id: string;
-            /**
-             * @description Name of the secret for display purposes
-             * @example STRIPE_API_KEY
-             */
-            secret_name: string;
-            /**
-             * @description Name of the service requesting access
-             * @example identity-service
-             */
-            service_name: string;
-            /**
-             * @description Timestamp when access was requested
-             * @example 1640995200000
-             */
-            requested_at: number;
-            /**
-             * @description Status of the access request
-             * @example pending
-             * @enum {string}
-             */
-            status: "pending" | "granted" | "denied";
-            /**
-             * @description Timestamp when granted, null if not granted
-             * @example 1640995200000
-             */
-            granted_at?: number | null;
-            /**
-             * @description User who granted access, null if not granted
-             * @example admin@example.com
-             */
-            granted_by?: string | null;
-            /**
-             * @description Number of times access has been used
-             * @example 5
-             */
-            access_count: number;
-            /**
-             * @description Timestamp of last access, null if never accessed
-             * @example 1640995200000
-             */
-            last_accessed_at?: number | null;
-        };
-        "approval-request": {
-            /**
-             * @description True to approve, false to deny
-             * @example true
-             */
-            approved: boolean;
-            /**
-             * @description Optional reason for approval/denial
-             * @example Approved for production use
-             */
-            reason?: string;
-        };
-        "service-token": {
-            /**
-             * @description Unique identifier for the service token
-             * @example 123e4567-e89b-12d3-a456-426614174000
-             */
-            id: string;
-            /**
-             * @description Name of the service
-             * @example identity-service
-             */
-            service_name: string;
-            /**
-             * @description Optional version of the service
-             * @example 1.2.3
-             */
-            service_version?: string;
-            /**
-             * @description Timestamp when token was requested
-             * @example 1640995200000
-             */
-            requested_at: number;
-            /**
-             * @description Whether the token is approved
-             * @example true
-             */
-            approved: boolean;
-            /**
-             * @description Timestamp when approved, null if not approved
-             * @example 1640995200000
-             */
-            approved_at?: number | null;
-            /**
-             * @description User who approved the token, null if not approved
-             * @example admin@example.com
-             */
-            approved_by?: string | null;
-            /**
-             * @description Timestamp of last usage, null if never used
-             * @example 1640995200000
-             */
-            last_used_at?: number | null;
-            /**
-             * @description Number of times the token has been used
-             * @example 42
-             */
-            access_count: number;
-        };
+  schemas: {
+    Error: components["schemas"]["error"];
+    Secret: components["schemas"]["secret"];
+    SecretCreateRequest: components["schemas"]["secret-create-request"];
+    SecretUpdateRequest: components["schemas"]["secret-update-request"];
+    ServiceToken: components["schemas"]["service-token"];
+    AccessRequest: components["schemas"]["access-request"];
+    ApprovalRequest: components["schemas"]["approval-request"];
+    secret: {
+      /**
+       * @description Unique identifier for the secret
+       * @example 123e4567-e89b-12d3-a456-426614174000
+       */
+      id: string;
+      /**
+       * @description Unique name for the secret
+       * @example STRIPE_API_KEY
+       */
+      name: string;
+      /**
+       * @description Optional description of the secret
+       * @example Stripe API key for payment processing
+       */
+      description?: string;
+      /**
+       * @description Masked value for admin display (shows as ***)
+       * @example ***
+       */
+      masked_value: string;
+      /**
+       * @description Timestamp when the secret was created
+       * @example 1640995200000
+       */
+      created_at: number;
+      /**
+       * @description Timestamp when the secret was last updated
+       * @example 1640995200000
+       */
+      updated_at: number;
+      /**
+       * @description Whether the secret is active
+       * @example true
+       */
+      is_active: boolean;
     };
-    responses: never;
-    parameters: never;
-    requestBodies: never;
-    headers: never;
-    pathItems: never;
+    error: {
+      /** @description A short, machine-readable error code, for when HTTP status codes are not sufficient. */
+      code?: string;
+      /**
+       * @description A human-readable description of the error.
+       * @example The requested resource could not be found.
+       */
+      message?: string;
+    };
+    "secret-create-request": {
+      /**
+       * @description Unique name for the secret
+       * @example STRIPE_API_KEY
+       */
+      name: string;
+      /**
+       * @description Optional description of the secret
+       * @example Stripe API key for payment processing
+       */
+      description?: string;
+      /**
+       * @description The actual secret value to be encrypted
+       * @example sk_test_1234567890abcdef
+       */
+      value: string;
+    };
+    "secret-update-request": {
+      /**
+       * @description Updated description of the secret
+       * @example Updated Stripe API key for payment processing
+       */
+      description?: string;
+      /**
+       * @description New secret value to be encrypted
+       * @example sk_test_9876543210fedcba
+       */
+      value?: string;
+      /**
+       * @description Whether to activate or deactivate the secret
+       * @example true
+       */
+      is_active?: boolean;
+    };
+    "access-request": {
+      /**
+       * @description Unique identifier for the access request
+       * @example 123e4567-e89b-12d3-a456-426614174000
+       */
+      id: string;
+      /**
+       * @description Name of the secret for display purposes
+       * @example STRIPE_API_KEY
+       */
+      secret_name: string;
+      /**
+       * @description Name of the service requesting access
+       * @example identity-service
+       */
+      service_name: string;
+      /**
+       * @description Timestamp when access was requested
+       * @example 1640995200000
+       */
+      requested_at: number;
+      /**
+       * @description Status of the access request
+       * @example pending
+       * @enum {string}
+       */
+      status: "pending" | "granted" | "denied";
+      /**
+       * @description Timestamp when granted, null if not granted
+       * @example 1640995200000
+       */
+      granted_at?: number | null;
+      /**
+       * @description User who granted access, null if not granted
+       * @example admin@example.com
+       */
+      granted_by?: string | null;
+      /**
+       * @description Number of times access has been used
+       * @example 5
+       */
+      access_count: number;
+      /**
+       * @description Timestamp of last access, null if never accessed
+       * @example 1640995200000
+       */
+      last_accessed_at?: number | null;
+    };
+    "approval-request": {
+      /**
+       * @description True to approve, false to deny
+       * @example true
+       */
+      approved: boolean;
+      /**
+       * @description Optional reason for approval/denial
+       * @example Approved for production use
+       */
+      reason?: string;
+    };
+    "service-token": {
+      /**
+       * @description Unique identifier for the service token
+       * @example 123e4567-e89b-12d3-a456-426614174000
+       */
+      id: string;
+      /**
+       * @description Name of the service
+       * @example identity-service
+       */
+      service_name: string;
+      /**
+       * @description Optional version of the service
+       * @example 1.2.3
+       */
+      service_version?: string;
+      /**
+       * @description Timestamp when token was requested
+       * @example 1640995200000
+       */
+      requested_at: number;
+      /**
+       * @description Whether the token is approved
+       * @example true
+       */
+      approved: boolean;
+      /**
+       * @description Timestamp when approved, null if not approved
+       * @example 1640995200000
+       */
+      approved_at?: number | null;
+      /**
+       * @description User who approved the token, null if not approved
+       * @example admin@example.com
+       */
+      approved_by?: string | null;
+      /**
+       * @description Timestamp of last usage, null if never used
+       * @example 1640995200000
+       */
+      last_used_at?: number | null;
+      /**
+       * @description Number of times the token has been used
+       * @example 42
+       */
+      access_count: number;
+    };
+  };
+  responses: never;
+  parameters: never;
+  requestBodies: never;
+  headers: never;
+  pathItems: never;
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    listSecrets: {
-        parameters: {
-            query?: {
-                /** @description Maximum number of secrets to return */
-                limit?: number;
-                /** @description Number of secrets to skip */
-                offset?: number;
-                /** @description Filter by active status */
-                is_active?: boolean;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description List of secrets */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["secret"][];
-                };
-            };
-            /** @description Unauthorized - missing or invalid auth headers, or not logged in. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["error"];
-                };
-            };
-            /** @description Forbidden - user does not have required privileges. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["error"];
-                };
-            };
-        };
+  listSecrets: {
+    parameters: {
+      query?: {
+        /** @description Maximum number of secrets to return */
+        limit?: number;
+        /** @description Number of secrets to skip */
+        offset?: number;
+        /** @description Filter by active status */
+        is_active?: boolean;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    createSecret: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
+    requestBody?: never;
+    responses: {
+      /** @description List of secrets */
+      200: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["secret-create-request"];
-            };
+        content: {
+          "application/json": components["schemas"]["secret"][];
         };
-        responses: {
-            /** @description Secret created successfully */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["secret"];
-                };
-            };
-            /** @description Unauthorized - missing or invalid auth headers, or not logged in. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["error"];
-                };
-            };
-            /** @description Forbidden - user does not have required privileges. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["error"];
-                };
-            };
-            /** @description Conflict - secret with this name already exists */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["error"];
-                };
-            };
+      };
+      /** @description Unauthorized - missing or invalid auth headers, or not logged in. */
+      401: {
+        headers: {
+          [name: string]: unknown;
         };
+        content: {
+          "application/json": components["schemas"]["error"];
+        };
+      };
+      /** @description Forbidden - user does not have required privileges. */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["error"];
+        };
+      };
     };
-    updateSecret: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Secret ID */
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["secret-update-request"];
-            };
-        };
-        responses: {
-            /** @description Secret updated successfully */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["secret"];
-                };
-            };
-            /** @description Unauthorized - missing or invalid auth headers, or not logged in. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["error"];
-                };
-            };
-            /** @description Forbidden - user does not have required privileges. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["error"];
-                };
-            };
-            /** @description Secret not found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["error"];
-                };
-            };
-            /** @description Conflict - secret name already exists */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["error"];
-                };
-            };
-        };
+  };
+  createSecret: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    deleteSecret: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Secret ID */
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Secret deleted successfully */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        /** @example Secret deleted successfully */
-                        message?: string;
-                    };
-                };
-            };
-            /** @description Unauthorized - missing or invalid auth headers, or not logged in. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["error"];
-                };
-            };
-            /** @description Forbidden - user does not have required privileges. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["error"];
-                };
-            };
-            /** @description Secret not found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["error"];
-                };
-            };
-            /** @description Conflict - operation conflicts with current state */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["error"];
-                };
-            };
-        };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["secret-create-request"];
+      };
     };
-    listAccessRequests: {
-        parameters: {
-            query?: {
-                /** @description Maximum number of access requests to return */
-                limit?: number;
-                /** @description Number of access requests to skip */
-                offset?: number;
-                /** @description Filter by status */
-                status?: "pending" | "granted" | "denied";
-                /** @description Filter by service name */
-                service_name?: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
+    responses: {
+      /** @description Secret created successfully */
+      201: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody?: never;
-        responses: {
-            /** @description List of access requests */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["access-request"][];
-                };
-            };
-            /** @description Unauthorized - missing or invalid auth headers, or not logged in. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["error"];
-                };
-            };
-            /** @description Forbidden - user does not have required privileges. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["error"];
-                };
-            };
+        content: {
+          "application/json": components["schemas"]["secret"];
         };
+      };
+      /** @description Unauthorized - missing or invalid auth headers, or not logged in. */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["error"];
+        };
+      };
+      /** @description Forbidden - user does not have required privileges. */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["error"];
+        };
+      };
+      /** @description Conflict - secret with this name already exists */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["error"];
+        };
+      };
     };
-    approveAccessRequest: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Access request ID */
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["approval-request"];
-            };
-        };
-        responses: {
-            /** @description Access request updated successfully */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["access-request"];
-                };
-            };
-            /** @description Unauthorized - missing or invalid auth headers, or not logged in. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["error"];
-                };
-            };
-            /** @description Forbidden - user does not have required privileges. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["error"];
-                };
-            };
-            /** @description Access request not found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["error"];
-                };
-            };
-        };
+  };
+  updateSecret: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Secret ID */
+        id: string;
+      };
+      cookie?: never;
     };
-    listServiceTokens: {
-        parameters: {
-            query?: {
-                /** @description Maximum number of service tokens to return */
-                limit?: number;
-                /** @description Number of service tokens to skip */
-                offset?: number;
-                /** @description Filter by approval status */
-                approved?: boolean;
-                /** @description Filter by service name */
-                service_name?: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description List of service tokens */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["service-token"][];
-                };
-            };
-            /** @description Unauthorized - missing or invalid auth headers, or not logged in. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["error"];
-                };
-            };
-            /** @description Forbidden - user does not have required privileges. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["error"];
-                };
-            };
-        };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["secret-update-request"];
+      };
     };
-    approveServiceToken: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description Service token ID */
-                id: string;
-            };
-            cookie?: never;
+    responses: {
+      /** @description Secret updated successfully */
+      200: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["approval-request"];
-            };
+        content: {
+          "application/json": components["schemas"]["secret"];
         };
-        responses: {
-            /** @description Service token updated successfully */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["service-token"];
-                };
-            };
-            /** @description Unauthorized - missing or invalid auth headers, or not logged in. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["error"];
-                };
-            };
-            /** @description Forbidden - user does not have required privileges. */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["error"];
-                };
-            };
-            /** @description Service token not found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["error"];
-                };
-            };
+      };
+      /** @description Unauthorized - missing or invalid auth headers, or not logged in. */
+      401: {
+        headers: {
+          [name: string]: unknown;
         };
+        content: {
+          "application/json": components["schemas"]["error"];
+        };
+      };
+      /** @description Forbidden - user does not have required privileges. */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["error"];
+        };
+      };
+      /** @description Secret not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["error"];
+        };
+      };
+      /** @description Conflict - secret name already exists */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["error"];
+        };
+      };
     };
+  };
+  deleteSecret: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Secret ID */
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Secret deleted successfully */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": {
+            /** @example Secret deleted successfully */
+            message?: string;
+          };
+        };
+      };
+      /** @description Unauthorized - missing or invalid auth headers, or not logged in. */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["error"];
+        };
+      };
+      /** @description Forbidden - user does not have required privileges. */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["error"];
+        };
+      };
+      /** @description Secret not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["error"];
+        };
+      };
+      /** @description Conflict - operation conflicts with current state */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["error"];
+        };
+      };
+    };
+  };
+  listAccessRequests: {
+    parameters: {
+      query?: {
+        /** @description Maximum number of access requests to return */
+        limit?: number;
+        /** @description Number of access requests to skip */
+        offset?: number;
+        /** @description Filter by status */
+        status?: "pending" | "granted" | "denied";
+        /** @description Filter by service name */
+        service_name?: string;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description List of access requests */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["access-request"][];
+        };
+      };
+      /** @description Unauthorized - missing or invalid auth headers, or not logged in. */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["error"];
+        };
+      };
+      /** @description Forbidden - user does not have required privileges. */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["error"];
+        };
+      };
+    };
+  };
+  approveAccessRequest: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Access request ID */
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["approval-request"];
+      };
+    };
+    responses: {
+      /** @description Access request updated successfully */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["access-request"];
+        };
+      };
+      /** @description Unauthorized - missing or invalid auth headers, or not logged in. */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["error"];
+        };
+      };
+      /** @description Forbidden - user does not have required privileges. */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["error"];
+        };
+      };
+      /** @description Access request not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["error"];
+        };
+      };
+    };
+  };
+  listServiceTokens: {
+    parameters: {
+      query?: {
+        /** @description Maximum number of service tokens to return */
+        limit?: number;
+        /** @description Number of service tokens to skip */
+        offset?: number;
+        /** @description Filter by approval status */
+        approved?: boolean;
+        /** @description Filter by service name */
+        service_name?: string;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description List of service tokens */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["service-token"][];
+        };
+      };
+      /** @description Unauthorized - missing or invalid auth headers, or not logged in. */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["error"];
+        };
+      };
+      /** @description Forbidden - user does not have required privileges. */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["error"];
+        };
+      };
+    };
+  };
+  approveServiceToken: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Service token ID */
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["approval-request"];
+      };
+    };
+    responses: {
+      /** @description Service token updated successfully */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["service-token"];
+        };
+      };
+      /** @description Unauthorized - missing or invalid auth headers, or not logged in. */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["error"];
+        };
+      };
+      /** @description Forbidden - user does not have required privileges. */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["error"];
+        };
+      };
+      /** @description Service token not found */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["error"];
+        };
+      };
+    };
+  };
 }

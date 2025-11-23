@@ -25,6 +25,14 @@ export interface SecretsGrpcProtoEnvSchema {
    */
   DOMAIN_REDIRECTS?: string;
   /**
+   * The hostname or URL of the Loki instance to send logs to (e.g., http://loki:3100)
+   */
+  LOKI_HOSTNAME?: string;
+  /**
+   * The port number of the Loki instance to send logs to (e.g., 3100)
+   */
+  LOKI_PORT?: string;
+  /**
    * Whether to mock 3rd party integrations. Set to 'true' to mock. And integration packages should respect this setting.
    */
   MOCK_INTEGRATIONS?: "true" | "false";
@@ -37,11 +45,10 @@ export interface SecretsGrpcProtoEnvSchema {
    */
   PROTOCOL: "https" | "http";
   /**
-   * The port on which the gRPC server will listen, or the client will connect.
+   * The host on which the gRPC server will listen, or the client will connect.
    */
-  SECRETS_SERVICE_GRPC_PORT: string;
-  SECRETS_SERVICE_HOST: string;
-  SECRETS_SERVICE_HTTP_PORT: string;
+  SECRETS_SERVICE_GRPC_HOST: string;
+  SECRETS_SERVICE_HTTP_HOST: string;
   /**
    * Comma-separated list of service subdomains, e.g. 'revenue,geo,identity,core'.
    */

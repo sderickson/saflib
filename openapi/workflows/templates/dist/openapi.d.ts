@@ -6,57 +6,62 @@
 export type paths = Record<string, never>;
 export type webhooks = Record<string, never>;
 export interface components {
-    schemas: {
-        Error: components["schemas"]["error"];
-        ProductEvent: components["schemas"]["index"];
-        error: {
-            /** @description A short, machine-readable error code, for when HTTP status codes are not sufficient. */
-            code?: string;
-            /**
-             * @description A human-readable description of the error.
-             * @example The requested resource could not be found.
-             */
-            message?: string;
-        };
-        login: {
-            /** @enum {string} */
-            event: "login";
-            context: {
-                /** @enum {string} */
-                method?: "email";
-            };
-        };
-        signup: {
-            /** @enum {string} */
-            event?: "signup";
-            context?: {
-                /** @enum {string} */
-                method?: "email";
-            };
-        };
-        signup_view: {
-            /** @enum {string} */
-            event?: "signup_view";
-        };
-        verify_email: {
-            /** @enum {string} */
-            event?: "verify_email";
-        };
-        index: {
-            event: string;
-            /** @description The frontend client that triggered the event. For web, it should be "web-{spa-name}". */
-            client?: string;
-            /** @description The page that triggered the event. For vue, it should be the route name provided by vue router. */
-            view?: string;
-            /** @description The component that triggered the event. For vue, it should be the component name. */
-            component?: string;
-        } & (components["schemas"]["login"] | components["schemas"]["signup"] | components["schemas"]["signup_view"] | components["schemas"]["verify_email"]);
+  schemas: {
+    Error: components["schemas"]["error"];
+    ProductEvent: components["schemas"]["index"];
+    error: {
+      /** @description A short, machine-readable error code, for when HTTP status codes are not sufficient. */
+      code?: string;
+      /**
+       * @description A human-readable description of the error.
+       * @example The requested resource could not be found.
+       */
+      message?: string;
     };
-    responses: never;
-    parameters: never;
-    requestBodies: never;
-    headers: never;
-    pathItems: never;
+    login: {
+      /** @enum {string} */
+      event: "login";
+      context: {
+        /** @enum {string} */
+        method?: "email";
+      };
+    };
+    signup: {
+      /** @enum {string} */
+      event?: "signup";
+      context?: {
+        /** @enum {string} */
+        method?: "email";
+      };
+    };
+    signup_view: {
+      /** @enum {string} */
+      event?: "signup_view";
+    };
+    verify_email: {
+      /** @enum {string} */
+      event?: "verify_email";
+    };
+    index: {
+      event: string;
+      /** @description The frontend client that triggered the event. For web, it should be "web-{spa-name}". */
+      client?: string;
+      /** @description The page that triggered the event. For vue, it should be the route name provided by vue router. */
+      view?: string;
+      /** @description The component that triggered the event. For vue, it should be the component name. */
+      component?: string;
+    } & (
+      | components["schemas"]["login"]
+      | components["schemas"]["signup"]
+      | components["schemas"]["signup_view"]
+      | components["schemas"]["verify_email"]
+    );
+  };
+  responses: never;
+  parameters: never;
+  requestBodies: never;
+  headers: never;
+  pathItems: never;
 }
 export type $defs = Record<string, never>;
 export type operations = Record<string, never>;

@@ -12,7 +12,7 @@ export type LimitedHealthClient = Pick<SecretsHealthClient, "HealthCheck">;
  * The global HealthClient for the secrets service.
  */
 let healthClient: LimitedHealthClient = new SecretsHealthClient(
-  `${typedEnv.SECRETS_SERVICE_HOST}:${typedEnv.SECRETS_SERVICE_GRPC_PORT}`,
+  typedEnv.SECRETS_SERVICE_GRPC_HOST,
   grpc.credentials.createInsecure(),
 );
 
