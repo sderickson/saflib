@@ -107,6 +107,11 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       lineReplace: makeLineReplace(context)
     })),
 
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["install"],
+    })),
+
     step(CdStepMachine, ({ context }) => ({
       path: path.join(context.cwd, `./services/${context.productName}-monolith`),
     })),

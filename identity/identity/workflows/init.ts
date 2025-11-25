@@ -67,6 +67,7 @@ export const IdentityInitWorkflowDefinition = defineWorkflow<
     dataDir: path.join(sourceDir, "data"),
     binDir: path.join(sourceDir, "bin"),
     gitignore: path.join(sourceDir, ".gitignore"),
+    tsconfig: path.join(sourceDir, "tsconfig.json"),
   },
 
   docFiles: {},
