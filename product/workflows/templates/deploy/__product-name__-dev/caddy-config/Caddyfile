@@ -21,7 +21,7 @@ import common.Caddyfile
 }
 
 {$PROTOCOL}://__product-name__.{$__PRODUCT_NAME___DOMAIN} {
-	import __product-name__-api-proxy {$__PRODUCT_NAME___SERVICE_HOST}
+	import __product-name__-api-proxy {$__PRODUCT_NAME___SERVICE_HTTP_HOST}
 }
 
 {$PROTOCOL}://account.{$__PRODUCT_NAME___DOMAIN} {

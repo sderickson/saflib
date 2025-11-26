@@ -1,7 +1,7 @@
 {
   "name": "template-package-identity",
   "type": "module",
-  "export": {
+  "exports": {
     ".": "./index.ts"
   },
   "scripts": {

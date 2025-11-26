@@ -4,7 +4,7 @@ import path from "node:path";
 
 export const start__ServiceName__IdentityService = () => {
   startIdentityService({
-    dbPath: path.join(import.meta.dirname, "..", "data", "identity.db"),
+    dbPath: path.join(import.meta.dirname, "data", "identity.sqlite"),
     callbacks,
   });
 };
