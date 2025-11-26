@@ -10,9 +10,10 @@ import type { Readable } from "stream";
 
 export function createBackupRouter(
   backupFn: () => Promise<Readable>,
+  restoreFn: ((backupStream: Readable) => Promise<void>) | undefined,
   objectStore: ObjectStore,
 ) {
-  return createBackupsRouter(backupFn, objectStore);
+  return createBackupsRouter(backupFn, restoreFn, objectStore);
 }
 
 /**
@@ -34,7 +35,7 @@ export function createBackupHttpApp(
   });
 
   if (options.backupFn && options.objectStore) {
-    app.use(createBackupRouter(options.backupFn, options.objectStore));
+    app.use(createBackupRouter(options.backupFn, options.restoreFn, options.objectStore));
   }
 
   app.use(createErrorMiddleware());

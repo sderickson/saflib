@@ -7,7 +7,7 @@ import { makeUserHeaders, makeAdminHeaders } from "@saflib/express";
 import { TestObjectStore, FileNotFoundError } from "@saflib/object-store";
 import { tmpdir } from "os";
 import { join } from "path";
-import { unlinkSync, readFileSync } from "fs";
+import { unlinkSync, readFileSync, createWriteStream } from "fs";
 import Database from "better-sqlite3";
 import type { ReturnsError } from "@saflib/monorepo";
 import type { StorageError } from "@saflib/object-store";
@@ -38,23 +38,41 @@ class TestObjectStoreWithContent extends TestObjectStore {
 
 describe("POST /backups/:backupId/restore", () => {
   let app: express.Express;
-  let dbKey: symbol;
   let objectStore: TestObjectStoreWithContent;
   let dbPath: string | undefined;
   let tempFiles: string[] = [];
 
   beforeEach(() => {
-    dbKey = backupDb.connect();
     objectStore = new TestObjectStoreWithContent();
+    dbPath = join(tmpdir(), `test-restore-${Date.now()}-${Math.random().toString(36).slice(2)}.sqlite`);
+    tempFiles.push(dbPath);
+    
+    const restoreFn = async (backupStream: Readable): Promise<void> => {
+      return new Promise((resolve, reject) => {
+        const writeStream = createWriteStream(dbPath!);
+        backupStream.on("error", (error) => {
+          writeStream.destroy();
+          reject(error);
+        });
+        writeStream.on("error", (error) => {
+          backupStream.destroy();
+          reject(error);
+        });
+        writeStream.on("finish", () => {
+          resolve();
+        });
+        backupStream.pipe(writeStream);
+      });
+    };
+
     app = createBackupHttpApp({
-      backupDbKey: dbKey,
       backupFn: async () => new Readable(),
+      restoreFn,
       objectStore,
     });
   });
 
   afterEach(() => {
-    backupDb.disconnect(dbKey);
     if (dbPath) {
       try {
         unlinkSync(dbPath);
@@ -84,18 +102,30 @@ describe("POST /backups/:backupId/restore", () => {
 
     const backupContent = readFileSync(tempBackupDbPath);
 
-    dbPath = join(tmpdir(), `test-restore-${Date.now()}-${Math.random().toString(36).slice(2)}.sqlite`);
-    tempFiles.push(dbPath);
-    backupDb.disconnect(dbKey);
-    dbKey = backupDb.connect({
-      onDisk: dbPath,
-      overrideTestDefault: true,
-    });
+    const restoreFn = async (backupStream: Readable): Promise<void> => {
+      return new Promise((resolve, reject) => {
+        const writeStream = createWriteStream(dbPath!);
+        backupStream.on("error", (error) => {
+          writeStream.destroy();
+          reject(error);
+        });
+        writeStream.on("error", (error) => {
+          backupStream.destroy();
+          reject(error);
+        });
+        writeStream.on("finish", () => {
+          resolve();
+        });
+        backupStream.pipe(writeStream);
+      });
+    };
+
     app = createBackupHttpApp({
-      backupDbKey: dbKey,
       backupFn: async () => new Readable(),
+      restoreFn,
       objectStore,
     });
+    
     const timestamp = Date.now();
     const backupId = "test-backup-1";
     const backupPath = `backup-${timestamp}-manual-${backupId}.db`;
@@ -123,6 +153,11 @@ describe("POST /backups/:backupId/restore", () => {
     expect(files.length).toBe(2);
     expect(files.some((f) => f.path === backupPath)).toBe(true);
     expect(files.some((f) => f.path.startsWith("backup-") && f.path.includes("-manual-") && f.path.endsWith(".db") && f.path !== backupPath)).toBe(true);
+
+    const restoredDb = new Database(dbPath!);
+    const result = restoredDb.prepare("SELECT name FROM test WHERE id = 1").get() as { name: string } | undefined;
+    expect(result?.name).toBe("test");
+    restoredDb.close();
   });
 
   it("should return 403 for non-admin user", async () => {

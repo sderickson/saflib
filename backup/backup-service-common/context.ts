@@ -4,6 +4,7 @@ import type { Readable } from "stream";
 
 export interface BackupServiceContext {
   backupFn?: () => Promise<Readable>;
+  restoreFn?: (backupStream: Readable) => Promise<void>;
   objectStore?: ObjectStore;
 }
 
@@ -12,6 +13,7 @@ export const backupServiceStorage =
 
 export interface BackupServiceContextOptions {
   backupFn?: () => Promise<Readable>;
+  restoreFn?: (backupStream: Readable) => Promise<void>;
   objectStore?: ObjectStore;
 }
 
@@ -20,6 +22,7 @@ export const makeContext = (
 ): BackupServiceContext => {
   return {
     backupFn: options.backupFn,
+    restoreFn: options.restoreFn,
     objectStore: options.objectStore,
   };
 };

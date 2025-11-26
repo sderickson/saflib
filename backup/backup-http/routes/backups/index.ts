@@ -10,6 +10,7 @@ import type { Readable } from "stream";
 
 export const createBackupsRouter = (
   backupFn: () => Promise<Readable>,
+  restoreFn: ((backupStream: Readable) => Promise<void>) | undefined,
   objectStore: ObjectStore,
 ) => {
   const router = express.Router();
@@ -22,7 +23,9 @@ export const createBackupsRouter = (
 
   router.get("/backups", createListHandler(objectStore));
   router.post("/backups", createCreateHandler(backupFn, objectStore));
-  router.post("/backups/:backupId/restore", createRestoreHandler(backupFn, objectStore));
+  if (restoreFn) {
+    router.post("/backups/:backupId/restore", createRestoreHandler(backupFn, restoreFn, objectStore));
+  }
   router.delete("/backups/:backupId", createDeleteHandler(objectStore));
 
   return router;
