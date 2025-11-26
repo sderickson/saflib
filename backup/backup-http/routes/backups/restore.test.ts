@@ -4,7 +4,6 @@ import express from "express";
 import { Readable } from "stream";
 import { createBackupHttpApp } from "../../http.ts";
 import { makeUserHeaders, makeAdminHeaders } from "@saflib/express";
-import { backupDb } from "@saflib/backup-db";
 import { TestObjectStore, FileNotFoundError } from "@saflib/object-store";
 import { tmpdir } from "os";
 import { join } from "path";

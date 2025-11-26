@@ -4,7 +4,6 @@ import express from "express";
 import { Readable } from "stream";
 import { createBackupHttpApp } from "../../http.ts";
 import { makeUserHeaders, makeAdminHeaders } from "@saflib/express";
-import { backupDb } from "@saflib/backup-db";
 import { TestObjectStore } from "@saflib/object-store";
 
 describe("DELETE /backups/:backupId", () => {
@@ -13,17 +12,11 @@ describe("DELETE /backups/:backupId", () => {
   let objectStore: TestObjectStore;
 
   beforeEach(() => {
-    dbKey = backupDb.connect();
     objectStore = new TestObjectStore();
     app = createBackupHttpApp({
-      backupDbKey: dbKey,
       backupFn: async () => new Readable(),
       objectStore,
     });
-  });
-
-  afterEach(() => {
-    backupDb.disconnect(dbKey);
   });
 
   it("should delete backup successfully", async () => {

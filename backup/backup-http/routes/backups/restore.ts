@@ -3,16 +3,14 @@ import type { BackupServiceResponseBody } from "@saflib/backup-spec";
 import createError from "http-errors";
 import { backupServiceStorage } from "@saflib/backup-service-common";
 import { getSafContextWithAuth } from "@saflib/node";
-import { backupDb } from "@saflib/backup-db";
 import type { ObjectStore } from "@saflib/object-store";
 import {
-  PathTraversalError,
   StorageError,
-  FileNotFoundError,
 } from "@saflib/object-store";
 import type { Readable } from "stream";
-import { randomUUID } from "crypto";
 import { mapObjectStoreFileToBackup } from "./_helpers.ts";
+
+// TODO: Fix this - actually backup to the real db, not the backup db
 
 export const createRestoreHandler = (
   backupFn: () => Promise<Readable>,

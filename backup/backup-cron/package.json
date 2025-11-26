@@ -16,7 +16,6 @@
     "@saflib/env": "*",
     "@saflib/monorepo": "*",
     "@saflib/node": "*",
-    "@saflib/backup-db": "*",
     "@saflib/backup-service-common": "*"
   },
   "devDependencies": {

@@ -1,35 +1,23 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import request from "supertest";
 import express from "express";
 import { Readable } from "stream";
 import { createBackupHttpApp } from "../../http.ts";
 import { makeUserHeaders, makeAdminHeaders } from "@saflib/express";
-import { backupDb } from "@saflib/backup-db";
 import {
   TestObjectStore,
-  InvalidUploadParamsError,
-  StorageError,
-  ObjectStore,
 } from "@saflib/object-store";
-import type { ReturnsError } from "@saflib/monorepo";
 
 describe("POST /backups", () => {
   let app: express.Express;
-  let dbKey: symbol;
   let objectStore: TestObjectStore;
 
   beforeEach(() => {
-    dbKey = backupDb.connect();
     objectStore = new TestObjectStore();
     app = createBackupHttpApp({
-      backupDbKey: dbKey,
       backupFn: async () => new Readable(),
       objectStore,
     });
-  });
-
-  afterEach(() => {
-    backupDb.disconnect(dbKey);
   });
 
   it("should create backup successfully", async () => {
