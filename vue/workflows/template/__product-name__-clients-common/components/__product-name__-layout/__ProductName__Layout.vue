@@ -71,6 +71,12 @@ import { events } from "@saflib/vue";
 import { SnackbarQueue } from "@saflib/vue/components";
 import { SpaLink } from "@saflib/vue/components";
 
+// Use this for choosing what links to display
+// import { getProfile } from "@saflib/auth";
+// import { useQuery } from "@tanstack/vue-query";
+// const { data: profile } = useQuery(getProfile());
+// const isAdmin = computed(() => profile.value?.isAdmin ?? false);
+
 const props = defineProps<{
   loggedIn?: boolean;
 }>();

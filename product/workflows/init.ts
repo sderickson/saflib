@@ -9,6 +9,7 @@ import {
   getPackageName,
   parsePackageName,
   type ParsePackageNameOutput,
+  PromptStepMachine,
 } from "@saflib/workflows";
 import { AddSpaWorkflowDefinition } from "@saflib/vue/workflows";
 import { InitServiceWorkflowDefinition } from "@saflib/service/workflows";
@@ -66,40 +67,40 @@ export const InitProductWorkflowDefinition = defineWorkflow<
   },
 
   steps: [
-    // step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
-    //   productName: context.productName,
-    //   subdomainName: "root",
-    // })),
+    step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
+      productName: context.productName,
+      subdomainName: "root",
+    })),
 
-    // step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
-    //   productName: context.productName,
-    //   subdomainName: "admin",
-    // })),
+    step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
+      productName: context.productName,
+      subdomainName: "admin",
+    })),
 
-    // step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
-    //   productName: context.productName,
-    //   subdomainName: "app",
-    // })),
+    step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
+      productName: context.productName,
+      subdomainName: "app",
+    })),
 
-    // step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
-    //   productName: context.productName,
-    //   subdomainName: "auth",
-    // })),
+    step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
+      productName: context.productName,
+      subdomainName: "auth",
+    })),
 
-    // step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
-    //   productName: context.productName,
-    //   subdomainName: "account",
-    // })),
+    step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
+      productName: context.productName,
+      subdomainName: "account",
+    })),
 
-    // step(makeWorkflowMachine(InitServiceWorkflowDefinition), ({ context }) => ({
-    //   name: `${context.sharedPackagePrefix}-service`,
-    //   path: `./services/${context.productName}`,
-    // })),
+    step(makeWorkflowMachine(InitServiceWorkflowDefinition), ({ context }) => ({
+      name: `${context.sharedPackagePrefix}-service`,
+      path: `./services/${context.productName}`,
+    })),
 
-    // step(makeWorkflowMachine(IdentityInitWorkflowDefinition), ({ context }) => ({
-    //   name: `${context.sharedPackagePrefix}-identity`,
-    //   path: `./services/${context.productName}-identity`,
-    // })),
+    step(makeWorkflowMachine(IdentityInitWorkflowDefinition), ({ context }) => ({
+      name: `${context.sharedPackagePrefix}-identity`,
+      path: `./services/${context.productName}-identity`,
+    })),
 
     step(CopyStepMachine, ({ context }) => ({
       name: context.productName,
@@ -128,6 +129,38 @@ export const InitProductWorkflowDefinition = defineWorkflow<
     step(CommandStepMachine, () => ({
       command: "touch",
       args: ["./.env"],
+    })),
+
+    step(CdStepMachine, ({ context }) => ({
+      path: `./clients/${context.productName}/${context.productName}-root-spa`,
+    })),
+
+    step(PromptStepMachine, () => ({
+      "prompt": "Update the home page to have a call to action to the register page. Use linkToProps from @saflib/links to create the link and bind them to the vuetify."
+    })),
+
+    step(CdStepMachine, ({ context }) => ({
+      path: `./clients/${context.productName}/${context.productName}-auth-spa`,
+    })),
+
+    step(PromptStepMachine, () => ({
+      "prompt": "Update the auth spa to use the @saflib/auth package's router using 'createAuthRouter'. That will provide login, register, forgot password, and logout pages. Make sure it redirects to the app spa's home page after login, using linkToHref from @saflib/links."
+    })),
+
+    step(CdStepMachine, ({ context }) => ({
+      path: `./clients/${context.productName}/${context.productName}-account-spa`,
+    })),
+
+    step(PromptStepMachine, () => ({
+      "prompt": "Update the account spa to use the @saflib/account package's pages for changing password and updating profile. Make sure it redirects to the account spa's home page after the changes."
+    })),
+
+    step(CdStepMachine, ({ context }) => ({
+      path: `./clients/${context.productName}/${context.productName}-clients-common`,
+    })),
+
+    step(PromptStepMachine, () => ({
+      "prompt": `Update the ./components/__product-name__-layout/__ProductName__Layout.vue file, adding links to the various spas. The `
     })),
   ],
 });
