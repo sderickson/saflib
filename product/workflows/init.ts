@@ -135,32 +135,47 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       path: `./clients/${context.productName}/${context.productName}-root-spa`,
     })),
 
-    step(PromptStepMachine, () => ({
-      "prompt": "Update the home page to have a call to action to the register page. Use linkToProps from @saflib/links to create the link and bind them to the vuetify."
+    step(PromptStepMachine, ({ context }) => ({
+      "prompt": `Set up the logged-out home page in the ${context.productName}-root-spa, integrating with the other spas.
+      
+      - Update the home page to have a call to action to the register page. Use linkToProps from @saflib/links to create the link and bind them to vuetify components.
+      - Incorporate the Layout exported from the ${context.sharedPackagePrefix}-clients-common package. This spa is "logged out".`
     })),
 
     step(CdStepMachine, ({ context }) => ({
       path: `./clients/${context.productName}/${context.productName}-auth-spa`,
     })),
 
-    step(PromptStepMachine, () => ({
-      "prompt": "Update the auth spa to use the @saflib/auth package's router using 'createAuthRouter'. That will provide login, register, forgot password, and logout pages. Make sure it redirects to the app spa's home page after login, using linkToHref from @saflib/links."
+    step(PromptStepMachine, ({ context }) => ({
+      "prompt": `Set up the ${context.productName}-auth-spa, integrating with the other spas.
+      
+      - Use the @saflib/auth package's router using 'createAuthRouter'. That will provide login, register, forgot password, and logout pages.
+      - Make sure it redirects to the app spa's home page after login, using linkToHref from @saflib/links.
+      - Incorporate the Layout exported from the ${context.sharedPackagePrefix}-clients-common package. The app will need to get the 'useProfile' hook from @saflib/auth and use it to determine if the user is logged in or not to give to the layout.`
     })),
 
     step(CdStepMachine, ({ context }) => ({
       path: `./clients/${context.productName}/${context.productName}-account-spa`,
     })),
 
-    step(PromptStepMachine, () => ({
-      "prompt": "Update the account spa to use the @saflib/account package's pages for changing password and updating profile. Make sure it redirects to the account spa's home page after the changes."
+    step(PromptStepMachine, ({ context }) => ({
+      "prompt": `Set up the ${context.productName}-account-spa, integrating with the other spas.
+      
+      - Add to the router @saflib/account package's pages for changing password and updating profile.
+      - Update the home page to link to those pages.
+      - Incorporate the Layout exported from the ${context.sharedPackagePrefix}-clients-common package. This spa is always logged in.`
     })),
 
     step(CdStepMachine, ({ context }) => ({
       path: `./clients/${context.productName}/${context.productName}-clients-common`,
     })),
 
-    step(PromptStepMachine, () => ({
-      "prompt": `Update the ./components/__product-name__-layout/__ProductName__Layout.vue file, adding links to the various spas. The `
+    step(PromptStepMachine, ({ context }) => ({
+      "prompt": `Update the ./components/__product-name__-layout/__ProductName__Layout.vue file in the ${context.sharedPackagePrefix}-clients-common package, adding links to the various spas.
+      
+      - When logged out, link to the root spa's home page, and the auth spa's register page.
+      - When logged in, link to the app spa's home page, and the account spa's profile page.
+      - Also, if logged in as admin, link to the admin spa's home page.`
     })),
   ],
 });
