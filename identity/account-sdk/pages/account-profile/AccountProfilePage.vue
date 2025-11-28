@@ -38,6 +38,10 @@ import { useUpdateProfile } from "@saflib/auth";
 import { useRouter } from "vue-router";
 import { showError } from "@saflib/vue";
 
+const props = defineProps<{
+  redirectTo?: string;
+}>();
+
 const { profileQuery } = useAccountProfilePageLoader();
 const { t } = useReverseT();
 
@@ -73,7 +77,7 @@ const handleSave = async () => {
       email: profileFormData.value.email,
     });
 
-    router.push("/");
+    router.push(props.redirectTo ?? "/");
   } catch {
     showError(t(strings.error_saving_profile));
   }

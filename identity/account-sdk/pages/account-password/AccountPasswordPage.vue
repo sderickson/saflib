@@ -38,6 +38,10 @@ import { useSetPassword } from "@saflib/auth";
 import { useRouter } from "vue-router";
 import { showError } from "@saflib/vue";
 
+const props = defineProps<{
+  redirectTo?: string;
+}>();
+
 useAccountPasswordPageLoader();
 
 const { t } = useReverseT();
@@ -69,7 +73,7 @@ const handleSave = async () => {
       newPassword: passwordFormData.value.newPassword,
     });
 
-    router.push("/");
+    router.push(props.redirectTo ?? "/");
   } catch {
     showError(t(strings.error_saving_password));
   }
