@@ -20,8 +20,8 @@ import common.Caddyfile
 	reverse_proxy clients:5173
 }
 
-{$PROTOCOL}://__product-name__.{$__PRODUCT_NAME___DOMAIN} {
-	import __product-name__-api-proxy {$__PRODUCT_NAME___SERVICE_HTTP_HOST}
+{$PROTOCOL}://app.{$__PRODUCT_NAME___DOMAIN} {
+	reverse_proxy clients:5173
 }
 
 {$PROTOCOL}://account.{$__PRODUCT_NAME___DOMAIN} {
@@ -30,6 +30,10 @@ import common.Caddyfile
 
 {$PROTOCOL}://admin.{$__PRODUCT_NAME___DOMAIN} {
 	reverse_proxy clients:5173
+}
+
+{$PROTOCOL}://__product-name__.{$__PRODUCT_NAME___DOMAIN} {
+	import __product-name__-api-proxy {$__PRODUCT_NAME___SERVICE_HTTP_HOST}
 }
 
 {$PROTOCOL}://azurite.{$__PRODUCT_NAME___DOMAIN} {
