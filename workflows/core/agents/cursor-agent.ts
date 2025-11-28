@@ -51,7 +51,7 @@ interface CursorToolCallLog {
   subtype: "started" | "completed";
   tool_call: {
     readToolCall?: {
-      args: {
+      args?: {
         path: string;
       };
       result?: {
@@ -228,16 +228,16 @@ export const executePromptWithCursor = async ({
         if (json.tool_call.readToolCall) {
           if (json.subtype === "started") {
             printLineSlowly(
-              `> Reading file: ${relativePath(json.tool_call.readToolCall.args.path)}`,
+              `> Reading file: ${relativePath(json.tool_call.readToolCall.args?.path ?? "unknown path")}`,
             );
           } else if (json.subtype === "completed") {
             if (json.tool_call.readToolCall.result?.success) {
               printLineSlowly(
-                `> File read: ${relativePath(json.tool_call.readToolCall.args.path)}`,
+                `> File read: ${relativePath(json.tool_call.readToolCall.args?.path ?? "unknown path")}`,
               );
             } else {
               printLineSlowly(
-                `> File read failed: ${relativePath(json.tool_call.readToolCall.args.path)}`,
+                `> File read failed: ${relativePath(json.tool_call.readToolCall.args?.path ?? "unknown path")}`,
               );
             }
           }
