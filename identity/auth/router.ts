@@ -1,5 +1,7 @@
 import { createAuthRouter } from "./auth-router";
 
 export const router = createAuthRouter({
-  defaultRedirect: "/",
+  registerRedirect: "/",
+  loginRedirect: "/",
+  logoutRedirect: "/",
 });
