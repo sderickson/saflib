@@ -189,6 +189,23 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       - When logged in, link to the app spa's home page, the account spa's home page, and the auth spa's logout page.
       - Also, if logged in as admin, link to the admin spa's home page.`
     })),
+
+    step(CdStepMachine, ({ context }) => ({
+      path: `./deploy/${context.productName}-dev`,
+    })),
+
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["run", "up"],
+    })),
+
+    step(PromptStepMachine, ({ context }) => ({
+      "prompt": `The dev environment is running on http://${context.productName}.docker.localhost. Please make sure it works.
+      - Navigate to http://${context.productName}.docker.localhost and make sure it looks good.
+      - Create a test account, make sure you end up on the app spa's home page.
+      - Log out, make sure you end up back on the root spa's home page, then log in again.
+      - Go to the account spa's home page, make sure you can change your password and update your profile.
+    `})),
   ],
 });
 
