@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { runBackupCron } from "./cron.ts";
+import { backupJobs } from "./cron.ts";
 
-describe("runBackupCron", () => {
+describe("backupJobs", () => {
   it("should be defined", () => {
-    expect(runBackupCron).toBeDefined();
+    expect(backupJobs).toBeDefined();
   });
 });

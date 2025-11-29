@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@saflib/vue": "*",
-    "@sentry/vue": "^10.21.0"
+    "@sentry/vue": "^10.21.0",
+    "template-package-spec": "*"
   }
 }

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import request from "supertest";
 import express from "express";
 import { Readable } from "stream";
@@ -8,7 +8,6 @@ import { TestObjectStore } from "@saflib/object-store";
 
 describe("DELETE /backups/:backupId", () => {
   let app: express.Express;
-  let dbKey: symbol;
   let objectStore: TestObjectStore;
 
   beforeEach(() => {
