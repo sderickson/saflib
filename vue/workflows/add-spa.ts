@@ -91,7 +91,7 @@ export const AddSpaWorkflowDefinition = defineWorkflow<
       clientsPackageName,
       spaPackageName,
       commonPackageName,
-      serviceSpecName,qs
+      serviceSpecName,
     };
   },
 
