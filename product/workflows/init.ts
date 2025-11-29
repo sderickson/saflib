@@ -183,7 +183,7 @@ export const InitProductWorkflowDefinition = defineWorkflow<
     })),
 
     step(PromptStepMachine, ({ context }) => ({
-      "prompt": `Update the ./components/__product-name__-layout/__ProductName__Layout.vue file in the ${context.sharedPackagePrefix}-clients-common package, adding links to the various spas.
+      "prompt": `Update the layout component in the ${context.sharedPackagePrefix}-clients-common package, adding links to the various spas.
       
       - When logged out, link to the root spa's home page, and the auth spa's register page.
       - When logged in, link to the app spa's home page, the account spa's home page, and the auth spa's logout page.
