@@ -34,117 +34,117 @@ export const BackupServiceWorkflowDefinition = defineWorkflow<
   },
 
   steps: [
-//     step(CdStepMachine, () => ({
-//       path: "./object-store",
-//     })),
+    step(CdStepMachine, () => ({
+      path: "./object-store",
+    })),
 
-//     step(makeWorkflowMachine(AddExportWorkflowDefinition), () => ({
-//       name: "ObjectStore",
-//       path: ".",
-//       prompt: `Create an abstract ObjectStore class with the following interface:
+    step(makeWorkflowMachine(AddExportWorkflowDefinition), () => ({
+      name: "ObjectStore",
+      path: ".",
+      prompt: `Create an abstract ObjectStore class with the following interface:
 
-// 1. Abstract class ObjectStore with methods:
-//    - uploadFile(path: string, stream: Readable, metadata?: Record<string, string>): Promise<ReturnsError<{ success: boolean; url?: string }>>
-//    - listFiles(prefix?: string): Promise<ReturnsError<Array<{ path: string; size?: number; metadata?: Record<string, string> }>>>
-//    - deleteFile(path: string): Promise<ReturnsError<{ success: boolean }>>
-//    - readFile(path: string): Promise<ReturnsError<Readable>>
+1. Abstract class ObjectStore with methods:
+   - uploadFile(path: string, stream: Readable, metadata?: Record<string, string>): Promise<ReturnsError<{ success: boolean; url?: string }>>
+   - listFiles(prefix?: string): Promise<ReturnsError<Array<{ path: string; size?: number; metadata?: Record<string, string> }>>>
+   - deleteFile(path: string): Promise<ReturnsError<{ success: boolean }>>
+   - readFile(path: string): Promise<ReturnsError<Readable>>
 
-// The class should be scoped to a specific container/bucket and folder path. The constructor should accept:
-// - containerName: string
-// - folderPath: string (defaults to empty string for root)
-// - tier?: AccessTier (for Azure, defaults to "Hot")
+The class should be scoped to a specific container/bucket and folder path. The constructor should accept:
+- containerName: string
+- folderPath: string (defaults to empty string for root)
+- tier?: AccessTier (for Azure, defaults to "Hot")
 
-// The class should validate that all paths stay within the scoped folder (prevent directory traversal).`,
-//     })),
+The class should validate that all paths stay within the scoped folder (prevent directory traversal).`,
+    })),
 
-//     step(makeWorkflowMachine(AddExportWorkflowDefinition), () => ({
-//       name: "AzureObjectStore",
-//       path: "azure",
-//       prompt: `Create AzureObjectStore class that extends ObjectStore:
+    step(makeWorkflowMachine(AddExportWorkflowDefinition), () => ({
+      name: "AzureObjectStore",
+      path: "azure",
+      prompt: `Create AzureObjectStore class that extends ObjectStore:
 
-// 1. Implement all abstract methods using the existing Azure blob storage functions
-// 2. Use getBlobServiceClient with the tier from constructor
-// 3. Prepend folderPath to all file paths when interacting with Azure
-// 4. For listFiles, filter results to only include files within the scoped folder
-// 5. Handle errors appropriately and return ReturnsError types
-// 6. Export the class from azure/index.ts`,
-//     })),
+1. Implement all abstract methods using the existing Azure blob storage functions
+2. Use getBlobServiceClient with the tier from constructor
+3. Prepend folderPath to all file paths when interacting with Azure
+4. For listFiles, filter results to only include files within the scoped folder
+5. Handle errors appropriately and return ReturnsError types
+6. Export the class from azure/index.ts`,
+    })),
 
-//     step(CommandStepMachine, () => ({
-//       command: "npm",
-//       args: ["run", "typecheck"],
-//     })),
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["run", "typecheck"],
+    })),
 
-//     step(CdStepMachine, () => ({
-//       path: "./backup/backup-spec",
-//     })),
+    step(CdStepMachine, () => ({
+      path: "./backup/backup-spec",
+    })),
 
-//     step(makeWorkflowMachine(AddSchemaWorkflowDefinition), () => ({
-//       name: "backup",
-//       prompt: `Create a schema for a backup object with the following properties:
-// - id: string (the backup ID from the filename)
-// - type: string enum ["manual", "automatic"] (parsed from filename)
-// - timestamp: string (ISO 8601 timestamp parsed from filename)
-// - size: number (file size in bytes)
-// - path: string (full path to the backup file in object store)
-// - Optional metadata fields if needed`,
-//     })),
+    step(makeWorkflowMachine(AddSchemaWorkflowDefinition), () => ({
+      name: "backup",
+      prompt: `Create a schema for a backup object with the following properties:
+- id: string (the backup ID from the filename)
+- type: string enum ["manual", "automatic"] (parsed from filename)
+- timestamp: string (ISO 8601 timestamp parsed from filename)
+- size: number (file size in bytes)
+- path: string (full path to the backup file in object store)
+- Optional metadata fields if needed`,
+    })),
 
-//     step(makeWorkflowMachine(AddRouteWorkflowDefinition), () => ({
-//       path: "./routes/backups/list.yaml",
-//       prompt: `Create GET /backups route that lists all backups. Returns an array of backup objects. Use the backup schema for the response.`,
-//     })),
+    step(makeWorkflowMachine(AddRouteWorkflowDefinition), () => ({
+      path: "./routes/backups/list.yaml",
+      prompt: `Create GET /backups route that lists all backups. Returns an array of backup objects. Use the backup schema for the response.`,
+    })),
 
-//     step(makeWorkflowMachine(AddRouteWorkflowDefinition), () => ({
-//       path: "./routes/backups/create.yaml",
-//       prompt: `Create POST /backups route that creates a manual backup. Accepts optional metadata in request body (description?: string, tags?: string[]). Returns a backup object.`,
-//     })),
+    step(makeWorkflowMachine(AddRouteWorkflowDefinition), () => ({
+      path: "./routes/backups/create.yaml",
+      prompt: `Create POST /backups route that creates a manual backup. Accepts optional metadata in request body (description?: string, tags?: string[]). Returns a backup object.`,
+    })),
 
-//     step(makeWorkflowMachine(AddRouteWorkflowDefinition), () => ({
-//       path: "./routes/backups/delete.yaml",
-//       prompt: `Create DELETE /backups/{backupId} route that deletes a manual backup. backupId is a path parameter. Returns success confirmation.`,
-//     })),
+    step(makeWorkflowMachine(AddRouteWorkflowDefinition), () => ({
+      path: "./routes/backups/delete.yaml",
+      prompt: `Create DELETE /backups/{backupId} route that deletes a manual backup. backupId is a path parameter. Returns success confirmation.`,
+    })),
 
-//     step(makeWorkflowMachine(AddRouteWorkflowDefinition), () => ({
-//       path: "./routes/backups/restore.yaml",
-//       prompt: `Create POST /backups/{backupId}/restore route that restores from a backup. backupId is a path parameter. Returns success status. This is synchronous since it's a single SQLite file.`,
-//     })),
+    step(makeWorkflowMachine(AddRouteWorkflowDefinition), () => ({
+      path: "./routes/backups/restore.yaml",
+      prompt: `Create POST /backups/{backupId}/restore route that restores from a backup. backupId is a path parameter. Returns success status. This is synchronous since it's a single SQLite file.`,
+    })),
 
-//     step(CommandStepMachine, () => ({
-//       command: "npm",
-//       args: ["exec", "saf-specs", "generate"],
-//     })),
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["exec", "saf-specs", "generate"],
+    })),
 
     step(CdStepMachine, () => ({
       path: "./backup/backup-http",
     })),
 
-//     step(makeWorkflowMachine(AddHandlerWorkflowDefinition), () => ({
-//       path: "./routes/backups/list.ts",
-//       prompt: `Implement GET /backups handler:
-// - Use object store's listFiles() to get all backup files
-// - Parse backup metadata from filenames (backup-{timestamp}-{type}-{id}.db)
-// - Return array of backup objects with type, timestamp, size, id
-// - Use getSafContextWithAuth and check scopes includes "*"
-// - The router will receive backupFn and objectStore as dependencies
+    step(makeWorkflowMachine(AddHandlerWorkflowDefinition), () => ({
+      path: "./routes/backups/list.ts",
+      prompt: `Implement GET /backups handler:
+- Use object store's listFiles() to get all backup files
+- Parse backup metadata from filenames (backup-{timestamp}-{type}-{id}.db)
+- Return array of backup objects with type, timestamp, size, id
+- Use getSafContextWithAuth and check scopes includes "*"
+- The router will receive backupFn and objectStore as dependencies
 
-// After all handlers are created, update http.ts to export a function that creates and returns a router with all backup routes. The function should accept:
-// - backupFn: () => Promise<Readable> - function that returns a backup stream
-// - objectStore: ObjectStore - the object store instance
-// Pass these dependencies to each route handler.`,
-//     })),
+After all handlers are created, update http.ts to export a function that creates and returns a router with all backup routes. The function should accept:
+- backupFn: () => Promise<Readable> - function that returns a backup stream
+- objectStore: ObjectStore - the object store instance
+Pass these dependencies to each route handler.`,
+    })),
 
-//     step(makeWorkflowMachine(AddHandlerWorkflowDefinition), () => ({
-//       path: "./routes/backups/create.ts",
-//       prompt: `Implement POST /backups handler:
-// - Accept optional metadata in request body (description, tags)
-// - Call the backup function passed to the router to get a stream
-// - Generate backup filename: backup-{timestamp}-manual-{uuid}.db
-// - Upload to object store using uploadFile
-// - Return backup metadata
-// - Use getSafContextWithAuth and check scopes includes "*"
-// - The router will receive backupFn and objectStore as dependencies`,
-//     })),
+    step(makeWorkflowMachine(AddHandlerWorkflowDefinition), () => ({
+      path: "./routes/backups/create.ts",
+      prompt: `Implement POST /backups handler:
+- Accept optional metadata in request body (description, tags)
+- Call the backup function passed to the router to get a stream
+- Generate backup filename: backup-{timestamp}-manual-{uuid}.db
+- Upload to object store using uploadFile
+- Return backup metadata
+- Use getSafContextWithAuth and check scopes includes "*"
+- The router will receive backupFn and objectStore as dependencies`,
+    })),
 
     step(makeWorkflowMachine(AddHandlerWorkflowDefinition), () => ({
       path: "./routes/backups/delete.ts",
