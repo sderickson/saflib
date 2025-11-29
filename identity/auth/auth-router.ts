@@ -20,9 +20,9 @@ let router: Router;
 
 interface AuthRouterOptions {
   additionalRoutes?: RouteRecordRaw[];
-  registerRedirect: string;
-  loginRedirect: string;
-  logoutRedirect: string;
+  registerRedirect?: string;
+  loginRedirect?: string;
+  logoutRedirect?: string;
   renderPrompt?: boolean;
 }
 
