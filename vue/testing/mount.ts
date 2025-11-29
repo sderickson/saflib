@@ -2,23 +2,22 @@ import { createVuetify } from "vuetify";
 import * as components from "vuetify/components";
 import * as directives from "vuetify/directives";
 import { mount, type ComponentMountingOptions } from "@vue/test-utils";
-import type { Component, Plugin } from "vue";
+import type { Component } from "vue";
 import { createRouter, createMemoryHistory } from "vue-router";
 import { VueQueryPlugin } from "@tanstack/vue-query";
 import { QueryClient } from "@tanstack/vue-query";
 import { createI18n } from "vue-i18n";
-import type { I18nMessages } from "../src/strings.ts";
+import type { CreateVueAppInstanceOptions } from "../src/app.ts";
 
 /**
  * Options for the `mountWithPlugins` function.
  */
-export interface MountWithPluginsOptions {
-  router?: Plugin;
-  i18nMessages?: I18nMessages;
-}
+export interface MountWithPluginsOptions extends CreateVueAppInstanceOptions {}
 
 /**
  * Mount a Vue component with plugins. Handles plugins like vuetify, router, and i18n. Uses `mount` under the hood.
+ *
+ * This function uses the same app creation logic as `createVueApp` to ensure consistency between tests and production.
  */
 export function mountWithPlugins(
   component: Component,
@@ -30,7 +29,6 @@ export function mountWithPlugins(
     directives,
   });
 
-  // To suppress warnings, provide your own router
   const router =
     pluginOptions.router ||
     createRouter({

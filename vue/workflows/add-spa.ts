@@ -97,6 +97,7 @@ export const AddSpaWorkflowDefinition = defineWorkflow<
 
   templateFiles: {
     app: path.join(spaDir, "__SubdomainName__App.vue"),
+    appConfig: path.join(spaDir, "app-config.ts"),
     i18n: path.join(spaDir, "i18n.ts"),
     main: path.join(spaDir, "main.ts"),
     packageJson: path.join(spaDir, "package.json"),

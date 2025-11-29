@@ -1,20 +1,14 @@
 import { mountWithPlugins } from "@saflib/vue/testing";
 import type { ComponentMountingOptions } from "@vue/test-utils";
 import type { Component } from "vue";
-import { create__SubdomainName__Router } from "./router.ts";
-import { __subdomain_name___strings } from "./strings.ts";
+import { get__SubdomainName__AppConfig } from "./app-config.ts";
 import { identityServiceFakeHandlers } from "@saflib/auth/fakes";
 
 export const mountTestApp = <C extends Component>(
   Component: C,
   options: ComponentMountingOptions<C> = {},
 ) => {
-  return mountWithPlugins(Component, options, {
-    router: create__SubdomainName__Router(),
-    i18nMessages: {
-      ...__subdomain_name___strings,
-    },
-  });
+  return mountWithPlugins(Component, options, get__SubdomainName__AppConfig());
 };
 
 // TODO: import and add here any other mock handlers from sdk packages this SPA depends on
