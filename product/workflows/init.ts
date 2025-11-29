@@ -67,6 +67,11 @@ export const InitProductWorkflowDefinition = defineWorkflow<
   },
 
   steps: [
+    step(makeWorkflowMachine(InitServiceWorkflowDefinition), ({ context }) => ({
+      name: `${context.sharedPackagePrefix}-service`,
+      path: `./services/${context.productName}`,
+    })),
+
     step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
       productName: context.productName,
       subdomainName: "root",
@@ -90,11 +95,6 @@ export const InitProductWorkflowDefinition = defineWorkflow<
     step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
       productName: context.productName,
       subdomainName: "account",
-    })),
-
-    step(makeWorkflowMachine(InitServiceWorkflowDefinition), ({ context }) => ({
-      name: `${context.sharedPackagePrefix}-service`,
-      path: `./services/${context.productName}`,
     })),
 
     step(makeWorkflowMachine(IdentityInitWorkflowDefinition), ({ context }) => ({

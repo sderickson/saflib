@@ -91,7 +91,7 @@ export const AddSpaWorkflowDefinition = defineWorkflow<
       clientsPackageName,
       spaPackageName,
       commonPackageName,
-      serviceSpecName,qs
+      serviceSpecName,
     };
   },
 
@@ -128,11 +128,11 @@ export const AddSpaWorkflowDefinition = defineWorkflow<
       // A couple packages don't use the subdomain, so manually
       // substitute the package names here.
       const wrappedLineReplace = (line: string) => {
-        line.replace(
+        line = line.replace(
           "template-package-clients-common",
           context.commonPackageName,
         );
-        line.replace(
+        line = line.replace(
           "template-package-spec",
           context.serviceSpecName,
         );
