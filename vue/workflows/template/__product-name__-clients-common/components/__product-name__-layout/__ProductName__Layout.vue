@@ -71,6 +71,19 @@ import { events } from "@saflib/vue";
 import { SnackbarQueue } from "@saflib/vue/components";
 import { SpaLink } from "@saflib/vue/components";
 
+// Import link packages for the various SPAs
+// import { appLinks } from "@__shared_package_prefix__/__product-name__-app-links";
+// import { accountLinks } from "@__shared_package_prefix__/__product-name__-account-links";
+// import { authLinks } from "@saflib/auth-links";
+// import { rootLinks } from "@__shared_package_prefix__/__product-name__-root-links";
+// import { adminLinks } from "@__shared_package_prefix__/__product-name__-admin-links";
+
+// Use this for choosing what links to display
+// import { getProfile } from "@saflib/auth";
+// import { useQuery } from "@tanstack/vue-query";
+// const { data: profile } = useQuery(getProfile());
+// const isAdmin = computed(() => profile.value?.isAdmin ?? false);
+
 const props = defineProps<{
   loggedIn?: boolean;
 }>();
@@ -90,10 +103,17 @@ const links = computed<LinkWithName[]>(() => {
   return props.loggedIn
     ? [
         // Add links here for when logged in
-        // Use
+        // Example:
+        // { ...appLinks.home, name: "App" },
+        // { ...accountLinks.home, name: "Account" },
+        // { ...authLinks.logout, name: "Logout" },
+        // ...(isAdmin.value ? [{ ...adminLinks.home, name: "Admin" }] : []),
       ]
     : [
         // Add links here for when not logged in
+        // Example:
+        // { ...authLinks.login, name: "Login" },
+        // { ...authLinks.register, name: "Sign Up" },
       ];
 });
 </script>

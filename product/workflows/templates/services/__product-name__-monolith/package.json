@@ -1,0 +1,16 @@
+{
+  "name": "template-package-monolith",
+  "type": "module",
+  "scripts": {
+    "start": "node --experimental-strip-types ./run.ts"
+  },
+  "exports": {},
+  "dependencies": {
+    "@saflib/monorepo": "*",
+    "template-package-identity": "*",
+    "template-package-service": "*",
+    "template-package-service-common": "*",
+    "@saflib/sentry": "*"
+  }
+}
+

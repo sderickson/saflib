@@ -1,0 +1,12 @@
+# syntax=docker/dockerfile:labs
+FROM node:alpine3.19
+
+WORKDIR /app
+
+#{ copy_packages }#
+RUN npm install --omit=dev
+#{ copy_src }#
+
+WORKDIR /app/services/__product-name__-monolith
+CMD ["npm", "start"]
+

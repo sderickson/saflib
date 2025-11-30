@@ -209,11 +209,73 @@ export class DbManager<S extends Schema, C extends Config> {
     return false;
   };
 
+  async restore(key: DbKey, stream: Readable): Promise<void> {
+    const { log } = makeSubsystemReporters("init", "db.restore");
+    const instance = this.instances.get(key);
+    if (!instance) {
+      throw new Error("Cannot restore: database instance not found");
+    }
+
+    const dbPath = this.dbPaths.get(key);
+    if (!dbPath) {
+      throw new Error("Cannot restore: database path not found");
+    }
+
+    if (dbPath === ":memory:") {
+      throw new Error("Cannot restore: database is in-memory");
+    }
+
+    const tempPath = `${dbPath}.restore.${randomUUID()}`;
+    log.info(`Restoring database from stream to temporary file: ${tempPath}`);
+
+    const writeStream = fs.createWriteStream(tempPath);
+    
+    return new Promise((resolve, reject) => {
+      stream.on("error", async (error) => {
+        writeStream.destroy();
+        try {
+          await fs.promises.unlink(tempPath);
+        } catch {
+        }
+        log.error(`Stream error during restore: ${error}`);
+        reject(error);
+      });
+
+      writeStream.on("error", async (error) => {
+        stream.destroy();
+        try {
+          await fs.promises.unlink(tempPath);
+        } catch {
+        }
+        log.error(`Write error during restore: ${error}`);
+        reject(error);
+      });
+
+      writeStream.on("finish", async () => {
+        try {
+          await fs.promises.rename(tempPath, dbPath);
+          log.info(`Database restored successfully to: ${dbPath}`);
+          resolve();
+        } catch (error) {
+          try {
+            await fs.promises.unlink(tempPath);
+          } catch {
+          }
+          log.error(`Failed to rename temporary file: ${error}`);
+          reject(error);
+        }
+      });
+
+      stream.pipe(writeStream);
+    });
+  }
+
   publicInterface() {
     return {
       connect: this.connect,
       disconnect: this.disconnect,
       createBackup: this.createBackup.bind(this),
+      restore: this.restore.bind(this),
     };
   }
 }

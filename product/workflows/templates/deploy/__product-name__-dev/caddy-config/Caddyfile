@@ -1,0 +1,48 @@
+import common.Caddyfile
+
+# Curried snippets
+
+(__product-name__-api-proxy) {
+	import api-proxy {$__PRODUCT_NAME___IDENTITY_SERVICE_HTTP_HOST} {args[0]}
+}
+
+(__product-name__-admin-proxy) {
+	import admin-proxy {$__PRODUCT_NAME___IDENTITY_SERVICE_HTTP_HOST} {args[0]}
+}
+
+# Subdomains
+
+{$PROTOCOL}://{$__PRODUCT_NAME___DOMAIN} {
+	reverse_proxy clients:5173
+}
+
+{$PROTOCOL}://auth.{$__PRODUCT_NAME___DOMAIN} {
+	reverse_proxy clients:5173
+}
+
+{$PROTOCOL}://app.{$__PRODUCT_NAME___DOMAIN} {
+	reverse_proxy clients:5173
+}
+
+{$PROTOCOL}://account.{$__PRODUCT_NAME___DOMAIN} {
+	reverse_proxy clients:5173
+}
+
+{$PROTOCOL}://admin.{$__PRODUCT_NAME___DOMAIN} {
+	reverse_proxy clients:5173
+}
+
+{$PROTOCOL}://__product-name__.{$__PRODUCT_NAME___DOMAIN} {
+	import __product-name__-api-proxy {$__PRODUCT_NAME___SERVICE_HTTP_HOST}
+}
+
+{$PROTOCOL}://azurite.{$__PRODUCT_NAME___DOMAIN} {
+	reverse_proxy azurite:10000 {
+		header_up Host azurite:10000
+		header_up X-Forwarded-Host {host}
+	}
+}
+
+{$PROTOCOL}://identity.{$__PRODUCT_NAME___DOMAIN} {
+	import identity {$__PRODUCT_NAME___DOMAIN} {$__PRODUCT_NAME___IDENTITY_SERVICE_HTTP_HOST}
+}

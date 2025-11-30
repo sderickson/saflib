@@ -20,7 +20,9 @@ let router: Router;
 
 interface AuthRouterOptions {
   additionalRoutes?: RouteRecordRaw[];
-  defaultRedirect: string;
+  registerRedirect?: string;
+  loginRedirect?: string;
+  logoutRedirect?: string;
   renderPrompt?: boolean;
 }
 
@@ -34,23 +36,23 @@ export const createAuthRouter = (options: AuthRouterOptions) => {
     {
       path: authLinks.home.path,
       component: LoginPage,
-      props: { redirectTo: options?.defaultRedirect, renderPrompt },
+      props: { redirectTo: options?.loginRedirect, renderPrompt },
     },
     {
       path: authLinks.login.path,
       component: LoginPage,
-      props: { redirectTo: options?.defaultRedirect, renderPrompt },
+      props: { redirectTo: options?.loginRedirect, renderPrompt },
     },
     {
       path: authLinks.register.path,
       component: RegisterPage,
-      props: { redirectTo: options?.defaultRedirect, renderPrompt },
+      props: { redirectTo: options?.registerRedirect, renderPrompt },
     },
     { path: authLinks.forgot.path, component: ForgotPasswordPage },
     {
       path: authLinks.logout.path,
       component: LogoutPage,
-      props: { redirectTo: options?.defaultRedirect },
+      props: { redirectTo: options?.logoutRedirect },
     },
     {
       path: authLinks.resetPassword.path,
@@ -59,12 +61,12 @@ export const createAuthRouter = (options: AuthRouterOptions) => {
     {
       path: authLinks.verifyEmail.path,
       component: VerifyEmailPage,
-      props: { redirectTo: options?.defaultRedirect },
+      props: { redirectTo: options?.loginRedirect },
     },
     {
       path: authLinks.verifyWall.path,
       component: VerifyEmailPageAsync,
-      props: { redirectTo: options?.defaultRedirect },
+      props: { redirectTo: options?.loginRedirect },
     },
   ];
 

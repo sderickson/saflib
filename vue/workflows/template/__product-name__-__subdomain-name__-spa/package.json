@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@saflib/vue": "*",
+    "@saflib/auth": "*",
     "vue-router": "*"
   }
 }

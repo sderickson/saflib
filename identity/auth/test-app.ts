@@ -5,7 +5,9 @@ import { createAuthRouter } from "./auth-router.ts";
 import { authAppStrings } from "./strings.ts";
 
 export const router = createAuthRouter({
-  defaultRedirect: "/",
+  registerRedirect: "/",
+  loginRedirect: "/",
+  logoutRedirect: "/",
 });
 
 export const mountTestApp = <C extends Component>(

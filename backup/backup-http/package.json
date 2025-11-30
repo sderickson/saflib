@@ -1,0 +1,24 @@
+{
+  "name": "@saflib/backup-http",
+  "description": "HTTP server for the backup service",
+  "type": "module",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc"
+  },
+  "dependencies": {
+    "@saflib/express": "*",
+    "@saflib/monorepo": "*",
+    "@saflib/backup-db": "*",
+    "@saflib/backup-service-common": "*",
+    "@saflib/backup-spec": "*"
+  },
+  "devDependencies": {
+    "@saflib/vitest": "*"
+  }
+}

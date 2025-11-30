@@ -1,0 +1,91 @@
+# common elements between dev and test
+services:
+  caddy:
+    image: caddy:2.9.1
+    ports:
+      - 80:80
+    volumes:
+      - ./caddy-config:/etc/caddy/
+      - caddy_data:/data
+      - caddy_config:/config
+    environment:
+      - __PRODUCT_NAME___DOMAIN=${__PRODUCT_NAME___DOMAIN}
+      - PROTOCOL=${PROTOCOL}
+      - __PRODUCT_NAME___IDENTITY_SERVICE_HTTP_HOST=${__PRODUCT_NAME___IDENTITY_SERVICE_HTTP_HOST}
+      - __PRODUCT_NAME___SERVICE_HTTP_HOST=${__PRODUCT_NAME___SERVICE_HTTP_HOST}
+    depends_on:
+      - clients
+
+  clients:
+    # Named for local dev, but doesn't get published; not needed for prod
+    image: __organization-name__-__product-name__-clients:latest
+    build:
+      context: ../..
+      dockerfile: ./clients/__product-name__/__product-name__-clients/Dockerfile
+    environment:
+      - CLIENT_SUBDOMAINS=${__PRODUCT_NAME___CLIENT_SUBDOMAINS}
+      - DOMAIN=${__PRODUCT_NAME___DOMAIN}
+      - DEPLOYMENT_NAME=${DEPLOYMENT_NAME}
+      - PROTOCOL=${PROTOCOL}
+      - SERVICE_SUBDOMAINS=${__PRODUCT_NAME___SERVICE_SUBDOMAINS}
+      - TZ=${TZ}
+    volumes:
+      - ../../clients/__product-name__/:/app/clients/__product-name__/
+      - ../../saflib/:/app/saflib/
+      - ../../services/__product-name__/__product-name__-sdk/:/app/services/__product-name__/__product-name__-sdk/
+    command: npm run dev
+
+  __product-name__-monolith:
+    image: ghcr.io/__organization-name__/__organization-name__-__product-name__-monolith:latest
+    volumes:
+      - ../../services/__product-name__/__product-name__-db/data:/app/services/__product-name__/__product-name__-db/data
+      - __product-name___identity_http_cache:/app/saflib/identity/identity-http/data
+      - ../../services/__product-name__-identity/data:/app/services/__product-name__-identity/data
+      - ../../services/__product-name__/__product-name__-cron/data:/app/services/__product-name__/__product-name__-cron/data
+
+    build:
+      context: ../..
+      dockerfile: services/__product-name__-monolith/Dockerfile
+
+    environment:
+      - ALLOW_DB_CREATION=true
+      - CLIENT_SUBDOMAINS=${__PRODUCT_NAME___CLIENT_SUBDOMAINS}
+      - DEPLOYMENT_NAME=${DEPLOYMENT_NAME}
+      - DOMAIN=${__PRODUCT_NAME___DOMAIN}
+      - MOCK_INTEGRATIONS=${MOCK_INTEGRATIONS}
+      - NODE_ENV=${NODE_ENV}
+      - PROTOCOL=${PROTOCOL}
+      - SERVICE_SUBDOMAINS=${__PRODUCT_NAME___SERVICE_SUBDOMAINS}
+      - TZ=${TZ}
+      - SENTRY_DSN=${__PRODUCT_NAME___SENTRY_DSN}
+
+      - IDENTITY_SERVICE_HTTP_HOST=${__PRODUCT_NAME___IDENTITY_SERVICE_HTTP_HOST}
+      - IDENTITY_SERVICE_GRPC_HOST=${__PRODUCT_NAME___IDENTITY_SERVICE_GRPC_HOST}
+      - IDENTITY_SERVICE_ADMIN_EMAILS=${__PRODUCT_NAME___IDENTITY_SERVICE_ADMIN_EMAILS}
+      - IDENTITY_SERVICE_DISABLE_RATE_LIMITING=${__PRODUCT_NAME___IDENTITY_SERVICE_DISABLE_RATE_LIMITING}
+
+      - NODEMAILER_TRANSPORT_CONFIG=${NODEMAILER_TRANSPORT_CONFIG}
+
+      - __PRODUCT_NAME___SERVICE_HTTP_HOST=${__PRODUCT_NAME___SERVICE_HTTP_HOST}
+
+      - AZURE_CLIENT_ID=${AZURE_CLIENT_ID}
+      - AZURE_HOT_BLOB_STORAGE_URL=${AZURE_HOT_BLOB_STORAGE_URL}
+      - AZURE_COLD_BLOB_STORAGE_URL=${AZURE_COLD_BLOB_STORAGE_URL}
+
+      - TRADEMARK=${__PRODUCT_NAME___TRADEMARK}
+
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite
+    hostname: azurite
+    ports:
+      - "10000:10000"
+      - "10001:10001"
+      - "10002:10002"
+    command: "azurite-blob --blobHost 0.0.0.0 --loose"
+
+volumes:
+  caddy_data:
+  caddy_config:
+  __product-name___identity_http_cache:
+  
+

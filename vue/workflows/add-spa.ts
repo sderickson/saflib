@@ -53,6 +53,7 @@ interface AddSpaWorkflowContext extends ParsePackageNameOutput {
   linksPackageName: string;
   clientsPackageName: string;
   commonPackageName: string;
+  serviceSpecName: string;
 }
 
 export const AddSpaWorkflowDefinition = defineWorkflow<
@@ -72,11 +73,12 @@ export const AddSpaWorkflowDefinition = defineWorkflow<
     const targetDir = path.join(input.cwd, "clients", input.productName);
     const currentPackageName = getPackageName(input.cwd);
     const currentPackageOrgName =
-      parsePackageName(currentPackageName).organizationName;
+      "@" +parsePackageName(currentPackageName).organizationName;
     const spaPackageName = `${currentPackageOrgName}/${input.productName}-${input.subdomainName}-spa`;
     const clientsPackageName = `${currentPackageOrgName}/${input.productName}-clients`;
     const linksPackageName = `${currentPackageOrgName}/${input.productName}-${input.subdomainName}-links`;
     const commonPackageName = `${currentPackageOrgName}/${input.productName}-clients-common`;
+    const serviceSpecName = `${currentPackageOrgName}/${input.productName}-spec`;
 
     return {
       ...parsePackageName(spaPackageName, {
@@ -89,6 +91,7 @@ export const AddSpaWorkflowDefinition = defineWorkflow<
       clientsPackageName,
       spaPackageName,
       commonPackageName,
+      serviceSpecName,
     };
   },
 
@@ -121,10 +124,17 @@ export const AddSpaWorkflowDefinition = defineWorkflow<
   steps: [
     step(CopyStepMachine, ({ context }) => {
       const lineReplace = makeLineReplace(context);
+
+      // A couple packages don't use the subdomain, so manually
+      // substitute the package names here.
       const wrappedLineReplace = (line: string) => {
-        line.replace(
+        line = line.replace(
           "template-package-clients-common",
           context.commonPackageName,
+        );
+        line = line.replace(
+          "template-package-spec",
+          context.serviceSpecName,
         );
         return lineReplace(line);
       };

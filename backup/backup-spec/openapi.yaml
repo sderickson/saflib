@@ -1,0 +1,28 @@
+openapi: 3.0.0
+info:
+  title: backup API
+  version: 1.0.0
+  description: API specification for the backup service
+
+paths:
+  /backups:
+    get:
+      $ref: "./routes/backups/list.yaml#/listBackups"
+    post:
+      $ref: "./routes/backups/create.yaml#/createBackup"
+  /backups/{backupId}:
+    delete:
+      $ref: "./routes/backups/delete.yaml#/deleteBackup"
+  /backups/{backupId}/restore:
+    post:
+      $ref: "./routes/backups/restore.yaml#/restoreBackup"
+
+components:
+  schemas:
+    # Add your shared schemas here
+    Error:
+      $ref: "./schemas/error.yaml"
+    Backup:
+      $ref: "./schemas/backup.yaml"
+    ProductEvent:
+      $ref: "./events/index.yaml"

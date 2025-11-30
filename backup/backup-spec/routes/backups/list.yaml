@@ -1,0 +1,34 @@
+listBackups:
+  summary: "List all backups"
+  operationId: "listBackups"
+
+  responses:
+    "200":
+      description: "List of backups"
+      content:
+        application/json:
+          schema:
+            type: "array"
+            items:
+              $ref: "../../schemas/backup.yaml"
+
+    "401":
+      description: "Unauthorized - missing or invalid auth headers, or not logged in."
+      content:
+        application/json:
+          schema:
+            $ref: "../../schemas/error.yaml"
+
+    "403":
+      description: "Forbidden - user does not have required privileges."
+      content:
+        application/json:
+          schema:
+            $ref: "../../schemas/error.yaml"
+
+    "404":
+      description: "Not Found"
+      content:
+        application/json:
+          schema:
+            $ref: "../../schemas/error.yaml"

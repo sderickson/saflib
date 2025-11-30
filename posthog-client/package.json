@@ -1,5 +1,5 @@
 {
-  "name": "@vendata/posthog-client",
+  "name": "@saflib/posthog-client",
   "description": "Posthog for web clients",
   "private": true,
   "type": "module",

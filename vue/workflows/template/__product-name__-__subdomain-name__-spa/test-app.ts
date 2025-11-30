@@ -1,7 +1,7 @@
 import { mountWithPlugins } from "@saflib/vue/testing";
 import type { ComponentMountingOptions } from "@vue/test-utils";
 import type { Component } from "vue";
-import { router } from "./router.ts";
+import { create__SubdomainName__Router } from "./router.ts";
 import { __subdomain_name___strings } from "./strings.ts";
 import { identityServiceFakeHandlers } from "@saflib/auth/fakes";
 
@@ -10,7 +10,7 @@ export const mountTestApp = <C extends Component>(
   options: ComponentMountingOptions<C> = {},
 ) => {
   return mountWithPlugins(Component, options, {
-    router,
+    router: create__SubdomainName__Router(),
     i18nMessages: {
       ...__subdomain_name___strings,
     },

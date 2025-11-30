@@ -1,0 +1,46 @@
+type: object
+properties:
+  id:
+    type: string
+    description: The backup ID parsed from the filename
+    example: "backup-20240101-120000"
+  type:
+    type: string
+    enum:
+      - "manual"
+      - "automatic"
+    description: The type of backup, parsed from the filename
+    example: "automatic"
+  timestamp:
+    type: string
+    format: date-time
+    description: ISO 8601 timestamp parsed from the filename
+    example: "2024-01-01T12:00:00Z"
+  size:
+    type: number
+    description: File size in bytes
+    example: 1048576
+    minimum: 0
+  path:
+    type: string
+    description: Full path to the backup file in object store
+    example: "backups/automatic/backup-20240101-120000.sql"
+  metadata:
+    type: object
+    description: Optional metadata fields for the backup
+    additionalProperties: true
+    properties:
+      source:
+        type: string
+        description: Source of the backup
+        example: "database"
+      version:
+        type: string
+        description: Version of the backup format
+        example: "1.0"
+required:
+  - id
+  - type
+  - timestamp
+  - size
+  - path

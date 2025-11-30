@@ -1,6 +1,7 @@
 import { addNewLinesToString } from "../strings.ts";
 import { type AnyMachineSnapshot, type AnyActor } from "xstate";
 import type { ChecklistItem, WorkflowContext, WorkflowInput } from "./types.ts";
+import { getWorkflowLogger } from "./store.ts";
 
 /**
  * Convenience function. Use with xstate's `waitFor` to wait for the workflow to halt, because it has prompted the agent to do something.
@@ -50,18 +51,29 @@ export const promptWorkflow = (actor: AnyActor) => {
  * Convenience function to continue a workflow which has halted because a prompt was shown. Signals every active actor to "continue".
  */
 export const continueWorkflow = (actor: AnyActor) => {
-  const snapshot = actor.getSnapshot();
+  const logger = getWorkflowLogger();
+  const activeActors = getActiveActors(actor);
+  if (!activeActors.length) {
+    throw new Error("No active actors found, could not continue workflow");
+  }
+  const lastActor = activeActors[activeActors.length - 1];
+  logger.info(`Continuing workflow with actor ${lastActor.id}`);
+  lastActor.send({ type: "continue" });
+};
+
+const getActiveActors = (actor: AnyActor): AnyActor[] => {
+  let activeActors: AnyActor[] = [];
   if (actor.getSnapshot().status === "active") {
-    actor.send({ type: "continue" });
+    activeActors.push(actor);
   }
-  if (!snapshot.children) {
-    return;
+  const children = actor.getSnapshot().children as Record<string, AnyActor>;
+  if (!children) {
+    return activeActors;
   }
-  Object.values(snapshot.children as Record<string, AnyActor>).forEach(
-    (child) => {
-      continueWorkflow(child);
-    },
-  );
+  Object.values(children).forEach(child => {
+    activeActors = [...activeActors, ...getActiveActors(child)];
+  });
+  return activeActors;
 };
 
 /**

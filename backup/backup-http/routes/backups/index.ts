@@ -1,0 +1,32 @@
+import express from "express";
+import { createScopedMiddleware } from "@saflib/express";
+import { jsonSpec } from "@saflib/backup-spec";
+import { createListHandler } from "./list.ts";
+import { createCreateHandler } from "./create.ts";
+import { createDeleteHandler } from "./delete.ts";
+import { createRestoreHandler } from "./restore.ts";
+import type { ObjectStore } from "@saflib/object-store";
+import type { Readable } from "stream";
+
+export const createBackupsRouter = (
+  backupFn: () => Promise<Readable>,
+  restoreFn: ((backupStream: Readable) => Promise<void>) | undefined,
+  objectStore: ObjectStore,
+) => {
+  const router = express.Router();
+
+  router.use(
+    createScopedMiddleware({
+      apiSpec: jsonSpec,
+    }),
+  );
+
+  router.get("/backups", createListHandler(objectStore));
+  router.post("/backups", createCreateHandler(backupFn, objectStore));
+  if (restoreFn) {
+    router.post("/backups/:backupId/restore", createRestoreHandler(backupFn, restoreFn, objectStore));
+  }
+  router.delete("/backups/:backupId", createDeleteHandler(objectStore));
+
+  return router;
+};

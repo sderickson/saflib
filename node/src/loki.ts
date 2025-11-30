@@ -13,7 +13,8 @@ export const addLokiTransport = () => {
     throw new Error("Service name is not set");
   }
   if (!typedEnv.LOKI_HOSTNAME || !typedEnv.LOKI_PORT) {
-    throw new Error("Loki hostname and port required");
+    console.warn("Loki hostname and port not provided; logs will not be sent to Loki");
+    return;
   }
   addTransport(
     new LokiTransport({

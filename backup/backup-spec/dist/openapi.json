@@ -1,0 +1,467 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "backup API",
+    "version": "1.0.0",
+    "description": "API specification for the backup service"
+  },
+  "paths": {
+    "/backups": {
+      "get": {
+        "summary": "List all backups",
+        "operationId": "listBackups",
+        "responses": {
+          "200": {
+            "description": "List of backups",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/backup"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - missing or invalid auth headers, or not logged in.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - user does not have required privileges.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a manual backup",
+        "operationId": "createBackup",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "description": {
+                    "type": "string",
+                    "description": "Optional description of the backup",
+                    "example": "Manual backup before major update"
+                  },
+                  "tags": {
+                    "type": "array",
+                    "description": "Optional tags for categorizing the backup",
+                    "items": {
+                      "type": "string"
+                    },
+                    "example": [
+                      "pre-update",
+                      "important"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Backup created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/backup"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - missing or invalid auth headers, or not logged in.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - user does not have required privileges.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict - backup with this ID already exists",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/backups/{backupId}": {
+      "delete": {
+        "summary": "Delete a manual backup",
+        "operationId": "deleteBackup",
+        "parameters": [
+          {
+            "name": "backupId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The backup ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Backup deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Backup deleted successfully"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - missing or invalid auth headers, or not logged in.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - user does not have required privileges.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Backup not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/backups/{backupId}/restore": {
+      "post": {
+        "summary": "Restore from a backup",
+        "operationId": "restoreBackup",
+        "parameters": [
+          {
+            "name": "backupId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The backup ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Backup restored successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Backup restored successfully"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - missing or invalid auth headers, or not logged in.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - user does not have required privileges.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Backup not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Error": {
+        "$ref": "#/components/schemas/error"
+      },
+      "Backup": {
+        "$ref": "#/components/schemas/backup"
+      },
+      "ProductEvent": {
+        "$ref": "#/components/schemas/index"
+      },
+      "backup": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The backup ID parsed from the filename",
+            "example": "backup-20240101-120000"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "manual",
+              "automatic"
+            ],
+            "description": "The type of backup, parsed from the filename",
+            "example": "automatic"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "ISO 8601 timestamp parsed from the filename",
+            "example": "2024-01-01T12:00:00Z"
+          },
+          "size": {
+            "type": "number",
+            "description": "File size in bytes",
+            "example": 1048576,
+            "minimum": 0
+          },
+          "path": {
+            "type": "string",
+            "description": "Full path to the backup file in object store",
+            "example": "backups/automatic/backup-20240101-120000.sql"
+          },
+          "metadata": {
+            "type": "object",
+            "description": "Optional metadata fields for the backup",
+            "additionalProperties": true,
+            "properties": {
+              "source": {
+                "type": "string",
+                "description": "Source of the backup",
+                "example": "database"
+              },
+              "version": {
+                "type": "string",
+                "description": "Version of the backup format",
+                "example": "1.0"
+              }
+            }
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "timestamp",
+          "size",
+          "path"
+        ]
+      },
+      "error": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "A short, machine-readable error code, for when HTTP status codes are not sufficient."
+          },
+          "message": {
+            "type": "string",
+            "description": "A human-readable description of the error.",
+            "example": "The requested resource could not be found."
+          }
+        }
+      },
+      "login": {
+        "type": "object",
+        "properties": {
+          "event": {
+            "type": "string",
+            "enum": [
+              "login"
+            ]
+          },
+          "context": {
+            "type": "object",
+            "properties": {
+              "method": {
+                "type": "string",
+                "enum": [
+                  "email"
+                ]
+              }
+            }
+          }
+        },
+        "required": [
+          "event",
+          "context"
+        ]
+      },
+      "signup": {
+        "type": "object",
+        "properties": {
+          "event": {
+            "type": "string",
+            "enum": [
+              "signup"
+            ]
+          },
+          "context": {
+            "type": "object",
+            "properties": {
+              "method": {
+                "type": "string",
+                "enum": [
+                  "email"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "signup_view": {
+        "type": "object",
+        "properties": {
+          "event": {
+            "type": "string",
+            "enum": [
+              "signup_view"
+            ]
+          }
+        }
+      },
+      "verify_email": {
+        "type": "object",
+        "properties": {
+          "event": {
+            "type": "string",
+            "enum": [
+              "verify_email"
+            ]
+          }
+        }
+      },
+      "index": {
+        "type": "object",
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/login"
+          },
+          {
+            "$ref": "#/components/schemas/signup"
+          },
+          {
+            "$ref": "#/components/schemas/signup_view"
+          },
+          {
+            "$ref": "#/components/schemas/verify_email"
+          }
+        ],
+        "properties": {
+          "event": {
+            "type": "string"
+          },
+          "client": {
+            "type": "string",
+            "description": "The frontend client that triggered the event. For web, it should be \"web-{spa-name}\"."
+          },
+          "view": {
+            "type": "string",
+            "description": "The page that triggered the event. For vue, it should be the route name provided by vue router."
+          },
+          "component": {
+            "type": "string",
+            "description": "The component that triggered the event. For vue, it should be the component name."
+          }
+        },
+        "required": [
+          "event"
+        ]
+      }
+    }
+  }
+}

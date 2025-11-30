@@ -116,6 +116,7 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
         
         * Make sure to implement proper test cases that cover both success and error scenarios.
         * Do not do any mocking. Databases are in memory, and integrations have fake implementations. Do not use vitest's mock!
+        * Do not test 500 or 400 responses. Just success and 401+ responses.
         
         Review ${context.docFiles?.testingGuide} for more details.`,
       }),
@@ -124,7 +125,9 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
           const content = readFileSync(context.copiedFiles!.test, "utf-8");
           const testLength = content.split("\n").length;
           if (testLength > 300) {
-            return `Test file is too long at ${testLength} lines. Try to stick to one test per status code returned. Also look for ways to reduce repetitive code, for example by reusing stub data. Do not test 400 responses.`;
+            return `Test file is too long at ${testLength} lines.
+            - Try to stick to one test per status code returned, and skip testing 500 responses or 400 (openapi validation) responses.
+            - If you are creating mocks or fake implementations, move those to a shared file, or to the appropriate library (libraries should provide their own mocks and fake implementations).`;
           }
           return Promise.resolve(undefined);
         },

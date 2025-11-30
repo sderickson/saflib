@@ -105,9 +105,9 @@ export const parsePackageName = (
     serviceName = parts[0];
     sharedPackagePrefix = serviceName;
   } else if (parts.length === 2) {
-    organizationName = parts[0];
+    organizationName = parts[0].replace("@", "");
     serviceName = parts[1];
-    sharedPackagePrefix = organizationName + "/" + serviceName;
+    sharedPackagePrefix = "@" + organizationName + "/" + serviceName;
   } else {
     throw new Error(`Invalid package name: ${packageName}`);
   }
