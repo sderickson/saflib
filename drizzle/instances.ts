@@ -225,26 +225,45 @@ export class DbManager<S extends Schema, C extends Config> {
       throw new Error("Cannot restore: database is in-memory");
     }
 
-    log.info(`Restoring database from stream to: ${dbPath}`);
+    const tempPath = `${dbPath}.restore.${randomUUID()}`;
+    log.info(`Restoring database from stream to temporary file: ${tempPath}`);
 
-    const writeStream = fs.createWriteStream(dbPath);
+    const writeStream = fs.createWriteStream(tempPath);
     
     return new Promise((resolve, reject) => {
-      stream.on("error", (error) => {
+      stream.on("error", async (error) => {
         writeStream.destroy();
+        try {
+          await fs.promises.unlink(tempPath);
+        } catch {
+        }
         log.error(`Stream error during restore: ${error}`);
         reject(error);
       });
 
-      writeStream.on("error", (error) => {
+      writeStream.on("error", async (error) => {
         stream.destroy();
+        try {
+          await fs.promises.unlink(tempPath);
+        } catch {
+        }
         log.error(`Write error during restore: ${error}`);
         reject(error);
       });
 
-      writeStream.on("finish", () => {
-        log.info(`Database restored successfully to: ${dbPath}`);
-        resolve();
+      writeStream.on("finish", async () => {
+        try {
+          await fs.promises.rename(tempPath, dbPath);
+          log.info(`Database restored successfully to: ${dbPath}`);
+          resolve();
+        } catch (error) {
+          try {
+            await fs.promises.unlink(tempPath);
+          } catch {
+          }
+          log.error(`Failed to rename temporary file: ${error}`);
+          reject(error);
+        }
       });
 
       stream.pipe(writeStream);
