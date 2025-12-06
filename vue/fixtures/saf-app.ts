@@ -1,4 +1,4 @@
-import { expect, type Page } from "@playwright/test";
+import { expect, type Page, test } from "@playwright/test";
 import {
   getByString as playwrightGetByString,
   tightAndroidViewport,
@@ -60,6 +60,32 @@ export class SafAppFixture {
    */
   async attachScreenshot(options: ScreenshotOptions = {}): Promise<void> {
     await playwrightAttachScreenshot(this.page, options);
+  }
+
+  /**
+   * Execute a test step with automatic screenshot on error.
+   * Wraps test.step and automatically attaches a screenshot if the step fails,
+   * then rethrows the error.
+   * @param title - The step title
+   * @param fn - The step function to execute
+   * @returns The result of the step function
+   */
+  async step<T>(
+    title: string,
+    fn: () => Promise<T>,
+  ): Promise<T> {
+    return test.step(title, async () => {
+      try {
+        const result = await fn();
+        // Attach screenshot on success too for visual record
+        await this.attachScreenshot();
+        return result;
+      } catch (error) {
+        // Attach screenshot on error before rethrowing
+        await this.attachScreenshot();
+        throw error;
+      }
+    });
   }
 }
 
