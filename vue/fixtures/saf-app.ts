@@ -63,9 +63,10 @@ export class SafAppFixture {
   }
 
   /**
-   * Execute a test step with automatic screenshot on error.
-   * Wraps test.step and automatically attaches a screenshot if the step fails,
-   * then rethrows the error.
+   * Execute a test step with automatic screenshot capture.
+   * Wraps test.step and automatically attaches a screenshot after the step completes
+   * (on both success and failure). On error, the screenshot is captured before
+   * the error is rethrown with additional context.
    * @param title - The step title
    * @param fn - The step function to execute
    * @returns The result of the step function
@@ -77,12 +78,16 @@ export class SafAppFixture {
     return test.step(title, async () => {
       try {
         const result = await fn();
-        // Attach screenshot on success too for visual record
+        // Attach screenshot on success for visual record
         await this.attachScreenshot();
         return result;
       } catch (error) {
         // Attach screenshot on error before rethrowing
         await this.attachScreenshot();
+        // Enhance error message with step context
+        if (error instanceof Error) {
+          error.message = `[Step: ${title}] ${error.message}`;
+        }
         throw error;
       }
     });
