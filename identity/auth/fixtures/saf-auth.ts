@@ -1,8 +1,6 @@
 import type { Page } from "@playwright/test";
 import { getUniqueEmail, getByString } from "@saflib/playwright";
 import { authAppStrings } from "@saflib/auth/strings";
-import { linkToHref } from "@saflib/links";
-import { authLinks } from "@saflib/auth-links";
 import { expect } from "@playwright/test";
 
 export type SafAuthFixtureOptions = {
