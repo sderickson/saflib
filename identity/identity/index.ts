@@ -47,7 +47,7 @@ export async function startIdentityService(
       ),
     });
 
-    log.info("Starting express server...");
+    log.info(`Starting express server at ${typedEnv.IDENTITY_SERVICE_HTTP_HOST}`);
     const app = createApp({ dbKey, callbacks: options?.callbacks ?? {} });
     const port = parseInt(
       typedEnv.IDENTITY_SERVICE_HTTP_HOST.split(":")[1] || "80",
