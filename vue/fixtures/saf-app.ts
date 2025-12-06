@@ -4,9 +4,9 @@ import {
   tightAndroidViewport,
   cleanScreenshots as playwrightCleanScreenshots,
   attachScreenshot as playwrightAttachScreenshot,
-  type ElementString,
   type ScreenshotOptions,
 } from "@saflib/playwright";
+import type { ElementString } from "@saflib/utils";
 
 export class SafAppFixture {
   constructor(private page: Page) {}
@@ -62,3 +62,18 @@ export class SafAppFixture {
     await playwrightAttachScreenshot(this.page, options);
   }
 }
+
+/**
+ * Playwright fixture function for SafAppFixture that automatically sets up:
+ * - Clean screenshots
+ * - Tight Android viewport
+ */
+export const safAppFixture = async (
+  { page }: { page: Page },
+  use: (fixture: SafAppFixture) => Promise<void>,
+) => {
+  const fixture = new SafAppFixture(page);
+  await fixture.cleanScreenshots();
+  await fixture.useTightAndroidViewport();
+  await use(fixture);
+};
