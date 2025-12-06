@@ -1,1 +1,1 @@
-export { safAppFixture, type SafAppFixture } from "./saf-app";
+export { SafAppFixture } from "./saf-app";
