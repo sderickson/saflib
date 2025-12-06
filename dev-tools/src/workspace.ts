@@ -216,15 +216,28 @@ export function getAllPackageWorkspaceDependencies(
   packageName: packageName,
   monorepoContext: MonorepoContext,
 ): Set<packageName> {
-  let flattenedDependencies = new Set(
-    monorepoContext.workspaceDependencyGraph[packageName],
-  );
-  for (const dependency of flattenedDependencies) {
-    flattenedDependencies = flattenedDependencies.union(
-      getAllPackageWorkspaceDependencies(dependency, monorepoContext),
-    );
+  const visited = new Set<packageName>();
+  
+  function collectDependencies(pkgName: packageName): Set<packageName> {
+    if (visited.has(pkgName)) {
+      return new Set();
+    }
+    visited.add(pkgName);
+    
+    const directDependencies = monorepoContext.workspaceDependencyGraph[pkgName] ?? [];
+    let flattenedDependencies = new Set(directDependencies);
+    
+    for (const dependency of directDependencies) {
+      const transitiveDependencies = collectDependencies(dependency);
+      for (const transitiveDep of transitiveDependencies) {
+        flattenedDependencies.add(transitiveDep);
+      }
+    }
+    
+    return flattenedDependencies;
   }
-  return flattenedDependencies;
+  
+  return collectDependencies(packageName);
 }
 
 /**
