@@ -73,7 +73,7 @@ export const AddSpaWorkflowDefinition = defineWorkflow<
     const targetDir = path.join(input.cwd, "clients", input.productName);
     const currentPackageName = getPackageName(input.cwd);
     const currentPackageOrgName =
-      "@" +parsePackageName(currentPackageName).organizationName;
+      "@" + parsePackageName(currentPackageName).organizationName;
     const spaPackageName = `${currentPackageOrgName}/${input.productName}-${input.subdomainName}-spa`;
     const clientsPackageName = `${currentPackageOrgName}/${input.productName}-clients`;
     const linksPackageName = `${currentPackageOrgName}/${input.productName}-${input.subdomainName}-links`;
@@ -97,6 +97,7 @@ export const AddSpaWorkflowDefinition = defineWorkflow<
 
   templateFiles: {
     app: path.join(spaDir, "__SubdomainName__App.vue"),
+    fixtures: path.join(spaDir, "fixtures.ts"),
     i18n: path.join(spaDir, "i18n.ts"),
     main: path.join(spaDir, "main.ts"),
     packageJson: path.join(spaDir, "package.json"),
@@ -132,10 +133,7 @@ export const AddSpaWorkflowDefinition = defineWorkflow<
           "template-package-clients-common",
           context.commonPackageName,
         );
-        line = line.replace(
-          "template-package-spec",
-          context.serviceSpecName,
-        );
+        line = line.replace("template-package-spec", context.serviceSpecName);
         return lineReplace(line);
       };
       return {
