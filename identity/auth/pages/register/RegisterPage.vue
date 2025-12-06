@@ -81,6 +81,7 @@
       block
       :disabled="!valid || isPending"
       :loading="isPending"
+      data-testid="register-button"
       @click="handleRegister"
     >
       {{ ctaText || t(register_page.register) }}

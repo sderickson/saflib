@@ -19,6 +19,9 @@ export const register_page = {
     label: "Confirm Password",
   },
   register: "Register",
+  register_button: {
+    "data-testid": "register-button",
+  },
   already_have_account: "Log in instead",
   email_already_exists: "Email already exists",
   failed_to_register: "Failed to register",

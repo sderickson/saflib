@@ -1,4 +1,12 @@
 import { expect, type Page } from "@playwright/test";
+import {
+  getByString as playwrightGetByString,
+  tightAndroidViewport,
+  cleanScreenshots as playwrightCleanScreenshots,
+  attachScreenshot as playwrightAttachScreenshot,
+  type ElementString,
+  type ScreenshotOptions,
+} from "@saflib/playwright";
 
 export class SafAppFixture {
   constructor(private page: Page) {}
@@ -24,5 +32,33 @@ export class SafAppFixture {
       .locator("pre[data-testid='events']")
       .textContent();
     return events ? JSON.parse(events) : [];
+  }
+
+  /**
+   * Get an element by an ElementString. Use this as much as possible, as it really helps avoid spending a bunch of time debugging string matching issues.
+   */
+  getByString(stringThing: ElementString) {
+    return playwrightGetByString(this.page, stringThing);
+  }
+
+  /**
+   * Set the viewport size to tight Android dimensions for mobile testing.
+   */
+  async useTightAndroidViewport(): Promise<void> {
+    await this.page.setViewportSize(tightAndroidViewport);
+  }
+
+  /**
+   * Clean up screenshots from the previous test run. Call this at the beginning of your test.
+   */
+  async cleanScreenshots(): Promise<void> {
+    await playwrightCleanScreenshots();
+  }
+
+  /**
+   * Attach a screenshot to the test report. Use throughout tests to create a visual record of the user journey for easier review.
+   */
+  async attachScreenshot(options: ScreenshotOptions = {}): Promise<void> {
+    await playwrightAttachScreenshot(this.page, options);
   }
 }

@@ -5,6 +5,21 @@ import { linkToHref } from "@saflib/links";
 import { authLinks } from "@saflib/auth-links";
 import { expect } from "@playwright/test";
 
+export type SafAuthFixtureOptions = {
+  /**
+   * Base domain for the application (e.g., "power-up.docker.localhost").
+   */
+  domain: string;
+  /**
+   * Auth subdomain. Defaults to "auth".
+   */
+  authSubdomain?: string;
+  /**
+   * Admin subdomain. Defaults to "admin".
+   */
+  adminSubdomain?: string;
+};
+
 export type RegisterUserOptions = {
   /**
    * Email address to use for registration. If not provided, a unique email will be generated.
@@ -46,7 +61,26 @@ export type RegisterUserOptions = {
 };
 
 export class SafAuthFixture {
-  constructor(private page: Page) {}
+  private authSubdomain: string;
+  private adminSubdomain: string;
+  private domain: string;
+
+  constructor(
+    private page: Page,
+    options: SafAuthFixtureOptions,
+  ) {
+    this.domain = options.domain;
+    this.authSubdomain = options.authSubdomain || "auth";
+    this.adminSubdomain = options.adminSubdomain || "admin";
+  }
+
+  private getAuthUrl(path: string): string {
+    return `http://${this.authSubdomain}.${this.domain}${path}`;
+  }
+
+  private getAdminUrl(path: string): string {
+    return `http://${this.adminSubdomain}.${this.domain}${path}`;
+  }
 
   /**
    * Register a new user or login if the user already exists.
@@ -57,12 +91,7 @@ export class SafAuthFixture {
     const userEmail = options.email || getUniqueEmail();
     const password = options.password || "asdfasdf";
 
-    await this.page.setViewportSize({
-      width: 430,
-      height: 1000,
-    });
-
-    await this.page.goto("http://auth.power-up.docker.localhost/register");
+    await this.page.goto(this.getAuthUrl("/register"));
 
     // Fill in email
     await getByString(
@@ -90,11 +119,8 @@ export class SafAuthFixture {
       authAppStrings.saflib_register_page.confirm_password,
     ).fill(password);
 
-    // Click register button - try to find it by the register string
-    await getByString(
-      this.page,
-      authAppStrings.saflib_register_page.register,
-    ).click();
+    // Click register button using test id
+    await this.page.getByTestId("register-button").click();
 
     // Check for either "Verify Your Email" or "Email already exists"
     const result = await Promise.race([
@@ -115,20 +141,8 @@ export class SafAuthFixture {
       if (options.handleExistingEmail) {
         await options.handleExistingEmail(this.page, userEmail, password);
       } else {
-        // Default login flow
-        await this.page.goto(linkToHref(authLinks.login));
-        await getByString(
-          this.page,
-          authAppStrings.saflib_login_page.email,
-        ).fill(userEmail);
-        await this.page
-          .getByRole("textbox", { name: "Password Password" })
-          .fill(password);
-        await getByString(
-          this.page,
-          authAppStrings.saflib_login_page.log_in,
-        ).click();
-        await getByString(this.page, "Welcome").waitFor();
+        // Default login flow - reuse login function
+        await this.login(userEmail, password);
       }
     } else if (result === "verify") {
       // Continue with email verification flow
@@ -142,7 +156,7 @@ export class SafAuthFixture {
           await getByString(this.page, "Verify Your Email").waitFor();
 
           await this.page.goto(
-            `http://admin.power-up.docker.localhost/mock-emails/last?subdomain=identity`,
+            `${this.getAdminUrl("/mock-emails/last")}?subdomain=identity`,
           );
           await expect(
             this.page.getByRole("heading", {
@@ -182,7 +196,7 @@ export class SafAuthFixture {
    * @param password - Password
    */
   async login(email: string, password: string): Promise<void> {
-    await this.page.goto(linkToHref(authLinks.login));
+    await this.page.goto(this.getAuthUrl("/login"));
     await getByString(
       this.page,
       authAppStrings.saflib_login_page.email,

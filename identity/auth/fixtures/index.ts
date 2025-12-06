@@ -1,1 +1,5 @@
-export { SafAuthFixture, type RegisterUserOptions } from "./saf-auth";
+export {
+  SafAuthFixture,
+  type RegisterUserOptions,
+  type SafAuthFixtureOptions,
+} from "./saf-auth";
