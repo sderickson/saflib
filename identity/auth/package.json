@@ -5,6 +5,7 @@
   "exports": {
     ".": "./index.ts",
     "./components": "./components/index.ts",
+    "./fixtures": "./fixtures/index.ts",
     "./strings": "./strings.ts",
     "./i18n": "./i18n.ts",
     "./fakes": "./fakes.ts"

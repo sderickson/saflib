@@ -5,6 +5,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./components": "./components/index.ts",
+    "./fixtures": "./fixtures/index.ts",
     "./testing": "./testing/index.ts",
     "./tsconfig.app.json": "./tsconfig.app.json",
     "./workflows": "./workflows/index.ts",
