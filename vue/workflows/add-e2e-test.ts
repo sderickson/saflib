@@ -83,7 +83,9 @@ export const AddE2eTestWorkflowDefinition = defineWorkflow<
         * Use fixtures from this package and the adjacent "common" package.
         * Use the product fixture's step() method to create test steps with automatic screenshot capture.
         * Use utilities from @saflib/playwright, such as getByString to locate elements using i18n strings.
-        * Use the product fixture's assertEvent() method to assert that certain event types were fired.`,
+        * Use the product fixture's assertEvent() method to assert that certain event types were fired.
+        * Use "npm run typecheck" for easy fixes.
+        * Use "npm run test:e2e" to run the test and see the results.`,
     })),
 
     step(CommandStepMachine, () => ({
