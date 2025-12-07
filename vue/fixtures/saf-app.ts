@@ -9,7 +9,7 @@ import {
 import type { ElementString } from "@saflib/utils";
 
 export class SafAppFixture {
-  constructor(private page: Page) {}
+  constructor(public readonly page: Page) {}
 
   /**
    * Assert that a product event was fired.
