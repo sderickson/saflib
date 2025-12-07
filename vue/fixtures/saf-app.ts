@@ -20,7 +20,7 @@ export class SafAppFixture {
       .locator("pre[data-testid='events']")
       .textContent();
     const parsedEvents = events ? JSON.parse(events) : [];
-    expect(parsedEvents.includes(event), `Event ${event} found`).toBe(true);
+    expect(parsedEvents.includes(event), `Event ${event} found among ${parsedEvents}`).toBe(true);
   }
 
   /**
