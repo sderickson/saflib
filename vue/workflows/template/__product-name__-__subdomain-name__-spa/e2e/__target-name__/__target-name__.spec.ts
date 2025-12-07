@@ -1,7 +1,7 @@
 import { test as base } from "@playwright/test";
 // import { getUniqueId } from "@saflib/playwright";
 // TODO: Import the product fixture from the common package
-// Example: import { __productName__Fixture } from "__product-name__-clients-common/fixtures";
+// Example: import { productNameFixture } from "product-name-clients-common/fixtures";
 
 // TODO: Import any page fixtures needed for this test, usually from the same package
 
@@ -9,7 +9,7 @@ import { test as base } from "@playwright/test";
 type __TargetName__Fixtures = {
   // TODO: Add fixture properties here
   // Example:
-  // __productName__: __ProductName__Fixture;
+  // productName: productNameFixture;
   // somePage: SomePageFixture;
 };
 
@@ -17,18 +17,18 @@ type __TargetName__Fixtures = {
 const test = base.extend<__TargetName__Fixtures>({
   // TODO: Add fixture definitions here
   // Example:
-  // __productName__: __productName__Fixture,
+  // productName: productNameFixture,
   // somePage: somePageFixture,
 });
 
 test("__target-name__", async ({}) => {
   // TODO: Destructure fixtures from the test parameter, e.g.:
-  // async ({ __productName__, somePage }) => {
+  // async ({ productName, somePage }) => {
   // TODO: Implement the test workflow
   // Example:
   // const uniqueId = getUniqueId();
   //
-  // await __productName__.step("Step description", async () => {
+  // await productName.step("Step description", async () => {
   //   // Test implementation
   // });
 });
