@@ -8,14 +8,14 @@ import {
 } from "@saflib/playwright";
 import type { ElementString } from "@saflib/utils";
 
-export class SafAppFixture {
+export class SafAppFixture<T = string> {
   constructor(public readonly page: Page) {}
 
   /**
    * Assert that a product event was fired.
    * @param event - The event name to check for
    */
-  async assertEvent(event: string): Promise<void> {
+  async assertEvent(event: T): Promise<void> {
     const events = await this.page
       .locator("pre[data-testid='events']")
       .textContent();
@@ -27,7 +27,7 @@ export class SafAppFixture {
    * Get all product events that have been fired.
    * @returns Array of event names
    */
-  async getEvents(): Promise<string[]> {
+  async getEvents(): Promise<T[]> {
     const events = await this.page
       .locator("pre[data-testid='events']")
       .textContent();
