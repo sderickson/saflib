@@ -21,7 +21,8 @@ const test = base.extend<__TargetName__Fixtures>({
   // somePage: somePageFixture,
 });
 
-test("__target-name__", async ({}) => {
+// @ts-expect-error - TODO: Update to what fixtures are actually used
+test("__target-name__", async ({ page }) => {
   // TODO: Destructure fixtures from the test parameter, e.g.:
   // async ({ productName, somePage }) => {
   // TODO: Implement the test workflow
@@ -29,6 +30,7 @@ test("__target-name__", async ({}) => {
   // const uniqueId = getUniqueId();
   //
   // await productName.step("Step description", async () => {
-  //   // Test implementation
+  //   // Test implementation, then assert any product events that were fired.
+  //   await productName.assertEvent("event-name");
   // });
 });

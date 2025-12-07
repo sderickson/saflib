@@ -83,7 +83,7 @@ export const AddE2eTestWorkflowDefinition = defineWorkflow<
         * Use fixtures from this package and the adjacent "common" package.
         * Use the product fixture's step() method to create test steps with automatic screenshot capture.
         * Use utilities from @saflib/playwright, such as getByString to locate elements using i18n strings.
-        * Implement a complete user workflow that tests the functionality end-to-end.`,
+        * Use the product fixture's assertEvent() method to assert that certain event types were fired.`,
     })),
 
     step(CommandStepMachine, () => ({
