@@ -65,7 +65,6 @@ export const chooseVuetifySelectOption = async (
   option: string,
 ) => {
   await page.getByRole("combobox").filter({ hasText: label }).click();
-  await page.pause();
   try {
     await page.getByRole("option", { name: option, exact: true }).click();
   } catch (error) {
