@@ -1,7 +1,6 @@
 import {
   CopyStepMachine,
   UpdateStepMachine,
-  PromptStepMachine,
   defineWorkflow,
   step,
   parsePath,
@@ -27,15 +26,15 @@ const input = [
   },
 ] as const;
 
-interface VueAddE2eTestWorkflowContext
+interface AddE2eTestWorkflowContext
   extends ParsePathOutput,
     ParsePackageNameOutput {
   targetDir: string;
 }
 
-export const VueAddE2eTestWorkflowDefinition = defineWorkflow<
+export const AddE2eTestWorkflowDefinition = defineWorkflow<
   typeof input,
-  VueAddE2eTestWorkflowContext
+  AddE2eTestWorkflowContext
 >({
   id: "vue/add-e2e-test",
 
