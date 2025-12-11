@@ -122,9 +122,11 @@ export const AddSpaPageWorkflowDefinition = defineWorkflow<
 
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "fixture",
-      promptMessage: `Update **${path.basename(context.copiedFiles!.fixture)}** to implement Playwright fixtures for this page:
+      promptMessage: `Update **${path.basename(context.copiedFiles!.fixture)}** to implement a Playwright fixture for this page:
       
-      * Add helper methods for interacting with this page in E2E tests.
+      * Write a class which has a constructor that takes a Page object and stores it as a readonly public property.
+      * Add helper methods for interacting with this page in E2E tests, for the key elements of the page.
+      * If the test needs to provide a value for a select option or a checkbox label or something like that, import the strings from the appropriate string file and check the value dynamically, with a helpful error message if the value is invalid.
       * Use getByString from @saflib/playwright to locate elements using strings from the page's strings file.
       * Export both the fixture class and the fixture function (following the pattern from other page fixtures).
       * Re-export them from the fixtures.ts file in the root of the package.`,
