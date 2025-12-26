@@ -52,6 +52,17 @@ interface CodeResult {
   };
 }
 
+interface Todo {
+  id: string;
+  content: string;
+  status:
+    | "TODO_STATUS_IN_PROGRESS"
+    | "TODO_STATUS_PENDING"
+    | "TODO_STATUS_COMPLETED";
+  createdAt: string;
+  updatedAt: string;
+}
+
 interface CursorToolCallLog {
   type: "tool_call";
   session_id: string;
@@ -87,7 +98,9 @@ interface CursorToolCallLog {
       };
     };
     updateTodosToolCall?: {
-      args: {};
+      args: {
+        todos: Todo[];
+      };
       result?: {
         success: {};
       };
@@ -293,10 +306,13 @@ export const executePromptWithCursor = async ({
             }
           }
         } else if (json.tool_call.updateTodosToolCall) {
+          const todos = json.tool_call.updateTodosToolCall.args.todos.map(
+            (todo) => todo.content,
+          );
           if (json.subtype === "started") {
-            printLineSlowly(`> Updating todos`);
+            printLineSlowly(`> Updating todos:\n > ${todos.join("\n > ")}`);
           } else if (json.subtype === "completed") {
-            printLineSlowly(`> Todos updated`);
+            printLineSlowly(`> Todos updated:\n > ${todos.join("\n > ")}`);
           }
         } else if (json.tool_call.shellToolCall) {
           if (json.subtype === "started") {
