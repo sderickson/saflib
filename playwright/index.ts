@@ -65,5 +65,18 @@ export const chooseVuetifySelectOption = async (
   option: string,
 ) => {
   await page.getByRole("combobox").filter({ hasText: label }).click();
-  await page.getByRole("option", { name: option, exact: true }).click();
+  try {
+    await page.getByRole("option", { name: option, exact: true }).click();
+  } catch (error) {
+    const optionPromises = (await page.getByRole("option").all()).map(
+      (option) => option.textContent(),
+    );
+    const options = await Promise.all(optionPromises);
+    console.error(
+      `Option not found: ${option}, all options: ${options.join(", ")}`,
+    );
+    throw new Error(
+      `Option not found: ${option}, options: ${options.slice(0, 10).join(", ")}${options.length > 10 ? "..." : ""}`,
+    );
+  }
 };

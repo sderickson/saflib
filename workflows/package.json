@@ -17,6 +17,7 @@
     "pack": "rm -rf dist/src && rm -f dist/saflib-workflows-*.tgz && npm run build && cp -r docs dist/src && cp -r workflows dist/src && cp ./docs/README.md dist/README.md && cd dist && npm pack"
   },
   "dependencies": {
+    "@isaacs/brace-expansion": "^5.0.0",
     "commander": "^14.0.0",
     "minimatch": "^10.1.1",
     "xstate": "^5.19.3"

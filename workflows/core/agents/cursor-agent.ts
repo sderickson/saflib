@@ -59,7 +59,7 @@ interface CursorToolCallLog {
       };
     };
     editToolCall?: {
-      args: {
+      args?: {
         path: string;
         content: string;
       };
@@ -244,17 +244,17 @@ export const executePromptWithCursor = async ({
         } else if (json.tool_call.editToolCall) {
           if (json.subtype === "started") {
             printLineSlowly(
-              `> Writing file: ${relativePath(json.tool_call.editToolCall.args.path)}`,
+              `> Writing file: ${relativePath(json.tool_call.editToolCall.args?.path ?? "unknown path")}`,
             );
           }
           if (json.subtype === "completed") {
             if (json.tool_call.editToolCall.result?.success) {
               printLineSlowly(
-                `> File written: ${relativePath(json.tool_call.editToolCall.args.path)}`,
+                `> File written: ${relativePath(json.tool_call.editToolCall.args?.path ?? "unknown path")}`,
               );
             } else {
               printLineSlowly(
-                `> File write failed: ${relativePath(json.tool_call.editToolCall.args.path)}`,
+                `> File write failed: ${relativePath(json.tool_call.editToolCall.args?.path ?? "unknown path")}`,
               );
             }
           }

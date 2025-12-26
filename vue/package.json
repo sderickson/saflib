@@ -5,6 +5,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./components": "./components/index.ts",
+    "./fixtures": "./fixtures/index.ts",
     "./testing": "./testing/index.ts",
     "./tsconfig.app.json": "./tsconfig.app.json",
     "./workflows": "./workflows/index.ts",
@@ -20,6 +21,7 @@
     "@mdi/font": "^7.0.0",
     "@saflib/links": "*",
     "@saflib/monorepo": "*",
+    "@saflib/playwright": "*",
     "@saflib/sdk": "*",
     "@saflib/utils": "*",
     "@tanstack/vue-query": "^5.85.9",

@@ -4,6 +4,7 @@
   "type": "module",
   "exports": {
     ".": "./main.ts",
+    "./fixtures": "./fixtures.ts",
     "./strings": "./strings.ts"
   },
   "scripts": {

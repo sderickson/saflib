@@ -1,0 +1,21 @@
+{
+  "name": "@saflib/admin",
+  "description": "Admin utilities and pages for SAF applications",
+  "type": "module",
+  "exports": {
+    ".": "./index.ts",
+    "./fixtures": "./fixtures/index.ts",
+    "./strings": "./strings.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "vue-tsc -b"
+  },
+  "dependencies": {
+    "@saflib/cron-vue": "*",
+    "@saflib/email-vue": "*",
+    "@saflib/vue": "*"
+  }
+}
