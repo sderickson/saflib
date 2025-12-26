@@ -152,6 +152,11 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       - Incorporate the Layout exported from the ${context.sharedPackagePrefix}-clients-common package. This spa is "logged out".`,
     })),
 
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["run", "typecheck"],
+    })),
+
     step(CdStepMachine, ({ context }) => ({
       path: `./clients/${context.productName}/${context.productName}-auth-spa`,
     })),
@@ -165,6 +170,11 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       - Incorporate the Layout exported from the ${context.sharedPackagePrefix}-clients-common package. The app will need to get the 'useProfile' hook from @saflib/auth and use it to determine if the user is logged in or not to give to the layout.`,
     })),
 
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["run", "typecheck"],
+    })),
+
     step(CdStepMachine, ({ context }) => ({
       path: `./clients/${context.productName}/${context.productName}-app-spa`,
     })),
@@ -173,6 +183,11 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       prompt: `Set up the ${context.productName}-app-spa, integrating with the other spas.
       
       - Incorporate the Layout exported from the ${context.sharedPackagePrefix}-clients-common package. The app is always logged in.`,
+    })),
+
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["run", "typecheck"],
     })),
 
     step(CdStepMachine, ({ context }) => ({
@@ -205,6 +220,11 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       - Also, if logged in as admin, link to the admin spa's home page.`,
     })),
 
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["run", "typecheck"],
+    })),
+
     step(CdStepMachine, ({ context }) => ({
       path: `./deploy/${context.productName}-dev`,
     })),
@@ -221,6 +241,11 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       - Log out, make sure you end up back on the root spa's home page, then log in again.
       - Go to the account spa's home page, make sure you can change your password and update your profile.
     `,
+    })),
+
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["run", "down"],
     })),
   ],
 });
