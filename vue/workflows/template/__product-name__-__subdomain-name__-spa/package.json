@@ -15,6 +15,7 @@
     "typecheck": "vue-tsc -b"
   },
   "dependencies": {
+    "template-package-clients-common": "*",
     "@saflib/vue": "*",
     "@saflib/auth": "*",
     "vue-router": "*"

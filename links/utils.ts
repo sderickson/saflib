@@ -31,7 +31,7 @@ export const linkToHref = (link: Link, options?: LinkOptions): string => {
     }
     path = `${path}?${new URLSearchParams(options.params).toString()}`;
   }
-  return `${protocol}//${link.subdomain ? `${link.subdomain}.` : ""}${domain}${path}`;
+  return `${protocol}//${link.subdomain && link.subdomain !== "root" ? `${link.subdomain}.` : ""}${domain}${path}`;
 };
 
 /**

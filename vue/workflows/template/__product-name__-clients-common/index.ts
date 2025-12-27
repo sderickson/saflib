@@ -4,4 +4,3 @@ export * from "./composables/index.ts";
 export * from "./vuetify-config.ts";
 export * from "./utils/index.ts";
 export * from "./clients/index.ts";
-export * from "./fixtures/index.ts";

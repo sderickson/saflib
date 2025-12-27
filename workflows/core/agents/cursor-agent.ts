@@ -45,6 +45,24 @@ interface DirectoryTree {
   }[];
 }
 
+interface CodeResult {
+  codeBlock: {
+    relativeWorkspacePath: string;
+    content: string;
+  };
+}
+
+interface Todo {
+  id: string;
+  content: string;
+  status:
+    | "TODO_STATUS_IN_PROGRESS"
+    | "TODO_STATUS_PENDING"
+    | "TODO_STATUS_COMPLETED";
+  createdAt: string;
+  updatedAt: string;
+}
+
 interface CursorToolCallLog {
   type: "tool_call";
   session_id: string;
@@ -80,7 +98,9 @@ interface CursorToolCallLog {
       };
     };
     updateTodosToolCall?: {
-      args: {};
+      args: {
+        todos: Todo[];
+      };
       result?: {
         success: {};
       };
@@ -131,6 +151,18 @@ interface CursorToolCallLog {
       result?: {
         success: {
           results: string;
+          codeResults: CodeResult[];
+        };
+      };
+    };
+    readLintsToolCall?: {
+      args: {
+        paths: string[];
+      };
+      result?: {
+        success: {
+          totalFiles: number;
+          totalDiagnostics: number;
         };
       };
     };
@@ -274,10 +306,13 @@ export const executePromptWithCursor = async ({
             }
           }
         } else if (json.tool_call.updateTodosToolCall) {
+          const todos = json.tool_call.updateTodosToolCall.args.todos.map(
+            (todo) => todo.content,
+          );
           if (json.subtype === "started") {
-            printLineSlowly(`> Updating todos`);
+            printLineSlowly(`> Updating todos:\n > ${todos.join("\n > ")}`);
           } else if (json.subtype === "completed") {
-            printLineSlowly(`> Todos updated`);
+            printLineSlowly(`> Todos updated:\n > ${todos.join("\n > ")}`);
           }
         } else if (json.tool_call.shellToolCall) {
           if (json.subtype === "started") {
@@ -345,8 +380,22 @@ export const executePromptWithCursor = async ({
           }
           if (json.subtype === "completed") {
             if (json.tool_call.semSearchToolCall.result?.success) {
+              const paths =
+                json.tool_call.semSearchToolCall.result.success.codeResults.map(
+                  (result) => result.codeBlock.relativeWorkspacePath,
+                );
+              printLineSlowly(`> Search results:\n > ${paths.join("\n > ")}`);
+            }
+          }
+        } else if (json.tool_call.readLintsToolCall) {
+          if (json.subtype === "started") {
+            printLineSlowly(
+              `> Reading lints: ${json.tool_call.readLintsToolCall.args.paths.join(", ")}`,
+            );
+          } else if (json.subtype === "completed") {
+            if (json.tool_call.readLintsToolCall.result?.success) {
               printLineSlowly(
-                `> Search results: ${json.tool_call.semSearchToolCall.result.success.results}`,
+                `> Lints read: ${json.tool_call.readLintsToolCall.result.success.totalFiles} files, ${json.tool_call.readLintsToolCall.result.success.totalDiagnostics} diagnostics`,
               );
             }
           }
