@@ -194,11 +194,16 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       path: `./clients/${context.productName}/${context.productName}-account-spa`,
     })),
 
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["install", "@saflib/account-sdk"],
+    })),
+
     step(PromptStepMachine, ({ context }) => ({
       prompt: `Set up the ${context.productName}-account-spa, integrating with the other spas.
       
-      - Add to the router @saflib/account package's pages for changing password and updating profile.
-      - Include the @saflib/account/strings in the account-spa's strings file, so i18n works.
+      - Add to the router @saflib/account-sdk package's pages for changing password and updating profile.
+      - Include the @saflib/account-sdk/strings in the account-spa's strings file, so i18n works.
       - Update the home page to link to those pages.
       - Incorporate the Layout exported from the ${context.sharedPackagePrefix}-clients-common package. This spa is always logged in.`,
     })),
