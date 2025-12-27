@@ -239,19 +239,19 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       args: ["run", "up"],
     })),
 
-    step(PromptStepMachine, ({ context }) => ({
-      prompt: `The dev environment is running on http://${context.productName}.docker.localhost. Please make sure it works.
-      - Navigate to http://${context.productName}.docker.localhost and make sure it looks good.
-      - Create a test account, make sure you end up on the app spa's home page.
-      - Log out, make sure you end up back on the root spa's home page, then log in again.
-      - Go to the account spa's home page, make sure you can change your password and update your profile.
-    `,
-    })),
+    // step(PromptStepMachine, ({ context }) => ({
+    //   prompt: `The dev environment is running on http://${context.productName}.docker.localhost. Please make sure it works.
+    //   - Navigate to http://${context.productName}.docker.localhost and make sure it looks good.
+    //   - Create a test account, make sure you end up on the app spa's home page.
+    //   - Log out, make sure you end up back on the root spa's home page, then log in again.
+    //   - Go to the account spa's home page, make sure you can change your password and update your profile.
+    // `,
+    // })),
 
-    step(CommandStepMachine, () => ({
-      command: "npm",
-      args: ["run", "down"],
-    })),
+    // step(CommandStepMachine, () => ({
+    //   command: "npm",
+    //   args: ["run", "down"],
+    // })),
   ],
 });
 
