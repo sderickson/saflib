@@ -1,4 +1,4 @@
-import { start__ServiceName__Service } from "template-package-service";
+import { start__ServiceName__Service } from "./index.ts";
 import { addLokiTransport, collectSystemMetrics } from "@saflib/node";
 import { setServiceName } from "@saflib/node";
 import { validateEnv } from "@saflib/env";
@@ -14,4 +14,3 @@ collectSystemMetrics();
 
 start__ServiceName__IdentityService();
 start__ServiceName__Service();
-

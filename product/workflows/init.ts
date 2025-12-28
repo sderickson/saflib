@@ -64,37 +64,37 @@ export const InitProductWorkflowDefinition = defineWorkflow<
   },
 
   steps: [
-    // step(makeWorkflowMachine(InitServiceWorkflowDefinition), ({ context }) => ({
-    //   name: `${context.sharedPackagePrefix}-service`,
-    //   path: `./${context.productName}/service`,
-    // })),
-    // step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
-    //   productName: context.productName,
-    //   subdomainName: "root",
-    // })),
-    // step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
-    //   productName: context.productName,
-    //   subdomainName: "admin",
-    // })),
-    // step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
-    //   productName: context.productName,
-    //   subdomainName: "app",
-    // })),
-    // step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
-    //   productName: context.productName,
-    //   subdomainName: "auth",
-    // })),
-    // step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
-    //   productName: context.productName,
-    //   subdomainName: "account",
-    // })),
-    // step(
-    //   makeWorkflowMachine(IdentityInitWorkflowDefinition),
-    //   ({ context }) => ({
-    //     name: `${context.sharedPackagePrefix}-identity`,
-    //     path: `./${context.productName}/service/identity`,
-    //   }),
-    // ),
+    step(makeWorkflowMachine(InitServiceWorkflowDefinition), ({ context }) => ({
+      name: `${context.sharedPackagePrefix}-service`,
+      path: `./${context.productName}/service`,
+    })),
+    step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
+      productName: context.productName,
+      subdomainName: "root",
+    })),
+    step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
+      productName: context.productName,
+      subdomainName: "admin",
+    })),
+    step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
+      productName: context.productName,
+      subdomainName: "app",
+    })),
+    step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
+      productName: context.productName,
+      subdomainName: "auth",
+    })),
+    step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
+      productName: context.productName,
+      subdomainName: "account",
+    })),
+    step(
+      makeWorkflowMachine(IdentityInitWorkflowDefinition),
+      ({ context }) => ({
+        name: `${context.sharedPackagePrefix}-identity`,
+        path: `./${context.productName}/service/identity`,
+      }),
+    ),
     step(CopyStepMachine, ({ context }) => ({
       name: context.productName,
       targetDir: context.cwd,
