@@ -100,6 +100,13 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       targetDir: context.cwd,
       lineReplace: makeLineReplace(context),
     })),
+    step(CommandStepMachine, ({ context }) => ({
+      command: "rm",
+      args: [
+        "-rf",
+        `./${context.productName}/service/${context.productName}-service`,
+      ],
+    })),
     // step(CommandStepMachine, () => ({
     //   command: "npm",
     //   args: ["install"],
