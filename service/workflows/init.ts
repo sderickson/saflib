@@ -58,9 +58,9 @@ export const InitServiceWorkflowDefinition = defineWorkflow<
     const parsed = parsePackageName(input.name, {
       requiredSuffix: "-service",
     });
-    if (!input.path.endsWith(`/${parsed.serviceName}`)) {
+    if (!input.path.endsWith(`/service`)) {
       throw new Error(
-        `The path must end with the service name, e.g. ${path.dirname(input.path)}/${parsed.serviceName}`,
+        `The path must end with the service name, e.g. ${path.dirname(input.path)}/service`,
       );
     }
     const targetDir = path.join(
@@ -96,34 +96,31 @@ export const InitServiceWorkflowDefinition = defineWorkflow<
     // openapi
     step(makeWorkflowMachine(OpenapiInitWorkflowDefinition), ({ context }) => ({
       name: context.sharedPackagePrefix + "-spec",
-      path: path.join(context.serviceGroupDir, `${context.serviceName}-spec`),
+      path: path.join(context.serviceGroupDir, "spec"),
     })),
 
     // drizzle
     step(makeWorkflowMachine(DrizzleInitWorkflowDefinition), ({ context }) => ({
       name: context.sharedPackagePrefix + "-db",
-      path: path.join(context.serviceGroupDir, `${context.serviceName}-db`),
+      path: path.join(context.serviceGroupDir, "db"),
     })),
 
     // sdk
     step(makeWorkflowMachine(SdkInitWorkflowDefinition), ({ context }) => ({
       name: context.sharedPackagePrefix + "-sdk",
-      path: path.join(context.serviceGroupDir, `${context.serviceName}-sdk`),
+      path: path.join(context.serviceGroupDir, "sdk"),
     })),
 
     // common
     step(makeWorkflowMachine(InitCommonWorkflowDefinition), ({ context }) => ({
       name: context.sharedPackagePrefix + "-service-common",
-      path: path.join(
-        context.serviceGroupDir,
-        `${context.serviceName}-service-common`,
-      ),
+      path: path.join(context.serviceGroupDir, "common"),
     })),
 
     // express
     step(makeWorkflowMachine(ExpressInitWorkflowDefinition), ({ context }) => ({
       name: context.sharedPackagePrefix + "-http",
-      path: path.join(context.serviceGroupDir, `${context.serviceName}-http`),
+      path: path.join(context.serviceGroupDir, "http"),
     })),
 
     // // service itself
