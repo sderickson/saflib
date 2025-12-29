@@ -65,74 +65,74 @@ export const InitProductWorkflowDefinition = defineWorkflow<
   },
 
   steps: [
-    step(CommandStepMachine, ({ context }) => {
-      // hack to add the product to the workspaces w/out deps
-      // probably the makings of a new workflow step here
-      const packageJson = JSON.parse(
-        fs.readFileSync(path.join(context.cwd, "package.json"), "utf8"),
-      );
-      const newWorkspaces = [
-        ...packageJson.workspaces,
-        `${context.productName}/**`,
-      ];
-      newWorkspaces.sort();
-      packageJson.workspaces = newWorkspaces;
-      fs.writeFileSync(
-        path.join(context.cwd, "package.json"),
-        JSON.stringify(packageJson, null, 2),
-      );
-      return {
-        command: "npm",
-        args: ["exec", "prettier", "--", "package.json", "--write"],
-      };
-    }),
-    step(makeWorkflowMachine(InitServiceWorkflowDefinition), ({ context }) => ({
-      name: `${context.sharedPackagePrefix}-service`,
-      path: `./${context.productName}/service`,
-    })),
-    step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
-      productName: context.productName,
-      subdomainName: "root",
-    })),
-    step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
-      productName: context.productName,
-      subdomainName: "admin",
-    })),
-    step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
-      productName: context.productName,
-      subdomainName: "app",
-    })),
-    step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
-      productName: context.productName,
-      subdomainName: "auth",
-    })),
-    step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
-      productName: context.productName,
-      subdomainName: "account",
-    })),
-    step(
-      makeWorkflowMachine(IdentityInitWorkflowDefinition),
-      ({ context }) => ({
-        name: `${context.sharedPackagePrefix}-identity`,
-        path: `./${context.productName}/service/identity`,
-      }),
-    ),
-    step(CopyStepMachine, ({ context }) => ({
-      name: context.productName,
-      targetDir: context.cwd,
-      lineReplace: makeLineReplace(context),
-    })),
-    step(CommandStepMachine, ({ context }) => ({
-      command: "rm",
-      args: [
-        "-rf",
-        `./${context.productName}/service/${context.productName}-service`,
-      ],
-    })),
-    // step(CommandStepMachine, () => ({
-    //   command: "npm",
-    //   args: ["install"],
+    // step(CommandStepMachine, ({ context }) => {
+    //   // hack to add the product to the workspaces w/out deps
+    //   // probably the makings of a new workflow step here
+    //   const packageJson = JSON.parse(
+    //     fs.readFileSync(path.join(context.cwd, "package.json"), "utf8"),
+    //   );
+    //   const newWorkspaces = [
+    //     ...packageJson.workspaces,
+    //     `${context.productName}/**`,
+    //   ];
+    //   newWorkspaces.sort();
+    //   packageJson.workspaces = newWorkspaces;
+    //   fs.writeFileSync(
+    //     path.join(context.cwd, "package.json"),
+    //     JSON.stringify(packageJson, null, 2),
+    //   );
+    //   return {
+    //     command: "npm",
+    //     args: ["exec", "prettier", "--", "package.json", "--write"],
+    //   };
+    // }),
+    // step(makeWorkflowMachine(InitServiceWorkflowDefinition), ({ context }) => ({
+    //   name: `${context.sharedPackagePrefix}-service`,
+    //   path: `./${context.productName}/service`,
     // })),
+    // step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
+    //   productName: context.productName,
+    //   subdomainName: "root",
+    // })),
+    // step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
+    //   productName: context.productName,
+    //   subdomainName: "admin",
+    // })),
+    // step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
+    //   productName: context.productName,
+    //   subdomainName: "app",
+    // })),
+    // step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
+    //   productName: context.productName,
+    //   subdomainName: "auth",
+    // })),
+    // step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
+    //   productName: context.productName,
+    //   subdomainName: "account",
+    // })),
+    // step(
+    //   makeWorkflowMachine(IdentityInitWorkflowDefinition),
+    //   ({ context }) => ({
+    //     name: `${context.sharedPackagePrefix}-identity`,
+    //     path: `./${context.productName}/service/identity`,
+    //   }),
+    // ),
+    // step(CopyStepMachine, ({ context }) => ({
+    //   name: context.productName,
+    //   targetDir: context.cwd,
+    //   lineReplace: makeLineReplace(context),
+    // })),
+    // step(CommandStepMachine, ({ context }) => ({
+    //   command: "rm",
+    //   args: [
+    //     "-rf",
+    //     `./${context.productName}/service/${context.productName}-service`,
+    //   ],
+    // })),
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["install"],
+    })),
     // step(CdStepMachine, ({ context }) => ({
     //   path: path.join(
     //     context.cwd,
