@@ -34,6 +34,13 @@ export type WorkflowStep<C, M extends AnyStateMachine> = {
    * A function that determines if the step should be skipped.
    */
   skipIf: (arg: { context: C & WorkflowContext }) => boolean;
+
+  /**
+   * Whether to commit the changes after the step has been executed, and with what message.
+   */
+  commitAfter?: {
+    message: string;
+  };
 };
 
 /**

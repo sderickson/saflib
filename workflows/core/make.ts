@@ -196,7 +196,12 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
               throw new Error(output);
             }
           }
-          return;
+
+          if (input.manageVersionControl && step.commitAfter) {
+            await commitChanges({
+              message: step.commitAfter.message,
+            });
+          }
         }),
         input: ({ context }: { context: Context }) => context,
         onDone: {

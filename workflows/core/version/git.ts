@@ -126,12 +126,12 @@ export const handleGitChanges = async ({
 };
 
 export interface CommitChangesParam {
-  workflow: WorkflowDefinition;
-  context: WorkflowContext;
+  workflow?: WorkflowDefinition;
+  context?: WorkflowContext;
+  message?: string;
 }
 
 export const commitChanges = async (param: CommitChangesParam) => {
-  const { workflow, context } = param;
   const logger = getWorkflowLogger();
 
   const absoluteAllFiles = await getGitChanges();
@@ -144,10 +144,20 @@ export const commitChanges = async (param: CommitChangesParam) => {
     cwd: await getGitRoot(),
   });
 
-  const gitCommitHeader =
-    workflow.checklistDescription?.(context) || workflow.description;
-  const gitCommitBody = checklistToString(context.checklist);
-  const gitCommitMessage = `${gitCommitHeader}\n\n${gitCommitBody}`;
+  const { workflow, context, message } = param;
+  let gitCommitMessage = "";
+  if (workflow && context) {
+    const gitCommitHeader =
+      workflow.checklistDescription?.(context) || workflow.description;
+    const gitCommitBody = checklistToString(context.checklist);
+    gitCommitMessage = `${gitCommitHeader}\n\n${gitCommitBody}`;
+  } else if (message) {
+    gitCommitMessage = message;
+  } else {
+    logger.error("No message provided to commit changes.");
+    return;
+  }
+
   const msgFile = join(tmpdir(), `commit-msg-${Date.now()}.txt`);
   writeFileSync(msgFile, gitCommitMessage);
   execSync(`git commit -F "${msgFile}"`, {
@@ -165,7 +175,7 @@ interface FilterMatchesOptions {
   cwd: string;
 }
 
-const universalGlobs = ["**/package-lock.json"];
+const universalGlobs = ["**/package-lock.json", "**/saflib"];
 
 export const filterMatches = ({
   absolutePaths,
@@ -191,6 +201,16 @@ export const filterMatches = ({
       return !absoluteGlobs.some((glob) => minimatch(absolutePath, glob));
     },
   );
+  if (filteredAbsolutePaths.length) {
+    console.log("filteredAbsolutePaths", filteredAbsolutePaths);
+    console.log("initialFilteredAbsolutePaths", initialFilteredAbsolutePaths);
+    console.log("allGlobs", allGlobs);
+    console.log("absoluteGlobs", absoluteGlobs);
+    console.log("cwd", cwd);
+    console.log("absolutePaths", absolutePaths);
+    console.log("allowedAbsolutePaths", allowedAbsolutePaths);
+    console.log("globs", globs);
+  }
 
   return filteredAbsolutePaths;
 };
