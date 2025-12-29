@@ -129,97 +129,106 @@ export const InitProductWorkflowDefinition = defineWorkflow<
     //     `./${context.productName}/service/${context.productName}-service`,
     //   ],
     // })),
+    // step(CommandStepMachine, () => ({
+    //   command: "npm",
+    //   args: ["install"],
+    // })),
+    step(CdStepMachine, ({ context }) => ({
+      path: path.join(context.cwd, `./${context.productName}/service/monolith`),
+    })),
     step(CommandStepMachine, () => ({
       command: "npm",
-      args: ["install"],
+      args: ["exec", "saf-env", "generate", "--", "--combined"],
+    })),
+    step(CdStepMachine, ({ context }) => ({
+      path: `./${context.productName}/dev`,
+    })),
+    step(CommandStepMachine, () => ({
+      command: "touch",
+      args: ["./.env"],
+    })),
+    step(CdStepMachine, ({ context }) => ({
+      path: `./${context.productName}/clients/root`,
+    })),
+    step(PromptStepMachine, ({ context }) => ({
+      prompt: `Set up the logged-out home page in the root SPA, integrating with the other SPAs.
+      - Update the home page to have a call to action to the register page. Use linkToProps from @saflib/links to create the link and bind them to vuetify components. Get the link object from @saflib/auth-links which is in saflib/identity/auth-links.
+      - Incorporate the Layout exported from the ${context.sharedPackagePrefix}-clients-common package. This spa is "logged out".`,
+    })),
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["run", "typecheck"],
+    })),
+    step(CdStepMachine, ({ context }) => ({
+      path: `./${context.productName}/clients/auth`,
+    })),
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["install", "@saflib/auth", "@saflib/auth-links"],
+    })),
+    step(PromptStepMachine, ({ context }) => ({
+      prompt: `Set up the auth SPA, integrating with the other SPAs.
+      - Use the @saflib/auth package's router using 'createAuthRouter'. That will provide login, register, forgot password, and logout pages.
+      - Include the @saflib/auth/strings in the auth SPA's strings file, so i18n works.
+      - Make sure it redirects to the app spa's home page after login/register, using linkToHref from @saflib/links. And to root home page after logout.
+      - Incorporate the Layout exported from the ${context.sharedPackagePrefix}-clients-common package. The app will need to get the 'useProfile' hook from @saflib/auth and use it to determine if the user is logged in or not to give to the layout.`,
+    })),
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["run", "typecheck"],
+    })),
+    step(CdStepMachine, ({ context }) => ({
+      path: `./${context.productName}/clients/app`,
+    })),
+    step(PromptStepMachine, ({ context }) => ({
+      prompt: `Set up the app SPA, integrating with the other SPAs.
+      - Incorporate the Layout exported from the ${context.sharedPackagePrefix}-clients-common package. The app is always logged in.`,
+    })),
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["run", "typecheck"],
+    })),
+    step(CdStepMachine, ({ context }) => ({
+      path: `./${context.productName}/clients/account`,
+    })),
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["install", "@saflib/account-sdk" "@saflib/auth-links"],
+    })),
+    step(PromptStepMachine, ({ context }) => ({
+      prompt: `Set up the account SPA, integrating with the other SPAs.
+      - Add to the router @saflib/account-sdk package's pages for changing password and updating profile.
+      - Include the @saflib/account-sdk/strings in the account-spa's strings file, so i18n works.
+      - Update the home page to link to those pages.
+      - Incorporate the Layout exported from the ${context.sharedPackagePrefix}-clients-common package. This spa is always logged in.`,
+    })),
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["run", "typecheck"],
+    })),
+    step(CdStepMachine, ({ context }) => ({
+      path: `./${context.productName}/clients/common`,
+    })),
+    step(CommandStepMachine, ({ context }) => ({
+      command: "npm",
+      args: [
+        "install",
+        "@saflib/auth-links",
+        `${context.sharedPackagePrefix}-links`,
+      ],
+    })),
+    step(PromptStepMachine, ({ context }) => ({
+      prompt: `Update the layout component in the common package, adding links to the various SPAs.
+      - When logged out, link to the root spa's home page, and the auth spa's register page.
+      - When logged in, link to the app spa's home page, the account spa's home page, and the auth spa's logout page.
+      - Also, if logged in as admin, link to the admin spa's home page.`,
+    })),
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["run", "typecheck"],
     })),
     // step(CdStepMachine, ({ context }) => ({
-    //   path: path.join(
-    //     context.cwd,
-    //     `./services/${context.productName}-monolith`,
-    //   ),
-    // })),
-    // step(CommandStepMachine, () => ({
-    //   command: "npm",
-    //   args: ["exec", "saf-env", "generate", "--", "--combined"],
-    // })),
-    // step(CdStepMachine, ({ context }) => ({
-    //   path: `./deploy/${context.productName}-dev`,
-    // })),
-    // step(CommandStepMachine, () => ({
-    //   command: "touch",
-    //   args: ["./.env"],
-    // })),
-    // step(CdStepMachine, ({ context }) => ({
-    //   path: `./clients/${context.productName}/${context.productName}-root-spa`,
-    // })),
-    // step(PromptStepMachine, ({ context }) => ({
-    //   prompt: `Set up the logged-out home page in the ${context.productName}-root-spa, integrating with the other spas.
-    //   - Update the home page to have a call to action to the register page. Use linkToProps from @saflib/links to create the link and bind them to vuetify components.
-    //   - Incorporate the Layout exported from the ${context.sharedPackagePrefix}-clients-common package. This spa is "logged out".`,
-    // })),
-    // step(CommandStepMachine, () => ({
-    //   command: "npm",
-    //   args: ["run", "typecheck"],
-    // })),
-    // step(CdStepMachine, ({ context }) => ({
-    //   path: `./clients/${context.productName}/${context.productName}-auth-spa`,
-    // })),
-    // step(PromptStepMachine, ({ context }) => ({
-    //   prompt: `Set up the ${context.productName}-auth-spa, integrating with the other spas.
-    //   - Use the @saflib/auth package's router using 'createAuthRouter'. That will provide login, register, forgot password, and logout pages.
-    //   - Include the @saflib/auth/strings in the auth-spa's strings file, so i18n works.
-    //   - Make sure it redirects to the app spa's home page after login/register, using linkToHref from @saflib/links. And to root home page after logout.
-    //   - Incorporate the Layout exported from the ${context.sharedPackagePrefix}-clients-common package. The app will need to get the 'useProfile' hook from @saflib/auth and use it to determine if the user is logged in or not to give to the layout.`,
-    // })),
-    // step(CommandStepMachine, () => ({
-    //   command: "npm",
-    //   args: ["run", "typecheck"],
-    // })),
-    // step(CdStepMachine, ({ context }) => ({
-    //   path: `./clients/${context.productName}/${context.productName}-app-spa`,
-    // })),
-    // step(PromptStepMachine, ({ context }) => ({
-    //   prompt: `Set up the ${context.productName}-app-spa, integrating with the other spas.
-    //   - Incorporate the Layout exported from the ${context.sharedPackagePrefix}-clients-common package. The app is always logged in.`,
-    // })),
-    // step(CommandStepMachine, () => ({
-    //   command: "npm",
-    //   args: ["run", "typecheck"],
-    // })),
-    // step(CdStepMachine, ({ context }) => ({
-    //   path: `./clients/${context.productName}/${context.productName}-account-spa`,
-    // })),
-    // step(CommandStepMachine, () => ({
-    //   command: "npm",
-    //   args: ["install", "@saflib/account-sdk"],
-    // })),
-    // step(PromptStepMachine, ({ context }) => ({
-    //   prompt: `Set up the ${context.productName}-account-spa, integrating with the other spas.
-    //   - Add to the router @saflib/account-sdk package's pages for changing password and updating profile.
-    //   - Include the @saflib/account-sdk/strings in the account-spa's strings file, so i18n works.
-    //   - Update the home page to link to those pages.
-    //   - Incorporate the Layout exported from the ${context.sharedPackagePrefix}-clients-common package. This spa is always logged in.`,
-    // })),
-    // step(CommandStepMachine, () => ({
-    //   command: "npm",
-    //   args: ["run", "typecheck"],
-    // })),
-    // step(CdStepMachine, ({ context }) => ({
-    //   path: `./clients/${context.productName}/${context.productName}-clients-common`,
-    // })),
-    // step(PromptStepMachine, ({ context }) => ({
-    //   prompt: `Update the layout component in the ${context.sharedPackagePrefix}-clients-common package, adding links to the various spas.
-    //   - When logged out, link to the root spa's home page, and the auth spa's register page.
-    //   - When logged in, link to the app spa's home page, the account spa's home page, and the auth spa's logout page.
-    //   - Also, if logged in as admin, link to the admin spa's home page.`,
-    // })),
-    // step(CommandStepMachine, () => ({
-    //   command: "npm",
-    //   args: ["run", "typecheck"],
-    // })),
-    // step(CdStepMachine, ({ context }) => ({
-    //   path: `./deploy/${context.productName}-dev`,
+    //   path: `./${context.productName}/dev`,
     // })),
     // step(CommandStepMachine, () => ({
     //   command: "npm",
