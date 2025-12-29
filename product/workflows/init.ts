@@ -61,7 +61,7 @@ export const InitProductWorkflowDefinition = defineWorkflow<
   docFiles: {},
 
   versionControl: {
-    allowPaths: ["**/clients/**"],
+    allowPaths: ["**/clients/**", "package.json"],
   },
 
   steps: [
