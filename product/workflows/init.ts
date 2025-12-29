@@ -61,7 +61,7 @@ export const InitProductWorkflowDefinition = defineWorkflow<
   docFiles: {},
 
   versionControl: {
-    allowPaths: ["**/clients/**", "**/package.json"],
+    allowPaths: ["**/clients/**", "**/package.json", "**/service/*-service/**"],
   },
 
   steps: [
@@ -130,13 +130,17 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       targetDir: context.cwd,
       lineReplace: makeLineReplace(context),
     })),
-    step(CommandStepMachine, ({ context }) => ({
-      command: "rm",
-      args: [
-        "-rf",
-        `./${context.productName}/service/${context.productName}-service`,
-      ],
-    })),
+    step(
+      CommandStepMachine,
+      ({ context }) => ({
+        command: "rm",
+        args: [
+          "-rf",
+          `./${context.productName}/service/${context.productName}-service`,
+        ],
+      }),
+      { commitAfter: { message: `Remove original service package` } },
+    ),
     step(CommandStepMachine, () => ({
       command: "npm",
       args: ["install"],
