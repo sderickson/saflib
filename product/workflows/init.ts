@@ -90,7 +90,7 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       },
       {
         commitAfter: {
-          message: `Add ${context.productName} to package.json workspaces`,
+          message: `Add product package to package.json workspaces`,
         },
       },
     ),

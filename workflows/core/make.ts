@@ -330,6 +330,9 @@ export const step = <C, M extends AnyStateMachine>(
       context: C & WorkflowContext;
     }) => Promise<string | undefined>;
     skipIf?: (arg: { context: C & WorkflowContext }) => boolean;
+    commitAfter?: {
+      message: string;
+    };
   } = {},
 ): WorkflowStep<C, M> => {
   return {
@@ -337,5 +340,6 @@ export const step = <C, M extends AnyStateMachine>(
     input,
     validate: options.validate || (() => Promise.resolve(undefined)),
     skipIf: options.skipIf || (() => false),
+    commitAfter: options.commitAfter || undefined,
   };
 };

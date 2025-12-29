@@ -201,16 +201,5 @@ export const filterMatches = ({
       return !absoluteGlobs.some((glob) => minimatch(absolutePath, glob));
     },
   );
-  if (filteredAbsolutePaths.length) {
-    console.log("filteredAbsolutePaths", filteredAbsolutePaths);
-    console.log("initialFilteredAbsolutePaths", initialFilteredAbsolutePaths);
-    console.log("allGlobs", allGlobs);
-    console.log("absoluteGlobs", absoluteGlobs);
-    console.log("cwd", cwd);
-    console.log("absolutePaths", absolutePaths);
-    console.log("allowedAbsolutePaths", allowedAbsolutePaths);
-    console.log("globs", globs);
-  }
-
   return filteredAbsolutePaths;
 };
