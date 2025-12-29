@@ -72,7 +72,7 @@ import { SnackbarQueue } from "@saflib/vue/components";
 import { SpaLink } from "@saflib/vue/components";
 
 // import other subdomain links here as needed
-import { __subdomainName__Links } from "template-package-links";
+// import { __subdomainName__Links } from "template-package-links";
 
 // Use this for choosing what links to display
 // import { getProfile } from "@saflib/auth";

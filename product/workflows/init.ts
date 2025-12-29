@@ -90,10 +90,10 @@ export const InitProductWorkflowDefinition = defineWorkflow<
     //   name: `${context.sharedPackagePrefix}-service`,
     //   path: `./${context.productName}/service`,
     // })),
-    step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
-      productName: context.productName,
-      subdomainName: "root",
-    })),
+    // step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
+    //   productName: context.productName,
+    //   subdomainName: "root",
+    // })),
     // step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
     //   productName: context.productName,
     //   subdomainName: "admin",
@@ -147,18 +147,22 @@ export const InitProductWorkflowDefinition = defineWorkflow<
     //   command: "touch",
     //   args: ["./.env"],
     // })),
-    // step(CdStepMachine, ({ context }) => ({
-    //   path: `./${context.productName}/clients/root`,
-    // })),
-    // step(PromptStepMachine, ({ context }) => ({
-    //   prompt: `Set up the logged-out home page in the root SPA, integrating with the other SPAs.
-    //   - Update the home page to have a call to action to the register page. Use linkToProps from @saflib/links to create the link and bind them to vuetify components. Get the link object from @saflib/auth-links which is in saflib/identity/auth-links.
-    //   - Incorporate the Layout exported from the ${context.sharedPackagePrefix}-clients-common package. This spa is "logged out".`,
-    // })),
-    // step(CommandStepMachine, () => ({
-    //   command: "npm",
-    //   args: ["run", "typecheck"],
-    // })),
+    step(CdStepMachine, ({ context }) => ({
+      path: `./${context.productName}/clients/root`,
+    })),
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["install", "@saflib/auth-links"],
+    })),
+    step(PromptStepMachine, ({ context }) => ({
+      prompt: `Set up the logged-out home page in the root SPA, integrating with the other SPAs.
+      - Update the home page to have a call to action to the register page. Use linkToProps from @saflib/links to create the link and bind them to vuetify components. Get the link object from @saflib/auth-links which is in saflib/identity/auth-links.
+      - Incorporate the Layout exported from the ${context.sharedPackagePrefix}-clients-common package. This spa is "logged out".`,
+    })),
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["run", "typecheck"],
+    })),
     // step(CdStepMachine, ({ context }) => ({
     //   path: `./${context.productName}/clients/auth`,
     // })),
