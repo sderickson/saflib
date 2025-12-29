@@ -122,6 +122,7 @@ export const AddSpaWorkflowDefinition = defineWorkflow<
           context.commonPackageName,
         );
         line = line.replace("template-package-spec", context.serviceSpecName);
+        line = line.replace("template-package-links", context.linksPackageName);
         return lineReplace(line);
       };
       return {

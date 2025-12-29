@@ -65,31 +65,31 @@ export const InitProductWorkflowDefinition = defineWorkflow<
   },
 
   steps: [
-    step(CommandStepMachine, ({ context }) => {
-      // hack to add the product to the workspaces w/out deps
-      // probably the makings of a new workflow step here
-      const packageJson = JSON.parse(
-        fs.readFileSync(path.join(context.cwd, "package.json"), "utf8"),
-      );
-      const newWorkspaces = [
-        ...packageJson.workspaces,
-        `${context.productName}/**`,
-      ];
-      newWorkspaces.sort();
-      packageJson.workspaces = newWorkspaces;
-      fs.writeFileSync(
-        path.join(context.cwd, "package.json"),
-        JSON.stringify(packageJson, null, 2),
-      );
-      return {
-        command: "npm",
-        args: ["exec", "prettier", "--", "package.json", "--write"],
-      };
-    }),
-    step(makeWorkflowMachine(InitServiceWorkflowDefinition), ({ context }) => ({
-      name: `${context.sharedPackagePrefix}-service`,
-      path: `./${context.productName}/service`,
-    })),
+    // step(CommandStepMachine, ({ context }) => {
+    //   // hack to add the product to the workspaces w/out deps
+    //   // probably the makings of a new workflow step here
+    //   const packageJson = JSON.parse(
+    //     fs.readFileSync(path.join(context.cwd, "package.json"), "utf8"),
+    //   );
+    //   const newWorkspaces = [
+    //     ...packageJson.workspaces,
+    //     `${context.productName}/**`,
+    //   ];
+    //   newWorkspaces.sort();
+    //   packageJson.workspaces = newWorkspaces;
+    //   fs.writeFileSync(
+    //     path.join(context.cwd, "package.json"),
+    //     JSON.stringify(packageJson, null, 2),
+    //   );
+    //   return {
+    //     command: "npm",
+    //     args: ["exec", "prettier", "--", "package.json", "--write"],
+    //   };
+    // }),
+    // step(makeWorkflowMachine(InitServiceWorkflowDefinition), ({ context }) => ({
+    //   name: `${context.sharedPackagePrefix}-service`,
+    //   path: `./${context.productName}/service`,
+    // })),
     step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
       productName: context.productName,
       subdomainName: "root",
