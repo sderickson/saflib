@@ -3,11 +3,7 @@ import {
   makeContext,
   backupServiceStorage,
 } from "@saflib/backup-service-common";
-import {
-  TestObjectStore,
-  StorageError,
-  PathTraversalError,
-} from "@saflib/object-store";
+import { TestObjectStore } from "@saflib/object-store";
 import { cleanup } from "./cleanup.ts";
 
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;

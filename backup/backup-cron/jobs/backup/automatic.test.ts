@@ -4,11 +4,7 @@ import {
   makeContext,
   backupServiceStorage,
 } from "@saflib/backup-service-common";
-import {
-  TestObjectStore,
-  StorageError,
-  PathTraversalError,
-} from "@saflib/object-store";
+import { TestObjectStore } from "@saflib/object-store";
 import { automatic } from "./automatic.ts";
 
 describe("automatic backup job", () => {
