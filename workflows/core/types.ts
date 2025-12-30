@@ -100,7 +100,7 @@ export interface WorkflowDefinition<
    * Configure version control for the workflow. Right now, just provide paths which the workflow will consider safe to change as part of the workflow.
    */
   versionControl?: {
-    allowPaths?: string[];
+    allowPaths?: string[] | ((context: C) => string[]);
   };
 }
 

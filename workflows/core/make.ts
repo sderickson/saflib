@@ -54,7 +54,7 @@ export function defineWorkflow<
   docFiles: Record<string, string>;
   steps: Array<WorkflowStep<C, AnyStateMachine>>;
   versionControl?: {
-    allowPaths?: string[];
+    allowPaths?: string[] | ((context: C) => string[]);
   };
 }): WorkflowDefinition<I, C> {
   return config;
@@ -173,15 +173,18 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
           }
 
           if (input.manageVersionControl) {
+            let allowPaths: string[] | undefined = undefined;
+            if (typeof workflow.versionControl?.allowPaths === "function") {
+              allowPaths = workflow.versionControl.allowPaths(input);
+            } else {
+              allowPaths = workflow.versionControl?.allowPaths;
+            }
             const successful = await handleGitChanges({
               workflowId: workflow.id,
               context: input,
               checklistDescription:
                 workflow.checklistDescription?.(input) || workflow.description,
-              allowPaths:
-                typeof workflow.versionControl === "object"
-                  ? workflow.versionControl.allowPaths
-                  : undefined,
+              allowPaths,
             });
             if (!successful) {
               throw new Error("Failed to handle git changes");
