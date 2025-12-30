@@ -11,7 +11,7 @@ import { renameNextFile } from "./rename-next-file.ts";
 import type { WorkflowOutput, WorkflowInput } from "../../types.ts";
 import { contextFromInput } from "../../utils.ts";
 import type { CopyStepContext, CopyStepInput } from "./types.ts";
-import { parseChecklist, parseCopiedFiles } from "./helpers.ts";
+import { parseCopiedFiles } from "./helpers.ts";
 import path from "node:path";
 import fs, { readdirSync, statSync } from "node:fs";
 
@@ -140,7 +140,6 @@ export const CopyStepMachine = setup({
                   `Warning: ${event.output.fileName} is a directory, did not rename`,
               ),
               assign({
-                // checklist: parseChecklist,
                 copiedFiles: parseCopiedFiles,
               }),
             ],
@@ -149,7 +148,6 @@ export const CopyStepMachine = setup({
             target: "rename",
             actions: [
               assign({
-                // checklist: parseChecklist,
                 copiedFiles: parseCopiedFiles,
               }),
             ],
