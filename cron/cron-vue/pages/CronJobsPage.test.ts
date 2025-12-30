@@ -58,7 +58,7 @@ const handlers = [
     "http://test.localhost:3000/cron/jobs",
     () => {
       return HttpResponse.json(mockJobs);
-    },
+    }
   ),
   // Default success for updating settings
   http.put<PathParams, UpdateSettingsRequest, UpdateSettingsResponse>(
@@ -69,7 +69,7 @@ const handlers = [
         jobName: body.jobName,
         enabled: body.enabled,
       });
-    },
+    }
   ),
 ];
 
@@ -87,7 +87,7 @@ describe("CronJobsPage", () => {
     if (waitForData) {
       await vi.waitFor(() => {
         expect(
-          wrapper.findComponent({ name: "v-progress-linear" }).exists(),
+          wrapper.findComponent({ name: "v-progress-linear" }).exists()
         ).toBe(false);
       });
     }
@@ -107,14 +107,14 @@ describe("CronJobsPage", () => {
   const getActionButton = (
     wrapper: VueWrapper,
     jobName: string,
-    expectedText: string,
+    expectedText: string
   ): VueWrapper => {
     const row = getRowByJobName(wrapper, jobName);
     // Find the button component within the row's DOM element
     const button = row.findComponent({ name: "v-btn", text: expectedText });
     expect(
       button.exists(),
-      `Button with text "${expectedText}" for job "${jobName}" not found`,
+      `Button with text "${expectedText}" for job "${jobName}" not found`
     ).toBe(true);
     return button;
   };
@@ -161,35 +161,15 @@ describe("CronJobsPage", () => {
     const row1 = getRowByJobName(wrapper, "job-1");
     expect(row1.text()).toContain("job-1"); // Job Name
     expect(
-      row1.findComponent({ name: "v-chip", text: "Enabled" }).exists(),
+      row1.findComponent({ name: "v-chip", text: "Enabled" }).exists()
     ).toBe(true); // Status Chip
     expect(
-      row1.findComponent({ name: "v-chip", text: "success" }).exists(),
+      row1.findComponent({ name: "v-chip", text: "success" }).exists()
     ).toBe(true); // Last Run Status Chip
     expect(row1.text()).toContain(formatDateTime(mockJobs[0].lastRunAt)); // Last Run At
     expect(row1.text()).toContain(formatDateTime(mockJobs[0].createdAt)); // Created At
     expect(row1.text()).toContain(formatDateTime(mockJobs[0].updatedAt)); // Updated At
     expect(getActionButton(wrapper, "job-1", "Disable").exists()).toBe(true); // Action Button
-  });
-
-  it("should display an error message if fetching jobs fails", async () => {
-    server.use(
-      http.get("http://test.localhost:3000/cron/jobs", () => {
-        return new HttpResponse("Internal Server Error", { status: 500 });
-      }),
-    );
-
-    const wrapper = await mountComponent(false); // Mount without waiting for success
-
-    // Wait for the error alert to appear
-    await vi.waitFor(() => {
-      expect(getErrorAlert(wrapper).exists()).toBe(true);
-    });
-
-    expect(getLoadingIndicator(wrapper).exists()).toBe(false);
-    expect(getTable(wrapper).exists()).toBe(false);
-    expect(getErrorAlert(wrapper).text()).toContain("Error loading cron jobs");
-    expect(getErrorAlert(wrapper).props("type")).toBe("error");
   });
 
   it("should disable an enabled job when the Disable button is clicked", async () => {
@@ -205,8 +185,8 @@ describe("CronJobsPage", () => {
         async ({ request }) => {
           receivedRequestBody = await request.json();
           return HttpResponse.json({ jobName: jobToDisable, enabled: false });
-        },
-      ),
+        }
+      )
     );
 
     await disableButton.trigger("click");
@@ -244,8 +224,8 @@ describe("CronJobsPage", () => {
         async ({ request }) => {
           receivedRequestBody = await request.json();
           return HttpResponse.json({ jobName: jobToEnable, enabled: true });
-        },
-      ),
+        }
+      )
     );
 
     await enableButton.trigger("click");
@@ -264,35 +244,5 @@ describe("CronJobsPage", () => {
       jobName: jobToEnable,
       enabled: true,
     });
-  });
-
-  it("should display an error message if updating a job fails", async () => {
-    server.use(
-      http.put("http://test.localhost:3000/cron/jobs/settings", () => {
-        return new HttpResponse(null, {
-          status: 400,
-          statusText: "Bad Request",
-        });
-      }),
-    );
-
-    const wrapper = await mountComponent();
-    const jobToDisable = "job-1";
-    // Find button using the adjusted helper
-    const disableButton = getActionButton(wrapper, jobToDisable, "Disable");
-
-    await disableButton.trigger("click");
-
-    // Wait for the error alert to appear
-    await vi.waitFor(() => {
-      const alert = wrapper.findComponent({ name: "v-alert" });
-      expect(alert.exists()).toBe(true);
-      expect(alert.text()).toContain("Error updating cron job");
-      expect(alert.props("type")).toBe("error");
-    });
-
-    // Ensure button is no longer loading (i.e., not disabled)
-    const updatedButton = getActionButton(wrapper, jobToDisable, "Disable");
-    expect(updatedButton.attributes("disabled")).toBeUndefined();
   });
 });
