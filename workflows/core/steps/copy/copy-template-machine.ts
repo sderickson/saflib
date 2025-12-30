@@ -126,7 +126,7 @@ export const CopyStepMachine = setup({
                   `File ${event.output.fileName} already exists, skipping`,
               ),
               assign({
-                checklist: parseChecklist,
+                // checklist: parseChecklist,
                 copiedFiles: parseCopiedFiles,
               }),
             ],
@@ -140,7 +140,7 @@ export const CopyStepMachine = setup({
                   `Warning: ${event.output.fileName} is a directory, did not rename`,
               ),
               assign({
-                checklist: parseChecklist,
+                // checklist: parseChecklist,
                 copiedFiles: parseCopiedFiles,
               }),
             ],
@@ -200,7 +200,7 @@ export const CopyStepMachine = setup({
   output: ({ context }) => {
     return {
       checklist: {
-        description: `Copy template files and rename placeholders.`,
+        description: `Upsert ${context.filesToCopy.length} templates.`,
         subitems: context.checklist,
       },
       copiedFiles: context.copiedFiles,
