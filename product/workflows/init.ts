@@ -247,6 +247,7 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       command: "npm",
       args: ["run", "typecheck"],
     })),
+
     // step(CdStepMachine, ({ context }) => ({
     //   path: `./${context.productName}/dev`,
     // })),

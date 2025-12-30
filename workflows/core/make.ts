@@ -54,7 +54,7 @@ export function defineWorkflow<
   docFiles: Record<string, string>;
   steps: Array<WorkflowStep<C, AnyStateMachine>>;
   versionControl?: {
-    allowPaths?: string[] | ((context: C) => string[]);
+    allowPaths?: string[] | (({ context }: { context: C }) => string[]);
   };
 }): WorkflowDefinition<I, C> {
   return config;
@@ -173,9 +173,14 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
           }
 
           if (input.manageVersionControl) {
-            let allowPaths: string[] | undefined = undefined;
+            let allowPaths:
+              | string[]
+              | ((context: Context) => string[])
+              | undefined = undefined;
             if (typeof workflow.versionControl?.allowPaths === "function") {
-              allowPaths = workflow.versionControl.allowPaths(input);
+              allowPaths = workflow.versionControl.allowPaths({
+                context: input,
+              });
             } else {
               allowPaths = workflow.versionControl?.allowPaths;
             }
