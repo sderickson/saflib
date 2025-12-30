@@ -29,7 +29,7 @@ const input = [
     name: "path",
     description:
       "The path to the target directory for the service package (e.g., './services/example').",
-    exampleValue: "./services/example",
+    exampleValue: "./service/example/service",
   },
 ] as const;
 
@@ -59,13 +59,13 @@ export const InitServiceWorkflowDefinition = defineWorkflow<
     });
     if (!input.path.endsWith(`/service`)) {
       throw new Error(
-        `The path must end with the service name, e.g. ${path.dirname(input.path)}/service`,
+        `The path must end with the service name, e.g. ${path.dirname(input.path)}/service`
       );
     }
     const targetDir = path.join(
       input.cwd,
       input.path,
-      parsed.serviceName + "-service",
+      parsed.serviceName + "-service"
     );
     return {
       ...parsed,

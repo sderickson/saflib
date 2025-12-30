@@ -15,7 +15,7 @@ import path from "node:path";
 
 const sourceDir = path.join(
   import.meta.dirname,
-  "template/__product-name__-__subdomain-name__-spa/e2e/__target-name__",
+  "template/__subdomain-name__/e2e/__target-name__"
 );
 
 const input = [
