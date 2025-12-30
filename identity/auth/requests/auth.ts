@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient, queryOptions } from "@tanstack/vue-query";
+import { useMutation, useQuery, useQueryClient, queryOptions } from "@tanstack/vue-query";
 import { getClient, getEmailClient } from "./client.ts";
 import type {
   IdentityResponseBody,
@@ -114,4 +114,8 @@ export const getSentAuthEmails = (email?: Ref<string | undefined>) => {
       );
     },
   };
+};
+
+export const useProfile = () => {
+  return useQuery(getProfile());
 };
