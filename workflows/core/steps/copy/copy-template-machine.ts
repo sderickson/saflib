@@ -200,8 +200,7 @@ export const CopyStepMachine = setup({
   output: ({ context }) => {
     return {
       checklist: {
-        description: `Upsert ${context.copiedFiles.length} templates.`,
-        // subitems: context.checklist,
+        description: `Upsert ${Object.keys(context.copiedFiles).length} templates.`,
       },
       copiedFiles: context.copiedFiles,
     };

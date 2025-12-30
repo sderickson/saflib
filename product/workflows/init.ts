@@ -77,10 +77,9 @@ export const InitProductWorkflowDefinition = defineWorkflow<
         const packageJson = JSON.parse(
           fs.readFileSync(path.join(context.cwd, "package.json"), "utf8"),
         );
-        const newWorkspaces = [
-          ...packageJson.workspaces,
-          `${context.productName}/**`,
-        ];
+        const newWorkspaces = Array.from(
+          new Set([...packageJson.workspaces, `${context.productName}/**`]),
+        );
         newWorkspaces.sort();
         packageJson.workspaces = newWorkspaces;
         fs.writeFileSync(

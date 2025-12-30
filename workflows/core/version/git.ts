@@ -60,7 +60,9 @@ export const getGitChanges = async () => {
 
   const allFiles = [...staged, ...unstaged, ...untracked];
   const gitRoot = await getGitRoot();
-  const absoluteAllFiles = allFiles.map((file) => path.join(gitRoot, file));
+  const absoluteAllFiles = allFiles
+    .map((file) => path.join(gitRoot, file))
+    .filter((file) => !file.endsWith("/saflib"));
 
   return absoluteAllFiles;
 };
@@ -162,6 +164,7 @@ export const commitChanges = async (param: CommitChangesParam) => {
   writeFileSync(msgFile, gitCommitMessage);
   execSync(`git commit -F "${msgFile}"`, {
     cwd: await getGitRoot(),
+    stdio: "inherit",
   });
   logger.info(`Committed ${absoluteAllFiles.length} files with message:
 ${gitCommitMessage}`);
