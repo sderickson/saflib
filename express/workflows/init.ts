@@ -39,8 +39,7 @@ export const ExpressInitWorkflowDefinition = defineWorkflow<
 
   description: "Create an Express HTTP service package",
 
-  checklistDescription: ({ packageName }) =>
-    `Create the ${packageName} Express HTTP service package.`,
+  checklistDescription: ({ packageName }) => `Init ${packageName}.`,
 
   input,
 

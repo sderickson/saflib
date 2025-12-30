@@ -206,8 +206,14 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
           }
 
           if (input.manageVersionControl && step.commitAfter) {
+            let message: string;
+            if (typeof step.commitAfter.message === "function") {
+              message = step.commitAfter.message({ context: input });
+            } else {
+              message = step.commitAfter.message;
+            }
             await commitChanges({
-              message: step.commitAfter.message,
+              message,
             });
           }
         }),
@@ -339,7 +345,7 @@ export const step = <C, M extends AnyStateMachine>(
     }) => Promise<string | undefined>;
     skipIf?: (arg: { context: C & WorkflowContext }) => boolean;
     commitAfter?: {
-      message: string;
+      message: string | ((arg: { context: C & WorkflowContext }) => string);
     };
   } = {},
 ): WorkflowStep<C, M> => {

@@ -94,7 +94,8 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       },
       {
         commitAfter: {
-          message: `Add product package to package.json workspaces`,
+          message: ({ context }) =>
+            `Add "${context.productName}/**" to workspaces`,
         },
       },
     ),
@@ -143,7 +144,12 @@ export const InitProductWorkflowDefinition = defineWorkflow<
           `./${context.productName}/service/${context.productName}-service`,
         ],
       }),
-      { commitAfter: { message: `Remove original service package` } },
+      {
+        commitAfter: {
+          message: ({ context }) =>
+            `Remove ${context.productName} service package`,
+        },
+      },
     ),
     step(CommandStepMachine, () => ({
       command: "npm",
@@ -159,10 +165,19 @@ export const InitProductWorkflowDefinition = defineWorkflow<
     step(CdStepMachine, ({ context }) => ({
       path: `./${context.productName}/dev`,
     })),
-    step(CommandStepMachine, () => ({
-      command: "touch",
-      args: ["./.env"],
-    })),
+    step(
+      CommandStepMachine,
+      () => ({
+        command: "touch",
+        args: ["./.env"],
+      }),
+      {
+        commitAfter: {
+          message: ({ context }) =>
+            `Set up dev environment for ${context.productName}`,
+        },
+      },
+    ),
     step(CdStepMachine, ({ context }) => ({
       path: `./${context.productName}/clients/root`,
     })),
@@ -175,10 +190,19 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       - Update the home page to have a call to action to the register page. Use linkToProps from @saflib/links to create the link and bind them to vuetify components. Get the link object from @saflib/auth-links which is in saflib/identity/auth-links.
       - Incorporate the Layout exported from the ${context.sharedPackagePrefix}-clients-common package. This spa is "logged out".`,
     })),
-    step(CommandStepMachine, () => ({
-      command: "npm",
-      args: ["run", "typecheck"],
-    })),
+    step(
+      CommandStepMachine,
+      () => ({
+        command: "npm",
+        args: ["run", "typecheck"],
+      }),
+      {
+        commitAfter: {
+          message: `Connect root spa`,
+        },
+      },
+    ),
+
     step(CdStepMachine, ({ context }) => ({
       path: `./${context.productName}/clients/auth`,
     })),
@@ -193,10 +217,19 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       - Make sure it redirects to the app spa's home page after login/register, using linkToHref from @saflib/links. And to root home page after logout.
       - Incorporate the Layout exported from the ${context.sharedPackagePrefix}-clients-common package. The app will need to get the 'useProfile' hook from @saflib/auth and use it to determine if the user is logged in or not to give to the layout.`,
     })),
-    step(CommandStepMachine, () => ({
-      command: "npm",
-      args: ["run", "typecheck"],
-    })),
+    step(
+      CommandStepMachine,
+      () => ({
+        command: "npm",
+        args: ["run", "typecheck"],
+      }),
+      {
+        commitAfter: {
+          message: `Connect auth spa`,
+        },
+      },
+    ),
+
     step(CdStepMachine, ({ context }) => ({
       path: `./${context.productName}/clients/app`,
     })),
@@ -204,10 +237,19 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       prompt: `Set up the ${context.productName} app SPA, integrating with the other SPAs.
       - Incorporate the Layout exported from the ${context.sharedPackagePrefix}-clients-common package. The app is always logged in.`,
     })),
-    step(CommandStepMachine, () => ({
-      command: "npm",
-      args: ["run", "typecheck"],
-    })),
+    step(
+      CommandStepMachine,
+      () => ({
+        command: "npm",
+        args: ["run", "typecheck"],
+      }),
+      {
+        commitAfter: {
+          message: `Connect app spa`,
+        },
+      },
+    ),
+
     step(CdStepMachine, ({ context }) => ({
       path: `./${context.productName}/clients/account`,
     })),
@@ -222,10 +264,18 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       - Update the home page to link to those pages.
       - Incorporate the Layout exported from the ${context.sharedPackagePrefix}-clients-common package. This spa is always logged in.`,
     })),
-    step(CommandStepMachine, () => ({
-      command: "npm",
-      args: ["run", "typecheck"],
-    })),
+    step(
+      CommandStepMachine,
+      () => ({
+        command: "npm",
+        args: ["run", "typecheck"],
+      }),
+      {
+        commitAfter: {
+          message: `Connect account spa`,
+        },
+      },
+    ),
     step(CdStepMachine, ({ context }) => ({
       path: `./${context.productName}/clients/common`,
     })),
@@ -243,10 +293,18 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       - When logged in, link to the app spa's home page, the account spa's home page, and the auth spa's logout page.
       - Also, if logged in as admin, link to the admin spa's home page.`,
     })),
-    step(CommandStepMachine, () => ({
-      command: "npm",
-      args: ["run", "typecheck"],
-    })),
+    step(
+      CommandStepMachine,
+      () => ({
+        command: "npm",
+        args: ["run", "typecheck"],
+      }),
+      {
+        commitAfter: {
+          message: `Connect common package`,
+        },
+      },
+    ),
 
     // step(CdStepMachine, ({ context }) => ({
     //   path: `./${context.productName}/dev`,

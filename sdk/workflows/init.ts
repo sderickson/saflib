@@ -41,8 +41,7 @@ export const SdkInitWorkflowDefinition = defineWorkflow<
 
   description: "Create an Tanstack/Vue SDK package",
 
-  checklistDescription: ({ packageName }) =>
-    `Create the ${packageName} Tanstack/Vue SDK package.`,
+  checklistDescription: ({ packageName }) => `Init ${packageName}.`,
 
   input,
 

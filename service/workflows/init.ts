@@ -47,8 +47,7 @@ export const InitServiceWorkflowDefinition = defineWorkflow<
   description:
     "Create a new complete service package with database, HTTP server, API spec, and service orchestration",
 
-  checklistDescription: ({ serviceName }) =>
-    `Create a new ${serviceName} service package with all components.`,
+  checklistDescription: ({ packageName }) => `Init ${packageName}.`,
 
   input,
 

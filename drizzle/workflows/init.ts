@@ -39,8 +39,7 @@ export const DrizzleInitWorkflowDefinition = defineWorkflow<
 
   description: "Create a Drizzle/SQLite database package",
 
-  checklistDescription: ({ packageName }) =>
-    `Create the ${packageName} Drizzle/SQLite database package.`,
+  checklistDescription: ({ packageName }) => `Init ${packageName}.`,
 
   input,
 

@@ -53,6 +53,8 @@ export const AddSpaWorkflowDefinition = defineWorkflow<
   description:
     "Create a new SAF-powered frontend SPA using Vue, Vue-Router, and Tanstack Query",
 
+  checklistDescription: ({ packageName }) => `Init ${packageName}.`,
+
   input,
 
   sourceUrl: import.meta.url,

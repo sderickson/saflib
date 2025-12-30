@@ -39,7 +39,7 @@ export type WorkflowStep<C, M extends AnyStateMachine> = {
    * Whether to commit the changes after the step has been executed, and with what message.
    */
   commitAfter?: {
-    message: string;
+    message: string | ((arg: { context: C & WorkflowContext }) => string);
   };
 };
 

@@ -39,8 +39,7 @@ export const InitCommonWorkflowDefinition = defineWorkflow<
 
   description: "Create a shared service package",
 
-  checklistDescription: ({ packageName }) =>
-    `Create the ${packageName} shared service package.`,
+  checklistDescription: ({ packageName }) => `Init ${packageName}.`,
 
   input,
 
