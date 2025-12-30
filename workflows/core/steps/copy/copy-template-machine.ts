@@ -149,7 +149,7 @@ export const CopyStepMachine = setup({
             target: "rename",
             actions: [
               assign({
-                checklist: parseChecklist,
+                // checklist: parseChecklist,
                 copiedFiles: parseCopiedFiles,
               }),
             ],
@@ -200,8 +200,8 @@ export const CopyStepMachine = setup({
   output: ({ context }) => {
     return {
       checklist: {
-        description: `Upsert ${context.filesToCopy.length} templates.`,
-        subitems: context.checklist,
+        description: `Upsert ${context.copiedFiles.length} templates.`,
+        // subitems: context.checklist,
       },
       copiedFiles: context.copiedFiles,
     };
