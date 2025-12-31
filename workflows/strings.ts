@@ -66,3 +66,14 @@ export function kebabCaseToSnakeCase(name: string) {
 export function camelCaseToKebabCase(name: string) {
   return name.replace(/([A-Z])/g, "-$1").toLowerCase();
 }
+
+/**
+ * Convert from camelCase to Title Case.
+ */
+export function camelCaseToTitleCase(name: string) {
+  return name
+    .replace(/([A-Z])/g, " $1")
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}

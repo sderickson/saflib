@@ -55,7 +55,7 @@ export const InitProductWorkflowDefinition = defineWorkflow<
   },
 
   templateFiles: {
-    all: path.join(import.meta.dirname, "templates/__product-name__"),
+    all: path.join(import.meta.dirname, "templates/"),
   },
 
   docFiles: {},
@@ -69,248 +69,248 @@ export const InitProductWorkflowDefinition = defineWorkflow<
   },
 
   steps: [
-    step(
-      CommandStepMachine,
-      ({ context }) => {
-        if (context.runMode === "dry" || !context.manageVersionControl) {
-          return {
-            command: "npm",
-            args: ["echo", "Skip appending to workspaces."],
-          };
-        }
+    // step(
+    //   CommandStepMachine,
+    //   ({ context }) => {
+    //     if (context.runMode === "dry" || !context.manageVersionControl) {
+    //       return {
+    //         command: "npm",
+    //         args: ["echo", "Skip appending to workspaces."],
+    //       };
+    //     }
 
-        // hack to add the product to the workspaces w/out deps
-        // probably the makings of a new workflow step here
-        const packageJson = JSON.parse(
-          fs.readFileSync(path.join(context.cwd, "package.json"), "utf8")
-        );
-        const newWorkspaces = Array.from(
-          new Set([...packageJson.workspaces, `${context.productName}/**`])
-        );
-        newWorkspaces.sort();
-        packageJson.workspaces = newWorkspaces;
-        fs.writeFileSync(
-          path.join(context.cwd, "package.json"),
-          JSON.stringify(packageJson, null, 2)
-        );
-        return {
-          command: "npm",
-          args: ["exec", "prettier", "--", "package.json", "--write"],
-        };
-      },
-      {
-        commitAfter: {
-          message: ({ context }) =>
-            `Add "${context.productName}/**" to workspaces`,
-        },
-      }
-    ),
-    step(makeWorkflowMachine(InitServiceWorkflowDefinition), ({ context }) => ({
-      name: `${context.sharedPackagePrefix}-service`,
-      path: `./${context.productName}/service`,
-    })),
-    step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
-      productName: context.productName,
-      subdomainName: "root",
-    })),
-    step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
-      productName: context.productName,
-      subdomainName: "admin",
-    })),
-    step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
-      productName: context.productName,
-      subdomainName: "app",
-    })),
-    step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
-      productName: context.productName,
-      subdomainName: "auth",
-    })),
-    step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
-      productName: context.productName,
-      subdomainName: "account",
-    })),
-    step(
-      makeWorkflowMachine(IdentityInitWorkflowDefinition),
-      ({ context }) => ({
-        name: `${context.sharedPackagePrefix}-identity`,
-        path: `./${context.productName}/service/identity`,
-      })
-    ),
+    //     // hack to add the product to the workspaces w/out deps
+    //     // probably the makings of a new workflow step here
+    //     const packageJson = JSON.parse(
+    //       fs.readFileSync(path.join(context.cwd, "package.json"), "utf8"),
+    //     );
+    //     const newWorkspaces = Array.from(
+    //       new Set([...packageJson.workspaces, `${context.productName}/**`]),
+    //     );
+    //     newWorkspaces.sort();
+    //     packageJson.workspaces = newWorkspaces;
+    //     fs.writeFileSync(
+    //       path.join(context.cwd, "package.json"),
+    //       JSON.stringify(packageJson, null, 2),
+    //     );
+    //     return {
+    //       command: "npm",
+    //       args: ["exec", "prettier", "--", "package.json", "--write"],
+    //     };
+    //   },
+    //   {
+    //     commitAfter: {
+    //       message: ({ context }) =>
+    //         `Add "${context.productName}/**" to workspaces`,
+    //     },
+    //   },
+    // ),
+    // step(makeWorkflowMachine(InitServiceWorkflowDefinition), ({ context }) => ({
+    //   name: `${context.sharedPackagePrefix}-service`,
+    //   path: `./${context.productName}/service`,
+    // })),
+    // step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
+    //   productName: context.productName,
+    //   subdomainName: "root",
+    // })),
+    // step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
+    //   productName: context.productName,
+    //   subdomainName: "admin",
+    // })),
+    // step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
+    //   productName: context.productName,
+    //   subdomainName: "app",
+    // })),
+    // step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
+    //   productName: context.productName,
+    //   subdomainName: "auth",
+    // })),
+    // step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
+    //   productName: context.productName,
+    //   subdomainName: "account",
+    // })),
+    // step(
+    //   makeWorkflowMachine(IdentityInitWorkflowDefinition),
+    //   ({ context }) => ({
+    //     name: `${context.sharedPackagePrefix}-identity`,
+    //     path: `./${context.productName}/service/identity`,
+    //   }),
+    // ),
     step(CopyStepMachine, ({ context }) => ({
       name: context.productName,
       targetDir: context.cwd,
       lineReplace: makeLineReplace(context),
     })),
-    step(
-      CommandStepMachine,
-      ({ context }) => ({
-        command: "rm",
-        args: [
-          "-rf",
-          `./${context.productName}/service/${context.productName}-service`,
-        ],
-      }),
-      {
-        commitAfter: {
-          message: ({ context }) =>
-            `Remove ${context.productName} service package`,
-        },
-      }
-    ),
-    step(CommandStepMachine, () => ({
-      command: "npm",
-      args: ["install"],
-    })),
-    step(CdStepMachine, ({ context }) => ({
-      path: path.join(context.cwd, `./${context.productName}/service/monolith`),
-    })),
-    step(CommandStepMachine, () => ({
-      command: "npm",
-      args: ["exec", "saf-env", "generate", "--", "--combined"],
-    })),
-    step(CdStepMachine, ({ context }) => ({
-      path: `./${context.productName}/dev`,
-    })),
-    step(
-      CommandStepMachine,
-      () => ({
-        command: "touch",
-        args: ["./.env"],
-      }),
-      {
-        commitAfter: {
-          message: ({ context }) =>
-            `Set up dev environment for ${context.productName}`,
-        },
-      }
-    ),
-    step(CdStepMachine, ({ context }) => ({
-      path: `./${context.productName}/clients/root`,
-    })),
-    step(CommandStepMachine, () => ({
-      command: "npm",
-      args: ["install", "@saflib/auth-links"],
-    })),
-    step(PromptStepMachine, ({ context }) => ({
-      prompt: `Set up the logged-out home page in the ${context.productName} root SPA, integrating with the other SPAs.
-      - Update the home page to have a call to action to the register page. Use linkToProps from @saflib/links to create the link and bind them to vuetify components. Get the link object from @saflib/auth-links which is in saflib/identity/auth-links.
-      - Incorporate the Layout exported from the ${context.sharedPackagePrefix}-clients-common package. This spa is "logged out".`,
-    })),
-    step(
-      CommandStepMachine,
-      () => ({
-        command: "npm",
-        args: ["run", "typecheck"],
-      }),
-      {
-        commitAfter: {
-          message: `Connect root spa`,
-        },
-      }
-    ),
+    // step(
+    //   CommandStepMachine,
+    //   ({ context }) => ({
+    //     command: "rm",
+    //     args: [
+    //       "-rf",
+    //       `./${context.productName}/service/${context.productName}-service`,
+    //     ],
+    //   }),
+    //   {
+    //     commitAfter: {
+    //       message: ({ context }) =>
+    //         `Remove ${context.productName} service package`,
+    //     },
+    //   },
+    // ),
+    // step(CommandStepMachine, () => ({
+    //   command: "npm",
+    //   args: ["install"],
+    // })),
+    // step(CdStepMachine, ({ context }) => ({
+    //   path: path.join(context.cwd, `./${context.productName}/service/monolith`),
+    // })),
+    // step(CommandStepMachine, () => ({
+    //   command: "npm",
+    //   args: ["exec", "saf-env", "generate", "--", "--combined"],
+    // })),
+    // step(CdStepMachine, ({ context }) => ({
+    //   path: `./${context.productName}/dev`,
+    // })),
+    // step(
+    //   CommandStepMachine,
+    //   () => ({
+    //     command: "touch",
+    //     args: ["./.env"],
+    //   }),
+    //   {
+    //     commitAfter: {
+    //       message: ({ context }) =>
+    //         `Set up dev environment for ${context.productName}`,
+    //     },
+    //   },
+    // ),
+    // step(CdStepMachine, ({ context }) => ({
+    //   path: `./${context.productName}/clients/root`,
+    // })),
+    // step(CommandStepMachine, () => ({
+    //   command: "npm",
+    //   args: ["install", "@saflib/auth-links"],
+    // })),
+    // step(PromptStepMachine, ({ context }) => ({
+    //   prompt: `Set up the logged-out home page in the ${context.productName} root SPA, integrating with the other SPAs.
+    //   - Update the home page to have a call to action to the register page. Use linkToProps from @saflib/links to create the link and bind them to vuetify components. Get the link object from @saflib/auth-links which is in saflib/identity/auth-links.
+    //   - Incorporate the Layout exported from the ${context.sharedPackagePrefix}-clients-common package. This spa is "logged out".`,
+    // })),
+    // step(
+    //   CommandStepMachine,
+    //   () => ({
+    //     command: "npm",
+    //     args: ["run", "typecheck"],
+    //   }),
+    //   {
+    //     commitAfter: {
+    //       message: `Connect root spa`,
+    //     },
+    //   },
+    // ),
 
-    step(CdStepMachine, ({ context }) => ({
-      path: `./${context.productName}/clients/auth`,
-    })),
-    step(CommandStepMachine, () => ({
-      command: "npm",
-      args: ["install", "@saflib/auth", "@saflib/auth-links"],
-    })),
-    step(PromptStepMachine, ({ context }) => ({
-      prompt: `Set up the ${context.productName} auth SPA, integrating with the other SPAs.
-      - Use the @saflib/auth package's router using 'createAuthRouter'. That will provide login, register, forgot password, and logout pages.
-      - Include the @saflib/auth/strings in the auth SPA's strings file, so i18n works.
-      - Make sure it redirects to the app spa's home page after login/register, using linkToHref from @saflib/links. And to root home page after logout.
-      - Incorporate the Layout exported from the ${context.sharedPackagePrefix}-clients-common package. The app will need to get the 'useProfile' hook from @saflib/auth and use it to determine if the user is logged in or not to give to the layout.`,
-    })),
-    step(
-      CommandStepMachine,
-      () => ({
-        command: "npm",
-        args: ["run", "typecheck"],
-      }),
-      {
-        commitAfter: {
-          message: `Connect auth spa`,
-        },
-      }
-    ),
+    // step(CdStepMachine, ({ context }) => ({
+    //   path: `./${context.productName}/clients/auth`,
+    // })),
+    // step(CommandStepMachine, () => ({
+    //   command: "npm",
+    //   args: ["install", "@saflib/auth", "@saflib/auth-links"],
+    // })),
+    // step(PromptStepMachine, ({ context }) => ({
+    //   prompt: `Set up the ${context.productName} auth SPA, integrating with the other SPAs.
+    //   - Use the @saflib/auth package's router using 'createAuthRouter'. That will provide login, register, forgot password, and logout pages.
+    //   - Include the @saflib/auth/strings in the auth SPA's strings file, so i18n works.
+    //   - Make sure it redirects to the app spa's home page after login/register, using linkToHref from @saflib/links. And to root home page after logout.
+    //   - Incorporate the Layout exported from the ${context.sharedPackagePrefix}-clients-common package. The app will need to get the 'useProfile' hook from @saflib/auth and use it to determine if the user is logged in or not to give to the layout.`,
+    // })),
+    // step(
+    //   CommandStepMachine,
+    //   () => ({
+    //     command: "npm",
+    //     args: ["run", "typecheck"],
+    //   }),
+    //   {
+    //     commitAfter: {
+    //       message: `Connect auth spa`,
+    //     },
+    //   },
+    // ),
 
-    step(CdStepMachine, ({ context }) => ({
-      path: `./${context.productName}/clients/app`,
-    })),
-    step(PromptStepMachine, ({ context }) => ({
-      prompt: `Set up the ${context.productName} app SPA, integrating with the other SPAs.
-      - Incorporate the Layout exported from the ${context.sharedPackagePrefix}-clients-common package. The app is always logged in.`,
-    })),
-    step(
-      CommandStepMachine,
-      () => ({
-        command: "npm",
-        args: ["run", "typecheck"],
-      }),
-      {
-        commitAfter: {
-          message: `Connect app spa`,
-        },
-      }
-    ),
+    // step(CdStepMachine, ({ context }) => ({
+    //   path: `./${context.productName}/clients/app`,
+    // })),
+    // step(PromptStepMachine, ({ context }) => ({
+    //   prompt: `Set up the ${context.productName} app SPA, integrating with the other SPAs.
+    //   - Incorporate the Layout exported from the ${context.sharedPackagePrefix}-clients-common package. The app is always logged in.`,
+    // })),
+    // step(
+    //   CommandStepMachine,
+    //   () => ({
+    //     command: "npm",
+    //     args: ["run", "typecheck"],
+    //   }),
+    //   {
+    //     commitAfter: {
+    //       message: `Connect app spa`,
+    //     },
+    //   },
+    // ),
 
-    step(CdStepMachine, ({ context }) => ({
-      path: `./${context.productName}/clients/account`,
-    })),
-    step(CommandStepMachine, () => ({
-      command: "npm",
-      args: ["install", "@saflib/account-sdk", "@saflib/auth-links"],
-    })),
-    step(PromptStepMachine, ({ context }) => ({
-      prompt: `Set up the ${context.productName} account SPA, integrating with the other SPAs.
-      - Add to the router @saflib/account-sdk package's pages for changing password and updating profile.
-      - Include the @saflib/account-sdk/strings in the account-spa's strings file, so i18n works.
-      - Update the home page to link to those pages.
-      - Incorporate the Layout exported from the ${context.sharedPackagePrefix}-clients-common package. This spa is always logged in.`,
-    })),
-    step(
-      CommandStepMachine,
-      () => ({
-        command: "npm",
-        args: ["run", "typecheck"],
-      }),
-      {
-        commitAfter: {
-          message: `Connect account spa`,
-        },
-      }
-    ),
-    step(CdStepMachine, ({ context }) => ({
-      path: `./${context.productName}/clients/common`,
-    })),
-    step(CommandStepMachine, ({ context }) => ({
-      command: "npm",
-      args: [
-        "install",
-        "@saflib/auth-links",
-        `${context.sharedPackagePrefix}-links`,
-      ],
-    })),
-    step(PromptStepMachine, ({ context }) => ({
-      prompt: `Update the layout component in the ${context.productName} common package, adding links to the various SPAs.
-      - When logged out, link to the root spa's home page, and the auth spa's register page.
-      - When logged in, link to the app spa's home page, the account spa's home page, and the auth spa's logout page.
-      - Also, if logged in as admin, link to the admin spa's home page.`,
-    })),
-    step(
-      CommandStepMachine,
-      () => ({
-        command: "npm",
-        args: ["run", "typecheck"],
-      }),
-      {
-        commitAfter: {
-          message: `Connect common package`,
-        },
-      }
-    ),
+    // step(CdStepMachine, ({ context }) => ({
+    //   path: `./${context.productName}/clients/account`,
+    // })),
+    // step(CommandStepMachine, () => ({
+    //   command: "npm",
+    //   args: ["install", "@saflib/account-sdk", "@saflib/auth-links"],
+    // })),
+    // step(PromptStepMachine, ({ context }) => ({
+    //   prompt: `Set up the ${context.productName} account SPA, integrating with the other SPAs.
+    //   - Add to the router @saflib/account-sdk package's pages for changing password and updating profile.
+    //   - Include the @saflib/account-sdk/strings in the account-spa's strings file, so i18n works.
+    //   - Update the home page to link to those pages.
+    //   - Incorporate the Layout exported from the ${context.sharedPackagePrefix}-clients-common package. This spa is always logged in.`,
+    // })),
+    // step(
+    //   CommandStepMachine,
+    //   () => ({
+    //     command: "npm",
+    //     args: ["run", "typecheck"],
+    //   }),
+    //   {
+    //     commitAfter: {
+    //       message: `Connect account spa`,
+    //     },
+    //   },
+    // ),
+    // step(CdStepMachine, ({ context }) => ({
+    //   path: `./${context.productName}/clients/common`,
+    // })),
+    // step(CommandStepMachine, ({ context }) => ({
+    //   command: "npm",
+    //   args: [
+    //     "install",
+    //     "@saflib/auth-links",
+    //     `${context.sharedPackagePrefix}-links`,
+    //   ],
+    // })),
+    // step(PromptStepMachine, ({ context }) => ({
+    //   prompt: `Update the layout component in the ${context.productName} common package, adding links to the various SPAs.
+    //   - When logged out, link to the root spa's home page, and the auth spa's register page.
+    //   - When logged in, link to the app spa's home page, the account spa's home page, and the auth spa's logout page.
+    //   - Also, if logged in as admin, link to the admin spa's home page.`,
+    // })),
+    // step(
+    //   CommandStepMachine,
+    //   () => ({
+    //     command: "npm",
+    //     args: ["run", "typecheck"],
+    //   }),
+    //   {
+    //     commitAfter: {
+    //       message: `Connect common package`,
+    //     },
+    //   },
+    // ),
 
     // step(CdStepMachine, ({ context }) => ({
     //   path: `./${context.productName}/dev`,

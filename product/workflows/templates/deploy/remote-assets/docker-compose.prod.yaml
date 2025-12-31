@@ -2,7 +2,7 @@ services:
   caddy:
     cap_add:
       - NET_ADMIN
-    image: $CONTAINER_REGISTRY/__org-name__-caddy:latest
+    image: $CONTAINER_REGISTRY/__organization-name__-caddy:latest
     ports:
       - "80:80"
       - "443:443"
@@ -18,7 +18,7 @@ services:
     restart: unless-stopped
 
   __product-name__-monolith:
-    image: $CONTAINER_REGISTRY/__org-name__-__product-name__-monolith:latest
+    image: $CONTAINER_REGISTRY/__organization-name__-__product-name__-monolith:latest
     restart: unless-stopped
     deploy:
       resources:
