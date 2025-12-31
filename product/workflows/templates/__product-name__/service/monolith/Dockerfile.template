@@ -7,6 +7,6 @@ WORKDIR /app
 RUN npm install --omit=dev
 #{ copy_src }#
 
-WORKDIR /app/services/__product-name__-monolith
+WORKDIR /app/__product-name__/service/monolith
 CMD ["npm", "start"]
 

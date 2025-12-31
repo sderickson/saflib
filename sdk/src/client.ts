@@ -9,7 +9,7 @@ import type { ClientResult } from "./types.ts";
  * Given a "paths" openapi generated type and a subdomain, creates a typed `openapi-fetch` client which queries the given subdomain. Uses the current domain and protocol. Handles CSRF token injection, and works in tests.
  */
 export const createSafClient = <Q extends {}>(
-  serviceSubdomain: string,
+  serviceSubdomain: string
 ): ReturnType<typeof createClient<Q>> => {
   let protocol = "http";
   let host = "localhost:3000";
@@ -67,7 +67,7 @@ export const createTanstackQueryClient = () => {
  * Wrapper around an openapi-fetch client fetch method to handle errors and return the data in a way that is compatible with Tanstack Query.
  */
 export const handleClientMethod = async <T>(
-  request: Promise<ClientResult<T>>,
+  request: Promise<ClientResult<T>>
 ): Promise<T> => {
   let result: ClientResult<T>;
   try {

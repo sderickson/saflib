@@ -60,7 +60,9 @@ export const getGitChanges = async () => {
 
   const allFiles = [...staged, ...unstaged, ...untracked];
   const gitRoot = await getGitRoot();
-  const absoluteAllFiles = allFiles.map((file) => path.join(gitRoot, file));
+  const absoluteAllFiles = allFiles
+    .map((file) => path.join(gitRoot, file))
+    .filter((file) => !file.endsWith("/saflib"));
 
   return absoluteAllFiles;
 };
@@ -126,12 +128,12 @@ export const handleGitChanges = async ({
 };
 
 export interface CommitChangesParam {
-  workflow: WorkflowDefinition;
-  context: WorkflowContext;
+  workflow?: WorkflowDefinition;
+  context?: WorkflowContext;
+  message?: string;
 }
 
 export const commitChanges = async (param: CommitChangesParam) => {
-  const { workflow, context } = param;
   const logger = getWorkflowLogger();
 
   const absoluteAllFiles = await getGitChanges();
@@ -144,14 +146,25 @@ export const commitChanges = async (param: CommitChangesParam) => {
     cwd: await getGitRoot(),
   });
 
-  const gitCommitHeader =
-    workflow.checklistDescription?.(context) || workflow.description;
-  const gitCommitBody = checklistToString(context.checklist);
-  const gitCommitMessage = `${gitCommitHeader}\n\n${gitCommitBody}`;
+  const { workflow, context, message } = param;
+  let gitCommitMessage = "";
+  if (workflow && context) {
+    const gitCommitHeader =
+      workflow.checklistDescription?.(context) || workflow.description;
+    const gitCommitBody = checklistToString(context.checklist);
+    gitCommitMessage = `${gitCommitHeader}\n\n${gitCommitBody}`;
+  } else if (message) {
+    gitCommitMessage = message;
+  } else {
+    logger.error("No message provided to commit changes.");
+    return;
+  }
+
   const msgFile = join(tmpdir(), `commit-msg-${Date.now()}.txt`);
   writeFileSync(msgFile, gitCommitMessage);
   execSync(`git commit -F "${msgFile}"`, {
     cwd: await getGitRoot(),
+    stdio: "inherit",
   });
   logger.info(`Committed ${absoluteAllFiles.length} files with message:
 ${gitCommitMessage}`);
@@ -165,7 +178,7 @@ interface FilterMatchesOptions {
   cwd: string;
 }
 
-const universalGlobs = ["**/package-lock.json"];
+const universalGlobs = ["**/package-lock.json", "**/saflib"];
 
 export const filterMatches = ({
   absolutePaths,
@@ -191,6 +204,5 @@ export const filterMatches = ({
       return !absoluteGlobs.some((glob) => minimatch(absolutePath, glob));
     },
   );
-
   return filteredAbsolutePaths;
 };

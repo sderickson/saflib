@@ -11,73 +11,101 @@ See [Code Reference](./ref/index.md) for more information on package exports.
 
 ## Monorepo Structure
 
-This is a recommended structure for a SAF monorepo. It serves as a reasonable layout for a single product (SAF is not designed for multiple products in the same repo). It does not need to be strictly adhered to; workflows are set up to be agnostic to the structure of the monorepo, and are more particular about how the packages are structured themselves rather than where they exist.
+This is a recommended structure for a SAF monorepo, which works for one or more products. It does not need to be strictly adhered to; workflows are set up to be agnostic to the structure of the monorepo, and are more particular about how the packages are structured themselves rather than where they exist.
 
 ```
 {repo-name}/
-├── clients/
+├── {product-name}/
+│   ├── clients/
+|   |   ├── account/
+|   |   ├── admin/
+|   |   ├── app/
+|   |   ├── auth/
+|   |   ├── build/
+|   |   ├── common/
+|   |   ├── links/
+|   |   ├── root/
+|   |   └── ...
+│   ├── dev/
+|   ├── notes/
+│   ├── service/
+|   |   ├── common/
+│   │   ├── cron/
+|   |   ├── db/
+|   |   ├── http/
+│   │   ├── identity/
+│   │   ├── monolith/
+|   |   ├── sdk/
+|   |   ├── spec/
+|   |   ├── ...
 ├── deploy/
-├── integrations/
 ├── notes/
 ├── saflib/
-├── services/
 ├── package-lock.json
 └── package.json
 ```
 
 ## Directories Explained
 
-### `clients/`
+### `{product-name}/clients/`
 
 Clients as in web clients, desktop clients, and mobile clients. SAF only supports web clients currently.
 
-Most web clients are expected to be Vue 3 single page apps with their own dedicated subdomain. Each SPA should have its own package within `clients/`, be named `web-{subdomain}`, and depend on `@saflib/vue`. It exports a function which will run `createVueApp` for the SPA.
+Most web clients are expected to be Vue 3 single page apps with their own dedicated subdomain. Each SPA should have its own package within `clients/`, be named `{subdomain}/`, and depend on `@saflib/vue`. It exports a function which will run `createVueApp` for the SPA.
 
-All web clients are built with a single Vite config in a `spas` package in `clients/`. This package's main purpose is to provide a single entry point for developing and building all SPAs together. This includes a Dockerfile which copies all necessary files and npm installs them, such that the image could either run vite in development or build the static files for production.
+All web clients are built with a single Vite config in a `build` package in `clients/`. This package's main purpose is to provide a single entry point for developing and building all SPAs together. This includes a Dockerfile which copies all necessary files and npm installs them, such that the image could either run vite in development or build the static files for production.
 
-There should also be a `@saflib/web-common` package which contains shared logic across SPAs.
+There should also be a `common/` package which contains shared logic across SPAs, and a `links/` package which contains link objects for pages referenced by the server and other SPAs. The `links/` package is separate to isolate it from Vue and related dependencies so server-side code doesn't depend on those dependencies.
 
 See docs for `@saflib/vue` for more information.
 
+### `{product-name}/dev/`
+
+Runs the application in development, using docker compose to run the clients (vite in dev mode), server, a caddy reverse proxy, and anything else necessary. The generated services includes `azurite`, a standin for Azure Blob Storage.
+
+### `{product-name}/notes/`
+
+Used for planning documents, including specs and roadmaps. Mostly used by the `@saflib/processes` package. It is one package with one folder for each project.
+
+### `{product-name}/service/`
+
+First, some terminology:
+
+- **Library**: A package which contains shared logic.
+- **Work**: Any long-running activity. A cron-job runner, an async job runner, or a server. May be executed by one or more workers.
+- **Server**: Work which includes listening on a port. GRPC, HTTP, WS, FTP, etc.
+- **Service**: A collection of work and servers which achieve a goal.
+- **Monolith**: Two or more services running together.
+
+Each `service/` directory is one of these.
+
+| Package     | Description                                                               | Type     |
+| ----------- | ------------------------------------------------------------------------- | -------- |
+| common      | shared logic such as loggers and async local storage                      | library  |
+| cron        | async job runner                                                          | worker   |
+| db          | drizzle/pglite database                                                   | library  |
+| grpc-client | gRPC client implementation                                                | library  |
+| grpc-proto  | gRPC protocol definitions                                                 | library  |
+| grpc-server | gRPC server implementation                                                | server   |
+| http        | HTTP server                                                               | server   |
+| identity    | runs SAF identity service, including its db, http server, and grpc server | service  |
+| jobs        | async job runner                                                          | worker   |
+| monolith    | runs all other servers and services in this directory                     | monolith |
+| sdk         | shared frontend code that is tightly coupled to this service              | library  |
+| spec        | OpenAPI specification                                                     | library  |
+
+Third-party integrations can also be added along-side these packages. However, for consistency they should describe the service rather than be the name of the brand.
+
+- `payments/`, not `stripe/`
+- `email/`, not `sendgrid/`
+- `notifications/`, not `twilio/`
+
+These packages are considered "libraries"; they are like `grpc-client` or `sdk` packages in that they don't _run_ anything, they are simply code which is imported and run as part of some work.
+
 ### `deploy/`
 
-Each "deployment" (either for local development or remote) should have its own directory in `deploy/`. At minimum, there should be `dev` deployment and a `prod` deployment, though there can be others such as focused local deployments for focused development, or staging/canary deployments. These directories own docker compose files, configurations, build/deploy scripts, and default environment files.
-
-This area is not thoroughly developed, and may be moved over to use Nix instead. The SAF template is the source of truth for how deployments are currently set up and run. It's fairly manual.
-
-### `integrations/`
-
-Integration packages integrate with external services. They are expected to be named `@org-name/{service-name}`, e.g. `@saflib/stripe`.
-
-Integration packages mainly differ from regular packages in that they must include a mock of the service, per [best practices](../../best-practices.md#mock-fake-and-shim-service-boundaries). They should return a mock client when `NODE_ENV` is `test` or `MOCK_INTEGRATIONS` is `true`.
-
-### `notes/`
-
-Used for planning documents, including specs (PRDs) and roadmaps. Mostly used by the `@saflib/processes` package. It is one package with one folder for each project.
+Assuming you deploy all products to the same infrastructure, the `deploy/` directory is similar to the `dev/` directory, but for production. It includes scripts to build images, run them locally to test, and deploy to the remote infrastructure. The prod build is also used in CI with playwright.
 
 ### `saflib/`
 
 A git submodule which contains [the SAF source](https://github.com/sderickson/saflib), so they can be referenced, edited, and used directly. One day these may be more traditionally published and installed through npm, but for projects which will also invest heavily in this shared codebase, a submodule is the way to go.
-
-### `services/`
-
-A service is an absolute unit of backend. It typically will be composed of some combination of:
-
-- An HTTP server
-- A gRPC server
-- Cron jobs
-- A database
-
-There's nothing particularly stopping a service from running multiples of each of these, but should be uncommon if not avoided.
-
-Currently these all not only run on the same machine, they all run on the same process. However, they are broken up into separate packages and may be run separately (or shared, in the case of the database).
-
-Services should be separated by domain, such as having separate services for:
-
-- identity
-- payments
-- each core application
-
-Third-party integrations, or systems which could be swapped out for a third-party integration, typically make good separate services.
-
-Services should be small enough to be owned by a single team.

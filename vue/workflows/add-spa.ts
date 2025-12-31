@@ -11,26 +11,14 @@ import {
 } from "@saflib/workflows";
 import path from "node:path";
 
-const spaDir = path.join(
+const subdomainDir = path.join(
   import.meta.dirname,
   "template",
-  "__product-name__-__subdomain-name__-spa",
+  "__subdomain-name__",
 );
-const linksDir = path.join(
-  import.meta.dirname,
-  "template",
-  "__product-name__-__subdomain-name__-links",
-);
-const clientsDir = path.join(
-  import.meta.dirname,
-  "template",
-  "__product-name__-clients",
-);
-const commonDir = path.join(
-  import.meta.dirname,
-  "template",
-  "__product-name__-clients-common",
-);
+const linksDir = path.join(import.meta.dirname, "template", "links");
+const buildDir = path.join(import.meta.dirname, "template", "build");
+const commonDir = path.join(import.meta.dirname, "template", "common");
 
 const input = [
   {
@@ -65,18 +53,20 @@ export const AddSpaWorkflowDefinition = defineWorkflow<
   description:
     "Create a new SAF-powered frontend SPA using Vue, Vue-Router, and Tanstack Query",
 
+  checklistDescription: ({ packageName }) => `Init ${packageName}.`,
+
   input,
 
   sourceUrl: import.meta.url,
 
   context: ({ input }) => {
-    const targetDir = path.join(input.cwd, "clients", input.productName);
+    const targetDir = path.join(input.cwd, input.productName, "clients");
     const currentPackageName = getPackageName(input.cwd);
     const currentPackageOrgName =
       "@" + parsePackageName(currentPackageName).organizationName;
     const spaPackageName = `${currentPackageOrgName}/${input.productName}-${input.subdomainName}-spa`;
     const clientsPackageName = `${currentPackageOrgName}/${input.productName}-clients`;
-    const linksPackageName = `${currentPackageOrgName}/${input.productName}-${input.subdomainName}-links`;
+    const linksPackageName = `${currentPackageOrgName}/${input.productName}-links`;
     const commonPackageName = `${currentPackageOrgName}/${input.productName}-clients-common`;
     const serviceSpecName = `${currentPackageOrgName}/${input.productName}-spec`;
 
@@ -96,22 +86,22 @@ export const AddSpaWorkflowDefinition = defineWorkflow<
   },
 
   templateFiles: {
-    app: path.join(spaDir, "__SubdomainName__App.vue"),
-    fixtures: path.join(spaDir, "fixtures.ts"),
-    i18n: path.join(spaDir, "i18n.ts"),
-    main: path.join(spaDir, "main.ts"),
-    packageJson: path.join(spaDir, "package.json"),
-    router: path.join(spaDir, "router.ts"),
-    strings: path.join(spaDir, "strings.ts"),
-    testApp: path.join(spaDir, "test-app.ts"),
-    tsconfig: path.join(spaDir, "tsconfig.json"),
-    vitestConfig: path.join(spaDir, "vitest.config.ts"),
-    homePage: path.join(spaDir, "pages/home-page"),
+    spa: path.join(subdomainDir, "__SubdomainName__Spa.vue"),
+    fixtures: path.join(subdomainDir, "fixtures.ts"),
+    i18n: path.join(subdomainDir, "i18n.ts"),
+    main: path.join(subdomainDir, "main.ts"),
+    packageJson: path.join(subdomainDir, "package.json"),
+    router: path.join(subdomainDir, "router.ts"),
+    strings: path.join(subdomainDir, "strings.ts"),
+    testApp: path.join(subdomainDir, "test-app.ts"),
+    tsconfig: path.join(subdomainDir, "tsconfig.json"),
+    vitestConfig: path.join(subdomainDir, "vitest.config.ts"),
+    homePage: path.join(subdomainDir, "pages/home-page"),
 
     linksPackage: linksDir,
 
-    clientsPackageJson: path.join(clientsDir, "package.json"),
-    clientsPackage: clientsDir,
+    clientsPackageJson: path.join(buildDir, "package.json"),
+    clientsPackage: buildDir,
 
     commonPackage: commonDir,
   },
@@ -134,6 +124,7 @@ export const AddSpaWorkflowDefinition = defineWorkflow<
           context.commonPackageName,
         );
         line = line.replace("template-package-spec", context.serviceSpecName);
+        line = line.replace("template-package-links", context.linksPackageName);
         return lineReplace(line);
       };
       return {

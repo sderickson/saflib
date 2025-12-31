@@ -1,13 +1,13 @@
 import { createVueApp } from "@saflib/vue";
 import { setClientName } from "@saflib/links";
-import App from "./__SubdomainName__App.vue";
+import Spa from "./__SubdomainName__Spa.vue";
 import { create__SubdomainName__Router } from "./router.ts";
 import { __subdomain_name___strings } from "./strings.ts";
 
 export const main = () => {
   setClientName("__subdomain-name__");
   const router = create__SubdomainName__Router();
-  createVueApp(App, {
+  createVueApp(Spa, {
     router,
     i18nMessages: {
       ...__subdomain_name___strings,

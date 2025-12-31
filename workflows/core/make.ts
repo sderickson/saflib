@@ -54,7 +54,7 @@ export function defineWorkflow<
   docFiles: Record<string, string>;
   steps: Array<WorkflowStep<C, AnyStateMachine>>;
   versionControl?: {
-    allowPaths?: string[];
+    allowPaths?: string[] | (({ context }: { context: C }) => string[]);
   };
 }): WorkflowDefinition<I, C> {
   return config;
@@ -64,7 +64,7 @@ export function defineWorkflow<
  * Implementation of the makeMachineFromWorkflow function.
  */
 function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
-  workflow: WorkflowDefinition<I, C>,
+  workflow: WorkflowDefinition<I, C>
 ) {
   type Input = CreateArgsType<I> & WorkflowInput;
   type Context = C & WorkflowContext;
@@ -90,11 +90,17 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
   }
 
   const states: Record<string, object> = {};
+  const stepNames = workflow.steps.map(
+    (step, index) => `step_${index}_${step.machine.id}`
+  );
+  const lastStepName = `step_${workflow.steps.length}_finalize`;
+  stepNames.push(lastStepName);
+
   for (let i = 0; i < workflow.steps.length; i++) {
     const step = workflow.steps[i];
-    const stateName = `step_${i}`;
+    const stateName = stepNames[i];
     const validateStateName = `${stateName}_validate`;
-    const nextStateName = `step_${i + 1}`;
+    const nextStateName = stepNames[i + 1];
 
     states[stateName] = {
       always: [
@@ -173,15 +179,23 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
           }
 
           if (input.manageVersionControl) {
+            let allowPaths:
+              | string[]
+              | ((context: Context) => string[])
+              | undefined = undefined;
+            if (typeof workflow.versionControl?.allowPaths === "function") {
+              allowPaths = workflow.versionControl.allowPaths({
+                context: input,
+              });
+            } else {
+              allowPaths = workflow.versionControl?.allowPaths;
+            }
             const successful = await handleGitChanges({
               workflowId: workflow.id,
               context: input,
               checklistDescription:
                 workflow.checklistDescription?.(input) || workflow.description,
-              allowPaths:
-                typeof workflow.versionControl === "object"
-                  ? workflow.versionControl.allowPaths
-                  : undefined,
+              allowPaths,
             });
             if (!successful) {
               throw new Error("Failed to handle git changes");
@@ -196,7 +210,18 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
               throw new Error(output);
             }
           }
-          return;
+
+          if (input.manageVersionControl && step.commitAfter) {
+            let message: string;
+            if (typeof step.commitAfter.message === "function") {
+              message = step.commitAfter.message({ context: input });
+            } else {
+              message = step.commitAfter.message;
+            }
+            await commitChanges({
+              message,
+            });
+          }
         }),
         input: ({ context }: { context: Context }) => context,
         onDone: {
@@ -224,7 +249,7 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
       },
     };
   }
-  states[`step_${workflow.steps.length}`] = {
+  states[lastStepName] = {
     invoke: {
       src: fromPromise(async ({ input }: { input: Context }) => {
         if (input.runMode === "dry" || input.runMode === "script") {
@@ -290,7 +315,7 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
       };
       return context;
     },
-    initial: "step_0",
+    initial: stepNames[0],
     states,
     output: ({ context }) => ({
       checklist: {
@@ -309,7 +334,7 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
  * This basically translates my simplified and scoped workflow machine definition to the full XState machine definition.
  */
 export const makeWorkflowMachine = <C, I extends readonly WorkflowArgument[]>(
-  config: WorkflowDefinition<I, C>,
+  config: WorkflowDefinition<I, C>
 ) => {
   return _makeWorkflowMachine(defineWorkflow(config));
 };
@@ -325,12 +350,16 @@ export const step = <C, M extends AnyStateMachine>(
       context: C & WorkflowContext;
     }) => Promise<string | undefined>;
     skipIf?: (arg: { context: C & WorkflowContext }) => boolean;
-  } = {},
+    commitAfter?: {
+      message: string | ((arg: { context: C & WorkflowContext }) => string);
+    };
+  } = {}
 ): WorkflowStep<C, M> => {
   return {
     machine,
     input,
     validate: options.validate || (() => Promise.resolve(undefined)),
     skipIf: options.skipIf || (() => false),
+    commitAfter: options.commitAfter || undefined,
   };
 };

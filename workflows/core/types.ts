@@ -34,6 +34,13 @@ export type WorkflowStep<C, M extends AnyStateMachine> = {
    * A function that determines if the step should be skipped.
    */
   skipIf: (arg: { context: C & WorkflowContext }) => boolean;
+
+  /**
+   * Whether to commit the changes after the step has been executed, and with what message.
+   */
+  commitAfter?: {
+    message: string | ((arg: { context: C & WorkflowContext }) => string);
+  };
 };
 
 /**
@@ -93,7 +100,7 @@ export interface WorkflowDefinition<
    * Configure version control for the workflow. Right now, just provide paths which the workflow will consider safe to change as part of the workflow.
    */
   versionControl?: {
-    allowPaths?: string[];
+    allowPaths?: string[] | (({ context }: { context: C }) => string[]);
   };
 }
 

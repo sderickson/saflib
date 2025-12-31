@@ -2,7 +2,11 @@
   <v-container>
     <h1>{{ t(strings.title) }}</h1>
     <v-text-field v-bind="t(strings.example_input)"></v-text-field>
-    <i18n-t v-if="profile.id" keypath="logged_in_with_email">
+    <i18n-t
+      v-if="profile.id"
+      scope="global"
+      :keypath="lookupTKey(strings.logged_in_with_email)"
+    >
       <template #email>{{ profile.email }}</template>
     </i18n-t>
     <div v-else>{{ t(strings.not_logged_in) }}</div>
@@ -14,7 +18,7 @@ import { __target_name___page as strings } from "./__TargetName__.strings.ts";
 import { use__TargetName__Loader } from "./__TargetName__.loader.ts";
 import { useReverseT } from "../../i18n.ts";
 
-const { t } = useReverseT();
+const { t, lookupTKey } = useReverseT();
 
 const { profileQuery } = use__TargetName__Loader();
 

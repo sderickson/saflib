@@ -6,11 +6,12 @@
   },
   "exports": {},
   "dependencies": {
+    "@saflib/env": "*",
     "@saflib/monorepo": "*",
+    "@saflib/sentry": "*",
+    "template-package-db": "*",
+    "template-package-http": "*",
     "template-package-identity": "*",
-    "template-package-service": "*",
-    "template-package-service-common": "*",
-    "@saflib/sentry": "*"
+    "template-package-service-common": "*"
   }
 }
-

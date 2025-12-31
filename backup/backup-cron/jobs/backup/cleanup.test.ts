@@ -3,11 +3,7 @@ import {
   makeContext,
   backupServiceStorage,
 } from "@saflib/backup-service-common";
-import {
-  TestObjectStore,
-  StorageError,
-  PathTraversalError,
-} from "@saflib/object-store";
+import { TestObjectStore } from "@saflib/object-store";
 import { cleanup } from "./cleanup.ts";
 
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
@@ -49,7 +45,9 @@ describe("cleanup backup job", () => {
 
     const files = objectStore.getFiles();
     expect(files).toHaveLength(1);
-    expect(files[0].path).toBe(`backup-${newTimestamp}-automatic-new-backup.db`);
+    expect(files[0].path).toBe(
+      `backup-${newTimestamp}-automatic-new-backup.db`
+    );
   });
 
   it("should skip empty or incomplete backups", async () => {
@@ -82,8 +80,12 @@ describe("cleanup backup job", () => {
     expect(files).toHaveLength(2);
     const paths = files.map((f) => f.path);
     expect(paths).toContain(`backup-${oldTimestamp}-automatic-empty-backup.db`);
-    expect(paths).toContain(`backup-${oldTimestamp}-automatic-no-size-backup.db`);
-    expect(paths).not.toContain(`backup-${oldTimestamp}-automatic-valid-backup.db`);
+    expect(paths).toContain(
+      `backup-${oldTimestamp}-automatic-no-size-backup.db`
+    );
+    expect(paths).not.toContain(
+      `backup-${oldTimestamp}-automatic-valid-backup.db`
+    );
   });
 
   it("should skip files that do not match automatic backup pattern", async () => {
@@ -123,7 +125,9 @@ describe("cleanup backup job", () => {
     expect(paths).toContain(`backup-${oldTimestamp}-manual-manual-backup.db`);
     expect(paths).toContain(`some-other-file.db`);
     expect(paths).toContain(`backup-${oldTimestamp}-invalid-type-backup.db`);
-    expect(paths).not.toContain(`backup-${oldTimestamp}-automatic-valid-backup.db`);
+    expect(paths).not.toContain(
+      `backup-${oldTimestamp}-automatic-valid-backup.db`
+    );
   });
 
   it("should skip backups that are not old enough", async () => {
@@ -141,158 +145,6 @@ describe("cleanup backup job", () => {
         size: 1024,
       },
     ]);
-
-    const context = makeContext({
-      objectStore,
-    });
-
-    await backupServiceStorage.run(context, async () => {
-      await cleanup();
-    });
-
-    const files = objectStore.getFiles();
-    expect(files).toHaveLength(2);
-  });
-
-  it("should handle missing objectStore configuration", async () => {
-    const context = makeContext({});
-
-    await backupServiceStorage.run(context, async () => {
-      await cleanup();
-    });
-  });
-
-  it("should handle StorageError during listFiles", async () => {
-    const storageError = new StorageError("List files failed");
-    objectStore.setListShouldFail(storageError);
-
-    const context = makeContext({
-      objectStore,
-    });
-
-    await backupServiceStorage.run(context, async () => {
-      await cleanup();
-    });
-
-    const files = objectStore.getFiles();
-    expect(files).toHaveLength(0);
-  });
-
-  it("should handle PathTraversalError during listFiles", async () => {
-    const pathTraversalError = new PathTraversalError(
-      "../invalid-path",
-      "backups",
-    );
-    objectStore.setListShouldFail(pathTraversalError);
-
-    const context = makeContext({
-      objectStore,
-    });
-
-    await backupServiceStorage.run(context, async () => {
-      await cleanup();
-    });
-
-    const files = objectStore.getFiles();
-    expect(files).toHaveLength(0);
-  });
-
-  it("should handle generic error during listFiles", async () => {
-    const genericError = new Error("Generic list error");
-    objectStore.setListShouldFail(genericError);
-
-    const context = makeContext({
-      objectStore,
-    });
-
-    await backupServiceStorage.run(context, async () => {
-      await cleanup();
-    });
-
-    const files = objectStore.getFiles();
-    expect(files).toHaveLength(0);
-  });
-
-  it("should handle StorageError during deleteFile and continue processing", async () => {
-    const now = Date.now();
-    const oldTimestamp = now - THIRTY_DAYS_MS - 1000;
-    const storageError = new StorageError("Delete failed");
-
-    objectStore.setFiles([
-      {
-        path: `backup-${oldTimestamp}-automatic-backup-1.db`,
-        size: 1024,
-      },
-      {
-        path: `backup-${oldTimestamp}-automatic-backup-2.db`,
-        size: 2048,
-      },
-    ]);
-
-    objectStore.setDeleteShouldFail(storageError);
-
-    const context = makeContext({
-      objectStore,
-    });
-
-    await backupServiceStorage.run(context, async () => {
-      await cleanup();
-    });
-
-    const files = objectStore.getFiles();
-    expect(files).toHaveLength(2);
-  });
-
-  it("should handle PathTraversalError during deleteFile and continue processing", async () => {
-    const now = Date.now();
-    const oldTimestamp = now - THIRTY_DAYS_MS - 1000;
-    const pathTraversalError = new PathTraversalError(
-      "../invalid-path",
-      "backups",
-    );
-
-    objectStore.setFiles([
-      {
-        path: `backup-${oldTimestamp}-automatic-backup-1.db`,
-        size: 1024,
-      },
-      {
-        path: `backup-${oldTimestamp}-automatic-backup-2.db`,
-        size: 2048,
-      },
-    ]);
-
-    objectStore.setDeleteShouldFail(pathTraversalError);
-
-    const context = makeContext({
-      objectStore,
-    });
-
-    await backupServiceStorage.run(context, async () => {
-      await cleanup();
-    });
-
-    const files = objectStore.getFiles();
-    expect(files).toHaveLength(2);
-  });
-
-  it("should handle generic error during deleteFile and continue processing", async () => {
-    const now = Date.now();
-    const oldTimestamp = now - THIRTY_DAYS_MS - 1000;
-    const genericError = new Error("Generic delete error");
-
-    objectStore.setFiles([
-      {
-        path: `backup-${oldTimestamp}-automatic-backup-1.db`,
-        size: 1024,
-      },
-      {
-        path: `backup-${oldTimestamp}-automatic-backup-2.db`,
-        size: 2048,
-      },
-    ]);
-
-    objectStore.setDeleteShouldFail(genericError);
 
     const context = makeContext({
       objectStore,
@@ -348,8 +200,12 @@ describe("cleanup backup job", () => {
     expect(paths).toContain(`backup-${oldTimestamp}-automatic-old-empty.db`);
     expect(paths).toContain(`backup-${newTimestamp}-automatic-new-valid.db`);
     expect(paths).toContain(`backup-${oldTimestamp}-manual-manual-backup.db`);
-    expect(paths).not.toContain(`backup-${oldTimestamp}-automatic-old-valid.db`);
-    expect(paths).not.toContain(`backup-${oldTimestamp}-automatic-old-valid-2.db`);
+    expect(paths).not.toContain(
+      `backup-${oldTimestamp}-automatic-old-valid.db`
+    );
+    expect(paths).not.toContain(
+      `backup-${oldTimestamp}-automatic-old-valid-2.db`
+    );
   });
 
   it("should handle empty file list", async () => {

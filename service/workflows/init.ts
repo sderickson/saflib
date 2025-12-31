@@ -29,7 +29,7 @@ const input = [
     name: "path",
     description:
       "The path to the target directory for the service package (e.g., './services/example').",
-    exampleValue: "./services/example",
+    exampleValue: "./service/example/service",
   },
 ] as const;
 
@@ -47,8 +47,7 @@ export const InitServiceWorkflowDefinition = defineWorkflow<
   description:
     "Create a new complete service package with database, HTTP server, API spec, and service orchestration",
 
-  checklistDescription: ({ serviceName }) =>
-    `Create a new ${serviceName} service package with all components.`,
+  checklistDescription: ({ packageName }) => `Init ${packageName}.`,
 
   input,
 
@@ -58,15 +57,15 @@ export const InitServiceWorkflowDefinition = defineWorkflow<
     const parsed = parsePackageName(input.name, {
       requiredSuffix: "-service",
     });
-    if (!input.path.endsWith(`/${parsed.serviceName}`)) {
+    if (!input.path.endsWith(`/service`)) {
       throw new Error(
-        `The path must end with the service name, e.g. ${path.dirname(input.path)}/${parsed.serviceName}`,
+        `The path must end with the service name, e.g. ${path.dirname(input.path)}/service`
       );
     }
     const targetDir = path.join(
       input.cwd,
       input.path,
-      parsed.serviceName + "-service",
+      parsed.serviceName + "-service"
     );
     return {
       ...parsed,
@@ -96,34 +95,31 @@ export const InitServiceWorkflowDefinition = defineWorkflow<
     // openapi
     step(makeWorkflowMachine(OpenapiInitWorkflowDefinition), ({ context }) => ({
       name: context.sharedPackagePrefix + "-spec",
-      path: path.join(context.serviceGroupDir, `${context.serviceName}-spec`),
+      path: path.join(context.serviceGroupDir, "spec"),
     })),
 
     // drizzle
     step(makeWorkflowMachine(DrizzleInitWorkflowDefinition), ({ context }) => ({
       name: context.sharedPackagePrefix + "-db",
-      path: path.join(context.serviceGroupDir, `${context.serviceName}-db`),
+      path: path.join(context.serviceGroupDir, "db"),
     })),
 
     // sdk
     step(makeWorkflowMachine(SdkInitWorkflowDefinition), ({ context }) => ({
       name: context.sharedPackagePrefix + "-sdk",
-      path: path.join(context.serviceGroupDir, `${context.serviceName}-sdk`),
+      path: path.join(context.serviceGroupDir, "sdk"),
     })),
 
     // common
     step(makeWorkflowMachine(InitCommonWorkflowDefinition), ({ context }) => ({
       name: context.sharedPackagePrefix + "-service-common",
-      path: path.join(
-        context.serviceGroupDir,
-        `${context.serviceName}-service-common`,
-      ),
+      path: path.join(context.serviceGroupDir, "common"),
     })),
 
     // express
     step(makeWorkflowMachine(ExpressInitWorkflowDefinition), ({ context }) => ({
       name: context.sharedPackagePrefix + "-http",
-      path: path.join(context.serviceGroupDir, `${context.serviceName}-http`),
+      path: path.join(context.serviceGroupDir, "http"),
     })),
 
     // // service itself

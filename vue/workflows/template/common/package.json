@@ -9,6 +9,12 @@
     "./i18n": "./i18n.ts",
     "./playwright.config": "./playwright.config.ts"
   },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "vue-tsc -b"
+  },
   "dependencies": {
     "@saflib/vue": "*",
     "@sentry/vue": "^10.21.0",

@@ -39,8 +39,7 @@ export const IdentityInitWorkflowDefinition = defineWorkflow<
 
   description: "Create an identity service package",
 
-  checklistDescription: ({ packageName }) =>
-    `Create the ${packageName} identity service package.`,
+  checklistDescription: ({ packageName }) => `Init ${packageName}.`,
 
   input,
 

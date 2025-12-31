@@ -39,8 +39,7 @@ export const OpenapiInitWorkflowDefinition = defineWorkflow<
 
   description: "Create an OpenAPI package",
 
-  checklistDescription: ({ serviceName }) =>
-    `Create the ${serviceName} OpenAPI package.`,
+  checklistDescription: ({ packageName }) => `Init ${packageName}.`,
 
   input,
 

@@ -16,7 +16,7 @@ import path from "node:path";
 
 const sourceDir = path.join(
   import.meta.dirname,
-  "template/__product-name__-__subdomain-name__-spa/pages/page-template",
+  "template/__subdomain-name__/pages/page-template"
 );
 
 const input = [
@@ -103,7 +103,7 @@ export const AddSpaPageWorkflowDefinition = defineWorkflow<
         skipIf: ({ context }) => {
           return context.serviceName.endsWith("-sdk");
         },
-      },
+      }
     ),
 
     step(UpdateStepMachine, ({ context }) => ({
