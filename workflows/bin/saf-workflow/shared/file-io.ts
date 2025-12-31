@@ -27,6 +27,7 @@ export const loadPlanStatusContents = (): string | undefined => {
 };
 
 let announcedError = false;
+let announcedErrorObject = false;
 
 export const saveWorkflow = (workflow: AbstractWorkflowRunner) => {
   const blob = workflow.dehydrate();
@@ -54,12 +55,17 @@ export const saveWorkflow = (workflow: AbstractWorkflowRunner) => {
     JSON.stringify(workflow.dehydrate(), null, 2)
   );
   if (anyErrors) {
+    const error = workflow.getError();
     if (!announcedError) {
       console.error(`!!! Workflow has errors!        
 !!! Snapshot saved to ${path.basename(getErrorStatusFilePath())}.
 !!! Workflows whose machines are in error cannot continue, so fix the underlying issue.
 !!! Workflows should not enter the error state in normal operation.`);
       announcedError = true;
+    }
+    if (error && !announcedErrorObject) {
+      console.error("\n", error.stack, "\n");
+      announcedErrorObject = true;
     }
   }
 };

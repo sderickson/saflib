@@ -77,12 +77,12 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
     // Covers various "init" workflows
     step(makeWorkflowMachine(InitServiceWorkflowDefinition), () => ({
       name: "@saflib/tmp-service",
-      path: "./services/tmp",
+      path: "./tmp/service",
     })),
 
     // Test "@saflib/openapi workflows"
     step(CdStepMachine, () => ({
-      path: "./services/tmp/tmp-spec",
+      path: "./tmp/service/spec",
     })),
     step(makeWorkflowMachine(AddSchemaWorkflowDefinition), () => ({
       name: "user",
@@ -96,7 +96,7 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
 
     // Test @saflib/drizzle workflows
     step(CdStepMachine, () => ({
-      path: "./services/tmp/tmp-db",
+      path: "./tmp/service/db",
     })),
     step(makeWorkflowMachine(UpdateSchemaWorkflowDefinition), () => ({
       path: "./schemas/users.ts",
@@ -107,7 +107,7 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
 
     // Test @saflib/express workflows
     step(CdStepMachine, () => ({
-      path: "./services/tmp/tmp-http",
+      path: "./tmp/service/http",
     })),
     step(makeWorkflowMachine(AddHandlerWorkflowDefinition), () => ({
       path: "./routes/users/list.ts",
@@ -127,10 +127,10 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
     })),
     step(makeWorkflowMachine(AddTsPackageWorkflowDefinition), () => ({
       name: "tmp-lib",
-      path: "./services/tmp/tmp-lib",
+      path: "./tmp/service/lib",
     })),
     step(CdStepMachine, () => ({
-      path: "./services/tmp/tmp-lib",
+      path: "./tmp/service/lib",
     })),
     step(makeWorkflowMachine(AddWorkflowDefinition), () => ({
       name: "workflows/add-foo",
@@ -152,18 +152,18 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
     })),
     step(makeWorkflowMachine(InitGrpcProtoWorkflowDefinition), () => ({
       name: "@saflib/tmp-grpc-proto",
-      path: "./services/tmp/tmp-grpc-proto",
+      path: "./tmp/service/grpc-proto",
     })),
     step(makeWorkflowMachine(InitGrpcServerWorkflowDefinition), () => ({
       name: "@saflib/tmp-grpc-server",
-      path: "./services/tmp/tmp-grpc-server",
+      path: "./tmp/service/grpc-server",
     })),
     step(makeWorkflowMachine(InitGrpcClientWorkflowDefinition), () => ({
       name: "@saflib/tmp-grpc-client",
-      path: "./services/tmp/tmp-grpc-client",
+      path: "./tmp/service/grpc-client",
     })),
     step(CdStepMachine, () => ({
-      path: "./services/tmp/tmp-grpc-proto",
+      path: "./tmp/service/grpc-proto",
     })),
 
     // NOTE: It has to be in the health group for types, and this test, to work.
@@ -171,13 +171,13 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
       path: "./protos/health/example.proto",
     })),
     step(CdStepMachine, () => ({
-      path: "./services/tmp/tmp-grpc-server",
+      path: "./tmp/service/grpc-server",
     })),
     step(makeWorkflowMachine(AddGrpcServerHandlerWorkflowDefinition), () => ({
       path: "./handlers/health/example.ts",
     })),
     step(CdStepMachine, () => ({
-      path: "./services/tmp/tmp-grpc-client",
+      path: "./tmp/service/grpc-client",
     })),
     step(makeWorkflowMachine(AddGrpcCallWorkflowDefinition), () => ({
       path: "./rpcs/health/example.ts",
@@ -189,7 +189,7 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
     })),
     step(makeWorkflowMachine(IdentityInitWorkflowDefinition), () => ({
       name: "@saflib/tmp-identity",
-      path: "./services/tmp-identity",
+      path: "./tmp/service/identity",
     })),
 
     // Test @saflib/cron workflows
@@ -198,10 +198,10 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
     })),
     step(makeWorkflowMachine(CronInitWorkflowDefinition), () => ({
       name: "@saflib/tmp-cron",
-      path: "./services/tmp/tmp-cron",
+      path: "./tmp/service/cron",
     })),
     step(CdStepMachine, () => ({
-      path: "./services/tmp/tmp-cron",
+      path: "./tmp/service/cron",
     })),
     step(makeWorkflowMachine(CronAddJobWorkflowDefinition), () => ({
       path: "./jobs/tmp-cron/give-time.ts",
@@ -209,7 +209,7 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
 
     // Test @saflib/sdk workflows
     step(CdStepMachine, () => ({
-      path: "./services/tmp/tmp-sdk",
+      path: "./tmp/service/sdk",
     })),
     step(makeWorkflowMachine(AddSdkQueryWorkflowDefinition), () => ({
       path: "./requests/users/list.ts",
@@ -227,7 +227,7 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
       subdomainName: "root",
     })),
     step(CdStepMachine, () => ({
-      path: "./clients/tmp/tmp-root-spa",
+      path: "./tmp/clients/root",
     })),
     step(makeWorkflowMachine(AddSpaPageWorkflowDefinition), () => ({
       path: "./pages/welcome-new-user",
