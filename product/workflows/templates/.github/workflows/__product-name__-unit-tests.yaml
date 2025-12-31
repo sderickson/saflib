@@ -1,0 +1,28 @@
+name: __Product Name__ Unit Tests
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "npm"
+      - name: Install submodules
+        run: git submodule update --init
+      - name: Install dependencies
+        run: npm ci
+
+      # Tests fail to run if this one package isn't installed
+      - name: Install rollup for linux
+        run: npm install @rollup/rollup-linux-x64-gnu
+
+      - name: Run Unit Tests
+        run: npm run test

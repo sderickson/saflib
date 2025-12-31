@@ -1,0 +1,27 @@
+{
+  "name": "@__org-name__/deploy",
+  "description": "Docker compose setup for building and deploying __Org Name__ products to production",
+  "bin": {
+    "run-clean-slate": "./run-prod-local.ts"
+  },
+  "type": "module",
+  "scripts": {
+    "generate": "saf-docker generate",
+    "prod-local": "docker compose --env-file env.prod-local -f docker-compose.prod-local.yaml up",
+    "exec-remote": "source env.remote && ssh $SSH_HOSTNAME 'bash -s'",
+    "build": "npm run generate && cd ../.. && ./deploy/prod/local-scripts/build.sh",
+    "build-no-generate": "cd ../.. && ./deploy/prod/local-scripts/build.sh",
+    "push": "cd ../.. && ./deploy/prod/local-scripts/push.sh",
+    "sync": "source env.remote && cd ../.. && ./deploy/prod/local-scripts/sync.sh",
+    "remote-purge": "npm run exec-remote < ./remote-scripts/purge.sh",
+    "remote-setup": "npm run exec-remote < ./remote-scripts/setup.sh",
+    "remote-pull": "npm run exec-remote < ./remote-scripts/pull.sh",
+    "remote-deploy": "npm run exec-remote < ./remote-scripts/deploy.sh",
+    "remote-undeploy": "npm run exec-remote < ./remote-scripts/undeploy.sh",
+    "remote-logs": "npm run exec-remote < ./remote-scripts/logs.sh",
+    "full-deploy": "npm run build && npm run push && npm run remote-pull && npm run sync && npm run remote-deploy"
+  },
+  "dependencies": {
+    "@saflib/dev-tools": "*"
+  }
+}

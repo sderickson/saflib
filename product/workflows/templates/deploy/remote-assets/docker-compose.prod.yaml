@@ -1,0 +1,78 @@
+services:
+  caddy:
+    cap_add:
+      - NET_ADMIN
+    image: $CONTAINER_REGISTRY/__org-name__-caddy:latest
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    env_file:
+      - ./.env.prod
+    environment:
+      - DISABLE_VITE_DEV_SERVER=#
+    volumes:
+      - ./config:/etc/caddy/
+      - caddy_data:/data
+      - caddy_config:/config
+    restart: unless-stopped
+
+  __product-name__-monolith:
+    image: $CONTAINER_REGISTRY/__org-name__-__product-name__-monolith:latest
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
+    memswap_limit: 2G
+    volumes:
+      - /opt/__product-name__/cron:/app/__product-name__/service/cron/data
+      - /opt/__product-name__/db:/app/__product-name__/service/db/data
+      - /opt/__product-name__/identity:/app/__product-name__/service/identity/data
+      - /opt/__product-name__/identity-http:/app/saflib/identity/identity-http/data
+
+    build:
+      context: ../..
+      dockerfile: __product-name__/service/monolith/Dockerfile
+
+    env_file:
+      - ./.env.prod
+
+  prometheus:
+    image: prom/prometheus:v2.46.0
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+
+  loki:
+    image: grafana/loki:latest
+    volumes:
+      - ./loki-config.yaml:/etc/loki/loki-config.yaml
+    command: -config.file=/etc/loki/loki-config.yaml
+
+  grafana:
+    image: grafana/grafana:latest
+    volumes:
+      - grafana_storage:/var/lib/grafana
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
+
+  node_exporter:
+    image: prom/node-exporter:latest
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - "--path.procfs=/host/proc"
+      - "--path.sysfs=/host/sys"
+      - "--path.rootfs=/rootfs"
+      - "--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($|/)"
+
+volumes:
+  caddy_data:
+  caddy_config:
+  grafana_storage:
