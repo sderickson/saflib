@@ -72,12 +72,12 @@ export interface RunWorkflowResult {
  * by the CLI tool.
  */
 export const runWorkflow = async (
-  options: RunWorkflowOptions,
+  options: RunWorkflowOptions
 ): Promise<RunWorkflowResult> => {
   const { definition, runMode, args } = options;
   const cliArguments = definition.input as WorkflowArgument[];
   const exampleArgs = cliArguments.map(
-    (arg) => arg.exampleValue || "example-value-missing",
+    (arg) => arg.exampleValue || "example-value-missing"
   );
   const workflow = new XStateWorkflowRunner({
     definition,
@@ -87,6 +87,7 @@ export const runWorkflow = async (
     manageVersionControl: options.manageVersionControl,
     skipTodos: options.skipTodos,
   });
+  console.log("Kicking off workflow", workflow.definition.id);
   await workflow.kickoff({
     onSnapshot: () => {
       saveWorkflow(workflow);
@@ -131,7 +132,7 @@ export function getPackageName(rootUrl: string) {
  */
 export const loadWorkflowDefinition = async (
   workflowIdOrPath: string,
-  workflows: WorkflowDefinition[],
+  workflows: WorkflowDefinition[]
 ): Promise<WorkflowDefinition> => {
   const log = getWorkflowLogger();
   log.info(`Loading workflow from path: ${workflowIdOrPath}`);

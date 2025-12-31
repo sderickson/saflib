@@ -64,7 +64,7 @@ export function defineWorkflow<
  * Implementation of the makeMachineFromWorkflow function.
  */
 function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
-  workflow: WorkflowDefinition<I, C>,
+  workflow: WorkflowDefinition<I, C>
 ) {
   type Input = CreateArgsType<I> & WorkflowInput;
   type Context = C & WorkflowContext;
@@ -90,11 +90,17 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
   }
 
   const states: Record<string, object> = {};
+  const stepNames = workflow.steps.map(
+    (step, index) => `step_${index}_${step.machine.id}`
+  );
+  const lastStepName = `step_${workflow.steps.length}_finalize`;
+  stepNames.push(lastStepName);
+
   for (let i = 0; i < workflow.steps.length; i++) {
     const step = workflow.steps[i];
-    const stateName = `step_${i}`;
+    const stateName = stepNames[i];
     const validateStateName = `${stateName}_validate`;
-    const nextStateName = `step_${i + 1}`;
+    const nextStateName = stepNames[i + 1];
 
     states[stateName] = {
       always: [
@@ -243,7 +249,7 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
       },
     };
   }
-  states[`step_${workflow.steps.length}`] = {
+  states[lastStepName] = {
     invoke: {
       src: fromPromise(async ({ input }: { input: Context }) => {
         if (input.runMode === "dry" || input.runMode === "script") {
@@ -309,7 +315,7 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
       };
       return context;
     },
-    initial: "step_0",
+    initial: stepNames[0],
     states,
     output: ({ context }) => ({
       checklist: {
@@ -328,7 +334,7 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
  * This basically translates my simplified and scoped workflow machine definition to the full XState machine definition.
  */
 export const makeWorkflowMachine = <C, I extends readonly WorkflowArgument[]>(
-  config: WorkflowDefinition<I, C>,
+  config: WorkflowDefinition<I, C>
 ) => {
   return _makeWorkflowMachine(defineWorkflow(config));
 };
@@ -347,7 +353,7 @@ export const step = <C, M extends AnyStateMachine>(
     commitAfter?: {
       message: string | ((arg: { context: C & WorkflowContext }) => string);
     };
-  } = {},
+  } = {}
 ): WorkflowStep<C, M> => {
   return {
     machine,
