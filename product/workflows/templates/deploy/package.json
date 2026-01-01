@@ -8,7 +8,7 @@
   "scripts": {
     "generate": "saf-docker generate",
     "prod-local": "docker compose --env-file env.prod-local -f docker-compose.prod-local.yaml up",
-    "exec-remote": "source env.remote && ssh $SSH_HOSTNAME 'bash -s'",
+    "exec-remote": "./local-scripts/exec-remote.sh",
     "build": "npm run generate && cd .. && ./deploy/local-scripts/build.sh",
     "build-no-generate": "cd .. && ./deploy/local-scripts/build.sh",
     "push": "cd .. && ./deploy/local-scripts/push.sh",
