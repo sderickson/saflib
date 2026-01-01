@@ -157,6 +157,15 @@ export const InitProductWorkflowDefinition = defineWorkflow<
         },
       },
     ),
+
+    step(CommandStepMachine, () => ({
+      command: "mv",
+      args: [
+        "./deploy/remote-assets/env.prod",
+        "./deploy/remote-assets/.env.prod",
+      ],
+    })),
+
     step(CommandStepMachine, () => ({
       command: "npm",
       args: ["install"],
