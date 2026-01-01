@@ -45,5 +45,5 @@ jobs:
         if: ${{ !cancelled() }}
         with:
           name: last-docker-compose-log
-          path: ./deploy/prod/last-docker-compose.log
+          path: ./deploy/last-docker-compose.log
           retention-days: 30

@@ -72,10 +72,10 @@ export const InitProductWorkflowDefinition = defineWorkflow<
     step(
       CommandStepMachine,
       ({ context }) => {
-        if (context.runMode === "dry" || !context.manageVersionControl) {
+        if (context.runMode === "dry") {
           return {
-            command: "npm",
-            args: ["echo", "Skip appending to workspaces."],
+            command: "echo",
+            args: ["Skip appending to workspaces."],
           };
         }
 

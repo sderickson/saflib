@@ -1,5 +1,5 @@
 # Install docker if it's not already installed
-sudo -i
+
 if ! command -v docker &> /dev/null; then
     echo "Docker could not be found, installing..."
 

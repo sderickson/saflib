@@ -1,6 +1,6 @@
 FROM __organization-name__-__product-name__-clients:latest AS __product-name__-builder
 
-COPY ./deploy/prod/env.prod-local /app/env.prod-local
+COPY ./deploy/env.prod-local /app/env.prod-local
 RUN export $(grep -v "^#" /app/env.prod-local | xargs) && DOMAIN=${DOMAIN} CLIENT_SUBDOMAINS=${CLIENT_SUBDOMAINS} SERVICE_SUBDOMAINS=${SERVICE_SUBDOMAINS} npm run build
 
 FROM caddy:2.9.1
