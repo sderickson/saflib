@@ -55,7 +55,7 @@ export const InitProductWorkflowDefinition = defineWorkflow<
   },
 
   templateFiles: {
-    all: path.join(import.meta.dirname, "templates/__product-name__"),
+    all: path.join(import.meta.dirname, "templates/"),
   },
 
   docFiles: {},
@@ -72,26 +72,26 @@ export const InitProductWorkflowDefinition = defineWorkflow<
     step(
       CommandStepMachine,
       ({ context }) => {
-        if (context.runMode === "dry" || !context.manageVersionControl) {
+        if (context.runMode === "dry") {
           return {
-            command: "npm",
-            args: ["echo", "Skip appending to workspaces."],
+            command: "echo",
+            args: ["Skip appending to workspaces."],
           };
         }
 
         // hack to add the product to the workspaces w/out deps
         // probably the makings of a new workflow step here
         const packageJson = JSON.parse(
-          fs.readFileSync(path.join(context.cwd, "package.json"), "utf8")
+          fs.readFileSync(path.join(context.cwd, "package.json"), "utf8"),
         );
         const newWorkspaces = Array.from(
-          new Set([...packageJson.workspaces, `${context.productName}/**`])
+          new Set([...packageJson.workspaces, `${context.productName}/**`]),
         );
         newWorkspaces.sort();
         packageJson.workspaces = newWorkspaces;
         fs.writeFileSync(
           path.join(context.cwd, "package.json"),
-          JSON.stringify(packageJson, null, 2)
+          JSON.stringify(packageJson, null, 2),
         );
         return {
           command: "npm",
@@ -103,7 +103,7 @@ export const InitProductWorkflowDefinition = defineWorkflow<
           message: ({ context }) =>
             `Add "${context.productName}/**" to workspaces`,
         },
-      }
+      },
     ),
     step(makeWorkflowMachine(InitServiceWorkflowDefinition), ({ context }) => ({
       name: `${context.sharedPackagePrefix}-service`,
@@ -134,7 +134,7 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       ({ context }) => ({
         name: `${context.sharedPackagePrefix}-identity`,
         path: `./${context.productName}/service/identity`,
-      })
+      }),
     ),
     step(CopyStepMachine, ({ context }) => ({
       name: context.productName,
@@ -155,8 +155,17 @@ export const InitProductWorkflowDefinition = defineWorkflow<
           message: ({ context }) =>
             `Remove ${context.productName} service package`,
         },
-      }
+      },
     ),
+
+    step(CommandStepMachine, () => ({
+      command: "mv",
+      args: [
+        "./deploy/remote-assets/env.prod",
+        "./deploy/remote-assets/.env.prod",
+      ],
+    })),
+
     step(CommandStepMachine, () => ({
       command: "npm",
       args: ["install"],
@@ -182,7 +191,7 @@ export const InitProductWorkflowDefinition = defineWorkflow<
           message: ({ context }) =>
             `Set up dev environment for ${context.productName}`,
         },
-      }
+      },
     ),
     step(CdStepMachine, ({ context }) => ({
       path: `./${context.productName}/clients/root`,
@@ -206,7 +215,7 @@ export const InitProductWorkflowDefinition = defineWorkflow<
         commitAfter: {
           message: `Connect root spa`,
         },
-      }
+      },
     ),
 
     step(CdStepMachine, ({ context }) => ({
@@ -233,7 +242,7 @@ export const InitProductWorkflowDefinition = defineWorkflow<
         commitAfter: {
           message: `Connect auth spa`,
         },
-      }
+      },
     ),
 
     step(CdStepMachine, ({ context }) => ({
@@ -253,7 +262,7 @@ export const InitProductWorkflowDefinition = defineWorkflow<
         commitAfter: {
           message: `Connect app spa`,
         },
-      }
+      },
     ),
 
     step(CdStepMachine, ({ context }) => ({
@@ -280,7 +289,7 @@ export const InitProductWorkflowDefinition = defineWorkflow<
         commitAfter: {
           message: `Connect account spa`,
         },
-      }
+      },
     ),
     step(CdStepMachine, ({ context }) => ({
       path: `./${context.productName}/clients/common`,
@@ -309,8 +318,16 @@ export const InitProductWorkflowDefinition = defineWorkflow<
         commitAfter: {
           message: `Connect common package`,
         },
-      }
+      },
     ),
+
+    step(CdStepMachine, () => ({
+      path: `./deploy`,
+    })),
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["run", "generate"],
+    })),
 
     // step(CdStepMachine, ({ context }) => ({
     //   path: `./${context.productName}/dev`,

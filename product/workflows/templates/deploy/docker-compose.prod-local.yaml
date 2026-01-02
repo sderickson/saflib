@@ -1,0 +1,50 @@
+services:
+  caddy:
+    extends:
+      file: remote-assets/docker-compose.prod.yaml
+      service: caddy
+    volumes: !override []
+    env_file: !override
+      - ./env.prod-local
+
+  __product-name__-monolith:
+    extends:
+      file: remote-assets/docker-compose.prod.yaml
+      service: __product-name__-monolith
+    volumes: !override []
+    env_file: !override
+      - ./env.prod-local
+
+  loki:
+    extends:
+      file: remote-assets/docker-compose.prod.yaml
+      service: loki
+    volumes:
+      - ./remote-assets/loki-config.yaml:/etc/loki/loki-config.yaml
+    command: -config.file=/etc/loki/loki-config.yaml
+
+  prometheus:
+    extends:
+      file: remote-assets/docker-compose.prod.yaml
+      service: prometheus
+    volumes:
+      - ./remote-assets/prometheus.yml:/etc/prometheus/prometheus.yml
+
+  grafana:
+    extends:
+      file: remote-assets/docker-compose.prod.yaml
+      service: grafana
+    volumes: !override []
+
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite
+    hostname: azurite
+    ports:
+      - "10000:10000"
+      - "10001:10001"
+      - "10002:10002"
+    command: "azurite-blob --blobHost 0.0.0.0 --loose"
+
+volumes:
+  caddy_data:
+  caddy_config:

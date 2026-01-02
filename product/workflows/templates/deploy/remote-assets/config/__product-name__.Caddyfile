@@ -1,0 +1,55 @@
+# Curried snippets
+
+(power-up-spa) {
+	import spa /__product-name__-clients {args[0]}
+}
+
+(power-up-api-proxy) {
+	import api-proxy {$__PRODUCT_NAME___IDENTITY_SERVICE_HTTP_HOST} {args[0]}
+}
+
+(power-up-admin-proxy) {
+	import admin-proxy {$__PRODUCT_NAME___IDENTITY_SERVICE_HTTP_HOST} {args[0]}
+}
+
+# Subdomains
+
+{$PROTOCOL}://{$__PRODUCT_NAME___DOMAIN} {
+	import power-up-spa /root/index.html
+}
+
+{$PROTOCOL}://auth.{$__PRODUCT_NAME___DOMAIN} {
+	import power-up-spa /auth/index.html
+}
+
+{$PROTOCOL}://app.{$__PRODUCT_NAME___DOMAIN} {
+	import power-up-spa /app/index.html
+}
+
+{$PROTOCOL}://admin.{$__PRODUCT_NAME___DOMAIN} {
+	import power-up-spa /admin/index.html
+}
+
+{$PROTOCOL}://account.{$__PRODUCT_NAME___DOMAIN} {
+	import power-up-spa /account/index.html
+}
+
+{$PROTOCOL}://__product-name__.{$__PRODUCT_NAME___DOMAIN} {
+	import power-up-api-proxy {$__PRODUCT_NAME___SERVICE_HTTP_HOST}
+}
+
+{$PROTOCOL}://grafana.{$__PRODUCT_NAME___DOMAIN} {
+	import power-up-admin-proxy grafana:3000
+}
+
+{$PROTOCOL}://prometheus.{$__PRODUCT_NAME___DOMAIN} {
+	import power-up-admin-proxy prometheus:9090
+}
+
+{$PROTOCOL}://identity.{$__PRODUCT_NAME___DOMAIN} {
+	import identity {$__PRODUCT_NAME___DOMAIN} {$__PRODUCT_NAME___IDENTITY_SERVICE_HTTP_HOST}
+}
+
+{$__PRODUCT_NAME___DOMAIN_REDIRECTS} {
+	import redirect {$__PRODUCT_NAME___DOMAIN}
+}

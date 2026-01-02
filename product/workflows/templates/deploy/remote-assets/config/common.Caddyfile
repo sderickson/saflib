@@ -1,0 +1,113 @@
+# Have Caddy serve prometheus metrics
+http://caddy:2020 {
+	metrics
+}
+
+# For old URLs, or domains you don't want people to use (such as "www")
+# set the env variable DOMAIN_REDIRECTS. This snippet won't work unless
+# a domain is given so even if you don't want to redirect, you need to
+# set the env variable.
+(redirect) {
+	redir {$PROTOCOL}://{args[0]}{uri} permanent
+}
+
+# Caddy is the source of request IDs for API requests.
+#These get propagated both to identity and the target service.
+(reverse_proxy_common) {
+	header_up X-Request-ID {http.request.uuid}
+}
+
+# Used for SPA clients accessible to all users
+(spa) {
+	encode gzip
+	root * /srv{args[0]}
+	file_server {
+		pass_thru
+	}
+	@non-file expression path_regexp('^[^.]*$')
+	handle @non-file {
+		try_files {args[1]}
+	}
+}
+
+(cors) {
+	@cors_preflight method OPTIONS
+
+	header {
+		Access-Control-Allow-Origin "{header.origin}"
+		Vary Origin
+		Access-Control-Expose-Headers "Authorization"
+		Access-Control-Allow-Credentials "true"
+	}
+}
+
+# Used for static assets accessible only to admins.
+# With "browse" enabled, you can go to the subdomain root path
+# and explore the contents.
+(admin-file-server) {
+	import cors
+	encode gzip
+	root * /srv{args[1]}
+	forward_auth {args[0]} {
+		uri /auth/verify?
+		header_up X-Csrf-Skip true
+		header_up X-Require-Admin {$BLOCK_ADMIN_PAGES}
+	}
+
+	file_server {
+		pass_thru
+		browse
+	}
+}
+
+# Used for API servers accessible to all users.
+# args[0]: identity service host (e.g. power-up-identity:3000)
+# args[1]: target service host (e.g. power-up:3000)
+(api-proxy) {
+	forward_auth {args[0]} {
+		uri /auth/verify?
+		header_up X-Request-ID {http.request.uuid}
+		copy_headers X-User-ID X-User-Email X-User-Scopes X-User-Email-Verified
+		header_up X-Csrf-Token {http.request.header.X-CSRF-Token}
+	}
+	reverse_proxy {args[1]} {
+		import reverse_proxy_common
+	}
+}
+
+# Used for standalone services which provide their own UI, only accessible to admins,
+# such as Grafana and Prometheus.
+(admin-proxy) {
+	forward_auth {args[0]} {
+		uri /auth/verify?
+		header_up X-Csrf-Skip true
+		header_up X-Require-Admin {$BLOCK_ADMIN_PAGES}
+	}
+
+	reverse_proxy {args[1]} {
+		import reverse_proxy_common
+	}
+}
+
+# ---- AUTH ----
+
+# Other subdomains depend on identity verifying users have access to subdomains (via forward_auth)
+# args[0]: domain (e.g. familycaller.com)
+# args[1]: identity service host (e.g. caller-identity:3000)
+(identity) {
+	@identity {
+		host identity.{args[0]}
+		path /auth*
+	}
+
+	# auth routes do not go through the "verify" endpoint; they manage their own access
+	handle @identity {
+		reverse_proxy {args[1]} {
+			import reverse_proxy_common
+		}
+	}
+
+	# all other routes, such as "/users", go through the "verify" endpoint
+	# since the identity service is the same as the target service, we can use the same host
+	import api-proxy {args[1]} {args[1]}
+}

@@ -1,0 +1,50 @@
+name: __Product Name__ Playwright Tests
+on:
+  # TODO: set up playwright tests properly as part of product/init
+  pull_request:
+    branches: none
+jobs:
+  test:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: .
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: "npm"
+      - name: Install submodules
+        run: git submodule update --init
+      - name: Install dependencies
+        run: npm ci
+      # For some reason, github actions hang when I do `npm exec saf-docker generate`. So we run the script directly.
+      - name: Generate Docker
+        run: node --experimental-strip-types --disable-warning=ExperimentalWarning saflib/dev-tools/src/saf-docker-cli.ts generate
+      - name: Pre-build images
+        run: npm run build-no-generate
+        working-directory: ./deploy
+      - name: Run server
+        run: npm run prod-local &> last-docker-compose.log &
+        working-directory: ./deploy
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps chromium firefox
+      - name: Run Playwright tests
+        run: npm run test:e2e
+      - name: Shut down
+        run: docker stop $(docker ps -a -q)
+      # TODO: gather all logs and upload them as artifacts
+      # - uses: actions/upload-artifact@v4
+      #   if: ${{ !cancelled() }}
+      #   with:
+      #     name: playwright-report
+      #     path: ./clients/web-auth/playwright-report/
+      #     retention-days: 30
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: last-docker-compose-log
+          path: ./deploy/prod/last-docker-compose.log
+          retention-days: 30

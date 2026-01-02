@@ -4,6 +4,7 @@ import {
   kebabCaseToSnakeCase,
   kebabCaseToPascalCase,
   kebabCaseToCamelCase,
+  camelCaseToTitleCase,
 } from "../../../strings.ts";
 import { readFileSync } from "node:fs";
 import path from "node:path";
@@ -232,6 +233,7 @@ export const makeLineReplace = (context: { [key: string]: any }) => {
     }
     const kebabKey = camelCaseToKebabCase(camelKey);
     const snakeKey = kebabCaseToSnakeCase(kebabKey);
+    const spaceKey = snakeKey.replace(/_/g, " ");
     const pascalKey = kebabCaseToPascalCase(kebabKey);
     replaceMap[`__${kebabKey}__`] = context[camelKey];
     replaceMap[`__${camelKey}__`] = kebabCaseToCamelCase(context[camelKey]);
@@ -240,6 +242,9 @@ export const makeLineReplace = (context: { [key: string]: any }) => {
     replaceMap[`__${snakeKey.toUpperCase()}__`] = kebabCaseToSnakeCase(
       context[camelKey],
     ).toUpperCase();
+    replaceMap[`__${camelCaseToTitleCase(spaceKey)}__`] = camelCaseToTitleCase(
+      context[camelKey],
+    );
   });
   if (context["sharedPackagePrefix"]) {
     // special case, because npm doesn't allow package names to start with an underscore

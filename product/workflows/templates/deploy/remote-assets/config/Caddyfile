@@ -1,0 +1,2 @@
+import common.Caddyfile
+import __product-name__.Caddyfile
