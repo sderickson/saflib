@@ -321,6 +321,14 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       },
     ),
 
+    step(CdStepMachine, () => ({
+      path: `./deploy`,
+    })),
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["run", "generate"],
+    })),
+
     // step(CdStepMachine, ({ context }) => ({
     //   path: `./${context.productName}/dev`,
     // })),
