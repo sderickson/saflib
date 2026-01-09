@@ -19,7 +19,7 @@ describe("updateWorkflowAreas", () => {
 
     const lineReplace = (line: string) => line.replace("source", "target");
 
-    updateWorkflowAreas({
+    const result = updateWorkflowAreas({
       targetLines,
       targetPath: "test.ts",
       sourceLines,
@@ -27,7 +27,7 @@ describe("updateWorkflowAreas", () => {
       lineReplace,
     });
 
-    expect(targetLines).toEqual([
+    expect(result).toEqual([
       "// BEGIN WORKFLOW AREA myArea FOR workflow1 workflow2",
       "  const targetCode = 'hello';",
       "  const anotherLine = 'world';",
@@ -51,7 +51,7 @@ describe("updateWorkflowAreas", () => {
 
     const originalTargetLines = [...targetLines];
 
-    updateWorkflowAreas({
+    const result = updateWorkflowAreas({
       targetLines,
       targetPath: "test.ts",
       sourceLines,
@@ -59,7 +59,10 @@ describe("updateWorkflowAreas", () => {
       lineReplace: (line) => line,
     });
 
+    // Should not modify input
     expect(targetLines).toEqual(originalTargetLines);
+    // Should return unchanged result
+    expect(result).toEqual(originalTargetLines);
   });
 
   it("should handle multiple workflow areas in the same file", () => {
@@ -81,7 +84,7 @@ describe("updateWorkflowAreas", () => {
       "// END WORKFLOW AREA",
     ];
 
-    updateWorkflowAreas({
+    const result = updateWorkflowAreas({
       targetLines,
       targetPath: "test.ts",
       sourceLines,
@@ -89,7 +92,7 @@ describe("updateWorkflowAreas", () => {
       lineReplace: (line) => line,
     });
 
-    expect(targetLines).toEqual([
+    expect(result).toEqual([
       "// BEGIN WORKFLOW AREA area1 FOR workflow1",
       "  code from area1",
       "// END WORKFLOW AREA",
@@ -111,7 +114,7 @@ describe("updateWorkflowAreas", () => {
       "# END WORKFLOW AREA",
     ];
 
-    updateWorkflowAreas({
+    const result = updateWorkflowAreas({
       targetLines,
       targetPath: "test.py",
       sourceLines,
@@ -119,7 +122,7 @@ describe("updateWorkflowAreas", () => {
       lineReplace: (line) => line,
     });
 
-    expect(targetLines).toEqual([
+    expect(result).toEqual([
       "# BEGIN WORKFLOW AREA myArea FOR workflow1",
       "  python code here",
       "# END WORKFLOW AREA",
@@ -142,7 +145,7 @@ describe("updateWorkflowAreas", () => {
     const lineReplace = (line: string) =>
       line.replace(/template-name/g, "actual-name");
 
-    updateWorkflowAreas({
+    const result = updateWorkflowAreas({
       targetLines,
       targetPath: "test.ts",
       sourceLines,
@@ -150,7 +153,7 @@ describe("updateWorkflowAreas", () => {
       lineReplace,
     });
 
-    expect(targetLines).toEqual([
+    expect(result).toEqual([
       "// BEGIN WORKFLOW AREA myArea FOR workflow1",
       "  actual-name code",
       "  more actual-name",
@@ -171,7 +174,7 @@ describe("updateWorkflowAreas", () => {
     ];
 
     // Should work for any of the listed workflows
-    updateWorkflowAreas({
+    const result = updateWorkflowAreas({
       targetLines,
       targetPath: "test.ts",
       sourceLines,
@@ -179,7 +182,7 @@ describe("updateWorkflowAreas", () => {
       lineReplace: (line) => line,
     });
 
-    expect(targetLines).toEqual([
+    expect(result).toEqual([
       "// BEGIN WORKFLOW AREA sharedArea FOR workflow1 workflow2 workflow3",
       "  shared code",
       "// END WORKFLOW AREA",

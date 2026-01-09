@@ -12,7 +12,10 @@ export function updateWorkflowAreas({
   sourceLines,
   workflowId,
   lineReplace,
-}: WorkflowAreaParam) {
+}: WorkflowAreaParam): string[] {
+  // Create a copy to avoid mutating the input
+  const result = [...targetLines];
+
   let inWorkflowArea = false;
   let areaAppliesToWorkflow = false;
   let workflowAreaLines: string[] = [];
@@ -43,49 +46,61 @@ export function updateWorkflowAreas({
       continue;
     }
 
-    // find the end of the workflow area
-    if (inWorkflowArea && /^.*END WORKFLOW AREA.*$/.test(sourceLine)) {
-      inWorkflowArea = false;
-      areaEndLine = sourceLine;
-      if (areaAppliesToWorkflow) {
-        // find the same target area in targetLines
-        let foundTargetArea = false;
-        const targetAreaStart = workflowAreaLines.findIndex(
-          (line) => line === sourceLine,
-        );
-        if (targetAreaStart === -1) {
-          console.warn(
-            `Could not find target area ${areaName} in ${targetPath}`,
+    // Collect content lines while inside a workflow area
+    if (inWorkflowArea) {
+      // Check if this is the end of the workflow area
+      if (/^.*END WORKFLOW AREA.*$/.test(sourceLine)) {
+        inWorkflowArea = false;
+        areaEndLine = sourceLine;
+
+        if (areaAppliesToWorkflow) {
+          // Find the matching target area by looking for the BEGIN marker
+          const targetAreaStart = result.findIndex(
+            (line) => line === areaStartLine,
           );
-          resetVariables();
-          continue;
-        }
 
-        let targetAreaEnd = 0;
-        for (let i = targetAreaStart + 1; i < targetLines.length; i++) {
-          if (targetLines[i] === sourceLine) {
-            foundTargetArea = true;
-            targetAreaEnd = i;
-            break;
+          if (targetAreaStart === -1) {
+            console.warn(
+              `Could not find target area ${areaName} in ${targetPath}`,
+            );
+            resetVariables();
+            continue;
           }
-        }
-        if (!foundTargetArea) {
-          console.warn(`Target area ${areaName} does not end in ${targetPath}`);
-          resetVariables();
-          continue;
-        }
 
-        // transform text and insert into target lines
-        if (foundTargetArea) {
+          // Find the END marker in the target file (after the BEGIN marker)
+          let targetAreaEnd = -1;
+          for (let i = targetAreaStart + 1; i < result.length; i++) {
+            if (result[i] === areaEndLine) {
+              targetAreaEnd = i;
+              break;
+            }
+          }
+
+          if (targetAreaEnd === -1) {
+            console.warn(
+              `Target area ${areaName} does not end in ${targetPath}`,
+            );
+            resetVariables();
+            continue;
+          }
+
+          // Transform the source content and insert it between BEGIN and END
           const transformedLines = workflowAreaLines.map((line) =>
             lineReplace(line),
           );
-          targetLines.splice(targetAreaEnd, 0, ...transformedLines);
-        }
-      }
 
-      // successs - reset for next area
-      resetVariables();
+          // Insert transformed lines right after the BEGIN marker
+          result.splice(targetAreaStart + 1, 0, ...transformedLines);
+        }
+
+        // Reset for next area
+        resetVariables();
+      } else {
+        // This is a content line inside the area, collect it
+        workflowAreaLines.push(sourceLine);
+      }
     }
   }
+
+  return result;
 }
