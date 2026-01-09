@@ -2,6 +2,7 @@ import path from "node:path";
 import { fromPromise } from "xstate";
 import { access } from "node:fs/promises";
 import { constants } from "node:fs";
+import { readFile } from "node:fs/promises";
 import { stat } from "node:fs/promises";
 import { copyFile } from "node:fs/promises";
 import { transformName } from "./utils.ts";
@@ -29,6 +30,7 @@ export const copyNextFile = fromPromise(
       targetDir,
       lineReplace,
       sharedPrefix,
+      workflowId,
     } = input;
 
     if (filesToCopy.length === 0) {
@@ -73,6 +75,14 @@ export const copyNextFile = fromPromise(
     // Check if target file already exists
     try {
       await access(targetPath, constants.F_OK);
+      const targetLines = (await readFile(targetPath, "utf-8")).split("\n");
+      const sourceLines = (await readFile(sourcePath, "utf-8")).split("\n");
+      updateWorkflowAreas({
+        targetLines,
+        sourceLines,
+        workflowId,
+        lineReplace: lineReplace || ((line) => line),
+      });
       response.skipped = true;
       return response;
     } catch {
@@ -93,3 +103,61 @@ export const copyNextFile = fromPromise(
     return response;
   },
 );
+
+interface WorkflowAreaParam {
+  targetLines: string[];
+  sourceLines: string[];
+  workflowId: string;
+  lineReplace: (line: string) => string;
+}
+
+function updateWorkflowAreas({
+  targetLines,
+  sourceLines,
+  workflowId,
+  lineReplace,
+}: WorkflowAreaParam) {
+  let inWorkflowArea = false;
+  let areaAppliesToWorkflow = false;
+  let workflowAreaLines: string[] = [];
+  let targetAreaStartLine = "";
+  for (let sourceLine of sourceLines) {
+    // find any template workflow areas in the source file
+    const matches = /^.*BEGIN WORKFLOW AREA (.*) FOR (.*)$/.exec(sourceLine);
+    if (matches) {
+      const [, _areaName, workflowIds] = matches;
+      targetAreaStartLine = sourceLine;
+      areaAppliesToWorkflow = workflowIds.split(" ").includes(workflowId);
+      inWorkflowArea = true;
+      workflowAreaLines = [];
+      continue;
+    }
+
+    // find the end of the workflow area
+    if (inWorkflowArea && /^.*END WORKFLOW AREA.*$/.test(sourceLine)) {
+      inWorkflowArea = false;
+      if (areaAppliesToWorkflow) {
+        let foundTargetArea = false;
+        const targetAreaStart = workflowAreaLines.findIndex(
+          (line) => line === sourceLine,
+        );
+        let targetAreaEnd = 0;
+        for (let i = targetAreaStart + 1; i < targetLines.length; i++) {
+          if (targetLines[i] === sourceLine) {
+            foundTargetArea = true;
+            targetAreaEnd = i;
+            break;
+          }
+        }
+
+        if (foundTargetArea) {
+          const transformedLines = workflowAreaLines.map((line) =>
+            lineReplace(line),
+          );
+          targetLines.splice(targetAreaEnd, 0, ...transformedLines);
+        }
+      }
+      continue;
+    }
+  }
+}
