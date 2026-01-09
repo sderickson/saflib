@@ -19,6 +19,7 @@ export function updateWorkflowAreas({
   let inWorkflowArea = false;
   let areaAppliesToWorkflow = false;
   let workflowAreaLines: string[] = [];
+  let isSortedArea = false;
 
   // target and source areas should share the same start and end lines - find and use them here
   let areaName = "";
@@ -31,16 +32,21 @@ export function updateWorkflowAreas({
     workflowAreaLines = [];
     areaStartLine = "";
     areaEndLine = "";
+    isSortedArea = false;
   };
 
   for (let sourceLine of sourceLines) {
     // find any template workflow areas in the source file
-    const matches = /^.*BEGIN WORKFLOW AREA (.*) FOR (.*)$/.exec(sourceLine);
+    // Support both "BEGIN WORKFLOW AREA" and "BEGIN SORTED WORKFLOW AREA"
+    const matches = /^.*BEGIN (SORTED )?WORKFLOW AREA (.*) FOR (.*)$/.exec(
+      sourceLine,
+    );
     if (matches) {
-      const [, _areaName, workflowIds] = matches;
+      const [, sortedMarker, _areaName, workflowIds] = matches;
       areaName = _areaName;
       areaStartLine = sourceLine;
       areaAppliesToWorkflow = workflowIds.split(" ").includes(workflowId);
+      isSortedArea = sortedMarker !== undefined;
       inWorkflowArea = true;
       workflowAreaLines = [];
       continue;
@@ -84,13 +90,53 @@ export function updateWorkflowAreas({
             continue;
           }
 
-          // Transform the source content and insert it between BEGIN and END
+          // Transform the source content
           const transformedLines = workflowAreaLines.map((line) =>
             lineReplace(line),
           );
 
-          // Insert transformed lines right after the BEGIN marker
-          result.splice(targetAreaStart + 1, 0, ...transformedLines);
+          // Get existing content in the target area (between BEGIN and END)
+          const existingAreaContent = result.slice(
+            targetAreaStart + 1,
+            targetAreaEnd,
+          );
+
+          // Check if transformed lines already exist in the area
+          // Compare each transformed line to see if it's already present
+          const newLines: string[] = [];
+          for (const transformedLine of transformedLines) {
+            if (!existingAreaContent.includes(transformedLine)) {
+              newLines.push(transformedLine);
+            }
+          }
+
+          // Only insert if there are new lines to add
+          if (newLines.length > 0) {
+            // Insert new lines right before the END marker (append to existing content)
+            result.splice(targetAreaEnd, 0, ...newLines);
+
+            // If this is a sorted area, sort all lines in the area alphabetically
+            if (isSortedArea) {
+              // After insertion, the END marker is now at targetAreaEnd + newLines.length
+              const newTargetAreaEnd = targetAreaEnd + newLines.length;
+
+              // Extract all content between BEGIN and END (now includes new lines)
+              const areaContent = result.slice(
+                targetAreaStart + 1,
+                newTargetAreaEnd,
+              );
+
+              // Sort alphabetically
+              areaContent.sort();
+
+              // Replace the area content with sorted content
+              result.splice(
+                targetAreaStart + 1,
+                areaContent.length,
+                ...areaContent,
+              );
+            }
+          }
         }
 
         // Reset for next area

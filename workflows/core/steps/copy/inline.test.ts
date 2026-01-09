@@ -188,4 +188,160 @@ describe("updateWorkflowAreas", () => {
       "// END WORKFLOW AREA",
     ]);
   });
+
+  it("should not duplicate lines that already exist in the target area", () => {
+    const sourceLines = [
+      "// BEGIN WORKFLOW AREA myArea FOR workflow1",
+      "  const code1 = 'hello';",
+      "  const code2 = 'world';",
+      "// END WORKFLOW AREA",
+    ];
+
+    const targetLines = [
+      "// BEGIN WORKFLOW AREA myArea FOR workflow1",
+      "  const code1 = 'hello';",
+      "// END WORKFLOW AREA",
+    ];
+
+    const result = updateWorkflowAreas({
+      targetLines,
+      targetPath: "test.ts",
+      sourceLines,
+      workflowId: "workflow1",
+      lineReplace: (line) => line,
+    });
+
+    // Should only add code2, not duplicate code1
+    expect(result).toEqual([
+      "// BEGIN WORKFLOW AREA myArea FOR workflow1",
+      "  const code1 = 'hello';",
+      "  const code2 = 'world';",
+      "// END WORKFLOW AREA",
+    ]);
+  });
+
+  it("should not add any lines if all transformed lines already exist", () => {
+    const sourceLines = [
+      "// BEGIN WORKFLOW AREA myArea FOR workflow1",
+      "  const code1 = 'hello';",
+      "  const code2 = 'world';",
+      "// END WORKFLOW AREA",
+    ];
+
+    const targetLines = [
+      "// BEGIN WORKFLOW AREA myArea FOR workflow1",
+      "  const code1 = 'hello';",
+      "  const code2 = 'world';",
+      "// END WORKFLOW AREA",
+    ];
+
+    const originalTargetLines = [...targetLines];
+
+    const result = updateWorkflowAreas({
+      targetLines,
+      targetPath: "test.ts",
+      sourceLines,
+      workflowId: "workflow1",
+      lineReplace: (line) => line,
+    });
+
+    // Should remain unchanged since all lines already exist
+    expect(result).toEqual(originalTargetLines);
+  });
+
+  it("should sort lines alphabetically in SORTED WORKFLOW AREA", () => {
+    const sourceLines = [
+      "// BEGIN SORTED WORKFLOW AREA myArea FOR workflow1",
+      "  const zebra = 'z';",
+      "  const apple = 'a';",
+      "// END WORKFLOW AREA",
+    ];
+
+    const targetLines = [
+      "// BEGIN SORTED WORKFLOW AREA myArea FOR workflow1",
+      "  const monkey = 'm';",
+      "// END WORKFLOW AREA",
+    ];
+
+    const result = updateWorkflowAreas({
+      targetLines,
+      targetPath: "test.ts",
+      sourceLines,
+      workflowId: "workflow1",
+      lineReplace: (line) => line,
+    });
+
+    // All lines should be sorted alphabetically
+    expect(result).toEqual([
+      "// BEGIN SORTED WORKFLOW AREA myArea FOR workflow1",
+      "  const apple = 'a';",
+      "  const monkey = 'm';",
+      "  const zebra = 'z';",
+      "// END WORKFLOW AREA",
+    ]);
+  });
+
+  it("should sort lines and prevent duplicates in SORTED WORKFLOW AREA", () => {
+    const sourceLines = [
+      "// BEGIN SORTED WORKFLOW AREA myArea FOR workflow1",
+      "  const zebra = 'z';",
+      "  const apple = 'a';",
+      "// END WORKFLOW AREA",
+    ];
+
+    const targetLines = [
+      "// BEGIN SORTED WORKFLOW AREA myArea FOR workflow1",
+      "  const apple = 'a';",
+      "  const monkey = 'm';",
+      "// END WORKFLOW AREA",
+    ];
+
+    const result = updateWorkflowAreas({
+      targetLines,
+      targetPath: "test.ts",
+      sourceLines,
+      workflowId: "workflow1",
+      lineReplace: (line) => line,
+    });
+
+    // Should not duplicate apple, should add zebra, and all should be sorted
+    expect(result).toEqual([
+      "// BEGIN SORTED WORKFLOW AREA myArea FOR workflow1",
+      "  const apple = 'a';",
+      "  const monkey = 'm';",
+      "  const zebra = 'z';",
+      "// END WORKFLOW AREA",
+    ]);
+  });
+
+  it("should handle SORTED WORKFLOW AREA with different comment styles", () => {
+    const sourceLines = [
+      "# BEGIN SORTED WORKFLOW AREA myArea FOR workflow1",
+      "  zebra",
+      "  apple",
+      "# END WORKFLOW AREA",
+    ];
+
+    const targetLines = [
+      "# BEGIN SORTED WORKFLOW AREA myArea FOR workflow1",
+      "  monkey",
+      "# END WORKFLOW AREA",
+    ];
+
+    const result = updateWorkflowAreas({
+      targetLines,
+      targetPath: "test.py",
+      sourceLines,
+      workflowId: "workflow1",
+      lineReplace: (line) => line,
+    });
+
+    expect(result).toEqual([
+      "# BEGIN SORTED WORKFLOW AREA myArea FOR workflow1",
+      "  apple",
+      "  monkey",
+      "  zebra",
+      "# END WORKFLOW AREA",
+    ]);
+  });
 });
