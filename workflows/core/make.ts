@@ -64,7 +64,7 @@ export function defineWorkflow<
  * Implementation of the makeMachineFromWorkflow function.
  */
 function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
-  workflow: WorkflowDefinition<I, C>
+  workflow: WorkflowDefinition<I, C>,
 ) {
   type Input = CreateArgsType<I> & WorkflowInput;
   type Context = C & WorkflowContext;
@@ -91,7 +91,7 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
 
   const states: Record<string, object> = {};
   const stepNames = workflow.steps.map(
-    (step, index) => `step_${index}_${step.machine.id}`
+    (step, index) => `step_${index}_${step.machine.id}`,
   );
   const lastStepName = `step_${workflow.steps.length}_finalize`;
   stepNames.push(lastStepName);
@@ -128,6 +128,7 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
           return {
             ...step.input({ context }),
             // don't need checklist; the machine will compose their own
+            workflowId: context.workflowId,
             runMode: context.runMode,
             templateFiles: context.templateFiles,
             copiedFiles: context.copiedFiles,
@@ -310,6 +311,7 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
           },
         }),
         ...contextFromInput(input),
+        workflowId: workflow.id,
         templateFiles: workflow.templateFiles,
         docFiles: workflow.docFiles,
       };
@@ -334,7 +336,7 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
  * This basically translates my simplified and scoped workflow machine definition to the full XState machine definition.
  */
 export const makeWorkflowMachine = <C, I extends readonly WorkflowArgument[]>(
-  config: WorkflowDefinition<I, C>
+  config: WorkflowDefinition<I, C>,
 ) => {
   return _makeWorkflowMachine(defineWorkflow(config));
 };
@@ -353,7 +355,7 @@ export const step = <C, M extends AnyStateMachine>(
     commitAfter?: {
       message: string | ((arg: { context: C & WorkflowContext }) => string);
     };
-  } = {}
+  } = {},
 ): WorkflowStep<C, M> => {
   return {
     machine,
