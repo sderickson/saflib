@@ -150,6 +150,7 @@ function updateWorkflowAreas({
           }
         }
 
+        // transform text and insert into target lines
         if (foundTargetArea) {
           const transformedLines = workflowAreaLines.map((line) =>
             lineReplace(line),
