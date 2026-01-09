@@ -1,0 +1,188 @@
+import { describe, it, expect } from "vitest";
+import { updateWorkflowAreas } from "./inline.ts";
+
+describe("updateWorkflowAreas", () => {
+  it("should append transformed content to target area when workflow ID matches", () => {
+    const sourceLines = [
+      "// BEGIN WORKFLOW AREA myArea FOR workflow1 workflow2",
+      "  const sourceCode = 'hello';",
+      "  const anotherLine = 'world';",
+      "// END WORKFLOW AREA",
+      "other code",
+    ];
+
+    const targetLines = [
+      "// BEGIN WORKFLOW AREA myArea FOR workflow1 workflow2",
+      "// END WORKFLOW AREA",
+      "existing code after",
+    ];
+
+    const lineReplace = (line: string) => line.replace("source", "target");
+
+    updateWorkflowAreas({
+      targetLines,
+      targetPath: "test.ts",
+      sourceLines,
+      workflowId: "workflow1",
+      lineReplace,
+    });
+
+    expect(targetLines).toEqual([
+      "// BEGIN WORKFLOW AREA myArea FOR workflow1 workflow2",
+      "  const targetCode = 'hello';",
+      "  const anotherLine = 'world';",
+      "// END WORKFLOW AREA",
+      "existing code after",
+    ]);
+  });
+
+  it("should not modify target area when workflow ID does not match", () => {
+    const sourceLines = [
+      "// BEGIN WORKFLOW AREA myArea FOR workflow1 workflow2",
+      "  const sourceCode = 'hello';",
+      "// END WORKFLOW AREA",
+    ];
+
+    const targetLines = [
+      "// BEGIN WORKFLOW AREA myArea FOR workflow1 workflow2",
+      "  existing content",
+      "// END WORKFLOW AREA",
+    ];
+
+    const originalTargetLines = [...targetLines];
+
+    updateWorkflowAreas({
+      targetLines,
+      targetPath: "test.ts",
+      sourceLines,
+      workflowId: "workflow3", // Not in the list
+      lineReplace: (line) => line,
+    });
+
+    expect(targetLines).toEqual(originalTargetLines);
+  });
+
+  it("should handle multiple workflow areas in the same file", () => {
+    const sourceLines = [
+      "// BEGIN WORKFLOW AREA area1 FOR workflow1",
+      "  code from area1",
+      "// END WORKFLOW AREA",
+      "middle code",
+      "// BEGIN WORKFLOW AREA area2 FOR workflow2",
+      "  code from area2",
+      "// END WORKFLOW AREA",
+    ];
+
+    const targetLines = [
+      "// BEGIN WORKFLOW AREA area1 FOR workflow1",
+      "// END WORKFLOW AREA",
+      "middle code",
+      "// BEGIN WORKFLOW AREA area2 FOR workflow2",
+      "// END WORKFLOW AREA",
+    ];
+
+    updateWorkflowAreas({
+      targetLines,
+      targetPath: "test.ts",
+      sourceLines,
+      workflowId: "workflow1",
+      lineReplace: (line) => line,
+    });
+
+    expect(targetLines).toEqual([
+      "// BEGIN WORKFLOW AREA area1 FOR workflow1",
+      "  code from area1",
+      "// END WORKFLOW AREA",
+      "middle code",
+      "// BEGIN WORKFLOW AREA area2 FOR workflow2",
+      "// END WORKFLOW AREA",
+    ]);
+  });
+
+  it("should handle different comment styles", () => {
+    const sourceLines = [
+      "# BEGIN WORKFLOW AREA myArea FOR workflow1",
+      "  python code here",
+      "# END WORKFLOW AREA",
+    ];
+
+    const targetLines = [
+      "# BEGIN WORKFLOW AREA myArea FOR workflow1",
+      "# END WORKFLOW AREA",
+    ];
+
+    updateWorkflowAreas({
+      targetLines,
+      targetPath: "test.py",
+      sourceLines,
+      workflowId: "workflow1",
+      lineReplace: (line) => line,
+    });
+
+    expect(targetLines).toEqual([
+      "# BEGIN WORKFLOW AREA myArea FOR workflow1",
+      "  python code here",
+      "# END WORKFLOW AREA",
+    ]);
+  });
+
+  it("should transform lines using lineReplace function", () => {
+    const sourceLines = [
+      "// BEGIN WORKFLOW AREA myArea FOR workflow1",
+      "  template-name code",
+      "  more template-name",
+      "// END WORKFLOW AREA",
+    ];
+
+    const targetLines = [
+      "// BEGIN WORKFLOW AREA myArea FOR workflow1",
+      "// END WORKFLOW AREA",
+    ];
+
+    const lineReplace = (line: string) =>
+      line.replace(/template-name/g, "actual-name");
+
+    updateWorkflowAreas({
+      targetLines,
+      targetPath: "test.ts",
+      sourceLines,
+      workflowId: "workflow1",
+      lineReplace,
+    });
+
+    expect(targetLines).toEqual([
+      "// BEGIN WORKFLOW AREA myArea FOR workflow1",
+      "  actual-name code",
+      "  more actual-name",
+      "// END WORKFLOW AREA",
+    ]);
+  });
+
+  it("should handle areas with multiple workflow IDs", () => {
+    const sourceLines = [
+      "// BEGIN WORKFLOW AREA sharedArea FOR workflow1 workflow2 workflow3",
+      "  shared code",
+      "// END WORKFLOW AREA",
+    ];
+
+    const targetLines = [
+      "// BEGIN WORKFLOW AREA sharedArea FOR workflow1 workflow2 workflow3",
+      "// END WORKFLOW AREA",
+    ];
+
+    // Should work for any of the listed workflows
+    updateWorkflowAreas({
+      targetLines,
+      targetPath: "test.ts",
+      sourceLines,
+      workflowId: "workflow2",
+      lineReplace: (line) => line,
+    });
+
+    expect(targetLines).toEqual([
+      "// BEGIN WORKFLOW AREA sharedArea FOR workflow1 workflow2 workflow3",
+      "  shared code",
+      "// END WORKFLOW AREA",
+    ]);
+  });
+});
