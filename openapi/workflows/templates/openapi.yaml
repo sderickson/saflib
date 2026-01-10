@@ -22,8 +22,10 @@ paths:
 
 components:
   schemas:
+    # BEGIN WORKFLOW AREA schema-components FOR openapi/add-schema
     # Add your shared schemas here
     Error:
       $ref: "./schemas/error.yaml"
     ProductEvent:
       $ref: "./events/index.yaml"
+    # END WORKFLOW AREA

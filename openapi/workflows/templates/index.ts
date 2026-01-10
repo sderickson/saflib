@@ -7,20 +7,14 @@ import {
   castJson,
 } from "@saflib/openapi";
 
-/**
- * For typing Express responses for template-service API routes.
- */
 export type __ServiceName__ServiceResponseBody =
   ExtractResponseBody<operations>;
-
-/**
- * For typing Express requests for template-service API routes.
- */
 export type __ServiceName__ServiceRequestBody = ExtractRequestBody<operations>;
 
-// Export your schema types here
+// BEGIN SORTED WORKFLOW AREA schema-exports FOR openapi/add-schema
 export type Error = components["schemas"]["Error"];
 export type ProductEvent = components["schemas"]["ProductEvent"];
+// END WORKFLOW AREA
 
 import * as json from "./dist/openapi.json" with { type: "json" };
 

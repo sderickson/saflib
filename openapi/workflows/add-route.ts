@@ -22,9 +22,7 @@ const input = [
   },
 ] as const;
 
-interface AddRouteWorkflowContext
-  extends 
-    ParsePathOutput {
+interface AddRouteWorkflowContext extends ParsePathOutput {
   operationId: string;
 }
 

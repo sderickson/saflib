@@ -4,7 +4,6 @@ import {
   CommandStepMachine,
   defineWorkflow,
   step,
-  PromptStepMachine,
   type ParsePathOutput,
   type ParsePackageNameOutput,
   parsePackageName,
@@ -26,8 +25,7 @@ const input = [
 ] as const;
 
 interface AddSchemaWorkflowContext
-  extends ParsePackageNameOutput,
-    ParsePathOutput {}
+  extends ParsePackageNameOutput, ParsePathOutput {}
 
 export const AddSchemaWorkflowDefinition = defineWorkflow<
   typeof input,
@@ -93,17 +91,9 @@ export const AddSchemaWorkflowDefinition = defineWorkflow<
       - For nullable enums, make sure to include null in the enum list otherwise the validator will disallow null values.`,
     })),
 
-    step(PromptStepMachine, () => ({
-      promptText: `Add the schema to the openapi.yaml file in the components.schemas section.`,
-    })),
-
     step(CommandStepMachine, () => ({
       command: "npm",
       args: ["exec", "saf-specs", "generate"],
-    })),
-
-    step(PromptStepMachine, () => ({
-      promptText: `Update the index.ts file to export the new schema from \`components["schemas"]\`.`,
     })),
 
     step(CommandStepMachine, () => ({

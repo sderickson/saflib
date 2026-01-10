@@ -24,8 +24,7 @@ const input = [
 ] as const;
 
 interface AddEventWorkflowContext
-  extends ParsePackageNameOutput,
-    ParsePathOutput {
+  extends ParsePackageNameOutput, ParsePathOutput {
   eventName: string;
 }
 
@@ -85,9 +84,7 @@ export const AddEventWorkflowDefinition = defineWorkflow<
       fileId: "event",
       promptMessage: `Update **${path.basename(context.copiedFiles!.event)}**. Resolve all TODOs.
       
-      Replace the template properties with actual event definition:
-      - Add any event-specific context
-      - Add the event to the adjacent index.yaml file in the oneOf array. Reference the event file using $ref.
+      Replace the template properties with actual event definition.
       `,
     })),
 
