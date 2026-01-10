@@ -7,10 +7,12 @@ import {
   kebabCaseToPascalCase,
   kebabCaseToCamelCase,
 } from "../../../strings.ts";
+import { parseWorkflowAreaStart, isWorkflowAreaEnd } from "./inline.ts";
 
 export const renameNextFile = fromPromise(
   async ({ input }: { input: CopyStepContext }) => {
-    const { name, filesToCopy, runMode, lineReplace, copiedFiles } = input;
+    const { name, filesToCopy, runMode, lineReplace, copiedFiles, workflowId } =
+      input;
     const currentFileId = filesToCopy[0];
     const targetPath = copiedFiles[currentFileId];
     const targetFileName = path.basename(targetPath);
@@ -31,17 +33,43 @@ export const renameNextFile = fromPromise(
     const snakeName = kebabCaseToSnakeCase(name || "");
     const pascalName = kebabCaseToPascalCase(name || "");
     const camelName = kebabCaseToCamelCase(name || "");
+
+    // Track if we're inside a workflow area and if it applies to this workflow
+    let inWorkflowArea = false;
+    let areaAppliesToWorkflow = false;
+
     try {
       for (var i = 0; i < updatedContent.length; i++) {
-        if (updatedContent[i].includes("DELETE_THIS_LINE")) {
+        const line = updatedContent[i];
+
+        // Check if this is the start of a workflow area
+        const areaStart = parseWorkflowAreaStart(line);
+        const isAreaStart = areaStart !== null;
+        const isAreaEnd = isWorkflowAreaEnd(line);
+
+        if (isAreaStart) {
+          inWorkflowArea = true;
+          areaAppliesToWorkflow = areaStart.workflowIds.includes(workflowId);
+          // BEGIN line should always be kept - continue to normal processing
+        } else if (isAreaEnd) {
+          inWorkflowArea = false;
+          areaAppliesToWorkflow = false;
+          // END line should always be kept - continue to normal processing
+        } else if (inWorkflowArea && !areaAppliesToWorkflow) {
+          // If we're inside a workflow area that doesn't apply to this workflow,
+          // set the content line to empty and skip all replacements
+          // (BEGIN and END lines are handled above and will be processed normally)
           updatedContent[i] = "";
           continue;
         }
-        if (updatedContent[i].includes("/* do not replace */")) {
-          updatedContent[i] = updatedContent[i].replace(
-            "/* do not replace */",
-            "",
-          );
+
+        // Normal processing for lines outside workflow areas or inside applicable areas
+        if (line.includes("DELETE_THIS_LINE")) {
+          updatedContent[i] = "";
+          continue;
+        }
+        if (line.includes("/* do not replace */")) {
+          updatedContent[i] = line.replace("/* do not replace */", "");
           continue;
         }
 
@@ -67,7 +95,7 @@ export const renameNextFile = fromPromise(
             snakeName.toUpperCase(),
           );
         }
-    }
+      }
 
       await writeFile(targetPath, updatedContent.join("\n"));
 

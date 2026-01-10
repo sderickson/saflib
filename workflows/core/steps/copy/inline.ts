@@ -6,6 +6,50 @@ export interface WorkflowAreaParam {
   lineReplace: (line: string) => string;
 }
 
+/**
+ * Regex pattern to match the start of a workflow area.
+ * Matches: "BEGIN WORKFLOW AREA <name> FOR <workflowIds>" or "BEGIN SORTED WORKFLOW AREA <name> FOR <workflowIds>"
+ * Groups: [1] = "SORTED " or undefined, [2] = area name, [3] = workflow IDs (space-separated)
+ */
+export const WORKFLOW_AREA_START_REGEX =
+  /^.*BEGIN (SORTED )?WORKFLOW AREA (.*) FOR (.*)$/;
+
+/**
+ * Regex pattern to match the end of a workflow area.
+ * Matches: "END WORKFLOW AREA" (with any prefix/suffix for comments)
+ */
+export const WORKFLOW_AREA_END_REGEX = /^.*END WORKFLOW AREA.*$/;
+
+/**
+ * Checks if a line is the start of a workflow area.
+ * @returns Object with area info if it's a start line, null otherwise
+ */
+export function parseWorkflowAreaStart(line: string): {
+  areaName: string;
+  workflowIds: string[];
+  isSorted: boolean;
+  fullLine: string;
+} | null {
+  const matches = WORKFLOW_AREA_START_REGEX.exec(line);
+  if (!matches) {
+    return null;
+  }
+  const [, sortedMarker, areaName, workflowIdsStr] = matches;
+  return {
+    areaName,
+    workflowIds: workflowIdsStr.split(" ").filter(Boolean),
+    isSorted: sortedMarker !== undefined,
+    fullLine: line,
+  };
+}
+
+/**
+ * Checks if a line is the end of a workflow area.
+ */
+export function isWorkflowAreaEnd(line: string): boolean {
+  return WORKFLOW_AREA_END_REGEX.test(line);
+}
+
 export function updateWorkflowAreas({
   targetLines,
   targetPath,
@@ -38,15 +82,12 @@ export function updateWorkflowAreas({
   for (let sourceLine of sourceLines) {
     // find any template workflow areas in the source file
     // Support both "BEGIN WORKFLOW AREA" and "BEGIN SORTED WORKFLOW AREA"
-    const matches = /^.*BEGIN (SORTED )?WORKFLOW AREA (.*) FOR (.*)$/.exec(
-      sourceLine,
-    );
-    if (matches) {
-      const [, sortedMarker, _areaName, workflowIds] = matches;
-      areaName = _areaName;
-      areaStartLine = sourceLine;
-      areaAppliesToWorkflow = workflowIds.split(" ").includes(workflowId);
-      isSortedArea = sortedMarker !== undefined;
+    const areaStart = parseWorkflowAreaStart(sourceLine);
+    if (areaStart) {
+      areaName = areaStart.areaName;
+      areaStartLine = areaStart.fullLine;
+      areaAppliesToWorkflow = areaStart.workflowIds.includes(workflowId);
+      isSortedArea = areaStart.isSorted;
       inWorkflowArea = true;
       workflowAreaLines = [];
       continue;
@@ -55,7 +96,7 @@ export function updateWorkflowAreas({
     // Collect content lines while inside a workflow area
     if (inWorkflowArea) {
       // Check if this is the end of the workflow area
-      if (/^.*END WORKFLOW AREA.*$/.test(sourceLine)) {
+      if (isWorkflowAreaEnd(sourceLine)) {
         inWorkflowArea = false;
         areaEndLine = sourceLine;
 
