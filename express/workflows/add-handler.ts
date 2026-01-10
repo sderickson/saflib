@@ -98,8 +98,7 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
       fileId: "index",
       promptMessage: `Update the feature router to include the new route handler.
       It is located at \`${context.copiedFiles!.index}\`.
-        1. Import the new handler from "./${context.targetName}.ts"
-        2. Add the route to the router using the appropriate HTTP method`,
+      Add the route to the router using the appropriate HTTP method`,
     })),
 
     step(
