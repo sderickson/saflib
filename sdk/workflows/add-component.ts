@@ -1,7 +1,6 @@
 import {
   CopyStepMachine,
   UpdateStepMachine,
-  PromptStepMachine,
   defineWorkflow,
   step,
   parsePath,
@@ -27,8 +26,7 @@ const input = [
 ] as const;
 
 interface AddComponentWorkflowContext
-  extends ParsePathOutput,
-    ParsePackageNameOutput {
+  extends ParsePathOutput, ParsePackageNameOutput {
   targetDir: string;
   prefixName: string;
 }
@@ -158,13 +156,6 @@ export const AddComponentWorkflowDefinition = defineWorkflow<
     step(CommandStepMachine, () => ({
       command: "npm",
       args: ["run", "typecheck"],
-    })),
-
-    step(PromptStepMachine, ({ context }) => ({
-      promptText: `If this is a new component, set up the appropriate exports.
-
-      * Make sure ${context.copiedFiles?.vue} is in the root "components.ts" file.
-      * Make sure ${context.copiedFiles?.strings} is in the root "strings.ts" file.`,
     })),
 
     step(CommandStepMachine, () => ({

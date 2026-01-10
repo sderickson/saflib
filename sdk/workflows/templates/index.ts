@@ -2,8 +2,10 @@
 // Since these packages can be large and shared, it's important to export everything independently,
 // rather than grouping them in an object and exporting that object, so they can be properly tree-shaken.
 
-// Example exports (replace with actual exports):
-// export * from "./requests/health.ts";
-// export * from "./requests/users.ts";
-// export * from "./components/UserCard.vue";
-// export * from "./composables/useUser.ts";
+// BEGIN SORTED WORKFLOW AREA query-group-exports FOR sdk/add-query
+export * from "./requests/__group-name__/index.ts";
+// END WORKFLOW AREA
+
+// BEGIN SORTED WORKFLOW AREA component-exports FOR sdk/add-component
+export * from "./__prefix-name__/__target-name__/__TargetName__.vue";
+// END WORKFLOW AREA
