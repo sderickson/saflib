@@ -16,7 +16,7 @@ import path from "node:path";
 
 const sourceDir = path.join(
   import.meta.dirname,
-  "template/__subdomain-name__/pages/page-template"
+  "template/__subdomain-name__/pages/__folder-name__",
 );
 
 const input = [
@@ -28,8 +28,7 @@ const input = [
 ] as const;
 
 interface AddSpaPageWorkflowContext
-  extends ParsePathOutput,
-    ParsePackageNameOutput {
+  extends ParsePathOutput, ParsePackageNameOutput {
   targetDir: string;
 }
 
@@ -51,6 +50,7 @@ export const AddSpaPageWorkflowDefinition = defineWorkflow<
     return {
       ...parsePath(input.path, {
         requiredPrefix: "./pages/",
+        requiredSuffix: "Page.vue",
         cwd: input.cwd,
       }),
       ...parsePackageName(getPackageName(input.cwd), {
@@ -103,7 +103,7 @@ export const AddSpaPageWorkflowDefinition = defineWorkflow<
         skipIf: ({ context }) => {
           return context.serviceName.endsWith("-sdk");
         },
-      }
+      },
     ),
 
     step(UpdateStepMachine, ({ context }) => ({
@@ -127,9 +127,7 @@ export const AddSpaPageWorkflowDefinition = defineWorkflow<
       * Write a class which has a constructor that takes a Page object and stores it as a readonly public property.
       * Add helper methods for interacting with this page in E2E tests, for the key elements of the page.
       * If the test needs to provide a value for a select option or a checkbox label or something like that, import the strings from the appropriate string file and check the value dynamically, with a helpful error message if the value is invalid.
-      * Use getByString from @saflib/playwright to locate elements using strings from the page's strings file.
-      * Export both the fixture class and the fixture function (following the pattern from other page fixtures).
-      * Re-export them from the fixtures.ts file in the root of the package.`,
+      * Use getByString from @saflib/playwright to locate elements using strings from the page's strings file.`,
     })),
 
     step(CommandStepMachine, () => ({
