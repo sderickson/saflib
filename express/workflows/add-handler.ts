@@ -25,8 +25,7 @@ const input = [
 ] as const;
 
 interface AddHandlerWorkflowContext
-  extends ParsePackageNameOutput,
-    ParsePathOutput {}
+  extends ParsePackageNameOutput, ParsePathOutput {}
 
 export const AddHandlerWorkflowDefinition = defineWorkflow<
   typeof input,
@@ -100,12 +99,7 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
       promptMessage: `Update the feature router to include the new route handler.
       It is located at \`${context.copiedFiles!.index}\`.
         1. Import the new handler from "./${context.targetName}.ts"
-        2. Add the route to the router using the appropriate HTTP method
-      
-      Also make sure the root http.ts file includes the feature router, if not already there.
-        1. Import the feature router that was just exported from the index.ts file
-        2. Add the router to the app with "app.use"
-        3. Make sure to add this before the error handlers`,
+        2. Add the route to the router using the appropriate HTTP method`,
     })),
 
     step(
