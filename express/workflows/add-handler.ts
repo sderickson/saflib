@@ -88,17 +88,10 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
       - Handle expected errors from service/DB layers, with "satisfies never" for exhaustive error handling
       - Let unexpected errors propagate to central error handler (no try/catch!)
       - Follow the pattern in the reference doc
-      - Export the handler from the folder's "index.ts
+      - Export the handler from the adjacent "index.ts" file
       - Include db -> http mapper functions in the adjacent ${context.copiedFiles?.helpers} file." 
       
       Review ${context.docFiles?.refDoc} for more details.`,
-    })),
-
-    step(UpdateStepMachine, ({ context }) => ({
-      fileId: "index",
-      promptMessage: `Update the feature router to include the new route handler.
-      It is located at \`${context.copiedFiles!.index}\`.
-      Add the route to the router using the appropriate HTTP method`,
     })),
 
     step(
