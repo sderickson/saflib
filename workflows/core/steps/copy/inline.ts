@@ -91,15 +91,74 @@ function findTargetAreaIndices(
 }
 
 /**
- * Gets new lines that don't already exist in the target area.
+ * Checks if a sequence of lines exists consecutively in the target area.
+ * @returns true if the entire sequence exists in order and uninterrupted
  */
-function getNewLines(
+function sequenceExists(sequence: string[], target: string[]): boolean {
+  if (sequence.length === 0) {
+    return true;
+  }
+  if (sequence.length > target.length) {
+    return false;
+  }
+
+  // Try to find the sequence starting at each position in the target
+  for (let i = 0; i <= target.length - sequence.length; i++) {
+    let matches = true;
+    for (let j = 0; j < sequence.length; j++) {
+      if (target[i + j] !== sequence[j]) {
+        matches = false;
+        break;
+      }
+    }
+    if (matches) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Gets new lines for non-sorted areas. If the entire sequence of transformed lines
+ * already exists consecutively in the target, returns empty array. Otherwise, returns all transformed lines.
+ */
+function getNewLinesForNonSorted(
   workflowAreaLines: string[],
   existingAreaContent: string[],
   lineReplace: (line: string) => string,
 ): string[] {
   const transformedLines = workflowAreaLines.map(lineReplace);
-  return transformedLines.filter((line) => !existingAreaContent.includes(line));
+
+  // Check if the entire sequence exists consecutively in the target
+  if (sequenceExists(transformedLines, existingAreaContent)) {
+    return [];
+  }
+
+  // If the sequence doesn't exist, return all transformed lines
+  return transformedLines;
+}
+
+/**
+ * Gets new lines for sorted areas. Deduplicates individual lines that already exist.
+ */
+function getNewLinesForSorted(
+  workflowAreaLines: string[],
+  existingAreaContent: string[],
+  lineReplace: (line: string) => string,
+): string[] {
+  const transformedLines = workflowAreaLines.map(lineReplace);
+  const seen = new Set<string>(existingAreaContent);
+  const newLines: string[] = [];
+
+  for (const line of transformedLines) {
+    if (!seen.has(line)) {
+      seen.add(line);
+      newLines.push(line);
+    }
+  }
+
+  return newLines;
 }
 
 /**
@@ -174,12 +233,23 @@ function processWorkflowArea(
   // Get existing content in the target area (between BEGIN and END)
   const existingAreaContent = result.slice(targetAreaStart + 1, targetAreaEnd);
 
-  // Get new lines that don't already exist
-  const newLines = getNewLines(
-    state.workflowAreaLines,
-    existingAreaContent,
-    lineReplace,
-  );
+  // Get new lines based on whether it's sorted or not
+  let newLines: string[];
+  if (state.isSorted) {
+    // For sorted areas, deduplicate individual lines
+    newLines = getNewLinesForSorted(
+      state.workflowAreaLines,
+      existingAreaContent,
+      lineReplace,
+    );
+  } else {
+    // For non-sorted areas, check if entire sequence exists consecutively
+    newLines = getNewLinesForNonSorted(
+      state.workflowAreaLines,
+      existingAreaContent,
+      lineReplace,
+    );
+  }
 
   // Update the area based on whether it's sorted or not
   if (state.isSorted) {
