@@ -48,7 +48,7 @@ describe("processFileContent", () => {
     expect(result).toEqual(["const x = 1;", "", "const y = 2;"]);
   });
 
-  it("should remove /* do not replace */ marker", () => {
+  it("should keep the /* do not replace */ marker", () => {
     const contentLines = [
       "const x = 1;",
       "const y = 2; /* do not replace */",
@@ -60,7 +60,11 @@ describe("processFileContent", () => {
       workflowId: "workflow1",
     });
 
-    expect(result).toEqual(["const x = 1;", "const y = 2; ", "const z = 3;"]);
+    expect(result).toEqual([
+      "const x = 1;",
+      "const y = 2; /* do not replace */",
+      "const z = 3;",
+    ]);
   });
 
   it("should keep workflow area BEGIN and END lines when workflow applies", () => {
