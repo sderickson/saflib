@@ -24,7 +24,8 @@ const input = [
 ] as const;
 
 interface AddEventWorkflowContext
-  extends ParsePackageNameOutput, ParsePathOutput {
+  extends ParsePackageNameOutput,
+    ParsePathOutput {
   eventName: string;
 }
 

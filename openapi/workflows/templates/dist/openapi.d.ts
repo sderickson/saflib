@@ -6,62 +6,87 @@
 export type paths = Record<string, never>;
 export type webhooks = Record<string, never>;
 export interface components {
-  schemas: {
-    Error: components["schemas"]["error"];
-    ProductEvent: components["schemas"]["index"];
-    error: {
-      /** @description A short, machine-readable error code, for when HTTP status codes are not sufficient. */
-      code?: string;
-      /**
-       * @description A human-readable description of the error.
-       * @example The requested resource could not be found.
-       */
-      message?: string;
+    schemas: {
+        Error: components["schemas"]["error"];
+        ProductEvent: components["schemas"]["index"];
+        __TargetName__: components["schemas"]["__target-name__"];
+        error: {
+            /** @description A short, machine-readable error code, for when HTTP status codes are not sufficient. */
+            code?: string;
+            /**
+             * @description A human-readable description of the error.
+             * @example The requested resource could not be found.
+             */
+            message?: string;
+        };
+        login: {
+            /** @enum {string} */
+            event: "login";
+            context: {
+                /** @enum {string} */
+                method?: "email";
+            };
+        };
+        signup: {
+            /** @enum {string} */
+            event?: "signup";
+            context?: {
+                /** @enum {string} */
+                method?: "email";
+            };
+        };
+        signup_view: {
+            /** @enum {string} */
+            event?: "signup_view";
+        };
+        verify_email: {
+            /** @enum {string} */
+            event?: "verify_email";
+        };
+        index: {
+            event: string;
+            /** @description The frontend client that triggered the event. For web, it should be "web-{spa-name}". */
+            client?: string;
+            /** @description The page that triggered the event. For vue, it should be the route name provided by vue router. */
+            view?: string;
+            /** @description The component that triggered the event. For vue, it should be the component name. */
+            component?: string;
+        } & (components["schemas"]["login"] | components["schemas"]["signup"] | components["schemas"]["signup_view"] | components["schemas"]["verify_email"]);
+        "__target-name__": {
+            /**
+             * @description Unique identifier for the template-resource
+             * @example 123e4567-e89b-12d3-a456-426614174000
+             */
+            id: string;
+            /**
+             * @description Human-readable name for the template-resource
+             * @example Example Template Resource
+             */
+            name: string;
+            /**
+             * @description Optional description of the template-resource
+             * @example This is an example template resource
+             */
+            description?: string;
+            /**
+             * Format: date-time
+             * @description When the template-resource was created
+             * @example 2023-01-01T00:00:00Z
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @description When the template-resource was last updated
+             * @example 2023-01-01T00:00:00Z
+             */
+            updatedAt: string;
+        };
     };
-    login: {
-      /** @enum {string} */
-      event: "login";
-      context: {
-        /** @enum {string} */
-        method?: "email";
-      };
-    };
-    signup: {
-      /** @enum {string} */
-      event?: "signup";
-      context?: {
-        /** @enum {string} */
-        method?: "email";
-      };
-    };
-    signup_view: {
-      /** @enum {string} */
-      event?: "signup_view";
-    };
-    verify_email: {
-      /** @enum {string} */
-      event?: "verify_email";
-    };
-    index: {
-      event: string;
-      /** @description The frontend client that triggered the event. For web, it should be "web-{spa-name}". */
-      client?: string;
-      /** @description The page that triggered the event. For vue, it should be the route name provided by vue router. */
-      view?: string;
-      /** @description The component that triggered the event. For vue, it should be the component name. */
-      component?: string;
-    } & (
-      | components["schemas"]["login"]
-      | components["schemas"]["signup"]
-      | components["schemas"]["signup_view"]
-      | components["schemas"]["verify_email"]
-    );
-  };
-  responses: never;
-  parameters: never;
-  requestBodies: never;
-  headers: never;
-  pathItems: never;
+    responses: never;
+    parameters: never;
+    requestBodies: never;
+    headers: never;
+    pathItems: never;
 }
 export type $defs = Record<string, never>;
 export type operations = Record<string, never>;

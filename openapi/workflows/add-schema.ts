@@ -25,7 +25,8 @@ const input = [
 ] as const;
 
 interface AddSchemaWorkflowContext
-  extends ParsePackageNameOutput, ParsePathOutput {}
+  extends ParsePackageNameOutput,
+    ParsePathOutput {}
 
 export const AddSchemaWorkflowDefinition = defineWorkflow<
   typeof input,
@@ -60,7 +61,7 @@ export const AddSchemaWorkflowDefinition = defineWorkflow<
   },
 
   templateFiles: {
-    schema: path.join(sourceDir, "./schemas/template-file.yaml"),
+    schema: path.join(sourceDir, "./schemas/__target-name__.yaml"),
     error: path.join(sourceDir, "./schemas/error.yaml"),
     openapi: path.join(sourceDir, "openapi.yaml"),
     index: path.join(sourceDir, "index.ts"),

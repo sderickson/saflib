@@ -14,6 +14,9 @@
       "ProductEvent": {
         "$ref": "#/components/schemas/index"
       },
+      "__TargetName__": {
+        "$ref": "#/components/schemas/__target-name__"
+      },
       "error": {
         "type": "object",
         "properties": {
@@ -33,33 +36,44 @@
         "properties": {
           "event": {
             "type": "string",
-            "enum": ["login"]
+            "enum": [
+              "login"
+            ]
           },
           "context": {
             "type": "object",
             "properties": {
               "method": {
                 "type": "string",
-                "enum": ["email"]
+                "enum": [
+                  "email"
+                ]
               }
             }
           }
         },
-        "required": ["event", "context"]
+        "required": [
+          "event",
+          "context"
+        ]
       },
       "signup": {
         "type": "object",
         "properties": {
           "event": {
             "type": "string",
-            "enum": ["signup"]
+            "enum": [
+              "signup"
+            ]
           },
           "context": {
             "type": "object",
             "properties": {
               "method": {
                 "type": "string",
-                "enum": ["email"]
+                "enum": [
+                  "email"
+                ]
               }
             }
           }
@@ -70,7 +84,9 @@
         "properties": {
           "event": {
             "type": "string",
-            "enum": ["signup_view"]
+            "enum": [
+              "signup_view"
+            ]
           }
         }
       },
@@ -79,7 +95,9 @@
         "properties": {
           "event": {
             "type": "string",
-            "enum": ["verify_email"]
+            "enum": [
+              "verify_email"
+            ]
           }
         }
       },
@@ -116,7 +134,47 @@
             "description": "The component that triggered the event. For vue, it should be the component name."
           }
         },
-        "required": ["event"]
+        "required": [
+          "event"
+        ]
+      },
+      "__target-name__": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique identifier for the template-resource",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "name": {
+            "type": "string",
+            "description": "Human-readable name for the template-resource",
+            "example": "Example Template Resource"
+          },
+          "description": {
+            "type": "string",
+            "description": "Optional description of the template-resource",
+            "example": "This is an example template resource"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the template-resource was created",
+            "example": "2023-01-01T00:00:00Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the template-resource was last updated",
+            "example": "2023-01-01T00:00:00Z"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "createdAt",
+          "updatedAt"
+        ]
       }
     }
   }
