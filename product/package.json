@@ -1,5 +1,5 @@
 {
-  "name": "product",
+  "name": "@saflib/product",
   "description": "Package for product workflows",
   "private": true,
   "type": "module",

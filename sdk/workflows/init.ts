@@ -67,7 +67,6 @@ export const SdkInitWorkflowDefinition = defineWorkflow<
     public: path.join(sourceDir, "public"),
     app: path.join(sourceDir, "App.vue"),
     client: path.join(sourceDir, "client.ts"),
-    components: path.join(sourceDir, "components.ts"),
     dockerfile: path.join(sourceDir, "Dockerfile.template"),
     dockerCompose: path.join(sourceDir, "docker-compose.yaml"),
     fakes: path.join(sourceDir, "fakes.ts"),

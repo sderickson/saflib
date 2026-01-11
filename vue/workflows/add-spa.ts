@@ -96,7 +96,6 @@ export const AddSpaWorkflowDefinition = defineWorkflow<
     testApp: path.join(subdomainDir, "test-app.ts"),
     tsconfig: path.join(subdomainDir, "tsconfig.json"),
     vitestConfig: path.join(subdomainDir, "vitest.config.ts"),
-    homePage: path.join(subdomainDir, "pages/home-page"),
 
     linksPackage: linksDir,
 
