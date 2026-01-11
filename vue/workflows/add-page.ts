@@ -16,7 +16,7 @@ import path from "node:path";
 
 const sourceDir = path.join(
   import.meta.dirname,
-  "template/__subdomain-name__/pages/__folder-name__",
+  "template/__subdomain-name__/pages/__target-name__",
 );
 
 const input = [
@@ -62,12 +62,12 @@ export const AddSpaPageWorkflowDefinition = defineWorkflow<
   },
 
   templateFiles: {
-    fixture: path.join(sourceDir, "__TargetName__.fixture.ts"),
-    loader: path.join(sourceDir, "__TargetName__.loader.ts"),
-    vue: path.join(sourceDir, "__TargetName__.vue"),
-    async: path.join(sourceDir, "__TargetName__Async.vue"),
-    strings: path.join(sourceDir, "__TargetName__.strings.ts"),
-    test: path.join(sourceDir, "__TargetName__.test.ts"),
+    fixture: path.join(sourceDir, "__TargetName__Page.fixture.ts"),
+    loader: path.join(sourceDir, "__TargetName__Page.loader.ts"),
+    vue: path.join(sourceDir, "__TargetName__Page.vue"),
+    async: path.join(sourceDir, "__TargetName__PageAsync.vue"),
+    strings: path.join(sourceDir, "__TargetName__Page.strings.ts"),
+    test: path.join(sourceDir, "__TargetName__Page.test.ts"),
   },
 
   docFiles: {},

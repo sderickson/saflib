@@ -26,7 +26,8 @@ const input = [
 ] as const;
 
 interface AddComponentWorkflowContext
-  extends ParsePathOutput, ParsePackageNameOutput {
+  extends ParsePathOutput,
+    ParsePackageNameOutput {
   targetDir: string;
   prefixName: string;
 }
@@ -100,7 +101,6 @@ export const AddComponentWorkflowDefinition = defineWorkflow<
       "__prefix-name__/__target-name__/__TargetName__.test.ts",
     ),
     packageStrings: path.join(sourceDir, "strings.ts"),
-    packageComponents: path.join(sourceDir, "components.ts"),
   },
 
   // TODO: add documentation file references

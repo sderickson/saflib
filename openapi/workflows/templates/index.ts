@@ -11,9 +11,10 @@ export type __ServiceName__ServiceResponseBody =
   ExtractResponseBody<operations>;
 export type __ServiceName__ServiceRequestBody = ExtractRequestBody<operations>;
 
-// BEGIN SORTED WORKFLOW AREA schema-exports FOR openapi/add-schema
 export type Error = components["schemas"]["Error"];
 export type ProductEvent = components["schemas"]["ProductEvent"];
+
+// BEGIN SORTED WORKFLOW AREA schema-exports FOR openapi/add-schema
 // END WORKFLOW AREA
 
 import * as json from "./dist/openapi.json" with { type: "json" };
