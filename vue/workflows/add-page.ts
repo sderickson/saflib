@@ -14,9 +14,13 @@ import {
 } from "@saflib/workflows";
 import path from "node:path";
 
-const sourceDir = path.join(
+const pageDir = path.join(
   import.meta.dirname,
   "template/__subdomain-name__/pages/__target-name__",
+);
+const packageDir = path.join(
+  import.meta.dirname,
+  "template/__subdomain-name__",
 );
 
 const input = [
@@ -28,7 +32,8 @@ const input = [
 ] as const;
 
 interface AddSpaPageWorkflowContext
-  extends ParsePathOutput, ParsePackageNameOutput {
+  extends ParsePathOutput,
+    ParsePackageNameOutput {
   targetDir: string;
 }
 
@@ -46,7 +51,7 @@ export const AddSpaPageWorkflowDefinition = defineWorkflow<
   sourceUrl: import.meta.url,
 
   context: ({ input }) => {
-    const targetDir = path.join(input.cwd, input.path);
+    const targetDir = path.join(input.cwd);
     const pathResult = parsePath(input.path, {
       requiredPrefix: "./pages/",
       cwd: input.cwd,
@@ -65,12 +70,15 @@ export const AddSpaPageWorkflowDefinition = defineWorkflow<
   },
 
   templateFiles: {
-    fixture: path.join(sourceDir, "__TargetName__Page.fixture.ts"),
-    loader: path.join(sourceDir, "__TargetName__Page.loader.ts"),
-    vue: path.join(sourceDir, "__TargetName__Page.vue"),
-    async: path.join(sourceDir, "__TargetName__PageAsync.vue"),
-    strings: path.join(sourceDir, "__TargetName__Page.strings.ts"),
-    test: path.join(sourceDir, "__TargetName__Page.test.ts"),
+    fixture: path.join(pageDir, "__TargetName__Page.fixture.ts"),
+    loader: path.join(pageDir, "__TargetName__Page.loader.ts"),
+    vue: path.join(pageDir, "__TargetName__Page.vue"),
+    async: path.join(pageDir, "__TargetName__PageAsync.vue"),
+    strings: path.join(pageDir, "__TargetName__Page.strings.ts"),
+    test: path.join(pageDir, "__TargetName__Page.test.ts"),
+
+    fixturesIndex: path.join(packageDir, "fixtures.ts"),
+    stringsIndex: path.join(packageDir, "strings.ts"),
   },
 
   docFiles: {},

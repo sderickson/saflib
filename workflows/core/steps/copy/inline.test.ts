@@ -344,4 +344,105 @@ describe("updateWorkflowAreas", () => {
       "# END WORKFLOW AREA",
     ]);
   });
+
+  it("should remove empty strings from SORTED WORKFLOW AREA", () => {
+    const sourceLines = [
+      "// BEGIN SORTED WORKFLOW AREA myArea FOR workflow1",
+      "  const zebra = 'z';",
+      "",
+      "  const apple = 'a';",
+      "// END WORKFLOW AREA",
+    ];
+
+    const targetLines = [
+      "// BEGIN SORTED WORKFLOW AREA myArea FOR workflow1",
+      "  const monkey = 'm';",
+      "",
+      "// END WORKFLOW AREA",
+    ];
+
+    const result = updateWorkflowAreas({
+      targetLines,
+      targetPath: "test.ts",
+      sourceLines,
+      workflowId: "workflow1",
+      lineReplace: (line) => line,
+    });
+
+    // Empty strings should be removed
+    expect(result).toEqual([
+      "// BEGIN SORTED WORKFLOW AREA myArea FOR workflow1",
+      "  const apple = 'a';",
+      "  const monkey = 'm';",
+      "  const zebra = 'z';",
+      "// END WORKFLOW AREA",
+    ]);
+  });
+
+  it("should remove whitespace-only lines from SORTED WORKFLOW AREA", () => {
+    const sourceLines = [
+      "// BEGIN SORTED WORKFLOW AREA myArea FOR workflow1",
+      "  const zebra = 'z';",
+      "  ",
+      "  const apple = 'a';",
+      "\t",
+      "// END WORKFLOW AREA",
+    ];
+
+    const targetLines = [
+      "// BEGIN SORTED WORKFLOW AREA myArea FOR workflow1",
+      "  const monkey = 'm';",
+      "   ",
+      "// END WORKFLOW AREA",
+    ];
+
+    const result = updateWorkflowAreas({
+      targetLines,
+      targetPath: "test.ts",
+      sourceLines,
+      workflowId: "workflow1",
+      lineReplace: (line) => line,
+    });
+
+    // Whitespace-only lines should be removed
+    expect(result).toEqual([
+      "// BEGIN SORTED WORKFLOW AREA myArea FOR workflow1",
+      "  const apple = 'a';",
+      "  const monkey = 'm';",
+      "  const zebra = 'z';",
+      "// END WORKFLOW AREA",
+    ]);
+  });
+
+  it("should not remove empty or whitespace lines from non-sorted WORKFLOW AREA", () => {
+    const sourceLines = [
+      "// BEGIN WORKFLOW AREA myArea FOR workflow1",
+      "  const code = 'test';",
+      "",
+      "  const more = 'code';",
+      "// END WORKFLOW AREA",
+    ];
+
+    const targetLines = [
+      "// BEGIN WORKFLOW AREA myArea FOR workflow1",
+      "// END WORKFLOW AREA",
+    ];
+
+    const result = updateWorkflowAreas({
+      targetLines,
+      targetPath: "test.ts",
+      sourceLines,
+      workflowId: "workflow1",
+      lineReplace: (line) => line,
+    });
+
+    // Empty lines should be preserved in non-sorted areas
+    expect(result).toEqual([
+      "// BEGIN WORKFLOW AREA myArea FOR workflow1",
+      "  const code = 'test';",
+      "",
+      "  const more = 'code';",
+      "// END WORKFLOW AREA",
+    ]);
+  });
 });

@@ -78,6 +78,7 @@ export function updateWorkflowAreas({
     areaEndLine = "";
     isSortedArea = false;
   };
+  console.log("checking file", targetPath);
 
   for (let sourceLine of sourceLines) {
     // find any template workflow areas in the source file
@@ -95,12 +96,14 @@ export function updateWorkflowAreas({
 
     // Collect content lines while inside a workflow area
     if (inWorkflowArea) {
+      console.log("inWorkflowArea", sourceLine);
       // Check if this is the end of the workflow area
       if (isWorkflowAreaEnd(sourceLine)) {
         inWorkflowArea = false;
         areaEndLine = sourceLine;
 
         if (areaAppliesToWorkflow) {
+          console.log("areaAppliesToWorkflow", areaAppliesToWorkflow);
           // Find the matching target area by looking for the BEGIN marker
           const targetAreaStart = result.findIndex(
             (line) => line === areaStartLine,
@@ -151,32 +154,39 @@ export function updateWorkflowAreas({
             }
           }
 
-          // Only insert if there are new lines to add
-          if (newLines.length > 0) {
-            // Insert new lines right before the END marker (append to existing content)
-            result.splice(targetAreaEnd, 0, ...newLines);
+          // If this is a sorted area, we need to sort and filter even if there are no new lines
+          if (isSortedArea) {
+            // Get all existing content in the target area
+            const areaContent = result.slice(
+              targetAreaStart + 1,
+              targetAreaEnd,
+            );
 
-            // If this is a sorted area, sort all lines in the area alphabetically
-            if (isSortedArea) {
-              // After insertion, the END marker is now at targetAreaEnd + newLines.length
-              const newTargetAreaEnd = targetAreaEnd + newLines.length;
+            // Filter out empty strings and whitespace-only lines from existing content
+            const filteredContent = areaContent.filter(
+              (line) => line.trim().length > 0,
+            );
 
-              // Extract all content between BEGIN and END (now includes new lines)
-              const areaContent = result.slice(
-                targetAreaStart + 1,
-                newTargetAreaEnd,
+            // Add new lines if any, also filtering out whitespace-only lines
+            if (newLines.length > 0) {
+              const filteredNewLines = newLines.filter(
+                (line) => line.trim().length > 0,
               );
-
-              // Sort alphabetically
-              areaContent.sort();
-
-              // Replace the area content with sorted content
-              result.splice(
-                targetAreaStart + 1,
-                areaContent.length,
-                ...areaContent,
-              );
+              filteredContent.push(...filteredNewLines);
             }
+
+            // Sort alphabetically
+            filteredContent.sort();
+
+            // Replace the area content with sorted, filtered content
+            result.splice(
+              targetAreaStart + 1,
+              areaContent.length,
+              ...filteredContent,
+            );
+          } else if (newLines.length > 0) {
+            // For non-sorted areas, just insert new lines right before the END marker
+            result.splice(targetAreaEnd, 0, ...newLines);
           }
         }
 
