@@ -1,7 +1,7 @@
 import { __product_name___common_strings } from "../common/strings.ts";
 
 // BEGIN SORTED WORKFLOW AREA page-string-imports FOR vue/add-page
-import { __target_name___page } from "./pages/__target-name__/__TargetName__Page.strings.ts";
+import { __target_name___page } from "./pages/__full-path__/__TargetName__Page.strings.ts";
 // END WORKFLOW AREA
 
 export const __subdomain_name___strings = {

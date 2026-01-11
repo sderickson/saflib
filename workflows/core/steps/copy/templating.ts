@@ -201,9 +201,9 @@ export const parsePath = (
   if (parts.length === 1) {
     targetName = parts[0];
     groupName = targetName; // for workflows that set up the group
-  } else if (parts.length === 2) {
-    groupName = parts[0];
-    targetName = parts[1];
+  } else if (parts.length >= 2) {
+    groupName = parts.slice(0, -1).join("/");
+    targetName = parts[parts.length - 1];
   } else {
     throw new Error(`Invalid path: ${path}`);
   }

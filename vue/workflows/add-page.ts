@@ -1,7 +1,6 @@
 import {
   CopyStepMachine,
   UpdateStepMachine,
-  PromptStepMachine,
   defineWorkflow,
   step,
   parsePath,
@@ -16,7 +15,7 @@ import path from "node:path";
 
 const pageDir = path.join(
   import.meta.dirname,
-  "template/__subdomain-name__/pages/__target-name__",
+  "template/__subdomain-name__/pages/__full-path__",
 );
 const packageDir = path.join(
   import.meta.dirname,
@@ -54,12 +53,14 @@ export const AddSpaPageWorkflowDefinition = defineWorkflow<
   context: ({ input }) => {
     const targetDir = path.dirname(path.join(input.cwd));
     const subdomainName = path.basename(input.cwd);
-    console.log("targetDir", targetDir);
-    console.log("subdomain name", subdomainName);
     const pathResult = parsePath(input.path, {
       requiredPrefix: "./pages/",
       cwd: input.cwd,
     });
+    let fullPath = pathResult.targetName;
+    if (pathResult.groupName) {
+      fullPath = pathResult.groupName + "/" + fullPath;
+    }
     if (pathResult.targetName.endsWith("-page")) {
       throw new Error("Target name cannot end with '-page'");
     }
@@ -71,6 +72,7 @@ export const AddSpaPageWorkflowDefinition = defineWorkflow<
       }),
       targetDir,
       subdomainName,
+      fullPath,
     };
   },
 
@@ -109,21 +111,6 @@ export const AddSpaPageWorkflowDefinition = defineWorkflow<
       * Don't break reactivity! Render the data directly from the tanstack queries, or if necessary create a computed property.
       * Import and use the "useReverseT" function from the i18n.ts file at the root of the package, and use t(strings.key) instead of strings.key for all text.`,
     })),
-
-    step(
-      PromptStepMachine,
-      ({ context }) => ({
-        promptText: `Find the "links" package adjacent to this package. Add the link for the new page there along with the others. Then update **router.ts** to include the new page:
-        
-        * Use ${path.basename(context.copiedFiles!.async)}.
-        * Use the link from the shared links package instead of hardcoding the path.`,
-      }),
-      {
-        skipIf: ({ context }) => {
-          return context.serviceName.endsWith("-sdk");
-        },
-      },
-    ),
 
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "test",

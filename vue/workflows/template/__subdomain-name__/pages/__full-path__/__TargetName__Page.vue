@@ -16,7 +16,7 @@
 <script setup lang="ts">
 import { __target_name___page as strings } from "./__TargetName__Page.strings.ts";
 import { use__TargetName__Loader } from "./__TargetName__Page.loader.ts";
-import { useReverseT } from "../../i18n.ts";
+import { useReverseT } from "~/i18n.ts";
 
 const { t, lookupTKey } = useReverseT();
 

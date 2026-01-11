@@ -3,7 +3,7 @@ import { __subdomainName__Links } from "template-package-links";
 import { PageNotFound } from "@saflib/vue/components";
 
 // BEGIN SORTED WORKFLOW AREA page-imports FOR vue/add-page
-import __TargetName__Async from "./pages/__target-name__/__TargetName__PageAsync.vue";
+import __TargetName__Async from "./pages/__full-path__/__TargetName__PageAsync.vue";
 // END WORKFLOW AREA
 
 export const create__SubdomainName__Router = () => {
