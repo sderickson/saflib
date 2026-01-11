@@ -50,6 +50,145 @@ export function isWorkflowAreaEnd(line: string): boolean {
   return WORKFLOW_AREA_END_REGEX.test(line);
 }
 
+interface WorkflowAreaState {
+  areaName: string;
+  areaStartLine: string;
+  areaEndLine: string;
+  workflowAreaLines: string[];
+  isSorted: boolean;
+  appliesToWorkflow: boolean;
+}
+
+/**
+ * Finds the start and end indices of a workflow area in the target file.
+ * @returns Object with start and end indices, or null if not found
+ */
+function findTargetAreaIndices(
+  result: string[],
+  areaStartLine: string,
+  areaEndLine: string,
+  areaName: string,
+  targetPath: string,
+): { start: number; end: number } | null {
+  const targetAreaStart = result.findIndex((line) => line === areaStartLine);
+
+  if (targetAreaStart === -1) {
+    console.warn(`Could not find target area ${areaName} in ${targetPath}`);
+    return null;
+  }
+
+  // Find the END marker in the target file (after the BEGIN marker)
+  const targetAreaEnd = result.findIndex(
+    (line, index) => index > targetAreaStart && line === areaEndLine,
+  );
+
+  if (targetAreaEnd === -1) {
+    console.warn(`Target area ${areaName} does not end in ${targetPath}`);
+    return null;
+  }
+
+  return { start: targetAreaStart, end: targetAreaEnd };
+}
+
+/**
+ * Gets new lines that don't already exist in the target area.
+ */
+function getNewLines(
+  workflowAreaLines: string[],
+  existingAreaContent: string[],
+  lineReplace: (line: string) => string,
+): string[] {
+  const transformedLines = workflowAreaLines.map(lineReplace);
+  return transformedLines.filter((line) => !existingAreaContent.includes(line));
+}
+
+/**
+ * Updates a sorted workflow area by filtering whitespace, adding new lines, and sorting.
+ */
+function updateSortedArea(
+  result: string[],
+  targetAreaStart: number,
+  targetAreaEnd: number,
+  newLines: string[],
+): void {
+  // Get all existing content in the target area
+  const areaContent = result.slice(targetAreaStart + 1, targetAreaEnd);
+
+  // Filter out empty strings and whitespace-only lines from existing content
+  const filteredContent = areaContent.filter((line) => line.trim().length > 0);
+
+  // Add new lines if any, also filtering out whitespace-only lines
+  if (newLines.length > 0) {
+    const filteredNewLines = newLines.filter((line) => line.trim().length > 0);
+    filteredContent.push(...filteredNewLines);
+  }
+
+  // Sort alphabetically
+  filteredContent.sort();
+
+  // Replace the area content with sorted, filtered content
+  result.splice(targetAreaStart + 1, areaContent.length, ...filteredContent);
+}
+
+/**
+ * Updates a non-sorted workflow area by appending new lines.
+ */
+function updateNonSortedArea(
+  result: string[],
+  targetAreaEnd: number,
+  newLines: string[],
+): void {
+  if (newLines.length > 0) {
+    // Insert new lines right before the END marker
+    result.splice(targetAreaEnd, 0, ...newLines);
+  }
+}
+
+/**
+ * Processes a workflow area and updates the target file.
+ */
+function processWorkflowArea(
+  result: string[],
+  state: WorkflowAreaState,
+  targetPath: string,
+  lineReplace: (line: string) => string,
+): void {
+  if (!state.appliesToWorkflow) {
+    return;
+  }
+
+  const indices = findTargetAreaIndices(
+    result,
+    state.areaStartLine,
+    state.areaEndLine,
+    state.areaName,
+    targetPath,
+  );
+
+  if (!indices) {
+    return;
+  }
+
+  const { start: targetAreaStart, end: targetAreaEnd } = indices;
+
+  // Get existing content in the target area (between BEGIN and END)
+  const existingAreaContent = result.slice(targetAreaStart + 1, targetAreaEnd);
+
+  // Get new lines that don't already exist
+  const newLines = getNewLines(
+    state.workflowAreaLines,
+    existingAreaContent,
+    lineReplace,
+  );
+
+  // Update the area based on whether it's sorted or not
+  if (state.isSorted) {
+    updateSortedArea(result, targetAreaStart, targetAreaEnd, newLines);
+  } else {
+    updateNonSortedArea(result, targetAreaEnd, newLines);
+  }
+}
+
 export function updateWorkflowAreas({
   targetLines,
   targetPath,
@@ -60,143 +199,38 @@ export function updateWorkflowAreas({
   // Create a copy to avoid mutating the input
   const result = [...targetLines];
 
-  let inWorkflowArea = false;
-  let areaAppliesToWorkflow = false;
-  let workflowAreaLines: string[] = [];
-  let isSortedArea = false;
+  let state: WorkflowAreaState | null = null;
 
-  // target and source areas should share the same start and end lines - find and use them here
-  let areaName = "";
-  let areaStartLine = "";
-  let areaEndLine = "";
-
-  const resetVariables = () => {
-    inWorkflowArea = false;
-    areaAppliesToWorkflow = false;
-    workflowAreaLines = [];
-    areaStartLine = "";
-    areaEndLine = "";
-    isSortedArea = false;
-  };
-  console.log("checking file", targetPath);
-
-  for (let sourceLine of sourceLines) {
-    // find any template workflow areas in the source file
-    // Support both "BEGIN WORKFLOW AREA" and "BEGIN SORTED WORKFLOW AREA"
+  for (const sourceLine of sourceLines) {
+    // Check if this is the start of a workflow area
     const areaStart = parseWorkflowAreaStart(sourceLine);
     if (areaStart) {
-      areaName = areaStart.areaName;
-      areaStartLine = areaStart.fullLine;
-      areaAppliesToWorkflow = areaStart.workflowIds.includes(workflowId);
-      isSortedArea = areaStart.isSorted;
-      inWorkflowArea = true;
-      workflowAreaLines = [];
+      state = {
+        areaName: areaStart.areaName,
+        areaStartLine: areaStart.fullLine,
+        areaEndLine: "",
+        workflowAreaLines: [],
+        isSorted: areaStart.isSorted,
+        appliesToWorkflow: areaStart.workflowIds.includes(workflowId),
+      };
       continue;
     }
 
-    // Collect content lines while inside a workflow area
-    if (inWorkflowArea) {
-      console.log("inWorkflowArea", sourceLine);
-      // Check if this is the end of the workflow area
-      if (isWorkflowAreaEnd(sourceLine)) {
-        inWorkflowArea = false;
-        areaEndLine = sourceLine;
-
-        if (areaAppliesToWorkflow) {
-          console.log("areaAppliesToWorkflow", areaAppliesToWorkflow);
-          // Find the matching target area by looking for the BEGIN marker
-          const targetAreaStart = result.findIndex(
-            (line) => line === areaStartLine,
-          );
-
-          if (targetAreaStart === -1) {
-            console.warn(
-              `Could not find target area ${areaName} in ${targetPath}`,
-            );
-            resetVariables();
-            continue;
-          }
-
-          // Find the END marker in the target file (after the BEGIN marker)
-          let targetAreaEnd = -1;
-          for (let i = targetAreaStart + 1; i < result.length; i++) {
-            if (result[i] === areaEndLine) {
-              targetAreaEnd = i;
-              break;
-            }
-          }
-
-          if (targetAreaEnd === -1) {
-            console.warn(
-              `Target area ${areaName} does not end in ${targetPath}`,
-            );
-            resetVariables();
-            continue;
-          }
-
-          // Transform the source content
-          const transformedLines = workflowAreaLines.map((line) =>
-            lineReplace(line),
-          );
-
-          // Get existing content in the target area (between BEGIN and END)
-          const existingAreaContent = result.slice(
-            targetAreaStart + 1,
-            targetAreaEnd,
-          );
-
-          // Check if transformed lines already exist in the area
-          // Compare each transformed line to see if it's already present
-          const newLines: string[] = [];
-          for (const transformedLine of transformedLines) {
-            if (!existingAreaContent.includes(transformedLine)) {
-              newLines.push(transformedLine);
-            }
-          }
-
-          // If this is a sorted area, we need to sort and filter even if there are no new lines
-          if (isSortedArea) {
-            // Get all existing content in the target area
-            const areaContent = result.slice(
-              targetAreaStart + 1,
-              targetAreaEnd,
-            );
-
-            // Filter out empty strings and whitespace-only lines from existing content
-            const filteredContent = areaContent.filter(
-              (line) => line.trim().length > 0,
-            );
-
-            // Add new lines if any, also filtering out whitespace-only lines
-            if (newLines.length > 0) {
-              const filteredNewLines = newLines.filter(
-                (line) => line.trim().length > 0,
-              );
-              filteredContent.push(...filteredNewLines);
-            }
-
-            // Sort alphabetically
-            filteredContent.sort();
-
-            // Replace the area content with sorted, filtered content
-            result.splice(
-              targetAreaStart + 1,
-              areaContent.length,
-              ...filteredContent,
-            );
-          } else if (newLines.length > 0) {
-            // For non-sorted areas, just insert new lines right before the END marker
-            result.splice(targetAreaEnd, 0, ...newLines);
-          }
-        }
-
-        // Reset for next area
-        resetVariables();
-      } else {
-        // This is a content line inside the area, collect it
-        workflowAreaLines.push(sourceLine);
-      }
+    // If we're not in a workflow area, skip this line
+    if (!state) {
+      continue;
     }
+
+    // Check if this is the end of the workflow area
+    if (isWorkflowAreaEnd(sourceLine)) {
+      state.areaEndLine = sourceLine;
+      processWorkflowArea(result, state, targetPath, lineReplace);
+      state = null;
+      continue;
+    }
+
+    // This is a content line inside the area, collect it
+    state.workflowAreaLines.push(sourceLine);
   }
 
   return result;

@@ -22,6 +22,7 @@ const packageDir = path.join(
   import.meta.dirname,
   "template/__subdomain-name__",
 );
+const linksDir = path.join(import.meta.dirname, "template", "links");
 
 const input = [
   {
@@ -51,7 +52,10 @@ export const AddSpaPageWorkflowDefinition = defineWorkflow<
   sourceUrl: import.meta.url,
 
   context: ({ input }) => {
-    const targetDir = path.join(input.cwd);
+    const targetDir = path.dirname(path.join(input.cwd));
+    const subdomainName = path.basename(input.cwd);
+    console.log("targetDir", targetDir);
+    console.log("subdomain name", subdomainName);
     const pathResult = parsePath(input.path, {
       requiredPrefix: "./pages/",
       cwd: input.cwd,
@@ -66,6 +70,7 @@ export const AddSpaPageWorkflowDefinition = defineWorkflow<
         requiredSuffix: ["-spa", "-sdk"],
       }),
       targetDir,
+      subdomainName,
     };
   },
 
@@ -79,6 +84,9 @@ export const AddSpaPageWorkflowDefinition = defineWorkflow<
 
     fixturesIndex: path.join(packageDir, "fixtures.ts"),
     stringsIndex: path.join(packageDir, "strings.ts"),
+    router: path.join(packageDir, "router.ts"),
+
+    linksPackage: linksDir,
   },
 
   docFiles: {},

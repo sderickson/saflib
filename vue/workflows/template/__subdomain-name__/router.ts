@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from "vue-router";
-// import { __subdomainName__Links } from "template-package-links";
+import { __subdomainName__Links } from "template-package-links";
 import { PageNotFound } from "@saflib/vue/components";
 
 // BEGIN SORTED WORKFLOW AREA page-imports FOR vue/add-page
@@ -9,10 +9,10 @@ import __TargetName__Async from "./pages/__target-name__/__TargetName__PageAsync
 export const create__SubdomainName__Router = () => {
   const routes = [
     // BEGIN WORKFLOW AREA page-routes FOR vue/add-page
-    // {
-    //   path: __subdomainName__Links.__target_name__.path,
-    //   component: __TargetName__Async,
-    // },
+    {
+      path: __subdomainName__Links.__target_name__.path,
+      component: __TargetName__Async,
+    },
     // END WORKFLOW AREA
     { path: "/:pathMatch(.*)*", component: PageNotFound },
   ];
