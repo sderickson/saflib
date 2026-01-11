@@ -47,12 +47,15 @@ export const AddSpaPageWorkflowDefinition = defineWorkflow<
 
   context: ({ input }) => {
     const targetDir = path.join(input.cwd, input.path);
+    const pathResult = parsePath(input.path, {
+      requiredPrefix: "./pages/",
+      cwd: input.cwd,
+    });
+    if (pathResult.targetName.endsWith("-page")) {
+      throw new Error("Target name cannot end with '-page'");
+    }
     return {
-      ...parsePath(input.path, {
-        requiredPrefix: "./pages/",
-        requiredSuffix: "Page.vue",
-        cwd: input.cwd,
-      }),
+      ...pathResult,
       ...parsePackageName(getPackageName(input.cwd), {
         silentError: true, // so checklists don't error
         requiredSuffix: ["-spa", "-sdk"],

@@ -109,7 +109,7 @@ export function processFileContent({
       continue;
     }
     if (line.includes("/* do not replace */")) {
-      updatedContent[i] = line.replace("/* do not replace */", "");
+      updatedContent[i] = line;
       continue;
     }
 
