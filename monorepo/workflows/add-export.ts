@@ -42,7 +42,8 @@ export const AddExportWorkflowDefinition = defineWorkflow<
 
   description: "Add new exports (functions, classes, interfaces) to packages",
 
-  checklistDescription: ({ targetName, path }) => `Add ${targetName} export to ${path}.`,
+  checklistDescription: ({ targetName, path }) =>
+    `Add ${targetName} export to ${path}.`,
 
   input,
 
