@@ -1,14 +1,16 @@
 import { defaultConfig } from "@saflib/vue/vitest-config";
 import { defineConfig } from "vitest/config";
-import path from "path";
+
+const rootDir = import.meta.dirname;
 
 export default defineConfig({
   ...defaultConfig,
+  root: rootDir,
   resolve: {
     ...defaultConfig.resolve,
     alias: {
       ...defaultConfig.resolve?.alias,
-      "~": path.resolve(import.meta.dirname, "."),
+      "~": rootDir,
     },
   },
 });
