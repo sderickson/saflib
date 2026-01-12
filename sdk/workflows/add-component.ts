@@ -1,7 +1,6 @@
 import {
   CopyStepMachine,
   UpdateStepMachine,
-  PromptStepMachine,
   defineWorkflow,
   step,
   parsePath,
@@ -102,7 +101,6 @@ export const AddComponentWorkflowDefinition = defineWorkflow<
       "__prefix-name__/__target-name__/__TargetName__.test.ts",
     ),
     packageStrings: path.join(sourceDir, "strings.ts"),
-    packageComponents: path.join(sourceDir, "components.ts"),
   },
 
   // TODO: add documentation file references
@@ -158,13 +156,6 @@ export const AddComponentWorkflowDefinition = defineWorkflow<
     step(CommandStepMachine, () => ({
       command: "npm",
       args: ["run", "typecheck"],
-    })),
-
-    step(PromptStepMachine, ({ context }) => ({
-      promptText: `If this is a new component, set up the appropriate exports.
-
-      * Make sure ${context.copiedFiles?.vue} is in the root "components.ts" file.
-      * Make sure ${context.copiedFiles?.strings} is in the root "strings.ts" file.`,
     })),
 
     step(CommandStepMachine, () => ({

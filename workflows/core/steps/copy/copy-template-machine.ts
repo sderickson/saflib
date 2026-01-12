@@ -109,6 +109,7 @@ export const CopyStepMachine = setup({
       sharedPrefix,
     };
   },
+
   states: {
     copy: {
       invoke: {

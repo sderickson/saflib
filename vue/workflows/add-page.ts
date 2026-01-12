@@ -1,7 +1,6 @@
 import {
   CopyStepMachine,
   UpdateStepMachine,
-  PromptStepMachine,
   defineWorkflow,
   step,
   parsePath,
@@ -14,10 +13,15 @@ import {
 } from "@saflib/workflows";
 import path from "node:path";
 
-const sourceDir = path.join(
+const pageDir = path.join(
   import.meta.dirname,
-  "template/__subdomain-name__/pages/page-template"
+  "template/__subdomain-name__/pages/__full-path__",
 );
+const packageDir = path.join(
+  import.meta.dirname,
+  "template/__subdomain-name__",
+);
+const linksDir = path.join(import.meta.dirname, "template", "links");
 
 const input = [
   {
@@ -47,27 +51,44 @@ export const AddSpaPageWorkflowDefinition = defineWorkflow<
   sourceUrl: import.meta.url,
 
   context: ({ input }) => {
-    const targetDir = path.join(input.cwd, input.path);
+    const targetDir = path.dirname(path.join(input.cwd));
+    const subdomainName = path.basename(input.cwd);
+    const pathResult = parsePath(input.path, {
+      requiredPrefix: "./pages/",
+      cwd: input.cwd,
+    });
+    let fullPath = pathResult.targetName;
+    if (pathResult.groupName) {
+      fullPath = pathResult.groupName + "/" + fullPath;
+    }
+    if (pathResult.targetName.endsWith("-page")) {
+      throw new Error("Target name cannot end with '-page'");
+    }
     return {
-      ...parsePath(input.path, {
-        requiredPrefix: "./pages/",
-        cwd: input.cwd,
-      }),
+      ...pathResult,
       ...parsePackageName(getPackageName(input.cwd), {
         silentError: true, // so checklists don't error
         requiredSuffix: ["-spa", "-sdk"],
       }),
       targetDir,
+      subdomainName,
+      fullPath,
     };
   },
 
   templateFiles: {
-    fixture: path.join(sourceDir, "__TargetName__.fixture.ts"),
-    loader: path.join(sourceDir, "__TargetName__.loader.ts"),
-    vue: path.join(sourceDir, "__TargetName__.vue"),
-    async: path.join(sourceDir, "__TargetName__Async.vue"),
-    strings: path.join(sourceDir, "__TargetName__.strings.ts"),
-    test: path.join(sourceDir, "__TargetName__.test.ts"),
+    fixture: path.join(pageDir, "__TargetName__Page.fixture.ts"),
+    loader: path.join(pageDir, "__TargetName__Page.loader.ts"),
+    vue: path.join(pageDir, "__TargetName__Page.vue"),
+    async: path.join(pageDir, "__TargetName__PageAsync.vue"),
+    strings: path.join(pageDir, "__TargetName__Page.strings.ts"),
+    test: path.join(pageDir, "__TargetName__Page.test.ts"),
+
+    fixturesIndex: path.join(packageDir, "fixtures.ts"),
+    stringsIndex: path.join(packageDir, "strings.ts"),
+    router: path.join(packageDir, "router.ts"),
+
+    linksPackage: linksDir,
   },
 
   docFiles: {},
@@ -91,21 +112,6 @@ export const AddSpaPageWorkflowDefinition = defineWorkflow<
       * Import and use the "useReverseT" function from the i18n.ts file at the root of the package, and use t(strings.key) instead of strings.key for all text.`,
     })),
 
-    step(
-      PromptStepMachine,
-      ({ context }) => ({
-        promptText: `Find the "links" package adjacent to this package. Add the link for the new page there along with the others. Then update **router.ts** to include the new page:
-        
-        * Use ${path.basename(context.copiedFiles!.async)}.
-        * Use the link from the shared links package instead of hardcoding the path.`,
-      }),
-      {
-        skipIf: ({ context }) => {
-          return context.serviceName.endsWith("-sdk");
-        },
-      }
-    ),
-
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "test",
       promptMessage: `Update **${path.basename(context.copiedFiles!.test)}** to verify that the page renders correctly:
@@ -127,9 +133,7 @@ export const AddSpaPageWorkflowDefinition = defineWorkflow<
       * Write a class which has a constructor that takes a Page object and stores it as a readonly public property.
       * Add helper methods for interacting with this page in E2E tests, for the key elements of the page.
       * If the test needs to provide a value for a select option or a checkbox label or something like that, import the strings from the appropriate string file and check the value dynamically, with a helpful error message if the value is invalid.
-      * Use getByString from @saflib/playwright to locate elements using strings from the page's strings file.
-      * Export both the fixture class and the fixture function (following the pattern from other page fixtures).
-      * Re-export them from the fixtures.ts file in the root of the package.`,
+      * Use getByString from @saflib/playwright to locate elements using strings from the page's strings file.`,
     })),
 
     step(CommandStepMachine, () => ({

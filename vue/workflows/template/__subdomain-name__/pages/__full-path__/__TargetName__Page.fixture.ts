@@ -13,10 +13,3 @@ export class __TargetName__PageFixture {
   //   await getByString(this.page, strings.someButton).click();
   // }
 }
-
-export const __targetName__PageFixture = async (
-  { page }: { page: Page },
-  use: (fixture: __TargetName__PageFixture) => Promise<void>,
-) => {
-  await use(new __TargetName__PageFixture(page));
-};

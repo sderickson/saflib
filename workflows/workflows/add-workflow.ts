@@ -87,15 +87,7 @@ export const AddWorkflowDefinition = defineWorkflow<
 
     step(UpdateStepMachine, () => ({
       fileId: "workflow",
-      promptMessage: `Update the workflow file to implement the main functionality. Replace any TODO comments with actual implementation.`
-    })),
-
-    step(PromptStepMachine, ({ context }) => ({
-      promptText: `Export **${context.targetName}** from **${context.packageName}**.
-        1. An adjacent 'index.ts' file should already exist, check that it does.
-        2. Import the new workflow class into 'workflows/index.ts' if it's not already there.
-        3. Add the new workflow *class* (not an instance) to the default exported array in 'workflows/index.ts'.
-        4. If needed, update the package.json of this package (${context.packageName}) to include a './workflows' export pointing to the 'workflows/index.ts' file.`,
+      promptMessage: `Update the workflow file to implement the main functionality. Replace any TODO comments with actual implementation.`,
     })),
 
     step(PromptStepMachine, ({ context }) => ({

@@ -108,12 +108,6 @@ export const UpdateSchemaWorkflowDefinition = defineWorkflow<
       * If the field may be null, the type should include \`... | null\`.`,
     })),
 
-    step(PromptStepMachine, ({ context }) => ({
-      promptText: `Check that everything in ${context.targetName}.ts is exported in the root \`./schema.ts\` file.
-      
-      Don't overthink this. Just check quickly and be done with it.`,
-    })),
-
     step(CommandStepMachine, () => ({
       command: "npm",
       args: ["run", "generate"],

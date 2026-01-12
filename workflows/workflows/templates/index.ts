@@ -1,13 +1,18 @@
+// BEGIN SORTED WORKFLOW AREA workflow-imports FOR workflows/add-workflow
 import { __WorkflowNamespace____TargetName__WorkflowDefinition } from "./__target-name__.ts";
+// END WORKFLOW AREA
+
 import type { WorkflowDefinition } from "@saflib/workflows";
 
 export {
-  // Export each workflow definition separately
+  // BEGIN SORTED WORKFLOW AREA workflow-exports FOR workflows/add-workflow
   __WorkflowNamespace____TargetName__WorkflowDefinition,
+  // END WORKFLOW AREA
 };
 
 const __WorkflowNamespace__WorkflowDefinitions: WorkflowDefinition[] = [
-  // And have the default export be the array of all of them
+  // BEGIN SORTED WORKFLOW AREA workflow-array FOR workflows/add-workflow
   __WorkflowNamespace____TargetName__WorkflowDefinition,
+  // END WORKFLOW AREA
 ];
 export default __WorkflowNamespace__WorkflowDefinitions;

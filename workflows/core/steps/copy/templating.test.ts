@@ -204,12 +204,6 @@ describe("templating", () => {
       );
     });
 
-    it("should throw error for invalid path with too many parts", () => {
-      expect(() => parsePath("./a/b/c/d", baseInput)).toThrow(
-        "Invalid path: ./a/b/c/d",
-      );
-    });
-
     it("should handle path with only target name and prefix/suffix", () => {
       const input: ParsePathInput = {
         ...baseInput,

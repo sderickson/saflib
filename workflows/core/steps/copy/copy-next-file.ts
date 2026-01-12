@@ -2,10 +2,12 @@ import path from "node:path";
 import { fromPromise } from "xstate";
 import { access } from "node:fs/promises";
 import { constants } from "node:fs";
+import { readFile, writeFile } from "node:fs/promises";
 import { stat } from "node:fs/promises";
 import { copyFile } from "node:fs/promises";
 import { transformName } from "./utils.ts";
 import type { CopyStepContext } from "./types.ts";
+import { updateWorkflowAreas } from "./inline.ts";
 
 export interface CopyNextFileOutput {
   skipped: boolean;
@@ -29,6 +31,7 @@ export const copyNextFile = fromPromise(
       targetDir,
       lineReplace,
       sharedPrefix,
+      workflowId,
     } = input;
 
     if (filesToCopy.length === 0) {
@@ -73,7 +76,24 @@ export const copyNextFile = fromPromise(
     // Check if target file already exists
     try {
       await access(targetPath, constants.F_OK);
-      response.skipped = true;
+      const targetContent = await readFile(targetPath, "utf-8");
+      const targetLines = targetContent.split(/\r?\n/);
+      const sourceContent = await readFile(sourcePath, "utf-8");
+      const sourceLines = sourceContent.split(/\r?\n/);
+
+      const updatedLines = updateWorkflowAreas({
+        targetLines,
+        targetPath,
+        sourceLines,
+        workflowId,
+        lineReplace: lineReplace || ((line) => line),
+      });
+
+      // Write the updated content back to the file
+      const lineEnding = targetContent.includes("\r\n") ? "\r\n" : "\n";
+      await writeFile(targetPath, updatedLines.join(lineEnding), "utf-8");
+
+      response.skipped = false; // File was updated, not skipped
       return response;
     } catch {
       // File doesn't exist, proceed with copy

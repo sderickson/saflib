@@ -201,9 +201,9 @@ export const parsePath = (
   if (parts.length === 1) {
     targetName = parts[0];
     groupName = targetName; // for workflows that set up the group
-  } else if (parts.length === 2) {
-    groupName = parts[0];
-    targetName = parts[1];
+  } else if (parts.length >= 2) {
+    groupName = parts.slice(0, -1).join("/");
+    targetName = parts[parts.length - 1];
   } else {
     throw new Error(`Invalid path: ${path}`);
   }
@@ -265,7 +265,7 @@ export const makeLineReplace = (context: { [key: string]: any }) => {
         if (!replaceMap[match]) {
           if (process.env.NODE_ENV !== "test") {
             console.error(`Match "${match}" not found in line \`${line}\``);
-            console.error("replaceMap:", JSON.stringify(replaceMap, null, 2));
+            // console.error("replaceMap:", JSON.stringify(replaceMap, null, 2));
           }
           throw new Error(`Missing replacement for ${match}`);
         }

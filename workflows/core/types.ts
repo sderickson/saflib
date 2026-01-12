@@ -160,6 +160,8 @@ export type VersionControlMode = "git";
  * Inputs every workflow machine receives.
  */
 export interface WorkflowInput {
+  workflowId?: string;
+
   agentConfig?: AgentConfig;
 
   runMode?: WorkflowExecutionMode;
@@ -218,6 +220,8 @@ export type WorkflowExecutionMode = "dry" | "script" | "print" | "run";
  * @internal
  */
 export interface WorkflowContext {
+  workflowId: string;
+
   agentConfig?: AgentConfig;
 
   /**

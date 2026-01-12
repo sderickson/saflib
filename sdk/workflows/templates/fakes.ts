@@ -1,12 +1,12 @@
-// TODO: Re-export files from the requests/ directory that contain fake implementations
-// These only export the fake files, so that they're only used in tests
-// This also allows the fake in-memory store to automatically refresh the data after each test
-
 import { identityServiceFakeHandlers } from "@saflib/auth/fakes";
-// import { groupNameFakeHandlers } from "./requests/group-name/index.fakes.ts";
+
+// BEGIN SORTED WORKFLOW AREA fake-group-imports FOR sdk/add-query
+import { __groupName__FakeHandlers } from "./requests/__group-name__/index.fakes.ts";
+// END WORKFLOW AREA
 
 export const __serviceName__ServiceFakeHandlers = [
-  // add fake handlers here
   ...identityServiceFakeHandlers,
-  // ...groupNameFakeHandlers,
+  // BEGIN SORTED WORKFLOW AREA fake-group-handlers FOR sdk/add-query
+  ...__groupName__FakeHandlers,
+  // END WORKFLOW AREA
 ];

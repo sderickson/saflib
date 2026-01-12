@@ -1,7 +1,6 @@
 import {
   CopyStepMachine,
   UpdateStepMachine,
-  PromptStepMachine,
   defineWorkflow,
   step,
   CommandStepMachine,
@@ -26,8 +25,7 @@ const input = [
 ] as const;
 
 interface AddDrizzleQueryWorkflowContext
-  extends ParsePathOutput,
-    ParsePackageNameOutput {}
+  extends ParsePathOutput, ParsePackageNameOutput {}
 
 export const AddDrizzleQueryWorkflowDefinition = defineWorkflow<
   typeof input,
@@ -88,34 +86,17 @@ export const AddDrizzleQueryWorkflowDefinition = defineWorkflow<
       lineReplace: makeLineReplace(context),
     })),
 
-    step(PromptStepMachine, ({ context }) => ({
-      promptText: `Add parameters and results to the root types.ts file and errors to the errors.ts files.
-      Full paths: ${context.copiedFiles?.types}, ${context.copiedFiles?.errors}
+    step(UpdateStepMachine, ({ context }) => ({
+      fileId: "query",
+      promptMessage: `Implement the new query following the documentation guidelines.
+      Full path: ${context.copiedFiles?.query}
 
         * As much as possible, types should be based on the types that drizzle provides.
         * A resource not being found by ID is an error.
         * Errors should be simple, no special constructors or anything.
         * You don't need to export error types from the types.ts file.
-
-        Note: Do NOT create a new \`types.ts\` or \`errors.ts\` files. Add to the existing ones next to the \`package.json\` file.
         
         Please reference the documentation here for more information: ${context.docFiles?.refDoc}`,
-    })),
-
-    step(UpdateStepMachine, ({ context }) => ({
-      fileId: "query",
-      promptMessage: `Implement the new query following the documentation guidelines.
-      Full path: ${context.copiedFiles?.query}`,
-    })),
-
-    step(UpdateStepMachine, ({ context }) => ({
-      fileId: "groupIndex",
-      promptMessage: `Update the group index to include the new query.
-      Full path: ${context.copiedFiles?.groupIndex}
-
-        1. Import the new query from \`./${context.copiedFiles?.query}\`
-        2. Add it to the others being exported
-        3. Make sure this index file is being re-exported by the root index.ts file`,
     })),
 
     step(CommandStepMachine, () => ({

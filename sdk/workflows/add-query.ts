@@ -25,8 +25,7 @@ const input = [
 ] as const;
 
 interface AddQueryWorkflowContext
-  extends ParsePackageNameOutput,
-    ParsePathOutput {}
+  extends ParsePackageNameOutput, ParsePathOutput {}
 
 export const AddSdkQueryWorkflowDefinition = defineWorkflow<
   typeof input,
@@ -111,16 +110,6 @@ export const AddSdkQueryWorkflowDefinition = defineWorkflow<
       Include:
       * One test that makes sure it works at all.
       * Another test for (if it's a mutation and affects caching) making sure the caching works.`,
-    })),
-
-    step(UpdateStepMachine, ({ context }) => ({
-      fileId: "index",
-      promptMessage: `Update related files
-      
-      * Update **${context.targetName}/index.ts** to export the new query/mutation function.
-      * Update **${context.targetName}/index.fakes.ts** to export the new fake handler.
-      * Update the root level index.ts file to export all query/mutation functions for this group (if needed).
-      * Update the root level fakes.ts file to export all fake handlers for this group (if needed).`,
     })),
 
     step(CommandStepMachine, () => ({

@@ -6,6 +6,10 @@ import {
   type __ServiceName__ServiceContextOptions,
 } from "template-package-service-common";
 
+// BEGIN SORTED WORKFLOW AREA router-imports FOR express/add-handler
+import { create__GroupName__Router } from "./routes/__group-name__/index.ts";
+// END WORKFLOW AREA
+
 /**
  * Creates the HTTP server for the __service-name__ service.
  */
@@ -28,8 +32,9 @@ export function create__ServiceName__HttpApp(
     });
   });
 
-  // Add route handlers here. Do not prefix the routes; the router will handle the prefix.
-  // app.use(create__ServiceName__Router());
+  // BEGIN WORKFLOW AREA app-use-routes FOR express/add-handler
+  app.use(create__GroupName__Router());
+  // END WORKFLOW AREA
 
   app.use(createErrorMiddleware());
 

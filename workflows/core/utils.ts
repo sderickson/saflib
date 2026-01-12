@@ -43,7 +43,7 @@ export const promptWorkflow = (actor: AnyActor) => {
   Object.values(snapshot.children as Record<string, AnyActor>).forEach(
     (child) => {
       promptWorkflow(child);
-    }
+    },
   );
 };
 
@@ -83,7 +83,7 @@ const getActiveActors = (actor: AnyActor): AnyActor[] => {
  */
 export const checklistToString = (
   checklist: ChecklistItem[],
-  prefix = ""
+  prefix = "",
 ): string => {
   return checklist
     .map((item) => {
@@ -99,6 +99,7 @@ export const checklistToString = (
 
 export function contextFromInput(input: WorkflowInput): WorkflowContext {
   return {
+    workflowId: input.workflowId || "not-provided",
     checklist: [],
     prompt: input.prompt,
     runMode: input.runMode || "print",
@@ -120,7 +121,7 @@ let timeout: NodeJS.Timeout | undefined;
  */
 export const pollingWaitFor = (
   actor: AnyActor,
-  condition: (snapshot: AnyMachineSnapshot) => boolean
+  condition: (snapshot: AnyMachineSnapshot) => boolean,
 ) => {
   let resolve: (value: any) => void;
   const promise = new Promise((_resolve, _reject) => {

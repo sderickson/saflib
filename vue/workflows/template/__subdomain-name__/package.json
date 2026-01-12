@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "template-package-clients-common": "*",
+    "template-package-links": "*",
     "@saflib/vue": "*",
     "@saflib/auth": "*",
     "vue-router": "*"
