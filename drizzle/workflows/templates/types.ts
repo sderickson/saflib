@@ -8,6 +8,7 @@ export type * from "./schema.ts";
 export type StubEntity = any;
 export type StubParams = any;
 
+// Re-export commonly used types for convenience
 // Example:
 // import type { ExampleEntity } from "./schemas/example.ts";
 // export type { ExampleEntity };
@@ -15,4 +16,3 @@ export type StubParams = any;
 //   ExampleEntity,
 //   "id" | "createdAt" | "updatedAt"
 // >;
-// END WORKFLOW AREA

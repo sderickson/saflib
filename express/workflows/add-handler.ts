@@ -25,7 +25,8 @@ const input = [
 ] as const;
 
 interface AddHandlerWorkflowContext
-  extends ParsePackageNameOutput, ParsePathOutput {}
+  extends ParsePackageNameOutput,
+    ParsePathOutput {}
 
 export const AddHandlerWorkflowDefinition = defineWorkflow<
   typeof input,
@@ -88,7 +89,7 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
       - Handle expected errors from service/DB layers, with "satisfies never" for exhaustive error handling
       - Let unexpected errors propagate to central error handler (no try/catch!)
       - Follow the pattern in the reference doc
-      - Export the handler from the adjacent "index.ts" file
+      - Use the handler in the adjacent "index.ts" file.
       - Include db -> http mapper functions in the adjacent ${context.copiedFiles?.helpers} file." 
       
       Review ${context.docFiles?.refDoc} for more details.`,
