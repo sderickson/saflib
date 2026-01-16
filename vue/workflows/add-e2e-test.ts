@@ -15,20 +15,19 @@ import path from "node:path";
 
 const sourceDir = path.join(
   import.meta.dirname,
-  "template/__subdomain-name__/e2e/__target-name__"
+  "template/__subdomain-name__/e2e/__target-name__",
 );
 
 const input = [
   {
     name: "path",
-    description: "Path of the new e2e test (e.g., './e2e/test-name')",
-    exampleValue: "./e2e/test-name",
+    description: "Path of the new e2e test (e.g., './e2e/test-name.spec.ts')",
+    exampleValue: "./e2e/test-name.spec.ts",
   },
 ] as const;
 
 interface AddE2eTestWorkflowContext
-  extends ParsePathOutput,
-    ParsePackageNameOutput {
+  extends ParsePathOutput, ParsePackageNameOutput {
   targetDir: string;
 }
 
@@ -54,6 +53,7 @@ export const AddE2eTestWorkflowDefinition = defineWorkflow<
       ...parsePath(input.path, {
         requiredPrefix: "./e2e/",
         cwd: input.cwd,
+        requiredSuffix: ".spec.ts",
       }),
       ...parsePackageName(getPackageName(input.cwd), {
         silentError: true, // so checklists don't error
