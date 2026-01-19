@@ -8,6 +8,13 @@ import {
 } from "@saflib/workflows";
 import path from "path";
 
+/**
+ * Todo:
+ * - make sure api responses are flattened, without nested objects
+ * - allow there to be multiple workflows, might need to make several based on the spec
+ * - run a test where workflows will be run in packages that support them, often they don't cd correctly
+ */
+
 const sourceDir = path.resolve(import.meta.dirname, "./templates");
 
 const input = [
@@ -57,7 +64,7 @@ export const SpecProjectWorkflowDefinition = defineWorkflow<
   steps: [
     step(CopyStepMachine, ({ context }) => ({
       targetDir: context.targetDir,
-      lineReplace: makeLineReplace(context),  
+      lineReplace: makeLineReplace(context),
     })),
 
     step(UpdateStepMachine, ({ context }) => ({
