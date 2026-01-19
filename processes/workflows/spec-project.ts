@@ -13,6 +13,7 @@ import path from "path";
  * - make sure api responses are flattened, without nested objects
  * - allow there to be multiple workflows, might need to make several based on the spec
  * - run a test where workflows will be run in packages that support them, often they don't cd correctly
+ * - make sure schemas are implemented in the right order
  */
 
 const sourceDir = path.resolve(import.meta.dirname, "./templates");
