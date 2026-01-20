@@ -93,8 +93,6 @@ export const UpdateSchemaWorkflowDefinition = defineWorkflow<
 
       If there's a foreign key relationship, DO NOT set it to cascade on delete.
       
-      ${context.prompt ? `More context: ${context.prompt}` : ""}
-      
       Please reference the documentation here for more information: ${context.docFiles?.schemaDoc}`,
     })),
 
