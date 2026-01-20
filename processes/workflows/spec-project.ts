@@ -15,6 +15,7 @@ import path from "path";
  * - run a test where workflows will be run in packages that support them, often they don't cd correctly
  * - make sure schemas are implemented in the right order
  * - need a way to add a lib function, not just an export
+ * - how might the changes be reviewed to make sure they follow the spec?
  */
 
 const sourceDir = path.resolve(import.meta.dirname, "./templates");
