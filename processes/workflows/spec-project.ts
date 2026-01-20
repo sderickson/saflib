@@ -16,7 +16,6 @@ import path from "path";
  * - make sure schemas are implemented in the right order
  * - need a way to add a lib function, not just an export
  * - how might the changes be reviewed to make sure they follow the spec?
- * - the inline templates to export schemas from openapi spec packages isn't working
  */
 
 const sourceDir = path.resolve(import.meta.dirname, "./templates");
