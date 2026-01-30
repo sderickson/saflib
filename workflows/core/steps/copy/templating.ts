@@ -262,7 +262,7 @@ export const makeLineReplace = (context: { [key: string]: any }) => {
     const matches = line.match(interpolationRegex);
     if (matches) {
       matches.forEach((match) => {
-        if (!replaceMap[match]) {
+        if (replaceMap[match] === undefined) {
           if (process.env.NODE_ENV !== "test") {
             console.error(`Match "${match}" not found in line \`${line}\``);
             // console.error("replaceMap:", JSON.stringify(replaceMap, null, 2));

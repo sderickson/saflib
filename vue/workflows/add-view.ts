@@ -69,6 +69,14 @@ export const AddSpaViewWorkflowDefinition = defineWorkflow<
     if (pathResult.targetName.endsWith("-page") || pathResult.targetName.endsWith("-dialog")) {
       throw new Error("Target name cannot end with '-page' or '-dialog'");
     }
+
+    // get the "full path" of the view, which does not include the first directory (pages/ or dialogs/)
+    const folderPath = pathResult.groupName + "/" + pathResult.targetName;
+    let routePath =  folderPath.split("/").slice(2).join("/");
+    if (routePath === "home") {
+      routePath = "";
+    }
+
     return {
       ...pathResult,
       ...parsePackageName(getPackageName(input.cwd), {
@@ -77,7 +85,8 @@ export const AddSpaViewWorkflowDefinition = defineWorkflow<
       }),
       targetDir,
       subdomainName,
-      groupName: pathResult.groupName + "/" + pathResult.targetName,
+      groupName: folderPath,
+      routePath,
     };
   },
 
@@ -99,11 +108,22 @@ export const AddSpaViewWorkflowDefinition = defineWorkflow<
   docFiles: {},
 
   steps: [
-    step(CopyStepMachine, ({ context }) => ({
-      name: context.targetName,
-      targetDir: context.targetDir,
-      lineReplace: makeLineReplace(context),
-    })),
+    step(CopyStepMachine, ({ context }) => {
+      let templateFiles = context.templateFiles;
+      if (context.groupName !== "pages") {
+        // remove "router.ts" from the template files
+        templateFiles = {
+          ...templateFiles,
+        };
+        delete templateFiles.router;
+      }
+      return {
+        name: context.targetName,
+        targetDir: context.targetDir,
+        lineReplace: makeLineReplace(context),
+        templateFiles,
+      }
+    }),
 
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "vue",
