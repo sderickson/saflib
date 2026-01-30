@@ -117,10 +117,16 @@ export const AddSpaViewWorkflowDefinition = defineWorkflow<
         };
         delete templateFiles.router;
       }
+
+      // bit of a bandaid to replace valid but extraneous import syntax from root level imports
+      const defaultLineReplace = makeLineReplace(context);
+      const lineReplace = (line: string) => {
+        return defaultLineReplace(line).replace("././", "./");
+      };
       return {
         name: context.targetName,
         targetDir: context.targetDir,
-        lineReplace: makeLineReplace(context),
+        lineReplace,
         templateFiles,
       }
     }),
