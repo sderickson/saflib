@@ -1,12 +1,12 @@
-let listening = false;
+let printDirectToConsole = false;
 let pendingMessages: string[] = [];
 
-export const setListening = (listening: boolean) => {
-  listening = listening;
+export const setPrintDirectToConsole = (printDirectToConsole: boolean) => {
+  printDirectToConsole = printDirectToConsole;
 };
 
 export const addPendingMessage = (message: string) => {
-  if (listening) {
+  if (printDirectToConsole) {
     return;
   }
   pendingMessages.push(message);

@@ -1,6 +1,6 @@
 import { AsyncLocalStorage } from "async_hooks";
 import path from "node:path";
-import { addPendingMessage, setListening } from "./agents/message.ts";
+import { addPendingMessage, setPrintDirectToConsole } from "./agents/message.ts";
 
 /**
  * Logger interface for workflow operations
@@ -54,7 +54,7 @@ export function createWorkflowLogger(
     return createSilentLogger();
   }
   if (printToAgent) {
-    setListening(true);
+    setPrintDirectToConsole(true);
   }
 
   return {
