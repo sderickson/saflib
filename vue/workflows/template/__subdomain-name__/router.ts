@@ -2,6 +2,9 @@ import { createRouter, createWebHistory } from "vue-router";
 import { __subdomainName__Links } from "template-package-links";
 import { PageNotFound } from "@saflib/vue/components";
 
+// TODO: remove this log once __subdomainName__Links is being used by the routes
+console.log("__subdomainName__Links:", __subdomainName__Links);
+
 // BEGIN SORTED WORKFLOW AREA page-imports FOR vue/add-page
 import __TargetName__Async from "./pages/__full-path__/__TargetName__PageAsync.vue";
 // END WORKFLOW AREA

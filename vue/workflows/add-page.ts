@@ -52,6 +52,7 @@ export const AddSpaPageWorkflowDefinition = defineWorkflow<
 
   context: ({ input }) => {
     const targetDir = path.dirname(path.join(input.cwd));
+    console.log("targetDir:", targetDir);
     const subdomainName = path.basename(input.cwd);
     const pathResult = parsePath(input.path, {
       requiredPrefix: "./pages/",
