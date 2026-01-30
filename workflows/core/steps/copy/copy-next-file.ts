@@ -10,7 +10,7 @@ import type { CopyStepContext } from "./types.ts";
 import { updateWorkflowAreas } from "./inline.ts";
 
 export interface CopyNextFileOutput {
-  skipped: boolean;
+  fileExisted: boolean;
   fileName: string;
   fileId: string;
   filePath: string;
@@ -62,7 +62,7 @@ export const copyNextFile = fromPromise(
     const isDirectory = stats.isDirectory();
 
     const response: CopyNextFileOutput = {
-      skipped: false,
+      fileExisted: false,
       fileName: targetFileName,
       fileId: currentFileId,
       filePath: targetPath,
@@ -93,7 +93,7 @@ export const copyNextFile = fromPromise(
       const lineEnding = targetContent.includes("\r\n") ? "\r\n" : "\n";
       await writeFile(targetPath, updatedLines.join(lineEnding), "utf-8");
 
-      response.skipped = false; // File was updated, not skipped
+      response.fileExisted = true; // File was updated
       return response;
     } catch {
       // File doesn't exist, proceed with copy
