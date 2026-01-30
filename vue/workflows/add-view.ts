@@ -77,6 +77,7 @@ export const AddSpaViewWorkflowDefinition = defineWorkflow<
       }),
       targetDir,
       subdomainName,
+      groupName: pathResult.groupName + "/" + pathResult.targetName,
     };
   },
 
