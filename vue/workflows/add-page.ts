@@ -59,7 +59,7 @@ export const AddSpaPageWorkflowDefinition = defineWorkflow<
       cwd: input.cwd,
     });
     let fullPath = pathResult.targetName;
-    if (pathResult.groupName) {
+    if (pathResult.groupName && pathResult.groupName !== pathResult.targetName) {
       fullPath = pathResult.groupName + "/" + fullPath;
     }
     if (pathResult.targetName.endsWith("-page")) {
