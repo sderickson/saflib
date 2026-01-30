@@ -4,7 +4,6 @@ import type { Page } from "@playwright/test";
 // import { __target_name___page as strings } from "./__TargetName__.strings.ts";
 
 export class __TargetName__PageFixture {
-  // TODO: Implement this fixture
   constructor(private page: Page) {}
 
   // TODO: Add helper methods for interacting with this page
