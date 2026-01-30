@@ -15,7 +15,7 @@ import path from "node:path";
 
 const pageDir = path.join(
   import.meta.dirname,
-  "template/__subdomain-name__/__group-name__/__full-path__",
+  "template/__subdomain-name__/__group-name__",
 );
 const packageDir = path.join(
   import.meta.dirname,
@@ -62,16 +62,10 @@ export const AddSpaViewWorkflowDefinition = defineWorkflow<
         "Path must start with './pages/' or './dialogs/'",
       );
     }
-    const firstDir = `./${input.path.split("/")[1]}/`;
 
     const pathResult = parsePath(input.path, {
-      requiredPrefix: firstDir,
       cwd: input.cwd,
     });
-    let fullPath = pathResult.targetName;
-    if (pathResult.groupName && pathResult.groupName !== pathResult.targetName) {
-      fullPath = pathResult.groupName + "/" + fullPath;
-    }
     if (pathResult.targetName.endsWith("-page") || pathResult.targetName.endsWith("-dialog")) {
       throw new Error("Target name cannot end with '-page' or '-dialog'");
     }
@@ -83,7 +77,6 @@ export const AddSpaViewWorkflowDefinition = defineWorkflow<
       }),
       targetDir,
       subdomainName,
-      fullPath,
     };
   },
 
