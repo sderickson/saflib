@@ -91,6 +91,7 @@ export const AddSpaWorkflowDefinition = defineWorkflow<
     i18n: path.join(subdomainDir, "i18n.ts"),
     main: path.join(subdomainDir, "main.ts"),
     packageJson: path.join(subdomainDir, "package.json"),
+    playwrightConfig: path.join(subdomainDir, "playwright.config.ts"),
     router: path.join(subdomainDir, "router.ts"),
     strings: path.join(subdomainDir, "strings.ts"),
     testApp: path.join(subdomainDir, "test-app.ts"),
