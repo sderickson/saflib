@@ -3,7 +3,6 @@ import { stubGlobals, getElementByString } from "@saflib/vue/testing";
 import { type VueWrapper } from "@vue/test-utils";
 import __TargetName__Async from "./__TargetName__Async.vue";
 import { __target_name___page as strings } from "./__TargetName__.strings.ts";
-// TODO: Fix this import to point to the actual one for this package
 import { mountTestApp, testAppHandlers } from "template-package-spa/test-app";
 import { setupMockServer } from "@saflib/sdk/testing/mock";
 
