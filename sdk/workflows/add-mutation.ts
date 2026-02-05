@@ -19,24 +19,24 @@ const input = [
   {
     name: "path",
     description:
-      "The path to the template file to be created (e.g., 'requests/secrets/list.ts')",
-    exampleValue: "./requests/secrets/list.ts",
+      "The path to the template file to be created (e.g., 'requests/scans/execute.ts')",
+    exampleValue: "./requests/scans/execute.ts",
   },
 ] as const;
 
-interface AddQueryWorkflowContext
+interface AddMutationWorkflowContext
   extends ParsePackageNameOutput, ParsePathOutput {}
 
-export const AddSdkQueryWorkflowDefinition = defineWorkflow<
+export const AddSdkMutationWorkflowDefinition = defineWorkflow<
   typeof input,
-  AddQueryWorkflowContext
+  AddMutationWorkflowContext
 >({
-  id: "sdk/add-query",
+  id: "sdk/add-mutation",
 
-  description: "Add a new API query to the SDK",
+  description: "Add a new API mutation to the SDK",
 
   checklistDescription: ({ targetDir, targetName }) =>
-    `Add new API query ${targetName} at ${targetDir}`,
+    `Add new API mutation ${targetName} at ${targetDir}`,
 
   input,
 
@@ -89,7 +89,7 @@ export const AddSdkQueryWorkflowDefinition = defineWorkflow<
 
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "templateFile",
-      promptMessage: `Update **${context.targetName}.ts** to implement the API query.
+      promptMessage: `Update **${context.targetName}.ts** to implement the API mutation.
       
       Please review documentation here first: ${context.docFiles?.overview}`,
     })),
@@ -105,10 +105,11 @@ export const AddSdkQueryWorkflowDefinition = defineWorkflow<
 
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "templateFileTest",
-      promptMessage: `Update **${context.targetName}.test.ts** to implement simple tests for the API query.
+      promptMessage: `Update **${context.targetName}.test.ts** to implement simple tests for the API mutation.
       
       Include:
-      * One test that makes sure it works at all.`,
+      * One test that makes sure it works at all.
+      * Another test for making sure the caching works (that related queries are invalidated after the mutation).`,
     })),
 
     step(CommandStepMachine, () => ({
@@ -122,7 +123,7 @@ export const AddSdkQueryWorkflowDefinition = defineWorkflow<
       command: "npm",
       args: ["run", "test"],
       description:
-        "Run tests to ensure the new API query works correctly.",
+        "Run tests to ensure the new API mutation works correctly.",
     })),
   ],
 });
