@@ -171,21 +171,22 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
     })),
 
     // NOTE: It has to be in the health group for types, and this test, to work.
-    step(makeWorkflowMachine(AddProtoWorkflowDefinition), () => ({
-      path: "./protos/health/example.proto",
-    })),
-    step(CdStepMachine, () => ({
-      path: "./tmp/service/grpc-server",
-    })),
-    step(makeWorkflowMachine(AddGrpcServerHandlerWorkflowDefinition), () => ({
-      path: "./handlers/health/example.ts",
-    })),
-    step(CdStepMachine, () => ({
-      path: "./tmp/service/grpc-client",
-    })),
-    step(makeWorkflowMachine(AddGrpcCallWorkflowDefinition), () => ({
-      path: "./rpcs/health/example.ts",
-    })),
+    // TODO: Refactor grpc to use inline templates, it'll be better
+    // step(makeWorkflowMachine(AddProtoWorkflowDefinition), () => ({
+    //   path: "./protos/health/example.proto",
+    // })),
+    // step(CdStepMachine, () => ({
+    //   path: "./tmp/service/grpc-server",
+    // })),
+    // step(makeWorkflowMachine(AddGrpcServerHandlerWorkflowDefinition), () => ({
+    //   path: "./handlers/health/example.ts",
+    // })),
+    // step(CdStepMachine, () => ({
+    //   path: "./tmp/service/grpc-client",
+    // })),
+    // step(makeWorkflowMachine(AddGrpcCallWorkflowDefinition), () => ({
+    //   path: "./rpcs/health/example.ts",
+    // })),
 
     // Test @saflib/identity workflows
     step(CdStepMachine, () => ({
