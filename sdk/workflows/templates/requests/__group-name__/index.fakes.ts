@@ -1,4 +1,4 @@
-// BEGIN SORTED WORKFLOW AREA fake-handler-imports FOR sdk/add-query sdk/add-mutation
+// BEGIN SORTED WORKFLOW AREA fake-handler-imports FOR sdk/add-query
 import { __queryName____GroupName__Handler } from "./__query-name__.fake.ts";
 // END WORKFLOW AREA
 
