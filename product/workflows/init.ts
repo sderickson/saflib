@@ -72,7 +72,7 @@ export const InitProductWorkflowDefinition = defineWorkflow<
     step(
       CommandStepMachine,
       ({ context }) => {
-        if (context.runMode === "dry") {
+        if (context.runMode === "dry" || context.runMode === "checklist") {
           return {
             command: "echo",
             args: ["Skip appending to workspaces."],

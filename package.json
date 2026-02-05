@@ -11,8 +11,7 @@
   "author": "Scott Erickson <sderickson@gmail.com>",
   "license": "MIT",
   "workspaces": [
-    "/**",
-    "foo/**"
+    "/**"
   ],
   "devDependencies": {
     "@saflib/vue": "*"
