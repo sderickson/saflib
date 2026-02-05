@@ -48,9 +48,11 @@ export interface WorkflowBlob {
  */
 export interface WorkflowCliOptions {
   getSourceUrl?: GetSourceUrlFunction;
+  systemPrompt?: string;
 }
 
 export interface WorkflowCommandOptions {
+  systemPrompt?: string;
   getSourceUrl?: GetSourceUrlFunction;
   program: Command;
   workflows: WorkflowDefinition[];

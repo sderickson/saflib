@@ -68,6 +68,9 @@ export const addKickoffCommand = (commandOptions: WorkflowCommandOptions) => {
           addPendingMessage(
             "You are going through a well-defined developer workflow specific to this codebase and project. You will receive logs and prompts, please follow them to the best of your ability.\n",
           );
+          if (commandOptions.systemPrompt) {
+            addPendingMessage(`${commandOptions.systemPrompt}\n`);
+          }
           if (options.message) {
             addPendingMessage(`${options.message}\n`);
           }
