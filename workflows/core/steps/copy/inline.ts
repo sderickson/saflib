@@ -420,19 +420,25 @@ export function validateWorkflowAreas({
   sourceLines,
   targetLines,
   targetPath,
+  sourcePath,
 }: {
   sourceLines: string[];
   targetLines: string[];
   targetPath: string;
+  sourcePath: string;
 }): void {
   const sourceAreas = extractWorkflowAreas(sourceLines);
   const targetAreas = extractWorkflowAreas(targetLines);
+  const errorContext = `
+  Source: ${sourcePath}
+  Target: ${targetPath}
+  `;
 
   // Check for areas missing END markers
   for (const area of sourceAreas) {
     if (area.endLine === null) {
       throw new Error(
-        `Source has workflow area "${area.areaName}" without matching END marker in ${targetPath}`,
+        `Source has workflow area "${area.areaName}" without matching END marker${errorContext}`,
       );
     }
   }
@@ -440,7 +446,7 @@ export function validateWorkflowAreas({
   for (const area of targetAreas) {
     if (area.endLine === null) {
       throw new Error(
-        `Target has workflow area "${area.areaName}" without matching END marker in ${targetPath}`,
+        `Target has workflow area "${area.areaName}" without matching END marker${errorContext}`,
       );
     }
   }
@@ -453,7 +459,7 @@ export function validateWorkflowAreas({
     const key = getAreaKey(area);
     if (sourceAreaMap.has(key)) {
       throw new Error(
-        `Source has duplicate workflow area "${area.areaName}" in ${targetPath}`,
+        `Source has duplicate workflow area "${area.areaName}"${errorContext}`,
       );
     }
     sourceAreaMap.set(key, area);
@@ -463,7 +469,7 @@ export function validateWorkflowAreas({
     const key = getAreaKey(area);
     if (targetAreaMap.has(key)) {
       throw new Error(
-        `Target has duplicate workflow area "${area.areaName}" in ${targetPath}`,
+        `Target has duplicate workflow area "${area.areaName}"${errorContext}`,
       );
     }
     targetAreaMap.set(key, area);
@@ -473,7 +479,7 @@ export function validateWorkflowAreas({
   for (const [key, area] of sourceAreaMap) {
     if (!targetAreaMap.has(key)) {
       throw new Error(
-        `Source has workflow area "${area.areaName}" (${area.isSorted ? "SORTED " : ""}FOR ${area.workflowIds.join(" ")}) that target does not have in ${targetPath}`,
+        `Source has workflow area "${area.areaName}" (${area.isSorted ? "SORTED " : ""}FOR ${area.workflowIds.join(" ")}) that target does not have${errorContext}`,
       );
     }
   }
@@ -482,7 +488,7 @@ export function validateWorkflowAreas({
   for (const [key, area] of targetAreaMap) {
     if (!sourceAreaMap.has(key)) {
       throw new Error(
-        `Target has workflow area "${area.areaName}" (${area.isSorted ? "SORTED " : ""}FOR ${area.workflowIds.join(" ")}) that source does not have in ${targetPath}`,
+        `Target has workflow area "${area.areaName}" (${area.isSorted ? "SORTED " : ""}FOR ${area.workflowIds.join(" ")}) that source does not have${errorContext}`,
       );
     }
   }
@@ -494,13 +500,13 @@ export function validateWorkflowAreas({
     // These should already match due to the key, but double-check for safety
     if (sourceArea.areaName !== targetArea.areaName) {
       throw new Error(
-        `Workflow area name mismatch: source has "${sourceArea.areaName}" but target has "${targetArea.areaName}" in ${targetPath}`,
+        `Workflow area name mismatch: source has "${sourceArea.areaName}" but target has "${targetArea.areaName}"${errorContext}`,
       );
     }
 
     if (sourceArea.isSorted !== targetArea.isSorted) {
       throw new Error(
-        `Workflow area "${sourceArea.areaName}" sorted status mismatch: source is ${sourceArea.isSorted ? "SORTED" : "not sorted"} but target is ${targetArea.isSorted ? "SORTED" : "not sorted"} in ${targetPath}`,
+        `Workflow area "${sourceArea.areaName}" sorted status mismatch: source is ${sourceArea.isSorted ? "SORTED" : "not sorted"} but target is ${targetArea.isSorted ? "SORTED" : "not sorted"}${errorContext}`,
       );
     }
 
@@ -511,7 +517,7 @@ export function validateWorkflowAreas({
       sourceIds.some((id, i) => id !== targetIds[i])
     ) {
       throw new Error(
-        `Workflow area "${sourceArea.areaName}" workflow IDs mismatch: source has [${sourceIds.join(", ")}] but target has [${targetIds.join(", ")}] in ${targetPath}`,
+        `Workflow area "${sourceArea.areaName}" workflow IDs mismatch: source has [${sourceIds.join(", ")}] but target has [${targetIds.join(", ")}]${errorContext}`,
       );
     }
   }

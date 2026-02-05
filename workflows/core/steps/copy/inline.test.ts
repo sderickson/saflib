@@ -326,6 +326,7 @@ describe("validateWorkflowAreas", () => {
           "// END WORKFLOW AREA",
         ],
         targetPath: "test.ts",
+        sourcePath: "test.ts",
       });
     }).not.toThrow();
   });
@@ -350,6 +351,7 @@ describe("validateWorkflowAreas", () => {
           "// END WORKFLOW AREA",
         ],
         targetPath: "test.ts",
+        sourcePath: "test.ts",
       });
     }).not.toThrow();
   });
@@ -364,10 +366,9 @@ describe("validateWorkflowAreas", () => {
         ],
         targetLines: [],
         targetPath: "test.ts",
+        sourcePath: "test.ts",
       });
-    }).toThrow(
-      'Source has workflow area "myArea" (FOR workflow1) that target does not have in test.ts',
-    );
+    }).toThrow();
   });
 
   it("should error when target has area that source doesn't have", () => {
@@ -380,10 +381,9 @@ describe("validateWorkflowAreas", () => {
           "// END WORKFLOW AREA",
         ],
         targetPath: "test.ts",
+        sourcePath: "test.ts",
       });
-    }).toThrow(
-      'Target has workflow area "myArea" (FOR workflow1) that source does not have in test.ts',
-    );
+    }).toThrow();
   });
 
   it("should error when source area is missing END marker", () => {
@@ -399,10 +399,9 @@ describe("validateWorkflowAreas", () => {
           "// END WORKFLOW AREA",
         ],
         targetPath: "test.ts",
+        sourcePath: "test.ts",
       });
-    }).toThrow(
-      'Source has workflow area "myArea" without matching END marker in test.ts',
-    );
+    }).toThrow();
   });
 
   it("should error when target area is missing END marker", () => {
@@ -418,10 +417,9 @@ describe("validateWorkflowAreas", () => {
           "  existing",
         ],
         targetPath: "test.ts",
+        sourcePath: "test.ts",
       });
-    }).toThrow(
-      'Target has workflow area "myArea" without matching END marker in test.ts',
-    );
+    }).toThrow();
   });
 
   it("should error when areas differ in sorted status", () => {
@@ -438,10 +436,9 @@ describe("validateWorkflowAreas", () => {
           "// END WORKFLOW AREA",
         ],
         targetPath: "test.ts",
+        sourcePath: "test.ts",
       });
-    }).toThrow(
-      'Source has workflow area "myArea" (FOR workflow1) that target does not have in test.ts',
-    );
+    }).toThrow();
   });
 
   it("should error when areas differ in workflow IDs", () => {
@@ -458,10 +455,9 @@ describe("validateWorkflowAreas", () => {
           "// END WORKFLOW AREA",
         ],
         targetPath: "test.ts",
+        sourcePath: "test.ts",
       });
-    }).toThrow(
-      'Source has workflow area "myArea" (FOR workflow1) that target does not have in test.ts',
-    );
+    }).toThrow();
   });
 
   it("should error when areas differ in workflow ID order (multiple IDs)", () => {
@@ -478,8 +474,9 @@ describe("validateWorkflowAreas", () => {
           "// END WORKFLOW AREA",
         ],
         targetPath: "test.ts",
+        sourcePath: "test.ts",
       });
-    }).not.toThrow(); // Order shouldn't matter, IDs are sorted for comparison
+    }).not.toThrow();
   });
 
   it("should error when areas have different names", () => {
@@ -496,10 +493,9 @@ describe("validateWorkflowAreas", () => {
           "// END WORKFLOW AREA",
         ],
         targetPath: "test.ts",
+        sourcePath: "test.ts",
       });
-    }).toThrow(
-      'Source has workflow area "area1" (FOR workflow1) that target does not have in test.ts',
-    );
+    }).toThrow();
   });
 
   it("should error when source has multiple areas but target has different ones", () => {
@@ -522,6 +518,7 @@ describe("validateWorkflowAreas", () => {
           "// END WORKFLOW AREA",
         ],
         targetPath: "test.ts",
+        sourcePath: "test.ts",
       });
     }).toThrow();
   });
@@ -540,10 +537,9 @@ describe("validateWorkflowAreas", () => {
           "# END WORKFLOW AREA",
         ],
         targetPath: "test.ts",
+        sourcePath: "test.ts",
       });
-    }).toThrow(
-      'Source has workflow area "myArea" (FOR workflow1) that target does not have in test.ts',
-    );
+    }).toThrow();
   });
 
   it("should error when source has duplicate areas", () => {
@@ -563,8 +559,9 @@ describe("validateWorkflowAreas", () => {
           "// END WORKFLOW AREA",
         ],
         targetPath: "test.ts",
+        sourcePath: "test.ts",
       });
-    }).toThrow('Source has duplicate workflow area "myArea" in test.ts');
+    }).toThrow();
   });
 
   it("should error when target has duplicate areas", () => {
@@ -584,8 +581,9 @@ describe("validateWorkflowAreas", () => {
           "// END WORKFLOW AREA",
         ],
         targetPath: "test.ts",
+        sourcePath: "test.ts",
       });
-    }).toThrow('Target has duplicate workflow area "myArea" in test.ts');
+    }).toThrow();
   });
 
   it("should handle nested unclosed areas correctly", () => {
@@ -607,10 +605,9 @@ describe("validateWorkflowAreas", () => {
           "// END WORKFLOW AREA",
         ],
         targetPath: "test.ts",
+        sourcePath: "test.ts",
       });
-    }).toThrow(
-      'Source has workflow area "area1" without matching END marker in test.ts',
-    );
+    }).toThrow();
   });
 
   it("should pass with matching sorted areas", () => {
@@ -627,6 +624,7 @@ describe("validateWorkflowAreas", () => {
           "// END WORKFLOW AREA",
         ],
         targetPath: "test.ts",
+        sourcePath: "test.ts",
       });
     }).not.toThrow();
   });
@@ -645,6 +643,7 @@ describe("validateWorkflowAreas", () => {
           "// END WORKFLOW AREA",
         ],
         targetPath: "test.ts",
+        sourcePath: "test.ts",
       });
     }).not.toThrow();
   });

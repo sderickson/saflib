@@ -1,7 +1,5 @@
 import path from "node:path";
 import { fromPromise } from "xstate";
-import { access } from "node:fs/promises";
-import { constants } from "node:fs";
 import { readFile, writeFile } from "node:fs/promises";
 import { stat } from "node:fs/promises";
 import { copyFile } from "node:fs/promises";
@@ -82,6 +80,7 @@ export const copyNextFile = fromPromise(
         sourceLines,
         targetLines,
         targetPath,
+        sourcePath,
       });
 
       if (runMode === "dry") {
@@ -101,6 +100,10 @@ export const copyNextFile = fromPromise(
       await writeFile(targetPath, updatedLines.join(lineEnding), "utf-8");
 
       response.fileExisted = true; // File was updated
+      return response;
+    }
+
+    if (runMode === "dry") {
       return response;
     }
 
