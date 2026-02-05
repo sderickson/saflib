@@ -37,9 +37,10 @@ import {
 import {
   AddComponentWorkflowDefinition,
   AddSdkQueryWorkflowDefinition,
+  AddSdkMutationWorkflowDefinition,
 } from "@saflib/sdk/workflows";
 import {
-  AddSpaPageWorkflowDefinition,
+  AddSpaViewWorkflowDefinition,
   AddSpaWorkflowDefinition,
 } from "@saflib/vue/workflows";
 import { AddWorkflowDefinition } from "@saflib/workflows/workflows";
@@ -89,6 +90,9 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
     })),
     step(makeWorkflowMachine(AddRouteWorkflowDefinition), () => ({
       path: "./routes/users/list.yaml",
+    })),
+    step(makeWorkflowMachine(AddRouteWorkflowDefinition), () => ({
+      path: "./routes/users/create.yaml",
     })),
     step(makeWorkflowMachine(AddEventWorkflowDefinition), () => ({
       path: "./events/signup.yaml",
@@ -217,6 +221,9 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
     step(makeWorkflowMachine(AddComponentWorkflowDefinition), () => ({
       path: "./components/user-list",
     })),
+    step(makeWorkflowMachine(AddSdkMutationWorkflowDefinition), () => ({
+      path: "./requests/users/create.ts",
+    })),
 
     // Test @saflib/vue workflows
     step(CdStepMachine, () => ({
@@ -229,7 +236,7 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
     step(CdStepMachine, () => ({
       path: "./tmp/clients/root",
     })),
-    step(makeWorkflowMachine(AddSpaPageWorkflowDefinition), () => ({
+    step(makeWorkflowMachine(AddSpaViewWorkflowDefinition), () => ({
       path: "./pages/welcome-new-user",
     })),
   ],
