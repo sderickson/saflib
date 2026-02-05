@@ -39,7 +39,7 @@ export interface RunWorkflowOptions {
   agentConfig?: AgentConfig;
 
   /**
-   * Whether to skip TODOs in the workflow. They're already skipped in "dry" and "script" modes; this is mainly used to override the default behaviors, for example in automated testing of run and print modes.
+   * Whether to skip TODOs in the workflow. They're already skipped in "dry", "checklist", and "script" modes; this is mainly used to override the default behaviors, for example in automated testing of run and print modes.
    */
   skipTodos?: boolean;
 
@@ -181,4 +181,19 @@ export function isWorkflowDefinition(obj: any): obj is WorkflowDefinition {
     typeof obj.docFiles === "object" &&
     Array.isArray(obj.steps)
   );
+}
+
+/**
+ * Validate arguments for a workflow.
+ */
+export const validateArguments = (args: string[], definition: WorkflowDefinition) => {
+  const expectedArgs = definition.input.length;
+  const providedArgs = args.length;
+
+  if (providedArgs < expectedArgs) {
+    console.error(
+      `Error: Expected ${expectedArgs} argument${expectedArgs === 1 ? "" : "s"}, but got ${providedArgs}`,
+    );
+    process.exit(1);
+  }
 }

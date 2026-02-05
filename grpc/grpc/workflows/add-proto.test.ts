@@ -6,7 +6,7 @@ describe("add-proto", () => {
   it("should successfully dry run", async () => {
     const result = await runWorkflow({
       definition: AddProtoWorkflowDefinition,
-      runMode: "dry",
+      runMode: "checklist",
     });
     expect(result.output?.checklist).toBeDefined();
   });

@@ -76,8 +76,8 @@ export const CommandStepMachine = setup({
     ...workflowActors,
     runCommand: fromPromise(
       async ({ input }: { input: CommandStepContext }) => {
-        if (input.runMode === "dry") {
-          return "Dry run";
+        if (input.runMode === "dry" || input.runMode === "checklist") {
+          return `Skipped because mode is ${input.runMode}.`;
         }
         let tries = 0;
         while (true) {

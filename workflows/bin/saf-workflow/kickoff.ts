@@ -5,7 +5,7 @@ import type {
   WorkflowDefinition,
   WorkflowExecutionMode,
 } from "../../core/types.ts";
-import { runWorkflow } from "./shared/utils.ts";
+import { runWorkflow, validateArguments } from "./shared/utils.ts";
 import {
   createWorkflowLogger,
   setupWorkflowContext,
@@ -104,16 +104,7 @@ export const addKickoffCommand = (commandOptions: WorkflowCommandOptions) => {
           );
         }
 
-        // Check if enough arguments were provided
-        const expectedArgs = workflowDefinition.input.length;
-        const providedArgs = args.length;
-
-        if (providedArgs < expectedArgs) {
-          log.error(
-            `Error: Expected ${expectedArgs} argument${expectedArgs === 1 ? "" : "s"}, but got ${providedArgs}`,
-          );
-          process.exit(1);
-        }
+        validateArguments(args, workflowDefinition);
 
         if (args.length > 0) {
           log.info(`- Arguments:    ${args.join(", ")}`);

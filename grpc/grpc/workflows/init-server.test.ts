@@ -6,7 +6,7 @@ describe("grpc/init-server", () => {
   it("should successfully dry run", async () => {
     const result = await runWorkflow({
       definition: InitGrpcServerWorkflowDefinition,
-      runMode: "dry",
+      runMode: "checklist",
     });
     expect(result.output?.checklist).toBeDefined();
   });

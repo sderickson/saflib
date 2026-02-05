@@ -6,7 +6,7 @@ describe("add-cli", () => {
   it("should create a new CLI", async () => {
     const result = await runWorkflow({
       definition: AddCLIWorkflowDefinition,
-      runMode: "dry",
+      runMode: "checklist",
     });
     expect(result.output?.checklist).toBeDefined();
   });

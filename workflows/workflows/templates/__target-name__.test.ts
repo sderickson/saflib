@@ -6,7 +6,7 @@ describe("__target-name__", () => {
   it("should successfully dry run", async () => {
     const result = await runWorkflow({
       definition: __WorkflowNamespace____TargetName__WorkflowDefinition,
-      runMode: "dry",
+      runMode: "checklist",
     });
     expect(result.output?.checklist).toBeDefined();
   });

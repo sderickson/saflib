@@ -177,7 +177,7 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
     states[validateStateName] = {
       invoke: {
         src: fromPromise(async ({ input }: { input: Context }) => {
-          if (input.runMode === "dry") {
+          if (input.runMode === "dry" || input.runMode === "checklist") {
             return;
           }
 
@@ -240,6 +240,7 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
               // If validations failed, and we're running things in a way that *ought* to be correct each time, then error.
               if (
                 context.runMode === "dry" ||
+                context.runMode === "checklist" ||
                 context.runMode === "script" ||
                 context.agentConfig?.cli === "mock-agent"
               ) {
@@ -262,7 +263,7 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
   states[lastStepName] = {
     invoke: {
       src: fromPromise(async ({ input }: { input: Context }) => {
-        if (input.runMode === "dry" || input.runMode === "script") {
+        if (input.runMode === "dry" || input.runMode === "checklist" || input.runMode === "script") {
           return;
         }
         if (input.manageVersionControl) {

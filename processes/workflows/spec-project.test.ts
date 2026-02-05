@@ -6,7 +6,7 @@ describe("spec-project", () => {
   it("should successfully dry run", async () => {
     const result = await runWorkflow({
       definition: SpecProjectWorkflowDefinition,
-      runMode: "dry",
+      runMode: "checklist",
     });
     expect(result.output?.checklist).toBeDefined();
   });

@@ -63,7 +63,7 @@ export const UpdateStepMachine = setup({
     ...workflowActors,
 
     prompt: fromPromise(async ({ input }: { input: UpdateStepContext }) => {
-      if (input.runMode === "dry" || input.runMode === "script") {
+      if (input.runMode === "dry" || input.runMode === "checklist" || input.runMode === "script") {
         return { shouldContinue: true };
       }
 

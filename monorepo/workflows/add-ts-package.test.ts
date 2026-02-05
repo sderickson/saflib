@@ -6,7 +6,7 @@ describe("add-ts-package", () => {
   it("should successfully dry run", async () => {
     const result = await runWorkflow({
       definition: AddTsPackageWorkflowDefinition,
-      runMode: "dry",
+      runMode: "checklist",
     });
     expect(result.output?.checklist).toBeDefined();
   });

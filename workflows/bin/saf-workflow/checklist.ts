@@ -36,7 +36,7 @@ export const addChecklistCommand = (commandOptions: WorkflowCommandOptions) => {
 export const printChecklist = async (Workflow: WorkflowDefinition) => {
   const workflow = await runWorkflow({
     definition: Workflow,
-    runMode: "dry",
+    runMode: "checklist",
   });
   console.log(
     checklistToString(

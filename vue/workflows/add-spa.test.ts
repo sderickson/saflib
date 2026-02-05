@@ -6,7 +6,7 @@ describe("add-spa", () => {
   it("should successfully dry run", async () => {
     const result = await runWorkflow({
       definition: AddSpaWorkflowDefinition,
-      runMode: "dry",
+      runMode: "checklist",
     });
     expect(result.output?.checklist).toBeDefined();
   });

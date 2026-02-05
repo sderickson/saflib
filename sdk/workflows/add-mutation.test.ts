@@ -6,7 +6,7 @@ describe("add-mutation", () => {
   it("should successfully dry run", async () => {
     const result = await runWorkflow({
       definition: AddSdkMutationWorkflowDefinition,
-      runMode: "dry",
+      runMode: "checklist",
     });
     expect(result.output?.checklist).toBeDefined();
   });

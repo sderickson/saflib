@@ -68,6 +68,10 @@ export const copyNextFile = fromPromise(
       isDirectory,
     };
 
+    if (runMode === "checklist") {
+      return response;
+    }
+
     // Check if target file already exists
     const fileExists = fs.existsSync(targetPath);
     if (fileExists) {      

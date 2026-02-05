@@ -21,6 +21,7 @@ export const handlePrompt = async ({
           throw new Error("Agent config is required for run mode");
       }
     case "dry":
+    case "checklist":
       return { code: 0, sessionId: undefined, shouldContinue: true };
     case "script":
       // mainly to see errors when running scripts

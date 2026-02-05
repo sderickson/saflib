@@ -204,15 +204,17 @@ export interface WorkflowOutput {
  * The mode to run the workflow in.
  *
  * ## Dry
- * Runs the workflow as much as possible without making any file changes, running any commands, or prompting. Useful for checking that it basically works, and to generate a checklist.
+ * Runs the workflow as much as possible without making any file changes, running any commands, or prompting. Also tests the workflow inputs and starting cwd.
  * ## Script
  * Skip prompts and TODO checks, just run commands and copy template files. Useful for debugging those, it's recommended you run this at least once before running in "print" or "run" modes, to make sure the agent doesn't get tripped up by the automations the workflow itself performs.
  * ## Print
  * Print out logs and prompts, halt the machine at prompts. The original execution mode which integrates well with any agent, but lacks guarantees.
  * ## Run
  * Invert control from "print": the tool invokes the agent. If the workflow tool exits successfully, the workflow has been completed successfully.
+ * ## Checklist
+ * Similar to "dry", but uses the example values for inputs and does not do anything that depends on cwd, basically just runs the workflow to generate a generic checklist.
  */
-export type WorkflowExecutionMode = "dry" | "script" | "print" | "run";
+export type WorkflowExecutionMode = "dry" | "script" | "print" | "run" | "checklist";
 
 /**
  * Context shared across all workflow machines.
@@ -240,6 +242,7 @@ export interface WorkflowContext {
   /**
    * The mode to run the workflow in.
    * - "dry": do not print out logs or prompts, do not halt, just run the whole workflow and return the output. Useful for getting a checklist.
+   * - "checklist": similar to "dry", but uses the example values for inputs and does not do anything that depends on cwd, basically just runs the workflow to generate a generic checklist.
    * - "print": print out logs and prompts, halt at prompts. "Normal" execution mode.
    * - "script": skip prompts and checks, just run command and copy steps. Useful for debugging templates and scripts.
    * - "run": runs the workflow at the top level, so it invokes agents, rather than agents invoking the tool. agentConfig is included in this mode.
@@ -260,7 +263,7 @@ export interface WorkflowContext {
   /**
    * Opt in to having the workflow tool check git changes are expected, and commit them if they are. If they aren't, the workflow tool prompts the agent to justify its changes, and either commit or revert them.
    *
-   * This field is ignored in "dry" and "script" modes.
+   * This field is ignored in "dry", "checklist", and "script" modes.
    */
   manageVersionControl?: VersionControlMode;
 

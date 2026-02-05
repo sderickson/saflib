@@ -52,4 +52,4 @@ The mode to run the workflow in.
 
 > `optional` **skipTodos**: `boolean`
 
-Whether to skip TODOs in the workflow. They're already skipped in "dry" and "script" modes; this is mainly used to override the default behaviors, for example in automated testing of run and print modes.
+Whether to skip TODOs in the workflow. They're already skipped in "dry", "checklist", and "script" modes; this is mainly used to override the default behaviors, for example in automated testing of run and print modes.
