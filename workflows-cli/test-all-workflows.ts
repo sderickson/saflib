@@ -25,9 +25,9 @@ import {
   InitGrpcProtoWorkflowDefinition,
   InitGrpcServerWorkflowDefinition,
   InitGrpcClientWorkflowDefinition,
-  AddGrpcServerHandlerWorkflowDefinition,
-  AddGrpcCallWorkflowDefinition,
-  AddProtoWorkflowDefinition,
+  // AddGrpcServerHandlerWorkflowDefinition,
+  // AddGrpcCallWorkflowDefinition,
+  // AddProtoWorkflowDefinition,
 } from "@saflib/grpc/workflows";
 import { IdentityInitWorkflowDefinition } from "@saflib/identity/workflows";
 import {
