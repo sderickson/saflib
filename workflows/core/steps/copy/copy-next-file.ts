@@ -7,7 +7,8 @@ import { stat } from "node:fs/promises";
 import { copyFile } from "node:fs/promises";
 import { transformName } from "./utils.ts";
 import type { CopyStepContext } from "./types.ts";
-import { updateWorkflowAreas } from "./inline.ts";
+import { updateWorkflowAreas, validateWorkflowAreas } from "./inline.ts";
+import fs from "node:fs";
 
 export interface CopyNextFileOutput {
   fileExisted: boolean;
@@ -69,17 +70,23 @@ export const copyNextFile = fromPromise(
       isDirectory,
     };
 
-    if (runMode === "dry") {
-      return response;
-    }
-
     // Check if target file already exists
-    try {
-      await access(targetPath, constants.F_OK);
+    const fileExists = fs.existsSync(targetPath);
+    if (fileExists) {      
       const targetContent = await readFile(targetPath, "utf-8");
       const targetLines = targetContent.split(/\r?\n/);
       const sourceContent = await readFile(sourcePath, "utf-8");
       const sourceLines = sourceContent.split(/\r?\n/);
+
+      validateWorkflowAreas({
+        sourceLines,
+        targetLines,
+        targetPath,
+      });
+
+      if (runMode === "dry") {
+        return response;
+      }
 
       const updatedLines = updateWorkflowAreas({
         targetLines,
@@ -95,8 +102,6 @@ export const copyNextFile = fromPromise(
 
       response.fileExisted = true; // File was updated
       return response;
-    } catch {
-      // File doesn't exist, proceed with copy
     }
 
     // Ensure target directory exists
