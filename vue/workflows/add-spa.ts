@@ -42,6 +42,7 @@ interface AddSpaWorkflowContext extends ParsePackageNameOutput {
   clientsPackageName: string;
   commonPackageName: string;
   serviceSpecName: string;
+  serviceSdkName: string;
 }
 
 export const AddSpaWorkflowDefinition = defineWorkflow<
@@ -69,6 +70,7 @@ export const AddSpaWorkflowDefinition = defineWorkflow<
     const linksPackageName = `${currentPackageOrgName}/${input.productName}-links`;
     const commonPackageName = `${currentPackageOrgName}/${input.productName}-clients-common`;
     const serviceSpecName = `${currentPackageOrgName}/${input.productName}-spec`;
+    const serviceSdkName = `${currentPackageOrgName}/${input.productName}-sdk`;
 
     return {
       ...parsePackageName(spaPackageName, {
@@ -82,6 +84,7 @@ export const AddSpaWorkflowDefinition = defineWorkflow<
       spaPackageName,
       commonPackageName,
       serviceSpecName,
+      serviceSdkName,
     };
   },
 
@@ -125,6 +128,7 @@ export const AddSpaWorkflowDefinition = defineWorkflow<
         );
         line = line.replace("template-package-spec", context.serviceSpecName);
         line = line.replace("template-package-links", context.linksPackageName);
+        line = line.replace("template-package-sdk", context.serviceSdkName);
         return lineReplace(line);
       };
       return {
