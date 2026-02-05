@@ -10,6 +10,7 @@ import {
   parsePackageName,
   getPackageName,
   makeLineReplace,
+  PromptStepMachine,
 } from "@saflib/workflows";
 import path from "node:path";
 
@@ -102,18 +103,14 @@ export const AddSdkMutationWorkflowDefinition = defineWorkflow<
       Please review documentation here first: ${context.docFiles?.overview}`,
     })),
 
-    step(UpdateStepMachine, ({ context }) => ({
-      fileId: "templateFileFake",
-      promptMessage: `Update **${context.targetName}.fake.ts** to implement the fake handlers for testing.
+    step(PromptStepMachine, ({ context }) => ({
+      promptText: `Update **${context.targetName}.fake.ts** to implement the fake handlers for testing.
       
       Mainly it should reflect what is given to it. Have it respect query parameters and request bodies. Don't bother doing validation.
       If this is a list query, keep the resources in a separately exported array. Otherwise, if it would affect that list, import that array and modify/use it accordingly.
-      This way operations affect one another (like creating or deleting resources) so that tanstack caching can be tested.`,
-    })),
-
-    step(UpdateStepMachine, ({ context }) => ({
-      fileId: "templateFileTest",
-      promptMessage: `Update **${context.targetName}.test.ts** to implement simple tests for the API mutation.
+      This way operations affect one another (like creating or deleting resources) so that tanstack caching can be tested.
+      
+      As part of this, also update **${context.targetName}.test.ts** to implement simple tests for the API mutation.
       
       Include:
       * One test that makes sure it works at all.
