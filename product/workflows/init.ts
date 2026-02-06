@@ -260,7 +260,7 @@ export const InitProductWorkflowDefinition = defineWorkflow<
 
     step(makeWorkflowMachine(AddSpaViewWorkflowDefinition), () => ({
       path: "./pages/home",
-      prompt: `Set up the app SPA similar to the root SPA, just put some really basic content for now, will fit it in later..
+      prompt: `Set up the app SPA similar to the root SPA, just put some really basic content for now, will fit it in later.
       `,
     })),
 
