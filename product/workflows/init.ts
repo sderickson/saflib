@@ -206,7 +206,8 @@ export const InitProductWorkflowDefinition = defineWorkflow<
 
     step(makeWorkflowMachine(AddSpaViewWorkflowDefinition), ({ context }) => ({
       path: "./pages/home",
-      prompt: `Set up the logged-out home page in the ${context.productName} root SPA, integrating with the other SPAs.
+      prompt: `Set up the logged-out home page in the ${context.productName} root SPA.
+      - Remove anything happening in the loader; this page will be static.
       - Update the home page to have a call to action to the register page. Use linkToProps from @saflib/links to create the link and bind them to vuetify components. Get the link object from @saflib/auth-links which is in saflib/identity/auth-links.
       - Give it really basic content for now, will fit it in later.`,
     })),
@@ -222,8 +223,8 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       prompt: `Set up the ${context.productName} auth SPA, integrating with the other SPAs.
       - Use the @saflib/auth package's router using 'createAuthRouter'. That will provide login, register, forgot password, and logout pages.
       - Include authAppStrings from @saflib/auth/strings in this product's auth SPA's strings file, so i18n works.
-      - Make sure it redirects to the app spa's home page after login/register, using linkToHref from @saflib/links. And to root home page after logout.
-      - Update the layout in the main AuthApp.vue component. The app will need to get the 'useProfile' hook from @saflib/auth and use it to determine if the user is logged in or not to give to the layout.`,
+      - Make sure it redirects to the app spa's home page after login/register, using linkToHrefWithHost from @saflib/links. And to root home page after logout.
+      - Update the layout in the main AuthSpa.vue component. The app will need to get the 'useProfile' hook from @saflib/auth and use it to determine if the user is logged in or not to give to the layout.`,
     })),
     step(
       CommandStepMachine,
@@ -241,9 +242,26 @@ export const InitProductWorkflowDefinition = defineWorkflow<
     step(CdStepMachine, ({ context }) => ({
       path: `./${context.productName}/clients/app`,
     })),
+    step(PromptStepMachine, () => ({
+      prompt: `Update the layout in AppSpa.vue to always be logged in.`,
+    })),
+    step(
+      CommandStepMachine,
+      () => ({
+        command: "npm",
+        args: ["run", "typecheck"],
+      }),
+      {
+        commitAfter: {
+          message: `Update app spa layout`,
+        },
+      },
+    ),
+
     step(makeWorkflowMachine(AddSpaViewWorkflowDefinition), () => ({
       path: "./pages/home",
-      prompt: `Like with the root SPA, just put some stub content here, will fit it in later. Make the layout in AppSpa.vue always logged in.`,
+      prompt: `Set up the app SPA similar to the root SPA, just put some stub content here, will fit it in later.
+      `,
     })),
 
     step(CdStepMachine, ({ context }) => ({
@@ -270,6 +288,7 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       args: [
         "install",
         "@saflib/auth-links",
+        "@saflib/auth",
         `${context.sharedPackagePrefix}-links`,
       ],
     })),
