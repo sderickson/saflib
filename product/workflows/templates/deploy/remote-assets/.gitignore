@@ -1,1 +1,3 @@
+# BEGIN WORKFLOW AREA env-secrets FOR product/init
 .env.__product-name__.secrets
+# END WORKFLOW AREA
