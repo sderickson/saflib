@@ -214,6 +214,7 @@ export const executePromptWithCursor = async ({
   // spawn the agent
   const args = ["-p", msg, "--output-format", "stream-json", "-f"];
   if (context.agentConfig?.sessionId) {
+    printLineSlowly(`Resuming session ${context.agentConfig.sessionId}`);
     args.push("--resume");
     args.push(context.agentConfig.sessionId);
   }

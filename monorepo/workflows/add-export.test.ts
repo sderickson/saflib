@@ -6,7 +6,7 @@ describe("add-export", () => {
   it("should successfully dry run", async () => {
     const result = await runWorkflow({
       definition: AddExportWorkflowDefinition,
-      runMode: "dry",
+      runMode: "checklist",
     });
     expect(result.output?.checklist).toBeDefined();
   });

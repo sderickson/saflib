@@ -4,7 +4,7 @@
 
 # Type Alias: WorkflowExecutionMode
 
-> **WorkflowExecutionMode** = `"dry"` \| `"script"` \| `"print"` \| `"run"`
+> **WorkflowExecutionMode** = `"dry"` \| `"checklist"` \| `"script"` \| `"print"` \| `"run"`
 
 The mode to run the workflow in.
 

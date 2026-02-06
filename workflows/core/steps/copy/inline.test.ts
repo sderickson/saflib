@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { updateWorkflowAreas } from "./inline.ts";
+import { updateWorkflowAreas, validateWorkflowAreas } from "./inline.ts";
 
 describe("updateWorkflowAreas", () => {
   it("should append content when workflow ID matches", () => {
@@ -308,5 +308,343 @@ describe("updateWorkflowAreas", () => {
       "  new2",
       "// END WORKFLOW AREA",
     ]);
+  });
+});
+
+describe("validateWorkflowAreas", () => {
+  it("should pass when source and target have matching workflow areas", () => {
+    expect(() => {
+      validateWorkflowAreas({
+        sourceLines: [
+          "// BEGIN WORKFLOW AREA myArea FOR workflow1",
+          "  code",
+          "// END WORKFLOW AREA",
+        ],
+        targetLines: [
+          "// BEGIN WORKFLOW AREA myArea FOR workflow1",
+          "  existing",
+          "// END WORKFLOW AREA",
+        ],
+        targetPath: "test.ts",
+        sourcePath: "test.ts",
+      });
+    }).not.toThrow();
+  });
+
+  it("should pass when source and target have multiple matching areas", () => {
+    expect(() => {
+      validateWorkflowAreas({
+        sourceLines: [
+          "// BEGIN WORKFLOW AREA area1 FOR workflow1",
+          "  code1",
+          "// END WORKFLOW AREA",
+          "// BEGIN SORTED WORKFLOW AREA area2 FOR workflow1 workflow2",
+          "  code2",
+          "// END WORKFLOW AREA",
+        ],
+        targetLines: [
+          "// BEGIN WORKFLOW AREA area1 FOR workflow1",
+          "  existing1",
+          "// END WORKFLOW AREA",
+          "// BEGIN SORTED WORKFLOW AREA area2 FOR workflow1 workflow2",
+          "  existing2",
+          "// END WORKFLOW AREA",
+        ],
+        targetPath: "test.ts",
+        sourcePath: "test.ts",
+      });
+    }).not.toThrow();
+  });
+
+  it("should error when source has area that target doesn't have", () => {
+    expect(() => {
+      validateWorkflowAreas({
+        sourceLines: [
+          "// BEGIN WORKFLOW AREA myArea FOR workflow1",
+          "  code",
+          "// END WORKFLOW AREA",
+        ],
+        targetLines: [],
+        targetPath: "test.ts",
+        sourcePath: "test.ts",
+      });
+    }).toThrow();
+  });
+
+  it("should error when target has area that source doesn't have", () => {
+    expect(() => {
+      validateWorkflowAreas({
+        sourceLines: [],
+        targetLines: [
+          "// BEGIN WORKFLOW AREA myArea FOR workflow1",
+          "  code",
+          "// END WORKFLOW AREA",
+        ],
+        targetPath: "test.ts",
+        sourcePath: "test.ts",
+      });
+    }).toThrow();
+  });
+
+  it("should error when source area is missing END marker", () => {
+    expect(() => {
+      validateWorkflowAreas({
+        sourceLines: [
+          "// BEGIN WORKFLOW AREA myArea FOR workflow1",
+          "  code",
+        ],
+        targetLines: [
+          "// BEGIN WORKFLOW AREA myArea FOR workflow1",
+          "  existing",
+          "// END WORKFLOW AREA",
+        ],
+        targetPath: "test.ts",
+        sourcePath: "test.ts",
+      });
+    }).toThrow();
+  });
+
+  it("should error when target area is missing END marker", () => {
+    expect(() => {
+      validateWorkflowAreas({
+        sourceLines: [
+          "// BEGIN WORKFLOW AREA myArea FOR workflow1",
+          "  code",
+          "// END WORKFLOW AREA",
+        ],
+        targetLines: [
+          "// BEGIN WORKFLOW AREA myArea FOR workflow1",
+          "  existing",
+        ],
+        targetPath: "test.ts",
+        sourcePath: "test.ts",
+      });
+    }).toThrow();
+  });
+
+  it("should error when areas differ in sorted status", () => {
+    expect(() => {
+      validateWorkflowAreas({
+        sourceLines: [
+          "// BEGIN WORKFLOW AREA myArea FOR workflow1",
+          "  code",
+          "// END WORKFLOW AREA",
+        ],
+        targetLines: [
+          "// BEGIN SORTED WORKFLOW AREA myArea FOR workflow1",
+          "  existing",
+          "// END WORKFLOW AREA",
+        ],
+        targetPath: "test.ts",
+        sourcePath: "test.ts",
+      });
+    }).toThrow();
+  });
+
+  it("should error when areas differ in workflow IDs", () => {
+    expect(() => {
+      validateWorkflowAreas({
+        sourceLines: [
+          "// BEGIN WORKFLOW AREA myArea FOR workflow1",
+          "  code",
+          "// END WORKFLOW AREA",
+        ],
+        targetLines: [
+          "// BEGIN WORKFLOW AREA myArea FOR workflow2",
+          "  existing",
+          "// END WORKFLOW AREA",
+        ],
+        targetPath: "test.ts",
+        sourcePath: "test.ts",
+      });
+    }).toThrow();
+  });
+
+  it("should error when areas differ in workflow ID order (multiple IDs)", () => {
+    expect(() => {
+      validateWorkflowAreas({
+        sourceLines: [
+          "// BEGIN WORKFLOW AREA myArea FOR workflow1 workflow2",
+          "  code",
+          "// END WORKFLOW AREA",
+        ],
+        targetLines: [
+          "// BEGIN WORKFLOW AREA myArea FOR workflow2 workflow1",
+          "  existing",
+          "// END WORKFLOW AREA",
+        ],
+        targetPath: "test.ts",
+        sourcePath: "test.ts",
+      });
+    }).not.toThrow();
+  });
+
+  it("should error when areas have different names", () => {
+    expect(() => {
+      validateWorkflowAreas({
+        sourceLines: [
+          "// BEGIN WORKFLOW AREA area1 FOR workflow1",
+          "  code",
+          "// END WORKFLOW AREA",
+        ],
+        targetLines: [
+          "// BEGIN WORKFLOW AREA area2 FOR workflow1",
+          "  existing",
+          "// END WORKFLOW AREA",
+        ],
+        targetPath: "test.ts",
+        sourcePath: "test.ts",
+      });
+    }).toThrow();
+  });
+
+  it("should error when source has multiple areas but target has different ones", () => {
+    expect(() => {
+      validateWorkflowAreas({
+        sourceLines: [
+          "// BEGIN WORKFLOW AREA area1 FOR workflow1",
+          "  code1",
+          "// END WORKFLOW AREA",
+          "// BEGIN WORKFLOW AREA area2 FOR workflow1",
+          "  code2",
+          "// END WORKFLOW AREA",
+        ],
+        targetLines: [
+          "// BEGIN WORKFLOW AREA area1 FOR workflow1",
+          "  existing1",
+          "// END WORKFLOW AREA",
+          "// BEGIN WORKFLOW AREA area3 FOR workflow1",
+          "  existing3",
+          "// END WORKFLOW AREA",
+        ],
+        targetPath: "test.ts",
+        sourcePath: "test.ts",
+      });
+    }).toThrow();
+  });
+
+  it("should handle different comment styles but same area definition", () => {
+    expect(() => {
+      validateWorkflowAreas({
+        sourceLines: [
+          "// BEGIN WORKFLOW AREA myArea FOR workflow1",
+          "  code",
+          "// END WORKFLOW AREA",
+        ],
+        targetLines: [
+          "# BEGIN WORKFLOW AREA myArea FOR workflow1",
+          "  existing",
+          "# END WORKFLOW AREA",
+        ],
+        targetPath: "test.ts",
+        sourcePath: "test.ts",
+      });
+    }).toThrow();
+  });
+
+  it("should error when source has duplicate areas", () => {
+    expect(() => {
+      validateWorkflowAreas({
+        sourceLines: [
+          "// BEGIN WORKFLOW AREA myArea FOR workflow1",
+          "  code1",
+          "// END WORKFLOW AREA",
+          "// BEGIN WORKFLOW AREA myArea FOR workflow1",
+          "  code2",
+          "// END WORKFLOW AREA",
+        ],
+        targetLines: [
+          "// BEGIN WORKFLOW AREA myArea FOR workflow1",
+          "  existing",
+          "// END WORKFLOW AREA",
+        ],
+        targetPath: "test.ts",
+        sourcePath: "test.ts",
+      });
+    }).toThrow();
+  });
+
+  it("should error when target has duplicate areas", () => {
+    expect(() => {
+      validateWorkflowAreas({
+        sourceLines: [
+          "// BEGIN WORKFLOW AREA myArea FOR workflow1",
+          "  code",
+          "// END WORKFLOW AREA",
+        ],
+        targetLines: [
+          "// BEGIN WORKFLOW AREA myArea FOR workflow1",
+          "  existing1",
+          "// END WORKFLOW AREA",
+          "// BEGIN WORKFLOW AREA myArea FOR workflow1",
+          "  existing2",
+          "// END WORKFLOW AREA",
+        ],
+        targetPath: "test.ts",
+        sourcePath: "test.ts",
+      });
+    }).toThrow();
+  });
+
+  it("should handle nested unclosed areas correctly", () => {
+    expect(() => {
+      validateWorkflowAreas({
+        sourceLines: [
+          "// BEGIN WORKFLOW AREA area1 FOR workflow1",
+          "  code1",
+          "// BEGIN WORKFLOW AREA area2 FOR workflow1",
+          "  code2",
+          "// END WORKFLOW AREA",
+        ],
+        targetLines: [
+          "// BEGIN WORKFLOW AREA area1 FOR workflow1",
+          "  existing1",
+          "// END WORKFLOW AREA",
+          "// BEGIN WORKFLOW AREA area2 FOR workflow1",
+          "  existing2",
+          "// END WORKFLOW AREA",
+        ],
+        targetPath: "test.ts",
+        sourcePath: "test.ts",
+      });
+    }).toThrow();
+  });
+
+  it("should pass with matching sorted areas", () => {
+    expect(() => {
+      validateWorkflowAreas({
+        sourceLines: [
+          "// BEGIN SORTED WORKFLOW AREA myArea FOR workflow1",
+          "  code",
+          "// END WORKFLOW AREA",
+        ],
+        targetLines: [
+          "// BEGIN SORTED WORKFLOW AREA myArea FOR workflow1",
+          "  existing",
+          "// END WORKFLOW AREA",
+        ],
+        targetPath: "test.ts",
+        sourcePath: "test.ts",
+      });
+    }).not.toThrow();
+  });
+
+  it("should pass with matching areas with multiple workflow IDs", () => {
+    expect(() => {
+      validateWorkflowAreas({
+        sourceLines: [
+          "// BEGIN WORKFLOW AREA myArea FOR workflow1 workflow2 workflow3",
+          "  code",
+          "// END WORKFLOW AREA",
+        ],
+        targetLines: [
+          "// BEGIN WORKFLOW AREA myArea FOR workflow3 workflow1 workflow2",
+          "  existing",
+          "// END WORKFLOW AREA",
+        ],
+        targetPath: "test.ts",
+        sourcePath: "test.ts",
+      });
+    }).not.toThrow();
   });
 });

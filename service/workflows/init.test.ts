@@ -6,7 +6,7 @@ describe("init", () => {
   it("should successfully dry run", async () => {
     await runWorkflow({
       definition: InitServiceWorkflowDefinition,
-      runMode: "dry",
+      runMode: "checklist",
     });
   });
 });

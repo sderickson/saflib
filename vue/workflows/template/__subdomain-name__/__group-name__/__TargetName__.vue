@@ -14,9 +14,9 @@
 </template>
 
 <script setup lang="ts">
-import { __target_name___page as strings } from "./__TargetName__Page.strings.ts";
-import { use__TargetName__Loader } from "./__TargetName__Page.loader.ts";
-import { useReverseT } from "~/i18n.ts";
+import { __target_name___page as strings } from "./__TargetName__.strings.ts";
+import { use__TargetName__Loader } from "./__TargetName__.loader.ts";
+import { useReverseT } from "template-package-spa/i18n";
 
 const { t, lookupTKey } = useReverseT();
 

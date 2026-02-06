@@ -17,7 +17,7 @@ export const renameNextFile = fromPromise(
     const targetPath = copiedFiles[currentFileId];
     const targetFileName = path.basename(targetPath);
 
-    if (runMode === "dry") {
+    if (runMode === "dry" || runMode === "checklist") {
       return { fileName: targetFileName };
     }
 

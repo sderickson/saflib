@@ -15,7 +15,7 @@ import path from "node:path";
 
 const pageDir = path.join(
   import.meta.dirname,
-  "template/__subdomain-name__/pages/__full-path__",
+  "template/__subdomain-name__/__group-name__",
 );
 const packageDir = path.join(
   import.meta.dirname,
@@ -26,25 +26,25 @@ const linksDir = path.join(import.meta.dirname, "template", "links");
 const input = [
   {
     name: "path",
-    description: "Path of the new page (e.g., './pages/welcome-new-user')",
+    description: "Path of the new page or dialog (e.g., './pages/welcome-new-user')",
     exampleValue: "./pages/welcome-new-user",
   },
 ] as const;
 
-interface AddSpaPageWorkflowContext
+interface AddSpaViewWorkflowContext
   extends ParsePathOutput,
     ParsePackageNameOutput {
   targetDir: string;
 }
 
-export const AddSpaPageWorkflowDefinition = defineWorkflow<
+export const AddSpaViewWorkflowDefinition = defineWorkflow<
   typeof input,
-  AddSpaPageWorkflowContext
+  AddSpaViewWorkflowContext
 >({
-  id: "vue/add-page",
+  id: "vue/add-view",
 
   description:
-    "Create a new page in a SAF-powered Vue SPA, using a template and renaming placeholders.",
+    "Create a new page, dialog, or other view in a SAF-powered Vue SPA, using a template and renaming placeholders.",
 
   input,
 
@@ -53,17 +53,30 @@ export const AddSpaPageWorkflowDefinition = defineWorkflow<
   context: ({ input }) => {
     const targetDir = path.dirname(path.join(input.cwd));
     const subdomainName = path.basename(input.cwd);
+
+    if (
+      !input.path.startsWith("./pages/") &&
+      !input.path.startsWith("./dialogs/")
+    ) {
+      throw new Error(
+        "Path must start with './pages/' or './dialogs/'",
+      );
+    }
+
     const pathResult = parsePath(input.path, {
-      requiredPrefix: "./pages/",
       cwd: input.cwd,
     });
-    let fullPath = pathResult.targetName;
-    if (pathResult.groupName) {
-      fullPath = pathResult.groupName + "/" + fullPath;
+    if (pathResult.targetName.endsWith("-page") || pathResult.targetName.endsWith("-dialog")) {
+      throw new Error("Target name cannot end with '-page' or '-dialog'");
     }
-    if (pathResult.targetName.endsWith("-page")) {
-      throw new Error("Target name cannot end with '-page'");
+
+    // get the "full path" of the view, which does not include the first directory (pages/ or dialogs/)
+    const folderPath = pathResult.groupName + "/" + pathResult.targetName;
+    let routePath =  folderPath.split("/").slice(2).join("/");
+    if (routePath === "home") {
+      routePath = "";
     }
+
     return {
       ...pathResult,
       ...parsePackageName(getPackageName(input.cwd), {
@@ -72,17 +85,18 @@ export const AddSpaPageWorkflowDefinition = defineWorkflow<
       }),
       targetDir,
       subdomainName,
-      fullPath,
+      groupName: folderPath,
+      routePath,
     };
   },
 
   templateFiles: {
-    fixture: path.join(pageDir, "__TargetName__Page.fixture.ts"),
-    loader: path.join(pageDir, "__TargetName__Page.loader.ts"),
-    vue: path.join(pageDir, "__TargetName__Page.vue"),
-    async: path.join(pageDir, "__TargetName__PageAsync.vue"),
-    strings: path.join(pageDir, "__TargetName__Page.strings.ts"),
-    test: path.join(pageDir, "__TargetName__Page.test.ts"),
+    fixture: path.join(pageDir, "__TargetName__.fixture.ts"),
+    loader: path.join(pageDir, "__TargetName__.loader.ts"),
+    vue: path.join(pageDir, "__TargetName__.vue"),
+    async: path.join(pageDir, "__TargetName__Async.vue"),
+    strings: path.join(pageDir, "__TargetName__.strings.ts"),
+    test: path.join(pageDir, "__TargetName__.test.ts"),
 
     fixturesIndex: path.join(packageDir, "fixtures.ts"),
     stringsIndex: path.join(packageDir, "strings.ts"),
@@ -94,11 +108,28 @@ export const AddSpaPageWorkflowDefinition = defineWorkflow<
   docFiles: {},
 
   steps: [
-    step(CopyStepMachine, ({ context }) => ({
-      name: context.targetName,
-      targetDir: context.targetDir,
-      lineReplace: makeLineReplace(context),
-    })),
+    step(CopyStepMachine, ({ context }) => {
+      let templateFiles = context.templateFiles;
+      if (context.groupName !== "pages") {
+        // remove "router.ts" from the template files
+        templateFiles = {
+          ...templateFiles,
+        };
+        delete templateFiles.router;
+      }
+
+      // bit of a bandaid to replace valid but extraneous import syntax from root level imports
+      const defaultLineReplace = makeLineReplace(context);
+      const lineReplace = (line: string) => {
+        return defaultLineReplace(line).replace("././", "./");
+      };
+      return {
+        name: context.targetName,
+        targetDir: context.targetDir,
+        lineReplace,
+        templateFiles,
+      }
+    }),
 
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "vue",
@@ -142,3 +173,8 @@ export const AddSpaPageWorkflowDefinition = defineWorkflow<
     })),
   ],
 });
+
+/**
+ * @deprecated Use AddSpaViewWorkflowDefinition instead
+ */
+export const AddSpaPageWorkflowDefinition = AddSpaViewWorkflowDefinition;

@@ -94,6 +94,28 @@ Each `service/` directory is one of these.
 | sdk         | shared frontend code that is tightly coupled to this service              | library  |
 | spec        | OpenAPI specification                                                     | library  |
 
+**Package dependency flow:** These packages form a layered dependency chain:
+
+Service:
+* `spec` and `db` have no dependencies - they define the API and database types respectively, and are distinct from one another (e.g., frontend has no direct dependency on how data is stored).`
+* `http` depends on both `spec` and `db` and translates between the two data models.
+* `sdk` depends on `spec`. This way frontend and backend are decoupled except for the API contract.
+* Both `clients` and `service` packages have a `common` package.
+* `service` wraps `http`, `grpc-server`, `cron`, and any other "runtimes" into a single runnable package, and `monolith` wraps that with `identity`.
+
+Clients:
+* All `clients` packages depend on `sdk` for API calls and shared components which are tightly coupled to the API contract.
+* `links` and `common` are shared. `links` is separate so server-side code doesn't depend on Vue and related dependencies.
+* The other packages are separate SPAs each serving their own subdomain, and the only thing that depends on them is the `build` package which builds them all together with Vite.
+
+**Package naming convention:** Packages under `{product}/service/{name}/` are imported as `@{org}/{product}-{name}`. For example, if the product is `foobar` and the org is `acme`:
+
+- `foobar/service/db/` → `@acme/foobar-db`
+- `foobar/service/http/` → `@acme/foobar-http`
+- `foobar/service/spec/` → `@acme/foobar-spec`
+- `foobar/service/sdk/` → `@acme/foobar-sdk`
+- `foobar/service/common/` → `@acme/foobar-service-common`
+
 Third-party integrations can also be added along-side these packages. However, for consistency they should describe the service rather than be the name of the brand.
 
 - `payments/`, not `stripe/`
@@ -109,3 +131,25 @@ Assuming you deploy all products to the same infrastructure, the `deploy/` direc
 ### `saflib/`
 
 A git submodule which contains [the SAF source](https://github.com/sderickson/saflib), so they can be referenced, edited, and used directly. One day these may be more traditionally published and installed through npm, but for projects which will also invest heavily in this shared codebase, a submodule is the way to go.
+
+Note that `saflib/` has its own git history. Changes to files under `saflib/` are tracked in the submodule, not in the parent repo. The parent repo only tracks which submodule commit is checked out.
+
+## Testing
+
+Each package has its own `vitest.config.js` and tests are run from within the package directory:
+
+```bash
+cd {product}/service/http && npm run test
+```
+
+To run a specific test file, pass a filter after `--`:
+
+```bash
+cd {product}/service/http && npx vitest run -- routes/scans/execute
+```
+
+The workspace-root `vitest.config.ts` configures workspace-level projects, but individual test files should be run from their package directory.
+
+Each package also has its own `tsconfig.json` which can be checked with the command `npm run typecheck`.
+
+For testing specific types of packages, see documentation inside the appropriate `saflib/` package, such as in [`saflib/drizzle/docs/`](../../drizzle/docs/04-testing.md) for database packages.

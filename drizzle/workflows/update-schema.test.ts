@@ -6,7 +6,7 @@ describe("update-schema", () => {
   it("should successfully dry run", async () => {
     const result = await runWorkflow({
       definition: UpdateSchemaWorkflowDefinition,
-      runMode: "dry",
+      runMode: "checklist",
     });
     expect(result.output?.checklist).toBeDefined();
   });

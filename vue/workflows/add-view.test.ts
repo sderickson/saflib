@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { CronAddJobWorkflowDefinition } from "./add-job.ts";
+import { AddSpaViewWorkflowDefinition } from "./add-view.ts";
 import { runWorkflow } from "@saflib/workflows";
 
-describe("add-job", () => {
+describe("add-spa-view", () => {
   it("should successfully dry run", async () => {
     const result = await runWorkflow({
-      definition: CronAddJobWorkflowDefinition,
+      definition: AddSpaViewWorkflowDefinition,
       runMode: "checklist",
     });
     expect(result.output?.checklist).toBeDefined();

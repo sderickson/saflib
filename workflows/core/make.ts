@@ -96,6 +96,8 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
   const lastStepName = `step_${workflow.steps.length}_finalize`;
   stepNames.push(lastStepName);
 
+  let retries = 0;
+
   for (let i = 0; i < workflow.steps.length; i++) {
     const step = workflow.steps[i];
     const stateName = stepNames[i];
@@ -175,7 +177,7 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
     states[validateStateName] = {
       invoke: {
         src: fromPromise(async ({ input }: { input: Context }) => {
-          if (input.runMode === "dry") {
+          if (input.runMode === "dry" || input.runMode === "checklist") {
             return;
           }
 
@@ -206,11 +208,15 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
           if (step.validate) {
             const output = await step.validate({ context: input });
             if (output) {
+              addPendingMessage(output);
               const log = getWorkflowLogger();
               log.error(output);
               throw new Error(output);
             }
           }
+
+          // reset retries for the next step
+          retries = 0;
 
           if (input.manageVersionControl && step.commitAfter) {
             let message: string;
@@ -232,15 +238,19 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
           {
             guard: ({ context, event }: { context: Context; event: any }) => {
               // If validations failed, and we're running things in a way that *ought* to be correct each time, then error.
-              // Currently, this is an infinite loop, though when running with a real agent. I have various loops being handled
-              // internally by steps and here.
-              // TODO: Figure out a general way to handle validation in a way that will retry, but not forever.
               if (
                 context.runMode === "dry" ||
+                context.runMode === "checklist" ||
                 context.runMode === "script" ||
                 context.agentConfig?.cli === "mock-agent"
               ) {
                 throw new Error(event.error);
+              }
+
+              // Also error if there have been too many retries
+              retries++;
+              if (retries > 3) {
+                throw new Error(`Failed to validate step ${step.machine.id} after 3 retries: ${event.error}`);
               }
               return true;
             },
@@ -253,7 +263,7 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
   states[lastStepName] = {
     invoke: {
       src: fromPromise(async ({ input }: { input: Context }) => {
-        if (input.runMode === "dry" || input.runMode === "script") {
+        if (input.runMode === "dry" || input.runMode === "checklist" || input.runMode === "script") {
           return;
         }
         if (input.manageVersionControl) {

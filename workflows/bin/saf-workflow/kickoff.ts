@@ -5,7 +5,7 @@ import type {
   WorkflowDefinition,
   WorkflowExecutionMode,
 } from "../../core/types.ts";
-import { runWorkflow } from "./shared/utils.ts";
+import { runWorkflow, validateArguments } from "./shared/utils.ts";
 import {
   createWorkflowLogger,
   setupWorkflowContext,
@@ -68,6 +68,9 @@ export const addKickoffCommand = (commandOptions: WorkflowCommandOptions) => {
           addPendingMessage(
             "You are going through a well-defined developer workflow specific to this codebase and project. You will receive logs and prompts, please follow them to the best of your ability.\n",
           );
+          if (commandOptions.systemPrompt) {
+            addPendingMessage(`${commandOptions.systemPrompt}\n`);
+          }
           if (options.message) {
             addPendingMessage(`${options.message}\n`);
           }
@@ -101,16 +104,7 @@ export const addKickoffCommand = (commandOptions: WorkflowCommandOptions) => {
           );
         }
 
-        // Check if enough arguments were provided
-        const expectedArgs = workflowDefinition.input.length;
-        const providedArgs = args.length;
-
-        if (providedArgs < expectedArgs) {
-          log.error(
-            `Error: Expected ${expectedArgs} argument${expectedArgs === 1 ? "" : "s"}, but got ${providedArgs}`,
-          );
-          process.exit(1);
-        }
+        validateArguments(args, workflowDefinition);
 
         if (args.length > 0) {
           log.info(`- Arguments:    ${args.join(", ")}`);

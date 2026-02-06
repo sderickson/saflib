@@ -8,6 +8,17 @@ import {
 } from "@saflib/workflows";
 import path from "path";
 
+/**
+ * Todo:
+ * - make sure api responses are flattened, without nested objects
+ * - allow there to be multiple workflows, might need to make several based on the spec
+ * - run a test where workflows will be run in packages that support them, often they don't cd correctly
+ * - also make sure checklist command runs, as a sanity check
+ * - make sure schemas are implemented in the right order, in terms of dependencies
+ * - need a way to add a lib function, not just an export
+ * - how might the changes be reviewed to make sure they follow the spec?
+ */
+
 const sourceDir = path.resolve(import.meta.dirname, "./templates");
 
 const input = [
@@ -57,7 +68,7 @@ export const SpecProjectWorkflowDefinition = defineWorkflow<
   steps: [
     step(CopyStepMachine, ({ context }) => ({
       targetDir: context.targetDir,
-      lineReplace: makeLineReplace(context),  
+      lineReplace: makeLineReplace(context),
     })),
 
     step(UpdateStepMachine, ({ context }) => ({

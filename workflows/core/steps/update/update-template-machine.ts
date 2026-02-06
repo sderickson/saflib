@@ -63,7 +63,7 @@ export const UpdateStepMachine = setup({
     ...workflowActors,
 
     prompt: fromPromise(async ({ input }: { input: UpdateStepContext }) => {
-      if (input.runMode === "dry" || input.runMode === "script") {
+      if (input.runMode === "dry" || input.runMode === "checklist" || input.runMode === "script") {
         return { shouldContinue: true };
       }
 
@@ -71,6 +71,7 @@ export const UpdateStepMachine = setup({
         context: input,
         msg: input.prompt,
       });
+      const hadTodos = input.hasTodos;
       const agentConfig = input.agentConfig;
 
       let tries = 1;
@@ -83,6 +84,9 @@ export const UpdateStepMachine = setup({
         const content = readFileSync(resolvedPath, "utf-8");
         hasTodos = /\s*(?:#|\/\/).*todo/i.test(content);
         if (!hasTodos) {
+          break;
+        }
+        if (input.runMode === "print" && !hadTodos) {
           break;
         }
         if (hasTodos) {
@@ -140,7 +144,10 @@ export const UpdateStepMachine = setup({
     return {
       ...contextFromInput(input),
       filePath,
-      prompt: typeof input.promptMessage === "string" ? input.promptMessage : input.prompt ?? "",
+      prompt:
+        typeof input.promptMessage === "string"
+          ? input.promptMessage
+          : (input.prompt ?? "Update `" + filePath + "`."),
     };
   },
   states: {

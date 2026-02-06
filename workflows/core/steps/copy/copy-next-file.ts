@@ -1,16 +1,15 @@
 import path from "node:path";
 import { fromPromise } from "xstate";
-import { access } from "node:fs/promises";
-import { constants } from "node:fs";
 import { readFile, writeFile } from "node:fs/promises";
 import { stat } from "node:fs/promises";
 import { copyFile } from "node:fs/promises";
 import { transformName } from "./utils.ts";
 import type { CopyStepContext } from "./types.ts";
-import { updateWorkflowAreas } from "./inline.ts";
+import { updateWorkflowAreas, validateWorkflowAreas } from "./inline.ts";
+import fs from "node:fs";
 
 export interface CopyNextFileOutput {
-  skipped: boolean;
+  fileExisted: boolean;
   fileName: string;
   fileId: string;
   filePath: string;
@@ -62,24 +61,35 @@ export const copyNextFile = fromPromise(
     const isDirectory = stats.isDirectory();
 
     const response: CopyNextFileOutput = {
-      skipped: false,
+      fileExisted: false,
       fileName: targetFileName,
       fileId: currentFileId,
       filePath: targetPath,
       isDirectory,
     };
 
-    if (runMode === "dry") {
+    if (runMode === "checklist") {
       return response;
     }
 
     // Check if target file already exists
-    try {
-      await access(targetPath, constants.F_OK);
+    const fileExists = fs.existsSync(targetPath);
+    if (fileExists) {      
       const targetContent = await readFile(targetPath, "utf-8");
       const targetLines = targetContent.split(/\r?\n/);
       const sourceContent = await readFile(sourcePath, "utf-8");
       const sourceLines = sourceContent.split(/\r?\n/);
+
+      validateWorkflowAreas({
+        sourceLines,
+        targetLines,
+        targetPath,
+        sourcePath,
+      });
+
+      if (runMode === "dry") {
+        return response;
+      }
 
       const updatedLines = updateWorkflowAreas({
         targetLines,
@@ -93,10 +103,12 @@ export const copyNextFile = fromPromise(
       const lineEnding = targetContent.includes("\r\n") ? "\r\n" : "\n";
       await writeFile(targetPath, updatedLines.join(lineEnding), "utf-8");
 
-      response.skipped = false; // File was updated, not skipped
+      response.fileExisted = true; // File was updated
       return response;
-    } catch {
-      // File doesn't exist, proceed with copy
+    }
+
+    if (runMode === "dry") {
+      return response;
     }
 
     // Ensure target directory exists

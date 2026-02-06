@@ -60,7 +60,7 @@ export const PromptStepMachine = setup({
       }: {
         input: PromptStepContext;
       }): Promise<PromptStepOutput> => {
-        if (input.runMode === "dry" || input.runMode === "script") {
+        if (input.runMode === "dry" || input.runMode === "checklist" || input.runMode === "script") {
           return { shouldContinue: true };
         }
         if (process.env.NODE_ENV === "test") {
@@ -80,7 +80,7 @@ export const PromptStepMachine = setup({
   },
   guards: {
     shouldSkip: ({ context }) => {
-      if (context.runMode === "dry" || context.runMode === "script") {
+      if (context.runMode === "dry" || context.runMode === "checklist" || context.runMode === "script") {
         return true;
       }
       return false;

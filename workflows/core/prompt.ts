@@ -21,6 +21,7 @@ export const handlePrompt = async ({
           throw new Error("Agent config is required for run mode");
       }
     case "dry":
+    case "checklist":
       return { code: 0, sessionId: undefined, shouldContinue: true };
     case "script":
       // mainly to see errors when running scripts
@@ -34,15 +35,11 @@ export const handlePrompt = async ({
   }
 };
 
-export const printPrompt = ({ msg, context }: PromptParam) => {
+export const printPrompt = ({ msg }: PromptParam) => {
   if (process.env.NODE_ENV === "test") {
     return;
   }
   print("");
-  if (context.prompt) {
-    print(context.prompt);
-    print("");
-  }
   print(msg);
   print("");
   return;

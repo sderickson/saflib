@@ -25,9 +25,9 @@ import {
   InitGrpcProtoWorkflowDefinition,
   InitGrpcServerWorkflowDefinition,
   InitGrpcClientWorkflowDefinition,
-  AddGrpcServerHandlerWorkflowDefinition,
-  AddGrpcCallWorkflowDefinition,
-  AddProtoWorkflowDefinition,
+  // AddGrpcServerHandlerWorkflowDefinition,
+  // AddGrpcCallWorkflowDefinition,
+  // AddProtoWorkflowDefinition,
 } from "@saflib/grpc/workflows";
 import { IdentityInitWorkflowDefinition } from "@saflib/identity/workflows";
 import {
@@ -37,9 +37,10 @@ import {
 import {
   AddComponentWorkflowDefinition,
   AddSdkQueryWorkflowDefinition,
+  AddSdkMutationWorkflowDefinition,
 } from "@saflib/sdk/workflows";
 import {
-  AddSpaPageWorkflowDefinition,
+  AddSpaViewWorkflowDefinition,
   AddSpaWorkflowDefinition,
 } from "@saflib/vue/workflows";
 import { AddWorkflowDefinition } from "@saflib/workflows/workflows";
@@ -89,6 +90,9 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
     })),
     step(makeWorkflowMachine(AddRouteWorkflowDefinition), () => ({
       path: "./routes/users/list.yaml",
+    })),
+    step(makeWorkflowMachine(AddRouteWorkflowDefinition), () => ({
+      path: "./routes/users/create.yaml",
     })),
     step(makeWorkflowMachine(AddEventWorkflowDefinition), () => ({
       path: "./events/signup.yaml",
@@ -167,21 +171,22 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
     })),
 
     // NOTE: It has to be in the health group for types, and this test, to work.
-    step(makeWorkflowMachine(AddProtoWorkflowDefinition), () => ({
-      path: "./protos/health/example.proto",
-    })),
-    step(CdStepMachine, () => ({
-      path: "./tmp/service/grpc-server",
-    })),
-    step(makeWorkflowMachine(AddGrpcServerHandlerWorkflowDefinition), () => ({
-      path: "./handlers/health/example.ts",
-    })),
-    step(CdStepMachine, () => ({
-      path: "./tmp/service/grpc-client",
-    })),
-    step(makeWorkflowMachine(AddGrpcCallWorkflowDefinition), () => ({
-      path: "./rpcs/health/example.ts",
-    })),
+    // TODO: Refactor grpc to use inline templates, it'll be better
+    // step(makeWorkflowMachine(AddProtoWorkflowDefinition), () => ({
+    //   path: "./protos/health/example.proto",
+    // })),
+    // step(CdStepMachine, () => ({
+    //   path: "./tmp/service/grpc-server",
+    // })),
+    // step(makeWorkflowMachine(AddGrpcServerHandlerWorkflowDefinition), () => ({
+    //   path: "./handlers/health/example.ts",
+    // })),
+    // step(CdStepMachine, () => ({
+    //   path: "./tmp/service/grpc-client",
+    // })),
+    // step(makeWorkflowMachine(AddGrpcCallWorkflowDefinition), () => ({
+    //   path: "./rpcs/health/example.ts",
+    // })),
 
     // Test @saflib/identity workflows
     step(CdStepMachine, () => ({
@@ -217,6 +222,9 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
     step(makeWorkflowMachine(AddComponentWorkflowDefinition), () => ({
       path: "./components/user-list",
     })),
+    step(makeWorkflowMachine(AddSdkMutationWorkflowDefinition), () => ({
+      path: "./requests/users/create.ts",
+    })),
 
     // Test @saflib/vue workflows
     step(CdStepMachine, () => ({
@@ -229,7 +237,7 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
     step(CdStepMachine, () => ({
       path: "./tmp/clients/root",
     })),
-    step(makeWorkflowMachine(AddSpaPageWorkflowDefinition), () => ({
+    step(makeWorkflowMachine(AddSpaViewWorkflowDefinition), () => ({
       path: "./pages/welcome-new-user",
     })),
   ],

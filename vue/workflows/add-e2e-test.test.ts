@@ -6,7 +6,7 @@ describe("add-e2e-test", () => {
   it("should successfully dry run", async () => {
     const result = await runWorkflow({
       definition: AddE2eTestWorkflowDefinition,
-      runMode: "dry",
+      runMode: "checklist",
     });
     expect(result.output?.checklist).toBeDefined();
   });

@@ -56,6 +56,10 @@ export const addNextCommand = (commandOptions: WorkflowCommandOptions) => {
         log.error("No workflow found");
         process.exit(1);
       }
+      if (workflow.done()) {
+        log.info("Workflow complete.");
+        return;
+      }
       log.info(`Successfully loaded workflow ${workflow.definition.id}`);
       await workflow.goToNextStep();
       log.info(`Saving workflow ${workflow.definition.id}`);

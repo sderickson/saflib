@@ -20,26 +20,26 @@ const input = [
   {
     name: "path",
     description:
-      "The path to the template file to be created (e.g., 'requests/secrets/list.ts')",
-    exampleValue: "./requests/secrets/list.ts",
+      "The path to the template file to be created (e.g., 'requests/scans/execute.ts')",
+    exampleValue: "./requests/scans/execute.ts",
   },
 ] as const;
 
-interface AddQueryWorkflowContext
+interface AddMutationWorkflowContext
   extends ParsePackageNameOutput, ParsePathOutput {
-    queryName: string;
+    mutationName: string;
   }
 
-export const AddSdkQueryWorkflowDefinition = defineWorkflow<
+export const AddSdkMutationWorkflowDefinition = defineWorkflow<
   typeof input,
-  AddQueryWorkflowContext
+  AddMutationWorkflowContext
 >({
-  id: "sdk/add-query",
+  id: "sdk/add-mutation",
 
-  description: "Add a new API query to the SDK",
+  description: "Add a new API mutation to the SDK",
 
   checklistDescription: ({ targetDir, targetName }) =>
-    `Add new API query ${targetName} at ${targetDir}`,
+    `Add new API mutation ${targetName} at ${targetDir}`,
 
   input,
 
@@ -56,9 +56,13 @@ export const AddSdkQueryWorkflowDefinition = defineWorkflow<
         requiredSuffix: "-sdk",
         silentError: true, // so checklists don't error
       }),
-      ...pathResult,
+      ...parsePath(input.path, {
+        requiredSuffix: ".ts",
+        cwd: input.cwd,
+        requiredPrefix: "./requests/",
+      }),
       targetDir: input.cwd,
-      queryName: pathResult.targetName,
+      mutationName: pathResult.targetName,
     };
   },
 
@@ -67,15 +71,15 @@ export const AddSdkQueryWorkflowDefinition = defineWorkflow<
     indexFakes: path.join(sourceDir, "requests/__group-name__/index.fakes.ts"),
     templateFile: path.join(
       sourceDir,
-      "requests/__group-name__/__query-name__.ts",
+      "requests/__group-name__/__mutation-name__.ts",
     ),
     templateFileFake: path.join(
       sourceDir,
-      "requests/__group-name__/__query-name__.fake.ts",
+      "requests/__group-name__/__mutation-name__.fake.ts",
     ),
     templateFileTest: path.join(
       sourceDir,
-      "requests/__group-name__/__query-name__.test.ts",
+      "requests/__group-name__/__mutation-name__.test.ts",
     ),
     rootIndex: path.join(sourceDir, "index.ts"),
     rootFakes: path.join(sourceDir, "fakes.ts"),
@@ -94,7 +98,7 @@ export const AddSdkQueryWorkflowDefinition = defineWorkflow<
 
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "templateFile",
-      promptMessage: `Update **${context.targetName}.ts** to implement the API query.
+      promptMessage: `Update **${context.targetName}.ts** to implement the API mutation.
       
       Please review documentation here first: ${context.docFiles?.overview}`,
     })),
@@ -106,11 +110,11 @@ export const AddSdkQueryWorkflowDefinition = defineWorkflow<
       If this is a list query, keep the resources in a separately exported array. Otherwise, if it would affect that list, import that array and modify/use it accordingly.
       This way operations affect one another (like creating or deleting resources) so that tanstack caching can be tested.
       
-      As part of this, also update **${context.targetName}.test.ts** to implement simple tests for the API query.
+      As part of this, also update **${context.targetName}.test.ts** to implement simple tests for the API mutation.
       
       Include:
       * One test that makes sure it works at all.
-      `,
+      * Another test for making sure the caching works (that related queries are invalidated after the mutation).`,
     })),
 
     step(CommandStepMachine, () => ({
@@ -124,7 +128,7 @@ export const AddSdkQueryWorkflowDefinition = defineWorkflow<
       command: "npm",
       args: ["run", "test"],
       description:
-        "Run tests to ensure the new API query works correctly.",
+        "Run tests to ensure the new API mutation works correctly.",
     })),
   ],
 });

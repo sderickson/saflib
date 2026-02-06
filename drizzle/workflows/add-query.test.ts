@@ -6,7 +6,7 @@ describe("add-queries", () => {
   it("should successfully dry run", async () => {
     const result = await runWorkflow({
       definition: AddDrizzleQueryWorkflowDefinition,
-      runMode: "dry",
+      runMode: "checklist",
     });
     expect(result.output?.checklist).toBeDefined();
   });

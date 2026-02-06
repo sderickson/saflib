@@ -38,7 +38,7 @@ export const CopyStepMachine = setup({
     hasMoreFiles: ({ context }) => {
       return context.filesToCopy.length > 0;
     },
-    skipped: ({ event }) => event.output.skipped,
+    fileExisted: ({ event }) => event.output.fileExisted,
     wasDirectory: ({ event }) => event.output.isDirectory,
   },
 }).createMachine({
@@ -119,12 +119,12 @@ export const CopyStepMachine = setup({
         src: "copyNextFile",
         onDone: [
           {
-            guard: "skipped",
+            guard: "fileExisted",
             target: "popFile",
             actions: [
               logWarn(
                 ({ event }) =>
-                  `File ${event.output.fileName} already exists, skipping`,
+                  `File ${event.output.fileName} already existed, skipping rename`,
               ),
               assign({
                 // checklist: parseChecklist,

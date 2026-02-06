@@ -5,7 +5,9 @@
   "exports": {
     ".": "./main.ts",
     "./fixtures": "./fixtures.ts",
-    "./strings": "./strings.ts"
+    "./strings": "./strings.ts",
+    "./i18n": "./i18n.ts",
+    "./test-app": "./test-app.ts"
   },
   "scripts": {
     "dev": "vite",
@@ -19,6 +21,7 @@
   "dependencies": {
     "template-package-clients-common": "*",
     "template-package-links": "*",
+    "template-package-sdk": "*",
     "@saflib/vue": "*",
     "@saflib/auth": "*",
     "vue-router": "*"

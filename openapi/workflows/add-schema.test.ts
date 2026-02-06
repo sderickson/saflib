@@ -6,7 +6,7 @@ describe("openapi/add-schema", () => {
   it("should successfully dry run", async () => {
     const result = await runWorkflow({
       definition: AddSchemaWorkflowDefinition,
-      runMode: "dry",
+      runMode: "checklist",
     });
     expect(result.output?.checklist).toBeDefined();
   });

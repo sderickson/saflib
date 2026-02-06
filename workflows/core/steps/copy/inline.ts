@@ -305,3 +305,220 @@ export function updateWorkflowAreas({
 
   return result;
 }
+
+interface WorkflowAreaInfo {
+  areaName: string;
+  workflowIds: string[];
+  isSorted: boolean;
+  startLine: string;
+  endLine: string | null;
+}
+
+/**
+ * Extracts all workflow areas from a set of lines.
+ * @returns Array of workflow area information, including whether each has a matching END marker
+ */
+function extractWorkflowAreas(lines: string[]): WorkflowAreaInfo[] {
+  const areas: WorkflowAreaInfo[] = [];
+  let currentArea: {
+    areaName: string;
+    workflowIds: string[];
+    isSorted: boolean;
+    startLine: string;
+    startIndex: number;
+  } | null = null;
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+
+    // Check if this is the start of a workflow area
+    const areaStart = parseWorkflowAreaStart(line);
+    if (areaStart) {
+      // If we have an unclosed area, record it as missing END
+      if (currentArea) {
+        areas.push({
+          areaName: currentArea.areaName,
+          workflowIds: currentArea.workflowIds,
+          isSorted: currentArea.isSorted,
+          startLine: currentArea.startLine,
+          endLine: null,
+        });
+      }
+
+      currentArea = {
+        areaName: areaStart.areaName,
+        workflowIds: areaStart.workflowIds,
+        isSorted: areaStart.isSorted,
+        startLine: areaStart.fullLine,
+        startIndex: i,
+      };
+      continue;
+    }
+
+    // If we're in an area, check for END marker
+    if (currentArea && isWorkflowAreaEnd(line)) {
+      areas.push({
+        areaName: currentArea.areaName,
+        workflowIds: currentArea.workflowIds,
+        isSorted: currentArea.isSorted,
+        startLine: currentArea.startLine,
+        endLine: line,
+      });
+      currentArea = null;
+    }
+  }
+
+  // If there's an unclosed area at the end, record it
+  if (currentArea) {
+    areas.push({
+      areaName: currentArea.areaName,
+      workflowIds: currentArea.workflowIds,
+      isSorted: currentArea.isSorted,
+      startLine: currentArea.startLine,
+      endLine: null,
+    });
+  }
+
+  return areas;
+}
+
+/**
+ * Creates a unique key for a workflow area based on its properties.
+ * Normalizes workflow ID order but preserves comment style for exact matching.
+ */
+function getAreaKey(area: WorkflowAreaInfo): string {
+  // Parse the start line to extract comment prefix
+  const parsed = parseWorkflowAreaStart(area.startLine);
+  if (!parsed) {
+    // Fallback: use full line if parsing fails
+    return area.startLine;
+  }
+
+  // Extract comment prefix (everything before "BEGIN")
+  const beginIndex = area.startLine.indexOf("BEGIN");
+  const prefix = beginIndex >= 0 ? area.startLine.substring(0, beginIndex) : "";
+  
+  // Normalize workflow IDs by sorting them
+  const normalizedIds = [...area.workflowIds].sort().join(" ");
+  
+  // Build normalized key: prefix + normalized area definition
+  // This preserves comment style but normalizes workflow ID order
+  const sortedMarker = area.isSorted ? "SORTED " : "";
+  const normalizedDefinition = `BEGIN ${sortedMarker}WORKFLOW AREA ${area.areaName} FOR ${normalizedIds}`;
+  
+  return `${prefix}${normalizedDefinition}`;
+}
+
+/**
+ * Validates that source and target files have matching workflow areas.
+ * Throws an error if there are any inconsistencies:
+ * - Source has a workflow area that target doesn't have, or vice versa
+ * - Areas differ in any way (sorted or not, different workflow IDs, different area names)
+ * - Either has a workflow area without a matching END marker
+ */
+export function validateWorkflowAreas({
+  sourceLines,
+  targetLines,
+  targetPath,
+  sourcePath,
+}: {
+  sourceLines: string[];
+  targetLines: string[];
+  targetPath: string;
+  sourcePath: string;
+}): void {
+  const sourceAreas = extractWorkflowAreas(sourceLines);
+  const targetAreas = extractWorkflowAreas(targetLines);
+  const errorContext = `
+  Source: ${sourcePath}
+  Target: ${targetPath}
+  `;
+
+  // Check for areas missing END markers
+  for (const area of sourceAreas) {
+    if (area.endLine === null) {
+      throw new Error(
+        `Source has workflow area "${area.areaName}" without matching END marker${errorContext}`,
+      );
+    }
+  }
+
+  for (const area of targetAreas) {
+    if (area.endLine === null) {
+      throw new Error(
+        `Target has workflow area "${area.areaName}" without matching END marker${errorContext}`,
+      );
+    }
+  }
+
+  // Create maps keyed by area properties for comparison
+  const sourceAreaMap = new Map<string, WorkflowAreaInfo>();
+  const targetAreaMap = new Map<string, WorkflowAreaInfo>();
+
+  for (const area of sourceAreas) {
+    const key = getAreaKey(area);
+    if (sourceAreaMap.has(key)) {
+      throw new Error(
+        `Source has duplicate workflow area "${area.areaName}"${errorContext}`,
+      );
+    }
+    sourceAreaMap.set(key, area);
+  }
+
+  for (const area of targetAreas) {
+    const key = getAreaKey(area);
+    if (targetAreaMap.has(key)) {
+      throw new Error(
+        `Target has duplicate workflow area "${area.areaName}"${errorContext}`,
+      );
+    }
+    targetAreaMap.set(key, area);
+  }
+
+  // Check for areas in source but not in target
+  for (const [key, area] of sourceAreaMap) {
+    if (!targetAreaMap.has(key)) {
+      throw new Error(
+        `Source has workflow area "${area.areaName}" (${area.isSorted ? "SORTED " : ""}FOR ${area.workflowIds.join(" ")}) that target does not have${errorContext}`,
+      );
+    }
+  }
+
+  // Check for areas in target but not in source
+  for (const [key, area] of targetAreaMap) {
+    if (!sourceAreaMap.has(key)) {
+      throw new Error(
+        `Target has workflow area "${area.areaName}" (${area.isSorted ? "SORTED " : ""}FOR ${area.workflowIds.join(" ")}) that source does not have${errorContext}`,
+      );
+    }
+  }
+
+  // Verify exact matches (area name, sorted status, workflow IDs)
+  for (const [key, sourceArea] of sourceAreaMap) {
+    const targetArea = targetAreaMap.get(key)!;
+
+    // These should already match due to the key, but double-check for safety
+    if (sourceArea.areaName !== targetArea.areaName) {
+      throw new Error(
+        `Workflow area name mismatch: source has "${sourceArea.areaName}" but target has "${targetArea.areaName}"${errorContext}`,
+      );
+    }
+
+    if (sourceArea.isSorted !== targetArea.isSorted) {
+      throw new Error(
+        `Workflow area "${sourceArea.areaName}" sorted status mismatch: source is ${sourceArea.isSorted ? "SORTED" : "not sorted"} but target is ${targetArea.isSorted ? "SORTED" : "not sorted"}${errorContext}`,
+      );
+    }
+
+    const sourceIds = [...sourceArea.workflowIds].sort();
+    const targetIds = [...targetArea.workflowIds].sort();
+    if (
+      sourceIds.length !== targetIds.length ||
+      sourceIds.some((id, i) => id !== targetIds[i])
+    ) {
+      throw new Error(
+        `Workflow area "${sourceArea.areaName}" workflow IDs mismatch: source has [${sourceIds.join(", ")}] but target has [${targetIds.join(", ")}]${errorContext}`,
+      );
+    }
+  }
+}
