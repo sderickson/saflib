@@ -105,7 +105,9 @@ export const AddSpaViewWorkflowDefinition = defineWorkflow<
     linksPackage: linksDir,
   },
 
-  docFiles: {},
+  docFiles: {
+    components: path.join(import.meta.dirname, "docs", "02-components.md"),
+  },
 
   steps: [
     step(CopyStepMachine, ({ context }) => {
@@ -140,7 +142,9 @@ export const AddSpaViewWorkflowDefinition = defineWorkflow<
       * Take the data from the loader, assert that it's loaded, and render the page.
       * Do not add any sort of loading state or skeleton; that's the job of the "Async" component.
       * Don't break reactivity! Render the data directly from the tanstack queries, or if necessary create a computed property.
-      * Import and use the "useReverseT" function from the i18n.ts file at the root of the package, and use t(strings.key) instead of strings.key for all text.`,
+      * Import and use the "useReverseT" function from the i18n.ts file at the root of the package, and use t(strings.key) instead of strings.key for all text.
+      
+      For more information, see ${context.docFiles?.components}`,
     })),
 
     step(UpdateStepMachine, ({ context }) => ({
