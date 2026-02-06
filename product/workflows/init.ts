@@ -158,11 +158,11 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       },
     ),
 
-    step(CommandStepMachine, () => ({
+    step(CommandStepMachine, ({ context }) => ({
       command: "mv",
       args: [
-        "./deploy/remote-assets/env.prod",
-        "./deploy/remote-assets/.env.prod",
+        `./deploy/remote-assets/env.${context.productName}.secrets`,
+        `./deploy/remote-assets/.env.${context.productName}.secrets`,
       ],
     })),
 
