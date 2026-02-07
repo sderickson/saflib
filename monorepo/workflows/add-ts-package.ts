@@ -6,6 +6,7 @@ import {
   defineWorkflow,
   step,
   CdStepMachine,
+  makeLineReplace,
 } from "@saflib/workflows";
 import path from "node:path";
 
@@ -50,6 +51,7 @@ export const AddTsPackageWorkflowDefinition = defineWorkflow<
   context: ({ input }) => {
     const targetDir = path.join(input.cwd, input.path);
     const packageDirName = path.basename(input.path);
+    console.log("input.name", input.name);
 
     return {
       name: input.name,
@@ -71,10 +73,18 @@ export const AddTsPackageWorkflowDefinition = defineWorkflow<
   docFiles: {},
 
   steps: [
-    step(CopyStepMachine, ({ context }) => ({
-      name: context.packageDirName,
-      targetDir: context.targetDir,
-    })),
+    step(CopyStepMachine, ({ context }) => {
+      const defaultLineReplace = makeLineReplace(context);
+      const lineReplace = (line: string) => {
+        let newLine = line.replace("template-package", context.packageName);
+        return defaultLineReplace(newLine);
+      };
+      return {
+        name: context.packageDirName,
+        targetDir: context.targetDir,
+        lineReplace,
+      };
+    }),
 
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "packageJson",
