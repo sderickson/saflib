@@ -1,8 +1,7 @@
-name: __Product Name__ Playwright Tests
+name: Playwright Tests
 on:
-  # TODO: set up playwright tests properly as part of product/init
   pull_request:
-    branches: none
+    branches: main
 jobs:
   test:
     timeout-minutes: 60
@@ -33,6 +32,7 @@ jobs:
         run: npx playwright install --with-deps chromium firefox
       - name: Run Playwright tests
         run: npm run test:e2e
+        # working-directory: ./clients/web-auth
       - name: Shut down
         run: docker stop $(docker ps -a -q)
       # TODO: gather all logs and upload them as artifacts
@@ -42,9 +42,10 @@ jobs:
       #     name: playwright-report
       #     path: ./clients/web-auth/playwright-report/
       #     retention-days: 30
-      - uses: actions/upload-artifact@v4
+      - name: Upload docker compose logs
+        uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
           name: last-docker-compose-log
-          path: ./deploy/prod/last-docker-compose.log
+          path: ./deploy/last-docker-compose.log
           retention-days: 30

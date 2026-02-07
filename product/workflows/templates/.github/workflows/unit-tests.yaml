@@ -1,4 +1,4 @@
-name: __Product Name__ Unit Tests
+name: Unit Tests
 
 on:
   pull_request:
@@ -7,7 +7,15 @@ on:
 
 jobs:
   unit-tests:
+    name: ${{ matrix.project }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        project:
+          # BEGIN WORKFLOW AREA test-product-dependencies FOR product/init
+          - __product-name__
+          # END WORKFLOW AREA
     steps:
       - uses: actions/checkout@v4
       - name: Setup Node.js
@@ -25,4 +33,4 @@ jobs:
         run: npm install @rollup/rollup-linux-x64-gnu
 
       - name: Run Unit Tests
-        run: npm run test
+        run: npm run test -- --project='*${{ matrix.project }}*'

@@ -1,2 +1,4 @@
 import common.Caddyfile
+# BEGIN WORKFLOW AREA import-product-caddy FOR product/init
 import __product-name__.Caddyfile
+# END WORKFLOW AREA
