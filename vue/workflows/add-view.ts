@@ -26,14 +26,14 @@ const linksDir = path.join(import.meta.dirname, "template", "links");
 const input = [
   {
     name: "path",
-    description: "Path of the new page or dialog (e.g., './pages/welcome-new-user')",
+    description:
+      "Path of the new page or dialog (e.g., './pages/welcome-new-user')",
     exampleValue: "./pages/welcome-new-user",
   },
 ] as const;
 
 interface AddSpaViewWorkflowContext
-  extends ParsePathOutput,
-    ParsePackageNameOutput {
+  extends ParsePathOutput, ParsePackageNameOutput {
   targetDir: string;
 }
 
@@ -58,21 +58,22 @@ export const AddSpaViewWorkflowDefinition = defineWorkflow<
       !input.path.startsWith("./pages/") &&
       !input.path.startsWith("./dialogs/")
     ) {
-      throw new Error(
-        "Path must start with './pages/' or './dialogs/'",
-      );
+      throw new Error("Path must start with './pages/' or './dialogs/'");
     }
 
     const pathResult = parsePath(input.path, {
       cwd: input.cwd,
     });
-    if (pathResult.targetName.endsWith("-page") || pathResult.targetName.endsWith("-dialog")) {
+    if (
+      pathResult.targetName.endsWith("-page") ||
+      pathResult.targetName.endsWith("-dialog")
+    ) {
       throw new Error("Target name cannot end with '-page' or '-dialog'");
     }
 
     // get the "full path" of the view, which does not include the first directory (pages/ or dialogs/)
     const folderPath = pathResult.groupName + "/" + pathResult.targetName;
-    let routePath =  folderPath.split("/").slice(2).join("/");
+    let routePath = folderPath.split("/").slice(2).join("/");
     if (routePath === "home") {
       routePath = "";
     }
@@ -105,7 +106,9 @@ export const AddSpaViewWorkflowDefinition = defineWorkflow<
     linksPackage: linksDir,
   },
 
-  docFiles: {},
+  docFiles: {
+    components: path.join(import.meta.dirname, "../docs", "02-components.md"),
+  },
 
   steps: [
     step(CopyStepMachine, ({ context }) => {
@@ -128,7 +131,7 @@ export const AddSpaViewWorkflowDefinition = defineWorkflow<
         targetDir: context.targetDir,
         lineReplace,
         templateFiles,
-      }
+      };
     }),
 
     step(UpdateStepMachine, ({ context }) => ({
@@ -140,7 +143,9 @@ export const AddSpaViewWorkflowDefinition = defineWorkflow<
       * Take the data from the loader, assert that it's loaded, and render the page.
       * Do not add any sort of loading state or skeleton; that's the job of the "Async" component.
       * Don't break reactivity! Render the data directly from the tanstack queries, or if necessary create a computed property.
-      * Import and use the "useReverseT" function from the i18n.ts file at the root of the package, and use t(strings.key) instead of strings.key for all text.`,
+      * Import and use the "useReverseT" function from the i18n.ts file at the root of the package, and use t(strings.key) instead of strings.key for all text.
+      
+      For more information, see ${context.docFiles?.components}`,
     })),
 
     step(UpdateStepMachine, ({ context }) => ({

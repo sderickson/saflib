@@ -9,6 +9,7 @@ import { addListCommand } from "./list.ts";
 import { addSourceCommand } from "./source.ts";
 import { addRunScriptsCommand } from "./run-scripts.ts";
 import { addInfoCommand } from "./info.ts";
+import { addDryRunCommand } from "./dry-run.ts";
 import type {
   WorkflowCliOptions,
   WorkflowCommandOptions,
@@ -42,6 +43,7 @@ export async function runWorkflowCli(
   };
 
   addKickoffCommand(commandOptions);
+  addDryRunCommand(commandOptions);
   addStatusCommand(commandOptions);
   addNextCommand(commandOptions);
   addChecklistCommand(commandOptions);

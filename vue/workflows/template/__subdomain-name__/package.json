@@ -24,6 +24,7 @@
     "template-package-sdk": "*",
     "@saflib/vue": "*",
     "@saflib/auth": "*",
+    "@saflib/links": "*",
     "vue-router": "*"
   }
 }

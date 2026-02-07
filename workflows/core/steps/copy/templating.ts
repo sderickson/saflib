@@ -6,7 +6,7 @@ import {
   kebabCaseToCamelCase,
   camelCaseToTitleCase,
 } from "../../../strings.ts";
-import { readFileSync } from "node:fs";
+import { readFileSync, existsSync } from "node:fs";
 import path from "node:path";
 
 /**
@@ -56,6 +56,14 @@ export interface ParsePackageNameOutput {
  * Reads the package.json for the given cwd and returns the package name.
  */
 export const getPackageName = (cwd: string): string => {
+  const packagePath = path.join(cwd, "package.json");
+  const pathExists = existsSync(packagePath);
+  if (!pathExists) {
+    // this happens in "checklist" mode, when files and folders are not put
+    // into the filesystem. Return an empty string so they can continue.
+    return "";
+  }
+
   const result = readFileSync(path.join(cwd, "package.json"), "utf8").match(
     /name": "(.+)"/,
   )?.[1];

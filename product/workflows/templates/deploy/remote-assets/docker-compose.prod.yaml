@@ -8,7 +8,9 @@ services:
       - "443:443"
       - "443:443/udp"
     env_file:
-      - ./.env.prod
+      # BEGIN WORKFLOW AREA env-caddy FOR product/init
+      - ./env.__product-name__.caddy
+      # END WORKFLOW AREA
     environment:
       - DISABLE_VITE_DEV_SERVER=#
     volumes:
@@ -17,6 +19,7 @@ services:
       - caddy_config:/config
     restart: unless-stopped
 
+  # BEGIN WORKFLOW AREA monolith FOR product/init
   __product-name__-monolith:
     image: $CONTAINER_REGISTRY/__organization-name__-__product-name__-monolith:latest
     restart: unless-stopped
@@ -38,7 +41,10 @@ services:
       dockerfile: __product-name__/service/monolith/Dockerfile
 
     env_file:
-      - ./.env.prod
+      - ./env.__product-name__.config
+      - ./.env.__product-name__.secrets
+    
+  # END WORKFLOW AREA
 
   prometheus:
     image: prom/prometheus:v2.46.0
