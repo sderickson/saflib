@@ -281,6 +281,20 @@ export const InitProductWorkflowDefinition = defineWorkflow<
     })),
 
     step(CdStepMachine, ({ context }) => ({
+      path: `./${context.productName}/clients/admin`,
+    })),
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["install", "@saflib/admin-sdk", "@saflib/auth-links"],
+    })),
+
+    step(makeWorkflowMachine(AddSpaViewWorkflowDefinition), ({ context }) => ({
+      path: "./pages/admin",
+      prompt: `Set up the ${context.productName} admin SPA home page.
+      - It can just be a stub for now, will fit it in later.`,
+    })),
+
+    step(CdStepMachine, ({ context }) => ({
       path: `./${context.productName}/clients/common`,
     })),
     step(CommandStepMachine, ({ context }) => ({
