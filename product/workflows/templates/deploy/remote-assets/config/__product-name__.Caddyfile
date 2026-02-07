@@ -14,39 +14,39 @@
 
 # Subdomains
 
-{$PROTOCOL}://{$__PRODUCT_NAME___DOMAIN} {
+{$__PRODUCT_NAME___PROTOCOL}://{$__PRODUCT_NAME___DOMAIN} {
 	import __product-name__-spa /root/index.html
 }
 
-{$PROTOCOL}://auth.{$__PRODUCT_NAME___DOMAIN} {
+{$__PRODUCT_NAME___PROTOCOL}://auth.{$__PRODUCT_NAME___DOMAIN} {
 	import __product-name__-spa /auth/index.html
 }
 
-{$PROTOCOL}://app.{$__PRODUCT_NAME___DOMAIN} {
+{$__PRODUCT_NAME___PROTOCOL}://app.{$__PRODUCT_NAME___DOMAIN} {
 	import __product-name__-spa /app/index.html
 }
 
-{$PROTOCOL}://admin.{$__PRODUCT_NAME___DOMAIN} {
+{$__PRODUCT_NAME___PROTOCOL}://admin.{$__PRODUCT_NAME___DOMAIN} {
 	import __product-name__-spa /admin/index.html
 }
 
-{$PROTOCOL}://account.{$__PRODUCT_NAME___DOMAIN} {
+{$__PRODUCT_NAME___PROTOCOL}://account.{$__PRODUCT_NAME___DOMAIN} {
 	import __product-name__-spa /account/index.html
 }
 
-{$PROTOCOL}://__product-name__.{$__PRODUCT_NAME___DOMAIN} {
+{$__PRODUCT_NAME___PROTOCOL}://__product-name__.{$__PRODUCT_NAME___DOMAIN} {
 	import __product-name__-api-proxy {$__PRODUCT_NAME___SERVICE_HTTP_HOST}
 }
 
-{$PROTOCOL}://grafana.{$__PRODUCT_NAME___DOMAIN} {
+{$__PRODUCT_NAME___PROTOCOL}://grafana.{$__PRODUCT_NAME___DOMAIN} {
 	import __product-name__-admin-proxy grafana:3000
 }
 
-{$PROTOCOL}://prometheus.{$__PRODUCT_NAME___DOMAIN} {
+{$__PRODUCT_NAME___PROTOCOL}://prometheus.{$__PRODUCT_NAME___DOMAIN} {
 	import __product-name__-admin-proxy prometheus:9090
 }
 
-{$PROTOCOL}://identity.{$__PRODUCT_NAME___DOMAIN} {
+{$__PRODUCT_NAME___PROTOCOL}://identity.{$__PRODUCT_NAME___DOMAIN} {
 	import identity {$__PRODUCT_NAME___DOMAIN} {$__PRODUCT_NAME___IDENTITY_SERVICE_HTTP_HOST}
 }
 
