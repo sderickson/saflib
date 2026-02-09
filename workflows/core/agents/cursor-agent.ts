@@ -416,8 +416,6 @@ export const executePromptWithCursor = async ({
     printLineSlowly("AGENT ERROR: " + shortTimestamp() + " " + data.toString());
   });
   agent.on("close", (code) => {
-    // console.log("closing agent");
-    // process.exit(1);
     resolve({ code, sessionId: sessionId ?? undefined, shouldContinue: true });
   });
   return p;
