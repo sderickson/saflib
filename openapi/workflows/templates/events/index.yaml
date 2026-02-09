@@ -1,10 +1,11 @@
 type: object
 oneOf:
-  # BEGIN SORTED WORKFLOW AREA event-refs FOR openapi/add-event
   - $ref: "./login.yaml"
   - $ref: "./signup.yaml"
   - $ref: "./signup_view.yaml"
   - $ref: "./verify_email.yaml"
+  # BEGIN SORTED WORKFLOW AREA event-refs FOR openapi/add-event
+  - $ref: "./__target_name__.yaml"
   # END WORKFLOW AREA
 properties:
   event:
