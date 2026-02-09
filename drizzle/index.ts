@@ -8,3 +8,7 @@ export { DbManager } from "./instances.ts";
 export * from "./types.ts";
 export type { Address } from "./types/address.ts";
 export { addressSchema } from "./types/address.ts";
+export {
+  fileMetadataColumns,
+  type FileMetadataFields,
+} from "./types/file-metadata.ts";
