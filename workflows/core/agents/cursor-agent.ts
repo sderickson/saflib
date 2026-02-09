@@ -216,8 +216,8 @@ export const executePromptWithCursor = async ({
   if (context.agentConfig?.sessionId) {
     printLineSlowly(`Resuming session ${context.agentConfig.sessionId}`);
     args.push("--resume");
-    args.push("--model", "composer-1");
     args.push(context.agentConfig.sessionId);
+    args.push("--model", "composer-1");
   }
   const agent = spawn("cursor-agent", args);
   agent.stdin.end(); // or it hangs
@@ -416,6 +416,8 @@ export const executePromptWithCursor = async ({
     printLineSlowly("AGENT ERROR: " + shortTimestamp() + " " + data.toString());
   });
   agent.on("close", (code) => {
+    // console.log("closing agent");
+    // process.exit(1);
     resolve({ code, sessionId: sessionId ?? undefined, shouldContinue: true });
   });
   return p;
