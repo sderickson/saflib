@@ -152,6 +152,7 @@ export type AgentCLI = "cursor-agent" | "mock-agent";
 export interface AgentConfig {
   cli: AgentCLI;
   sessionId?: string;
+  totalTimeMs: number;
 }
 
 export type VersionControlMode = "git";
@@ -214,7 +215,12 @@ export interface WorkflowOutput {
  * ## Checklist
  * Similar to "dry", but uses the example values for inputs and does not do anything that depends on cwd, basically just runs the workflow to generate a generic checklist.
  */
-export type WorkflowExecutionMode = "dry" | "script" | "print" | "run" | "checklist";
+export type WorkflowExecutionMode =
+  | "dry"
+  | "script"
+  | "print"
+  | "run"
+  | "checklist";
 
 /**
  * Context shared across all workflow machines.

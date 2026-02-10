@@ -448,6 +448,16 @@ export const executePromptWithCursor = async ({
       printLineSlowly(`Workflow % used: ${percentTimeUsed.toFixed(1)}%`);
     }
 
+    if (context.agentConfig) {
+      context.agentConfig.totalTimeMs += duration_api_ms;
+      if (context.agentConfig.totalTimeMs > 1000 * 1000) {
+        const pctOver = (context.agentConfig.totalTimeMs / 1000) * 1000 * 100;
+        printLineSlowly(
+          `WARNING: WORKFLOW SESSION GOING LONG! ${pctOver.toFixed(1)}% RECOMMENDED TIME USED!`,
+        );
+      }
+    }
+
     resolve({ code, sessionId: sessionId ?? undefined, shouldContinue });
   });
   return p;
