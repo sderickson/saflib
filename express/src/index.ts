@@ -15,6 +15,9 @@ export {
   type GlobalMiddlewareOptions,
 } from "./middleware/composition.ts";
 
+// multer options
+export * from "./middleware/multer.ts";
+
 // route handler utilities
 export { createHandler } from "./handler.ts";
 
