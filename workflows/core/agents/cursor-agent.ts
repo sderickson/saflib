@@ -437,24 +437,29 @@ export const executePromptWithCursor = async ({
     if (!duration_api_ms) {
       throw new Error("Duration API ms is not set after agent execution");
     }
+    // console.log("DEBUG TIMEOUT - agent close adding" + duration_api_ms);
     const shouldContinue = !addTimeMs(duration_api_ms);
     if (!shouldContinue) {
       const workflowTimeMs = getTimeMs();
       printLineSlowly(
-        "Workflow timed out after " + workflowTimeMs / 1000 + "s",
+        "Routine workflow timed out after " + workflowTimeMs / 1000 + "s",
       );
     } else {
       const percentTimeUsed = getPercentTimeUsed();
-      printLineSlowly(`Workflow % used: ${percentTimeUsed.toFixed(1)}%`);
+      // printLineSlowly(
+      //   `DEBUG TIMEOUT - Routine workflow % used: ${percentTimeUsed.toFixed(1)}%`,
+      // );
     }
 
     if (context.agentConfig) {
       context.agentConfig.totalTimeMs += duration_api_ms;
+      const pctOver = (context.agentConfig.totalTimeMs / 1000) * 1000 * 100;
       if (context.agentConfig.totalTimeMs > 1000 * 1000) {
-        const pctOver = (context.agentConfig.totalTimeMs / 1000) * 1000 * 100;
         printLineSlowly(
           `WARNING: WORKFLOW SESSION GOING LONG! ${pctOver.toFixed(1)}% RECOMMENDED TIME USED!`,
         );
+      } else {
+        printLineSlowly(`WORKFLOW SESSION % USED: ${pctOver.toFixed(1)}%`);
       }
     }
 
