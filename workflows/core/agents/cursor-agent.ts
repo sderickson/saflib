@@ -445,7 +445,7 @@ export const executePromptWithCursor = async ({
         "Routine workflow timed out after " + workflowTimeMs / 1000 + "s",
       );
     } else {
-      const percentTimeUsed = getPercentTimeUsed();
+      // const percentTimeUsed = getPercentTimeUsed();
       // printLineSlowly(
       //   `DEBUG TIMEOUT - Routine workflow % used: ${percentTimeUsed.toFixed(1)}%`,
       // );
