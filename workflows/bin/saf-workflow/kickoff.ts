@@ -132,9 +132,15 @@ interface RunReturn {
 const parseRun = (runMode: string | undefined): RunReturn => {
   switch (runMode) {
     case "cursor":
-      return { runMode: "run", agentConfig: { cli: "cursor-agent" } };
+      return {
+        runMode: "run",
+        agentConfig: { cli: "cursor-agent", totalTimeMs: 0 },
+      };
     case "mock":
-      return { runMode: "run", agentConfig: { cli: "mock-agent" } };
+      return {
+        runMode: "run",
+        agentConfig: { cli: "mock-agent", totalTimeMs: 0 },
+      };
     case undefined:
       return { runMode: "print" };
     default:
