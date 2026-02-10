@@ -1,7 +1,7 @@
 import multer from "multer";
 import { randomUUID } from "crypto";
 import { tmpdir } from "os";
-import { sanitizeFilename } from "@saflib/object-store";
+import { sanitizeFilename } from "@saflib/utils";
 
 export const uploadToDiskOptions: multer.Options = {
   storage: multer.diskStorage({
