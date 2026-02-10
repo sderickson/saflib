@@ -4,7 +4,7 @@ import { addNewLinesToString } from "../../strings.ts";
 import { writeFileSync } from "node:fs";
 import { type PromptParam, type PromptResult } from "../types.ts";
 import { popPendingMessages } from "./message.ts";
-import { logFile } from "./log.ts";
+import { logFile, type CostTsvRow, appendToCostFile } from "./log.ts";
 
 interface CursorSystemLog {
   type: "system";
@@ -173,6 +173,8 @@ interface CursorResultLog {
   type: "result";
   is_error: boolean;
   result: string;
+  duration_api_ms: number;
+  duration_ms: number;
   session_id: string;
   request_id: string;
 }
@@ -195,6 +197,8 @@ export const executePromptWithCursor = async ({
   msg,
   context,
 }: PromptParam): Promise<PromptResult> => {
+  const t0 = Date.now();
+
   if (process.env.NODE_ENV === "test") {
     return { code: 0, sessionId: "test-session-id", shouldContinue: true };
   }
@@ -407,6 +411,17 @@ export const executePromptWithCursor = async ({
           );
         }
       } else if (json.type === "result") {
+        const t1 = Date.now();
+        const duration_api_ms = json.duration_api_ms ?? 0;
+        const tsvRow: CostTsvRow = {
+          timestamp_start: new Date(t0).toISOString(),
+          timestamp_end: new Date(t1).toISOString(),
+          duration_ms: (t1 - t0).toString(),
+          duration_api_ms: duration_api_ms.toString(),
+          status: json.is_error ? "Error" : "Success",
+          request_id: json.request_id,
+        };
+        appendToCostFile(tsvRow);
         printLineSlowly("\n---------- RESULT ---------- " + shortTimestamp());
         printLineSlowly(`> ${json.is_error ? "Error" : "Success"}`);
       }
