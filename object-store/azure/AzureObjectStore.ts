@@ -8,23 +8,29 @@ import {
 import { getBlobServiceClient } from "./client.ts";
 import { uploadFile } from "./upload-file.ts";
 import { deleteBlob } from "./delete-blob.ts";
+import { upsertContainer } from "./upsert-container.ts";
 import { typedEnv } from "../env.ts";
 import type { ReturnsError } from "@saflib/monorepo";
 import { getSafReporters } from "@saflib/node";
 import type { AccessTier } from "@azure/storage-blob";
 
+export type ContainerAccessLevel = "blob" | "container" | "private";
+
 export class AzureObjectStore extends ObjectStore {
   protected readonly containerName: string;
   protected readonly tier: AccessTier;
+  protected readonly accessLevel: ContainerAccessLevel;
 
   constructor(
     containerName: string,
     folderPath: string = "",
     tier: AccessTier = "Hot",
+    accessLevel: ContainerAccessLevel = "private",
   ) {
     super(folderPath);
     this.containerName = containerName;
     this.tier = tier;
+    this.accessLevel = accessLevel;
   }
   async uploadFile(
     path: string,
@@ -246,5 +252,35 @@ export class AzureObjectStore extends ObjectStore {
         ),
       };
     }
+  }
+
+  async upsertContainer(): Promise<
+    ReturnsError<
+      {
+        success: boolean;
+        created?: boolean;
+        updated?: boolean;
+        skipped?: boolean;
+        url?: string;
+      },
+      StorageError
+    >
+  > {
+    const result = await upsertContainer({
+      name: this.containerName,
+      accessLevel: this.accessLevel,
+      tier: this.tier,
+    });
+
+    if ("error" in result && result.error) {
+      return {
+        error: new StorageError(
+          result.error.message,
+          result.error,
+        ),
+      };
+    }
+
+    return result;
   }
 }

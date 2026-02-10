@@ -98,4 +98,11 @@ export abstract class ObjectStore {
   ): Promise<
     ReturnsError<Readable, PathTraversalError | StorageError | FileNotFoundError>
   >;
+
+  abstract upsertContainer(): Promise<
+    ReturnsError<
+      { success: boolean; created?: boolean; updated?: boolean; skipped?: boolean; url?: string },
+      StorageError
+    >
+  >;
 }

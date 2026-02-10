@@ -23,6 +23,16 @@ describe("AzureObjectStore", () => {
       const store = new AzureObjectStore("test-container", "folder", "Cool");
       expect(store).toBeInstanceOf(AzureObjectStore);
     });
+
+    it("should initialize with container name, folder path, tier, and access level", () => {
+      const store = new AzureObjectStore(
+        "test-container",
+        "folder",
+        "Cool",
+        "blob",
+      );
+      expect(store).toBeInstanceOf(AzureObjectStore);
+    });
   });
 
   describe("uploadFile", () => {
@@ -251,6 +261,57 @@ describe("AzureObjectStore", () => {
         ).toBe(true);
       } else {
         expect("result" in result).toBe(true);
+      }
+    });
+  });
+
+  describe("upsertContainer", () => {
+    it("should upsert container successfully in test mode", async () => {
+      const store = new AzureObjectStore("my-container");
+      const result = await store.upsertContainer();
+
+      expect("result" in result).toBe(true);
+      if ("result" in result && result.result) {
+        expect(result.result.success).toBe(true);
+        expect(result.result.created).toBe(true);
+        expect(result.result.url).toBe(
+          "https://mock-storage.blob.core.windows.net/my-container",
+        );
+      }
+    });
+
+    it("should use access level from constructor (blob)", async () => {
+      const store = new AzureObjectStore("blob-container", "", "Hot", "blob");
+      const result = await store.upsertContainer();
+
+      expect("result" in result).toBe(true);
+      if ("result" in result && result.result) {
+        expect(result.result.success).toBe(true);
+      }
+    });
+
+    it("should use access level from constructor (container)", async () => {
+      const store = new AzureObjectStore(
+        "public-container",
+        "",
+        "Hot",
+        "container",
+      );
+      const result = await store.upsertContainer();
+
+      expect("result" in result).toBe(true);
+      if ("result" in result && result.result) {
+        expect(result.result.success).toBe(true);
+      }
+    });
+
+    it("should use store container name", async () => {
+      const store = new AzureObjectStore("custom-container-name");
+      const result = await store.upsertContainer();
+
+      expect("result" in result).toBe(true);
+      if ("result" in result && result.result) {
+        expect(result.result.url).toContain("custom-container-name");
       }
     });
   });

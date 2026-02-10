@@ -1,10 +1,7 @@
 import { Readable } from "stream";
 import { ObjectStore } from "./ObjectStore.ts";
 import type { ReturnsError } from "@saflib/monorepo";
-import {
-  StorageError,
-  FileNotFoundError,
-} from "./ObjectStore.ts";
+import { StorageError, FileNotFoundError } from "./ObjectStore.ts";
 import {
   BlobAlreadyExistsError,
   InvalidUploadParamsError,
@@ -87,22 +84,14 @@ export class TestObjectStore extends ObjectStore {
     path: string,
     _stream: Readable,
     metadata?: Record<string, string>,
-  ): Promise<
-    ReturnsError<
-      { success: boolean; url?: string },
-      StorageError
-    >
-  > {
+  ): Promise<ReturnsError<{ success: boolean; url?: string }, StorageError>> {
     if (this.uploadShouldFail) {
       if (
         this.uploadError instanceof BlobAlreadyExistsError ||
         this.uploadError instanceof InvalidUploadParamsError
       ) {
         return {
-          error: new StorageError(
-            this.uploadError.message,
-            this.uploadError,
-          ),
+          error: new StorageError(this.uploadError.message, this.uploadError),
         };
       }
       return {
@@ -188,9 +177,7 @@ export class TestObjectStore extends ObjectStore {
 
   async readFile(
     path: string,
-  ): Promise<
-    ReturnsError<Readable, StorageError | FileNotFoundError>
-  > {
+  ): Promise<ReturnsError<Readable, StorageError | FileNotFoundError>> {
     if (this.readShouldFail) {
       return {
         error:
@@ -213,5 +200,25 @@ export class TestObjectStore extends ObjectStore {
 
     return { result: new Readable() };
   }
-}
 
+  async upsertContainer(): Promise<
+    ReturnsError<
+      {
+        success: boolean;
+        created?: boolean;
+        updated?: boolean;
+        skipped?: boolean;
+        url?: string;
+      },
+      StorageError
+    >
+  > {
+    return {
+      result: {
+        success: true,
+        created: true,
+        url: "https://mock-storage.blob.core.windows.net/test-container",
+      },
+    };
+  }
+}
