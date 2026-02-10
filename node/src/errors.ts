@@ -5,6 +5,7 @@ import type {
   ErrorCollectorParam,
   ErrorReporter,
   ErrorReportOptions,
+  SafContext,
 } from "./types.ts";
 import { typedEnv } from "@saflib/env";
 
@@ -32,7 +33,18 @@ const getErrorCollectors = () => {
 export const defaultErrorReporter: ErrorReporter = (error, options) => {
   const e =
     error instanceof Error ? error : new Error("Thrown error was not an Error");
-  const ctx = getSafContext();
+  let ctx: SafContext = {
+    serviceName: "unknown",
+    subsystemName: "init",
+    operationName: "unknown",
+    requestId: "unknown",
+    auth: undefined,
+  };
+  try {
+    ctx = getSafContext();
+  } catch {
+    // ignore
+  }
 
   const collectorUser: ErrorCollectorParam["user"] | undefined = ctx.auth
     ? {
