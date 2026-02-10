@@ -103,8 +103,8 @@ export const handleGitChanges = async ({
       These are not expected to be changed by the workflow ${workflowId}.
       
       You need to do one of two things:
-      - If these changes were NOT in service to the original prompt, undo them.
-      - If these changes WERE in service of the original prompt, commit exactly these files with an explanatory message.
+      - If these changes were not necessary to complete the workflow, undo them.
+      - If these changes WERE necessary to complete the workflow, commit exactly these files with an explanatory message (fixing existing test or type issues is fine).
       
       Remember! The goal of this workflow is just to do the following:
 

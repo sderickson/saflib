@@ -4,7 +4,7 @@ import { createScopedMiddleware } from "@saflib/express";
 // import { jsonSpec } from "@saflib/cron-spec";
 
 // BEGIN SORTED WORKFLOW AREA handler-imports FOR express/add-handler
-// import { __targetName__Handler } from "./__target-name__.ts";
+// import { __targetName____GroupName__Handler } from "./__target-name__.ts";
 // END WORKFLOW AREA
 
 export const create__GroupName__Router = () => {

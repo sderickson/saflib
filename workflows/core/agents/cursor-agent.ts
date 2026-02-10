@@ -217,6 +217,7 @@ export const executePromptWithCursor = async ({
     printLineSlowly(`Resuming session ${context.agentConfig.sessionId}`);
     args.push("--resume");
     args.push(context.agentConfig.sessionId);
+    args.push("--model", "composer-1");
   }
   const agent = spawn("cursor-agent", args);
   agent.stdin.end(); // or it hangs

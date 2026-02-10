@@ -4,6 +4,7 @@ import {
   CommandStepMachine,
   defineWorkflow,
   step,
+  makeLineReplace,
 } from "@saflib/workflows";
 import path from "node:path";
 
@@ -59,6 +60,7 @@ export const AddEnvVarWorkflowDefinition = defineWorkflow<
     step(CopyStepMachine, ({ context }) => ({
       name: context.name,
       targetDir: context.cwd,
+      lineReplace: makeLineReplace(context),
     })),
 
     step(UpdateStepMachine, ({ context }) => ({

@@ -1,6 +1,21 @@
 import { type Link, type LinkOptions } from "./types.ts";
 import { typedEnv } from "@saflib/env";
 
+const constructPath = (link: Link, options?: LinkOptions): string => {
+  let path = link.path;
+  if (options?.params) {
+    const queryParams = new URLSearchParams();
+    for (const [param, value] of Object.entries(options.params)) {
+      if (!link.params?.includes(param)) {
+        throw new Error(`Param ${param} not found in link ${link.path}`);
+      }
+      queryParams.set(param, value);
+    }
+    path = `${path}?${queryParams.toString()}`;
+  }
+  return path;
+};
+
 /**
  * Given a Link object, return a fully-qualified url. Any provided params must
  * be specified in the Link object.
@@ -21,16 +36,7 @@ export const linkToHref = (link: Link, options?: LinkOptions): string => {
     protocol = typedEnv.PROTOCOL + ":";
   }
 
-  let path = link.path;
-  if (options?.params) {
-    const linkParams = link.params ?? [];
-    for (const [param, _value] of Object.entries(options.params)) {
-      if (!linkParams.includes(param)) {
-        throw new Error(`Param ${param} not found in link ${link.path}`);
-      }
-    }
-    path = `${path}?${new URLSearchParams(options.params).toString()}`;
-  }
+  const path = constructPath(link, options);
   return `${protocol}//${link.subdomain && link.subdomain !== "root" ? `${link.subdomain}.` : ""}${domain}${path}`;
 };
 
@@ -105,7 +111,7 @@ export const getClientName = () => {
  *
  * The current domain is derived from the client name, which is also the subdomain.
  */
-export const linkToProps = (link: Link) => {
+export const linkToProps = (link: Link, options?: LinkOptions) => {
   let currentSubdomain = getClientName();
   if (process.env.NODE_ENV === "test" && !currentSubdomain) {
     currentSubdomain = "test";
@@ -115,13 +121,14 @@ export const linkToProps = (link: Link) => {
       "You must call setClientName with your subdomain before using linkToProps",
     );
   }
+  const path = constructPath(link, options);
   if (currentSubdomain === link.subdomain) {
     return {
-      to: link.path,
+      to: path,
     };
   }
   return {
-    href: linkToHref(link, { domain: getHost() }),
+    href: linkToHref(link, { ...options, domain: getHost() }),
   };
 };
 
