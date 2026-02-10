@@ -11,6 +11,7 @@ export interface CostTsvRow {
   duration_api_ms: string;
   status: string;
   request_id: string;
+  message: string;
 }
 
 const rowOrder = [
@@ -20,6 +21,7 @@ const rowOrder = [
   "duration_api_ms",
   "status",
   "request_id",
+  "message",
 ] as const;
 
 const escapeTsvCell = (cell: string) => {

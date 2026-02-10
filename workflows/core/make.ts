@@ -26,6 +26,7 @@ import { getWorkflowLogger } from "./store.ts";
 import { addPendingMessage } from "./agents/message.ts";
 
 import { handleGitChanges, commitChanges } from "./version/git.ts";
+import { resetTimeMs } from "./agents/timeout.ts";
 
 let lastSystemPrompt: string | undefined;
 
@@ -250,7 +251,9 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
               // Also error if there have been too many retries
               retries++;
               if (retries > 3) {
-                throw new Error(`Failed to validate step ${step.machine.id} after 3 retries: ${event.error}`);
+                throw new Error(
+                  `Failed to validate step ${step.machine.id} after 3 retries: ${event.error}`,
+                );
               }
               return true;
             },
@@ -263,7 +266,11 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
   states[lastStepName] = {
     invoke: {
       src: fromPromise(async ({ input }: { input: Context }) => {
-        if (input.runMode === "dry" || input.runMode === "checklist" || input.runMode === "script") {
+        if (
+          input.runMode === "dry" ||
+          input.runMode === "checklist" ||
+          input.runMode === "script"
+        ) {
           return;
         }
         if (input.manageVersionControl) {
@@ -272,6 +279,13 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
             context: input,
           });
         }
+
+        // Timing out routine workflows when they run too long.
+        // To track this, reset every time we finish out any workflow.
+        // Technically this gets called more often than necessary,
+        // since it's also called for complex workflows, but it's fine.
+        resetTimeMs();
+
         return;
       }),
       input: ({ context }: { context: Context }) => context,
