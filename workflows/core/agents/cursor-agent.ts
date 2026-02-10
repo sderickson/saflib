@@ -453,8 +453,10 @@ export const executePromptWithCursor = async ({
 
     if (context.agentConfig) {
       context.agentConfig.totalTimeMs += duration_api_ms;
-      const pctOver = (context.agentConfig.totalTimeMs / 1000) * 1000 * 100;
-      if (context.agentConfig.totalTimeMs > 1000 * 1000) {
+      const MAX_WORKFLOW_TIME_MS = 1000 * 1000;
+      const pctOver =
+        (context.agentConfig.totalTimeMs / MAX_WORKFLOW_TIME_MS) * 100;
+      if (context.agentConfig.totalTimeMs > MAX_WORKFLOW_TIME_MS) {
         printLineSlowly(
           `WARNING: WORKFLOW SESSION GOING LONG! ${pctOver.toFixed(1)}% RECOMMENDED TIME USED!`,
         );
