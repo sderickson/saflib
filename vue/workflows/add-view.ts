@@ -137,9 +137,10 @@ export const AddSpaViewWorkflowDefinition = defineWorkflow<
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "vue",
       promptMessage: `Update **${path.basename(context.copiedFiles!.vue)}** to render the page:
-      
-      * Use the loader file (${path.basename(context.copiedFiles!.loader)}) to add Tanstack queries for any data needed to render the page.
-      * Use the strings file (${path.basename(context.copiedFiles!.strings)}) for all user-facing copy.
+
+      * Located at ${context.copiedFiles?.vue}
+      * Use the adjacent (${path.basename(context.copiedFiles!.loader)}) to add Tanstack queries for any data needed to render the page (the Tanstack queries are imported from the appropriate sdk package)
+      * Use the adjacent (${path.basename(context.copiedFiles!.strings)}) for all user-facing copy.
       * Take the data from the loader, assert that it's loaded, and render the page.
       * Do not add any sort of loading state or skeleton; that's the job of the "Async" component.
       * Don't break reactivity! Render the data directly from the tanstack queries, or if necessary create a computed property.
