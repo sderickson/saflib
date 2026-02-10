@@ -4,7 +4,8 @@ import { addNewLinesToString } from "../../strings.ts";
 import { writeFileSync } from "node:fs";
 import { type PromptParam, type PromptResult } from "../types.ts";
 import { popPendingMessages } from "./message.ts";
-import { logFile } from "./log.ts";
+import { logFile, type CostTsvRow, appendToCostFile } from "./log.ts";
+import { addTimeMs, getPercentTimeUsed, getTimeMs } from "./timeout.ts";
 
 interface CursorSystemLog {
   type: "system";
@@ -173,6 +174,8 @@ interface CursorResultLog {
   type: "result";
   is_error: boolean;
   result: string;
+  duration_api_ms: number;
+  duration_ms: number;
   session_id: string;
   request_id: string;
 }
@@ -195,6 +198,9 @@ export const executePromptWithCursor = async ({
   msg,
   context,
 }: PromptParam): Promise<PromptResult> => {
+  const t0 = Date.now();
+  let duration_api_ms = 0;
+
   if (process.env.NODE_ENV === "test") {
     return { code: 0, sessionId: "test-session-id", shouldContinue: true };
   }
@@ -407,6 +413,18 @@ export const executePromptWithCursor = async ({
           );
         }
       } else if (json.type === "result") {
+        const t1 = Date.now();
+        duration_api_ms = json.duration_api_ms ?? 0;
+        const tsvRow: CostTsvRow = {
+          timestamp_start: new Date(t0).toISOString(),
+          timestamp_end: new Date(t1).toISOString(),
+          duration_ms: (t1 - t0).toString(),
+          duration_api_ms: duration_api_ms.toString(),
+          status: json.is_error ? "Error" : "Success",
+          request_id: json.request_id,
+          message: msg.split("\n")[0],
+        };
+        appendToCostFile(tsvRow);
         printLineSlowly("\n---------- RESULT ---------- " + shortTimestamp());
         printLineSlowly(`> ${json.is_error ? "Error" : "Success"}`);
       }
@@ -416,7 +434,31 @@ export const executePromptWithCursor = async ({
     printLineSlowly("AGENT ERROR: " + shortTimestamp() + " " + data.toString());
   });
   agent.on("close", (code) => {
-    resolve({ code, sessionId: sessionId ?? undefined, shouldContinue: true });
+    if (!duration_api_ms) {
+      throw new Error("Duration API ms is not set after agent execution");
+    }
+    const shouldContinue = !addTimeMs(duration_api_ms);
+    if (!shouldContinue) {
+      const workflowTimeMs = getTimeMs();
+      printLineSlowly(
+        "Workflow timed out after " + workflowTimeMs / 1000 + "s",
+      );
+    } else {
+      const percentTimeUsed = getPercentTimeUsed();
+      printLineSlowly(`Workflow % used: ${percentTimeUsed.toFixed(1)}%`);
+    }
+
+    if (context.agentConfig) {
+      context.agentConfig.totalTimeMs += duration_api_ms;
+      if (context.agentConfig.totalTimeMs > 1000 * 1000) {
+        const pctOver = (context.agentConfig.totalTimeMs / 1000) * 1000 * 100;
+        printLineSlowly(
+          `WARNING: WORKFLOW SESSION GOING LONG! ${pctOver.toFixed(1)}% RECOMMENDED TIME USED!`,
+        );
+      }
+    }
+
+    resolve({ code, sessionId: sessionId ?? undefined, shouldContinue });
   });
   return p;
 };

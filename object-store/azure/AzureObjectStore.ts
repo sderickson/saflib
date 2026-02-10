@@ -8,23 +8,31 @@ import {
 import { getBlobServiceClient } from "./client.ts";
 import { uploadFile } from "./upload-file.ts";
 import { deleteBlob } from "./delete-blob.ts";
+import { upsertContainer } from "./upsert-container.ts";
 import { typedEnv } from "../env.ts";
 import type { ReturnsError } from "@saflib/monorepo";
 import { getSafReporters } from "@saflib/node";
 import type { AccessTier } from "@azure/storage-blob";
 
+export type ContainerAccessLevel = "blob" | "container" | "private";
+
+export interface AzureObjectStoreOptions {
+  containerName: string;
+  folderPath: string;
+  tier: AccessTier;
+  accessLevel: ContainerAccessLevel;
+}
+
 export class AzureObjectStore extends ObjectStore {
   protected readonly containerName: string;
   protected readonly tier: AccessTier;
+  protected readonly accessLevel: ContainerAccessLevel;
 
-  constructor(
-    containerName: string,
-    folderPath: string = "",
-    tier: AccessTier = "Hot",
-  ) {
-    super(folderPath);
-    this.containerName = containerName;
-    this.tier = tier;
+  constructor(options: AzureObjectStoreOptions) {
+    super(options.folderPath);
+    this.containerName = options.containerName;
+    this.tier = options.tier;
+    this.accessLevel = options.accessLevel;
   }
   async uploadFile(
     path: string,
@@ -147,9 +155,7 @@ export class AzureObjectStore extends ObjectStore {
     }
   }
 
-  async deleteFile(
-    path: string,
-  ): Promise<ReturnsError<{ success: boolean }>> {
+  async deleteFile(path: string): Promise<ReturnsError<{ success: boolean }>> {
     try {
       let blobName: string;
       try {
@@ -234,7 +240,8 @@ export class AzureObjectStore extends ObjectStore {
         };
       }
 
-      const webStream = downloadResponse.readableStreamBody as unknown as import("stream/web").ReadableStream<any>;
+      const webStream =
+        downloadResponse.readableStreamBody as unknown as import("stream/web").ReadableStream<any>;
       return { result: Readable.fromWeb(webStream) };
     } catch (error) {
       const { logError } = getSafReporters();
@@ -246,5 +253,32 @@ export class AzureObjectStore extends ObjectStore {
         ),
       };
     }
+  }
+
+  async upsertContainer(): Promise<
+    ReturnsError<
+      {
+        success: boolean;
+        created?: boolean;
+        updated?: boolean;
+        skipped?: boolean;
+        url?: string;
+      },
+      StorageError
+    >
+  > {
+    const result = await upsertContainer({
+      name: this.containerName,
+      accessLevel: this.accessLevel,
+      tier: this.tier,
+    });
+
+    if ("error" in result && result.error) {
+      return {
+        error: new StorageError(result.error.message, result.error),
+      };
+    }
+
+    return result;
   }
 }

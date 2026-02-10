@@ -34,4 +34,10 @@ export const defaultConfig = defineConfig({
       ],
     },
   },
+  resolve: {
+    alias: {
+      // Prevent Vite from resolving Node built-in "stream" as a relative path
+      stream: "node:stream",
+    },
+  },
 });
