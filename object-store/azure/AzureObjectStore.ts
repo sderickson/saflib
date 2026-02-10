@@ -16,21 +16,23 @@ import type { AccessTier } from "@azure/storage-blob";
 
 export type ContainerAccessLevel = "blob" | "container" | "private";
 
+export interface AzureObjectStoreOptions {
+  containerName: string;
+  folderPath: string;
+  tier: AccessTier;
+  accessLevel: ContainerAccessLevel;
+}
+
 export class AzureObjectStore extends ObjectStore {
   protected readonly containerName: string;
   protected readonly tier: AccessTier;
   protected readonly accessLevel: ContainerAccessLevel;
 
-  constructor(
-    containerName: string,
-    folderPath: string = "",
-    tier: AccessTier = "Hot",
-    accessLevel: ContainerAccessLevel = "private",
-  ) {
-    super(folderPath);
-    this.containerName = containerName;
-    this.tier = tier;
-    this.accessLevel = accessLevel;
+  constructor(options: AzureObjectStoreOptions) {
+    super(options.folderPath);
+    this.containerName = options.containerName;
+    this.tier = options.tier;
+    this.accessLevel = options.accessLevel;
   }
   async uploadFile(
     path: string,
@@ -153,9 +155,7 @@ export class AzureObjectStore extends ObjectStore {
     }
   }
 
-  async deleteFile(
-    path: string,
-  ): Promise<ReturnsError<{ success: boolean }>> {
+  async deleteFile(path: string): Promise<ReturnsError<{ success: boolean }>> {
     try {
       let blobName: string;
       try {
@@ -240,7 +240,8 @@ export class AzureObjectStore extends ObjectStore {
         };
       }
 
-      const webStream = downloadResponse.readableStreamBody as unknown as import("stream/web").ReadableStream<any>;
+      const webStream =
+        downloadResponse.readableStreamBody as unknown as import("stream/web").ReadableStream<any>;
       return { result: Readable.fromWeb(webStream) };
     } catch (error) {
       const { logError } = getSafReporters();
@@ -274,10 +275,7 @@ export class AzureObjectStore extends ObjectStore {
 
     if ("error" in result && result.error) {
       return {
-        error: new StorageError(
-          result.error.message,
-          result.error,
-        ),
+        error: new StorageError(result.error.message, result.error),
       };
     }
 
