@@ -287,6 +287,7 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
         // since it's also called for complex workflows, but it's fine.
         // console.log("DEBUG TIMEOUT - resetting time");
         resetTimeMs();
+        // console.log("DEBUG TIMEOUT - time now", getTimeMs());
 
         return;
       }),
