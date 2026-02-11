@@ -234,15 +234,15 @@ export class AzureObjectStore extends ObjectStore {
       }
 
       const downloadResponse = await blobClient.download();
-      if (!downloadResponse.readableStreamBody) {
+      const stream = downloadResponse.readableStreamBody;
+      if (!stream) {
         return {
           error: new StorageError(`Failed to read file: ${path}`),
         };
       }
 
-      const webStream =
-        downloadResponse.readableStreamBody as unknown as import("stream/web").ReadableStream<any>;
-      return { result: Readable.fromWeb(webStream) };
+      // readableStreamBody is already a Node Readable (RetriableReadableStream extends Readable)
+      return { result: stream as Readable };
     } catch (error) {
       const { logError } = getSafReporters();
       logError(error);
