@@ -4,13 +4,8 @@ import { TestObjectStore } from "./TestObjectStore.ts";
 
 describe("ObjectStore", () => {
   describe("constructor", () => {
-    it("should initialize without folder path", () => {
+    it("should initialize", () => {
       const store = new TestObjectStore();
-      expect(store).toBeInstanceOf(ObjectStore);
-    });
-
-    it("should initialize with folder path", () => {
-      const store = new TestObjectStore("folder/subfolder");
       expect(store).toBeInstanceOf(ObjectStore);
     });
   });
@@ -48,56 +43,51 @@ describe("ObjectStore", () => {
   });
 
   describe("validatePath", () => {
-    it("should validate paths within folder scope", () => {
-      const store = new TestObjectStore("folder");
-      expect(store.validatePath("file.txt")).toBe("folder/file.txt");
-    });
-
-    it("should validate paths without folder scope", () => {
+    it("should validate and normalize path", () => {
       const store = new TestObjectStore();
       expect(store.validatePath("file.txt")).toBe("file.txt");
     });
 
     it("should throw PathTraversalError for paths with ..", () => {
-      const store = new TestObjectStore("folder");
+      const store = new TestObjectStore();
       expect(() => store.validatePath("../file.txt")).toThrow(
         PathTraversalError,
       );
     });
 
-    it("should throw PathTraversalError for paths escaping folder scope", () => {
-      const store = new TestObjectStore("folder");
+    it("should throw PathTraversalError for paths with .. segment", () => {
+      const store = new TestObjectStore();
       expect(() => store.validatePath("../../file.txt")).toThrow(
         PathTraversalError,
       );
     });
 
-    it("should allow creating subdirectories within folder scope", () => {
-      const store = new TestObjectStore("folder/subfolder");
-      expect(store.validatePath("other/file.txt")).toBe(
-        "folder/subfolder/other/file.txt",
+    it("should allow subdirectory paths", () => {
+      const store = new TestObjectStore();
+      expect(store.validatePath("other/file.txt")).toBe("other/file.txt");
+    });
+
+    it("should allow nested paths", () => {
+      const store = new TestObjectStore();
+      expect(store.validatePath("folder/subfolder/file.txt")).toBe(
+        "folder/subfolder/file.txt",
       );
     });
 
-    it("should allow paths within nested folder scope", () => {
-      const store = new TestObjectStore("folder/subfolder");
-      expect(store.validatePath("file.txt")).toBe("folder/subfolder/file.txt");
-    });
-
     it("should normalize paths during validation", () => {
-      const store = new TestObjectStore("folder");
-      expect(store.validatePath("sub//file.txt")).toBe("folder/sub/file.txt");
+      const store = new TestObjectStore();
+      expect(store.validatePath("sub//file.txt")).toBe("sub/file.txt");
     });
   });
 
   describe("getScopedPath", () => {
-    it("should return scoped path", () => {
-      const store = new TestObjectStore("folder");
-      expect(store.getScopedPath("file.txt")).toBe("folder/file.txt");
+    it("should return validated path", () => {
+      const store = new TestObjectStore();
+      expect(store.getScopedPath("file.txt")).toBe("file.txt");
     });
 
     it("should validate path before returning", () => {
-      const store = new TestObjectStore("folder");
+      const store = new TestObjectStore();
       expect(() => store.getScopedPath("../file.txt")).toThrow(
         PathTraversalError,
       );
@@ -106,12 +96,12 @@ describe("ObjectStore", () => {
 
   describe("PathTraversalError", () => {
     it("should create error with correct message", () => {
-      const error = new PathTraversalError("../file.txt", "folder");
+      const error = new PathTraversalError("../file.txt");
       expect(error).toBeInstanceOf(Error);
       expect(error).toBeInstanceOf(PathTraversalError);
       expect(error.name).toBe("PathTraversalError");
       expect(error.message).toBe(
-        'Path "../file.txt" attempts to escape the scoped folder "folder"',
+        'Path "../file.txt" attempts path traversal',
       );
     });
   });

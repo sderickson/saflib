@@ -107,6 +107,7 @@ export const CopyStepMachine = setup({
       copiedFiles: input.copiedFiles || {},
       lineReplace: input.lineReplace,
       sharedPrefix,
+      flags: input.flags,
     };
   },
 

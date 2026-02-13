@@ -12,37 +12,24 @@ describe("AzureObjectStore", () => {
     it("should initialize with container name", () => {
       const store = new AzureObjectStore({
         containerName: "test-container",
-        folderPath: "",
         tier: "Hot",
         accessLevel: "private",
       });
       expect(store).toBeInstanceOf(AzureObjectStore);
     });
 
-    it("should initialize with container name and folder path", () => {
+    it("should initialize with container name and tier", () => {
       const store = new AzureObjectStore({
         containerName: "test-container",
-        folderPath: "folder/subfolder",
-        tier: "Hot",
-        accessLevel: "private",
-      });
-      expect(store).toBeInstanceOf(AzureObjectStore);
-    });
-
-    it("should initialize with container name, folder path, and tier", () => {
-      const store = new AzureObjectStore({
-        containerName: "test-container",
-        folderPath: "folder",
         tier: "Cool",
         accessLevel: "private",
       });
       expect(store).toBeInstanceOf(AzureObjectStore);
     });
 
-    it("should initialize with container name, folder path, tier, and access level", () => {
+    it("should initialize with container name, tier, and access level", () => {
       const store = new AzureObjectStore({
         containerName: "test-container",
-        folderPath: "folder",
         tier: "Cool",
         accessLevel: "blob",
       });
@@ -54,7 +41,6 @@ describe("AzureObjectStore", () => {
     it("should upload file successfully", async () => {
       const store = new AzureObjectStore({
         containerName: "test-container",
-        folderPath: "",
         tier: "Hot",
         accessLevel: "private",
       });
@@ -72,7 +58,6 @@ describe("AzureObjectStore", () => {
     it("should upload file with metadata", async () => {
       const store = new AzureObjectStore({
         containerName: "test-container",
-        folderPath: "",
         tier: "Hot",
         accessLevel: "private",
       });
@@ -90,10 +75,9 @@ describe("AzureObjectStore", () => {
       }
     });
 
-    it("should scope path with folderPath", async () => {
+    it("should include path in url", async () => {
       const store = new AzureObjectStore({
         containerName: "test-container",
-        folderPath: "folder",
         tier: "Hot",
         accessLevel: "private",
       });
@@ -104,14 +88,13 @@ describe("AzureObjectStore", () => {
       expect("result" in result).toBe(true);
       if ("result" in result && result.result) {
         expect(result.result.success).toBe(true);
-        expect(result.result.url).toContain("folder/file.txt");
+        expect(result.result.url).toContain("file.txt");
       }
     });
 
     it("should return StorageError for invalid paths", async () => {
       const store = new AzureObjectStore({
         containerName: "test-container",
-        folderPath: "folder",
         tier: "Hot",
         accessLevel: "private",
       });
@@ -131,7 +114,6 @@ describe("AzureObjectStore", () => {
     it("should return empty array in test mode", async () => {
       const store = new AzureObjectStore({
         containerName: "test-container",
-        folderPath: "",
         tier: "Hot",
         accessLevel: "private",
       });
@@ -146,7 +128,6 @@ describe("AzureObjectStore", () => {
     it("should accept prefix parameter", async () => {
       const store = new AzureObjectStore({
         containerName: "test-container",
-        folderPath: "folder",
         tier: "Hot",
         accessLevel: "private",
       });
@@ -157,25 +138,12 @@ describe("AzureObjectStore", () => {
         expect(Array.isArray(result.result)).toBe(true);
       }
     });
-
-    it("should scope prefix with folderPath", async () => {
-      const store = new AzureObjectStore({
-        containerName: "test-container",
-        folderPath: "folder",
-        tier: "Hot",
-        accessLevel: "private",
-      });
-      const result = await store.listFiles("subfolder");
-
-      expect("result" in result).toBe(true);
-    });
   });
 
   describe("deleteFile", () => {
     it("should delete file successfully", async () => {
       const store = new AzureObjectStore({
         containerName: "test-container",
-        folderPath: "",
         tier: "Hot",
         accessLevel: "private",
       });
@@ -187,25 +155,9 @@ describe("AzureObjectStore", () => {
       }
     });
 
-    it("should scope path with folderPath", async () => {
-      const store = new AzureObjectStore({
-        containerName: "test-container",
-        folderPath: "folder",
-        tier: "Hot",
-        accessLevel: "private",
-      });
-      const result = await store.deleteFile("file.txt");
-
-      expect("result" in result).toBe(true);
-      if ("result" in result && result.result) {
-        expect(result.result.success).toBe(true);
-      }
-    });
-
     it("should return StorageError for invalid paths", async () => {
       const store = new AzureObjectStore({
         containerName: "test-container",
-        folderPath: "folder",
         tier: "Hot",
         accessLevel: "private",
       });
@@ -224,7 +176,6 @@ describe("AzureObjectStore", () => {
     it("should return Readable stream in test mode", async () => {
       const store = new AzureObjectStore({
         containerName: "test-container",
-        folderPath: "",
         tier: "Hot",
         accessLevel: "private",
       });
@@ -236,25 +187,9 @@ describe("AzureObjectStore", () => {
       }
     });
 
-    it("should scope path with folderPath", async () => {
-      const store = new AzureObjectStore({
-        containerName: "test-container",
-        folderPath: "folder",
-        tier: "Hot",
-        accessLevel: "private",
-      });
-      const result = await store.readFile("file.txt");
-
-      expect("result" in result).toBe(true);
-      if ("result" in result && result.result) {
-        expect(result.result).toBeInstanceOf(Readable);
-      }
-    });
-
     it("should return StorageError for invalid paths", async () => {
       const store = new AzureObjectStore({
         containerName: "test-container",
-        folderPath: "folder",
         tier: "Hot",
         accessLevel: "private",
       });
@@ -269,53 +204,24 @@ describe("AzureObjectStore", () => {
     });
   });
 
-  describe("path scoping", () => {
-    it("should prepend folderPath to file paths", async () => {
+  describe("path handling", () => {
+    it("should use nested path in url", async () => {
       const store = new AzureObjectStore({
         containerName: "test-container",
-        folderPath: "folder",
         tier: "Hot",
         accessLevel: "private",
       });
       const stream = Readable.from("test");
 
-      const uploadResult = await store.uploadFile("file.txt", stream);
+      const uploadResult = await store.uploadFile(
+        "folder/subfolder/file.txt",
+        stream,
+      );
       expect("result" in uploadResult).toBe(true);
       if ("result" in uploadResult && uploadResult.result) {
-        expect(uploadResult.result.url).toContain("folder/file.txt");
-      }
-    });
-
-    it("should handle nested folder paths", async () => {
-      const store = new AzureObjectStore({
-        containerName: "test-container",
-        folderPath: "folder/subfolder",
-        tier: "Hot",
-        accessLevel: "private",
-      });
-      const stream = Readable.from("test");
-
-      const uploadResult = await store.uploadFile("file.txt", stream);
-      expect("result" in uploadResult).toBe(true);
-      if ("result" in uploadResult && uploadResult.result) {
-        expect(uploadResult.result.url).toContain("folder/subfolder/file.txt");
-      }
-    });
-
-    it("should work without folderPath", async () => {
-      const store = new AzureObjectStore({
-        containerName: "test-container",
-        folderPath: "",
-        tier: "Hot",
-        accessLevel: "private",
-      });
-      const stream = Readable.from("test");
-
-      const uploadResult = await store.uploadFile("file.txt", stream);
-      expect("result" in uploadResult).toBe(true);
-      if ("result" in uploadResult && uploadResult.result) {
-        expect(uploadResult.result.url).toContain("file.txt");
-        expect(uploadResult.result.url).not.toContain("folder/");
+        expect(uploadResult.result.url).toContain(
+          "folder/subfolder/file.txt",
+        );
       }
     });
   });
@@ -324,7 +230,6 @@ describe("AzureObjectStore", () => {
     it("should return StorageError on upload failure", async () => {
       const store = new AzureObjectStore({
         containerName: "test-container",
-        folderPath: "",
         tier: "Hot",
         accessLevel: "private",
       });
@@ -342,7 +247,6 @@ describe("AzureObjectStore", () => {
     it("should return StorageError on delete failure", async () => {
       const store = new AzureObjectStore({
         containerName: "test-container",
-        folderPath: "",
         tier: "Hot",
         accessLevel: "private",
       });
@@ -358,7 +262,6 @@ describe("AzureObjectStore", () => {
     it("should return FileNotFoundError or StorageError on read failure", async () => {
       const store = new AzureObjectStore({
         containerName: "test-container",
-        folderPath: "",
         tier: "Hot",
         accessLevel: "private",
       });
@@ -379,7 +282,6 @@ describe("AzureObjectStore", () => {
     it("should upsert container successfully in test mode", async () => {
       const store = new AzureObjectStore({
         containerName: "my-container",
-        folderPath: "",
         tier: "Hot",
         accessLevel: "private",
       });
@@ -398,7 +300,6 @@ describe("AzureObjectStore", () => {
     it("should use access level from constructor (blob)", async () => {
       const store = new AzureObjectStore({
         containerName: "blob-container",
-        folderPath: "",
         tier: "Hot",
         accessLevel: "blob",
       });
@@ -413,7 +314,6 @@ describe("AzureObjectStore", () => {
     it("should use access level from constructor (container)", async () => {
       const store = new AzureObjectStore({
         containerName: "public-container",
-        folderPath: "",
         tier: "Hot",
         accessLevel: "container",
       });
@@ -428,7 +328,6 @@ describe("AzureObjectStore", () => {
     it("should use store container name", async () => {
       const store = new AzureObjectStore({
         containerName: "custom-container-name",
-        folderPath: "",
         tier: "Hot",
         accessLevel: "private",
       });

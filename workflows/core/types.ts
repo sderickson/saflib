@@ -107,9 +107,26 @@ export interface WorkflowDefinition<
 type ArrayElementType<T extends readonly unknown[]> = T[number];
 type ExtractKeys<T extends readonly { name: string }[]> =
   ArrayElementType<T>["name"];
-export type CreateArgsType<T extends readonly { name: string }[]> = {
-  [K in ExtractKeys<T>]: string;
+type FindArg<T extends readonly { name: string }[], K extends string> = Extract<
+  ArrayElementType<T>,
+  { name: K }
+>;
+/** Keys of T that are flag-type args (optional when invoking the workflow). */
+type FlagKeys<T extends readonly WorkflowArgument[]> = {
+  [K in ExtractKeys<T>]: FindArg<T, K> extends { type: "flag" } ? K : never;
+}[ExtractKeys<T>];
+/** Base shape: all keys required. */
+type CreateArgsTypeBase<T extends readonly WorkflowArgument[]> = {
+  [K in ExtractKeys<T>]: FindArg<T, K> extends { type: "flag" }
+    ? boolean
+    : string;
 };
+/** Flag args are optional so callers can omit them (default false). */
+export type CreateArgsType<T extends readonly WorkflowArgument[]> = Omit<
+  CreateArgsTypeBase<T>,
+  FlagKeys<T>
+> &
+  Partial<Pick<CreateArgsTypeBase<T>, FlagKeys<T>>>;
 
 /**
  * Simple checklist object. Machines should append one to the list for each
@@ -122,11 +139,17 @@ export interface ChecklistItem {
 }
 
 /**
- * Required argument for the workflow, in a format the CLI tool (or other program) can use.
+ * Required or optional argument for the workflow, in a format the CLI tool (or other program) can use.
  */
 export interface WorkflowArgument {
   name: string;
   description?: string;
+
+  /**
+   * When "flag", the argument is optional and passed as e.g. --upload or --no-upload.
+   * Default is "string" (required positional).
+   */
+  type?: "string" | "flag";
 
   /**
    * When generating an example checklist, this is the value that will be provided.

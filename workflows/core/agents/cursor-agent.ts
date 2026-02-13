@@ -201,6 +201,14 @@ export const executePromptWithCursor = async ({
   const t0 = Date.now();
   let duration_api_ms = 0;
 
+  let pipeClosed = false;
+  let resultReceived = false;
+  let response: PromptResult = {
+    code: 0,
+    sessionId: undefined,
+    shouldContinue: true,
+  };
+
   if (process.env.NODE_ENV === "test") {
     return { code: 0, sessionId: "test-session-id", shouldContinue: true };
   }
@@ -427,6 +435,10 @@ export const executePromptWithCursor = async ({
         appendToCostFile(tsvRow);
         printLineSlowly("\n---------- RESULT ---------- " + shortTimestamp());
         printLineSlowly(`> ${json.is_error ? "Error" : "Success"}`);
+        resultReceived = true;
+        if (pipeClosed) {
+          resolve(response);
+        }
       }
     }
   });
@@ -441,24 +453,35 @@ export const executePromptWithCursor = async ({
     if (!shouldContinue) {
       const workflowTimeMs = getTimeMs();
       printLineSlowly(
-        "Workflow timed out after " + workflowTimeMs / 1000 + "s",
+        "Routine workflow timed out after " + workflowTimeMs / 1000 + "s",
       );
     } else {
       const percentTimeUsed = getPercentTimeUsed();
-      printLineSlowly(`Workflow % used: ${percentTimeUsed.toFixed(1)}%`);
+      printLineSlowly(
+        `Routine workflow % used: ${percentTimeUsed.toFixed(1)}%`,
+      );
     }
 
     if (context.agentConfig) {
       context.agentConfig.totalTimeMs += duration_api_ms;
-      if (context.agentConfig.totalTimeMs > 1000 * 1000) {
-        const pctOver = (context.agentConfig.totalTimeMs / 1000) * 1000 * 100;
+      const MAX_WORKFLOW_TIME_MS = 1000 * 1000;
+      const pctOver =
+        (context.agentConfig.totalTimeMs / MAX_WORKFLOW_TIME_MS) * 100;
+      if (context.agentConfig.totalTimeMs > MAX_WORKFLOW_TIME_MS) {
         printLineSlowly(
           `WARNING: WORKFLOW SESSION GOING LONG! ${pctOver.toFixed(1)}% RECOMMENDED TIME USED!`,
         );
+      } else {
+        printLineSlowly(`WORKFLOW SESSION % USED: ${pctOver.toFixed(1)}%`);
       }
     }
-
-    resolve({ code, sessionId: sessionId ?? undefined, shouldContinue });
+    response.code = code;
+    response.sessionId = sessionId ?? undefined;
+    response.shouldContinue = shouldContinue;
+    pipeClosed = true;
+    if (resultReceived) {
+      resolve(response);
+    }
   });
   return p;
 };

@@ -18,7 +18,6 @@ export type ContainerAccessLevel = "blob" | "container" | "private";
 
 export interface AzureObjectStoreOptions {
   containerName: string;
-  folderPath: string;
   tier: AccessTier;
   accessLevel: ContainerAccessLevel;
 }
@@ -29,7 +28,7 @@ export class AzureObjectStore extends ObjectStore {
   protected readonly accessLevel: ContainerAccessLevel;
 
   constructor(options: AzureObjectStoreOptions) {
-    super(options.folderPath);
+    super();
     this.containerName = options.containerName;
     this.tier = options.tier;
     this.accessLevel = options.accessLevel;
@@ -114,9 +113,7 @@ export class AzureObjectStore extends ObjectStore {
         this.containerName,
       );
 
-      const searchPrefix = prefix
-        ? this.getScopedPath(prefix)
-        : this.folderPath;
+      const searchPrefix = prefix ? this.getScopedPath(prefix) : undefined;
 
       const files: Array<{
         path: string;
@@ -127,16 +124,8 @@ export class AzureObjectStore extends ObjectStore {
       for await (const blob of containerClient.listBlobsFlat({
         prefix: searchPrefix,
       })) {
-        if (!blob.name.startsWith(this.folderPath)) {
-          continue;
-        }
-
-        const relativePath = this.folderPath
-          ? blob.name.slice(this.folderPath.length + 1)
-          : blob.name;
-
         files.push({
-          path: relativePath,
+          path: blob.name,
           size: blob.properties.contentLength,
           metadata: blob.metadata,
         });
@@ -234,15 +223,15 @@ export class AzureObjectStore extends ObjectStore {
       }
 
       const downloadResponse = await blobClient.download();
-      if (!downloadResponse.readableStreamBody) {
+      const stream = downloadResponse.readableStreamBody;
+      if (!stream) {
         return {
           error: new StorageError(`Failed to read file: ${path}`),
         };
       }
 
-      const webStream =
-        downloadResponse.readableStreamBody as unknown as import("stream/web").ReadableStream<any>;
-      return { result: Readable.fromWeb(webStream) };
+      // readableStreamBody is already a Node Readable (RetriableReadableStream extends Readable)
+      return { result: stream as Readable };
     } catch (error) {
       const { logError } = getSafReporters();
       logError(error);

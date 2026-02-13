@@ -18,10 +18,25 @@ __operationId__:
   requestBody:
     required: true
     content:
+      # BEGIN ONCE WORKFLOW AREA requestBody FOR openapi/add-route IF upload
+      multipart/form-data:
+        schema:
+          type: object
+          required:
+            - file
+          properties:
+            file:
+              type: string
+              format: binary
+              description: The file to upload
+            foo:
+              $ref: "../../schemas/todo.yaml"
+      # ELSE
       application/json:
         # TODO: Update to an appropriate schema reference
         schema:
           $ref: "../../schemas/todo.yaml"
+      # END WORKFLOW AREA
 
   # TODO: Update response definitions. You do not need to include 400 or 5xx responses.
   responses:

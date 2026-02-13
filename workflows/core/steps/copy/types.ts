@@ -18,6 +18,12 @@ export interface CopyStepInput {
    * Optional argument to do custom string transformations of template files and paths.
    */
   lineReplace?: (line: string) => string;
+
+  /**
+   * Optional flags for workflow area conditionals (e.g. IF upload).
+   * Passed to template resolution so that BEGIN...IF flag...ELSE...END areas choose the correct branch.
+   */
+  flags?: Record<string, boolean>;
 }
 
 /**
@@ -30,4 +36,5 @@ export interface CopyStepContext extends WorkflowContext {
   copiedFiles: Record<string, string>;
   lineReplace?: (line: string) => string;
   sharedPrefix: string;
+  flags?: Record<string, boolean>;
 }

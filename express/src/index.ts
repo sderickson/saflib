@@ -14,6 +14,8 @@ export {
   type ScopedMiddlewareOptions,
   type GlobalMiddlewareOptions,
 } from "./middleware/composition.ts";
+export { makeContextMiddleware } from "./middleware/context.ts";
+export { makeAuthMiddleware } from "./middleware/auth.ts";
 
 // multer options
 export * from "./middleware/multer.ts";

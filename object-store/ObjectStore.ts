@@ -2,10 +2,8 @@ import { Readable } from "stream";
 import type { ReturnsError } from "@saflib/monorepo";
 
 export class PathTraversalError extends Error {
-  constructor(path: string, folderPath: string) {
-    super(
-      `Path "${path}" attempts to escape the scoped folder "${folderPath}"`,
-    );
+  constructor(path: string) {
+    super(`Path "${path}" attempts path traversal`);
     this.name = "PathTraversalError";
   }
 }
@@ -28,12 +26,6 @@ export class FileNotFoundError extends Error {
 }
 
 export abstract class ObjectStore {
-  protected readonly folderPath: string;
-
-  constructor(folderPath: string = "") {
-    this.folderPath = this.normalizePath(folderPath);
-  }
-
   protected normalizePath(path: string): string {
     return path
       .split("/")
@@ -45,22 +37,10 @@ export abstract class ObjectStore {
     const normalizedPath = this.normalizePath(path);
 
     if (normalizedPath.includes("..")) {
-      throw new PathTraversalError(path, this.folderPath);
+      throw new PathTraversalError(path);
     }
 
-    const fullPath = this.folderPath
-      ? `${this.folderPath}/${normalizedPath}`
-      : normalizedPath;
-
-    const resolvedPath = this.normalizePath(fullPath);
-
-    if (this.folderPath) {
-      if (!resolvedPath.startsWith(this.folderPath)) {
-        throw new PathTraversalError(path, this.folderPath);
-      }
-    }
-
-    return resolvedPath;
+    return normalizedPath;
   }
 
   protected getScopedPath(path: string): string {

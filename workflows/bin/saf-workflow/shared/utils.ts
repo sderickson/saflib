@@ -76,8 +76,10 @@ export const runWorkflow = async (
 ): Promise<RunWorkflowResult> => {
   const { definition, runMode, args } = options;
   const cliArguments = definition.input as WorkflowArgument[];
-  const exampleArgs = cliArguments.map(
-    (arg) => arg.exampleValue || "example-value-missing"
+  const exampleArgs = cliArguments.map((arg) =>
+    arg.type === "flag"
+      ? (arg.exampleValue ?? "false")
+      : (arg.exampleValue || "example-value-missing"),
   );
   const workflow = new XStateWorkflowRunner({
     definition,
@@ -184,16 +186,54 @@ export function isWorkflowDefinition(obj: any): obj is WorkflowDefinition {
 }
 
 /**
- * Validate arguments for a workflow.
+ * Parse raw CLI args (positional + flags like --upload / --no-upload) into an array
+ * in definition.input order. String args get positional values; flag args get "true" or "false".
+ * Exits on validation error (e.g. not enough positionals).
  */
-export const validateArguments = (args: string[], definition: WorkflowDefinition) => {
-  const expectedArgs = definition.input.length;
-  const providedArgs = args.length;
-
-  if (providedArgs < expectedArgs) {
-    console.error(
-      `Error: Expected ${expectedArgs} argument${expectedArgs === 1 ? "" : "s"}, but got ${providedArgs}`,
-    );
-    process.exit(1);
+export const parseWorkflowArgs = (
+  rawArgs: string[],
+  definition: WorkflowDefinition,
+): string[] => {
+  const inputs = definition.input as WorkflowArgument[];
+  const positionals = rawArgs.filter((a) => !a.startsWith("--"));
+  const flags: Record<string, string> = {};
+  for (const a of rawArgs) {
+    if (a.startsWith("--no-")) {
+      const name = a.slice("--no-".length);
+      flags[name] = "false";
+    } else if (a.startsWith("--") && !a.startsWith("--no-")) {
+      const name = a.slice(2);
+      if (name && !name.includes("=")) {
+        flags[name] = "true";
+      }
+    }
   }
+  let posIndex = 0;
+  const result: string[] = [];
+  for (const arg of inputs) {
+    if (arg.type === "flag") {
+      result.push(arg.name in flags ? flags[arg.name] : "false");
+    } else {
+      if (posIndex >= positionals.length) {
+        console.error(
+          `Error: Expected ${inputs.filter((i) => i.type !== "flag").length} positional argument(s), but got ${positionals.length}`,
+        );
+        process.exit(1);
+      }
+      result.push(positionals[posIndex]);
+      posIndex++;
+    }
+  }
+  return result;
+};
+
+/**
+ * Validate and parse arguments for a workflow. Parses flags (--name / --no-name) and
+ * positionals, returns an array in input order. Exits on validation error.
+ */
+export const validateArguments = (
+  rawArgs: string[],
+  definition: WorkflowDefinition,
+): string[] => {
+  return parseWorkflowArgs(rawArgs, definition);
 }

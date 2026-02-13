@@ -24,8 +24,8 @@ export class TestObjectStore extends ObjectStore {
   private readShouldFail = false;
   private readError?: Error;
 
-  constructor(folderPath: string = "") {
-    super(folderPath);
+  constructor() {
+    super();
   }
 
   public normalizePath(path: string): string {

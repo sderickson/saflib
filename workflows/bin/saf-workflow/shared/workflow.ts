@@ -71,7 +71,7 @@ interface XStateWorkflowOptions<I extends readonly WorkflowArgument[], C> {
  */
 export class XStateWorkflowRunner extends AbstractWorkflowRunner {
   private machine: AnyStateMachine;
-  private input: { [key: string]: string } & {
+  private input: { [key: string]: string | boolean } & {
     runMode?: WorkflowExecutionMode;
     agentConfig?: AgentConfig;
     manageVersionControl?: VersionControlMode;
@@ -86,16 +86,18 @@ export class XStateWorkflowRunner extends AbstractWorkflowRunner {
     this.definition = options.definition;
     this.input = {};
     this.args = options.args || [];
-    const inputLength = options.args?.length || 0;
+    const parsed = options.args || [];
     const expectedInputLength = this.definition.input.length;
-    if (expectedInputLength !== inputLength) {
+    if (parsed.length !== expectedInputLength) {
       throw new Error(
-        `Expected ${expectedInputLength} arguments, got ${inputLength}`,
+        `Expected ${expectedInputLength} arguments, got ${parsed.length}`,
       );
     }
     for (let i = 0; i < expectedInputLength; i++) {
-      const arg = this.definition.input[i];
-      this.input[arg.name] = options.args?.[i] || "";
+      const arg = this.definition.input[i] as WorkflowArgument;
+      const raw = parsed[i] ?? "";
+      this.input[arg.name] =
+        arg.type === "flag" ? (raw === "true") : (raw || "");
     }
 
     this.input.runMode = options.workflowExecutionMode;
