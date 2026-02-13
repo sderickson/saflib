@@ -55,7 +55,7 @@ export const AddRouteWorkflowDefinition = defineWorkflow<
         requiredPrefix: "./routes/",
       }),
       targetDir: input.cwd,
-      upload: input.upload,
+      upload: input.upload ?? false,
     };
     const operationId =
       kebabCaseToCamelCase(context.targetName.split(".")[0]) +
