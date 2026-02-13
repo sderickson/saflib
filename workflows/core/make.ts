@@ -266,7 +266,6 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
   states[lastStepName] = {
     invoke: {
       src: fromPromise(async ({ input }: { input: Context }) => {
-        // console.log("DEBUG TIMEOUT - last step", input.runMode);
         if (
           input.runMode === "dry" ||
           input.runMode === "checklist" ||
@@ -285,9 +284,7 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
         // To track this, reset every time we finish out any workflow.
         // Technically this gets called more often than necessary,
         // since it's also called for complex workflows, but it's fine.
-        // console.log("DEBUG TIMEOUT - resetting time");
         resetTimeMs();
-        // console.log("DEBUG TIMEOUT - time now", getTimeMs());
 
         return;
       }),
