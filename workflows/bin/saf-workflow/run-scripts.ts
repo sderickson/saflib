@@ -18,6 +18,7 @@ export const addRunScriptsCommand = (
 ) => {
   commandOptions.program
     .command("run-scripts")
+    .allowUnknownOption(true)
     .description(
       addNewLinesToString(
         "Run a workflow in script mode. Can be called with a workflow ID or a file path to a workflow definition.",
@@ -26,7 +27,6 @@ export const addRunScriptsCommand = (
     .argument("<path-or-id>", "Workflow ID or path to workflow file")
     .argument("[args...]", "Arguments for the workflow")
     .action(async (workflowIdOrPath: string, givenArgs: string[]) => {
-      console.log("Running workflow:", workflowIdOrPath, givenArgs);
       const log = createWorkflowLogger();
       setupWorkflowContext({
         logger: log,
@@ -45,8 +45,6 @@ export const addRunScriptsCommand = (
                 : (input.exampleValue ?? "example-value-missing"),
             );
 
-      console.log("Parsed args:", parsedArgs);
-      return;
       const result = await runWorkflowScript({
         definition: workflowDefinition,
         args: parsedArgs,

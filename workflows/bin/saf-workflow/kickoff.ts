@@ -32,6 +32,7 @@ export const addKickoffCommand = (commandOptions: WorkflowCommandOptions) => {
   );
   commandOptions.program
     .command("kickoff")
+    .allowUnknownOption(true)
     .description(
       addNewLinesToString(
         "Kick off a workflow. Takes a workflow name and then any arguments for the workflow. Names should be kebab-case, and paths should be ./relative/to/package/root.ts. All commands should be run in a folder with a package.json; the package the workflow is acting on. Example:\n\nnpm exec saf-workflow kickoff add-tests ./path/to/file.ts",

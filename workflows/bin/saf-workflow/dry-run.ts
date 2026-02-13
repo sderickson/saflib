@@ -9,6 +9,7 @@ import {
 export const addDryRunCommand = (commandOptions: WorkflowCommandOptions) => {
   commandOptions.program
     .command("dry-run")
+    .allowUnknownOption(true)
     .description(
       addNewLinesToString(
         "Dry run a workflow. Runs the workflow with the given input, but does not make any file changes at all.",

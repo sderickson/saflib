@@ -207,7 +207,7 @@ export function processFileContent({
     }
 
     if (inWorkflowArea && areaIsConditional && areaAppliesToWorkflow) {
-      if (!isElse) {
+      if (!isWorkflowAreaElse(line)) {
         areaBuffer.push(line);
       }
       continue;
