@@ -1,0 +1,7 @@
+**/cache/**
+**/dist/**
+**/node_modules/**
+**/coverage/**
+playwright-report/
+package-lock.json
+**/templates/**

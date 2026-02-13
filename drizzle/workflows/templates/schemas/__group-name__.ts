@@ -11,8 +11,9 @@ export type SomeEnum = (typeof someEnum)[number];
 // TODO: Replace this example table with actual tables for your database
 export interface __GroupName__Entity
   // BEGIN ONCE WORKFLOW AREA entityInterface FOR drizzle/update-schema IF file
-  extends FileMetadataFields {
-  // END WORKFLOW AREA
+  extends FileMetadataFields
+  /* END WORKFLOW AREA */
+  {
   id: string;
   name: string;
   createdAt: Date;
