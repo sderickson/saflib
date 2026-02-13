@@ -19,7 +19,6 @@ export interface __GroupName__Entity
   updatedAt: Date;
   someEnum: SomeEnum;
 }
-// END WORKFLOW AREA
 
 // TODO: Replace this table with actual tables for your database
 export const __groupName__Table = sqliteTable("__group_name___table", {
