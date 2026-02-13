@@ -12,4 +12,5 @@ export {
   resolveConditionalBlocks,
 } from "./parse.ts";
 export { updateWorkflowAreas } from "./update.ts";
+export { resolveTemplateWorkflowAreas } from "./resolve-template.ts";
 export { validateWorkflowAreas, extractWorkflowAreas, getAreaKey } from "./validate.ts";
