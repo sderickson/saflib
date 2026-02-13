@@ -12,6 +12,20 @@ describe("__targetName____GroupName__", () => {
     app = create__ServiceName__HttpApp({});
   });
 
+  // BEGIN ONCE WORKFLOW AREA instructions FOR express/add-handler IF upload
+  /*
+  For file-upload handlers, send the file with supertest using .attach() instead of .send():
+
+  const fileContent = "test,data\n1,2";
+  const response = await request(app)
+    .post("/__group-name__/__target-name__")
+    .set(makeUserHeaders())
+    .attach("file", Buffer.from(fileContent), "test.csv");
+
+  Consider tests for: success, 401 (no auth), 403 (wrong role), 415 (no file / wrong content-type), 4xx/5xx (invalid file type or validation).
+  */
+  // END WORKFLOW AREA
+
   // TODO: unskip this test
   it.skip("should handle successful requests", async () => {
     const response = await request(app)
