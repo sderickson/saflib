@@ -201,6 +201,14 @@ export const executePromptWithCursor = async ({
   const t0 = Date.now();
   let duration_api_ms = 0;
 
+  let pipeClosed = false;
+  let resultReceived = false;
+  let response: PromptResult = {
+    code: 0,
+    sessionId: undefined,
+    shouldContinue: true,
+  };
+
   if (process.env.NODE_ENV === "test") {
     return { code: 0, sessionId: "test-session-id", shouldContinue: true };
   }
@@ -427,6 +435,10 @@ export const executePromptWithCursor = async ({
         appendToCostFile(tsvRow);
         printLineSlowly("\n---------- RESULT ---------- " + shortTimestamp());
         printLineSlowly(`> ${json.is_error ? "Error" : "Success"}`);
+        resultReceived = true;
+        if (pipeClosed) {
+          resolve(response);
+        }
       }
     }
   });
@@ -437,7 +449,6 @@ export const executePromptWithCursor = async ({
     if (!duration_api_ms) {
       throw new Error("Duration API ms is not set after agent execution");
     }
-    // console.log("DEBUG TIMEOUT - agent close adding" + duration_api_ms);
     const shouldContinue = !addTimeMs(duration_api_ms);
     if (!shouldContinue) {
       const workflowTimeMs = getTimeMs();
@@ -464,8 +475,13 @@ export const executePromptWithCursor = async ({
         printLineSlowly(`WORKFLOW SESSION % USED: ${pctOver.toFixed(1)}%`);
       }
     }
-
-    resolve({ code, sessionId: sessionId ?? undefined, shouldContinue });
+    response.code = code;
+    response.sessionId = sessionId ?? undefined;
+    response.shouldContinue = shouldContinue;
+    pipeClosed = true;
+    if (resultReceived) {
+      resolve(response);
+    }
   });
   return p;
 };
