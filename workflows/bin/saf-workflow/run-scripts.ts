@@ -1,6 +1,10 @@
 import { addNewLinesToString } from "../../strings.ts";
 import type { WorkflowArgument, WorkflowDefinition } from "../../core/types.ts";
-import { runWorkflow, loadWorkflowDefinition, validateArguments } from "./shared/utils.ts";
+import {
+  runWorkflow,
+  loadWorkflowDefinition,
+  validateArguments,
+} from "./shared/utils.ts";
 import { checklistToString } from "../../core/utils.ts";
 import type { WorkflowCommandOptions } from "./shared/types.ts";
 import {
@@ -22,6 +26,7 @@ export const addRunScriptsCommand = (
     .argument("<path-or-id>", "Workflow ID or path to workflow file")
     .argument("[args...]", "Arguments for the workflow")
     .action(async (workflowIdOrPath: string, givenArgs: string[]) => {
+      console.log("Running workflow:", workflowIdOrPath, givenArgs);
       const log = createWorkflowLogger();
       setupWorkflowContext({
         logger: log,
@@ -39,6 +44,9 @@ export const addRunScriptsCommand = (
                 ? (input.exampleValue ?? "false")
                 : (input.exampleValue ?? "example-value-missing"),
             );
+
+      console.log("Parsed args:", parsedArgs);
+      return;
       const result = await runWorkflowScript({
         definition: workflowDefinition,
         args: parsedArgs,

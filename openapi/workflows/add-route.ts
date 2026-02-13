@@ -84,6 +84,7 @@ export const AddRouteWorkflowDefinition = defineWorkflow<
       name: context.targetName,
       targetDir: path.join(context.targetDir),
       lineReplace: makeLineReplace(context),
+      flags: { upload: context.upload },
     })),
 
     step(UpdateStepMachine, ({ context }) => ({

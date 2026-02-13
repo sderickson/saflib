@@ -5,7 +5,7 @@ import { stat } from "node:fs/promises";
 import { copyFile } from "node:fs/promises";
 import { transformName } from "./utils.ts";
 import type { CopyStepContext } from "./types.ts";
-import { updateWorkflowAreas, validateWorkflowAreas } from "./inline.ts";
+import { updateWorkflowAreas, validateWorkflowAreas } from "./inline/index.ts";
 import fs from "node:fs";
 
 export interface CopyNextFileOutput {
@@ -31,6 +31,7 @@ export const copyNextFile = fromPromise(
       lineReplace,
       sharedPrefix,
       workflowId,
+      flags,
     } = input;
 
     if (filesToCopy.length === 0) {
@@ -97,6 +98,7 @@ export const copyNextFile = fromPromise(
         sourceLines,
         workflowId,
         lineReplace: lineReplace || ((line) => line),
+        flags,
       });
 
       // Write the updated content back to the file

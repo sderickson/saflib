@@ -7,11 +7,16 @@ import {
   kebabCaseToPascalCase,
   kebabCaseToCamelCase,
 } from "../../../strings.ts";
-import { parseWorkflowAreaStart, isWorkflowAreaEnd } from "./inline.ts";
+import {
+  parseWorkflowAreaStart,
+  isWorkflowAreaEnd,
+  isWorkflowAreaElse,
+  resolveConditionalBlocks,
+} from "./inline/index.ts";
 
 export const renameNextFile = fromPromise(
   async ({ input }: { input: CopyStepContext }) => {
-    const { name, filesToCopy, runMode, lineReplace, copiedFiles, workflowId } =
+    const { name, filesToCopy, runMode, lineReplace, copiedFiles, workflowId, flags } =
       input;
     const currentFileId = filesToCopy[0];
     const targetPath = copiedFiles[currentFileId];
@@ -36,6 +41,7 @@ export const renameNextFile = fromPromise(
         name,
         lineReplace,
         workflowId,
+        flags,
       });
 
       await writeFile(targetPath, updatedContent.join("\n"));
@@ -58,81 +64,186 @@ export interface ProcessFileContentParams {
   name?: string;
   lineReplace?: (line: string) => string;
   workflowId: string;
+  flags?: Record<string, boolean>;
+}
+
+function transformLine(
+  line: string,
+  name: string | undefined,
+  lineReplace: ((line: string) => string) | undefined,
+  snakeName: string,
+  pascalName: string,
+  camelName: string,
+): string {
+  if (line.includes("DELETE_THIS_LINE")) {
+    return "";
+  }
+  if (line.includes("/* do not replace */")) {
+    return line;
+  }
+  let out = line;
+  if (lineReplace) {
+    out = lineReplace(out);
+  }
+  if (name) {
+    out = out.replace(/template-file/g, name);
+    out = out.replace(/template_file/g, snakeName);
+    out = out.replace(/TemplateFile/g, pascalName);
+    out = out.replace(/templateFile/g, camelName);
+    out = out.replace(/TEMPLATE_FILE/g, snakeName.toUpperCase());
+  }
+  return out;
 }
 
 /**
  * Processes file content by applying name replacements, line replacements,
- * and handling workflow areas. Returns the processed lines.
+ * and handling workflow areas (including IF/ELSE/ONCE). Returns the processed lines.
  */
 export function processFileContent({
   contentLines,
   name,
   lineReplace,
   workflowId,
+  flags,
 }: ProcessFileContentParams): string[] {
-  const updatedContent = [...contentLines];
   const snakeName = kebabCaseToSnakeCase(name || "");
   const pascalName = kebabCaseToPascalCase(name || "");
   const camelName = kebabCaseToCamelCase(name || "");
 
-  // Track if we're inside a workflow area and if it applies to this workflow
+  const result: string[] = [];
   let inWorkflowArea = false;
   let areaAppliesToWorkflow = false;
+  let areaIsConditional = false;
+  let areaStartLine: string | null = null;
+  let areaIsOnce = false;
+  let areaIfFlag: string | undefined = undefined;
+  let areaBuffer: string[] = [];
 
-  for (var i = 0; i < updatedContent.length; i++) {
-    const line = updatedContent[i];
-
-    // Check if this is the start of a workflow area
+  for (let i = 0; i < contentLines.length; i++) {
+    const line = contentLines[i];
     const areaStart = parseWorkflowAreaStart(line);
-    const isAreaStart = areaStart !== null;
     const isAreaEnd = isWorkflowAreaEnd(line);
 
-    if (isAreaStart) {
+    if (areaStart) {
       inWorkflowArea = true;
       areaAppliesToWorkflow = areaStart.workflowIds.includes(workflowId);
-      // BEGIN line should always be kept - continue to normal processing
-    } else if (isAreaEnd) {
+      areaIsConditional =
+        areaAppliesToWorkflow && (areaStart.ifFlag !== undefined || areaStart.isOnce);
+      areaStartLine = areaStart.fullLine;
+      areaIsOnce = areaStart.isOnce;
+      areaIfFlag = areaStart.ifFlag;
+
+      if (areaIsConditional) {
+        areaBuffer = [];
+      } else {
+        result.push(
+          transformLine(
+            line,
+            name,
+            lineReplace,
+            snakeName,
+            pascalName,
+            camelName,
+          ),
+        );
+      }
+      continue;
+    }
+
+    if (isAreaEnd && inWorkflowArea) {
+      if (areaIsConditional && areaAppliesToWorkflow && areaStartLine) {
+        const resolved = resolveConditionalBlocks(
+          areaBuffer,
+          areaIfFlag,
+          flags,
+        );
+        const transformed = resolved.map((l) =>
+          transformLine(l, name, lineReplace, snakeName, pascalName, camelName),
+        );
+        if (areaIsOnce) {
+          result.push(...transformed);
+        } else {
+          result.push(
+            transformLine(
+              areaStartLine,
+              name,
+              lineReplace,
+              snakeName,
+              pascalName,
+              camelName,
+            ),
+          );
+          result.push(...transformed);
+          result.push(
+            transformLine(
+              line,
+              name,
+              lineReplace,
+              snakeName,
+              pascalName,
+              camelName,
+            ),
+          );
+        }
+      } else {
+        // Area doesn't apply or not conditional: keep END line
+        result.push(
+          transformLine(
+            line,
+            name,
+            lineReplace,
+            snakeName,
+            pascalName,
+            camelName,
+          ),
+        );
+      }
       inWorkflowArea = false;
       areaAppliesToWorkflow = false;
-      // END line should always be kept - continue to normal processing
-    } else if (inWorkflowArea && !areaAppliesToWorkflow) {
-      // If we're inside a workflow area that doesn't apply to this workflow,
-      // set the content line to empty and skip all replacements
-      // (BEGIN and END lines are handled above and will be processed normally)
-      updatedContent[i] = "";
+      areaIsConditional = false;
+      areaStartLine = null;
+      areaBuffer = [];
       continue;
     }
 
-    // Normal processing for lines outside workflow areas or inside applicable areas
-    if (line.includes("DELETE_THIS_LINE")) {
-      updatedContent[i] = "";
-      continue;
-    }
-    if (line.includes("/* do not replace */")) {
-      updatedContent[i] = line;
+    if (inWorkflowArea && areaIsConditional && areaAppliesToWorkflow) {
+      if (!isElse) {
+        areaBuffer.push(line);
+      }
       continue;
     }
 
-    if (lineReplace) {
-      updatedContent[i] = lineReplace(updatedContent[i]);
+    if (inWorkflowArea && !areaAppliesToWorkflow) {
+      result.push("");
+      continue;
     }
-    if (name) {
-      updatedContent[i] = updatedContent[i].replace(/template-file/g, name);
-      updatedContent[i] = updatedContent[i].replace(
-        /template_file/g,
+
+    if (inWorkflowArea && areaAppliesToWorkflow && !areaIsConditional) {
+      result.push(
+        transformLine(
+          line,
+          name,
+          lineReplace,
+          snakeName,
+          pascalName,
+          camelName,
+        ),
+      );
+      continue;
+    }
+
+    // Outside any workflow area
+    result.push(
+      transformLine(
+        line,
+        name,
+        lineReplace,
         snakeName,
-      );
-      updatedContent[i] = updatedContent[i].replace(
-        /TemplateFile/g,
         pascalName,
-      );
-      updatedContent[i] = updatedContent[i].replace(/templateFile/g, camelName);
-      updatedContent[i] = updatedContent[i].replace(
-        /TEMPLATE_FILE/g,
-        snakeName.toUpperCase(),
-      );
-    }
+        camelName,
+      ),
+    );
   }
 
-  return updatedContent;
+  return result;
 }
