@@ -162,6 +162,8 @@ export function validateWorkflowAreas({
 
   for (const [key, area] of sourceAreaMap) {
     if (!targetAreaMap.has(key)) {
+      // ONCE areas are intentionally removed from the target after resolution
+      if (area.isOnce) continue;
       throw new Error(
         `Source has workflow area "${area.areaName}" (${area.isSorted ? "SORTED " : ""}${area.isOnce ? "ONCE " : ""}FOR ${area.workflowIds.join(" ")}${area.ifFlag ? ` IF ${area.ifFlag}` : ""}) that target does not have${errorContext}`,
       );
@@ -177,7 +179,9 @@ export function validateWorkflowAreas({
   }
 
   for (const [key, sourceArea] of sourceAreaMap) {
-    const targetArea = targetAreaMap.get(key)!;
+    const targetArea = targetAreaMap.get(key);
+    // ONCE areas may be missing in target (removed after resolution); skip comparison
+    if (!targetArea) continue;
 
     if (sourceArea.areaName !== targetArea.areaName) {
       throw new Error(
