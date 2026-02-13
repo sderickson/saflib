@@ -31,13 +31,17 @@ export const addRunScriptsCommand = (
         workflowIdOrPath,
         commandOptions.workflows,
       );
-      const args = givenArgs.length > 0 ? givenArgs : workflowDefinition.input.map(
-        (input: WorkflowArgument) => input.exampleValue,
-      );
-      validateArguments(args, workflowDefinition);
+      const parsedArgs =
+        givenArgs.length > 0
+          ? validateArguments(givenArgs, workflowDefinition)
+          : (workflowDefinition.input as WorkflowArgument[]).map((input) =>
+              input.type === "flag"
+                ? (input.exampleValue ?? "false")
+                : (input.exampleValue ?? "example-value-missing"),
+            );
       const result = await runWorkflowScript({
         definition: workflowDefinition,
-        args,
+        args: parsedArgs,
       });
       if (!result.success) {
         console.error("Workflow did not complete successfully");

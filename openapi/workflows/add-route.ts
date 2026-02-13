@@ -20,10 +20,16 @@ const input = [
     description: "The path for the route (e.g., 'users' or 'products')",
     exampleValue: "./routes/example/example.yaml",
   },
+  {
+    name: "upload",
+    type: "flag" as const,
+    description: "Include file upload (e.g. multipart) in the route",
+  },
 ] as const;
 
 interface AddRouteWorkflowContext extends ParsePathOutput {
   operationId: string;
+  upload: boolean;
 }
 
 export const AddRouteWorkflowDefinition = defineWorkflow<
@@ -49,6 +55,7 @@ export const AddRouteWorkflowDefinition = defineWorkflow<
         requiredPrefix: "./routes/",
       }),
       targetDir: input.cwd,
+      upload: input.upload,
     };
     const operationId =
       kebabCaseToCamelCase(context.targetName.split(".")[0]) +

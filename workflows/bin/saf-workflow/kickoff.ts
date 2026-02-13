@@ -104,10 +104,10 @@ export const addKickoffCommand = (commandOptions: WorkflowCommandOptions) => {
           );
         }
 
-        validateArguments(args, workflowDefinition);
+        const parsedArgs = validateArguments(args, workflowDefinition);
 
-        if (args.length > 0) {
-          log.info(`- Arguments:    ${args.join(", ")}`);
+        if (parsedArgs.length > 0) {
+          log.info(`- Arguments:    ${parsedArgs.join(", ")}`);
         }
 
         // Kick off the workflow
@@ -115,7 +115,7 @@ export const addKickoffCommand = (commandOptions: WorkflowCommandOptions) => {
           definition: workflowDefinition,
           runMode: givenRunMode,
           agentConfig,
-          args,
+          args: parsedArgs,
           skipTodos,
           manageVersionControl:
             options.versionControl === "git" ? "git" : undefined,

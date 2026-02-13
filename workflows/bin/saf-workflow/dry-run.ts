@@ -27,13 +27,13 @@ export const addDryRunCommand = (commandOptions: WorkflowCommandOptions) => {
         commandOptions.workflows,
       );
 
-      validateArguments(args, workflowDefinition);
+      const parsedArgs = validateArguments(args, workflowDefinition);
 
       // Run the workflow
       await runWorkflow({
         definition: workflowDefinition,
         runMode: "dry",
-        args: args,
+        args: parsedArgs,
       });
       console.log("Workflow dry-run completed successfully");
     });
