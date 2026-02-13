@@ -207,9 +207,8 @@ export function processFileContent({
     }
 
     if (inWorkflowArea && areaIsConditional && areaAppliesToWorkflow) {
-      if (!isWorkflowAreaElse(line)) {
-        areaBuffer.push(line);
-      }
+      // Buffer all lines including # ELSE so splitIfElseBlocks can split correctly
+      areaBuffer.push(line);
       continue;
     }
 
