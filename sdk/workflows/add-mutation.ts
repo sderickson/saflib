@@ -23,12 +23,19 @@ const input = [
       "The path to the template file to be created (e.g., 'requests/scans/execute.ts')",
     exampleValue: "./requests/scans/execute.ts",
   },
+  {
+    name: "upload",
+    type: "flag" as const,
+    description: "Mutation sends a file via FormData (e.g. multipart upload)",
+  },
 ] as const;
 
 interface AddMutationWorkflowContext
-  extends ParsePackageNameOutput, ParsePathOutput {
-    mutationName: string;
-  }
+  extends ParsePackageNameOutput,
+    ParsePathOutput {
+  mutationName: string;
+  upload: boolean;
+}
 
 export const AddSdkMutationWorkflowDefinition = defineWorkflow<
   typeof input,
@@ -63,6 +70,7 @@ export const AddSdkMutationWorkflowDefinition = defineWorkflow<
       }),
       targetDir: input.cwd,
       mutationName: pathResult.targetName,
+      upload: input.upload ?? false,
     };
   },
 
@@ -94,11 +102,13 @@ export const AddSdkMutationWorkflowDefinition = defineWorkflow<
       name: context.targetName,
       targetDir: context.targetDir,
       lineReplace: makeLineReplace(context),
+      flags: { upload: context.upload },
     })),
 
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "templateFile",
       promptMessage: `Update **${context.targetName}.ts** to implement the API mutation.
+      ${context.upload ? "This mutation accepts a File and sends it as FormData (body: formData as unknown as request body type)." : ""}
       
       Please review documentation here first: ${context.docFiles?.overview}`,
     })),
