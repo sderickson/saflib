@@ -1,7 +1,7 @@
-export const __target_name___page = {
+export const __full_name___page = {
   // TODO: Replace strings with strings from the actual design
   // Use descriptive keys that work well with translation systems
-  title: "Hello, __TargetName__!",
+  title: "Hello, __FullName__!",
   subtitle: "This is a subtitle",
   description: "This is a description of what this page does",
 
