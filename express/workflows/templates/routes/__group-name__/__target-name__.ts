@@ -4,10 +4,10 @@ import type {
   __ServiceName__ServiceRequestBody,
   __ServiceName__ServiceResponseBody,
 } from "template-package-spec";
-import createError from "http-errors";
 import { __serviceName__ServiceStorage } from "template-package-service-common";
 import { getSafContextWithAuth } from "@saflib/node";
 // BEGIN ONCE WORKFLOW AREA uploadImports FOR express/add-handler IF upload
+import createError from "http-errors";
 import fs from "fs";
 // import { Readable } from "stream";
 import { sanitizeFilename } from "@saflib/utils";
@@ -17,11 +17,11 @@ import { sanitizeFilename } from "@saflib/utils";
 
 export const __targetName____GroupName__Handler = createHandler(
   async (req, res) => {
-    const ctx = __serviceName__ServiceStorage.getStore()!;
     // @ts-expect-error
     const { auth } = getSafContextWithAuth();
     
     // BEGIN ONCE WORKFLOW AREA uploadInput FOR express/add-handler IF upload
+    const ctx = __serviceName__ServiceStorage.getStore()!;
     // @ts-expect-error
     const { fileContainer } = ctx; // TODO: use actual container property name (e.g. emptyFormContainer)
     if (!Array.isArray(req.files)) {
