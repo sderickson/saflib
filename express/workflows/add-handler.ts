@@ -80,6 +80,10 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
     testingGuide: path.join(import.meta.dirname, "../docs/04-testing.md"),
   },
 
+  versionControl: {
+    allowPaths: ["**/context.ts"],
+  },
+
   steps: [
     step(
       PromptStepMachine,
