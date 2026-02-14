@@ -18,6 +18,21 @@ export class TestObjectStore extends ObjectStore {
   private files: TestFile[] = [];
   private contentMap = new Map<string, Buffer>();
 
+  /** Exposed for tests that assert path behavior (ObjectStore.test.ts). */
+  normalizePath(path: string): string {
+    return super.normalizePath(path);
+  }
+
+  /** Exposed for tests that assert path behavior (ObjectStore.test.ts). */
+  validatePath(path: string): string {
+    return super.validatePath(path);
+  }
+
+  /** Exposed for tests that assert path behavior (ObjectStore.test.ts). */
+  getScopedPath(path: string): string {
+    return super.getScopedPath(path);
+  }
+
   setFiles(files: TestFile[]): void {
     this.files = files;
     this.contentMap.clear();
