@@ -1,4 +1,5 @@
 import { Readable } from "stream";
+import { buffer as streamToBuffer } from "node:stream/consumers";
 import { ObjectStore } from "./ObjectStore.ts";
 import type { ReturnsError } from "@saflib/monorepo";
 import { StorageError, FileNotFoundError } from "./ObjectStore.ts";
@@ -15,6 +16,8 @@ export interface TestFile {
 
 export class TestObjectStore extends ObjectStore {
   private files: TestFile[] = [];
+  /** Stored content for each path so readFile returns real data */
+  private contentMap = new Map<string, Buffer>();
   private uploadShouldFail = false;
   private uploadError?: Error;
   private listShouldFail = false;
@@ -42,6 +45,7 @@ export class TestObjectStore extends ObjectStore {
 
   setFiles(files: TestFile[]): void {
     this.files = files;
+    this.contentMap.clear();
   }
 
   getFiles(): TestFile[] {
@@ -70,6 +74,7 @@ export class TestObjectStore extends ObjectStore {
 
   reset(): void {
     this.files = [];
+    this.contentMap.clear();
     this.uploadShouldFail = false;
     this.uploadError = undefined;
     this.listShouldFail = false;
@@ -82,7 +87,7 @@ export class TestObjectStore extends ObjectStore {
 
   async uploadFile(
     path: string,
-    _stream: Readable,
+    stream: Readable,
     metadata?: Record<string, string>,
   ): Promise<ReturnsError<{ success: boolean; url?: string }, StorageError>> {
     if (this.uploadShouldFail) {
@@ -114,9 +119,22 @@ export class TestObjectStore extends ObjectStore {
       };
     }
 
+    let content: Buffer;
+    try {
+      content = await streamToBuffer(stream);
+    } catch (error) {
+      return {
+        error: new StorageError(
+          "Error reading upload stream",
+          error instanceof Error ? error : undefined,
+        ),
+      };
+    }
+
+    this.contentMap.set(path, content);
     this.files.push({
       path,
-      size: 1024,
+      size: content.length,
       metadata,
     });
 
@@ -172,6 +190,7 @@ export class TestObjectStore extends ObjectStore {
     }
 
     this.files = this.files.filter((f) => f.path !== path);
+    this.contentMap.delete(path);
     return { result: { success: true } };
   }
 
@@ -198,7 +217,8 @@ export class TestObjectStore extends ObjectStore {
       };
     }
 
-    return { result: new Readable() };
+    const content = this.contentMap.get(path) ?? Buffer.alloc(0);
+    return { result: Readable.from(content) };
   }
 
   async upsertContainer(): Promise<
