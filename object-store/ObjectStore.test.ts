@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { ObjectStore, PathTraversalError } from "./ObjectStore.ts";
-import { TestObjectStore } from "./TestObjectStore.ts";
+import { TestObjectStore } from "./test/TestObjectStore.ts";
 
 describe("ObjectStore", () => {
   describe("constructor", () => {

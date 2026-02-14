@@ -4,7 +4,7 @@ import {
   AzureObjectStore,
   type AzureObjectStoreOptions,
 } from "./azure/AzureObjectStore.ts";
-import { TestObjectStore } from "./TestObjectStore.ts";
+import { TestObjectStore } from "./test/TestObjectStore.ts";
 
 export type CreateObjectStoreOptions =
   | { type: "disk"; rootPath: string }
