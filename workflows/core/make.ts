@@ -194,6 +194,9 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
             } else {
               allowPaths = workflow.versionControl?.allowPaths;
             }
+            if (!allowPaths) {
+              allowPaths = [`${input.cwd}/**`];
+            }
             const successful = await handleGitChanges({
               workflowId: workflow.id,
               context: input,

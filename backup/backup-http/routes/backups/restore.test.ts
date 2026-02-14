@@ -14,14 +14,23 @@ import type { StorageError } from "@saflib/object-store";
 
 class TestObjectStoreWithContent extends TestObjectStore {
   private fileContent: Map<string, Buffer> = new Map();
+  /** When set, readFile returns FileNotFoundError for this path (e.g. to simulate read failure). */
+  private readFailPath: string | null = null;
 
   setFileContent(path: string, content: Buffer): void {
     this.fileContent.set(path, content);
   }
 
+  setReadToFailForPath(path: string): void {
+    this.readFailPath = path;
+  }
+
   async readFile(
     path: string,
   ): Promise<ReturnsError<Readable, StorageError | FileNotFoundError>> {
+    if (this.readFailPath === path) {
+      return { error: new FileNotFoundError(path) };
+    }
     const baseResult = await super.readFile(path);
     if (baseResult.error) {
       return baseResult;
@@ -66,7 +75,7 @@ describe("POST /backups/:backupId/restore", () => {
     };
 
     app = createBackupHttpApp({
-      backupFn: async () => new Readable(),
+      backupFn: async () => Readable.from(Buffer.alloc(0)),
       restoreFn,
       objectStore,
     });
@@ -121,7 +130,7 @@ describe("POST /backups/:backupId/restore", () => {
     };
 
     app = createBackupHttpApp({
-      backupFn: async () => new Readable(),
+      backupFn: async () => Readable.from(Buffer.alloc(0)),
       restoreFn,
       objectStore,
     });
@@ -206,8 +215,7 @@ describe("POST /backups/:backupId/restore", () => {
         size: 1024,
       },
     ]);
-
-    objectStore.setReadShouldFail(new FileNotFoundError(backupPath));
+    objectStore.setReadToFailForPath(backupPath);
 
     const response = await request(app)
       .post(`/backups/${backupId}/restore`)

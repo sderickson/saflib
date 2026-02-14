@@ -2,6 +2,7 @@ import { addNewLinesToString } from "../../strings.ts";
 import { getCurrentPackage } from "../../workspace.ts";
 import { getPackageName } from "./shared/utils.ts";
 import type { WorkflowCommandOptions } from "./shared/types.ts";
+import type { WorkflowArgument } from "../../core/types.ts";
 
 export const addListCommand = (commandOptions: WorkflowCommandOptions) => {
   commandOptions.program
@@ -30,7 +31,7 @@ export const addListCommand = (commandOptions: WorkflowCommandOptions) => {
           .map((w) => {
             const id = w.id.padEnd(longestId, " ");
             if (options.details) {
-              return `${id} - ${w.description}`;
+              return `${id}\n  ${w.description}\n  Args:\n${w.input.map((i: WorkflowArgument) => `  - (${i.type === "flag" ? "flag" : "string"}) ${i.name}${i.description ? `: ${i.description}` : ""}`).join("\n")}\n`;
             }
             return id;
           })

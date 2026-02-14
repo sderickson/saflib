@@ -2,6 +2,7 @@ import {
   CopyStepMachine,
   UpdateStepMachine,
   CommandStepMachine,
+  PromptStepMachine,
   defineWorkflow,
   step,
   type ParsePackageNameOutput,
@@ -22,11 +23,18 @@ const input = [
     description: "Path of the new handler (e.g. 'routes/todos/create')",
     exampleValue: "./routes/example-subpath/example-handler.ts",
   },
+  {
+    name: "upload",
+    type: "flag" as const,
+    description:
+      "Include file upload handling (multipart); shunt file data to a container in the store",
+  },
 ] as const;
 
 interface AddHandlerWorkflowContext
-  extends ParsePackageNameOutput,
-    ParsePathOutput {}
+  extends ParsePackageNameOutput, ParsePathOutput {
+  upload: boolean;
+}
 
 export const AddHandlerWorkflowDefinition = defineWorkflow<
   typeof input,
@@ -55,6 +63,7 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
         requiredPrefix: "./routes/",
       }),
       targetDir: input.cwd,
+      upload: input.upload ?? false,
     };
   },
 
@@ -71,11 +80,29 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
     testingGuide: path.join(import.meta.dirname, "../docs/04-testing.md"),
   },
 
+  versionControl: {
+    allowPaths: ["**/context.ts"],
+  },
+
   steps: [
+    step(
+      PromptStepMachine,
+      ({ context }) => ({
+        prompt: `Find or add a place in the service's common store (e.g. AsyncLocalStorage context) to hold uploaded files.
+
+- Locate where the request-scoped context is created (usually in an adjacent common package) and what type it has.
+- Ensure the context includes an ObjectStore (or similar) for file blobs—e.g. a property like \`emptyFormContainer\` or \`${context.groupName}FileContainer\`.
+- If it doesn't exist, add the container to the context type, create it where the context is built (using a @saflib/object-store implementation), upsert it, and pass it into the context.
+- You will use this container in the handler to shunt uploaded file data (uploadFile, deleteFile, readFile). See @saflib/object-store library for details.`,
+      }),
+      { skipIf: ({ context }) => !context.upload },
+    ),
+
     step(CopyStepMachine, ({ context }) => ({
       name: context.targetName,
       targetDir: context.targetDir,
       lineReplace: makeLineReplace(context),
+      flags: { upload: context.upload },
     })),
 
     step(UpdateStepMachine, ({ context }) => ({
@@ -90,7 +117,13 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
       - Let unexpected errors propagate to central error handler (no try/catch!)
       - Follow the pattern in the reference doc
       - Use the handler in the adjacent "index.ts" file.
-      - Include db -> http mapper functions in the adjacent ${context.copiedFiles?.helpers} file." 
+      - Include db -> http mapper functions in the adjacent ${context.copiedFiles?.helpers} file.${
+        context.upload
+          ? `
+
+      This handler includes file upload support. Use the file container you added or found in the store (e.g. emptyFormContainer). Validate req.files, read the file buffer, unlink the temp file early, then create the DB record with file metadata (blob_name, file_original_name, mimetype, size). Upload the file to the container (uploadFile) after the DB create; on upload failure, clean up the DB record and return 500.`
+          : ""
+      }
       
       Review ${context.docFiles?.refDoc} for more details.`,
     })),

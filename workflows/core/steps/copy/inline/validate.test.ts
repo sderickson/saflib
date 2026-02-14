@@ -192,7 +192,19 @@ describe("validateWorkflowAreas", () => {
     ).not.toThrow();
   });
 
-  it("throws when source has area that target does not have", () => {
+  it("does not throw when source has ONCE area that target does not have (ONCE areas are removed after resolution)", () => {
+    const source = [
+      "// BEGIN ONCE WORKFLOW AREA onceArea FOR workflow1",
+      "  content",
+      "// END WORKFLOW AREA",
+    ];
+    const target: string[] = [];
+    expect(() =>
+      validateWorkflowAreas({ sourceLines: source, targetLines: target, ...ctx }),
+    ).not.toThrow();
+  });
+
+  it("throws when source has non-ONCE area that target does not have", () => {
     const source = [
       "// BEGIN WORKFLOW AREA myArea FOR workflow1",
       "  code",
@@ -354,7 +366,7 @@ describe("validateWorkflowAreas", () => {
     ).toThrow();
   });
 
-  it("throws when source has ONCE but target does not", () => {
+  it("throws when target has area that source does not have (e.g. target has non-ONCE, source has ONCE)", () => {
     const source = [
       "// BEGIN ONCE WORKFLOW AREA x FOR w1",
       "  code",
@@ -367,6 +379,6 @@ describe("validateWorkflowAreas", () => {
     ];
     expect(() =>
       validateWorkflowAreas({ sourceLines: source, targetLines: target, ...ctx }),
-    ).toThrow();
+    ).toThrow(/Target has workflow area/);
   });
 });
