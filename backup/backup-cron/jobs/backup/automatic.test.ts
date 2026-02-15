@@ -13,7 +13,7 @@ describe("automatic backup job", () => {
 
   beforeEach(() => {
     objectStore = new TestObjectStore();
-    backupFn = async () => new Readable();
+    backupFn = async () => Readable.from(Buffer.alloc(0));
   });
 
   it("should successfully create and upload backup", async () => {

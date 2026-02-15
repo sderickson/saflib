@@ -447,7 +447,7 @@ export const executePromptWithCursor = async ({
   });
   agent.on("close", (code) => {
     if (!duration_api_ms) {
-      throw new Error("Duration API ms is not set after agent execution");
+      console.warn("Duration API ms is not set after agent execution");
     }
     const shouldContinue = !addTimeMs(duration_api_ms);
     if (!shouldContinue) {

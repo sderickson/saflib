@@ -35,6 +35,7 @@ const input = [
 interface AddSpaViewWorkflowContext
   extends ParsePathOutput, ParsePackageNameOutput {
   targetDir: string;
+  fullName: string;
 }
 
 export const AddSpaViewWorkflowDefinition = defineWorkflow<
@@ -78,6 +79,13 @@ export const AddSpaViewWorkflowDefinition = defineWorkflow<
       routePath = "";
     }
 
+    // convert that into a full name that can be used for variable names
+    const fullName = folderPath
+      .split("/")
+      .slice(2)
+      .join("-")
+      .replaceAll("/", "-");
+
     return {
       ...pathResult,
       ...parsePackageName(getPackageName(input.cwd), {
@@ -88,6 +96,7 @@ export const AddSpaViewWorkflowDefinition = defineWorkflow<
       subdomainName,
       groupName: folderPath,
       routePath,
+      fullName,
     };
   },
 

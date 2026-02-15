@@ -17,11 +17,18 @@ const input = [
     description: "The path to the schema file to update",
     exampleValue: "./schemas/example.ts",
   },
+  {
+    name: "file",
+    type: "flag" as const,
+    description: "Include file metadata columns (blob_name, file_original_name, mimetype, size, etc.)",
+  },
 ] as const;
 
 const sourceDir = path.join(import.meta.dirname, "templates");
 
-interface UpdateSchemaWorkflowContext extends ParsePathOutput {}
+interface UpdateSchemaWorkflowContext extends ParsePathOutput {
+  file: boolean;
+}
 
 export const UpdateSchemaWorkflowDefinition = defineWorkflow<
   typeof input,
@@ -46,6 +53,7 @@ export const UpdateSchemaWorkflowDefinition = defineWorkflow<
         cwd: input.cwd,
       }),
       targetDir: input.cwd,
+      file: input.file ?? false,
     };
   },
 
@@ -84,6 +92,7 @@ export const UpdateSchemaWorkflowDefinition = defineWorkflow<
         name: context.targetName,
         targetDir: context.targetDir,
         lineReplace: makeLineReplace(context),
+        flags: { file: context.file },
       };
     }),
 

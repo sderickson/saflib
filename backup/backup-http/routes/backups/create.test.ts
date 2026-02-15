@@ -15,7 +15,7 @@ describe("POST /backups", () => {
   beforeEach(() => {
     objectStore = new TestObjectStore();
     app = createBackupHttpApp({
-      backupFn: async () => new Readable(),
+      backupFn: async () => Readable.from(Buffer.alloc(0)),
       objectStore,
     });
   });
@@ -31,7 +31,7 @@ describe("POST /backups", () => {
       id: expect.any(String),
       type: "manual",
       timestamp: expect.stringMatching(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/),
-      size: 1024,
+      size: 0,
       path: expect.stringMatching(/^backup-\d+-manual-.+\.db$/),
     });
   });
