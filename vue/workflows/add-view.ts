@@ -106,6 +106,7 @@ export const AddSpaViewWorkflowDefinition = defineWorkflow<
     vue: path.join(pageDir, "__TargetName__.vue"),
     async: path.join(pageDir, "__TargetName__Async.vue"),
     strings: path.join(pageDir, "__TargetName__.strings.ts"),
+    test: path.join(pageDir, "__TargetName__.test.ts"),
     stringsIndex: path.join(packageDir, "strings.ts"),
     router: path.join(packageDir, "router.ts"),
 
@@ -199,9 +200,11 @@ call. All interesting logic should be tested independently via the logic and com
   threading them through props and events. Only pass data that is already loaded by the view's
   loader; if a sub-component needs to fetch additional data on interaction or fire mutations,
   it should do so itself.
-* **Don't test rendering**: Render/component tests for thin template components add maintenance
-  cost without much signal. Playwright covers that wiring. Focus tests on the extracted logic
-  and composables.
+* **Render test**: Update the generated \`${context.targetName}.test.ts\` — replace the TODO
+  string with an actual visible string from the rendered page (e.g. the page title). This smoke
+  test drives baseline coverage on the Vue file; uncovered lines highlight logic worth extracting.
+  Don't add interaction tests here — Playwright covers that. Focus deeper tests on the extracted
+  logic files and composables.
 
 For more information, see ${context.docFiles?.components}`,
     })),

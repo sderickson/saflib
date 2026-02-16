@@ -5,6 +5,9 @@ Note: this file is in JS because for some reason, vitest-config.ts can't import 
 import { defineConfig } from "vitest/config";
 import vue from "@vitejs/plugin-vue";
 import vuetify from "vite-plugin-vuetify";
+import path from "node:path";
+
+const setupFile = path.join(import.meta.dirname, "vitest-setup.js");
 
 export const defaultConfig = defineConfig({
   plugins: [vue(), vuetify()],
@@ -12,6 +15,7 @@ export const defaultConfig = defineConfig({
     environment: "jsdom",
     globals: true,
     exclude: ["**/e2e/**"],
+    setupFiles: [setupFile],
     coverage: {
       provider: "v8",
       reporter: ["text", "html"],
@@ -25,6 +29,16 @@ export const defaultConfig = defineConfig({
         "*.config.*",
         "**/*.d.ts",
         "**/__mocks__",
+
+        // Strings files are pure localization data with no logic
+        "**/*.strings.ts",
+
+        // Loader files are simple prefetch wrappers
+        "**/*.loader.ts",
+
+        // Test infrastructure
+        "**/test-app.ts",
+        "**/fixtures.ts",
       ],
     },
     server: {
