@@ -102,3 +102,48 @@ Key points:
 The template includes a basic render test (`PageName.test.ts`) that mounts the async component and verifies the page loads. This serves as a smoke test that the page's loader, data assertions, and initial render work together.
 
 Render tests should **not** attempt to test interactions (clicking buttons, filling forms, submitting). That logic should be extracted into composables and tested there, or covered by Playwright E2E tests. Render tests that simulate interactions are fragile, slow, and duplicate coverage.
+
+## Coverage
+
+### Excluded Files
+
+The shared vitest config excludes files from coverage that don't contain meaningful logic:
+
+- `*.strings.ts` — pure localization data
+- `*.loader.ts` — simple prefetch wrappers
+- `test-app.ts`, `fixtures.ts` — test infrastructure
+- `main.ts`, `router.ts` — app bootstrapping (covered by E2E)
+
+This keeps the report focused on files with actual logic.
+
+### Making the Report Useful
+
+Each page should have a render test (`PageName.test.ts`) that mounts the async component and verifies it loads. This drives baseline coverage on the Vue file — the "easy" coverage.
+
+Lines that remain uncovered after the render test indicate logic worth extracting:
+
+- Pure logic → `.logic.ts` (covered by fast unit tests)
+- Stateful/networking logic → `useFlow.ts` composable (covered by integration tests)
+
+After extraction, the Vue file is thin, the logic files have high coverage from focused tests, and the remaining uncovered lines in Vue files are simple event handler wiring that Playwright covers.
+
+### Coverage Enforcement
+
+To enforce coverage thresholds, use `defaultConfigWithCoverageEnforcement` in your `vitest.config.ts`:
+
+```typescript
+import { defaultConfigWithCoverageEnforcement } from "@saflib/vue/vitest-config";
+
+export default defaultConfigWithCoverageEnforcement;
+```
+
+This enables automatic coverage collection on every `npm run test` and enforces:
+
+| Pattern | Lines | Branches | Functions | Statements |
+|---|---|---|---|---|
+| `**/*.logic.ts` | 90% | 90% | 90% | 90% |
+| Global (all files) | 50% | 50% | 30% | 50% |
+
+The global functions threshold is lower because Vue template event handlers (e.g. `@click`) count as uncovered functions in render-only tests.
+
+If coverage falls below these thresholds, `npm run test` fails — including when run by the `vue/add-view` workflow, forcing the agent to write adequate tests before the step passes.
