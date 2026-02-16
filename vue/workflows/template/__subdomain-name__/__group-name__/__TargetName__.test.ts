@@ -14,7 +14,7 @@ describe("__FullName__", () => {
   it("should render", async () => {
     const wrapper = mountTestApp(__FullName__Async);
     // TODO: replace "TODO" with a visible string from the rendered page
-    await vi.waitFor(() => expect(wrapper.text()).toContain("TODO"));
+    await vi.waitFor(() => expect(wrapper.text()).toContain("Hello"));
     wrapper.unmount();
   });
 });
