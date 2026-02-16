@@ -143,7 +143,7 @@ This enables automatic coverage collection on every `npm run test` and enforces 
 |---|---|---|---|---|
 | `**/*.logic.ts` | 90% | 90% | 90% | 90% |
 | `**/use*.ts` (composables) | 80% | 70% | — | 80% |
-| Global (per file) | 30% | — | — | 30% |
+| Global (per file) | 60% | — | — | 60% |
 
 Thresholds are enforced **per file** (`perFile: true`), so a single untested file will fail the build even if aggregate coverage is high. Branch and function thresholds are omitted at the global level because Vue files inherently have uncovered branches (`v-if` paths) and functions (event handlers) that only Playwright exercises.
 

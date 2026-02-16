@@ -92,12 +92,14 @@ export const defaultConfigWithCoverageEnforcement = defineConfig({
           statements: 80,
         },
 
-        // Global per-file floor: catches files with no tests at all.
-        // Branches and functions are 0 because Vue files inherently have
-        // uncovered branches (v-if paths) and functions (event handlers)
+        // Global per-file floor: a well-extracted thin Vue file reaches
+        // 80-100% from just a render test, so 60% catches files with
+        // significant untested inline logic that should be extracted.
+        // Branches and functions are omitted because Vue files inherently
+        // have uncovered branches (v-if paths) and functions (event handlers)
         // that only Playwright exercises.
-        lines: 30,
-        statements: 30,
+        lines: 60,
+        statements: 60,
       },
     },
   },
