@@ -160,7 +160,50 @@ export const AddSpaViewWorkflowDefinition = defineWorkflow<
     })),
 
     step(PromptStepMachine, ({ context }) => ({
-      promptText: `Example usage of ${context.targetName}`, // hey agent, update this!
+      prompt: `Now that the view is implemented, extract testable logic and write tests.
+
+Review the view and any sub-components you created, then:
+
+## 1. Logic files (\`ComponentName.logic.ts\`)
+
+Extract **pure business logic** from Vue components into plain TypeScript functions.
+This includes: validation, data transformation, formatting, building request payloads,
+and any computation that doesn't need Vue reactivity or the DOM.
+
+Write unit tests in \`ComponentName.logic.test.ts\` — these should be fast, deterministic,
+no-DOM tests that import and call the functions directly.
+
+## 2. Composables (\`useComponentFlow.ts\`)
+
+If a component has **stateful logic involving networking** — TanStack mutations, multi-step
+flows (e.g. create → upload → run), state machines, or complex error handling chains —
+extract it into a composable. The composable should own the reactive state and mutations,
+and expose them to the component.
+
+Write integration tests in \`useComponentFlow.test.ts\` using \`setupMockServer\` with the
+SDK's fake handlers and \`withVueQuery\` to test the composable without a DOM.
+Import mock data arrays (e.g. \`mockEvals\`, \`mockForms\`) from the SDK's fakes export
+to set up and verify backend state.
+
+## 3. After extraction
+
+The Vue components should be **thin** — mostly template + v-model bindings + the composable
+call. All interesting logic should be tested independently via the logic and composable tests.
+
+## Important guidelines
+
+* **Strings**: Each sub-component gets its own \`.strings.ts\` file (e.g. \`MyDialog.strings.ts\`).
+  Don't pile all strings into the view's strings file.
+* **Sub-component interfaces**: Keep them simple. Pass data loaded by the view's loader through
+  props. But let sub-components access TanStack queries and mutations **directly** rather than
+  threading them through props and events. Only pass data that is already loaded by the view's
+  loader; if a sub-component needs to fetch additional data on interaction or fire mutations,
+  it should do so itself.
+* **Don't test rendering**: Render/component tests for thin template components add maintenance
+  cost without much signal. Playwright covers that wiring. Focus tests on the extracted logic
+  and composables.
+
+For more information, see ${context.docFiles?.components}`,
     })),
 
     step(CommandStepMachine, () => ({

@@ -19,15 +19,23 @@ Each page in a SPA has its own directory that looks like this:
 
 ```
 {page-name}/
-├── components/
-│   └── ...
-├── PageName.fixture.ts
-├── PageName.loader.ts
-├── PageName.strings.ts
-├── PageName.test.ts
-├── PageName.vue
-└── PageNameAsync.vue
+├── PageName.fixture.ts        # Playwright fixture
+├── PageName.loader.ts         # Data fetching (TanStack queries)
+├── PageName.strings.ts        # Localized strings for the page
+├── PageName.test.ts           # Render smoke test
+├── PageName.vue               # Page component (thin template)
+├── PageNameAsync.vue          # Async wrapper for code splitting
+│
+│   Sub-components and their extracted logic:
+├── SubComponent.vue           # Sub-component (thin template)
+├── SubComponent.strings.ts    # Its own strings file
+├── SubComponent.logic.ts      # Pure business logic (validation, transforms)
+├── SubComponent.logic.test.ts # Unit tests for pure logic
+├── useSubComponentFlow.ts     # Composable (stateful + networking logic)
+└── useSubComponentFlow.test.ts # Integration tests for composable
 ```
+
+Not every sub-component needs all of these files — only create logic files and composables when there is logic worth extracting and testing. Simple presentational components may only need a `.vue` and `.strings.ts`.
 
 Other types of views follow the same pattern.
 
@@ -88,7 +96,79 @@ Strings are important to keep separate from the Vue component because they:
 
 By keeping them in separate files, they can be exported and used by processes which don't need to know about, parse, or compile Vue components, in particular: [Playwright](../../playwright/docs/overview.md).
 
+**Each sub-component should have its own strings file** (e.g. `MyDialog.strings.ts`). Don't pile all strings into the view's strings file — it becomes hard to manage and makes it unclear which strings belong to which component.
+
 For localization, see [i18n](./03-i18n.md).
+
+### Logic Files: Pure Business Logic
+
+Logic files (`ComponentName.logic.ts`) contain **pure TypeScript functions** extracted from Vue components. This includes:
+
+- Validation logic (e.g. "can this form be submitted?")
+- Data transformation (e.g. building API payloads, mapping response data to UI state)
+- Formatting (e.g. dates, scores, percentages)
+- Type coercion and defaulting
+
+These functions take plain values and return plain values — no Vue reactivity, no DOM, no network calls. This makes them trivial to unit test:
+
+```typescript
+// EvalCreateDialog.logic.ts
+export function canCreate(name: string, prompt: string, formId: string | null, selectedGroupHeaders: string[]): boolean {
+  if (!name.trim() || !prompt.trim()) return false;
+  if (!formId) return false;
+  return selectedGroupHeaders.length > 0;
+}
+
+// EvalCreateDialog.logic.test.ts
+it("returns false when name is empty", () => {
+  expect(canCreate("", "prompt", "form-1", ["group"])).toBe(false);
+});
+```
+
+The component then imports and calls these functions, keeping its `<script setup>` focused on wiring reactivity to the template.
+
+### Composables: Stateful and Networking Logic
+
+When a component has **stateful logic involving networking** — TanStack mutations, multi-step flows, state machines, or complex error handling — extract it into a composable (`useComponentFlow.ts`).
+
+The composable owns:
+
+- Reactive state (refs, computed properties)
+- TanStack queries and mutations
+- Orchestration logic (e.g. create → upload → run → set expected)
+- Error handling and step transitions
+
+It exposes reactive state and action methods to the component, which can then be a thin template:
+
+```typescript
+// useEvalCreateFlow.ts
+export function useEvalCreateFlow(callbacks: {
+  onClose: () => void;
+  onCreated: (evalId: string) => void;
+}) {
+  const createStep = ref<CreateStep>("setup");
+  const createName = ref("");
+  // ... state, queries, mutations, orchestration ...
+  return { createStep, createName, handleCreate, handleSaveExpected, ... };
+}
+```
+
+Composables are tested using `withVueQuery` and `setupMockServer` with the SDK's fake handlers — full integration tests that exercise the state machine and networking without a DOM:
+
+```typescript
+// useEvalCreateFlow.test.ts
+setupMockServer(iformServiceFakeHandlers);
+
+it("create without file: creates eval, calls onClose", async () => {
+  const [flow, app] = withVueQuery(() => useEvalCreateFlow({ onClose, onCreated }));
+  flow.createName.value = "Test Eval";
+  // ... set up state ...
+  flow.handleCreate();
+  await vi.waitFor(() => expect(createdId).not.toBeNull());
+  expect(closeCalled).toBe(true);
+  app.unmount();
+});
+```
 
 ### Test: Integration Testing
 
@@ -109,8 +189,16 @@ A [Playwright Fixture](https://playwright.dev/docs/test-fixtures) provides a con
 
 Naturally, pages will often be complex enough to warrant breaking down into sub-components. Where these components live depends:
 
-- If they're specific to the page, they should go in the `components/` directory inside the page's directory.
+- If they're specific to the page, they should live in the page's directory alongside it.
 - If they're shared across multiple pages, they should go in `common` package which is adjacent to all the SPA packages.
+
+### Keep Interfaces Simple
+
+Sub-components should **not** have overly complicated prop/emit interfaces. The key principle: only pass data through props that was loaded by the view's loader. For everything else, let sub-components access TanStack queries and mutations directly.
+
+For example, if a dialog needs to create an eval, upload a file, and run a mutation chain, the dialog (or its composable) should call those mutations itself — the parent shouldn't thread mutation callbacks through props and coordinate the flow from outside.
+
+This keeps parent-child interfaces focused on **what data to render**, not **how to orchestrate network operations**.
 
 ### Forms
 
