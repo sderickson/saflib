@@ -77,6 +77,7 @@ export const AddSdkMutationWorkflowDefinition = defineWorkflow<
   templateFiles: {
     index: path.join(sourceDir, "requests/__group-name__/index.ts"),
     indexFakes: path.join(sourceDir, "requests/__group-name__/index.fakes.ts"),
+    mocks: path.join(sourceDir, "requests/__group-name__/mocks.ts"),
     templateFile: path.join(
       sourceDir,
       "requests/__group-name__/__mutation-name__.ts",
@@ -114,17 +115,20 @@ export const AddSdkMutationWorkflowDefinition = defineWorkflow<
     })),
 
     step(PromptStepMachine, ({ context }) => ({
-      promptText: `Update **${context.targetName}.fake.ts** to implement the fake handlers for testing.
+      prompt: `Update **${context.targetName}.fake.ts** to implement the fake handler for testing.
       
-      Mainly it should reflect what is given to it. Have it respect query parameters and request bodies. Don't bother doing validation.
-      If this is a list query, keep the resources in a separately exported array. Otherwise, if it would affect that list, import that array and modify/use it accordingly.
-      This way operations affect one another (like creating or deleting resources) so that tanstack caching can be tested.
-      
-      As part of this, also update **${context.targetName}.test.ts** to implement simple tests for the API mutation.
-      
-      Include:
-      * One test that makes sure it works at all.
-      * Another test for making sure the caching works (that related queries are invalidated after the mutation).`,
+Mainly it should reflect what is given to it. Have it respect query parameters and request bodies. Don't bother doing validation.
+
+**Mock data**: Import the shared mock data array from **mocks.ts** (adjacent to this file) and
+modify it in the handler. For create mutations, push a new item. For delete, splice it out.
+For update, modify in place. This way operations affect one another so that TanStack caching
+can be tested.
+
+As part of this, also update **${context.targetName}.test.ts** to implement simple tests for the API mutation.
+
+Include:
+* One test that makes sure it works at all.
+* Another test for making sure the caching works (that related queries are invalidated after the mutation).`,
     })),
 
     step(CommandStepMachine, () => ({

@@ -4,6 +4,10 @@ import { identityServiceFakeHandlers } from "@saflib/auth/fakes";
 import { __groupName__FakeHandlers } from "./requests/__group-name__/index.fakes.ts";
 // END WORKFLOW AREA
 
+// BEGIN SORTED WORKFLOW AREA mock-data-exports FOR sdk/add-query sdk/add-mutation
+export * from "./requests/__group-name__/mocks.ts";
+// END WORKFLOW AREA
+
 export const __serviceName__ServiceFakeHandlers = [
   ...identityServiceFakeHandlers,
   // BEGIN SORTED WORKFLOW AREA fake-group-handlers FOR sdk/add-query sdk/add-mutation

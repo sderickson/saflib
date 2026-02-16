@@ -27,8 +27,8 @@ const input = [
 
 interface AddQueryWorkflowContext
   extends ParsePackageNameOutput, ParsePathOutput {
-    queryName: string;
-  }
+  queryName: string;
+}
 
 export const AddSdkQueryWorkflowDefinition = defineWorkflow<
   typeof input,
@@ -50,7 +50,7 @@ export const AddSdkQueryWorkflowDefinition = defineWorkflow<
       requiredSuffix: ".ts",
       cwd: input.cwd,
       requiredPrefix: "./requests/",
-    })
+    });
     return {
       ...parsePackageName(getPackageName(input.cwd), {
         requiredSuffix: "-sdk",
@@ -65,6 +65,7 @@ export const AddSdkQueryWorkflowDefinition = defineWorkflow<
   templateFiles: {
     index: path.join(sourceDir, "requests/__group-name__/index.ts"),
     indexFakes: path.join(sourceDir, "requests/__group-name__/index.fakes.ts"),
+    mocks: path.join(sourceDir, "requests/__group-name__/mocks.ts"),
     templateFile: path.join(
       sourceDir,
       "requests/__group-name__/__query-name__.ts",
@@ -100,17 +101,19 @@ export const AddSdkQueryWorkflowDefinition = defineWorkflow<
     })),
 
     step(PromptStepMachine, ({ context }) => ({
-      promptText: `Update **${context.targetName}.fake.ts** to implement the fake handlers for testing.
+      prompt: `Update **${context.targetName}.fake.ts** to implement the fake handler for testing.
       
-      Mainly it should reflect what is given to it. Have it respect query parameters and request bodies. Don't bother doing validation.
-      If this is a list query, keep the resources in a separately exported array. Otherwise, if it would affect that list, import that array and modify/use it accordingly.
-      This way operations affect one another (like creating or deleting resources) so that tanstack caching can be tested.
-      
-      As part of this, also update **${context.targetName}.test.ts** to implement simple tests for the API query.
-      
-      Include:
-      * One test that makes sure it works at all.
-      `,
+Mainly it should reflect what is given to it. Have it respect query parameters and request bodies. Don't bother doing validation.
+
+**Mock data**: Define shared mock data arrays in **mocks.ts** (adjacent to this file).
+If this is a list query, define the array there (e.g. \`export const mock${context.groupName}: ...\`).
+If this query reads from an existing list (e.g. a get-by-id), import the array from \`./mocks.ts\`.
+This way operations affect one another (like creating or deleting resources) so that TanStack caching can be tested.
+
+As part of this, also update **${context.targetName}.test.ts** to implement simple tests for the API query.
+
+Include:
+* One test that makes sure it works at all.`,
     })),
 
     step(CommandStepMachine, () => ({
@@ -123,8 +126,7 @@ export const AddSdkQueryWorkflowDefinition = defineWorkflow<
     step(CommandStepMachine, () => ({
       command: "npm",
       args: ["run", "test"],
-      description:
-        "Run tests to ensure the new API query works correctly.",
+      description: "Run tests to ensure the new API query works correctly.",
     })),
   ],
 });

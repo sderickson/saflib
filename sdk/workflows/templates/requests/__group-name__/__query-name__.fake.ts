@@ -1,6 +1,8 @@
 import { __serviceName__Handler } from "../../typed-fake.ts";
 
-// TODO: If this is a list endpoint, create a list of stubs here and export them.
+// TODO: Import the shared mock data array from ./mocks.ts and use it in the handler.
+// If this is a list endpoint, define the mock array in ./mocks.ts and read from it here.
+// If this is a get/detail endpoint, find the item in the mock array by ID.
 
 export const __queryName____GroupName__Handler = __serviceName__Handler({
   verb: "get",
