@@ -1,7 +1,7 @@
 import { __serviceName__Handler } from "../../typed-fake.ts";
 
-// TODO: Import the shared mock data array from ./mocks.ts and modify it in the handler.
-// e.g. import { mock__GroupName__ } from "./mocks.ts";
+// @ts-expect-error TODO: use mock data
+import { mock__GroupName__ } from "./mocks.ts";
 // For create mutations, push a new item. For delete, splice it out. For update, modify in place.
 
 // BEGIN ONCE WORKFLOW AREA instructions FOR sdk/add-mutation IF upload
