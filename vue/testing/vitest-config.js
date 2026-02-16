@@ -73,6 +73,10 @@ export const defaultConfigWithCoverageEnforcement = defineConfig({
       ...baseCoverage,
       enabled: true,
       thresholds: {
+        // Each file must independently meet thresholds — prevents high-coverage
+        // logic files from masking untested Vue files or utilities.
+        perFile: true,
+
         // Logic files: pure functions, should be exhaustively tested
         "**/*.logic.ts": {
           lines: 90,
@@ -80,13 +84,20 @@ export const defaultConfigWithCoverageEnforcement = defineConfig({
           functions: 90,
           statements: 90,
         },
-        // Global: achievable with render tests + logic/composable tests.
-        // Functions threshold is lower because Vue template event handlers
-        // show as uncovered functions in render-only tests.
-        lines: 50,
-        branches: 50,
-        functions: 30,
-        statements: 50,
+
+        // Composables with networking: integration-tested with mock server
+        "**/use*.ts": {
+          lines: 80,
+          branches: 70,
+          statements: 80,
+        },
+
+        // Global per-file floor: catches files with no tests at all.
+        // Branches and functions are 0 because Vue files inherently have
+        // uncovered branches (v-if paths) and functions (event handlers)
+        // that only Playwright exercises.
+        lines: 30,
+        statements: 30,
       },
     },
   },

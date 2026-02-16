@@ -137,13 +137,14 @@ import { defaultConfigWithCoverageEnforcement } from "@saflib/vue/vitest-config"
 export default defaultConfigWithCoverageEnforcement;
 ```
 
-This enables automatic coverage collection on every `npm run test` and enforces:
+This enables automatic coverage collection on every `npm run test` and enforces per-file thresholds:
 
 | Pattern | Lines | Branches | Functions | Statements |
 |---|---|---|---|---|
 | `**/*.logic.ts` | 90% | 90% | 90% | 90% |
-| Global (all files) | 50% | 50% | 30% | 50% |
+| `**/use*.ts` (composables) | 80% | 70% | — | 80% |
+| Global (per file) | 30% | — | — | 30% |
 
-The global functions threshold is lower because Vue template event handlers (e.g. `@click`) count as uncovered functions in render-only tests.
+Thresholds are enforced **per file** (`perFile: true`), so a single untested file will fail the build even if aggregate coverage is high. Branch and function thresholds are omitted at the global level because Vue files inherently have uncovered branches (`v-if` paths) and functions (event handlers) that only Playwright exercises.
 
 If coverage falls below these thresholds, `npm run test` fails — including when run by the `vue/add-view` workflow, forcing the agent to write adequate tests before the step passes.
