@@ -101,14 +101,10 @@ export const AddSpaViewWorkflowDefinition = defineWorkflow<
   },
 
   templateFiles: {
-    // fixture: path.join(pageDir, "__TargetName__.fixture.ts"),
     loader: path.join(pageDir, "__TargetName__.loader.ts"),
     vue: path.join(pageDir, "__TargetName__.vue"),
     async: path.join(pageDir, "__TargetName__Async.vue"),
     strings: path.join(pageDir, "__TargetName__.strings.ts"),
-    // test: path.join(pageDir, "__TargetName__.test.ts"),
-
-    // fixturesIndex: path.join(packageDir, "fixtures.ts"),
     stringsIndex: path.join(packageDir, "strings.ts"),
     router: path.join(packageDir, "router.ts"),
 
@@ -174,16 +170,6 @@ export const AddSpaViewWorkflowDefinition = defineWorkflow<
     // step(CommandStepMachine, () => ({
     //   command: "npm",
     //   args: ["run", "test"],
-    // })),
-
-    // step(UpdateStepMachine, ({ context }) => ({
-    //   fileId: "fixture",
-    //   promptMessage: `Update **${path.basename(context.copiedFiles!.fixture)}** to implement a Playwright fixture for this page:
-
-    //   * Write a class which has a constructor that takes a Page object and stores it as a readonly public property.
-    //   * Add helper methods for interacting with this page in E2E tests, for the key elements of the page.
-    //   * If the test needs to provide a value for a select option or a checkbox label or something like that, import the strings from the appropriate string file and check the value dynamically, with a helpful error message if the value is invalid.
-    //   * Use getByString from @saflib/playwright to locate elements using strings from the page's strings file.`,
     // })),
 
     step(CommandStepMachine, () => ({
