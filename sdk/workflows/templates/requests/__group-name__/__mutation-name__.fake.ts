@@ -1,5 +1,9 @@
 import { __serviceName__Handler } from "../../typed-fake.ts";
 
+// @ts-expect-error TODO: use mock data
+import { mock__GroupName__ } from "./mocks.ts";
+// For create mutations, push a new item. For delete, splice it out. For update, modify in place.
+
 // BEGIN ONCE WORKFLOW AREA instructions FOR sdk/add-mutation IF upload
 /*
 For file-upload fakes, the handler receives the request (multipart body). Return a plausible response

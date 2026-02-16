@@ -1,6 +1,7 @@
 import { __serviceName__Handler } from "../../typed-fake.ts";
 
-// TODO: If this is a list endpoint, create a list of stubs here and export them.
+// @ts-expect-error TODO: use mock data
+import { mock__GroupName__ } from "./mocks.ts";
 
 export const __queryName____GroupName__Handler = __serviceName__Handler({
   verb: "get",

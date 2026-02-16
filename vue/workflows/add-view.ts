@@ -10,6 +10,7 @@ import {
   parsePackageName,
   getPackageName,
   CommandStepMachine,
+  PromptStepMachine,
 } from "@saflib/workflows";
 import path from "node:path";
 
@@ -101,14 +102,11 @@ export const AddSpaViewWorkflowDefinition = defineWorkflow<
   },
 
   templateFiles: {
-    // fixture: path.join(pageDir, "__TargetName__.fixture.ts"),
     loader: path.join(pageDir, "__TargetName__.loader.ts"),
     vue: path.join(pageDir, "__TargetName__.vue"),
     async: path.join(pageDir, "__TargetName__Async.vue"),
     strings: path.join(pageDir, "__TargetName__.strings.ts"),
-    // test: path.join(pageDir, "__TargetName__.test.ts"),
-
-    // fixturesIndex: path.join(packageDir, "fixtures.ts"),
+    test: path.join(pageDir, "__TargetName__.test.ts"),
     stringsIndex: path.join(packageDir, "strings.ts"),
     router: path.join(packageDir, "router.ts"),
 
@@ -117,6 +115,10 @@ export const AddSpaViewWorkflowDefinition = defineWorkflow<
 
   docFiles: {
     components: path.join(import.meta.dirname, "../docs", "02-components.md"),
+  },
+
+  versionControl: {
+    allowPaths: ({ context }) => [`**/${context.groupName.slice(2)}/**`],
   },
 
   steps: [
@@ -158,29 +160,59 @@ export const AddSpaViewWorkflowDefinition = defineWorkflow<
       For more information, see ${context.docFiles?.components}`,
     })),
 
-    // step(UpdateStepMachine, ({ context }) => ({
-    //   fileId: "test",
-    //   promptMessage: `Update **${path.basename(context.copiedFiles!.test)}** to verify that the page renders correctly:
+    step(PromptStepMachine, ({ context }) => ({
+      prompt: `Now that the view is implemented, extract testable logic and write tests.
 
-    //   * Test that the page renders.
-    //   * Update the helper methods to locate actual key elements of the page, then update the one test to check that they all exist and have the right text.
-    //   * Only use "getElementByString" to locate elements, using the strings from the strings file as the argument.`,
-    // })),
+Review the view and any sub-components you created, then:
 
-    // step(CommandStepMachine, () => ({
-    //   command: "npm",
-    //   args: ["run", "test"],
-    // })),
+## 1. Logic files (\`ComponentName.logic.ts\`)
 
-    // step(UpdateStepMachine, ({ context }) => ({
-    //   fileId: "fixture",
-    //   promptMessage: `Update **${path.basename(context.copiedFiles!.fixture)}** to implement a Playwright fixture for this page:
+Extract **pure business logic** from Vue components into plain TypeScript functions.
+This includes: validation, data transformation, formatting, building request payloads,
+and any computation that doesn't need Vue reactivity or the DOM.
 
-    //   * Write a class which has a constructor that takes a Page object and stores it as a readonly public property.
-    //   * Add helper methods for interacting with this page in E2E tests, for the key elements of the page.
-    //   * If the test needs to provide a value for a select option or a checkbox label or something like that, import the strings from the appropriate string file and check the value dynamically, with a helpful error message if the value is invalid.
-    //   * Use getByString from @saflib/playwright to locate elements using strings from the page's strings file.`,
-    // })),
+Write unit tests in \`ComponentName.logic.test.ts\` — these should be fast, deterministic,
+no-DOM tests that import and call the functions directly.
+
+## 2. Composables (\`useComponentFlow.ts\`)
+
+If a component has **stateful logic involving networking** — TanStack mutations, multi-step
+flows (e.g. create → upload → run), state machines, or complex error handling chains —
+extract it into a composable. The composable should own the reactive state and mutations,
+and expose them to the component.
+
+Write integration tests in \`useComponentFlow.test.ts\` using \`setupMockServer\` with the
+SDK's fake handlers and \`withVueQuery\` to test the composable without a DOM.
+Import mock data arrays (e.g. \`mockEvals\`, \`mockForms\`) from the SDK's fakes export
+to set up and verify backend state.
+
+## 3. After extraction
+
+The Vue components should be **thin** — mostly template + v-model bindings + the composable
+call. All interesting logic should be tested independently via the logic and composable tests.
+
+## Important guidelines
+
+* **Strings**: Each sub-component gets its own \`.strings.ts\` file (e.g. \`MyDialog.strings.ts\`).
+  Don't pile all strings into the view's strings file.
+* **Sub-component interfaces**: Keep them simple. Pass data loaded by the view's loader through
+  props. But let sub-components access TanStack queries and mutations **directly** rather than
+  threading them through props and events. Only pass data that is already loaded by the view's
+  loader; if a sub-component needs to fetch additional data on interaction or fire mutations,
+  it should do so itself.
+* **Render test**: Update the generated \`${context.targetName}.test.ts\` — replace the TODO
+  string with an actual visible string from the rendered page (e.g. the page title). This smoke
+  test drives baseline coverage on the Vue file; uncovered lines highlight logic worth extracting.
+  Don't add interaction tests here — Playwright covers that. Focus deeper tests on the extracted
+  logic files and composables.
+
+For more information, see ${context.docFiles?.components}`,
+    })),
+
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["run", "test"],
+    })),
 
     step(CommandStepMachine, () => ({
       command: "npm",
