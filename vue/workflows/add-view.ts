@@ -10,6 +10,7 @@ import {
   parsePackageName,
   getPackageName,
   CommandStepMachine,
+  PromptStepMachine,
 } from "@saflib/workflows";
 import path from "node:path";
 
@@ -158,14 +159,9 @@ export const AddSpaViewWorkflowDefinition = defineWorkflow<
       For more information, see ${context.docFiles?.components}`,
     })),
 
-    // step(UpdateStepMachine, ({ context }) => ({
-    //   fileId: "test",
-    //   promptMessage: `Update **${path.basename(context.copiedFiles!.test)}** to verify that the page renders correctly:
-
-    //   * Test that the page renders.
-    //   * Update the helper methods to locate actual key elements of the page, then update the one test to check that they all exist and have the right text.
-    //   * Only use "getElementByString" to locate elements, using the strings from the strings file as the argument.`,
-    // })),
+    step(PromptStepMachine, ({ context }) => ({
+      promptText: `Example usage of ${context.targetName}`,
+    })),
 
     // step(CommandStepMachine, () => ({
     //   command: "npm",
