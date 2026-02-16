@@ -160,13 +160,13 @@ export const AddSpaViewWorkflowDefinition = defineWorkflow<
     })),
 
     step(PromptStepMachine, ({ context }) => ({
-      promptText: `Example usage of ${context.targetName}`,
+      promptText: `Example usage of ${context.targetName}`, // hey agent, update this!
     })),
 
-    // step(CommandStepMachine, () => ({
-    //   command: "npm",
-    //   args: ["run", "test"],
-    // })),
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["run", "test"],
+    })),
 
     step(CommandStepMachine, () => ({
       command: "npm",
