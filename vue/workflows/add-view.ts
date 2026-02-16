@@ -119,6 +119,10 @@ export const AddSpaViewWorkflowDefinition = defineWorkflow<
     components: path.join(import.meta.dirname, "../docs", "02-components.md"),
   },
 
+  versionControl: {
+    allowPaths: ({ context }) => [`**/${context.groupName.slice(2)}/**`],
+  },
+
   steps: [
     step(CopyStepMachine, ({ context }) => {
       let templateFiles = context.templateFiles;
