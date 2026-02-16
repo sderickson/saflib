@@ -3,8 +3,8 @@ import { use__MutationName____GroupName__Mutation } from "./__mutation-name__.ts
 import { __serviceName__ServiceFakeHandlers } from "../../fakes.ts";
 import { withVueQuery } from "@saflib/sdk/testing";
 import { setupMockServer } from "@saflib/sdk/testing/mock";
-// TODO: Import mock data to set up and verify test state
-// import { mock__GroupName__ } from "./mocks.ts";
+// @ts-expect-error TODO: use mock data
+import { mock__GroupName__ } from "./mocks.ts";
 
 describe("__mutationName____GroupName__", () => {
   setupMockServer(__serviceName__ServiceFakeHandlers);

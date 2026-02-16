@@ -4,8 +4,8 @@ import { __serviceName__ServiceFakeHandlers } from "../../fakes.ts";
 import { withVueQuery } from "@saflib/sdk/testing";
 import { setupMockServer } from "@saflib/sdk/testing/mock";
 import { useQuery } from "@tanstack/vue-query";
-// TODO: Import mock data to set up test state
-// import { mock__GroupName__ } from "./mocks.ts";
+// @ts-expect-error TODO: use mock data
+import { mock__GroupName__ } from "./mocks.ts";
 
 describe("__queryName____GroupName__", () => {
   setupMockServer(__serviceName__ServiceFakeHandlers);
