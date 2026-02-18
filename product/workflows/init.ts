@@ -69,6 +69,7 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       `./package.json`,
       `**/${context.productName}/service/${context.productName}-service/**`,
     ],
+    commitEachStep: true,
   },
 
   steps: [

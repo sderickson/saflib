@@ -56,6 +56,7 @@ export function defineWorkflow<
   steps: Array<WorkflowStep<C, AnyStateMachine>>;
   versionControl?: {
     allowPaths?: string[] | (({ context }: { context: C }) => string[]);
+    commitEachStep?: boolean;
   };
 }): WorkflowDefinition<I, C> {
   return config;
