@@ -270,7 +270,13 @@ export const InitProductWorkflowDefinition = defineWorkflow<
     step(CommandStepMachine, () => ({
       command: "npm",
       args: ["install", "@saflib/account-sdk", "@saflib/auth-links"],
-    })),
+    }),
+    {
+      commitAfter: {
+        message: `Install account spa dependencies`,
+      },
+    },
+  ),
     step(makeWorkflowMachine(AddSpaViewWorkflowDefinition), ({ context }) => ({
       path: "./pages/home",
       prompt: `Set up the ${context.productName} account SPA home page.
@@ -285,8 +291,14 @@ export const InitProductWorkflowDefinition = defineWorkflow<
     })),
     step(CommandStepMachine, () => ({
       command: "npm",
-      args: ["install", "@saflib/admin-sdk", "@saflib/auth-links"],
-    })),
+      args: ["install", "@saflib/admin", "@saflib/auth-links"],
+    }),
+    {
+      commitAfter: {
+        message: `Install admin spa dependencies`,
+      },
+    },
+  ),
 
     step(makeWorkflowMachine(AddSpaViewWorkflowDefinition), ({ context }) => ({
       path: "./pages/admin",
@@ -305,7 +317,13 @@ export const InitProductWorkflowDefinition = defineWorkflow<
         "@saflib/auth",
         `${context.sharedPackagePrefix}-links`,
       ],
-    })),
+    }),
+    {
+      commitAfter: {
+        message: `Install common package dependencies`,
+      },
+    },
+  ),
     step(PromptStepMachine, ({ context }) => ({
       prompt: `Update the layout component in the ${context.productName} common package, adding links to the various SPAs.
       - When logged out, link to the root spa's home page, and the auth spa's register page.
@@ -331,7 +349,13 @@ export const InitProductWorkflowDefinition = defineWorkflow<
     step(CommandStepMachine, () => ({
       command: "npm",
       args: ["run", "generate"],
-    })),
+    }),
+    {
+      commitAfter: {
+        message: `Generate deploy files`,
+      },
+    },
+  ),
 
     // step(CdStepMachine, ({ context }) => ({
     //   path: `./${context.productName}/dev`,
