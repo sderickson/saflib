@@ -58,7 +58,9 @@ export interface WorkflowDefinition<
   /**
    * The context specific to this workflow, generated from the input and available to use in each step.
    */
-  context: (arg: { input: CreateArgsType<I> & { cwd: string } }) => C;
+  context: (arg: {
+    input: CreateArgsType<I> & { cwd: string; agentConfig?: AgentConfig };
+  }) => C;
 
   /**
    * Unique id for the workflow, for invoking it with the CLI tool.

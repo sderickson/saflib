@@ -21,7 +21,13 @@ export const __TargetName__WorkflowDefinition = defineWorkflow<
   id: "plans/__target-name__",
   description: "Project __target-name__ workflow",
   input,
-  context: () => ({}),
+  context: ({ input }) => ({
+    agentConfig: {
+      ...input.agentConfig,
+      // So this workflow can be arbitrarily long.
+      resetTimeoutEachStep: true,
+    },
+  }),
   sourceUrl: import.meta.url,
   templateFiles: {},
   docFiles: {

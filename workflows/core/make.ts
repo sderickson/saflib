@@ -2,6 +2,7 @@ import type {
   CreateArgsType,
   WorkflowStep,
   WorkflowDefinition,
+  AgentConfig,
 } from "./types.ts";
 import type {
   WorkflowInput,
@@ -45,6 +46,7 @@ export function defineWorkflow<
       runMode?: WorkflowExecutionMode;
       cwd: string;
       prompt?: string;
+      agentConfig?: AgentConfig;
     };
   }) => C;
   id: string;
