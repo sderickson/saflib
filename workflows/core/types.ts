@@ -101,6 +101,7 @@ export interface WorkflowDefinition<
    */
   versionControl?: {
     allowPaths?: string[] | (({ context }: { context: C }) => string[]);
+    commitEachStep?: boolean;
   };
 }
 
@@ -176,6 +177,7 @@ export interface AgentConfig {
   cli: AgentCLI;
   sessionId?: string;
   totalTimeMs: number;
+  resetTimeoutEachStep?: boolean;
 }
 
 export type VersionControlMode = "git";
