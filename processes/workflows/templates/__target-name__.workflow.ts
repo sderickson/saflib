@@ -31,7 +31,7 @@ export const __TargetName__WorkflowDefinition = defineWorkflow<
   sourceUrl: import.meta.url,
   templateFiles: {},
   docFiles: {
-    spec: path.join(import.meta.dirname, "spec.md"),
+    spec: path.join(import.meta.dirname, "__target-name__.spec.md"),
   },
 
   versionControl: {
