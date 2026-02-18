@@ -28,6 +28,11 @@ export const __TargetName__WorkflowDefinition = defineWorkflow<
     spec: path.join(import.meta.dirname, "spec.md"),
   },
 
+  versionControl: {
+    allowPaths: ["**/*"], // TODO: Make this more specific if you can. You only need to specify changes made in this specific workflow (e.g. prompt steps, command steps, etc), not other workflows which you invoke.
+    commitEachStep: true,
+  },
+
   steps: [
     // TODO: Add steps here for implement the spec.
     // Mostly it should be Cd steps to move into the appropriate directory, then
