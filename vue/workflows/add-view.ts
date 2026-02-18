@@ -191,10 +191,14 @@ to set up and verify backend state.
 The Vue components should be **thin** — mostly template + v-model bindings + the composable
 call. All interesting logic should be tested independently via the logic and composable tests.
 
+Run \`npm run test\` in ${context.cwd} to verify the tests pass and are sufficiently covered.
+Run \`npm run typecheck\` in ${context.cwd} to verify the code is type-safe.
+
 ## Important guidelines
 
 * **Strings**: Each sub-component gets its own \`.strings.ts\` file (e.g. \`MyDialog.strings.ts\`).
-  Don't pile all strings into the view's strings file.
+  Don't pile all strings into the view's strings file. Remember to do this if you opt to break
+  a vue file into sub-components.
 * **Sub-component interfaces**: Keep them simple. Pass data loaded by the view's loader through
   props. But let sub-components access TanStack queries and mutations **directly** rather than
   threading them through props and events. Only pass data that is already loaded by the view's
