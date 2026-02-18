@@ -19,6 +19,11 @@ import multer from "multer";
  */
 export interface GlobalMiddlewareOptions {
   disableCors?: boolean;
+  /**
+   * Max size for JSON request body (e.g. '100kb', '2mb').
+   * Default is Express's 100kb when not set.
+   */
+  jsonLimit?: string;
 }
 
 /**
@@ -28,7 +33,7 @@ export interface GlobalMiddlewareOptions {
 export const createGlobalMiddleware = (
   options: GlobalMiddlewareOptions = {},
 ): Handler[] => {
-  const { disableCors } = options;
+  const { disableCors, jsonLimit } = options;
 
   let corsMiddleware: Handler[] = [corsRouter];
   if (disableCors) {
@@ -41,7 +46,7 @@ export const createGlobalMiddleware = (
     helmet(),
     healthRouter,
     everyRequestLogger,
-    json(),
+    json(jsonLimit ? { limit: jsonLimit } : undefined),
     urlencoded({ extended: false }),
     ...sanitizeMiddleware,
     ...corsMiddleware,
