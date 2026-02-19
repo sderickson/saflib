@@ -21,11 +21,22 @@ export const __TargetName__WorkflowDefinition = defineWorkflow<
   id: "plans/__target-name__",
   description: "Project __target-name__ workflow",
   input,
-  context: () => ({}),
+  context: ({ input }) => ({
+    agentConfig: {
+      ...input.agentConfig,
+      // So this workflow can be arbitrarily long.
+      resetTimeoutEachStep: true,
+    },
+  }),
   sourceUrl: import.meta.url,
   templateFiles: {},
   docFiles: {
-    spec: path.join(import.meta.dirname, "spec.md"),
+    spec: path.join(import.meta.dirname, "__target-name__.spec.md"),
+  },
+
+  versionControl: {
+    allowPaths: ["**/*"], // TODO: Make this more specific if you can. You only need to specify changes made in this specific workflow (e.g. prompt steps, command steps, etc), not other workflows which you invoke.
+    commitEachStep: true,
   },
 
   steps: [

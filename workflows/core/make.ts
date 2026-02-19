@@ -2,6 +2,7 @@ import type {
   CreateArgsType,
   WorkflowStep,
   WorkflowDefinition,
+  AgentConfig,
 } from "./types.ts";
 import type {
   WorkflowInput,
@@ -45,6 +46,7 @@ export function defineWorkflow<
       runMode?: WorkflowExecutionMode;
       cwd: string;
       prompt?: string;
+      agentConfig?: AgentConfig;
     };
   }) => C;
   id: string;
@@ -56,6 +58,7 @@ export function defineWorkflow<
   steps: Array<WorkflowStep<C, AnyStateMachine>>;
   versionControl?: {
     allowPaths?: string[] | (({ context }: { context: C }) => string[]);
+    commitEachStep?: boolean;
   };
 }): WorkflowDefinition<I, C> {
   return config;
@@ -182,6 +185,9 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
             return;
           }
 
+          const checklistDescription =
+            workflow.checklistDescription?.(input) || workflow.description;
+
           if (input.manageVersionControl) {
             let allowPaths:
               | string[]
@@ -200,8 +206,7 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
             const successful = await handleGitChanges({
               workflowId: workflow.id,
               context: input,
-              checklistDescription:
-                workflow.checklistDescription?.(input) || workflow.description,
+              checklistDescription,
               allowPaths,
             });
             if (!successful) {
@@ -222,16 +227,25 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
           // reset retries for the next step
           retries = 0;
 
-          if (input.manageVersionControl && step.commitAfter) {
+          if (
+            input.manageVersionControl &&
+            (step.commitAfter || workflow.versionControl?.commitEachStep)
+          ) {
             let message: string;
-            if (typeof step.commitAfter.message === "function") {
-              message = step.commitAfter.message({ context: input });
+            if (workflow.versionControl?.commitEachStep) {
+              message = checklistDescription;
+            } else if (typeof step.commitAfter!.message === "function") {
+              message = step.commitAfter!.message({ context: input });
             } else {
-              message = step.commitAfter.message;
+              message = step.commitAfter!.message;
             }
             await commitChanges({
               message,
             });
+          }
+
+          if (input.agentConfig?.resetTimeoutEachStep) {
+            resetTimeMs();
           }
         }),
         input: ({ context }: { context: Context }) => context,

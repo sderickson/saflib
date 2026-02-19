@@ -7,6 +7,7 @@ import { transformName } from "./utils.ts";
 import type { CopyStepContext } from "./types.ts";
 import { updateWorkflowAreas, validateWorkflowAreas } from "./inline/index.ts";
 import fs from "node:fs";
+import { mkdir } from "node:fs/promises";
 
 export interface CopyNextFileOutput {
   fileExisted: boolean;
@@ -75,7 +76,7 @@ export const copyNextFile = fromPromise(
 
     // Check if target file already exists
     const fileExists = fs.existsSync(targetPath);
-    if (fileExists) {      
+    if (fileExists) {
       const targetContent = await readFile(targetPath, "utf-8");
       const targetLines = targetContent.split(/\r?\n/);
       const sourceContent = await readFile(sourcePath, "utf-8");
@@ -114,9 +115,9 @@ export const copyNextFile = fromPromise(
     }
 
     // Ensure target directory exists
-    await import("node:fs/promises").then((fs) =>
-      fs.mkdir(path.dirname(targetPath), { recursive: true }),
-    );
+    if (!fs.existsSync(path.dirname(targetPath))) {
+      await mkdir(path.dirname(targetPath), { recursive: true });
+    }
 
     if (isDirectory) {
       throw new Error("Directories should not be provided to copy-next-file.");
