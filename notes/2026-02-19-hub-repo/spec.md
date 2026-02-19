@@ -8,7 +8,8 @@ This spec describes how to evolve a SAF monorepo from independent products (each
 
 - **Shared identity**: All products share a single identity service (owned by hub), a single user database, and a single session store. Users log in once and have access across products.
 - **Single domain**: All products live under one domain (e.g. `scotterickson.info`) with product-specific subdomain prefixes (e.g. `recipes.scotterickson.info`, `notebook.scotterickson.info`).
-- **Minimal dev resources**: In development, only the target product's clients run vite; all other products' clients are served as static builds by caddy. Backend monoliths run only the services necessary for the target product.
+- **Minimal dev resources**: In development, only the target product's clients run vite; all other products' clients are served as static builds by caddy. Per-product monoliths run only the services necessary for that product.
+- **Hub monolith = production monolith**: The hub monolith runs all product services, making hub development identical to production on the backend. This same image is used for deploy.
 - **Clean service/monolith separation**: Service packages export composable `start*Service()` functions. Monolith packages compose the specific set of services needed for each product's development and deployment.
 
 ### Current State
@@ -155,25 +156,13 @@ startNotebookService();
 ```typescript
 startHubIdentityService();
 startHubService();
-// no other product services needed for hub development
-```
-
-Each product's monolith only runs what's necessary for that product. This keeps development streamlined as more products are added.
-
-### Production Deploy Monolith
-
-In production, the deploy monolith runs everything:
-
-```typescript
-startHubIdentityService();
-startHubService();
 startRecipesService();
 startNotebookService();
 ```
 
-This could live in an existing product's monolith (e.g. hub's, since it's the central one) or in a dedicated `deploy/monolith/` package. The Dockerfile for this monolith copies all products' service code.
+The hub monolith runs **all** product services. This means hub development exercises the full production backend, catching integration issues early. It also means the hub monolith **doubles as the production monolith** — no separate deploy-specific monolith package is needed. The deploy Dockerfile simply builds the hub monolith image.
 
-Alternatively, production could continue running per-product monolith containers (as today) but with each one pointing `forward_auth` at hub's identity. This trades resource efficiency for deployment isolation. The choice depends on infrastructure constraints.
+Per-product monoliths (recipes, notebook) only run what's necessary for that product, keeping those dev environments streamlined as more products are added.
 
 ## Development Environment
 
@@ -229,9 +218,7 @@ services:
 
 ### Caddy Configuration
 
-Caddy needs to handle two modes per subdomain: vite proxy (for the target product) and static file serving (for everything else). This can be managed via environment variables or separate Caddyfile snippets.
-
-A possible approach: caddy imports product-specific Caddyfile snippets, and each dev environment provides its product's snippet configured for vite while other products' snippets are configured for static serving. The `DISABLE_VITE_DEV_SERVER` pattern already exists in deploy's caddy config and could be extended per-product.
+Each dev environment and the deploy folder each have their own explicit caddy config. There is no shared config with env-var-driven switching. Each Caddyfile makes explicit what domains exist and how they're routed — vite proxy for the target product's clients, static file serving for everything else, API/identity proxying to the monolith.
 
 ## Caddy Routing (Production)
 
@@ -295,16 +282,12 @@ A rough ordering of the work:
 6. **Update env files**: Single `DOMAIN`, expanded `CLIENT_SUBDOMAINS` and `SERVICE_SUBDOMAINS`, per-service HTTP host vars.
 7. **Restructure caddy configs**: Merge per-product Caddyfiles under one domain, add `api.*` subdomains.
 8. **Update dev docker-compose files**: Each product's dev setup runs its own monolith (with appropriate services), vite for its own clients, and caddy serving static builds for other products.
-9. **Update deploy**: Single monolith (or restructured per-product monoliths pointing at hub identity), merged caddy config.
+9. **Update deploy**: Use hub monolith as the production monolith. Update deploy docker-compose and caddy config.
 10. **Update `01-overview.md`**: Reflect the hub model in the monorepo documentation.
 
-## Open Questions
+## Resolved Decisions
 
-- **Product-specific account/admin SPAs**: Do recipes and notebook need their own `account.*` and `admin.*` subdomains, or can these be centralized in hub?
-  - They should continue to have their own admin SPA (to administer that product), and I think also they should have their own account SPA for product-specific account configuration. It _might_ make sense to redirect to the hub's account SPA for identity-service specific fields like name and email. But that feels like an optimization for later.
-- **Client build artifacts for static serving**: How are non-target products' client builds provided to caddy in dev? Pre-built images, volume mounts from a build step, or multi-stage Docker builds?
-  - The same way production build pull them in I think. Probably need a Dockerfile.dev similar to Dockerfile.prod in deploy right now. And that'll have commands like COPY --from=recipes-builder /app/recipes/clients/build/dist /srv/recipes-clients
-- **Deploy topology**: Single uber-monolith container, or per-product containers that all point at hub's identity? The former is simpler; the latter offers deployment isolation.
-  - uber-monolith container. The way I have things set up, it wouldn't be too hard to manually break things down into per-product containers later if needed.
-- **Vite config and build directory structure**: Does the nested subdomain approach (`app.recipes/index.html`) work with the existing vite MPA setup, or does the build structure need rethinking?
-  - I think it should work. If it doesn't then... yes!
+- **Product-specific account/admin SPAs**: Products keep their own admin and account SPAs for product-specific administration and configuration. Redirecting to hub's account SPA for identity-level fields (name, email) may make sense later but is not an initial concern.
+- **Client build artifacts for static serving in dev**: Use a multi-stage Dockerfile (similar to `deploy/Dockerfile.prod`) that copies built client assets into the caddy image. E.g. `COPY --from=recipes-builder /app/recipes/clients/build/dist /srv/recipes-clients`.
+- **Deploy topology**: Single uber-monolith container (the hub monolith). Per-product containers can be introduced later if needed without major restructuring.
+- **Vite config and build directory structure**: The nested subdomain approach (`app.recipes/index.html`) is expected to work with the existing vite MPA setup. If it doesn't, the build structure will be adjusted accordingly.
