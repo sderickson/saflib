@@ -185,8 +185,6 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
             return;
           }
 
-          // const checklistDescription =
-          //   workflow.checklistDescription?.(input) || workflow.description;
           const lastChecklistDescription =
             input.checklist[input.checklist.length - 1]?.description;
 
