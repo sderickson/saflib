@@ -185,8 +185,8 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
             return;
           }
 
-          const checklistDescription =
-            workflow.checklistDescription?.(input) || workflow.description;
+          const lastChecklistDescription =
+            input.checklist[input.checklist.length - 1]?.description;
 
           if (input.manageVersionControl) {
             let allowPaths:
@@ -206,7 +206,7 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
             const successful = await handleGitChanges({
               workflowId: workflow.id,
               context: input,
-              checklistDescription,
+              checklistDescription: lastChecklistDescription,
               allowPaths,
             });
             if (!successful) {
@@ -233,7 +233,7 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
           ) {
             let message: string;
             if (workflow.versionControl?.commitEachStep) {
-              message = checklistDescription;
+              message = lastChecklistDescription;
             } else if (typeof step.commitAfter!.message === "function") {
               message = step.commitAfter!.message({ context: input });
             } else {
