@@ -52,6 +52,15 @@ export const getHost = () => {
     // just to ease local development - specifically running vite in sdk
     return document.location.host;
   }
+
+  if (
+    typeof document !== "undefined" &&
+    document.location.host.endsWith("localhost:5173")
+  ) {
+    // ease local development - specifically running vite in clients
+    return "localhost:5173";
+  }
+
   if (typeof document !== "undefined" && process.env.NODE_ENV !== "test") {
     if (!getClientName()) {
       throw new Error(

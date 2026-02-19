@@ -9,12 +9,18 @@ import ignore from "rollup-plugin-ignore";
 import { typedEnv } from "./env.ts";
 import fs from "fs";
 
-const subdomains = typedEnv.CLIENT_SUBDOMAINS?.split(",") ?? [];
-const domain = typedEnv.DOMAIN;
-const hosts = subdomains.map((subdomain) =>
-  subdomain === "" ? domain : `${subdomain}.${domain}`,
-);
+const subdomains = typedEnv.CLIENT_SUBDOMAINS?.split(",") ?? ["app"];
+const domain = typedEnv.DOMAIN || "localhost:5173";
+const hosts =
+  domain === undefined
+    ? []
+    : subdomains.map((subdomain) =>
+        subdomain === "" ? domain : `${subdomain}.${domain}`,
+      );
 
+console.log("subdomains", subdomains);
+console.log("domain", domain);
+console.log("hosts", hosts);
 const subDomainProxyPlugin: Plugin = {
   name: "sub-domain-proxy",
   configureServer(server) {
