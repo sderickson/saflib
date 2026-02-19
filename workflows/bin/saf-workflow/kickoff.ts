@@ -30,6 +30,10 @@ export const addKickoffCommand = (commandOptions: WorkflowCommandOptions) => {
     "-s, --skip-todos",
     "Skip TODOs in the workflow. This is useful if you want to run the workflow without having to complete TODOs.",
   );
+  const workflowTimeoutMultiplierOption = new Option(
+    "-t, --timeout-multiplier <multiplier>",
+    "Multiply the default workflow timeout by the given number. The default timeout is 150 seconds of API time.",
+  );
   commandOptions.program
     .command("kickoff")
     .allowUnknownOption(true)
@@ -44,6 +48,7 @@ export const addKickoffCommand = (commandOptions: WorkflowCommandOptions) => {
     .addOption(runModeOption)
     .addOption(versionControlOption)
     .addOption(skipTodosOption)
+    .addOption(workflowTimeoutMultiplierOption)
     .action(
       async (
         filePath: string,
@@ -53,13 +58,19 @@ export const addKickoffCommand = (commandOptions: WorkflowCommandOptions) => {
           message?: string;
           versionControl?: string;
           skipTodos?: boolean;
+          timeoutMultiplier?: string;
         },
       ) => {
         const runMode = options.run;
+        const workflowTimeoutMultiplier = options.timeoutMultiplier;
+        const workflowTimeout = workflowTimeoutMultiplier ? parseInt(workflowTimeoutMultiplier) * 150 : undefined;
         if (runMode) {
           writeFileSync(logFile, "");
         }
         const { runMode: givenRunMode, agentConfig } = parseRun(runMode);
+        if (agentConfig && workflowTimeout) {
+          agentConfig.workflowTimeoutMultiplier = workflowTimeout;
+        }
         const skipTodos = options.skipTodos;
         const log = createWorkflowLogger({
           // printToAgent: givenRunMode === "run",

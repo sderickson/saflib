@@ -176,6 +176,7 @@ export interface AgentConfig {
   cli: AgentCLI;
   sessionId?: string;
   totalTimeMs: number;
+  workflowTimeoutMultiplier?: number;
 }
 
 export type VersionControlMode = "git";
