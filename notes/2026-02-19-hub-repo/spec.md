@@ -268,20 +268,9 @@ With a shared domain, the per-product Caddyfiles (`recipes.Caddyfile`, `notebook
 
 The existing gRPC setup (identity gRPC server for inter-service communication) is preserved. Even though services run in the same process, maintaining gRPC enforces logical separation and keeps the architecture ready for future service splitting. The gRPC host would be on the monolith container at port 50051.
 
-## Migration Steps
+## Migration
 
-A rough ordering of the work:
-
-1. **Re-separate service packages from monoliths**: Clean up monolith `index.ts` to import `start*Service()` from the service package rather than duplicating the code.
-2. **Update link subdomains**: Change product link definitions to include the product prefix (e.g. `"app"` -> `"app.recipes"`). Verify `setClientName`, `getHost`, and `linkToHref` work with nested subdomains.
-3. **Verify vite config**: Ensure the `subDomainProxyPlugin` and build input structure handle nested subdomain paths (e.g. `app.recipes/index.html`).
-4. **Consolidate identity to hub**: Remove per-product identity packages. Point all `forward_auth` to hub's identity service.
-5. **Implement auth redirect flow**: Add redirect param support to the auth SPA and identity service. Validate redirect targets.
-6. **Update env files**: Single `DOMAIN`, expanded `CLIENT_SUBDOMAINS` and `SERVICE_SUBDOMAINS`, per-service HTTP host vars.
-7. **Restructure caddy configs**: Merge per-product Caddyfiles under one domain, add `api.*` subdomains.
-8. **Update dev docker-compose files**: Each product's dev setup runs its own monolith (with appropriate services), vite for its own clients, and caddy serving static builds for other products.
-9. **Update deploy**: Use hub monolith as the production monolith. Update deploy docker-compose and caddy config.
-10. **Update `01-overview.md`**: Reflect the hub model in the monorepo documentation.
+See [plan.md](plan.md) for the migration plan.
 
 ## Resolved Decisions
 
