@@ -243,7 +243,7 @@ export const InitProductWorkflowDefinition = defineWorkflow<
     })),
     step(CommandStepMachine, () => ({
       command: "npm",
-      args: ["install", "@saflib/admin-sdk", "@saflib/auth-links"],
+      args: ["install", "@saflib/admin", "@saflib/auth-links"],
     })),
 
     step(makeWorkflowMachine(AddSpaViewWorkflowDefinition), ({ context }) => ({

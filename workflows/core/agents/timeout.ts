@@ -6,7 +6,7 @@
  */
 
 let workflowTimeMs = 0;
-const MAX_WORKFLOW_TIME_MS = 1000 * 150; // I generally find workflows that run over this number need some work
+const MAX_WORKFLOW_TIME_MS = 1000 * 450; // I generally find workflows that run over this number need some work
 
 export const addTimeMs = (timeMs: number): boolean => {
   workflowTimeMs += timeMs;
