@@ -139,7 +139,6 @@ Each product has a monolith package that composes the set of services needed for
 ```typescript
 // validates env, sets up telemetry, then:
 startHubIdentityService(); // shared identity
-startHubService(); // hub backend (needed for auth redirects, hub API)
 startRecipesService(); // recipes backend
 ```
 
@@ -147,7 +146,6 @@ startRecipesService(); // recipes backend
 
 ```typescript
 startHubIdentityService();
-startHubService();
 startNotebookService();
 ```
 
