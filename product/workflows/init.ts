@@ -73,42 +73,33 @@ export const InitProductWorkflowDefinition = defineWorkflow<
   },
 
   steps: [
-    step(
-      CommandStepMachine,
-      ({ context }) => {
-        if (context.runMode === "dry" || context.runMode === "checklist") {
-          return {
-            command: "echo",
-            args: ["Skip appending to workspaces."],
-          };
-        }
-
-        // hack to add the product to the workspaces w/out deps
-        // probably the makings of a new workflow step here
-        const packageJson = JSON.parse(
-          fs.readFileSync(path.join(context.cwd, "package.json"), "utf8"),
-        );
-        const newWorkspaces = Array.from(
-          new Set([...packageJson.workspaces, `${context.productName}/**`]),
-        );
-        newWorkspaces.sort();
-        packageJson.workspaces = newWorkspaces;
-        fs.writeFileSync(
-          path.join(context.cwd, "package.json"),
-          JSON.stringify(packageJson, null, 2),
-        );
+    step(CommandStepMachine, ({ context }) => {
+      if (context.runMode === "dry" || context.runMode === "checklist") {
         return {
-          command: "npm",
-          args: ["exec", "prettier", "--", "package.json", "--write"],
+          command: "echo",
+          args: ["Skip appending to workspaces."],
         };
-      },
-      {
-        commitAfter: {
-          message: ({ context }) =>
-            `Add "${context.productName}/**" to workspaces`,
-        },
-      },
-    ),
+      }
+
+      // hack to add the product to the workspaces w/out deps
+      // probably the makings of a new workflow step here
+      const packageJson = JSON.parse(
+        fs.readFileSync(path.join(context.cwd, "package.json"), "utf8"),
+      );
+      const newWorkspaces = Array.from(
+        new Set([...packageJson.workspaces, `${context.productName}/**`]),
+      );
+      newWorkspaces.sort();
+      packageJson.workspaces = newWorkspaces;
+      fs.writeFileSync(
+        path.join(context.cwd, "package.json"),
+        JSON.stringify(packageJson, null, 2),
+      );
+      return {
+        command: "npm",
+        args: ["exec", "prettier", "--", "package.json", "--write"],
+      };
+    }),
     step(makeWorkflowMachine(InitServiceWorkflowDefinition), ({ context }) => ({
       name: `${context.sharedPackagePrefix}-service`,
       path: `./${context.productName}/service`,
@@ -145,22 +136,13 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       targetDir: context.cwd,
       lineReplace: makeLineReplace(context),
     })),
-    step(
-      CommandStepMachine,
-      ({ context }) => ({
-        command: "rm",
-        args: [
-          "-rf",
-          `./${context.productName}/service/${context.productName}-service`,
-        ],
-      }),
-      {
-        commitAfter: {
-          message: ({ context }) =>
-            `Remove ${context.productName} service package`,
-        },
-      },
-    ),
+    step(CommandStepMachine, ({ context }) => ({
+      command: "rm",
+      args: [
+        "-rf",
+        `./${context.productName}/service/${context.productName}-service`,
+      ],
+    })),
 
     step(CommandStepMachine, ({ context }) => ({
       command: "mv",
@@ -184,19 +166,10 @@ export const InitProductWorkflowDefinition = defineWorkflow<
     step(CdStepMachine, ({ context }) => ({
       path: `./${context.productName}/dev`,
     })),
-    step(
-      CommandStepMachine,
-      () => ({
-        command: "touch",
-        args: ["./.env"],
-      }),
-      {
-        commitAfter: {
-          message: ({ context }) =>
-            `Set up dev environment for ${context.productName}`,
-        },
-      },
-    ),
+    step(CommandStepMachine, () => ({
+      command: "touch",
+      args: ["./.env"],
+    })),
     step(CdStepMachine, ({ context }) => ({
       path: `./${context.productName}/clients/root`,
     })),
@@ -227,18 +200,10 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       - Make sure it redirects to the app spa's home page after login/register, using linkToHrefWithHost from @saflib/links. And to root home page after logout.
       - Update the layout in the main AuthSpa.vue component. The app will need to get the 'useProfile' hook from @saflib/auth and use it to determine if the user is logged in or not to give to the layout.`,
     })),
-    step(
-      CommandStepMachine,
-      () => ({
-        command: "npm",
-        args: ["run", "typecheck"],
-      }),
-      {
-        commitAfter: {
-          message: `Connect auth spa`,
-        },
-      },
-    ),
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["run", "typecheck"],
+    })),
 
     step(CdStepMachine, ({ context }) => ({
       path: `./${context.productName}/clients/app`,
@@ -246,18 +211,10 @@ export const InitProductWorkflowDefinition = defineWorkflow<
     step(PromptStepMachine, () => ({
       prompt: `Update the layout in AppSpa.vue to always be logged in.`,
     })),
-    step(
-      CommandStepMachine,
-      () => ({
-        command: "npm",
-        args: ["run", "typecheck"],
-      }),
-      {
-        commitAfter: {
-          message: `Update app spa layout`,
-        },
-      },
-    ),
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["run", "typecheck"],
+    })),
 
     step(makeWorkflowMachine(AddSpaViewWorkflowDefinition), () => ({
       path: "./pages/home",
@@ -313,18 +270,10 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       - When logged in, link to the app spa's home page, the account spa's home page, and the auth spa's logout page.
       - Also, if logged in as admin, link to the admin spa's home page.`,
     })),
-    step(
-      CommandStepMachine,
-      () => ({
-        command: "npm",
-        args: ["run", "typecheck"],
-      }),
-      {
-        commitAfter: {
-          message: `Connect common package`,
-        },
-      },
-    ),
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["run", "typecheck"],
+    })),
 
     step(CdStepMachine, () => ({
       path: `./deploy`,
@@ -333,26 +282,6 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       command: "npm",
       args: ["run", "generate"],
     })),
-
-    // step(CdStepMachine, ({ context }) => ({
-    //   path: `./${context.productName}/dev`,
-    // })),
-    // step(CommandStepMachine, () => ({
-    //   command: "npm",
-    //   args: ["run", "up"],
-    // })),
-    // step(PromptStepMachine, ({ context }) => ({
-    //   prompt: `The dev environment is running on http://${context.productName}.docker.localhost. Please make sure it works.
-    //   - Navigate to http://${context.productName}.docker.localhost and make sure it looks good.
-    //   - Create a test account, make sure you end up on the app spa's home page.
-    //   - Log out, make sure you end up back on the root spa's home page, then log in again.
-    //   - Go to the account spa's home page, make sure you can change your password and update your profile.
-    // `,
-    // })),
-    // step(CommandStepMachine, () => ({
-    //   command: "npm",
-    //   args: ["run", "down"],
-    // })),
   ],
 });
 
