@@ -20,15 +20,23 @@
 
 [Only if schema changes are needed. If not, remove this section.]
 
+## Business Objects
+
+[List any new objects which need to be added to API routes. These are separate from the database schema, as these are the contract between frontend and backend. While the objects themselves may have nested data (such as for compound data like addresses), different business objects should not be nested, and instead have id references to one another. See (productName)/service/spec/schemas for existing business objects that may be reused.]
+
+1. [Business Object Name]
+   - Description: [description]
+   - Properties: [list properties]
+
 ## API Endpoints
 
-[List the API endpoints that need to be created or modified. Include only essential details.]
+[List the API endpoints that need to be created or modified. Include only essential details. See (productName)/service/spec/routes for existing routes.]
 
 1. [HTTP Method] [Path]
    - Purpose: [brief description]
    - Request parameters: [list parameters]
-   - Request body: [describe structure]
-   - Response: [describe structure]
+   - Request body: [describe structure, may include business object values]
+   - Response: [describe structure, should generally be a business object, or an object with business object values, or business object array values]
    - Error responses: [list possible errors]
    - Authorization requirements: [describe who can access]
 
