@@ -167,6 +167,11 @@ interface CursorToolCallLog {
         };
       };
     };
+    webFetchToolCall?: {
+      args?: {
+        url: string;
+      };
+    };
   };
 }
 
@@ -414,6 +419,16 @@ export const executePromptWithCursor = async ({
                 `> Lints read: ${json.tool_call.readLintsToolCall.result.success.totalFiles} files, ${json.tool_call.readLintsToolCall.result.success.totalDiagnostics} diagnostics`,
               );
             }
+          }
+        } else if (json.tool_call.webFetchToolCall) {
+          if (json.subtype === "started") {
+            printLineSlowly(
+              `> Fetching URL: ${json.tool_call.webFetchToolCall.args?.url ?? "unknown URL"}`,
+            );
+          } else if (json.subtype === "completed") {
+            printLineSlowly(
+              `> URL fetched: ${json.tool_call.webFetchToolCall.args?.url ?? "unknown URL"}`,
+            );
           }
         } else {
           printLineSlowly(
