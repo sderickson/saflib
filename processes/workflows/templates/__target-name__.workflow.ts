@@ -5,6 +5,7 @@ import {
   // CdStepMachine,
   // CommandStepMachine,
 } from "@saflib/workflows";
+import { GetFeedbackStep } from "@saflib/processes/workflows";
 
 // TODO: Import workflows from the appropriate packages
 
@@ -51,6 +52,9 @@ export const __TargetName__WorkflowDefinition = defineWorkflow<
     //   path: "schemas/foo.ts",
     //   prompt: `...`,
     // })),
+
+    // Leave this in here, it's for the agent to report how things went.
+    GetFeedbackStep,
   ],
 });
 
