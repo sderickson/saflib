@@ -10,6 +10,12 @@ export { default as VerifyEmailPage } from "./pages/verify-email/VerifyEmailPage
 export { default as VerifyEmailPageAsync } from "./pages/verify-wall/VerifyWallPageAsync.vue";
 export { default as UserAdmin } from "./pages/admin-users/UserAdmin.vue";
 export { createAuthRouter } from "./auth-router.ts";
+export {
+  getRedirectTarget,
+  clearRedirectTarget,
+  validateAndRedirect,
+  safeRedirect,
+} from "./redirect.ts";
 
 const currentDomain = window.location.origin;
 const allowedRedirects = [`${currentDomain}/auth/verify-email`];

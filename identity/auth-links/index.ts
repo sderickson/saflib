@@ -18,6 +18,7 @@ export const authLinks = {
   register: {
     subdomain,
     path: "/register",
+    params: ["redirect"],
   },
   forgot: {
     subdomain,

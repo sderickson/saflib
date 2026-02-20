@@ -3,6 +3,7 @@ import { onMounted } from "vue";
 import { useLogout } from "../../requests/auth.ts";
 import { logout_page } from "./LogoutPage.strings.ts";
 import { useReverseT } from "../../i18n.ts";
+import { safeRedirect } from "../../redirect.ts";
 
 const { t } = useReverseT();
 
@@ -17,9 +18,7 @@ onMounted(() => {
   logout(undefined, {
     onSuccess: async () => {
       emit("logout");
-      if (props.redirectTo) {
-        window.location.href = props.redirectTo;
-      }
+      safeRedirect(props.redirectTo);
     },
   });
 });

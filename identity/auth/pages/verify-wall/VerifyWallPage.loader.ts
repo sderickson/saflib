@@ -1,8 +1,9 @@
 import { useQuery } from "@tanstack/vue-query";
 import { getProfile } from "../../requests/auth";
 import { watch } from "vue";
+import { safeRedirect } from "../../redirect";
 
-export function useVerifyWallPageLoader(redirectTo: string) {
+export function useVerifyWallPageLoader(redirectTo: string | undefined) {
   const profileQuery = useQuery(getProfile());
 
   // Watch for profile data and redirect if email is verified
@@ -10,7 +11,7 @@ export function useVerifyWallPageLoader(redirectTo: string) {
     () => profileQuery.data.value,
     (profile) => {
       if (profile?.emailVerified) {
-        window.location.href = redirectTo;
+        safeRedirect(redirectTo ?? "/");
       }
     },
     { immediate: true },

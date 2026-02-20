@@ -12,7 +12,7 @@ import { useVerifyWallPageLoader } from "./VerifyWallPage.loader.ts";
 import { AsyncPage } from "@saflib/vue/components";
 
 const props = defineProps<{
-  redirectTo: string;
+  redirectTo?: string;
 }>();
 
 const VerifyWallPage = defineAsyncComponent(

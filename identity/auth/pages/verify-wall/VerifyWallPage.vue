@@ -58,7 +58,7 @@ import { useReverseT } from "../../i18n.ts";
 import { useResendVerification } from "../../requests/auth.ts";
 
 const props = defineProps<{
-  redirectTo: string;
+  redirectTo?: string;
 }>();
 
 const { t } = useReverseT();

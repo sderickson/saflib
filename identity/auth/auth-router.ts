@@ -15,6 +15,7 @@ import {
 import VerifyEmailPageAsync from "./pages/verify-wall/VerifyWallPageAsync.vue";
 
 import { authLinks } from "@saflib/auth-links";
+import { getRedirectTarget, type RouteLike } from "./redirect.ts";
 
 let router: Router;
 
@@ -31,28 +32,32 @@ export const createAuthRouter = (options: AuthRouterOptions) => {
   if (router) {
     return router;
   }
+  const routeProps = (route: unknown, fallback?: string) => ({
+    redirectTo: getRedirectTarget(route as RouteLike, fallback),
+    renderPrompt,
+  });
   const routes: RouteRecordRaw[] = [
     ...(options?.additionalRoutes ?? []),
     {
       path: authLinks.home.path,
       component: LoginPage,
-      props: { redirectTo: options?.loginRedirect, renderPrompt },
+      props: (route) => routeProps(route, options?.loginRedirect),
     },
     {
       path: authLinks.login.path,
       component: LoginPage,
-      props: { redirectTo: options?.loginRedirect, renderPrompt },
+      props: (route) => routeProps(route, options?.loginRedirect),
     },
     {
       path: authLinks.register.path,
       component: RegisterPage,
-      props: { redirectTo: options?.registerRedirect, renderPrompt },
+      props: (route) => routeProps(route, options?.registerRedirect),
     },
     { path: authLinks.forgot.path, component: ForgotPasswordPage },
     {
       path: authLinks.logout.path,
       component: LogoutPage,
-      props: { redirectTo: options?.logoutRedirect },
+      props: (route) => ({ redirectTo: getRedirectTarget(route as RouteLike, options?.logoutRedirect) }),
     },
     {
       path: authLinks.resetPassword.path,
@@ -61,12 +66,12 @@ export const createAuthRouter = (options: AuthRouterOptions) => {
     {
       path: authLinks.verifyEmail.path,
       component: VerifyEmailPage,
-      props: { redirectTo: options?.loginRedirect },
+      props: (route) => ({ redirectTo: getRedirectTarget(route as RouteLike, options?.loginRedirect) }),
     },
     {
       path: authLinks.verifyWall.path,
       component: VerifyEmailPageAsync,
-      props: { redirectTo: options?.loginRedirect },
+      props: (route) => ({ redirectTo: getRedirectTarget(route as RouteLike, options?.loginRedirect) }),
     },
   ];
 

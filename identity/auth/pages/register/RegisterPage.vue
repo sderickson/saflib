@@ -106,6 +106,7 @@ import { authLinks } from "@saflib/auth-links";
 import { SpaLink } from "@saflib/vue/components";
 import type { User } from "@saflib/identity-spec";
 import { useReverseT } from "../../i18n.ts";
+import { safeRedirect } from "../../redirect.ts";
 
 const { t } = useReverseT();
 
@@ -158,9 +159,7 @@ watch(
   async (success) => {
     if (success && newUser.value) {
       emit("signup", newUser.value);
-      if (props.redirectTo) {
-        window.location.href = props.redirectTo;
-      }
+      safeRedirect(props.redirectTo);
     }
   },
 );
