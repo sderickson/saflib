@@ -8,6 +8,9 @@ import ignore from "rollup-plugin-ignore";
 // import { htmlHeaderPlugin } from "../../clients/spas/html-header-plugin.ts";
 import { typedEnv } from "./env.ts";
 import fs from "fs";
+import { getSubdomainProxyRewrite } from "./subdomain-proxy.ts";
+
+export { getSubdomainProxyRewrite } from "./subdomain-proxy.ts";
 
 const subdomains = typedEnv.CLIENT_SUBDOMAINS?.split(",") ?? [];
 const domain = typedEnv.DOMAIN;
@@ -19,34 +22,32 @@ const subDomainProxyPlugin: Plugin = {
   name: "sub-domain-proxy",
   configureServer(server) {
     server.middlewares.use((req, _res, next) => {
-      if (req.url?.includes(".") || req.url?.includes("@")) {
-        next();
-        return;
-      }
-      if (req.headers.host?.startsWith("localhost")) {
-        req.url = `/index.html`;
-        next();
-        return;
-      }
-
-      for (const host of hosts) {
-        if (req.headers.host === host) {
-          const subdomain = host
-            .replace(`${domain}`, "")
-            .split(".")
-            .filter(Boolean)
-            .join(".");
-          req.url = `/${subdomain}/index.html`;
-          next();
-          return;
-        }
-      }
-      console.warn("Unhandled request", {
-        "req.url": req.url,
-        "req.headers.host": req.headers.host,
-        "startsWith('localhost')": req.headers.host?.startsWith("localhost"),
+      const rewrite = getSubdomainProxyRewrite(
+        req.url,
+        req.headers.host,
         hosts,
-      });
+        domain,
+      );
+      if (rewrite !== null) {
+        req.url = rewrite;
+        next();
+        return;
+      }
+      const host = req.headers.host;
+      if (
+        req.url &&
+        !req.url.split("?")[0].includes(".") &&
+        !req.url.split("?")[0].includes("@") &&
+        host &&
+        !host.startsWith("localhost") &&
+        !hosts.includes(host)
+      ) {
+        console.warn("Unhandled request", {
+          "req.url": req.url,
+          "req.headers.host": host,
+          hosts,
+        });
+      }
       next();
     });
   },
