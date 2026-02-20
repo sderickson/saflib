@@ -97,16 +97,18 @@ Each `service/` directory is one of these.
 **Package dependency flow:** These packages form a layered dependency chain:
 
 Service:
-* `spec` and `db` have no dependencies - they define the API and database types respectively, and are distinct from one another (e.g., frontend has no direct dependency on how data is stored).`
-* `http` depends on both `spec` and `db` and translates between the two data models.
-* `sdk` depends on `spec`. This way frontend and backend are decoupled except for the API contract.
-* Both `clients` and `service` packages have a `common` package.
-* `service` wraps `http`, `grpc-server`, `cron`, and any other "runtimes" into a single runnable package, and `monolith` wraps that with `identity`.
+
+- `spec` and `db` have no dependencies - they define the API and database types respectively, and are distinct from one another (e.g., frontend has no direct dependency on how data is stored).`
+- `http` depends on both `spec` and `db` and translates between the two data models.
+- `sdk` depends on `spec`. This way frontend and backend are decoupled except for the API contract.
+- Both `clients` and `service` packages have a `common` package.
+- `service` wraps `http`, `grpc-server`, `cron`, and any other "runtimes" into a single runnable package, and `monolith` wraps that with `identity`.
 
 Clients:
-* All `clients` packages depend on `sdk` for API calls and shared components which are tightly coupled to the API contract.
-* `links` and `common` are shared. `links` is separate so server-side code doesn't depend on Vue and related dependencies.
-* The other packages are separate SPAs each serving their own subdomain, and the only thing that depends on them is the `build` package which builds them all together with Vite.
+
+- All `clients` packages depend on `sdk` for API calls and shared components which are tightly coupled to the API contract.
+- `links` and `common` are shared. `links` is separate so server-side code doesn't depend on Vue and related dependencies.
+- The other packages are separate SPAs each serving their own subdomain, and the only thing that depends on them is the `build` package which builds them all together with Vite.
 
 **Package naming convention:** Packages under `{product}/service/{name}/` are imported as `@{org}/{product}-{name}`. For example, if the product is `foobar` and the org is `acme`:
 
@@ -127,6 +129,44 @@ These packages are considered "libraries"; they are like `grpc-client` or `sdk` 
 ### `deploy/`
 
 Assuming you deploy all products to the same infrastructure, the `deploy/` directory is similar to the `dev/` directory, but for production. It includes scripts to build images, run them locally to test, and deploy to the remote infrastructure. The prod build is also used in CI with playwright.
+
+## Deployment models: Standalone product vs product hub
+
+You can run and deploy products in two ways. Both are supported; choose the one that fits how you operate.
+
+### Standalone product model
+
+Each product is independent:
+
+- **Own domain** (e.g. `recipes.net`, `notebook.ai`, in prod).
+- **Own identity service** — each product runs its own identity (db, sessions, auth UI).
+- **Own dev environment** — each `{product}/dev/` has its own docker-compose (caddy, vite clients, monolith, azurite).
+- **Own monolith in production** — deploy runs separate containers (e.g. `recipes-monolith`, `notebook-monolith`), each serving one product and their own identity service.
+
+Good when products are run or deployed separately, or when you want minimal coupling between them.
+
+### Product hub model
+
+Products share one domain and one identity:
+
+- **Single domain** (e.g. `myhome.online`). All products use subdomains of that domain (e.g. `recipes.myhome.online`, `notebook.myhome.online`).
+- **Shared identity** — one identity service (hub-owned). Users log in once; sessions and auth apply across all products. Auth UI lives at a single `auth.{domain}`; products redirect there for login/register.
+- **Hub dev** — `hub/dev/` runs the hub monolith (identity + hub + recipes + notebook services). Hub clients run on Vite; recipes and notebook clients are static builds served by Caddy. Each product can also still have its own `{product}/dev/` for that product’s dev in standalone style, to still develop one product without building/running the other products.
+- **Single monolith in production** — one `monolith` container runs all services. Caddy serves static client builds for all products and proxies API subdomains (`api.recipes.{domain}`, `api.notebook.{domain}`, `hub.{domain}`) to that monolith.
+
+Good when you want one login across products, one deployment unit, and a single domain.
+
+### How they differ
+
+| Aspect           | Standalone product             | Product hub                          |
+| ---------------- | ------------------------------ | ------------------------------------ |
+| Domain           | One per product                | One for all (subdomains per product) |
+| Identity         | Per-product                    | Single (hub)                         |
+| Auth UI          | Per-product auth subdomain     | Single `auth.{domain}`               |
+| Deploy monoliths | One container per product      | One container (hub monolith)         |
+| Link subdomains  | Product-specific (`app`, etc.) | Product-prefixed (`app.recipes`, …)  |
+
+The repo can support both: e.g. use hub dev and hub deploy for the “one domain, one identity” setup, and keep per-product dev and optional standalone deploy for the other model.
 
 ### `saflib/`
 
