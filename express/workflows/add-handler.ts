@@ -32,7 +32,8 @@ const input = [
 ] as const;
 
 interface AddHandlerWorkflowContext
-  extends ParsePackageNameOutput, ParsePathOutput {
+  extends ParsePackageNameOutput,
+    ParsePathOutput {
   upload: boolean;
 }
 
@@ -128,31 +129,17 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
       Review ${context.docFiles?.refDoc} for more details.`,
     })),
 
-    step(
-      UpdateStepMachine,
-      ({ context }) => ({
-        fileId: "test",
-        promptMessage: `Update the generated ${context.targetName}.test.ts file following the testing guide patterns.
+    step(UpdateStepMachine, ({ context }) => ({
+      fileId: "test",
+      promptMessage: `Update the generated ${context.targetName}.test.ts file following the testing guide patterns.
         
         * Make sure to implement proper test cases that cover both success and error scenarios.
         * Do not do any mocking. Databases are in memory, and integrations have fake implementations. Do not use vitest's mock!
         * Do not test 500 or 400 responses. Just success and 401+ responses.
+        * Run tests with "npm run test" in ${context.cwd}.
         
         Review ${context.docFiles?.testingGuide} for more details.`,
-      }),
-      {
-        validate: async ({ context }) => {
-          const content = readFileSync(context.copiedFiles!.test, "utf-8");
-          const testLength = content.split("\n").length;
-          if (testLength > 300) {
-            return `Test file is too long at ${testLength} lines.
-            - Try to stick to one test per status code returned, and skip testing 500 responses or 400 (openapi validation) responses.
-            - If you are creating mocks or fake implementations, move those to a shared file, or to the appropriate library (libraries should provide their own mocks and fake implementations).`;
-          }
-          return Promise.resolve(undefined);
-        },
-      },
-    ),
+    })),
 
     step(CommandStepMachine, () => ({
       command: "npm",
