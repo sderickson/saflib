@@ -1,5 +1,4 @@
 import {
-  PromptStepMachine,
   CommandStepMachine,
   defineWorkflow,
   step,

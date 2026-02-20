@@ -13,7 +13,6 @@ import {
   makeLineReplace,
 } from "@saflib/workflows";
 import path from "node:path";
-import { readFileSync } from "node:fs";
 
 const sourceDir = path.join(import.meta.dirname, "templates");
 
