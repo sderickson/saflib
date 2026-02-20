@@ -75,6 +75,7 @@ import { authLinks } from "@saflib/auth-links";
 import { SpaLink } from "@saflib/vue/components";
 import type { User } from "@saflib/identity-spec";
 import { useReverseT } from "../../i18n.ts";
+import { safeRedirect } from "../../redirect.ts";
 
 const { t } = useReverseT();
 
@@ -101,9 +102,7 @@ const handleLogin = async () => {
     await login({ email: email.value, password: password.value });
     if (user.value) {
       emit("login", user.value);
-      if (props.redirectTo) {
-        window.location.href = props.redirectTo;
-      }
+      safeRedirect(props.redirectTo);
     }
   } catch (error) {}
 };

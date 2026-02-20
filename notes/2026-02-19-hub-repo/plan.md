@@ -156,6 +156,47 @@ The monolith `run.ts` already imports hub identity (from Phase 3). Ensure env va
 
 ---
 
+### Phase 4b: Auth redirect flow
+
+The hub auth SPA currently hardcodes redirect targets to hub's own app page (`appLinks.home`). In the hub model, users arrive at `auth.docker.localhost` from different products and need to be sent back to where they came from after auth completes.
+
+**Step 4b.1: Make auth links carry a `redirect` query param**
+
+When product clients link to the auth SPA (login, register), they should include a `redirect` param with the current page URL. For example, from `app.recipes.docker.localhost`, the login link should produce `auth.docker.localhost/login?redirect=http://app.recipes.docker.localhost/`.
+
+The `authLinks.login` already declares `params: ["redirect"]`. Add `params: ["redirect"]` to `authLinks.register` as well so both login and register links can carry the redirect target.
+
+Product SPAs that link to auth (e.g. from a "Log in" button, or on 401 detection) should pass the redirect param. This likely happens in `@saflib/vue` or `@saflib/sdk` where 401 handling and auth navigation is coordinated.
+
+**Step 4b.2: Update `@saflib/identity/auth/auth-router.ts` to read `redirect` from URL**
+
+Currently `createAuthRouter` receives static `loginRedirect`/`registerRedirect` options and passes them as props. Change this so the route `props` function reads the `redirect` query param from the URL, falling back to the static option if no param is present:
+
+```typescript
+{
+  path: authLinks.login.path,
+  component: LoginPage,
+  props: (route) => ({
+    redirectTo: route.query.redirect || options?.loginRedirect,
+    renderPrompt,
+  }),
+},
+```
+
+Apply the same pattern to the register, verify-wall, and verify-email routes.
+
+**Step 4b.3: Persist redirect across auth SPA navigation**
+
+Users may navigate within the auth SPA (login → register → forgot password → back to login). The `redirect` query param would be lost during these internal navigations. Store the redirect target in `sessionStorage` when first seen, and read from there as a fallback. Clear it after use (successful auth redirect).
+
+**Step 4b.4: Validate redirect targets**
+
+Before redirecting, validate that the target URL's hostname ends with the expected domain (e.g. `.docker.localhost` in dev, `.scotterickson.info` in prod). This prevents open redirect attacks. The `DOMAIN` env var can be baked into the auth SPA's build to use for validation.
+
+**Test**: From `app.recipes.docker.localhost`, click "Log in" → should arrive at `auth.docker.localhost/login?redirect=...`. Log in → should redirect back to `app.recipes.docker.localhost`. Repeat for register flow. Also verify that navigating within the auth SPA (login → register → back to login) preserves the redirect target. Verify that a redirect to an external domain is blocked.
+
+---
+
 ### Phase 5: Generalize to other products
 
 Once recipes dev works under the hub model, replicate for notebook and hub.

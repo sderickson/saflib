@@ -52,16 +52,22 @@ export const getHost = () => {
     // just to ease local development - specifically running vite in sdk
     return document.location.host;
   }
-  if (typeof document !== "undefined" && process.env.NODE_ENV !== "test") {
-    if (!getClientName()) {
+  if (typeof document !== "undefined") {
+    const name = getClientName();
+    if (!name && process.env.NODE_ENV !== "test") {
       throw new Error(
         "You must call setClientName with your subdomain before using getHost",
       );
     }
-    const clientName = getClientName();
-    host = document.location.host.replace(clientName, "");
-    if (host.startsWith(".")) {
-      host = host.slice(1);
+    // When host starts with client name (e.g. app.recipes.scotterickson.info), strip it to get root domain.
+    // Supports dotted subdomains (hub model). Only strip when host actually starts with name + ".".
+    if (name && document.location.host.startsWith(name + ".")) {
+      host = document.location.host.slice(name.length + 1);
+    } else if (name && process.env.NODE_ENV !== "test") {
+      host = document.location.host.replace(name, "");
+      if (host.startsWith(".")) {
+        host = host.slice(1);
+      }
     }
   }
   return host;

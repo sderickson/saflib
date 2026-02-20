@@ -24,7 +24,11 @@
       class="mb-4"
       :text="t(verify_email_page.verify_email_success)"
     />
-    <a class="text-blue text-decoration-none" :href="redirectTo">
+    <a
+      class="text-blue text-decoration-none"
+      href="#"
+      @click.prevent="handleContinue"
+    >
       {{ t(verify_email_page.continue_to_app) }}
       <v-icon icon="mdi-chevron-right"></v-icon>
     </a>
@@ -109,11 +113,12 @@ import { linkToHrefWithHost } from "@saflib/links";
 import { authLinks } from "@saflib/auth-links";
 import { useQuery } from "@tanstack/vue-query";
 import { useReverseT } from "../../i18n.ts";
+import { safeRedirect } from "../../redirect.ts";
 
 const { t } = useReverseT();
 
-defineProps<{
-  redirectTo: string;
+const props = defineProps<{
+  redirectTo?: string;
 }>();
 
 const emit = defineEmits<{
@@ -192,6 +197,10 @@ const thisUrlEncoded = btoa(window.location.href);
 const loginLink = linkToHrefWithHost(authLinks.login, {
   params: { redirect: thisUrlEncoded },
 });
+
+function handleContinue() {
+  safeRedirect(props.redirectTo ?? "/");
+}
 
 // Verify email automatically on load if token is present
 watch(isGettingProfile, () => {
