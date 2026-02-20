@@ -10,7 +10,7 @@ import path from "path";
 
 /**
  * Todo:
- * - run a test where workflows will be run in packages that support them, often they don't cd correctly
+ * - encourage from the start breaking down the workflow into multiple workflows, which the main workflow orchestrates. Provide guidance on how to scope workflows.
  * - need a way to add a lib function, not just an export
  * - have database schemas be less denormalized generally, and maybe add a step to discuss how to structure the database best for any future plans.
  */
