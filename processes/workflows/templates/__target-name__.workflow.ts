@@ -24,8 +24,6 @@ export const __TargetName__WorkflowDefinition = defineWorkflow<
   context: ({ input }) => ({
     agentConfig: {
       ...input.agentConfig,
-      // So this workflow can be arbitrarily long.
-      resetTimeoutEachStep: true,
     },
   }),
   sourceUrl: import.meta.url,
