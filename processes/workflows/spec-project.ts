@@ -14,6 +14,7 @@ import path from "path";
  * - need a way to add a lib function, not just an export
  * - have database schemas be less denormalized generally, and maybe add a step to discuss how to structure the database best for any future plans.
  * - remind agent to use singular table names and query folders.
+ * - should probably organize work by feature... don't just build the entire backend and then the entire frontend for a whole series of features.
  */
 
 const sourceDir = path.resolve(import.meta.dirname, "./templates");
