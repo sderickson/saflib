@@ -12,7 +12,7 @@ import path from "path";
  * Todo:
  * - run a test where workflows will be run in packages that support them, often they don't cd correctly
  * - need a way to add a lib function, not just an export
- * - how might the changes be reviewed to make sure they follow the spec?
+ * - have database schemas be less denormalized generally, and maybe add a step to discuss how to structure the database best for any future plans.
  */
 
 const sourceDir = path.resolve(import.meta.dirname, "./templates");
