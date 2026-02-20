@@ -27,6 +27,7 @@ export const authLinks = {
   logout: {
     subdomain,
     path: "/logout",
+    params: ["redirect"],
   },
   resetPassword: {
     subdomain,
