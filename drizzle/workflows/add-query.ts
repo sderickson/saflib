@@ -7,6 +7,7 @@ import {
   type ParsePathOutput,
   parsePath,
   parsePackageName,
+  // checkPackageDependency,
   getPackageName,
   type ParsePackageNameOutput,
   makeLineReplace,
@@ -25,7 +26,8 @@ const input = [
 ] as const;
 
 interface AddDrizzleQueryWorkflowContext
-  extends ParsePathOutput, ParsePackageNameOutput {}
+  extends ParsePathOutput,
+    ParsePackageNameOutput {}
 
 export const AddDrizzleQueryWorkflowDefinition = defineWorkflow<
   typeof input,
@@ -44,6 +46,8 @@ export const AddDrizzleQueryWorkflowDefinition = defineWorkflow<
   sourceUrl: import.meta.url,
 
   context: ({ input }) => {
+    // maybe later?
+    // checkPackageDependency(input.cwd, "@saflib/drizzle");
     let packageName = "@mock/package-db";
     if (existsSync(path.join(input.cwd, "package.json"))) {
       packageName = getPackageName(input.cwd);
