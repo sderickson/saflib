@@ -92,15 +92,11 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
     step(makeWorkflowMachine(AddSchemaWorkflowDefinition), () => ({
       name: "todo",
     })),
+    // Only one route per path to avoid duplicate YAML path keys (openapi/add-route appends path blocks)
     step(makeWorkflowMachine(AddRouteWorkflowDefinition), () => ({
       path: "./routes/users/list.yaml",
       urlPath: "/users",
       method: "get",
-    })),
-    step(makeWorkflowMachine(AddRouteWorkflowDefinition), () => ({
-      path: "./routes/users/create.yaml",
-      urlPath: "/users",
-      method: "post",
     })),
     step(makeWorkflowMachine(AddEventWorkflowDefinition), () => ({
       path: "./events/signup.yaml",
