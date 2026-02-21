@@ -88,6 +88,10 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
     step(makeWorkflowMachine(AddSchemaWorkflowDefinition), () => ({
       name: "user",
     })),
+    // Route template references schemas/todo.yaml; add it so saf-specs generate succeeds in script mode
+    step(makeWorkflowMachine(AddSchemaWorkflowDefinition), () => ({
+      name: "todo",
+    })),
     step(makeWorkflowMachine(AddRouteWorkflowDefinition), () => ({
       path: "./routes/users/list.yaml",
       urlPath: "/users",
