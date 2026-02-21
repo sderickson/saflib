@@ -5,7 +5,6 @@ import {
   CommandStepMachine,
   defineWorkflow,
   step,
-  PromptStepMachine,
   type ParsePathOutput,
   parsePath,
   makeLineReplace,
@@ -17,8 +16,20 @@ const sourceDir = path.join(import.meta.dirname, "templates");
 const input = [
   {
     name: "path",
-    description: "The path for the route (e.g., 'users' or 'products')",
+    description:
+      "The file path for the route (e.g., './routes/recipes/list.yaml')",
     exampleValue: "./routes/example/example.yaml",
+  },
+  {
+    name: "urlPath",
+    description:
+      "The URL path for the route (e.g., '/recipes' or '/recipes/{id}')",
+    exampleValue: "/example",
+  },
+  {
+    name: "method",
+    description: "The HTTP method (e.g., 'get', 'post', 'put', 'delete')",
+    exampleValue: "get",
   },
   {
     name: "upload",
@@ -30,6 +41,8 @@ const input = [
 interface AddRouteWorkflowContext extends ParsePathOutput {
   operationId: string;
   upload: boolean;
+  urlPath: string;
+  method: string;
 }
 
 export const AddRouteWorkflowDefinition = defineWorkflow<
@@ -56,6 +69,8 @@ export const AddRouteWorkflowDefinition = defineWorkflow<
       }),
       targetDir: input.cwd,
       upload: input.upload ?? false,
+      urlPath: input.urlPath,
+      method: input.method,
     };
     const operationId =
       kebabCaseToCamelCase(context.targetName.split(".")[0]) +
@@ -100,8 +115,17 @@ export const AddRouteWorkflowDefinition = defineWorkflow<
       `,
     })),
 
-    step(PromptStepMachine, () => ({
-      promptText: `Add the route to the openapi.yaml file in the paths section. Reference the route file using $ref.`,
+    step(UpdateStepMachine, ({ context }) => ({
+      fileId: "openapi",
+      prompt: `Verify the route was correctly added to openapi.yaml paths section. The entry should be:
+
+\`\`\`yaml
+  ${context.urlPath}:
+    ${context.method}:
+      $ref: "./routes/${context.groupName}/${context.targetName}.yaml#/${context.operationId}"
+\`\`\`
+
+If the path \`${context.urlPath}\` already exists, add the \`${context.method}\` method under the existing path entry and remove the duplicate path key.`,
     })),
 
     step(CommandStepMachine, () => ({

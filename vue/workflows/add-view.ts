@@ -28,8 +28,14 @@ const input = [
   {
     name: "path",
     description:
-      "Path of the new page or dialog (e.g., './pages/welcome-new-user')",
+      "Folder path of the new page or dialog (e.g., './pages/welcome-new-user')",
     exampleValue: "./pages/welcome-new-user",
+  },
+  {
+    name: "urlPath",
+    description:
+      "The URL path for the view (e.g., '/recipes/:id' or '/recipes/create')",
+    exampleValue: "/welcome-new-user",
   },
 ] as const;
 
@@ -76,10 +82,6 @@ export const AddSpaViewWorkflowDefinition = defineWorkflow<
 
     // get the "full path" of the view, which does not include the first directory (pages/ or dialogs/)
     const folderPath = pathResult.groupName + "/" + pathResult.targetName;
-    let routePath = folderPath.split("/").slice(2).join("/");
-    if (routePath === "home") {
-      routePath = "";
-    }
 
     // convert that into a full name that can be used for variable names
     const fullName = folderPath
@@ -97,7 +99,7 @@ export const AddSpaViewWorkflowDefinition = defineWorkflow<
       targetDir,
       subdomainName,
       groupName: folderPath,
-      routePath,
+      urlPath: input.urlPath,
       fullName,
     };
   },
