@@ -92,21 +92,29 @@ The class should validate that all paths stay within the scoped folder (prevent 
 
     step(makeWorkflowMachine(AddRouteWorkflowDefinition), () => ({
       path: "./routes/backups/list.yaml",
+      urlPath: "/backups",
+      method: "get",
       prompt: `Create GET /backups route that lists all backups. Returns an array of backup objects. Use the backup schema for the response.`,
     })),
 
     step(makeWorkflowMachine(AddRouteWorkflowDefinition), () => ({
       path: "./routes/backups/create.yaml",
+      urlPath: "/backups",
+      method: "post",
       prompt: `Create POST /backups route that creates a manual backup. Accepts optional metadata in request body (description?: string, tags?: string[]). Returns a backup object.`,
     })),
 
     step(makeWorkflowMachine(AddRouteWorkflowDefinition), () => ({
       path: "./routes/backups/delete.yaml",
+      urlPath: "/backups/{backupId}",
+      method: "delete",
       prompt: `Create DELETE /backups/{backupId} route that deletes a manual backup. backupId is a path parameter. Returns success confirmation.`,
     })),
 
     step(makeWorkflowMachine(AddRouteWorkflowDefinition), () => ({
       path: "./routes/backups/restore.yaml",
+      urlPath: "/backups/{backupId}/restore",
+      method: "post",
       prompt: `Create POST /backups/{backupId}/restore route that restores from a backup. backupId is a path parameter. Returns success status. This is synchronous since it's a single SQLite file.`,
     })),
 
@@ -233,6 +241,7 @@ The job will receive backupFn and objectStore as dependencies.`,
 
     step(makeWorkflowMachine(AddSpaPageWorkflowDefinition), () => ({
       path: "./pages/backup-manager",
+      urlPath: "/backup-manager",
       prompt: `Create a backup management page with:
 
 1. Display list of all backups with:

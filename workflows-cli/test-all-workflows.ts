@@ -90,9 +90,13 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
     })),
     step(makeWorkflowMachine(AddRouteWorkflowDefinition), () => ({
       path: "./routes/users/list.yaml",
+      urlPath: "/users",
+      method: "get",
     })),
     step(makeWorkflowMachine(AddRouteWorkflowDefinition), () => ({
       path: "./routes/users/create.yaml",
+      urlPath: "/users",
+      method: "post",
     })),
     step(makeWorkflowMachine(AddEventWorkflowDefinition), () => ({
       path: "./events/signup.yaml",
@@ -239,6 +243,7 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
     })),
     step(makeWorkflowMachine(AddSpaViewWorkflowDefinition), () => ({
       path: "./pages/welcome-new-user",
+      urlPath: "/welcome-new-user",
     })),
   ],
 });

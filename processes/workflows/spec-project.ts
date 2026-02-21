@@ -89,7 +89,7 @@ export const SpecProjectWorkflowDefinition = defineWorkflow<
       fileId: "workflow",
       promptMessage: `Update **${path.basename(context.copiedFiles!.plan)}**.
 
-      Noe that the project is spec'd, it's time to sketch a plan to implement the spec. The way you'll be doing this is mainly with workflows. Before you write any workflows, though, you should understand what workflows are available, and lay out a plan in the plan.md file.
+      Note that the project is spec'd, it's time to sketch a plan to implement the spec. The way you'll be doing this is mainly with workflows. Before you write any workflows, though, you should understand what workflows are available, and lay out a plan in the plan.md file.
 
       You may need to plan for multiple workflows if the spec is larger. It's good to break them down by resource (e.g. database table and related business object) and frontend/backend. So for each resource have one workflow for the frontend and one for the backend, unless it's a small change. It's also generally good to organize workflows in a way that after each one is a good stopping point, where changes can be tested and polished.
       
@@ -99,14 +99,14 @@ export const SpecProjectWorkflowDefinition = defineWorkflow<
       
       Backend:
       * openapi/add-schema - to add business objects
-      * openapi/add-route - to add API routes
+      * openapi/add-route - to add API routes (takes path, urlPath, method, and prompt)
       * drizzle/update-schema - to add database tables
       * drizzle/add-query - to add database queries
       * express/add-handler - to add API handlers
       
       Frontend:
       * sdk/add-query and sdk/add-mutation - to add TanStack hooks
-      * vue/add-page - to add a page
+      * vue/add-view - to add a page (takes path, urlPath, and prompt)
       
       Some have flags, such as "upload" or "file" for variations of adding files to the database, express handlers, api routes, and TanStack mutations. See if you need to use any of these.
       `,

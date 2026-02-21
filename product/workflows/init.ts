@@ -180,6 +180,7 @@ export const InitProductWorkflowDefinition = defineWorkflow<
 
     step(makeWorkflowMachine(AddSpaViewWorkflowDefinition), ({ context }) => ({
       path: "./pages/home",
+      urlPath: "/",
       prompt: `Set up the logged-out home page in the ${context.productName} root SPA.
       - Remove anything happening in the loader; this page will be static.
       - Update the home page to have a call to action to the register page. Use linkToProps from @saflib/links to create the link and bind them to vuetify components. Get the link object from @saflib/auth-links which is in saflib/identity/auth-links.
@@ -218,6 +219,7 @@ export const InitProductWorkflowDefinition = defineWorkflow<
 
     step(makeWorkflowMachine(AddSpaViewWorkflowDefinition), () => ({
       path: "./pages/home",
+      urlPath: "/",
       prompt: `Set up the app SPA similar to the root SPA, just put some really basic content for now, will fit it in later.
       `,
     })),
@@ -231,6 +233,7 @@ export const InitProductWorkflowDefinition = defineWorkflow<
     })),
     step(makeWorkflowMachine(AddSpaViewWorkflowDefinition), ({ context }) => ({
       path: "./pages/home",
+      urlPath: "/",
       prompt: `Set up the ${context.productName} account SPA home page.
       - Add to the router @saflib/account-sdk package's AccountPasswordPageAsync and AccountProfilePageAsync.
       - Include the accountSdkStrings from @saflib/account-sdk/strings in the account-spa's strings file, so i18n works.
@@ -248,6 +251,7 @@ export const InitProductWorkflowDefinition = defineWorkflow<
 
     step(makeWorkflowMachine(AddSpaViewWorkflowDefinition), ({ context }) => ({
       path: "./pages/admin",
+      urlPath: "/admin",
       prompt: `Set up the ${context.productName} admin SPA home page.
       - It can just be a stub for now, will fit it in later.`,
     })),
