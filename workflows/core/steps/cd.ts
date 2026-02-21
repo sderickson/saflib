@@ -46,17 +46,21 @@ export const CdStepMachine = setup({
   context: ({ input }) => {
     const newCwd = input.path.startsWith("/")
       ? input.path
-      : path.join(process.cwd(), input.path);
-    if (!existsSync(newCwd)) {
-      throw new Error(
-        `Directory ${newCwd} does not exist. You should only cd into packages.`,
-      );
-    }
-    const packagePath = path.join(newCwd, "package.json");
-    if (!existsSync(packagePath)) {
-      throw new Error(
-        `Package.json not found in ${newCwd}. You should only cd into packages.`,
-      );
+      : path.join(input.cwd ?? process.cwd(), input.path);
+    // In checklist/dry/script mode, skip validation so workflow can produce a checklist from any cwd
+    const runMode = input.runMode ?? "print";
+    if (runMode === "print" || runMode === "run") {
+      if (!existsSync(newCwd)) {
+        throw new Error(
+          `Directory ${newCwd} does not exist. You should only cd into packages.`,
+        );
+      }
+      const packagePath = path.join(newCwd, "package.json");
+      if (!existsSync(packagePath)) {
+        throw new Error(
+          `Package.json not found in ${newCwd}. You should only cd into packages.`,
+        );
+      }
     }
     return {
       ...contextFromInput(input),

@@ -18,7 +18,7 @@ describe("__FullName__", () => {
   it("should render", async () => {
     const router = createTestRouter();
     // TODO: replace any route params (e.g. :id) with actual test values
-    await router.push("__url-path__");
+    await router.push("/__url-path__");
     await router.isReady();
 
     const wrapper = mountTestApp(__FullName__Async, {}, { router });
