@@ -15,6 +15,8 @@ import path from "path";
  * - have database schemas be less denormalized generally, and maybe add a step to discuss how to structure the database best for any future plans.
  * - remind agent to use singular table names and query folders.
  * - should probably organize work by feature... don't just build the entire backend and then the entire frontend for a whole series of features.
+ * - also more thoroughly document what pages and what might share components, or what existing components might be used. Give hints in the prompt.
+ * - might also need to make it easier, or already set up, to have components in the sdk work in spas. Like i18n and exports.
  */
 
 const sourceDir = path.resolve(import.meta.dirname, "./templates");
