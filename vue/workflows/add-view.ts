@@ -34,7 +34,8 @@ const input = [
 ] as const;
 
 interface AddSpaViewWorkflowContext
-  extends ParsePathOutput, ParsePackageNameOutput {
+  extends ParsePathOutput,
+    ParsePackageNameOutput {
   targetDir: string;
   fullName: string;
 }
@@ -209,6 +210,7 @@ Run \`npm run typecheck\` in ${context.cwd} to verify the code is type-safe.
   test drives baseline coverage on the Vue file; uncovered lines highlight logic worth extracting.
   Don't add interaction tests here — Playwright covers that. Focus deeper tests on the extracted
   logic files and composables.
+* **Deciding What to Test**: Don't extract simple logic just to test it. We already have tests for each tanstack query, so there's no need to pull that into a separate composable either. Save testing for more complex logic.
 
 For more information, see ${context.docFiles?.components}`,
     })),
