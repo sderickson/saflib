@@ -17,13 +17,17 @@ export const __queryName____GroupName__Query = (
     queryKey: ["__group-name__", "__query-name__"],
     queryFn: async () =>
       handleClientMethod(
-        // @ts-expect-error
-        getClient().GET("/__group-name__/__query-name__", {
-          // use options passed in
-          params: {
-            // limit: options.limit?.value,
+        // @ts-ignore TODO: update params to match the route
+        getClient().__METHOD__(
+          // @ts-ignore TODO: update params to match the route
+          "__url-path__",
+          {
+            // @ts-ignore TODO: update params to match the route
+            params: {
+              // limit: options.limit?.value,
+            },
           },
-        }),
+        ),
       ),
   });
 };

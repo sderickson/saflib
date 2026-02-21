@@ -16,6 +16,7 @@ export * from "./steps/update/update-template-machine.ts";
 export * from "./steps/prompt.ts";
 export * from "./steps/command.ts";
 export * from "./steps/cd.ts";
+export * from "./steps/transform-file.ts";
 export { checklistToString, pollingWaitFor } from "./utils.ts";
 export {
   type GetSourceUrlFunction,

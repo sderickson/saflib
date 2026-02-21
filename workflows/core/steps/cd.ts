@@ -46,7 +46,7 @@ export const CdStepMachine = setup({
   context: ({ input }) => {
     const newCwd = input.path.startsWith("/")
       ? input.path
-      : path.join(input.cwd ?? process.cwd(), input.path);
+      : path.join(process.cwd(), input.path);
     // In checklist/dry/script mode, skip validation so workflow can produce a checklist from any cwd
     const runMode = input.runMode ?? "print";
     if (runMode === "print" || runMode === "run") {

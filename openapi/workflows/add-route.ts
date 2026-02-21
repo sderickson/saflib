@@ -3,6 +3,7 @@ import {
   CopyStepMachine,
   UpdateStepMachine,
   CommandStepMachine,
+  TransformFileStepMachine,
   defineWorkflow,
   step,
   type ParsePathOutput,
@@ -115,17 +116,10 @@ export const AddRouteWorkflowDefinition = defineWorkflow<
       `,
     })),
 
-    step(UpdateStepMachine, ({ context }) => ({
-      fileId: "openapi",
-      prompt: `Verify the route was correctly added to openapi.yaml paths section. The entry should be:
-
-\`\`\`yaml
-  ${context.urlPath}:
-    ${context.method}:
-      $ref: "./routes/${context.groupName}/${context.targetName}.yaml#/${context.operationId}"
-\`\`\`
-
-If the path \`${context.urlPath}\` already exists, add the \`${context.method}\` method under the existing path entry and remove the duplicate path key.`,
+    step(TransformFileStepMachine, ({ context }) => ({
+      filePath: path.join(context.targetDir, "openapi.yaml"),
+      description: `Merge ${context.method.toUpperCase()} ${context.urlPath} into openapi.yaml paths`,
+      transform: (content: string) => mergeOpenApiRoute(content),
     })),
 
     step(CommandStepMachine, () => ({
@@ -139,3 +133,86 @@ If the path \`${context.urlPath}\` already exists, add the \`${context.method}\`
     })),
   ],
 });
+
+/**
+ * Merges a route entry into the openapi.yaml paths section, handling duplicate
+ * path keys that occur when the CopyStepMachine's workflow area inserts a new
+ * block for the same URL path (different method).
+ *
+ * Scans lines between the route-paths workflow area markers. If the urlPath
+ * already exists, the new method+$ref is added under the existing path key and
+ * the duplicate path key block is removed. If it doesn't exist, the content is
+ * left as-is (already inserted by CopyStepMachine).
+ */
+function mergeOpenApiRoute(content: string): string {
+  const lines = content.split("\n");
+  const areaStart = lines.findIndex((l) =>
+    l.includes("BEGIN WORKFLOW AREA route-paths FOR openapi/add-route"),
+  );
+  const areaEnd = lines.findIndex((l) =>
+    l.includes("END WORKFLOW AREA") && lines.indexOf(l) > areaStart,
+  );
+  if (areaStart === -1 || areaEnd === -1) {
+    return content;
+  }
+
+  const pathIndent = "  ";
+  const methodIndent = "    ";
+  const refIndent = "      ";
+
+  // Parse path blocks within the workflow area
+  interface PathBlock {
+    urlPath: string;
+    methods: { method: string; ref: string }[];
+  }
+  const blocks: PathBlock[] = [];
+  let current: PathBlock | null = null;
+
+  for (let i = areaStart + 1; i < areaEnd; i++) {
+    const line = lines[i];
+    // Match a path key like "  /recipes:" or "  /recipes/{id}:"
+    const pathMatch = line.match(/^(\s{2})(\/.+):$/);
+    if (pathMatch) {
+      current = { urlPath: pathMatch[2], methods: [] };
+      blocks.push(current);
+      continue;
+    }
+    // Match a method key like "    get:" or "    post:"
+    const methodMatch = line.match(/^\s{4}(\w+):$/);
+    if (methodMatch && current) {
+      const nextLine = lines[i + 1] || "";
+      const refMatch = nextLine.match(/^\s+\$ref:\s*"(.+)"$/);
+      if (refMatch) {
+        current.methods.push({ method: methodMatch[1], ref: refMatch[1] });
+        i++; // skip the $ref line
+      }
+      continue;
+    }
+  }
+
+  // Merge duplicate path keys
+  const merged = new Map<string, { method: string; ref: string }[]>();
+  for (const block of blocks) {
+    const existing = merged.get(block.urlPath) || [];
+    existing.push(...block.methods);
+    merged.set(block.urlPath, existing);
+  }
+
+  // Rebuild the area content
+  const newAreaLines: string[] = [];
+  for (const [urlPath, methods] of merged) {
+    newAreaLines.push(`${pathIndent}${urlPath}:`);
+    for (const { method, ref } of methods) {
+      newAreaLines.push(`${methodIndent}${method}:`);
+      newAreaLines.push(`${refIndent}$ref: "${ref}"`);
+    }
+  }
+
+  // Replace the area content
+  const result = [
+    ...lines.slice(0, areaStart + 1),
+    ...newAreaLines,
+    ...lines.slice(areaEnd),
+  ];
+  return result.join("\n");
+}

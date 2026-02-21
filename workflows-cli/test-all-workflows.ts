@@ -92,11 +92,15 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
     step(makeWorkflowMachine(AddSchemaWorkflowDefinition), () => ({
       name: "todo",
     })),
-    // Only one route per path to avoid duplicate YAML path keys (openapi/add-route appends path blocks)
     step(makeWorkflowMachine(AddRouteWorkflowDefinition), () => ({
       path: "./routes/users/list.yaml",
       urlPath: "/users",
       method: "get",
+    })),
+    step(makeWorkflowMachine(AddRouteWorkflowDefinition), () => ({
+      path: "./routes/users/create.yaml",
+      urlPath: "/users",
+      method: "post",
     })),
     step(makeWorkflowMachine(AddEventWorkflowDefinition), () => ({
       path: "./events/signup.yaml",
@@ -107,10 +111,10 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
       path: "./tmp/service/db",
     })),
     step(makeWorkflowMachine(UpdateSchemaWorkflowDefinition), () => ({
-      path: "./schemas/users.ts",
+      path: "./schemas/user.ts",
     })),
     step(makeWorkflowMachine(AddDrizzleQueryWorkflowDefinition), () => ({
-      path: "./queries/users/list.ts",
+      path: "./queries/user/list.ts",
     })),
 
     // Test @saflib/express workflows
@@ -222,12 +226,16 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
     })),
     step(makeWorkflowMachine(AddSdkQueryWorkflowDefinition), () => ({
       path: "./requests/users/list.ts",
+      urlPath: "/users",
+      method: "get",
     })),
     step(makeWorkflowMachine(AddComponentWorkflowDefinition), () => ({
       path: "./components/user-list",
     })),
     step(makeWorkflowMachine(AddSdkMutationWorkflowDefinition), () => ({
       path: "./requests/users/create.ts",
+      urlPath: "/users",
+      method: "post",
     })),
 
     // Test @saflib/vue workflows
