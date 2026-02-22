@@ -2,7 +2,7 @@ import App from "./App.vue";
 import { createVueApp } from "@saflib/vue";
 import { setClientName } from "@saflib/links";
 import "@saflib/vue/components";
-import { __serviceName__SdkStrings } from "./strings";
+import { __service_name___sdk_strings } from "./strings";
 import { setupWorker } from "msw/browser";
 import { __serviceName__ServiceFakeHandlers } from "./fakes.ts";
 import { http, bypass } from "msw";
@@ -23,7 +23,7 @@ export const main = async () => {
   await server.start({ onUnhandledRequest: "error" });
   createVueApp(App, {
     i18nMessages: {
-      ...__serviceName__SdkStrings,
+      ...__service_name___sdk_strings,
     },
     router,
   });
