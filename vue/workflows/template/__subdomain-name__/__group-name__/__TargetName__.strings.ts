@@ -1,4 +1,4 @@
-export const __full_name___page = {
+export const __full_name_____group_name__ = {
   // TODO: Replace strings with strings from the actual design
   // Use descriptive keys that work well with translation systems
   title: "Hello, __FullName__!",
