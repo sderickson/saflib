@@ -221,21 +221,29 @@ The job will receive backupFn and objectStore as dependencies.`,
 
     step(makeWorkflowMachine(AddSdkQueryWorkflowDefinition), () => ({
       path: "./requests/backups/list.ts",
+      urlPath: "/backups",
+      method: "get",
       prompt: `Create listBackups() query function that calls GET /backups and returns an array of backup objects.`,
     })),
 
     step(makeWorkflowMachine(AddSdkQueryWorkflowDefinition), () => ({
       path: "./requests/backups/create.ts",
+      urlPath: "/backups",
+      method: "post",
       prompt: `Create createBackup() mutation function that calls POST /backups with optional metadata (description?: string, tags?: string[]) and returns a backup object.`,
     })),
 
     step(makeWorkflowMachine(AddSdkQueryWorkflowDefinition), () => ({
       path: "./requests/backups/delete.ts",
+      urlPath: "/backups/{backupId}",
+      method: "delete",
       prompt: `Create deleteBackup() mutation function that calls DELETE /backups/{backupId} with backupId as a parameter and returns success confirmation.`,
     })),
 
     step(makeWorkflowMachine(AddSdkQueryWorkflowDefinition), () => ({
       path: "./requests/backups/restore.ts",
+      urlPath: "/backups/{backupId}/restore",
+      method: "post",
       prompt: `Create restoreBackup() mutation function that calls POST /backups/{backupId}/restore with backupId as a parameter and returns success status.`,
     })),
 

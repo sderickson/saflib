@@ -4,7 +4,10 @@ import {
   makeWorkflowMachine,
   CdStepMachine,
 } from "@saflib/workflows";
-import { AddSdkQueryWorkflowDefinition } from "@saflib/sdk/workflows";
+import {
+  AddSdkQueryWorkflowDefinition,
+  AddSdkMutationWorkflowDefinition,
+} from "@saflib/sdk/workflows";
 import path from "path";
 
 const input = [] as const;
@@ -30,39 +33,55 @@ export const ImplementSecretsSdkWorkflowDefinition = defineWorkflow<
       path: "./secrets/secrets-sdk",
     })),
 
-    // Secrets resource queries
+    // Secrets resource: list (query), create/update/delete (mutations)
     step(makeWorkflowMachine(AddSdkQueryWorkflowDefinition), () => ({
       path: "requests/secrets/list.ts",
+      urlPath: "/secrets",
+      method: "get",
     })),
 
-    step(makeWorkflowMachine(AddSdkQueryWorkflowDefinition), () => ({
+    step(makeWorkflowMachine(AddSdkMutationWorkflowDefinition), () => ({
       path: "requests/secrets/create.ts",
+      urlPath: "/secrets",
+      method: "post",
     })),
 
-    step(makeWorkflowMachine(AddSdkQueryWorkflowDefinition), () => ({
+    step(makeWorkflowMachine(AddSdkMutationWorkflowDefinition), () => ({
       path: "requests/secrets/update.ts",
+      urlPath: "/secrets/{id}",
+      method: "put",
     })),
 
-    step(makeWorkflowMachine(AddSdkQueryWorkflowDefinition), () => ({
+    step(makeWorkflowMachine(AddSdkMutationWorkflowDefinition), () => ({
       path: "requests/secrets/delete.ts",
+      urlPath: "/secrets/{id}",
+      method: "delete",
     })),
 
-    // Access requests resource queries
+    // Access requests: list (query), approve (mutation)
     step(makeWorkflowMachine(AddSdkQueryWorkflowDefinition), () => ({
       path: "requests/access-requests/list.ts",
+      urlPath: "/access-requests",
+      method: "get",
     })),
 
-    step(makeWorkflowMachine(AddSdkQueryWorkflowDefinition), () => ({
+    step(makeWorkflowMachine(AddSdkMutationWorkflowDefinition), () => ({
       path: "requests/access-requests/approve.ts",
+      urlPath: "/access-requests/{id}/approve",
+      method: "post",
     })),
 
-    // Service tokens resource queries
+    // Service tokens: list (query), approve (mutation)
     step(makeWorkflowMachine(AddSdkQueryWorkflowDefinition), () => ({
       path: "requests/service-tokens/list.ts",
+      urlPath: "/service-tokens",
+      method: "get",
     })),
 
-    step(makeWorkflowMachine(AddSdkQueryWorkflowDefinition), () => ({
+    step(makeWorkflowMachine(AddSdkMutationWorkflowDefinition), () => ({
       path: "requests/service-tokens/approve.ts",
+      urlPath: "/service-tokens/{id}/approve",
+      method: "post",
     })),
   ],
 });

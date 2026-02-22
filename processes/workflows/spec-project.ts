@@ -99,14 +99,14 @@ export const SpecProjectWorkflowDefinition = defineWorkflow<
       
       Backend:
       * openapi/add-schema - to add business objects
-      * openapi/add-route - to add API routes (takes path, urlPath, method, and prompt)
+      * openapi/add-route - to add API routes (takes path, urlPath, method, and prompt; urlPath uses OpenAPI {param} syntax, method is lowercase e.g. get, post, put, delete)
       * drizzle/update-schema - to add database tables
       * drizzle/add-query - to add database queries
       * express/add-handler - to add API handlers
       
       Frontend:
-      * sdk/add-query and sdk/add-mutation - to add TanStack hooks
-      * vue/add-view - to add a page (takes path, urlPath, and prompt)
+      * sdk/add-query and sdk/add-mutation - to add TanStack hooks (both take path, urlPath, method, and prompt; urlPath uses OpenAPI {param} syntax, method is lowercase)
+      * vue/add-view (not vue/add-page) - to add a page (takes path, urlPath in Vue Router :param style, and prompt)
       
       Some have flags, such as "upload" or "file" for variations of adding files to the database, express handlers, api routes, and TanStack mutations. See if you need to use any of these.
       `,
