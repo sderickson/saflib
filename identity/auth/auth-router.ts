@@ -2,6 +2,7 @@ import {
   createWebHistory,
   createRouter,
   type Router,
+  type RouterHistory,
   type RouteRecordRaw,
 } from "vue-router";
 import {
@@ -25,6 +26,7 @@ interface AuthRouterOptions {
   loginRedirect?: string;
   logoutRedirect?: string;
   renderPrompt?: boolean;
+  history?: RouterHistory;
 }
 
 export const createAuthRouter = (options: AuthRouterOptions) => {
@@ -76,7 +78,7 @@ export const createAuthRouter = (options: AuthRouterOptions) => {
   ];
 
   router = createRouter({
-    history: createWebHistory(),
+    history: options?.history ?? createWebHistory(),
     routes,
   });
   return router;

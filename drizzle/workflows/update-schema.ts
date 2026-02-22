@@ -1,5 +1,4 @@
 import {
-  PromptStepMachine,
   CommandStepMachine,
   defineWorkflow,
   step,
@@ -20,7 +19,14 @@ const input = [
   {
     name: "file",
     type: "flag" as const,
-    description: "Include file metadata columns (blob_name, file_original_name, mimetype, size, etc.)",
+    description:
+      "Include file metadata columns (blob_name, file_original_name, mimetype, size, etc.)",
+  },
+  {
+    name: "ignorePlural",
+    description: "Ignore the plural check for the schema name",
+    type: "flag" as const,
+    exampleValue: "false",
   },
 ] as const;
 
@@ -46,12 +52,18 @@ export const UpdateSchemaWorkflowDefinition = defineWorkflow<
   sourceUrl: import.meta.url,
 
   context: ({ input }) => {
+    const pathResult = parsePath(input.path, {
+      requiredPrefix: "./schemas/",
+      requiredSuffix: ".ts",
+      cwd: input.cwd,
+    });
+    if (!input.ignorePlural && pathResult.targetName.endsWith("s")) {
+      throw new Error(
+        `Table name is ${pathResult.targetName} and should not be plural. Either change it to singular, or if it already is singular, use the ignorePlural flag.`,
+      );
+    }
     return {
-      ...parsePath(input.path, {
-        requiredPrefix: "./schemas/",
-        requiredSuffix: ".ts",
-        cwd: input.cwd,
-      }),
+      ...pathResult,
       targetDir: input.cwd,
       file: input.file ?? false,
     };
@@ -71,22 +83,6 @@ export const UpdateSchemaWorkflowDefinition = defineWorkflow<
   },
 
   steps: [
-    step(
-      PromptStepMachine,
-      () => {
-        return {
-          promptText: `Make sure the table name is singular.
-        
-        The table ends with "s". Table names should not be plural; if the table name is actually plural, please stop and rerun the workflow with a singular name. Otherwise, continue.`,
-        };
-      },
-      {
-        skipIf: ({ context }) => {
-          return !context.targetName.endsWith("s");
-        },
-      },
-    ),
-
     step(CopyStepMachine, ({ context }) => {
       return {
         name: context.targetName,

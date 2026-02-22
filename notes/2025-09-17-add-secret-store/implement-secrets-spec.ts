@@ -70,6 +70,8 @@ export const ImplementSecretsSpecWorkflowDefinition = defineWorkflow<
     // GET /secrets route
     step(makeWorkflowMachine(AddRouteWorkflowDefinition), () => ({
       path: "secrets/list",
+      urlPath: "/secrets",
+      method: "get",
       systemPrompt: `The GET /secrets endpoint has the following requirements:
 
       - Returns array of Secret objects
@@ -85,6 +87,8 @@ export const ImplementSecretsSpecWorkflowDefinition = defineWorkflow<
     // POST /secrets route
     step(makeWorkflowMachine(AddRouteWorkflowDefinition), () => ({
       path: "secrets/create",
+      urlPath: "/secrets",
+      method: "post",
       systemPrompt: `The POST /secrets endpoint has the following requirements:
 
       - Accepts SecretCreateRequest in request body
@@ -100,6 +104,8 @@ export const ImplementSecretsSpecWorkflowDefinition = defineWorkflow<
     // PUT /secrets/:id route
     step(makeWorkflowMachine(AddRouteWorkflowDefinition), () => ({
       path: "secrets/update",
+      urlPath: "/secrets/{id}",
+      method: "put",
       systemPrompt: `The PUT /secrets/:id endpoint has the following requirements:
 
       - Accepts secret ID as path parameter
@@ -117,6 +123,8 @@ export const ImplementSecretsSpecWorkflowDefinition = defineWorkflow<
     // DELETE /secrets/:id route
     step(makeWorkflowMachine(AddRouteWorkflowDefinition), () => ({
       path: "secrets/delete",
+      urlPath: "/secrets/{id}",
+      method: "delete",
       systemPrompt: `The DELETE /secrets/:id endpoint has the following requirements:
 
       - Accepts secret ID as path parameter
@@ -177,6 +185,8 @@ export const ImplementSecretsSpecWorkflowDefinition = defineWorkflow<
     // GET /access-requests route
     step(makeWorkflowMachine(AddRouteWorkflowDefinition), () => ({
       path: "access-requests/list",
+      urlPath: "/access-requests",
+      method: "get",
       systemPrompt: `The GET /access-requests endpoint has the following requirements:
 
       - Returns array of AccessRequest objects
@@ -193,6 +203,8 @@ export const ImplementSecretsSpecWorkflowDefinition = defineWorkflow<
     // POST /access-requests/:id/approve route
     step(makeWorkflowMachine(AddRouteWorkflowDefinition), () => ({
       path: "access-requests/approve",
+      urlPath: "/access-requests/{id}/approve",
+      method: "post",
       systemPrompt: `The POST /access-requests/:id/approve endpoint has the following requirements:
 
       - Accepts access request ID as path parameter
@@ -210,6 +222,8 @@ export const ImplementSecretsSpecWorkflowDefinition = defineWorkflow<
     // GET /service-tokens route
     step(makeWorkflowMachine(AddRouteWorkflowDefinition), () => ({
       path: "service-tokens/list",
+      urlPath: "/service-tokens",
+      method: "get",
       systemPrompt: `The GET /service-tokens endpoint has the following requirements:
 
       - Returns array of ServiceToken objects
@@ -226,6 +240,8 @@ export const ImplementSecretsSpecWorkflowDefinition = defineWorkflow<
     // POST /service-tokens/:id/approve route
     step(makeWorkflowMachine(AddRouteWorkflowDefinition), () => ({
       path: "service-tokens/approve",
+      urlPath: "/service-tokens/{id}/approve",
+      method: "post",
       systemPrompt: `The POST /service-tokens/:id/approve endpoint has the following requirements:
 
       - Accepts service token ID as path parameter

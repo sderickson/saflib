@@ -64,6 +64,8 @@ const TestExpressWorkflowsDefinition = defineWorkflow<
     // Add a list users route to the spec
     step(makeWorkflowMachine(AddRouteWorkflowDefinition), () => ({
       path: "routes/users/list.yaml",
+      urlPath: "/users",
+      method: "get",
     })),
 
     // Go back to parent directory and initialize HTTP service

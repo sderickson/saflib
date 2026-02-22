@@ -74,6 +74,17 @@ export const getPackageName = (cwd: string): string => {
 };
 
 /**
+ * Checks if the cwd's package.json has a given dependency. Throws an error if it does not.
+ */
+export const checkPackageDependency = (cwd: string, dependencyName: string) => {
+  const packageJson = readFileSync(path.join(cwd, "package.json"), "utf8");
+  const dependencies = JSON.parse(packageJson).dependencies;
+  if (!dependencies[dependencyName]) {
+    throw new Error(`Package ${cwd} does not depend on ${dependencyName}`);
+  }
+};
+
+/**
  * Takes a package name and returns a breakdown into conventional parts for templating.
  *
  * The package name format is [@organization-name/]service-name[-required-suffix].

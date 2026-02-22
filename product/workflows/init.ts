@@ -5,6 +5,7 @@ import {
   CopyStepMachine,
   makeLineReplace,
   CommandStepMachine,
+  TransformFileStepMachine,
   CdStepMachine,
   getPackageName,
   parsePackageName,
@@ -18,7 +19,6 @@ import {
 import { InitServiceWorkflowDefinition } from "@saflib/service/workflows";
 import path from "node:path";
 import { IdentityInitWorkflowDefinition } from "@saflib/identity/workflows";
-import fs from "node:fs";
 
 const input = [
   {
@@ -73,33 +73,23 @@ export const InitProductWorkflowDefinition = defineWorkflow<
   },
 
   steps: [
-    step(CommandStepMachine, ({ context }) => {
-      if (context.runMode === "dry" || context.runMode === "checklist") {
-        return {
-          command: "echo",
-          args: ["Skip appending to workspaces."],
-        };
-      }
-
-      // hack to add the product to the workspaces w/out deps
-      // probably the makings of a new workflow step here
-      const packageJson = JSON.parse(
-        fs.readFileSync(path.join(context.cwd, "package.json"), "utf8"),
-      );
-      const newWorkspaces = Array.from(
-        new Set([...packageJson.workspaces, `${context.productName}/**`]),
-      );
-      newWorkspaces.sort();
-      packageJson.workspaces = newWorkspaces;
-      fs.writeFileSync(
-        path.join(context.cwd, "package.json"),
-        JSON.stringify(packageJson, null, 2),
-      );
-      return {
-        command: "npm",
-        args: ["exec", "prettier", "--", "package.json", "--write"],
-      };
-    }),
+    step(TransformFileStepMachine, ({ context }) => ({
+      filePath: path.join(context.cwd, "package.json"),
+      description: `Add ${context.productName}/** to workspaces in package.json`,
+      transform: (content: string) => {
+        const pkg = JSON.parse(content);
+        const workspaces = Array.from(
+          new Set([...pkg.workspaces, `${context.productName}/**`]),
+        );
+        workspaces.sort();
+        pkg.workspaces = workspaces;
+        return JSON.stringify(pkg, null, 2) + "\n";
+      },
+    })),
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["exec", "prettier", "--", "package.json", "--write"],
+    })),
     step(makeWorkflowMachine(InitServiceWorkflowDefinition), ({ context }) => ({
       name: `${context.sharedPackagePrefix}-service`,
       path: `./${context.productName}/service`,
@@ -180,6 +170,7 @@ export const InitProductWorkflowDefinition = defineWorkflow<
 
     step(makeWorkflowMachine(AddSpaViewWorkflowDefinition), ({ context }) => ({
       path: "./pages/home",
+      urlPath: "/",
       prompt: `Set up the logged-out home page in the ${context.productName} root SPA.
       - Remove anything happening in the loader; this page will be static.
       - Update the home page to have a call to action to the register page. Use linkToProps from @saflib/links to create the link and bind them to vuetify components. Get the link object from @saflib/auth-links which is in saflib/identity/auth-links.
@@ -218,6 +209,7 @@ export const InitProductWorkflowDefinition = defineWorkflow<
 
     step(makeWorkflowMachine(AddSpaViewWorkflowDefinition), () => ({
       path: "./pages/home",
+      urlPath: "/",
       prompt: `Set up the app SPA similar to the root SPA, just put some really basic content for now, will fit it in later.
       `,
     })),
@@ -231,6 +223,7 @@ export const InitProductWorkflowDefinition = defineWorkflow<
     })),
     step(makeWorkflowMachine(AddSpaViewWorkflowDefinition), ({ context }) => ({
       path: "./pages/home",
+      urlPath: "/",
       prompt: `Set up the ${context.productName} account SPA home page.
       - Add to the router @saflib/account-sdk package's AccountPasswordPageAsync and AccountProfilePageAsync.
       - Include the accountSdkStrings from @saflib/account-sdk/strings in the account-spa's strings file, so i18n works.
@@ -248,6 +241,7 @@ export const InitProductWorkflowDefinition = defineWorkflow<
 
     step(makeWorkflowMachine(AddSpaViewWorkflowDefinition), ({ context }) => ({
       path: "./pages/admin",
+      urlPath: "/admin",
       prompt: `Set up the ${context.productName} admin SPA home page.
       - It can just be a stub for now, will fit it in later.`,
     })),

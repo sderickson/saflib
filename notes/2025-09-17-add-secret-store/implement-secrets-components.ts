@@ -72,6 +72,7 @@ export const ImplementSecretsComponentsWorkflowDefinition = defineWorkflow<
     // Page component for the main management interface
     step(makeWorkflowMachine(AddSpaPageWorkflowDefinition), () => ({
       path: "./pages/secret-manager",
+      urlPath: "/secret-manager",
       systemPrompt: `The SecretManager page loads all (first 100) secrets, access requests, and service tokens and shows them in a v-tabs. It has three tabs: secrets, access-requests, and service-tokens. Uses the "SecretsTable", "AccessRequestsTable", and "ServiceTokensTable" components for the tabs. Also include the "MissingSecretsTable" component for the secrets tab; the page will need to determine which access requests are missing secrets and pass those.`,
     })),
   ],

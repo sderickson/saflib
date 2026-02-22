@@ -28,13 +28,20 @@ const input = [
   {
     name: "path",
     description:
-      "Path of the new page or dialog (e.g., './pages/welcome-new-user')",
+      "Folder path of the new page or dialog (e.g., './pages/welcome-new-user')",
     exampleValue: "./pages/welcome-new-user",
+  },
+  {
+    name: "urlPath",
+    description:
+      "The URL path for the view (e.g., '/recipes/:id' or '/recipes/create')",
+    exampleValue: "/welcome-new-user",
   },
 ] as const;
 
 interface AddSpaViewWorkflowContext
-  extends ParsePathOutput, ParsePackageNameOutput {
+  extends ParsePathOutput,
+    ParsePackageNameOutput {
   targetDir: string;
   fullName: string;
 }
@@ -75,10 +82,6 @@ export const AddSpaViewWorkflowDefinition = defineWorkflow<
 
     // get the "full path" of the view, which does not include the first directory (pages/ or dialogs/)
     const folderPath = pathResult.groupName + "/" + pathResult.targetName;
-    let routePath = folderPath.split("/").slice(2).join("/");
-    if (routePath === "home") {
-      routePath = "";
-    }
 
     // convert that into a full name that can be used for variable names
     const fullName = folderPath
@@ -96,7 +99,7 @@ export const AddSpaViewWorkflowDefinition = defineWorkflow<
       targetDir,
       subdomainName,
       groupName: folderPath,
-      routePath,
+      urlPath: input.urlPath,
       fullName,
     };
   },
@@ -209,6 +212,7 @@ Run \`npm run typecheck\` in ${context.cwd} to verify the code is type-safe.
   test drives baseline coverage on the Vue file; uncovered lines highlight logic worth extracting.
   Don't add interaction tests here — Playwright covers that. Focus deeper tests on the extracted
   logic files and composables.
+* **Deciding What to Test**: Don't extract simple logic just to test it. We already have tests for each tanstack query, so there's no need to pull that into a separate composable either. Save testing for more complex logic.
 
 For more information, see ${context.docFiles?.components}`,
     })),

@@ -26,11 +26,17 @@ export const use__MutationName____GroupName__Mutation = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (
+      // @ts-ignore TODO: update params to match the route
       data: __ServiceName__ServiceRequestBody["__mutationName____GroupName__"],
     ) => {
       return handleClientMethod(
-        // @ts-expect-error TODO: update to correct HTTP method and path
-        getClient().POST("/__group-name__/__mutation-name__", { body: data }),
+        // @ts-ignore TODO: update params to match the route
+        getClient().__METHOD__(
+          // @ts-ignore TODO: update params to match the route
+          "__url-path__",
+          // @ts-ignore TODO: update params to match the route
+          { body: data },
+        ),
       );
     },
     onSuccess: () => {
