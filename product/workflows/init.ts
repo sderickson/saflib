@@ -28,6 +28,12 @@ const input = [
   },
 ] as const;
 
+/**
+ * TODO:
+ * - figure out how to make links between spas and pages get added more consistently.
+ *   Maybe start with a left nav, auto-add pages there, and add spas to top nav?
+ */
+
 interface InitProductWorkflowContext extends ParsePackageNameOutput {
   productName: string;
 }
