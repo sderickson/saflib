@@ -11,7 +11,7 @@ export const __subdomainName__Links: LinkMap = {
   // BEGIN WORKFLOW AREA page-links FOR vue/add-view
   __fullName__: {
     subdomain,
-    path: "/__route-path__",
+    path: "/__url-path__",
   },
   // END WORKFLOW AREA
 };

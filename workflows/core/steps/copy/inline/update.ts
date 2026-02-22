@@ -5,10 +5,7 @@ import {
   isWorkflowAreaEnd,
 } from "./parse.ts";
 import { findTargetAreaIndices } from "./find.ts";
-import {
-  getNewLinesForNonSorted,
-  getNewLinesForSorted,
-} from "./lines.ts";
+import { getNewLinesForNonSorted, getNewLinesForSorted } from "./lines.ts";
 
 /**
  * Updates a sorted workflow area by filtering whitespace, adding new lines, and sorting.

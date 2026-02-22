@@ -20,8 +20,20 @@ const input = [
   {
     name: "path",
     description:
-      "The path to the template file to be created (e.g., 'requests/scans/execute.ts')",
+      "The file path to the template file to be created (e.g., './requests/scans/execute.ts')",
     exampleValue: "./requests/scans/execute.ts",
+  },
+  {
+    name: "urlPath",
+    description:
+      "The URL path for the API endpoint (e.g., '/scans/{id}/execute')",
+    exampleValue: "/example",
+  },
+  {
+    name: "method",
+    description:
+      "The HTTP method in lowercase (e.g., 'post', 'put', 'delete')",
+    exampleValue: "post",
   },
   {
     name: "upload",
@@ -35,6 +47,8 @@ interface AddMutationWorkflowContext
     ParsePathOutput {
   mutationName: string;
   upload: boolean;
+  urlPath: string;
+  method: string;
 }
 
 export const AddSdkMutationWorkflowDefinition = defineWorkflow<
@@ -57,20 +71,18 @@ export const AddSdkMutationWorkflowDefinition = defineWorkflow<
       requiredSuffix: ".ts",
       cwd: input.cwd,
       requiredPrefix: "./requests/",
-    })
+    });
     return {
       ...parsePackageName(getPackageName(input.cwd), {
         requiredSuffix: "-sdk",
         silentError: true, // so checklists don't error
       }),
-      ...parsePath(input.path, {
-        requiredSuffix: ".ts",
-        cwd: input.cwd,
-        requiredPrefix: "./requests/",
-      }),
+      ...pathResult,
       targetDir: input.cwd,
       mutationName: pathResult.targetName,
       upload: input.upload ?? false,
+      urlPath: input.urlPath,
+      method: input.method,
     };
   },
 

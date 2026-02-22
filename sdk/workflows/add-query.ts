@@ -20,14 +20,28 @@ const input = [
   {
     name: "path",
     description:
-      "The path to the template file to be created (e.g., 'requests/secrets/list.ts')",
+      "The file path to the template file to be created (e.g., './requests/secrets/list.ts')",
     exampleValue: "./requests/secrets/list.ts",
+  },
+  {
+    name: "urlPath",
+    description:
+      "The URL path for the API endpoint (e.g., '/secrets' or '/secrets/{id}')",
+    exampleValue: "/example",
+  },
+  {
+    name: "method",
+    description:
+      "The HTTP method in lowercase (e.g., 'get', 'post', 'put', 'delete')",
+    exampleValue: "get",
   },
 ] as const;
 
 interface AddQueryWorkflowContext
   extends ParsePackageNameOutput, ParsePathOutput {
   queryName: string;
+  urlPath: string;
+  method: string;
 }
 
 export const AddSdkQueryWorkflowDefinition = defineWorkflow<
@@ -59,6 +73,8 @@ export const AddSdkQueryWorkflowDefinition = defineWorkflow<
       ...pathResult,
       targetDir: input.cwd,
       queryName: pathResult.targetName,
+      urlPath: input.urlPath,
+      method: input.method,
     };
   },
 

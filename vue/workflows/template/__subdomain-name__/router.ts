@@ -1,4 +1,8 @@
-import { createRouter, createWebHistory } from "vue-router";
+import {
+  createRouter,
+  createWebHistory,
+  type RouterHistory,
+} from "vue-router";
 import { __subdomainName__Links } from "template-package-links";
 import { PageNotFound } from "@saflib/vue/components";
 
@@ -9,7 +13,9 @@ console.log("__subdomainName__Links:", __subdomainName__Links);
 import __FullName__Async from "./__group-name__/__TargetName__Async.vue";
 // END WORKFLOW AREA
 
-export const create__SubdomainName__Router = () => {
+export const create__SubdomainName__Router = (options?: {
+  history?: RouterHistory;
+}) => {
   const routes = [
     // BEGIN WORKFLOW AREA page-routes FOR vue/add-view
     {
@@ -20,7 +26,7 @@ export const create__SubdomainName__Router = () => {
     { path: "/:pathMatch(.*)*", component: PageNotFound },
   ];
   return createRouter({
-    history: createWebHistory("/"),
+    history: options?.history ?? createWebHistory("/"),
     routes,
   });
 };

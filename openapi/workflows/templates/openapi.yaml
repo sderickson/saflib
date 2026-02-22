@@ -5,20 +5,11 @@ info:
   description: API specification for the __service-name__ service
 
 paths:
-  # Add your API routes here
-  # Example:
-  # /resource:
-  #   get:
-  #     $ref: "./routes/resource/list.yaml#/listResource"
-  #   post:
-  #     $ref: "./routes/resource/create.yaml#/createResource"
-  # /resource/{id}:
-  #   get:
-  #     $ref: "./routes/resource/get.yaml#/getResource"
-  #   put:
-  #     $ref: "./routes/resource/update.yaml#/updateResource"
-  #   delete:
-  #     $ref: "./routes/resource/delete.yaml#/deleteResource"
+  # BEGIN WORKFLOW AREA route-paths FOR openapi/add-route
+  __url-path__:
+    __method__:
+      $ref: "./routes/__group-name__/__target-name__.yaml#/__operationId__"
+  # END WORKFLOW AREA
 
 components:
   schemas:

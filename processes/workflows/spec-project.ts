@@ -10,9 +10,13 @@ import path from "path";
 
 /**
  * Todo:
- * - encourage from the start breaking down the workflow into multiple workflows, which the main workflow orchestrates. Provide guidance on how to scope workflows.
+ * - encourage from the start breaking down the workflow into multiple workflows, which the main workflow orchestrates. Provide guidance on how to scope workflows. Maybe limit to ten routine workflows per complex workflow...
  * - need a way to add a lib function, not just an export
  * - have database schemas be less denormalized generally, and maybe add a step to discuss how to structure the database best for any future plans.
+ * - remind agent to use singular table names and query folders.
+ * - should probably organize work by feature... don't just build the entire backend and then the entire frontend for a whole series of features.
+ * - also more thoroughly document what pages and what might share components, or what existing components might be used. Give hints in the prompt.
+ * - might also need to make it easier, or already set up, to have components in the sdk work in spas. Like i18n and exports.
  */
 
 const sourceDir = path.resolve(import.meta.dirname, "./templates");
@@ -85,7 +89,7 @@ export const SpecProjectWorkflowDefinition = defineWorkflow<
       fileId: "workflow",
       promptMessage: `Update **${path.basename(context.copiedFiles!.plan)}**.
 
-      Noe that the project is spec'd, it's time to sketch a plan to implement the spec. The way you'll be doing this is mainly with workflows. Before you write any workflows, though, you should understand what workflows are available, and lay out a plan in the plan.md file.
+      Note that the project is spec'd, it's time to sketch a plan to implement the spec. The way you'll be doing this is mainly with workflows. Before you write any workflows, though, you should understand what workflows are available, and lay out a plan in the plan.md file.
 
       You may need to plan for multiple workflows if the spec is larger. It's good to break them down by resource (e.g. database table and related business object) and frontend/backend. So for each resource have one workflow for the frontend and one for the backend, unless it's a small change. It's also generally good to organize workflows in a way that after each one is a good stopping point, where changes can be tested and polished.
       
@@ -95,14 +99,14 @@ export const SpecProjectWorkflowDefinition = defineWorkflow<
       
       Backend:
       * openapi/add-schema - to add business objects
-      * openapi/add-route - to add API routes
+      * openapi/add-route - to add API routes (takes path, urlPath, method, and prompt; urlPath uses OpenAPI {param} syntax, method is lowercase e.g. get, post, put, delete)
       * drizzle/update-schema - to add database tables
       * drizzle/add-query - to add database queries
       * express/add-handler - to add API handlers
       
       Frontend:
-      * sdk/add-query and sdk/add-mutation - to add TanStack hooks
-      * vue/add-page - to add a page
+      * sdk/add-query and sdk/add-mutation - to add TanStack hooks (both take path, urlPath, method, and prompt; urlPath uses OpenAPI {param} syntax, method is lowercase)
+      * vue/add-view (not vue/add-page) - to add a page (takes path, urlPath in Vue Router :param style, and prompt)
       
       Some have flags, such as "upload" or "file" for variations of adding files to the database, express handlers, api routes, and TanStack mutations. See if you need to use any of these.
       `,

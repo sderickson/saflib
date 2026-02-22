@@ -14,10 +14,10 @@ is shared list state (like mockPartSources), push a new item so list queries see
 // END WORKFLOW AREA
 
 export const __mutationName____GroupName__Handler = __serviceName__Handler({
-  verb: "post",
-  path: "/__group-name__/__mutation-name__",
+  verb: "__method__",
+  path: "__url-path__",
   status: 200,
-  // @ts-expect-error TODO: update verb, path, status, and handler to match the endpoint
+  // @ts-expect-error TODO: update status and handler to match the endpoint
   handler: async (req) => {
     return {};
   },
