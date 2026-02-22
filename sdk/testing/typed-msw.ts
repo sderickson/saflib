@@ -80,7 +80,14 @@ export const typedCreateHandler = <Paths extends Record<string, any>>({
     }
     // translate instances of "{id}" (the openapi spec format) with ":id" (the msw format)
     const pathString = String(path).replace(/{(\w+)}/g, ":$1");
-    return http[verb as keyof typeof http](
+    let v = verb as keyof typeof http;
+    if (verb === "__method__") {
+      v = "post";
+    }
+    if (!http[v]) {
+      throw new Error(`Invalid HTTP verb: ${v}`);
+    }
+    return http[v](
       `http://${subdomain}.${domain}${pathString}`,
       async (request) => {
         let body: any;
