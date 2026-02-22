@@ -144,7 +144,7 @@ export const AddRouteWorkflowDefinition = defineWorkflow<
  * the duplicate path key block is removed. If it doesn't exist, the content is
  * left as-is (already inserted by CopyStepMachine).
  */
-function mergeOpenApiRoute(content: string): string {
+export function mergeOpenApiRoute(content: string): string {
   const lines = content.split("\n");
   const areaStart = lines.findIndex((l) =>
     l.includes("BEGIN WORKFLOW AREA route-paths FOR openapi/add-route"),
