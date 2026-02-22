@@ -86,20 +86,17 @@ export const AddComponentWorkflowDefinition = defineWorkflow<
       .join("-")
       .replaceAll("/", "-");
 
-    console.log("fullName", fullName);
-    console.log("folderPath", folderPath);
-    console.log("pathResult", pathResult);
-    console.log("input.path", input.path);
-    console.log("input.cwd", input.cwd);
-    console.log("input", input);
-    // throw new Error("test");
-
-    // const targetDir = path.join(input.cwd, input.path);
+    // this is all to make add-component work for sdk and spa packages
+    // have to look at the context to figure out what the required suffix is
+    const dirname = path.basename(input.cwd);
+    const packageName = getPackageName(input.cwd);
+    const dirnameIndex = packageName.indexOf(dirname) - 1;
+    const requiredSuffix = packageName.slice(dirnameIndex);
 
     return {
       ...pathResult,
       ...parsePackageName(getPackageName(input.cwd), {
-        requiredSuffix: "-sdk",
+        requiredSuffix: requiredSuffix,
         silentError: true, // so checklists don't error
       }),
       targetDir: input.cwd,
@@ -120,11 +117,23 @@ export const AddComponentWorkflowDefinition = defineWorkflow<
   docFiles: {},
 
   steps: [
-    step(CopyStepMachine, ({ context }) => ({
-      name: context.targetName,
-      targetDir: context.targetDir,
-      lineReplace: makeLineReplace(context),
-    })),
+    step(CopyStepMachine, ({ context }) => {
+      const defaultLineReplace = makeLineReplace(context);
+      const lineReplace = (line: string) => {
+        let l = line
+          .replace(
+            "template-package-sdk/test-app",
+            context.packageName + "/test-app",
+          )
+          .replace("template-package-sdk/i18n", context.packageName + "/i18n");
+        return defaultLineReplace(l);
+      };
+      return {
+        name: context.targetName,
+        targetDir: context.targetDir,
+        lineReplace,
+      };
+    }),
 
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "vue",
