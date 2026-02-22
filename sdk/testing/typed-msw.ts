@@ -81,6 +81,7 @@ export const typedCreateHandler = <Paths extends Record<string, any>>({
     // translate instances of "{id}" (the openapi spec format) with ":id" (the msw format)
     const pathString = String(path).replace(/{(\w+)}/g, ":$1");
     let v = verb as keyof typeof http;
+    // bit of a hack to make template files for tanstack query and mutation tests to work as templates
     if (verb === "__method__") {
       v = "post";
     }
