@@ -6,7 +6,9 @@
   "exports": {
     ".": "./index.ts",
     "./fakes": "./fakes.ts",
-    "./strings": "./strings.ts"
+    "./strings": "./strings.ts",
+    "./i18n": "./i18n.ts",
+    "./test-app": "./test-app.ts"
   },
   "scripts": {
     "test": "vitest run",
