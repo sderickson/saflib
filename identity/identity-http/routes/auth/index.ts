@@ -27,7 +27,7 @@ export const makeAuthRouter = () => {
     "/auth",
     createScopedMiddleware({
       apiSpec: jsonSpec,
-      authRequired: false,
+      enforceAuth: false,
     }),
   );
 

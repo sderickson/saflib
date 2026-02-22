@@ -20,9 +20,9 @@ Options for creating scoped middleware.
 
 ---
 
-### authRequired?
+### enforceAuth?
 
-> `optional` **authRequired**: `boolean`
+> `optional` **enforceAuth**: `boolean`
 
 ---
 

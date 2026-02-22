@@ -59,7 +59,7 @@ export const createGlobalMiddleware = (
 export interface ScopedMiddlewareOptions {
   apiSpec?: OpenAPIV3.DocumentV3;
   fileUploader?: multer.Options;
-  authRequired?: boolean;
+  enforceAuth?: boolean;
   adminRequired?: boolean;
 }
 
@@ -70,7 +70,7 @@ export interface ScopedMiddlewareOptions {
 export const createScopedMiddleware = (
   options: ScopedMiddlewareOptions,
 ): Handler[] => {
-  const { apiSpec, fileUploader, authRequired, adminRequired } = options;
+  const { apiSpec, fileUploader, enforceAuth, adminRequired } = options;
 
   let openApiValidatorMiddleware: Handler[] = [];
   if (apiSpec) {
@@ -81,7 +81,7 @@ export const createScopedMiddleware = (
   }
 
   let authMiddleware: Handler[] = [];
-  if (authRequired !== false) {
+  if (enforceAuth !== false) {
     authMiddleware = [makeAuthMiddleware({ adminRequired })];
   }
 
