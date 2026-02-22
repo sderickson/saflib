@@ -14,7 +14,7 @@
 </template>
 
 <script setup lang="ts">
-import { __full_name_____group_name__ as strings } from "./__TargetName__.strings.ts";
+import { __full_name__ as strings } from "./__TargetName__.strings.ts";
 import { use__TargetName__Loader } from "./__TargetName__.loader.ts";
 import { useReverseT } from "template-package-spa/i18n";
 

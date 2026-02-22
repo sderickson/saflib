@@ -30,6 +30,7 @@ interface AddComponentWorkflowContext
     ParsePackageNameOutput {
   targetDir: string;
   prefixName: string;
+  fullName: string;
 }
 
 export const AddComponentWorkflowDefinition = defineWorkflow<
@@ -71,35 +72,47 @@ export const AddComponentWorkflowDefinition = defineWorkflow<
       throw new Error("Path must be all lowercase");
     }
 
+    const pathResult = parsePath(input.path, {
+      cwd: input.cwd,
+    });
+
+    // get the "full path" of the view, which does not include the first directory (pages/ or dialogs/)
+    const folderPath = pathResult.groupName + "/" + pathResult.targetName;
+
+    // convert that into a full name that can be used for variable names
+    const fullName = folderPath
+      .split("/")
+      .slice(2)
+      .join("-")
+      .replaceAll("/", "-");
+
+    console.log("fullName", fullName);
+    console.log("folderPath", folderPath);
+    console.log("pathResult", pathResult);
+    console.log("input.path", input.path);
+    console.log("input.cwd", input.cwd);
+    console.log("input", input);
+    // throw new Error("test");
+
     // const targetDir = path.join(input.cwd, input.path);
 
     return {
-      ...parsePath(input.path, {
-        requiredPrefix: firstDir,
-        cwd: input.cwd,
-      }),
+      ...pathResult,
       ...parsePackageName(getPackageName(input.cwd), {
         requiredSuffix: "-sdk",
         silentError: true, // so checklists don't error
       }),
       targetDir: input.cwd,
       prefixName: firstDir,
+      fullName,
+      groupName: folderPath,
     };
   },
 
   templateFiles: {
-    vue: path.join(
-      sourceDir,
-      "__prefix-name__/__target-name__/__TargetName__.vue",
-    ),
-    strings: path.join(
-      sourceDir,
-      "__prefix-name__/__target-name__/__TargetName__.strings.ts",
-    ),
-    test: path.join(
-      sourceDir,
-      "__prefix-name__/__target-name__/__TargetName__.test.ts",
-    ),
+    vue: path.join(sourceDir, "__group-name__/__TargetName__.vue"),
+    strings: path.join(sourceDir, "__group-name__/__TargetName__.strings.ts"),
+    test: path.join(sourceDir, "__group-name__/__TargetName__.test.ts"),
     packageStrings: path.join(sourceDir, "strings.ts"),
   },
 

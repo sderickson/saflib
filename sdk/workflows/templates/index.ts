@@ -7,5 +7,5 @@ export * from "./requests/__group-name__/index.ts";
 // END WORKFLOW AREA
 
 // BEGIN SORTED WORKFLOW AREA component-exports FOR sdk/add-component
-export * from "./__prefix-name__/__target-name__/__TargetName__.vue";
+export * from "./__group-name__/__TargetName__.vue";
 // END WORKFLOW AREA
