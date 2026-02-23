@@ -6,7 +6,7 @@ import type {
 import createError from "http-errors";
 import { secretsServiceStorage } from "@saflib/secrets-service-common";
 import { serviceTokenQueries } from "@saflib/secrets-db";
-import { mapServiceTokenToResponse } from "../_helpers.js";
+import { mapServiceTokenToResponse } from "../_helpers.ts";
 import { getSafContextWithAuth } from "@saflib/node";
 
 export const approveServiceTokensHandler = createHandler(async (req, res) => {

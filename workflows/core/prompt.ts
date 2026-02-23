@@ -14,7 +14,11 @@ export const handlePrompt = async ({
     case "run":
       switch (context.agentConfig?.cli) {
         case "cursor-agent":
-          return await executePromptWithCursor({ msg, context });
+          const result = await executePromptWithCursor({ msg, context });
+          if (context.agentConfig?.sessionId && !result.sessionId) {
+            throw new Error("Session ID is required for run mode");
+          }
+          return result;
         case "mock-agent":
           return await executePromptWithMock({ msg, context });
         case undefined:

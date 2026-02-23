@@ -236,6 +236,8 @@ export const executePromptWithCursor = async ({
     printLineSlowly(`Resuming session ${context.agentConfig.sessionId}`);
     args.push("--resume");
     args.push(context.agentConfig.sessionId);
+  } else {
+    printLineSlowly("Starting new session");
     args.push("--model", "auto");
   }
   const agent = spawn("cursor-agent", args);
@@ -478,6 +480,7 @@ export const executePromptWithCursor = async ({
     }
 
     if (context.agentConfig) {
+      // might want to consider refactoring this... to not mutate the context object directly
       context.agentConfig.totalTimeMs += duration_api_ms;
       const MAX_WORKFLOW_TIME_MS = 1000 * 1000;
       const pctOver =
@@ -489,6 +492,7 @@ export const executePromptWithCursor = async ({
       } else {
         printLineSlowly(`WORKFLOW SESSION % USED: ${pctOver.toFixed(1)}%`);
       }
+      context.agentConfig.sessionId = sessionId;
     }
     response.code = code;
     response.sessionId = sessionId ?? undefined;

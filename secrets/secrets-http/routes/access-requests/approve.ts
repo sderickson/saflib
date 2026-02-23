@@ -6,7 +6,7 @@ import type {
 import createError from "http-errors";
 import { secretsServiceStorage } from "@saflib/secrets-service-common";
 import { accessRequestQueries } from "@saflib/secrets-db";
-import { mapAccessRequestToResponse } from "../_helpers.js";
+import { mapAccessRequestToResponse } from "../_helpers.ts";
 import { getSafContextWithAuth } from "@saflib/node";
 
 export const approveAccessRequestHandler = createHandler(async (req, res) => {

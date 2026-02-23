@@ -10,7 +10,7 @@ import {
   SecretNotFoundError,
   SecretAlreadyExistsError,
 } from "@saflib/secrets-db";
-import { mapSecretToResponse } from "../_helpers.js";
+import { mapSecretToResponse } from "../_helpers.ts";
 import {
   upsertSecretEncryptionKey,
   encryptSecret,

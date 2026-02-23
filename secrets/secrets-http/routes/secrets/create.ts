@@ -6,7 +6,7 @@ import type {
 import createError from "http-errors";
 import { secretsServiceStorage } from "@saflib/secrets-service-common";
 import { secretQueries, SecretAlreadyExistsError } from "@saflib/secrets-db";
-import { mapSecretToResponse } from "../_helpers.js";
+import { mapSecretToResponse } from "../_helpers.ts";
 import {
   upsertSecretEncryptionKey,
   encryptSecret,
