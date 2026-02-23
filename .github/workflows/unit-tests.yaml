@@ -4,6 +4,9 @@ on:
   pull_request:
     branches:
       - main
+      # Bit of a hack so tests pass. Might move these tests elsewhere.
+      # BEGIN WORKFLOW AREA test-product-dependencies FOR product/init
+      # END WORKFLOW AREA
 
 jobs:
   unit-tests:
