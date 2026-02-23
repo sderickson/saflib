@@ -8,8 +8,9 @@ import { getSafContextWithAuth } from "@saflib/node";
 // BEGIN ONCE WORKFLOW AREA uploadImports FOR express/add-handler IF upload
 import { __serviceName__ServiceStorage } from "template-package-service-common";
 import createError from "http-errors";
-import fs from "fs";
-// import { Readable } from "stream";
+import { createReadStream } from "fs";
+import { unlink } from "fs/promises";
+import { Readable } from "stream";
 import { sanitizeFilename } from "@saflib/utils";
 // END WORKFLOW AREA
 // TODO: Import neccessary db functions and error classes, as well as any other deps
@@ -22,25 +23,22 @@ export const __targetName____GroupName__Handler = createHandler(
     
     // BEGIN ONCE WORKFLOW AREA uploadInput FOR express/add-handler IF upload
     const ctx = __serviceName__ServiceStorage.getStore()!;
-    // @ts-expect-error
-    const { fileContainer } = ctx; // TODO: use actual container property name (e.g. emptyFormContainer)
-    if (!Array.isArray(req.files)) {
-      throw createError(400, "No files uploaded");
-    }
-    const file = req.files.find((f) => f.fieldname === "file");
-    if (!file) {
+    const { __groupName__FileContainer } = ctx;
+
+    // req.files may be an array (multer .any()) or a keyed object (multer .fields()).
+    // Extract the file whose fieldname matches the spec (e.g. "file").
+    const files = Array.isArray(req.files) ? req.files : req.files?.file;
+    const file = Array.isArray(files)
+      ? files.find((f: { fieldname: string }) => f.fieldname === "file") ?? files[0]
+      : files;
+    if (!file || !("path" in file) || typeof file.path !== "string") {
       throw createError(400, "No file uploaded");
     }
-    const fileBuffer = await fs.promises.readFile(file.path);
+    const multerFile = file as { path: string; originalname: string; mimetype: string; size: number };
+
+    const blobName = `__groupName__/${crypto.randomUUID()}`;
     // @ts-expect-error
-    const fileSize = fileBuffer.length;
-    try {
-      await fs.promises.unlink(file.path);
-    } catch {
-      // ignore cleanup errors
-    }
-    // @ts-expect-error
-    const blobName = `__groupName__/${Math.random().toString(36).slice(2, 15)}-${sanitizeFilename(file.originalname)}`;
+    const fileSize = multerFile.size;
     // END WORKFLOW AREA
     // @ts-expect-error
     const data: __ServiceName__ServiceRequestBody["__targetName____GroupName__"] =
@@ -62,13 +60,24 @@ export const __targetName____GroupName__Handler = createHandler(
     // }
 
     // BEGIN ONCE WORKFLOW AREA uploadToStore FOR express/add-handler IF upload
-    // TODO: After DB create, upload file to container. On upload failure, clean up DB record and throw 500.
-    // const uploadResult = await fileContainer.uploadFile(blobName, Readable.from(fileBuffer), {
-    //   mimetype: file.mimetype,
-    //   filename: sanitizeFilename(file.originalname),
-    //   cacheTime: new Date().toISOString(),
-    // });
-    // if (uploadResult.error) { ... cleanup result.id ... throw createError(500, "Failed to upload file to storage"); }
+    const stream: Readable = createReadStream(multerFile.path);
+    const uploadResult = await __groupName__FileContainer.uploadFile(blobName, stream, {
+      mimetype: multerFile.mimetype || "application/octet-stream",
+      filename: sanitizeFilename(multerFile.originalname),
+    });
+
+    try {
+      await unlink(multerFile.path);
+    } catch {
+      // ignore temp-file cleanup errors
+    }
+
+    if (uploadResult.error) {
+      // TODO: clean up the DB record created above (e.g. deleteX(dbKey, result.id))
+      throw createError(500, "Failed to upload file to storage", {
+        code: "FILE_UPLOAD_FAILED",
+      });
+    }
     // END WORKFLOW AREA
 
     // TODO: Map result to API response

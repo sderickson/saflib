@@ -57,6 +57,20 @@ createError(400, "This file type is not supported", {
 
 See for example [get-profile.ts](https://github.com/sderickson/saflib/blob/37d619bf41fe2922880dee7483b9fb9690d2ee1b/identity/identity-service/routes/auth/get-profile.ts).
 
+## File Upload Routes
+
+Routes that accept file uploads need additional setup beyond a standard handler:
+
+1. **Router middleware**: The group's `index.ts` router must pass `fileUploader: uploadToDiskOptions` (from `@saflib/express`) to `createScopedMiddleware` so that multipart requests are parsed by multer.
+
+2. **File container in context**: The service's request-scoped context (usually in the adjacent `-common` package) must include an `ObjectStore` property named `<groupName>FileContainer` (e.g. `recipesFileContainer`). This is created via `@saflib/object-store` and passed into the context. The `express/add-handler` workflow's first step (when `--upload` is set) handles finding or creating this.
+
+3. **`req.files` shape**: Multer may provide `req.files` as an array (`.any()`) or a keyed object (`.fields()`). Handlers should handle both forms and match the field name from the OpenAPI spec (e.g. `"file"`).
+
+4. **Write order**: Create the DB record first (with blob_name, file_original_name, mimetype, size), then upload to the container. On upload failure, delete the DB record and return 500. This ensures partial state is cleaned up.
+
+5. **Delete validation**: For delete handlers on child resources (e.g. deleting a file belonging to a recipe), fetch the record first and validate the parent relationship *before* deleting. This prevents destroying data when the request should return 404.
+
 ## Business Logic
 
 Since a route handler is primarily responsible for HTTP concerns, it should house as little business logic as possible. Instead it should call out to:
