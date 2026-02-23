@@ -11,7 +11,7 @@ import {
 } from "@saflib/workflows";
 import path from "node:path";
 
-const sourceDir = path.join(import.meta.dirname, "add-store-templates");
+const sourceDir = path.join(import.meta.dirname, "common-templates");
 
 const input = [
   {
@@ -24,6 +24,7 @@ const input = [
 
 interface ServiceAddStoreWorkflowContext extends ParsePackageNameOutput {
   storeName: string;
+  targetDir: string;
 }
 
 export const ServiceAddStoreWorkflowDefinition = defineWorkflow<
