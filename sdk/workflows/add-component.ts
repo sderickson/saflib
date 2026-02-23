@@ -89,9 +89,13 @@ export const AddComponentWorkflowDefinition = defineWorkflow<
     // this is all to make add-component work for sdk and spa packages
     // have to look at the context to figure out what the required suffix is
     const dirname = path.basename(input.cwd);
-    const packageName = getPackageName(input.cwd);
+    let packageName = getPackageName(input.cwd);
     const dirnameIndex = packageName.indexOf(dirname) - 1;
-    const requiredSuffix = packageName.slice(dirnameIndex);
+    let requiredSuffix = packageName.slice(dirnameIndex);
+    if (input.runMode === "checklist") {
+      packageName = "template-package-sdk";
+      requiredSuffix = "-sdk";
+    }
 
     return {
       ...pathResult,
