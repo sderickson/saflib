@@ -1,5 +1,5 @@
 import { defineWorkflow, makeWorkflowMachine, step } from "@saflib/workflows";
-import { InitServiceWorkflowDefinition } from "@saflib/service/workflows";
+import { InitProductWorkflowDefinition } from "@saflib/product/workflows";
 import { CdStepMachine } from "@saflib/workflows";
 import {
   AddSchemaWorkflowDefinition,
@@ -72,9 +72,8 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
   docFiles: {},
   steps: [
     // Covers various "init" workflows
-    step(makeWorkflowMachine(InitServiceWorkflowDefinition), () => ({
-      name: "@saflib/tmp-service",
-      path: "./tmp/service",
+    step(makeWorkflowMachine(InitProductWorkflowDefinition), () => ({
+      name: "tmp",
     })),
 
     // test spec project
@@ -200,15 +199,6 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
     //   path: "./rpcs/health/example.ts",
     // })),
 
-    // Test @saflib/identity workflows
-    step(CdStepMachine, () => ({
-      path: ".",
-    })),
-    step(makeWorkflowMachine(IdentityInitWorkflowDefinition), () => ({
-      name: "@saflib/tmp-identity",
-      path: "./tmp/service/identity",
-    })),
-
     // Test @saflib/cron workflows
     step(CdStepMachine, () => ({
       path: ".",
@@ -243,13 +233,6 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
     })),
 
     // Test @saflib/vue workflows
-    step(CdStepMachine, () => ({
-      path: ".",
-    })),
-    step(makeWorkflowMachine(AddSpaWorkflowDefinition), () => ({
-      productName: "tmp",
-      subdomainName: "root",
-    })),
     step(CdStepMachine, () => ({
       path: "./tmp/clients/root",
     })),
