@@ -2,9 +2,9 @@ import {
   CopyStepMachine,
   UpdateStepMachine,
   CommandStepMachine,
-  PromptStepMachine,
   defineWorkflow,
   step,
+  makeWorkflowMachine,
   type ParsePackageNameOutput,
   type ParsePathOutput,
   parsePath,
@@ -12,6 +12,7 @@ import {
   getPackageName,
   makeLineReplace,
 } from "@saflib/workflows";
+import { ServiceAddStoreWorkflowDefinition } from "@saflib/service/workflows/add-store";
 import path from "node:path";
 
 const sourceDir = path.join(import.meta.dirname, "templates");
@@ -91,15 +92,10 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
 
   steps: [
     step(
-      PromptStepMachine,
+      makeWorkflowMachine(ServiceAddStoreWorkflowDefinition),
       ({ context }) => ({
-        prompt: `Find or add a place in the service's common store (e.g. AsyncLocalStorage context) to hold uploaded files.
-
-- Locate where the request-scoped context is created (usually in an adjacent common package) and what type it has.
-- Ensure the context includes an ObjectStore (or similar) for file blobs. The property should be named \`${context.groupName}FileContainer\` (e.g. \`recipesFileContainer\`).
-- If it doesn't exist, add the container to the context type, create it where the context is built (using a @saflib/object-store implementation), upsert it, and pass it into the context.
-- You will use this container in the handler to shunt uploaded file data (uploadFile, deleteFile, readFile). See @saflib/object-store library for details.
-- Note: this step may touch common package files (context.ts, package.json) and the http.ts app file. This is expected.`,
+        name: `${context.groupName}FileContainer`,
+        cwd: path.join(path.dirname(context.cwd), "common"),
       }),
       { skipIf: ({ context }) => !context.upload },
     ),
