@@ -18,7 +18,7 @@
 
 ## Database Schema Updates
 
-[Only if schema changes are needed. If not, remove this section.]
+[Only if schema changes are needed. If not, remove this section. For the sake of simplicity in database queries and http routes, erron the side of grouping data (using json fields) rather than having every table consist only of primitive data types. If the product might need things normalized later, ask the person for clarification to make the right decision. Also, table names are singular, not plural.]
 
 ## Business Objects
 

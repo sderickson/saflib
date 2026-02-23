@@ -5,18 +5,13 @@ import {
   UpdateStepMachine,
   PromptStepMachine,
   makeLineReplace,
+  CommandStepMachine,
 } from "@saflib/workflows";
 import path from "path";
 
 /**
  * Todo:
- * - encourage from the start breaking down the workflow into multiple workflows, which the main workflow orchestrates. Provide guidance on how to scope workflows. Maybe limit to ten routine workflows per complex workflow...
- * - need a way to add a lib function, not just an export
- * - have database schemas be less denormalized generally, and maybe add a step to discuss how to structure the database best for any future plans.
- * - remind agent to use singular table names and query folders.
- * - should probably organize work by feature... don't just build the entire backend and then the entire frontend for a whole series of features.
- * - also more thoroughly document what pages and what might share components, or what existing components might be used. Give hints in the prompt.
- * - might also need to make it easier, or already set up, to have components in the sdk work in spas. Like i18n and exports.
+ * - More thoroughly document what pages and what might share components, or what existing components might be used. Give hints in the prompt.
  */
 
 const sourceDir = path.resolve(import.meta.dirname, "./templates");
@@ -120,10 +115,15 @@ export const SpecProjectWorkflowDefinition = defineWorkflow<
       fileId: "workflow",
       promptMessage: `Update **${path.basename(context.copiedFiles!.workflow)}**.
 
-      Now that you have a plan, you can write the workflows per the aligned plan to implement the spec. Only one workflow has been generated, but make as many as the plan dictates.
+      Now that you have a plan, you can write the workflows per the aligned plan to implement the spec. Only one workflow has been generated, but make as many as the plan dictates. Have the main one run the others (orchestrating them).
 
       For each workflow, run "npm exec saf-workflow dry-run ./path/to/workflow.ts" to make sure everything is wired up correctly. One of the more common errors is for the workflow to not include "CdStepMachine" to move into the right directory before running the workflow. Location matters.
       `,
+    })),
+
+    step(CommandStepMachine, ({ context }) => ({
+      command: "npm",
+      args: ["exec", "saf-workflow", "dry-run", context.copiedFiles!.workflow],
     })),
 
     // TODO: figure out how to run dry-run on all workflows the agent generates, not just the template one.
