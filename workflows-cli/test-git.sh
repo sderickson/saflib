@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 # error if there are any git changes
+git branch -D test-git &>/dev/null 
 
 if git status -uall | grep -q "modified:"; then
   echo "There are git changes. Please commit or stash them."
@@ -24,8 +25,7 @@ git reset --hard
 git clean -fd
 
 # Go back, delete the branch
-# git checkout $current_branch
-# git branch -D test-git
+git checkout $current_branch
 
 # Exit with the status code
 exit $status_code
