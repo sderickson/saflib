@@ -1,10 +1,11 @@
-import { describe, it, expect, vi } from "vitest";
+import { afterEach, describe, it, expect, vi } from "vitest";
 import { stubGlobals } from "@saflib/vue/testing";
 import __FullName__Async from "./__TargetName__Async.vue";
 import {
   mountTestApp,
   createTestRouter,
   testAppHandlers,
+  resetMocks,
 } from "template-package-spa/test-app";
 import { setupMockServer } from "@saflib/sdk/testing/mock";
 
@@ -14,6 +15,7 @@ import { setupMockServer } from "@saflib/sdk/testing/mock";
 describe("__FullName__", () => {
   stubGlobals();
   setupMockServer(testAppHandlers);
+  afterEach(resetMocks);
 
   it("should render", async () => {
     const router = createTestRouter();

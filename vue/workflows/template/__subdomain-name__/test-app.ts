@@ -5,6 +5,7 @@ import { createMemoryHistory, type Router } from "vue-router";
 import { create__SubdomainName__Router } from "./router.ts";
 import { __subdomain_name___strings } from "./strings.ts";
 import { identityServiceFakeHandlers } from "@saflib/auth/fakes";
+import { resetMocks } from "template-package-sdk/fakes";
 
 export const createTestRouter = () =>
   create__SubdomainName__Router({ history: createMemoryHistory() });
@@ -22,5 +23,8 @@ export const mountTestApp = <C extends Component>(
   });
 };
 
-// TODO: import and add here any other mock handlers from sdk packages this SPA depends on
+// TODO: import and add here any other mock handlers and mockReset functions from sdk packages this SPA depends on
 export const testAppHandlers = [...identityServiceFakeHandlers];
+export const resetAllMocks = (): void => {
+  resetMocks();
+};
