@@ -24,8 +24,8 @@ git reset --hard
 git clean -fd
 
 # Go back, delete the branch
-git checkout $current_branch
-git branch -D test-git
+# git checkout $current_branch
+# git branch -D test-git
 
 # Exit with the status code
 exit $status_code
