@@ -79,7 +79,7 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
 
     // test spec project
     step(CdStepMachine, () => ({
-      path: "./tmp/plans",
+      path: "./tmp/service/plans",
     })),
     step(makeWorkflowMachine(SpecProjectWorkflowDefinition), () => ({
       name: "example-project",
