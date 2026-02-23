@@ -100,19 +100,7 @@ export const handleGitChanges = async ({
         msg: `The following files had unexpected changes:
       ${otherFiles.map((file) => `- ${path.relative(context.cwd, file)}`).join("\n")}
 
-      These are not expected to be changed by the workflow ${workflowId}.
-      
-      You need to do one of two things:
-      - If these changes were not necessary to complete the workflow, undo them.
-      - If these changes WERE necessary to complete the workflow, commit exactly these files with an explanatory message (fixing existing test or type issues is fine).
-      
-      Remember! The goal of this workflow is just to do the following:
-
-      ****
-      ${checklistDescription}
-      ****
-      
-      If you have diverged from this goal, you need to undo the unscoped changes.`,
+      These are not expected to be changed by the workflow ${workflowId}. But that's okay! Please commit them with an explanatory message (fixing existing test or type issues is fine). If any of it was exploratory work that doesn't need to be committed, remove that first.`,
       });
 
       // bit of a hack to make sure "slowly printing" is done
