@@ -29,7 +29,6 @@ import {
   // AddGrpcCallWorkflowDefinition,
   // AddProtoWorkflowDefinition,
 } from "@saflib/grpc/workflows";
-import { IdentityInitWorkflowDefinition } from "@saflib/identity/workflows";
 import {
   CronInitWorkflowDefinition,
   CronAddJobWorkflowDefinition,
@@ -39,10 +38,7 @@ import {
   AddSdkQueryWorkflowDefinition,
   AddSdkMutationWorkflowDefinition,
 } from "@saflib/sdk/workflows";
-import {
-  AddSpaViewWorkflowDefinition,
-  AddSpaWorkflowDefinition,
-} from "@saflib/vue/workflows";
+import { AddSpaViewWorkflowDefinition } from "@saflib/vue/workflows";
 import { AddWorkflowDefinition } from "@saflib/workflows/workflows";
 import { SpecProjectWorkflowDefinition } from "@saflib/processes/workflows";
 
@@ -123,6 +119,10 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
     // Test @saflib/express workflows
     step(CdStepMachine, () => ({
       path: "./tmp/service/http",
+    })),
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["install"],
     })),
     step(makeWorkflowMachine(AddHandlerWorkflowDefinition), () => ({
       path: "./routes/users/list.ts",
