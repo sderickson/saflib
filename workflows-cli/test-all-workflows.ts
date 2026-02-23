@@ -39,6 +39,7 @@ import {
   AddSdkMutationWorkflowDefinition,
 } from "@saflib/sdk/workflows";
 import { AddSpaViewWorkflowDefinition } from "@saflib/vue/workflows";
+import { CommandStepMachine } from "@saflib/workflows";
 import { AddWorkflowDefinition } from "@saflib/workflows/workflows";
 import { SpecProjectWorkflowDefinition } from "@saflib/processes/workflows";
 
