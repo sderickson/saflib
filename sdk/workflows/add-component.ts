@@ -30,6 +30,7 @@ interface AddComponentWorkflowContext
     ParsePackageNameOutput {
   targetDir: string;
   prefixName: string;
+  fullName: string;
 }
 
 export const AddComponentWorkflowDefinition = defineWorkflow<
@@ -71,35 +72,48 @@ export const AddComponentWorkflowDefinition = defineWorkflow<
       throw new Error("Path must be all lowercase");
     }
 
-    // const targetDir = path.join(input.cwd, input.path);
+    const pathResult = parsePath(input.path, {
+      cwd: input.cwd,
+    });
+
+    // get the "full path" of the view, which does not include the first directory (pages/ or dialogs/)
+    const folderPath = pathResult.groupName + "/" + pathResult.targetName;
+
+    // convert that into a full name that can be used for variable names
+    const fullName = folderPath
+      .split("/")
+      .slice(2)
+      .join("-")
+      .replaceAll("/", "-");
+
+    // this is all to make add-component work for sdk and spa packages
+    // have to look at the context to figure out what the required suffix is
+    const dirname = path.basename(input.cwd);
+    let packageName = getPackageName(input.cwd);
+    const dirnameIndex = packageName.indexOf(dirname) - 1;
+    let requiredSuffix = packageName.slice(dirnameIndex);
+    if (input.runMode === "checklist") {
+      packageName = "template-package-sdk";
+      requiredSuffix = "-sdk";
+    }
 
     return {
-      ...parsePath(input.path, {
-        requiredPrefix: firstDir,
-        cwd: input.cwd,
-      }),
+      ...pathResult,
       ...parsePackageName(getPackageName(input.cwd), {
-        requiredSuffix: "-sdk",
+        requiredSuffix: requiredSuffix,
         silentError: true, // so checklists don't error
       }),
       targetDir: input.cwd,
       prefixName: firstDir,
+      fullName,
+      groupName: folderPath,
     };
   },
 
   templateFiles: {
-    vue: path.join(
-      sourceDir,
-      "__prefix-name__/__target-name__/__TargetName__.vue",
-    ),
-    strings: path.join(
-      sourceDir,
-      "__prefix-name__/__target-name__/__TargetName__.strings.ts",
-    ),
-    test: path.join(
-      sourceDir,
-      "__prefix-name__/__target-name__/__TargetName__.test.ts",
-    ),
+    vue: path.join(sourceDir, "__group-name__/__TargetName__.vue"),
+    strings: path.join(sourceDir, "__group-name__/__TargetName__.strings.ts"),
+    test: path.join(sourceDir, "__group-name__/__TargetName__.test.ts"),
     packageStrings: path.join(sourceDir, "strings.ts"),
   },
 
@@ -107,11 +121,23 @@ export const AddComponentWorkflowDefinition = defineWorkflow<
   docFiles: {},
 
   steps: [
-    step(CopyStepMachine, ({ context }) => ({
-      name: context.targetName,
-      targetDir: context.targetDir,
-      lineReplace: makeLineReplace(context),
-    })),
+    step(CopyStepMachine, ({ context }) => {
+      const defaultLineReplace = makeLineReplace(context);
+      const lineReplace = (line: string) => {
+        let l = line
+          .replace(
+            "template-package-sdk/test-app",
+            context.packageName + "/test-app",
+          )
+          .replace("template-package-sdk/i18n", context.packageName + "/i18n");
+        return defaultLineReplace(l);
+      };
+      return {
+        name: context.targetName,
+        targetDir: context.targetDir,
+        lineReplace,
+      };
+    }),
 
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "vue",

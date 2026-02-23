@@ -11,7 +11,7 @@ describe("Auth Middleware", () => {
 
   beforeEach(() => {
     app = express();
-    app.use(createScopedMiddleware({ authRequired: true }));
+    app.use(createScopedMiddleware({ enforceAuth: true }));
     app.get("/test", (_req, res) => {
       const { auth } = getSafContext();
       res.status(200).json({ authFromMiddleware: auth });

@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  workflow-integration-test:
+  workflow-git-test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -37,8 +37,7 @@ jobs:
         run: "git commit -m 'Add package.json, package-lock.json'"
 
       - name: Run Workflow Integration Test
-        run: ./test-git.sh
-        working-directory: ./workflows-cli
+        run: ./workflows-cli/test-git.sh
 
       - name: Git status
         run: git status -uall

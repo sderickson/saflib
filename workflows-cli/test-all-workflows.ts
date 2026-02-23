@@ -1,5 +1,5 @@
 import { defineWorkflow, makeWorkflowMachine, step } from "@saflib/workflows";
-import { InitServiceWorkflowDefinition } from "@saflib/service/workflows";
+import { InitProductWorkflowDefinition } from "@saflib/product/workflows";
 import { CdStepMachine } from "@saflib/workflows";
 import {
   AddSchemaWorkflowDefinition,
@@ -29,7 +29,6 @@ import {
   // AddGrpcCallWorkflowDefinition,
   // AddProtoWorkflowDefinition,
 } from "@saflib/grpc/workflows";
-import { IdentityInitWorkflowDefinition } from "@saflib/identity/workflows";
 import {
   CronInitWorkflowDefinition,
   CronAddJobWorkflowDefinition,
@@ -39,10 +38,8 @@ import {
   AddSdkQueryWorkflowDefinition,
   AddSdkMutationWorkflowDefinition,
 } from "@saflib/sdk/workflows";
-import {
-  AddSpaViewWorkflowDefinition,
-  AddSpaWorkflowDefinition,
-} from "@saflib/vue/workflows";
+import { AddSpaViewWorkflowDefinition } from "@saflib/vue/workflows";
+import { CommandStepMachine } from "@saflib/workflows";
 import { AddWorkflowDefinition } from "@saflib/workflows/workflows";
 import { SpecProjectWorkflowDefinition } from "@saflib/processes/workflows";
 
@@ -71,14 +68,17 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
   templateFiles: {},
   docFiles: {},
   steps: [
-    step(makeWorkflowMachine(SpecProjectWorkflowDefinition), () => ({
-      name: "example-project",
+    // Covers various "init" workflows
+    step(makeWorkflowMachine(InitProductWorkflowDefinition), () => ({
+      name: "tmp",
     })),
 
-    // Covers various "init" workflows
-    step(makeWorkflowMachine(InitServiceWorkflowDefinition), () => ({
-      name: "@saflib/tmp-service",
-      path: "./tmp/service",
+    // test spec project
+    step(CdStepMachine, () => ({
+      path: "./tmp/plans",
+    })),
+    step(makeWorkflowMachine(SpecProjectWorkflowDefinition), () => ({
+      name: "example-project",
     })),
 
     // Test "@saflib/openapi workflows"
@@ -120,6 +120,10 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
     // Test @saflib/express workflows
     step(CdStepMachine, () => ({
       path: "./tmp/service/http",
+    })),
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["install"],
     })),
     step(makeWorkflowMachine(AddHandlerWorkflowDefinition), () => ({
       path: "./routes/users/list.ts",
@@ -196,15 +200,6 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
     //   path: "./rpcs/health/example.ts",
     // })),
 
-    // Test @saflib/identity workflows
-    step(CdStepMachine, () => ({
-      path: ".",
-    })),
-    step(makeWorkflowMachine(IdentityInitWorkflowDefinition), () => ({
-      name: "@saflib/tmp-identity",
-      path: "./tmp/service/identity",
-    })),
-
     // Test @saflib/cron workflows
     step(CdStepMachine, () => ({
       path: ".",
@@ -239,13 +234,6 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
     })),
 
     // Test @saflib/vue workflows
-    step(CdStepMachine, () => ({
-      path: ".",
-    })),
-    step(makeWorkflowMachine(AddSpaWorkflowDefinition), () => ({
-      productName: "tmp",
-      subdomainName: "root",
-    })),
     step(CdStepMachine, () => ({
       path: "./tmp/clients/root",
     })),

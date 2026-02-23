@@ -31,6 +31,7 @@ interface SdkInitWorkflowContext extends ParsePackageNameOutput {
   targetDir: string;
   relDir: string;
   reversePath: string;
+  productName: string;
 }
 
 export const SdkInitWorkflowDefinition = defineWorkflow<
@@ -52,13 +53,15 @@ export const SdkInitWorkflowDefinition = defineWorkflow<
     const relDir = path.relative(input.cwd, targetDir);
     const numDirs = relDir.split(path.sep).length;
     const reversePath = "../".repeat(numDirs).slice(0, -1);
+    const parsePathResult = parsePackageName(input.name, {
+      requiredSuffix: "-sdk",
+    });
     const ctx: SdkInitWorkflowContext = {
-      ...parsePackageName(input.name, {
-        requiredSuffix: "-sdk",
-      }),
+      ...parsePathResult,
       targetDir,
       relDir,
       reversePath,
+      productName: parsePathResult.serviceName,
     };
     return ctx;
   },

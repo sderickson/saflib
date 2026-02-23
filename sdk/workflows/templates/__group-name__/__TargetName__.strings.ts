@@ -1,5 +1,5 @@
-export const __target_name___strings = {
-  title: "__TargetName__",
+export const __full_name___strings = {
+  title: "__FullName__",
   description: "This is a component for the SDK",
 
   // Standard states

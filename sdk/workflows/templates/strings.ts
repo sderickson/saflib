@@ -1,9 +1,9 @@
-// BEGIN SORTED WORKFLOW AREA string-exports FOR sdk/add-component
-import { __target_name___strings } from "./__prefix-name__/__target-name__/__TargetName__.strings.ts";
+// BEGIN SORTED WORKFLOW AREA string-imports FOR vue/add-view sdk/add-component
+import { __full_name___strings } from "./__group-name__/__TargetName__.strings.ts";
 // END WORKFLOW AREA
 
-export const __serviceName__SdkStrings = {
-  // BEGIN SORTED WORKFLOW AREA string-object FOR sdk/add-component
-  __target_name___strings,
+export const __product_name___sdk_strings = {
+  // BEGIN SORTED WORKFLOW AREA string-object FOR vue/add-view sdk/add-component
+  __full_name___strings,
   // END WORKFLOW AREA
 };

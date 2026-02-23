@@ -8,6 +8,14 @@ on:
 jobs:
   unit-tests:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        project:
+          # Bit of a hack so tests pass. Might move these tests elsewhere.
+          # BEGIN WORKFLOW AREA test-product-dependencies FOR product/init
+          - __product-name__
+          # END WORKFLOW AREA
     steps:
       - uses: actions/checkout@v4
       - name: Setup Node.js

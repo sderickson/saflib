@@ -38,8 +38,8 @@
 </template>
 
 <script setup lang="ts">
-import { __target_name___strings as strings } from "./__TargetName__.strings.ts";
-import { useReverseT } from "../../i18n.ts";
+import { __full_name___strings as strings } from "./__TargetName__.strings.ts";
+import { useReverseT } from "template-package-sdk/i18n";
 import { TanstackError, getTanstackErrorMessage } from "@saflib/sdk";
 // @ts-expect-error - TODO: replace with the actual schema, use with defineModel and defineProps
 import { type TODO } from "template-package-spec";

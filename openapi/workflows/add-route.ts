@@ -113,6 +113,7 @@ export const AddRouteWorkflowDefinition = defineWorkflow<
       - Remove any unused sections (parameters, requestBody) if not needed
       - Do not specify a 400 response. The openapi validator is the only source of these.
       - If this is a list route, do not include a sort parameter unless explicitly requested.
+      - For a route that is public, specify and enforce it with a "no-auth" tag.
       `,
     })),
 
@@ -149,8 +150,8 @@ export function mergeOpenApiRoute(content: string): string {
   const areaStart = lines.findIndex((l) =>
     l.includes("BEGIN WORKFLOW AREA route-paths FOR openapi/add-route"),
   );
-  const areaEnd = lines.findIndex((l) =>
-    l.includes("END WORKFLOW AREA") && lines.indexOf(l) > areaStart,
+  const areaEnd = lines.findIndex(
+    (l) => l.includes("END WORKFLOW AREA") && lines.indexOf(l) > areaStart,
   );
   if (areaStart === -1 || areaEnd === -1) {
     return content;

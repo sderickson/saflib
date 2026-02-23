@@ -7,6 +7,11 @@ export default defineConfig({
       NODE_OPTIONS: "--disable-warning=DEP0040",
     },
 
-    projects: ["*/**/vitest.config.{ts,js,mts,mjs}"],
+    projects: [
+      // BEGIN WORKFLOW AREA test-product-dependencies FOR product/init
+      "*/**/vitest.config.{ts,js,mts,mjs}",
+      "tmp/**/vitest.config.{ts,js,mts,mjs}",
+      // END WORKFLOW AREA
+    ],
   },
 });
