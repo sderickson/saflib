@@ -177,6 +177,8 @@ and any computation that doesn't need Vue reactivity or the DOM.
 Write unit tests in \`ComponentName.logic.test.ts\` — these should be fast, deterministic,
 no-DOM tests that import and call the functions directly.
 
+Hint: you can group all validation in one function, rather than one per loader query.
+
 ## 2. Composables (\`useComponentFlow.ts\`)
 
 If a component has **stateful logic involving networking** — TanStack mutations, multi-step
@@ -211,7 +213,7 @@ Run \`npm run typecheck\` in ${context.cwd} to verify the code is type-safe.
   test drives baseline coverage on the Vue file; uncovered lines highlight logic worth extracting.
   Don't add interaction tests here — Playwright covers that. Focus deeper tests on the extracted
   logic files and composables.
-* **Deciding What to Test**: Don't extract simple logic just to test it. We already have tests for each tanstack query, so there's no need to pull that into a separate composable either. Save testing for more complex logic.
+* **Deciding What to Test**: Don't extract simple logic just to test it. We already have tests for each tanstack query, so there's no need to pull that into a separate composable either. Save testing for more complex logic, for example when multiple or tanstack queries are used together.
 
 For more information, see ${context.docFiles?.components}`,
     })),
