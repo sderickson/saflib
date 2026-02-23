@@ -77,7 +77,7 @@ interface HandleGitChangesOptions {
 export const handleGitChanges = async ({
   workflowId,
   context,
-  checklistDescription,
+  // checklistDescription,
   allowPaths,
 }: HandleGitChangesOptions) => {
   let tries = 0;
