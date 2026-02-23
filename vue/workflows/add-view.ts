@@ -187,7 +187,7 @@ and expose them to the component.
 Write integration tests in \`useComponentFlow.test.ts\` using \`setupMockServer\` with the
 SDK's fake handlers and \`withVueQuery\` to test the composable without a DOM.
 Import mock data arrays (e.g. \`mockEvals\`, \`mockForms\`) from the SDK's fakes export
-to set up and verify backend state.
+to set up and verify backend state. See the SDK itself for examples of composable tests.
 
 ## 3. After extraction
 
@@ -207,8 +207,7 @@ Run \`npm run typecheck\` in ${context.cwd} to verify the code is type-safe.
   threading them through props and events. Only pass data that is already loaded by the view's
   loader; if a sub-component needs to fetch additional data on interaction or fire mutations,
   it should do so itself.
-* **Render test**: Update the generated \`${context.targetName}.test.ts\` — replace the TODO
-  string with an actual visible string from the rendered page (e.g. the page title). This smoke
+* **Render test**: Update the generated \`${context.targetName}.test.ts\` as necessary — This smoke
   test drives baseline coverage on the Vue file; uncovered lines highlight logic worth extracting.
   Don't add interaction tests here — Playwright covers that. Focus deeper tests on the extracted
   logic files and composables.
