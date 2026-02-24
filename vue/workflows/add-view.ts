@@ -164,9 +164,13 @@ export const AddSpaViewWorkflowDefinition = defineWorkflow<
     })),
 
     step(PromptStepMachine, ({ context }) => ({
-      prompt: `Now that the view is implemented, extract testable logic and write tests.
+      prompt: `Now that the view is implemented, extract sub-components, testable logic, and composables, and write tests.
 
-Review the view and any sub-components you created, then:
+Review the view you worked on, then break out:
+
+## 0. Sub-components (\`ComponentName.vue\`)
+
+Extract sub-components from the view. Sub-components should be small, focused components that are used to render a part of the view. They should be able to be used in other views, and should be able to be tested independently. They should be in the same directory as the view.
 
 ## 1. Logic files (\`ComponentName.logic.ts\`)
 
@@ -191,7 +195,7 @@ SDK's fake handlers and \`withVueQuery\` to test the composable without a DOM.
 Import mock data arrays (e.g. \`mockEvals\`, \`mockForms\`) from the SDK's fakes export
 to set up and verify backend state. See the SDK itself for examples of composable tests.
 
-## 3. After extraction
+## After extraction
 
 The Vue components should be **thin** — mostly template + v-model bindings + the composable
 call. All interesting logic should be tested independently via the logic and composable tests.
