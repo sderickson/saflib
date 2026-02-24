@@ -141,7 +141,7 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
             docFiles: context.docFiles,
             agentConfig: context.agentConfig,
             cwd: context.cwd,
-            originalWorkingDirectory: context.cwd,
+            originalWorkingDirectory: context.originalWorkingDirectory,
             manageVersionControl: context.manageVersionControl,
             skipTodos: context.skipTodos,
           };
@@ -169,6 +169,7 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
               cwd: ({ context, event }) => {
                 const output: WorkflowOutput = event.output;
                 if (output.newCwd) {
+                  console.log("new cwd output", output.newCwd);
                   return output.newCwd;
                 }
                 return context.cwd;

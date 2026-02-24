@@ -44,6 +44,17 @@ export const CdStepMachine = setup({
   id: "cwd-step",
   initial: "done",
   context: ({ input }) => {
+    console.log("cd step input", {
+      originalWorkingDirectory: input.originalWorkingDirectory,
+      processCwd: process.cwd(),
+      path: input.path,
+    });
+    if (
+      input.originalWorkingDirectory ===
+      "/Users/scotterickson/src/home-2026/saflib/tmp/service/monolith"
+    ) {
+      throw new Error("test");
+    }
     const originalWorkingDirectory =
       input.originalWorkingDirectory ?? process.cwd();
     const newCwd = input.path.startsWith("/")

@@ -152,16 +152,38 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       command: "npm",
       args: ["install"],
     })),
-    step(CdStepMachine, ({ context }) => ({
-      path: path.join(context.cwd, `./${context.productName}/service/monolith`),
-    })),
-    step(CommandStepMachine, () => ({
-      command: "npm",
-      args: ["exec", "saf-env", "generate", "--", "--combined"],
-    })),
-    step(CdStepMachine, ({ context }) => ({
-      path: `./${context.productName}/dev`,
-    })),
+    step(CdStepMachine, ({ context }) => {
+      console.log("--------------------------------");
+      console.log("monolith context", {
+        originalWorkingDirectory: context.originalWorkingDirectory,
+        cwd: context.cwd,
+      });
+      return {
+        path: `./${context.productName}/service/monolith`,
+      };
+    }),
+    step(CommandStepMachine, ({ context }) => {
+      console.log("--------------------------------");
+      console.log("command cwd", context.cwd);
+      console.log(
+        "original working directory",
+        context.originalWorkingDirectory,
+      );
+      return {
+        command: "npm",
+        args: ["exec", "saf-env", "generate", "--", "--combined"],
+      };
+    }),
+    step(CdStepMachine, ({ context }) => {
+      console.log("--------------------------------");
+      console.log("dev context", {
+        originalWorkingDirectory: context.originalWorkingDirectory,
+        cwd: context.cwd,
+      });
+      return {
+        path: `./${context.productName}/dev`,
+      };
+    }),
     step(CommandStepMachine, () => ({
       command: "touch",
       args: ["./.env"],
