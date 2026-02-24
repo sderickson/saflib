@@ -4,6 +4,7 @@ import type { Component } from "vue";
 import { __product_name___sdk_strings } from "./strings.ts";
 import { __serviceName__ServiceFakeHandlers } from "./fakes.ts";
 import { router } from "./router.ts";
+import { resetMocks } from "./fakes.ts";
 
 export const mountTestApp = <C extends Component>(
   Component: C,
@@ -18,3 +19,4 @@ export const mountTestApp = <C extends Component>(
 };
 
 export const testAppHandlers = [...__serviceName__ServiceFakeHandlers];
+export { resetMocks };
