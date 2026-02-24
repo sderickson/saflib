@@ -8,6 +8,7 @@ import {
   getPackageName,
   makeLineReplace,
   type ParsePackageNameOutput,
+  UpdateStepMachine,
 } from "@saflib/workflows";
 import path from "node:path";
 
@@ -71,12 +72,18 @@ export const ServiceAddStoreWorkflowDefinition = defineWorkflow<
       lineReplace: makeLineReplace({ storeName: context.storeName }),
     })),
 
-    step(PromptStepMachine, ({ context }) => ({
-      prompt: `Ensure @saflib/object-store is a dependency of this package (${context.packageName}).
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["install", "@saflib/object-store"],
+    })),
 
-- Check package.json for "@saflib/object-store" in dependencies.
-- If missing, add it and run \`npm install\`.
-- Then update the service's http.ts (in the adjacent http package) to use \`makeContext\` from this package instead of creating the context object inline, so the new store is properly initialized.`,
+    step(UpdateStepMachine, ({ context }) => ({
+      fileId: "context",
+      prompt: `Update ${context.copiedFiles!.context} to set up the desired file store. Right now it's a test store.`,
+    })),
+
+    step(PromptStepMachine, () => ({
+      prompt: `Update the service's http.ts (in the adjacent http package) to use \`makeContext\` from this package instead of creating the context object inline, so the new store is properly initialized.`,
     })),
 
     step(CommandStepMachine, () => ({
