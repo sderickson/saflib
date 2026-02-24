@@ -153,33 +153,17 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       args: ["install"],
     })),
     step(CdStepMachine, ({ context }) => {
-      console.log("--------------------------------");
-      console.log("monolith context", {
-        originalWorkingDirectory: context.originalWorkingDirectory,
-        cwd: context.cwd,
-      });
       return {
         path: `./${context.productName}/service/monolith`,
       };
     }),
-    step(CommandStepMachine, ({ context }) => {
-      console.log("--------------------------------");
-      console.log("command cwd", context.cwd);
-      console.log(
-        "original working directory",
-        context.originalWorkingDirectory,
-      );
+    step(CommandStepMachine, () => {
       return {
         command: "npm",
         args: ["exec", "saf-env", "generate", "--", "--combined"],
       };
     }),
     step(CdStepMachine, ({ context }) => {
-      console.log("--------------------------------");
-      console.log("dev context", {
-        originalWorkingDirectory: context.originalWorkingDirectory,
-        cwd: context.cwd,
-      });
       return {
         path: `./${context.productName}/dev`,
       };
