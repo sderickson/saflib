@@ -21,6 +21,13 @@ describe("__mutationName____GroupName__", () => {
   */
   // END WORKFLOW AREA
 
+  // BEGIN ONCE WORKFLOW AREA instructions FOR sdk/add-mutation IF download
+  /*
+  For download mutations, call the mutation and assert on the returned blob/arrayBuffer
+  (e.g. expect(result instanceof Blob).toBe(true), or expect(new Uint8Array(await result.arrayBuffer()).length).toBeGreaterThan(0)).
+  */
+  // END WORKFLOW AREA
+
   // TODO: Update to call the mutation with correct arguments and verify the response
   it.skip("TODO: should succeed", async () => {
     const [mutation, app] = withVueQuery(() => use__MutationName____GroupName__Mutation());

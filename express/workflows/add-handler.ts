@@ -30,12 +30,19 @@ const input = [
     description:
       "Include file upload handling (multipart); shunt file data to a container in the store",
   },
+  {
+    name: "download",
+    type: "flag" as const,
+    description:
+      "Return binary response (e.g. stream/send file from store or generated content)",
+  },
 ] as const;
 
 interface AddHandlerWorkflowContext
   extends ParsePackageNameOutput,
     ParsePathOutput {
   upload: boolean;
+  download: boolean;
   storeName: string;
 }
 
@@ -70,6 +77,7 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
       storeName,
       targetDir: input.cwd,
       upload: input.upload ?? false,
+      download: input.download ?? false,
     };
   },
 
@@ -116,7 +124,7 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
       name: context.targetName,
       targetDir: context.targetDir,
       lineReplace: makeLineReplace(context),
-      flags: { upload: context.upload },
+      flags: { upload: context.upload, download: context.download },
     })),
 
     step(UpdateStepMachine, ({ context }) => ({
@@ -142,6 +150,14 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
       - The file container property in the store is \`${context.groupName}FileContainer\` (e.g. recipesFileContainer). Use it to uploadFile / deleteFile / readFile.
       - \`req.files\` may be an array (multer \`.any()\`) or a keyed object (multer \`.fields()\`); the template handles both. Match the field name from the spec (e.g. \`"file"\`).
       - Create the DB record first with file metadata (blob_name, file_original_name, mimetype, size), then upload to the container. On upload failure, clean up the DB record and throw 500.`
+          : ""
+      }${
+        context.download
+          ? `
+
+      This handler returns a binary (download) response:
+      - Use \`res.status(200).contentType(<mediaType>).send(buffer)\` or stream with \`res.setHeader("Content-Type", ...)\` and piping. Set the Content-Type to match the OpenAPI spec (e.g. \`application/octet-stream\` or a specific type like \`application/pdf\`).
+      - If the binary comes from a store, use the container's \`readFile\` and handle FileNotFoundError / PathTraversalError / StorageError appropriately (404, 400, 500).`
           : ""
       }
       

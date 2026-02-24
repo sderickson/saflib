@@ -26,6 +26,13 @@ describe("__targetName____GroupName__", () => {
   */
   // END WORKFLOW AREA
 
+  // BEGIN ONCE WORKFLOW AREA instructions FOR express/add-handler IF download
+  /*
+  For download handlers, assert on binary response: expect(response.headers["content-type"]).toMatch(/.../),
+  expect(Buffer.isBuffer(response.body)).toBe(true) or similar. Test success and 401/403/404 as needed.
+  */
+  // END WORKFLOW AREA
+
   // TODO: unskip this test
   it.skip("should handle successful requests", async () => {
     const response = await request(app)

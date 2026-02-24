@@ -13,6 +13,13 @@ is shared list state (like mockPartSources), push a new item so list queries see
 */
 // END WORKFLOW AREA
 
+// BEGIN ONCE WORKFLOW AREA instructions FOR sdk/add-mutation IF download
+/*
+For download fakes, return a stub binary (e.g. Buffer or Uint8Array). The handler can set
+Content-Type and send the buffer; keep it small for tests (e.g. a few bytes).
+*/
+// END WORKFLOW AREA
+
 export const __mutationName____GroupName__Handler = __serviceName__Handler({
   verb: "__method__",
   path: "__url-path__",

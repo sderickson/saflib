@@ -43,10 +43,17 @@ __operationId__:
     "200":
       description: "todo"
       content:
+        # BEGIN ONCE WORKFLOW AREA responseContent FOR openapi/add-route IF download
+        application/octet-stream:
+          schema:
+            type: string
+            format: binary
+        # ELSE
         application/json:
           schema:
             # TODO: Update to an appropriate schema reference
             $ref: "../../schemas/todo.yaml"
+        # END WORKFLOW AREA
 
     "401":
       description: "Unauthorized - missing or invalid auth headers, or not logged in."
