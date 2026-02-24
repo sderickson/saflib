@@ -99,7 +99,7 @@ export const AddSpaViewWorkflowDefinition = defineWorkflow<
       targetDir,
       subdomainName,
       groupName: folderPath,
-      urlPath: input.urlPath,
+      urlPath: input.urlPath.slice(1),
       fullName,
     };
   },
