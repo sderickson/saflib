@@ -35,6 +35,7 @@ interface AddHandlerWorkflowContext
   extends ParsePackageNameOutput,
     ParsePathOutput {
   upload: boolean;
+  storeName: string;
 }
 
 export const AddHandlerWorkflowDefinition = defineWorkflow<
@@ -53,16 +54,19 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
   sourceUrl: import.meta.url,
 
   context: ({ input }) => {
+    const pathResult = parsePath(input.path, {
+      requiredSuffix: ".ts",
+      cwd: input.cwd,
+      requiredPrefix: "./routes/",
+    });
+    const storeName = `${pathResult.groupName}-file-container`;
     return {
       ...parsePackageName(getPackageName(input.cwd), {
         silentError: true, // so checklists don't error
         requiredSuffix: "-http",
       }),
-      ...parsePath(input.path, {
-        requiredSuffix: ".ts",
-        cwd: input.cwd,
-        requiredPrefix: "./routes/",
-      }),
+      ...pathResult,
+      storeName,
       targetDir: input.cwd,
       upload: input.upload ?? false,
     };

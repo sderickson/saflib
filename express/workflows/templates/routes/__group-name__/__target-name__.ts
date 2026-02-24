@@ -23,7 +23,7 @@ export const __targetName____GroupName__Handler = createHandler(
     
     // BEGIN ONCE WORKFLOW AREA uploadInput FOR express/add-handler IF upload
     const ctx = __serviceName__ServiceStorage.getStore()!;
-    const { __groupName__FileContainer } = ctx;
+    const { __storeName__ } = ctx;
 
     // req.files may be an array (multer .any()) or a keyed object (multer .fields()).
     // Extract the file whose fieldname matches the spec (e.g. "file").
@@ -61,7 +61,7 @@ export const __targetName____GroupName__Handler = createHandler(
 
     // BEGIN ONCE WORKFLOW AREA uploadToStore FOR express/add-handler IF upload
     const stream: Readable = createReadStream(multerFile.path);
-    const uploadResult = await __groupName__FileContainer.uploadFile(blobName, stream, {
+    const uploadResult = await __storeName__.uploadFile(blobName, stream, {
       mimetype: multerFile.mimetype || "application/octet-stream",
       filename: sanitizeFilename(multerFile.originalname),
     });
