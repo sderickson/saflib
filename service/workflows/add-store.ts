@@ -45,6 +45,9 @@ export const ServiceAddStoreWorkflowDefinition = defineWorkflow<
   sourceUrl: import.meta.url,
 
   context: ({ input }) => {
+    if (!input.cwd.endsWith("common")) {
+      throw new Error("CWD must end with common");
+    }
     return {
       ...parsePackageName(getPackageName(input.cwd), {
         silentError: true,
@@ -69,7 +72,7 @@ export const ServiceAddStoreWorkflowDefinition = defineWorkflow<
     step(CopyStepMachine, ({ context }) => ({
       name: context.storeName,
       targetDir: context.targetDir,
-      lineReplace: makeLineReplace({ storeName: context.storeName }),
+      lineReplace: makeLineReplace(context),
     })),
 
     step(CommandStepMachine, () => ({

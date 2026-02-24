@@ -11,6 +11,7 @@ import {
   parsePackageName,
   getPackageName,
   makeLineReplace,
+  CdStepMachine,
 } from "@saflib/workflows";
 import { ServiceAddStoreWorkflowDefinition } from "@saflib/service/workflows/add-store";
 import path from "node:path";
@@ -95,14 +96,21 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
   },
 
   steps: [
+    step(CdStepMachine, () => ({
+      path: "../common",
+    })),
+
     step(
       makeWorkflowMachine(ServiceAddStoreWorkflowDefinition),
       ({ context }) => ({
         name: `${context.groupName}FileContainer`,
-        cwd: path.join(path.dirname(context.cwd), "common"),
       }),
       { skipIf: ({ context }) => !context.upload },
     ),
+
+    step(CdStepMachine, () => ({
+      path: ".",
+    })),
 
     step(CopyStepMachine, ({ context }) => ({
       name: context.targetName,
