@@ -33,7 +33,7 @@ export function create__ServiceName__HttpApp(
     __serviceName__DbKey: dbKey,
     // BEGIN SORTED WORKFLOW AREA storeProperties FOR dne2
     __storeName__: options.__storeName__ ?? createObjectStore({ type: "test" }),
-    // END SORTED WORKFLOW AREA
+    // END WORKFLOW AREA
   };
   app.use((_req, _res, next) => {
     __serviceName__ServiceStorage.run(context, () => {
