@@ -45,16 +45,20 @@ export const ServiceAddStoreWorkflowDefinition = defineWorkflow<
   sourceUrl: import.meta.url,
 
   context: ({ input }) => {
-    if (!input.cwd.endsWith("common")) {
+    let cwd = input.cwd;
+    if (input.runMode === "checklist") {
+      cwd = cwd + "-common";
+    }
+    if (!cwd.endsWith("common")) {
       throw new Error("CWD must end with common");
     }
     return {
-      ...parsePackageName(getPackageName(input.cwd), {
+      ...parsePackageName(getPackageName(cwd), {
         silentError: true,
         requiredSuffix: "-service-common",
       }),
       storeName: input.name,
-      targetDir: input.cwd,
+      targetDir: cwd,
     };
   },
 
