@@ -1,5 +1,5 @@
 import { expect, test, describe, beforeEach, afterEach } from "vitest";
-import { setupContext } from "./index.js";
+import { setupContext } from "./index.ts";
 import { getSafContext, getSafReporters } from "@saflib/node";
 
 describe("setupContext", () => {

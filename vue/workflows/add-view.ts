@@ -99,7 +99,7 @@ export const AddSpaViewWorkflowDefinition = defineWorkflow<
       targetDir,
       subdomainName,
       groupName: folderPath,
-      urlPath: input.urlPath,
+      urlPath: input.urlPath.slice(1),
       fullName,
     };
   },
@@ -177,6 +177,8 @@ and any computation that doesn't need Vue reactivity or the DOM.
 Write unit tests in \`ComponentName.logic.test.ts\` — these should be fast, deterministic,
 no-DOM tests that import and call the functions directly.
 
+Hint: you can group all validation in one function, rather than one per loader query.
+
 ## 2. Composables (\`useComponentFlow.ts\`)
 
 If a component has **stateful logic involving networking** — TanStack mutations, multi-step
@@ -187,7 +189,7 @@ and expose them to the component.
 Write integration tests in \`useComponentFlow.test.ts\` using \`setupMockServer\` with the
 SDK's fake handlers and \`withVueQuery\` to test the composable without a DOM.
 Import mock data arrays (e.g. \`mockEvals\`, \`mockForms\`) from the SDK's fakes export
-to set up and verify backend state.
+to set up and verify backend state. See the SDK itself for examples of composable tests.
 
 ## 3. After extraction
 
@@ -207,12 +209,11 @@ Run \`npm run typecheck\` in ${context.cwd} to verify the code is type-safe.
   threading them through props and events. Only pass data that is already loaded by the view's
   loader; if a sub-component needs to fetch additional data on interaction or fire mutations,
   it should do so itself.
-* **Render test**: Update the generated \`${context.targetName}.test.ts\` — replace the TODO
-  string with an actual visible string from the rendered page (e.g. the page title). This smoke
+* **Render test**: Update the generated \`${context.targetName}.test.ts\` as necessary — This smoke
   test drives baseline coverage on the Vue file; uncovered lines highlight logic worth extracting.
   Don't add interaction tests here — Playwright covers that. Focus deeper tests on the extracted
   logic files and composables.
-* **Deciding What to Test**: Don't extract simple logic just to test it. We already have tests for each tanstack query, so there's no need to pull that into a separate composable either. Save testing for more complex logic.
+* **Deciding What to Test**: Don't extract simple logic just to test it. We already have tests for each tanstack query, so there's no need to pull that into a separate composable either. Save testing for more complex logic, for example when multiple or tanstack queries are used together.
 
 For more information, see ${context.docFiles?.components}`,
     })),

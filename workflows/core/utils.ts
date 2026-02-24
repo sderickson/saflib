@@ -107,6 +107,7 @@ export function contextFromInput(input: WorkflowInput): WorkflowContext {
     copiedFiles: input.copiedFiles,
     docFiles: input.docFiles,
     cwd: input.cwd || process.cwd(),
+    originalWorkingDirectory: input.cwd || process.cwd(),
     agentConfig: input.agentConfig,
     skipTodos: input.skipTodos,
     manageVersionControl: input.manageVersionControl,

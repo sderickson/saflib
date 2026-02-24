@@ -204,6 +204,8 @@ export interface WorkflowInput {
 
   cwd?: string;
 
+  originalWorkingDirectory?: string;
+
   manageVersionControl?: VersionControlMode;
 
   skipTodos?: boolean;
@@ -292,6 +294,12 @@ export interface WorkflowContext {
   docFiles?: Record<string, string>;
 
   cwd: string;
+
+  /**
+   * When using "cd" with a relative path, it's always relative to the original working directory.
+   * An invoking workflow will set the original working directory for the invoked workflow to the invoking workflow's current working directory.
+   */
+  originalWorkingDirectory: string;
 
   /**
    * Opt in to having the workflow tool check git changes are expected, and commit them if they are. If they aren't, the workflow tool prompts the agent to justify its changes, and either commit or revert them.

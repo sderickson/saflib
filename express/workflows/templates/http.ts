@@ -4,6 +4,7 @@ import { __serviceName__Db } from "template-package-db";
 import {
   __serviceName__ServiceStorage,
   type __ServiceName__ServiceContextOptions,
+  makeContext,
 } from "template-package-service-common";
 
 // BEGIN SORTED WORKFLOW AREA router-imports FOR express/add-handler
@@ -25,7 +26,7 @@ export function create__ServiceName__HttpApp(
   app.use(createGlobalMiddleware());
   app.set("trust proxy", 1);
 
-  const context = { __serviceName__DbKey: dbKey };
+  const context = makeContext();
   app.use((_req, _res, next) => {
     __serviceName__ServiceStorage.run(context, () => {
       next();

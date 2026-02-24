@@ -128,6 +128,10 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
     step(makeWorkflowMachine(AddHandlerWorkflowDefinition), () => ({
       path: "./routes/users/list.ts",
     })),
+    step(makeWorkflowMachine(AddHandlerWorkflowDefinition), () => ({
+      path: "./routes/users/upload.ts",
+      upload: true,
+    })),
 
     // Test misc workflows
     step(makeWorkflowMachine(AddEmailTemplateWorkflowDefinition), () => ({

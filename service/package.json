@@ -5,7 +5,8 @@
   "type": "module",
   "exports": {
     ".": "./index.ts",
-    "./workflows": "./workflows/index.ts"
+    "./workflows": "./workflows/index.ts",
+    "./workflows/add-store": "./workflows/add-store.ts"
   },
   "scripts": {
     "test": "vitest run",

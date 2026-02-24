@@ -1,13 +1,14 @@
-import { describe, it, expect } from "vitest";
+import { afterEach, describe, it, expect } from "vitest";
 import { use__MutationName____GroupName__Mutation } from "./__mutation-name__.ts";
 import { __serviceName__ServiceFakeHandlers } from "../../fakes.ts";
 import { withVueQuery } from "@saflib/sdk/testing";
 import { setupMockServer } from "@saflib/sdk/testing/mock";
 // @ts-expect-error TODO: use mock data
-import { mock__GroupName__ } from "./mocks.ts";
+import { mock__GroupName__, resetMocks } from "./mocks.ts";
 
 describe("__mutationName____GroupName__", () => {
   setupMockServer(__serviceName__ServiceFakeHandlers);
+  afterEach(resetMocks);
 
   // BEGIN ONCE WORKFLOW AREA instructions FOR sdk/add-mutation IF upload
   /*

@@ -85,6 +85,7 @@ export const AddSpaWorkflowDefinition = defineWorkflow<
       commonPackageName,
       serviceSpecName,
       serviceSdkName,
+      serviceName: input.productName,
     };
   },
 

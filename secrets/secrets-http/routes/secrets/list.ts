@@ -2,7 +2,7 @@ import { createHandler } from "@saflib/express";
 import type { SecretsServiceResponseBody } from "@saflib/secrets-spec";
 import { secretsServiceStorage } from "@saflib/secrets-service-common";
 import { secretQueries } from "@saflib/secrets-db";
-import { mapSecretToResponse } from "../_helpers.js";
+import { mapSecretToResponse } from "../_helpers.ts";
 
 export const listHandler = createHandler(async (req, res) => {
   const ctx = secretsServiceStorage.getStore()!;

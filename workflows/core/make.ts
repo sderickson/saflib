@@ -141,6 +141,7 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
             docFiles: context.docFiles,
             agentConfig: context.agentConfig,
             cwd: context.cwd,
+            originalWorkingDirectory: context.originalWorkingDirectory,
             manageVersionControl: context.manageVersionControl,
             skipTodos: context.skipTodos,
           };

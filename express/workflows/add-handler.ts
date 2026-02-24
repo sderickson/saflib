@@ -2,16 +2,18 @@ import {
   CopyStepMachine,
   UpdateStepMachine,
   CommandStepMachine,
-  PromptStepMachine,
   defineWorkflow,
   step,
+  makeWorkflowMachine,
   type ParsePackageNameOutput,
   type ParsePathOutput,
   parsePath,
   parsePackageName,
   getPackageName,
   makeLineReplace,
+  CdStepMachine,
 } from "@saflib/workflows";
+import { ServiceAddStoreWorkflowDefinition } from "@saflib/service/workflows/add-store";
 import path from "node:path";
 
 const sourceDir = path.join(import.meta.dirname, "templates");
@@ -34,6 +36,7 @@ interface AddHandlerWorkflowContext
   extends ParsePackageNameOutput,
     ParsePathOutput {
   upload: boolean;
+  storeName: string;
 }
 
 export const AddHandlerWorkflowDefinition = defineWorkflow<
@@ -52,16 +55,19 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
   sourceUrl: import.meta.url,
 
   context: ({ input }) => {
+    const pathResult = parsePath(input.path, {
+      requiredSuffix: ".ts",
+      cwd: input.cwd,
+      requiredPrefix: "./routes/",
+    });
+    const storeName = `${pathResult.groupName}-file-container`;
     return {
       ...parsePackageName(getPackageName(input.cwd), {
         silentError: true, // so checklists don't error
         requiredSuffix: "-http",
       }),
-      ...parsePath(input.path, {
-        requiredSuffix: ".ts",
-        cwd: input.cwd,
-        requiredPrefix: "./routes/",
-      }),
+      ...pathResult,
+      storeName,
       targetDir: input.cwd,
       upload: input.upload ?? false,
     };
@@ -81,22 +87,30 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
   },
 
   versionControl: {
-    allowPaths: ["**/context.ts"],
+    allowPaths: [
+      "**/context.ts",
+      "**/common/package.json",
+      "**/http.ts",
+      "**/package.json",
+    ],
   },
 
   steps: [
-    step(
-      PromptStepMachine,
-      ({ context }) => ({
-        prompt: `Find or add a place in the service's common store (e.g. AsyncLocalStorage context) to hold uploaded files.
+    step(CdStepMachine, () => ({
+      path: "../common",
+    })),
 
-- Locate where the request-scoped context is created (usually in an adjacent common package) and what type it has.
-- Ensure the context includes an ObjectStore (or similar) for file blobs—e.g. a property like \`emptyFormContainer\` or \`${context.groupName}FileContainer\`.
-- If it doesn't exist, add the container to the context type, create it where the context is built (using a @saflib/object-store implementation), upsert it, and pass it into the context.
-- You will use this container in the handler to shunt uploaded file data (uploadFile, deleteFile, readFile). See @saflib/object-store library for details.`,
+    step(
+      makeWorkflowMachine(ServiceAddStoreWorkflowDefinition),
+      ({ context }) => ({
+        name: `${context.groupName}FileContainer`,
       }),
       { skipIf: ({ context }) => !context.upload },
     ),
+
+    step(CdStepMachine, () => ({
+      path: ".",
+    })),
 
     step(CopyStepMachine, ({ context }) => ({
       name: context.targetName,
@@ -117,11 +131,16 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
       - Let unexpected errors propagate to central error handler (no try/catch!)
       - Follow the pattern in the reference doc
       - Use the handler in the adjacent "index.ts" file.
-      - Include db -> http mapper functions in the adjacent ${context.copiedFiles?.helpers} file.${
+      - Include db -> http mapper functions in the adjacent ${context.copiedFiles?.helpers} file.
+      - For delete handlers that operate on child resources (e.g. deleting a file belonging to a recipe), validate the parent relationship *before* deleting. Fetch the record first, check that the parent ID matches, return 404 if not, and only then perform the delete. This avoids destroying data before returning an error.${
         context.upload
           ? `
 
-      This handler includes file upload support. Use the file container you added or found in the store (e.g. emptyFormContainer). Validate req.files, read the file buffer, unlink the temp file early, then create the DB record with file metadata (blob_name, file_original_name, mimetype, size). Upload the file to the container (uploadFile) after the DB create; on upload failure, clean up the DB record and return 500.`
+      This handler includes file upload support:
+      - Ensure the router's index.ts passes \`fileUploader: uploadToDiskOptions\` (from @saflib/express) to \`createScopedMiddleware\` so multipart requests are parsed. Import \`uploadToDiskOptions\` if not already imported.
+      - The file container property in the store is \`${context.groupName}FileContainer\` (e.g. recipesFileContainer). Use it to uploadFile / deleteFile / readFile.
+      - \`req.files\` may be an array (multer \`.any()\`) or a keyed object (multer \`.fields()\`); the template handles both. Match the field name from the spec (e.g. \`"file"\`).
+      - Create the DB record first with file metadata (blob_name, file_original_name, mimetype, size), then upload to the container. On upload failure, clean up the DB record and throw 500.`
           : ""
       }
       
