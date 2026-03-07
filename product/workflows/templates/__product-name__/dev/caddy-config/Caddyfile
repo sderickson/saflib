@@ -3,6 +3,7 @@ import common.Caddyfile
 # Curried snippets
 
 (__product-name__-api-proxy) {
+	import cors {$__PRODUCT_NAME___DOMAIN}
 	import api-proxy {$__PRODUCT_NAME___IDENTITY_SERVICE_HTTP_HOST} {args[0]}
 }
 

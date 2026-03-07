@@ -30,15 +30,32 @@ http://caddy:2020 {
 	}
 }
 
+# CORS: add response headers and handle OPTIONS preflight in Caddy so the backend never sees OPTIONS.
+# args[0]: allowed domain (e.g. recipes.docker.localhost). When provided, call as: import cors {domain}.
+# Origin is reflected when present; restrict to domain in deploy configs if needed.
 (cors) {
-	@cors_preflight method OPTIONS
-
-	header {
-		Access-Control-Allow-Origin "{header.origin}"
-		Vary Origin
-		Access-Control-Expose-Headers "Authorization"
-		Access-Control-Allow-Credentials "true"
+	@has_origin header Origin *
+	@options method OPTIONS
+	handle @options {
+		header {
+			Vary Origin
+			Cross-Origin-Resource-Policy "cross-origin"
+			Access-Control-Allow-Origin "{http.request.header.Origin}"
+			Access-Control-Allow-Credentials "true"
+			Access-Control-Expose-Headers "Authorization"
+			Access-Control-Allow-Methods "GET, POST, PUT, DELETE, PATCH, OPTIONS"
+			Access-Control-Allow-Headers "Content-Type, Authorization, X-CSRF-Token, Accept"
+			Access-Control-Max-Age "600"
+		}
+		respond 204
 	}
+	header {
+		Vary Origin
+		Cross-Origin-Resource-Policy "cross-origin"
+		Access-Control-Allow-Credentials "true"
+		Access-Control-Expose-Headers "Authorization"
+	}
+	header @has_origin Access-Control-Allow-Origin "{http.request.header.Origin}"
 }
 
 # Used for static assets accessible only to admins.
@@ -61,17 +78,20 @@ http://caddy:2020 {
 }
 
 # Used for API servers accessible to all users.
-# args[0]: identity service host (e.g. power-up-identity:3000)
-# args[1]: target service host (e.g. power-up:3000)
+# args[0]: identity service host (e.g. caller-identity:3000)
+# args[1]: target service host (e.g. caller:3000)
+# Wrapped in handle so OPTIONS (handled by cors snippet) never reaches forward_auth.
 (api-proxy) {
-	forward_auth {args[0]} {
-		uri /auth/verify?
-		header_up X-Request-ID {http.request.uuid}
-		copy_headers X-User-ID X-User-Email X-User-Scopes X-User-Email-Verified
-		header_up X-Csrf-Token {http.request.header.X-CSRF-Token}
-	}
-	reverse_proxy {args[1]} {
-		import reverse_proxy_common
+	handle {
+		forward_auth {args[0]} {
+			uri /auth/verify?
+			header_up X-Request-ID {http.request.uuid}
+			copy_headers X-User-ID X-User-Email X-User-Scopes X-User-Email-Verified
+			header_up X-Csrf-Token {http.request.header.X-CSRF-Token}
+		}
+		reverse_proxy {args[1]} {
+			import reverse_proxy_common
+		}
 	}
 }
 
