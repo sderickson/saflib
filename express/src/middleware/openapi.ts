@@ -24,7 +24,7 @@ const validateResponses = {
         "> Please update the spec or match the implementation to the spec.",
       );
       console.log(
-        "> Also: Don't forget to run `npm run generate` to update your spec.",
+        "> Also: Don't forget to run `npm exec saf-specs generate` to update your spec.",
       );
     }
     throw err;
