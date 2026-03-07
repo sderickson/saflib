@@ -15,8 +15,13 @@ export const verifyHandler = createHandler(async (req, res) => {
     return;
   }
 
+  const rawMethod = req.headers["x-forwarded-method"];
+  const method = typeof rawMethod === "string" ? rawMethod : rawMethod?.[0] ?? "";
+  const isSafeMethod = method.toUpperCase() === "GET" || method.toUpperCase() === "HEAD";
+
   if (
     req.user &&
+    !isSafeMethod &&
     !req.isValidCsrfToken() &&
     req.headers["x-csrf-skip"] !== "true"
   ) {
