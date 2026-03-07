@@ -155,9 +155,10 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
         context.download
           ? `
 
-      This handler returns a binary (download) response:
+      This handler returns a binary response (file download or serve):
       - Use \`res.status(200).contentType(<mediaType>).send(buffer)\` or stream with \`res.setHeader("Content-Type", ...)\` and piping. Set the Content-Type to match the OpenAPI spec (e.g. \`application/octet-stream\` or a specific type like \`application/pdf\`).
-      - If the binary comes from a store, use the container's \`readFile\` and handle FileNotFoundError / PathTraversalError / StorageError appropriately (404, 400, 500).`
+      - If the binary comes from a store, use the container's \`readFile\` and handle FileNotFoundError / PathTraversalError / StorageError appropriately (404, 400, 500).
+      - Set Content-Disposition as appropriate for the endpoint's purpose: use \`attachment\` (with filename) for save-to-disk flows, or \`inline\` (or omit) for serving the file for display (e.g. in an img tag).`
           : ""
       }
       
