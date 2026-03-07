@@ -40,6 +40,11 @@ const input = [
     type: "flag" as const,
     description: "Mutation sends a file via FormData (e.g. multipart upload)",
   },
+  {
+    name: "download",
+    type: "flag" as const,
+    description: "Mutation returns binary (e.g. blob/arrayBuffer from fetch)",
+  },
 ] as const;
 
 interface AddMutationWorkflowContext
@@ -47,6 +52,7 @@ interface AddMutationWorkflowContext
     ParsePathOutput {
   mutationName: string;
   upload: boolean;
+  download: boolean;
   urlPath: string;
   method: string;
 }
@@ -81,6 +87,7 @@ export const AddSdkMutationWorkflowDefinition = defineWorkflow<
       targetDir: input.cwd,
       mutationName: pathResult.targetName,
       upload: input.upload ?? false,
+      download: input.download ?? false,
       urlPath: input.urlPath,
       method: input.method,
     };
@@ -115,13 +122,14 @@ export const AddSdkMutationWorkflowDefinition = defineWorkflow<
       name: context.targetName,
       targetDir: context.targetDir,
       lineReplace: makeLineReplace(context),
-      flags: { upload: context.upload },
+      flags: { upload: context.upload, download: context.download },
     })),
 
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "templateFile",
       promptMessage: `Update **${context.targetName}.ts** to implement the API mutation.
       ${context.upload ? "This mutation accepts a File and sends it as FormData (body: formData as unknown as request body type)." : ""}
+      ${context.download ? "This mutation returns binary: use fetch (or similar) to call the endpoint, then response.arrayBuffer() or response.blob() and return it. Set Accept or leave default as needed. Handle non-ok responses (e.g. parse JSON error body when available)." : ""}
       
       Please review documentation here first: ${context.docFiles?.overview}`,
     })),

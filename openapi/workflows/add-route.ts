@@ -37,11 +37,17 @@ const input = [
     type: "flag" as const,
     description: "Include file upload (e.g. multipart) in the route",
   },
+  {
+    name: "download",
+    type: "flag" as const,
+    description: "Route returns binary (e.g. application/octet-stream or specific type)",
+  },
 ] as const;
 
 interface AddRouteWorkflowContext extends ParsePathOutput {
   operationId: string;
   upload: boolean;
+  download: boolean;
   urlPath: string;
   method: string;
 }
@@ -70,6 +76,7 @@ export const AddRouteWorkflowDefinition = defineWorkflow<
       }),
       targetDir: input.cwd,
       upload: input.upload ?? false,
+      download: input.download ?? false,
       urlPath: input.urlPath,
       method: input.method,
     };
@@ -100,7 +107,7 @@ export const AddRouteWorkflowDefinition = defineWorkflow<
       name: context.targetName,
       targetDir: path.join(context.targetDir),
       lineReplace: makeLineReplace(context),
-      flags: { upload: context.upload },
+      flags: { upload: context.upload, download: context.download },
     })),
 
     step(UpdateStepMachine, ({ context }) => ({
@@ -114,6 +121,7 @@ export const AddRouteWorkflowDefinition = defineWorkflow<
       - Do not specify a 400 response. The openapi validator is the only source of these.
       - If this is a list route, do not include a sort parameter unless explicitly requested.
       - For a route that is public, specify and enforce it with a "no-auth" tag.
+      ${context.download ? "- For download routes the 200 response content is already set to application/octet-stream (or adjust to a specific media type e.g. application/pdf)." : ""}
       `,
     })),
 

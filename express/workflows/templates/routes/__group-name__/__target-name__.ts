@@ -86,7 +86,13 @@ export const __targetName____GroupName__Handler = createHandler(
       {
         // Map service result to API response, using _helpers.ts mapper function
       };
+    // BEGIN ONCE WORKFLOW AREA responseBody FOR express/add-handler IF download
+    // TODO: obtain buffer from store readFile or generated content; set Content-Type to match spec
+    const buffer = Buffer.from([]);
+    res.status(200).contentType("application/octet-stream").send(buffer);
+    // ELSE
     // TODO: Set appropriate status code
     res.status(201).json(response);
+    // END WORKFLOW AREA
   },
 );

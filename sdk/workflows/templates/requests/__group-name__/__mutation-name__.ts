@@ -22,6 +22,16 @@ const res = await handleClientMethod(
  */
 // END WORKFLOW AREA
 
+// BEGIN ONCE WORKFLOW AREA instructions FOR sdk/add-mutation IF download
+/*
+For binary (download) responses, use fetch directly to get arrayBuffer() or blob(),
+then return it. Build the URL from getProtocol(), getHost(), and the path; include
+credentials and CSRF token like other mutations. On !response.ok, parse JSON error
+body when available and throw TanstackError. Return new Blob([arrayBuffer], { type })
+or the arrayBuffer as appropriate.
+ */
+// END WORKFLOW AREA
+
 export const use__MutationName____GroupName__Mutation = () => {
   const queryClient = useQueryClient();
   return useMutation({

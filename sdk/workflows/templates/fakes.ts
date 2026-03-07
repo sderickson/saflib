@@ -4,7 +4,7 @@ import { identityServiceFakeHandlers } from "@saflib/auth/fakes";
 import { __groupName__FakeHandlers } from "./requests/__group-name__/index.fakes.ts";
 // END WORKFLOW AREA
 
-// BEGIN SORTED WORKFLOW AREA resetMocks FOR sdk/add-query sdk/add-mutation
+// BEGIN SORTED WORKFLOW AREA import-mocks FOR sdk/add-query sdk/add-mutation
 import { resetMocks as __groupName__ResetMocks } from "./requests/__group-name__/mocks.ts";
 // END WORKFLOW AREA
 
@@ -21,7 +21,7 @@ export const __serviceName__ServiceFakeHandlers = [
 
 
 export const resetMocks = () => {
-  // BEGIN SORTED WORKFLOW AREA resetMocks FOR sdk/add-query sdk/add-mutation
+  // BEGIN SORTED WORKFLOW AREA export-mocks FOR sdk/add-query sdk/add-mutation
   __groupName__ResetMocks();
   // END WORKFLOW AREA
 };
