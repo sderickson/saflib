@@ -23,7 +23,9 @@ export function create__ServiceName__HttpApp(
   }
 
   const app = express();
-  app.use(createGlobalMiddleware());
+  app.use(createGlobalMiddleware({
+    disableCors: true,
+  }));
   app.set("trust proxy", 1);
 
   const context = makeContext();
