@@ -220,8 +220,11 @@ export const executePromptWithCursor = async ({
 
   // set up a promise to resolve when the agent is done
   let resolve: (value: PromptResult) => void;
-  const p = new Promise<PromptResult>((r) => {
+  let reject: (reason?: any) => void;
+  let code: number | null = null;
+  const p = new Promise<PromptResult>((r, rej) => {
     resolve = r;
+    reject = rej;
   });
 
   // prepending pending messages to the message
@@ -454,7 +457,11 @@ export const executePromptWithCursor = async ({
         printLineSlowly(`> ${json.is_error ? "Error" : "Success"}`);
         resultReceived = true;
         if (pipeClosed) {
-          resolve(response);
+          if (code !== 0) {
+            reject(new Error(`Agent exited with code ${code}`));
+          } else {
+            resolve(response);
+          }
         }
       }
     }
@@ -462,7 +469,8 @@ export const executePromptWithCursor = async ({
   agent.stderr.on("data", (data) => {
     printLineSlowly("AGENT ERROR: " + shortTimestamp() + " " + data.toString());
   });
-  agent.on("close", (code) => {
+  agent.on("close", (c) => {
+    code = c;
     if (!duration_api_ms) {
       console.warn("Duration API ms is not set after agent execution");
     }
@@ -499,7 +507,11 @@ export const executePromptWithCursor = async ({
     response.shouldContinue = shouldContinue;
     pipeClosed = true;
     if (resultReceived) {
-      resolve(response);
+      if (code !== 0) {
+        reject(new Error(`Agent exited with code ${code}`));
+      } else {
+        resolve(response);
+      }
     }
   });
   return p;

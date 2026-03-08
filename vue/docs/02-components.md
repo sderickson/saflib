@@ -79,6 +79,10 @@ Both the async component and the page component use the loader; the async compon
 
 Because the loader always uses Tanstack queries to fetch data, and the Tanstack client is configured to allow stale data for a few seconds, the page calling the loader will usually use the same data without causing extra requests.
 
+**Loaders must have a bounded, statically-known number of queries.** Each query in a loader fires in parallel with the code load, so the set of queries must be determinable at route-navigation time — not dependent on the results of other queries. For example, a loader can fetch a recipe, its notes, and its files (three queries), but it should _not_ loop over notes to fire one query per note.
+
+If you find yourself needing a data-dependent number of queries, that's a signal the API needs a [batch endpoint](../../openapi/docs/02-api-design.md#batch-endpoints). For example, instead of fetching note-files per-note with N queries, the API should provide `GET /recipe-note-files/by-note-ids?noteIds=...` so the loader can fetch them all in one query.
+
 ### Component: Rendering
 
 _[Template file](../workflows/template/__subdomain-name__/__group-name__/__TargetName__.vue)_
@@ -153,6 +157,8 @@ export function useEvalCreateFlow(callbacks: {
 }
 ```
 
+**Scoping note**: Each component that calls a composable gets its own instance with its own local state. This is usually what you want — each sub-component manages its own editing/uploading state independently. However, when multiple siblings need **coordinated state** (e.g. "only one note in edit mode at a time"), the parent should own that coordination state and pass it as a simple prop (like `isEditing: boolean`), while the sub-component still calls its own composable for mutations and other stateful flows.
+
 Composables are tested using `withVueQuery` and `setupMockServer` with the SDK's fake handlers — full integration tests that exercise the state machine and networking without a DOM:
 
 ```typescript
@@ -194,11 +200,20 @@ Naturally, pages will often be complex enough to warrant breaking down into sub-
 
 ### Keep Interfaces Simple
 
-Sub-components should **not** have overly complicated prop/emit interfaces. The key principle: only pass data through props that was loaded by the view's loader. For everything else, let sub-components access TanStack queries and mutations directly.
+Sub-components should **not** have overly complicated prop/emit interfaces. Props should be limited to:
 
-For example, if a dialog needs to create an eval, upload a file, and run a mutation chain, the dialog (or its composable) should call those mutations itself — the parent shouldn't thread mutation callbacks through props and coordinate the flow from outside.
+- **Loader data** — the data the view already loaded (passed as plain values or objects, not refs).
+- **Simple display state** — booleans, IDs, or other scalar values that control rendering.
 
-This keeps parent-child interfaces focused on **what data to render**, not **how to orchestrate network operations**.
+For everything else — mutations, multi-step flows, stateful editing/deleting/uploading — the sub-component should call the relevant **composable directly** in its own `<script setup>`. Do not pass flow objects, refs, or mutation callbacks through props.
+
+For example, if a `NoteCard` needs to edit and delete notes, it should call `useDetailNotesFlow()` itself rather than receiving an object with `editingNoteId`, `editBody`, `startEditNote`, `saveEditNote`, etc. as props. This avoids:
+
+- **Ref-unwrapping issues**: Vue does not auto-unwrap refs from props in templates, so you end up writing `noteFlow.editingNoteId?.value` and computed get/set wrappers for v-model — fragile and confusing.
+- **Bloated prop interfaces**: Flow objects with many refs and callbacks make the component harder to understand and reuse.
+- **Tight coupling**: The parent dictates orchestration that belongs to the child.
+
+Since composables use TanStack Query under the hood, multiple components calling the same composable will share the same query cache — there's no duplicated fetching.
 
 ### Forms
 

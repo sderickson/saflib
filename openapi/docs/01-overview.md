@@ -12,6 +12,8 @@ Packages using `@saflib/openapi` can generate:
 - JSON schemas
 - API docs
 
+For conventions on designing routes and schemas (URL structure, batch endpoints, binary responses, etc.), see [API Design](./02-api-design.md).
+
 ## Package Structure
 
 ```
@@ -72,6 +74,8 @@ API route definitions. There should be one file per route, with the file name be
 Routes should use `schemas/` for recurring business objects. Unless you're sure the route will never return more than one kind of object, the response should be an object whose values are a business object or an array of business objects. Responses should avoid getting any deeper than that.
 
 The top-level property should be the same as the operationId, as this will help debugging errors which just print the schema path for the offending file.
+
+See [API Design](./02-api-design.md) for conventions on URL structure, when to add batch or action endpoints, and how to handle binary responses.
 
 ### `schemas/`
 

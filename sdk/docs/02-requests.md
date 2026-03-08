@@ -41,6 +41,35 @@ export const getResource = (resourceId: Ref<number>) => {
 
 Altogether this handles types so that the result of using the query is typed based on the OpenAPI spec passed to `createSafClient`.
 
+### Query Key Conventions
+
+Query keys should mirror the URL path segments, replacing path parameters with their runtime values. This makes cache invalidation predictable — invalidating a prefix wipes all related queries below it.
+
+```
+URL: GET /recipes              → queryKey: ["recipes", "list"]
+URL: GET /recipes/:id          → queryKey: ["recipes", recipeId]
+URL: GET /recipes/:id/notes    → queryKey: ["recipes", recipeId, "notes"]
+URL: GET /recipes/:id/notes/:noteId/files
+                               → queryKey: ["recipes", recipeId, "notes", noteId, "files"]
+```
+
+For non-CRUD action endpoints, use the action name as the final segment:
+
+```
+URL: GET /recipe-note-files/by-note-ids?noteIds=...
+                               → queryKey: ["recipe-note-files", "by-note-ids", noteIds]
+```
+
+This convention means mutations can invalidate broadly or narrowly:
+
+```ts
+// Invalidate all note queries for a recipe
+queryClient.invalidateQueries({ queryKey: ["recipes", recipeId, "notes"] });
+
+// Invalidate everything related to a recipe
+queryClient.invalidateQueries({ queryKey: ["recipes", recipeId] });
+```
+
 ## Writing a Mutation
 
 A mutation needs to be a composable, so writing one is a bit different.

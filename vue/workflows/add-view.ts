@@ -170,7 +170,9 @@ Review the view you worked on, then break out:
 
 ## 0. Sub-components (\`ComponentName.vue\`)
 
-Extract sub-components from the view. Sub-components should be small, focused components that are used to render a part of the view. They should be able to be used in other views, and should be able to be tested independently. They should be in the same directory as the view.
+Extract sub-components from the view. Sub-components should be small, focused components that are used to render a part of the view. They should be in the same directory as the view.
+
+**Important**: Sub-components should have simple prop interfaces — pass only loader data and simple display state through props. If a sub-component needs mutations or stateful flows (editing, deleting, uploading), it should call the relevant composable **directly** inside its own \`<script setup>\`, not receive a flow object or mutation callbacks through props. This keeps parent-child interfaces clean and avoids awkward ref-unwrapping in templates.
 
 ## 1. Logic files (\`ComponentName.logic.ts\`)
 
@@ -208,11 +210,12 @@ Run \`npm run typecheck\` in ${context.cwd} to verify the code is type-safe.
 * **Strings**: Each sub-component gets its own \`.strings.ts\` file (e.g. \`MyDialog.strings.ts\`).
   Don't pile all strings into the view's strings file. Remember to do this if you opt to break
   a vue file into sub-components.
-* **Sub-component interfaces**: Keep them simple. Pass data loaded by the view's loader through
-  props. But let sub-components access TanStack queries and mutations **directly** rather than
-  threading them through props and events. Only pass data that is already loaded by the view's
-  loader; if a sub-component needs to fetch additional data on interaction or fire mutations,
-  it should do so itself.
+* **Sub-component interfaces**: Keep them simple. Props should be limited to loader data and
+  simple display state (booleans, IDs, etc.). Sub-components should call composables and
+  TanStack mutations **directly** in their own \`<script setup>\` rather than receiving flow
+  objects, refs, or mutation callbacks through props. This avoids ref-unwrapping issues in
+  templates and keeps parent-child interfaces focused on **what to render**, not
+  **how to orchestrate**.
 * **Render test**: Update the generated \`${context.targetName}.test.ts\` as necessary — This smoke
   test drives baseline coverage on the Vue file; uncovered lines highlight logic worth extracting.
   Don't add interaction tests here — Playwright covers that. Focus deeper tests on the extracted
