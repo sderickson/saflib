@@ -1,4 +1,18 @@
 /**
+ * Short random ID (8 base64url chars by default). Uses crypto.getRandomValues; URL-safe,
+ * same entropy as 12 hex chars in less space. Optional byteLength (default 6 → 8 chars).
+ */
+export function generateShortId(byteLength: number = 6): string {
+  const bytes = new Uint8Array(byteLength);
+  crypto.getRandomValues(bytes);
+  if (typeof Buffer !== "undefined") {
+    return Buffer.from(bytes).toString("base64url");
+  }
+  const base64 = btoa(String.fromCharCode.apply(null, Array.from(bytes)));
+  return base64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+/**
  * Given a string which may have newlines already included, add /n to each line such that no line is longer than maxLineWidth.
  */
 export function addNewLinesToString(str: string, maxLineWidth: number = 80) {

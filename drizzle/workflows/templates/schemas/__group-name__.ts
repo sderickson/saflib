@@ -1,5 +1,6 @@
 import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
 import type { Expect, Equal } from "@saflib/drizzle";
+import { generateShortId } from "@saflib/drizzle";
 // BEGIN ONCE WORKFLOW AREA drizzleImport FOR drizzle/update-schema IF file
 import { fileMetadataColumns, type FileMetadataFields } from "@saflib/drizzle";
 // END WORKFLOW AREA
@@ -25,7 +26,7 @@ export interface __GroupName__Entity
 export const __groupName__Table = sqliteTable("__group_name___table", {
   id: text("id")
     .primaryKey()
-    .$defaultFn(() => crypto.randomUUID()),
+    .$defaultFn(() => generateShortId()),
   name: text("name").notNull(),
   createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
   updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
