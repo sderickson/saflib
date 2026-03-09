@@ -7,6 +7,8 @@ import { popPendingMessages } from "./message.ts";
 import { logFile, type CostTsvRow, appendToCostFile } from "./log.ts";
 import { addTimeMs, getPercentTimeUsed, getTimeMs } from "./timeout.ts";
 
+const HALT_WORKFLOW_STRING = "--- HALT WORKFLOW ---";
+
 interface CursorSystemLog {
   type: "system";
   session_id: string;
@@ -221,7 +223,7 @@ export const executePromptWithCursor = async ({
   // set up a promise to resolve when the agent is done
   let resolve: (value: PromptResult) => void;
   let reject: (reason?: any) => void;
-  let code: number | null = null;
+  let halt = false;
   const p = new Promise<PromptResult>((r, rej) => {
     resolve = r;
     reject = rej;
@@ -456,9 +458,10 @@ export const executePromptWithCursor = async ({
         printLineSlowly("\n---------- RESULT ---------- " + shortTimestamp());
         printLineSlowly(`> ${json.is_error ? "Error" : "Success"}`);
         resultReceived = true;
+        halt = json.result.includes(HALT_WORKFLOW_STRING);
         if (pipeClosed) {
-          if (code !== 0) {
-            reject(new Error(`Agent exited with code ${code}`));
+          if (halt) {
+            reject(new Error("Workflow halted"));
           } else {
             resolve(response);
           }
@@ -469,8 +472,7 @@ export const executePromptWithCursor = async ({
   agent.stderr.on("data", (data) => {
     printLineSlowly("AGENT ERROR: " + shortTimestamp() + " " + data.toString());
   });
-  agent.on("close", (c) => {
-    code = c;
+  agent.on("close", (code) => {
     if (!duration_api_ms) {
       console.warn("Duration API ms is not set after agent execution");
     }
@@ -507,8 +509,8 @@ export const executePromptWithCursor = async ({
     response.shouldContinue = shouldContinue;
     pipeClosed = true;
     if (resultReceived) {
-      if (code !== 0) {
-        reject(new Error(`Agent exited with code ${code}`));
+      if (halt) {
+        reject(new Error("Workflow halted"));
       } else {
         resolve(response);
       }
