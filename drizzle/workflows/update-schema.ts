@@ -96,6 +96,7 @@ export const UpdateSchemaWorkflowDefinition = defineWorkflow<
       fileId: "schema",
       promptMessage: `Update ${context.targetName}.ts to add the new table, or modify it.
 
+      Use generateShortId() from @saflib/drizzle for primary key id columns (not crypto.randomUUID()).
       If there's a foreign key relationship, DO NOT set it to cascade on delete.
       
       Please reference the documentation here for more information: ${context.docFiles?.schemaDoc}`,

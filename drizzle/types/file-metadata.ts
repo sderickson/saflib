@@ -6,10 +6,10 @@ import { text, integer } from "drizzle-orm/sqlite-core";
  *
  * @example
  * ```ts
- * import { fileMetadataColumns } from "@saflib/drizzle/types/file-metadata";
+ * import { fileMetadataColumns, generateShortId } from "@saflib/drizzle";
  *
  * export const myFileTable = sqliteTable("my_file", {
- *   id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+ *   id: text("id").primaryKey().$defaultFn(() => generateShortId()),
  *   ...fileMetadataColumns,
  *   // other columns...
  * });

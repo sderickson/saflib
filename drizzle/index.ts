@@ -12,3 +12,4 @@ export {
   fileMetadataColumns,
   type FileMetadataFields,
 } from "./types/file-metadata.ts";
+export { generateShortId } from "./id.ts";

@@ -88,6 +88,7 @@ export const AddSchemaWorkflowDefinition = defineWorkflow<
       - Define the object properties and their types
       - Add appropriate descriptions and examples
       - Set required fields
+      - Use type: string for id and reference fields (do not use format: uuid; we use short ids from generateShortId)
       - Consider validation rules and constraints
       - For nullable enums, make sure to include null in the enum list otherwise the validator will disallow null values.`,
     })),

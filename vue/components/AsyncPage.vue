@@ -56,7 +56,8 @@ const errorMessage = computed(() => {
     return "An unexpected error occurred.";
   }
 
-  switch (error.status) {
+  const status = (error as { status?: number })?.status;
+  switch (status) {
     case 401:
       return "Not Logged In";
     case 403:
@@ -68,7 +69,7 @@ const errorMessage = computed(() => {
     case 0:
       return "Connection Error";
     default:
-      return `Failed to load data (Error ${error.status})`;
+      return `Failed to load data (Error ${status})`;
   }
 });
 </script>
