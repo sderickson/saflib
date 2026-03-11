@@ -39,6 +39,10 @@ import {
   AddSdkMutationWorkflowDefinition,
 } from "@saflib/sdk/workflows";
 import { AddSpaViewWorkflowDefinition } from "@saflib/vue/workflows";
+import {
+  InitIntegrationWorkflowDefinition,
+  AddCallWorkflowDefinition,
+} from "@saflib/integrations/workflows";
 import { CommandStepMachine } from "@saflib/workflows";
 import { AddWorkflowDefinition } from "@saflib/workflows/workflows";
 import { SpecProjectWorkflowDefinition } from "@saflib/processes/workflows";
@@ -217,6 +221,21 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
     })),
     step(makeWorkflowMachine(CronAddJobWorkflowDefinition), () => ({
       path: "./jobs/tmp-cron/give-time.ts",
+    })),
+
+    // Test @saflib/integrations workflows
+    step(CdStepMachine, () => ({
+      path: ".",
+    })),
+    step(makeWorkflowMachine(InitIntegrationWorkflowDefinition), () => ({
+      name: "@saflib/tmp-integration",
+      path: "./tmp/service/integrations/example",
+    })),
+    step(CdStepMachine, () => ({
+      path: "./tmp/service/integrations/example",
+    })),
+    step(makeWorkflowMachine(AddCallWorkflowDefinition), () => ({
+      path: "./calls/search.ts",
     })),
 
     // Test @saflib/sdk workflows
