@@ -67,7 +67,7 @@ export const InitIntegrationWorkflowDefinition = defineWorkflow<
   templateFiles: {
     packageJson: path.join(sourceDir, "package.json"),
     envSchema: path.join(sourceDir, "env.schema.json"),
-    envFile: path.join(sourceDir, ".env"),
+    // envFile: path.join(sourceDir, ".env"),
     client: path.join(sourceDir, "client.ts"),
     clientMocks: path.join(sourceDir, "client.mocks.ts"),
     index: path.join(sourceDir, "index.ts"),
@@ -104,6 +104,11 @@ export const InitIntegrationWorkflowDefinition = defineWorkflow<
 
     step(CdStepMachine, ({ context }) => ({
       path: context.targetDir,
+    })),
+
+    step(CommandStepMachine, () => ({
+      command: "touch",
+      args: [".env"],
     })),
 
     step(PromptStepMachine, ({ context }) => ({
