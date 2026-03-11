@@ -15,6 +15,7 @@ Each integration package should have the following structure:
 ├── calls/
 │   └── ping.ts       # Read-only API call to verify the integration
 ├── client.ts         # Scoped client with mock/real branching
+├── client.mocks.ts   # Mock data and mock client implementation
 ├── env.schema.json   # Env variable declarations
 ├── env.ts            # Generated typed env (via @saflib/env)
 ├── index.ts
@@ -99,6 +100,10 @@ myClient = sdk as unknown as ScopedMyClient;
 The goal is always the same: the scoped type is the contract that the mock must satisfy and the application must not exceed.
 
 ## Mock Implementation
+
+Mock data and mock client construction live in `client.mocks.ts`, separate from the client logic in `client.ts`. This keeps `client.ts` focused on the type definition, gate logic, and branching, while the mock file holds all placeholder data and method implementations.
+
+`client.mocks.ts` exports the mock client, which `client.ts` imports and uses when `isMocked` is true.
 
 The mock client must satisfy the scoped type and return realistic placeholder data. Mocks are used in two situations:
 

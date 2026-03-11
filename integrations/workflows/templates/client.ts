@@ -1,5 +1,6 @@
 // TODO: Import the SDK client package.
 import { typedEnv } from "./env.ts";
+import { mock__IntegrationName__Client } from "./client.mocks.ts";
 
 // TODO: Update the env variable name below if you renamed it in env.schema.json.
 const apiKey = typedEnv.__INTEGRATION_NAME___API_KEY;
@@ -21,9 +22,6 @@ export const isMocked = apiKey === "mock" || isTest;
 // For nested SDKs: { ns: Pick<SdkClient["ns"], "method1" | "method2"> }
 // See @saflib/integrations docs for more patterns.
 export type Scoped__IntegrationName__Client = Record<string, never>;
-
-// TODO: Implement a mock client returning realistic placeholder data.
-const mock__IntegrationName__Client: Scoped__IntegrationName__Client = {};
 
 let __integrationName__Client: Scoped__IntegrationName__Client;
 

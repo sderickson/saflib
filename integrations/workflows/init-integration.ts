@@ -69,6 +69,7 @@ export const InitIntegrationWorkflowDefinition = defineWorkflow<
     envSchema: path.join(sourceDir, "env.schema.json"),
     envFile: path.join(sourceDir, ".env"),
     client: path.join(sourceDir, "client.ts"),
+    clientMocks: path.join(sourceDir, "client.mocks.ts"),
     index: path.join(sourceDir, "index.ts"),
     test: path.join(sourceDir, "index.test.ts"),
     gitignore: path.join(sourceDir, ".gitignore"),
@@ -136,7 +137,7 @@ Read the overview doc first: ${context.docFiles?.overview}
 2. Read the correct API key env variable from \`typedEnv\` (matching what you set in env.schema.json). Update the variable name and error message if you renamed it.
 3. **Do not change the two-gate pattern** (the \`if (!apiKey && !isTest)\` throw and the \`isMocked\` assignment). See the docs for why.
 4. Define a scoped client type using \`Pick\` to select only the SDK methods this integration will use. For nested SDKs, pick from each namespace. See the docs for patterns.
-5. Implement the **mock client** with realistic placeholder responses matching the picked methods.
+5. Implement the **mock client** in \`client.mocks.ts\` (already imported). Put all mock data and mock method implementations there — keep \`client.ts\` focused on the type, gates, and branching logic.
 6. Implement the **real client** by initialising the SDK and casting it to the scoped type.
 7. Update the export name and types.`,
     })),
