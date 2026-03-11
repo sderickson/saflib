@@ -1,8 +1,13 @@
 import { describe, it, expect } from "vitest";
-import * as exports from "template-integration";
+import { __integrationName__, ping } from "template-integration";
 
 describe("template-integration", () => {
   it("should export the client", () => {
-    expect(exports.__integrationName__).toBeDefined();
+    expect(__integrationName__).toBeDefined();
+  });
+
+  it("should ping successfully", async () => {
+    const result = await ping();
+    expect(result).toBeDefined();
   });
 });
