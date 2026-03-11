@@ -38,7 +38,7 @@ export const InitIntegrationWorkflowDefinition = defineWorkflow<
   typeof input,
   InitIntegrationContext
 >({
-  id: "integrations/init-integration",
+  id: "integrations/init",
 
   description:
     "Initialize a new third-party integration package with client, env schema, mock, and test script",
@@ -104,7 +104,7 @@ export const InitIntegrationWorkflowDefinition = defineWorkflow<
       promptText: `Install the SDK package for the **${context.integrationName}** integration and configure environment variables.
 
 1. Install the appropriate SDK npm package as a dependency (e.g. \`npm install @anthropic-ai/sdk\`). If the integration doesn't need a dedicated SDK, skip this.
-2. Add the required API key / credentials env variable(s) to \`env.schema.json\`. Use descriptive names like \`ANTHROPIC_API_KEY\` or \`DOCUMENT_AI_CREDENTIALS\`. Mark them as NOT required (the mock/test path should work without them).
+2. Add or update environment variables that are required for the integration to \`env.schema.json\`. Use descriptive names like \`ANTHROPIC_API_KEY\` or \`DOCUMENT_AI_CREDENTIALS\`. Mark them as NOT required (the mock/test path should work without them).
 3. Describe each variable clearly in its \`"description"\` field.`,
     })),
 
