@@ -18,13 +18,13 @@ const input = [
   {
     name: "name",
     description:
-      "The npm package name for the integration (e.g., '@vendata/iform-anthropic')",
+      "The npm package name for the integration (e.g., '@myorg/myapp-stripe')",
     exampleValue: "@example/example-integration",
   },
   {
     name: "path",
     description:
-      "Relative path to the integration directory (e.g., 'iform/service/integrations/anthropic')",
+      "Relative path to the integration directory (e.g., 'services/integrations/stripe')",
     exampleValue: "services/integrations/example-integration",
   },
 ] as const;
@@ -73,6 +73,8 @@ export const InitIntegrationWorkflowDefinition = defineWorkflow<
     gitignore: path.join(sourceDir, ".gitignore"),
     tsconfig: path.join(sourceDir, "tsconfig.json"),
     vitestConfig: path.join(sourceDir, "vitest.config.js"),
+    callsGitkeep: path.join(sourceDir, "calls/.gitkeep"),
+    binGitkeep: path.join(sourceDir, "bin/.gitkeep"),
   },
 
   docFiles: {},
@@ -103,8 +105,8 @@ export const InitIntegrationWorkflowDefinition = defineWorkflow<
     step(PromptStepMachine, ({ context }) => ({
       promptText: `Install the SDK package for the **${context.integrationName}** integration and configure environment variables.
 
-1. Install the appropriate SDK npm package as a dependency (e.g. \`npm install @anthropic-ai/sdk\`). If the integration doesn't need a dedicated SDK, skip this.
-2. Add or update environment variables that are required for the integration to \`env.schema.json\`. Use descriptive names like \`ANTHROPIC_API_KEY\` or \`DOCUMENT_AI_CREDENTIALS\`. Mark them as NOT required (the mock/test path should work without them).
+1. Install the appropriate SDK npm package as a dependency (e.g. \`npm install some-sdk\`). If the integration doesn't need a dedicated SDK, skip this.
+2. Update the API key / credentials env variable(s) in \`env.schema.json\`. Rename or add variables as needed. Mark them as NOT required (the mock/test path should work without them).
 3. Describe each variable clearly in its \`"description"\` field.`,
     })),
 
@@ -124,23 +126,21 @@ export const InitIntegrationWorkflowDefinition = defineWorkflow<
 
 1. Import the installed SDK.
 2. Read the correct API key env variable from \`typedEnv\` (matching what you added to env.schema.json).
-3. Define \`ScopedClient\` type — only expose the SDK methods this integration will use. Keep the type surface minimal.
-4. Implement the **mock client** with realistic placeholder responses.
-5. Implement the **real client** by initialising the SDK and mapping it to the scoped type.
-6. Update the export name and types.
-
-Reference existing integrations for style: both the anthropic and gcloud integrations define a \`Scoped*Client\` type and branch on \`isMocked\`.`,
+3. Define a scoped client type using \`Pick<SdkClientType, "method1" | "method2">\` to select only the SDK methods this integration will use. This keeps the mock surface small and limits coupling.
+4. Implement the **mock client** with realistic placeholder responses matching the picked methods.
+5. Implement the **real client** by initialising the SDK and casting it to the scoped type.
+6. Update the export name and types.`,
     })),
 
     step(PromptStepMachine, ({ context }) => ({
       promptText: `Create a test call, bin script, and npm run-script for the **${context.integrationName}** integration.
 
-1. Create a \`calls/\` directory and add a test call file (e.g. \`calls/ping.ts\` or \`calls/list.ts\`). It should:
+1. Add a test call file in the \`calls/\` directory (e.g. \`calls/ping.ts\` or \`calls/list.ts\`). It should:
    - Import the client from \`../client.ts\`.
    - Call a safe, read-only API method (list, fetch, or ping — not create/update/delete).
    - Export a function that returns the result.
 
-2. Create a \`bin/\` directory with a script (e.g. \`bin/ping.ts\`) that:
+2. Add a script in the \`bin/\` directory (e.g. \`bin/ping.ts\`) that:
    - Imports and calls the function from the calls file.
    - Logs the result with \`console.log(JSON.stringify(result, null, 2))\`.
 
