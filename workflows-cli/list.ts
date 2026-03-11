@@ -14,6 +14,7 @@ import serviceWorkflows from "../service/workflows/index.ts";
 import identityWorkflows from "@saflib/identity/workflows";
 import grpcWorkflows from "@saflib/grpc/workflows";
 import cronWorkflows from "@saflib/cron/workflows";
+import integrationsWorkflows from "@saflib/integrations/workflows";
 import productWorkflows from "product/workflows";
 import type { WorkflowDefinition } from "@saflib/workflows";
 
@@ -30,6 +31,7 @@ const workflowClasses: WorkflowDefinition[] = [
   ...grpcWorkflows,
   ...identityWorkflows,
   ...cronWorkflows,
+  ...integrationsWorkflows,
   ...sdkWorkflows,
   ...vueSpaWorkflows,
   ...metaWorkflows,

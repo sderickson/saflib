@@ -9,3 +9,5 @@ export const accountSdkStrings = {
   account_profile_page,
   profile_form,
 };
+
+export { profile_form };
