@@ -1,1 +1,4 @@
-export { InitIntegrationWorkflowDefinition } from "./workflows/index.ts";
+export {
+  InitIntegrationWorkflowDefinition,
+  AddCallWorkflowDefinition,
+} from "./workflows/index.ts";

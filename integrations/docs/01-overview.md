@@ -8,16 +8,19 @@ Each integration package should have the following structure:
 
 ```
 {integration-name}/
-├── .env              # Local API key (git-ignored)
+├── .env                    # Local API key (git-ignored)
 ├── .gitignore
 ├── bin/
-│   └── ping.ts       # Runs the test call with a live API key
+│   ├── ping.ts             # Runs the ping call with a live API key
+│   └── {call-name}.ts      # Runs a call with a live API key
 ├── calls/
-│   └── ping.ts       # Read-only API call to verify the integration
-├── client.ts         # Scoped client with mock/real branching
-├── client.mocks.ts   # Mock data and mock client implementation
-├── env.schema.json   # Env variable declarations
-├── env.ts            # Generated typed env (via @saflib/env)
+│   ├── ping.ts             # Read-only API call to verify connectivity
+│   ├── {call-name}.ts      # Product-specific call implementation
+│   └── {call-name}.mocks.ts  # Mock for the call
+├── client.ts               # Scoped client with mock/real branching
+├── client.mocks.ts         # Mock data and mock client implementation
+├── env.schema.json         # Env variable declarations
+├── env.ts                  # Generated typed env (via @saflib/env)
 ├── index.ts
 ├── index.test.ts
 ├── package.json
@@ -36,7 +39,9 @@ const isTest = typedEnv.NODE_ENV === "test";
 // Gate 1: Throw if the key is missing and we're NOT in a test.
 // A missing key in production/development is a configuration error.
 if (!apiKey && !isTest) {
-  throw new Error("MY_API_KEY is required. Set it in your environment or .env file.");
+  throw new Error(
+    "MY_API_KEY is required. Set it in your environment or .env file.",
+  );
 }
 
 // Gate 2: Use mocks when the key is explicitly "mock" or when running tests.
@@ -46,12 +51,12 @@ export const isMocked = apiKey === "mock" || isTest;
 
 ### Why this matters
 
-| Scenario | `apiKey` | `isTest` | Behavior |
-|---|---|---|---|
-| Unit tests (`vitest run`) | `undefined` | `true` | Skip throw, `isMocked = true` → mock client |
-| Dev with `.env` key | `"sk-abc..."` | `false` | Pass throw, `isMocked = false` → real client |
-| Dev forgot `.env` | `undefined` | `false` | **Throw** — catches misconfiguration early |
-| CI with `API_KEY=mock` | `"mock"` | `false` | Pass throw, `isMocked = true` → mock client |
+| Scenario                  | `apiKey`      | `isTest` | Behavior                                     |
+| ------------------------- | ------------- | -------- | -------------------------------------------- |
+| Unit tests (`vitest run`) | `undefined`   | `true`   | Skip throw, `isMocked = true` → mock client  |
+| Dev with `.env` key       | `"sk-abc..."` | `false`  | Pass throw, `isMocked = false` → real client |
+| Dev forgot `.env`         | `undefined`   | `false`  | **Throw** — catches misconfiguration early   |
+| CI with `API_KEY=mock`    | `"mock"`      | `false`  | Pass throw, `isMocked = true` → mock client  |
 
 A common mistake is to fold the missing-key case into `isMocked` (e.g. `isMocked = !apiKey || ...`). This silently mocks when the key is absent, which hides configuration errors and causes `npm run ping` to return mock data instead of failing loudly.
 
@@ -112,14 +117,80 @@ The mock client must satisfy the scoped type and return realistic placeholder da
 
 Keep mock responses minimal but structurally correct — the test suite (and any downstream code exercised by tests) needs the response shape to be accurate.
 
-## Test Call (`calls/ping.ts`)
+## Calls
 
-Every integration should include at least one read-only API call (conventionally `calls/ping.ts`). This call:
+Calls are the product-facing layer of an integration. While the scoped client exposes raw SDK methods, calls wrap those methods with product-specific logic: parameter building, response parsing, validation, retries, caching, etc.
 
-- Uses the scoped client (not the raw SDK).
+### Structure
+
+Each call has three files:
+
+```
+calls/
+├── parse-file.ts         # Implementation
+├── parse-file.mocks.ts   # Mock for tests
+bin/
+└── parse-file.ts         # Manual test script
+```
+
+Use `npm exec saf-workflow kickoff integrations/add-call ./calls/<name>.ts` to scaffold these.
+
+### Call implementation (`calls/<name>.ts`)
+
+A call imports the scoped client and `isMocked` from `../client.ts`, and the mock from the adjacent `.mocks.ts` file. It should:
+
+- Define a typed result interface.
+- Return the mock early when `isMocked` is true.
+- Use the scoped client (not the raw SDK) for the real implementation.
+- Be exported from `index.ts`.
+
+```ts
+import { myIntegration, isMocked } from "../client.ts";
+import { mockParseFile } from "./parse-file.mocks.ts";
+
+export interface ParseFileResult<T = unknown> {
+  data: T;
+  explanation: string;
+}
+
+export async function parseFile<T>(
+  stream: ReadableStream,
+  schema: object,
+): Promise<ParseFileResult<T>> {
+  if (isMocked) {
+    return mockParseFile();
+  }
+  // ... real implementation using myIntegration
+}
+```
+
+### Call mocks (`calls/<name>.mocks.ts`)
+
+The mock file exports a function returning realistic placeholder data that matches the call's result type. Keeping mocks in separate files:
+
+- Prevents `client.ts` and call files from growing large with inline mock data.
+- Makes it easy to find and update mock responses.
+- Keeps the real implementation readable.
+
+### Bin scripts (`bin/<name>.ts`)
+
+Each call should have a corresponding bin script for manual testing with a live API key:
+
+```ts
+import { parseFile } from "../calls/parse-file.ts";
+
+const result = await parseFile(stream, schema);
+console.log(JSON.stringify(result, null, 2));
+```
+
+Add an npm script: `"parse-file": "node --env-file=.env --experimental-strip-types ./bin/parse-file.ts"`
+
+### Test call (`calls/ping.ts`)
+
+Every integration includes a `ping.ts` call created by the init workflow. This is a minimal read-only call to verify connectivity. It:
+
 - Calls a safe method (list, get, search — never create, update, or delete).
-- Is exported from `index.ts` so the test suite can exercise it.
-- Has a corresponding `bin/ping.ts` script and `npm run ping` command for manual verification with a live API key.
+- Has a corresponding `bin/ping.ts` and `npm run ping` for manual verification.
 
 To test the integration manually:
 
