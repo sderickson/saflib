@@ -38,7 +38,7 @@ __operationId__:
           $ref: "../../schemas/todo.yaml"
       # END WORKFLOW AREA
 
-  # TODO: Update response definitions. You do not need to include 400 or 5xx responses.
+  # TODO: Update response definitions. Include 400 only for dynamic/business-rule failures (not for OpenAPI validation). You do not need to include 5xx.
   responses:
     "200":
       description: "todo"
