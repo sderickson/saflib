@@ -1,17 +1,25 @@
 import { type Link, type LinkOptions } from "./types.ts";
 import { typedEnv } from "@saflib/env";
 
-const constructPath = (link: Link, options?: LinkOptions): string => {
+export const constructPath = (link: Link, options?: LinkOptions): string => {
   let path = link.path;
   if (options?.params) {
     const queryParams = new URLSearchParams();
     for (const [param, value] of Object.entries(options.params)) {
+      const urlParam = `:${param}`;
+      if (link.path.includes(urlParam)) {
+        path = path.replace(urlParam, value);
+        continue;
+      }
       if (!link.params?.includes(param)) {
         throw new Error(`Param ${param} not found in link ${link.path}`);
       }
       queryParams.set(param, value);
     }
-    path = `${path}?${queryParams.toString()}`;
+    const queryString = queryParams.toString();
+    if (queryString) {
+      path = `${path}?${queryString}`;
+    }
   }
   return path;
 };

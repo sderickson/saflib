@@ -97,10 +97,10 @@ export const handleGitChanges = async ({
       }
       const { shouldContinue } = await handlePrompt({
         context: context,
-        msg: `The following files had unexpected changes:
+        msg: `The following files had changes:
       ${otherFiles.map((file) => `- ${path.relative(context.cwd, file)}`).join("\n")}
 
-      These are not expected to be changed by the workflow ${workflowId}. But that's okay! Please commit them with an explanatory message (fixing existing test or type issues is fine). If any of it was exploratory work that doesn't need to be committed, remove that first.`,
+      These are generally outside of the scope of the workflow ${workflowId}. But that's okay! Please commit them with an explanatory message (fixing existing test or type issues is fine). If any of it was exploratory work that doesn't need to be committed, remove that first.`,
       });
 
       // bit of a hack to make sure "slowly printing" is done

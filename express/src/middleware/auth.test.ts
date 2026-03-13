@@ -34,6 +34,7 @@ describe("Auth Middleware", () => {
       userId: "123",
       userEmail: "test@example.com",
       userScopes: [],
+      emailVerified: true,
     });
   });
 
@@ -52,6 +53,7 @@ describe("Auth Middleware", () => {
       userId: "123",
       userEmail: "test@example.com",
       userScopes: ["admin", "write"],
+      emailVerified: true,
     });
   });
 
@@ -70,6 +72,7 @@ describe("Auth Middleware", () => {
       userId: "123",
       userEmail: "test@example.com",
       userScopes: [],
+      emailVerified: true,
     });
   });
 

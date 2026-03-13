@@ -1,5 +1,5 @@
 import { createReadStream, existsSync } from "node:fs";
-import { mkdir, readdir, rm, stat } from "node:fs/promises";
+import { mkdir, readdir, rm, rmdir, stat } from "node:fs/promises";
 import path from "node:path";
 import { Readable } from "stream";
 import {
@@ -152,6 +152,16 @@ export class DiskObjectStore extends ObjectStore {
         return { result: { success: true } };
       }
       await rm(filePath, { force: true });
+
+      const root = path.resolve(this.rootPath);
+      let dir = path.dirname(filePath);
+      while (dir !== root && existsSync(dir)) {
+        const entries = await readdir(dir);
+        if (entries.length > 0) break;
+        await rmdir(dir);
+        dir = path.dirname(dir);
+      }
+
       return { result: { success: true } };
     } catch (error) {
       if (error instanceof PathTraversalError) {

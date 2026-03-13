@@ -118,7 +118,7 @@ export const AddRouteWorkflowDefinition = defineWorkflow<
       - Define request parameters and body schemas using $ref to existing schemas
       - Define response schemas using $ref to existing schemas (including error.yaml for error responses)
       - Remove any unused sections (parameters, requestBody) if not needed
-      - Do not specify a 400 response. The openapi validator is the only source of these.
+      - Do not specify a 400 response when the only 400s would come from OpenAPI request validation (e.g. missing required, wrong type). Do specify 400 for dynamic or business-rule failures (e.g. duplicate id, id not URL-safe, cannot remove creator).
       - If this is a list route, do not include a sort parameter unless explicitly requested.
       - For a route that is public, specify and enforce it with a "no-auth" tag.
       ${context.download ? "- For download routes the 200 response content is already set to application/octet-stream (or adjust to a specific media type e.g. application/pdf)." : ""}

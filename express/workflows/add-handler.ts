@@ -171,7 +171,7 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
         
         * Make sure to implement proper test cases that cover both success and error scenarios.
         * Do not do any mocking. Databases are in memory, and integrations have fake implementations. Do not use vitest's mock!
-        * Do not test 500 or 400 responses. Just success and 401+ responses.
+        * Do not test 500 or involve OpenAPI validation. Just success and 400 responses which are handled in the implementation.
         * Run tests with "npm run test" in ${context.cwd}.
         
         Review ${context.docFiles?.testingGuide} for more details.`,

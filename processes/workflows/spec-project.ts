@@ -106,6 +106,8 @@ export const SpecProjectWorkflowDefinition = defineWorkflow<
       * vue/add-view (not vue/add-page) - to add a page (takes path, urlPath in Vue Router :param style, and prompt)
       
       Some have flags, such as "upload", "download", or "file" for variations of adding file upload/download to the database, express handlers, api routes, and TanStack mutations. See if you need to use any of these.
+
+      As a general rule, have one thing per file. Like with "drizzle/update-schema", have one for each table added to the overall database schema. Don't group routes or handlers or queries or tables in the same file.
       
       **API design**: When planning routes, follow the conventions in /saflib/openapi/docs/02-api-design.md. In particular:
       * Give each distinct action its own URL path — don't overload one endpoint with query params that change its behavior. Use named action paths under the resource (e.g. \`GET /resource-name/by-parent-ids\`, \`GET /resource-name/search\`).

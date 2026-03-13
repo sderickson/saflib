@@ -7,6 +7,7 @@ export interface Auth {
   userId: string;
   userEmail: string;
   userScopes: string[];
+  emailVerified: boolean;
 }
 
 /**

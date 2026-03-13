@@ -1,4 +1,9 @@
-import { getHost, linkToProps, setClientName } from "./utils.ts";
+import {
+  constructPath,
+  getHost,
+  linkToProps,
+  setClientName,
+} from "./utils.ts";
 import { describe, it, expect, beforeEach } from "vitest";
 import { linkToHref } from "./index.ts";
 import { typedEnv } from "@saflib/env";
@@ -12,6 +17,59 @@ beforeEach(() => {
     },
   } as unknown as Document;
   setClientName("test");
+});
+
+describe("constructPath", () => {
+  it("returns path unchanged when no options", () => {
+    expect(constructPath({ subdomain: "app", path: "/c/:collectionId/recipes" })).toBe(
+      "/c/:collectionId/recipes",
+    );
+  });
+
+  it("replaces URL params in path (e.g. :collectionId)", () => {
+    expect(
+      constructPath(
+        { subdomain: "app", path: "/c/:collectionId/recipes/list" },
+        { params: { collectionId: "my-kitchen" } },
+      ),
+    ).toBe("/c/my-kitchen/recipes/list");
+  });
+
+  it("replaces multiple URL params in path", () => {
+    expect(
+      constructPath(
+        { subdomain: "app", path: "/c/:collectionId/recipes/:id" },
+        { params: { collectionId: "c1", id: "r1" } },
+      ),
+    ).toBe("/c/c1/recipes/r1");
+  });
+
+  it("adds query params when param is not in path", () => {
+    expect(
+      constructPath(
+        { subdomain: "app", path: "/", params: ["a", "b"] },
+        { params: { a: "1", b: "2" } },
+      ),
+    ).toBe("/?a=1&b=2");
+  });
+
+  it("replaces URL params and adds remaining as query params", () => {
+    expect(
+      constructPath(
+        { subdomain: "app", path: "/c/:collectionId/recipes", params: ["sort"] },
+        { params: { collectionId: "c1", sort: "title" } },
+      ),
+    ).toBe("/c/c1/recipes?sort=title");
+  });
+
+  it("throws if param is neither in path nor in link.params", () => {
+    expect(() =>
+      constructPath(
+        { subdomain: "app", path: "/c/:collectionId/recipes" },
+        { params: { collectionId: "c1", unknown: "x" } },
+      ),
+    ).toThrow('Param unknown not found in link /c/:collectionId/recipes');
+  });
 });
 
 describe("linkToProps", () => {
@@ -40,6 +98,20 @@ describe("linkToProps", () => {
       to: "/?a=1&b=2",
     });
   });
+
+  it("substitutes URL params in path (e.g. :collectionId)", () => {
+    process.env.DOMAIN = "docker.localhost";
+    process.env.PROTOCOL = "http";
+    setClientName("subdomain-a");
+    expect(
+      linkToProps(
+        { subdomain: "subdomain-a", path: "/c/:collectionId/recipes/list" },
+        { params: { collectionId: "my-kitchen" } },
+      ),
+    ).toEqual({
+      to: "/c/my-kitchen/recipes/list",
+    });
+  });
 });
 
 describe("linkToHref", () => {
@@ -59,6 +131,18 @@ describe("linkToHref", () => {
         { params: { a: "1", b: "2" }, domain: "docker.localhost" },
       ),
     ).toBe("http://test.docker.localhost/?a=1&b=2");
+  });
+
+  it("substitutes URL params in path", () => {
+    expect(
+      linkToHref(
+        { subdomain: "test", path: "/c/:collectionId/recipes/:id" },
+        {
+          params: { collectionId: "c1", id: "r1" },
+          domain: "docker.localhost",
+        },
+      ),
+    ).toBe("http://test.docker.localhost/c/c1/recipes/r1");
   });
 
   it("handles an empty subdomain", () => {
