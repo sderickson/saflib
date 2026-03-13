@@ -1,7 +1,7 @@
 import { type Link, type LinkOptions } from "./types.ts";
 import { typedEnv } from "@saflib/env";
 
-const constructPath = (link: Link, options?: LinkOptions): string => {
+export const constructPath = (link: Link, options?: LinkOptions): string => {
   let path = link.path;
   if (options?.params) {
     const queryParams = new URLSearchParams();
