@@ -6,6 +6,11 @@ const constructPath = (link: Link, options?: LinkOptions): string => {
   if (options?.params) {
     const queryParams = new URLSearchParams();
     for (const [param, value] of Object.entries(options.params)) {
+      const urlParam = `:${param}`;
+      if (link.path.includes(urlParam)) {
+        path = path.replace(urlParam, value);
+        continue;
+      }
       if (!link.params?.includes(param)) {
         throw new Error(`Param ${param} not found in link ${link.path}`);
       }
