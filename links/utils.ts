@@ -16,7 +16,10 @@ export const constructPath = (link: Link, options?: LinkOptions): string => {
       }
       queryParams.set(param, value);
     }
-    path = `${path}?${queryParams.toString()}`;
+    const queryString = queryParams.toString();
+    if (queryString) {
+      path = `${path}?${queryString}`;
+    }
   }
   return path;
 };
