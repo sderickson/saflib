@@ -47,6 +47,7 @@ export const addSafContext = (
           userId: authFromRequest.user_id,
           userEmail: authFromRequest.user_email,
           userScopes: authFromRequest.user_scopes,
+          emailVerified: true,
         };
       }
       const context: SafContext = {
