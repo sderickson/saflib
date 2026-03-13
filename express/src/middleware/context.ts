@@ -25,7 +25,7 @@ export const makeContextMiddleware = () => {
     const userId = req.headers["x-user-id"];
     const userEmail = req.headers["x-user-email"];
     const userScopes = req.headers["x-user-scopes"];
-    const emailVerified = req.headers["x-email-verified"];
+    const emailVerified = req.headers["x-user-email-verified"];
     const scopes = userScopes ? (userScopes as string).split(",") : [];
     if (userId && userEmail && scopes) {
       auth = {
