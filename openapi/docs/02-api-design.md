@@ -90,6 +90,37 @@ Resources should reference each other **by ID**, not by nesting. If a menu conta
 
 When a page needs to display resolved data (e.g. recipe titles inside a menu), the frontend fetches and joins them — or the API provides a dedicated endpoint that returns the resolved view (as a distinct schema, not by deeply nesting core resources).
 
+## HTTP Status Codes
+
+Use status codes consistently so clients can distinguish **syntax errors** (bad request shape), **semantic/validation errors** (invalid references or business rules), **auth**, and **not found**.
+
+### 400 Bad Request
+
+Use for **malformed or invalid request format**: missing required fields, wrong types, invalid values for enums or formats. The client sent something the server cannot parse or that fails schema validation.
+
+In most cases, _you do not need to specify 400 responses in the OpenAPI spec_. Most of these originate from OpenAPI request validation; only specify 400 responses if the API implementation needs to also do request validation.
+
+### 401 Unauthorized
+
+Use when the request **lacks valid auth** or the auth token is missing/expired. The client needs to authenticate (or re-authenticate) before retrying.
+
+### 403 Forbidden
+
+Use when the client **is authenticated** but **not allowed** to perform this action on this resource (e.g. not a member of the collection, insufficient role). The resource may exist; the caller simply doesn’t have permission.
+
+### 404 Not Found
+
+Use when the **primary resource** identified by the URL (e.g. the recipe in `GET /recipes/:id`) does not exist. The request is valid and authorized, but the thing you’re asking for isn’t there.
+
+### 422 Unprocessable Entity
+
+Use when the request is **well-formed and authorized**, but **semantically invalid** because a **referenced resource doesn’t exist** or a business rule is violated. Typical cases:
+
+- The client sends a `collectionId` (or other reference) in the body or query, and that collection (or entity) does not exist — return **422** with a code like `COLLECTION_NOT_FOUND`, not 403 or 404.
+- A parent resource is referenced by ID and that parent doesn’t exist (e.g. creating a menu in a non-existent collection).
+
+Use 422 (not 404) when the **target of the request** is valid (e.g. “create a recipe” or “list recipes”) but a **reference inside** the request is invalid. That keeps 404 reserved for “the resource in the URL doesn’t exist” and makes it clear to the client that the failure is a validation problem (fix the reference), not “you’re not allowed” (403) or “this URL is wrong” (404).
+
 ## Batch Endpoints
 
 When a child resource will be fetched for multiple parents at once on a single page, design a **batch-capable endpoint** rather than requiring the frontend to make N requests.
