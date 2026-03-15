@@ -36,6 +36,12 @@ registerUser:
         application/json:
           schema:
             $ref: "../../schemas/user.yaml"
+    "403":
+      description: Signup restricted (e.g. admin-only mode); request not allowed
+      content:
+        application/json:
+          schema:
+            $ref: "../../schemas/error.yaml"
     "409":
       description: Email already exists
       content:

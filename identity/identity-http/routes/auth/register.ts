@@ -11,12 +11,26 @@ import { authServiceStorage } from "@saflib/identity-common";
 import { linkToHref } from "@saflib/links";
 import { authLinks } from "@saflib/auth-links";
 import { getSafReporters } from "@saflib/node";
+import { typedEnv } from "../../env.ts";
 
 export const registerHandler = createHandler(async (req, res) => {
   const { dbKey } = authServiceStorage.getStore()!;
   const registerRequest: IdentityRequestBody["registerUser"] = req.body;
   const { email, password, name, givenName, familyName } = registerRequest;
   const { logError } = getSafReporters();
+
+  if (typedEnv.IDENTITY_SERVICE_ADMIN_SIGNUP_ONLY === "true") {
+    const adminEmails = req.app.get("saf:admin emails") as Set<string>;
+    const isAllowedEmail = [...adminEmails].some(
+      (e) => e.trim().toLowerCase() === email.trim().toLowerCase(),
+    );
+    if (!isAllowedEmail) {
+      res.status(403).json({
+        message: "Signup is restricted to allowed emails only.",
+      });
+      return;
+    }
+  }
 
   const passwordHash = await argon2.hash(password);
 
