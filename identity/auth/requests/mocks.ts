@@ -1,6 +1,6 @@
 import { createIdentityHandler } from "../typed-mock.ts";
 
-const defaultUser = {
+export const defaultUser = {
   id: "1",
   email: "john.doe@example.com",
   name: "John Doe",

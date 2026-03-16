@@ -221,6 +221,7 @@ Run \`npm run typecheck\` in ${context.cwd} to verify the code is type-safe.
   Don't add interaction tests here — Playwright covers that. Focus deeper tests on the extracted
   logic files and composables.
 * **Deciding What to Test**: Don't extract simple logic just to test it. We already have tests for each tanstack query, so there's no need to pull that into a separate composable either. Save testing for more complex logic, for example when multiple or tanstack queries are used together.
+* **When NOT to extract a composable**: A single mutation + local UI state (e.g. edit form + one save, delete + redirect) can stay in the component. Composables are for multi-step or shared flows.
 
 For more information, see ${context.docFiles?.components}`,
     })),

@@ -2,6 +2,7 @@ import { AsyncLocalStorage } from "async_hooks";
 import type { SafContext, SafContextWithAuth } from "./types.ts";
 import crypto from "crypto";
 import { typedEnv } from "@saflib/env";
+import createError from "http-errors";
 
 /**
  * Context provided during testing.
@@ -43,7 +44,7 @@ export const getSafContextWithAuth = (): SafContextWithAuth => {
     throw new Error("SafContext not found");
   }
   if (!store.auth) {
-    throw new Error("Auth not found");
+    throw createError(401, "Unauthorized");
   }
   return store as SafContextWithAuth;
 };

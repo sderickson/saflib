@@ -102,6 +102,8 @@ By keeping them in separate files, they can be exported and used by processes wh
 
 **Each sub-component should have its own strings file** (e.g. `MyDialog.strings.ts`). Don't pile all strings into the view's strings file — it becomes hard to manage and makes it unclear which strings belong to which component.
 
+**Duplication across components is fine.** If a create form and an edit form use the same labels, each should have its own strings file with its own copy. They get separate i18n keys (e.g. `create_menu_form.name_label` vs `menu_edit_form.name_label`), which means they can be translated independently per context — even if the English text is identical. Don't try to share strings across routes or components to reduce duplication; the added import complexity and path fragility isn't worth it.
+
 For localization, see [i18n](./03-i18n.md).
 
 ### Logic Files: Pure Business Logic
@@ -131,6 +133,8 @@ it("returns false when name is empty", () => {
 
 The component then imports and calls these functions, keeping its `<script setup>` focused on wiring reactivity to the template.
 
+**Ownership**: Payload builders and validation helpers used by sub-components can live in the parent page's logic file (e.g. `buildUpdateMenuPayload` in `Detail.logic.ts` used by `MenuEditForm.vue`). This keeps all testable pure logic for a page consolidated in one place, regardless of which sub-component calls it.
+
 ### Composables: Stateful and Networking Logic
 
 When a component has **stateful logic involving networking** — TanStack mutations, multi-step flows, state machines, or complex error handling — extract it into a composable (`useComponentFlow.ts`).
@@ -156,6 +160,8 @@ export function useEvalCreateFlow(callbacks: {
   return { createStep, createName, handleCreate, handleSaveExpected, ... };
 }
 ```
+
+**When not to extract**: A single mutation with local UI state (e.g. an edit form with one save call, or a delete button with a redirect) can stay in the component. Composables are for multi-step flows, shared stateful logic, or complex error handling — not every use of a TanStack mutation.
 
 **Scoping note**: Each component that calls a composable gets its own instance with its own local state. This is usually what you want — each sub-component manages its own editing/uploading state independently. However, when multiple siblings need **coordinated state** (e.g. "only one note in edit mode at a time"), the parent should own that coordination state and pass it as a simple prop (like `isEditing: boolean`), while the sub-component still calls its own composable for mutations and other stateful flows.
 

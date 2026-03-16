@@ -3,9 +3,11 @@
     <v-progress-circular indeterminate />
   </div>
 
-  <v-alert v-else-if="isError" type="error" class="my-4">
-    {{ errorMessage }}
-  </v-alert>
+  <template v-else-if="isError">
+    <slot name="error" :error="firstError" :error-message="errorMessage">
+      <AsyncPageError :error="firstError" :message="errorMessage" />
+    </slot>
+  </template>
 
   <component :is="props.pageComponent" v-else v-bind="props.pageProps" />
 </template>
@@ -14,6 +16,7 @@
 import { computed } from "vue";
 import type { Component } from "vue";
 import type { LoaderQueries } from "../types.ts";
+import AsyncPageError from "./AsyncPageError.vue";
 
 interface Props {
   loader?: () => LoaderQueries;
