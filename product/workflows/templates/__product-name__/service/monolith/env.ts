@@ -25,9 +25,21 @@ export interface TemplatePackageMonolithEnvSchema {
    */
   DOMAIN_REDIRECTS?: string;
   /**
+   * Git commit hash of the repo root (e.g. home-2026). Set at build/start for display; use scripts/git-hashes.sh in recipes/dev.
+   */
+  GIT_HASH_ROOT?: string;
+  /**
+   * Git commit hash of the saflib submodule. Set at build/start for display; use scripts/git-hashes.sh in recipes/dev.
+   */
+  GIT_HASH_SAFLIB?: string;
+  /**
    * Comma-separated list of emails who will get the 'admin' scope. Emails must be validated to receive this scope.
    */
   IDENTITY_SERVICE_ADMIN_EMAILS?: string;
+  /**
+   * When set to 'true', only emails listed in IDENTITY_SERVICE_ADMIN_EMAILS may register. All other signups return 403.
+   */
+  IDENTITY_SERVICE_ADMIN_SIGNUP_ONLY?: string;
   /**
    * Whether to disable rate limiting. Set to 'true' to disable.
    */

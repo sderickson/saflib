@@ -25,6 +25,14 @@ export interface TemplateIntegrationEnvSchema {
    */
   DOMAIN_REDIRECTS?: string;
   /**
+   * Git commit hash of the repo root (e.g. home-2026). Set at build/start for display; use scripts/git-hashes.sh in recipes/dev.
+   */
+  GIT_HASH_ROOT?: string;
+  /**
+   * Git commit hash of the saflib submodule. Set at build/start for display; use scripts/git-hashes.sh in recipes/dev.
+   */
+  GIT_HASH_SAFLIB?: string;
+  /**
    * Whether to mock 3rd party integrations. Set to 'true' to mock. And integration packages should respect this setting.
    */
   MOCK_INTEGRATIONS?: "true" | "false";
@@ -57,4 +65,6 @@ export interface TemplateIntegrationEnvSchema {
 /**
  * `process.env` casted to the `TemplateIntegrationEnvSchema` type.
  */
-export const typedEnv = (globalThis.process ? process.env : {}) as unknown as TemplateIntegrationEnvSchema;
+export const typedEnv = (globalThis.process
+  ? process.env
+  : {}) as unknown as TemplateIntegrationEnvSchema;

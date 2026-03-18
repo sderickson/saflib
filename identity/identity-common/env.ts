@@ -25,6 +25,14 @@ export interface IdentityCommonEnvSchema {
    */
   DOMAIN_REDIRECTS?: string;
   /**
+   * Git commit hash of the repo root (e.g. home-2026). Set at build/start for display; use scripts/git-hashes.sh in recipes/dev.
+   */
+  GIT_HASH_ROOT?: string;
+  /**
+   * Git commit hash of the saflib submodule. Set at build/start for display; use scripts/git-hashes.sh in recipes/dev.
+   */
+  GIT_HASH_SAFLIB?: string;
+  /**
    * Host URL for the identity service
    */
   IDENTITY_SERVICE_HTTP_HOST: string;

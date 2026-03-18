@@ -25,6 +25,14 @@ export interface IdentityHttpEnvSchema {
    */
   DOMAIN_REDIRECTS?: string;
   /**
+   * Git commit hash of the repo root (e.g. home-2026). Set at build/start for display; use scripts/git-hashes.sh in recipes/dev.
+   */
+  GIT_HASH_ROOT?: string;
+  /**
+   * Git commit hash of the saflib submodule. Set at build/start for display; use scripts/git-hashes.sh in recipes/dev.
+   */
+  GIT_HASH_SAFLIB?: string;
+  /**
    * Comma-separated list of emails who will get the 'admin' scope. Emails must be validated to receive this scope.
    */
   IDENTITY_SERVICE_ADMIN_EMAILS?: string;
@@ -81,4 +89,6 @@ export interface IdentityHttpEnvSchema {
 /**
  * `process.env` casted to the `IdentityHttpEnvSchema` type.
  */
-export const typedEnv = (globalThis.process ? process.env : {}) as unknown as IdentityHttpEnvSchema;
+export const typedEnv = (globalThis.process
+  ? process.env
+  : {}) as unknown as IdentityHttpEnvSchema;
