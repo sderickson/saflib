@@ -100,6 +100,7 @@ export const setClientName = (client: string) => {
   if (
     process.env.NODE_ENV !== "test" &&
     client !== "root" &&
+    typeof document !== "undefined" &&
     !document.location.hostname.startsWith(`${client}.`) &&
     process.env.NODE_ENV !== "test"
   ) {
