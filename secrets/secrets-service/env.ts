@@ -25,14 +25,6 @@ export interface SecretsServiceEnvSchema {
    */
   DOMAIN_REDIRECTS?: string;
   /**
-   * Git commit hash of the repo root (e.g. home-2026). Set at build/start for display; use scripts/git-hashes.sh in recipes/dev.
-   */
-  GIT_HASH_ROOT?: string;
-  /**
-   * Git commit hash of the saflib submodule. Set at build/start for display; use scripts/git-hashes.sh in recipes/dev.
-   */
-  GIT_HASH_SAFLIB?: string;
-  /**
    * The hostname or URL of the Loki instance to send logs to (e.g., http://loki:3100)
    */
   LOKI_HOSTNAME?: string;

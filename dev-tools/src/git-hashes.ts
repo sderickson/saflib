@@ -1,6 +1,6 @@
 import { execSync } from "node:child_process";
 import path, { join } from "node:path";
-import { existsSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 
 export interface GitHashesEnvOptions {
   /**
@@ -97,6 +97,20 @@ export function writeGitHashesEnvFile(
     `VITE_GIT_HASH_ROOT=${rootWithDirty}\n` +
     `VITE_GIT_HASH_SAFLIB=${saflibWithDirty}\n`;
   writeFileSync(filePath, content, "utf8");
+
+  const jsonContent = JSON.stringify(
+    { root: rootWithDirty, saflib: saflibWithDirty },
+    null,
+    2,
+  ) + "\n";
+
+  const nodeJsonPath = join(repoRoot, "saflib", "node", "git-hashes.json");
+  mkdirSync(path.dirname(nodeJsonPath), { recursive: true });
+  writeFileSync(nodeJsonPath, jsonContent, "utf8");
+
+  const vueJsonPath = join(repoRoot, "saflib", "vue", "src", "git-hashes.json");
+  mkdirSync(path.dirname(vueJsonPath), { recursive: true });
+  writeFileSync(vueJsonPath, jsonContent, "utf8");
 
   return { filePath, root: rootWithDirty, saflib: saflibWithDirty };
 }

@@ -1,30 +1,23 @@
-// Import this here so TypeScript doesn't complain about `import.meta.env`.
-// @ts-expect-error - vite/client is not a module
-import type { ImportMetaEnv as _ImportMetaEnv } from "vite/client";
-
-interface ViteGitHashEnv {
-  VITE_GIT_HASH_ROOT?: string;
-  VITE_GIT_HASH_SAFLIB?: string;
-}
-
-const getGitHashEnv = () => import.meta.env as unknown as ViteGitHashEnv;
-
 export interface GitHashes {
   root: string;
   saflib: string;
 }
 
+const modules = import.meta.glob<GitHashes>("./git-hashes.json", {
+  eager: true,
+  import: "default",
+});
+
+const data = modules["./git-hashes.json"];
+
 /**
- * Returns build-time git hashes, when provided via `VITE_GIT_HASH_ROOT` and
- * `VITE_GIT_HASH_SAFLIB` (e.g. through docker-compose `env_file`).
+ * Returns git hashes baked in at build time by `saf-git-hashes`.
+ * Falls back to `"unknown"` when the generated JSON file is absent.
  */
 export function getGitHashes(): GitHashes {
-  const env = getGitHashEnv();
-  const root = env.VITE_GIT_HASH_ROOT?.trim();
-  const saflib = env.VITE_GIT_HASH_SAFLIB?.trim();
+  if (!data) return { root: "unknown", saflib: "unknown" };
   return {
-    root: root ? root : "unknown",
-    saflib: saflib ? saflib : "unknown",
+    root: data.root ?? "unknown",
+    saflib: data.saflib ?? "unknown",
   };
 }
-
