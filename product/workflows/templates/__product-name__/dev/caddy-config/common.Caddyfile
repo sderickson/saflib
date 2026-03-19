@@ -30,6 +30,15 @@ http://caddy:2020 {
 	}
 }
 
+# Used for SPA clients accessible to all users
+(static-site) {
+	encode gzip
+	root * /srv{args[0]}
+	file_server {
+		pass_thru
+	}
+}
+
 # CORS: add response headers and handle OPTIONS preflight in Caddy so the backend never sees OPTIONS.
 # args[0]: allowed domain (e.g. recipes.docker.localhost). When provided, call as: import cors {domain}.
 # Origin is reflected when present; restrict to domain in deploy configs if needed.
