@@ -27,7 +27,7 @@ export function useResolvedHref(
       ? linkOrResolve()
       : linkToHrefWithHost(linkOrResolve, options);
 
-  const href = ref(resolve());
+  const href = ref("");
   onMounted(() => {
     href.value = resolve();
   });
