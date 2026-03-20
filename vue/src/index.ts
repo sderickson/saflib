@@ -12,3 +12,4 @@ export * from "./snackbar.ts";
 export * from "./test-mode.ts";
 export * from "./wip-env.ts";
 export * from "./git-hash";
+export * from "./useResolvedHref.ts";
