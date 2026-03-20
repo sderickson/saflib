@@ -4,6 +4,7 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
+    "./useResolvedHref": "./src/useResolvedHref.ts",
     "./components": "./components/index.ts",
     "./fixtures": "./fixtures/index.ts",
     "./testing": "./testing/index.ts",

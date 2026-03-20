@@ -39,9 +39,13 @@ export const linkToHref = (link: Link, options?: LinkOptions): string => {
     }
     domain = options.domain;
     protocol = document.location.protocol;
-  } else {
+  } else if (typedEnv.DOMAIN) {
     domain = typedEnv.DOMAIN;
     protocol = typedEnv.PROTOCOL + ":";
+  } else {
+    // SSG / prerender: domain unknown at build time, return path only.
+    // Vue hydration will recompute with the real domain in the browser.
+    return constructPath(link, options);
   }
 
   const path = constructPath(link, options);
@@ -100,10 +104,11 @@ export const setClientName = (client: string) => {
   if (
     process.env.NODE_ENV !== "test" &&
     client !== "root" &&
+    typeof document !== "undefined" &&
     !document.location.hostname.startsWith(`${client}.`) &&
     process.env.NODE_ENV !== "test"
   ) {
-    throw new Error(
+    console.warn(
       `Client name ${client} does not match hostname ${document.location.hostname}`,
     );
   }

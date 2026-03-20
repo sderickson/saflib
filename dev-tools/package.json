@@ -16,6 +16,7 @@
   "bin": {
     "saf-docker": "./src/saf-docker-cli.ts",
     "saf-tests": "./src/saf-tests-cli.ts",
+    "saf-git-hashes": "./src/git-hashes-cli.ts",
     "saf-docs": "./bin/saf-docs-cli/index.ts"
   },
   "devDependencies": {
