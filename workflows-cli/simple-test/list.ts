@@ -14,7 +14,7 @@ import serviceWorkflows from "@saflib/service/workflows";
 import identityWorkflows from "@saflib/identity/workflows";
 import grpcWorkflows from "@saflib/grpc/workflows";
 import cronWorkflows from "@saflib/cron/workflows";
-import productWorkflows from "product/workflows";
+import productWorkflows from "@saflib/product/workflows";
 import type { WorkflowDefinition } from "@saflib/workflows";
 
 const workflowClasses: WorkflowDefinition[] = [
