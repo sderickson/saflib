@@ -9,8 +9,9 @@ import { typedEnv } from "../env.ts";
  * to `sentEmails`.
  */
 export const mockingOn =
-  (typedEnv.NODE_ENV === "test" || typedEnv.MOCK_INTEGRATIONS === "true") &&
-  !typedEnv.NODEMAILER_TRANSPORT_CONFIG;
+  typedEnv.NODE_ENV === "test" ||
+  typedEnv.MOCK_INTEGRATIONS === "true" ||
+  typedEnv.NODEMAILER_TRANSPORT_CONFIG === "mock";
 
 setImmediate(() => {
   const logger = createLogger({
