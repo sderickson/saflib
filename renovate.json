@@ -3,7 +3,7 @@
   "extends": ["config:recommended", "group:allNonMajor"],
   "packageRules": [
     {
-      "matchPackagePrefixes": ["@saflib/"],
+      "matchPackagePrefixes": ["@saflib/", "template-package-"],
       "enabled": false
     }
   ]
