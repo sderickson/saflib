@@ -4,88 +4,142 @@
  */
 
 export interface paths {
-  "/email/sent": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
+    "/email/sent": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List all sent emails */
+        get: operations["listSentEmails"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
     };
-    /** List all sent emails */
-    get: operations["listSentEmails"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
+    "/email/kratos-courier": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Receive email dispatch from Ory Kratos HTTP courier */
+        post: operations["postKratosCourier"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
-  schemas: {
-    SentEmail: components["schemas"]["sent-email"];
-    "sent-email": {
-      to: string[];
-      cc?: string[];
-      bcc?: string[];
-      subject: string;
-      text?: string;
-      html?: string;
-      attachments?: string[];
-      from: string;
-      timeSent?: number;
-      replyTo?: string[];
+    schemas: {
+        SentEmail: components["schemas"]["sent-email"];
+        "sent-email": {
+            to: string[];
+            cc?: string[];
+            bcc?: string[];
+            subject: string;
+            text?: string;
+            html?: string;
+            attachments?: string[];
+            from: string;
+            timeSent?: number;
+            replyTo?: string[];
+        };
+        error: {
+            /** @description A short, machine-readable error code, for when HTTP status codes are not sufficient. */
+            code?: string;
+            /**
+             * @description A human-readable description of the error.
+             * @example The requested resource could not be found.
+             */
+            message?: string;
+        };
     };
-    error: {
-      /** @description A short, machine-readable error code, for when HTTP status codes are not sufficient. */
-      code?: string;
-      /**
-       * @description A human-readable description of the error.
-       * @example The requested resource could not be found.
-       */
-      message?: string;
-    };
-  };
-  responses: never;
-  parameters: never;
-  requestBodies: never;
-  headers: never;
-  pathItems: never;
+    responses: never;
+    parameters: never;
+    requestBodies: never;
+    headers: never;
+    pathItems: never;
 }
 export type $defs = Record<string, never>;
 export interface operations {
-  listSentEmails: {
-    parameters: {
-      query?: {
-        /** @description The email address of the user to get sent emails to or from */
-        userEmail?: string;
-      };
-      header?: never;
-      path?: never;
-      cookie?: never;
+    listSentEmails: {
+        parameters: {
+            query?: {
+                /** @description The email address of the user to get sent emails to or from */
+                userEmail?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description A list of sent emails. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["sent-email"][];
+                };
+            };
+            /** @description Forbidden - server is not mocking email sends */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+        };
     };
-    requestBody?: never;
-    responses: {
-      /** @description A list of sent emails. */
-      200: {
-        headers: {
-          [name: string]: unknown;
+    postKratosCourier: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
         };
-        content: {
-          "application/json": components["schemas"]["sent-email"][];
+        requestBody: {
+            content: {
+                "application/json": {
+                    recipient: string;
+                    template_type: string;
+                    template_data?: {
+                        [key: string]: unknown;
+                    };
+                };
+            };
         };
-      };
-      /** @description Forbidden - server is not mocking email sends */
-      403: {
-        headers: {
-          [name: string]: unknown;
+        responses: {
+            /** @description Email accepted for delivery */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Failed to send email */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
         };
-        content: {
-          "application/json": components["schemas"]["error"];
-        };
-      };
     };
-  };
 }

@@ -38,7 +38,7 @@ export const createScopeValidator = (): Handler => {
       return;
     }
 
-    const userScopes = new Set(auth.userScopes);
+    const userScopes = new Set(auth.userScopes ?? []);
 
     if (userScopes.has("*")) {
       return next();

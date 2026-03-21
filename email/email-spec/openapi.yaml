@@ -13,3 +13,6 @@ paths:
   /email/sent:
     get:
       $ref: "./routes/email_routes.yaml#/get"
+  /email/kratos-courier:
+    post:
+      $ref: "./routes/kratos_courier.yaml#/post"

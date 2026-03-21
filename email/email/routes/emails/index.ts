@@ -1,5 +1,6 @@
 import express from "express";
 import { getSentEmails } from "./get-sent-emails.ts";
+import { postKratosCourier } from "./post-kratos-courier.ts";
 import { createScopedMiddleware } from "@saflib/express";
 import { jsonSpec } from "@saflib/email-spec";
 
@@ -21,6 +22,7 @@ export function createEmailsRouter(options: EmailsRouterOptions = {}) {
 
   router.use("/email", scopedMiddleware);
   router.get("/email/sent", getSentEmails);
+  router.post("/email/kratos-courier", postKratosCourier);
 
   return router;
 }
