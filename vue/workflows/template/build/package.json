@@ -11,7 +11,7 @@
     "@saflib/env": "*",
     "@saflib/monorepo": "*",
     "@saflib/vite": "*",
-    "@vue/tsconfig": "^0.8.1"
+    "@vue/tsconfig": "^0.9.0"
   },
   "workspaces": [
     "clients/*"

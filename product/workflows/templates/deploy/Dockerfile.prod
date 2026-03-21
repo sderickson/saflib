@@ -6,7 +6,7 @@ RUN export $(grep -v "^#" /app/env.__product-name__.prod-local | xargs) && DOMAI
 
 # END WORKFLOW AREA
 
-FROM caddy:2.9.1
+FROM caddy:2.11.2
 
 # BEGIN WORKFLOW AREA copy-product-assets FOR product/init
 COPY --from=__product-name__-builder /app/__product-name__/clients/build/dist /srv/__product-name__-clients
