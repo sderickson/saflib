@@ -16,7 +16,7 @@
     "@grpc/grpc-js": "^1.13.3",
     "@saflib/env": "*",
     "@saflib/node": "*",
-    "google-protobuf": "^3.21.4",
+    "google-protobuf": "^4.0.0",
     "protoc-gen-ts": "^0.8.7"
   },
   "devDependencies": {
