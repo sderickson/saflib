@@ -17,7 +17,8 @@ interface KratosAdminIdentity {
 }
 
 function defaultKratosAdminUrl(): string {
-  return process.env.KRATOS_ADMIN_URL ?? "http://kratos:4434";
+  // TODO: use env var?
+  return "http://kratos:4434";
 }
 
 async function resolveKratosAuth(identityId: string): Promise<Auth> {
