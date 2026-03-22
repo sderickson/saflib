@@ -14,17 +14,17 @@ jobs:
         project:
           # Bit of a hack so tests pass. Might move these tests elsewhere.
           # BEGIN WORKFLOW AREA test-product-dependencies FOR product/init
-          - __product-name__
+          - saflib
           # END WORKFLOW AREA
     steps:
       - uses: actions/checkout@v6
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: 24
           cache: "npm"
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       # Tests fail to run if this one package isn't installed
       - name: Install rollup for linux

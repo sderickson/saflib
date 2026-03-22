@@ -20,6 +20,6 @@
   },
   "devDependencies": {
     "@saflib/vitest": "*",
-    "@types/nodemailer": "^6.4.17"
+    "@types/nodemailer": "^7.0.0"
   }
 }
