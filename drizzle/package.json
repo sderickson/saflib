@@ -20,7 +20,7 @@
     "@types/ajv": "^0.0.5",
     "better-sqlite3": "11.10.0",
     "drizzle-kit": "^0.31.1",
-    "drizzle-orm": "^0.45.0"
+    "drizzle-orm": "^0.45.1"
   },
   "devDependencies": {
     "@saflib/vitest": "*",
