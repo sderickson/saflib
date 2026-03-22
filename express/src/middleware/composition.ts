@@ -12,6 +12,7 @@ import { blockHtml } from "./blockHtml.ts";
 import { createScopeValidator } from "./scopes.ts";
 import { metricsMiddleware } from "./metrics.ts";
 import { makeAuthMiddleware } from "./auth.ts";
+import { makeCsrfMiddleware } from "./csrf.ts";
 import multer from "multer";
 
 /**
@@ -87,6 +88,7 @@ export const createScopedMiddleware = (
 
   return [
     ...openApiValidatorMiddleware,
+    makeCsrfMiddleware(),
     makeContextMiddleware(),
     unsafeRequestLogger,
     ...authMiddleware,

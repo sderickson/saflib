@@ -9,6 +9,7 @@ export function makeUserHeaders(
     "x-user-email": email,
     "x-user-email-verified": "true",
     "x-user-scopes": "none",
+    "x-requested-with": "XMLHttpRequest",
   };
 }
 
@@ -21,5 +22,6 @@ export function makeAdminHeaders(
     "x-user-email": email,
     "x-user-email-verified": "true",
     "x-user-scopes": "*",
+    "x-requested-with": "XMLHttpRequest",
   };
 }

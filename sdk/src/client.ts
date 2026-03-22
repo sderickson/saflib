@@ -30,6 +30,10 @@ export const createSafClient = <Q extends {}>(
       if (csrfToken) {
         request.headers.set("X-CSRF-Token", csrfToken);
       }
+      const method = request.method.toUpperCase();
+      if (!["GET", "HEAD", "OPTIONS"].includes(method)) {
+        request.headers.set("X-Requested-With", "XMLHttpRequest");
+      }
       return fetch(request);
     },
   });

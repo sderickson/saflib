@@ -1,0 +1,33 @@
+# POST /email/kratos-courier
+post:
+  summary: Receive email dispatch from Ory Kratos HTTP courier
+  operationId: postKratosCourier
+  tags:
+    - no-auth
+    - email
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          required:
+            - recipient
+            - template_type
+          properties:
+            recipient:
+              type: string
+            template_type:
+              type: string
+            template_data:
+              type: object
+              additionalProperties: true
+  responses:
+    "204":
+      description: Email accepted for delivery
+    "500":
+      description: Failed to send email
+      content:
+        application/json:
+          schema:
+            $ref: "../schemas/error.yaml"

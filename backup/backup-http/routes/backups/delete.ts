@@ -13,7 +13,7 @@ export const createDeleteHandler = (objectStore: ObjectStore) => {
   return createHandler(async (req, res) => {
     const { auth } = getSafContextWithAuth();
 
-    if (!auth.userScopes.includes("*")) {
+    if (!auth.userScopes?.includes("*")) {
       const errorResponse: BackupServiceResponseBody["deleteBackup"][403] = {
         message: "Forbidden - admin access required",
         code: "FORBIDDEN",

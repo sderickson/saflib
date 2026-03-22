@@ -20,7 +20,7 @@ export const createRestoreHandler = (
   return createHandler(async (req, res) => {
     const { auth } = getSafContextWithAuth();
 
-    if (!auth.userScopes.includes("*")) {
+    if (!auth.userScopes?.includes("*")) {
       const errorResponse: BackupServiceResponseBody["restoreBackup"][403] = {
         message: "Forbidden - admin access required",
         code: "FORBIDDEN",

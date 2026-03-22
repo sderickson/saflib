@@ -9,7 +9,7 @@ export const createListHandler = (objectStore: ObjectStore) => {
   return createHandler(async (_req, res) => {
     const { auth } = getSafContextWithAuth();
 
-    if (!auth.userScopes.includes("*")) {
+    if (!auth.userScopes?.includes("*")) {
       const errorResponse: BackupServiceResponseBody["listBackups"][403] = {
         message: "Forbidden - admin access required",
         code: "FORBIDDEN",

@@ -16,6 +16,7 @@ export {
 } from "./middleware/composition.ts";
 export { makeContextMiddleware } from "./middleware/context.ts";
 export { makeAuthMiddleware, drainRequest } from "./middleware/auth.ts";
+export { makeCsrfMiddleware } from "./middleware/csrf.ts";
 
 // multer options
 export * from "./middleware/multer.ts";
