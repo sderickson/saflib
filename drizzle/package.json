@@ -18,7 +18,7 @@
     "@saflib/node": "*",
     "@saflib/utils": "*",
     "better-sqlite3": "12.8.0",
-    "drizzle-kit": "^0.31.1",
+    "drizzle-kit": "^0.31.10",
     "drizzle-orm": "^0.45.1"
   },
   "devDependencies": {
