@@ -14,7 +14,7 @@ jobs:
         project:
           # Bit of a hack so tests pass. Might move these tests elsewhere.
           # BEGIN WORKFLOW AREA test-product-dependencies FOR product/init
-          - __product-name__
+          - saflib
           # END WORKFLOW AREA
     steps:
       - uses: actions/checkout@v6
