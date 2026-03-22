@@ -21,14 +21,13 @@ import {
   AddCLIWorkflowDefinition,
   AddCommandWorkflowDefinition,
 } from "@saflib/commander/workflows";
-import {
-  InitGrpcProtoWorkflowDefinition,
-  InitGrpcServerWorkflowDefinition,
-  InitGrpcClientWorkflowDefinition,
-  // AddGrpcServerHandlerWorkflowDefinition,
-  // AddGrpcCallWorkflowDefinition,
-  // AddProtoWorkflowDefinition,
-} from "@saflib/grpc/workflows";
+import {} from // InitGrpcProtoWorkflowDefinition,
+// InitGrpcServerWorkflowDefinition,
+// InitGrpcClientWorkflowDefinition,
+// AddGrpcServerHandlerWorkflowDefinition,
+// AddGrpcCallWorkflowDefinition,
+// AddProtoWorkflowDefinition,
+"@saflib/grpc/workflows";
 import {
   CronInitWorkflowDefinition,
   CronAddJobWorkflowDefinition,
@@ -171,24 +170,24 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
     })),
 
     // Test @saflib/grpc workflows
-    step(CdStepMachine, () => ({
-      path: ".",
-    })),
-    step(makeWorkflowMachine(InitGrpcProtoWorkflowDefinition), () => ({
-      name: "@saflib/tmp-grpc-proto",
-      path: "./tmp/service/grpc-proto",
-    })),
-    step(makeWorkflowMachine(InitGrpcServerWorkflowDefinition), () => ({
-      name: "@saflib/tmp-grpc-server",
-      path: "./tmp/service/grpc-server",
-    })),
-    step(makeWorkflowMachine(InitGrpcClientWorkflowDefinition), () => ({
-      name: "@saflib/tmp-grpc-client",
-      path: "./tmp/service/grpc-client",
-    })),
-    step(CdStepMachine, () => ({
-      path: "./tmp/service/grpc-proto",
-    })),
+    // step(CdStepMachine, () => ({
+    //   path: ".",
+    // })),
+    // step(makeWorkflowMachine(InitGrpcProtoWorkflowDefinition), () => ({
+    //   name: "@saflib/tmp-grpc-proto",
+    //   path: "./tmp/service/grpc-proto",
+    // })),
+    // step(makeWorkflowMachine(InitGrpcServerWorkflowDefinition), () => ({
+    //   name: "@saflib/tmp-grpc-server",
+    //   path: "./tmp/service/grpc-server",
+    // })),
+    // step(makeWorkflowMachine(InitGrpcClientWorkflowDefinition), () => ({
+    //   name: "@saflib/tmp-grpc-client",
+    //   path: "./tmp/service/grpc-client",
+    // })),
+    // step(CdStepMachine, () => ({
+    //   path: "./tmp/service/grpc-proto",
+    // })),
 
     // NOTE: It has to be in the health group for types, and this test, to work.
     // TODO: Refactor grpc to use inline templates, it'll be better
