@@ -38,7 +38,7 @@
     "@saflib/workflows": "*",
     "@types/node": "^24.3.0",
     "@vue/test-utils": "^2.0.0",
-    "jsdom": "^26.0.0",
+    "jsdom": "^29.0.0",
     "sass-embedded": "^1.0.0",
     "vite-plugin-vuetify": "^2.0.0",
     "vue-tsc": "^3.0.0"
