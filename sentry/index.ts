@@ -3,7 +3,7 @@ import { addErrorCollector } from "@saflib/node";
 import { typedEnv } from "./env.ts";
 
 export const initSentry = () => {
-  if (typedEnv.MOCK_INTEGRATIONS === "true" && !typedEnv.SENTRY_DSN) {
+  if (typedEnv.MOCK_INTEGRATIONS === "true" || typedEnv.SENTRY_DSN === "mock") {
     return;
   }
 
