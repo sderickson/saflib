@@ -30,7 +30,7 @@ export const createSecretHandler = createHandler(async (req, res) => {
     name: data.name,
     description: data.description || null,
     valueEncrypted: encryptedValue,
-    createdBy: auth.userEmail,
+    createdBy: auth.userId,
     isActive: true,
   });
 
