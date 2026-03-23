@@ -2,6 +2,7 @@ import {
   createRouter,
   createWebHistory,
   type RouterHistory,
+  type RouteRecordRaw,
 } from "vue-router";
 import { __subdomainName__Links } from "template-package-links";
 import { PageNotFound } from "@saflib/vue/components";
@@ -16,7 +17,7 @@ import __FullName__Async from "./__group-name__/__TargetName__Async.vue";
 export const create__SubdomainName__Router = (options?: {
   history?: RouterHistory;
 }) => {
-  const routes = [
+  const routes: RouteRecordRaw[] = [
     // BEGIN WORKFLOW AREA page-routes FOR vue/add-view
     {
       path: __subdomainName__Links.__fullName__.path,
