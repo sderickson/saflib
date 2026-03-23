@@ -93,6 +93,22 @@ describe("findTargetAreaIndices", () => {
     );
     expect(indices).toEqual({ start: 0, end: 2 });
   });
+
+  it("matches BEGIN and END when only leading whitespace differs from template", () => {
+    const result = [
+      "    // BEGIN WORKFLOW AREA myArea FOR workflow1",
+      "      existing",
+      "    // END WORKFLOW AREA",
+    ];
+    const indices = findTargetAreaIndices(
+      result,
+      "  // BEGIN WORKFLOW AREA myArea FOR workflow1",
+      "  // END WORKFLOW AREA",
+      "myArea",
+      "test.ts",
+    );
+    expect(indices).toEqual({ start: 0, end: 2 });
+  });
 });
 
 describe("sequenceExists", () => {

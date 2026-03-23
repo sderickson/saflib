@@ -1,3 +1,8 @@
+/** True when two lines are the same workflow BEGIN/END marker aside from leading whitespace. */
+export function workflowMarkerLinesEqual(a: string, b: string): boolean {
+  return a.trimStart() === b.trimStart();
+}
+
 /**
  * Finds the start and end indices of a workflow area in the target file.
  * @returns Object with start and end indices, or null if not found
@@ -9,7 +14,9 @@ export function findTargetAreaIndices(
   areaName: string,
   targetPath: string,
 ): { start: number; end: number } | null {
-  const targetAreaStart = result.findIndex((line) => line === areaStartLine);
+  const targetAreaStart = result.findIndex((line) =>
+    workflowMarkerLinesEqual(line, areaStartLine),
+  );
 
   if (targetAreaStart === -1) {
     console.warn(`Could not find target area ${areaName} in ${targetPath}`);
@@ -17,7 +24,8 @@ export function findTargetAreaIndices(
   }
 
   const targetAreaEnd = result.findIndex(
-    (line, index) => index > targetAreaStart && line === areaEndLine,
+    (line, index) =>
+      index > targetAreaStart && workflowMarkerLinesEqual(line, areaEndLine),
   );
 
   if (targetAreaEnd === -1) {

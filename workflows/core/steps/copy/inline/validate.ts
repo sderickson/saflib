@@ -86,8 +86,9 @@ export function getAreaKey(area: WorkflowAreaInfo): string {
     return area.startLine;
   }
 
-  const beginIndex = area.startLine.indexOf("BEGIN");
-  const prefix = beginIndex >= 0 ? area.startLine.substring(0, beginIndex) : "";
+  const trimmed = area.startLine.trimStart();
+  const beginIndex = trimmed.indexOf("BEGIN");
+  const prefix = beginIndex >= 0 ? trimmed.substring(0, beginIndex) : "";
 
   const normalizedIds = [...area.workflowIds].sort().join(" ");
 
