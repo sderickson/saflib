@@ -51,7 +51,7 @@ export const CdStepMachine = setup({
       : path.join(originalWorkingDirectory, input.path);
     // In checklist/dry/script mode, skip validation so workflow can produce a checklist from any cwd
     const runMode = input.runMode ?? "print";
-    if (runMode === "print" || runMode === "run") {
+    if (runMode === "print" || runMode === "run" || runMode === "dry") {
       if (!existsSync(newCwd)) {
         throw new Error(
           `Directory ${newCwd} does not exist. You should only cd into packages.`,
