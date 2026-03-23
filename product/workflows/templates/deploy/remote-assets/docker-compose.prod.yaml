@@ -47,7 +47,7 @@ services:
   # END WORKFLOW AREA
 
   prometheus:
-    image: prom/prometheus:v2.55.1
+    image: prom/prometheus:v3.10.0
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
 
