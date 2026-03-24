@@ -139,10 +139,43 @@ describe("getAreaKey", () => {
     };
     expect(getAreaKey(slash)).not.toBe(getAreaKey(hash));
   });
+
+  it("ignores differing leading whitespace before the marker in key", () => {
+    const four = {
+      areaName: "myArea",
+      workflowIds: ["workflow1"],
+      isSorted: false,
+      isOnce: false,
+      ifFlag: undefined as string | undefined,
+      startLine: "    // BEGIN WORKFLOW AREA myArea FOR workflow1",
+      endLine: null as string | null,
+    };
+    const six = {
+      ...four,
+      startLine: "      // BEGIN WORKFLOW AREA myArea FOR workflow1",
+    };
+    expect(getAreaKey(four)).toBe(getAreaKey(six));
+  });
 });
 
 describe("validateWorkflowAreas", () => {
   const ctx = { targetPath: "test.ts", sourcePath: "test.ts" };
+
+  it("does not throw when BEGIN/END indentation differs between source and target", () => {
+    const source = [
+      "  // BEGIN WORKFLOW AREA myArea FOR workflow1",
+      "  code",
+      "  // END WORKFLOW AREA",
+    ];
+    const target = [
+      "    // BEGIN WORKFLOW AREA myArea FOR workflow1",
+      "  existing",
+      "    // END WORKFLOW AREA",
+    ];
+    expect(() =>
+      validateWorkflowAreas({ sourceLines: source, targetLines: target, ...ctx }),
+    ).not.toThrow();
+  });
 
   it("does not throw when source and target have matching areas", () => {
     const source = [

@@ -9,6 +9,7 @@ export { startExpressServer, type StartServerOptions } from "./bin/www.ts";
 // middleware bundles
 export {
   createGlobalMiddleware,
+  createInternalMiddleware,
   createErrorMiddleware,
   createScopedMiddleware,
   type ScopedMiddlewareOptions,

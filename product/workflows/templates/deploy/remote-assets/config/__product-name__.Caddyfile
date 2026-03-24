@@ -6,11 +6,7 @@
 
 (__product-name__-api-proxy) {
 	import cors {$__PRODUCT_NAME___DOMAIN}
-	import api-proxy {$__PRODUCT_NAME___IDENTITY_SERVICE_HTTP_HOST} {args[0]}
-}
-
-(__product-name__-admin-proxy) {
-	import admin-proxy {$__PRODUCT_NAME___IDENTITY_SERVICE_HTTP_HOST} {args[0]}
+	import kratos-api-proxy {args[0]}
 }
 
 # Subdomains
@@ -40,15 +36,10 @@
 }
 
 {$__PRODUCT_NAME___PROTOCOL}://grafana.{$__PRODUCT_NAME___DOMAIN} {
-	import __product-name__-admin-proxy grafana:3000
-}
-
-{$__PRODUCT_NAME___PROTOCOL}://prometheus.{$__PRODUCT_NAME___DOMAIN} {
-	import __product-name__-admin-proxy prometheus:9090
-}
-
-{$__PRODUCT_NAME___PROTOCOL}://identity.{$__PRODUCT_NAME___DOMAIN} {
-	import identity {$__PRODUCT_NAME___DOMAIN} {$__PRODUCT_NAME___IDENTITY_SERVICE_HTTP_HOST}
+	import cors {$__PRODUCT_NAME___DOMAIN}
+	reverse_proxy grafana:3000 {
+		import reverse_proxy_common
+	}
 }
 
 {$__PRODUCT_NAME___DOMAIN_REDIRECTS} {
