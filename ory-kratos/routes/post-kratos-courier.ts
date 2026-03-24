@@ -2,6 +2,8 @@ import createError from "http-errors";
 import { createHandler } from "@saflib/express";
 import { getSafReporters } from "@saflib/node";
 import { emailClient } from "@saflib/email";
+import type { IdentityServiceCallbacks } from "../callbacks.ts";
+import { kratosIdentityToUser } from "../kratos-map.ts";
 
 export interface KratosCourierBody {
   recipient: string;
@@ -54,27 +56,63 @@ function buildMessage(body: KratosCourierBody): {
   };
 }
 
-export const postKratosCourier = createHandler(async (req, res) => {
-  const { log } = getSafReporters();
-  const body = req.body as KratosCourierBody;
+export function createPostKratosCourierHandler(
+  callbacks: IdentityServiceCallbacks = {},
+) {
+  return createHandler(async (req, res) => {
+    const { log } = getSafReporters();
+    const body = req.body as KratosCourierBody;
 
-  if (!body?.recipient || !body?.template_type) {
-    throw createError(400, "Invalid Kratos courier payload");
-  }
+    if (!body?.recipient || !body?.template_type) {
+      throw createError(400, "Invalid Kratos courier payload");
+    }
 
-  log.info("Kratos courier email", {
-    template_type: body.template_type,
-    recipient: body.recipient,
+    const td = body.template_data ?? {};
+    const identity = td.identity;
+    const user = kratosIdentityToUser(identity);
+
+    log.info("Kratos courier email", {
+      template_type: body.template_type,
+      recipient: body.recipient,
+    });
+
+    const tt = body.template_type.toLowerCase();
+
+    if (tt.includes("verification")) {
+      const verificationUrl = String(td.verification_url ?? "");
+      const isResend =
+        tt.includes("resend") ||
+        tt.includes("reminder") ||
+        tt.includes("second");
+      await callbacks.onVerificationTokenCreated?.({
+        user,
+        verificationUrl,
+        isResend,
+      });
+    } else if (tt.includes("recovery")) {
+      const resetUrl = String(td.recovery_url ?? "");
+      await callbacks.onPasswordReset?.({
+        user,
+        resetUrl,
+      });
+    } else if (
+      tt.includes("password") &&
+      (tt.includes("updated") ||
+        tt.includes("changed") ||
+        tt.includes("credential"))
+    ) {
+      await callbacks.onPasswordUpdated?.({ user });
+    }
+
+    const { subject, text, html } = buildMessage(body);
+
+    await emailClient.sendEmail({
+      to: body.recipient,
+      subject,
+      text,
+      html,
+    });
+
+    res.status(204).end();
   });
-
-  const { subject, text, html } = buildMessage(body);
-
-  await emailClient.sendEmail({
-    to: body.recipient,
-    subject,
-    text,
-    html,
-  });
-
-  res.status(204).end();
-});
+}

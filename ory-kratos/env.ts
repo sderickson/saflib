@@ -25,10 +25,6 @@ export interface OryKratosEnvSchema {
    */
   DOMAIN_REDIRECTS?: string;
   /**
-   * Host URL for the identity service
-   */
-  IDENTITY_SERVICE_HTTP_HOST: string;
-  /**
    * Host URL for the Ory Kratos courier callback server (e.g. recipes-monolith:3000).
    */
   KRATOS_COURIER_HTTP_HOST: string;
@@ -73,4 +69,6 @@ export interface OryKratosEnvSchema {
 /**
  * `process.env` casted to the `OryKratosEnvSchema` type.
  */
-export const typedEnv = (globalThis.process ? process.env : {}) as unknown as OryKratosEnvSchema;
+export const typedEnv = (globalThis.process
+  ? process.env
+  : {}) as unknown as OryKratosEnvSchema;

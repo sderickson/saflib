@@ -15,11 +15,12 @@
   "dependencies": {
     "@saflib/email": "*",
     "@saflib/express": "*",
-    "@saflib/identity-common": "*",
     "@saflib/node": "*"
   },
   "devDependencies": {
     "@saflib/monorepo": "*",
-    "@saflib/vitest": "*"
+    "@saflib/vitest": "*",
+    "@types/supertest": "^7.0.0",
+    "supertest": "^7.0.0"
   }
 }
