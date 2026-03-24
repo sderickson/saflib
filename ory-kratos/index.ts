@@ -1,9 +1,13 @@
 import express from "express";
-import { postKratosCourier } from "@saflib/email";
 import type { IdentityServiceCallbacks } from "@saflib/identity-common";
-import { startExpressServer, createGlobalMiddleware, createErrorMiddleware } from "@saflib/express";
+import {
+  startExpressServer,
+  createInternalMiddleware,
+  createErrorMiddleware,
+} from "@saflib/express";
 import { makeSubsystemReporters } from "@saflib/node";
 import { typedEnv } from "./env.ts";
+import { postKratosCourier } from "./routes/post-kratos-courier.ts";
 
 export interface StartOryKratosServiceOptions {
   callbacks?: IdentityServiceCallbacks;
@@ -14,7 +18,7 @@ export function startOryKratosService(options?: StartOryKratosServiceOptions) {
   try {
     log.info(`Starting Ory Kratos courier server at ${typedEnv.KRATOS_COURIER_HTTP_HOST}`);
     const app = express();
-    app.use(createGlobalMiddleware());
+    app.use(createInternalMiddleware());
     app.locals.identityCallbacks = options?.callbacks ?? {};
     app.post("/email/kratos-courier", postKratosCourier);
     app.use(createErrorMiddleware());

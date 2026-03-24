@@ -1,7 +1,7 @@
 import createError from "http-errors";
 import { createHandler } from "@saflib/express";
 import { getSafReporters } from "@saflib/node";
-import { emailClient } from "../../client/email-client.ts";
+import { emailClient } from "@saflib/email";
 
 export interface KratosCourierBody {
   recipient: string;

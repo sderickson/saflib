@@ -28,6 +28,16 @@ export interface GlobalMiddlewareOptions {
 }
 
 /**
+ * Middleware for internal-only service endpoints.
+ */
+export const createInternalMiddleware = (
+  options: Pick<GlobalMiddlewareOptions, "jsonLimit"> = {},
+): Handler[] => {
+  const { jsonLimit } = options;
+  return [metricsMiddleware, everyRequestLogger, json(jsonLimit ? { limit: jsonLimit } : undefined)];
+};
+
+/**
  * Middleware which should be put at the top of the middleware stack, and run
  * for every request.
  */

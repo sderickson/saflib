@@ -7,6 +7,9 @@
     ".": "./index.ts"
   },
   "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "typecheck": "tsc"
   },
   "dependencies": {
@@ -16,6 +19,7 @@
     "@saflib/node": "*"
   },
   "devDependencies": {
-    "@saflib/monorepo": "*"
+    "@saflib/monorepo": "*",
+    "@saflib/vitest": "*"
   }
 }
