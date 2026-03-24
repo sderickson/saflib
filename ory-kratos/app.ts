@@ -3,11 +3,11 @@ import {
   createInternalMiddleware,
   createErrorMiddleware,
 } from "@saflib/express";
-import type { IdentityServiceCallbacks } from "./callbacks.ts";
+import type { KratosCourierCallbacks } from "./callbacks.ts";
 import { createPostKratosCourierHandler } from "./routes/post-kratos-courier.ts";
 
 export interface CreateOryKratosAppOptions {
-  callbacks?: IdentityServiceCallbacks;
+  callbacks?: KratosCourierCallbacks;
 }
 
 /**

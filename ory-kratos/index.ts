@@ -2,10 +2,10 @@ import { startExpressServer } from "@saflib/express";
 import { makeSubsystemReporters } from "@saflib/node";
 import { typedEnv } from "./env.ts";
 import { createOryKratosApp } from "./app.ts";
-import type { IdentityServiceCallbacks } from "./callbacks.ts";
+import type { KratosCourierCallbacks } from "./callbacks.ts";
 
 export interface StartOryKratosServiceOptions {
-  callbacks?: IdentityServiceCallbacks;
+  callbacks?: KratosCourierCallbacks;
 }
 
 export function startOryKratosService(options?: StartOryKratosServiceOptions) {
@@ -34,9 +34,13 @@ export function startOryKratosService(options?: StartOryKratosServiceOptions) {
 export { createOryKratosApp } from "./app.ts";
 export { createPostKratosCourierHandler } from "./routes/post-kratos-courier.ts";
 export type {
-  IdentityServiceCallbacks,
+  KratosCourierCallbacks,
+  KratosCourierTemplateId,
   User,
-  VerificationTokenCreatedPayload,
-  PasswordResetPayload,
-  PasswordUpdatedPayload,
+  RecoveryCodeValidPayload,
+  RecoveryValidPayload,
+  VerificationCodeValidPayload,
+  VerificationValidPayload,
+  LoginCodeValidPayload,
+  RegistrationCodeValidPayload,
 } from "./callbacks.ts";

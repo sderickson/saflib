@@ -1,6 +1,6 @@
 /**
- * Copied from @saflib/identity-common (pending removal of identity packages).
- * Payload `user` uses a minimal shape suitable for Kratos courier events.
+ * Courier callbacks aligned with Ory Identities built-in email templates (valid flows only).
+ * @see https://www.ory.com/docs/kratos/emails-sms/custom-email-templates
  */
 
 export interface User {
@@ -8,45 +8,72 @@ export interface User {
   email: string;
   createdAt?: Date;
   lastLoginAt?: Date | null;
-  /** Aligns with legacy identity-db `users` row typing where applicable. */
+  /** For the recipient address: taken from the matching `verifiable_addresses` entry when present. */
   emailVerified?: boolean | null;
   name?: string | null;
   givenName?: string | null;
   familyName?: string | null;
 }
 
-export interface UserCreatedPayload {
+/** Canonical IDs use dots, e.g. `verification_code.valid`. */
+export type KratosCourierTemplateId =
+  | "recovery_code.valid"
+  | "recovery.valid"
+  | "verification_code.valid"
+  | "verification.valid"
+  | "login_code.valid"
+  | "registration_code.valid";
+
+export interface BaseKratosCourierPayload {
+  recipient: string;
   user: User;
+  /** Original `template_data` from the HTTP courier body. */
+  templateData: Record<string, unknown>;
 }
 
-export interface VerificationTokenCreatedPayload {
-  user: User;
+export interface RecoveryCodeValidPayload extends BaseKratosCourierPayload {
+  recoveryCode: string;
+  expiresInMinutes?: number;
+}
+
+export interface RecoveryValidPayload extends BaseKratosCourierPayload {
+  recoveryUrl: string;
+}
+
+export interface VerificationCodeValidPayload extends BaseKratosCourierPayload {
+  verificationCode: string;
+  verificationUrl?: string;
+  expiresInMinutes?: number;
+}
+
+export interface VerificationValidPayload extends BaseKratosCourierPayload {
   verificationUrl: string;
-  isResend: boolean;
 }
 
-export interface UserVerifiedPayload {
-  user: User;
+export interface LoginCodeValidPayload extends BaseKratosCourierPayload {
+  loginCode: string;
+  loginUrl?: string;
+  expiresInMinutes?: number;
 }
 
-export interface PasswordResetPayload {
-  user: User;
-  resetUrl: string;
-}
-
-export interface PasswordUpdatedPayload {
-  user: User;
+export interface RegistrationCodeValidPayload extends BaseKratosCourierPayload {
+  registrationCode: string;
+  registrationUrl?: string;
+  expiresInMinutes?: number;
 }
 
 /**
- * Callbacks for events which occur in the auth/courier flow.
+ * Hooks for each supported **valid** template type. Unsupported / invalid templates are rejected before dispatch.
  */
-export interface IdentityServiceCallbacks {
-  onUserCreated?: (payload: UserCreatedPayload) => Promise<void>;
-  onUserVerified?: (payload: UserVerifiedPayload) => Promise<void>;
-  onVerificationTokenCreated?: (
-    payload: VerificationTokenCreatedPayload,
+export interface KratosCourierCallbacks {
+  onRecoveryCodeValid?: (payload: RecoveryCodeValidPayload) => Promise<void>;
+  onRecoveryValid?: (payload: RecoveryValidPayload) => Promise<void>;
+  onVerificationCodeValid?: (
+    payload: VerificationCodeValidPayload,
   ) => Promise<void>;
-  onPasswordReset?: (payload: PasswordResetPayload) => Promise<void>;
-  onPasswordUpdated?: (payload: PasswordUpdatedPayload) => Promise<void>;
+  onVerificationValid?: (payload: VerificationValidPayload) => Promise<void>;
+  onLoginCodeValid?: (payload: LoginCodeValidPayload) => Promise<void>;
+  onRegistrationCodeValid?: (
+    payload: RegistrationCodeValidPayload,
+  ) => Promise<void>;
 }

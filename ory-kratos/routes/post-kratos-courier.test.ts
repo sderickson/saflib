@@ -4,7 +4,7 @@ import express from "express";
 import { emailClient } from "@saflib/email";
 import { createErrorMiddleware, createInternalMiddleware } from "@saflib/express";
 import { createPostKratosCourierHandler } from "./post-kratos-courier.ts";
-import type { IdentityServiceCallbacks } from "../callbacks.ts";
+import type { KratosCourierCallbacks } from "../callbacks.ts";
 
 vi.mock("@saflib/email", async (importOriginal) => {
   const mod = await importOriginal<typeof import("@saflib/email")>();
@@ -20,7 +20,7 @@ vi.mock("@saflib/email", async (importOriginal) => {
 describe("createPostKratosCourierHandler", () => {
   let app: express.Express;
 
-  const verificationBody = {
+  const verificationCodeBody = {
     recipient: "user@example.com",
     template_type: "verification_code_valid",
     template_data: {
@@ -58,9 +58,48 @@ describe("createPostKratosCourierHandler", () => {
     expect(emailClient.sendEmail).not.toHaveBeenCalled();
   });
 
-  it("calls onVerificationTokenCreated and sends email for verification template", async () => {
-    const onVerificationTokenCreated = vi.fn().mockResolvedValue(undefined);
-    const callbacks: IdentityServiceCallbacks = { onVerificationTokenCreated };
+  it("returns 400 for unsupported template types", async () => {
+    const handler = createPostKratosCourierHandler({});
+    app = express();
+    app.use(createInternalMiddleware());
+    app.post("/email/kratos-courier", handler);
+    app.use(createErrorMiddleware());
+
+    const res = await request(app)
+      .post("/email/kratos-courier")
+      .send({
+        recipient: "a@b.com",
+        template_type: "unknown_template",
+        template_data: {},
+      })
+      .set("Content-Type", "application/json");
+
+    expect(res.status).toBe(400);
+    expect(emailClient.sendEmail).not.toHaveBeenCalled();
+  });
+
+  it("returns 400 for invalid templates (not implemented)", async () => {
+    const handler = createPostKratosCourierHandler({});
+    app = express();
+    app.use(createInternalMiddleware());
+    app.post("/email/kratos-courier", handler);
+    app.use(createErrorMiddleware());
+
+    const res = await request(app)
+      .post("/email/kratos-courier")
+      .send({
+        recipient: "a@b.com",
+        template_type: "verification_code_invalid",
+        template_data: {},
+      })
+      .set("Content-Type", "application/json");
+
+    expect(res.status).toBe(400);
+  });
+
+  it("calls onVerificationCodeValid and sends email for verification_code.valid", async () => {
+    const onVerificationCodeValid = vi.fn().mockResolvedValue(undefined);
+    const callbacks: KratosCourierCallbacks = { onVerificationCodeValid };
 
     const handler = createPostKratosCourierHandler(callbacks);
     app = express();
@@ -70,18 +109,22 @@ describe("createPostKratosCourierHandler", () => {
 
     const res = await request(app)
       .post("/email/kratos-courier")
-      .send(verificationBody)
+      .send(verificationCodeBody)
       .set("Content-Type", "application/json");
 
     expect(res.status).toBe(204);
-    expect(onVerificationTokenCreated).toHaveBeenCalledTimes(1);
-    expect(onVerificationTokenCreated).toHaveBeenCalledWith({
+    expect(onVerificationCodeValid).toHaveBeenCalledTimes(1);
+    expect(onVerificationCodeValid).toHaveBeenCalledWith({
+      recipient: "user@example.com",
       user: expect.objectContaining({
         id: "0e7a38c8-841f-45ea-abe6-9a1ef859c074",
         email: "user@example.com",
+        emailVerified: false,
       }),
-      verificationUrl: verificationBody.template_data.verification_url,
-      isResend: false,
+      templateData: verificationCodeBody.template_data,
+      verificationCode: "842363",
+      verificationUrl: verificationCodeBody.template_data.verification_url,
+      expiresInMinutes: undefined,
     });
     expect(emailClient.sendEmail).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -91,13 +134,12 @@ describe("createPostKratosCourierHandler", () => {
     );
   });
 
-  it("calls onPasswordReset for recovery template", async () => {
-    const onPasswordReset = vi.fn().mockResolvedValue(undefined);
+  it("calls onRecoveryValid for recovery.valid (link)", async () => {
+    const onRecoveryValid = vi.fn().mockResolvedValue(undefined);
     const body = {
       recipient: "user@example.com",
       template_type: "recovery_valid",
       template_data: {
-        recovery_code: "abc",
         recovery_url: "http://kratos.docker.localhost/self-service/recovery?flow=x",
         identity: {
           id: "id-1",
@@ -106,7 +148,7 @@ describe("createPostKratosCourierHandler", () => {
       },
     };
 
-    const handler = createPostKratosCourierHandler({ onPasswordReset });
+    const handler = createPostKratosCourierHandler({ onRecoveryValid });
     app = express();
     app.use(createInternalMiddleware());
     app.post("/email/kratos-courier", handler);
@@ -118,9 +160,11 @@ describe("createPostKratosCourierHandler", () => {
       .set("Content-Type", "application/json");
 
     expect(res.status).toBe(204);
-    expect(onPasswordReset).toHaveBeenCalledWith({
+    expect(onRecoveryValid).toHaveBeenCalledWith({
+      recipient: "user@example.com",
       user: expect.objectContaining({ id: "id-1", email: "user@example.com" }),
-      resetUrl: body.template_data.recovery_url,
+      templateData: body.template_data,
+      recoveryUrl: body.template_data.recovery_url,
     });
   });
 });

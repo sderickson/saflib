@@ -2,8 +2,16 @@ import createError from "http-errors";
 import { createHandler } from "@saflib/express";
 import { getSafReporters } from "@saflib/node";
 import { emailClient } from "@saflib/email";
-import type { IdentityServiceCallbacks } from "../callbacks.ts";
+import type {
+  KratosCourierCallbacks,
+  KratosCourierTemplateId,
+  User,
+} from "../callbacks.ts";
 import { kratosIdentityToUser } from "../kratos-map.ts";
+import {
+  isSupportedValidTemplate,
+  normalizeKratosTemplateType,
+} from "../kratos-template.ts";
 
 export interface KratosCourierBody {
   recipient: string;
@@ -11,53 +19,166 @@ export interface KratosCourierBody {
   template_data?: Record<string, unknown>;
 }
 
-function buildMessage(body: KratosCourierBody): {
-  subject: string;
-  text: string;
-  html?: string;
-} {
-  const { template_type, template_data: td = {} } = body;
-  const verificationUrl = td.verification_url as string | undefined;
-  const recoveryUrl = td.recovery_url as string | undefined;
-  const verificationCode = td.verification_code as string | undefined;
-  const recoveryCode = td.recovery_code as string | undefined;
+function readString(td: Record<string, unknown>, key: string): string | undefined {
+  const v = td[key];
+  return typeof v === "string" ? v : undefined;
+}
 
-  if (template_type.includes("verification")) {
-    const lines = [
-      verificationCode ? `Code: ${verificationCode}` : null,
-      verificationUrl ? `Link: ${verificationUrl}` : null,
-    ].filter(Boolean);
-    return {
-      subject: "Verify your email",
-      text: lines.join("\n") || JSON.stringify(td),
-      html: verificationUrl
-        ? `<p><a href="${verificationUrl}">Verify your email</a></p>`
-        : undefined,
-    };
+function readNumber(td: Record<string, unknown>, key: string): number | undefined {
+  const v = td[key];
+  if (typeof v === "number" && !Number.isNaN(v)) return v;
+  if (typeof v === "string") {
+    const n = parseInt(v, 10);
+    if (!Number.isNaN(n)) return n;
   }
+  return undefined;
+}
 
-  if (template_type.includes("recovery")) {
-    const lines = [
-      recoveryCode ? `Code: ${recoveryCode}` : null,
-      recoveryUrl ? `Link: ${recoveryUrl}` : null,
-    ].filter(Boolean);
-    return {
-      subject: "Account recovery",
-      text: lines.join("\n") || JSON.stringify(td),
-      html: recoveryUrl
-        ? `<p><a href="${recoveryUrl}">Reset your password</a></p>`
-        : undefined,
-    };
+function buildMessage(
+  templateId: KratosCourierTemplateId,
+  td: Record<string, unknown>,
+): { subject: string; text: string; html?: string } {
+  switch (templateId) {
+    case "verification_code.valid": {
+      const code = readString(td, "verification_code");
+      const url = readString(td, "verification_url");
+      const lines = [code ? `Code: ${code}` : null, url ? `Link: ${url}` : null].filter(
+        Boolean,
+      );
+      return {
+        subject: "Verify your email",
+        text: lines.join("\n") || JSON.stringify(td),
+        html: url ? `<p><a href="${url}">Verify your email</a></p>` : undefined,
+      };
+    }
+    case "verification.valid": {
+      const url = readString(td, "verification_url");
+      return {
+        subject: "Verify your email",
+        text: url ? `Link: ${url}` : JSON.stringify(td),
+        html: url ? `<p><a href="${url}">Verify your email</a></p>` : undefined,
+      };
+    }
+    case "recovery_code.valid": {
+      const code = readString(td, "recovery_code");
+      const url = readString(td, "recovery_url");
+      const lines = [code ? `Code: ${code}` : null, url ? `Link: ${url}` : null].filter(
+        Boolean,
+      );
+      return {
+        subject: "Account recovery",
+        text: lines.join("\n") || JSON.stringify(td),
+        html: url ? `<p><a href="${url}">Reset your password</a></p>` : undefined,
+      };
+    }
+    case "recovery.valid": {
+      const url = readString(td, "recovery_url");
+      return {
+        subject: "Account recovery",
+        text: url ? `Link: ${url}` : JSON.stringify(td),
+        html: url ? `<p><a href="${url}">Reset your password</a></p>` : undefined,
+      };
+    }
+    case "login_code.valid": {
+      const code = readString(td, "login_code");
+      const url = readString(td, "login_url");
+      const lines = [code ? `Code: ${code}` : null, url ? `Link: ${url}` : null].filter(
+        Boolean,
+      );
+      return {
+        subject: "Sign in",
+        text: lines.join("\n") || JSON.stringify(td),
+        html: url ? `<p><a href="${url}">Sign in</a></p>` : undefined,
+      };
+    }
+    case "registration_code.valid": {
+      const code = readString(td, "registration_code");
+      const url = readString(td, "registration_url");
+      const lines = [code ? `Code: ${code}` : null, url ? `Link: ${url}` : null].filter(
+        Boolean,
+      );
+      return {
+        subject: "Complete registration",
+        text: lines.join("\n") || JSON.stringify(td),
+        html: url ? `<p><a href="${url}">Continue</a></p>` : undefined,
+      };
+    }
   }
+}
 
-  return {
-    subject: `Kratos: ${template_type}`,
-    text: JSON.stringify({ template_type, template_data: td }, null, 2),
-  };
+async function dispatchCallback(
+  templateId: KratosCourierTemplateId,
+  callbacks: KratosCourierCallbacks,
+  args: {
+    recipient: string;
+    user: User;
+    td: Record<string, unknown>;
+  },
+): Promise<void> {
+  const { recipient, user, td } = args;
+  const expiresInMinutes = readNumber(td, "expires_in_minutes");
+
+  switch (templateId) {
+    case "recovery_code.valid":
+      await callbacks.onRecoveryCodeValid?.({
+        recipient,
+        user,
+        templateData: td,
+        recoveryCode: readString(td, "recovery_code") ?? "",
+        expiresInMinutes,
+      });
+      return;
+    case "recovery.valid":
+      await callbacks.onRecoveryValid?.({
+        recipient,
+        user,
+        templateData: td,
+        recoveryUrl: readString(td, "recovery_url") ?? "",
+      });
+      return;
+    case "verification_code.valid":
+      await callbacks.onVerificationCodeValid?.({
+        recipient,
+        user,
+        templateData: td,
+        verificationCode: readString(td, "verification_code") ?? "",
+        verificationUrl: readString(td, "verification_url"),
+        expiresInMinutes,
+      });
+      return;
+    case "verification.valid":
+      await callbacks.onVerificationValid?.({
+        recipient,
+        user,
+        templateData: td,
+        verificationUrl: readString(td, "verification_url") ?? "",
+      });
+      return;
+    case "login_code.valid":
+      await callbacks.onLoginCodeValid?.({
+        recipient,
+        user,
+        templateData: td,
+        loginCode: readString(td, "login_code") ?? "",
+        loginUrl: readString(td, "login_url"),
+        expiresInMinutes,
+      });
+      return;
+    case "registration_code.valid":
+      await callbacks.onRegistrationCodeValid?.({
+        recipient,
+        user,
+        templateData: td,
+        registrationCode: readString(td, "registration_code") ?? "",
+        registrationUrl: readString(td, "registration_url"),
+        expiresInMinutes,
+      });
+      return;
+  }
 }
 
 export function createPostKratosCourierHandler(
-  callbacks: IdentityServiceCallbacks = {},
+  callbacks: KratosCourierCallbacks = {},
 ) {
   return createHandler(async (req, res) => {
     const { log } = getSafReporters();
@@ -67,44 +188,41 @@ export function createPostKratosCourierHandler(
       throw createError(400, "Invalid Kratos courier payload");
     }
 
+    const rawType = body.template_type;
+    const normalized = normalizeKratosTemplateType(rawType);
+
+    if (normalized.endsWith(".invalid")) {
+      throw createError(
+        400,
+        `Unsupported Kratos courier template_type (invalid templates not implemented): ${rawType}`,
+      );
+    }
+
+    if (!isSupportedValidTemplate(normalized)) {
+      throw createError(
+        400,
+        `Unsupported Kratos courier template_type: ${rawType} (normalized: ${normalized})`,
+      );
+    }
+
+    const templateId = normalized;
     const td = body.template_data ?? {};
     const identity = td.identity;
-    const user = kratosIdentityToUser(identity);
+    const user = kratosIdentityToUser(identity, body.recipient);
 
     log.info("Kratos courier email", {
-      template_type: body.template_type,
+      template_type: rawType,
+      template_id: templateId,
       recipient: body.recipient,
     });
 
-    const tt = body.template_type.toLowerCase();
+    await dispatchCallback(templateId, callbacks, {
+      recipient: body.recipient,
+      user,
+      td,
+    });
 
-    if (tt.includes("verification")) {
-      const verificationUrl = String(td.verification_url ?? "");
-      const isResend =
-        tt.includes("resend") ||
-        tt.includes("reminder") ||
-        tt.includes("second");
-      await callbacks.onVerificationTokenCreated?.({
-        user,
-        verificationUrl,
-        isResend,
-      });
-    } else if (tt.includes("recovery")) {
-      const resetUrl = String(td.recovery_url ?? "");
-      await callbacks.onPasswordReset?.({
-        user,
-        resetUrl,
-      });
-    } else if (
-      tt.includes("password") &&
-      (tt.includes("updated") ||
-        tt.includes("changed") ||
-        tt.includes("credential"))
-    ) {
-      await callbacks.onPasswordUpdated?.({ user });
-    }
-
-    const { subject, text, html } = buildMessage(body);
+    const { subject, text, html } = buildMessage(templateId, td);
 
     await emailClient.sendEmail({
       to: body.recipient,
