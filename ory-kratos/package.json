@@ -1,0 +1,21 @@
+{
+  "name": "@saflib/ory-kratos",
+  "description": "Dedicated HTTP courier endpoint service for Ory Kratos.",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc"
+  },
+  "dependencies": {
+    "@saflib/email": "*",
+    "@saflib/express": "*",
+    "@saflib/identity-common": "*",
+    "@saflib/node": "*"
+  },
+  "devDependencies": {
+    "@saflib/monorepo": "*"
+  }
+}
