@@ -50,11 +50,7 @@ function buildMessage(body: KratosCourierBody): {
 
   return {
     subject: `Kratos: ${template_type}`,
-    text: JSON.stringify(
-      { template_type, template_data: td },
-      null,
-      2,
-    ),
+    text: JSON.stringify({ template_type, template_data: td }, null, 2),
   };
 }
 
