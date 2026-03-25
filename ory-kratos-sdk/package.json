@@ -1,0 +1,29 @@
+{
+  "name": "@saflib/ory-kratos-sdk",
+  "description": "Ory Kratos browser flows, session queries, and MSW fakes (TanStack Query + Frontend API).",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts",
+    "./fakes": "./fakes.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "vue-tsc"
+  },
+  "dependencies": {
+    "@ory/client": "^1.22.28",
+    "@saflib/links": "*",
+    "@tanstack/vue-query": "^5.85.9",
+    "axios": "^1.7.9",
+    "vue": "*"
+  },
+  "devDependencies": {
+    "@saflib/monorepo": "*",
+    "@saflib/vitest": "*",
+    "@saflib/vue": "*",
+    "msw": "^2.11.3"
+  }
+}
