@@ -6,7 +6,7 @@ import type { Ref } from "vue";
  * A subset of what `useQuery` returns. This is so that loaders can create pseudo-queries by simply creating objects with isLoading, error, and isError properties.
  */
 export type LoaderQuery<TData = undefined> = Pick<
-  UseQueryReturnType<any, TanstackError | Error>,
+  UseQueryReturnType<any, TanstackError>,
   "isLoading" | "error"
 > & {
   isError: Ref<boolean>;
