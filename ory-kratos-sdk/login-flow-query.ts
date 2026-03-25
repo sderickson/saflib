@@ -2,6 +2,8 @@ import { queryOptions, useQuery } from "@tanstack/vue-query";
 import type { LoginFlow } from "@ory/client";
 import { fetchBrowserLoginFlow, fetchLoginFlowById } from "./kratos-flows.ts";
 import { kratosFlowQueryRetry } from "./kratos-query-retry.ts";
+import type { TanstackError } from "@saflib/sdk";
+import type { Ref } from "vue";
 
 /**
  * Stable key: flow id when resuming `?flow=`; otherwise browser init keyed by `returnTo`
@@ -17,22 +19,37 @@ export function loginFlowQueryKey(flowId?: string, returnTo?: string) {
 
 export type LoginFlowQueryKey = ReturnType<typeof loginFlowQueryKey>;
 
+interface LoginFlowQueryOptions {
+  flowId?: string;
+  returnTo?: string;
+  enabled?: Ref<boolean>;
+}
+
 /** Cached login flow from `fetchBrowserLoginFlow` or `fetchLoginFlowById`. */
-export function loginFlowQueryOptions(flowId?: string, returnTo?: string) {
+export function loginFlowQueryOptions({
+  flowId,
+  returnTo,
+  enabled,
+}: LoginFlowQueryOptions) {
   const queryKey = loginFlowQueryKey(flowId, returnTo) as readonly [
     "kratos",
     "login",
     string,
   ];
-  return queryOptions({
+  return queryOptions<LoginFlow, TanstackError>({
     queryKey,
-    queryFn: async (): Promise<LoginFlow> =>
+    queryFn: async () =>
       flowId ? fetchLoginFlowById(flowId) : fetchBrowserLoginFlow(returnTo),
     staleTime: 30_000,
     retry: kratosFlowQueryRetry,
+    enabled,
   });
 }
 
-export function useLoginFlowQuery(flowId?: string, returnTo?: string) {
-  return useQuery(loginFlowQueryOptions(flowId, returnTo));
+export function useLoginFlowQuery({
+  flowId,
+  returnTo,
+  enabled,
+}: LoginFlowQueryOptions) {
+  return useQuery(loginFlowQueryOptions({ flowId, returnTo, enabled }));
 }

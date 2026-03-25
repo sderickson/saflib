@@ -5,6 +5,8 @@ import {
   fetchRegistrationFlowById,
 } from "./kratos-flows.ts";
 import { kratosFlowQueryRetry } from "./kratos-query-retry.ts";
+import type { TanstackError } from "@saflib/sdk";
+import type { Ref } from "vue";
 
 /**
  * Stable key: flow id when resuming `?flow=`; otherwise browser init keyed by `returnTo`
@@ -20,22 +22,37 @@ export function registrationFlowQueryKey(flowId?: string, returnTo?: string) {
 
 export type RegistrationFlowQueryKey = ReturnType<typeof registrationFlowQueryKey>;
 
+interface RegistrationFlowQueryOptions {
+  flowId?: string;
+  returnTo?: string;
+  enabled?: Ref<boolean>;
+}
+
 /** Cached registration flow from `fetchBrowserRegistrationFlow` or `fetchRegistrationFlowById`. */
-export function registrationFlowQueryOptions(flowId?: string, returnTo?: string) {
+export function registrationFlowQueryOptions({
+  flowId,
+  returnTo,
+  enabled,
+}: RegistrationFlowQueryOptions) {
   const queryKey = registrationFlowQueryKey(flowId, returnTo) as readonly [
     "kratos",
     "registration",
     string,
   ];
-  return queryOptions({
+  return queryOptions<RegistrationFlow, TanstackError>({
     queryKey,
-    queryFn: async (): Promise<RegistrationFlow> =>
+    queryFn: async () =>
       flowId ? fetchRegistrationFlowById(flowId) : fetchBrowserRegistrationFlow(returnTo),
     staleTime: 30_000,
     retry: kratosFlowQueryRetry,
+    enabled,
   });
 }
 
-export function useRegistrationFlowQuery(flowId?: string, returnTo?: string) {
-  return useQuery(registrationFlowQueryOptions(flowId, returnTo));
+export function useRegistrationFlowQuery({
+  flowId,
+  returnTo,
+  enabled,
+}: RegistrationFlowQueryOptions) {
+  return useQuery(registrationFlowQueryOptions({ flowId, returnTo, enabled }));
 }

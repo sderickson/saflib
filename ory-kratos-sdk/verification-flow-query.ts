@@ -5,6 +5,8 @@ import {
   fetchVerificationFlowById,
 } from "./kratos-flows.ts";
 import { kratosFlowQueryRetry } from "./kratos-query-retry.ts";
+import type { TanstackError } from "@saflib/sdk";
+import type { Ref } from "vue";
 
 /**
  * Stable key: flow id when resuming `?flow=`; otherwise browser init keyed by `returnTo`
@@ -22,27 +24,39 @@ export type VerificationFlowQueryKey = ReturnType<
   typeof verificationFlowQueryKey
 >;
 
+interface VerificationFlowQueryOptions {
+  flowId?: string;
+  returnTo?: string;
+  enabled?: Ref<boolean>;
+}
+
 /** Cached verification flow from `fetchBrowserVerificationFlow` or `fetchVerificationFlowById`. */
-export function verificationFlowQueryOptions(
-  flowId?: string,
-  returnTo?: string,
-) {
+export function verificationFlowQueryOptions({
+  flowId,
+  returnTo,
+  enabled,
+}: VerificationFlowQueryOptions) {
   const queryKey = verificationFlowQueryKey(flowId, returnTo) as readonly [
     "kratos",
     "verification",
     string,
   ];
-  return queryOptions({
+  return queryOptions<VerificationFlow, TanstackError>({
     queryKey,
-    queryFn: async (): Promise<VerificationFlow> =>
+    queryFn: async () =>
       flowId
         ? fetchVerificationFlowById(flowId)
         : fetchBrowserVerificationFlow(returnTo),
     staleTime: 30_000,
     retry: kratosFlowQueryRetry,
+    enabled,
   });
 }
 
-export function useVerificationFlowQuery(flowId?: string, returnTo?: string) {
-  return useQuery(verificationFlowQueryOptions(flowId, returnTo));
+export function useVerificationFlowQuery({
+  flowId,
+  returnTo,
+  enabled,
+}: VerificationFlowQueryOptions) {
+  return useQuery(verificationFlowQueryOptions({ flowId, returnTo, enabled }));
 }
