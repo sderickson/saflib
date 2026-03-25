@@ -1,11 +1,14 @@
-import { isAxiosError } from "axios";
+import { AxiosError, isAxiosError } from "axios";
 import { useMutation, useQueryClient } from "@tanstack/vue-query";
-import type { FrontendApiUpdateVerificationFlowRequest, VerificationFlow } from "@ory/client";
+import type {
+  FrontendApiUpdateVerificationFlowRequest,
+  VerificationFlow,
+} from "@ory/client";
+import { TanstackError } from "@saflib/sdk";
 import { getKratosFrontendApi } from "./kratos-client.ts";
 import { invalidateKratosSessionQueries } from "./kratos-session.ts";
 
-/** Kratos may return an updated verification flow (validation errors) in the Axios response body (e.g. HTTP 400). */
-export function extractVerificationFlowFromError(e: unknown): VerificationFlow | undefined {
+function extractVerificationFlow(e: unknown): VerificationFlow | undefined {
   if (!isAxiosError(e)) return undefined;
   const d = e.response?.data;
   if (d && typeof d === "object" && "ui" in d && "id" in d) {
@@ -16,10 +19,23 @@ export function extractVerificationFlowFromError(e: unknown): VerificationFlow |
 
 export const useUpdateVerificationFlowMutation = () => {
   const queryClient = useQueryClient();
-  return useMutation({
+  return useMutation<
+    VerificationFlow,
+    TanstackError,
+    FrontendApiUpdateVerificationFlowRequest
+  >({
     mutationFn: async (vars: FrontendApiUpdateVerificationFlowRequest) => {
-      const res = await getKratosFrontendApi().updateVerificationFlow(vars);
-      return res.data;
+      try {
+        const res = await getKratosFrontendApi().updateVerificationFlow(vars);
+        return res.data;
+      } catch (e: unknown) {
+        const flow = extractVerificationFlow(e);
+        if (flow) return flow;
+        if (e instanceof AxiosError) {
+          throw new TanstackError(e.response?.status ?? 0);
+        }
+        throw e;
+      }
     },
     onSuccess: () => {
       void invalidateKratosSessionQueries(queryClient);

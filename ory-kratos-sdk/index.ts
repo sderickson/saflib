@@ -17,11 +17,6 @@ export { identityNeedsEmailVerification } from "./kratos-identity.ts";
 export { isKratosFlowGoneError } from "./kratos-http-error.ts";
 export { kratosFlowQueryRetry } from "./kratos-query-retry.ts";
 export {
-  TanstackErrorBrowserLocationChangeRequired,
-  TanstackErrorKratosRecoveryValidation,
-  throwKratosRecoveryAxiosError,
-} from "./kratos-recovery-errors.ts";
-export {
   fetchBrowserLoginFlow,
   fetchBrowserLogoutFlow,
   fetchBrowserRecoveryFlow,
@@ -46,11 +41,13 @@ export {
   useRegistrationFlowQuery,
 } from "./registration-flow-query.ts";
 export {
-  extractRegistrationFlowFromError,
+  RegistrationCompleted,
+  RegistrationFlowUpdated,
   useUpdateRegistrationFlowMutation,
 } from "./use-update-registration-flow.ts";
 export {
-  extractLoginFlowFromError,
+  LoginCompleted,
+  LoginFlowUpdated,
   useUpdateLoginFlowMutation,
 } from "./use-update-login-flow.ts";
 export {
@@ -69,15 +66,8 @@ export {
   useVerificationFlowQuery,
 } from "./verification-flow-query.ts";
 export {
-  extractBrowserLocationChangeRequiredFromError,
-  extractRecoveryFlowFromError,
+  BrowserRedirectRequired,
   useUpdateRecoveryFlowMutation,
 } from "./use-update-recovery-flow.ts";
-export {
-  extractSettingsFlowFromError,
-  useUpdateSettingsFlowMutation,
-} from "./use-update-settings-flow.ts";
-export {
-  extractVerificationFlowFromError,
-  useUpdateVerificationFlowMutation,
-} from "./use-update-verification-flow.ts";
+export { useUpdateSettingsFlowMutation } from "./use-update-settings-flow.ts";
+export { useUpdateVerificationFlowMutation } from "./use-update-verification-flow.ts";

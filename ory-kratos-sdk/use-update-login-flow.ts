@@ -1,11 +1,23 @@
-import { isAxiosError } from "axios";
+import { AxiosError, isAxiosError } from "axios";
 import { useMutation, useQueryClient } from "@tanstack/vue-query";
-import type { FrontendApiUpdateLoginFlowRequest, LoginFlow } from "@ory/client";
+import type {
+  FrontendApiUpdateLoginFlowRequest,
+  LoginFlow,
+  SuccessfulNativeLogin,
+} from "@ory/client";
+import { TanstackError } from "@saflib/sdk";
 import { getKratosFrontendApi } from "./kratos-client.ts";
 import { invalidateKratosSessionQueries } from "./kratos-session.ts";
 
-/** Kratos may return an updated login flow (validation errors) in the Axios response body (e.g. HTTP 400). */
-export function extractLoginFlowFromError(e: unknown): LoginFlow | undefined {
+export class LoginFlowUpdated {
+  constructor(readonly flow: LoginFlow) {}
+}
+
+export class LoginCompleted {
+  constructor(readonly session: SuccessfulNativeLogin) {}
+}
+
+function extractLoginFlow(e: unknown): LoginFlow | undefined {
   if (!isAxiosError(e)) return undefined;
   const d = e.response?.data;
   if (d && typeof d === "object" && "ui" in d && "id" in d) {
@@ -16,13 +28,28 @@ export function extractLoginFlowFromError(e: unknown): LoginFlow | undefined {
 
 export const useUpdateLoginFlowMutation = () => {
   const queryClient = useQueryClient();
-  return useMutation({
+  return useMutation<
+    LoginFlowUpdated | LoginCompleted,
+    TanstackError,
+    FrontendApiUpdateLoginFlowRequest
+  >({
     mutationFn: async (vars: FrontendApiUpdateLoginFlowRequest) => {
-      const res = await getKratosFrontendApi().updateLoginFlow(vars);
-      return res.data;
+      try {
+        const res = await getKratosFrontendApi().updateLoginFlow(vars);
+        return new LoginCompleted(res.data);
+      } catch (e: unknown) {
+        const flow = extractLoginFlow(e);
+        if (flow) return new LoginFlowUpdated(flow);
+        if (e instanceof AxiosError) {
+          throw new TanstackError(e.response?.status ?? 0);
+        }
+        throw e;
+      }
     },
-    onSuccess: () => {
-      void invalidateKratosSessionQueries(queryClient);
+    onSuccess: (result) => {
+      if (result instanceof LoginCompleted) {
+        void invalidateKratosSessionQueries(queryClient);
+      }
     },
   });
 };

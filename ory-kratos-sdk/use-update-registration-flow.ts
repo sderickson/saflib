@@ -5,12 +5,18 @@ import type {
   RegistrationFlow,
   SuccessfulNativeRegistration,
 } from "@ory/client";
+import { TanstackError } from "@saflib/sdk";
 import { getKratosFrontendApi } from "./kratos-client.ts";
 
-/** Kratos may return an updated registration flow (validation errors) in the Axios response body (e.g. HTTP 400). */
-export function extractRegistrationFlowFromError(
-  e: unknown,
-): RegistrationFlow | undefined {
+export class RegistrationFlowUpdated {
+  constructor(readonly flow: RegistrationFlow) {}
+}
+
+export class RegistrationCompleted {
+  constructor(readonly result: SuccessfulNativeRegistration) {}
+}
+
+function extractRegistrationFlow(e: unknown): RegistrationFlow | undefined {
   if (!isAxiosError(e)) return undefined;
   const d = e.response?.data;
   if (d && typeof d === "object" && "ui" in d && "id" in d) {
@@ -19,37 +25,22 @@ export function extractRegistrationFlowFromError(
   return undefined;
 }
 
-interface SuccessfulNativeRegistrationWrapped {
-  response_type: "successful_native_registration";
-  successful_native_registration: SuccessfulNativeRegistration;
-}
-
-interface RegistrationFlowWrapped {
-  response_type: "registration_flow";
-  registration_flow: RegistrationFlow;
-}
-
 export const useUpdateRegistrationFlowMutation = () => {
   return useMutation<
-    SuccessfulNativeRegistrationWrapped | RegistrationFlowWrapped,
-    AxiosError,
+    RegistrationFlowUpdated | RegistrationCompleted,
+    TanstackError,
     FrontendApiUpdateRegistrationFlowRequest
   >({
     mutationFn: async (vars: FrontendApiUpdateRegistrationFlowRequest) => {
       try {
         const res = await getKratosFrontendApi().updateRegistrationFlow(vars);
-        return {
-          response_type: "successful_native_registration",
-          successful_native_registration: res.data,
-        };
+        return new RegistrationCompleted(res.data);
       } catch (e: unknown) {
-        if (!(e instanceof AxiosError)) throw e;
-        const flow = extractRegistrationFlowFromError(e);
-        if (flow)
-          return {
-            response_type: "registration_flow",
-            registration_flow: flow,
-          };
+        const flow = extractRegistrationFlow(e);
+        if (flow) return new RegistrationFlowUpdated(flow);
+        if (e instanceof AxiosError) {
+          throw new TanstackError(e.response?.status ?? 0);
+        }
         throw e;
       }
     },

@@ -1,26 +1,29 @@
-import { isAxiosError } from "axios";
+import { AxiosError, isAxiosError } from "axios";
 import { useMutation, useQueryClient } from "@tanstack/vue-query";
 import type {
   ErrorBrowserLocationChangeRequired,
   FrontendApiUpdateRecoveryFlowRequest,
   RecoveryFlow,
 } from "@ory/client";
+import { TanstackError } from "@saflib/sdk";
 import { getKratosFrontendApi } from "./kratos-client.ts";
-import {
-  TanstackErrorBrowserLocationChangeRequired,
-  TanstackErrorKratosRecoveryValidation,
-  throwKratosRecoveryAxiosError,
-} from "./kratos-recovery-errors.ts";
 import { invalidateKratosSessionQueries } from "./kratos-session.ts";
 
-/**
- * Kratos may return an updated recovery flow in the error response body (e.g. HTTP 400 validation)
- * — same shape as a successful GET flow.
- */
-export function extractRecoveryFlowFromError(e: unknown): RecoveryFlow | undefined {
-  if (e instanceof TanstackErrorKratosRecoveryValidation) {
-    return e.payload;
-  }
+export class BrowserRedirectRequired {
+  constructor(readonly payload: ErrorBrowserLocationChangeRequired) {}
+}
+
+function isBrowserLocationChangeBody(
+  d: unknown,
+): d is ErrorBrowserLocationChangeRequired {
+  if (!d || typeof d !== "object") return false;
+  if ("ui" in d) return false;
+  const redirect = (d as ErrorBrowserLocationChangeRequired)
+    .redirect_browser_to;
+  return typeof redirect === "string" && redirect.trim().length > 0;
+}
+
+function extractRecoveryFlow(e: unknown): RecoveryFlow | undefined {
   if (!isAxiosError(e)) return undefined;
   const d = e.response?.data;
   if (d && typeof d === "object" && "ui" in d && "id" in d) {
@@ -29,35 +32,30 @@ export function extractRecoveryFlowFromError(e: unknown): RecoveryFlow | undefin
   return undefined;
 }
 
-/**
- * Browser flows with `Accept: application/json` can get HTTP 422 with this body instead of a 303:
- * the client must navigate to `redirect_browser_to` (session may already be established).
- * This shape does **not** include `ui` (unlike validation errors that return a full flow).
- */
-export function extractBrowserLocationChangeRequiredFromError(
-  e: unknown,
-): ErrorBrowserLocationChangeRequired | undefined {
-  if (e instanceof TanstackErrorBrowserLocationChangeRequired) {
-    return e.payload;
-  }
-  if (!isAxiosError(e)) return undefined;
-  const d = e.response?.data;
-  if (!d || typeof d !== "object") return undefined;
-  if ("ui" in d) return undefined;
-  const redirect = (d as ErrorBrowserLocationChangeRequired).redirect_browser_to;
-  if (typeof redirect !== "string" || !redirect.trim()) return undefined;
-  return d as ErrorBrowserLocationChangeRequired;
-}
-
 export const useUpdateRecoveryFlowMutation = () => {
   const queryClient = useQueryClient();
-  return useMutation({
+  return useMutation<
+    RecoveryFlow | BrowserRedirectRequired,
+    TanstackError,
+    FrontendApiUpdateRecoveryFlowRequest
+  >({
     mutationFn: async (vars: FrontendApiUpdateRecoveryFlowRequest) => {
       try {
         const res = await getKratosFrontendApi().updateRecoveryFlow(vars);
         return res.data;
-      } catch (e) {
-        throwKratosRecoveryAxiosError(e);
+      } catch (e: unknown) {
+        if (isAxiosError(e)) {
+          const d = e.response?.data;
+          if (isBrowserLocationChangeBody(d)) {
+            return new BrowserRedirectRequired(d);
+          }
+        }
+        const flow = extractRecoveryFlow(e);
+        if (flow) return flow;
+        if (e instanceof AxiosError) {
+          throw new TanstackError(e.response?.status ?? 0);
+        }
+        throw e;
       }
     },
     onSuccess: () => {

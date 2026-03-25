@@ -6,8 +6,15 @@ import type {
   SettingsFlow,
   VerificationFlow,
 } from "@ory/client";
+import { TanstackError } from "@saflib/sdk";
+import { isAxiosError } from "axios";
 import { getKratosFrontendApi } from "./kratos-client.ts";
-import { throwKratosRecoveryAxiosError } from "./kratos-recovery-errors.ts";
+
+function throwNormalizedError(e: unknown): never {
+  if (e instanceof TanstackError) throw e;
+  if (isAxiosError(e)) throw new TanstackError(e.response?.status ?? 0);
+  throw e;
+}
 
 /** `returnTo` is sent to Kratos as `return_to` and echoed on {@link LoginFlow.return_to}. */
 export async function fetchBrowserLoginFlow(returnTo?: string): Promise<LoginFlow> {
@@ -65,7 +72,7 @@ export async function fetchBrowserRecoveryFlow(returnTo?: string): Promise<Recov
     );
     return res.data;
   } catch (e) {
-    throwKratosRecoveryAxiosError(e);
+    throwNormalizedError(e);
   }
 }
 
@@ -74,7 +81,7 @@ export async function fetchRecoveryFlowById(flowId: string): Promise<RecoveryFlo
     const res = await getKratosFrontendApi().getRecoveryFlow({ id: flowId });
     return res.data;
   } catch (e) {
-    throwKratosRecoveryAxiosError(e);
+    throwNormalizedError(e);
   }
 }
 
