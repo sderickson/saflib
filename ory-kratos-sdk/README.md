@@ -17,27 +17,11 @@ Because Kratos uses 4xx status codes for expected responses, we can't simply let
 
 ## Queries
 
-Each flow type has a query file exporting three things:
-
-| Export                       | Purpose                                                              |
-| ---------------------------- | -------------------------------------------------------------------- |
-| `xxxFlowQueryKey(...)`       | Build the cache key for manual `setQueryData`/`invalidateQueries`    |
-| `xxxFlowQueryOptions({...})` | Return a `queryOptions(...)` object typed as `<Flow, TanstackError>` |
-| `useXxxFlowQuery({...})`     | Convenience wrapper: calls `useQuery` with the options               |
-
-All three accept a single options object:
-
-```ts
-interface XxxFlowQueryOptions {
-  flowId?: string; // resume an existing flow by id (?flow=...)
-  returnTo?: string; // Kratos return_to for browser flow creation
-  enabled?: Ref<boolean>; // reactive gate (e.g. wait until session check completes)
-}
-```
+Each flow type has a query file exporting a `xxxFlowQueryKey` function (for manual cache operations), a `xxxFlowQueryOptions` function (returning a typed `queryOptions` object), and a `useXxxFlowQuery` convenience wrapper. All accept a single options object with optional `flowId`, `returnTo`, and `enabled` (a `Ref<boolean>` for reactive gating).
 
 ### Typing queries with `TanstackError`
 
-Pass explicit type parameters to `queryOptions` so the error type flows through to consumers:
+Pass explicit type parameters to `queryOptions` so the error type flows through to consumers without `as` casts:
 
 ```ts
 return queryOptions<LoginFlow, TanstackError>({
@@ -46,8 +30,6 @@ return queryOptions<LoginFlow, TanstackError>({
   ...
 });
 ```
-
-This eliminates the need for `as` casts when using the query in loaders or composables.
 
 ### Using queries in loaders
 
@@ -118,19 +100,9 @@ const updated = await updateSettings.mutateAsync({...});
 queryClient.setQueryData(key, updated);
 ```
 
-### Result class summary
-
-| Flow         | Return type                                        | Classes                                                                           |
-| ------------ | -------------------------------------------------- | --------------------------------------------------------------------------------- |
-| Registration | `RegistrationFlowUpdated \| RegistrationCompleted` | `RegistrationFlowUpdated` (400 validation), `RegistrationCompleted` (200 success) |
-| Login        | `LoginFlowUpdated \| LoginCompleted`               | `LoginFlowUpdated` (400 validation), `LoginCompleted` (200 success)               |
-| Recovery     | `RecoveryFlow \| BrowserRedirectRequired`          | `BrowserRedirectRequired` (422 redirect); `RecoveryFlow` returned unwrapped       |
-| Settings     | `SettingsFlow`                                     | None needed — single shape                                                        |
-| Verification | `VerificationFlow`                                 | None needed — single shape                                                        |
-
 ### Error type
 
-All mutations declare `TanstackError` as their error type. This is consistent with the `defaultError` registered in `vue-query-register.ts` and with the convention from `@saflib/sdk`. Consumers can rely on `error instanceof TanstackError` and use `getTanstackErrorMessage(error)` for generic display.
+All mutations declare `TanstackError` as their error type, consistent with the `defaultError` registered for Vue Query and with the convention from `@saflib/sdk`. Consumers can rely on `error instanceof TanstackError` and use `getTanstackErrorMessage(error)` for generic display.
 
 ### Consumer pattern
 
@@ -158,30 +130,4 @@ try {
 } finally {
   submitting.value = false;
 }
-```
-
-## Package structure
-
-```
-ory-kratos-sdk/
-├── kratos-client.ts           # Shared FrontendApi instance (Axios + cookies)
-├── kratos-flows.ts            # Plain fetch functions for creating/getting flows
-├── kratos-http-error.ts       # HTTP error helpers (e.g. isKratosFlowGoneError)
-├── kratos-identity.ts         # Identity helpers (email verification check)
-├── kratos-query-retry.ts      # TanStack retry callback (skip 410)
-├── kratos-session.ts          # Session query, invalidation, helpers
-├── kratos-mocks.ts            # Test mocks
-├── kratos.fake.ts             # Fake Kratos for testing
-├── vue-query-register.ts      # Register TanstackError as defaultError
-├── login-flow-query.ts        # Login flow query + key
-├── registration-flow-query.ts # Registration flow query + key
-├── recovery-flow-query.ts     # Recovery flow query + key
-├── settings-flow-query.ts     # Settings flow query + key
-├── verification-flow-query.ts # Verification flow query + key
-├── use-update-login-flow.ts       # Login mutation + result classes
-├── use-update-registration-flow.ts # Registration mutation + result classes
-├── use-update-recovery-flow.ts    # Recovery mutation + BrowserRedirectRequired
-├── use-update-settings-flow.ts    # Settings mutation (returns SettingsFlow)
-├── use-update-verification-flow.ts # Verification mutation (returns VerificationFlow)
-└── index.ts                   # Re-exports everything
 ```
