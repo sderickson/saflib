@@ -29,27 +29,23 @@ const props = defineProps<Props>();
 const queryResults = props.loader?.() ?? {};
 
 const isLoading = computed(() =>
-  Array.isArray(queryResults)
-    ? queryResults.some((query) => query.isLoading.value)
-    : Object.values(queryResults).some((query) => query.isLoading.value),
+  Object.values(queryResults).some((query) => query.isLoading.value),
 );
 
 const isError = computed(
   () =>
     !isLoading.value &&
-    (Array.isArray(queryResults)
-      ? queryResults.some((query) => query.isError.value)
-      : Object.values(queryResults).some((query) => query.isError.value)),
+    Object.values(queryResults).some((query) => query.isError.value),
 );
 
 const firstError = computed(() => {
   if (!isError.value) {
     return null;
   }
-  return Array.isArray(queryResults)
-    ? (queryResults.find((query) => query.isError.value)?.error.value ?? null)
-    : (Object.values(queryResults).find((query) => query.isError.value)?.error
-        .value ?? null);
+  return (
+    Object.values(queryResults).find((query) => query.isError.value)?.error
+      .value ?? null
+  );
 });
 
 const errorMessage = computed(() => {

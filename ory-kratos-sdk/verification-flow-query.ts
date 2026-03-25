@@ -18,10 +18,15 @@ export function verificationFlowQueryKey(flowId?: string, returnTo?: string) {
   return ["kratos", "verification", `browser:${returnTo ?? ""}`] as const;
 }
 
-export type VerificationFlowQueryKey = ReturnType<typeof verificationFlowQueryKey>;
+export type VerificationFlowQueryKey = ReturnType<
+  typeof verificationFlowQueryKey
+>;
 
 /** Cached verification flow from `fetchBrowserVerificationFlow` or `fetchVerificationFlowById`. */
-export function verificationFlowQueryOptions(flowId?: string, returnTo?: string) {
+export function verificationFlowQueryOptions(
+  flowId?: string,
+  returnTo?: string,
+) {
   const queryKey = verificationFlowQueryKey(flowId, returnTo) as readonly [
     "kratos",
     "verification",
@@ -30,7 +35,9 @@ export function verificationFlowQueryOptions(flowId?: string, returnTo?: string)
   return queryOptions({
     queryKey,
     queryFn: async (): Promise<VerificationFlow> =>
-      flowId ? fetchVerificationFlowById(flowId) : fetchBrowserVerificationFlow(returnTo),
+      flowId
+        ? fetchVerificationFlowById(flowId)
+        : fetchBrowserVerificationFlow(returnTo),
     staleTime: 30_000,
     retry: kratosFlowQueryRetry,
   });
