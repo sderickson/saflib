@@ -1,3 +1,5 @@
+import "./vue-query-register.ts";
+
 export { getKratosFrontendApi } from "./kratos-client.ts";
 export {
   assertKratosSessionIdentityLoaded,
@@ -14,6 +16,11 @@ export {
 export { identityNeedsEmailVerification } from "./kratos-identity.ts";
 export { isKratosFlowGoneError } from "./kratos-http-error.ts";
 export { kratosFlowQueryRetry } from "./kratos-query-retry.ts";
+export {
+  TanstackErrorBrowserLocationChangeRequired,
+  TanstackErrorKratosRecoveryValidation,
+  throwKratosRecoveryAxiosError,
+} from "./kratos-recovery-errors.ts";
 export {
   fetchBrowserLoginFlow,
   fetchBrowserLogoutFlow,

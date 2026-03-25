@@ -6,13 +6,21 @@ import type {
   RecoveryFlow,
 } from "@ory/client";
 import { getKratosFrontendApi } from "./kratos-client.ts";
+import {
+  TanstackErrorBrowserLocationChangeRequired,
+  TanstackErrorKratosRecoveryValidation,
+  throwKratosRecoveryAxiosError,
+} from "./kratos-recovery-errors.ts";
 import { invalidateKratosSessionQueries } from "./kratos-session.ts";
 
 /**
- * Kratos may return an updated recovery flow in the Axios error response body (e.g. HTTP 400
- * validation) — same shape as a successful GET flow.
+ * Kratos may return an updated recovery flow in the error response body (e.g. HTTP 400 validation)
+ * — same shape as a successful GET flow.
  */
 export function extractRecoveryFlowFromError(e: unknown): RecoveryFlow | undefined {
+  if (e instanceof TanstackErrorKratosRecoveryValidation) {
+    return e.payload;
+  }
   if (!isAxiosError(e)) return undefined;
   const d = e.response?.data;
   if (d && typeof d === "object" && "ui" in d && "id" in d) {
@@ -29,6 +37,9 @@ export function extractRecoveryFlowFromError(e: unknown): RecoveryFlow | undefin
 export function extractBrowserLocationChangeRequiredFromError(
   e: unknown,
 ): ErrorBrowserLocationChangeRequired | undefined {
+  if (e instanceof TanstackErrorBrowserLocationChangeRequired) {
+    return e.payload;
+  }
   if (!isAxiosError(e)) return undefined;
   const d = e.response?.data;
   if (!d || typeof d !== "object") return undefined;
@@ -42,8 +53,12 @@ export const useUpdateRecoveryFlowMutation = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (vars: FrontendApiUpdateRecoveryFlowRequest) => {
-      const res = await getKratosFrontendApi().updateRecoveryFlow(vars);
-      return res.data;
+      try {
+        const res = await getKratosFrontendApi().updateRecoveryFlow(vars);
+        return res.data;
+      } catch (e) {
+        throwKratosRecoveryAxiosError(e);
+      }
     },
     onSuccess: () => {
       void invalidateKratosSessionQueries(queryClient);

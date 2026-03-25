@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@ory/client": "^1.22.28",
+    "@saflib/sdk": "*",
     "@saflib/links": "*",
     "@tanstack/vue-query": "^5.85.9",
     "axios": "^1.7.9",

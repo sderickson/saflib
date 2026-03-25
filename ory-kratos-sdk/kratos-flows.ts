@@ -7,6 +7,7 @@ import type {
   VerificationFlow,
 } from "@ory/client";
 import { getKratosFrontendApi } from "./kratos-client.ts";
+import { throwKratosRecoveryAxiosError } from "./kratos-recovery-errors.ts";
 
 /** `returnTo` is sent to Kratos as `return_to` and echoed on {@link LoginFlow.return_to}. */
 export async function fetchBrowserLoginFlow(returnTo?: string): Promise<LoginFlow> {
@@ -58,15 +59,23 @@ export async function fetchVerificationFlowById(flowId: string): Promise<Verific
 
 /** `returnTo` is sent to Kratos as `return_to` and echoed on {@link RecoveryFlow.return_to}. */
 export async function fetchBrowserRecoveryFlow(returnTo?: string): Promise<RecoveryFlow> {
-  const res = await getKratosFrontendApi().createBrowserRecoveryFlow(
-    returnTo ? { returnTo } : {},
-  );
-  return res.data;
+  try {
+    const res = await getKratosFrontendApi().createBrowserRecoveryFlow(
+      returnTo ? { returnTo } : {},
+    );
+    return res.data;
+  } catch (e) {
+    throwKratosRecoveryAxiosError(e);
+  }
 }
 
 export async function fetchRecoveryFlowById(flowId: string): Promise<RecoveryFlow> {
-  const res = await getKratosFrontendApi().getRecoveryFlow({ id: flowId });
-  return res.data;
+  try {
+    const res = await getKratosFrontendApi().getRecoveryFlow({ id: flowId });
+    return res.data;
+  } catch (e) {
+    throwKratosRecoveryAxiosError(e);
+  }
 }
 
 /** Alias for {@link fetchRecoveryFlowById} (matches Ory `getRecoveryFlow` naming). */
