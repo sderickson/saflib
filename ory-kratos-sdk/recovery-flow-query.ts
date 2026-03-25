@@ -6,7 +6,7 @@ import {
 } from "./kratos-flows.ts";
 import { kratosFlowQueryRetry } from "./kratos-query-retry.ts";
 import type { Ref } from "vue";
-import type { AxiosError } from "axios";
+import type { TanstackError } from "@saflib/sdk";
 
 /**
  * Stable key: flow id when resuming `?flow=`; otherwise browser init keyed by `returnTo`
@@ -39,9 +39,9 @@ export function recoveryFlowQueryOptions({
     "recovery",
     string,
   ];
-  return queryOptions<RecoveryFlow, AxiosError>({
+  return queryOptions<RecoveryFlow, TanstackError>({
     queryKey,
-    queryFn: async (): Promise<RecoveryFlow> =>
+    queryFn: async () =>
       flowId
         ? fetchRecoveryFlowById(flowId)
         : fetchBrowserRecoveryFlow(returnTo),
