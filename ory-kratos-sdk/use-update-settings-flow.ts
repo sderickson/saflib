@@ -1,6 +1,7 @@
 import { AxiosError, isAxiosError } from "axios";
 import { useMutation, useQueryClient } from "@tanstack/vue-query";
 import type {
+  ErrorAuthenticatorAssuranceLevelNotSatisfied,
   FrontendApiUpdateSettingsFlowRequest,
   SettingsFlow,
 } from "@ory/client";
@@ -17,10 +18,23 @@ function extractSettingsFlow(e: unknown): SettingsFlow | undefined {
   return undefined;
 }
 
+function extractAalNotSatisfied(
+  e: unknown,
+): ErrorAuthenticatorAssuranceLevelNotSatisfied | undefined {
+  if (!isAxiosError(e)) return undefined;
+  const d = e.response?.data;
+  if (!d || typeof d !== "object") return undefined;
+  if ("ui" in d) return undefined;
+  if ("redirect_browser_to" in d) {
+    return d as ErrorAuthenticatorAssuranceLevelNotSatisfied;
+  }
+  return undefined;
+}
+
 export const useUpdateSettingsFlowMutation = () => {
   const queryClient = useQueryClient();
   return useMutation<
-    SettingsFlow,
+    SettingsFlow | ErrorAuthenticatorAssuranceLevelNotSatisfied,
     TanstackError,
     FrontendApiUpdateSettingsFlowRequest
   >({
@@ -31,14 +45,18 @@ export const useUpdateSettingsFlowMutation = () => {
       } catch (e: unknown) {
         const flow = extractSettingsFlow(e);
         if (flow) return flow;
+        const aalNotSatisfied = extractAalNotSatisfied(e);
+        if (aalNotSatisfied) return aalNotSatisfied;
         if (e instanceof AxiosError) {
           throw new TanstackError(e.response?.status ?? 0);
         }
         throw e;
       }
     },
-    onSuccess: () => {
-      void invalidateKratosSessionQueries(queryClient);
+    onSuccess: (result) => {
+      if ("ui" in result) {
+        void invalidateKratosSessionQueries(queryClient);
+      }
     },
   });
 };

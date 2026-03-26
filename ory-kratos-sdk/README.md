@@ -92,12 +92,17 @@ if (result instanceof RegistrationFlowUpdated) {
 // result is RegistrationCompleted — proceed with post-registration logic
 ```
 
-When all expected outcomes share the same shape and handling (settings, verification), the mutation returns the flow type directly with no wrapper:
+When all expected outcomes share the same shape and handling (verification), the mutation returns the flow type directly with no wrapper:
 
 ```ts
-// Settings: both 200 and 400 return a SettingsFlow, handled the same way
+// Settings: 200/400 return SettingsFlow; 403 reauth returns
+// ErrorAuthenticatorAssuranceLevelNotSatisfied with redirect_browser_to
 const updated = await updateSettings.mutateAsync({...});
-queryClient.setQueryData(key, updated);
+if ("ui" in updated) {
+  queryClient.setQueryData(key, updated);
+} else {
+  window.location.assign(updated.redirect_browser_to ?? "/login");
+}
 ```
 
 ### Error type

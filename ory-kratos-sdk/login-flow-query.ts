@@ -10,11 +10,11 @@ import type { Ref } from "vue";
  * (from `?redirect=`) so different `return_to` values do not share cache.
  * Third segment is a single encoded string so the query key tuple stays a consistent 3-tuple.
  */
-export function loginFlowQueryKey(flowId?: string, returnTo?: string) {
+export function loginFlowQueryKey(flowId?: string, returnTo?: string, refresh?: boolean) {
   if (flowId) {
     return ["kratos", "login", `id:${flowId}`] as const;
   }
-  return ["kratos", "login", `browser:${returnTo ?? ""}`] as const;
+  return ["kratos", "login", `browser:${returnTo ?? ""}:refresh:${refresh ? "1" : "0"}`] as const;
 }
 
 export type LoginFlowQueryKey = ReturnType<typeof loginFlowQueryKey>;
@@ -22,6 +22,7 @@ export type LoginFlowQueryKey = ReturnType<typeof loginFlowQueryKey>;
 interface LoginFlowQueryOptions {
   flowId?: string;
   returnTo?: string;
+  refresh?: boolean;
   enabled?: Ref<boolean>;
 }
 
@@ -29,9 +30,10 @@ interface LoginFlowQueryOptions {
 export function loginFlowQueryOptions({
   flowId,
   returnTo,
+  refresh,
   enabled,
 }: LoginFlowQueryOptions) {
-  const queryKey = loginFlowQueryKey(flowId, returnTo) as readonly [
+  const queryKey = loginFlowQueryKey(flowId, returnTo, refresh) as readonly [
     "kratos",
     "login",
     string,
@@ -39,7 +41,7 @@ export function loginFlowQueryOptions({
   return queryOptions<LoginFlow, TanstackError>({
     queryKey,
     queryFn: async () =>
-      flowId ? fetchLoginFlowById(flowId) : fetchBrowserLoginFlow(returnTo),
+      flowId ? fetchLoginFlowById(flowId) : fetchBrowserLoginFlow(returnTo, refresh),
     staleTime: 30_000,
     retry: kratosFlowQueryRetry,
     enabled,
@@ -49,7 +51,8 @@ export function loginFlowQueryOptions({
 export function useLoginFlowQuery({
   flowId,
   returnTo,
+  refresh,
   enabled,
 }: LoginFlowQueryOptions) {
-  return useQuery(loginFlowQueryOptions({ flowId, returnTo, enabled }));
+  return useQuery(loginFlowQueryOptions({ flowId, returnTo, refresh, enabled }));
 }

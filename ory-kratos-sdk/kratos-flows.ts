@@ -19,9 +19,13 @@ function throwNormalizedError(e: unknown): never {
 /** `returnTo` is sent to Kratos as `return_to` and echoed on {@link LoginFlow.return_to}. */
 export async function fetchBrowserLoginFlow(
   returnTo?: string,
+  refresh?: boolean,
 ): Promise<LoginFlow> {
+  const params: { returnTo?: string; refresh?: boolean } = {};
+  if (returnTo) params.returnTo = returnTo;
+  if (refresh) params.refresh = true;
   const res = await getKratosFrontendApi().createBrowserLoginFlow(
-    returnTo ? { returnTo } : {},
+    params,
   );
   return res.data;
 }
