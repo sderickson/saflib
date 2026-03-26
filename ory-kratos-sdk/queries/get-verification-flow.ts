@@ -1,4 +1,4 @@
-import type { VerificationFlow } from "@ory/client";
+import type { GenericError, VerificationFlow } from "@ory/client";
 import { queryOptions, useQuery } from "@tanstack/vue-query";
 import { isAxiosError } from "axios";
 import { TanstackError } from "@saflib/sdk";
@@ -31,7 +31,7 @@ export function getVerificationFlowQueryOptions({
         return new VerificationFlowFetched(res.data);
       } catch (e) {
         if (isAxiosError(e) && e.response?.status === 410) {
-          return new FlowGone();
+          return new FlowGone(e.response.data as GenericError);
         }
         if (isAxiosError(e)) throw new TanstackError(e.response?.status ?? 0);
         throw e;

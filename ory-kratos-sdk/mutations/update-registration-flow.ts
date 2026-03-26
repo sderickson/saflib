@@ -1,6 +1,7 @@
 import { isAxiosError } from "axios";
 import { useMutation } from "@tanstack/vue-query";
 import type {
+  ErrorBrowserLocationChangeRequired,
   FrontendApiUpdateRegistrationFlowRequest,
   RegistrationFlow,
   SuccessfulNativeRegistration,
@@ -40,14 +41,10 @@ export const useUpdateRegistrationFlowMutation = () => {
         const flow = extractRegistrationFlow(e);
         if (flow) return new RegistrationFlowUpdated(flow);
         if (isAxiosError(e)) {
-          const d = e.response?.data;
-          if (
-            e.response?.status === 422 &&
-            d && typeof d === "object" && "redirect_browser_to" in d
-          ) {
-            const url = (d as { redirect_browser_to?: string }).redirect_browser_to;
-            if (typeof url === "string" && url.trim()) {
-              return new BrowserRedirectRequired(url);
+          if (e.response?.status === 422) {
+            const d = e.response.data as ErrorBrowserLocationChangeRequired | undefined;
+            if (d?.redirect_browser_to?.trim()) {
+              return new BrowserRedirectRequired(d);
             }
           }
           throw new TanstackError(e.response?.status ?? 0);

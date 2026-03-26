@@ -1,6 +1,7 @@
 import { AxiosError, isAxiosError } from "axios";
 import { useMutation, useQueryClient } from "@tanstack/vue-query";
 import type {
+  ErrorBrowserLocationChangeRequired,
   FrontendApiUpdateRecoveryFlowRequest,
   RecoveryFlow,
 } from "@ory/client";
@@ -41,9 +42,9 @@ export const useUpdateRecoveryFlowMutation = () => {
             !("ui" in d) &&
             "redirect_browser_to" in d
           ) {
-            const url = (d as { redirect_browser_to?: string }).redirect_browser_to;
-            if (typeof url === "string" && url.trim()) {
-              return new BrowserRedirectRequired(url);
+            const payload = d as ErrorBrowserLocationChangeRequired;
+            if (payload.redirect_browser_to?.trim()) {
+              return new BrowserRedirectRequired(payload);
             }
           }
         }

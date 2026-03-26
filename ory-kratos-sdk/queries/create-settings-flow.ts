@@ -1,4 +1,4 @@
-import type { SettingsFlow } from "@ory/client";
+import type { ErrorBrowserLocationChangeRequired, SettingsFlow } from "@ory/client";
 import { queryOptions, useQuery } from "@tanstack/vue-query";
 import { isAxiosError } from "axios";
 import { TanstackError } from "@saflib/sdk";
@@ -33,12 +33,9 @@ export function createSettingsFlowQueryOptions({
         return new SettingsFlowCreated(res.data);
       } catch (e) {
         if (isAxiosError(e) && e.response?.status === 403) {
-          const d = e.response.data;
-          if (d && typeof d === "object" && "redirect_browser_to" in d) {
-            const url = (d as { redirect_browser_to?: string }).redirect_browser_to;
-            if (typeof url === "string" && url.trim()) {
-              return new BrowserRedirectRequired(url);
-            }
+          const d = e.response.data as ErrorBrowserLocationChangeRequired | undefined;
+          if (d?.redirect_browser_to?.trim()) {
+            return new BrowserRedirectRequired(d);
           }
         }
         if (isAxiosError(e)) throw new TanstackError(e.response?.status ?? 0);

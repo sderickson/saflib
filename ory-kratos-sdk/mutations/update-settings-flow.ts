@@ -1,6 +1,7 @@
 import { isAxiosError } from "axios";
 import { useMutation, useQueryClient } from "@tanstack/vue-query";
 import type {
+  ErrorBrowserLocationChangeRequired,
   FrontendApiUpdateSettingsFlowRequest,
   SettingsFlow,
 } from "@ory/client";
@@ -43,9 +44,9 @@ export const useUpdateSettingsFlowMutation = () => {
             !("ui" in d) &&
             "redirect_browser_to" in d
           ) {
-            const url = (d as { redirect_browser_to?: string }).redirect_browser_to;
-            if (typeof url === "string" && url.trim()) {
-              return new BrowserRedirectRequired(url);
+            const payload = d as ErrorBrowserLocationChangeRequired;
+            if (payload.redirect_browser_to?.trim()) {
+              return new BrowserRedirectRequired(payload);
             }
           }
           throw new TanstackError(e.response?.status ?? 0);
