@@ -1,5 +1,5 @@
 import { isAxiosError } from "axios";
-import { useMutation } from "@tanstack/vue-query";
+import { useMutation, useQueryClient } from "@tanstack/vue-query";
 import type {
   ErrorBrowserLocationChangeRequired,
   FrontendApiUpdateRegistrationFlowRequest,
@@ -9,6 +9,7 @@ import type {
 import { TanstackError } from "@saflib/sdk";
 import { getKratosFrontendApi } from "../kratos-client.ts";
 import { BrowserRedirectRequired } from "../flow-results.ts";
+import { getRegistrationFlowQueryKey } from "../queries/get-registration-flow.ts";
 
 export class RegistrationFlowUpdated {
   constructor(readonly flow: RegistrationFlow) {}
@@ -28,6 +29,7 @@ function extractRegistrationFlow(e: unknown): RegistrationFlow | undefined {
 }
 
 export const useUpdateRegistrationFlowMutation = () => {
+  const queryClient = useQueryClient();
   return useMutation<
     RegistrationFlowUpdated | RegistrationCompleted | BrowserRedirectRequired,
     TanstackError,
@@ -39,10 +41,19 @@ export const useUpdateRegistrationFlowMutation = () => {
         return new RegistrationCompleted(res.data);
       } catch (e: unknown) {
         const flow = extractRegistrationFlow(e);
-        if (flow) return new RegistrationFlowUpdated(flow);
+        if (flow) {
+          // TODO: figure out how to make this work
+          // queryClient.setQueryData(getRegistrationFlowQueryKey(flow.id), flow);
+          void queryClient.invalidateQueries({
+            queryKey: getRegistrationFlowQueryKey(flow.id),
+          });
+          return new RegistrationFlowUpdated(flow);
+        }
         if (isAxiosError(e)) {
           if (e.response?.status === 422) {
-            const d = e.response.data as ErrorBrowserLocationChangeRequired | undefined;
+            const d = e.response.data as
+              | ErrorBrowserLocationChangeRequired
+              | undefined;
             if (d?.redirect_browser_to?.trim()) {
               return new BrowserRedirectRequired(d);
             }
