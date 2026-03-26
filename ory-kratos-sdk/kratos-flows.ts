@@ -17,7 +17,9 @@ function throwNormalizedError(e: unknown): never {
 }
 
 /** `returnTo` is sent to Kratos as `return_to` and echoed on {@link LoginFlow.return_to}. */
-export async function fetchBrowserLoginFlow(returnTo?: string): Promise<LoginFlow> {
+export async function fetchBrowserLoginFlow(
+  returnTo?: string,
+): Promise<LoginFlow> {
   const res = await getKratosFrontendApi().createBrowserLoginFlow(
     returnTo ? { returnTo } : {},
   );
@@ -39,13 +41,19 @@ export async function fetchLoginFlowById(flowId: string): Promise<LoginFlow> {
   return res.data;
 }
 
-export async function fetchRegistrationFlowById(flowId: string): Promise<RegistrationFlow> {
+export async function fetchRegistrationFlowById(
+  flowId: string,
+): Promise<RegistrationFlow> {
   const res = await getKratosFrontendApi().getRegistrationFlow({ id: flowId });
   return res.data;
 }
 
-export async function fetchBrowserLogoutFlow(returnTo?: string): Promise<LogoutFlow> {
-  const res = await getKratosFrontendApi().createBrowserLogoutFlow({ returnTo });
+export async function fetchBrowserLogoutFlow(
+  returnTo?: string,
+): Promise<LogoutFlow> {
+  const res = await getKratosFrontendApi().createBrowserLogoutFlow({
+    returnTo,
+  });
   return res.data;
 }
 
@@ -59,13 +67,17 @@ export async function fetchBrowserVerificationFlow(
   return res.data;
 }
 
-export async function fetchVerificationFlowById(flowId: string): Promise<VerificationFlow> {
+export async function fetchVerificationFlowById(
+  flowId: string,
+): Promise<VerificationFlow> {
   const res = await getKratosFrontendApi().getVerificationFlow({ id: flowId });
   return res.data;
 }
 
 /** `returnTo` is sent to Kratos as `return_to` and echoed on {@link RecoveryFlow.return_to}. */
-export async function fetchBrowserRecoveryFlow(returnTo?: string): Promise<RecoveryFlow> {
+export async function fetchBrowserRecoveryFlow(
+  returnTo?: string,
+): Promise<RecoveryFlow> {
   try {
     const res = await getKratosFrontendApi().createBrowserRecoveryFlow(
       returnTo ? { returnTo } : {},
@@ -76,7 +88,9 @@ export async function fetchBrowserRecoveryFlow(returnTo?: string): Promise<Recov
   }
 }
 
-export async function fetchRecoveryFlowById(flowId: string): Promise<RecoveryFlow> {
+export async function fetchRecoveryFlowById(
+  flowId: string,
+): Promise<RecoveryFlow> {
   try {
     const res = await getKratosFrontendApi().getRecoveryFlow({ id: flowId });
     return res.data;
@@ -89,14 +103,18 @@ export async function fetchRecoveryFlowById(flowId: string): Promise<RecoveryFlo
 export const getRecoveryFlow = fetchRecoveryFlowById;
 
 /** `returnTo` is sent to Kratos as `return_to` and echoed on {@link SettingsFlow.return_to}. */
-export async function fetchBrowserSettingsFlow(returnTo?: string): Promise<SettingsFlow> {
+export async function fetchBrowserSettingsFlow(
+  returnTo?: string,
+): Promise<SettingsFlow> {
   const res = await getKratosFrontendApi().createBrowserSettingsFlow(
     returnTo ? { returnTo } : {},
   );
   return res.data;
 }
 
-export async function fetchSettingsFlowById(flowId: string): Promise<SettingsFlow> {
+export async function fetchSettingsFlowById(
+  flowId: string,
+): Promise<SettingsFlow> {
   const res = await getKratosFrontendApi().getSettingsFlow({ id: flowId });
   return res.data;
 }
