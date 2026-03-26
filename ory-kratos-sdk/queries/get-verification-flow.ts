@@ -27,7 +27,9 @@ export function getVerificationFlowQueryOptions({
     queryKey: getVerificationFlowQueryKey(flowId ?? ""),
     queryFn: async () => {
       try {
-        const res = await getKratosFrontendApi().getVerificationFlow({ id: flowId! });
+        const res = await getKratosFrontendApi().getVerificationFlow({
+          id: flowId!,
+        });
         return new VerificationFlowFetched(res.data);
       } catch (e) {
         if (isAxiosError(e) && e.response?.status === 410) {
@@ -42,6 +44,8 @@ export function getVerificationFlowQueryOptions({
   });
 }
 
-export function useGetVerificationFlowQuery(opts: GetVerificationFlowQueryOptions) {
+export function useGetVerificationFlowQuery(
+  opts: GetVerificationFlowQueryOptions,
+) {
   return useQuery(getVerificationFlowQueryOptions(opts));
 }
