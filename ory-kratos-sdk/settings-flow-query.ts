@@ -1,8 +1,12 @@
 import { queryOptions, useQuery } from "@tanstack/vue-query";
-import type { SettingsFlow } from "@ory/client";
+import type {
+  ErrorAuthenticatorAssuranceLevelNotSatisfied,
+  SettingsFlow,
+} from "@ory/client";
 import { fetchBrowserSettingsFlow, fetchSettingsFlowById } from "./kratos-flows.ts";
 import { kratosFlowQueryRetry } from "./kratos-query-retry.ts";
-import type { TanstackError } from "@saflib/sdk";
+import { TanstackError } from "@saflib/sdk";
+import { isAxiosError } from "axios";
 import type { Ref } from "vue";
 
 /**
@@ -17,6 +21,9 @@ export function settingsFlowQueryKey(flowId?: string, returnTo?: string) {
 }
 
 export type SettingsFlowQueryKey = ReturnType<typeof settingsFlowQueryKey>;
+export type SettingsFlowQueryResult =
+  | SettingsFlow
+  | ErrorAuthenticatorAssuranceLevelNotSatisfied;
 
 interface SettingsFlowQueryOptions {
   flowId?: string;
@@ -35,10 +42,29 @@ export function settingsFlowQueryOptions({
     "settings",
     string,
   ];
-  return queryOptions<SettingsFlow, TanstackError>({
+  return queryOptions<SettingsFlowQueryResult, TanstackError>({
     queryKey,
-    queryFn: async () =>
-      flowId ? fetchSettingsFlowById(flowId) : fetchBrowserSettingsFlow(returnTo),
+    queryFn: async () => {
+      try {
+        return flowId
+          ? fetchSettingsFlowById(flowId)
+          : fetchBrowserSettingsFlow(returnTo);
+      } catch (e) {
+        if (isAxiosError(e)) {
+          const d = e.response?.data;
+          if (
+            d &&
+            typeof d === "object" &&
+            "redirect_browser_to" in d &&
+            !("ui" in d)
+          ) {
+            return d as ErrorAuthenticatorAssuranceLevelNotSatisfied;
+          }
+          throw new TanstackError(e.response?.status ?? 0);
+        }
+        throw e;
+      }
+    },
     staleTime: 30_000,
     retry: kratosFlowQueryRetry,
     enabled,

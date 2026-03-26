@@ -14,7 +14,11 @@ export {
   useKratosSession,
 } from "./kratos-session.ts";
 export { identityNeedsEmailVerification } from "./kratos-identity.ts";
-export { isKratosFlowGoneError } from "./kratos-http-error.ts";
+export {
+  isKratosAalNotSatisfiedError,
+  isKratosFlowGoneError,
+  kratosAalNotSatisfiedRedirectTo,
+} from "./kratos-http-error.ts";
 export { kratosFlowQueryRetry } from "./kratos-query-retry.ts";
 export {
   fetchBrowserLoginFlow,
