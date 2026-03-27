@@ -4,6 +4,7 @@ import { isAxiosError } from "axios";
 import { TanstackError } from "@saflib/sdk";
 import type { Ref } from "vue";
 import { getKratosFrontendApi } from "../kratos-client.ts";
+import { UnhandledResponse } from "../flow-results.ts";
 
 export class VerificationFlowCreated {
   constructor(readonly flow: VerificationFlow) {}
@@ -22,7 +23,10 @@ export function createVerificationFlowQueryOptions({
   returnTo,
   enabled,
 }: CreateVerificationFlowQueryOptions) {
-  return queryOptions<VerificationFlowCreated, TanstackError>({
+  return queryOptions<
+    VerificationFlowCreated | UnhandledResponse,
+    TanstackError
+  >({
     queryKey: createVerificationFlowQueryKey(returnTo),
     queryFn: async () => {
       try {
@@ -31,6 +35,13 @@ export function createVerificationFlowQueryOptions({
         );
         return new VerificationFlowCreated(res.data);
       } catch (e) {
+        if (isAxiosError(e) && e.response) {
+          const status = e.response.status;
+          const raw = e.response.data;
+          if (status >= 400 && status < 500) {
+            return new UnhandledResponse(status, raw);
+          }
+        }
         if (isAxiosError(e)) throw new TanstackError(e.response?.status ?? 0);
         throw e;
       }
