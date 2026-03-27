@@ -4,9 +4,15 @@ import "./vue-query-register.ts";
 export {
   FlowGone,
   BrowserRedirectRequired,
+  SecurityCsrfViolation,
   SessionAlreadyAvailable,
   UnhandledResponse,
 } from "./flow-results.ts";
+
+export {
+  isKratosSecurityCsrfResponseBody,
+  resultFromKratosGetFlowHttpError,
+} from "./get-flow-query-error.ts";
 
 // ── Client & session ────────────────────────────────────────────────────────
 export {

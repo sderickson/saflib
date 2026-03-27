@@ -1,10 +1,11 @@
-import type { GenericError, RegistrationFlow } from "@ory/client";
+import type { RegistrationFlow } from "@ory/client";
 import { queryOptions, useQuery } from "@tanstack/vue-query";
 import { isAxiosError } from "axios";
 import { TanstackError } from "@saflib/sdk";
 import type { Ref } from "vue";
 import { getKratosFrontendApi } from "../kratos-client.ts";
-import { FlowGone, UnhandledResponse } from "../flow-results.ts";
+import { FlowGone, SecurityCsrfViolation, UnhandledResponse } from "../flow-results.ts";
+import { resultFromKratosGetFlowHttpError } from "../get-flow-query-error.ts";
 
 export class RegistrationFlowFetched {
   constructor(readonly flow: RegistrationFlow) {}
@@ -24,7 +25,7 @@ export function getRegistrationFlowQueryOptions({
   enabled,
 }: GetRegistrationFlowQueryOptions) {
   return queryOptions<
-    RegistrationFlowFetched | FlowGone | UnhandledResponse,
+    RegistrationFlowFetched | FlowGone | SecurityCsrfViolation | UnhandledResponse,
     TanstackError
   >({
     queryKey: getRegistrationFlowQueryKey(flowId ?? ""),
@@ -35,16 +36,8 @@ export function getRegistrationFlowQueryOptions({
         });
         return new RegistrationFlowFetched(res.data);
       } catch (e) {
-        if (isAxiosError(e) && e.response) {
-          const status = e.response.status;
-          if (status === 410) {
-            return new FlowGone(e.response.data as GenericError);
-          }
-          if (status >= 400 && status < 500) {
-            console.log("UnhandledResponse", status, e.response.data);
-            return new UnhandledResponse(status, e.response.data);
-          }
-        }
+        const r = resultFromKratosGetFlowHttpError(e);
+        if (r) return r;
         if (isAxiosError(e)) throw new TanstackError(e.response?.status ?? 0);
         throw e;
       }

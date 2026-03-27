@@ -1,10 +1,11 @@
-import type { GenericError, RecoveryFlow } from "@ory/client";
+import type { RecoveryFlow } from "@ory/client";
 import { queryOptions, useQuery } from "@tanstack/vue-query";
 import { isAxiosError } from "axios";
 import { TanstackError } from "@saflib/sdk";
 import type { Ref } from "vue";
 import { getKratosFrontendApi } from "../kratos-client.ts";
-import { FlowGone } from "../flow-results.ts";
+import { FlowGone, SecurityCsrfViolation, UnhandledResponse } from "../flow-results.ts";
+import { resultFromKratosGetFlowHttpError } from "../get-flow-query-error.ts";
 
 export class RecoveryFlowFetched {
   constructor(readonly flow: RecoveryFlow) {}
@@ -23,16 +24,18 @@ export function getRecoveryFlowQueryOptions({
   flowId,
   enabled,
 }: GetRecoveryFlowQueryOptions) {
-  return queryOptions<RecoveryFlowFetched | FlowGone, TanstackError>({
+  return queryOptions<
+    RecoveryFlowFetched | FlowGone | SecurityCsrfViolation | UnhandledResponse,
+    TanstackError
+  >({
     queryKey: getRecoveryFlowQueryKey(flowId ?? ""),
     queryFn: async () => {
       try {
         const res = await getKratosFrontendApi().getRecoveryFlow({ id: flowId! });
         return new RecoveryFlowFetched(res.data);
       } catch (e) {
-        if (isAxiosError(e) && e.response?.status === 410) {
-          return new FlowGone(e.response.data as GenericError);
-        }
+        const r = resultFromKratosGetFlowHttpError(e);
+        if (r) return r;
         if (isAxiosError(e)) throw new TanstackError(e.response?.status ?? 0);
         throw e;
       }

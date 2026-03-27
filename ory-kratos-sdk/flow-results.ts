@@ -29,3 +29,11 @@ export class BrowserRedirectRequired {
 export class SessionAlreadyAvailable {
   constructor(readonly error: GenericError) {}
 }
+
+/**
+ * Kratos returned HTTP 403 with `error.id === "security_csrf_violation"` — CSRF cookie/token mismatch.
+ * Caller should restart the browser flow (new flow id) and optionally clear cookies per Kratos docs.
+ */
+export class SecurityCsrfViolation {
+  constructor(readonly data: unknown) {}
+}
