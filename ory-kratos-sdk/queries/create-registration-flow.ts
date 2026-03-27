@@ -4,7 +4,7 @@ import { isAxiosError } from "axios";
 import { TanstackError } from "@saflib/sdk";
 import type { Ref } from "vue";
 import { getKratosFrontendApi } from "../kratos-client.ts";
-import { SessionAlreadyAvailable } from "../flow-results.ts";
+import { SessionAlreadyAvailable, UnhandledResponse } from "../flow-results.ts";
 
 export class RegistrationFlowCreated {
   constructor(readonly flow: RegistrationFlow) {}
@@ -24,7 +24,7 @@ export function createRegistrationFlowQueryOptions({
   enabled,
 }: CreateRegistrationFlowQueryOptions) {
   return queryOptions<
-    RegistrationFlowCreated | SessionAlreadyAvailable,
+    RegistrationFlowCreated | SessionAlreadyAvailable | UnhandledResponse,
     TanstackError
   >({
     queryKey: createRegistrationFlowQueryKey(returnTo),
@@ -35,10 +35,17 @@ export function createRegistrationFlowQueryOptions({
         );
         return new RegistrationFlowCreated(res.data);
       } catch (e) {
-        if (isAxiosError(e) && e.response?.status === 400) {
-          const data = e.response.data as { error?: GenericError };
-          if (data.error?.id === "session_already_available") {
-            return new SessionAlreadyAvailable(data.error);
+        if (isAxiosError(e) && e.response) {
+          const status = e.response.status;
+          const raw = e.response.data;
+          if (status === 400) {
+            const data = raw as { error?: GenericError };
+            if (data.error?.id === "session_already_available") {
+              return new SessionAlreadyAvailable(data.error);
+            }
+          }
+          if (status >= 400 && status < 500) {
+            return new UnhandledResponse(status, raw);
           }
         }
         if (isAxiosError(e)) throw new TanstackError(e.response?.status ?? 0);
