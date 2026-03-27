@@ -1,11 +1,16 @@
-import type { RegistrationFlow } from "@ory/client";
+import type { GenericError, RegistrationFlow } from "@ory/client";
 import { queryOptions, useQuery } from "@tanstack/vue-query";
-import type { TanstackError } from "@saflib/sdk";
+import { isAxiosError } from "axios";
+import { TanstackError } from "@saflib/sdk";
 import type { Ref } from "vue";
 import { getKratosFrontendApi } from "../kratos-client.ts";
 
 export class RegistrationFlowCreated {
   constructor(readonly flow: RegistrationFlow) {}
+}
+
+export class SessionAlreadyAvailable {
+  constructor(readonly error: GenericError) {}
 }
 
 export function createRegistrationFlowQueryKey(returnTo?: string) {
@@ -21,19 +26,35 @@ export function createRegistrationFlowQueryOptions({
   returnTo,
   enabled,
 }: CreateRegistrationFlowQueryOptions) {
-  return queryOptions<RegistrationFlowCreated, TanstackError>({
+  return queryOptions<
+    RegistrationFlowCreated | SessionAlreadyAvailable,
+    TanstackError
+  >({
     queryKey: createRegistrationFlowQueryKey(returnTo),
     queryFn: async () => {
-      const res = await getKratosFrontendApi().createBrowserRegistrationFlow(
-        returnTo ? { returnTo } : {},
-      );
-      return new RegistrationFlowCreated(res.data);
+      try {
+        const res = await getKratosFrontendApi().createBrowserRegistrationFlow(
+          returnTo ? { returnTo } : {},
+        );
+        return new RegistrationFlowCreated(res.data);
+      } catch (e) {
+        if (isAxiosError(e) && e.response?.status === 400) {
+          const data = e.response.data as { error?: GenericError };
+          if (data.error?.id === "session_already_available") {
+            return new SessionAlreadyAvailable(data.error);
+          }
+        }
+        if (isAxiosError(e)) throw new TanstackError(e.response?.status ?? 0);
+        throw e;
+      }
     },
     staleTime: 30_000,
     enabled,
   });
 }
 
-export function useCreateRegistrationFlowQuery(opts: CreateRegistrationFlowQueryOptions) {
+export function useCreateRegistrationFlowQuery(
+  opts: CreateRegistrationFlowQueryOptions,
+) {
   return useQuery(createRegistrationFlowQueryOptions(opts));
 }

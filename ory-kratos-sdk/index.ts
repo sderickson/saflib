@@ -48,6 +48,7 @@ export {
 } from "./queries/create-login-flow.ts";
 export {
   RegistrationFlowCreated,
+  SessionAlreadyAvailable,
   createRegistrationFlowQueryKey,
   createRegistrationFlowQueryOptions,
   useCreateRegistrationFlowQuery,
