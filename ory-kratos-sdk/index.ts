@@ -1,7 +1,11 @@
 import "./vue-query-register.ts";
 
 // ── Shared result classes ───────────────────────────────────────────────────
-export { FlowGone, BrowserRedirectRequired } from "./flow-results.ts";
+export {
+  FlowGone,
+  BrowserRedirectRequired,
+  SessionAlreadyAvailable,
+} from "./flow-results.ts";
 
 // ── Client & session ────────────────────────────────────────────────────────
 export {
@@ -48,7 +52,6 @@ export {
 } from "./queries/create-login-flow.ts";
 export {
   RegistrationFlowCreated,
-  SessionAlreadyAvailable,
   createRegistrationFlowQueryKey,
   createRegistrationFlowQueryOptions,
   useCreateRegistrationFlowQuery,

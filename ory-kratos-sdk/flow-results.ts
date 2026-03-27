@@ -14,3 +14,7 @@ export class FlowGone {
 export class BrowserRedirectRequired {
   constructor(readonly payload: ErrorBrowserLocationChangeRequired) {}
 }
+
+export class SessionAlreadyAvailable {
+  constructor(readonly error: GenericError) {}
+}

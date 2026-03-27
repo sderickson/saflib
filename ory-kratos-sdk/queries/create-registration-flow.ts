@@ -4,13 +4,10 @@ import { isAxiosError } from "axios";
 import { TanstackError } from "@saflib/sdk";
 import type { Ref } from "vue";
 import { getKratosFrontendApi } from "../kratos-client.ts";
+import { SessionAlreadyAvailable } from "../flow-results.ts";
 
 export class RegistrationFlowCreated {
   constructor(readonly flow: RegistrationFlow) {}
-}
-
-export class SessionAlreadyAvailable {
-  constructor(readonly error: GenericError) {}
 }
 
 export function createRegistrationFlowQueryKey(returnTo?: string) {
