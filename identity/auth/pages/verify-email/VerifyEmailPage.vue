@@ -195,7 +195,7 @@ const handleResend = async () => {
 const thisUrlEncoded = btoa(window.location.href);
 
 const loginLink = linkToHrefWithHost(authLinks.login, {
-  params: { redirect: thisUrlEncoded },
+  params: { return_to: thisUrlEncoded },
 });
 
 function handleContinue() {

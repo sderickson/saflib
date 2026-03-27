@@ -13,12 +13,12 @@ export const authLinks = {
   login: {
     subdomain,
     path: "/login",
-    params: ["redirect"],
+    params: ["return_to"],
   },
   register: {
     subdomain,
     path: "/register",
-    params: ["redirect"],
+    params: ["return_to"],
   },
   forgot: {
     subdomain,
@@ -27,7 +27,7 @@ export const authLinks = {
   logout: {
     subdomain,
     path: "/logout",
-    params: ["redirect"],
+    params: ["return_to"],
   },
   resetPassword: {
     subdomain,

@@ -8,14 +8,14 @@ export interface RouteLike {
 }
 
 /**
- * Resolve redirect target: URL query param (and persist to sessionStorage), then sessionStorage, then fallback.
- * Call when rendering auth pages so that internal navigation (login ↔ register) preserves the redirect.
+ * Resolve post-auth return URL: prefers `return_to`, then legacy `redirect` (and persist to sessionStorage), then sessionStorage, then fallback.
+ * Call when rendering auth pages so that internal navigation (login ↔ register) preserves the destination.
  */
 export function getRedirectTarget(
   route: RouteLike,
   fallback?: string,
 ): string | undefined {
-  const raw = route.query.redirect;
+  const raw = route.query.return_to ?? route.query.redirect;
   const fromQuery =
     typeof raw === "string" ? raw : Array.isArray(raw) ? (raw[0] as string) : null;
   const fromQueryStr = fromQuery ?? undefined;
