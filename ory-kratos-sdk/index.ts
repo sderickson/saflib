@@ -5,6 +5,7 @@ export {
   FlowGone,
   BrowserRedirectRequired,
   SessionAlreadyAvailable,
+  UnhandledResponse,
 } from "./flow-results.ts";
 
 // ── Client & session ────────────────────────────────────────────────────────

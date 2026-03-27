@@ -4,7 +4,7 @@ import { isAxiosError } from "axios";
 import { TanstackError } from "@saflib/sdk";
 import type { Ref } from "vue";
 import { getKratosFrontendApi } from "../kratos-client.ts";
-import { FlowGone } from "../flow-results.ts";
+import { FlowGone, UnhandledResponse } from "../flow-results.ts";
 
 export class RegistrationFlowFetched {
   constructor(readonly flow: RegistrationFlow) {}
@@ -23,15 +23,27 @@ export function getRegistrationFlowQueryOptions({
   flowId,
   enabled,
 }: GetRegistrationFlowQueryOptions) {
-  return queryOptions<RegistrationFlowFetched | FlowGone, TanstackError>({
+  return queryOptions<
+    RegistrationFlowFetched | FlowGone | UnhandledResponse,
+    TanstackError
+  >({
     queryKey: getRegistrationFlowQueryKey(flowId ?? ""),
     queryFn: async () => {
       try {
-        const res = await getKratosFrontendApi().getRegistrationFlow({ id: flowId! });
+        const res = await getKratosFrontendApi().getRegistrationFlow({
+          id: flowId!,
+        });
         return new RegistrationFlowFetched(res.data);
       } catch (e) {
-        if (isAxiosError(e) && e.response?.status === 410) {
-          return new FlowGone(e.response.data as GenericError);
+        if (isAxiosError(e) && e.response) {
+          const status = e.response.status;
+          if (status === 410) {
+            return new FlowGone(e.response.data as GenericError);
+          }
+          if (status >= 400 && status < 500) {
+            console.log("UnhandledResponse", status, e.response.data);
+            return new UnhandledResponse(status, e.response.data);
+          }
         }
         if (isAxiosError(e)) throw new TanstackError(e.response?.status ?? 0);
         throw e;
@@ -42,6 +54,8 @@ export function getRegistrationFlowQueryOptions({
   });
 }
 
-export function useGetRegistrationFlowQuery(opts: GetRegistrationFlowQueryOptions) {
+export function useGetRegistrationFlowQuery(
+  opts: GetRegistrationFlowQueryOptions,
+) {
   return useQuery(getRegistrationFlowQueryOptions(opts));
 }
