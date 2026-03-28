@@ -1,72 +1,61 @@
 # @saflib/ory-kratos-sdk
 
-TanStack Query bindings for the [Ory Kratos](https://www.ory.sh/docs/kratos/) self-service flows (login, registration, recovery, verification, settings).
+TanStack Query bindings for the [Ory Kratos](https://www.ory.sh/docs/kratos/) browser **Frontend API**: session, self-service flows (create, get by id, submit), and related helpers.
 
-This package wraps the `@ory/client` Axios SDK with Vue Query queries and mutations, translating Kratos's HTTP responses into a shape that plays well with TanStack's success/error lifecycle and our `TanstackError` convention from `@saflib/sdk`.
+The package wraps `@ory/client` with Vue Query `queryOptions` and mutations. Where Kratos uses **4xx for normal UX** (validation, expired flow, CSRF, “session already available”), those responses are **returned as typed classes** so callers can branch with `instanceof`. Real failures use [`TanstackError`](../../sdk/docs/ref/@saflib/sdk/classes/TanstackError.md) from `@saflib/sdk`.
+
+Importing the package root runs `vue-query-register.ts` so Vue Query’s default error type is `TanstackError` project-wide.
+
+## Entry points
+
+- **`@saflib/ory-kratos-sdk`** — queries, mutations, helpers, and shared flow result types (**authoritative list:** `index.ts`).
+- **`@saflib/ory-kratos-sdk/fakes`** — MSW handlers and test doubles for Kratos in unit/integration tests (**authoritative list:** `fakes.ts`).
 
 ## Why a separate SDK?
 
-Kratos is a third-party API we don't control. Its HTTP semantics differ from our own APIs in important ways:
+Kratos’s HTTP behavior is not “errors vs 200” in the usual sense:
 
-- **Validation errors return 400** with an updated flow object (same shape as a successful GET). The UI must re-render the flow — this is a normal, expected part of every flow.
-- **Successful completion returns 200** with either the flow or a `SuccessfulNativeLogin`/`SuccessfulNativeRegistration` object, depending on the flow type.
-- **Browser redirects return 422** (`ErrorBrowserLocationChangeRequired`) when the client must navigate to a Kratos-provided URL. This commonly happens during recovery after the code is accepted.
-- **Expired flows return 410**, indicating the flow timed out and a new one must be created.
+- **400** often means an **updated flow** to render again.
+- **410** means the flow is gone — start a new browser flow.
+- **403** may mean **CSRF mismatch** — restart the flow.
+- **422** may mean **browser redirect** — follow `redirect_browser_to`.
 
-Because Kratos uses 4xx status codes for expected responses, we can't simply let errors propagate through TanStack as-is. See [Wrapping Third-Party Error Responses](../sdk/docs/05-wrapping-third-party-error-responses.md) in the `@saflib/sdk` docs for the design rationale.
+So a lot of 4xx handling lives **inside** `queryFn` / `mutationFn` and is returned as data, not thrown. Unexpected network/API failures still surface as `TanstackError`.
 
-## Queries
+## Source layout (conventions)
 
-Flow queries live under `queries/` in two shapes per flow:
+| Location | Idea |
+|----------|------|
+| `queries/` | One session query, `create-*` browser flows (including logout), `get-*` by flow id. |
+| `mutations/` | `useUpdate*FlowMutation` — POST self-service updates. |
+| `helpers/` | Pure functions that are not queries. |
+| `flow-results.ts` | Shared result classes used across queries/mutations. |
+| `get-flow-query-error.ts` | Internal mapping from GET-flow HTTP errors to typed results (not re-exported from the root). |
 
-- **`kratos-session.ts`** — browser `toSession()` (`useKratosSession`, `kratosSessionQueryOptions`).
-- **`create-*-flow.ts`** — browser-initiated flows (`useCreateLoginFlowQuery`, etc.), keyed by `returnTo` and related options.
-- **`get-*-flow.ts`** — resume an existing flow by id (`useGetLoginFlowQuery`, etc.).
+## Query patterns
 
-Each flow query file exports `*QueryOptions` (for `useQuery` / `queryClient.fetchQuery`) and a `useGet*` or `useCreate*` wrapper. **Query keys are not part of the public API** — the SDK keeps them for internal cache updates. Tests that assert on cache contents may use `getXxxFlowQueryOptions(args).queryKey` when necessary.
+**Naming:** each flow typically has **`createXxxFlowQueryOptions` / `useCreateXxxFlowQuery`**, **`getXxxFlowQueryOptions` / `useGetXxxFlowQuery`**, plus small wrapper classes for successful fetches/creates (so `data` is never a raw Kratos object alone).
 
-## Helpers
+**Create-flow** queries may resolve to outcomes like “flow created”, “session already available”, or an unmapped client error — see the options’ generic success type in source.
 
-Pure functions that are not TanStack queries live under `helpers/` (e.g. `kratosIdentityEmail`, `identityNeedsEmailVerification`).
+**Get-flow** queries may resolve to “flow fetched”, “gone” (410), “CSRF” (403), or other handled 4xx — again, the declared union on each `queryOptions` is the source of truth.
 
-### Typing queries with `TanstackError`
+**Query keys** are an implementation detail: they are **not** part of the stable public API. Prefer `*QueryOptions(...)` for `useQuery` / `fetchQuery`; in tests, derive `.queryKey` from those options if you need to read the cache.
 
-`queryOptions` use explicit error type parameters so `TanstackError` flows through without `as` casts.
+**Imperative `fetchQuery`:** when you must not reuse a cached create (e.g. another step just finished and you need a fresh browser flow with the same `returnTo`), pass **`staleTime: 0`** on that `fetchQuery` call.
 
-### Using queries in loaders
+## Mutation patterns
 
-Typical pattern for a page that resumes `?flow=`:
+Update mutations return **discriminated classes** (updated flow, completed login/registration, redirect required, etc.) instead of throwing for expected Kratos outcomes. They normalize unexpected failures to `TanstackError`. On success, mutations **update flow query cache** and **invalidate session** where appropriate so feature code does not duplicate cache wiring for every submit.
 
-```ts
-return {
-  loginFlowQuery: useGetLoginFlowQuery({
-    flowId: flowId.value,
-    enabled: computed(() => !!flowId.value),
-  }),
-};
-```
+## Typing
 
-Pages that start a new browser flow use the matching `useCreate*FlowQuery` from `queries/create-*-flow.ts`.
+Queries and mutations are typed so thrown errors are `TanstackError` where applicable. Use `instanceof` for Kratos result classes and `instanceof TanstackError` (or `@saflib/sdk` helpers) for generic error UI.
 
-Imperative code can use `queryClient.fetchQuery(createLoginFlowQueryOptions(...))` with the same keys and `queryFn` as the declarative hook. When a **new** browser flow must be created (e.g. immediately after registration), pass `staleTime: 0` so TanStack does not reuse a still-fresh cached create-login result for the same `returnTo`.
+## Tests
 
-**Logout** uses `queries/create-browser-logout-flow.ts` (`createBrowserLogoutFlowQueryOptions`, `BrowserLogoutFlowCreated`). Call sites typically use `queryClient.fetchQuery({ ...options, staleTime: 0 })` so each sign-out gets a fresh logout URL.
+Use **`@saflib/ory-kratos-sdk/fakes`** together with `@saflib/sdk/testing` (e.g. MSW + `withVueQuery`) like other packages. Exported symbols are listed in `fakes.ts`.
 
-## Mutations
+## Apps using this package
 
-Mutations live under `mutations/` as `useUpdateXxxFlowMutation`. They follow two rules:
-
-1. **Expected responses are returned, not thrown.** Kratos 4xx responses that are part of the normal flow lifecycle (validation errors, browser redirects) are caught in the `mutationFn` and returned as success values.
-2. **Unexpected errors are normalized to `TanstackError`.** Any AxiosError that isn't an expected response is converted to `TanstackError(status)` and thrown.
-
-### Result types
-
-Distinct outcomes use classes so consumers can branch with `instanceof` (for example `LoginFlowUpdated`, `LoginCompleted`, `RegistrationFlowUpdated`).
-
-### Cache and session
-
-`onSuccess` in these mutations updates the relevant flow query cache when a flow is returned, and invalidates Kratos session queries when a flow completes or session-affecting state changes. Callers normally do not call `setQueryData` for flow updates themselves.
-
-### Error type
-
-Mutations declare `TanstackError` as the error type. Consumers can use `error instanceof TanstackError` and `getTanstackErrorMessage(error)` for generic display.
+Session-only callers should use the **session** query API from this package rather than calling `toSession` ad hoc. **Routing** (`/new-login`, `?flow=`, verify wall, etc.) stays in each application; this SDK focuses on Kratos HTTP + TanStack cache behavior.
