@@ -9,7 +9,10 @@ import type {
 import { TanstackError } from "@saflib/sdk";
 import { getKratosFrontendApi } from "../kratos-client.ts";
 import { BrowserRedirectRequired } from "../flow-results.ts";
-import { getRegistrationFlowQueryKey } from "../queries/get-registration-flow.ts";
+import {
+  RegistrationFlowFetched,
+  getRegistrationFlowQueryKey,
+} from "../queries/get-registration-flow.ts";
 
 export class RegistrationFlowUpdated {
   constructor(readonly flow: RegistrationFlow) {}
@@ -42,11 +45,6 @@ export const useUpdateRegistrationFlowMutation = () => {
       } catch (e: unknown) {
         const flow = extractRegistrationFlow(e);
         if (flow) {
-          // TODO: figure out how to make this work
-          // queryClient.setQueryData(getRegistrationFlowQueryKey(flow.id), flow);
-          void queryClient.invalidateQueries({
-            queryKey: getRegistrationFlowQueryKey(flow.id),
-          });
           return new RegistrationFlowUpdated(flow);
         }
         if (isAxiosError(e)) {
@@ -61,6 +59,14 @@ export const useUpdateRegistrationFlowMutation = () => {
           throw new TanstackError(e.response?.status ?? 0);
         }
         throw e;
+      }
+    },
+    onSuccess: (result) => {
+      if (result instanceof RegistrationFlowUpdated) {
+        queryClient.setQueryData(
+          getRegistrationFlowQueryKey(result.flow.id),
+          new RegistrationFlowFetched(result.flow),
+        );
       }
     },
   });

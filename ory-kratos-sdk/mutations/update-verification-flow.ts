@@ -7,6 +7,10 @@ import type {
 import { TanstackError } from "@saflib/sdk";
 import { getKratosFrontendApi } from "../kratos-client.ts";
 import { invalidateKratosSessionQueries } from "../kratos-session.ts";
+import {
+  VerificationFlowFetched,
+  getVerificationFlowQueryKey,
+} from "../queries/get-verification-flow.ts";
 
 export class VerificationFlowUpdated {
   constructor(readonly flow: VerificationFlow) {}
@@ -41,7 +45,11 @@ export const useUpdateVerificationFlowMutation = () => {
         throw e;
       }
     },
-    onSuccess: () => {
+    onSuccess: (result) => {
+      queryClient.setQueryData(
+        getVerificationFlowQueryKey(result.flow.id),
+        new VerificationFlowFetched(result.flow),
+      );
       void invalidateKratosSessionQueries(queryClient);
     },
   });

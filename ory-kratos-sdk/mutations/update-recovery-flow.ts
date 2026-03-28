@@ -9,6 +9,10 @@ import { TanstackError } from "@saflib/sdk";
 import { getKratosFrontendApi } from "../kratos-client.ts";
 import { invalidateKratosSessionQueries } from "../kratos-session.ts";
 import { BrowserRedirectRequired } from "../flow-results.ts";
+import {
+  RecoveryFlowFetched,
+  getRecoveryFlowQueryKey,
+} from "../queries/get-recovery-flow.ts";
 
 export class RecoveryFlowUpdated {
   constructor(readonly flow: RecoveryFlow) {}
@@ -56,7 +60,13 @@ export const useUpdateRecoveryFlowMutation = () => {
         throw e;
       }
     },
-    onSuccess: () => {
+    onSuccess: (result) => {
+      if (result instanceof RecoveryFlowUpdated) {
+        queryClient.setQueryData(
+          getRecoveryFlowQueryKey(result.flow.id),
+          new RecoveryFlowFetched(result.flow),
+        );
+      }
       void invalidateKratosSessionQueries(queryClient);
     },
   });

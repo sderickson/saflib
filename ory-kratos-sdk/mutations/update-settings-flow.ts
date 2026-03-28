@@ -9,6 +9,10 @@ import { TanstackError } from "@saflib/sdk";
 import { getKratosFrontendApi } from "../kratos-client.ts";
 import { invalidateKratosSessionQueries } from "../kratos-session.ts";
 import { BrowserRedirectRequired } from "../flow-results.ts";
+import {
+  SettingsFlowFetched,
+  getSettingsFlowQueryKey,
+} from "../queries/get-settings-flow.ts";
 
 export class SettingsFlowUpdated {
   constructor(readonly flow: SettingsFlow) {}
@@ -56,6 +60,10 @@ export const useUpdateSettingsFlowMutation = () => {
     },
     onSuccess: (result) => {
       if (result instanceof SettingsFlowUpdated) {
+        queryClient.setQueryData(
+          getSettingsFlowQueryKey(result.flow.id),
+          new SettingsFlowFetched(result.flow),
+        );
         void invalidateKratosSessionQueries(queryClient);
       }
     },

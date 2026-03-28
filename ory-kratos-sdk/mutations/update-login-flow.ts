@@ -10,6 +10,10 @@ import { TanstackError } from "@saflib/sdk";
 import { getKratosFrontendApi } from "../kratos-client.ts";
 import { invalidateKratosSessionQueries } from "../kratos-session.ts";
 import { BrowserRedirectRequired } from "../flow-results.ts";
+import {
+  LoginFlowFetched,
+  getLoginFlowQueryKey,
+} from "../queries/get-login-flow.ts";
 
 export class LoginFlowUpdated {
   constructor(readonly flow: LoginFlow) {}
@@ -55,7 +59,12 @@ export const useUpdateLoginFlowMutation = () => {
       }
     },
     onSuccess: (result) => {
-      if (result instanceof LoginCompleted) {
+      if (result instanceof LoginFlowUpdated) {
+        queryClient.setQueryData(
+          getLoginFlowQueryKey(result.flow.id),
+          new LoginFlowFetched(result.flow),
+        );
+      } else if (result instanceof LoginCompleted) {
         void invalidateKratosSessionQueries(queryClient);
       }
     },
