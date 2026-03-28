@@ -43,9 +43,9 @@ return {
 
 Pages that start a new browser flow use the matching `useCreate*FlowQuery` from `queries/create-*-flow.ts`.
 
-### Retry
+Imperative code can use `queryClient.fetchQuery(createLoginFlowQueryOptions(...))` with the same keys and `queryFn` as the declarative hook. When a **new** browser flow must be created (e.g. immediately after registration), pass `staleTime: 0` so TanStack does not reuse a still-fresh cached create-login result for the same `returnTo`.
 
-Create/get flow queries use `kratosFlowQueryRetry`, which suppresses retries for HTTP 410 (expired flow). Other errors retry up to TanStack defaults.
+**Logout** uses `queries/create-browser-logout-flow.ts` (`createBrowserLogoutFlowQueryOptions`, `BrowserLogoutFlowCreated`). Call sites typically use `queryClient.fetchQuery({ ...options, staleTime: 0 })` so each sign-out gets a fresh logout URL.
 
 ## Mutations
 

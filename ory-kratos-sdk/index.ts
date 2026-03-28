@@ -32,23 +32,6 @@ export {
   isKratosFlowGoneError,
   kratosAalNotSatisfiedRedirectTo,
 } from "./kratos-http-error.ts";
-export { kratosFlowQueryRetry } from "./kratos-query-retry.ts";
-
-// ── Raw fetch helpers (for non-query usage, e.g. post-registration login) ────
-export {
-  fetchBrowserLoginFlow,
-  fetchBrowserLogoutFlow,
-  fetchBrowserRecoveryFlow,
-  fetchBrowserRegistrationFlow,
-  fetchBrowserSettingsFlow,
-  fetchBrowserVerificationFlow,
-  fetchLoginFlowById,
-  fetchRecoveryFlowById,
-  fetchRegistrationFlowById,
-  fetchSettingsFlowById,
-  fetchVerificationFlowById,
-  getRecoveryFlow,
-} from "./kratos-flows.ts";
 
 // ── Queries: create flow ────────────────────────────────────────────────────
 export {
@@ -81,6 +64,12 @@ export {
   createVerificationFlowQueryOptions,
   useCreateVerificationFlowQuery,
 } from "./queries/create-verification-flow.ts";
+export {
+  BrowserLogoutFlowCreated,
+  createBrowserLogoutFlowQueryKey,
+  createBrowserLogoutFlowQueryOptions,
+  useCreateBrowserLogoutFlowQuery,
+} from "./queries/create-browser-logout-flow.ts";
 
 // ── Queries: get flow by id ─────────────────────────────────────────────────
 export {
