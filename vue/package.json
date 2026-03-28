@@ -19,7 +19,7 @@
     "typecheck": "vue-tsc --project tsconfig.app.json"
   },
   "dependencies": {
-    "@mdi/font": "^7.0.0",
+    "@mdi/font": "^7.4.47",
     "@saflib/links": "*",
     "@saflib/monorepo": "*",
     "@saflib/playwright": "*",
