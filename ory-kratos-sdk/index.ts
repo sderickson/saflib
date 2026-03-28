@@ -1,73 +1,106 @@
 import "./vue-query-register.ts";
 
-export { getKratosFrontendApi } from "./kratos-client.ts";
+// ── Shared result classes ───────────────────────────────────────────────────
+export {
+  FlowGone,
+  BrowserRedirectRequired,
+  SecurityCsrfViolation,
+  SessionAlreadyAvailable,
+  UnhandledResponse,
+} from "./flow-results.ts";
+
+// ── Helpers (non-query) ─────────────────────────────────────────────────────
 export {
   assertKratosSessionIdentityLoaded,
-  fetchKratosSession,
-  invalidateKratosSessionQueries,
   kratosIdentityEmail,
-  kratosSessionQueryKey,
+} from "./helpers/kratos-session.ts";
+export { identityNeedsEmailVerification } from "./helpers/kratos-identity.ts";
+
+// ── Queries: session ────────────────────────────────────────────────────────
+export {
   kratosSessionQueryOptions,
-  kratosSessionRequiredQueryKey,
-  kratosSessionRequiredQueryOptions,
-  useInvalidateKratosSession,
   useKratosSession,
-} from "./kratos-session.ts";
-export { identityNeedsEmailVerification } from "./kratos-identity.ts";
-export { isKratosFlowGoneError } from "./kratos-http-error.ts";
-export { kratosFlowQueryRetry } from "./kratos-query-retry.ts";
+} from "./queries/kratos-session.ts";
+
+// ── Queries: create flow ────────────────────────────────────────────────────
 export {
-  fetchBrowserLoginFlow,
-  fetchBrowserLogoutFlow,
-  fetchBrowserRecoveryFlow,
-  fetchBrowserRegistrationFlow,
-  fetchBrowserSettingsFlow,
-  fetchBrowserVerificationFlow,
-  fetchLoginFlowById,
-  fetchRecoveryFlowById,
-  fetchRegistrationFlowById,
-  fetchSettingsFlowById,
-  fetchVerificationFlowById,
-  getRecoveryFlow,
-} from "./kratos-flows.ts";
+  LoginFlowCreated,
+  createLoginFlowQueryOptions,
+  useCreateLoginFlowQuery,
+} from "./queries/create-login-flow.ts";
 export {
-  loginFlowQueryKey,
-  loginFlowQueryOptions,
-  useLoginFlowQuery,
-} from "./login-flow-query.ts";
+  RegistrationFlowCreated,
+  createRegistrationFlowQueryOptions,
+  useCreateRegistrationFlowQuery,
+} from "./queries/create-registration-flow.ts";
 export {
-  registrationFlowQueryKey,
-  registrationFlowQueryOptions,
-  useRegistrationFlowQuery,
-} from "./registration-flow-query.ts";
+  RecoveryFlowCreated,
+  createRecoveryFlowQueryOptions,
+  useCreateRecoveryFlowQuery,
+} from "./queries/create-recovery-flow.ts";
 export {
-  RegistrationCompleted,
-  RegistrationFlowUpdated,
-  useUpdateRegistrationFlowMutation,
-} from "./use-update-registration-flow.ts";
+  SettingsFlowCreated,
+  createSettingsFlowQueryOptions,
+  useCreateSettingsFlowQuery,
+} from "./queries/create-settings-flow.ts";
+export {
+  VerificationFlowCreated,
+  createVerificationFlowQueryOptions,
+  useCreateVerificationFlowQuery,
+} from "./queries/create-verification-flow.ts";
+export {
+  BrowserLogoutFlowCreated,
+  createBrowserLogoutFlowQueryOptions,
+  useCreateBrowserLogoutFlowQuery,
+} from "./queries/create-browser-logout-flow.ts";
+
+// ── Queries: get flow by id ─────────────────────────────────────────────────
+export {
+  LoginFlowFetched,
+  getLoginFlowQueryOptions,
+  useGetLoginFlowQuery,
+} from "./queries/get-login-flow.ts";
+export {
+  RegistrationFlowFetched,
+  getRegistrationFlowQueryOptions,
+  useGetRegistrationFlowQuery,
+} from "./queries/get-registration-flow.ts";
+export {
+  RecoveryFlowFetched,
+  getRecoveryFlowQueryOptions,
+  useGetRecoveryFlowQuery,
+} from "./queries/get-recovery-flow.ts";
+export {
+  SettingsFlowFetched,
+  getSettingsFlowQueryOptions,
+  useGetSettingsFlowQuery,
+} from "./queries/get-settings-flow.ts";
+export {
+  VerificationFlowFetched,
+  getVerificationFlowQueryOptions,
+  useGetVerificationFlowQuery,
+} from "./queries/get-verification-flow.ts";
+
+// ── Mutations ───────────────────────────────────────────────────────────────
 export {
   LoginCompleted,
   LoginFlowUpdated,
   useUpdateLoginFlowMutation,
-} from "./use-update-login-flow.ts";
+} from "./mutations/update-login-flow.ts";
 export {
-  recoveryFlowQueryKey,
-  recoveryFlowQueryOptions,
-  useRecoveryFlowQuery,
-} from "./recovery-flow-query.ts";
+  RegistrationCompleted,
+  RegistrationFlowUpdated,
+  useUpdateRegistrationFlowMutation,
+} from "./mutations/update-registration-flow.ts";
 export {
-  settingsFlowQueryKey,
-  settingsFlowQueryOptions,
-  useSettingsFlowQuery,
-} from "./settings-flow-query.ts";
-export {
-  verificationFlowQueryKey,
-  verificationFlowQueryOptions,
-  useVerificationFlowQuery,
-} from "./verification-flow-query.ts";
-export {
-  BrowserRedirectRequired,
+  RecoveryFlowUpdated,
   useUpdateRecoveryFlowMutation,
-} from "./use-update-recovery-flow.ts";
-export { useUpdateSettingsFlowMutation } from "./use-update-settings-flow.ts";
-export { useUpdateVerificationFlowMutation } from "./use-update-verification-flow.ts";
+} from "./mutations/update-recovery-flow.ts";
+export {
+  SettingsFlowUpdated,
+  useUpdateSettingsFlowMutation,
+} from "./mutations/update-settings-flow.ts";
+export {
+  VerificationFlowUpdated,
+  useUpdateVerificationFlowMutation,
+} from "./mutations/update-verification-flow.ts";

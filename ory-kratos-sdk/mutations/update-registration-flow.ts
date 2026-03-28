@@ -1,12 +1,18 @@
-import { AxiosError, isAxiosError } from "axios";
-import { useMutation } from "@tanstack/vue-query";
+import { isAxiosError } from "axios";
+import { useMutation, useQueryClient } from "@tanstack/vue-query";
 import type {
+  ErrorBrowserLocationChangeRequired,
   FrontendApiUpdateRegistrationFlowRequest,
   RegistrationFlow,
   SuccessfulNativeRegistration,
 } from "@ory/client";
 import { TanstackError } from "@saflib/sdk";
-import { getKratosFrontendApi } from "./kratos-client.ts";
+import { getKratosFrontendApi } from "../kratos-client.ts";
+import { BrowserRedirectRequired } from "../flow-results.ts";
+import {
+  RegistrationFlowFetched,
+  getRegistrationFlowQueryKey,
+} from "../queries/get-registration-flow.ts";
 
 export class RegistrationFlowUpdated {
   constructor(readonly flow: RegistrationFlow) {}
@@ -26,8 +32,9 @@ function extractRegistrationFlow(e: unknown): RegistrationFlow | undefined {
 }
 
 export const useUpdateRegistrationFlowMutation = () => {
+  const queryClient = useQueryClient();
   return useMutation<
-    RegistrationFlowUpdated | RegistrationCompleted,
+    RegistrationFlowUpdated | RegistrationCompleted | BrowserRedirectRequired,
     TanstackError,
     FrontendApiUpdateRegistrationFlowRequest
   >({
@@ -37,11 +44,29 @@ export const useUpdateRegistrationFlowMutation = () => {
         return new RegistrationCompleted(res.data);
       } catch (e: unknown) {
         const flow = extractRegistrationFlow(e);
-        if (flow) return new RegistrationFlowUpdated(flow);
-        if (e instanceof AxiosError) {
+        if (flow) {
+          return new RegistrationFlowUpdated(flow);
+        }
+        if (isAxiosError(e)) {
+          if (e.response?.status === 422) {
+            const d = e.response.data as
+              | ErrorBrowserLocationChangeRequired
+              | undefined;
+            if (d?.redirect_browser_to?.trim()) {
+              return new BrowserRedirectRequired(d);
+            }
+          }
           throw new TanstackError(e.response?.status ?? 0);
         }
         throw e;
+      }
+    },
+    onSuccess: (result) => {
+      if (result instanceof RegistrationFlowUpdated) {
+        queryClient.setQueryData(
+          getRegistrationFlowQueryKey(result.flow.id),
+          new RegistrationFlowFetched(result.flow),
+        );
       }
     },
   });

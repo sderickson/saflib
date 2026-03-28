@@ -1,13 +1,19 @@
-import { AxiosError, isAxiosError } from "axios";
+import { isAxiosError } from "axios";
 import { useMutation, useQueryClient } from "@tanstack/vue-query";
 import type {
+  ErrorBrowserLocationChangeRequired,
   FrontendApiUpdateLoginFlowRequest,
   LoginFlow,
   SuccessfulNativeLogin,
 } from "@ory/client";
 import { TanstackError } from "@saflib/sdk";
-import { getKratosFrontendApi } from "./kratos-client.ts";
-import { invalidateKratosSessionQueries } from "./kratos-session.ts";
+import { getKratosFrontendApi } from "../kratos-client.ts";
+import { invalidateKratosSessionQueries } from "../queries/kratos-session.ts";
+import { BrowserRedirectRequired } from "../flow-results.ts";
+import {
+  LoginFlowFetched,
+  getLoginFlowQueryKey,
+} from "../queries/get-login-flow.ts";
 
 export class LoginFlowUpdated {
   constructor(readonly flow: LoginFlow) {}
@@ -29,7 +35,7 @@ function extractLoginFlow(e: unknown): LoginFlow | undefined {
 export const useUpdateLoginFlowMutation = () => {
   const queryClient = useQueryClient();
   return useMutation<
-    LoginFlowUpdated | LoginCompleted,
+    LoginFlowUpdated | LoginCompleted | BrowserRedirectRequired,
     TanstackError,
     FrontendApiUpdateLoginFlowRequest
   >({
@@ -40,14 +46,25 @@ export const useUpdateLoginFlowMutation = () => {
       } catch (e: unknown) {
         const flow = extractLoginFlow(e);
         if (flow) return new LoginFlowUpdated(flow);
-        if (e instanceof AxiosError) {
+        if (isAxiosError(e)) {
+          if (e.response?.status === 422) {
+            const d = e.response.data as ErrorBrowserLocationChangeRequired | undefined;
+            if (d?.redirect_browser_to?.trim()) {
+              return new BrowserRedirectRequired(d);
+            }
+          }
           throw new TanstackError(e.response?.status ?? 0);
         }
         throw e;
       }
     },
     onSuccess: (result) => {
-      if (result instanceof LoginCompleted) {
+      if (result instanceof LoginFlowUpdated) {
+        queryClient.setQueryData(
+          getLoginFlowQueryKey(result.flow.id),
+          new LoginFlowFetched(result.flow),
+        );
+      } else if (result instanceof LoginCompleted) {
         void invalidateKratosSessionQueries(queryClient);
       }
     },
