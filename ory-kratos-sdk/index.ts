@@ -25,13 +25,6 @@ export {
 } from "./kratos-session.ts";
 export { identityNeedsEmailVerification } from "./kratos-identity.ts";
 
-// ── HTTP helpers (still useful for ad-hoc checks outside query/mutation) ─────
-export {
-  isKratosAalNotSatisfiedError,
-  isKratosFlowGoneError,
-  kratosAalNotSatisfiedRedirectTo,
-} from "./kratos-http-error.ts";
-
 // ── Queries: create flow ────────────────────────────────────────────────────
 export {
   LoginFlowCreated,
