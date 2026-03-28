@@ -137,31 +137,3 @@ export {
   VerificationFlowUpdated,
   useUpdateVerificationFlowMutation,
 } from "./mutations/update-verification-flow.ts";
-
-// ── Backward-compatible re-exports (old combined query APIs) ────────────────
-// These still work for pages that haven't migrated to separate create/get yet.
-export {
-  loginFlowQueryKey,
-  loginFlowQueryOptions,
-  useLoginFlowQuery,
-} from "./login-flow-query.ts";
-export {
-  registrationFlowQueryKey,
-  registrationFlowQueryOptions,
-  useRegistrationFlowQuery,
-} from "./registration-flow-query.ts";
-export {
-  recoveryFlowQueryKey,
-  recoveryFlowQueryOptions,
-  useRecoveryFlowQuery,
-} from "./recovery-flow-query.ts";
-export {
-  settingsFlowQueryKey,
-  settingsFlowQueryOptions,
-  useSettingsFlowQuery,
-} from "./settings-flow-query.ts";
-export {
-  verificationFlowQueryKey,
-  verificationFlowQueryOptions,
-  useVerificationFlowQuery,
-} from "./verification-flow-query.ts";
