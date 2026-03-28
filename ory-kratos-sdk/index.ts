@@ -20,7 +20,6 @@ export {
   fetchKratosSession,
   kratosIdentityEmail,
   kratosSessionQueryOptions,
-  kratosSessionRequiredQueryKey,
   kratosSessionRequiredQueryOptions,
   useKratosSession,
 } from "./kratos-session.ts";
@@ -36,37 +35,31 @@ export {
 // ── Queries: create flow ────────────────────────────────────────────────────
 export {
   LoginFlowCreated,
-  createLoginFlowQueryKey,
   createLoginFlowQueryOptions,
   useCreateLoginFlowQuery,
 } from "./queries/create-login-flow.ts";
 export {
   RegistrationFlowCreated,
-  createRegistrationFlowQueryKey,
   createRegistrationFlowQueryOptions,
   useCreateRegistrationFlowQuery,
 } from "./queries/create-registration-flow.ts";
 export {
   RecoveryFlowCreated,
-  createRecoveryFlowQueryKey,
   createRecoveryFlowQueryOptions,
   useCreateRecoveryFlowQuery,
 } from "./queries/create-recovery-flow.ts";
 export {
   SettingsFlowCreated,
-  createSettingsFlowQueryKey,
   createSettingsFlowQueryOptions,
   useCreateSettingsFlowQuery,
 } from "./queries/create-settings-flow.ts";
 export {
   VerificationFlowCreated,
-  createVerificationFlowQueryKey,
   createVerificationFlowQueryOptions,
   useCreateVerificationFlowQuery,
 } from "./queries/create-verification-flow.ts";
 export {
   BrowserLogoutFlowCreated,
-  createBrowserLogoutFlowQueryKey,
   createBrowserLogoutFlowQueryOptions,
   useCreateBrowserLogoutFlowQuery,
 } from "./queries/create-browser-logout-flow.ts";
@@ -74,31 +67,26 @@ export {
 // ── Queries: get flow by id ─────────────────────────────────────────────────
 export {
   LoginFlowFetched,
-  getLoginFlowQueryKey,
   getLoginFlowQueryOptions,
   useGetLoginFlowQuery,
 } from "./queries/get-login-flow.ts";
 export {
   RegistrationFlowFetched,
-  getRegistrationFlowQueryKey,
   getRegistrationFlowQueryOptions,
   useGetRegistrationFlowQuery,
 } from "./queries/get-registration-flow.ts";
 export {
   RecoveryFlowFetched,
-  getRecoveryFlowQueryKey,
   getRecoveryFlowQueryOptions,
   useGetRecoveryFlowQuery,
 } from "./queries/get-recovery-flow.ts";
 export {
   SettingsFlowFetched,
-  getSettingsFlowQueryKey,
   getSettingsFlowQueryOptions,
   useGetSettingsFlowQuery,
 } from "./queries/get-settings-flow.ts";
 export {
   VerificationFlowFetched,
-  getVerificationFlowQueryKey,
   getVerificationFlowQueryOptions,
   useGetVerificationFlowQuery,
 } from "./queries/get-verification-flow.ts";

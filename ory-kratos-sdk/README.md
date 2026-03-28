@@ -22,7 +22,7 @@ Flow queries live under `queries/` in two shapes per flow:
 - **`create-*-flow.ts`** — browser-initiated flows (`useCreateLoginFlowQuery`, etc.), keyed by `returnTo` and related options.
 - **`get-*-flow.ts`** — resume an existing flow by id (`useGetLoginFlowQuery`, etc.).
 
-Each file exports a `*QueryKey` / `*QueryOptions` pair (for manual cache work) and a `useGet*` or `useCreate*` wrapper. Options include `enabled` as a `Ref<boolean>` when reactive gating is needed.
+Each file exports `*QueryOptions` (for `useQuery` / `queryClient.fetchQuery`) and a `useGet*` or `useCreate*` wrapper. **Query keys are not part of the public API** — the SDK keeps them for internal cache updates. Tests that assert on cache contents may use `getXxxFlowQueryOptions(args).queryKey` when necessary.
 
 ### Typing queries with `TanstackError`
 
