@@ -14,16 +14,19 @@ export {
   resultFromKratosGetFlowHttpError,
 } from "./get-flow-query-error.ts";
 
-// ── Client & session ────────────────────────────────────────────────────────
+// ── Helpers (non-query) ─────────────────────────────────────────────────────
+export { fetchKratosSession } from "./helpers/fetch-kratos-session.ts";
 export {
   assertKratosSessionIdentityLoaded,
-  fetchKratosSession,
   kratosIdentityEmail,
+} from "./helpers/kratos-session.ts";
+export { identityNeedsEmailVerification } from "./helpers/kratos-identity.ts";
+
+// ── Queries: session ────────────────────────────────────────────────────────
+export {
   kratosSessionQueryOptions,
-  kratosSessionRequiredQueryOptions,
   useKratosSession,
-} from "./kratos-session.ts";
-export { identityNeedsEmailVerification } from "./kratos-identity.ts";
+} from "./queries/kratos-session.ts";
 
 // ── Queries: create flow ────────────────────────────────────────────────────
 export {

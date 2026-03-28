@@ -6,7 +6,7 @@ import type {
 } from "@ory/client";
 import { TanstackError } from "@saflib/sdk";
 import { getKratosFrontendApi } from "../kratos-client.ts";
-import { invalidateKratosSessionQueries } from "../kratos-session.ts";
+import { invalidateKratosSessionQueries } from "../queries/kratos-session.ts";
 import {
   VerificationFlowFetched,
   getVerificationFlowQueryKey,

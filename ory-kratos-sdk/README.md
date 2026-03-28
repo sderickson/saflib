@@ -19,10 +19,15 @@ Because Kratos uses 4xx status codes for expected responses, we can't simply let
 
 Flow queries live under `queries/` in two shapes per flow:
 
+- **`kratos-session.ts`** — browser `toSession()` (`useKratosSession`, `kratosSessionQueryOptions`).
 - **`create-*-flow.ts`** — browser-initiated flows (`useCreateLoginFlowQuery`, etc.), keyed by `returnTo` and related options.
 - **`get-*-flow.ts`** — resume an existing flow by id (`useGetLoginFlowQuery`, etc.).
 
-Each file exports `*QueryOptions` (for `useQuery` / `queryClient.fetchQuery`) and a `useGet*` or `useCreate*` wrapper. **Query keys are not part of the public API** — the SDK keeps them for internal cache updates. Tests that assert on cache contents may use `getXxxFlowQueryOptions(args).queryKey` when necessary.
+Each flow query file exports `*QueryOptions` (for `useQuery` / `queryClient.fetchQuery`) and a `useGet*` or `useCreate*` wrapper. **Query keys are not part of the public API** — the SDK keeps them for internal cache updates. Tests that assert on cache contents may use `getXxxFlowQueryOptions(args).queryKey` when necessary.
+
+## Helpers
+
+Pure functions and imperative fetches that are not TanStack queries live under `helpers/` (e.g. `fetchKratosSession`, `kratosIdentityEmail`, `identityNeedsEmailVerification`).
 
 ### Typing queries with `TanstackError`
 
