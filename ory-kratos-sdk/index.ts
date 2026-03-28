@@ -9,13 +9,7 @@ export {
   UnhandledResponse,
 } from "./flow-results.ts";
 
-export {
-  isKratosSecurityCsrfResponseBody,
-  resultFromKratosGetFlowHttpError,
-} from "./get-flow-query-error.ts";
-
 // ── Helpers (non-query) ─────────────────────────────────────────────────────
-export { fetchKratosSession } from "./helpers/fetch-kratos-session.ts";
 export {
   assertKratosSessionIdentityLoaded,
   kratosIdentityEmail,

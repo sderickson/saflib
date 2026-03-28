@@ -27,7 +27,7 @@ Each flow query file exports `*QueryOptions` (for `useQuery` / `queryClient.fetc
 
 ## Helpers
 
-Pure functions and imperative fetches that are not TanStack queries live under `helpers/` (e.g. `fetchKratosSession`, `kratosIdentityEmail`, `identityNeedsEmailVerification`).
+Pure functions that are not TanStack queries live under `helpers/` (e.g. `kratosIdentityEmail`, `identityNeedsEmailVerification`).
 
 ### Typing queries with `TanstackError`
 
