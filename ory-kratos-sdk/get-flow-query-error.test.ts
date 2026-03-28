@@ -21,6 +21,11 @@ describe("isKratosSecurityCsrfResponseBody", () => {
     ).toBe(true);
     expect(isKratosSecurityCsrfResponseBody({})).toBe(false);
   });
+
+  it("returns false for non-objects and missing error id", () => {
+    expect(isKratosSecurityCsrfResponseBody(null)).toBe(false);
+    expect(isKratosSecurityCsrfResponseBody({ error: {} })).toBe(false);
+  });
 });
 
 describe("resultFromKratosGetFlowHttpError", () => {
@@ -44,5 +49,21 @@ describe("resultFromKratosGetFlowHttpError", () => {
 
   it("returns undefined for 5xx", () => {
     expect(resultFromKratosGetFlowHttpError(axiosErr(500, {}))).toBeUndefined();
+  });
+
+  it("returns undefined for non-Axios errors", () => {
+    expect(resultFromKratosGetFlowHttpError(new Error("x"))).toBeUndefined();
+  });
+
+  it("returns undefined when AxiosError has no response", () => {
+    const e = new AxiosError("n");
+    expect(resultFromKratosGetFlowHttpError(e)).toBeUndefined();
+  });
+
+  it("maps 403 without CSRF id to UnhandledResponse", () => {
+    const r = resultFromKratosGetFlowHttpError(
+      axiosErr(403, { error: { id: "forbidden" } }),
+    );
+    expect(r).toBeInstanceOf(UnhandledResponse);
   });
 });
