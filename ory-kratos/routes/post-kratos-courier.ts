@@ -19,12 +19,18 @@ export interface KratosCourierBody {
   template_data?: Record<string, unknown>;
 }
 
-function readString(td: Record<string, unknown>, key: string): string | undefined {
+function readString(
+  td: Record<string, unknown>,
+  key: string,
+): string | undefined {
   const v = td[key];
   return typeof v === "string" ? v : undefined;
 }
 
-function readNumber(td: Record<string, unknown>, key: string): number | undefined {
+function readNumber(
+  td: Record<string, unknown>,
+  key: string,
+): number | undefined {
   const v = td[key];
   if (typeof v === "number" && !Number.isNaN(v)) return v;
   if (typeof v === "string") {
@@ -42,9 +48,10 @@ function buildMessage(
     case "verification_code.valid": {
       const code = readString(td, "verification_code");
       const url = readString(td, "verification_url");
-      const lines = [code ? `Code: ${code}` : null, url ? `Link: ${url}` : null].filter(
-        Boolean,
-      );
+      const lines = [
+        code ? `Code: ${code}` : null,
+        url ? `Link: ${url}` : null,
+      ].filter(Boolean);
       return {
         subject: "Verify your email",
         text: lines.join("\n") || JSON.stringify(td),
@@ -62,13 +69,16 @@ function buildMessage(
     case "recovery_code.valid": {
       const code = readString(td, "recovery_code");
       const url = readString(td, "recovery_url");
-      const lines = [code ? `Code: ${code}` : null, url ? `Link: ${url}` : null].filter(
-        Boolean,
-      );
+      const lines = [
+        code ? `Code: ${code}` : null,
+        url ? `Link: ${url}` : null,
+      ].filter(Boolean);
       return {
         subject: "Account recovery",
         text: lines.join("\n") || JSON.stringify(td),
-        html: url ? `<p><a href="${url}">Reset your password</a></p>` : undefined,
+        html: url
+          ? `<p><a href="${url}">Reset your password</a></p>`
+          : undefined,
       };
     }
     case "recovery.valid": {
@@ -76,15 +86,18 @@ function buildMessage(
       return {
         subject: "Account recovery",
         text: url ? `Link: ${url}` : JSON.stringify(td),
-        html: url ? `<p><a href="${url}">Reset your password</a></p>` : undefined,
+        html: url
+          ? `<p><a href="${url}">Reset your password</a></p>`
+          : undefined,
       };
     }
     case "login_code.valid": {
       const code = readString(td, "login_code");
       const url = readString(td, "login_url");
-      const lines = [code ? `Code: ${code}` : null, url ? `Link: ${url}` : null].filter(
-        Boolean,
-      );
+      const lines = [
+        code ? `Code: ${code}` : null,
+        url ? `Link: ${url}` : null,
+      ].filter(Boolean);
       return {
         subject: "Sign in",
         text: lines.join("\n") || JSON.stringify(td),
@@ -94,9 +107,10 @@ function buildMessage(
     case "registration_code.valid": {
       const code = readString(td, "registration_code");
       const url = readString(td, "registration_url");
-      const lines = [code ? `Code: ${code}` : null, url ? `Link: ${url}` : null].filter(
-        Boolean,
-      );
+      const lines = [
+        code ? `Code: ${code}` : null,
+        url ? `Link: ${url}` : null,
+      ].filter(Boolean);
       return {
         subject: "Complete registration",
         text: lines.join("\n") || JSON.stringify(td),
@@ -115,6 +129,7 @@ async function dispatchCallback(
     td: Record<string, unknown>;
   },
 ): Promise<void> {
+  const { log } = getSafReporters();
   const { recipient, user, td } = args;
   const expiresInMinutes = readNumber(td, "expires_in_minutes");
 
@@ -174,6 +189,10 @@ async function dispatchCallback(
         expiresInMinutes,
       });
       return;
+    default:
+      log.warn(`Unsupported Kratos courier template_type: ${templateId}`);
+      log.warn(JSON.stringify(td, null, 2));
+      return;
   }
 }
 
@@ -210,7 +229,7 @@ export function createPostKratosCourierHandler(
     const identity = td.identity;
     const user = kratosIdentityToUser(identity, body.recipient);
 
-    log.info("Kratos courier email", {
+    log.info(`Kratos courier email ${templateId}`, {
       template_type: rawType,
       template_id: templateId,
       recipient: body.recipient,
