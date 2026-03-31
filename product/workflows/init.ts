@@ -15,6 +15,7 @@ import {
 import {
   AddSpaWorkflowDefinition,
   AddSpaViewWorkflowDefinition,
+  AddStaticSiteWorkflowDefinition,
 } from "@saflib/vue/workflows";
 import { InitServiceWorkflowDefinition } from "@saflib/service/workflows";
 import path from "node:path";
@@ -100,10 +101,13 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       name: `${context.sharedPackagePrefix}-service`,
       path: `./${context.productName}/service`,
     })),
-    step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
-      productName: context.productName,
-      subdomainName: "root",
-    })),
+    step(
+      makeWorkflowMachine(AddStaticSiteWorkflowDefinition),
+      ({ context }) => ({
+        productName: context.productName,
+        subdomainName: "root",
+      }),
+    ),
     step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
       productName: context.productName,
       subdomainName: "admin",

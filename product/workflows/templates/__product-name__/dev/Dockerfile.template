@@ -1,0 +1,20 @@
+# syntax=docker/dockerfile:labs
+
+# Requires a local tag first: __organization-name__/__product-name__-dev npm scripts run `docker build` on
+# __product-name__/clients/static-root before compose (compose builds services in parallel).
+# Logged-out __product-name__ marketing site — same base image as deploy (__product-name__/clients/root).
+FROM __organization-name__-__product-name__-static-root:latest AS static-root-builder
+RUN npm run build
+
+# Monorepo install once — workspace closure of __organization-name__/__product-name__-dev (__product-name__ static builds for this stack).
+FROM node:24-slim AS deps
+
+WORKDIR /app
+
+#{ copy_packages }#
+RUN npm install --omit=dev
+
+#{ copy_src }#
+
+FROM caddy:2.11.2
+COPY --from=static-root-builder /app/__product-name__/clients/root/.vitepress/dist /srv/__product-name__-static-root

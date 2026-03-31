@@ -12,6 +12,7 @@
     "template-package-db": "*",
     "template-package-http": "*",
     "template-package-identity": "*",
+    "template-package-kratos-courier": "*",
     "template-package-service-common": "*"
   }
 }
