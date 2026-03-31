@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { __ProductName__Layout } from "template-package-clients-common";
+import { Dynamic__ProductName__Layout } from "template-package-clients-common";
 </script>
 
 <template>
-  <__ProductName__Layout>
+  <Dynamic__ProductName__Layout>
     <router-view />
-  </__ProductName__Layout>
+  </Dynamic__ProductName__Layout>
 </template>

@@ -5,6 +5,9 @@
   "type": "module",
   "exports": {
     ".": "./index.ts",
+    "./components": "./components/index.ts",
+    "./components/__product-name__-layout": "./components/__product-name__-layout/index.ts",
+    "./vuetify-config": "./vuetify-config.ts",
     "./strings": "./strings.ts",
     "./i18n": "./i18n.ts",
     "./fixtures": "./fixtures/index.ts",

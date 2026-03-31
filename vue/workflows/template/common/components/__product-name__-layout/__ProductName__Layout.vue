@@ -1,14 +1,11 @@
 <template>
   <v-app>
-    <!-- Events are rendered here for playwright tests to assert on -->
-    <pre class="d-none" data-testid="events">{{ events }}</pre>
-
-    <v-app-bar height="90" class="px-4" flat>
+    <v-app-bar height="90" class="px-4" v-if="mounted">
       <!-- Logo -->
       <v-app-bar-title>
-        <SpaLink :link="{ subdomain: 'root', path: '/' }" class="logo-link">
+        <a :href="toHref(rootHomeLink)" class="logo-link">
           {{ t(__product_name___layout.nav_title) }}
-        </SpaLink>
+        </a>
       </v-app-bar-title>
 
       <!-- Desktop Navigation Links (hidden on mobile) -->
@@ -18,7 +15,7 @@
           :key="link.path"
           variant="text"
           class="text-uppercase font-weight-regular"
-          :href="linkToHrefWithHost(link)"
+          :href="toHref(link)"
         >
           {{ link.name }}
         </v-btn>
@@ -26,6 +23,7 @@
 
       <!-- Mobile Menu Button (hidden on desktop) -->
       <template #append>
+        <slot name="app-bar-append" />
         <v-app-bar-nav-icon class="d-md-none mr-4" @click="drawer = !drawer">
           <v-icon v-if="!drawer">mdi-menu</v-icon>
           <v-icon v-else>mdi-close</v-icon>
@@ -45,7 +43,7 @@
         :key="link.name"
         :title="link.name"
         class="text-uppercase text-center py-4"
-        :href="linkToHrefWithHost(link)"
+        :href="toHref(link)"
       />
     </v-navigation-drawer>
 
@@ -55,21 +53,16 @@
       </TopLevelContainer>
       <slot v-else />
     </v-main>
-
-    <SnackbarQueue />
   </v-app>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
 import { TopLevelContainer } from "@saflib/vue/components";
 import { __product_name___layout } from "./__ProductName__Layout.strings.ts";
 import { useReverseT } from "../../i18n.ts";
-import { linkToHrefWithHost, type Link } from "@saflib/links";
-import { events } from "@saflib/vue";
-import { SnackbarQueue } from "@saflib/vue/components";
-import { SpaLink } from "@saflib/vue/components";
+import { linkToHrefWithHost, type Link, type LinkOptions } from "@saflib/links";
 
 // import other subdomain links here as needed
 // import { __subdomainName__Links } from "template-package-links";
@@ -92,6 +85,19 @@ const disableContainer = computed(() => {
 });
 
 const drawer = ref(false);
+
+// Forces a re-render after SSG hydration so links recompute with the real domain.
+const mounted = ref(false);
+onMounted(() => {
+  mounted.value = true;
+});
+
+const rootHomeLink: Link = { subdomain: "root", path: "/" };
+
+const toHref = (link: Link, options?: LinkOptions) => {
+  void mounted.value;
+  return linkToHrefWithHost(link, options);
+};
 
 type LinkWithName = Link & { name: string };
 
