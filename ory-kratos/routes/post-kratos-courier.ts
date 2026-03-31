@@ -1,7 +1,6 @@
 import createError from "http-errors";
 import { createHandler } from "@saflib/express";
 import { getSafReporters } from "@saflib/node";
-import { emailClient } from "@saflib/email";
 import type {
   KratosCourierCallbacks,
   KratosCourierTemplateId,

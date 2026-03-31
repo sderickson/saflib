@@ -13,7 +13,6 @@
     "typecheck": "tsc"
   },
   "dependencies": {
-    "@saflib/email": "*",
     "@saflib/express": "*",
     "@saflib/node": "*"
   },

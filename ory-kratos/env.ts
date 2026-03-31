@@ -41,10 +41,6 @@ export interface OryKratosEnvSchema {
    */
   MOCK_INTEGRATIONS?: "true" | "false";
   /**
-   * JSON string which can be passed into nodemailer.createTransport. See https://nodemailer.com/usage for more details.
-   */
-  NODEMAILER_TRANSPORT_CONFIG: string;
-  /**
    * The environment of the deployment. Generally should avoid using this, consider its use deprecated, prefer instead more specific environment variables.
    */
   NODE_ENV: "development" | "production" | "test";
