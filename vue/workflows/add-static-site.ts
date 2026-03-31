@@ -17,6 +17,7 @@ const staticSubdomainDir = path.join(
   "__static-subdomain-name__",
 );
 const linksDir = path.join(import.meta.dirname, "template", "links");
+const commonDir = path.join(import.meta.dirname, "template", "common");
 
 const input = [
   {
@@ -39,6 +40,8 @@ interface AddStaticSiteWorkflowContext extends ParsePackageNameOutput {
   staticPackageName: string;
   linksPackageName: string;
   commonPackageName: string;
+  serviceSpecName: string;
+  serviceSdkName: string;
 }
 
 export const AddStaticSiteWorkflowDefinition = defineWorkflow<
@@ -65,6 +68,8 @@ export const AddStaticSiteWorkflowDefinition = defineWorkflow<
     const staticPackageName = `${currentPackageOrgName}/${input.productName}-${staticSubdomainName}-static`;
     const linksPackageName = `${currentPackageOrgName}/${input.productName}-links`;
     const commonPackageName = `${currentPackageOrgName}/${input.productName}-clients-common`;
+    const serviceSpecName = `${currentPackageOrgName}/${input.productName}-spec`;
+    const serviceSdkName = `${currentPackageOrgName}/${input.productName}-sdk`;
 
     return {
       ...parsePackageName(staticPackageName, {
@@ -77,6 +82,8 @@ export const AddStaticSiteWorkflowDefinition = defineWorkflow<
       staticPackageName,
       linksPackageName,
       commonPackageName,
+      serviceSpecName,
+      serviceSdkName,
       serviceName: input.productName,
     };
   },
@@ -85,6 +92,7 @@ export const AddStaticSiteWorkflowDefinition = defineWorkflow<
     packageJson: path.join(staticSubdomainDir, "package.json"),
     staticSite: staticSubdomainDir,
     linksPackage: linksDir,
+    commonPackage: commonDir,
   },
 
   docFiles: {},
@@ -102,7 +110,9 @@ export const AddStaticSiteWorkflowDefinition = defineWorkflow<
           "template-package-clients-common",
           context.commonPackageName,
         );
+        line = line.replace("template-package-spec", context.serviceSpecName);
         line = line.replace("template-package-links", context.linksPackageName);
+        line = line.replace("template-package-sdk", context.serviceSdkName);
         return lineReplace(line);
       };
       return {
