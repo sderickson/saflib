@@ -1,0 +1,22 @@
+{
+  "name": "template-package-static-root",
+  "description": "Static root site for __Product Name__ using VitePress + Vuetify",
+  "type": "module",
+  "scripts": {
+    "dev": "vitepress dev",
+    "build": "vitepress build",
+    "preview": "vitepress preview"
+  },
+  "dependencies": {
+    "@mdi/font": "^7.4.47",
+    "@saflib/links": "*",
+    "@saflib/vue": "*",
+    "template-package-clients-common": "*",
+    "template-package-links": "*",
+    "sass": "^1.93.2",
+    "vite-plugin-vuetify": "^2.1.2",
+    "vitepress": "^1.6.3",
+    "vue": "^3.5.13",
+    "vuetify": "^4.0.0"
+  }
+}
