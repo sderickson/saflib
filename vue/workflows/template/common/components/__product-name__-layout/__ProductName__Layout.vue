@@ -4,7 +4,7 @@
       <!-- Logo -->
       <v-app-bar-title>
         <a :href="toHref(rootHomeLink)" class="logo-link">
-          {{ t(__product_name___layout.nav_title) }}
+          {{ __product_name___layout.nav_title }}
         </a>
       </v-app-bar-title>
 
@@ -48,20 +48,14 @@
     </v-navigation-drawer>
 
     <v-main>
-      <TopLevelContainer v-if="!disableContainer">
-        <slot />
-      </TopLevelContainer>
-      <slot v-else />
+      <slot />
     </v-main>
   </v-app>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
-import { useRoute } from "vue-router";
-import { TopLevelContainer } from "@saflib/vue/components";
 import { __product_name___layout } from "./__ProductName__Layout.strings.ts";
-import { useReverseT } from "../../i18n.ts";
 import { linkToHrefWithHost, type Link, type LinkOptions } from "@saflib/links";
 
 // import other subdomain links here as needed
@@ -76,13 +70,6 @@ import { linkToHrefWithHost, type Link, type LinkOptions } from "@saflib/links";
 const props = defineProps<{
   loggedIn?: boolean;
 }>();
-
-const { t } = useReverseT();
-
-const route = useRoute();
-const disableContainer = computed(() => {
-  return route.meta?.disableContainer ?? false;
-});
 
 const drawer = ref(false);
 
