@@ -1,7 +1,6 @@
 import createError from "http-errors";
 import { createHandler } from "@saflib/express";
 import { getSafReporters } from "@saflib/node";
-import { emailClient } from "@saflib/email";
 import type {
   KratosCourierCallbacks,
   KratosCourierTemplateId,
@@ -38,86 +37,6 @@ function readNumber(
     if (!Number.isNaN(n)) return n;
   }
   return undefined;
-}
-
-function buildMessage(
-  templateId: KratosCourierTemplateId,
-  td: Record<string, unknown>,
-): { subject: string; text: string; html?: string } {
-  switch (templateId) {
-    case "verification_code.valid": {
-      const code = readString(td, "verification_code");
-      const url = readString(td, "verification_url");
-      const lines = [
-        code ? `Code: ${code}` : null,
-        url ? `Link: ${url}` : null,
-      ].filter(Boolean);
-      return {
-        subject: "Verify your email",
-        text: lines.join("\n") || JSON.stringify(td),
-        html: url ? `<p><a href="${url}">Verify your email</a></p>` : undefined,
-      };
-    }
-    case "verification.valid": {
-      const url = readString(td, "verification_url");
-      return {
-        subject: "Verify your email",
-        text: url ? `Link: ${url}` : JSON.stringify(td),
-        html: url ? `<p><a href="${url}">Verify your email</a></p>` : undefined,
-      };
-    }
-    case "recovery_code.valid": {
-      const code = readString(td, "recovery_code");
-      const url = readString(td, "recovery_url");
-      const lines = [
-        code ? `Code: ${code}` : null,
-        url ? `Link: ${url}` : null,
-      ].filter(Boolean);
-      return {
-        subject: "Account recovery",
-        text: lines.join("\n") || JSON.stringify(td),
-        html: url
-          ? `<p><a href="${url}">Reset your password</a></p>`
-          : undefined,
-      };
-    }
-    case "recovery.valid": {
-      const url = readString(td, "recovery_url");
-      return {
-        subject: "Account recovery",
-        text: url ? `Link: ${url}` : JSON.stringify(td),
-        html: url
-          ? `<p><a href="${url}">Reset your password</a></p>`
-          : undefined,
-      };
-    }
-    case "login_code.valid": {
-      const code = readString(td, "login_code");
-      const url = readString(td, "login_url");
-      const lines = [
-        code ? `Code: ${code}` : null,
-        url ? `Link: ${url}` : null,
-      ].filter(Boolean);
-      return {
-        subject: "Sign in",
-        text: lines.join("\n") || JSON.stringify(td),
-        html: url ? `<p><a href="${url}">Sign in</a></p>` : undefined,
-      };
-    }
-    case "registration_code.valid": {
-      const code = readString(td, "registration_code");
-      const url = readString(td, "registration_url");
-      const lines = [
-        code ? `Code: ${code}` : null,
-        url ? `Link: ${url}` : null,
-      ].filter(Boolean);
-      return {
-        subject: "Complete registration",
-        text: lines.join("\n") || JSON.stringify(td),
-        html: url ? `<p><a href="${url}">Continue</a></p>` : undefined,
-      };
-    }
-  }
 }
 
 async function dispatchCallback(
@@ -239,15 +158,6 @@ export function createPostKratosCourierHandler(
       recipient: body.recipient,
       user,
       td,
-    });
-
-    const { subject, text, html } = buildMessage(templateId, td);
-
-    await emailClient.sendEmail({
-      to: body.recipient,
-      subject,
-      text,
-      html,
     });
 
     res.status(204).end();

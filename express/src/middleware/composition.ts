@@ -34,7 +34,11 @@ export const createInternalMiddleware = (
   options: Pick<GlobalMiddlewareOptions, "jsonLimit"> = {},
 ): Handler[] => {
   const { jsonLimit } = options;
-  return [metricsMiddleware, everyRequestLogger, json(jsonLimit ? { limit: jsonLimit } : undefined)];
+  return [
+    metricsMiddleware,
+    everyRequestLogger,
+    json(jsonLimit ? { limit: jsonLimit } : undefined),
+  ];
 };
 
 /**
@@ -72,6 +76,7 @@ export interface ScopedMiddlewareOptions {
   fileUploader?: multer.Options;
   enforceAuth?: boolean;
   adminRequired?: boolean;
+  emailVerificationRequired?: boolean;
 }
 
 /**
@@ -81,7 +86,13 @@ export interface ScopedMiddlewareOptions {
 export const createScopedMiddleware = (
   options: ScopedMiddlewareOptions,
 ): Handler[] => {
-  const { apiSpec, fileUploader, enforceAuth, adminRequired } = options;
+  const {
+    apiSpec,
+    fileUploader,
+    enforceAuth,
+    adminRequired,
+    emailVerificationRequired,
+  } = options;
 
   let openApiValidatorMiddleware: Handler[] = [];
   if (apiSpec) {
@@ -93,7 +104,12 @@ export const createScopedMiddleware = (
 
   let authMiddleware: Handler[] = [];
   if (enforceAuth !== false) {
-    authMiddleware = [makeAuthMiddleware({ adminRequired })];
+    authMiddleware = [
+      makeAuthMiddleware({
+        adminRequired,
+        emailVerificationRequired,
+      }),
+    ];
   }
 
   return [

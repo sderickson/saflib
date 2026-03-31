@@ -3,6 +3,8 @@ import { getSafContext } from "@saflib/node";
 
 interface AuthMiddlewareOptions {
   adminRequired?: boolean;
+  /** When true, respond with 403 unless `auth.emailVerified` is true. */
+  emailVerificationRequired?: boolean;
 }
 
 /**
@@ -25,7 +27,7 @@ export function drainRequest(req: import("express").Request): Promise<void> {
 export const makeAuthMiddleware = (
   options: AuthMiddlewareOptions = {},
 ): Handler => {
-  const { adminRequired } = options;
+  const { adminRequired, emailVerificationRequired } = options;
 
   return (req, res, next): void => {
     const { auth } = getSafContext();
@@ -40,6 +42,18 @@ export const makeAuthMiddleware = (
           res.status(401).json({
             error: "Unauthorized",
             message: "Unauthorized",
+          });
+        }
+      });
+      return;
+    }
+
+    if (emailVerificationRequired && auth.emailVerified !== true) {
+      drainRequest(req).then(() => {
+        if (!res.headersSent) {
+          res.status(403).json({
+            error: "Forbidden",
+            message: "Forbidden",
           });
         }
       });

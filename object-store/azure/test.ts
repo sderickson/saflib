@@ -5,11 +5,6 @@ import { getSafReporters } from "@saflib/node";
 export async function testAzureBlobStorage() {
   const { log, logError } = getSafReporters();
 
-  log.info(
-    "Azure client ID",
-    process.env.AZURE_CLIENT_ID?.slice(0, 10) + "...",
-  );
-
   while (true) {
     try {
       log.info("Azure Blob Storage - Running JavaScript quickstart sample");
@@ -33,4 +28,3 @@ export async function testAzureBlobStorage() {
     }
   }
 }
-
