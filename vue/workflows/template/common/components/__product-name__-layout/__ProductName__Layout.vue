@@ -48,7 +48,9 @@
     </v-navigation-drawer>
 
     <v-main>
-      <slot />
+      <TopLevelContainer>
+        <slot />
+      </TopLevelContainer>
     </v-main>
   </v-app>
 </template>
@@ -57,6 +59,7 @@
 import { computed, onMounted, ref } from "vue";
 import { __product_name___layout } from "./__ProductName__Layout.strings.ts";
 import { linkToHrefWithHost, type Link, type LinkOptions } from "@saflib/links";
+import { TopLevelContainer } from "@saflib/vue/components";
 
 // import other subdomain links here as needed
 // import { __subdomainName__Links } from "template-package-links";
