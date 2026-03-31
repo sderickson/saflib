@@ -108,67 +108,67 @@ export const InitProductWorkflowDefinition = defineWorkflow<
         subdomainName: "root",
       }),
     ),
-    // step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
-    //   productName: context.productName,
-    //   subdomainName: "admin",
-    // })),
-    // step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
-    //   productName: context.productName,
-    //   subdomainName: "app",
-    // })),
-    // step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
-    //   productName: context.productName,
-    //   subdomainName: "auth",
-    // })),
-    // step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
-    //   productName: context.productName,
-    //   subdomainName: "account",
-    // })),
-    // step(CopyStepMachine, ({ context }) => ({
-    //   name: context.productName,
-    //   targetDir: context.cwd,
-    //   lineReplace: makeLineReplace(context),
-    // })),
-    // step(CommandStepMachine, ({ context }) => ({
-    //   command: "rm",
-    //   args: [
-    //     "-rf",
-    //     `./${context.productName}/service/${context.productName}-service`,
-    //   ],
-    // })),
+    step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
+      productName: context.productName,
+      subdomainName: "admin",
+    })),
+    step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
+      productName: context.productName,
+      subdomainName: "app",
+    })),
+    step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
+      productName: context.productName,
+      subdomainName: "auth",
+    })),
+    step(makeWorkflowMachine(AddSpaWorkflowDefinition), ({ context }) => ({
+      productName: context.productName,
+      subdomainName: "account",
+    })),
+    step(CopyStepMachine, ({ context }) => ({
+      name: context.productName,
+      targetDir: context.cwd,
+      lineReplace: makeLineReplace(context),
+    })),
+    step(CommandStepMachine, ({ context }) => ({
+      command: "rm",
+      args: [
+        "-rf",
+        `./${context.productName}/service/${context.productName}-service`,
+      ],
+    })),
 
-    // step(CommandStepMachine, ({ context }) => ({
-    //   command: "mv",
-    //   args: [
-    //     `./deploy/remote-assets/env.${context.productName}.secrets`,
-    //     `./deploy/remote-assets/.env.${context.productName}.secrets`,
-    //   ],
-    // })),
+    step(CommandStepMachine, ({ context }) => ({
+      command: "mv",
+      args: [
+        `./deploy/remote-assets/env.${context.productName}.secrets`,
+        `./deploy/remote-assets/.env.${context.productName}.secrets`,
+      ],
+    })),
 
-    // step(CommandStepMachine, () => ({
-    //   command: "npm",
-    //   args: ["install"],
-    // })),
-    // step(CdStepMachine, ({ context }) => {
-    //   return {
-    //     path: `./${context.productName}/service/monolith`,
-    //   };
-    // }),
-    // step(CommandStepMachine, () => {
-    //   return {
-    //     command: "npm",
-    //     args: ["exec", "saf-env", "generate", "--", "--combined"],
-    //   };
-    // }),
-    // step(CdStepMachine, ({ context }) => {
-    //   return {
-    //     path: `./${context.productName}/dev`,
-    //   };
-    // }),
-    // step(CommandStepMachine, () => ({
-    //   command: "touch",
-    //   args: ["./.env"],
-    // })),
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["install"],
+    })),
+    step(CdStepMachine, ({ context }) => {
+      return {
+        path: `./${context.productName}/service/monolith`,
+      };
+    }),
+    step(CommandStepMachine, () => {
+      return {
+        command: "npm",
+        args: ["exec", "saf-env", "generate", "--", "--combined"],
+      };
+    }),
+    step(CdStepMachine, ({ context }) => {
+      return {
+        path: `./${context.productName}/dev`,
+      };
+    }),
+    step(CommandStepMachine, () => ({
+      command: "touch",
+      args: ["./.env"],
+    })),
     // step(CdStepMachine, ({ context }) => ({
     //   path: `./${context.productName}/clients/root`,
     // })),
