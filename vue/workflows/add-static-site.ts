@@ -41,7 +41,7 @@ interface AddStaticSiteWorkflowContext extends ParsePackageNameOutput {
   commonPackageName: string;
 }
 
-export const VueAddStaticSiteWorkflowDefinition = defineWorkflow<
+export const AddStaticSiteWorkflowDefinition = defineWorkflow<
   typeof input,
   AddStaticSiteWorkflowContext
 >({
@@ -123,4 +123,4 @@ export const VueAddStaticSiteWorkflowDefinition = defineWorkflow<
   ],
 });
 
-export default VueAddStaticSiteWorkflowDefinition;
+export default AddStaticSiteWorkflowDefinition;

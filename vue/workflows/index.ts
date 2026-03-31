@@ -2,7 +2,7 @@
 import { AddE2eTestWorkflowDefinition } from "./add-e2e-test.ts";
 import { AddSpaViewWorkflowDefinition } from "./add-view.ts";
 import { AddSpaWorkflowDefinition } from "./add-spa.ts";
-import { VueAddStaticSiteWorkflowDefinition } from "./add-static-site.ts";
+import { AddStaticSiteWorkflowDefinition } from "./add-static-site.ts";
 // END WORKFLOW AREA
 
 import type { WorkflowDefinition } from "@saflib/workflows";
@@ -12,7 +12,7 @@ export {
   AddE2eTestWorkflowDefinition,
   AddSpaViewWorkflowDefinition,
   AddSpaWorkflowDefinition,
-  VueAddStaticSiteWorkflowDefinition,
+  AddStaticSiteWorkflowDefinition,
   // END WORKFLOW AREA
 };
 
@@ -21,7 +21,7 @@ const workflowDefinitions: WorkflowDefinition[] = [
   AddE2eTestWorkflowDefinition,
   AddSpaViewWorkflowDefinition,
   AddSpaWorkflowDefinition,
-  VueAddStaticSiteWorkflowDefinition,
+  AddStaticSiteWorkflowDefinition,
   // END WORKFLOW AREA
 ];
 
