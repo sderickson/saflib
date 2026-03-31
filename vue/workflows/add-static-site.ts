@@ -11,11 +11,12 @@ import {
 } from "@saflib/workflows";
 import path from "node:path";
 
-const staticRootDir = path.join(
+const staticSubdomainDir = path.join(
   import.meta.dirname,
   "template",
-  "static-root",
+  "__static-subdomain-name__",
 );
+const linksDir = path.join(import.meta.dirname, "template", "links");
 
 const input = [
   {
@@ -23,12 +24,20 @@ const input = [
     description: "Name of the new or existing product (e.g. 'product-name')",
     exampleValue: "product-name",
   },
+  {
+    name: "subdomainName",
+    description:
+      "Name of the new subdomain for the static site (e.g. 'docs')",
+    exampleValue: "docs",
+  },
 ] as const;
 
 interface AddStaticSiteWorkflowContext extends ParsePackageNameOutput {
   targetDir: string;
   productName: string;
-  staticRootPackageName: string;
+  subdomainName: string;
+  staticSubdomainName: string;
+  staticPackageName: string;
   linksPackageName: string;
   commonPackageName: string;
 }
@@ -53,25 +62,30 @@ export const VueAddStaticSiteWorkflowDefinition = defineWorkflow<
     const currentPackageName = getPackageName(input.cwd);
     const currentPackageOrgName =
       "@" + parsePackageName(currentPackageName).organizationName;
-    const staticRootPackageName = `${currentPackageOrgName}/${input.productName}-static-root`;
+    const staticSubdomainName = `${input.subdomainName}-static`;
+    const staticPackageName = `${currentPackageOrgName}/${input.productName}-${staticSubdomainName}`;
     const linksPackageName = `${currentPackageOrgName}/${input.productName}-links`;
     const commonPackageName = `${currentPackageOrgName}/${input.productName}-clients-common`;
 
     return {
-      ...parsePackageName(staticRootPackageName, {
-        requiredSuffix: "-static-root",
+      ...parsePackageName(staticPackageName, {
+        requiredSuffix: "-static",
       }),
       targetDir,
       productName: input.productName,
-      staticRootPackageName,
+      subdomainName: input.subdomainName,
+      staticSubdomainName,
+      staticPackageName,
       linksPackageName,
       commonPackageName,
+      serviceName: input.productName,
     };
   },
 
   templateFiles: {
-    packageJson: path.join(staticRootDir, "package.json"),
-    staticRoot: staticRootDir,
+    packageJson: path.join(staticSubdomainDir, "package.json"),
+    staticSite: staticSubdomainDir,
+    linksPackage: linksDir,
   },
 
   docFiles: {},

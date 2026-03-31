@@ -6,4 +6,4 @@ WORKDIR /app
 RUN npm install --omit=dev
 #{ copy_src }#
 
-WORKDIR /app/__product-name__/clients/static-root
+WORKDIR /app/__product-name__/clients/__static-subdomain-name__

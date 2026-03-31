@@ -2,10 +2,10 @@
   background: rgb(var(--v-theme-background));
 }
 
-.root-home a {
+.__subdomain-name__-home a {
   text-decoration: none;
 }
 
-.root-home a:hover {
+.__subdomain-name__-home a:hover {
   text-decoration: underline;
 }

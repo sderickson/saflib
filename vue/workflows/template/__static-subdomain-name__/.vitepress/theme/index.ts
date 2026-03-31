@@ -5,11 +5,11 @@ import "@mdi/font/css/materialdesignicons.css";
 import "vuetify/styles";
 import "./style.css";
 import StaticSiteLayout from "./components/StaticSiteLayout.vue";
-import __ProductName__HomePage from "./components/__ProductName__HomePage.vue";
+import __SubdomainName__HomePage from "./components/__SubdomainName__HomePage.vue";
 
 import { setClientName } from "@saflib/links";
 
-setClientName("__product-name__");
+setClientName("__subdomain-name__");
 
 const vuetify = createVuetify(vuetifyConfig);
 
@@ -17,6 +17,6 @@ export default {
   Layout: StaticSiteLayout,
   enhanceApp({ app }) {
     app.use(vuetify);
-    app.component("__ProductName__HomePage", __ProductName__HomePage);
+    app.component("__SubdomainName__HomePage", __SubdomainName__HomePage);
   },
 } satisfies Theme;

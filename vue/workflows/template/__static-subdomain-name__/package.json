@@ -1,6 +1,6 @@
 {
-  "name": "template-package-static-root",
-  "description": "Static root site for __Product Name__ using VitePress + Vuetify",
+  "name": "template-package-static",
+  "description": "Static __subdomain-name__ site for __Product Name__ using VitePress + Vuetify",
   "type": "module",
   "scripts": {
     "dev": "vitepress dev",

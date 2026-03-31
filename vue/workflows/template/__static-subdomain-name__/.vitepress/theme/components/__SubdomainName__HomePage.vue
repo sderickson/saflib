@@ -1,5 +1,5 @@
 <template>
-  <div class="root-home py-8">
+  <div class="__subdomain-name__-home py-8">
     <v-row class="align-center mb-10" dense>
       <v-col cols="12" md="6" class="order-2 order-md-1">
         <h1 class="text-h3 text-md-h2 font-weight-medium my-8">
@@ -17,10 +17,10 @@
 </script>
 
 <style scoped>
-.root-home :deep(a.text-primary) {
+.__subdomain-name__-home :deep(a.text-primary) {
   text-decoration: none;
 }
-.root-home :deep(a.text-primary:hover) {
+.__subdomain-name__-home :deep(a.text-primary:hover) {
   text-decoration: underline;
 }
 </style>
