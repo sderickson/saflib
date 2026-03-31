@@ -26,8 +26,7 @@ const input = [
   },
   {
     name: "subdomainName",
-    description:
-      "Name of the new subdomain for the static site (e.g. 'docs')",
+    description: "Name of the new subdomain for the static site (e.g. 'docs')",
     exampleValue: "docs",
   },
 ] as const;
@@ -62,8 +61,8 @@ export const VueAddStaticSiteWorkflowDefinition = defineWorkflow<
     const currentPackageName = getPackageName(input.cwd);
     const currentPackageOrgName =
       "@" + parsePackageName(currentPackageName).organizationName;
-    const staticSubdomainName = `${input.subdomainName}-static`;
-    const staticPackageName = `${currentPackageOrgName}/${input.productName}-${staticSubdomainName}`;
+    const staticSubdomainName = `${input.subdomainName}`;
+    const staticPackageName = `${currentPackageOrgName}/${input.productName}-${staticSubdomainName}-static`;
     const linksPackageName = `${currentPackageOrgName}/${input.productName}-links`;
     const commonPackageName = `${currentPackageOrgName}/${input.productName}-clients-common`;
 
