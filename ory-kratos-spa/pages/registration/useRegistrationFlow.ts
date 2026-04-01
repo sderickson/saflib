@@ -16,7 +16,7 @@ import {
   SessionAlreadyAvailable,
   UnhandledResponse,
 } from "@saflib/ory-kratos-sdk";
-import { useAuthPostAuthFallbackHref } from "../../../authFallbackInject.ts";
+import { useAuthPostAuthFallbackHref } from "../../authFallbackInject.ts";
 import type { KratosFlowUiMessageFilterContext } from "../common/kratosUiMessages.ts";
 import { isKratosPropertyMissingMessage } from "../common/kratosUiMessages.ts";
 import {

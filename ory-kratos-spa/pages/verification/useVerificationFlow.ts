@@ -4,7 +4,7 @@ import {
   useUpdateVerificationFlowMutation,
   VerificationFlowUpdated,
 } from "@saflib/ory-kratos-sdk";
-import { useAuthPostAuthFallbackHref } from "../../../authFallbackInject.ts";
+import { useAuthPostAuthFallbackHref } from "../../authFallbackInject.ts";
 import type { KratosFlowUiMessageFilterContext } from "../common/kratosUiMessages.ts";
 import {
   buildVerificationUpdateBodyFromFormData,

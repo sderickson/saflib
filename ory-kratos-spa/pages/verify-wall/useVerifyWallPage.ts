@@ -4,7 +4,7 @@ import { computed, watch } from "vue";
 import { useRoute } from "vue-router";
 import { linkToHrefWithHost, navigateToLink } from "@saflib/links";
 import { authLinks } from "@saflib/ory-kratos-sdk/links";
-import { useAuthPostAuthFallbackHref } from "../../../authFallbackInject.ts";
+import { useAuthPostAuthFallbackHref } from "../../authFallbackInject.ts";
 import { identityNeedsEmailVerification } from "@saflib/ory-kratos-sdk";
 import {
   resolveVerifyWallReturnToDestination,

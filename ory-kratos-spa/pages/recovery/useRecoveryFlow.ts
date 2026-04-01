@@ -6,7 +6,7 @@ import {
 import { ref, type MaybeRefOrGetter, toValue } from "vue";
 import { linkToHrefWithHost } from "@saflib/links";
 import { authLinks } from "@saflib/ory-kratos-sdk/links";
-import { useAuthPostAuthFallbackHref } from "../../../authFallbackInject.ts";
+import { useAuthPostAuthFallbackHref } from "../../authFallbackInject.ts";
 import {
   BrowserRedirectRequired,
   RecoveryFlowUpdated,

@@ -1,5 +1,5 @@
 import { computed, ref, type Ref } from "vue";
-import { useAuthPostAuthFallbackHref } from "../../../authFallbackInject.ts";
+import { useAuthPostAuthFallbackHref } from "../../authFallbackInject.ts";
 import {
   BrowserRedirectRequired,
   LoginCompleted,

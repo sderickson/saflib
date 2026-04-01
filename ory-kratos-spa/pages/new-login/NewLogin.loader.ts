@@ -1,7 +1,7 @@
 import { computed } from "vue";
 import { useRoute } from "vue-router";
 import { useCreateLoginFlowQuery } from "@saflib/ory-kratos-sdk";
-import { useAuthPostAuthFallbackHref } from "../../../authFallbackInject.ts";
+import { useAuthPostAuthFallbackHref } from "../../authFallbackInject.ts";
 
 export function useNewLoginLoader() {
   const route = useRoute();

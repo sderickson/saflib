@@ -31,7 +31,7 @@ import { computed } from "vue";
 import { useRoute } from "vue-router";
 import { useReverseT } from "@saflib/ory-kratos-spa/i18n";
 import { session_already_available as strings } from "./SessionAlreadyAvailable.strings.ts";
-import { useAuthPostAuthFallbackHref } from "../../../authFallbackInject.ts";
+import { useAuthPostAuthFallbackHref } from "../../authFallbackInject.ts";
 import { useKratosBrowserLogout } from "../registration/useKratosBrowserLogout.ts";
 
 const route = useRoute();

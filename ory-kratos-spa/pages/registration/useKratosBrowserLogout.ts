@@ -5,7 +5,7 @@ import {
   BrowserLogoutFlowCreated,
   createBrowserLogoutFlowQueryOptions,
 } from "@saflib/ory-kratos-sdk";
-import { useAuthLoggedOutRootFallbackHref } from "../../../authFallbackInject.ts";
+import { useAuthLoggedOutRootFallbackHref } from "../../authFallbackInject.ts";
 
 export function useKratosBrowserLogout(options?: {
   /**

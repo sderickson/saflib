@@ -4,18 +4,18 @@ import { PageNotFound } from "@saflib/vue/components";
 import { authLinks } from "@saflib/ory-kratos-sdk/links";
 
 // BEGIN SORTED WORKFLOW AREA page-imports FOR vue/add-view
-import KratosLoginAsync from "./pages/kratos/login/LoginAsync.vue";
-import KratosNewLoginAsync from "./pages/kratos/new-login/NewLoginAsync.vue";
-import KratosSettingsAsync from "./pages/kratos/settings/SettingsAsync.vue";
-import KratosNewSettingsAsync from "./pages/kratos/new-settings/NewSettingsAsync.vue";
-import KratosRegistrationAsync from "./pages/kratos/registration/RegistrationAsync.vue";
-import KratosNewRegistrationAsync from "./pages/kratos/new-registration/NewRegistrationAsync.vue";
-import KratosVerificationAsync from "./pages/kratos/verification/VerificationAsync.vue";
-import KratosNewVerificationAsync from "./pages/kratos/new-verification/NewVerificationAsync.vue";
-import KratosRecoveryAsync from "./pages/kratos/recovery/RecoveryAsync.vue";
-import KratosNewRecoveryAsync from "./pages/kratos/new-recovery/NewRecoveryAsync.vue";
-import KratosVerifyWallAsync from "./pages/kratos/verify-wall/VerifyWallAsync.vue";
-import LogoutAsync from "./pages/kratos/logout/LogoutAsync.vue";
+import KratosLoginAsync from "./pages/login/LoginAsync.vue";
+import KratosNewLoginAsync from "./pages/new-login/NewLoginAsync.vue";
+import KratosSettingsAsync from "./pages/settings/SettingsAsync.vue";
+import KratosNewSettingsAsync from "./pages/new-settings/NewSettingsAsync.vue";
+import KratosRegistrationAsync from "./pages/registration/RegistrationAsync.vue";
+import KratosNewRegistrationAsync from "./pages/new-registration/NewRegistrationAsync.vue";
+import KratosVerificationAsync from "./pages/verification/VerificationAsync.vue";
+import KratosNewVerificationAsync from "./pages/new-verification/NewVerificationAsync.vue";
+import KratosRecoveryAsync from "./pages/recovery/RecoveryAsync.vue";
+import KratosNewRecoveryAsync from "./pages/new-recovery/NewRecoveryAsync.vue";
+import KratosVerifyWallAsync from "./pages/verify-wall/VerifyWallAsync.vue";
+import LogoutAsync from "./pages/logout/LogoutAsync.vue";
 // END WORKFLOW AREA
 
 export interface CreateKratosAuthRouterOptions {
