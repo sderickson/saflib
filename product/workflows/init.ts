@@ -176,22 +176,6 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       command: "touch",
       args: ["./.env"],
     })),
-    // step(CdStepMachine, ({ context }) => ({
-    //   path: `./${context.productName}/clients/root`,
-    // })),
-    // step(CommandStepMachine, () => ({
-    //   command: "npm",
-    //   args: ["install", "@saflib/auth-links"],
-    // })),
-
-    // step(makeWorkflowMachine(AddSpaViewWorkflowDefinition), ({ context }) => ({
-    //   path: "./pages/home",
-    //   urlPath: "/",
-    //   prompt: `Set up the logged-out home page in the ${context.productName} root SPA.
-    //   - Remove anything happening in the loader; this page will be static.
-    //   - Update the home page to have a call to action to the register page. Use linkToProps from @saflib/links to create the link and bind them to vuetify components. Get the link object from @saflib/auth-links which is in saflib/identity/auth-links.
-    //   - Give it really basic content for now, will fit it in later.`,
-    // })),
 
     // step(CdStepMachine, ({ context }) => ({
     //   path: `./${context.productName}/clients/auth`,
@@ -210,6 +194,23 @@ export const InitProductWorkflowDefinition = defineWorkflow<
     // step(CommandStepMachine, () => ({
     //   command: "npm",
     //   args: ["run", "typecheck"],
+    // })),
+
+    // step(CdStepMachine, ({ context }) => ({
+    //   path: `./${context.productName}/clients/root`,
+    // })),
+    // step(CommandStepMachine, () => ({
+    //   command: "npm",
+    //   args: ["install", "@saflib/auth-links"],
+    // })),
+
+    // step(makeWorkflowMachine(AddSpaViewWorkflowDefinition), ({ context }) => ({
+    //   path: "./pages/home",
+    //   urlPath: "/",
+    //   prompt: `Set up the logged-out home page in the ${context.productName} root SPA.
+    //   - Remove anything happening in the loader; this page will be static.
+    //   - Update the home page to have a call to action to the register page. Use linkToProps from @saflib/links to create the link and bind them to vuetify components. Get the link object from @saflib/auth-links which is in saflib/identity/auth-links.
+    //   - Give it really basic content for now, will fit it in later.`,
     // })),
 
     // step(CdStepMachine, ({ context }) => ({
