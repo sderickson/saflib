@@ -14,25 +14,24 @@ export const kratosToSessionHandler = http.get("*/sessions/whoami", () =>
 );
 
 /** Override in tests so session-required loaders succeed (same URL as {@link kratosToSessionHandler}). */
-export const kratosSessionLoggedInHandler = http.get(
-  "*/sessions/whoami",
-  () =>
-    HttpResponse.json({
-      id: "test-session",
-      active: true,
-      identity: {
-        id: "1",
-        schema_id: "default",
-        schema_url: "",
-        traits: { email: "john.doe@example.com" },
-      },
-    }),
+export const kratosSessionLoggedInHandler = http.get("*/sessions/whoami", () =>
+  HttpResponse.json({
+    id: "test-session",
+    active: true,
+    identity: {
+      id: "1",
+      schema_id: "default",
+      schema_url: "",
+      traits: { email: "john.doe@example.com" },
+    },
+  }),
 );
 
-export const kratosRegistrationBrowserHandler = http.get(
+export const registrationBrowserHandler = http.get(
   "*/self-service/registration/browser",
   ({ request }) => {
-    const returnTo = new URL(request.url).searchParams.get("return_to") ?? undefined;
+    const returnTo =
+      new URL(request.url).searchParams.get("return_to") ?? undefined;
     return HttpResponse.json({
       ...mockRegistrationFlow,
       return_to: returnTo ?? mockRegistrationFlow.return_to,
@@ -40,7 +39,7 @@ export const kratosRegistrationBrowserHandler = http.get(
   },
 );
 
-export const kratosRegistrationFlowByIdHandler = http.get(
+export const registrationFlowByIdHandler = http.get(
   "*/self-service/registration/flows",
   ({ request }) => {
     const url = new URL(request.url);
@@ -89,10 +88,11 @@ export const kratosBrowserLogoutHandler = http.get(
     }),
 );
 
-export const kratosLoginBrowserHandler = http.get(
+export const loginBrowserHandler = http.get(
   "*/self-service/login/browser",
   ({ request }) => {
-    const returnTo = new URL(request.url).searchParams.get("return_to") ?? undefined;
+    const returnTo =
+      new URL(request.url).searchParams.get("return_to") ?? undefined;
     return HttpResponse.json({
       ...mockLoginFlow,
       return_to: returnTo ?? mockLoginFlow.return_to,
@@ -100,7 +100,7 @@ export const kratosLoginBrowserHandler = http.get(
   },
 );
 
-export const kratosLoginFlowByIdHandler = http.get(
+export const loginFlowByIdHandler = http.get(
   "*/self-service/login/flows",
   ({ request }) => {
     const url = new URL(request.url);
@@ -123,10 +123,11 @@ export const kratosUpdateLoginHandler = http.post("*/self-service/login", () =>
   }),
 );
 
-export const kratosVerificationBrowserHandler = http.get(
+export const verificationBrowserHandler = http.get(
   "*/self-service/verification/browser",
   ({ request }) => {
-    const returnTo = new URL(request.url).searchParams.get("return_to") ?? undefined;
+    const returnTo =
+      new URL(request.url).searchParams.get("return_to") ?? undefined;
     return HttpResponse.json({
       ...mockVerificationFlow,
       return_to: returnTo ?? mockVerificationFlow.return_to,
@@ -134,7 +135,7 @@ export const kratosVerificationBrowserHandler = http.get(
   },
 );
 
-export const kratosVerificationFlowByIdHandler = http.get(
+export const verificationFlowByIdHandler = http.get(
   "*/self-service/verification/flows",
   ({ request }) => {
     const url = new URL(request.url);
@@ -146,10 +147,11 @@ export const kratosVerificationFlowByIdHandler = http.get(
   },
 );
 
-export const kratosRecoveryBrowserHandler = http.get(
+export const recoveryBrowserHandler = http.get(
   "*/self-service/recovery/browser",
   ({ request }) => {
-    const returnTo = new URL(request.url).searchParams.get("return_to") ?? undefined;
+    const returnTo =
+      new URL(request.url).searchParams.get("return_to") ?? undefined;
     return HttpResponse.json({
       ...mockRecoveryFlow,
       return_to: returnTo ?? mockRecoveryFlow.return_to,
@@ -157,7 +159,7 @@ export const kratosRecoveryBrowserHandler = http.get(
   },
 );
 
-export const kratosRecoveryFlowByIdHandler = http.get(
+export const recoveryFlowByIdHandler = http.get(
   "*/self-service/recovery/flows",
   ({ request }) => {
     const url = new URL(request.url);
@@ -169,21 +171,26 @@ export const kratosRecoveryFlowByIdHandler = http.get(
   },
 );
 
-export const kratosUpdateRecoveryHandler = http.post("*/self-service/recovery", async () =>
-  HttpResponse.json({
-    ...mockRecoveryFlow,
-    state: RecoveryFlowState.SentEmail,
-    ui: {
-      ...mockRecoveryFlow.ui,
-      messages: [{ type: "info" as const, text: "Recovery email sent (fake)." }],
-    },
-  }),
+export const kratosUpdateRecoveryHandler = http.post(
+  "*/self-service/recovery",
+  async () =>
+    HttpResponse.json({
+      ...mockRecoveryFlow,
+      state: RecoveryFlowState.SentEmail,
+      ui: {
+        ...mockRecoveryFlow.ui,
+        messages: [
+          { type: "info" as const, text: "Recovery email sent (fake)." },
+        ],
+      },
+    }),
 );
 
-export const kratosSettingsBrowserHandler = http.get(
+export const settingsBrowserHandler = http.get(
   "*/self-service/settings/browser",
   ({ request }) => {
-    const returnTo = new URL(request.url).searchParams.get("return_to") ?? undefined;
+    const returnTo =
+      new URL(request.url).searchParams.get("return_to") ?? undefined;
     return HttpResponse.json({
       ...mockSettingsFlow,
       return_to: returnTo ?? mockSettingsFlow.return_to,
@@ -191,7 +198,7 @@ export const kratosSettingsBrowserHandler = http.get(
   },
 );
 
-export const kratosSettingsFlowByIdHandler = http.get(
+export const settingsFlowByIdHandler = http.get(
   "*/self-service/settings/flows",
   ({ request }) => {
     const url = new URL(request.url);
@@ -203,14 +210,16 @@ export const kratosSettingsFlowByIdHandler = http.get(
   },
 );
 
-export const kratosUpdateSettingsHandler = http.post("*/self-service/settings", async () =>
-  HttpResponse.json({
-    ...mockSettingsFlow,
-    ui: {
-      ...mockSettingsFlow.ui,
-      messages: [{ type: "info" as const, text: "Settings updated (fake)." }],
-    },
-  }),
+export const kratosUpdateSettingsHandler = http.post(
+  "*/self-service/settings",
+  async () =>
+    HttpResponse.json({
+      ...mockSettingsFlow,
+      ui: {
+        ...mockSettingsFlow.ui,
+        messages: [{ type: "info" as const, text: "Settings updated (fake)." }],
+      },
+    }),
 );
 
 export const kratosUpdateVerificationHandler = http.post(
@@ -231,7 +240,10 @@ export const kratosUpdateVerificationHandler = http.post(
         ui: {
           ...mockVerificationFlow.ui,
           messages: [
-            { type: "info" as const, text: "A new verification code was sent." },
+            {
+              type: "info" as const,
+              text: "A new verification code was sent.",
+            },
           ],
         },
       });
@@ -245,20 +257,20 @@ export const kratosUpdateVerificationHandler = http.post(
 
 export const kratosFakeHandlers = [
   kratosToSessionHandler,
-  kratosRegistrationBrowserHandler,
-  kratosRegistrationFlowByIdHandler,
+  registrationBrowserHandler,
+  registrationFlowByIdHandler,
   kratosUpdateRegistrationHandler,
-  kratosLoginBrowserHandler,
-  kratosLoginFlowByIdHandler,
+  loginBrowserHandler,
+  loginFlowByIdHandler,
   kratosUpdateLoginHandler,
-  kratosVerificationBrowserHandler,
-  kratosVerificationFlowByIdHandler,
+  verificationBrowserHandler,
+  verificationFlowByIdHandler,
   kratosUpdateVerificationHandler,
-  kratosRecoveryBrowserHandler,
-  kratosRecoveryFlowByIdHandler,
+  recoveryBrowserHandler,
+  recoveryFlowByIdHandler,
   kratosUpdateRecoveryHandler,
-  kratosSettingsBrowserHandler,
-  kratosSettingsFlowByIdHandler,
+  settingsBrowserHandler,
+  settingsFlowByIdHandler,
   kratosUpdateSettingsHandler,
   kratosBrowserLogoutHandler,
 ];

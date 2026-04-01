@@ -4,17 +4,17 @@ import { PageNotFound } from "@saflib/vue/components";
 import { authLinks } from "@saflib/ory-kratos-sdk/links";
 
 // BEGIN SORTED WORKFLOW AREA page-imports FOR vue/add-view
-import KratosLoginAsync from "./pages/login/LoginAsync.vue";
-import KratosNewLoginAsync from "./pages/new-login/NewLoginAsync.vue";
-import KratosSettingsAsync from "./pages/settings/SettingsAsync.vue";
-import KratosNewSettingsAsync from "./pages/new-settings/NewSettingsAsync.vue";
-import KratosRegistrationAsync from "./pages/registration/RegistrationAsync.vue";
-import KratosNewRegistrationAsync from "./pages/new-registration/NewRegistrationAsync.vue";
-import KratosVerificationAsync from "./pages/verification/VerificationAsync.vue";
-import KratosNewVerificationAsync from "./pages/new-verification/NewVerificationAsync.vue";
-import KratosRecoveryAsync from "./pages/recovery/RecoveryAsync.vue";
-import KratosNewRecoveryAsync from "./pages/new-recovery/NewRecoveryAsync.vue";
-import KratosVerifyWallAsync from "./pages/verify-wall/VerifyWallAsync.vue";
+import loginAsync from "./pages/login/LoginAsync.vue";
+import newLoginAsync from "./pages/new-login/NewLoginAsync.vue";
+import settingsAsync from "./pages/settings/SettingsAsync.vue";
+import newSettingsAsync from "./pages/new-settings/NewSettingsAsync.vue";
+import registrationAsync from "./pages/registration/RegistrationAsync.vue";
+import newRegistrationAsync from "./pages/new-registration/NewRegistrationAsync.vue";
+import verificationAsync from "./pages/verification/VerificationAsync.vue";
+import newVerificationAsync from "./pages/new-verification/NewVerificationAsync.vue";
+import recoveryAsync from "./pages/recovery/RecoveryAsync.vue";
+import newRecoveryAsync from "./pages/new-recovery/NewRecoveryAsync.vue";
+import verifyWallAsync from "./pages/verify-wall/VerifyWallAsync.vue";
 import LogoutAsync from "./pages/logout/LogoutAsync.vue";
 // END WORKFLOW AREA
 
@@ -36,54 +36,54 @@ export const createKratosAuthRouter = (
       {
         path: "/",
         redirect: (to) => ({
-          path: authLinks.kratosNewLogin.path,
+          path: authLinks.newLogin.path,
           query: to.query,
         }),
       },
       // BEGIN WORKFLOW AREA page-routes FOR vue/add-view
       {
-        path: authLinks.kratosRegistration.path,
-        component: KratosRegistrationAsync,
+        path: authLinks.registration.path,
+        component: registrationAsync,
       },
       {
-        path: authLinks.kratosNewRegistration.path,
-        component: KratosNewRegistrationAsync,
+        path: authLinks.newRegistration.path,
+        component: newRegistrationAsync,
       },
       {
-        path: authLinks.kratosLogin.path,
-        component: KratosLoginAsync,
+        path: authLinks.login.path,
+        component: loginAsync,
       },
       {
-        path: authLinks.kratosNewLogin.path,
-        component: KratosNewLoginAsync,
+        path: authLinks.newLogin.path,
+        component: newLoginAsync,
       },
       {
-        path: authLinks.kratosVerification.path,
-        component: KratosVerificationAsync,
+        path: authLinks.verification.path,
+        component: verificationAsync,
       },
       {
-        path: authLinks.kratosNewVerification.path,
-        component: KratosNewVerificationAsync,
+        path: authLinks.newVerification.path,
+        component: newVerificationAsync,
       },
       {
-        path: authLinks.kratosRecovery.path,
-        component: KratosRecoveryAsync,
+        path: authLinks.recovery.path,
+        component: recoveryAsync,
       },
       {
-        path: authLinks.kratosNewRecovery.path,
-        component: KratosNewRecoveryAsync,
+        path: authLinks.newRecovery.path,
+        component: newRecoveryAsync,
       },
       {
-        path: authLinks.kratosSettings.path,
-        component: KratosSettingsAsync,
+        path: authLinks.settings.path,
+        component: settingsAsync,
       },
       {
-        path: authLinks.kratosNewSettings.path,
-        component: KratosNewSettingsAsync,
+        path: authLinks.newSettings.path,
+        component: newSettingsAsync,
       },
       {
-        path: authLinks.kratosVerifyWall.path,
-        component: KratosVerifyWallAsync,
+        path: authLinks.verifyWall.path,
+        component: verifyWallAsync,
       },
       {
         path: authLinks.logout.path,

@@ -21,9 +21,9 @@ export function useNewRecoveryEntryHref(
         : undefined;
     const rt = fromQuery ?? fromFlow;
     return rt
-      ? linkToHrefWithHost(authLinks.kratosNewRecovery, {
+      ? linkToHrefWithHost(authLinks.newRecovery, {
           params: { return_to: rt },
         })
-      : linkToHrefWithHost(authLinks.kratosNewRecovery);
+      : linkToHrefWithHost(authLinks.newRecovery);
   });
 }

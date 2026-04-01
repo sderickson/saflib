@@ -5,7 +5,7 @@ import {
   findPasskeyOrWebAuthnLoginTrigger,
   isPasskeyLoginTriggerButton,
   shouldMergePasskeyTriggerIntoIdentifier,
-} from "./kratosLoginPasskeyInIdentifier.ts";
+} from "./loginPasskeyInIdentifier.ts";
 
 function input(name: string, type: string, group = "default"): UiNode {
   return {
@@ -37,21 +37,29 @@ function passkeyTrigger(): UiNode {
   } as UiNode;
 }
 
-describe("kratosLoginPasskeyInIdentifier", () => {
+describe("loginPasskeyInIdentifier", () => {
   it("detects passkey login trigger", () => {
     const n = passkeyTrigger();
     expect(isPasskeyLoginTriggerButton(n)).toBe(true);
   });
 
   it("merges only when identifier + passkey trigger exist", () => {
-    const nodes = [input("csrf_token", "hidden"), input("identifier", "text"), passkeyTrigger()];
+    const nodes = [
+      input("csrf_token", "hidden"),
+      input("identifier", "text"),
+      passkeyTrigger(),
+    ];
     expect(shouldMergePasskeyTriggerIntoIdentifier(true, nodes)).toBe(true);
     expect(shouldMergePasskeyTriggerIntoIdentifier(false, nodes)).toBe(false);
   });
 
   it("finds trigger and filters it from display list", () => {
     const trigger = passkeyTrigger();
-    const nodes = [input("identifier", "text"), trigger, input("password", "password", "password")];
+    const nodes = [
+      input("identifier", "text"),
+      trigger,
+      input("password", "password", "password"),
+    ];
     expect(findPasskeyOrWebAuthnLoginTrigger(nodes)).toBe(trigger);
     const filtered = filterOutMergedLoginTriggerButton(true, nodes);
     expect(filtered).toHaveLength(2);

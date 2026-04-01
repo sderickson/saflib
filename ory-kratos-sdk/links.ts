@@ -13,7 +13,7 @@ export const authLinks: LinkMap = {
    * Kratos registration UI (existing flow). Resume with `params.flow` (Kratos flow id). Do not mix
    * with `return_to` on the same URL — start a browser flow via `/new-registration?return_to=`.
    */
-  kratosRegistration: {
+  registration: {
     subdomain,
     path: "/registration",
     params: ["flow"],
@@ -22,7 +22,7 @@ export const authLinks: LinkMap = {
    * Kratos new registration UI (browser flow creation). Use `params.return_to` (full URL) for Kratos
    * `return_to`.
    */
-  kratosNewRegistration: {
+  newRegistration: {
     subdomain,
     path: "/new-registration",
     params: ["return_to"],
@@ -30,7 +30,7 @@ export const authLinks: LinkMap = {
   /**
    * Kratos login UI (existing flow). Resume with `params.flow`. Start via `/new-login?return_to=`.
    */
-  kratosLogin: {
+  login: {
     subdomain,
     path: "/login",
     params: ["flow"],
@@ -39,7 +39,7 @@ export const authLinks: LinkMap = {
    * Kratos new login UI (browser flow creation). Use `params.return_to` (full URL) for Kratos
    * `return_to`.
    */
-  kratosNewLogin: {
+  newLogin: {
     subdomain,
     path: "/new-login",
     params: ["return_to"],
@@ -48,7 +48,7 @@ export const authLinks: LinkMap = {
    * Kratos email verification (code flow). Resume with `params.flow`, optional `params.token` from
    * the courier. Start via `/new-verification?return_to=`.
    */
-  kratosVerification: {
+  verification: {
     subdomain,
     path: "/verification",
     params: ["flow", "token"],
@@ -57,7 +57,7 @@ export const authLinks: LinkMap = {
    * Kratos new verification UI (browser flow creation). Use `params.return_to` for post-verification
    * navigation.
    */
-  kratosNewVerification: {
+  newVerification: {
     subdomain,
     path: "/new-verification",
     params: ["return_to"],
@@ -66,7 +66,7 @@ export const authLinks: LinkMap = {
    * Shared gate when the user is signed in but email is not verified. Use `params.return_to` (full
    * URL) for where to send them after verification (e.g. recipes home).
    */
-  kratosVerifyWall: {
+  verifyWall: {
     subdomain,
     path: "/verify-wall",
     params: ["return_to"],
@@ -75,7 +75,7 @@ export const authLinks: LinkMap = {
    * Kratos account recovery. Resume with `params.flow` and optional `params.token`. Start a browser
    * flow via `/new-recovery?return_to=` (do not mix `flow` with `return_to` on the same URL).
    */
-  kratosRecovery: {
+  recovery: {
     subdomain,
     path: "/recovery",
     params: ["flow", "token", "return_to"],
@@ -83,7 +83,7 @@ export const authLinks: LinkMap = {
   /**
    * Kratos new recovery UI (browser flow creation). Use `params.return_to` for post-recovery navigation.
    */
-  kratosNewRecovery: {
+  newRecovery: {
     subdomain,
     path: "/new-recovery",
     params: ["return_to"],
@@ -92,7 +92,7 @@ export const authLinks: LinkMap = {
    * Kratos account settings. Resume with `params.flow` (and optional `return_to`). Start a browser
    * flow via `/new-settings?return_to=` — do not mix `flow` with `return_to` on the same URL.
    */
-  kratosSettings: {
+  settings: {
     subdomain,
     path: "/settings",
     params: ["flow"],
@@ -100,24 +100,12 @@ export const authLinks: LinkMap = {
   /**
    * Kratos new settings UI (browser flow creation). Use `params.return_to` for post-settings navigation.
    */
-  kratosNewSettings: {
+  newSettings: {
     subdomain,
     path: "/new-settings",
     params: ["return_to"],
   },
   // END WORKFLOW AREA
-  /** Nav — same paths as Kratos flows. */
-  login: {
-    subdomain,
-    path: "/login",
-    params: ["flow"],
-  },
-  register: {
-    subdomain,
-    path: "/registration",
-    params: ["flow"],
-  },
-  /** Kratos browser logout via `LogoutAsync` route. */
   logout: {
     subdomain,
     path: "/logout",

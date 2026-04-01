@@ -1,4 +1,10 @@
-import type { LoginFlow, RecoveryFlow, RegistrationFlow, SettingsFlow, VerificationFlow } from "@ory/client";
+import type {
+  LoginFlow,
+  RecoveryFlow,
+  RegistrationFlow,
+  SettingsFlow,
+  VerificationFlow,
+} from "@ory/client";
 import {
   LoginFlowState,
   RecoveryFlowState,
@@ -7,13 +13,15 @@ import {
 } from "@ory/client";
 
 /** Mutable registration flow returned by browser / get-by-id handlers. */
-export let mockRegistrationFlow: RegistrationFlow = createDefaultMockRegistrationFlow();
+export let mockRegistrationFlow: RegistrationFlow =
+  createDefaultMockRegistrationFlow();
 
 /** Mutable login flow for MSW (post-registration sign-in). */
 export let mockLoginFlow: LoginFlow = createDefaultMockLoginFlow();
 
 /** Mutable verification flow for MSW. */
-export let mockVerificationFlow: VerificationFlow = createDefaultMockVerificationFlow();
+export let mockVerificationFlow: VerificationFlow =
+  createDefaultMockVerificationFlow();
 
 /** Mutable recovery flow for MSW. */
 export let mockRecoveryFlow: RecoveryFlow = createDefaultMockRecoveryFlow();
@@ -21,16 +29,16 @@ export let mockRecoveryFlow: RecoveryFlow = createDefaultMockRecoveryFlow();
 /** Mutable settings flow for MSW. */
 export let mockSettingsFlow: SettingsFlow = createDefaultMockSettingsFlow();
 
-export type KratosRegistrationPostResult = "success" | "validation_error";
+export type registrationPostResult = "success" | "validation_error";
 
 /** How `POST /self-service/registration` responds in fake handlers. */
-let mockRegistrationPostResult: KratosRegistrationPostResult = "success";
+let mockRegistrationPostResult: registrationPostResult = "success";
 
-export function getMockRegistrationPostResult(): KratosRegistrationPostResult {
+export function getMockRegistrationPostResult(): registrationPostResult {
   return mockRegistrationPostResult;
 }
 
-export function setMockRegistrationPostResult(r: KratosRegistrationPostResult) {
+export function setMockRegistrationPostResult(r: registrationPostResult) {
   mockRegistrationPostResult = r;
 }
 
@@ -119,7 +127,8 @@ export function createDefaultMockRecoveryFlow(): RecoveryFlow {
     request_url: "http://auth.localhost/recovery",
     return_to: "http://app.recipes.localhost:3000/",
     ui: {
-      action: "http://kratos.localhost/self-service/recovery?flow=mock-recovery-flow",
+      action:
+        "http://kratos.localhost/self-service/recovery?flow=mock-recovery-flow",
       method: "POST",
       nodes: [
         {
@@ -180,7 +189,8 @@ export function createDefaultMockSettingsFlow(): SettingsFlow {
       traits: { email: "user@example.com" },
     },
     ui: {
-      action: "http://kratos.localhost/self-service/settings?flow=mock-settings-flow",
+      action:
+        "http://kratos.localhost/self-service/settings?flow=mock-settings-flow",
       method: "POST",
       nodes: [
         {

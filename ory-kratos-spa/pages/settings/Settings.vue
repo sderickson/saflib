@@ -35,7 +35,7 @@
 
       <v-window v-model="tab">
         <v-window-item value="email">
-          <KratosSettingsGroupUi
+          <settingsGroupUi
             :flow="flow"
             group="profile"
             :submitting="submitting"
@@ -45,7 +45,7 @@
           />
         </v-window-item>
         <v-window-item value="password">
-          <KratosSettingsGroupUi
+          <settingsGroupUi
             :flow="flow"
             group="password"
             :submitting="submitting"
@@ -55,7 +55,7 @@
           />
         </v-window-item>
         <v-window-item v-if="hasTotpSettings" value="totp">
-          <KratosSettingsGroupUi
+          <settingsGroupUi
             :flow="flow"
             group="totp"
             :submitting="submitting"
@@ -65,7 +65,7 @@
           />
         </v-window-item>
         <v-window-item v-if="hasPasskeySettings" value="passkey">
-          <KratosSettingsGroupUi
+          <settingsGroupUi
             :flow="flow"
             group="passkey"
             :submitting="submitting"
@@ -112,7 +112,7 @@ import {
   kratosIdentityEmail,
   useKratosSession,
 } from "@saflib/ory-kratos-sdk";
-import KratosSettingsGroupUi from "./KratosSettingsGroupUi.vue";
+import settingsGroupUi from "./settingsGroupUi.vue";
 import SettingsIntro from "./SettingsIntro.vue";
 import type { KratosFlowUiMessageFilterContext } from "../common/kratosUiMessages.ts";
 import {

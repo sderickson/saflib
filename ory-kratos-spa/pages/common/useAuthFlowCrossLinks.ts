@@ -28,13 +28,13 @@ export function useAuthFlowCrossLinks(
     return rt ? ({ params: { return_to: rt } } as const) : undefined;
   });
   const loginHref = computed(() =>
-    linkToHrefWithHost(authLinks.kratosNewLogin, returnToOptions.value),
+    linkToHrefWithHost(authLinks.newLogin, returnToOptions.value),
   );
   const registerHref = computed(() =>
-    linkToHrefWithHost(authLinks.kratosNewRegistration, returnToOptions.value),
+    linkToHrefWithHost(authLinks.newRegistration, returnToOptions.value),
   );
   const recoveryHref = computed(() =>
-    linkToHrefWithHost(authLinks.kratosNewRecovery, returnToOptions.value),
+    linkToHrefWithHost(authLinks.newRecovery, returnToOptions.value),
   );
   return { loginHref, registerHref, recoveryHref };
 }

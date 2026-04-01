@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, it, expect, vi } from "vitest";
 import { stubGlobals } from "@saflib/vue/testing";
-import KratosSettingsAsync from "./SettingsAsync.vue";
+import settingsAsync from "./SettingsAsync.vue";
 import {
   mountTestApp,
   createTestRouter,
@@ -12,7 +12,7 @@ import {
 } from "@saflib/ory-kratos-sdk/fakes";
 import { setupMockServer } from "@saflib/sdk/testing/mock";
 
-describe("KratosSettings", () => {
+describe("settings", () => {
   stubGlobals();
   const server = setupMockServer(testAppHandlers);
   beforeEach(() => {
@@ -28,7 +28,7 @@ describe("KratosSettings", () => {
     });
     await router.isReady();
 
-    const wrapper = mountTestApp(KratosSettingsAsync, {}, { router });
+    const wrapper = mountTestApp(settingsAsync, {}, { router });
     await vi.waitFor(() =>
       expect(wrapper.text()).toContain("Account settings"),
     );

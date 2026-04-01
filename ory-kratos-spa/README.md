@@ -120,7 +120,7 @@ Submit-body construction is a pure function in the flow's `.logic.ts` file (e.g.
 
 `login/LoginFlowForm.vue` is the most customized consumer of `KratosFlowUi` and demonstrates both extension patterns:
 
-- **Passkey-in-identifier merge**: Filters the passkey trigger button out of the node list (`:nodes="filteredLoginNodes"`), then passes `KratosFlowUiNodeAt` a `passkeyLoginTrigger` prop on the identifier field so the cloud-key icon appears. Uses helpers from `kratosLoginPasskeyInIdentifier.ts`.
+- **Passkey-in-identifier merge**: Filters the passkey trigger button out of the node list (`:nodes="filteredLoginNodes"`), then passes `KratosFlowUiNodeAt` a `passkeyLoginTrigger` prop on the identifier field so the cloud-key icon appears. Uses helpers from `loginPasskeyInIdentifier.ts`.
 - **MFA tabs**: Overrides `#fieldset` to split non-default groups into `v-tabs` / `v-window` for AAL2 login. Tab logic lives in `useKratosMfaGroupTabs.ts`.
 - **Passkey-specific CSS**: The `.kratos-flow-form__identifier-with-passkey` style lives in `LoginFlowForm.vue`'s `<style scoped>`, not in the shared component.
 
