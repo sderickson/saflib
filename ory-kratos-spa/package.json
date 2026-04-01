@@ -1,0 +1,27 @@
+{
+  "name": "@saflib/ory-kratos-spa",
+  "type": "module",
+  "exports": {
+    "./router": "./router.ts",
+    "./fixtures": "./fixtures.ts",
+    "./strings": "./strings.ts",
+    "./i18n": "./i18n.ts",
+    "./test-app": "./test-app.ts"
+  },
+  "scripts": {
+    "dev": "vite",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest --coverage",
+    "test:e2e": "npx playwright test",
+    "test:e2e:ui": "npx playwright test --ui",
+    "typecheck": "vue-tsc -b"
+  },
+  "dependencies": {
+    "@saflib/sdk": "*",
+    "@saflib/links": "*",
+    "@saflib/vue": "*",
+    "@saflib/ory-kratos-sdk": "*",
+    "vue-router": "*"
+  }
+}
