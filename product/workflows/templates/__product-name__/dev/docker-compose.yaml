@@ -18,13 +18,8 @@ services:
     build:
       context: ../..
       dockerfile: ./__product-name__/clients/build/Dockerfile
-    environment:
-      - CLIENT_SUBDOMAINS=${__PRODUCT_NAME___CLIENT_SUBDOMAINS}
-      - DOMAIN=${__PRODUCT_NAME___DOMAIN}
-      - DEPLOYMENT_NAME=${DEPLOYMENT_NAME}
-      - PROTOCOL=${PROTOCOL}
-      - SERVICE_SUBDOMAINS=${__PRODUCT_NAME___SERVICE_SUBDOMAINS}
-      - TZ=${TZ}
+    env_file:
+      - ./env.dev
     volumes:
       - ../../__product-name__/clients/:/app/__product-name__/clients/
       - ../../saflib/:/app/saflib/
