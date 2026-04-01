@@ -22,8 +22,8 @@
     "template-package-clients-common": "*",
     "template-package-links": "*",
     "template-package-sdk": "*",
+    "@saflib/ory-kratos-sdk": "*",
     "@saflib/vue": "*",
-    "@saflib/auth": "*",
     "@saflib/links": "*",
     "vue-router": "*"
   }
