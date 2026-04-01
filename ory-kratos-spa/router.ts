@@ -1,0 +1,96 @@
+import type { RouteRecordRaw, RouterHistory } from "vue-router";
+import { createRouter, createWebHistory } from "vue-router";
+import { PageNotFound } from "@saflib/vue/components";
+import { authLinks } from "@saflib/ory-kratos-sdk/links";
+
+// BEGIN SORTED WORKFLOW AREA page-imports FOR vue/add-view
+import KratosLoginAsync from "./pages/login/LoginAsync.vue";
+import KratosNewLoginAsync from "./pages/new-login/NewLoginAsync.vue";
+import KratosSettingsAsync from "./pages/settings/SettingsAsync.vue";
+import KratosNewSettingsAsync from "./pages/new-settings/NewSettingsAsync.vue";
+import KratosRegistrationAsync from "./pages/registration/RegistrationAsync.vue";
+import KratosNewRegistrationAsync from "./pages/new-registration/NewRegistrationAsync.vue";
+import KratosVerificationAsync from "./pages/verification/VerificationAsync.vue";
+import KratosNewVerificationAsync from "./pages/new-verification/NewVerificationAsync.vue";
+import KratosRecoveryAsync from "./pages/recovery/RecoveryAsync.vue";
+import KratosNewRecoveryAsync from "./pages/new-recovery/NewRecoveryAsync.vue";
+import KratosVerifyWallAsync from "./pages/verify-wall/VerifyWallAsync.vue";
+import LogoutAsync from "./pages/logout/LogoutAsync.vue";
+// END WORKFLOW AREA
+
+export interface CreateKratosAuthRouterOptions {
+  history?: RouterHistory;
+  additionalRoutes?: RouteRecordRaw[];
+}
+
+export const createKratosAuthRouter = (
+  options?: CreateKratosAuthRouterOptions,
+) => {
+  return createRouter({
+    history: options?.history ?? createWebHistory(),
+    routes: [
+      ...(options?.additionalRoutes ?? []),
+      /**
+       * Auth SPA home: start sign-in from `/new-login` (browser flow creation). Preserves query.
+       */
+      {
+        path: "/",
+        redirect: (to) => ({
+          path: authLinks.kratosNewLogin.path,
+          query: to.query,
+        }),
+      },
+      // BEGIN WORKFLOW AREA page-routes FOR vue/add-view
+      {
+        path: authLinks.kratosRegistration.path,
+        component: KratosRegistrationAsync,
+      },
+      {
+        path: authLinks.kratosNewRegistration.path,
+        component: KratosNewRegistrationAsync,
+      },
+      {
+        path: authLinks.kratosLogin.path,
+        component: KratosLoginAsync,
+      },
+      {
+        path: authLinks.kratosNewLogin.path,
+        component: KratosNewLoginAsync,
+      },
+      {
+        path: authLinks.kratosVerification.path,
+        component: KratosVerificationAsync,
+      },
+      {
+        path: authLinks.kratosNewVerification.path,
+        component: KratosNewVerificationAsync,
+      },
+      {
+        path: authLinks.kratosRecovery.path,
+        component: KratosRecoveryAsync,
+      },
+      {
+        path: authLinks.kratosNewRecovery.path,
+        component: KratosNewRecoveryAsync,
+      },
+      {
+        path: authLinks.kratosSettings.path,
+        component: KratosSettingsAsync,
+      },
+      {
+        path: authLinks.kratosNewSettings.path,
+        component: KratosNewSettingsAsync,
+      },
+      {
+        path: authLinks.kratosVerifyWall.path,
+        component: KratosVerifyWallAsync,
+      },
+      {
+        path: authLinks.logout.path,
+        component: LogoutAsync,
+      },
+      // END WORKFLOW AREA
+      { path: "/:pathMatch(.*)*", component: PageNotFound },
+    ],
+  });
+};
