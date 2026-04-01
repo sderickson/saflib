@@ -2,6 +2,7 @@
   "name": "@saflib/ory-kratos-spa",
   "type": "module",
   "exports": {
+    ".": "./index.ts",
     "./router": "./router.ts",
     "./fixtures": "./fixtures.ts",
     "./strings": "./strings.ts",

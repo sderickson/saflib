@@ -1,4 +1,4 @@
-import type { RouterHistory } from "vue-router";
+import type { RouteRecordRaw, RouterHistory } from "vue-router";
 import { createRouter, createWebHistory } from "vue-router";
 import { PageNotFound } from "@saflib/vue/components";
 import { authLinks } from "@saflib/ory-kratos-sdk/links";
@@ -18,10 +18,18 @@ import KratosVerifyWallAsync from "./pages/kratos/verify-wall/VerifyWallAsync.vu
 import LogoutAsync from "./pages/kratos/logout/LogoutAsync.vue";
 // END WORKFLOW AREA
 
-export const createAuthRouter = (options?: { history?: RouterHistory }) => {
+export interface CreateKratosAuthRouterOptions {
+  history?: RouterHistory;
+  additionalRoutes?: RouteRecordRaw[];
+}
+
+export const createKratosAuthRouter = (
+  options?: CreateKratosAuthRouterOptions,
+) => {
   return createRouter({
     history: options?.history ?? createWebHistory(),
     routes: [
+      ...(options?.additionalRoutes ?? []),
       /**
        * Auth SPA home: start sign-in from `/new-login` (browser flow creation). Preserves query.
        */
