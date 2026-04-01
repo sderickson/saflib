@@ -124,3 +124,5 @@ export const authLinks: LinkMap = {
     params: ["return_to"],
   },
 };
+
+export const defaultKratosAuthLinks = authLinks;
