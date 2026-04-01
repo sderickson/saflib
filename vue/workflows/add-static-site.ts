@@ -8,6 +8,7 @@ import {
   CdStepMachine,
   CommandStepMachine,
   getPackageName,
+  PromptStepMachine,
 } from "@saflib/workflows";
 import path from "node:path";
 
@@ -129,6 +130,13 @@ export const AddStaticSiteWorkflowDefinition = defineWorkflow<
     step(CommandStepMachine, () => ({
       command: "npm",
       args: ["install"],
+    })),
+
+    step(PromptStepMachine, () => ({
+      promptText: `Update the root level deploy/ to incorporate the new static site.
+
+      * Update build.sh to build the new static site client docker images.
+      * Update Dockerfile.prod to use those images to build the static files and incorporate them into the caddy image.`,
     })),
   ],
 });

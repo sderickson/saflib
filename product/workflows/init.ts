@@ -27,6 +27,11 @@ const input = [
     description: "Name of the new product",
     exampleValue: "foo",
   },
+  {
+    name: "domain",
+    description: "Domain of the new product",
+    exampleValue: "example.com",
+  },
 ] as const;
 
 /**
@@ -37,6 +42,7 @@ const input = [
 
 interface InitProductWorkflowContext extends ParsePackageNameOutput {
   productName: string;
+  domainName: string;
 }
 
 export const InitProductWorkflowDefinition = defineWorkflow<
@@ -61,6 +67,7 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       organizationName: packageInfo.organizationName,
       packageName: "PACKAGE_NAME_UNUSED",
       serviceName: input.name,
+      domainName: input.domain,
     };
   },
 

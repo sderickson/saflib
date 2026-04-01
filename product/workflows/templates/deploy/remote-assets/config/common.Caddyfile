@@ -53,7 +53,7 @@ http://caddy:2020 {
 			Access-Control-Allow-Credentials "true"
 			Access-Control-Expose-Headers "Authorization"
 			Access-Control-Allow-Methods "GET, POST, PUT, DELETE, PATCH, OPTIONS"
-			Access-Control-Allow-Headers "Content-Type, Authorization, X-CSRF-Token, Accept"
+			Access-Control-Allow-Headers "Content-Type, Authorization, X-CSRF-Token, X-Requested-With, Accept"
 			Access-Control-Max-Age "600"
 		}
 		respond 204
@@ -99,6 +99,21 @@ http://caddy:2020 {
 			header_up X-Csrf-Token {http.request.header.X-CSRF-Token}
 		}
 		reverse_proxy {args[1]} {
+			import reverse_proxy_common
+		}
+	}
+}
+
+# Recipes API (and similar): forward_auth to Kratos whoami; Express resolves identity via admin API.
+# args[0]: target service host (e.g. monolith:3002)
+(kratos-api-proxy) {
+	handle {
+		forward_auth kratos:4433 {
+			uri /sessions/whoami
+			header_up X-Request-ID {http.request.uuid}
+			copy_headers X-Kratos-Authenticated-Identity-Id
+		}
+		reverse_proxy {args[0]} {
 			import reverse_proxy_common
 		}
 	}

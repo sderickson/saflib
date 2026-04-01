@@ -1,6 +1,6 @@
 {
   "name": "@__organization-name__/deploy",
-  "description": "Docker compose setup for building and deploying __Organization Name__ products to production",
+  "description": "Docker compose setup for building and deploying __Organization Name__ products to __domain-name__",
   "bin": {
     "run-clean-slate": "./run-prod-local.ts"
   },
