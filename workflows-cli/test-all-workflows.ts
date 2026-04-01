@@ -257,7 +257,7 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
 
     // Test @saflib/vue workflows
     step(CdStepMachine, () => ({
-      path: "./tmp/clients/root",
+      path: "./tmp/clients/app",
     })),
     step(makeWorkflowMachine(AddSpaViewWorkflowDefinition), () => ({
       path: "./pages/welcome-new-user",
