@@ -5,7 +5,8 @@
   "type": "module",
   "exports": {
     ".": "./index.ts",
-    "./fakes": "./fakes.ts"
+    "./fakes": "./fakes.ts",
+    "./links": "./links.ts"
   },
   "scripts": {
     "test": "vitest run",
