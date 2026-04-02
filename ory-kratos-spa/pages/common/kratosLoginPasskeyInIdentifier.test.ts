@@ -5,7 +5,7 @@ import {
   findPasskeyOrWebAuthnLoginTrigger,
   isPasskeyLoginTriggerButton,
   shouldMergePasskeyTriggerIntoIdentifier,
-} from "./loginPasskeyInIdentifier.ts";
+} from "./kratosLoginPasskeyInIdentifier.ts";
 
 function input(name: string, type: string, group = "default"): UiNode {
   return {

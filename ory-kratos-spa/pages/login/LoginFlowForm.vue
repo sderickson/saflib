@@ -80,7 +80,7 @@ import {
   filterOutMergedLoginTriggerButton,
   findPasskeyOrWebAuthnLoginTrigger,
   shouldMergePasskeyTriggerIntoIdentifier,
-} from "../common/loginPasskeyInIdentifier.ts";
+} from "../common/kratosLoginPasskeyInIdentifier.ts";
 import { isKratosInputNode } from "../common/kratosNodeUtils.ts";
 import LoginIntro from "./LoginIntro.vue";
 import { login_intro } from "./LoginIntro.strings.ts";
