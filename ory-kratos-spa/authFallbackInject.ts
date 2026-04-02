@@ -8,8 +8,16 @@ import {
 } from "vue";
 import { useRoute } from "vue-router";
 
-const defaultPostAuthFallbackHref = computed(() => "/");
-const defaultRootHomeFallbackHref = computed(() => "/");
+// really gotta figure out some better way to handle client-side links
+// perhaps set up something in @saflib/vue that is reactive?
+import { linkToHref } from "@saflib/links";
+const domain = document.location.host.replace("auth.", "");
+const defaultPostAuthFallbackHref = computed(() =>
+  linkToHref({ subdomain: "app", path: "/" }, { domain }),
+);
+const defaultRootHomeFallbackHref = computed(() =>
+  linkToHref({ subdomain: "root", path: "/" }, { domain }),
+);
 
 /**
  * Full URL for the hub **app** home (`app.`…`/`), used when `?return_to=` is absent: Kratos

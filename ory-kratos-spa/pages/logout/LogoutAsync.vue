@@ -2,20 +2,20 @@
 import { onMounted } from "vue";
 import { useRoute } from "vue-router";
 import { useQueryClient } from "@tanstack/vue-query";
-import { linkToHrefWithHost } from "@saflib/links";
 import {
   BrowserLogoutFlowCreated,
   createBrowserLogoutFlowQueryOptions,
 } from "@saflib/ory-kratos-sdk";
-import { authLinks } from "@saflib/ory-kratos-sdk/links";
+import { useAuthLoggedOutRootFallbackHref } from "../../authFallbackInject.ts";
 
 const route = useRoute();
 const queryClient = useQueryClient();
 
+const rootHomeFallbackHref = useAuthLoggedOutRootFallbackHref();
 onMounted(async () => {
   const q = route.query.return_to;
   const fromQuery = typeof q === "string" && q.trim() ? q.trim() : undefined;
-  const returnTo = fromQuery ?? linkToHrefWithHost(authLinks.home);
+  const returnTo = fromQuery ?? rootHomeFallbackHref.value;
   const result = await queryClient.fetchQuery({
     ...createBrowserLogoutFlowQueryOptions({ returnTo }),
     staleTime: 0,
