@@ -1,5 +1,5 @@
 # Add static client build steps here:
-FROM __organization-name__-__product-name__-root-builder:latest AS __organization-name__-__product-name__-root-builder
+FROM __organization-name__-__product-name__-root:latest AS __organization-name__-__product-name__-root-builder
 RUN npm run build
 
 # BEGIN WORKFLOW AREA build-product-dependencies FOR product/init
