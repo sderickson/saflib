@@ -39,6 +39,27 @@ services:
       service: grafana
     volumes: !override []
 
+
+  kratos-migrate:
+    extends:
+      file: remote-assets/docker-compose.prod.yaml
+      service: kratos-migrate
+    volumes: !override
+      - ./kratos-prod-local/data:/var/lib/sqlite
+      - ./kratos-prod-local:/etc/config/kratos
+
+  kratos:
+    extends:
+      file: remote-assets/docker-compose.prod.yaml
+      service: kratos
+    command: serve -c /etc/config/kratos/kratos.yml --dev --watch-courier
+    env_file: !override
+      - ./env.kratos.config.prod-local
+      - ./env.kratos.prod-local
+    volumes: !override
+      - ./kratos-prod-local/data:/var/lib/sqlite
+      - ./kratos-prod-local:/etc/config/kratos
+      
 volumes:
   caddy_data:
   caddy_config:
