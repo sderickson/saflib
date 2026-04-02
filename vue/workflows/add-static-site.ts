@@ -99,7 +99,7 @@ export const AddStaticSiteWorkflowDefinition = defineWorkflow<
   docFiles: {},
 
   versionControl: {
-    allowPaths: ["**/content/**"],
+    allowPaths: ["**/content/**", "**/deploy/**"],
   },
 
   steps: [
