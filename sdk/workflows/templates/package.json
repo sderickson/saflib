@@ -28,6 +28,7 @@
     "template-package-spec": "*",
     "@saflib/vite": "*",
     "@saflib/vue": "*",
+    "@saflib/ory-kratos-sdk": "*",
     "msw": "^2.11.3"
   },
   "msw": {
