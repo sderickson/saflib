@@ -4,11 +4,11 @@ import type { Component } from "vue";
 import { createMemoryHistory, type Router } from "vue-router";
 import { create__SubdomainName__Router } from "./router.ts";
 import { __subdomain_name___strings } from "./strings.ts";
-import { identityServiceFakeHandlers } from "@saflib/auth/fakes";
 import {
   resetMocks,
   __serviceName__ServiceFakeHandlers,
 } from "template-package-sdk/fakes";
+import { kratosFakeHandlers } from "@saflib/ory-kratos-sdk/fakes";
 
 export const createTestRouter = () =>
   create__SubdomainName__Router({ history: createMemoryHistory() });
@@ -27,7 +27,7 @@ export const mountTestApp = <C extends Component>(
 };
 
 export const testAppHandlers = [
-  ...identityServiceFakeHandlers,
+  ...kratosFakeHandlers,
   ...__serviceName__ServiceFakeHandlers,
 ];
 export { resetMocks };

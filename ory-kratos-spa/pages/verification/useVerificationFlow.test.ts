@@ -52,7 +52,9 @@ describe("useVerificationFlow", () => {
 
       await submitVerificationForm(verificationTestForm());
 
-      await vi.waitFor(() => expect(assignMock).toHaveBeenCalledWith("/"));
+      await vi.waitFor(() =>
+        expect(assignMock).toHaveBeenCalledWith("http://app.localhost:3000/"),
+      );
       app.unmount();
     } finally {
       vi.unstubAllGlobals();

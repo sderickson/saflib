@@ -11,7 +11,9 @@ import type {
  */
 export const KRATOS_SETTINGS_PASSWORD_RECOVERY_MESSAGE_ID = 1060001;
 
-export function settingsFlowHasPasswordRecoveryMessage(flow: SettingsFlow): boolean {
+export function settingsFlowHasPasswordRecoveryMessage(
+  flow: SettingsFlow,
+): boolean {
   return (flow.ui.messages ?? []).some(
     (m) => Number(m.id) === KRATOS_SETTINGS_PASSWORD_RECOVERY_MESSAGE_ID,
   );
@@ -29,7 +31,7 @@ export function settingsFlowShouldFetch(
 /**
  * Builds {@link FormData} for a Kratos settings submit (same submit-button omission issue as recovery).
  */
-export function formDataFromKratosSettingsForm(
+export function formDataFromsettingsForm(
   form: HTMLFormElement,
   submitter: HTMLElement | null | undefined,
 ): FormData {

@@ -90,6 +90,11 @@ export const DrizzleInitWorkflowDefinition = defineWorkflow<
       args: ["install"],
     })),
 
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["install", "drizzle-orm"],
+    })),
+
     // initialize drizzle sqlite migrations
     step(CommandStepMachine, () => ({
       command: "npm",

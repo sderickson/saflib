@@ -6,7 +6,7 @@ import {
 import { kratosSubmitErrorMessage } from "../common/kratosErrorMessage.ts";
 import {
   buildSettingsUpdateBodyFromFormData,
-  formDataFromKratosSettingsForm,
+  formDataFromsettingsForm,
 } from "./Settings.logic.ts";
 import { settings_page as pageStrings } from "./Settings.strings.ts";
 
@@ -29,7 +29,7 @@ export function useSettingsFlow(flowId: MaybeRefOrGetter<string>) {
   ) {
     const id = toValue(flowId);
     if (!id) return;
-    const fd = formDataFromKratosSettingsForm(form, submitter);
+    const fd = formDataFromsettingsForm(form, submitter);
     submitting.value = true;
     submitError.value = null;
     try {

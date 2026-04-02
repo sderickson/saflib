@@ -24,7 +24,9 @@
       :intercept-ory-programmatic-submit="interceptOryProgrammaticSubmit"
       @submit="(form, submitter) => submitLoginForm(form, submitter)"
     >
-      <template #fieldset="{ displayNodes: flowNodes, allNodeIndices: flatIndices }">
+      <template
+        #fieldset="{ displayNodes: flowNodes, allNodeIndices: flatIndices }"
+      >
         <template v-if="!showMfaGroupTabs">
           <template v-for="idx in flatIndices" :key="'node-' + idx">
             <KratosFlowUiNodeAt
@@ -94,7 +96,9 @@ const { submitting, submitError, clearSubmitError, submitLoginForm } =
 
 /** Ory `webauthn.js` calls `form.submit()` after passkey login; patch so `@submit.prevent` runs (see `kratosFormSubmitOryPatch.ts`). */
 const interceptOryProgrammaticSubmit = computed(() =>
-  props.flow.ui.nodes.some((n) => n.group === "passkey" || n.group === "webauthn"),
+  props.flow.ui.nodes.some(
+    (n) => n.group === "passkey" || n.group === "webauthn",
+  ),
 );
 
 const filteredLoginNodes = computed(() =>
@@ -117,7 +121,9 @@ const mergePasskeyIntoIdentifier = computed(() =>
   shouldMergePasskeyTriggerIntoIdentifier(true, props.flow.ui.nodes),
 );
 
-function passkeyTriggerForNode(node: UiNode | undefined): UiNode | null | undefined {
+function passkeyTriggerForNode(
+  node: UiNode | undefined,
+): UiNode | null | undefined {
   if (
     !mergePasskeyIntoIdentifier.value ||
     !node ||
@@ -151,7 +157,8 @@ function groupTabTitle(group: string): string {
 
 <style scoped>
 /* Passkey trigger uses append-inner icon; emphasize affordance slightly */
-:deep(.kratos-flow-form__identifier-with-passkey .v-field__append-inner) .v-icon {
+:deep(.kratos-flow-form__identifier-with-passkey .v-field__append-inner)
+  .v-icon {
   opacity: 1;
 }
 </style>

@@ -1,6 +1,6 @@
 import { afterEach, describe, it, expect, vi } from "vitest";
 import { stubGlobals } from "@saflib/vue/testing";
-import KratosVerificationAsync from "./VerificationAsync.vue";
+import verificationAsync from "./VerificationAsync.vue";
 import {
   mountTestApp,
   createTestRouter,
@@ -12,7 +12,7 @@ import { setupMockServer } from "@saflib/sdk/testing/mock";
 // Renders the page to capture baseline coverage.
 // Uncovered lines after this indicate logic worth extracting to .logic.ts or composables.
 
-describe("KratosVerification", () => {
+describe("verification", () => {
   stubGlobals();
   setupMockServer(testAppHandlers);
   afterEach(resetKratosFlowMocks);
@@ -25,7 +25,7 @@ describe("KratosVerification", () => {
     });
     await router.isReady();
 
-    const wrapper = mountTestApp(KratosVerificationAsync, {}, { router });
+    const wrapper = mountTestApp(verificationAsync, {}, { router });
     await vi.waitFor(() =>
       expect(wrapper.text()).toContain("Verify your email"),
     );

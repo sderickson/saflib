@@ -5,6 +5,9 @@
   "type": "module",
   "exports": {
     ".": "./index.ts",
+    "./components": "./components/index.ts",
+    "./components/__product-name__-layout": "./components/__product-name__-layout/__ProductName__Layout.vue",
+    "./vuetify-config": "./vuetify-config.ts",
     "./strings": "./strings.ts",
     "./i18n": "./i18n.ts",
     "./fixtures": "./fixtures/index.ts",
@@ -19,6 +22,7 @@
   "dependencies": {
     "@saflib/vue": "*",
     "@sentry/vue": "^10.21.0",
+    "@saflib/ory-kratos-sdk": "*",
     "template-package-spec": "*"
   }
 }

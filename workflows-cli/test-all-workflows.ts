@@ -74,6 +74,7 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
     // Covers various "init" workflows
     step(makeWorkflowMachine(InitProductWorkflowDefinition), () => ({
       name: "tmp",
+      domain: "temporary.com",
     })),
 
     // test spec project
@@ -257,7 +258,7 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
 
     // Test @saflib/vue workflows
     step(CdStepMachine, () => ({
-      path: "./tmp/clients/root",
+      path: "./tmp/clients/app",
     })),
     step(makeWorkflowMachine(AddSpaViewWorkflowDefinition), () => ({
       path: "./pages/welcome-new-user",

@@ -94,7 +94,7 @@ export function useRegistrationFlow(flow: Ref<RegistrationFlow>) {
       if (registrationSession) {
         if (identityNeedsEmailVerification(registrationSession.identity)) {
           window.location.assign(
-            linkToHrefWithHost(authLinks.kratosVerifyWall, {
+            linkToHrefWithHost(authLinks.verifyWall, {
               params: { return_to: destination },
             }),
           );
@@ -109,7 +109,7 @@ export function useRegistrationFlow(flow: Ref<RegistrationFlow>) {
       const password = String(fd.get("password") ?? "");
       if (!password.trim()) {
         window.location.assign(
-          linkToHrefWithHost(authLinks.kratosNewLogin, {
+          linkToHrefWithHost(authLinks.newLogin, {
             params: { return_to: destination },
           }),
         );
@@ -148,7 +148,7 @@ export function useRegistrationFlow(flow: Ref<RegistrationFlow>) {
         identityNeedsEmailVerification(loginSession.identity)
       ) {
         window.location.assign(
-          linkToHrefWithHost(authLinks.kratosVerifyWall, {
+          linkToHrefWithHost(authLinks.verifyWall, {
             params: { return_to: destination },
           }),
         );

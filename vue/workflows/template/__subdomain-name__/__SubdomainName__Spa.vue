@@ -1,9 +1,13 @@
 <script setup lang="ts">
-import { __ProductName__Layout } from "template-package-clients-common";
+import { computed } from "vue";
+import { Dynamic__ProductName__Layout } from "template-package-clients-common";
+import { useKratosSession } from "@saflib/ory-kratos-sdk";
+const { data: session } = useKratosSession();
+const loggedIn = computed(() => !!session);
 </script>
 
 <template>
-  <__ProductName__Layout>
+  <Dynamic__ProductName__Layout :logged-in="loggedIn">
     <router-view />
-  </__ProductName__Layout>
+  </Dynamic__ProductName__Layout>
 </template>

@@ -3,6 +3,7 @@ import type { ComponentMountingOptions } from "@vue/test-utils";
 import type { Component } from "vue";
 import { __product_name___sdk_strings } from "./strings.ts";
 import { __serviceName__ServiceFakeHandlers } from "./fakes.ts";
+import { kratosFakeHandlers } from "@saflib/ory-kratos-sdk/fakes";
 import { router } from "./router.ts";
 import { resetMocks } from "./fakes.ts";
 
@@ -18,5 +19,5 @@ export const mountTestApp = <C extends Component>(
   });
 };
 
-export const testAppHandlers = [...__serviceName__ServiceFakeHandlers];
+export const testAppHandlers = [...kratosFakeHandlers, ...__serviceName__ServiceFakeHandlers];
 export { resetMocks };

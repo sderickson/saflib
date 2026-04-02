@@ -1,0 +1,11 @@
+.VPContent {
+  background: rgb(var(--v-theme-background));
+}
+
+.__subdomain-name__-home a {
+  text-decoration: none;
+}
+
+.__subdomain-name__-home a:hover {
+  text-decoration: underline;
+}

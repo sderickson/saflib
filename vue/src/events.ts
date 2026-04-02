@@ -72,6 +72,9 @@ export const getEvents = (): string[] => {
   if (isTestEnv()) {
     return [];
   }
+  if (!globalThis.document) {
+    return [];
+  }
   const eventCookie =
     document.cookie.split(";").find((c) => c.trim().startsWith("events=")) ||
     "";

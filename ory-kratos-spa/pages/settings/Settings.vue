@@ -35,44 +35,44 @@
 
       <v-window v-model="tab">
         <v-window-item value="email">
-          <KratosSettingsGroupUi
+          <SettingsGroupUi
             :flow="flow"
             group="profile"
             :submitting="submitting"
             id-prefix="settings-profile"
             :message-filter="settingsMessageFilter"
-            @submit="(form, submitter) => submitSettingsForm(form, submitter)"
+            @submit="submitSettingsForm"
           />
         </v-window-item>
         <v-window-item value="password">
-          <KratosSettingsGroupUi
+          <SettingsGroupUi
             :flow="flow"
             group="password"
             :submitting="submitting"
             id-prefix="settings-password"
             :message-filter="settingsMessageFilter"
-            @submit="(form, submitter) => submitSettingsForm(form, submitter)"
+            @submit="submitSettingsForm"
           />
         </v-window-item>
         <v-window-item v-if="hasTotpSettings" value="totp">
-          <KratosSettingsGroupUi
+          <SettingsGroupUi
             :flow="flow"
             group="totp"
             :submitting="submitting"
             id-prefix="settings-totp"
             :message-filter="settingsMessageFilter"
-            @submit="(form, submitter) => submitSettingsForm(form, submitter)"
+            @submit="submitSettingsForm"
           />
         </v-window-item>
         <v-window-item v-if="hasPasskeySettings" value="passkey">
-          <KratosSettingsGroupUi
+          <SettingsGroupUi
             :flow="flow"
             group="passkey"
             :submitting="submitting"
             id-prefix="settings-passkey"
             :message-filter="settingsMessageFilter"
             :identity-passkey-display-fallback="sessionEmail"
-            @submit="(form, submitter) => submitSettingsForm(form, submitter)"
+            @submit="submitSettingsForm"
           />
         </v-window-item>
       </v-window>
@@ -112,7 +112,7 @@ import {
   kratosIdentityEmail,
   useKratosSession,
 } from "@saflib/ory-kratos-sdk";
-import KratosSettingsGroupUi from "./KratosSettingsGroupUi.vue";
+import SettingsGroupUi from "./SettingsGroupUi.vue";
 import SettingsIntro from "./SettingsIntro.vue";
 import type { KratosFlowUiMessageFilterContext } from "../common/kratosUiMessages.ts";
 import {

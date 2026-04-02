@@ -22,9 +22,9 @@ export function useNewVerificationEntryHref(
         : undefined;
     const rt = fromQuery ?? fromFlow;
     return rt
-      ? linkToHrefWithHost(authLinks.kratosNewVerification, {
+      ? linkToHrefWithHost(authLinks.newVerification, {
           params: { return_to: rt },
         })
-      : linkToHrefWithHost(authLinks.kratosNewVerification);
+      : linkToHrefWithHost(authLinks.newVerification);
   });
 }

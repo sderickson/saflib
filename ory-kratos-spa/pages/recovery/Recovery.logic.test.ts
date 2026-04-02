@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import {
   buildRecoveryUpdateBodyFromFormData,
   destinationAfterRecovery,
-  formDataFromKratosRecoveryForm,
+  formDataFromrecoveryForm,
   recoveryFlowContinueWithUrl,
   recoveryFlowShouldFetch,
   resolveRecoveryBrowserRedirectUrl,
@@ -20,7 +20,9 @@ describe("recoveryFlowShouldFetch", () => {
   });
 
   it("returns false when the user is signed in and there is no flow id (browser recovery is for logged-out users)", () => {
-    expect(recoveryFlowShouldFetch(false, { id: "s" } as Session, undefined)).toBe(false);
+    expect(
+      recoveryFlowShouldFetch(false, { id: "s" } as Session, undefined),
+    ).toBe(false);
   });
 
   it("returns true when logged out, session loaded, and there is no flow id", () => {
@@ -30,18 +32,22 @@ describe("recoveryFlowShouldFetch", () => {
 
 describe("destinationAfterRecovery", () => {
   it("prefers the flow return_to when set", () => {
-    expect(destinationAfterRecovery("https://app.example/after", "https://fallback")).toBe(
-      "https://app.example/after",
-    );
+    expect(
+      destinationAfterRecovery("https://app.example/after", "https://fallback"),
+    ).toBe("https://app.example/after");
   });
 
   it("uses the fallback when return_to is empty", () => {
-    expect(destinationAfterRecovery("  ", "https://fallback")).toBe("https://fallback");
-    expect(destinationAfterRecovery(undefined, "https://fallback")).toBe("https://fallback");
+    expect(destinationAfterRecovery("  ", "https://fallback")).toBe(
+      "https://fallback",
+    );
+    expect(destinationAfterRecovery(undefined, "https://fallback")).toBe(
+      "https://fallback",
+    );
   });
 });
 
-describe("formDataFromKratosRecoveryForm", () => {
+describe("formDataFromrecoveryForm", () => {
   it("includes method from the submit control (plain FormData omits it)", () => {
     const form = document.createElement("form");
     const email = document.createElement("input");
@@ -55,7 +61,7 @@ describe("formDataFromKratosRecoveryForm", () => {
     form.appendChild(btn);
 
     expect(new FormData(form).get("method")).toBeNull();
-    expect(formDataFromKratosRecoveryForm(form, btn).get("method")).toBe("link");
+    expect(formDataFromrecoveryForm(form, btn).get("method")).toBe("link");
   });
 
   it("fills method from the first named submit when submitter is missing", () => {
@@ -66,7 +72,7 @@ describe("formDataFromKratosRecoveryForm", () => {
     btn.value = "code";
     form.appendChild(btn);
 
-    expect(formDataFromKratosRecoveryForm(form, null).get("method")).toBe("code");
+    expect(formDataFromrecoveryForm(form, null).get("method")).toBe("code");
   });
 });
 
@@ -129,7 +135,9 @@ describe("recoveryFlowContinueWithUrl", () => {
         },
       ],
     } as RecoveryFlow;
-    expect(recoveryFlowContinueWithUrl(flow)).toBe("https://next.example/after");
+    expect(recoveryFlowContinueWithUrl(flow)).toBe(
+      "https://next.example/after",
+    );
   });
 
   it("resolves path-only redirect_browser_to against the current origin", () => {
@@ -160,7 +168,9 @@ describe("recoveryFlowContinueWithUrl", () => {
         },
       ],
     } as RecoveryFlow;
-    expect(recoveryFlowContinueWithUrl(flow)).toBe("https://auth.example/settings");
+    expect(recoveryFlowContinueWithUrl(flow)).toBe(
+      "https://auth.example/settings",
+    );
   });
 
   it("builds settings URL from flow id when Kratos omits flow.url", () => {
@@ -173,13 +183,18 @@ describe("recoveryFlowContinueWithUrl", () => {
       ],
     } as RecoveryFlow;
     expect(
-      recoveryFlowContinueWithUrl(flow, (id) => `https://auth.test/settings?flow=${id}`),
+      recoveryFlowContinueWithUrl(
+        flow,
+        (id) => `https://auth.test/settings?flow=${id}`,
+      ),
     ).toBe("https://auth.test/settings?flow=settings-flow-99");
   });
 
   it("returns null when there is no navigable continue_with entry", () => {
-    expect(recoveryFlowContinueWithUrl({ continue_with: [] } as unknown as RecoveryFlow)).toBe(
-      null,
-    );
+    expect(
+      recoveryFlowContinueWithUrl({
+        continue_with: [],
+      } as unknown as RecoveryFlow),
+    ).toBe(null);
   });
 });

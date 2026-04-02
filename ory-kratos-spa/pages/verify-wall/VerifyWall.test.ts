@@ -1,7 +1,7 @@
 import { http, HttpResponse } from "msw";
 import { afterEach, describe, it, expect, vi } from "vitest";
 import { stubGlobals } from "@saflib/vue/testing";
-import KratosVerifyWallAsync from "./VerifyWallAsync.vue";
+import verifyWallAsync from "./VerifyWallAsync.vue";
 import {
   mountTestApp,
   createTestRouter,
@@ -30,7 +30,7 @@ const unverifiedSession = {
   },
 };
 
-describe("KratosVerifyWall", () => {
+describe("verifyWall", () => {
   stubGlobals();
   const server = setupMockServer(testAppHandlers);
   afterEach(resetKratosFlowMocks);
@@ -44,7 +44,7 @@ describe("KratosVerifyWall", () => {
     await router.push("/verify-wall");
     await router.isReady();
 
-    const wrapper = mountTestApp(KratosVerifyWallAsync, {}, { router });
+    const wrapper = mountTestApp(verifyWallAsync, {}, { router });
     await vi.waitFor(() =>
       expect(wrapper.text()).toContain("Confirm your email"),
     );

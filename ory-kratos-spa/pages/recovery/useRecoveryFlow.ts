@@ -16,7 +16,7 @@ import { kratosSubmitErrorMessage } from "../common/kratosErrorMessage.ts";
 import {
   buildRecoveryUpdateBodyFromFormData,
   destinationAfterRecovery,
-  formDataFromKratosRecoveryForm,
+  formDataFromrecoveryForm,
   recoveryFlowContinueWithUrl,
   resolveRecoveryBrowserRedirectUrl,
 } from "./Recovery.logic.ts";
@@ -40,7 +40,7 @@ export function useRecoveryFlow(
   }
 
   function settingsFlowHrefFromId(settingsFlowId: string): string {
-    return linkToHrefWithHost(authLinks.kratosSettings, {
+    return linkToHrefWithHost(authLinks.settings, {
       params: { flow: settingsFlowId },
     });
   }
@@ -79,7 +79,7 @@ export function useRecoveryFlow(
   ) {
     const id = toValue(flowId);
     if (!id || submitting.value) return;
-    const fd = formDataFromKratosRecoveryForm(form, submitter);
+    const fd = formDataFromrecoveryForm(form, submitter);
     submitting.value = true;
     submitError.value = null;
     try {

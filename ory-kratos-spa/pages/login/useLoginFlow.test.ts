@@ -50,7 +50,7 @@ describe("useLoginFlow", () => {
       href: "http://localhost/",
       assign: assignMock,
     });
-    const hubAppHome = "/";
+    const hubAppHome = "http://app.localhost:3000/";
 
     try {
       const [{ submitLoginForm }, app] = withVueQuery(() =>

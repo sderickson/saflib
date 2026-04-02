@@ -1,66 +1,69 @@
 # common elements between dev and test
 services:
   caddy:
-    image: caddy:2.11.2
+    depends_on:
+      - clients
+    build:
+      context: ../..
+      dockerfile: ./__product-name__/dev/Dockerfile
     ports:
       - 80:80
     volumes:
       - ./caddy-config:/etc/caddy/
       - caddy_data:/data
       - caddy_config:/config
-    environment:
-      - __PRODUCT_NAME___DOMAIN=${__PRODUCT_NAME___DOMAIN}
-      - PROTOCOL=${PROTOCOL}
-      - __PRODUCT_NAME___IDENTITY_SERVICE_HTTP_HOST=${__PRODUCT_NAME___IDENTITY_SERVICE_HTTP_HOST}
-      - __PRODUCT_NAME___SERVICE_HTTP_HOST=${__PRODUCT_NAME___SERVICE_HTTP_HOST}
-    depends_on:
-      - clients
 
   clients:
-    # Named for local dev, but doesn't get published; not needed for prod
     image: __organization-name__-__product-name__-clients:latest
     build:
       context: ../..
       dockerfile: ./__product-name__/clients/build/Dockerfile
-    environment:
-      - CLIENT_SUBDOMAINS=${__PRODUCT_NAME___CLIENT_SUBDOMAINS}
-      - DOMAIN=${__PRODUCT_NAME___DOMAIN}
-      - DEPLOYMENT_NAME=${DEPLOYMENT_NAME}
-      - PROTOCOL=${PROTOCOL}
-      - SERVICE_SUBDOMAINS=${__PRODUCT_NAME___SERVICE_SUBDOMAINS}
-      - TZ=${TZ}
+    env_file:
+      - ./env.dev
     volumes:
       - ../../__product-name__/clients/:/app/__product-name__/clients/
       - ../../saflib/:/app/saflib/
       - ../../__product-name__/service/sdk/:/app/__product-name__/service/sdk/
     command: npm run dev
 
-  __product-name__-monolith:
-    image: ghcr.io/__organization-name__/__organization-name__-__product-name__-monolith:latest
+  monolith:
+    image: __organization-name__-__product-name__-monolith:latest
     volumes:
       - ../../__product-name__/service/db/data:/app/__product-name__/service/db/data
       - ../../__product-name__/service/cron/data:/app/__product-name__/service/cron/data
-      - ../../__product-name__/service/identity/data:/app/__product-name__/service/identity/data
-      - __product-name___identity_http_cache:/app/saflib/identity/identity-http/data
 
     build:
       context: ../..
       dockerfile: __product-name__/service/monolith/Dockerfile
 
     env_file:
-      - ./.env
       - ./env.dev
+      - ./.env
 
-  azurite:
-    image: mcr.microsoft.com/azure-storage/azurite
-    hostname: azurite
-    ports:
-      - "10000:10000"
-      - "10001:10001"
-      - "10002:10002"
-    command: "azurite-blob --blobHost 0.0.0.0 --loose"
+  kratos-migrate:
+    image: oryd/kratos:v26.2.0
+    command: migrate sql -e --yes
+    environment:
+      - DSN=sqlite:///var/lib/sqlite/db.sqlite?_fk=true&mode=rwc
+    volumes:
+      # Persists SQLite (identities, sessions, flows) across container restarts
+      - ./kratos/data:/var/lib/sqlite
+      - ./kratos:/etc/config/kratos
+
+  kratos:
+    image: oryd/kratos:v26.2.0
+    depends_on:
+      kratos-migrate:
+        condition: service_completed_successfully
+    command: serve -c /etc/config/kratos/kratos.yml --dev --watch-courier
+    environment:
+      - DSN=sqlite:///var/lib/sqlite/db.sqlite?_fk=true&mode=rwc
+    env_file:
+      - ./env.kratos.config
+    volumes:
+      - ./kratos/data:/var/lib/sqlite
+      - ./kratos:/etc/config/kratos
 
 volumes:
   caddy_data:
   caddy_config:
-  __product-name___identity_http_cache:

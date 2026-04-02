@@ -32,17 +32,20 @@ export function destinationAfterRecovery(
  * (`link` / `code`). Pass the submit event's {@link SubmitEvent.submitter}, or we fall back to
  * the first `[type="submit"][name="method"]` in the form.
  */
-export function formDataFromKratosRecoveryForm(
+export function formDataFromrecoveryForm(
   form: HTMLFormElement,
   submitter: HTMLElement | null | undefined,
 ): FormData {
   const btn =
-    submitter instanceof HTMLButtonElement || submitter instanceof HTMLInputElement
+    submitter instanceof HTMLButtonElement ||
+    submitter instanceof HTMLInputElement
       ? submitter
       : undefined;
   const fd = new FormData(form, btn);
   if (!String(fd.get("method") ?? "").trim()) {
-    const methodControl = form.querySelector<HTMLInputElement | HTMLButtonElement>(
+    const methodControl = form.querySelector<
+      HTMLInputElement | HTMLButtonElement
+    >(
       'button[type="submit"][name="method"], input[type="submit"][name="method"]',
     );
     if (methodControl?.name) {
@@ -55,7 +58,9 @@ export function formDataFromKratosRecoveryForm(
 /**
  * Builds an update body from the Kratos-rendered recovery form. Supports `link` and `code` strategies.
  */
-export function buildRecoveryUpdateBodyFromFormData(fd: FormData): UpdateRecoveryFlowBody {
+export function buildRecoveryUpdateBodyFromFormData(
+  fd: FormData,
+): UpdateRecoveryFlowBody {
   const method = String(fd.get("method") ?? "").trim();
   if (method === "link") {
     return {
@@ -70,7 +75,8 @@ export function buildRecoveryUpdateBodyFromFormData(fd: FormData): UpdateRecover
       csrf_token: String(fd.get("csrf_token") ?? ""),
     };
     const email = fd.get("email");
-    if (email != null && String(email).trim()) body.email = String(email).trim();
+    if (email != null && String(email).trim())
+      body.email = String(email).trim();
     const code = fd.get("code");
     if (code != null && String(code).trim()) body.code = String(code).trim();
     const recoveryAddress = fd.get("recovery_address");
@@ -82,11 +88,15 @@ export function buildRecoveryUpdateBodyFromFormData(fd: FormData): UpdateRecover
       body.recovery_select_address = String(recoverySelectAddress).trim();
     }
     const recoveryConfirmAddress = fd.get("recovery_confirm_address");
-    if (recoveryConfirmAddress != null && String(recoveryConfirmAddress).trim()) {
+    if (
+      recoveryConfirmAddress != null &&
+      String(recoveryConfirmAddress).trim()
+    ) {
       body.recovery_confirm_address = String(recoveryConfirmAddress).trim();
     }
     const screen = fd.get("screen");
-    if (screen != null && String(screen).trim()) body.screen = String(screen).trim();
+    if (screen != null && String(screen).trim())
+      body.screen = String(screen).trim();
     return body as unknown as UpdateRecoveryFlowBody;
   }
   throw new Error("Unsupported recovery method in form");
@@ -117,7 +127,9 @@ export function recoveryFlowContinueWithUrl(
 ): string | null {
   for (const c of flow.continue_with ?? []) {
     if (c.action === "redirect_browser_to") {
-      const raw = (c as ContinueWithRedirectBrowserTo).redirect_browser_to?.trim();
+      const raw = (
+        c as ContinueWithRedirectBrowserTo
+      ).redirect_browser_to?.trim();
       if (raw) return resolveRecoveryBrowserRedirectUrl(raw);
     }
     if (c.action === "show_settings_ui") {

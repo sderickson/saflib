@@ -31,11 +31,11 @@ export function useVerifyWallPage(
   const verifyWallReturnHref = computed(() => {
     const r = route.query.return_to;
     if (typeof r === "string" && r.trim()) {
-      return linkToHrefWithHost(authLinks.kratosVerifyWall, {
+      return linkToHrefWithHost(authLinks.verifyWall, {
         params: { return_to: r.trim() },
       });
     }
-    return linkToHrefWithHost(authLinks.kratosVerifyWall);
+    return linkToHrefWithHost(authLinks.verifyWall);
   });
 
   watch(
@@ -43,7 +43,7 @@ export function useVerifyWallPage(
     (session) => {
       if (sessionQuery.status.value !== "success") return;
       if (session == null) {
-        navigateToLink(authLinks.kratosNewLogin, {
+        navigateToLink(authLinks.newLogin, {
           params: { return_to: verifyWallReturnHref.value },
         });
       }

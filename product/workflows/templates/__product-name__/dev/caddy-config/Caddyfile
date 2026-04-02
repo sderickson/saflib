@@ -1,49 +1,37 @@
 import common.Caddyfile
 
-# Curried snippets
+# Recipes client subdomains → vite dev server
 
-(__product-name__-api-proxy) {
-	import cors {$__PRODUCT_NAME___DOMAIN}
-	import api-proxy {$__PRODUCT_NAME___IDENTITY_SERVICE_HTTP_HOST} {args[0]}
+http://docker.localhost {
+	import spa /__product-name__-static-root /index.html
 }
 
-(__product-name__-admin-proxy) {
-	import admin-proxy {$__PRODUCT_NAME___IDENTITY_SERVICE_HTTP_HOST} {args[0]}
-}
-
-# Subdomains
-
-{$PROTOCOL}://{$__PRODUCT_NAME___DOMAIN} {
+http://auth.docker.localhost {
 	reverse_proxy clients:5173
 }
 
-{$PROTOCOL}://auth.{$__PRODUCT_NAME___DOMAIN} {
+http://app.docker.localhost {
 	reverse_proxy clients:5173
 }
 
-{$PROTOCOL}://app.{$__PRODUCT_NAME___DOMAIN} {
+http://admin.docker.localhost {
 	reverse_proxy clients:5173
 }
 
-{$PROTOCOL}://account.{$__PRODUCT_NAME___DOMAIN} {
+http://account.docker.localhost {
 	reverse_proxy clients:5173
 }
 
-{$PROTOCOL}://admin.{$__PRODUCT_NAME___DOMAIN} {
-	reverse_proxy clients:5173
+# __ProductName__ API
+
+http://api.docker.localhost {
+	import cors docker.localhost
+	import kratos-api-proxy monolith:3001
 }
 
-{$PROTOCOL}://__product-name__.{$__PRODUCT_NAME___DOMAIN} {
-	import __product-name__-api-proxy {$__PRODUCT_NAME___SERVICE_HTTP_HOST}
-}
+# Kratos public API
 
-{$PROTOCOL}://azurite.{$__PRODUCT_NAME___DOMAIN} {
-	reverse_proxy azurite:10000 {
-		header_up Host azurite:10000
-		header_up X-Forwarded-Host {host}
-	}
-}
-
-{$PROTOCOL}://identity.{$__PRODUCT_NAME___DOMAIN} {
-	import identity {$__PRODUCT_NAME___DOMAIN} {$__PRODUCT_NAME___IDENTITY_SERVICE_HTTP_HOST}
+http://kratos.docker.localhost {
+	import cors docker.localhost
+	reverse_proxy kratos:4433
 }

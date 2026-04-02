@@ -18,6 +18,8 @@ services:
       - caddy_data:/data
       - caddy_config:/config
     restart: unless-stopped
+    labels:
+      com.centurylinklabs.watchtower.enable: "true"
 
   # BEGIN WORKFLOW AREA monolith FOR product/init
   __product-name__-monolith:
@@ -35,30 +37,54 @@ services:
       - /opt/__product-name__/db:/app/__product-name__/service/db/data
       - /opt/__product-name__/identity:/app/__product-name__/service/identity/data
       - /opt/__product-name__/identity-http:/app/saflib/identity/identity-http/data
-
     build:
       context: ../..
       dockerfile: __product-name__/service/monolith/Dockerfile
-
     env_file:
       - ./env.__product-name__.config
       - ./.env.__product-name__.secrets
-    
+    labels:
+      com.centurylinklabs.watchtower.enable: "true"
   # END WORKFLOW AREA
 
+  kratos-migrate:
+    image: oryd/kratos:v26.2.0
+    command: migrate sql -e --yes
+    environment:
+      - DSN=sqlite:///var/lib/sqlite/db.sqlite?_fk=true&mode=rwc
+    volumes:
+      - /opt/kratos/data:/var/lib/sqlite
+      - ./kratos:/etc/config/kratos
+
+  kratos:
+    image: oryd/kratos:v26.2.0
+    depends_on:
+      kratos-migrate:
+        condition: service_completed_successfully
+    command: serve -c /etc/config/kratos/kratos.yml --watch-courier
+    environment:
+      - DSN=sqlite:///var/lib/sqlite/db.sqlite?_fk=true&mode=rwc
+    env_file:
+      - ./env.kratos.config
+      - ./.env.kratos.secrets
+    volumes:
+      - /opt/kratos/data:/var/lib/sqlite
+      - ./kratos:/etc/config/kratos
+    restart: unless-stopped
+  
   prometheus:
     image: prom/prometheus:v3.10.0
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
 
   loki:
-    image: grafana/loki:latest
+    image: grafana/loki:3.7
     volumes:
       - ./loki-config.yaml:/etc/loki/loki-config.yaml
     command: -config.file=/etc/loki/loki-config.yaml
 
   grafana:
-    image: grafana/grafana:latest
+    image: grafana/grafana:12.4
     volumes:
       - grafana_storage:/var/lib/grafana
     environment:
@@ -67,7 +93,7 @@ services:
       - GF_AUTH_DISABLE_LOGIN_FORM=true
 
   node_exporter:
-    image: prom/node-exporter:latest
+    image: prom/node-exporter:v1.10.2
     volumes:
       - /proc:/host/proc:ro
       - /sys:/host/sys:ro
@@ -77,6 +103,20 @@ services:
       - "--path.sysfs=/host/sys"
       - "--path.rootfs=/rootfs"
       - "--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($|/)"
+
+  watchtower:
+    image: containrrr/watchtower:1.7.1
+    command:
+      # Poll every 60 seconds so local "push new :latest" tests are fast.
+      - "--interval=60"
+      # Only update containers explicitly opted-in via the enable label.
+      - "--label-enable"
+      - "--cleanup"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      # GHCR auth: assume docker login has written credentials to ~/.docker/config.json on the host.
+      - ${HOME}/.docker/config.json:/config.json:ro
+    restart: unless-stopped
 
 volumes:
   caddy_data:
