@@ -60,15 +60,10 @@ import { computed, onMounted, ref } from "vue";
 import { __product_name___layout } from "./__ProductName__Layout.strings.ts";
 import { linkToHrefWithHost, type Link, type LinkOptions } from "@saflib/links";
 import { TopLevelContainer } from "@saflib/vue/components";
+import { authLinks } from "@saflib/ory-kratos-sdk/links";
 
 // import other subdomain links here as needed
 // import { __subdomainName__Links } from "template-package-links";
-
-// Use this for choosing what links to display
-// import { getProfile } from "@saflib/auth";
-// import { useQuery } from "@tanstack/vue-query";
-// const { data: profile } = useQuery(getProfile());
-// const isAdmin = computed(() => profile.value?.isAdmin ?? false);
 
 const props = defineProps<{
   loggedIn?: boolean;
@@ -93,19 +88,10 @@ type LinkWithName = Link & { name: string };
 
 const links = computed<LinkWithName[]>(() => {
   return props.loggedIn
-    ? [
-        // Add links here for when logged in
-        // Example:
-        // { ...appLinks.home, name: "App" },
-        // { ...accountLinks.home, name: "Account" },
-        // { ...authLinks.logout, name: "Logout" },
-        // ...(isAdmin.value ? [{ ...adminLinks.home, name: "Admin" }] : []),
-      ]
+    ? [{ ...authLinks.logout, name: "Logout" }]
     : [
-        // Add links here for when not logged in
-        // Example:
-        // { ...authLinks.login, name: "Login" },
-        // { ...authLinks.register, name: "Sign Up" },
+        { ...authLinks.newLogin, name: "Login" },
+        { ...authLinks.newRegistration, name: "Sign Up" },
       ];
 });
 </script>
