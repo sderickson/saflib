@@ -60,7 +60,7 @@ describe("useRegistrationFlow", () => {
 
       await submitRegistrationForm(registrationTestForm());
 
-      const expected = "/";
+      const expected = "http://app.localhost:3000/";
       await vi.waitFor(() => expect(assignMock).toHaveBeenCalledWith(expected));
       app.unmount();
     } finally {
