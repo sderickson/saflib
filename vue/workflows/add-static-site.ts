@@ -132,12 +132,13 @@ export const AddStaticSiteWorkflowDefinition = defineWorkflow<
       args: ["install"],
     })),
 
-    step(PromptStepMachine, () => ({
-      promptText: `Update the root level deploy/ to incorporate the new static site.
+    // TODO: I think it would be better to automate this somehow... than to lean on the agent.
+    // step(PromptStepMachine, () => ({
+    //   promptText: `Update the root level deploy/ to incorporate the new static site.
 
-      * Update build.sh to build the new static site client docker images.
-      * Update Dockerfile.prod to use those images to build the static files and incorporate them into the caddy image.`,
-    })),
+    //   * Update build.sh to build the new static site client docker images.
+    //   * Update Dockerfile.prod to use those images to build the static files and incorporate them into the caddy image.`,
+    // })),
   ],
 });
 
