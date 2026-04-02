@@ -74,6 +74,7 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
     // Covers various "init" workflows
     step(makeWorkflowMachine(InitProductWorkflowDefinition), () => ({
       name: "tmp",
+      domain: "temporary.com",
     })),
 
     // test spec project
