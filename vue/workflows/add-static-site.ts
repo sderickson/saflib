@@ -132,6 +132,12 @@ export const AddStaticSiteWorkflowDefinition = defineWorkflow<
       args: ["install"],
     })),
 
+    // seems to not be there when you need it when you build in docker, so install it here
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: ["run", "install", "@vue/tsconfig"],
+    })),
+
     // TODO: I think it would be better to automate this somehow... than to lean on the agent.
     // step(PromptStepMachine, () => ({
     //   promptText: `Update the root level deploy/ to incorporate the new static site.
