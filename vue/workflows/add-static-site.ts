@@ -8,7 +8,6 @@ import {
   CdStepMachine,
   CommandStepMachine,
   getPackageName,
-  PromptStepMachine,
 } from "@saflib/workflows";
 import path from "node:path";
 
