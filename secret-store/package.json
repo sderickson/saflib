@@ -1,0 +1,22 @@
+{
+  "name": "@saflib/secret-store",
+  "description": "Secret store library for env-backed and Infisical-backed secret resolution",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc"
+  },
+  "dependencies": {
+    "@infisical/sdk": "^5.0.0"
+  },
+  "devDependencies": {
+    "@saflib/monorepo": "*",
+    "@saflib/vitest": "*"
+  }
+}
