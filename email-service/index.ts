@@ -10,6 +10,7 @@ export {
   type CreateEmailServiceOptions,
 } from "./createEmailService.ts";
 export { NodemailerEmailService } from "./nodemailer/NodemailerEmailService.ts";
+export { BrevoEmailService } from "./brevo/BrevoEmailService.ts";
 export {
   createEmailsRouter,
   type EmailsRouterOptions,

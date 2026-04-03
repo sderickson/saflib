@@ -14,17 +14,19 @@ export type { EmailOptions, EmailResult, EmailService, SentEmail };
 
 type TransporterConfig = Parameters<typeof nodemailer.createTransport>[0];
 
-function getTransport(): "mock" | TransporterConfig {
-  if (
+function shouldMockEmail(): boolean {
+  return (
     typedEnv.NODE_ENV === "test" ||
     typedEnv.MOCK_INTEGRATIONS === "true" ||
-    typedEnv.NODEMAILER_TRANSPORT_CONFIG === "mock"
-  ) {
-    return "mock";
-  }
+    typedEnv.NODEMAILER_TRANSPORT_CONFIG === "mock" ||
+    typedEnv.BREVO_API_KEY === "mock"
+  );
+}
+
+function parseSmtpTransportConfig(): TransporterConfig {
   if (!typedEnv.NODEMAILER_TRANSPORT_CONFIG) {
     throw new Error(
-      "SMTP configuration error: NODEMAILER_TRANSPORT_CONFIG must be provided.",
+      "Email: set BREVO_API_KEY for Brevo, or NODEMAILER_TRANSPORT_CONFIG (JSON) for SMTP.",
     );
   }
   try {
@@ -38,13 +40,26 @@ function getTransport(): "mock" | TransporterConfig {
   }
 }
 
+function createResolvedEmailService(): EmailService {
+  if (shouldMockEmail()) {
+    return createEmailService({ type: "nodemailer", transport: "mock" });
+  }
+
+  const brevoKey = typedEnv.BREVO_API_KEY?.trim();
+  if (brevoKey) {
+    return createEmailService({ type: "brevo", apiKey: brevoKey });
+  }
+
+  return createEmailService({
+    type: "nodemailer",
+    transport: parseSmtpTransportConfig(),
+  });
+}
+
 /**
- * Shared service instance: nodemailer transport from env, or mock when tests / integrations mock.
+ * Shared service instance: Brevo (if `BREVO_API_KEY`), else nodemailer from env, or mock in tests / `MOCK_INTEGRATIONS`.
  */
-export const emailService: EmailService = createEmailService({
-  type: "nodemailer",
-  transport: getTransport(),
-});
+export const emailService: EmailService = createResolvedEmailService();
 
 /**
  * Whether the email client is currently being mocked, and emails are being saved
@@ -58,7 +73,13 @@ setImmediate(() => {
     operationName: "initEmailClient",
   });
 
-  logger.info("Email: " + (mockingOn ? "MOCKED" : "LIVE"));
+  const backend =
+    !mockingOn && typedEnv.BREVO_API_KEY?.trim()
+      ? "Brevo"
+      : mockingOn
+        ? "MOCKED"
+        : "SMTP (nodemailer)";
+  logger.info(`Email: ${backend}`);
 });
 
 export { sentEmails };
@@ -75,6 +96,6 @@ export class EmailClient {
 }
 
 /**
- * Global instance. Config is driven by environment; services should not create multiple SMTP connections.
+ * Global instance. Config is driven by environment; services should not create multiple SMTP/API connections.
  */
 export const emailClient = new EmailClient();
