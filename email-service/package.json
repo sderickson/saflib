@@ -1,6 +1,6 @@
 {
   "name": "@saflib/email-service",
-  "description": "TODO: Add package description",
+  "description": "Email sending abstraction (nodemailer) with mock store and Express routes",
   "private": true,
   "type": "module",
   "exports": {
@@ -12,9 +12,18 @@
     "test:coverage": "vitest run --coverage",
     "typecheck": "tsc"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@saflib/email-spec": "*",
+    "@saflib/express": "*",
+    "@saflib/node": "*",
+    "nodemailer": "^8.0.0"
+  },
   "devDependencies": {
+    "@saflib/monorepo": "*",
     "@saflib/vitest": "*",
-    "@saflib/monorepo": "*"
+    "@types/nodemailer": "^7.0.0",
+    "@types/supertest": "^7.0.0",
+    "express": "^5.0.0",
+    "supertest": "^7.0.0"
   }
 }

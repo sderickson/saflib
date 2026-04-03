@@ -1,43 +1,42 @@
 import { createHandler } from "@saflib/express";
 import createError from "http-errors";
-import {
-  type EmailOptions,
-  mockingOn,
-  sentEmails,
-  type SentEmail as NodeSentEmail,
-} from "../../client/email-client.ts";
+import type { EmailService } from "../EmailService.ts";
+import { sentEmails } from "../mock-store.ts";
+import type { EmailOptions, SentEmail as NodeSentEmail } from "../types.ts";
 import type {
   EmailResponseBody,
   SentEmail as ApiSentEmail,
   EmailRequestQuery,
 } from "@saflib/email-spec";
 
-export const getSentEmails = createHandler(async (req, res) => {
-  const query = req.query as EmailRequestQuery["listSentEmails"];
-  const { userEmail } = query ?? {};
+export function createGetSentEmailsHandler(emailService: EmailService) {
+  return createHandler(async (req, res) => {
+    const query = req.query as EmailRequestQuery["listSentEmails"];
+    const { userEmail } = query ?? {};
 
-  if (!mockingOn) {
-    throw createError(403, "Forbidden - server is not mocking email sends");
-  }
+    if (!emailService.isMocked) {
+      throw createError(403, "Forbidden - server is not mocking email sends");
+    }
 
-  let emails = sentEmails;
-  if (userEmail) {
-    emails = emails.filter(
-      (email) =>
-        email.to === userEmail ||
-        email.from === userEmail ||
-        email.replyTo === userEmail,
-    );
-  }
+    let emails = sentEmails;
+    if (userEmail) {
+      emails = emails.filter(
+        (email) =>
+          email.to === userEmail ||
+          email.from === userEmail ||
+          email.replyTo === userEmail,
+      );
+    }
 
-  res
-    .status(200)
-    .json(
-      emails.map(
-        convertEmailOptionsToApiResponse,
-      ) satisfies EmailResponseBody["listSentEmails"][200],
-    );
-});
+    res
+      .status(200)
+      .json(
+        emails.map(
+          convertEmailOptionsToApiResponse,
+        ) satisfies EmailResponseBody["listSentEmails"][200],
+      );
+  });
+}
 
 const convertEmailOptionsToApiResponse = (
   sentEmail: NodeSentEmail,

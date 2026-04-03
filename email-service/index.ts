@@ -1,5 +1,16 @@
-// Export your public API from here
-export const greet = (name: string): string => `Hello, ${name}!`;
-
-// Placeholder for other exports
-export const meaningOfLife = 42;
+export type { EmailService } from "./EmailService.ts";
+export type {
+  EmailOptions,
+  SentEmail,
+  EmailResult,
+} from "./types.ts";
+export { sentEmails } from "./mock-store.ts";
+export {
+  createEmailService,
+  type CreateEmailServiceOptions,
+} from "./createEmailService.ts";
+export { NodemailerEmailService } from "./nodemailer/NodemailerEmailService.ts";
+export {
+  createEmailsRouter,
+  type EmailsRouterOptions,
+} from "./express/createEmailsRouter.ts";
