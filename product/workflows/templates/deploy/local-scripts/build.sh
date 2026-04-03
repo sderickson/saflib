@@ -12,10 +12,9 @@ git status
 npx saf-git-hashes
 
 # Build static clients
-# When adding a new static client, add the docker build command here, like so:
-# docker build -f ./blog/Dockerfile . --platform linux/amd64 \
-# 	-t (org name)-(product name)-client:latest \
-# 	-t "$CONTAINER_REGISTRY/(org name)-(product name)-client:latest"
+docker build -f ./__product-name__/clients/root/Dockerfile . --platform linux/amd64 \
+	-t __organization-name__-__product-name__-root:latest \
+	-t "$CONTAINER_REGISTRY/__organization-name__-__product-name__-root:latest"
 
 # Build monolith services
 # BEGIN WORKFLOW AREA build-product-dependencies FOR product/init

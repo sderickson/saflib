@@ -200,6 +200,10 @@ export const InitProductWorkflowDefinition = defineWorkflow<
     })),
     step(CommandStepMachine, () => ({
       command: "npm",
+      args: ["run", "regen-kratos-secrets"],
+    })),
+    step(CommandStepMachine, () => ({
+      command: "npm",
       args: ["run", "generate"],
     })),
   ],

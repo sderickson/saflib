@@ -7,7 +7,7 @@
 # Client subdomains
 
 {$__PRODUCT_NAME___PROTOCOL}://{$__PRODUCT_NAME___DOMAIN} {
-	import static-site /__product-name__-static-root /index.html
+	import static-site /__product-name__-root
 }
 
 {$__PRODUCT_NAME___PROTOCOL}://auth.{$__PRODUCT_NAME___DOMAIN} {
