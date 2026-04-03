@@ -1,6 +1,6 @@
 {
-  "name": "template-integration",
-  "description": "TODO: Add package description",
+  "name": "@saflib/secret-store",
+  "description": "Secret store library for env-backed and Infisical-backed secret resolution",
   "private": true,
   "type": "module",
   "exports": {
@@ -10,12 +10,10 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "typecheck": "tsc",
-    "ping": "node --env-file=.env --experimental-strip-types ./bin/ping.ts"
+    "typecheck": "tsc"
   },
   "dependencies": {
-    "@saflib/env": "*",
-    "@saflib/secret-store": "*"
+    "@infisical/sdk": "^5.0.0"
   },
   "devDependencies": {
     "@saflib/monorepo": "*",

@@ -1,9 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { __integrationName__, ping } from "template-integration";
+import { get__IntegrationName__Client, isMocked, ping } from "template-integration";
 
 describe("template-integration", () => {
-  it("should export the client", () => {
-    expect(__integrationName__).toBeDefined();
+  it("should export isMocked and get__IntegrationName__Client", () => {
+    expect(typeof isMocked).toBe("function");
+    expect(typeof get__IntegrationName__Client).toBe("function");
   });
 
   it("should ping successfully", async () => {

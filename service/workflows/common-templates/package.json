@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@saflib/monorepo": "*",
-    "@saflib/node": "*"
+    "@saflib/node": "*",
+    "@saflib/secret-store": "*"
   }
 }
