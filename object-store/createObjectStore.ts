@@ -4,11 +4,16 @@ import {
   AzureObjectStore,
   type AzureObjectStoreOptions,
 } from "./azure/AzureObjectStore.ts";
+import {
+  GcsObjectStore,
+  type GcsObjectStoreOptions,
+} from "./gcs/GcsObjectStore.ts";
 import { TestObjectStore } from "./test/TestObjectStore.ts";
 
 export type CreateObjectStoreOptions =
   | { type: "disk"; rootPath: string }
   | { type: "azure"; options: AzureObjectStoreOptions }
+  | { type: "gcs"; options: GcsObjectStoreOptions }
   | { type: "test" };
 
 /**
@@ -21,6 +26,7 @@ const testStoreCache = new Map<string, TestObjectStore>();
 function getTestStoreCacheKey(options: CreateObjectStoreOptions): string | null {
   if (options.type === "disk") return options.rootPath;
   if (options.type === "azure") return `azure:${options.options.containerName}`;
+  if (options.type === "gcs") return `gcs:${options.options.bucketName}`;
   return null;
 }
 
@@ -50,6 +56,8 @@ export function createObjectStore(
       return new DiskObjectStore(options.rootPath);
     case "azure":
       return new AzureObjectStore(options.options);
+    case "gcs":
+      return new GcsObjectStore(options.options);
     case "test":
       return new TestObjectStore();
     default: {

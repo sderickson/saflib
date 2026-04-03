@@ -1,4 +1,5 @@
 export * from "./azure/index.ts";
+export * from "./gcs/index.ts";
 export * from "./disk/index.ts";
 export * from "./ObjectStore.ts";
 export * from "./test/index.ts";

@@ -4,7 +4,6 @@ import {
 } from "@azure/storage-blob";
 import { DefaultAzureCredential } from "@azure/identity";
 import { getSafReporters } from "@saflib/node";
-import { typedEnv } from "../env.ts";
 import type { AccessTier } from "@azure/storage-blob";
 
 type AccessTierKey = "Hot" | "Cool" | "Cold";
@@ -14,6 +13,17 @@ let blobServiceClients: Record<AccessTierKey, BlobServiceClient | undefined> = {
   Cool: undefined,
   Cold: undefined,
 };
+
+function getAzureBlobStorageUrl(tier: AccessTierKey): string | undefined {
+  switch (tier) {
+    case "Hot":
+      return process.env.AZURE_HOT_BLOB_STORAGE_URL;
+    case "Cool":
+      return process.env.AZURE_COOL_BLOB_STORAGE_URL;
+    case "Cold":
+      return process.env.AZURE_COLD_BLOB_STORAGE_URL;
+  }
+}
 
 interface GetBlobServiceClientParams {
   tier?: AccessTier;
@@ -25,13 +35,13 @@ export function getBlobServiceClient({
   let url: string | undefined;
   switch (tier) {
     case "Hot":
-      url = typedEnv.AZURE_HOT_BLOB_STORAGE_URL;
+      url = getAzureBlobStorageUrl("Hot");
       break;
     case "Cool":
-      url = typedEnv.AZURE_COOL_BLOB_STORAGE_URL;
+      url = getAzureBlobStorageUrl("Cool");
       break;
     case "Cold":
-      url = typedEnv.AZURE_COLD_BLOB_STORAGE_URL;
+      url = getAzureBlobStorageUrl("Cold");
       break;
     default:
       throw new Error(`Invalid access tier: ${tier}`);
