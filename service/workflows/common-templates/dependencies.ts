@@ -12,9 +12,9 @@ let initialized = false;
  * Add integration configuration here as you add integrations, e.g.:
  *
  * ```ts
- * import { configure__IntegrationName__ } from "template-integration";
+ * import { configure(IntegrationName) } from "template-integration";
  * // ... inside initializeDependencies:
- * await configure__IntegrationName__(getSecretStore());
+ * await configure(IntegrationName)(getSecretStore());
  * ```
  */
 export async function initializeDependencies(): Promise<void> {
