@@ -26,7 +26,7 @@ services:
       - ../../__product-name__/service/sdk/:/app/__product-name__/service/sdk/
     command: npm run dev
 
-  monolith:
+  __product-name__-monolith:
     image: __organization-name__-__product-name__-monolith:latest
     volumes:
       - ../../__product-name__/service/db/data:/app/__product-name__/service/db/data
