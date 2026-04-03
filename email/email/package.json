@@ -1,6 +1,6 @@
 {
   "name": "@saflib/email",
-  "description": "Centralized package for sending emails via SMTP.",
+  "description": "Centralized package for sending emails via SMTP. DEPRECATED: Use @saflib/email-service instead.",
   "private": true,
   "type": "module",
   "exports": {
