@@ -1,16 +1,22 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import request from "supertest";
 import express from "express";
-import { createEmailsRouter } from "./index.ts";
-import { emailClient } from "../../client/email-client.ts";
 import { createErrorMiddleware } from "@saflib/express";
+import { createEmailService } from "../createEmailService.ts";
+import { sentEmails } from "../mock-store.ts";
+import { createEmailsRouter } from "./createEmailsRouter.ts";
 
 describe("getSentEmails", () => {
   let app: express.Express;
 
   beforeEach(() => {
+    sentEmails.length = 0;
+    const emailService = createEmailService({
+      type: "nodemailer",
+      transport: "mock",
+    });
     app = express();
-    app.use("/", createEmailsRouter());
+    app.use("/", createEmailsRouter({ emailService }));
     app.use(createErrorMiddleware());
   });
 
@@ -22,22 +28,30 @@ describe("getSentEmails", () => {
   });
 
   it("should return sent emails for a specific user", async () => {
+    const emailService = createEmailService({
+      type: "nodemailer",
+      transport: "mock",
+    });
     const email1 = `test${Math.random()}@test.com`;
     const email2 = `test${Math.random()}@test.com`;
-    await emailClient.sendEmail({
+    await emailService.sendEmail({
       to: email1,
       from: "support@your-org.com",
       subject: "Test Email",
       text: "Test Email",
     });
-    await emailClient.sendEmail({
+    await emailService.sendEmail({
       to: "support@your-org.com",
       from: email2,
       subject: "Test Email",
       text: "Test Email",
     });
 
-    const response = await request(app)
+    const routerApp = express();
+    routerApp.use("/", createEmailsRouter({ emailService }));
+    routerApp.use(createErrorMiddleware());
+
+    const response = await request(routerApp)
       .get(`/email/sent`)
       .query({ userEmail: email1 });
 
@@ -46,7 +60,7 @@ describe("getSentEmails", () => {
     expect(response.body.length).toBe(1);
     expect(response.body[0].to[0]).toBe(email1);
 
-    const response2 = await request(app)
+    const response2 = await request(routerApp)
       .get(`/email/sent`)
       .query({ userEmail: email2 });
 

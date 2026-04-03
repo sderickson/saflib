@@ -1,17 +1,71 @@
-import { createLogger, getSafReporters } from "@saflib/node";
-import * as nodemailer from "nodemailer";
-import type { Transporter } from "nodemailer";
-
+import { createLogger } from "@saflib/node";
+import {
+  createEmailService,
+  type EmailOptions,
+  type EmailResult,
+  type SentEmail,
+  sentEmails,
+  type EmailService,
+} from "@saflib/email-service";
+import type * as nodemailer from "nodemailer";
 import { typedEnv } from "../env.ts";
+
+export type { EmailOptions, EmailResult, EmailService, SentEmail };
+
+type TransporterConfig = Parameters<typeof nodemailer.createTransport>[0];
+
+function shouldMockEmail(): boolean {
+  return (
+    typedEnv.NODE_ENV === "test" ||
+    typedEnv.MOCK_INTEGRATIONS === "true" ||
+    typedEnv.NODEMAILER_TRANSPORT_CONFIG === "mock" ||
+    typedEnv.BREVO_API_KEY === "mock"
+  );
+}
+
+function parseSmtpTransportConfig(): TransporterConfig {
+  if (!typedEnv.NODEMAILER_TRANSPORT_CONFIG) {
+    throw new Error(
+      "Email: set BREVO_API_KEY for Brevo, or NODEMAILER_TRANSPORT_CONFIG (JSON) for SMTP.",
+    );
+  }
+  try {
+    return JSON.parse(
+      typedEnv.NODEMAILER_TRANSPORT_CONFIG,
+    ) as TransporterConfig;
+  } catch {
+    throw new Error(
+      "SMTP configuration error: NODEMAILER_TRANSPORT_CONFIG must be valid JSON.",
+    );
+  }
+}
+
+function createResolvedEmailService(): EmailService {
+  if (shouldMockEmail()) {
+    return createEmailService({ type: "nodemailer", transport: "mock" });
+  }
+
+  const brevoKey = typedEnv.BREVO_API_KEY?.trim();
+  if (brevoKey) {
+    return createEmailService({ type: "brevo", apiKey: brevoKey });
+  }
+
+  return createEmailService({
+    type: "nodemailer",
+    transport: parseSmtpTransportConfig(),
+  });
+}
+
+/**
+ * Shared service instance: Brevo (if `BREVO_API_KEY`), else nodemailer from env, or mock in tests / `MOCK_INTEGRATIONS`.
+ */
+export const emailService: EmailService = createResolvedEmailService();
 
 /**
  * Whether the email client is currently being mocked, and emails are being saved
  * to `sentEmails`.
  */
-export const mockingOn =
-  typedEnv.NODE_ENV === "test" ||
-  typedEnv.MOCK_INTEGRATIONS === "true" ||
-  typedEnv.NODEMAILER_TRANSPORT_CONFIG === "mock";
+export const mockingOn = emailService.isMocked;
 
 setImmediate(() => {
   const logger = createLogger({
@@ -19,145 +73,29 @@ setImmediate(() => {
     operationName: "initEmailClient",
   });
 
-  logger.info("Email: " + (mockingOn ? "MOCKED" : "LIVE"));
+  const backend =
+    !mockingOn && typedEnv.BREVO_API_KEY?.trim()
+      ? "Brevo"
+      : mockingOn
+        ? "MOCKED"
+        : "SMTP (nodemailer)";
+  logger.info(`Email: ${backend}`);
 });
 
-type TransporterConfig = Parameters<typeof nodemailer.createTransport>[0];
+export { sentEmails };
 
 /**
- * A record of an email that was sent. Only used for mocking.
- */
-export interface SentEmail extends EmailOptions {
-  timeSent: number;
-}
-
-/**
- * An array of emails that were sent by this service. Only used for mocking.
- */
-export const sentEmails: SentEmail[] = [];
-
-/**
- * Accepted options when sending an email. A subset of what nodemailer accepts.
- * See [Nodemailer docs](https://nodemailer.com/message/) for more details.
- */
-export interface EmailOptions
-  extends Pick<
-    nodemailer.SendMailOptions,
-    | "to"
-    | "cc"
-    | "bcc"
-    | "subject"
-    | "text"
-    | "html"
-    | "attachments"
-    | "from"
-    | "replyTo"
-  > {}
-
-function getTo(options: EmailOptions): string[] {
-  if (Array.isArray(options.to)) {
-    return options.to.map((t) => (typeof t === "string" ? t : t.address));
-  } else if (typeof options.to === "string") {
-    return [options.to];
-  } else if (options.to && options.to.address) {
-    return [options.to.address];
-  } else {
-    return [];
-  }
-}
-
-/**
- * Result of sending an email. This seems to be what is returned by nodemailer when
- * the transport is SMTP. These types may not be correct if configured to use some
- * other transport.
- */
-export interface EmailResult {
-  messageId: string;
-  accepted: string[];
-  rejected: string[];
-  response: string;
-}
-
-/**
- * A simplified client for sending emails, wrapping around nodemailer (or a mock in during tests).
+ * A simplified client for sending emails, wrapping the shared {@link emailService}.
  */
 export class EmailClient {
-  private transporter: Transporter | undefined;
+  constructor(private readonly service: EmailService = emailService) {}
 
-  constructor() {
-    if (mockingOn) {
-      return;
-    }
-
-    if (!typedEnv.NODEMAILER_TRANSPORT_CONFIG) {
-      throw new Error(
-        "SMTP configuration error: NODEMAILER_TRANSPORT_CONFIG must be provided.",
-      );
-    }
-
-    let config: TransporterConfig;
-    try {
-      config = JSON.parse(
-        typedEnv.NODEMAILER_TRANSPORT_CONFIG,
-      ) as TransporterConfig;
-    } catch (error) {
-      throw new Error(
-        "SMTP configuration error: NODEMAILER_TRANSPORT_CONFIG must be valid JSON.",
-      );
-    }
-
-    this.transporter = nodemailer.createTransport(config);
-    if (!this.transporter) {
-      throw new Error("Failed to create transporter");
-    }
-  }
-
-  async sendEmail(options: EmailOptions): Promise<EmailResult> {
-    const { log } = getSafReporters();
-
-    if (!options.to && !options.cc && !options.bcc) {
-      throw new Error("No recipients specified");
-    }
-    if (mockingOn) {
-      sentEmails.push({
-        ...options,
-        timeSent: Date.now(),
-      });
-      return {
-        messageId: "1234567890",
-        accepted: getTo(options),
-        rejected: [],
-        response: "250 2.0.0 OK",
-      };
-    }
-
-    if (!this.transporter) {
-      throw new Error("Transporter not initialized");
-    }
-
-    const info = await this.transporter.sendMail(options);
-
-    log.info("Email sent", {
-      from: options.from,
-      subject: options.subject,
-      messageId: info.messageId,
-      accepted: info.accepted.length,
-      rejected: info.rejected.length,
-      response: info.response,
-    });
-
-    return {
-      messageId: info.messageId,
-      accepted: info.accepted as string[],
-      rejected: info.rejected as string[],
-      response: info.response,
-    };
+  sendEmail(options: EmailOptions): Promise<EmailResult> {
+    return this.service.sendEmail(options);
   }
 }
 
 /**
- * Global instance of the email client. Since the config is loaded by the
- * environment, and services shouldn't try to set up multiple SMTP connections,
- * this can be a singleton.
+ * Global instance. Config is driven by environment; services should not create multiple SMTP/API connections.
  */
 export const emailClient = new EmailClient();

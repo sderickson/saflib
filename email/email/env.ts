@@ -9,6 +9,10 @@ export interface EmailEnvSchema {
    */
   ALLOW_DB_CREATION?: "true" | "false";
   /**
+   * Brevo (Sendinblue) API v3 key for transactional email via REST. When set (non-empty), takes precedence over NODEMAILER_TRANSPORT_CONFIG. Use "mock" for mock-only mode with tests.
+   */
+  BREVO_API_KEY?: string;
+  /**
    * Comma-separated list of client subdomains, e.g. 'www,app,auth,'. Include an empty string (such as in the example) to indicate there's a client for the root domain.
    */
   CLIENT_SUBDOMAINS: string;
@@ -25,13 +29,21 @@ export interface EmailEnvSchema {
    */
   DOMAIN_REDIRECTS?: string;
   /**
+   * The hostname or URL of the Loki instance to send logs to (e.g., http://loki:3100)
+   */
+  LOKI_HOSTNAME?: string;
+  /**
+   * The port number of the Loki instance to send logs to (e.g., 3100)
+   */
+  LOKI_PORT?: string;
+  /**
    * Whether to mock 3rd party integrations. Set to 'true' to mock. And integration packages should respect this setting.
    */
   MOCK_INTEGRATIONS?: "true" | "false";
   /**
-   * JSON string which can be passed into nodemailer.createTransport. See https://nodemailer.com/usage for more details.
+   * JSON string for nodemailer.createTransport when BREVO_API_KEY is not set. See https://nodemailer.com/usage
    */
-  NODEMAILER_TRANSPORT_CONFIG: string;
+  NODEMAILER_TRANSPORT_CONFIG?: string;
   /**
    * The environment of the deployment. Generally should avoid using this, consider its use deprecated, prefer instead more specific environment variables.
    */
@@ -57,6 +69,4 @@ export interface EmailEnvSchema {
 /**
  * `process.env` casted to the `EmailEnvSchema` type.
  */
-export const typedEnv = (globalThis.process
-  ? process.env
-  : {}) as unknown as EmailEnvSchema;
+export const typedEnv = (globalThis.process ? process.env : {}) as unknown as EmailEnvSchema;
