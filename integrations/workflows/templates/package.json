@@ -14,7 +14,8 @@
     "ping": "node --env-file=.env --experimental-strip-types ./bin/ping.ts"
   },
   "dependencies": {
-    "@saflib/env": "*"
+    "@saflib/env": "*",
+    "@saflib/secret-store": "*"
   },
   "devDependencies": {
     "@saflib/monorepo": "*",

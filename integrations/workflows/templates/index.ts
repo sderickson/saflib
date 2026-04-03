@@ -1,4 +1,8 @@
-export { __integrationName__, isMocked } from "./client.ts";
+export {
+  isMocked,
+  configure__IntegrationName__,
+  get__IntegrationName__Client,
+} from "./client.ts";
 export type { Scoped__IntegrationName__Client } from "./client.ts";
 export { ping } from "./calls/ping.ts";
 // BEGIN SORTED WORKFLOW AREA call-exports FOR integrations/add-call
