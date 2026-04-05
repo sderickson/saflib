@@ -1,10 +1,20 @@
-import type { Page } from "@playwright/test";
+import { expect, type Page } from "@playwright/test";
+import { registration_intro as introStrings } from "./RegistrationIntro.strings.ts";
 
 /**
  * Page helpers for {@link ./Registration.vue} (Kratos registration flow UI).
  */
 export class RegistrationPageFixture {
   constructor(public readonly page: Page) {}
+
+  /**
+   * Asserts the registration view is visible (intro + flow shell), like `expect(locator).toBeVisible()`.
+   */
+  async toBeVisible(): Promise<void> {
+    await expect(
+      this.page.getByRole("heading", { name: introStrings.title }),
+    ).toBeVisible();
+  }
 
   private get emailInput() {
     return this.page.getByRole("textbox", { name: "E-Mail" });

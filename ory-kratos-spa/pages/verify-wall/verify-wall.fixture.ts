@@ -8,7 +8,10 @@ import { verify_wall_intro as introStrings } from "./VerifyWallIntro.strings.ts"
 export class VerifyWallPageFixture {
   constructor(public readonly page: Page) {}
 
-  async expectConfirmEmailHeadingVisible(): Promise<void> {
+  /**
+   * Asserts the unverified verify-wall view is visible, like `expect(locator).toBeVisible()`.
+   */
+  async toBeVisible(): Promise<void> {
     await expect(
       this.page.getByRole("heading", { name: introStrings.title }),
     ).toBeVisible();
