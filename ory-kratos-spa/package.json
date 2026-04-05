@@ -9,6 +9,9 @@
     "./i18n": "./i18n.ts",
     "./test-app": "./test-app.ts"
   },
+  "devDependencies": {
+    "@playwright/test": "^1.53.2"
+  },
   "scripts": {
     "dev": "vite",
     "test": "vitest run",

@@ -25,25 +25,9 @@ export interface TemplatePackageMonolithEnvSchema {
    */
   DOMAIN_REDIRECTS?: string;
   /**
-   * Comma-separated list of emails who will get the 'admin' scope. Emails must be validated to receive this scope.
+   * Host URL for the Ory Kratos courier callback server (e.g. recipes-monolith:3000).
    */
-  IDENTITY_SERVICE_ADMIN_EMAILS?: string;
-  /**
-   * When set to 'true', only emails listed in IDENTITY_SERVICE_ADMIN_EMAILS may register. All other signups return 403.
-   */
-  IDENTITY_SERVICE_ADMIN_SIGNUP_ONLY?: string;
-  /**
-   * Whether to disable rate limiting. Set to 'true' to disable.
-   */
-  IDENTITY_SERVICE_DISABLE_RATE_LIMITING?: string;
-  /**
-   * The port on which the gRPC server will listen, or the client will connect.
-   */
-  IDENTITY_SERVICE_GRPC_HOST: string;
-  /**
-   * Host URL for the identity service
-   */
-  IDENTITY_SERVICE_HTTP_HOST: string;
+  KRATOS_COURIER_HTTP_HOST: string;
   /**
    * The hostname or URL of the Loki instance to send logs to (e.g., http://loki:3100)
    */
@@ -56,10 +40,6 @@ export interface TemplatePackageMonolithEnvSchema {
    * Whether to mock 3rd party integrations. Set to 'true' to mock. And integration packages should respect this setting.
    */
   MOCK_INTEGRATIONS?: "true" | "false";
-  /**
-   * JSON string which can be passed into nodemailer.createTransport. See https://nodemailer.com/usage for more details.
-   */
-  NODEMAILER_TRANSPORT_CONFIG: string;
   /**
    * The environment of the deployment. Generally should avoid using this, consider its use deprecated, prefer instead more specific environment variables.
    */
