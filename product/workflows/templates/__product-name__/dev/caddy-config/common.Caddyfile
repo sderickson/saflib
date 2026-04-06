@@ -96,6 +96,7 @@ http://caddy:2020 {
 			uri /auth/verify?
 			header_up X-Request-ID {http.request.uuid}
 			copy_headers X-User-ID X-User-Email X-User-Scopes X-User-Email-Verified
+			header_up X-Csrf-Token {http.request.header.X-CSRF-Token}
 		}
 		reverse_proxy {args[1]} {
 			import reverse_proxy_common
@@ -106,6 +107,12 @@ http://caddy:2020 {
 # Recipes API (and similar): forward_auth to Kratos whoami; Express resolves identity via admin API.
 # args[0]: target service host (e.g. monolith:3002)
 (kratos-api-proxy) {
+	handle /health {
+		reverse_proxy {args[0]} {
+			import reverse_proxy_common
+		}
+	}
+
 	handle {
 		forward_auth kratos:4433 {
 			uri /sessions/whoami

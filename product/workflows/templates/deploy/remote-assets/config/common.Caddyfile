@@ -107,6 +107,12 @@ http://caddy:2020 {
 # Recipes API (and similar): forward_auth to Kratos whoami; Express resolves identity via admin API.
 # args[0]: target service host (e.g. monolith:3002)
 (kratos-api-proxy) {
+	handle /health {
+		reverse_proxy {args[0]} {
+			import reverse_proxy_common
+		}
+	}
+
 	handle {
 		forward_auth kratos:4433 {
 			uri /sessions/whoami
