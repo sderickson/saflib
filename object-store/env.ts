@@ -9,18 +9,6 @@ export interface ObjectStoreEnvSchema {
    */
   ALLOW_DB_CREATION?: "true" | "false";
   /**
-   * The Azure Blob Storage URL.
-   */
-  AZURE_COLD_BLOB_STORAGE_URL?: string;
-  /**
-   * The Azure Blob Storage URL.
-   */
-  AZURE_COOL_BLOB_STORAGE_URL?: string;
-  /**
-   * The Azure Blob Storage URL.
-   */
-  AZURE_HOT_BLOB_STORAGE_URL?: string;
-  /**
    * Comma-separated list of client subdomains, e.g. 'www,app,auth,'. Include an empty string (such as in the example) to indicate there's a client for the root domain.
    */
   CLIENT_SUBDOMAINS: string;
@@ -73,6 +61,4 @@ export interface ObjectStoreEnvSchema {
 /**
  * `process.env` casted to the `ObjectStoreEnvSchema` type.
  */
-export const typedEnv = (globalThis.process
-  ? process.env
-  : {}) as unknown as ObjectStoreEnvSchema;
+export const typedEnv = (globalThis.process ? process.env : {}) as unknown as ObjectStoreEnvSchema;
