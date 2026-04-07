@@ -16,7 +16,7 @@ describe("InfisicalSecretStore (mock token)", () => {
     });
     const { result, error } = await store.getSecretByName(key);
     expect(error).toBeUndefined();
-    expect(result).toBe("mock-secret-value");
+    expect(result).toBe("mock");
   });
 
   it("prefers process.env when set", async () => {

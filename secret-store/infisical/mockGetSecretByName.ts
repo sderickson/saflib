@@ -1,7 +1,7 @@
 import type { ReturnsError } from "@saflib/monorepo";
 import type { InfisicalClientError } from "./errors.ts";
 
-const MOCK_SECRET_VALUE = "mock-secret-value";
+const MOCK_SECRET_VALUE = "mock";
 
 /**
  * Mock resolution when `accessToken` is `"mock"`: prefers `process.env[name]`, else a fixed placeholder.

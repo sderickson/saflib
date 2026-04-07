@@ -88,7 +88,11 @@ export { sentEmails };
  * A simplified client for sending emails, wrapping the shared {@link emailService}.
  */
 export class EmailClient {
-  constructor(private readonly service: EmailService = emailService) {}
+  private readonly service: EmailService;
+
+  constructor(service: EmailService = emailService) {
+    this.service = service;
+  }
 
   sendEmail(options: EmailOptions): Promise<EmailResult> {
     return this.service.sendEmail(options);
