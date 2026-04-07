@@ -11,28 +11,16 @@ import { typedEnv } from "../env.ts";
 import type { ReturnsError } from "@saflib/monorepo";
 import { getSafReporters } from "@saflib/node";
 
-/** Aligns with Azure `ContainerAccessLevel`: private bucket vs public object access. */
-export type GcsBucketAccessLevel = "blob" | "container" | "private";
-
 export interface GcsObjectStoreOptions {
   bucketName: string;
-  accessLevel: GcsBucketAccessLevel;
-  /** Used when creating a new bucket; defaults to `US`. */
-  location?: string;
 }
-
-const bucketsUpserted = new Set<string>();
 
 export class GcsObjectStore extends ObjectStore {
   protected readonly bucketName: string;
-  protected readonly accessLevel: GcsBucketAccessLevel;
-  protected readonly location: string;
 
   constructor(options: GcsObjectStoreOptions) {
     super();
     this.bucketName = options.bucketName;
-    this.accessLevel = options.accessLevel;
-    this.location = options.location ?? "US";
   }
 
   async uploadFile(
@@ -270,68 +258,6 @@ export class GcsObjectStore extends ObjectStore {
       StorageError
     >
   > {
-    if (typedEnv.NODE_ENV === "test") {
-      return {
-        result: {
-          success: true,
-          created: true,
-          url: `https://storage.googleapis.com/${this.bucketName}`,
-        },
-      };
-    }
-
-    if (bucketsUpserted.has(this.bucketName)) {
-      return {
-        result: {
-          success: true,
-          skipped: true,
-        },
-      };
-    }
-
-    const { log, logError } = getSafReporters();
-    const wantsPublic =
-      this.accessLevel === "blob" || this.accessLevel === "container";
-
-    try {
-      const storage = getStorage();
-      const bucket = storage.bucket(this.bucketName);
-      const [exists] = await bucket.exists();
-
-      let created = false;
-      if (!exists) {
-        log.info(`Creating GCS bucket ${this.bucketName}`);
-        await storage.createBucket(this.bucketName, {
-          location: this.location,
-        });
-        created = true;
-      }
-
-      if (wantsPublic) {
-        log.info(`Setting GCS bucket ${this.bucketName} public read`);
-        await bucket.makePublic();
-      } else {
-        await bucket.makePrivate();
-      }
-
-      bucketsUpserted.add(this.bucketName);
-
-      return {
-        result: {
-          success: true,
-          created,
-          updated: !created,
-          url: `https://storage.googleapis.com/${this.bucketName}/`,
-        },
-      };
-    } catch (error) {
-      logError(error);
-      return {
-        error: new StorageError(
-          error instanceof Error ? error.message : "Error upserting bucket",
-          error instanceof Error ? error : undefined,
-        ),
-      };
-    }
+    throw new Error("Not implemented");
   }
 }
