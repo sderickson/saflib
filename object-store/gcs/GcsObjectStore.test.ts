@@ -8,24 +8,6 @@ describe("GcsObjectStore", () => {
     it("should initialize with bucket name", () => {
       const store = new GcsObjectStore({
         bucketName: "test-bucket",
-        accessLevel: "private",
-      });
-      expect(store).toBeInstanceOf(GcsObjectStore);
-    });
-
-    it("should initialize with location", () => {
-      const store = new GcsObjectStore({
-        bucketName: "test-bucket",
-        accessLevel: "private",
-        location: "europe-west1",
-      });
-      expect(store).toBeInstanceOf(GcsObjectStore);
-    });
-
-    it("should initialize with public access level", () => {
-      const store = new GcsObjectStore({
-        bucketName: "test-bucket",
-        accessLevel: "blob",
       });
       expect(store).toBeInstanceOf(GcsObjectStore);
     });
@@ -35,7 +17,6 @@ describe("GcsObjectStore", () => {
     it("should upload file successfully", async () => {
       const store = new GcsObjectStore({
         bucketName: "test-bucket",
-        accessLevel: "private",
       });
       const stream = Readable.from("test content");
 
@@ -51,7 +32,6 @@ describe("GcsObjectStore", () => {
     it("should upload file with metadata", async () => {
       const store = new GcsObjectStore({
         bucketName: "test-bucket",
-        accessLevel: "private",
       });
       const stream = Readable.from("test content");
 
@@ -70,7 +50,6 @@ describe("GcsObjectStore", () => {
     it("should include path in url", async () => {
       const store = new GcsObjectStore({
         bucketName: "test-bucket",
-        accessLevel: "private",
       });
       const stream = Readable.from("test content");
 
@@ -86,7 +65,6 @@ describe("GcsObjectStore", () => {
     it("should return StorageError for invalid paths", async () => {
       const store = new GcsObjectStore({
         bucketName: "test-bucket",
-        accessLevel: "private",
       });
       const stream = Readable.from("test content");
 
@@ -104,7 +82,6 @@ describe("GcsObjectStore", () => {
     it("should return empty array in test mode", async () => {
       const store = new GcsObjectStore({
         bucketName: "test-bucket",
-        accessLevel: "private",
       });
       const result = await store.listFiles();
 
@@ -117,7 +94,6 @@ describe("GcsObjectStore", () => {
     it("should accept prefix parameter", async () => {
       const store = new GcsObjectStore({
         bucketName: "test-bucket",
-        accessLevel: "private",
       });
       const result = await store.listFiles("subfolder");
 
@@ -132,7 +108,6 @@ describe("GcsObjectStore", () => {
     it("should delete file successfully", async () => {
       const store = new GcsObjectStore({
         bucketName: "test-bucket",
-        accessLevel: "private",
       });
       const result = await store.deleteFile("test.txt");
 
@@ -145,7 +120,6 @@ describe("GcsObjectStore", () => {
     it("should return StorageError for invalid paths", async () => {
       const store = new GcsObjectStore({
         bucketName: "test-bucket",
-        accessLevel: "private",
       });
 
       const result = await store.deleteFile("../file.txt");
@@ -162,7 +136,6 @@ describe("GcsObjectStore", () => {
     it("should return Readable stream in test mode", async () => {
       const store = new GcsObjectStore({
         bucketName: "test-bucket",
-        accessLevel: "private",
       });
       const result = await store.readFile("test.txt");
 
@@ -175,7 +148,6 @@ describe("GcsObjectStore", () => {
     it("should return StorageError for invalid paths", async () => {
       const store = new GcsObjectStore({
         bucketName: "test-bucket",
-        accessLevel: "private",
       });
 
       const result = await store.readFile("../file.txt");
@@ -192,7 +164,6 @@ describe("GcsObjectStore", () => {
     it("should use nested path in url", async () => {
       const store = new GcsObjectStore({
         bucketName: "test-bucket",
-        accessLevel: "private",
       });
       const stream = Readable.from("test");
 
@@ -202,52 +173,7 @@ describe("GcsObjectStore", () => {
       );
       expect("result" in uploadResult).toBe(true);
       if ("result" in uploadResult && uploadResult.result) {
-        expect(uploadResult.result.url).toContain(
-          "folder/subfolder/file.txt",
-        );
-      }
-    });
-  });
-
-  describe("upsertContainer", () => {
-    it("should upsert bucket successfully in test mode", async () => {
-      const store = new GcsObjectStore({
-        bucketName: "my-bucket",
-        accessLevel: "private",
-      });
-      const result = await store.upsertContainer();
-
-      expect("result" in result).toBe(true);
-      if ("result" in result && result.result) {
-        expect(result.result.success).toBe(true);
-        expect(result.result.created).toBe(true);
-        expect(result.result.url).toBe("https://storage.googleapis.com/my-bucket");
-      }
-    });
-
-    it("should use access level from constructor (blob)", async () => {
-      const store = new GcsObjectStore({
-        bucketName: "blob-bucket",
-        accessLevel: "blob",
-      });
-      const result = await store.upsertContainer();
-
-      expect("result" in result).toBe(true);
-      if ("result" in result && result.result) {
-        expect(result.result.success).toBe(true);
-      }
-    });
-
-    it("should use store bucket name in url", async () => {
-      const store = new GcsObjectStore({
-        bucketName: "custom-bucket-name",
-        accessLevel: "private",
-      });
-      const result = await store.upsertContainer();
-
-      expect("result" in result).toBe(true);
-      if ("result" in result && result.result) {
-        expect(result.result.url).toContain("custom-bucket-name");
+        expect(uploadResult.result.url).toContain("folder/subfolder/file.txt");
       }
     });
   });
