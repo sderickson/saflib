@@ -1,10 +1,13 @@
 import { describe, it, expect, vi } from "vitest";
-import { stubGlobals } from "@saflib/vue/testing";
+import {
+  asyncUiWaitForOptions,
+  getElementByString,
+  stubGlobals,
+} from "@saflib/vue/testing";
 import { setupMockServer } from "@saflib/sdk/testing/mock";
 import { type VueWrapper } from "@vue/test-utils";
 import AccountPasswordPageAsync from "./AccountPasswordPageAsync.vue";
 import { account_password_page as strings } from "./AccountPasswordPage.strings.ts";
-import { getElementByString } from "@saflib/vue/testing";
 import { mountTestApp } from "../../test-app.ts";
 import { identityServiceFakeHandlers } from "@saflib/auth/fakes";
 
@@ -26,7 +29,7 @@ describe("AccountPasswordPage", () => {
 
   it("should render the password change form", async () => {
     const wrapper = mountTestApp(AccountPasswordPageAsync);
-    await vi.waitFor(() => getPageTitle(wrapper).exists());
+    await vi.waitFor(() => getPageTitle(wrapper).exists(), asyncUiWaitForOptions);
     expect(getPageTitle(wrapper).exists()).toBe(true);
     expect(getSaveButton(wrapper).exists()).toBe(true);
   });
