@@ -1,5 +1,9 @@
 import { describe, it, expect, vi } from "vitest";
-import { stubGlobals, getElementByString } from "@saflib/vue/testing";
+import {
+  asyncUiWaitForOptions,
+  stubGlobals,
+  getElementByString,
+} from "@saflib/vue/testing";
 import { setupMockServer } from "@saflib/sdk/testing/mock";
 import VerifyWallPageAsync from "./VerifyWallPageAsync.vue";
 import { verify_wall_page as strings } from "./VerifyWallPage.strings.ts";
@@ -19,7 +23,10 @@ describe("VerifyWallPage", () => {
       },
     });
 
-    await vi.waitFor(() => getElementByString(wrapper, strings.title).exists());
+    await vi.waitFor(
+      () => getElementByString(wrapper, strings.title).exists(),
+      asyncUiWaitForOptions,
+    );
 
     expect(getElementByString(wrapper, strings.title).exists()).toBe(true);
     expect(getElementByString(wrapper, strings.subtitle).exists()).toBe(true);

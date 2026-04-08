@@ -1,5 +1,9 @@
 import { describe, it, expect, vi } from "vitest";
-import { stubGlobals, getElementByString } from "@saflib/vue/testing";
+import {
+  asyncUiWaitForOptions,
+  stubGlobals,
+  getElementByString,
+} from "@saflib/vue/testing";
 import { type VueWrapper } from "@vue/test-utils";
 import BackupManagerAsync from "./BackupManagerAsync.vue";
 import { backup_manager_page as strings } from "./BackupManager.strings.ts";
@@ -49,7 +53,7 @@ describe("BackupManager", () => {
 
   it("should render the backup manager page correctly", async () => {
     const wrapper = mountTestApp(BackupManagerAsync);
-    await vi.waitFor(() => getTitle(wrapper).exists());
+    await vi.waitFor(() => getTitle(wrapper).exists(), asyncUiWaitForOptions);
 
     expect(getTitle(wrapper).exists()).toBe(true);
     expect(getTitle(wrapper).text()).toBe(strings.title);

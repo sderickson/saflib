@@ -14,6 +14,8 @@ const baseTest = {
   globals: true,
   exclude: ["**/e2e/**"],
   setupFiles: [setupFile],
+  // Default Vitest is 5s; AsyncPage + MSW + dynamic imports use asyncUiWaitForOptions (10s).
+  testTimeout: 15_000,
   server: {
     deps: {
       inline: ["vuetify"],

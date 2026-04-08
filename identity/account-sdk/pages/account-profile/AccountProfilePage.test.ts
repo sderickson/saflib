@@ -1,10 +1,13 @@
 import { describe, it, expect, vi } from "vitest";
-import { stubGlobals } from "@saflib/vue/testing";
+import {
+  asyncUiWaitForOptions,
+  getElementByString,
+  stubGlobals,
+} from "@saflib/vue/testing";
 import { setupMockServer } from "@saflib/sdk/testing/mock";
 import { type VueWrapper } from "@vue/test-utils";
 import AccountProfilePageAsync from "./AccountProfilePageAsync.vue";
 import { account_profile_page as strings } from "./AccountProfilePage.strings.ts";
-import { getElementByString } from "@saflib/vue/testing";
 import { http, HttpResponse } from "msw";
 import type { IdentityResponseBody } from "@saflib/identity-spec";
 import { mountTestApp } from "../../test-app.ts";
@@ -50,14 +53,14 @@ describe("AccountProfilePage", () => {
   it("should render the profile form with correct elements", async () => {
     const wrapper = mountTestApp(AccountProfilePageAsync);
 
-    await vi.waitFor(() => getPageTitle(wrapper).exists());
+    await vi.waitFor(() => getPageTitle(wrapper).exists(), asyncUiWaitForOptions);
     expect(getPageTitle(wrapper).exists()).toBe(true);
     expect(getBreadcrumbAccount(wrapper).exists()).toBe(true);
     expect(getBreadcrumbEditPersonalDetails(wrapper).exists()).toBe(true);
     expect(getSaveButton(wrapper).exists()).toBe(true);
 
     // Verify form fields are rendered with proper data
-    await vi.waitFor(() => wrapper.text().includes("George"));
+    await vi.waitFor(() => wrapper.text().includes("George"), asyncUiWaitForOptions);
     const form = wrapper.find("form");
     expect(form.exists()).toBe(true);
   });
