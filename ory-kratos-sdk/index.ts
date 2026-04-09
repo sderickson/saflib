@@ -13,6 +13,7 @@ export {
 export {
   assertKratosSessionIdentityLoaded,
   kratosIdentityEmail,
+  kratosEmailFromIdentity,
 } from "./helpers/kratos-session.ts";
 export { identityNeedsEmailVerification } from "./helpers/kratos-identity.ts";
 
