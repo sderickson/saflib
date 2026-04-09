@@ -67,6 +67,4 @@ export interface TemplatePackageMonolithEnvSchema {
 /**
  * `process.env` casted to the `TemplatePackageMonolithEnvSchema` type.
  */
-export const typedEnv = (globalThis.process
-  ? process.env
-  : {}) as unknown as TemplatePackageMonolithEnvSchema;
+export const typedEnv = (globalThis.process ? process.env : {}) as unknown as TemplatePackageMonolithEnvSchema;

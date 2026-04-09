@@ -61,4 +61,6 @@ export interface ObjectStoreEnvSchema {
 /**
  * `process.env` casted to the `ObjectStoreEnvSchema` type.
  */
-export const typedEnv = (globalThis.process ? process.env : {}) as unknown as ObjectStoreEnvSchema;
+export const typedEnv = (globalThis.process
+  ? process.env
+  : {}) as unknown as ObjectStoreEnvSchema;
