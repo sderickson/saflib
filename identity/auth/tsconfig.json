@@ -1,6 +1,0 @@
-{
-  "extends": "@saflib/vue/tsconfig.app.json",
-  "compilerOptions": {
-    "types": ["vue"]
-  }
-}
