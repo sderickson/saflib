@@ -37,7 +37,7 @@ export interface ViteEnvSchema {
    */
   PROTOCOL: "https" | "http";
   /**
-   * Comma-separated list of service subdomains, e.g. 'revenue,geo,identity,core'.
+   * Comma-separated list of service subdomains, e.g. 'revenue,geo,core'.
    */
   SERVICE_SUBDOMAINS: string;
   /**

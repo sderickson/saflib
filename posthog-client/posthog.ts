@@ -6,13 +6,14 @@
 
 import type { PostHog } from "posthog-js";
 import { ref, type Ref } from "vue";
-import type { User } from "@saflib/identity-spec";
+import type { Session } from "@ory/client";
+import {
+  kratosEmailFromSession,
+  kratosNameFromSession,
+} from "@saflib/ory-kratos-sdk";
 
 // Client features in use, and in need of mocking.
-type FocusedPostHog = Pick<
-  PostHog,
-  "getFeatureFlag" | "onFeatureFlags" | "identify" | "capture"
->;
+type FocusedPostHog = Pick<PostHog, "getFeatureFlag" | "onFeatureFlags">;
 
 export function usePostHog(): FocusedPostHog {
   if ("posthog" in globalThis) {
@@ -23,8 +24,6 @@ export function usePostHog(): FocusedPostHog {
     return {
       getFeatureFlag: () => "control",
       onFeatureFlags: () => () => {},
-      identify: () => {},
-      capture: () => undefined,
     };
   }
 }
@@ -42,16 +41,22 @@ export function usePostHogFeatureFlag(feature: string): Ref<FeatureFlag> {
 
 let identified = false;
 
-export function identifyToPostHog(user: User) {
+export function identifyToPostHog(session: Session) {
+  const email = kratosEmailFromSession(session);
+  const name = kratosNameFromSession(session);
+  const id = session.identity?.id;
+  if (!email || !id) {
+    return;
+  }
   if ("posthog" in globalThis && !identified) {
     // @ts-expect-error - posthog is not typed
-    globalThis.posthog.identify(user.id, {
-      id: user.id,
-      email: user.email,
-      name: ((user.givenName || "") + " " + (user.familyName || "")).trim(),
-      givenName: user.givenName,
-      familyName: user.familyName,
+    globalThis.posthog.identify(id, {
+      id: id,
+      email: email,
+      firstName: name?.first,
+      lastName: name?.last,
     });
+    console.log("id'd to posthog", id);
     identified = true;
   }
 }
