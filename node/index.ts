@@ -6,3 +6,4 @@ export * from "./src/git-hashes.ts";
 export * from "./src/loki.ts";
 export * from "./src/metrics.ts";
 export * from "./src/types.ts";
+export * from "./env.ts";

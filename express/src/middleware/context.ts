@@ -11,6 +11,7 @@ import {
 import type { Handler, Request } from "express";
 import createError from "http-errors";
 import type { Session } from "@ory/client";
+import { typedEnv } from "@saflib/node";
 
 function defaultKratosBrowserUrl(): string {
   // TODO: use env var?
@@ -57,8 +58,31 @@ async function resolveKratosAuth(cookie: string): Promise<Auth> {
   };
 }
 
+function resolveIdentityServerAuth(req: Request): Auth | undefined {
+  const userId = req.headers["x-user-id"];
+  const userEmail = req.headers["x-user-email"];
+  const userIsAdmin = req.headers["x-user-is-admin"] === "true";
+  const emailVerified = req.headers["x-user-email-verified"];
+  if (userId && userEmail) {
+    return {
+      userId: userId as string,
+      userEmail: userEmail as string,
+      isAdmin: userIsAdmin && emailVerified === "true",
+      emailVerified: emailVerified === "true",
+    };
+  }
+  return undefined;
+}
+
 async function resolveAuth(req: Request): Promise<Auth | undefined> {
-  return resolveKratosAuth(req.headers.cookie as string);
+  const kratosId = req.headers["x-kratos-authenticated-identity-id"];
+  if (typeof kratosId === "string" && kratosId.length > 0) {
+    return await resolveKratosAuth(req.headers.cookie as string);
+  }
+  if (typedEnv.NODE_ENV === "test") {
+    return resolveIdentityServerAuth(req);
+  }
+  throw createError(500, "No auth found");
 }
 
 export const makeContextMiddleware = () => {
