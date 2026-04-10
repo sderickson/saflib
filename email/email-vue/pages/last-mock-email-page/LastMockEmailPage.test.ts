@@ -10,7 +10,6 @@ import { getElementByString } from "@saflib/vue/testing";
 import type { VueWrapper } from "@vue/test-utils";
 import { mountTestApp } from "../test-app.ts";
 import { router } from "../test_router.ts";
-import { identityServiceFakeHandlers } from "@saflib/auth/fakes";
 
 const mockEmails: EmailResponseBody["listSentEmails"][200] = [
   {
@@ -37,7 +36,6 @@ const handlers = [
   http.get("http://app.localhost:3000/email/sent", () => {
     return HttpResponse.json(mockEmails);
   }),
-  ...identityServiceFakeHandlers,
 ];
 
 describe("LastMockEmailPage", () => {

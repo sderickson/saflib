@@ -1,4 +1,4 @@
-import { getProfile } from "@saflib/auth";
+// import { getProfile } from "@saflib/auth";
 import { computed, type Ref } from "vue";
 import { useQuery } from "@tanstack/vue-query";
 import { useRoute } from "vue-router";
@@ -31,14 +31,17 @@ export function useLastMockEmailPageLoader() {
     throw new Error("Subdomain query param is required");
   }
 
-  const profileQuery = useQuery(getProfile());
-  const email = computed(() => profileQuery.data.value?.email);
-  const emailLoaded = computed(() => profileQuery.isSuccess.value);
+  // const profileQuery = useQuery(getProfile());
+  // const email = computed(() => profileQuery.data.value?.email);
+  const email = "stub@example.com";
+  const emailLoaded = true;
 
   return {
-    profileQuery,
     sentEmailsQuery: useQuery({
-      ...getSentEmails(subdomain, email),
+      ...getSentEmails(
+        subdomain,
+        computed(() => email),
+      ),
       enabled: emailLoaded,
     }),
   };

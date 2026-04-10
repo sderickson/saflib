@@ -6,7 +6,7 @@ import { Logger } from "winston";
 export interface Auth {
   userId: string;
   userEmail?: string;
-  userScopes?: string[];
+  isAdmin?: boolean;
   emailVerified?: boolean;
 }
 

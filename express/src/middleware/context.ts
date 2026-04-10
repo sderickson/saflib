@@ -11,6 +11,7 @@ import {
 import type { Handler, Request } from "express";
 import createError from "http-errors";
 import type { Session } from "@ory/client";
+import { typedEnv } from "@saflib/node";
 
 function defaultKratosBrowserUrl(): string {
   // TODO: use env var?
@@ -40,42 +41,33 @@ async function resolveKratosAuth(cookie: string): Promise<Auth> {
     verifiableAddresses.find((a) => a.via === "email")?.verified ?? false;
   const userId = session.identity.id;
 
-  const adminRaw = process.env.IDENTITY_SERVICE_ADMIN_EMAILS ?? "";
+  const adminRaw = process.env.ADMIN_EMAILS ?? "";
   const adminEmails = new Set(
     adminRaw
       .split(",")
       .map((e) => e.trim())
       .filter(Boolean),
   );
-
-  const userScopes: string[] = [];
-  if (adminEmails.has(userEmail) && emailVerified) {
-    userScopes.push("*");
-  } else {
-    userScopes.push("none");
-  }
+  const isAdmin = adminEmails.has(userEmail) && emailVerified;
 
   return {
     userId,
     userEmail,
-    userScopes,
+    isAdmin,
     emailVerified,
   };
 }
 
-function resolveIdentityServerAuth(req: Request): Auth | undefined {
+function resolveTestAuth(req: Request): Auth | undefined {
   const userId = req.headers["x-user-id"];
   const userEmail = req.headers["x-user-email"];
-  const userScopesHeader = req.headers["x-user-scopes"];
+  const userIsAdmin = req.headers["x-user-is-admin"] === "true";
   const emailVerified = req.headers["x-user-email-verified"];
   if (userId && userEmail) {
-    const scopes = userScopesHeader
-      ? (userScopesHeader as string).split(",")
-      : [];
     return {
       userId: userId as string,
       userEmail: userEmail as string,
-      userScopes: scopes,
+      isAdmin: userIsAdmin && emailVerified === "true",
       emailVerified: emailVerified === "true",
     };
   }
@@ -87,7 +79,10 @@ async function resolveAuth(req: Request): Promise<Auth | undefined> {
   if (typeof kratosId === "string" && kratosId.length > 0) {
     return await resolveKratosAuth(req.headers.cookie as string);
   }
-  return resolveIdentityServerAuth(req);
+  if (typedEnv.NODE_ENV === "test") {
+    return resolveTestAuth(req);
+  }
+  throw createError(500, "No auth found");
 }
 
 export const makeContextMiddleware = () => {

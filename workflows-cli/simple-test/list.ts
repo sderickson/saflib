@@ -11,7 +11,6 @@ import envWorkflows from "@saflib/env/workflows";
 import commanderWorkflows from "@saflib/commander/workflows";
 import sdkWorkflows from "@saflib/sdk/workflows";
 import serviceWorkflows from "@saflib/service/workflows";
-import identityWorkflows from "@saflib/identity/workflows";
 import grpcWorkflows from "@saflib/grpc/workflows";
 import cronWorkflows from "@saflib/cron/workflows";
 import productWorkflows from "@saflib/product/workflows";
@@ -28,7 +27,6 @@ const workflowClasses: WorkflowDefinition[] = [
   ...monorepoWorkflows,
   ...commanderWorkflows,
   ...grpcWorkflows,
-  ...identityWorkflows,
   ...cronWorkflows,
   ...sdkWorkflows,
   ...vueSpaWorkflows,

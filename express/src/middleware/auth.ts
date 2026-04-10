@@ -60,7 +60,7 @@ export const makeAuthMiddleware = (
       return;
     }
 
-    if (adminRequired && !auth.userScopes?.includes("*")) {
+    if (adminRequired && !auth.isAdmin) {
       drainRequest(req).then(() => {
         if (!res.headersSent) {
           res.status(403).json({

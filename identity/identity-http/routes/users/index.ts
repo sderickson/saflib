@@ -9,6 +9,7 @@ export const makeUsersRouter = () => {
     "/users",
     createScopedMiddleware({
       apiSpec: jsonSpec,
+      adminRequired: true,
     }),
   );
 

@@ -37,7 +37,7 @@ export interface TemplateIntegrationEnvSchema {
    */
   PROTOCOL: "https" | "http";
   /**
-   * Comma-separated list of service subdomains, e.g. 'revenue,geo,identity,core'.
+   * Comma-separated list of service subdomains, e.g. 'revenue,geo,core'.
    */
   SERVICE_SUBDOMAINS: string;
   /**
@@ -57,6 +57,4 @@ export interface TemplateIntegrationEnvSchema {
 /**
  * `process.env` casted to the `TemplateIntegrationEnvSchema` type.
  */
-export const typedEnv = (globalThis.process
-  ? process.env
-  : {}) as unknown as TemplateIntegrationEnvSchema;
+export const typedEnv = (globalThis.process ? process.env : {}) as unknown as TemplateIntegrationEnvSchema;

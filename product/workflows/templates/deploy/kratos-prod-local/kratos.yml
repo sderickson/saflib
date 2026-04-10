@@ -21,6 +21,7 @@ selfservice:
   flows:
     registration:
       enabled: true
+      style: unified
       ui_url: http://auth.docker.localhost/registration
 
     login:

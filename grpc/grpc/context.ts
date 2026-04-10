@@ -46,7 +46,8 @@ export const addSafContext = (
         auth = {
           userId: authFromRequest.user_id,
           userEmail: authFromRequest.user_email,
-          userScopes: authFromRequest.user_scopes,
+          // todo: work in identity?
+          // userScopes: authFromRequest.user_scopes,
           emailVerified: true,
         };
       }

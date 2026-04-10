@@ -11,6 +11,7 @@ router.use(
   "/cron",
   createScopedMiddleware({
     apiSpec: jsonSpec,
+    adminRequired: true,
   }),
 );
 router.get("/cron/jobs", listCronJobsHandler);

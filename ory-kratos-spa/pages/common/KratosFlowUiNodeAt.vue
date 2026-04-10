@@ -84,13 +84,37 @@
     >
       {{ ctx.kratosSubmitLabel(node) }}
     </v-btn>
+    <template v-else-if="isKratosTraitsPhoneInputNode(node)">
+      <!--
+        Visible field shows formatted digits; FormData must receive E.164 from the hidden input
+        (see UsPhoneNumberInput update:modelValue).
+      -->
+      <input
+        type="hidden"
+        :name="node.attributes.name"
+        :value="fieldModels[idx]"
+      />
+      <UsPhoneNumberInput
+        v-model="fieldModels[idx]"
+        :id="ctx.elementId(idx)"
+        :label="kratosPhoneFieldLabel(node)"
+        :required="!!node.attributes.required"
+        :disabled="submitting"
+        density="comfortable"
+        class="mb-4"
+        autocomplete="tel"
+      />
+    </template>
     <v-text-field
       v-else
       :id="ctx.elementId(idx)"
       v-model="fieldModels[idx]"
       :name="node.attributes.name"
       :type="ctx.effectiveInputType(node, idx)"
-      :label="node.meta?.label?.text"
+      :label="
+        node.meta?.label?.text?.trim() ||
+        kratosFallbackLabelForInputName(node.attributes.name)
+      "
       :required="node.attributes.required"
       :prepend-inner-icon="ctx.prependIcon(node)"
       :append-inner-icon="appendInnerIconForField(node, idx)"
@@ -107,7 +131,13 @@
 <script setup lang="ts">
 import type { UiNode } from "@ory/client";
 import { computed, inject, unref } from "vue";
-import { isKratosInputNode, kratosEffectiveInputType } from "./kratosNodeUtils.ts";
+import { UsPhoneNumberInput } from "@saflib/vue/components";
+import { kratosFallbackLabelForInputName } from "./kratosInputFieldLabel.ts";
+import {
+  isKratosInputNode,
+  isKratosTraitsPhoneInputNode,
+  kratosEffectiveInputType,
+} from "./kratosNodeUtils.ts";
 import { runKratosWebAuthnInputClick } from "./kratosWebAuthnInputClick.ts";
 import {
   KRATOS_FLOW_UI_INJECT,
@@ -168,6 +198,11 @@ function onAppendInnerForField(idx: number, node: UiNode) {
   ) {
     runKratosWebAuthnInputClick(props.passkeyLoginTrigger);
   }
+}
+
+function kratosPhoneFieldLabel(node: UiNode): string {
+  if (!isKratosInputNode(node)) return "Phone";
+  return node.meta?.label?.text?.trim() || "Phone";
 }
 </script>
 

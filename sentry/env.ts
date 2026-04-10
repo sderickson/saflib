@@ -38,7 +38,7 @@ export interface SentryEnvSchema {
   PROTOCOL: "https" | "http";
   SENTRY_DSN?: string;
   /**
-   * Comma-separated list of service subdomains, e.g. 'revenue,geo,identity,core'.
+   * Comma-separated list of service subdomains, e.g. 'revenue,geo,core'.
    */
   SERVICE_SUBDOMAINS: string;
   /**

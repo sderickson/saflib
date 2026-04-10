@@ -4,9 +4,11 @@ import type {
   UpdateLoginFlowBody,
   UpdateRegistrationFlowBody,
 } from "@ory/client";
+import { traitsRecordFromFormData } from "../common/kratosTraitsFromFormData.ts";
 
 export { isKratosInputNode, kratosEffectiveInputType } from "../common/kratosNodeUtils.ts";
 export { kratosSubmitErrorMessage as registrationSubmitErrorMessage } from "../common/kratosErrorMessage.ts";
+export { traitsRecordFromFormData };
 
 /** Resolve email from Kratos password-method registration FormData. */
 export function traitsEmailFromFormData(fd: FormData): string {
@@ -22,7 +24,7 @@ export function buildRegistrationPasswordBody(fd: FormData): UpdateRegistrationF
     method: "password",
     csrf_token: String(fd.get("csrf_token") ?? ""),
     password: String(fd.get("password") ?? ""),
-    traits: { email: traitsEmailFromFormData(fd) },
+    traits: traitsRecordFromFormData(fd),
   };
 }
 
@@ -43,17 +45,11 @@ export function buildRegistrationUpdateBodyFromFormData(fd: FormData): UpdateReg
     return buildRegistrationPasswordBody(fd);
   }
   if (method === "passkey") {
-    const traits: Record<string, unknown> = {};
-    fd.forEach((value, key) => {
-      if (key.startsWith("traits.")) {
-        traits[key.slice("traits.".length)] = String(value).trim();
-      }
-    });
     return {
       method: "passkey",
       csrf_token: String(fd.get("csrf_token") ?? ""),
       passkey_register: String(fd.get("passkey_register") ?? ""),
-      traits,
+      traits: traitsRecordFromFormData(fd),
     };
   }
   throw new Error("Missing or unsupported registration method in form");

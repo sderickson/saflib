@@ -6,6 +6,7 @@ import { cronDb, jobSettingsDb, type JobSetting } from "@saflib/cron-db";
 import type { JobSettings } from "@saflib/cron-spec";
 import type { DbKey } from "@saflib/drizzle";
 import { mockJobs } from "../mock-jobs.ts";
+import { makeAdminHeaders } from "@saflib/express";
 
 describe("GET /jobs", () => {
   let app: express.Express;
@@ -39,9 +40,7 @@ describe("GET /jobs", () => {
   it("should return a list of all cron jobs", async () => {
     const response = await request(app)
       .get("/cron/jobs")
-      .set("x-user-id", "1")
-      .set("x-user-email", "test@example.com")
-      .set("x-user-scopes", "cron:read");
+      .set(makeAdminHeaders());
 
     expect(response.status).toBe(200);
 

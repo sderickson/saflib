@@ -19,12 +19,11 @@ describe("Auth Middleware", () => {
     app.use(errorHandler);
   });
 
-  it("should populate auth object with user info and empty scopes when no scope header", async () => {
+  it("should populate auth object with user info and isAdmin false when no isAdmin header", async () => {
     const headers = {
       "x-user-id": "123",
       "x-user-email": "test@example.com",
       "x-user-email-verified": "true",
-      "x-user-scopes": "",
     };
 
     const response = await request(app).get("/test").set(headers);
@@ -33,16 +32,16 @@ describe("Auth Middleware", () => {
     expect(response.body.authFromMiddleware).toEqual({
       userId: "123",
       userEmail: "test@example.com",
-      userScopes: [],
+      isAdmin: false,
       emailVerified: true,
     });
   });
 
-  it("should populate auth object with user info and scopes from header", async () => {
+  it("should populate auth object with user info and isAdmin true when isAdmin header is true", async () => {
     const headers = {
       "x-user-id": "123",
       "x-user-email": "test@example.com",
-      "x-user-scopes": "admin,write",
+      "x-user-is-admin": "true",
       "x-user-email-verified": "true",
     };
 
@@ -52,26 +51,7 @@ describe("Auth Middleware", () => {
     expect(response.body.authFromMiddleware).toEqual({
       userId: "123",
       userEmail: "test@example.com",
-      userScopes: ["admin", "write"],
-      emailVerified: true,
-    });
-  });
-
-  it("should handle empty scopes header by returning empty array", async () => {
-    const headers = {
-      "x-user-id": "123",
-      "x-user-email": "test@example.com",
-      "x-user-scopes": "",
-      "x-user-email-verified": "true",
-    };
-
-    const response = await request(app).get("/test").set(headers);
-
-    expect(response.status).toBe(200);
-    expect(response.body.authFromMiddleware).toEqual({
-      userId: "123",
-      userEmail: "test@example.com",
-      userScopes: [],
+      isAdmin: true,
       emailVerified: true,
     });
   });
@@ -79,7 +59,7 @@ describe("Auth Middleware", () => {
   it("should return 401 when user ID is missing", async () => {
     const headers = {
       "x-user-email": "test@example.com",
-      "x-user-scopes": "admin",
+      "x-user-is-admin": "true",
       "x-user-email-verified": "true",
     };
 
@@ -94,7 +74,7 @@ describe("Auth Middleware", () => {
   it("should return 401 when user email is missing", async () => {
     const headers = {
       "x-user-id": "123",
-      "x-user-scopes": "admin",
+      "x-user-is-admin": "true",
     };
 
     const response = await request(app).get("/test").set(headers);
@@ -108,7 +88,7 @@ describe("Auth Middleware", () => {
 
   it("should return 401 when both user ID and email are missing", async () => {
     const headers = {
-      "x-user-scopes": "admin",
+      "x-user-is-admin": "true",
     };
 
     const response = await request(app).get("/test").set(headers);
@@ -135,13 +115,11 @@ describe("Auth Middleware email verification", () => {
     });
     app.use(errorHandler);
 
-    const response = await request(app)
-      .get("/test")
-      .set({
-        "x-user-id": "123",
-        "x-user-email": "test@example.com",
-        "x-user-email-verified": "false",
-      });
+    const response = await request(app).get("/test").set({
+      "x-user-id": "123",
+      "x-user-email": "test@example.com",
+      "x-user-email-verified": "false",
+    });
 
     expect(response.status).toBe(403);
     expect(response.body).toEqual({
@@ -164,13 +142,11 @@ describe("Auth Middleware email verification", () => {
     });
     app.use(errorHandler);
 
-    const response = await request(app)
-      .get("/test")
-      .set({
-        "x-user-id": "123",
-        "x-user-email": "test@example.com",
-        "x-user-email-verified": "true",
-      });
+    const response = await request(app).get("/test").set({
+      "x-user-id": "123",
+      "x-user-email": "test@example.com",
+      "x-user-email-verified": "true",
+    });
 
     expect(response.status).toBe(200);
     expect(response.body.authFromMiddleware?.emailVerified).toBe(true);

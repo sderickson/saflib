@@ -100,6 +100,26 @@ describe("Registration.logic", () => {
         traits: { email: "u@example.com" },
       });
     });
+
+    it("includes nested name and phone traits from dotted FormData keys", () => {
+      const fd = new FormData();
+      fd.set("csrf_token", "tok");
+      fd.set("password", "secret");
+      fd.set("traits.email", "u@example.com");
+      fd.set("traits.name.first", "Pat");
+      fd.set("traits.name.last", "Smith");
+      fd.set("traits.phone", "+15551234567");
+      expect(buildRegistrationPasswordBody(fd)).toEqual({
+        method: "password",
+        csrf_token: "tok",
+        password: "secret",
+        traits: {
+          email: "u@example.com",
+          name: { first: "Pat", last: "Smith" },
+          phone: "+15551234567",
+        },
+      });
+    });
   });
 
   describe("buildRegistrationUpdateBodyFromFormData", () => {
@@ -120,12 +140,17 @@ describe("Registration.logic", () => {
       fd.set("method", "passkey");
       fd.set("csrf_token", "tok");
       fd.set("traits.email", "u@example.com");
+      fd.set("traits.name.first", "Pat");
+      fd.set("traits.name.last", "Smith");
       fd.set("passkey_register", '{"response":{}}');
       expect(buildRegistrationUpdateBodyFromFormData(fd)).toEqual({
         method: "passkey",
         csrf_token: "tok",
         passkey_register: '{"response":{}}',
-        traits: { email: "u@example.com" },
+        traits: {
+          email: "u@example.com",
+          name: { first: "Pat", last: "Smith" },
+        },
       });
     });
   });

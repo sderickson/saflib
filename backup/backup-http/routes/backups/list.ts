@@ -9,7 +9,7 @@ export const createListHandler = (objectStore: ObjectStore) => {
   return createHandler(async (_req, res) => {
     const { auth } = getSafContextWithAuth();
 
-    if (!auth.userScopes?.includes("*")) {
+    if (!auth.isAdmin) {
       const errorResponse: BackupServiceResponseBody["listBackups"][403] = {
         message: "Forbidden - admin access required",
         code: "FORBIDDEN",
@@ -27,9 +27,25 @@ export const createListHandler = (objectStore: ObjectStore) => {
     }
 
     const backups = files
-      .filter((file: { path: string; size?: number; metadata?: Record<string, string> }) => file.path.endsWith(".db"))
-      .map((file: { path: string; size?: number; metadata?: Record<string, string> }) => mapObjectStoreFileToBackup(file))
-      .filter((backup: ReturnType<typeof mapObjectStoreFileToBackup>): backup is NonNullable<typeof backup> => backup !== null);
+      .filter(
+        (file: {
+          path: string;
+          size?: number;
+          metadata?: Record<string, string>;
+        }) => file.path.endsWith(".db"),
+      )
+      .map(
+        (file: {
+          path: string;
+          size?: number;
+          metadata?: Record<string, string>;
+        }) => mapObjectStoreFileToBackup(file),
+      )
+      .filter(
+        (
+          backup: ReturnType<typeof mapObjectStoreFileToBackup>,
+        ): backup is NonNullable<typeof backup> => backup !== null,
+      );
 
     const response: BackupServiceResponseBody["listBackups"][200] = backups;
     res.status(200).json(response);

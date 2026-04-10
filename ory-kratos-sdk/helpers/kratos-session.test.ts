@@ -2,21 +2,21 @@ import type { Session } from "@ory/client";
 import { describe, expect, it } from "vitest";
 import {
   assertKratosSessionIdentityLoaded,
-  kratosIdentityEmail,
+  kratosEmailFromSession,
 } from "./kratos-session.ts";
 
-describe("kratosIdentityEmail", () => {
+describe("kratosEmailFromSession", () => {
   it("returns undefined when session or traits are missing", () => {
-    expect(kratosIdentityEmail(undefined)).toBeUndefined();
-    expect(kratosIdentityEmail(null)).toBeUndefined();
+    expect(kratosEmailFromSession(undefined)).toBeUndefined();
+    expect(kratosEmailFromSession(null)).toBeUndefined();
     expect(
-      kratosIdentityEmail({ id: "s", active: true } as Session),
+      kratosEmailFromSession({ id: "s", active: true } as Session),
     ).toBeUndefined();
   });
 
   it("returns email from identity traits", () => {
     expect(
-      kratosIdentityEmail({
+      kratosEmailFromSession({
         id: "s",
         active: true,
         identity: {

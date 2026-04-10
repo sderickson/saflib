@@ -9,7 +9,8 @@
   },
   "dependencies": {
     "@saflib/env": "*",
-    "posthog-js": "^1.257.0"
+    "posthog-js": "^1.257.0",
+    "@saflib/ory-kratos-sdk": "*"
   },
   "devDependencies": {
     "@saflib/vitest": "*"

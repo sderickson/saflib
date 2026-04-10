@@ -5,6 +5,10 @@
 
 export interface TemplatePackageMonolithEnvSchema {
   /**
+   * Comma-separated list of emails who will get the 'admin' scope. Emails must be validated to receive this scope.
+   */
+  ADMIN_EMAILS: string;
+  /**
    * Whether to allow the creation of new databases. Useful for ensuring existing production environments don't inadvertently create new databases.
    */
   ALLOW_DB_CREATION?: "true" | "false";
@@ -50,7 +54,7 @@ export interface TemplatePackageMonolithEnvSchema {
   PROTOCOL: "https" | "http";
   SENTRY_DSN?: string;
   /**
-   * Comma-separated list of service subdomains, e.g. 'revenue,geo,identity,core'.
+   * Comma-separated list of service subdomains, e.g. 'revenue,geo,core'.
    */
   SERVICE_SUBDOMAINS: string;
   /**
@@ -67,6 +71,4 @@ export interface TemplatePackageMonolithEnvSchema {
 /**
  * `process.env` casted to the `TemplatePackageMonolithEnvSchema` type.
  */
-export const typedEnv = (globalThis.process
-  ? process.env
-  : {}) as unknown as TemplatePackageMonolithEnvSchema;
+export const typedEnv = (globalThis.process ? process.env : {}) as unknown as TemplatePackageMonolithEnvSchema;

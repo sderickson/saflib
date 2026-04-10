@@ -8,6 +8,7 @@ import { cronDb, jobSettingsDb } from "@saflib/cron-db";
 import type { DbKey } from "@saflib/drizzle";
 import { throwError } from "@saflib/monorepo";
 import { mockJobs } from "../mock-jobs.ts";
+import { makeAdminHeaders } from "@saflib/express";
 
 const existingJobName = Object.keys(mockJobs)[0];
 
@@ -29,9 +30,7 @@ describe("PUT /jobs/settings", () => {
 
     const response = await request(app)
       .put("/cron/jobs/settings")
-      .set("x-user-id", "1")
-      .set("x-user-email", "test@example.com")
-      .set("x-user-scopes", "cron:write")
+      .set(makeAdminHeaders())
       .send(updatePayload);
 
     expect(response.status).toBe(200);
@@ -56,9 +55,7 @@ describe("PUT /jobs/settings", () => {
 
     const response = await request(app)
       .put("/cron/jobs/settings")
-      .set("x-user-id", "1")
-      .set("x-user-email", "test@example.com")
-      .set("x-user-scopes", "cron:write")
+      .set(makeAdminHeaders())
       .send(updatePayload);
 
     expect(response.status).toBe(404);

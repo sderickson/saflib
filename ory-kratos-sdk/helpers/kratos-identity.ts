@@ -13,3 +13,9 @@ export function identityNeedsEmailVerification(
   if (emailAddrs.length === 0) return false;
   return emailAddrs.some((a) => !a.verified);
 }
+
+export function kratosEmailFromIdentity(
+  identity: Identity,
+): string | undefined {
+  return identity.traits?.email;
+}

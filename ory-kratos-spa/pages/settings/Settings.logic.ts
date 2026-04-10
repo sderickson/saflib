@@ -4,6 +4,11 @@ import type {
   UiNode,
   UpdateSettingsFlowBody,
 } from "@ory/client";
+import { isKratosInputNode } from "../common/kratosNodeUtils.ts";
+import {
+  normalizeKratosTraitPathFromFormKey,
+  traitsRecordFromFormData,
+} from "../common/kratosTraitsFromFormData.ts";
 
 /**
  * Kratos flow-level message id: account recovered — user should set a new password (session may be
@@ -54,13 +59,49 @@ export function formDataFromsettingsForm(
   return fd;
 }
 
+/**
+ * Kratos can emit both `traits.name.first` and `traits.name\.first` for nested traits; the latter
+ * carries values. Drop the duplicate unescaped nodes so the profile tab does not show two fields each.
+ */
+export function dedupeKratosProfileTraitNodes(nodes: readonly UiNode[]): UiNode[] {
+  const traitInputs = nodes.filter(
+    (node): node is UiNode & { attributes: { name: string } } =>
+      isKratosInputNode(node) &&
+      typeof node.attributes.name === "string" &&
+      node.attributes.name.startsWith("traits."),
+  );
+  const byNorm = new Map<string, { raw: string }[]>();
+  for (const node of traitInputs) {
+    const raw = node.attributes.name;
+    const path = normalizeKratosTraitPathFromFormKey(raw);
+    if (path == null) continue;
+    const list = byNorm.get(path) ?? [];
+    list.push({ raw });
+    byNorm.set(path, list);
+  }
+  const dropRaw = new Set<string>();
+  for (const [, list] of byNorm) {
+    if (list.length < 2) continue;
+    const hasEscaped = list.some(({ raw }) => /\\./.test(raw));
+    if (!hasEscaped) continue;
+    for (const { raw } of list) {
+      if (!/\\./.test(raw)) dropRaw.add(raw);
+    }
+  }
+  return nodes.filter((node) => {
+    if (!isKratosInputNode(node)) return true;
+    const raw = node.attributes.name;
+    return typeof raw !== "string" || !dropRaw.has(raw);
+  });
+}
+
 /** Nodes for one settings group (e.g. profile / password), plus shared CSRF from `default`. */
 export function settingsNodesForGroup(
   flow: SettingsFlow,
   group: "profile" | "password" | "totp" | "passkey",
 ): UiNode[] {
   const g = group;
-  return flow.ui.nodes.filter((node) => {
+  const filtered = flow.ui.nodes.filter((node) => {
     if (
       node.attributes &&
       "id" in node.attributes &&
@@ -79,6 +120,10 @@ export function settingsNodesForGroup(
     }
     return false;
   });
+  if (g === "profile") {
+    return dedupeKratosProfileTraitNodes(filtered);
+  }
+  return filtered;
 }
 
 /**
@@ -103,16 +148,10 @@ export function buildSettingsUpdateBodyFromFormData(
     method = "totp";
   }
   if (method === "profile") {
-    const traits: Record<string, unknown> = {};
-    fd.forEach((value, key) => {
-      if (key.startsWith("traits.")) {
-        traits[key.slice("traits.".length)] = String(value).trim();
-      }
-    });
     return {
       method: "profile",
       csrf_token: String(fd.get("csrf_token") ?? ""),
-      traits,
+      traits: traitsRecordFromFormData(fd),
     } as UpdateSettingsFlowBody;
   }
   if (!method) {

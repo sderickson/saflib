@@ -1,14 +1,9 @@
 import { createHandler } from "@saflib/express";
-import type {
-  BackupServiceResponseBody,
-} from "@saflib/backup-spec";
+import type { BackupServiceResponseBody } from "@saflib/backup-spec";
 import createError from "http-errors";
 import { getSafContextWithAuth } from "@saflib/node";
 import type { ObjectStore } from "@saflib/object-store";
-import {
-  PathTraversalError,
-  StorageError,
-} from "@saflib/object-store";
+import { PathTraversalError, StorageError } from "@saflib/object-store";
 import type { Readable } from "stream";
 import { randomUUID } from "crypto";
 import { mapObjectStoreFileToBackup } from "./_helpers.ts";
@@ -25,7 +20,7 @@ export const createCreateHandler = (
   return createHandler(async (req, res) => {
     const { auth } = getSafContextWithAuth();
 
-    if (!auth.userScopes?.includes("*")) {
+    if (!auth.isAdmin) {
       const errorResponse: BackupServiceResponseBody["createBackup"][403] = {
         message: "Forbidden - admin access required",
         code: "FORBIDDEN",
@@ -34,7 +29,8 @@ export const createCreateHandler = (
       return;
     }
 
-    const data: CreateBackupRequestBody = (req.body || {}) as CreateBackupRequestBody;
+    const data: CreateBackupRequestBody = (req.body ||
+      {}) as CreateBackupRequestBody;
 
     const stream = await backupFn();
 
@@ -50,10 +46,13 @@ export const createCreateHandler = (
       metadata.tags = JSON.stringify(data.tags);
     }
 
-    const { error: uploadError } =
-      await objectStore.uploadFile(filename, stream, metadata);
+    const { error: uploadError } = await objectStore.uploadFile(
+      filename,
+      stream,
+      metadata,
+    );
 
-    if (uploadError) { 
+    if (uploadError) {
       switch (true) {
         case uploadError instanceof StorageError:
           res.status(500).json({
