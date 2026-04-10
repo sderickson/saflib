@@ -25,7 +25,7 @@
       </v-alert>
 
       <v-tabs v-model="tab" class="mb-4" color="primary">
-        <v-tab value="email">{{ t(tabs.email) }}</v-tab>
+        <v-tab value="email">{{ t(tabs.general) }}</v-tab>
         <v-tab value="password">{{ t(tabs.password) }}</v-tab>
         <v-tab v-if="hasTotpSettings" value="totp">{{ t(tabs.totp) }}</v-tab>
         <v-tab v-if="hasPasskeySettings" value="passkey">{{

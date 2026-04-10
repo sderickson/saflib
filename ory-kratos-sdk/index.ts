@@ -14,6 +14,8 @@ export {
   assertKratosSessionIdentityLoaded,
   kratosEmailFromSession,
   kratosEmailVerifiedFromSession,
+  kratosPhoneFromSession,
+  kratosNameFromSession,
 } from "./helpers/kratos-session.ts";
 export {
   identityNeedsEmailVerification,

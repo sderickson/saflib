@@ -19,6 +19,22 @@ export function kratosEmailVerifiedFromSession(
   return addr.verified ?? false;
 }
 
+export function kratosPhoneFromSession(
+  session: Session | null | undefined,
+): string | undefined {
+  const traits = session?.identity?.traits as { phone?: string } | undefined;
+  return traits?.phone;
+}
+
+export function kratosNameFromSession(
+  session: Session | null | undefined,
+): { first: string; last: string } | undefined {
+  const traits = session?.identity?.traits as
+    | { name?: { first: string; last: string } }
+    | undefined;
+  return traits?.name;
+}
+
 /** Loader guard: session must include identity (required-session query succeeded). */
 export function assertKratosSessionIdentityLoaded(
   session: unknown,

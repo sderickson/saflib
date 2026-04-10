@@ -1,5 +1,5 @@
 export const settings_tabs = {
-  email: "Email",
+  general: "General",
   password: "Password",
   totp: "Authenticator app (TOTP)",
   passkey: "Passkeys",
