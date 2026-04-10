@@ -30,7 +30,7 @@ describe("PUT /jobs/settings", () => {
 
     const response = await request(app)
       .put("/cron/jobs/settings")
-      .set(makeAdminHeaders());
+      .set(makeAdminHeaders())
       .send(updatePayload);
 
     expect(response.status).toBe(200);
