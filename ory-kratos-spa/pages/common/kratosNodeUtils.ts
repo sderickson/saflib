@@ -9,6 +9,11 @@ export function isKratosInputNode(
   );
 }
 
+/** `traits.phone` — custom UI uses US phone input and submits E.164. */
+export function isKratosTraitsPhoneInputNode(node: UiNode): boolean {
+  return isKratosInputNode(node) && node.attributes.name === "traits.phone";
+}
+
 export type KratosInputAttrs = { name: string; type: string };
 
 /** Kratos may send password fields as `type="text"`; normalize so the field is masked. */

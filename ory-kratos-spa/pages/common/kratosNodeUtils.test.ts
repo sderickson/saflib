@@ -1,6 +1,10 @@
 import { describe, it, expect } from "vitest";
 import type { UiNode } from "@ory/client";
-import { isKratosInputNode, kratosEffectiveInputType } from "./kratosNodeUtils.ts";
+import {
+  isKratosInputNode,
+  isKratosTraitsPhoneInputNode,
+  kratosEffectiveInputType,
+} from "./kratosNodeUtils.ts";
 
 describe("isKratosInputNode", () => {
   it("narrows input nodes", () => {
@@ -17,6 +21,28 @@ describe("isKratosInputNode", () => {
       attributes: { text: { text: "hi" } },
     } as UiNode;
     expect(isKratosInputNode(node)).toBe(false);
+  });
+});
+
+describe("isKratosTraitsPhoneInputNode", () => {
+  it("is true for traits.phone input nodes", () => {
+    const node = {
+      type: "input",
+      attributes: {
+        node_type: "input",
+        name: "traits.phone",
+        type: "tel",
+      },
+    } as UiNode;
+    expect(isKratosTraitsPhoneInputNode(node)).toBe(true);
+  });
+
+  it("is false for other fields", () => {
+    const node = {
+      type: "input",
+      attributes: { node_type: "input", name: "traits.email", type: "email" },
+    } as UiNode;
+    expect(isKratosTraitsPhoneInputNode(node)).toBe(false);
   });
 });
 

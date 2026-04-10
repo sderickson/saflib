@@ -13,5 +13,8 @@ export function kratosPrependInnerIconForFieldName(name: string): string | undef
   if (n === "code") {
     return "mdi-message-lock-outline";
   }
+  if (n === "traits.name.first" || n === "traits.name.last") {
+    return "mdi-account-outline";
+  }
   return undefined;
 }
