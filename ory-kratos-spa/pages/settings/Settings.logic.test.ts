@@ -1,7 +1,8 @@
-import type { Session, SettingsFlow } from "@ory/client";
+import type { Session, SettingsFlow, UiNode } from "@ory/client";
 import { describe, expect, it } from "vitest";
 import {
   buildSettingsUpdateBodyFromFormData,
+  dedupeKratosProfileTraitNodes,
   settingsFlowHasPasswordRecoveryMessage,
   settingsFlowShouldFetch,
   settingsNodesForGroup,
@@ -31,6 +32,20 @@ describe("buildSettingsUpdateBodyFromFormData", () => {
       method: "profile",
       csrf_token: "tok",
       traits: { email: "a@b.co" },
+    });
+  });
+
+  it("builds nested name traits for profile (not flat name.first keys)", () => {
+    const fd = new FormData();
+    fd.set("method", "profile");
+    fd.set("csrf_token", "tok");
+    fd.set("traits.email", "a@b.co");
+    fd.set("traits.name.first", "Pat");
+    fd.set("traits.name.last", "Smith");
+    expect(buildSettingsUpdateBodyFromFormData(fd)).toEqual({
+      method: "profile",
+      csrf_token: "tok",
+      traits: { email: "a@b.co", name: { first: "Pat", last: "Smith" } },
     });
   });
 
@@ -83,6 +98,40 @@ describe("buildSettingsUpdateBodyFromFormData", () => {
       csrf_token: "tok",
       passkey_remove: "cred-id-123",
     });
+  });
+});
+
+describe("dedupeKratosProfileTraitNodes", () => {
+  it("drops traits.name.first when traits.name\\.first is also present", () => {
+    const nodes = [
+      {
+        type: "input",
+        group: "profile",
+        attributes: {
+          node_type: "input",
+          name: "traits.name.first",
+          type: "text",
+        },
+        meta: {},
+        messages: [],
+      },
+      {
+        type: "input",
+        group: "profile",
+        attributes: {
+          node_type: "input",
+          name: "traits.name\\.first",
+          type: "text",
+          value: "Pat",
+        },
+        meta: {},
+        messages: [],
+      },
+    ];
+    const out = dedupeKratosProfileTraitNodes(nodes as unknown as UiNode[]);
+    expect(out.map((n) => (n.attributes as { name?: string }).name)).toEqual([
+      "traits.name\\.first",
+    ]);
   });
 });
 

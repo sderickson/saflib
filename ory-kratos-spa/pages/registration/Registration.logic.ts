@@ -4,9 +4,11 @@ import type {
   UpdateLoginFlowBody,
   UpdateRegistrationFlowBody,
 } from "@ory/client";
+import { traitsRecordFromFormData } from "../common/kratosTraitsFromFormData.ts";
 
 export { isKratosInputNode, kratosEffectiveInputType } from "../common/kratosNodeUtils.ts";
 export { kratosSubmitErrorMessage as registrationSubmitErrorMessage } from "../common/kratosErrorMessage.ts";
+export { traitsRecordFromFormData };
 
 /** Resolve email from Kratos password-method registration FormData. */
 export function traitsEmailFromFormData(fd: FormData): string {
@@ -15,42 +17,6 @@ export function traitsEmailFromFormData(fd: FormData): string {
     String(fd.get("email") ?? "").trim() ||
     String(fd.get("traits[email]") ?? "").trim()
   );
-}
-
-/** Maps `traits.a.b` FormData keys to a nested `traits` object for the Kratos JSON API. */
-function setNestedTrait(
-  traits: Record<string, unknown>,
-  dottedPath: string,
-  value: string,
-): void {
-  const segments = dottedPath.split(".").filter(Boolean);
-  if (segments.length === 0) return;
-  let cur: Record<string, unknown> = traits;
-  for (let i = 0; i < segments.length - 1; i++) {
-    const seg = segments[i]!;
-    const next = cur[seg];
-    if (
-      next === undefined ||
-      typeof next !== "object" ||
-      next === null ||
-      Array.isArray(next)
-    ) {
-      cur[seg] = {};
-    }
-    cur = cur[seg] as Record<string, unknown>;
-  }
-  cur[segments[segments.length - 1]!] = value;
-}
-
-export function traitsRecordFromFormData(fd: FormData): Record<string, unknown> {
-  const traits: Record<string, unknown> = {};
-  fd.forEach((value, key) => {
-    if (!key.startsWith("traits.")) return;
-    const path = key.slice("traits.".length);
-    if (!path) return;
-    setNestedTrait(traits, path, String(value).trim());
-  });
-  return traits;
 }
 
 export function buildRegistrationPasswordBody(fd: FormData): UpdateRegistrationFlowBody {

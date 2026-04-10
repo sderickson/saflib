@@ -1,6 +1,6 @@
 /** Prepend icons for Kratos browser-flow fields — matches saflib identity auth (`LoginPage`, `RegisterPage`). */
 export function kratosPrependInnerIconForFieldName(name: string): string | undefined {
-  const n = name.toLowerCase();
+  const n = name.replace(/\\\./g, ".").toLowerCase();
   if (n === "identifier" || n === "email" || n.includes("traits.email") || n.endsWith("[email]")) {
     return "mdi-email-outline";
   }

@@ -5,7 +5,8 @@ export function kratosFallbackLabelForInputName(
   name: string | undefined,
 ): string | undefined {
   if (!name) return undefined;
-  switch (name) {
+  const n = name.replace(/\\\./g, ".");
+  switch (n) {
     case "traits.name.first":
       return "First name";
     case "traits.name.last":
