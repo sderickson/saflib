@@ -109,7 +109,7 @@ import {
   FlowGone,
   SecurityCsrfViolation,
   SettingsFlowFetched,
-  kratosIdentityEmail,
+  kratosEmailFromSession,
   useKratosSession,
 } from "@saflib/ory-kratos-sdk";
 import SettingsGroupUi from "./SettingsGroupUi.vue";
@@ -148,7 +148,7 @@ const flowIdForSubmit = computed(() => flow.value?.id ?? "");
 
 const { data: kratosSession } = useKratosSession();
 const sessionEmail = computed(() =>
-  kratosIdentityEmail(kratosSession.value ?? undefined),
+  kratosEmailFromSession(kratosSession.value ?? undefined),
 );
 
 const { submitting, submitError, clearSubmitError, submitSettingsForm } =

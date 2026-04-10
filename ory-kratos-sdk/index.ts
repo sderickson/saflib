@@ -12,10 +12,13 @@ export {
 // ── Helpers (non-query) ─────────────────────────────────────────────────────
 export {
   assertKratosSessionIdentityLoaded,
-  kratosIdentityEmail,
-  kratosEmailFromIdentity,
+  kratosEmailFromSession,
+  kratosEmailVerifiedFromSession,
 } from "./helpers/kratos-session.ts";
-export { identityNeedsEmailVerification } from "./helpers/kratos-identity.ts";
+export {
+  identityNeedsEmailVerification,
+  kratosEmailFromIdentity,
+} from "./helpers/kratos-identity.ts";
 
 // ── Queries: session ────────────────────────────────────────────────────────
 export {
