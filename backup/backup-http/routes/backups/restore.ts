@@ -20,7 +20,7 @@ export const createRestoreHandler = (
   return createHandler(async (req, res) => {
     const { auth } = getSafContextWithAuth();
 
-    if (!auth.userScopes?.includes("*")) {
+    if (!auth.isAdmin) {
       const errorResponse: BackupServiceResponseBody["restoreBackup"][403] = {
         message: "Forbidden - admin access required",
         code: "FORBIDDEN",
@@ -46,9 +46,25 @@ export const createRestoreHandler = (
     }
 
     const backups = files
-      .filter((file: { path: string; size?: number; metadata?: Record<string, string> }) => file.path.endsWith(".db"))
-      .map((file: { path: string; size?: number; metadata?: Record<string, string> }) => mapObjectStoreFileToBackup(file))
-      .filter((backup: ReturnType<typeof mapObjectStoreFileToBackup>): backup is NonNullable<typeof backup> => backup !== null);
+      .filter(
+        (file: {
+          path: string;
+          size?: number;
+          metadata?: Record<string, string>;
+        }) => file.path.endsWith(".db"),
+      )
+      .map(
+        (file: {
+          path: string;
+          size?: number;
+          metadata?: Record<string, string>;
+        }) => mapObjectStoreFileToBackup(file),
+      )
+      .filter(
+        (
+          backup: ReturnType<typeof mapObjectStoreFileToBackup>,
+        ): backup is NonNullable<typeof backup> => backup !== null,
+      );
 
     const backup = backups.find((b) => b.id === backupId);
 
@@ -67,10 +83,13 @@ export const createRestoreHandler = (
     const uuid = randomUUID();
     const safetyBackupFilename = `backup-${timestamp}-manual-${uuid}.db`;
 
-    const { error: uploadError } =
-      await objectStore.uploadFile(safetyBackupFilename, safetyBackupStream, {
+    const { error: uploadError } = await objectStore.uploadFile(
+      safetyBackupFilename,
+      safetyBackupStream,
+      {
         description: "Safety backup before restore",
-      });
+      },
+    );
 
     if (uploadError) {
       switch (true) {
@@ -95,10 +114,11 @@ export const createRestoreHandler = (
     if (readError) {
       switch (true) {
         case readError instanceof FileNotFoundError:
-          const errorResponse: BackupServiceResponseBody["restoreBackup"][404] = {
-            message: "Backup file not found",
-            code: "BACKUP_NOT_FOUND",
-          };
+          const errorResponse: BackupServiceResponseBody["restoreBackup"][404] =
+            {
+              message: "Backup file not found",
+              code: "BACKUP_NOT_FOUND",
+            };
           res.status(404).json(errorResponse);
           return;
         case readError instanceof StorageError:

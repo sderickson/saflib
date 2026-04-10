@@ -135,13 +135,11 @@ describe("Auth Middleware email verification", () => {
     });
     app.use(errorHandler);
 
-    const response = await request(app)
-      .get("/test")
-      .set({
-        "x-user-id": "123",
-        "x-user-email": "test@example.com",
-        "x-user-email-verified": "false",
-      });
+    const response = await request(app).get("/test").set({
+      "x-user-id": "123",
+      "x-user-email": "test@example.com",
+      "x-user-email-verified": "false",
+    });
 
     expect(response.status).toBe(403);
     expect(response.body).toEqual({
@@ -164,13 +162,11 @@ describe("Auth Middleware email verification", () => {
     });
     app.use(errorHandler);
 
-    const response = await request(app)
-      .get("/test")
-      .set({
-        "x-user-id": "123",
-        "x-user-email": "test@example.com",
-        "x-user-email-verified": "true",
-      });
+    const response = await request(app).get("/test").set({
+      "x-user-id": "123",
+      "x-user-email": "test@example.com",
+      "x-user-email-verified": "true",
+    });
 
     expect(response.status).toBe(200);
     expect(response.body.authFromMiddleware?.emailVerified).toBe(true);

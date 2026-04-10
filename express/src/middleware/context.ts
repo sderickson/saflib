@@ -40,54 +40,25 @@ async function resolveKratosAuth(cookie: string): Promise<Auth> {
     verifiableAddresses.find((a) => a.via === "email")?.verified ?? false;
   const userId = session.identity.id;
 
-  const adminRaw = process.env.IDENTITY_SERVICE_ADMIN_EMAILS ?? "";
+  const adminRaw = process.env.ADMIN_EMAILS ?? "";
   const adminEmails = new Set(
     adminRaw
       .split(",")
       .map((e) => e.trim())
       .filter(Boolean),
   );
-
-  const userScopes: string[] = [];
-  if (adminEmails.has(userEmail) && emailVerified) {
-    userScopes.push("*");
-  } else {
-    userScopes.push("none");
-  }
+  const isAdmin = adminEmails.has(userEmail) && emailVerified;
 
   return {
     userId,
     userEmail,
-    userScopes,
+    isAdmin,
     emailVerified,
   };
 }
 
-function resolveIdentityServerAuth(req: Request): Auth | undefined {
-  const userId = req.headers["x-user-id"];
-  const userEmail = req.headers["x-user-email"];
-  const userScopesHeader = req.headers["x-user-scopes"];
-  const emailVerified = req.headers["x-user-email-verified"];
-  if (userId && userEmail) {
-    const scopes = userScopesHeader
-      ? (userScopesHeader as string).split(",")
-      : [];
-    return {
-      userId: userId as string,
-      userEmail: userEmail as string,
-      userScopes: scopes,
-      emailVerified: emailVerified === "true",
-    };
-  }
-  return undefined;
-}
-
 async function resolveAuth(req: Request): Promise<Auth | undefined> {
-  const kratosId = req.headers["x-kratos-authenticated-identity-id"];
-  if (typeof kratosId === "string" && kratosId.length > 0) {
-    return await resolveKratosAuth(req.headers.cookie as string);
-  }
-  return resolveIdentityServerAuth(req);
+  return resolveKratosAuth(req.headers.cookie as string);
 }
 
 export const makeContextMiddleware = () => {

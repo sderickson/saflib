@@ -3,17 +3,14 @@ import type { BackupServiceResponseBody } from "@saflib/backup-spec";
 import createError from "http-errors";
 import { getSafContextWithAuth } from "@saflib/node";
 import type { ObjectStore } from "@saflib/object-store";
-import {
-  PathTraversalError,
-  StorageError,
-} from "@saflib/object-store";
+import { PathTraversalError, StorageError } from "@saflib/object-store";
 import { mapObjectStoreFileToBackup } from "./_helpers.ts";
 
 export const createDeleteHandler = (objectStore: ObjectStore) => {
   return createHandler(async (req, res) => {
     const { auth } = getSafContextWithAuth();
 
-    if (!auth.userScopes?.includes("*")) {
+    if (!auth.isAdmin) {
       const errorResponse: BackupServiceResponseBody["deleteBackup"][403] = {
         message: "Forbidden - admin access required",
         code: "FORBIDDEN",
@@ -39,9 +36,25 @@ export const createDeleteHandler = (objectStore: ObjectStore) => {
     }
 
     const backups = files
-      .filter((file: { path: string; size?: number; metadata?: Record<string, string> }) => file.path.endsWith(".db"))
-      .map((file: { path: string; size?: number; metadata?: Record<string, string> }) => mapObjectStoreFileToBackup(file))
-      .filter((backup: ReturnType<typeof mapObjectStoreFileToBackup>): backup is NonNullable<typeof backup> => backup !== null);
+      .filter(
+        (file: {
+          path: string;
+          size?: number;
+          metadata?: Record<string, string>;
+        }) => file.path.endsWith(".db"),
+      )
+      .map(
+        (file: {
+          path: string;
+          size?: number;
+          metadata?: Record<string, string>;
+        }) => mapObjectStoreFileToBackup(file),
+      )
+      .filter(
+        (
+          backup: ReturnType<typeof mapObjectStoreFileToBackup>,
+        ): backup is NonNullable<typeof backup> => backup !== null,
+      );
 
     const backup = backups.find((b) => b.id === backupId);
 

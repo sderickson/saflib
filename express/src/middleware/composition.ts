@@ -9,7 +9,6 @@ import helmet from "helmet";
 import { healthRouter } from "./health.ts";
 import { makeContextMiddleware } from "./context.ts";
 import { blockHtml } from "./blockHtml.ts";
-import { createScopeValidator } from "./scopes.ts";
 import { metricsMiddleware } from "./metrics.ts";
 import { makeAuthMiddleware } from "./auth.ts";
 import { makeCsrfMiddleware } from "./csrf.ts";
@@ -118,7 +117,6 @@ export const createScopedMiddleware = (
     makeContextMiddleware(),
     unsafeRequestLogger,
     ...authMiddleware,
-    createScopeValidator(),
   ];
 };
 

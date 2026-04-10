@@ -4,12 +4,9 @@ import { Router } from "express";
 
 export const metricsRouter = Router();
 
-// block external access to /metrics, except for admins
+// block external access to /metrics
 metricsRouter.get("/metrics", (req, res, next) => {
-  if (
-    !req.headers["x-forwarded-host"] ||
-    req.headers["x-user-scopes"] === "*"
-  ) {
+  if (!req.headers["x-forwarded-host"]) {
     next();
     return;
   }
