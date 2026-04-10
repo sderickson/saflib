@@ -86,24 +86,6 @@ http://caddy:2020 {
 	}
 }
 
-# Used for API servers accessible to all users.
-# args[0]: identity service host (e.g. caller-identity:3000)
-# args[1]: target service host (e.g. caller:3000)
-# Wrapped in handle so OPTIONS (handled by cors snippet) never reaches forward_auth.
-(api-proxy) {
-	handle {
-		forward_auth {args[0]} {
-			uri /auth/verify?
-			header_up X-Request-ID {http.request.uuid}
-			copy_headers X-User-ID X-User-Email X-User-Scopes X-User-Email-Verified
-			header_up X-Csrf-Token {http.request.header.X-CSRF-Token}
-		}
-		reverse_proxy {args[1]} {
-			import reverse_proxy_common
-		}
-	}
-}
-
 # Recipes API (and similar): forward_auth to Kratos whoami; Express resolves identity via admin API.
 # args[0]: target service host (e.g. monolith:3002)
 (kratos-api-proxy) {

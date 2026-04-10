@@ -97,9 +97,3 @@ This middleware depends on [express-prom-bundle](https://github.com/jochen-schwe
 **Type**: Scoped
 
 Provided a spec, this creates middleware which will validate requests and responses to check they conform with the spec. For convenience, it will also log validation errors in responses to the console for tests, since that's when those errors show up the most. It uses [express-openapi-validator](https://www.npmjs.com/package/express-openapi-validator) which also attaches `openapi` to the request which can be referenced by downstream middleware and handlers.
-
-### `scopes.ts`
-
-**Type**: Scoped
-
-Checks the OpenAPI spec against the user's auth and returns 403 if the user may not access this resource. In theory, SAF fully supports scopes, where they can be defined as part of the spec and enforced through this middleware, but in practice it really supports three levels of authority: none, user, and admin (which has the `"*"` scope). So far I haven't needed anything more granular than that, but I'm confident the current system can be extended fairly easily to give scopes more full-fledged support.

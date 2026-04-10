@@ -58,7 +58,7 @@ async function resolveKratosAuth(cookie: string): Promise<Auth> {
   };
 }
 
-function resolveIdentityServerAuth(req: Request): Auth | undefined {
+function resolveTestAuth(req: Request): Auth | undefined {
   const userId = req.headers["x-user-id"];
   const userEmail = req.headers["x-user-email"];
   const userIsAdmin = req.headers["x-user-is-admin"] === "true";
@@ -80,7 +80,7 @@ async function resolveAuth(req: Request): Promise<Auth | undefined> {
     return await resolveKratosAuth(req.headers.cookie as string);
   }
   if (typedEnv.NODE_ENV === "test") {
-    return resolveIdentityServerAuth(req);
+    return resolveTestAuth(req);
   }
   throw createError(500, "No auth found");
 }

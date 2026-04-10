@@ -8,7 +8,7 @@ export function makeUserHeaders(
     "x-user-id": userId,
     "x-user-email": email,
     "x-user-email-verified": "true",
-    "x-user-scopes": "none",
+    "x-user-is-admin": "false",
     "x-requested-with": "XMLHttpRequest",
   };
 }
@@ -21,7 +21,7 @@ export function makeAdminHeaders(
     "x-user-id": userId,
     "x-user-email": email,
     "x-user-email-verified": "true",
-    "x-user-scopes": "*",
+    "x-user-is-admin": "true",
     "x-requested-with": "XMLHttpRequest",
   };
 }
