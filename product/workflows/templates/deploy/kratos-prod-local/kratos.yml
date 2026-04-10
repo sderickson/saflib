@@ -21,6 +21,7 @@ selfservice:
   flows:
     registration:
       enabled: true
+      enable_legacy_one_step: true
       ui_url: http://auth.docker.localhost/registration
 
     login:
