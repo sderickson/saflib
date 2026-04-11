@@ -4,8 +4,8 @@ import type * as nodemailer from "nodemailer";
  * Accepted options when sending an email. A subset of what nodemailer accepts.
  * See [Nodemailer docs](https://nodemailer.com/message/) for more details.
  */
-export interface EmailOptions
-  extends Pick<
+export type EmailOptions = Partial<
+  Pick<
     nodemailer.SendMailOptions,
     | "to"
     | "cc"
@@ -16,7 +16,8 @@ export interface EmailOptions
     | "attachments"
     | "from"
     | "replyTo"
-  > {}
+  >
+>;
 
 /**
  * A record of an email that was sent. Only used for mocking.
