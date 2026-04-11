@@ -57,4 +57,6 @@ export interface TemplateIntegrationEnvSchema {
 /**
  * `process.env` casted to the `TemplateIntegrationEnvSchema` type.
  */
-export const typedEnv = (globalThis.process ? process.env : {}) as unknown as TemplateIntegrationEnvSchema;
+export const typedEnv = (globalThis.process
+  ? process.env
+  : {}) as unknown as TemplateIntegrationEnvSchema;
