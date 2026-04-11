@@ -9,6 +9,7 @@
     "typecheck": "tsc"
   },
   "dependencies": {
-    "@saflib/openapi": "*"
+    "@saflib/openapi": "*",
+    "openapi-typescript": "*"
   }
 }
