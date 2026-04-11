@@ -73,7 +73,7 @@ services:
     restart: unless-stopped
   
   prometheus:
-    image: prom/prometheus:v3.10.0
+    image: prom/prometheus:v3.11.1
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
 
@@ -93,7 +93,7 @@ services:
       - GF_AUTH_DISABLE_LOGIN_FORM=true
 
   node_exporter:
-    image: prom/node-exporter:v1.10.2
+    image: prom/node-exporter:v1.11.1
     volumes:
       - /proc:/host/proc:ro
       - /sys:/host/sys:ro
