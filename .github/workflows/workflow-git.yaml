@@ -15,8 +15,8 @@ jobs:
         with:
           node-version: 24
 
-      - name: Install Protoc
-        uses: arduino/setup-protoc@v3
+      # - name: Install Protoc
+      #   uses: arduino/setup-protoc@v3
 
       - name: Install dependencies
         run: npm install

@@ -17,10 +17,12 @@
   "bin": {
     "saf-specs": "./bin/saf-specs/index.ts"
   },
+  "dependencies": {
+    "openapi-typescript": "^7.13.0"
+  },
   "devDependencies": {
     "@redocly/cli": "^2.0.0",
     "@saflib/vitest": "*",
-    "openapi-typescript": "^7.0.0",
     "serve": "^14.0.0"
   }
 }
