@@ -35,11 +35,7 @@ type ExtractRequestBody<Op extends Record<string, any>> =
 /**
  * Use to create a typed helper function for creating typesafe mock API handlers.
  */
-export const typedCreateHandler = <Paths extends Record<string, any>>({
-  subdomain,
-}: {
-  subdomain: string;
-}) => {
+export const typedCreateHandler = <Paths extends Record<string, any>>() => {
   const createHandler = <
     P extends keyof Paths,
     V extends keyof Paths[P],
@@ -74,10 +70,6 @@ export const typedCreateHandler = <Paths extends Record<string, any>>({
     type query = ExtractRequestQuery<
       Paths[P][V] extends Record<string, any> ? Paths[P][V] : never
     >;
-    let domain = "localhost:3000";
-    if (typeof document !== "undefined") {
-      domain = getHost();
-    }
     // translate instances of "{id}" (the openapi spec format) with ":id" (the msw format)
     const pathString = String(path).replace(/{(\w+)}/g, ":$1");
     let v = verb as keyof typeof http;
