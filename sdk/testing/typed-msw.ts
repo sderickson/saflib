@@ -88,42 +88,38 @@ export const typedCreateHandler = <Paths extends Record<string, any>>({
     if (!http[v]) {
       throw new Error(`Invalid HTTP verb: ${v}`);
     }
-    return http[v](
-      `http://${subdomain}.${domain}${pathString}`,
-      async (request) => {
-        let body: any;
-        if (verb === "post" || verb === "put" || verb === "patch") {
-          try {
-            const contentType =
-              request.request.headers.get("content-type") || "";
-            if (contentType.startsWith("multipart/form-data")) {
-              // if you try to run json(), it doesn't crash... it just hangs. So don't parse it. Trying to call formData() also hangs.
-              body = undefined;
-            } else {
-              body = await request.request.json();
-            }
-          } catch (e) {
+    return http[v](`*${pathString}`, async (request) => {
+      let body: any;
+      if (verb === "post" || verb === "put" || verb === "patch") {
+        try {
+          const contentType = request.request.headers.get("content-type") || "";
+          if (contentType.startsWith("multipart/form-data")) {
+            // if you try to run json(), it doesn't crash... it just hangs. So don't parse it. Trying to call formData() also hangs.
             body = undefined;
+          } else {
+            body = await request.request.json();
           }
+        } catch (e) {
+          body = undefined;
         }
-        const query = request.request.url.split("?")[1];
-        let queryParams: query = {};
-        if (query) {
-          queryParams = Object.fromEntries(
-            new URLSearchParams(query).entries(),
-          ) as query;
-        }
-        const params = { ...request.params };
-        return HttpResponse.json(
-          await handler({
-            query: queryParams,
-            params,
-            body,
-          }),
-          { status },
-        );
-      },
-    );
+      }
+      const query = request.request.url.split("?")[1];
+      let queryParams: query = {};
+      if (query) {
+        queryParams = Object.fromEntries(
+          new URLSearchParams(query).entries(),
+        ) as query;
+      }
+      const params = { ...request.params };
+      return HttpResponse.json(
+        await handler({
+          query: queryParams,
+          params,
+          body,
+        }),
+        { status },
+      );
+    });
   };
   return { createHandler };
 };

@@ -5,19 +5,28 @@ import { getProtocol, getHost } from "@saflib/links";
 import { TanstackError } from "./errors.ts";
 import type { ClientResult } from "./types.ts";
 
-/**
- * Given a "paths" openapi generated type and a subdomain, creates a typed `openapi-fetch` client which queries the given subdomain. Uses the current domain and protocol. Handles CSRF token injection, and works in tests.
- */
-export const createSafClient = <Q extends {}>(
-  serviceSubdomain: string,
-): ReturnType<typeof createClient<Q>> => {
+const simpleIpv4Regex = /^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+:[0-9]+$/;
+
+export const getBaseUrl = (serviceSubdomain: string) => {
   let protocol = "http";
   let host = "localhost:3000";
   if (typeof document !== "undefined") {
     protocol = getProtocol();
     host = getHost();
   }
-  const baseUrl = `${protocol}//${serviceSubdomain}.${host}`;
+  if (simpleIpv4Regex.test(host)) {
+    return `${protocol}//${host}`;
+  }
+  return `${protocol}//${serviceSubdomain}.${host}`;
+};
+
+/**
+ * Given a "paths" openapi generated type and a subdomain, creates a typed `openapi-fetch` client which queries the given subdomain. Uses the current domain and protocol. Handles CSRF token injection, and works in tests.
+ */
+export const createSafClient = <Q extends {}>(
+  serviceSubdomain: string,
+): ReturnType<typeof createClient<Q>> => {
+  const baseUrl = getBaseUrl(serviceSubdomain);
   return createClient<Q>({
     baseUrl,
     credentials: "include",
