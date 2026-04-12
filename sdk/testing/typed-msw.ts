@@ -1,4 +1,3 @@
-import { getHost } from "@saflib/links";
 import { http, HttpResponse } from "msw";
 
 type ExtractRequestParams<Op extends Record<string, any>> =
@@ -35,11 +34,7 @@ type ExtractRequestBody<Op extends Record<string, any>> =
 /**
  * Use to create a typed helper function for creating typesafe mock API handlers.
  */
-export const typedCreateHandler = <Paths extends Record<string, any>>({
-  subdomain,
-}: {
-  subdomain: string;
-}) => {
+export const typedCreateHandler = <Paths extends Record<string, any>>() => {
   const createHandler = <
     P extends keyof Paths,
     V extends keyof Paths[P],
@@ -74,10 +69,6 @@ export const typedCreateHandler = <Paths extends Record<string, any>>({
     type query = ExtractRequestQuery<
       Paths[P][V] extends Record<string, any> ? Paths[P][V] : never
     >;
-    let domain = "localhost:3000";
-    if (typeof document !== "undefined") {
-      domain = getHost();
-    }
     // translate instances of "{id}" (the openapi spec format) with ":id" (the msw format)
     const pathString = String(path).replace(/{(\w+)}/g, ":$1");
     let v = verb as keyof typeof http;
@@ -88,42 +79,38 @@ export const typedCreateHandler = <Paths extends Record<string, any>>({
     if (!http[v]) {
       throw new Error(`Invalid HTTP verb: ${v}`);
     }
-    return http[v](
-      `http://${subdomain}.${domain}${pathString}`,
-      async (request) => {
-        let body: any;
-        if (verb === "post" || verb === "put" || verb === "patch") {
-          try {
-            const contentType =
-              request.request.headers.get("content-type") || "";
-            if (contentType.startsWith("multipart/form-data")) {
-              // if you try to run json(), it doesn't crash... it just hangs. So don't parse it. Trying to call formData() also hangs.
-              body = undefined;
-            } else {
-              body = await request.request.json();
-            }
-          } catch (e) {
+    return http[v](`*${pathString}`, async (request) => {
+      let body: any;
+      if (verb === "post" || verb === "put" || verb === "patch") {
+        try {
+          const contentType = request.request.headers.get("content-type") || "";
+          if (contentType.startsWith("multipart/form-data")) {
+            // if you try to run json(), it doesn't crash... it just hangs. So don't parse it. Trying to call formData() also hangs.
             body = undefined;
+          } else {
+            body = await request.request.json();
           }
+        } catch (e) {
+          body = undefined;
         }
-        const query = request.request.url.split("?")[1];
-        let queryParams: query = {};
-        if (query) {
-          queryParams = Object.fromEntries(
-            new URLSearchParams(query).entries(),
-          ) as query;
-        }
-        const params = { ...request.params };
-        return HttpResponse.json(
-          await handler({
-            query: queryParams,
-            params,
-            body,
-          }),
-          { status },
-        );
-      },
-    );
+      }
+      const query = request.request.url.split("?")[1];
+      let queryParams: query = {};
+      if (query) {
+        queryParams = Object.fromEntries(
+          new URLSearchParams(query).entries(),
+        ) as query;
+      }
+      const params = { ...request.params };
+      return HttpResponse.json(
+        await handler({
+          query: queryParams,
+          params,
+          body,
+        }),
+        { status },
+      );
+    });
   };
   return { createHandler };
 };

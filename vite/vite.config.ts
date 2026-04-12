@@ -82,6 +82,14 @@ export interface MakeConfigProps {
    * The absolute path of the root of the monorepo, to ensure vite has access to saflib packages.
    */
   monorepoRoot?: string;
+  /**
+   * appType: "spa" | "mpa"
+   */
+  appType?: "spa" | "mpa";
+  /**
+   * Use subdomain proxy plugin
+   */
+  useSubdomainProxy?: boolean;
 }
 
 /**
@@ -89,9 +97,12 @@ export interface MakeConfigProps {
  */
 export function makeConfig(config: MakeConfigProps = {}) {
   const { plugins = [], vuetifyOverrides, monorepoRoot } = config;
+  if (config.useSubdomainProxy !== false) {
+    plugins.push(subDomainProxyPlugin);
+  }
   return defineConfig({
     base: "/",
-    appType: "mpa",
+    appType: config.appType ?? "mpa",
     plugins: [
       vue(),
       vueDevTools(),
@@ -99,7 +110,6 @@ export function makeConfig(config: MakeConfigProps = {}) {
         vuetifyOverrides ? { styles: { configFile: vuetifyOverrides } } : {},
       ),
       ...plugins,
-      subDomainProxyPlugin,
     ],
     build: {
       rollupOptions: {
