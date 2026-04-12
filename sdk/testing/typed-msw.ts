@@ -1,4 +1,3 @@
-import { getHost } from "@saflib/links";
 import { http, HttpResponse } from "msw";
 
 type ExtractRequestParams<Op extends Record<string, any>> =
