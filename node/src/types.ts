@@ -6,6 +6,8 @@ import { Logger } from "winston";
 export interface Auth {
   userId: string;
   userEmail?: string;
+  /** From Kratos identity traits when present (e.g. phone). */
+  userPhone?: string;
   isAdmin?: boolean;
   emailVerified?: boolean;
 }
