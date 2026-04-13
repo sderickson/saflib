@@ -10,7 +10,7 @@
       </a>
     </div>
     <div style="clear: both"></div>
-    <h1 class="text-h4 mb-2">
+    <h1 v-if="authApp.showFlowHeaders" class="text-h4 mb-2">
       {{ t(secondFactor ? strings.title_second_factor : strings.title) }}
     </h1>
     <nav
@@ -31,6 +31,7 @@
 
 <script setup lang="ts">
 import { useReverseT } from "@saflib/ory-kratos-spa/i18n";
+import { useAuthAppConfig } from "../../configureAuthApp.ts";
 import { useAuthFlowCrossLinks } from "../common/useAuthFlowCrossLinks.ts";
 import { login_intro as strings } from "./LoginIntro.strings.ts";
 
@@ -41,6 +42,7 @@ const props = defineProps<{
 }>();
 
 const { t } = useReverseT();
+const authApp = useAuthAppConfig();
 const { registerHref, recoveryHref } = useAuthFlowCrossLinks(
   () => props.flowReturnTo,
 );
