@@ -1,21 +1,19 @@
 <template>
-  <v-container class="py-8" max-width="720">
-    <LoginFlowForm
-      v-if="queryData instanceof LoginFlowFetched && flow"
-      :flow="flow"
-    />
-    <FlowGonePanel
-      v-else-if="queryData instanceof FlowGone"
-      restart-path="/new-login"
-      :result="queryData"
-    />
-    <CsrfViolationPanel
-      v-else-if="queryData instanceof SecurityCsrfViolation"
-      restart-path="/new-login"
-      :result="queryData"
-    />
-    <UnhandledResponsePanel v-else :result="queryData" />
-  </v-container>
+  <LoginFlowForm
+    v-if="queryData instanceof LoginFlowFetched && flow"
+    :flow="flow"
+  />
+  <FlowGonePanel
+    v-else-if="queryData instanceof FlowGone"
+    restart-path="/new-login"
+    :result="queryData"
+  />
+  <CsrfViolationPanel
+    v-else-if="queryData instanceof SecurityCsrfViolation"
+    restart-path="/new-login"
+    :result="queryData"
+  />
+  <UnhandledResponsePanel v-else :result="queryData" />
 </template>
 
 <script setup lang="ts">

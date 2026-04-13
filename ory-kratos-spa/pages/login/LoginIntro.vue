@@ -1,15 +1,5 @@
 <template>
   <div v-if="!secondFactor">
-    <div class="float-right mb-4">
-      <a
-        :href="registerHref"
-        class="text-primary text-decoration-none d-inline-flex align-center ga-1"
-      >
-        {{ t(strings.link_register) }}
-        <v-icon icon="mdi-chevron-right" size="small" />
-      </a>
-    </div>
-    <div style="clear: both"></div>
     <h1 v-if="authApp.showFlowHeaders" class="text-h4 mb-2">
       {{ t(secondFactor ? strings.title_second_factor : strings.title) }}
     </h1>
@@ -43,7 +33,5 @@ const props = defineProps<{
 
 const { t } = useReverseT();
 const authApp = useAuthAppConfig();
-const { registerHref, recoveryHref } = useAuthFlowCrossLinks(
-  () => props.flowReturnTo,
-);
+const { recoveryHref } = useAuthFlowCrossLinks(() => props.flowReturnTo);
 </script>

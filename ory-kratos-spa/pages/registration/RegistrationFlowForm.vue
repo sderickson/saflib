@@ -1,6 +1,6 @@
 <template>
   <div>
-    <RegistrationIntro :flow-return-to="flow.return_to" />
+    <RegistrationIntro />
     <v-alert
       v-if="submitError"
       type="error"
@@ -53,7 +53,7 @@ const registrationDisplayNodes = computed(() =>
   sortRegistrationFlowNodes(props.flow.ui.nodes),
 );
 
-const { loginHref } = useAuthFlowCrossLinks();
+const { loginHref } = useAuthFlowCrossLinks(() => props.flow.return_to);
 
 const {
   submitting,
