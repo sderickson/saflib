@@ -4,7 +4,7 @@ import { computed, watch } from "vue";
 import { useRoute } from "vue-router";
 import { linkToHrefWithHost, navigateToLink } from "@saflib/links";
 import { authLinks } from "@saflib/ory-kratos-sdk/links";
-import { useAuthPostAuthFallbackHref } from "../../authFallbackInject.ts";
+import { useAuthPostRegisterFallbackHref } from "../../authFallbackInject.ts";
 import { identityNeedsEmailVerification } from "@saflib/ory-kratos-sdk";
 import {
   resolveVerifyWallReturnToDestination,
@@ -19,12 +19,12 @@ export function useVerifyWallPage(
   sessionQuery: UseQueryReturnType<Session | null, Error>,
 ) {
   const route = useRoute();
-  const postAuthFallbackHref = useAuthPostAuthFallbackHref();
+  const postRegisterFallbackHref = useAuthPostRegisterFallbackHref();
 
   const redirectAfter = computed(() =>
     resolveVerifyWallReturnToDestination(
       route.query.return_to,
-      postAuthFallbackHref.value,
+      postRegisterFallbackHref.value,
     ),
   );
 

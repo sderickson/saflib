@@ -1,14 +1,14 @@
 import type { Session } from "@ory/client";
 
-/** Post-verification destination: `?return_to=` when set, otherwise the injected hub app fallback URL. */
+/** Post-verification destination: `?return_to=` when set, otherwise the injected post-register fallback URL. */
 export function resolveVerifyWallReturnToDestination(
   returnToQueryParam: unknown,
-  fallbackRecipesHomeHref: string,
+  fallbackHref: string,
 ): string {
   if (typeof returnToQueryParam === "string" && returnToQueryParam.trim()) {
     return returnToQueryParam.trim();
   }
-  return fallbackRecipesHomeHref;
+  return fallbackHref;
 }
 
 /** Display email from traits or the first email verifiable address. */

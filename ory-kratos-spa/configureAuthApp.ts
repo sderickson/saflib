@@ -9,8 +9,10 @@ import {
 } from "vue";
 import {
   AUTH_POST_AUTH_FALLBACK_HREF,
+  AUTH_POST_REGISTER_FALLBACK_HREF,
   AUTH_ROOT_HOME_FALLBACK_HREF,
   defaultPostAuthFallbackHref,
+  defaultPostRegisterFallbackHref,
   defaultRootHomeFallbackHref,
 } from "./authFallbackInject.ts";
 
@@ -37,6 +39,12 @@ export interface ConfigureAuthAppOptions extends Partial<AuthAppConfig> {
    * See {@link AUTH_ROOT_HOME_FALLBACK_HREF}.
    */
   rootHomeFallbackHref?: MaybeRefOrGetter<string>;
+  /**
+   * Where to send users after **registration** completes (when `?return_to=` is absent).
+   * Login still uses {@link ConfigureAuthAppOptions.postAuthFallbackHref}.
+   * See {@link AUTH_POST_REGISTER_FALLBACK_HREF}.
+   */
+  postRegisterFallbackHref?: MaybeRefOrGetter<string>;
 }
 
 export const AUTH_APP_CONFIG: InjectionKey<ComputedRef<AuthAppConfig>> =
@@ -48,8 +56,8 @@ const fallbackAuthAppConfig = computed<AuthAppConfig>(
 
 /**
  * Call once from the auth shell (e.g. `AuthApp.vue`) to provide options for nested Kratos pages,
- * including post-auth and logged-out root URLs ({@link AUTH_POST_AUTH_FALLBACK_HREF},
- * {@link AUTH_ROOT_HOME_FALLBACK_HREF}).
+ * including post-auth, post-register, and logged-out root URLs ({@link AUTH_POST_AUTH_FALLBACK_HREF},
+ * {@link AUTH_POST_REGISTER_FALLBACK_HREF}, {@link AUTH_ROOT_HOME_FALLBACK_HREF}).
  */
 export function configureAuthApp(
   options: MaybeRefOrGetter<ConfigureAuthAppOptions> = {},
@@ -58,7 +66,8 @@ export function configureAuthApp(
     const o = toValue(options);
     return {
       ...defaultAuthAppConfig,
-      showFlowHeaders: o.showFlowHeaders ?? defaultAuthAppConfig.showFlowHeaders,
+      showFlowHeaders:
+        o.showFlowHeaders ?? defaultAuthAppConfig.showFlowHeaders,
     };
   });
   provide(AUTH_APP_CONFIG, config);
@@ -71,6 +80,15 @@ export function configureAuthApp(
     return defaultPostAuthFallbackHref.value;
   });
   provide(AUTH_POST_AUTH_FALLBACK_HREF, postAuthHref);
+
+  const postRegisterHref = computed(() => {
+    const o = toValue(options);
+    if (o.postRegisterFallbackHref !== undefined) {
+      return toValue(o.postRegisterFallbackHref);
+    }
+    return defaultPostRegisterFallbackHref.value;
+  });
+  provide(AUTH_POST_REGISTER_FALLBACK_HREF, postRegisterHref);
 
   const rootHomeHref = computed(() => {
     const o = toValue(options);

@@ -23,6 +23,11 @@ export const defaultRootHomeFallbackHref = computed(() =>
   linkToHref({ subdomain: "root", path: "/" }, { domain }),
 );
 
+/** Default URL after a successful **registration** when the shell does not pass `postRegisterFallbackHref` to {@link configureAuthApp}. Matches post-login default unless the host overrides it. */
+export const defaultPostRegisterFallbackHref = computed(() =>
+  linkToHref({ subdomain: "app", path: "/" }, { domain }),
+);
+
 /**
  * Full URL for the hub **app** home (`app.`…`/`), used when `?return_to=` is absent: Kratos
  * `return_to`, post-login / post-verification navigation, verify-wall fallback, etc.
@@ -38,6 +43,13 @@ export const AUTH_POST_AUTH_FALLBACK_HREF: InjectionKey<ComputedRef<string>> =
  */
 export const AUTH_ROOT_HOME_FALLBACK_HREF: InjectionKey<ComputedRef<string>> =
   Symbol("authRootHomeFallbackHref");
+
+/**
+ * Landing URL after **registration** completes (session or auto-login), when `?return_to=` is absent.
+ * Login flows use {@link AUTH_POST_AUTH_FALLBACK_HREF} instead.
+ */
+export const AUTH_POST_REGISTER_FALLBACK_HREF: InjectionKey<ComputedRef<string>> =
+  Symbol("authPostRegisterFallbackHref");
 
 /**
  * Returns a url to return to after authentication, either from the `?return_to=` query parameter or the default post-auth fallback URL.
@@ -61,4 +73,20 @@ export function useAuthLoggedOutRootFallbackHref(): Ref<string> {
     return ref(returnTo.trim());
   }
   return inject(AUTH_ROOT_HOME_FALLBACK_HREF, defaultRootHomeFallbackHref);
+}
+
+/**
+ * Returns a url to send the user to after **registration** succeeds, either from `?return_to=` or the
+ * post-register fallback URL ({@link AUTH_POST_REGISTER_FALLBACK_HREF}).
+ */
+export function useAuthPostRegisterFallbackHref(): Ref<string> {
+  const route = useRoute();
+  const returnTo = route.query.return_to;
+  if (typeof returnTo === "string") {
+    return ref(returnTo.trim());
+  }
+  return inject(
+    AUTH_POST_REGISTER_FALLBACK_HREF,
+    defaultPostRegisterFallbackHref,
+  );
 }
