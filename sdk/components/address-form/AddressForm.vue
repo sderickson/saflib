@@ -1,19 +1,15 @@
 <template>
-  <v-container class="address-form">
-    <v-row>
-      <v-col cols="12 py-0">
-        <v-text-field
-          v-model="streetAddress"
-          :label="t(strings.addressStreetLabel)"
-          :placeholder="t(strings.addressStreetPlaceholder)"
-          v-bind="commonInputProps"
-          :rules="[streetAddressRule]"
-        />
-      </v-col>
-    </v-row>
+  <div class="address-form">
+    <v-text-field
+      v-model="streetAddress"
+      :label="t(strings.addressStreetLabel)"
+      :placeholder="t(strings.addressStreetPlaceholder)"
+      v-bind="commonInputProps"
+      :rules="[streetAddressRule]"
+    />
 
-    <v-row class="pa-0">
-      <v-col cols="6 py-0">
+    <v-row class="ma-0" dense>
+      <v-col cols="12" sm="6" class="py-0 ps-0">
         <v-text-field
           v-model="locality"
           :label="t(strings.addressLocalityLabel)"
@@ -22,7 +18,7 @@
           :rules="[localityRule]"
         />
       </v-col>
-      <v-col cols="6 py-0">
+      <v-col cols="12" sm="6" class="py-0 pe-0">
         <v-text-field
           v-model="region"
           :label="t(strings.addressRegionLabel)"
@@ -33,8 +29,8 @@
       </v-col>
     </v-row>
 
-    <v-row>
-      <v-col cols="6 py-0">
+    <v-row class="ma-0" dense>
+      <v-col cols="12" sm="6" class="py-0 ps-0">
         <v-text-field
           v-model="country"
           :label="t(strings.addressCountryLabel)"
@@ -43,7 +39,7 @@
           :rules="[countryRule]"
         />
       </v-col>
-      <v-col cols="6 py-0">
+      <v-col cols="12" sm="6" class="py-0 pe-0">
         <v-text-field
           v-model="postalCode"
           :label="t(strings.addressPostalCodeLabel)"
@@ -53,7 +49,7 @@
         />
       </v-col>
     </v-row>
-  </v-container>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -74,9 +70,11 @@ const emit = defineEmits<{
   "update:modelValue": [value: Address | null];
 }>();
 
-// Common input props
+// Common input props — match standard outlined form fields (e.g. company profile, sell flow)
 const commonInputProps = computed(() => ({
-  class: "mb-4",
+  variant: "outlined" as const,
+  density: "comfortable" as const,
+  class: "mb-3",
   disabled: props.disabled,
 }));
 
@@ -200,5 +198,6 @@ onMounted(() => {
 <style scoped>
 .address-form {
   width: 100%;
+  padding: 0;
 }
 </style>
