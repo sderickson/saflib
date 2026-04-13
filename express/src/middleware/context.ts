@@ -32,10 +32,18 @@ async function resolveKratosAuth(cookie: string): Promise<Auth> {
   if (!session.identity) {
     throw createError(500, "Kratos identity not found");
   }
-  const userEmail = session.identity.traits?.email;
+  const traits = session.identity.traits as {
+    email?: string;
+    phone?: string;
+  };
+  const userEmail = traits.email;
   if (!userEmail) {
     throw createError(500, "Kratos identity missing email trait");
   }
+  const userPhone =
+    typeof traits.phone === "string" && traits.phone.trim()
+      ? traits.phone
+      : undefined;
   const verifiableAddresses = session.identity.verifiable_addresses ?? [];
   const emailVerified =
     verifiableAddresses.find((a) => a.via === "email")?.verified ?? false;
@@ -53,6 +61,7 @@ async function resolveKratosAuth(cookie: string): Promise<Auth> {
   return {
     userId,
     userEmail,
+    userPhone,
     isAdmin,
     emailVerified,
   };
@@ -63,10 +72,15 @@ function resolveTestAuth(req: Request): Auth | undefined {
   const userEmail = req.headers["x-user-email"];
   const userIsAdmin = req.headers["x-user-is-admin"] === "true";
   const emailVerified = req.headers["x-user-email-verified"];
+  const userPhone = req.headers["x-user-phone"];
   if (userId && userEmail) {
     return {
       userId: userId as string,
       userEmail: userEmail as string,
+      userPhone:
+        typeof userPhone === "string" && userPhone.trim()
+          ? userPhone
+          : undefined,
       isAdmin: userIsAdmin && emailVerified === "true",
       emailVerified: emailVerified === "true",
     };
