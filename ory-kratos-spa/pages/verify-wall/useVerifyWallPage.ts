@@ -6,10 +6,7 @@ import { linkToHrefWithHost, navigateToLink } from "@saflib/links";
 import { authLinks } from "@saflib/ory-kratos-sdk/links";
 import { useAuthPostRegisterFallbackHref } from "../../authFallbackInject.ts";
 import { identityNeedsEmailVerification } from "@saflib/ory-kratos-sdk";
-import {
-  resolveVerifyWallReturnToDestination,
-  sessionDisplayEmail,
-} from "./VerifyWall.logic.ts";
+import { sessionDisplayEmail } from "./VerifyWall.logic.ts";
 
 /**
  * Route side effects and derived state for the verify wall: redirect unauthenticated users to login,
@@ -19,14 +16,7 @@ export function useVerifyWallPage(
   sessionQuery: UseQueryReturnType<Session | null, Error>,
 ) {
   const route = useRoute();
-  const postRegisterFallbackHref = useAuthPostRegisterFallbackHref();
-
-  const redirectAfter = computed(() =>
-    resolveVerifyWallReturnToDestination(
-      route.query.return_to,
-      postRegisterFallbackHref.value,
-    ),
-  );
+  const redirectAfter = useAuthPostRegisterFallbackHref();
 
   const verifyWallReturnHref = computed(() => {
     const r = route.query.return_to;

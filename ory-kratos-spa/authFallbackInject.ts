@@ -1,11 +1,4 @@
-import {
-  computed,
-  inject,
-  ref,
-  type Ref,
-  type ComputedRef,
-  type InjectionKey,
-} from "vue";
+import { computed, inject, type ComputedRef, type InjectionKey } from "vue";
 import { useRoute } from "vue-router";
 
 // really gotta figure out some better way to handle client-side links
@@ -13,80 +6,123 @@ import { useRoute } from "vue-router";
 import { linkToHref } from "@saflib/links";
 const domain = document.location.host.replace("auth.", "");
 
-/** Default post-auth URL when the shell does not pass `postAuthFallbackHref` to {@link configureAuthApp}. */
+/** Default post-auth URL when the shell does not set `postAuthOverrideHref` in `configureAuthApp`. */
 export const defaultPostAuthFallbackHref = computed(() =>
   linkToHref({ subdomain: "app", path: "/" }, { domain }),
 );
 
-/** Default logged-out root URL when the shell does not pass `rootHomeFallbackHref` to {@link configureAuthApp}. */
+/** Default logged-out root URL when the shell does not set `rootHomeOverrideHref` in `configureAuthApp`. */
 export const defaultRootHomeFallbackHref = computed(() =>
   linkToHref({ subdomain: "root", path: "/" }, { domain }),
 );
 
-/** Default URL after a successful **registration** when the shell does not pass `postRegisterFallbackHref` to {@link configureAuthApp}. Matches post-login default unless the host overrides it. */
+/** Default URL after registration when the shell does not set `postRegisterOverrideHref` in `configureAuthApp`. */
 export const defaultPostRegisterFallbackHref = computed(() =>
   linkToHref({ subdomain: "app", path: "/" }, { domain }),
 );
 
 /**
- * Full URL for the hub **app** home (`app.`…`/`), used when `?return_to=` is absent: Kratos
- * `return_to`, post-login / post-verification navigation, verify-wall fallback, etc.
- * {@link configureAuthApp} provides this (or use inject defaults when the shell does not call it).
+ * Resolved post-auth URL from {@link configureAuthApp} (override value or library default).
+ * {@link AUTH_POST_AUTH_URL_IS_OVERRIDE} indicates whether the shell set an override.
  */
 export const AUTH_POST_AUTH_FALLBACK_HREF: InjectionKey<ComputedRef<string>> =
   Symbol("authPostAuthFallbackHref");
 
+/** True when {@link configureAuthApp} was given `postAuthOverrideHref` (that URL wins over `?return_to=`). */
+export const AUTH_POST_AUTH_URL_IS_OVERRIDE: InjectionKey<ComputedRef<boolean>> =
+  Symbol("authPostAuthUrlIsOverride");
+
 /**
- * Full URL for the hub **root** home (`/` on the root domain), used when logging out without
- * `?return_to=` so the browser lands on the logged-out marketing site.
- * {@link configureAuthApp} provides this (or use inject defaults when the shell does not call it).
+ * Resolved logged-out root URL from {@link configureAuthApp} (override or default).
  */
 export const AUTH_ROOT_HOME_FALLBACK_HREF: InjectionKey<ComputedRef<string>> =
   Symbol("authRootHomeFallbackHref");
 
+/** True when {@link configureAuthApp} was given `rootHomeOverrideHref`. */
+export const AUTH_ROOT_HOME_URL_IS_OVERRIDE: InjectionKey<ComputedRef<boolean>> =
+  Symbol("authRootHomeUrlIsOverride");
+
 /**
- * Landing URL after **registration** completes (session or auto-login), when `?return_to=` is absent.
- * Login flows use {@link AUTH_POST_AUTH_FALLBACK_HREF} instead.
+ * Resolved post-register URL from {@link configureAuthApp} (override or default).
  */
 export const AUTH_POST_REGISTER_FALLBACK_HREF: InjectionKey<ComputedRef<string>> =
   Symbol("authPostRegisterFallbackHref");
 
-/**
- * Returns a url to return to after authentication, either from the `?return_to=` query parameter or the default post-auth fallback URL.
- */
-export function useAuthPostAuthFallbackHref(): Ref<string> {
-  const route = useRoute();
-  const returnTo = route.query.return_to;
-  if (typeof returnTo === "string") {
-    return ref(returnTo.trim());
-  }
-  return inject(AUTH_POST_AUTH_FALLBACK_HREF, defaultPostAuthFallbackHref);
+/** True when {@link configureAuthApp} was given `postRegisterOverrideHref`. */
+export const AUTH_POST_REGISTER_URL_IS_OVERRIDE: InjectionKey<ComputedRef<boolean>> =
+  Symbol("authPostRegisterUrlIsOverride");
+
+/** Default for URL override flags when `configureAuthApp` was not used. */
+export const defaultAuthUrlNotOverride = computed(() => false);
+
+function mergeReturnToQuery(
+  route: ReturnType<typeof useRoute>,
+  resolvedHref: ComputedRef<string>,
+  isOverride: ComputedRef<boolean>,
+): ComputedRef<string> {
+  return computed(() => {
+    if (isOverride.value) return resolvedHref.value;
+    const q = route.query.return_to;
+    if (typeof q === "string" && q.trim()) return q.trim();
+    return resolvedHref.value;
+  });
 }
 
 /**
- * Returns a url to return to after logging out, either from the `?return_to=` query parameter or the default logged-out root home URL.
+ * After login / post-auth: when the shell set `postAuthOverrideHref`, that URL is used and `?return_to=` is ignored.
+ * Otherwise `?return_to=` wins, then the resolved default URL.
  */
-export function useAuthLoggedOutRootFallbackHref(): Ref<string> {
+export function useAuthPostAuthFallbackHref(): ComputedRef<string> {
   const route = useRoute();
-  const returnTo = route.query.return_to;
-  if (typeof returnTo === "string") {
-    return ref(returnTo.trim());
-  }
-  return inject(AUTH_ROOT_HOME_FALLBACK_HREF, defaultRootHomeFallbackHref);
+  const resolvedHref = inject(
+    AUTH_POST_AUTH_FALLBACK_HREF,
+    defaultPostAuthFallbackHref,
+  );
+  const isOverride = inject(
+    AUTH_POST_AUTH_URL_IS_OVERRIDE,
+    defaultAuthUrlNotOverride,
+  );
+  return mergeReturnToQuery(route, resolvedHref, isOverride);
 }
 
 /**
- * Returns a url to send the user to after **registration** succeeds, either from `?return_to=` or the
- * post-register fallback URL ({@link AUTH_POST_REGISTER_FALLBACK_HREF}).
+ * After logout: when the shell set `rootHomeOverrideHref`, that URL is used and `?return_to=` is ignored.
+ * Otherwise `?return_to=` wins, then the resolved default URL.
  */
-export function useAuthPostRegisterFallbackHref(): Ref<string> {
+export function useAuthLoggedOutRootFallbackHref(): ComputedRef<string> {
   const route = useRoute();
-  const returnTo = route.query.return_to;
-  if (typeof returnTo === "string") {
-    return ref(returnTo.trim());
-  }
-  return inject(
+  const resolvedHref = inject(
+    AUTH_ROOT_HOME_FALLBACK_HREF,
+    defaultRootHomeFallbackHref,
+  );
+  const isOverride = inject(
+    AUTH_ROOT_HOME_URL_IS_OVERRIDE,
+    defaultAuthUrlNotOverride,
+  );
+  return mergeReturnToQuery(route, resolvedHref, isOverride);
+}
+
+/**
+ * After registration: when the shell set `postRegisterOverrideHref`, that URL is used and `?return_to=` is ignored.
+ * Otherwise `?return_to=` wins, then the resolved default URL.
+ */
+export function useAuthPostRegisterFallbackHref(): ComputedRef<string> {
+  const route = useRoute();
+  const resolvedHref = inject(
     AUTH_POST_REGISTER_FALLBACK_HREF,
     defaultPostRegisterFallbackHref,
   );
+  const isOverride = inject(
+    AUTH_POST_REGISTER_URL_IS_OVERRIDE,
+    defaultAuthUrlNotOverride,
+  );
+  return mergeReturnToQuery(route, resolvedHref, isOverride);
+}
+
+export function useAuthPostAuthUrlIsOverride(): ComputedRef<boolean> {
+  return inject(AUTH_POST_AUTH_URL_IS_OVERRIDE, defaultAuthUrlNotOverride);
+}
+
+export function useAuthPostRegisterUrlIsOverride(): ComputedRef<boolean> {
+  return inject(AUTH_POST_REGISTER_URL_IS_OVERRIDE, defaultAuthUrlNotOverride);
 }
