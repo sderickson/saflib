@@ -1,6 +1,8 @@
 <template>
   <div>
-    <h1 class="text-h4 mb-2">{{ t(strings.title) }}</h1>
+    <h1 v-if="authApp.showFlowHeaders" class="text-h4 mb-2">
+      {{ t(strings.title) }}
+    </h1>
     <p class="text-body-1 mb-4">{{ t(strings.body) }}</p>
     <div class="d-flex flex-wrap ga-3">
       <v-btn
@@ -20,6 +22,7 @@
 import { useRouter } from "vue-router";
 import type { SecurityCsrfViolation } from "@saflib/ory-kratos-sdk";
 import { useReverseT } from "@saflib/ory-kratos-spa/i18n";
+import { useAuthAppConfig } from "../../configureAuthApp.ts";
 import { csrf_violation as strings } from "./csrf_violation.strings.ts";
 
 const props = defineProps<{
@@ -29,6 +32,7 @@ const props = defineProps<{
 }>();
 
 const { t } = useReverseT();
+const authApp = useAuthAppConfig();
 const router = useRouter();
 
 function restart() {

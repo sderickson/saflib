@@ -1,6 +1,8 @@
 <template>
   <div>
-    <h1 class="text-h4 mb-2">{{ t(strings.title) }}</h1>
+    <h1 v-if="authApp.showFlowHeaders" class="text-h4 mb-2">
+      {{ t(strings.title) }}
+    </h1>
     <p class="text-body-1 mb-4">{{ t(strings.body) }}</p>
     <p v-if="detailLine" class="text-body-2 text-medium-emphasis mb-4">
       {{ detailLine }}
@@ -24,6 +26,7 @@ import { computed } from "vue";
 import { useRouter } from "vue-router";
 import type { FlowGone } from "@saflib/ory-kratos-sdk";
 import { useReverseT } from "@saflib/ory-kratos-spa/i18n";
+import { useAuthAppConfig } from "../../configureAuthApp.ts";
 import { flow_gone as strings } from "./FlowGone.strings.ts";
 
 const props = withDefaults(
@@ -38,6 +41,7 @@ const props = withDefaults(
 );
 
 const { t } = useReverseT();
+const authApp = useAuthAppConfig();
 const router = useRouter();
 
 const detailLine = computed(() => {

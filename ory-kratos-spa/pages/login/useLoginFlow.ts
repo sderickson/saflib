@@ -1,5 +1,8 @@
 import { computed, ref, type Ref } from "vue";
-import { useAuthPostAuthFallbackHref } from "../../authFallbackInject.ts";
+import {
+  useAuthPostAuthFallbackHref,
+  useAuthPostAuthUrlIsOverride,
+} from "../../authFallbackInject.ts";
 import {
   BrowserRedirectRequired,
   LoginCompleted,
@@ -18,11 +21,14 @@ import type { LoginFlow } from "@ory/client";
  * (`Login.vue` + loader).
  */
 export function useLoginFlow(flow: Ref<LoginFlow>) {
-  const postAuthFallbackHref = useAuthPostAuthFallbackHref();
+  const postAuthHref = useAuthPostAuthFallbackHref();
+  const postAuthIsOverride = useAuthPostAuthUrlIsOverride();
   const updateLogin = useUpdateLoginFlowMutation();
 
-  const returnTo = computed(
-    () => flow.value.return_to ?? postAuthFallbackHref.value,
+  const returnTo = computed(() =>
+    postAuthIsOverride.value
+      ? postAuthHref.value
+      : (flow.value.return_to ?? postAuthHref.value),
   );
 
   const submitting = ref(false);

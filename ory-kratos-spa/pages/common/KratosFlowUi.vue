@@ -1,10 +1,5 @@
 <template>
-  <v-card
-    v-if="flow"
-    variant="outlined"
-    class="pa-4"
-    :class="{ 'opacity-60': submitting }"
-  >
+  <div v-if="flow" :class="{ 'opacity-60': submitting }">
     <form
       ref="formRef"
       class="kratos-flow-form"
@@ -25,7 +20,11 @@
       </v-alert>
 
       <fieldset class="kratos-flow-form__fieldset">
-        <slot name="fieldset" :display-nodes="displayNodes" :all-node-indices="allNodeIndices">
+        <slot
+          name="fieldset"
+          :display-nodes="displayNodes"
+          :all-node-indices="allNodeIndices"
+        >
           <template v-for="idx in allNodeIndices" :key="'node-' + idx">
             <slot name="node" :node="displayNodes[idx]!" :idx="idx">
               <KratosFlowUiNodeAt :idx="idx" />
@@ -34,7 +33,7 @@
         </slot>
       </fieldset>
     </form>
-  </v-card>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -144,7 +143,9 @@ const flowForFocus = computed(() => {
 const formRef = ref<HTMLFormElement | null>(null);
 
 /** When {@link SubmitEvent.submitter} is null (often with Vuetify `v-btn`), `FormData` loses the clicked control. */
-const lastPointerSubmitter = ref<HTMLButtonElement | HTMLInputElement | null>(null);
+const lastPointerSubmitter = ref<HTMLButtonElement | HTMLInputElement | null>(
+  null,
+);
 
 function onFormPointerDownCapture(ev: Event) {
   const t = ev.target;

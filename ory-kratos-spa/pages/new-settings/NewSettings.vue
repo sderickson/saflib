@@ -1,15 +1,13 @@
 <template>
-  <v-container class="py-8" max-width="720">
-    <SettingsAalReauthRedirect
-      v-if="queryData instanceof BrowserRedirectRequiredResult"
-      :redirect-browser-to="queryData.payload.redirect_browser_to"
-    />
-    <SettingsFlowCreatedView
-      v-else-if="queryData instanceof SettingsFlowCreatedResult"
-      :result="queryData"
-    />
-    <UnhandledResponsePanel v-else :result="queryData" />
-  </v-container>
+  <SettingsAalReauthRedirect
+    v-if="queryData instanceof BrowserRedirectRequiredResult"
+    :redirect-browser-to="queryData.payload.redirect_browser_to"
+  />
+  <SettingsFlowCreatedView
+    v-else-if="queryData instanceof SettingsFlowCreatedResult"
+    :result="queryData"
+  />
+  <UnhandledResponsePanel v-else :result="queryData" />
 </template>
 
 <script setup lang="ts">

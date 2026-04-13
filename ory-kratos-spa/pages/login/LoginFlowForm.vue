@@ -68,12 +68,24 @@
         </template>
       </template>
     </KratosFlowUi>
+    <div v-if="!isSecondFactorStep" class="text-center mb-4 mt-8">
+      {{ t(strings.no_account) }}
+      <a
+        :href="registerHref"
+        class="text-primary text-decoration-none d-inline-flex align-center ga-1"
+      >
+        {{ t(strings.link_sign_up) }}
+      </a>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import type { LoginFlow, UiNode } from "@ory/client";
 import { computed, toRef } from "vue";
+import { useReverseT } from "@saflib/ory-kratos-spa/i18n";
+import { kratos_login_flow as strings } from "./LoginFlowForm.strings.ts";
+import { useAuthFlowCrossLinks } from "../common/useAuthFlowCrossLinks.ts";
 import KratosFlowUi from "../common/KratosFlowUi.vue";
 import KratosFlowUiNodeAt from "../common/KratosFlowUiNodeAt.vue";
 import {
@@ -90,6 +102,10 @@ import { useLoginFlow } from "./useLoginFlow.ts";
 const props = defineProps<{
   flow: LoginFlow;
 }>();
+
+const { t } = useReverseT();
+
+const { registerHref } = useAuthFlowCrossLinks(() => props.flow.return_to);
 
 const { submitting, submitError, clearSubmitError, submitLoginForm } =
   useLoginFlow(toRef(props, "flow"));

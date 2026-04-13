@@ -1,21 +1,19 @@
 <template>
-  <v-container class="py-8" max-width="720">
-    <RecoveryFlowForm
-      v-if="queryData instanceof RecoveryFlowFetched && flow"
-      :flow="flow"
-    />
-    <FlowGonePanel
-      v-else-if="queryData instanceof FlowGone"
-      restart-path="/new-recovery"
-      :result="queryData"
-    />
-    <CsrfViolationPanel
-      v-else-if="queryData instanceof SecurityCsrfViolation"
-      restart-path="/new-recovery"
-      :result="queryData"
-    />
-    <UnhandledResponsePanel v-else :result="queryData" />
-  </v-container>
+  <RecoveryFlowForm
+    v-if="queryData instanceof RecoveryFlowFetched && flow"
+    :flow="flow"
+  />
+  <FlowGonePanel
+    v-else-if="queryData instanceof FlowGone"
+    restart-path="/new-recovery"
+    :result="queryData"
+  />
+  <CsrfViolationPanel
+    v-else-if="queryData instanceof SecurityCsrfViolation"
+    restart-path="/new-recovery"
+    :result="queryData"
+  />
+  <UnhandledResponsePanel v-else :result="queryData" />
 </template>
 
 <script setup lang="ts">

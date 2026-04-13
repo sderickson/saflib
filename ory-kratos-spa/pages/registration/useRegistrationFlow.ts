@@ -16,7 +16,10 @@ import {
   SessionAlreadyAvailable,
   UnhandledResponse,
 } from "@saflib/ory-kratos-sdk";
-import { useAuthPostAuthFallbackHref } from "../../authFallbackInject.ts";
+import {
+  useAuthPostRegisterFallbackHref,
+  useAuthPostRegisterUrlIsOverride,
+} from "../../authFallbackInject.ts";
 import type { KratosFlowUiMessageFilterContext } from "../common/kratosUiMessages.ts";
 import { isKratosPropertyMissingMessage } from "../common/kratosUiMessages.ts";
 import {
@@ -42,7 +45,8 @@ export function useRegistrationFlow(flow: Ref<RegistrationFlow>) {
   function clearSubmitError() {
     submitError.value = null;
   }
-  const postAuthFallbackHref = useAuthPostAuthFallbackHref();
+  const postRegisterHref = useAuthPostRegisterFallbackHref();
+  const postRegisterIsOverride = useAuthPostRegisterUrlIsOverride();
 
   /**
    * Used to hide Kratos "Property password is missing" on the first response after submitting email
@@ -89,7 +93,9 @@ export function useRegistrationFlow(flow: Ref<RegistrationFlow>) {
         throw new Error("Unexpected result");
       }
 
-      const destination = flow.value.return_to ?? postAuthFallbackHref.value;
+      const destination = postRegisterIsOverride.value
+        ? postRegisterHref.value
+        : (flow.value.return_to ?? postRegisterHref.value);
       const registrationSession = updated.result.session;
       if (registrationSession) {
         if (identityNeedsEmailVerification(registrationSession.identity)) {

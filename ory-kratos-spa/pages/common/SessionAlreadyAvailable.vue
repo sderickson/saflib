@@ -1,6 +1,8 @@
 <template>
   <div>
-    <h1 class="text-h4 mb-2">{{ t(strings.title) }}</h1>
+    <h1 v-if="authApp.showFlowHeaders" class="text-h4 mb-2">
+      {{ t(strings.title) }}
+    </h1>
     <p class="text-body-1 mb-4">{{ t(strings.body) }}</p>
     <div class="d-flex flex-wrap ga-3">
       <v-btn
@@ -30,12 +32,14 @@
 import { computed } from "vue";
 import { useRoute } from "vue-router";
 import { useReverseT } from "@saflib/ory-kratos-spa/i18n";
+import { useAuthAppConfig } from "../../configureAuthApp.ts";
 import { session_already_available as strings } from "./SessionAlreadyAvailable.strings.ts";
 import { useAuthPostAuthFallbackHref } from "../../authFallbackInject.ts";
 import { useKratosBrowserLogout } from "../registration/useKratosBrowserLogout.ts";
 
 const route = useRoute();
 const { t } = useReverseT();
+const authApp = useAuthAppConfig();
 const postAuthFallbackHref = useAuthPostAuthFallbackHref();
 
 const afterLogoutReturnTo = computed(

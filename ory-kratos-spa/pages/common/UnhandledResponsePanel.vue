@@ -1,6 +1,8 @@
 <template>
   <div>
-    <h1 class="text-h6 mb-2">Unexpected response</h1>
+    <h1 v-if="authApp.showFlowHeaders" class="text-h6 mb-2">
+      Unexpected response
+    </h1>
     <template v-if="result instanceof UnhandledResponse">
       <p class="text-body-2 text-medium-emphasis mb-2">
         HTTP status: <code>{{ result.status }}</code>
@@ -24,6 +26,9 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { UnhandledResponse } from "@saflib/ory-kratos-sdk";
+import { useAuthAppConfig } from "../../configureAuthApp.ts";
+
+const authApp = useAuthAppConfig();
 
 const props = defineProps<{
   result: unknown;
