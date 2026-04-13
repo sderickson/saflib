@@ -12,17 +12,21 @@ import { useRoute } from "vue-router";
 // perhaps set up something in @saflib/vue that is reactive?
 import { linkToHref } from "@saflib/links";
 const domain = document.location.host.replace("auth.", "");
-const defaultPostAuthFallbackHref = computed(() =>
+
+/** Default post-auth URL when the shell does not pass `postAuthFallbackHref` to {@link configureAuthApp}. */
+export const defaultPostAuthFallbackHref = computed(() =>
   linkToHref({ subdomain: "app", path: "/" }, { domain }),
 );
-const defaultRootHomeFallbackHref = computed(() =>
+
+/** Default logged-out root URL when the shell does not pass `rootHomeFallbackHref` to {@link configureAuthApp}. */
+export const defaultRootHomeFallbackHref = computed(() =>
   linkToHref({ subdomain: "root", path: "/" }, { domain }),
 );
 
 /**
  * Full URL for the hub **app** home (`app.`…`/`), used when `?return_to=` is absent: Kratos
  * `return_to`, post-login / post-verification navigation, verify-wall fallback, etc.
- * {@link AuthSpa.vue} provides this; composables fall back to the same hub-links resolution if missing.
+ * {@link configureAuthApp} provides this (or use inject defaults when the shell does not call it).
  */
 export const AUTH_POST_AUTH_FALLBACK_HREF: InjectionKey<ComputedRef<string>> =
   Symbol("authPostAuthFallbackHref");
@@ -30,6 +34,7 @@ export const AUTH_POST_AUTH_FALLBACK_HREF: InjectionKey<ComputedRef<string>> =
 /**
  * Full URL for the hub **root** home (`/` on the root domain), used when logging out without
  * `?return_to=` so the browser lands on the logged-out marketing site.
+ * {@link configureAuthApp} provides this (or use inject defaults when the shell does not call it).
  */
 export const AUTH_ROOT_HOME_FALLBACK_HREF: InjectionKey<ComputedRef<string>> =
   Symbol("authRootHomeFallbackHref");
