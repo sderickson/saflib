@@ -15,6 +15,7 @@
     <KratosFlowUi
       v-if="flow"
       :flow="flow"
+      :nodes="registrationDisplayNodes"
       :submitting="submitting"
       id-prefix="kratos-login"
       :message-filter="registrationMessageFilter"
@@ -34,9 +35,10 @@
 </template>
 
 <script setup lang="ts">
-import { toRef } from "vue";
+import { computed, toRef } from "vue";
 import KratosFlowUi from "../common/KratosFlowUi.vue";
 import RegistrationIntro from "./RegistrationIntro.vue";
+import { sortRegistrationFlowNodes } from "./kratosRegistrationNodeOrder.logic.ts";
 import { useRegistrationFlow } from "./useRegistrationFlow.ts";
 import type { RegistrationFlow } from "@ory/client";
 import { useReverseT } from "@saflib/ory-kratos-spa/i18n";
@@ -46,6 +48,10 @@ const { t } = useReverseT();
 
 import { useAuthFlowCrossLinks } from "../common/useAuthFlowCrossLinks.ts";
 const props = defineProps<{ flow: RegistrationFlow }>();
+
+const registrationDisplayNodes = computed(() =>
+  sortRegistrationFlowNodes(props.flow.ui.nodes),
+);
 
 const { loginHref } = useAuthFlowCrossLinks();
 

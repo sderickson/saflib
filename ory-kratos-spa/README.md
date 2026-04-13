@@ -93,6 +93,8 @@ The `#fieldset` slot receives:
 
 When `#fieldset` is provided, `#node` is not used (the fieldset consumer renders `KratosFlowUiNodeAt` directly and controls the full structure).
 
+**Default node order** is whatever Kratos returns in `flow.ui.nodes`. Flows that need a different order should pass a sorted copy via the **`nodes`** prop (see `RegistrationFlowForm.vue`, which uses `sortRegistrationFlowNodes` in `kratosRegistrationNodeOrder.logic.ts` for first → last → email → phone → password).
+
 ### KratosFlowUiNodeAt
 
 `common/KratosFlowUiNodeAt.vue` is the default per-node renderer. It receives context from `KratosFlowUi` via Vue `provide`/`inject` (see `kratosFlowUiInject.ts`). It can also be used directly by consumers who override `#fieldset`.
@@ -124,7 +126,7 @@ Submit-body construction is a pure function in the flow's `.logic.ts` file (e.g.
 - **MFA tabs**: Overrides `#fieldset` to split non-default groups into `v-tabs` / `v-window` for AAL2 login. Tab logic lives in `useKratosMfaGroupTabs.ts`.
 - **Passkey-specific CSS**: The `.kratos-flow-form__identifier-with-passkey` style lives in `LoginFlowForm.vue`'s `<style scoped>`, not in the shared component.
 
-Other flow forms (registration, recovery, verification, settings) use `KratosFlowUi` with just props — no slots needed.
+Other flow forms (recovery, verification, settings) use `KratosFlowUi` with just props — no slots needed. Registration passes **`nodes`** to fix field order without using slots.
 
 ## Ory WebAuthn / passkey integration
 
