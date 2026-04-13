@@ -1,11 +1,9 @@
 <template>
-  <v-container class="py-8" max-width="720">
-    <VerificationFlowCreatedView
-      v-if="queryData instanceof VerificationFlowCreatedResult"
-      :result="queryData"
-    />
-    <UnhandledResponsePanel v-else :result="queryData" />
-  </v-container>
+  <VerificationFlowCreatedView
+    v-if="queryData instanceof VerificationFlowCreatedResult"
+    :result="queryData"
+  />
+  <UnhandledResponsePanel v-else :result="queryData" />
 </template>
 
 <script setup lang="ts">

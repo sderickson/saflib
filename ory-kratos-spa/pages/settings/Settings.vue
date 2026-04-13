@@ -1,102 +1,100 @@
 <template>
-  <v-container class="py-8" max-width="720">
-    <template v-if="queryData instanceof SettingsFlowFetched && flow">
-      <SettingsIntro />
+  <template v-if="queryData instanceof SettingsFlowFetched && flow">
+    <SettingsIntro />
 
-      <v-alert
-        v-if="showPasswordRecoveryPrompt"
-        type="info"
-        variant="tonal"
-        class="mb-4"
-        density="comfortable"
-      >
-        {{ t(passwordRecoveryStrings.prompt) }}
-      </v-alert>
+    <v-alert
+      v-if="showPasswordRecoveryPrompt"
+      type="info"
+      variant="tonal"
+      class="mb-4"
+      density="comfortable"
+    >
+      {{ t(passwordRecoveryStrings.prompt) }}
+    </v-alert>
 
-      <v-alert
-        v-if="submitError"
-        type="error"
-        variant="tonal"
-        class="mb-4"
-        closable
-        @click:close="clearSubmitError"
-      >
-        {{ submitError }}
-      </v-alert>
+    <v-alert
+      v-if="submitError"
+      type="error"
+      variant="tonal"
+      class="mb-4"
+      closable
+      @click:close="clearSubmitError"
+    >
+      {{ submitError }}
+    </v-alert>
 
-      <v-tabs v-model="tab" class="mb-4" color="primary">
-        <v-tab value="email">{{ t(tabs.general) }}</v-tab>
-        <v-tab value="password">{{ t(tabs.password) }}</v-tab>
-        <v-tab v-if="hasTotpSettings" value="totp">{{ t(tabs.totp) }}</v-tab>
-        <v-tab v-if="hasPasskeySettings" value="passkey">{{
-          t(tabs.passkey)
-        }}</v-tab>
-      </v-tabs>
+    <v-tabs v-model="tab" class="mb-4" color="primary">
+      <v-tab value="email">{{ t(tabs.general) }}</v-tab>
+      <v-tab value="password">{{ t(tabs.password) }}</v-tab>
+      <v-tab v-if="hasTotpSettings" value="totp">{{ t(tabs.totp) }}</v-tab>
+      <v-tab v-if="hasPasskeySettings" value="passkey">{{
+        t(tabs.passkey)
+      }}</v-tab>
+    </v-tabs>
 
-      <v-window v-model="tab">
-        <v-window-item value="email">
-          <SettingsGroupUi
-            :flow="flow"
-            group="profile"
-            :submitting="submitting"
-            id-prefix="settings-profile"
-            :message-filter="settingsMessageFilter"
-            @submit="submitSettingsForm"
-          />
-        </v-window-item>
-        <v-window-item value="password">
-          <SettingsGroupUi
-            :flow="flow"
-            group="password"
-            :submitting="submitting"
-            id-prefix="settings-password"
-            :message-filter="settingsMessageFilter"
-            @submit="submitSettingsForm"
-          />
-        </v-window-item>
-        <v-window-item v-if="hasTotpSettings" value="totp">
-          <SettingsGroupUi
-            :flow="flow"
-            group="totp"
-            :submitting="submitting"
-            id-prefix="settings-totp"
-            :message-filter="settingsMessageFilter"
-            @submit="submitSettingsForm"
-          />
-        </v-window-item>
-        <v-window-item v-if="hasPasskeySettings" value="passkey">
-          <SettingsGroupUi
-            :flow="flow"
-            group="passkey"
-            :submitting="submitting"
-            id-prefix="settings-passkey"
-            :message-filter="settingsMessageFilter"
-            :identity-passkey-display-fallback="sessionEmail"
-            @submit="submitSettingsForm"
-          />
-        </v-window-item>
-      </v-window>
-    </template>
+    <v-window v-model="tab">
+      <v-window-item value="email">
+        <SettingsGroupUi
+          :flow="flow"
+          group="profile"
+          :submitting="submitting"
+          id-prefix="settings-profile"
+          :message-filter="settingsMessageFilter"
+          @submit="submitSettingsForm"
+        />
+      </v-window-item>
+      <v-window-item value="password">
+        <SettingsGroupUi
+          :flow="flow"
+          group="password"
+          :submitting="submitting"
+          id-prefix="settings-password"
+          :message-filter="settingsMessageFilter"
+          @submit="submitSettingsForm"
+        />
+      </v-window-item>
+      <v-window-item v-if="hasTotpSettings" value="totp">
+        <SettingsGroupUi
+          :flow="flow"
+          group="totp"
+          :submitting="submitting"
+          id-prefix="settings-totp"
+          :message-filter="settingsMessageFilter"
+          @submit="submitSettingsForm"
+        />
+      </v-window-item>
+      <v-window-item v-if="hasPasskeySettings" value="passkey">
+        <SettingsGroupUi
+          :flow="flow"
+          group="passkey"
+          :submitting="submitting"
+          id-prefix="settings-passkey"
+          :message-filter="settingsMessageFilter"
+          :identity-passkey-display-fallback="sessionEmail"
+          @submit="submitSettingsForm"
+        />
+      </v-window-item>
+    </v-window>
+  </template>
 
-    <SettingsAalReauthRedirect
-      v-else-if="queryData instanceof BrowserRedirectRequired"
-      :redirect-browser-to="queryData.payload.redirect_browser_to"
-    />
+  <SettingsAalReauthRedirect
+    v-else-if="queryData instanceof BrowserRedirectRequired"
+    :redirect-browser-to="queryData.payload.redirect_browser_to"
+  />
 
-    <FlowGonePanel
-      v-else-if="queryData instanceof FlowGone"
-      restart-path="/new-settings"
-      :restart-query="settingsRestartQuery"
-      :result="queryData"
-    />
-    <CsrfViolationPanel
-      v-else-if="queryData instanceof SecurityCsrfViolation"
-      restart-path="/new-settings"
-      :restart-query="settingsRestartQuery"
-      :result="queryData"
-    />
-    <UnhandledResponsePanel v-else :result="queryData" />
-  </v-container>
+  <FlowGonePanel
+    v-else-if="queryData instanceof FlowGone"
+    restart-path="/new-settings"
+    :restart-query="settingsRestartQuery"
+    :result="queryData"
+  />
+  <CsrfViolationPanel
+    v-else-if="queryData instanceof SecurityCsrfViolation"
+    restart-path="/new-settings"
+    :restart-query="settingsRestartQuery"
+    :result="queryData"
+  />
+  <UnhandledResponsePanel v-else :result="queryData" />
 </template>
 
 <script setup lang="ts">

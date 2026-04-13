@@ -68,17 +68,13 @@
         </template>
       </template>
     </KratosFlowUi>
-    <div
-      v-if="!isSecondFactorStep"
-      class="text-center mb-4 mt-8"
-    >
+    <div v-if="!isSecondFactorStep" class="text-center mb-4 mt-8">
       {{ t(strings.no_account) }}
       <a
         :href="registerHref"
         class="text-primary text-decoration-none d-inline-flex align-center ga-1"
       >
         {{ t(strings.link_sign_up) }}
-        <v-icon icon="mdi-chevron-right" size="small" />
       </a>
     </div>
   </div>

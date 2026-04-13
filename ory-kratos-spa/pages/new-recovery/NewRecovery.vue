@@ -1,14 +1,12 @@
 <template>
-  <v-container class="py-8" max-width="720">
-    <RecoveryFlowCreatedView
-      v-if="queryData instanceof RecoveryFlowCreatedResult"
-      :result="queryData"
-    />
-    <SessionAlreadyAvailableComponent
-      v-else-if="queryData instanceof SessionAlreadyAvailable"
-    />
-    <UnhandledResponsePanel v-else :result="queryData" />
-  </v-container>
+  <RecoveryFlowCreatedView
+    v-if="queryData instanceof RecoveryFlowCreatedResult"
+    :result="queryData"
+  />
+  <SessionAlreadyAvailableComponent
+    v-else-if="queryData instanceof SessionAlreadyAvailable"
+  />
+  <UnhandledResponsePanel v-else :result="queryData" />
 </template>
 
 <script setup lang="ts">
