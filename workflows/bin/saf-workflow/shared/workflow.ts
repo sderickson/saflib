@@ -49,7 +49,7 @@ export abstract class AbstractWorkflowRunner {
   abstract getCurrentStateName(): string;
   abstract goToNextStep(options?: WorkflowRunOptions): Promise<void>;
   abstract listSteps(): WorkflowStepInfo[];
-  abstract goToStep(stepIndex: number, options?: WorkflowRunOptions): Promise<void>;
+  abstract goToStep(stepIndex: number): Promise<void>;
   abstract dehydrate(): WorkflowBlob;
   abstract hydrate(blob: WorkflowBlob): void;
   abstract done(): boolean;
@@ -86,6 +86,7 @@ export class XStateWorkflowRunner extends AbstractWorkflowRunner {
   };
   private args: string[];
   private actor: AnyActor | undefined;
+  private pendingBlob: WorkflowBlob | undefined;
   definition: WorkflowDefinition<any, any>;
 
   constructor(options: XStateWorkflowOptions<any, any>) {
@@ -146,6 +147,7 @@ export class XStateWorkflowRunner extends AbstractWorkflowRunner {
       log.error("Workflow not started");
       return;
     }
+    this.actor.start();
     if (this.actor.getSnapshot().status === "error") {
       log.error("Workflow has errored. And could not continue.");
       return;
@@ -179,6 +181,7 @@ export class XStateWorkflowRunner extends AbstractWorkflowRunner {
     if (!this.actor) {
       throw new Error("Workflow not started");
     }
+    this.actor.start();
     if (this.actor.getSnapshot().status === "error") {
       log.error("This workflow has errored. And could not continue.");
       return;
@@ -198,6 +201,9 @@ export class XStateWorkflowRunner extends AbstractWorkflowRunner {
   };
 
   dehydrate = (): WorkflowBlob => {
+    if (this.pendingBlob) {
+      return this.pendingBlob;
+    }
     return {
       workflowName: this.machine.id,
       workflowSourceUrl: this.definition.sourceUrl,
@@ -216,7 +222,6 @@ export class XStateWorkflowRunner extends AbstractWorkflowRunner {
         }
       },
     });
-    this.actor.start();
   };
 
   done = (): boolean => {
@@ -254,13 +259,7 @@ export class XStateWorkflowRunner extends AbstractWorkflowRunner {
     }));
   };
 
-  goToStep = async (
-    stepIndex: number,
-    options?: WorkflowRunOptions,
-  ): Promise<void> => {
-    if (!this.actor) {
-      throw new Error("Workflow not started");
-    }
+  goToStep = async (stepIndex: number): Promise<void> => {
     const step = this.definition.steps[stepIndex];
     if (!step) {
       throw new Error(
@@ -269,7 +268,7 @@ export class XStateWorkflowRunner extends AbstractWorkflowRunner {
     }
     const targetStateName = `step_${stepIndex}_${step.machine.id}`;
     const currentBlob = this.dehydrate();
-    const modifiedBlob: WorkflowBlob = {
+    this.pendingBlob = {
       ...currentBlob,
       snapshotState: {
         ...currentBlob.snapshotState,
@@ -278,8 +277,6 @@ export class XStateWorkflowRunner extends AbstractWorkflowRunner {
         children: {},
       },
     };
-    this.actor.stop();
-    this.hydrate(modifiedBlob, options);
   };
 
   getError = (): Error | undefined => {
