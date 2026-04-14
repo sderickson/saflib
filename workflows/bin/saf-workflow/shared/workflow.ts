@@ -35,6 +35,11 @@ export interface WorkflowRunOptions {
   onSnapshot?: (snapshot: Snapshot<any>) => void;
 }
 
+export interface WorkflowStepInfo {
+  index: number;
+  name: string;
+}
+
 /**
  * Abstract superclass for XStateWorkflow. Can probably be removed since SimpleWorkflows are gone.
  */
@@ -43,6 +48,8 @@ export abstract class AbstractWorkflowRunner {
   abstract printStatus(): Promise<void>;
   abstract getCurrentStateName(): string;
   abstract goToNextStep(options?: WorkflowRunOptions): Promise<void>;
+  abstract listSteps(): WorkflowStepInfo[];
+  abstract goToStep(stepIndex: number, options?: WorkflowRunOptions): Promise<void>;
   abstract dehydrate(): WorkflowBlob;
   abstract hydrate(blob: WorkflowBlob): void;
   abstract done(): boolean;
@@ -238,6 +245,41 @@ export class XStateWorkflowRunner extends AbstractWorkflowRunner {
       return "not started";
     }
     return this.actor.getSnapshot().value;
+  };
+
+  listSteps = (): WorkflowStepInfo[] => {
+    return this.definition.steps.map((s, index) => ({
+      index,
+      name: s.machine.id,
+    }));
+  };
+
+  goToStep = async (
+    stepIndex: number,
+    options?: WorkflowRunOptions,
+  ): Promise<void> => {
+    if (!this.actor) {
+      throw new Error("Workflow not started");
+    }
+    const step = this.definition.steps[stepIndex];
+    if (!step) {
+      throw new Error(
+        `Step ${stepIndex} does not exist (workflow has ${this.definition.steps.length} steps)`,
+      );
+    }
+    const targetStateName = `step_${stepIndex}_${step.machine.id}`;
+    const currentBlob = this.dehydrate();
+    const modifiedBlob: WorkflowBlob = {
+      ...currentBlob,
+      snapshotState: {
+        ...currentBlob.snapshotState,
+        status: "active",
+        value: targetStateName,
+        children: {},
+      },
+    };
+    this.actor.stop();
+    this.hydrate(modifiedBlob, options);
   };
 
   getError = (): Error | undefined => {

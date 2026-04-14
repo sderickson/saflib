@@ -244,6 +244,7 @@ export const executePromptWithCursor = async ({
   } else {
     printLineSlowly("Starting new session");
     args.push("--model", "auto");
+    throw new Error("This shouldn't happen");
   }
   const agent = spawn("cursor-agent", args);
   agent.stdin.end(); // or it hangs
