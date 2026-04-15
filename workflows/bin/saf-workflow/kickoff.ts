@@ -67,7 +67,7 @@ export const addKickoffCommand = (commandOptions: WorkflowCommandOptions) => {
         });
         if (givenRunMode === "run") {
           addPendingMessage(
-            "You are going through a well-defined developer workflow specific to this codebase and project. You will receive logs and prompts, please follow them to the best of your ability. If you need to halt the workflow because of a blocker, please include the --- HALT WORKFLOW --- string in your final response.\n",
+            "You are going through a well-defined developer workflow specific to this codebase and project. You will receive logs and prompts, please follow them to the best of your ability. If you need to halt the workflow because of a blocker, please include the --- HALT WORKFLOW --- string in your final response. If you mention that you don't need to halt the workflow, don't cite the string that halts the workflow though...\n",
           );
           if (commandOptions.systemPrompt) {
             addPendingMessage(`${commandOptions.systemPrompt}\n`);

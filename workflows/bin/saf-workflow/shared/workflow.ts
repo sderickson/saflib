@@ -35,6 +35,11 @@ export interface WorkflowRunOptions {
   onSnapshot?: (snapshot: Snapshot<any>) => void;
 }
 
+export interface WorkflowStepInfo {
+  index: number;
+  name: string;
+}
+
 /**
  * Abstract superclass for XStateWorkflow. Can probably be removed since SimpleWorkflows are gone.
  */
@@ -43,6 +48,8 @@ export abstract class AbstractWorkflowRunner {
   abstract printStatus(): Promise<void>;
   abstract getCurrentStateName(): string;
   abstract goToNextStep(options?: WorkflowRunOptions): Promise<void>;
+  abstract listSteps(): WorkflowStepInfo[];
+  abstract goToStep(stepIndex: number): Promise<void>;
   abstract dehydrate(): WorkflowBlob;
   abstract hydrate(blob: WorkflowBlob): void;
   abstract done(): boolean;
@@ -79,6 +86,7 @@ export class XStateWorkflowRunner extends AbstractWorkflowRunner {
   };
   private args: string[];
   private actor: AnyActor | undefined;
+  private pendingBlob: WorkflowBlob | undefined;
   definition: WorkflowDefinition<any, any>;
 
   constructor(options: XStateWorkflowOptions<any, any>) {
@@ -139,6 +147,7 @@ export class XStateWorkflowRunner extends AbstractWorkflowRunner {
       log.error("Workflow not started");
       return;
     }
+    this.actor.start();
     if (this.actor.getSnapshot().status === "error") {
       log.error("Workflow has errored. And could not continue.");
       return;
@@ -172,6 +181,7 @@ export class XStateWorkflowRunner extends AbstractWorkflowRunner {
     if (!this.actor) {
       throw new Error("Workflow not started");
     }
+    this.actor.start();
     if (this.actor.getSnapshot().status === "error") {
       log.error("This workflow has errored. And could not continue.");
       return;
@@ -191,6 +201,9 @@ export class XStateWorkflowRunner extends AbstractWorkflowRunner {
   };
 
   dehydrate = (): WorkflowBlob => {
+    if (this.pendingBlob) {
+      return this.pendingBlob;
+    }
     return {
       workflowName: this.machine.id,
       workflowSourceUrl: this.definition.sourceUrl,
@@ -209,7 +222,6 @@ export class XStateWorkflowRunner extends AbstractWorkflowRunner {
         }
       },
     });
-    this.actor.start();
   };
 
   done = (): boolean => {
@@ -238,6 +250,33 @@ export class XStateWorkflowRunner extends AbstractWorkflowRunner {
       return "not started";
     }
     return this.actor.getSnapshot().value;
+  };
+
+  listSteps = (): WorkflowStepInfo[] => {
+    return this.definition.steps.map((s, index) => ({
+      index,
+      name: s.machine.id,
+    }));
+  };
+
+  goToStep = async (stepIndex: number): Promise<void> => {
+    const step = this.definition.steps[stepIndex];
+    if (!step) {
+      throw new Error(
+        `Step ${stepIndex} does not exist (workflow has ${this.definition.steps.length} steps)`,
+      );
+    }
+    const targetStateName = `step_${stepIndex}_${step.machine.id}`;
+    const currentBlob = this.dehydrate();
+    this.pendingBlob = {
+      ...currentBlob,
+      snapshotState: {
+        ...currentBlob.snapshotState,
+        status: "active",
+        value: targetStateName,
+        children: {},
+      },
+    };
   };
 
   getError = (): Error | undefined => {
