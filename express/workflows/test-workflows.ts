@@ -3,7 +3,7 @@ import { AddHandlerWorkflowDefinition } from "./add-handler.ts";
 
 import {
   OpenapiInitWorkflowDefinition,
-  AddSchemaWorkflowDefinition,
+  OpenApiSchemaWorkflowDefinition,
   AddRouteWorkflowDefinition,
 } from "@saflib/openapi/workflows";
 
@@ -57,7 +57,7 @@ const TestExpressWorkflowsDefinition = defineWorkflow<
     step(CdStepMachine, () => ({
       path: "test-spec",
     })),
-    step(makeWorkflowMachine(AddSchemaWorkflowDefinition), () => ({
+    step(makeWorkflowMachine(OpenApiSchemaWorkflowDefinition), () => ({
       name: "user",
     })),
 

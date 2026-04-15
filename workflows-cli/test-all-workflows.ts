@@ -2,7 +2,7 @@ import { defineWorkflow, makeWorkflowMachine, step } from "@saflib/workflows";
 import { InitProductWorkflowDefinition } from "@saflib/product/workflows";
 import { CdStepMachine } from "@saflib/workflows";
 import {
-  AddSchemaWorkflowDefinition,
+  OpenApiSchemaWorkflowDefinition,
   AddRouteWorkflowDefinition,
   AddEventWorkflowDefinition,
 } from "@saflib/openapi/workflows";
@@ -89,11 +89,11 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
     step(CdStepMachine, () => ({
       path: "./tmp/service/spec",
     })),
-    step(makeWorkflowMachine(AddSchemaWorkflowDefinition), () => ({
+    step(makeWorkflowMachine(OpenApiSchemaWorkflowDefinition), () => ({
       name: "user",
     })),
     // Route template references schemas/todo.yaml; add it so saf-specs generate succeeds in script mode
-    step(makeWorkflowMachine(AddSchemaWorkflowDefinition), () => ({
+    step(makeWorkflowMachine(OpenApiSchemaWorkflowDefinition), () => ({
       name: "todo",
     })),
     step(makeWorkflowMachine(AddRouteWorkflowDefinition), () => ({

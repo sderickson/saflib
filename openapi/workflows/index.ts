@@ -1,19 +1,19 @@
 import { OpenapiInitWorkflowDefinition } from "./init.ts";
-import { AddSchemaWorkflowDefinition } from "./add-schema.ts";
+import { OpenApiSchemaWorkflowDefinition } from "./add-schema.ts";
 import { AddRouteWorkflowDefinition } from "./add-route.ts";
 import { AddEventWorkflowDefinition } from "./add-event.ts";
 import type { WorkflowDefinition } from "@saflib/workflows";
 
 export {
   OpenapiInitWorkflowDefinition,
-  AddSchemaWorkflowDefinition,
+  OpenApiSchemaWorkflowDefinition,
   AddRouteWorkflowDefinition,
   AddEventWorkflowDefinition,
 };
 
 const workflowDefinitions: WorkflowDefinition[] = [
   OpenapiInitWorkflowDefinition,
-  AddSchemaWorkflowDefinition,
+  OpenApiSchemaWorkflowDefinition,
   AddRouteWorkflowDefinition,
   AddEventWorkflowDefinition,
 ];

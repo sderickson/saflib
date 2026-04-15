@@ -24,15 +24,14 @@ const input = [
   },
 ] as const;
 
-interface AddSchemaWorkflowContext
-  extends ParsePackageNameOutput,
-    ParsePathOutput {}
+interface OpenApiSchemaWorkflowContext
+  extends ParsePackageNameOutput, ParsePathOutput {}
 
-export const AddSchemaWorkflowDefinition = defineWorkflow<
+export const OpenApiSchemaWorkflowDefinition = defineWorkflow<
   typeof input,
-  AddSchemaWorkflowContext
+  OpenApiSchemaWorkflowContext
 >({
-  id: "openapi/add-schema",
+  id: "openapi/schema",
 
   description: "Add a new schema to an existing OpenAPI specification package",
 
@@ -82,14 +81,11 @@ export const AddSchemaWorkflowDefinition = defineWorkflow<
 
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "schema",
-      promptMessage: `Update **${context.targetName}** to define the schema for the ${context.groupName} resource.
-      
-      Replace the template properties with actual properties for your schema:
-      - Define the object properties and their types
-      - Add appropriate descriptions and examples
-      - Set required fields
+      promptMessage: `Update **${context.targetName}**
+      - Add or update object properties and their types
+      - Include appropriate descriptions and examples with new or updated properties
+      - Update the required property as necessary
       - Use type: string for id and reference fields (do not use format: uuid; we use short ids from generateShortId)
-      - Consider validation rules and constraints
       - For nullable enums, make sure to include null in the enum list otherwise the validator will disallow null values.`,
     })),
 
