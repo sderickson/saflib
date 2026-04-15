@@ -3,7 +3,7 @@ import { InitProductWorkflowDefinition } from "@saflib/product/workflows";
 import { CdStepMachine } from "@saflib/workflows";
 import {
   OpenApiSchemaWorkflowDefinition,
-  AddRouteWorkflowDefinition,
+  OpenApiRouteWorkflowDefinition,
   AddEventWorkflowDefinition,
 } from "@saflib/openapi/workflows";
 import {
@@ -96,12 +96,12 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
     step(makeWorkflowMachine(OpenApiSchemaWorkflowDefinition), () => ({
       name: "todo",
     })),
-    step(makeWorkflowMachine(AddRouteWorkflowDefinition), () => ({
+    step(makeWorkflowMachine(OpenApiRouteWorkflowDefinition), () => ({
       path: "./routes/users/list.yaml",
       urlPath: "/users",
       method: "get",
     })),
-    step(makeWorkflowMachine(AddRouteWorkflowDefinition), () => ({
+    step(makeWorkflowMachine(OpenApiRouteWorkflowDefinition), () => ({
       path: "./routes/users/create.yaml",
       urlPath: "/users",
       method: "post",

@@ -19,7 +19,7 @@ const sourceDir = path.join(import.meta.dirname, "templates");
 const input = [
   {
     name: "name",
-    description: "The name of the schema to create (e.g., 'user' or 'product')",
+    description: "The name of the schema (e.g., 'user' or 'product')",
     exampleValue: "example",
   },
 ] as const;
@@ -33,10 +33,9 @@ export const OpenApiSchemaWorkflowDefinition = defineWorkflow<
 >({
   id: "openapi/schema",
 
-  description: "Add a new schema to an existing OpenAPI specification package",
+  description: "Work on an OpenAPI schema",
 
-  checklistDescription: ({ groupName }) =>
-    `Add a new ${groupName} schema to the OpenAPI specification.`,
+  checklistDescription: ({ targetName }) => `Work on the ${targetName} schema.`,
 
   input,
 

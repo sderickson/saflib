@@ -40,11 +40,12 @@ const input = [
   {
     name: "download",
     type: "flag" as const,
-    description: "Route returns binary (e.g. application/octet-stream or specific type)",
+    description:
+      "Route returns binary (e.g. application/octet-stream or specific type)",
   },
 ] as const;
 
-interface AddRouteWorkflowContext extends ParsePathOutput {
+interface OpenApiRouteWorkflowContext extends ParsePathOutput {
   operationId: string;
   upload: boolean;
   download: boolean;
@@ -52,16 +53,16 @@ interface AddRouteWorkflowContext extends ParsePathOutput {
   method: string;
 }
 
-export const AddRouteWorkflowDefinition = defineWorkflow<
+export const OpenApiRouteWorkflowDefinition = defineWorkflow<
   typeof input,
-  AddRouteWorkflowContext
+  OpenApiRouteWorkflowContext
 >({
-  id: "openapi/add-route",
+  id: "openapi/route",
 
-  description: "Add a new route to an existing OpenAPI specification package",
+  description: "Work on an OpenAPI route",
 
   checklistDescription: ({ groupName, targetName }) =>
-    `Add a new ${targetName} route for ${groupName} resource to the OpenAPI specification.`,
+    `Work on the ${targetName} route for ${groupName} resource.`,
 
   input,
 
@@ -112,15 +113,11 @@ export const AddRouteWorkflowDefinition = defineWorkflow<
 
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "route",
-      promptMessage: `Update **${path.basename(context.copiedFiles!.route)}**. Resolve all TODOs.
-      
-      Replace the template properties with actual route definition:
-      - Define request parameters and body schemas using $ref to existing schemas
-      - Define response schemas using $ref to existing schemas (including error.yaml for error responses)
+      promptMessage: `Update **${path.basename(context.copiedFiles!.route)}**.
+      - Request parameters and body schemas, and response schemas should $ref existing schemas
       - Remove any unused sections (parameters, requestBody) if not needed
       - Do not specify a 400 response when the only 400s would come from OpenAPI request validation (e.g. missing required, wrong type). Do specify 400 for dynamic or business-rule failures (e.g. duplicate id, id not URL-safe, cannot remove creator).
       - If this is a list route, do not include a sort parameter unless explicitly requested.
-      - For a route that is public, specify and enforce it with a "no-auth" tag.
       ${context.download ? "- For download routes the 200 response content is already set to application/octet-stream (or adjust to a specific media type e.g. application/pdf)." : ""}
       `,
     })),

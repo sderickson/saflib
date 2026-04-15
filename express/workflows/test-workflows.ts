@@ -4,7 +4,7 @@ import { AddHandlerWorkflowDefinition } from "./add-handler.ts";
 import {
   OpenapiInitWorkflowDefinition,
   OpenApiSchemaWorkflowDefinition,
-  AddRouteWorkflowDefinition,
+  OpenApiRouteWorkflowDefinition,
 } from "@saflib/openapi/workflows";
 
 import {
@@ -62,7 +62,7 @@ const TestExpressWorkflowsDefinition = defineWorkflow<
     })),
 
     // Add a list users route to the spec
-    step(makeWorkflowMachine(AddRouteWorkflowDefinition), () => ({
+    step(makeWorkflowMachine(OpenApiRouteWorkflowDefinition), () => ({
       path: "routes/users/list.yaml",
       urlPath: "/users",
       method: "get",
