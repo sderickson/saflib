@@ -1,6 +1,6 @@
 <template>
   <div class="__subdomain-name__-home py-8">
-    <v-row class="align-center mb-10" dense>
+    <v-row class="align-center mb-10" density="comfortable">
       <v-col cols="12" md="6" class="order-2 order-md-1">
         <h1 class="text-h3 text-md-h2 font-weight-medium my-8">
           __Product Name__
@@ -13,8 +13,7 @@
   </div>
 </template>
 
-<script setup lang="ts">
-</script>
+<script setup lang="ts"></script>
 
 <style scoped>
 .__subdomain-name__-home :deep(a.text-primary) {

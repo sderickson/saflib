@@ -8,7 +8,7 @@
       :rules="[streetAddressRule]"
     />
 
-    <v-row class="ma-0" dense>
+    <v-row class="ma-0" density="comfortable">
       <v-col cols="12" sm="6" class="py-0 ps-0">
         <v-text-field
           v-model="locality"
@@ -29,7 +29,7 @@
       </v-col>
     </v-row>
 
-    <v-row class="ma-0" dense>
+    <v-row class="ma-0" density="comfortable">
       <v-col cols="12" sm="6" class="py-0 ps-0">
         <v-text-field
           v-model="country"
