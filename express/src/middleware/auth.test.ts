@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from "vitest";
 
 import express from "express";
+import type { OpenAPIV3 } from "express-openapi-validator/dist/framework/types.ts";
 import request from "supertest";
 import { createScopedMiddleware } from "./composition.ts";
 import { errorHandler } from "./errors.ts"; // Import errorHandler for a complete setup
@@ -155,7 +156,7 @@ describe("Auth Middleware email verification", () => {
 
 describe("Auth Middleware email-verified OpenAPI tag", () => {
   /** Minimal spec with response bodies so express-openapi-validator accepts handler + auth errors. */
-  const specWithEmailVerifiedTag = {
+  const specWithEmailVerifiedTag: OpenAPIV3.DocumentV3 = {
     openapi: "3.0.0",
     info: { title: "test", version: "1.0.0" },
     paths: {
@@ -192,7 +193,7 @@ describe("Auth Middleware email-verified OpenAPI tag", () => {
         },
       },
     },
-  } as const;
+  };
 
   it("returns 403 when operation has email-verified tag and email is not verified", async () => {
     const app = express();
