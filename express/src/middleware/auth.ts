@@ -41,7 +41,6 @@ export const makeAuthMiddleware = (
     }
 
     if (!auth) {
-      console.log("Unauthorizedm returning so");
       drainRequest(req).then(() => {
         if (!res.headersSent) {
           res.status(401).json({
