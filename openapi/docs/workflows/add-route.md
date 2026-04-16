@@ -1,4 +1,4 @@
-# openapi/add-route
+# openapi/route
 
 ## Source
 
@@ -7,7 +7,7 @@
 ## Usage
 
 ```bash
-npm exec saf-workflow kickoff openapi/add-route <path>
+npm exec saf-workflow kickoff openapi/route <path>
 ```
 
 To run this workflow automatically, tell the agent to:
@@ -34,7 +34,7 @@ When run, the workflow will:
 ## Help Docs
 
 ```bash
-Usage: npm exec saf-workflow kickoff openapi/add-route <path>
+Usage: npm exec saf-workflow kickoff openapi/route <path>
 
 Add a new route to an existing OpenAPI specification package
 

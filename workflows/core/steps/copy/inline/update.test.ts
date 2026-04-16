@@ -125,7 +125,7 @@ describe("updateWorkflowAreas", () => {
   it("ONCE: replaces entire area with resolved content only (no markers)", () => {
     const result = updateWorkflowAreas({
       targetLines: [
-        "# BEGIN ONCE WORKFLOW AREA requestBody FOR openapi/add-route IF upload",
+        "# BEGIN ONCE WORKFLOW AREA requestBody FOR openapi/route IF upload",
         "  multipart/content",
         "# ELSE",
         "  application/json",
@@ -133,7 +133,7 @@ describe("updateWorkflowAreas", () => {
       ],
       targetPath: "test.yaml",
       sourceLines: [
-        "# BEGIN ONCE WORKFLOW AREA requestBody FOR openapi/add-route IF upload",
+        "# BEGIN ONCE WORKFLOW AREA requestBody FOR openapi/route IF upload",
         "  multipart/form-data:",
         "    schema: {}",
         "# ELSE",
@@ -141,33 +141,30 @@ describe("updateWorkflowAreas", () => {
         "    schema: {}",
         "# END WORKFLOW AREA",
       ],
-      workflowId: "openapi/add-route",
+      workflowId: "openapi/route",
       lineReplace: (line) => line,
       flags: { upload: true },
     });
 
-    expect(result).toEqual([
-      "  multipart/form-data:",
-      "    schema: {}",
-    ]);
+    expect(result).toEqual(["  multipart/form-data:", "    schema: {}"]);
   });
 
   it("ONCE with IF false: replaces with else-block only", () => {
     const result = updateWorkflowAreas({
       targetLines: [
-        "# BEGIN ONCE WORKFLOW AREA requestBody FOR openapi/add-route IF upload",
+        "# BEGIN ONCE WORKFLOW AREA requestBody FOR openapi/route IF upload",
         "# ELSE",
         "# END WORKFLOW AREA",
       ],
       targetPath: "test.yaml",
       sourceLines: [
-        "# BEGIN ONCE WORKFLOW AREA requestBody FOR openapi/add-route IF upload",
+        "# BEGIN ONCE WORKFLOW AREA requestBody FOR openapi/route IF upload",
         "  multipart",
         "# ELSE",
         "  application/json",
         "# END WORKFLOW AREA",
       ],
-      workflowId: "openapi/add-route",
+      workflowId: "openapi/route",
       lineReplace: (line) => line,
       flags: { upload: false },
     });

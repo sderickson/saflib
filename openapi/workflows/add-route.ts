@@ -153,7 +153,7 @@ export const OpenApiRouteWorkflowDefinition = defineWorkflow<
 export function mergeOpenApiRoute(content: string): string {
   const lines = content.split("\n");
   const areaStart = lines.findIndex((l) =>
-    l.includes("BEGIN WORKFLOW AREA route-paths FOR openapi/add-route"),
+    l.includes("BEGIN WORKFLOW AREA route-paths FOR openapi/route"),
   );
   const areaEnd = lines.findIndex(
     (l) => l.includes("END WORKFLOW AREA") && lines.indexOf(l) > areaStart,

@@ -16,7 +16,7 @@ describe("add-route", () => {
 });
 
 describe("mergeOpenApiRoute", () => {
-  const beginMarker = "BEGIN WORKFLOW AREA route-paths FOR openapi/add-route";
+  const beginMarker = "BEGIN WORKFLOW AREA route-paths FOR openapi/route";
   const endMarker = "END WORKFLOW AREA";
 
   it("returns content unchanged when no workflow area markers exist", () => {

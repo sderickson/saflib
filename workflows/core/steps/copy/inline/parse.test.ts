@@ -11,7 +11,9 @@ describe("parseWorkflowAreaStart", () => {
   it("returns null for non-matching lines", () => {
     expect(parseWorkflowAreaStart("  const x = 1;")).toBeNull();
     expect(parseWorkflowAreaStart("")).toBeNull();
-    expect(parseWorkflowAreaStart("// BEGIN WORKFLOW ZONE foo FOR w1")).toBeNull();
+    expect(
+      parseWorkflowAreaStart("// BEGIN WORKFLOW ZONE foo FOR w1"),
+    ).toBeNull();
   });
 
   it("parses basic BEGIN WORKFLOW AREA", () => {
@@ -41,11 +43,11 @@ describe("parseWorkflowAreaStart", () => {
   });
 
   it("parses ONCE WORKFLOW AREA", () => {
-    const line = "# BEGIN ONCE WORKFLOW AREA requestBody FOR openapi/add-route";
+    const line = "# BEGIN ONCE WORKFLOW AREA requestBody FOR openapi/route";
     const parsed = parseWorkflowAreaStart(line);
     expect(parsed).toEqual({
       areaName: "requestBody",
-      workflowIds: ["openapi/add-route"],
+      workflowIds: ["openapi/route"],
       isSorted: false,
       isOnce: true,
       ifFlag: undefined,
@@ -55,11 +57,11 @@ describe("parseWorkflowAreaStart", () => {
 
   it("parses IF flag at end", () => {
     const line =
-      "# BEGIN ONCE WORKFLOW AREA requestBody FOR openapi/add-route IF upload";
+      "# BEGIN ONCE WORKFLOW AREA requestBody FOR openapi/route IF upload";
     const parsed = parseWorkflowAreaStart(line);
     expect(parsed).toEqual({
       areaName: "requestBody",
-      workflowIds: ["openapi/add-route"],
+      workflowIds: ["openapi/route"],
       isSorted: false,
       isOnce: true,
       ifFlag: "upload",
@@ -156,9 +158,9 @@ describe("resolveConditionalBlocks", () => {
 
   it("returns ifBlock when flag is true", () => {
     const lines = ["  ifLine", "# ELSE", "  elseLine"];
-    expect(
-      resolveConditionalBlocks(lines, "upload", { upload: true }),
-    ).toEqual(["  ifLine"]);
+    expect(resolveConditionalBlocks(lines, "upload", { upload: true })).toEqual(
+      ["  ifLine"],
+    );
   });
 
   it("returns elseBlock when flag is false", () => {

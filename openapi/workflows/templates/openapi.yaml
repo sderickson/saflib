@@ -5,7 +5,7 @@ info:
   description: API specification for the __service-name__ service
 
 paths:
-  # BEGIN WORKFLOW AREA route-paths FOR openapi/add-route
+  # BEGIN WORKFLOW AREA route-paths FOR openapi/route
   __url-path__:
     __method__:
       $ref: "./routes/__group-name__/__target-name__.yaml#/__operationId__"
@@ -17,7 +17,7 @@ components:
       $ref: "./schemas/error.yaml"
     ProductEvent:
       $ref: "./events/index.yaml"
-    # BEGIN WORKFLOW AREA schema-components FOR openapi/add-schema
+    # BEGIN WORKFLOW AREA schema-components FOR openapi/schema
     __TargetName__:
       $ref: "./schemas/__target-name__.yaml"
     # END WORKFLOW AREA

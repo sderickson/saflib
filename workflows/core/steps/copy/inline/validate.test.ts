@@ -30,7 +30,7 @@ describe("extractWorkflowAreas", () => {
 
   it("extracts area with ONCE and IF", () => {
     const lines = [
-      "# BEGIN ONCE WORKFLOW AREA requestBody FOR openapi/add-route IF upload",
+      "# BEGIN ONCE WORKFLOW AREA requestBody FOR openapi/route IF upload",
       "  content",
       "# END WORKFLOW AREA",
     ];
@@ -38,7 +38,7 @@ describe("extractWorkflowAreas", () => {
     expect(areas).toHaveLength(1);
     expect(areas[0]).toMatchObject({
       areaName: "requestBody",
-      workflowIds: ["openapi/add-route"],
+      workflowIds: ["openapi/route"],
       isSorted: false,
       isOnce: true,
       ifFlag: "upload",
@@ -65,10 +65,7 @@ describe("extractWorkflowAreas", () => {
   });
 
   it("records endLine null when area has no END", () => {
-    const lines = [
-      "// BEGIN WORKFLOW AREA myArea FOR workflow1",
-      "  code",
-    ];
+    const lines = ["// BEGIN WORKFLOW AREA myArea FOR workflow1", "  code"];
     const areas = extractWorkflowAreas(lines);
     expect(areas).toHaveLength(1);
     expect(areas[0].endLine).toBeNull();
@@ -117,8 +114,16 @@ describe("getAreaKey", () => {
       startLine: "// BEGIN WORKFLOW AREA x FOR w1",
       endLine: "// END" as string | null,
     };
-    const withOnce = { ...normal, isOnce: true, startLine: "// BEGIN ONCE WORKFLOW AREA x FOR w1" };
-    const withIf = { ...normal, ifFlag: "upload", startLine: "// BEGIN WORKFLOW AREA x FOR w1 IF upload" };
+    const withOnce = {
+      ...normal,
+      isOnce: true,
+      startLine: "// BEGIN ONCE WORKFLOW AREA x FOR w1",
+    };
+    const withIf = {
+      ...normal,
+      ifFlag: "upload",
+      startLine: "// BEGIN WORKFLOW AREA x FOR w1 IF upload",
+    };
     expect(getAreaKey(normal)).not.toBe(getAreaKey(withOnce));
     expect(getAreaKey(normal)).not.toBe(getAreaKey(withIf));
   });
@@ -173,7 +178,11 @@ describe("validateWorkflowAreas", () => {
       "    // END WORKFLOW AREA",
     ];
     expect(() =>
-      validateWorkflowAreas({ sourceLines: source, targetLines: target, ...ctx }),
+      validateWorkflowAreas({
+        sourceLines: source,
+        targetLines: target,
+        ...ctx,
+      }),
     ).not.toThrow();
   });
 
@@ -189,7 +198,11 @@ describe("validateWorkflowAreas", () => {
       "// END WORKFLOW AREA",
     ];
     expect(() =>
-      validateWorkflowAreas({ sourceLines: source, targetLines: target, ...ctx }),
+      validateWorkflowAreas({
+        sourceLines: source,
+        targetLines: target,
+        ...ctx,
+      }),
     ).not.toThrow();
   });
 
@@ -205,23 +218,31 @@ describe("validateWorkflowAreas", () => {
       "// END WORKFLOW AREA",
     ];
     expect(() =>
-      validateWorkflowAreas({ sourceLines: source, targetLines: target, ...ctx }),
+      validateWorkflowAreas({
+        sourceLines: source,
+        targetLines: target,
+        ...ctx,
+      }),
     ).not.toThrow();
   });
 
   it("does not throw when matching ONCE IF areas", () => {
     const source = [
-      "# BEGIN ONCE WORKFLOW AREA requestBody FOR openapi/add-route IF upload",
+      "# BEGIN ONCE WORKFLOW AREA requestBody FOR openapi/route IF upload",
       "  content",
       "# END WORKFLOW AREA",
     ];
     const target = [
-      "# BEGIN ONCE WORKFLOW AREA requestBody FOR openapi/add-route IF upload",
+      "# BEGIN ONCE WORKFLOW AREA requestBody FOR openapi/route IF upload",
       "  resolved",
       "# END WORKFLOW AREA",
     ];
     expect(() =>
-      validateWorkflowAreas({ sourceLines: source, targetLines: target, ...ctx }),
+      validateWorkflowAreas({
+        sourceLines: source,
+        targetLines: target,
+        ...ctx,
+      }),
     ).not.toThrow();
   });
 
@@ -233,7 +254,11 @@ describe("validateWorkflowAreas", () => {
     ];
     const target: string[] = [];
     expect(() =>
-      validateWorkflowAreas({ sourceLines: source, targetLines: target, ...ctx }),
+      validateWorkflowAreas({
+        sourceLines: source,
+        targetLines: target,
+        ...ctx,
+      }),
     ).not.toThrow();
   });
 
@@ -268,17 +293,18 @@ describe("validateWorkflowAreas", () => {
   });
 
   it("throws when source area is missing END marker", () => {
-    const source = [
-      "// BEGIN WORKFLOW AREA myArea FOR workflow1",
-      "  code",
-    ];
+    const source = ["// BEGIN WORKFLOW AREA myArea FOR workflow1", "  code"];
     const target = [
       "// BEGIN WORKFLOW AREA myArea FOR workflow1",
       "  existing",
       "// END WORKFLOW AREA",
     ];
     expect(() =>
-      validateWorkflowAreas({ sourceLines: source, targetLines: target, ...ctx }),
+      validateWorkflowAreas({
+        sourceLines: source,
+        targetLines: target,
+        ...ctx,
+      }),
     ).toThrow(/without matching END marker/);
   });
 
@@ -293,7 +319,11 @@ describe("validateWorkflowAreas", () => {
       "  existing",
     ];
     expect(() =>
-      validateWorkflowAreas({ sourceLines: source, targetLines: target, ...ctx }),
+      validateWorkflowAreas({
+        sourceLines: source,
+        targetLines: target,
+        ...ctx,
+      }),
     ).toThrow(/without matching END marker/);
   });
 
@@ -309,7 +339,11 @@ describe("validateWorkflowAreas", () => {
       "// END WORKFLOW AREA",
     ];
     expect(() =>
-      validateWorkflowAreas({ sourceLines: source, targetLines: target, ...ctx }),
+      validateWorkflowAreas({
+        sourceLines: source,
+        targetLines: target,
+        ...ctx,
+      }),
     ).toThrow();
   });
 
@@ -325,7 +359,11 @@ describe("validateWorkflowAreas", () => {
       "// END WORKFLOW AREA",
     ];
     expect(() =>
-      validateWorkflowAreas({ sourceLines: source, targetLines: target, ...ctx }),
+      validateWorkflowAreas({
+        sourceLines: source,
+        targetLines: target,
+        ...ctx,
+      }),
     ).toThrow();
   });
 
@@ -341,7 +379,11 @@ describe("validateWorkflowAreas", () => {
       "// END WORKFLOW AREA",
     ];
     expect(() =>
-      validateWorkflowAreas({ sourceLines: source, targetLines: target, ...ctx }),
+      validateWorkflowAreas({
+        sourceLines: source,
+        targetLines: target,
+        ...ctx,
+      }),
     ).toThrow();
   });
 
@@ -360,7 +402,11 @@ describe("validateWorkflowAreas", () => {
       "// END WORKFLOW AREA",
     ];
     expect(() =>
-      validateWorkflowAreas({ sourceLines: source, targetLines: target, ...ctx }),
+      validateWorkflowAreas({
+        sourceLines: source,
+        targetLines: target,
+        ...ctx,
+      }),
     ).toThrow(/duplicate/);
   });
 
@@ -379,7 +425,11 @@ describe("validateWorkflowAreas", () => {
       "// END WORKFLOW AREA",
     ];
     expect(() =>
-      validateWorkflowAreas({ sourceLines: source, targetLines: target, ...ctx }),
+      validateWorkflowAreas({
+        sourceLines: source,
+        targetLines: target,
+        ...ctx,
+      }),
     ).toThrow(/duplicate/);
   });
 
@@ -395,7 +445,11 @@ describe("validateWorkflowAreas", () => {
       "# END WORKFLOW AREA",
     ];
     expect(() =>
-      validateWorkflowAreas({ sourceLines: source, targetLines: target, ...ctx }),
+      validateWorkflowAreas({
+        sourceLines: source,
+        targetLines: target,
+        ...ctx,
+      }),
     ).toThrow();
   });
 
@@ -411,7 +465,11 @@ describe("validateWorkflowAreas", () => {
       "// END WORKFLOW AREA",
     ];
     expect(() =>
-      validateWorkflowAreas({ sourceLines: source, targetLines: target, ...ctx }),
+      validateWorkflowAreas({
+        sourceLines: source,
+        targetLines: target,
+        ...ctx,
+      }),
     ).toThrow(/Target has workflow area/);
   });
 });
