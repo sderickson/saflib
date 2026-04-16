@@ -89,7 +89,7 @@ http://caddy:2020 {
 	}
 }
 
-# Recipes API (and similar): forward_auth to Kratos whoami; Express resolves identity via admin API.
+# Recipes API (and similar): probe Kratos /sessions/whoami; copy identity on 2xx, but never short-circuit the client on 401.
 # args[0]: target service host (e.g. monolith:3002)
 (kratos-api-proxy) {
 	handle /health {
@@ -99,10 +99,21 @@ http://caddy:2020 {
 	}
 
 	handle {
-		forward_auth kratos:4433 {
-			uri /sessions/whoami
+		reverse_proxy kratos:4433 {
+			method GET
+			rewrite /sessions/whoami
 			header_up X-Request-ID {http.request.uuid}
-			copy_headers X-Kratos-Authenticated-Identity-Id
+			header_up X-Forwarded-Method {http.request.method}
+			header_up X-Forwarded-Uri {http.request.uri}
+
+			@kratos_session_ok status 2xx
+			handle_response @kratos_session_ok {
+				request_header X-Kratos-Authenticated-Identity-Id {rp.header.X-Kratos-Authenticated-Identity-Id}
+			}
+
+			@kratos_session_unauthorized status 401
+			handle_response @kratos_session_unauthorized {
+			}
 		}
 		reverse_proxy {args[0]} {
 			import reverse_proxy_common

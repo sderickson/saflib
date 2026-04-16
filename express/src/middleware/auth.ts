@@ -31,12 +31,17 @@ export const makeAuthMiddleware = (
 
   return (req, res, next): void => {
     const { auth } = getSafContext();
+    const tags = req.openapi?.schema?.tags;
+    const routeRequiresVerifiedEmail =
+      Boolean(emailVerificationRequired) ||
+      tags?.includes("email-verified") === true;
 
-    if (req.openapi?.schema?.tags?.includes("no-auth")) {
+    if (tags?.includes("no-auth")) {
       return next();
     }
 
     if (!auth) {
+      console.log("Unauthorizedm returning so");
       drainRequest(req).then(() => {
         if (!res.headersSent) {
           res.status(401).json({
@@ -48,7 +53,7 @@ export const makeAuthMiddleware = (
       return;
     }
 
-    if (emailVerificationRequired && auth.emailVerified !== true) {
+    if (routeRequiresVerifiedEmail && auth.emailVerified !== true) {
       drainRequest(req).then(() => {
         if (!res.headersSent) {
           res.status(403).json({

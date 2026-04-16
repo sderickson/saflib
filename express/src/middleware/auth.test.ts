@@ -152,3 +152,94 @@ describe("Auth Middleware email verification", () => {
     expect(response.body.authFromMiddleware?.emailVerified).toBe(true);
   });
 });
+
+describe("Auth Middleware email-verified OpenAPI tag", () => {
+  /** Minimal spec with response bodies so express-openapi-validator accepts handler + auth errors. */
+  const specWithEmailVerifiedTag = {
+    openapi: "3.0.0",
+    info: { title: "test", version: "1.0.0" },
+    paths: {
+      "/tagged": {
+        get: {
+          tags: ["email-verified"],
+          responses: {
+            "200": {
+              description: "ok",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: { ok: { type: "boolean" } },
+                  },
+                },
+              },
+            },
+            "403": {
+              description: "forbidden",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      error: { type: "string" },
+                      message: { type: "string" },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  } as const;
+
+  it("returns 403 when operation has email-verified tag and email is not verified", async () => {
+    const app = express();
+    app.use(
+      createScopedMiddleware({
+        enforceAuth: true,
+        apiSpec: specWithEmailVerifiedTag,
+      }),
+    );
+    app.get("/tagged", (_req, res) => {
+      res.status(200).json({ ok: true });
+    });
+    app.use(errorHandler);
+
+    const response = await request(app).get("/tagged").set({
+      "x-user-id": "123",
+      "x-user-email": "test@example.com",
+      "x-user-email-verified": "false",
+    });
+
+    expect(response.status).toBe(403);
+    expect(response.body).toEqual({
+      error: "Forbidden",
+      message: "Forbidden",
+    });
+  });
+
+  it("allows the request when operation has email-verified tag and email is verified", async () => {
+    const app = express();
+    app.use(
+      createScopedMiddleware({
+        enforceAuth: true,
+        apiSpec: specWithEmailVerifiedTag,
+      }),
+    );
+    app.get("/tagged", (_req, res) => {
+      res.status(200).json({ ok: true });
+    });
+    app.use(errorHandler);
+
+    const response = await request(app).get("/tagged").set({
+      "x-user-id": "123",
+      "x-user-email": "test@example.com",
+      "x-user-email-verified": "true",
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({ ok: true });
+  });
+});
