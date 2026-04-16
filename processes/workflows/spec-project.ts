@@ -95,8 +95,8 @@ export const SpecProjectWorkflowDefinition = defineWorkflow<
       The most common workflow... flow is:
       
       Backend:
-      * openapi/add-schema - to add business objects
-      * openapi/add-route - to add API routes (takes path, urlPath, method, and prompt; urlPath uses OpenAPI {param} syntax, method is lowercase e.g. get, post, put, delete)
+      * openapi/schema - to add business objects
+      * openapi/route - to add API routes (takes path, urlPath, method, and prompt; urlPath uses OpenAPI {param} syntax, method is lowercase e.g. get, post, put, delete)
       * drizzle/update-schema - to add database tables
       * drizzle/add-query - to add database queries
       * express/add-handler - to add API handlers

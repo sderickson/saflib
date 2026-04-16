@@ -1,4 +1,4 @@
-# openapi/add-schema
+# openapi/schema
 
 ## Source
 
@@ -7,7 +7,7 @@
 ## Usage
 
 ```bash
-npm exec saf-workflow kickoff openapi/add-schema <name>
+npm exec saf-workflow kickoff openapi/schema <name>
 ```
 
 To run this workflow automatically, tell the agent to:
@@ -34,7 +34,7 @@ When run, the workflow will:
 ## Help Docs
 
 ```bash
-Usage: npm exec saf-workflow kickoff openapi/add-schema <name>
+Usage: npm exec saf-workflow kickoff openapi/schema <name>
 
 Add a new schema to an existing OpenAPI specification package
 

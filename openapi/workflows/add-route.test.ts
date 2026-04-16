@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  AddRouteWorkflowDefinition,
+  OpenApiRouteWorkflowDefinition,
   mergeOpenApiRoute,
 } from "./add-route.ts";
 import { runWorkflow } from "@saflib/workflows";
@@ -8,7 +8,7 @@ import { runWorkflow } from "@saflib/workflows";
 describe("add-route", () => {
   it("should successfully dry run", async () => {
     const result = await runWorkflow({
-      definition: AddRouteWorkflowDefinition,
+      definition: OpenApiRouteWorkflowDefinition,
       runMode: "checklist",
     });
     expect(result.output?.checklist).toBeDefined();
@@ -16,8 +16,7 @@ describe("add-route", () => {
 });
 
 describe("mergeOpenApiRoute", () => {
-  const beginMarker =
-    "BEGIN WORKFLOW AREA route-paths FOR openapi/add-route";
+  const beginMarker = "BEGIN WORKFLOW AREA route-paths FOR openapi/route";
   const endMarker = "END WORKFLOW AREA";
 
   it("returns content unchanged when no workflow area markers exist", () => {
@@ -54,7 +53,7 @@ describe("mergeOpenApiRoute", () => {
     // Single path key for /recipes (no duplicate "  /recipes:" line before post)
     const recipesSection = result.slice(
       result.indexOf("  /recipes:"),
-      result.indexOf("  /other:")
+      result.indexOf("  /other:"),
     );
     expect(recipesSection.match(/^\s{2}\/recipes:/gm)).toHaveLength(1);
   });

@@ -28,9 +28,11 @@ The data passed in this way is limited. The only information the route is given 
 
 The auth middleware checks the OpenAPI schema for the requested route and the auth object provided through the `forward_auth` headers to return 401s where appropriate. As such, it depends on both the `context.ts` and `openapi.ts` middleware.
 
-If a route has a `no-auth` tag associated with it, it always passes the request through.
+If a route has a `no-auth` tag associated with it, it always passes the request through (no authentication or CSRF checks for that operation).
 
 Otherwise, if the request is unauthenticated, the middleware returns 401.
+
+If a route has an `email-verified` tag, or scoped middleware was created with `emailVerificationRequired: true`, the middleware returns 403 unless `auth.emailVerified` is true.
 
 When creating scoped middleware, `auth.ts` can be disabled, but it's on by default.
 

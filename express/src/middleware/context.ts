@@ -96,7 +96,8 @@ async function resolveAuth(req: Request): Promise<Auth | undefined> {
   if (typedEnv.NODE_ENV === "test") {
     return resolveTestAuth(req);
   }
-  throw createError(500, "No auth found");
+  // No Kratos identity header (e.g. Caddy whoami returned 401, or request bypassed edge auth): treat as anonymous.
+  return undefined;
 }
 
 export const makeContextMiddleware = () => {
