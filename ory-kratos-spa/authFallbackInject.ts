@@ -6,7 +6,7 @@ import { useRoute } from "vue-router";
 import { linkToHref } from "@saflib/links";
 const domain = document.location.host.replace("auth.", "");
 
-/** Default post-auth URL when the shell does not set `postAuthOverrideHref` in `configureAuthApp`. */
+/** Default post-auth URL when the shell does not set `postAuthFallbackHref` or `postAuthOverrideHref` in `configureAuthApp`. */
 export const defaultPostAuthFallbackHref = computed(() =>
   linkToHref({ subdomain: "app", path: "/" }, { domain }),
 );
@@ -22,13 +22,13 @@ export const defaultPostRegisterFallbackHref = computed(() =>
 );
 
 /**
- * Resolved post-auth URL from {@link configureAuthApp} (override value or library default).
- * {@link AUTH_POST_AUTH_URL_IS_OVERRIDE} indicates whether the shell set an override.
+ * Resolved post-auth fallback base URL from {@link configureAuthApp} (override, explicit fallback, or library default).
+ * {@link AUTH_POST_AUTH_URL_IS_OVERRIDE} is true only when the shell set `postAuthOverrideHref` (then `?return_to=` is ignored).
  */
 export const AUTH_POST_AUTH_FALLBACK_HREF: InjectionKey<ComputedRef<string>> =
   Symbol("authPostAuthFallbackHref");
 
-/** True when {@link configureAuthApp} was given `postAuthOverrideHref` (that URL wins over `?return_to=`). */
+/** True when {@link configureAuthApp} was given `postAuthOverrideHref` (that URL wins; `?return_to=` is ignored). */
 export const AUTH_POST_AUTH_URL_IS_OVERRIDE: InjectionKey<ComputedRef<boolean>> =
   Symbol("authPostAuthUrlIsOverride");
 
@@ -70,7 +70,7 @@ function mergeReturnToQuery(
 
 /**
  * After login / post-auth: when the shell set `postAuthOverrideHref`, that URL is used and `?return_to=` is ignored.
- * Otherwise `?return_to=` wins, then the resolved default URL.
+ * Otherwise `?return_to=` wins when present, then the resolved fallback URL (`postAuthFallbackHref`, else library default).
  */
 export function useAuthPostAuthFallbackHref(): ComputedRef<string> {
   const route = useRoute();

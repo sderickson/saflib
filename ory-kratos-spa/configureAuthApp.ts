@@ -33,9 +33,14 @@ const defaultAuthAppConfig: AuthAppConfig = {
 
 export interface ConfigureAuthAppOptions extends Partial<AuthAppConfig> {
   /**
-   * When set, this URL is used for post-login redirects and `?return_to=` is ignored.
-   * When omitted, `?return_to=` is honored, then the default app home URL.
-   * See {@link AUTH_POST_AUTH_FALLBACK_HREF}.
+   * Default URL after login when `?return_to=` is absent. When set, `?return_to=` is still honored when present.
+   * Prefer this over `postAuthOverrideHref` when deep links (e.g. “sell a part” with `return_to`) should win.
+   * When omitted, the library default app home URL is used as that fallback.
+   */
+  postAuthFallbackHref?: MaybeRefOrGetter<string>;
+  /**
+   * When set, post-login redirects always use this URL and `?return_to=` is ignored.
+   * If both this and `postAuthFallbackHref` are set, this wins.
    */
   postAuthOverrideHref?: MaybeRefOrGetter<string>;
   /**
@@ -76,15 +81,19 @@ export function configureAuthApp(
   });
   provide(AUTH_APP_CONFIG, config);
 
-  const postAuthOverride = computed(
-    () => toValue(options).postAuthOverrideHref !== undefined,
-  );
+  const postAuthOverride = computed(() => {
+    const o = toValue(options);
+    return o.postAuthOverrideHref !== undefined;
+  });
   provide(AUTH_POST_AUTH_URL_IS_OVERRIDE, postAuthOverride);
 
   const postAuthHref = computed(() => {
     const o = toValue(options);
     if (o.postAuthOverrideHref !== undefined) {
       return toValue(o.postAuthOverrideHref);
+    }
+    if (o.postAuthFallbackHref !== undefined) {
+      return toValue(o.postAuthFallbackHref);
     }
     return defaultPostAuthFallbackHref.value;
   });
