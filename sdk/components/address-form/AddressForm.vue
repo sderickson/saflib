@@ -9,7 +9,7 @@
     />
 
     <v-row class="ma-0" density="comfortable">
-      <v-col cols="12" sm="6" class="py-0 ps-0">
+      <v-col cols="6" class="py-0 ps-0">
         <v-text-field
           v-model="locality"
           :label="t(strings.addressLocalityLabel)"
@@ -18,7 +18,7 @@
           :rules="[localityRule]"
         />
       </v-col>
-      <v-col cols="12" sm="6" class="py-0 pe-0">
+      <v-col cols="6" class="py-0 pe-0">
         <v-text-field
           v-model="region"
           :label="t(strings.addressRegionLabel)"
@@ -30,7 +30,7 @@
     </v-row>
 
     <v-row class="ma-0" density="comfortable">
-      <v-col cols="12" sm="6" class="py-0 ps-0">
+      <v-col cols="6" class="py-0 ps-0">
         <v-text-field
           v-model="country"
           :label="t(strings.addressCountryLabel)"
@@ -39,7 +39,7 @@
           :rules="[countryRule]"
         />
       </v-col>
-      <v-col cols="12" sm="6" class="py-0 pe-0">
+      <v-col cols="6" class="py-0 pe-0">
         <v-text-field
           v-model="postalCode"
           :label="t(strings.addressPostalCodeLabel)"
