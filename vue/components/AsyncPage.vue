@@ -13,7 +13,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import type { Component } from "vue";
 import type { LoaderQueries } from "../types.ts";
 import AsyncPageError from "./AsyncPageError.vue";
@@ -28,16 +28,23 @@ const props = defineProps<Props>();
 
 // If pageComponent is an async component, eagerly trigger its loader so the
 // code download runs in parallel with data fetching rather than sequentially
-// after the loader queries resolve.
+// after the loader queries resolve. Track its loading state so the spinner
+// stays visible until both data and code are ready.
+const isComponentLoading = ref(false);
 const asyncLoader = (props.pageComponent as any).__asyncLoader;
 if (typeof asyncLoader === "function") {
-  asyncLoader();
+  isComponentLoading.value = true;
+  asyncLoader().finally(() => {
+    isComponentLoading.value = false;
+  });
 }
 
 const queryResults = props.loader?.() ?? {};
 
-const isLoading = computed(() =>
-  Object.values(queryResults).some((query) => query.isLoading.value),
+const isLoading = computed(
+  () =>
+    isComponentLoading.value ||
+    Object.values(queryResults).some((query) => query.isLoading.value),
 );
 
 const isError = computed(
