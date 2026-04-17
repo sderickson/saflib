@@ -26,6 +26,14 @@ interface Props {
 
 const props = defineProps<Props>();
 
+// If pageComponent is an async component, eagerly trigger its loader so the
+// code download runs in parallel with data fetching rather than sequentially
+// after the loader queries resolve.
+const asyncLoader = (props.pageComponent as any).__asyncLoader;
+if (typeof asyncLoader === "function") {
+  asyncLoader();
+}
+
 const queryResults = props.loader?.() ?? {};
 
 const isLoading = computed(() =>
