@@ -84,7 +84,7 @@ services:
     command: -config.file=/etc/loki/loki-config.yaml
 
   grafana:
-    image: grafana/grafana:12.4
+    image: grafana/grafana:13.0
     volumes:
       - grafana_storage:/var/lib/grafana
     environment:
