@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildSettingsUpdateBodyFromFormData,
   dedupeKratosProfileTraitNodes,
+  parseSettingsTabQuery,
   settingsFlowHasPasswordRecoveryMessage,
   settingsFlowShouldFetch,
   settingsNodesForGroup,
@@ -279,5 +280,18 @@ describe("settingsFlowHasPasswordRecoveryMessage", () => {
       },
     } as SettingsFlow;
     expect(settingsFlowHasPasswordRecoveryMessage(flow)).toBe(false);
+  });
+});
+
+describe("parseSettingsTabQuery", () => {
+  it("returns null for invalid values", () => {
+    expect(parseSettingsTabQuery(undefined)).toBeNull();
+    expect(parseSettingsTabQuery("")).toBeNull();
+    expect(parseSettingsTabQuery("profile")).toBeNull();
+  });
+
+  it("accepts known tab keys", () => {
+    expect(parseSettingsTabQuery("password")).toBe("password");
+    expect(parseSettingsTabQuery(" email ")).toBe("email");
   });
 });

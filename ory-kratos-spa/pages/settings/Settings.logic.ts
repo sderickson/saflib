@@ -24,6 +24,23 @@ export function settingsFlowHasPasswordRecoveryMessage(
   );
 }
 
+/** SPA-only query `tab=` values; must match {@link Settings.vue} tab model. */
+const SETTINGS_TAB_QUERY_VALUES = ["email", "password", "totp", "passkey"] as const;
+
+export type SettingsTabQueryValue = (typeof SETTINGS_TAB_QUERY_VALUES)[number];
+
+/** Parses the `tab` query param for the settings page (not validated against available groups). */
+export function parseSettingsTabQuery(
+  value: unknown,
+): SettingsTabQueryValue | null {
+  if (typeof value !== "string") return null;
+  const v = value.trim();
+  if ((SETTINGS_TAB_QUERY_VALUES as readonly string[]).includes(v)) {
+    return v as SettingsTabQueryValue;
+  }
+  return null;
+}
+
 /** Settings flow query runs only when the user has a Kratos session (browser flow creation requires auth). */
 export function settingsFlowShouldFetch(
   sessionIsPending: boolean,

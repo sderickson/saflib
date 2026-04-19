@@ -91,19 +91,24 @@ export const authLinks: LinkMap = {
   /**
    * Kratos account settings. Resume with `params.flow` (and optional `return_to`). Start a browser
    * flow via `/new-settings?return_to=` — do not mix `flow` with `return_to` on the same URL.
+   *
+   * Optional `tab`: which settings tab to open initially (`email` | `password` | `totp` | `passkey`).
+   * Not a Kratos parameter; consumed by the SPA only.
    */
   settings: {
     subdomain,
     path: "/settings",
-    params: ["flow"],
+    params: ["flow", "return_to", "tab"],
   },
   /**
    * Kratos new settings UI (browser flow creation). Use `params.return_to` for post-settings navigation.
+   *
+   * Optional `tab`: forwarded to `/settings` so the SPA can open that tab (see `settings`).
    */
   newSettings: {
     subdomain,
     path: "/new-settings",
-    params: ["return_to"],
+    params: ["return_to", "tab"],
   },
   // END WORKFLOW AREA
   logout: {
