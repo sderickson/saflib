@@ -115,6 +115,7 @@ import SettingsIntro from "./SettingsIntro.vue";
 import type { KratosFlowUiMessageFilterContext } from "../common/kratosUiMessages.ts";
 import {
   KRATOS_SETTINGS_PASSWORD_RECOVERY_MESSAGE_ID,
+  parseSettingsTabQuery,
   settingsFlowHasPasswordRecoveryMessage,
 } from "./Settings.logic.ts";
 import {
@@ -187,11 +188,18 @@ const settingsMessageFilter = computed(
 const tab = ref<"email" | "password" | "totp" | "passkey">("email");
 
 watch(
-  flow,
-  (f) => {
+  [flow, () => route.query.tab, hasTotpSettings, hasPasskeySettings],
+  () => {
+    const f = flow.value;
     if (f && settingsFlowHasPasswordRecoveryMessage(f)) {
       tab.value = "password";
+      return;
     }
+    const fromQuery = parseSettingsTabQuery(route.query.tab);
+    if (!fromQuery) return;
+    if (fromQuery === "totp" && !hasTotpSettings.value) return;
+    if (fromQuery === "passkey" && !hasPasskeySettings.value) return;
+    tab.value = fromQuery;
   },
   { immediate: true },
 );
@@ -216,6 +224,10 @@ const settingsRestartQuery = computed(() => {
     route.query.return_to.trim()
   ) {
     q.return_to = route.query.return_to.trim();
+  }
+  const tabQ = parseSettingsTabQuery(route.query.tab);
+  if (tabQ) {
+    q.tab = tabQ;
   }
   return q;
 });

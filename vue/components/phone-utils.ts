@@ -3,7 +3,14 @@
  */
 export const formatPhoneNumber = (value: string): string => {
   // Remove all non-digits
-  const digits = value.replace(/\D/g, "");
+  let digits = value.replace(/\D/g, "");
+
+  // Browsers (e.g. Firefox autofill) often include the NANP country code as a
+  // leading 1. Without stripping it, we would keep ten digits starting with 1
+  // and drop the real last digit of the subscriber number.
+  if (digits.length === 11 && digits.startsWith("1")) {
+    digits = digits.slice(1);
+  }
 
   // Limit to 10 digits
   const limitedDigits = digits.slice(0, 10);
