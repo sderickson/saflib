@@ -220,10 +220,8 @@ export const executePromptWithCursor = async ({
 
   // set up a promise to resolve when the agent is done
   let resolve: (value: PromptResult) => void;
-  let reject: (reason?: any) => void;
-  const p = new Promise<PromptResult>((r, rej) => {
+  const p = new Promise<PromptResult>((r) => {
     resolve = r;
-    reject = rej;
   });
 
   // prepending pending messages to the message
