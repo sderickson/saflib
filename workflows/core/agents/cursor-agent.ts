@@ -7,8 +7,6 @@ import { popPendingMessages } from "./message.ts";
 import { logFile, type CostTsvRow, appendToCostFile } from "./log.ts";
 import { addTimeMs, getPercentTimeUsed, getTimeMs } from "./timeout.ts";
 
-const HALT_WORKFLOW_STRING = "--- HALT WORKFLOW ---";
-
 interface CursorSystemLog {
   type: "system";
   session_id: string;
@@ -223,7 +221,6 @@ export const executePromptWithCursor = async ({
   // set up a promise to resolve when the agent is done
   let resolve: (value: PromptResult) => void;
   let reject: (reason?: any) => void;
-  let halt = false;
   const p = new Promise<PromptResult>((r, rej) => {
     resolve = r;
     reject = rej;
@@ -458,13 +455,8 @@ export const executePromptWithCursor = async ({
         printLineSlowly("\n---------- RESULT ---------- " + shortTimestamp());
         printLineSlowly(`> ${json.is_error ? "Error" : "Success"}`);
         resultReceived = true;
-        halt = json.result.includes(HALT_WORKFLOW_STRING);
         if (pipeClosed) {
-          if (halt) {
-            reject(new Error("Workflow halted"));
-          } else {
-            resolve(response);
-          }
+          resolve(response);
         }
       }
     }
@@ -509,11 +501,7 @@ export const executePromptWithCursor = async ({
     response.shouldContinue = shouldContinue;
     pipeClosed = true;
     if (resultReceived) {
-      if (halt) {
-        reject(new Error("Workflow halted"));
-      } else {
-        resolve(response);
-      }
+      resolve(response);
     }
   });
   return p;
