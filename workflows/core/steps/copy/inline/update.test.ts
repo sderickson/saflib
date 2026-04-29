@@ -234,14 +234,14 @@ describe("updateWorkflowAreas", () => {
   it("sorted: sorts and deduplicates lines", () => {
     const result = updateWorkflowAreas({
       targetLines: [
-        "// BEGIN SORTED WORKFLOW AREA myArea FOR workflow1",
+        "// BEGIN WORKFLOW AREA myArea FOR workflow1",
         "  apple",
         "  monkey",
         "// END WORKFLOW AREA",
       ],
       targetPath: "test.ts",
       sourceLines: [
-        "// BEGIN SORTED WORKFLOW AREA myArea FOR workflow1",
+        "// BEGIN WORKFLOW AREA myArea FOR workflow1",
         "  zebra",
         "  apple",
         "// END WORKFLOW AREA",
@@ -251,7 +251,7 @@ describe("updateWorkflowAreas", () => {
     });
 
     expect(result).toEqual([
-      "// BEGIN SORTED WORKFLOW AREA myArea FOR workflow1",
+      "// BEGIN WORKFLOW AREA myArea FOR workflow1",
       "  apple",
       "  monkey",
       "  zebra",

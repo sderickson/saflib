@@ -51,7 +51,7 @@ describe("extractWorkflowAreas", () => {
       "// BEGIN WORKFLOW AREA area1 FOR workflow1",
       "  code1",
       "// END WORKFLOW AREA",
-      "// BEGIN SORTED WORKFLOW AREA area2 FOR workflow1 workflow2",
+      "// BEGIN WORKFLOW AREA area2 FOR workflow1 workflow2",
       "  code2",
       "// END WORKFLOW AREA",
     ];
@@ -334,7 +334,7 @@ describe("validateWorkflowAreas", () => {
       "// END WORKFLOW AREA",
     ];
     const target = [
-      "// BEGIN SORTED WORKFLOW AREA myArea FOR workflow1",
+      "// BEGIN WORKFLOW AREA myArea FOR workflow1",
       "  existing",
       "// END WORKFLOW AREA",
     ];

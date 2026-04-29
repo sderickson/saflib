@@ -7,7 +7,7 @@ import {
   makeContext,
 } from "template-package-service-common";
 
-// BEGIN SORTED WORKFLOW AREA router-imports FOR express/add-handler
+// BEGIN WORKFLOW AREA router-imports FOR express/add-handler
 import { create__GroupName__Router } from "./routes/__group-name__/index.ts";
 // END WORKFLOW AREA
 

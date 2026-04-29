@@ -1,5 +1,5 @@
 // Re-export fixtures for each page here.
-// BEGIN SORTED WORKFLOW AREA fixture-exports FOR vue/add-view
+// BEGIN WORKFLOW AREA fixture-exports FOR vue/add-view
 export {
   LoginPageFixture,
   loginPageFixture,

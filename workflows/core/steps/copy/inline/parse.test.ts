@@ -30,7 +30,7 @@ describe("parseWorkflowAreaStart", () => {
   });
 
   it("parses SORTED WORKFLOW AREA", () => {
-    const line = "// BEGIN SORTED WORKFLOW AREA area2 FOR workflow1 workflow2";
+    const line = "// BEGIN WORKFLOW AREA area2 FOR workflow1 workflow2";
     const parsed = parseWorkflowAreaStart(line);
     expect(parsed).toEqual({
       areaName: "area2",

@@ -3,7 +3,7 @@ import { createRouter, createWebHistory } from "vue-router";
 import { PageNotFound } from "@saflib/vue/components";
 import { authLinks } from "@saflib/ory-kratos-sdk/links";
 
-// BEGIN SORTED WORKFLOW AREA page-imports FOR vue/add-view
+// BEGIN WORKFLOW AREA page-imports FOR vue/add-view
 import loginAsync from "./pages/login/LoginAsync.vue";
 import newLoginAsync from "./pages/new-login/NewLoginAsync.vue";
 import settingsAsync from "./pages/settings/SettingsAsync.vue";
