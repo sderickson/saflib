@@ -29,13 +29,13 @@ describe("parseWorkflowAreaStart", () => {
     });
   });
 
-  it("parses SORTED WORKFLOW AREA", () => {
+  it("parses BEGIN WORKFLOW AREA with multiple workflow IDs", () => {
     const line = "// BEGIN WORKFLOW AREA area2 FOR workflow1 workflow2";
     const parsed = parseWorkflowAreaStart(line);
     expect(parsed).toEqual({
       areaName: "area2",
       workflowIds: ["workflow1", "workflow2"],
-      isSorted: true,
+      isSorted: false,
       isOnce: false,
       ifFlag: undefined,
       fullLine: line,

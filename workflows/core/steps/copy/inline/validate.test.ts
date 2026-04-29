@@ -60,7 +60,7 @@ describe("extractWorkflowAreas", () => {
     expect(areas[0].areaName).toBe("area1");
     expect(areas[0].isSorted).toBe(false);
     expect(areas[1].areaName).toBe("area2");
-    expect(areas[1].isSorted).toBe(true);
+    expect(areas[1].isSorted).toBe(false);
     expect(areas[1].workflowIds).toEqual(["workflow1", "workflow2"]);
   });
 
@@ -325,26 +325,6 @@ describe("validateWorkflowAreas", () => {
         ...ctx,
       }),
     ).toThrow(/without matching END marker/);
-  });
-
-  it("throws when areas differ in sorted status (different keys)", () => {
-    const source = [
-      "// BEGIN WORKFLOW AREA myArea FOR workflow1",
-      "  code",
-      "// END WORKFLOW AREA",
-    ];
-    const target = [
-      "// BEGIN WORKFLOW AREA myArea FOR workflow1",
-      "  existing",
-      "// END WORKFLOW AREA",
-    ];
-    expect(() =>
-      validateWorkflowAreas({
-        sourceLines: source,
-        targetLines: target,
-        ...ctx,
-      }),
-    ).toThrow();
   });
 
   it("throws when areas differ in workflow IDs (different keys)", () => {

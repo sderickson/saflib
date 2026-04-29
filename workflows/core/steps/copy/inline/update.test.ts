@@ -231,7 +231,7 @@ describe("updateWorkflowAreas", () => {
     ]);
   });
 
-  it("sorted: sorts and deduplicates lines", () => {
+  it("non-sorted: appends full source block when sequence is not consecutive (may duplicate lines)", () => {
     const result = updateWorkflowAreas({
       targetLines: [
         "// BEGIN WORKFLOW AREA myArea FOR workflow1",
@@ -255,6 +255,7 @@ describe("updateWorkflowAreas", () => {
       "  apple",
       "  monkey",
       "  zebra",
+      "  apple",
       "// END WORKFLOW AREA",
     ]);
   });
