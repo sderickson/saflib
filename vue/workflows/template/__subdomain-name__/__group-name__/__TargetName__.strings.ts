@@ -11,6 +11,7 @@ export const __full_name__ = {
     label: "Enter your name",
   },
 
+  // Interpolation: single braces `{name}` (vue-i18n). Do not use `{{name}}` in strings passed to t() — breaks prod message compilation.
   logged_in_with_email: "Logged in with {email}",
   not_logged_in: "Not logged in",
 };

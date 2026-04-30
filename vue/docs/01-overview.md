@@ -77,7 +77,7 @@ _[Template file](../workflows/spa-template/i18n.ts)_
 
 Each page and component in this package should call `const { t } = useReverseT()` and use the `t` function to translate strings. Note that this is separate from `strings.ts` to avoid external packages that depend on `strings.ts` also depending on Vue I18n and co.
 
-For more information on using this in pages, and why it's set up this way, see [i18n](./03-i18n.md).
+For more information on using this in pages, and why it's set up this way, see [i18n](./03-i18n.md). For dynamic values in translated copy, follow [interpolation](./03-i18n.md#interpolation-dynamic-values-in-copy) (`{name}` in strings, `t(strings.key, { name: value })`, not Mustache `{{name}}` inside `t()` messages).
 
 ### `main.ts`
 

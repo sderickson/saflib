@@ -104,7 +104,7 @@ By keeping them in separate files, they can be exported and used by processes wh
 
 **Duplication across components is fine.** If a create form and an edit form use the same labels, each should have its own strings file with its own copy. They get separate i18n keys (e.g. `create_menu_form.name_label` vs `menu_edit_form.name_label`), which means they can be translated independently per context — even if the English text is identical. Don't try to share strings across routes or components to reduce duplication; the added import complexity and path fragility isn't worth it.
 
-For localization, see [i18n](./03-i18n.md).
+For localization, see [i18n](./03-i18n.md), including [how to interpolate values](./03-i18n.md#interpolation-dynamic-values-in-copy) without breaking production message compilation.
 
 ### Logic Files: Pure Business Logic
 

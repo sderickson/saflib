@@ -118,6 +118,7 @@ export const AddSpaViewWorkflowDefinition = defineWorkflow<
 
   docFiles: {
     components: path.join(import.meta.dirname, "../docs", "02-components.md"),
+    i18n: path.join(import.meta.dirname, "../docs", "03-i18n.md"),
   },
 
   versionControl: {
@@ -158,9 +159,9 @@ export const AddSpaViewWorkflowDefinition = defineWorkflow<
       * Take the data from the loader, assert that it's loaded, and render the page.
       * Do not add any sort of loading state or skeleton; that's the job of the "Async" component (and \`AsyncPage\` for query errors). Sub-components should receive **values to render** (e.g. lists, labels), not query \`isPending\`/\`isError\` or raw query objects—unless you have deliberately split loading (JIT) and documented it.
       * Don't break reactivity! Render the data directly from the tanstack queries, or if necessary create a computed property.
-      * Import and use the "useReverseT" function from the i18n.ts file at the root of the package, and use t(strings.key) instead of strings.key for all text.
+      * Import and use the "useReverseT" function from the i18n.ts file at the root of the package, and use t(strings.key) instead of strings.key for all text. If copy needs runtime values, use vue-i18n placeholders in the string (\`{name}\`, not \`{{name}}\`) and call \`t(strings.key, { name: value })\` — see **Interpolation** in ${context.docFiles?.i18n}.
       
-      For more information, see ${context.docFiles?.components}`,
+      For more information, see ${context.docFiles?.components} and ${context.docFiles?.i18n}.`,
     })),
 
     step(PromptStepMachine, ({ context }) => ({
@@ -209,7 +210,9 @@ Run \`npm run typecheck\` in ${context.cwd} to verify the code is type-safe.
 
 * **Strings**: Each sub-component gets its own \`.strings.ts\` file (e.g. \`MyDialog.strings.ts\`).
   Don't pile all strings into the view's strings file. Remember to do this if you opt to break
-  a vue file into sub-components.
+  a vue file into sub-components. Interpolation in \`.strings.ts\` must use vue-i18n form:
+  \`{placeholder}\` in the English string and \`t(strings.key, { placeholder: value })\` in the
+  component — never \`{{placeholder}}\` (breaks message compilation in production builds).
 * **Sub-component interfaces**: Keep them simple. Props = **render data** from the loader (plain
   values) + simple display state (booleans, IDs). Omit loader query **loading/errors** for that
   data—the \`*Async\` page owns fetch UX. Omit **mutation instances** passed from parents; the
@@ -225,7 +228,7 @@ Run \`npm run typecheck\` in ${context.cwd} to verify the code is type-safe.
 * **Deciding What to Test**: Don't extract simple logic just to test it. We already have tests for each tanstack query, so there's no need to pull that into a separate composable either. Save testing for more complex logic, for example when multiple or tanstack queries are used together.
 * **When NOT to extract a composable**: A single mutation + local UI state (e.g. edit form + one save, delete + redirect) can stay in the component. Composables are for multi-step or shared flows.
 
-For more information, see ${context.docFiles?.components}`,
+For more information, see ${context.docFiles?.components} and ${context.docFiles?.i18n}.`,
     })),
 
     step(CommandStepMachine, () => ({
