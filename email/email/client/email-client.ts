@@ -17,7 +17,6 @@ type TransporterConfig = Parameters<typeof nodemailer.createTransport>[0];
 function shouldMockEmail(): boolean {
   return (
     typedEnv.NODE_ENV === "test" ||
-    typedEnv.MOCK_INTEGRATIONS === "true" ||
     typedEnv.NODEMAILER_TRANSPORT_CONFIG === "mock" ||
     typedEnv.BREVO_API_KEY === "mock"
   );
@@ -57,7 +56,7 @@ function createResolvedEmailService(): EmailService {
 }
 
 /**
- * Shared service instance: Brevo (if `BREVO_API_KEY`), else nodemailer from env, or mock in tests / `MOCK_INTEGRATIONS`.
+ * Shared service instance: Brevo (if `BREVO_API_KEY`), else nodemailer from env, or mock in tests.
  */
 export const emailService: EmailService = createResolvedEmailService();
 

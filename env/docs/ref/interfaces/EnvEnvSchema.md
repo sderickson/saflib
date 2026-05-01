@@ -49,14 +49,6 @@ Comma-separated list of domains to redirect to the root domain, e.g. 'old-subdom
 
 ---
 
-### MOCK_INTEGRATIONS?
-
-> `optional` **MOCK_INTEGRATIONS**: `"true"` \| `"false"`
-
-Whether to mock 3rd party integrations. Set to 'true' to mock. And integration packages should respect this setting.
-
----
-
 ### NODE_ENV
 
 > **NODE_ENV**: `"development"` \| `"production"` \| `"test"`

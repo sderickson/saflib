@@ -1,13 +1,11 @@
 import * as Sentry from "@sentry/node";
 import { addErrorCollector } from "@saflib/node";
 import { typedEnv } from "./env.ts";
+import { getSafReporters } from "@saflib/node";
 
 export const initSentry = () => {
-  if (
-    typedEnv.MOCK_INTEGRATIONS === "true" ||
-    typedEnv.SENTRY_DSN === "mock" ||
-    !typedEnv.SENTRY_DSN
-  ) {
+  const { log } = getSafReporters();
+  if (typedEnv.SENTRY_DSN === "mock" || !typedEnv.SENTRY_DSN) {
     return;
   }
 
@@ -24,4 +22,6 @@ export const initSentry = () => {
       user,
     });
   });
+
+  log.info("Sentry initialized");
 };
