@@ -90,8 +90,8 @@ export const CronInitWorkflowDefinition = defineWorkflow<
 
 **HTTP API (cron job admin / status endpoints)**  
 - In the service's main HTTP app (Express or similar), mount \`createCronRouter\` from \`@saflib/cron\`.
-- Pass \`{ jobs }\` from this \`*-cron\` package, and a \`dbKey\` from \`cronDb.connect({ onDisk: <absolute sqlite path> })\` in \`@saflib/cron-db\` (job settings use the cron schema only). **Do not** pass your main application Drizzle key unless it is the same manager as \`cronDb\`—otherwise \`cronDbManager.get(dbKey)\` is undefined and routes will crash.
-- Reuse one shared \`cronDb.connect(...)\` result for both \`createCronRouter\` and \`runCron\` in the same process. Prefer storing the SQLite file under this \`*-cron\` package (e.g. \`<package>/data/db-\${DEPLOYMENT_NAME}.sqlite\`) via \`onDisk\` as a string path; \`onDisk: true\` alone stores under \`saflib/cron/cron-db/data\`.
+- Pass \`{ jobs: ...Jobs, dbKey: get...CronDbKey() }\` from this \`*-cron\` package (\`get*CronDbKey\` wraps \`cronDb.connect({ onDisk: ... })\` for the job-settings schema). **Do not** pass your main application Drizzle key—\`cronDbManager.get(dbKey)\` would be undefined and routes will crash.
+- The generated \`cron.ts\` template exposes \`get*CronSqlitePath\` / \`get*CronDbKey\` and stores SQLite under this package's \`data/cron-db-\${DEPLOYMENT_NAME}.sqlite\` unless you change it. Reuse the same \`get*CronDbKey()\` for both \`createCronRouter\` and \`runCron\`.
 - Place the router with other API routes, before the global error middleware.
 
 **Admin SPA (optional but typical)**  
