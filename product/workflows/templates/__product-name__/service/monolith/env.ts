@@ -48,6 +48,7 @@ export interface TemplatePackageMonolithEnvSchema {
    * The protocol of the deployment, e.g. 'https'
    */
   PROTOCOL: "https" | "http";
+  SENTRY_AUTH_TOKEN?: string;
   SENTRY_DSN?: string;
   /**
    * Comma-separated list of service subdomains, e.g. 'revenue,geo,core'.
