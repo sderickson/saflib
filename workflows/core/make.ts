@@ -26,7 +26,7 @@ import { addNewLinesToString } from "@saflib/utils";
 import { getWorkflowLogger } from "./store.ts";
 import { addPendingMessage } from "./agents/message.ts";
 
-import { handleGitChanges, commitChanges } from "./version/git.ts";
+import { commitChanges } from "./version/git.ts";
 import { resetTimeMs } from "./agents/timeout.ts";
 
 let lastSystemPrompt: string | undefined;
@@ -189,31 +189,31 @@ function _makeWorkflowMachine<I extends readonly WorkflowArgument[], C>(
           const lastChecklistDescription =
             input.checklist[input.checklist.length - 1]?.description;
 
-          if (input.manageVersionControl) {
-            let allowPaths:
-              | string[]
-              | ((context: Context) => string[])
-              | undefined = undefined;
-            if (typeof workflow.versionControl?.allowPaths === "function") {
-              allowPaths = workflow.versionControl.allowPaths({
-                context: input,
-              });
-            } else {
-              allowPaths = workflow.versionControl?.allowPaths;
-            }
-            if (!allowPaths) {
-              allowPaths = [`${input.cwd}/**`];
-            }
-            const successful = await handleGitChanges({
-              workflowId: workflow.id,
-              context: input,
-              checklistDescription: lastChecklistDescription,
-              allowPaths,
-            });
-            if (!successful) {
-              throw new Error("Failed to handle git changes");
-            }
-          }
+          // if (input.manageVersionControl) {
+          //   let allowPaths:
+          //     | string[]
+          //     | ((context: Context) => string[])
+          //     | undefined = undefined;
+          //   if (typeof workflow.versionControl?.allowPaths === "function") {
+          //     allowPaths = workflow.versionControl.allowPaths({
+          //       context: input,
+          //     });
+          //   } else {
+          //     allowPaths = workflow.versionControl?.allowPaths;
+          //   }
+          //   if (!allowPaths) {
+          //     allowPaths = [`${input.cwd}/**`];
+          //   }
+          //   const successful = await handleGitChanges({
+          //     workflowId: workflow.id,
+          //     context: input,
+          //     checklistDescription: lastChecklistDescription,
+          //     allowPaths,
+          //   });
+          //   if (!successful) {
+          //     throw new Error("Failed to handle git changes");
+          //   }
+          // }
 
           if (step.validate) {
             const output = await step.validate({ context: input });

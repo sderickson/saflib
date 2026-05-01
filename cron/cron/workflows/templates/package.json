@@ -13,6 +13,8 @@
   },
   "dependencies": {
     "@saflib/cron": "*",
+    "@saflib/cron-db": "*",
+    "@saflib/drizzle": "*",
     "@saflib/env": "*",
     "@saflib/monorepo": "*",
     "@saflib/node": "*",

@@ -26,8 +26,7 @@ const input = [
 ] as const;
 
 interface AddDrizzleQueryWorkflowContext
-  extends ParsePathOutput,
-    ParsePackageNameOutput {}
+  extends ParsePathOutput, ParsePackageNameOutput {}
 
 export const AddDrizzleQueryWorkflowDefinition = defineWorkflow<
   typeof input,
@@ -97,7 +96,7 @@ export const AddDrizzleQueryWorkflowDefinition = defineWorkflow<
 
         * As much as possible, types should be based on the types that drizzle provides.
         * A resource not being found by ID is an error.
-        * Errors should be simple, no special constructors or anything.
+        * Error subclasses should be simple, no special constructors or anything.
         * You don't need to export error types from the types.ts file.
         
         Please reference the documentation here for more information: ${context.docFiles?.refDoc}`,

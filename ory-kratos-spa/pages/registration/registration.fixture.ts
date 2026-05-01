@@ -20,8 +20,16 @@ export class RegistrationPageFixture {
     return this.page.getByRole("textbox", { name: "E-Mail" });
   }
 
+  private get firstNameInput() {
+    return this.page.getByLabel("First name");
+  }
+
+  private get lastNameInput() {
+    return this.page.getByLabel("Last name");
+  }
+
   private get passwordInput() {
-    return this.page.locator("#kratos-login-2");
+    return this.page.getByRole("textbox", { name: "Password" });
   }
 
   private get signUpButton() {
@@ -42,6 +50,16 @@ export class RegistrationPageFixture {
     await this.passwordInput.fill(password);
   }
 
+  async fillFirstName(firstName: string): Promise<void> {
+    await this.firstNameInput.click();
+    await this.firstNameInput.fill(firstName);
+  }
+
+  async fillLastName(lastName: string): Promise<void> {
+    await this.lastNameInput.click();
+    await this.lastNameInput.fill(lastName);
+  }
+
   async submitPasswordStep(): Promise<void> {
     await this.signUpButton.click();
   }
@@ -52,6 +70,8 @@ export class RegistrationPageFixture {
   async completeRegistration(email: string, password: string): Promise<void> {
     await this.fillEmail(email);
     await this.submitEmailStep();
+    await this.fillFirstName("Test");
+    await this.fillLastName("User");
     await this.fillPassword(password);
     await this.submitPasswordStep();
   }

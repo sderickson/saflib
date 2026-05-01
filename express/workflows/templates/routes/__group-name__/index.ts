@@ -3,7 +3,7 @@ import { createScopedMiddleware } from "@saflib/express";
 // TODO: import the appropriate spec package
 // import { jsonSpec } from "@saflib/cron-spec";
 
-// BEGIN SORTED WORKFLOW AREA handler-imports FOR express/add-handler
+// BEGIN WORKFLOW AREA handler-imports FOR express/add-handler
 // import { __targetName____GroupName__Handler } from "./__target-name__.ts";
 // END WORKFLOW AREA
 

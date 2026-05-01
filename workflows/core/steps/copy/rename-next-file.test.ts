@@ -160,7 +160,7 @@ describe("processFileContent", () => {
 
   it("should handle SORTED WORKFLOW AREA", () => {
     const contentLines = [
-      "// BEGIN SORTED WORKFLOW AREA myArea FOR workflow1",
+      "// BEGIN WORKFLOW AREA myArea FOR workflow1",
       "  code",
       "// END WORKFLOW AREA",
     ];
@@ -171,7 +171,7 @@ describe("processFileContent", () => {
     });
 
     expect(result).toEqual([
-      "// BEGIN SORTED WORKFLOW AREA myArea FOR workflow1",
+      "// BEGIN WORKFLOW AREA myArea FOR workflow1",
       "  code",
       "// END WORKFLOW AREA",
     ]);

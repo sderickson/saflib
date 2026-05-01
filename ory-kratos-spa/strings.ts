@@ -1,4 +1,4 @@
-// BEGIN SORTED WORKFLOW AREA string-imports FOR vue/add-view sdk/add-component
+// BEGIN WORKFLOW AREA string-imports FOR vue/add-view sdk/add-component
 import { kratos_login_flow } from "./pages/login/LoginFlowForm.strings.ts";
 import { kratos_recovery_flow } from "./pages/recovery/RecoveryFlowForm.strings.ts";
 import { recovery_intro } from "./pages/recovery/RecoveryIntro.strings.ts";
@@ -26,7 +26,7 @@ import { verify_wall_verified_intro } from "./pages/verify-wall/VerifyWallVerifi
 // END WORKFLOW AREA
 
 export const auth_strings = {
-  // BEGIN SORTED WORKFLOW AREA string-object FOR vue/add-view sdk/add-component
+  // BEGIN WORKFLOW AREA string-object FOR vue/add-view sdk/add-component
   kratos_login_flow,
   kratos_recovery_flow,
   recovery_intro,

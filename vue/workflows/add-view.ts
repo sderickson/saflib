@@ -118,6 +118,7 @@ export const AddSpaViewWorkflowDefinition = defineWorkflow<
 
   docFiles: {
     components: path.join(import.meta.dirname, "../docs", "02-components.md"),
+    i18n: path.join(import.meta.dirname, "../docs", "03-i18n.md"),
   },
 
   versionControl: {
@@ -156,11 +157,11 @@ export const AddSpaViewWorkflowDefinition = defineWorkflow<
       * Use the adjacent (${path.basename(context.copiedFiles!.loader)}) to add Tanstack queries for any data needed to render the page (the Tanstack queries are imported from the appropriate sdk package)
       * Use the adjacent (${path.basename(context.copiedFiles!.strings)}) for all user-facing copy.
       * Take the data from the loader, assert that it's loaded, and render the page.
-      * Do not add any sort of loading state or skeleton; that's the job of the "Async" component.
+      * Do not add any sort of loading state or skeleton; that's the job of the "Async" component (and \`AsyncPage\` for query errors). Sub-components should receive **values to render** (e.g. lists, labels), not query \`isPending\`/\`isError\` or raw query objects—unless you have deliberately split loading (JIT) and documented it.
       * Don't break reactivity! Render the data directly from the tanstack queries, or if necessary create a computed property.
-      * Import and use the "useReverseT" function from the i18n.ts file at the root of the package, and use t(strings.key) instead of strings.key for all text.
+      * Import and use the "useReverseT" function from the i18n.ts file at the root of the package, and use t(strings.key) instead of strings.key for all text. If copy needs runtime values, use vue-i18n placeholders in the string (\`{name}\`, not \`{{name}}\`) and call \`t(strings.key, { name: value })\` — see **Interpolation** in ${context.docFiles?.i18n}.
       
-      For more information, see ${context.docFiles?.components}`,
+      For more information, see ${context.docFiles?.components} and ${context.docFiles?.i18n}.`,
     })),
 
     step(PromptStepMachine, ({ context }) => ({
@@ -172,7 +173,7 @@ Review the view you worked on, then break out:
 
 Extract sub-components from the view. Sub-components should be small, focused components that are used to render a part of the view. They should be in the same directory as the view.
 
-**Important**: Sub-components should have simple prop interfaces — pass only loader data and simple display state through props. If a sub-component needs mutations or stateful flows (editing, deleting, uploading), it should call the relevant composable **directly** inside its own \`<script setup>\`, not receive a flow object or mutation callbacks through props. This keeps parent-child interfaces clean and avoids awkward ref-unwrapping in templates.
+**Important**: Sub-components should have simple prop interfaces — pass **data needed to render** (resolved values from the loader: models, arrays, strings) and simple display state (booleans, IDs). Do **not** pass query loading/error flags for loader-owned data (\`AsyncPage\` already gates the route on the loader). Do **not** pass TanStack **mutations** as props; the child calls \`useMutation\` / a composable **directly** in its own \`<script setup>\` (button \`:loading\` from that mutation is fine—it is not the same as page fetch loading). Do not receive flow objects or mutation callbacks through props. This keeps parent-child interfaces clean and avoids awkward ref-unwrapping in templates.
 
 ## 1. Logic files (\`ComponentName.logic.ts\`)
 
@@ -209,13 +210,17 @@ Run \`npm run typecheck\` in ${context.cwd} to verify the code is type-safe.
 
 * **Strings**: Each sub-component gets its own \`.strings.ts\` file (e.g. \`MyDialog.strings.ts\`).
   Don't pile all strings into the view's strings file. Remember to do this if you opt to break
-  a vue file into sub-components.
-* **Sub-component interfaces**: Keep them simple. Props should be limited to loader data and
-  simple display state (booleans, IDs, etc.). Sub-components should call composables and
+  a vue file into sub-components. Interpolation in \`.strings.ts\` must use vue-i18n form:
+  \`{placeholder}\` in the English string and \`t(strings.key, { placeholder: value })\` in the
+  component — never \`{{placeholder}}\` (breaks message compilation in production builds).
+* **Sub-component interfaces**: Keep them simple. Props = **render data** from the loader (plain
+  values) + simple display state (booleans, IDs). Omit loader query **loading/errors** for that
+  data—the \`*Async\` page owns fetch UX. Omit **mutation instances** passed from parents; the
+  child imports mutations or a small composable instead. Sub-components should call composables and
   TanStack mutations **directly** in their own \`<script setup>\` rather than receiving flow
   objects, refs, or mutation callbacks through props. This avoids ref-unwrapping issues in
   templates and keeps parent-child interfaces focused on **what to render**, not
-  **how to orchestrate**.
+  **how to orchestrate** (except local mutation wiring, which stays inside the child).
 * **Render test**: Update the generated \`${context.targetName}.test.ts\` as necessary — This smoke
   test drives baseline coverage on the Vue file; uncovered lines highlight logic worth extracting.
   Don't add interaction tests here — Playwright covers that. Focus deeper tests on the extracted
@@ -223,7 +228,7 @@ Run \`npm run typecheck\` in ${context.cwd} to verify the code is type-safe.
 * **Deciding What to Test**: Don't extract simple logic just to test it. We already have tests for each tanstack query, so there's no need to pull that into a separate composable either. Save testing for more complex logic, for example when multiple or tanstack queries are used together.
 * **When NOT to extract a composable**: A single mutation + local UI state (e.g. edit form + one save, delete + redirect) can stay in the component. Composables are for multi-step or shared flows.
 
-For more information, see ${context.docFiles?.components}`,
+For more information, see ${context.docFiles?.components} and ${context.docFiles?.i18n}.`,
     })),
 
     step(CommandStepMachine, () => ({

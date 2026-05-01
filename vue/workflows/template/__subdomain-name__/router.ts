@@ -10,7 +10,7 @@ import { PageNotFound } from "@saflib/vue/components";
 // TODO: remove this log once __subdomainName__Links is being used by the routes
 console.log("__subdomainName__Links:", __subdomainName__Links);
 
-// BEGIN SORTED WORKFLOW AREA page-imports FOR vue/add-view
+// BEGIN WORKFLOW AREA page-imports FOR vue/add-view
 import __FullName__Async from "./__group-name__/__TargetName__Async.vue";
 // END WORKFLOW AREA
 

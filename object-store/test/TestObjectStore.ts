@@ -2,7 +2,11 @@ import { Readable } from "stream";
 import { buffer as streamToBuffer } from "node:stream/consumers";
 import { ObjectStore } from "../ObjectStore.ts";
 import type { ReturnsError } from "@saflib/monorepo";
-import { StorageError, FileNotFoundError } from "../ObjectStore.ts";
+import {
+  PathTraversalError,
+  StorageError,
+  FileNotFoundError,
+} from "../ObjectStore.ts";
 
 export interface TestFile {
   path: string;
@@ -107,7 +111,18 @@ export class TestObjectStore extends ObjectStore {
 
   async readFile(
     path: string,
-  ): Promise<ReturnsError<Readable, StorageError | FileNotFoundError>> {
+  ): Promise<
+    ReturnsError<Readable, PathTraversalError | StorageError | FileNotFoundError>
+  > {
+    try {
+      this.getScopedPath(path);
+    } catch (error) {
+      if (error instanceof PathTraversalError) {
+        return { error };
+      }
+      throw error;
+    }
+
     const file = this.files.find((f) => f.path === path);
     if (!file) {
       return { error: new FileNotFoundError(path) };

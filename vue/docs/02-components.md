@@ -104,7 +104,7 @@ By keeping them in separate files, they can be exported and used by processes wh
 
 **Duplication across components is fine.** If a create form and an edit form use the same labels, each should have its own strings file with its own copy. They get separate i18n keys (e.g. `create_menu_form.name_label` vs `menu_edit_form.name_label`), which means they can be translated independently per context — even if the English text is identical. Don't try to share strings across routes or components to reduce duplication; the added import complexity and path fragility isn't worth it.
 
-For localization, see [i18n](./03-i18n.md).
+For localization, see [i18n](./03-i18n.md), including [how to interpolate values](./03-i18n.md#interpolation-dynamic-values-in-copy) without breaking production message compilation.
 
 ### Logic Files: Pure Business Logic
 
@@ -211,7 +211,11 @@ Sub-components should **not** have overly complicated prop/emit interfaces. Prop
 - **Loader data** — the data the view already loaded (passed as plain values or objects, not refs).
 - **Simple display state** — booleans, IDs, or other scalar values that control rendering.
 
-For everything else — mutations, multi-step flows, stateful editing/deleting/uploading — the sub-component should call the relevant **composable directly** in its own `<script setup>`. Do not pass flow objects, refs, or mutation callbacks through props.
+Do **not** pass query **loading** or **error** state down from the parent for data the page loader already owns. The `*Async.vue` wrapper’s `AsyncPage` blocks on the loader’s queries and surfaces fetch failures; by the time the page and its sub-components render, that data path is the happy path. (Optimizing for JIT loading of some loader queries is a separate decision—when in doubt, keep related queries in the page loader so sibling UI can reuse the same data without prop-drilling query objects.)
+
+Do **not** pass **mutations** through props either—the child calls TanStack mutation hooks (or a local composable) directly. Mutation **in-flight / error UI** for those actions (e.g. a submit button `:loading` or an inline alert on a failed create) stays in the component that owns the mutation; that is different from page-level query loading/errors above.
+
+For everything else — multi-step flows or orchestration that is not “fire this mutation with props I already have” — the sub-component should call the relevant **composable directly** in its own `<script setup>`. Do not pass flow objects, refs, or mutation callbacks through props.
 
 For example, if a `NoteCard` needs to edit and delete notes, it should call `useDetailNotesFlow()` itself rather than receiving an object with `editingNoteId`, `editBody`, `startEditNote`, `saveEditNote`, etc. as props. This avoids:
 

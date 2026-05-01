@@ -90,6 +90,80 @@ Resources should reference each other **by ID**, not by nesting. If a menu conta
 
 When a page needs to display resolved data (e.g. recipe titles inside a menu), the frontend fetches and joins them — or the API provides a dedicated endpoint that returns the resolved view (as a distinct schema, not by deeply nesting core resources).
 
+## Schema Layout: Inline Route Bodies, Named Business Objects
+
+Keep named schemas under `components.schemas` (or your spec's equivalent) reserved for **business objects** — the nouns your product talks about, like `Recipe`, `Menu`, `FileResource`. Don't promote per-route request or response envelopes to named schemas.
+
+### Define request and response bodies inline in the route
+
+Bodies that exist only to serve one endpoint should live **in that endpoint's route definition**, not as separate `CreateRecipeRequest` / `UpdateMenuRequest` / `ListRecipesResponse` schemas. Reuse named **business-object** schemas inside those inline definitions:
+
+```yaml
+# Good — inline request/response, referencing the Recipe business object
+createRecipe:
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            title: { type: string }
+            menuId: { type: string }
+          required: [title]
+  responses:
+    "201":
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              recipe:
+                $ref: "#/components/schemas/Recipe"
+            required: [recipe]
+```
+
+```yaml
+# Bad — two named schemas whose sole job is to wrap one endpoint
+components:
+  schemas:
+    CreateRecipeRequest: { ... }
+    CreateRecipeResponse: { ... }
+```
+
+Why:
+
+- **Named schemas become global vocabulary**. Every entry in `components.schemas` claims a name that now means something project-wide. Reserving that vocabulary for things the product actually reasons about (resources) keeps it meaningful.
+- **Route-specific envelopes change with the route**. Inlining puts the shape next to the handler/tests that enforce it, so edits don't ripple through a registry of one-off schemas.
+- **Response objects already tend to be thin wrappers** around a business object (`{ recipe: Recipe }`, `{ recipes: Recipe[] }`). Naming those wrappers is almost always noise.
+
+A **named** schema is the right call when:
+
+- It's a **business object** (a resource your app actually talks about — `Recipe`, `Menu`).
+- It's a **cross-route envelope** that multiple endpoints genuinely share (e.g. a common `Error` shape). If only two routes use it, it's probably still inline per route.
+
+A few specific patterns worth calling out:
+
+- **Response envelope of `{ resourceName: BusinessObject }`**: inline, `$ref` the business object.
+- **Per-route request body** with one or two fields: inline.
+- **Arrays/maps keyed by parent id** (batch-endpoint responses): inline the envelope, `$ref` the child business object.
+
+### Tolerate extra fields in requests to keep clients simple
+
+When a request body's shape overlaps with a business object (e.g. `PUT /packet-form-data/{id}` updates a few fields of `PacketFormData`), allow clients to send the **full business object** even when the endpoint only reads a subset. Fields the endpoint doesn't act on should be **silently ignored**, not rejected.
+
+This lets clients write straightforward code like:
+
+```ts
+await putPacketFormData(id, packetFormDataFromCache);
+```
+
+without having to manually project the object down to "only the fields the server actually writes." The server is still the authority on what gets persisted — it just doesn't make the client do bookkeeping to express that.
+
+Apply the same reasoning to agent-owned columns that share a shape with human-owned ones (e.g. `summary` vs `agentSummary`): if a PUT endpoint only writes the human field, it should accept — and ignore — the agent field when sent.
+
+Document the write-vs-ignore split in the route YAML's description so the intent is discoverable, but **don't** reject the request on the ignored fields.
+
 ## HTTP Status Codes
 
 Use status codes consistently so clients can distinguish **syntax errors** (bad request shape), **semantic/validation errors** (invalid references or business rules), **auth**, and **not found**.

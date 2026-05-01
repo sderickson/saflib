@@ -50,6 +50,8 @@ export interface I18NObject {
 
 /**
  * Creates an alternative to Vue I18n's $t function, which takes the English text instead of a key. This is mainly so TypeScript enforces that keys are translated to strings.
+ *
+ * For strings with placeholders, use vue-i18n message syntax (`{name}` in the English string) and call `t(englishString, { name: value })`. Do not use `{{name}}` inside messages passed to `t` — it is invalid for the message compiler (often only fails in production builds).
  */
 export const makeReverseTComposable = (strings: I18nMessages) => {
   const stringToKeyMap = makeStringToKeyMap(strings);
@@ -60,13 +62,20 @@ export const makeReverseTComposable = (strings: I18nMessages) => {
     };
     // Function overloads to preserve input type
     function wrappedT(s: string): string;
+    function wrappedT(s: string, values: Record<string, unknown>): string;
     function wrappedT(s: I18NObject): I18NObject;
-    function wrappedT(s: string | I18NObject): string | I18NObject {
+    function wrappedT(
+      s: string | I18NObject,
+      values?: Record<string, unknown>,
+    ): string | I18NObject {
       if (typeof s === "string") {
-        return stringToKeyMap.get(s) ? t(lookupTKey(s)) : s;
-      } else {
-        return tObject(s);
+        if (!stringToKeyMap.get(s)) return s;
+        const key = lookupTKey(s);
+        return values !== undefined
+          ? (t(key, values) as string)
+          : (t(key) as string);
       }
+      return tObject(s);
     }
     const tObject = (o: I18NObject): I18NObject => {
       return Object.fromEntries(
