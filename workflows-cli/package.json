@@ -18,6 +18,7 @@
     "@saflib/monorepo": "*",
     "@saflib/openapi": "*",
     "@saflib/processes": "*",
+    "@saflib/sentry": "*",
     "@saflib/sdk": "*",
     "@saflib/service": "*",
     "@saflib/vue": "*",
