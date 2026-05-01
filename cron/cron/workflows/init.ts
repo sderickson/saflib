@@ -90,8 +90,8 @@ export const CronInitWorkflowDefinition = defineWorkflow<
 
 **HTTP API (cron job admin / status endpoints)**  
 - In the service's main HTTP app (Express or similar), mount \`createCronRouter\` from \`@saflib/cron\`.
-- Pass \`{ jobs }\` from this \`*-cron\` package, and a \`dbKey\` that comes from \`cronDb.connect()\` in \`@saflib/cron-db\` (job settings use the cron schema only). **Do not** pass your main application Drizzle key unless it is the same manager as \`cronDb\`—otherwise \`cronDbManager.get(dbKey)\` is undefined and routes will crash.
-- Reuse one shared \`cronDb.connect()\` result for both \`createCronRouter\` and \`runCron\` in the same process.
+- Pass \`{ jobs }\` from this \`*-cron\` package, and a \`dbKey\` from \`cronDb.connect({ onDisk: <absolute sqlite path> })\` in \`@saflib/cron-db\` (job settings use the cron schema only). **Do not** pass your main application Drizzle key unless it is the same manager as \`cronDb\`—otherwise \`cronDbManager.get(dbKey)\` is undefined and routes will crash.
+- Reuse one shared \`cronDb.connect(...)\` result for both \`createCronRouter\` and \`runCron\` in the same process. Prefer storing the SQLite file under this \`*-cron\` package (e.g. \`<package>/data/db-\${DEPLOYMENT_NAME}.sqlite\`) via \`onDisk\` as a string path; \`onDisk: true\` alone stores under \`saflib/cron/cron-db/data\`.
 - Place the router with other API routes, before the global error middleware.
 
 **Admin SPA (optional but typical)**  
@@ -105,6 +105,11 @@ export const CronInitWorkflowDefinition = defineWorkflow<
 - In a **monolith**, that is usually after DB + shared deps are initialized and alongside or before HTTP listen.
 - In a **separate cron/worker service**, the service's \`main\` / entrypoint should call \`run*Cron\` instead of (or in addition to) HTTP—adapt to this repo's layout.
 - If the app uses \`initializeDependencies()\` or similar for secrets/integrations, ensure it runs before \`run*Cron\` when jobs need those clients.
+
+**Docker / deploy (persistent cron job settings DB)**  
+- Persist the **directory containing** the SQLite file you pass to \`cronDb.connect({ onDisk: ".../file.sqlite" })\` (e.g. mount \`<repo>/daemon/service/cron/data:/app/daemon/service/cron/data\` when the file is under \`daemon/service/cron/data/\` in the image).
+- If you use \`onDisk: true\` without a path, SQLite defaults to \`saflib/cron/cron-db/data/\` in the image—mount that path instead.
+- Ensure first deploy can create the DB (migrations run on connect; align with \`ALLOW_DB_CREATION\` / ops conventions used for the main app DB when applicable).
 
 After changes: add any new workspace dependencies, run typecheck/tests for touched packages.`,
     })),
