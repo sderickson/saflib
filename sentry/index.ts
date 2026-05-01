@@ -23,5 +23,7 @@ export const initSentry = () => {
     });
   });
 
-  log.info("Sentry initialized");
+  log.info(
+    `Sentry initialized with DSN: ${typedEnv.SENTRY_DSN.slice(0, 10) + "..."}`,
+  );
 };
