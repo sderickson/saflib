@@ -15,7 +15,9 @@ export abstract class AnalyticsServiceBase implements AnalyticsService {
    * Fields merged under capture `context` / PostHog `properties` from the current SafContext.
    * Subclasses do not override this for normal HTTP use; extend only if you add more keys.
    */
-  protected getCapturePropertiesFromSafContext(ctx: SafContext): Record<string, unknown> {
+  protected getCapturePropertiesFromSafContext(
+    ctx: SafContext,
+  ): Record<string, unknown> {
     const out: Record<string, unknown> = {};
     const str = (v: unknown): string | undefined =>
       v != null && String(v).trim() !== "" ? String(v).trim() : undefined;
@@ -26,7 +28,6 @@ export abstract class AnalyticsServiceBase implements AnalyticsService {
     put("host", ctx.host);
     put("origin", ctx.origin);
     put("user_agent", ctx.userAgent);
-    put("ip", ctx.clientIp);
     put("accept_language", ctx.acceptLanguage);
     return out;
   }
