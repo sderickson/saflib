@@ -12,6 +12,8 @@ export const testContext: SafContext = {
   serviceName: "test",
   subsystemName: "test",
   operationName: "test",
+  /** Placeholder so code paths that require an acting user (e.g. analytics capture) work in tests. */
+  auth: { userId: "test-user-id" },
 };
 
 /**

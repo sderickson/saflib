@@ -41,21 +41,32 @@ export function usePostHogFeatureFlag(feature: string): Ref<FeatureFlag> {
 
 let identified = false;
 
-export function identifyToPostHog(session: Session) {
+interface IdentifyToPostHogOptions {
+  sendEmail?: boolean;
+  sendName?: boolean;
+}
+
+export function identifyToPostHog(
+  session: Session,
+  options: IdentifyToPostHogOptions = {},
+) {
   const email = kratosEmailFromSession(session);
   const name = kratosNameFromSession(session);
+  const sendEmail = options.sendEmail ?? true;
+  const sendName = options.sendName ?? true;
   const id = session.identity?.id;
   if (!email || !id) {
     return;
   }
   if ("posthog" in globalThis && !identified) {
-    // @ts-expect-error - posthog is not typed
-    globalThis.posthog.identify(id, {
+    const userProps = {
       id: id,
-      email: email,
-      firstName: name?.first,
-      lastName: name?.last,
-    });
+      email: sendEmail ? email : undefined,
+      firstName: sendName ? name?.first : undefined,
+      lastName: sendName ? name?.last : undefined,
+    };
+    // @ts-expect-error - posthog is not typed
+    globalThis.posthog.identify(id, userProps);
     console.log("id'd to posthog", id);
     identified = true;
   }
