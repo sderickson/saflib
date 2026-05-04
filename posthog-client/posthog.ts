@@ -59,13 +59,14 @@ export function identifyToPostHog(
     return;
   }
   if ("posthog" in globalThis && !identified) {
-    // @ts-expect-error - posthog is not typed
-    globalThis.posthog.identify(id, {
+    const userProps = {
       id: id,
       email: sendEmail ? email : undefined,
       firstName: sendName ? name?.first : undefined,
       lastName: sendName ? name?.last : undefined,
-    });
+    };
+    // @ts-expect-error - posthog is not typed
+    globalThis.posthog.identify(id, userProps);
     console.log("id'd to posthog", id);
     identified = true;
   }
