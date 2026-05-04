@@ -25,10 +25,6 @@ export interface SentryEnvSchema {
    */
   DOMAIN_REDIRECTS?: string;
   /**
-   * Whether to mock 3rd party integrations. Set to 'true' to mock. And integration packages should respect this setting.
-   */
-  MOCK_INTEGRATIONS?: "true" | "false";
-  /**
    * The environment of the deployment. Generally should avoid using this, consider its use deprecated, prefer instead more specific environment variables.
    */
   NODE_ENV: "development" | "production" | "test";
@@ -36,6 +32,7 @@ export interface SentryEnvSchema {
    * The protocol of the deployment, e.g. 'https'
    */
   PROTOCOL: "https" | "http";
+  SENTRY_AUTH_TOKEN?: string;
   SENTRY_DSN?: string;
   /**
    * Comma-separated list of service subdomains, e.g. 'revenue,geo,core'.

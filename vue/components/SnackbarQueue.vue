@@ -5,7 +5,21 @@
     v-model="errors"
     color="error"
     :timeout="5000"
-  ></v-snackbar-queue>
+  >
+    <template #actions="{ item, props }">
+      <v-btn
+        v-if="snackbarAction(item)"
+        variant="text"
+        :href="snackbarAction(item)!.href"
+        target="_blank"
+        rel="noopener noreferrer"
+        @click.stop
+      >
+        {{ snackbarAction(item)!.label }}
+      </v-btn>
+      <v-btn variant="text" @click="props.onClick">Dismiss</v-btn>
+    </template>
+  </v-snackbar-queue>
   <v-snackbar-queue
     location="top"
     v-model="info"
@@ -17,5 +31,16 @@
 </template>
 
 <script setup lang="ts">
-import { errors, info } from "@saflib/vue";
+import {
+  errors,
+  info,
+  type ErrorSnackbarAction,
+  type ErrorSnackbarQueueItem,
+} from "@saflib/vue";
+
+function snackbarAction(
+  item: ErrorSnackbarQueueItem,
+): ErrorSnackbarAction | undefined {
+  return typeof item === "string" ? undefined : item.action;
+}
 </script>

@@ -1,16 +1,30 @@
 {
   "name": "@saflib/sentry",
-  "description": "Sentry for Node.js services",
+  "description": "Sentry for Node.js services and Vite client builds",
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./index.ts"
+    ".": "./index.ts",
+    "./vite-build": "./vite-build.ts",
+    "./workflows": "./workflows/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@saflib/env": "*",
-    "@sentry/node": "^10.0.0"
+    "@saflib/node": "*",
+    "@sentry/node": "^10.0.0",
+    "@sentry/vite-plugin": "^5.2.1"
+  },
+  "peerDependencies": {
+    "vite": "^8.0.0"
   },
   "devDependencies": {
-    "@saflib/vitest": "*"
+    "@saflib/vitest": "*",
+    "@saflib/workflows": "*",
+    "vite": "^8.0.7",
+    "vitest": "^3.2.4"
   }
 }

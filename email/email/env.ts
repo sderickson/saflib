@@ -41,10 +41,6 @@ export interface EmailEnvSchema {
    */
   LOKI_PORT?: string;
   /**
-   * Whether to mock 3rd party integrations. Set to 'true' to mock. And integration packages should respect this setting.
-   */
-  MOCK_INTEGRATIONS?: "true" | "false";
-  /**
    * JSON string for nodemailer.createTransport when BREVO_API_KEY is not set. See https://nodemailer.com/usage
    */
   NODEMAILER_TRANSPORT_CONFIG?: string;
