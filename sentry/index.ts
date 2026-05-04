@@ -3,15 +3,21 @@ import { addErrorCollector } from "@saflib/node";
 import { typedEnv } from "./env.ts";
 import { getSafReporters } from "@saflib/node";
 
-export const initSentry = () => {
+export type InitSentryOptions = {
+  sendDefaultPii?: boolean;
+};
+
+export const initSentry = (options: InitSentryOptions = {}) => {
   const { log } = getSafReporters();
   if (typedEnv.SENTRY_DSN === "mock" || !typedEnv.SENTRY_DSN) {
     return;
   }
 
+  const sendDefaultPii = options.sendDefaultPii ?? false;
+
   Sentry.init({
     dsn: typedEnv.SENTRY_DSN,
-    sendDefaultPii: true,
+    sendDefaultPii,
   });
 
   addErrorCollector(({ error, level, extra, tags, user }) => {
