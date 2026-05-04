@@ -1,16 +1,18 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-const { mockCapture, mockIdentify, mockShutdown, PostHogMock } = vi.hoisted(() => {
-  const mockCapture = vi.fn();
-  const mockIdentify = vi.fn();
-  const mockShutdown = vi.fn();
-  const PostHogMock = vi.fn().mockImplementation(() => ({
-    capture: mockCapture,
-    identify: mockIdentify,
-    shutdown: mockShutdown,
-  }));
-  return { mockCapture, mockIdentify, mockShutdown, PostHogMock };
-});
+const { mockCapture, mockIdentify, mockShutdown, PostHogMock } = vi.hoisted(
+  () => {
+    const mockCapture = vi.fn();
+    const mockIdentify = vi.fn();
+    const mockShutdown = vi.fn();
+    const PostHogMock = vi.fn().mockImplementation(() => ({
+      capture: mockCapture,
+      identify: mockIdentify,
+      shutdown: mockShutdown,
+    }));
+    return { mockCapture, mockIdentify, mockShutdown, PostHogMock };
+  },
+);
 
 vi.mock("posthog-node", () => ({
   PostHog: PostHogMock,
@@ -179,7 +181,6 @@ describe("capture merges SafContext (e.g. host)", () => {
         host: "api.example.com",
         origin: "https://app.example",
         user_agent: "vitest/1",
-        ip: "203.0.113.1",
         accept_language: "en-US,en;q=0.9",
         a: 1,
       },
@@ -197,7 +198,6 @@ describe("capture merges SafContext (e.g. host)", () => {
         host: "client",
         origin: "https://app.example",
         user_agent: "vitest/1",
-        ip: "203.0.113.1",
         accept_language: "en-US,en;q=0.9",
       },
     });
