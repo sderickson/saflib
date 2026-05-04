@@ -17,9 +17,17 @@ export abstract class AnalyticsServiceBase implements AnalyticsService {
    */
   protected getCapturePropertiesFromSafContext(ctx: SafContext): Record<string, unknown> {
     const out: Record<string, unknown> = {};
-    if (ctx.host != null && String(ctx.host).trim() !== "") {
-      out.host = ctx.host;
-    }
+    const str = (v: unknown): string | undefined =>
+      v != null && String(v).trim() !== "" ? String(v).trim() : undefined;
+    const put = (key: string, v: unknown) => {
+      const s = str(v);
+      if (s !== undefined) out[key] = s;
+    };
+    put("host", ctx.host);
+    put("origin", ctx.origin);
+    put("user_agent", ctx.userAgent);
+    put("ip", ctx.clientIp);
+    put("accept_language", ctx.acceptLanguage);
     return out;
   }
 

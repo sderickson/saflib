@@ -143,6 +143,10 @@ describe("capture merges SafContext (e.g. host)", () => {
     subsystemName: "http",
     operationName: "PostMatter",
     host: "api.example.com",
+    origin: "https://app.example",
+    userAgent: "vitest/1",
+    clientIp: "203.0.113.1",
+    acceptLanguage: "en-US,en;q=0.9",
     auth: { userId: "merge-user" },
   };
 
@@ -171,7 +175,14 @@ describe("capture merges SafContext (e.g. host)", () => {
     expect(mockCapture).toHaveBeenCalledWith({
       distinctId: "merge-user",
       event: "evt",
-      properties: { host: "api.example.com", a: 1 },
+      properties: {
+        host: "api.example.com",
+        origin: "https://app.example",
+        user_agent: "vitest/1",
+        ip: "203.0.113.1",
+        accept_language: "en-US,en;q=0.9",
+        a: 1,
+      },
     });
   });
 
@@ -179,12 +190,16 @@ describe("capture merges SafContext (e.g. host)", () => {
     vi.spyOn(node, "getSafContext").mockReturnValue(safWithHost);
     const svc = createAnalyticsService({ type: "in-memory" });
     svc.capture({ event: "evt", context: { host: "client" } });
-    expect(capturedAnalyticsCalls[0]).toEqual(
-      expect.objectContaining({
-        kind: "capture",
-        distinctId: "merge-user",
-        context: { host: "client" },
-      }),
-    );
+    expect(capturedAnalyticsCalls[0]).toMatchObject({
+      kind: "capture",
+      distinctId: "merge-user",
+      context: {
+        host: "client",
+        origin: "https://app.example",
+        user_agent: "vitest/1",
+        ip: "203.0.113.1",
+        accept_language: "en-US,en;q=0.9",
+      },
+    });
   });
 });

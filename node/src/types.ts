@@ -68,6 +68,26 @@ export interface SafContext {
    * Used for analytics and routing diagnostics.
    */
   host?: string;
+
+  /**
+   * HTTP `Origin` header when the client sends it (e.g. browsers, CORS).
+   */
+  origin?: string;
+
+  /**
+   * HTTP `User-Agent` header when present.
+   */
+  userAgent?: string;
+
+  /**
+   * Best-effort client IP for the inbound request (e.g. first `X-Forwarded-For` hop, else Express `req.ip`, else socket).
+   */
+  clientIp?: string;
+
+  /**
+   * HTTP `Accept-Language` header when present.
+   */
+  acceptLanguage?: string;
 }
 
 /**

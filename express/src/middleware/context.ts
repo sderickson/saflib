@@ -88,6 +88,28 @@ function resolveTestAuth(req: Request): Auth | undefined {
   return undefined;
 }
 
+function trimmedHeader(req: Request, name: string): string | undefined {
+  const v = req.headers?.[name];
+  return typeof v === "string" && v.trim() !== "" ? v.trim() : undefined;
+}
+
+function resolveClientIp(req: Request): string | undefined {
+  const xff = trimmedHeader(req, "x-forwarded-for");
+  if (xff) {
+    const first = xff.split(",")[0]?.trim();
+    if (first) return first;
+  }
+  const ip = req.ip;
+  if (typeof ip === "string" && ip.trim() !== "") {
+    return ip.trim();
+  }
+  const socketAddr = req.socket?.remoteAddress;
+  if (typeof socketAddr === "string" && socketAddr.trim() !== "") {
+    return socketAddr.trim();
+  }
+  return undefined;
+}
+
 async function resolveAuth(req: Request): Promise<Auth | undefined> {
   const kratosId = req.headers["x-kratos-authenticated-identity-id"];
   if (typeof kratosId === "string" && kratosId.length > 0) {
@@ -119,6 +141,11 @@ export const makeContextMiddleware = () => {
             ? hostHeader.trim()
             : undefined;
 
+        const origin = trimmedHeader(req, "origin");
+        const userAgent = trimmedHeader(req, "user-agent");
+        const acceptLanguage = trimmedHeader(req, "accept-language");
+        const clientIp = resolveClientIp(req);
+
         const context: SafContext = {
           requestId: reqId,
           serviceName: getServiceName(),
@@ -126,6 +153,10 @@ export const makeContextMiddleware = () => {
           operationName,
           auth,
           host,
+          origin,
+          userAgent,
+          clientIp,
+          acceptLanguage,
         };
 
         const reporters: SafReporters = {
