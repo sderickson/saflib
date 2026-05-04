@@ -3,7 +3,6 @@ export type {
   CommonEvent,
   IdentifyProps,
   TypedAnalytics,
-  WithDistinctId,
 } from "./types.ts";
 export { AnalyticsServiceBase } from "./AnalyticsServiceBase.ts";
 export { makeTypedAnalytics } from "./makeTypedAnalytics.ts";

@@ -1,10 +1,6 @@
 import { getSafContext } from "@saflib/node";
-import type {
-  AnalyticsService,
-  CommonEvent,
-  IdentifyProps,
-  WithDistinctId,
-} from "./types.ts";
+import type { SafContext } from "@saflib/node";
+import type { AnalyticsService, CommonEvent, IdentifyProps } from "./types.ts";
 
 /**
  * Shared server-side analytics behavior: merges `getSafContext()`-derived fields into every
@@ -16,31 +12,34 @@ export abstract class AnalyticsServiceBase implements AnalyticsService {
   abstract shutdown(): void | Promise<void>;
 
   /**
-   * Fields merged under capture `context` / PostHog `properties` after SafContext lookup.
+   * Fields merged under capture `context` / PostHog `properties` from the current SafContext.
    * Subclasses do not override this for normal HTTP use; extend only if you add more keys.
    */
-  protected getCapturePropertiesFromSafContext(): Record<string, unknown> {
-    try {
-      const ctx = getSafContext();
-      const out: Record<string, unknown> = {};
-      if (ctx.host != null && String(ctx.host).trim() !== "") {
-        out.host = ctx.host;
-      }
-      return out;
-    } catch {
-      return {};
+  protected getCapturePropertiesFromSafContext(ctx: SafContext): Record<string, unknown> {
+    const out: Record<string, unknown> = {};
+    if (ctx.host != null && String(ctx.host).trim() !== "") {
+      out.host = ctx.host;
     }
+    return out;
   }
 
-  capture(event: CommonEvent & WithDistinctId): void {
-    const fromContext = this.getCapturePropertiesFromSafContext();
+  capture(event: CommonEvent): void {
+    const ctx = getSafContext();
+    const userId = ctx.auth?.userId;
+    if (userId == null || String(userId).trim() === "") {
+      throw new Error(
+        "Analytics capture requires SafContext.auth.userId (authenticated request).",
+      );
+    }
+    const distinctId = String(userId).trim();
+    const fromContext = this.getCapturePropertiesFromSafContext(ctx);
     const mergedContext =
       event.context === undefined && Object.keys(fromContext).length === 0
         ? undefined
         : { ...fromContext, ...event.context };
 
     this.emitCapture({
-      distinctId: event.distinctId,
+      distinctId,
       event: event.event,
       context: mergedContext,
     });

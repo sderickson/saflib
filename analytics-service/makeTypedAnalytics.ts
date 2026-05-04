@@ -1,9 +1,4 @@
-import type {
-  AnalyticsService,
-  CommonEvent,
-  TypedAnalytics,
-  WithDistinctId,
-} from "./types.ts";
+import type { AnalyticsService, CommonEvent, TypedAnalytics } from "./types.ts";
 
 export function makeTypedAnalytics<E extends CommonEvent>(
   service: AnalyticsService,
@@ -11,7 +6,7 @@ export function makeTypedAnalytics<E extends CommonEvent>(
   return {
     identify: (props) => service.identify(props),
     shutdown: () => service.shutdown(),
-    capture: (event: E & WithDistinctId) => {
+    capture: (event: E) => {
       service.capture(event);
     },
   };

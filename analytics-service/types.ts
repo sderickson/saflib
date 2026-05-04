@@ -1,7 +1,3 @@
-export interface WithDistinctId {
-  distinctId: string;
-}
-
 export interface CommonEvent {
   event: string;
   context?: Record<string, unknown>;
@@ -16,17 +12,18 @@ export interface IdentifyProps {
 
 /**
  * Server-side analytics client. Concrete implementations should extend
- * `AnalyticsServiceBase` so each `capture` is enriched from `getSafContext()` (e.g. HTTP `host`).
+ * `AnalyticsServiceBase` so each `capture` uses `getSafContext().auth.userId` as PostHog distinct id
+ * and enriches payloads from SafContext (e.g. HTTP `host`).
  */
 export interface AnalyticsService {
   identify: (props: IdentifyProps) => void;
   shutdown: () => void | Promise<void>;
-  capture: (event: CommonEvent & WithDistinctId) => void;
+  capture: (event: CommonEvent) => void;
 }
 
 export type TypedAnalytics<E extends CommonEvent> = Pick<
   AnalyticsService,
   "identify" | "shutdown"
 > & {
-  capture: (event: E & WithDistinctId) => void;
+  capture: (event: E) => void;
 };
