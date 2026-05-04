@@ -62,6 +62,12 @@ export interface SafContext {
    * More info should be gotten directly from the auth service.
    */
   auth?: Auth;
+
+  /**
+   * HTTP `Host` header (or equivalent) for the inbound request, when known (e.g. Express).
+   * Used for analytics and routing diagnostics.
+   */
+  host?: string;
 }
 
 /**

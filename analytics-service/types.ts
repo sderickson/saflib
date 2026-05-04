@@ -14,6 +14,10 @@ export interface IdentifyProps {
   disableGeoip?: boolean;
 }
 
+/**
+ * Server-side analytics client. Concrete implementations should extend
+ * `AnalyticsServiceBase` so each `capture` is enriched from `getSafContext()` (e.g. HTTP `host`).
+ */
 export interface AnalyticsService {
   identify: (props: IdentifyProps) => void;
   shutdown: () => void | Promise<void>;

@@ -113,12 +113,19 @@ export const makeContextMiddleware = () => {
 
     resolveAuth(req)
       .then((auth) => {
+        const hostHeader = req.headers?.host;
+        const host =
+          typeof hostHeader === "string" && hostHeader.trim() !== ""
+            ? hostHeader.trim()
+            : undefined;
+
         const context: SafContext = {
           requestId: reqId,
           serviceName: getServiceName(),
           subsystemName: "http",
           operationName,
           auth,
+          host,
         };
 
         const reporters: SafReporters = {

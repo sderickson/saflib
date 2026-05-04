@@ -1,20 +1,17 @@
 import { PostHog } from "posthog-node";
-import type {
-  AnalyticsService,
-  CommonEvent,
-  IdentifyProps,
-  WithDistinctId,
-} from "../types.ts";
+import { AnalyticsServiceBase } from "../AnalyticsServiceBase.ts";
+import type { IdentifyProps } from "../types.ts";
 
 export type PosthogAnalyticsServiceOptions = {
   apiKey: string;
   host: string;
 };
 
-export class PosthogAnalyticsService implements AnalyticsService {
+export class PosthogAnalyticsService extends AnalyticsServiceBase {
   private readonly client: PostHog;
 
   constructor(options: PosthogAnalyticsServiceOptions) {
+    super();
     this.client = new PostHog(options.apiKey, { host: options.host });
   }
 
@@ -30,7 +27,11 @@ export class PosthogAnalyticsService implements AnalyticsService {
     return this.client.shutdown();
   }
 
-  capture(event: CommonEvent & WithDistinctId): void {
+  protected emitCapture(event: {
+    distinctId: string;
+    event: string;
+    context?: Record<string, unknown>;
+  }): void {
     this.client.capture({
       distinctId: event.distinctId,
       event: event.event,

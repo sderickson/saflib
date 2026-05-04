@@ -16,6 +16,7 @@ vi.mock("posthog-node", () => ({
   PostHog: PostHogMock,
 }));
 
+import * as node from "@saflib/node";
 import {
   clearCapturedAnalyticsCalls,
   capturedAnalyticsCalls,
@@ -104,5 +105,53 @@ describe("makeTypedAnalytics", () => {
       event: "custom",
       context: { x: 3 },
     });
+  });
+});
+
+describe("capture merges SafContext (e.g. host)", () => {
+  const safWithHost: node.SafContext = {
+    requestId: "r1",
+    serviceName: "daemon-http",
+    subsystemName: "http",
+    operationName: "PostMatter",
+    host: "api.example.com",
+  };
+
+  beforeEach(() => {
+    clearCapturedAnalyticsCalls();
+    mockCapture.mockClear();
+    vi.stubEnv("NODE_ENV", "development");
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.restoreAllMocks();
+  });
+
+  it("merges host from getSafContext into PostHog properties", () => {
+    vi.spyOn(node, "getSafContext").mockReturnValue(safWithHost);
+    const svc = createAnalyticsService({
+      type: "posthog",
+      apiKey: "phc_key",
+      host: "https://app.posthog.com",
+    });
+    svc.capture({ distinctId: "u", event: "evt", context: { a: 1 } });
+    expect(mockCapture).toHaveBeenCalledWith({
+      distinctId: "u",
+      event: "evt",
+      properties: { host: "api.example.com", a: 1 },
+    });
+  });
+
+  it("event context overrides duplicate keys from SafContext merge", () => {
+    vi.spyOn(node, "getSafContext").mockReturnValue(safWithHost);
+    const svc = createAnalyticsService({ type: "in-memory" });
+    svc.capture({ distinctId: "u", event: "evt", context: { host: "client" } });
+    expect(capturedAnalyticsCalls[0]).toEqual(
+      expect.objectContaining({
+        kind: "capture",
+        context: { host: "client" },
+      }),
+    );
   });
 });

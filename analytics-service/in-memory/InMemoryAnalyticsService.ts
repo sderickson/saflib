@@ -1,9 +1,5 @@
-import type {
-  AnalyticsService,
-  CommonEvent,
-  IdentifyProps,
-  WithDistinctId,
-} from "../types.ts";
+import { AnalyticsServiceBase } from "../AnalyticsServiceBase.ts";
+import type { IdentifyProps } from "../types.ts";
 
 export type CapturedAnalyticsCall =
   | {
@@ -26,7 +22,7 @@ export function clearCapturedAnalyticsCalls(): void {
   capturedAnalyticsCalls.length = 0;
 }
 
-export class InMemoryAnalyticsService implements AnalyticsService {
+export class InMemoryAnalyticsService extends AnalyticsServiceBase {
   identify(props: IdentifyProps): void {
     capturedAnalyticsCalls.push({
       kind: "identify",
@@ -40,7 +36,11 @@ export class InMemoryAnalyticsService implements AnalyticsService {
     // no-op
   }
 
-  capture(event: CommonEvent & WithDistinctId): void {
+  protected emitCapture(event: {
+    distinctId: string;
+    event: string;
+    context?: Record<string, unknown>;
+  }): void {
     capturedAnalyticsCalls.push({
       kind: "capture",
       distinctId: event.distinctId,
