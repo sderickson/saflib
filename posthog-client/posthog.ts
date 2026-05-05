@@ -58,7 +58,8 @@ export function identifyToPostHog(
   if (!email || !id) {
     return;
   }
-  if ("posthog" in globalThis && !identified) {
+  // @ts-expect-error - posthog is not typed
+  if ("posthog" in globalThis && globalThis.posthog.identify && !identified) {
     const userProps = {
       id: id,
       email: sendEmail ? email : undefined,
