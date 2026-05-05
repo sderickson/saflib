@@ -195,6 +195,14 @@ Use when the request is **well-formed and authorized**, but **semantically inval
 
 Use 422 (not 404) when the **target of the request** is valid (e.g. “create a recipe” or “list recipes”) but a **reference inside** the request is invalid. That keeps 404 reserved for “the resource in the URL doesn’t exist” and makes it clear to the client that the failure is a validation problem (fix the reference), not “you’re not allowed” (403) or “this URL is wrong” (404).
 
+## Security: no PII in URL parameters
+
+Path and query parameters MUST contain only opaque identifiers (UUIDs, shortIds, slugs that don’t reveal personal data) or non-PII literals (enums, flags, ISO dates). PII — emails, full names, phone numbers, free-form text — MUST travel in request bodies.
+
+Why: URL-shaped data is logged in many places — reverse proxy access logs, browser history, error reports, and the project’s audit log (see `daemon/plans/notes/2026-05-05-audit-log/audit-log.spec.md`). Audit retention is multi-year; you do not want PII to inherit that retention by accident.
+
+If you find yourself wanting an email or name in a path, replace it with the resource’s id and accept the lookup cost.
+
 ## Batch Endpoints
 
 When a child resource will be fetched for multiple parents at once on a single page, design a **batch-capable endpoint** rather than requiring the frontend to make N requests.

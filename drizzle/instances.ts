@@ -80,6 +80,11 @@ export class DbManager<S extends Schema, C extends Config> {
 
     log.info(`Connecting to database: ${dbStorage}`);
     const sqlite = new Database(dbStorage);
+    if (options?.pragmas) {
+      for (const [key, value] of Object.entries(options.pragmas)) {
+        sqlite.pragma(`${key} = ${value}`);
+      }
+    }
     const db = drizzle(sqlite, { schema: this.schema });
 
     if (this.config.out) {
