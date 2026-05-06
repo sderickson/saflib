@@ -87,7 +87,7 @@ export class DbManager<S extends Schema, C extends Config> {
     }
     const db = drizzle(sqlite, { schema: this.schema });
 
-    if (this.config.out) {
+    if (this.config.out && !options?.skipMigrations) {
       log.info("Running migrations...");
       let migrationsPath = this.config.out;
       if (migrationsPath.startsWith("./")) {
@@ -205,15 +205,31 @@ export class DbManager<S extends Schema, C extends Config> {
   }
 
   private closeSqliteDb(instance: DbConnection<S>): void {
+    // NOTE: reaches into Drizzle's internal session shape (`instance.session.client`)
+    // to call better-sqlite3's `close()`. This is a private API and may break on
+    // a future Drizzle major; if the cast or method lookup fails we log and move
+    // on (the handle leak only matters at process exit).
+    let client: { close?: () => void } | undefined;
     try {
-      const client = (
+      client = (
         instance as unknown as {
-          session: { client: { close?: () => void } };
+          session?: { client?: { close?: () => void } };
         }
-      ).session.client;
-      if (client && typeof client.close === "function") {
-        client.close();
-      }
+      ).session?.client;
+    } catch {
+      /* ignore */
+    }
+    if (!client || typeof client.close !== "function") {
+      const { log } = makeSubsystemReporters("db", "db.closeSqliteDb");
+      log.warn(
+        "closeSqliteDb: could not locate underlying better-sqlite3 client " +
+          "via instance.session.client — handle may leak. Drizzle internals " +
+          "may have changed.",
+      );
+      return;
+    }
+    try {
+      client.close();
     } catch {
       /* ignore close failures */
     }
@@ -239,6 +255,26 @@ export class DbManager<S extends Schema, C extends Config> {
   };
 
   /**
+   * Online SQLite backup of the database registered under `key` to `destinationPath`.
+   * Uses better-sqlite3's `db.backup()` (SQLite Online Backup API), so the
+   * source DB can stay open and writable during the copy.
+   *
+   * The destination file is overwritten if it exists. Parent directory must exist.
+   */
+  backupTo = async (key: DbKey, destinationPath: string): Promise<void> => {
+    const instance = this.instances.get(key);
+    if (!instance) {
+      throw new Error("backupTo: database instance not found");
+    }
+    const client = (
+      instance as unknown as {
+        session: { client: { backup: (path: string) => Promise<unknown> } };
+      }
+    ).session.client;
+    await client.backup(destinationPath);
+  };
+
+  /**
    * Open an on-disk SQLite file and register it under an existing {@link DbKey}
    * (after {@link disconnect} removed the prior connection). Used for audit seal
    * rotation so the process keeps the same key while replacing the file.
@@ -259,7 +295,7 @@ export class DbManager<S extends Schema, C extends Config> {
       sqlite.pragma(`${pragmaKey} = ${value}`);
     }
     const db = drizzle(sqlite, { schema: this.schema });
-    if (this.config.out) {
+    if (this.config.out && !options?.skipMigrations) {
       log.info("Running migrations...");
       let migrationsPath = this.config.out;
       if (migrationsPath.startsWith("./")) {
@@ -359,6 +395,7 @@ export class DbManager<S extends Schema, C extends Config> {
       getDbPath: this.getDbPath,
       walCheckpointTruncate: this.walCheckpointTruncate,
       attachConnection: this.attachConnection,
+      backupTo: this.backupTo.bind(this),
     };
   }
 }

@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeAll } from "vitest";
-import { rmSync, existsSync } from "node:fs";
+import { createHash } from "node:crypto";
+import { readFileSync, rmSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
 import { eq } from "drizzle-orm";
 import { DbManager } from "./instances.ts";
@@ -183,5 +184,29 @@ describe("Instance Manager", () => {
       "memory",
     );
     manager.disconnect(key as DbKey);
+  });
+
+  it("skipMigrations leaves on-disk bytes unchanged across reconnect", () => {
+    const dbPath = getTempDbPath("skip-mig");
+    const key1 = manager.connect({
+      onDisk: dbPath,
+      overrideTestDefault: true,
+    });
+    manager.disconnect(key1 as DbKey);
+
+    const hash1 = createHash("sha256").update(readFileSync(dbPath)).digest("hex");
+
+    const key2 = manager.connect({
+      onDisk: dbPath,
+      overrideTestDefault: true,
+      skipMigrations: true,
+    });
+    manager.disconnect(key2 as DbKey);
+
+    const hash2 = createHash("sha256").update(readFileSync(dbPath)).digest("hex");
+
+    expect(hash2).toBe(hash1);
+
+    rmSync(dbPath, { force: true });
   });
 });
