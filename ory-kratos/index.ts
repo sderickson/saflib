@@ -22,7 +22,7 @@ export function startOryKratosService(options?: StartOryKratosServiceOptions) {
   );
   try {
     log.info(
-      `Starting Ory Kratos courier server at ${typedEnv.KRATOS_COURIER_HTTP_HOST}`,
+      `Starting Ory Kratos courier server at ${typedEnv.KRATOS_HANDLER_HTTP_HOST}`,
     );
     const app = createOryKratosApp({
       courierCallbacks: options?.courierCallbacks,
@@ -31,7 +31,7 @@ export function startOryKratosService(options?: StartOryKratosServiceOptions) {
     });
 
     const port = parseInt(
-      typedEnv.KRATOS_COURIER_HTTP_HOST.split(":")[1] || "80",
+      typedEnv.KRATOS_HANDLER_HTTP_HOST.split(":")[1] || "80",
       10,
     );
     startExpressServer(app, { port });
