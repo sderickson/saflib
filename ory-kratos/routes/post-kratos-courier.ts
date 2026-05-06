@@ -5,7 +5,7 @@ import type {
   KratosCourierCallbacks,
   KratosCourierTemplateId,
   User,
-} from "../callbacks.ts";
+} from "../courier-callbacks.ts";
 import { kratosIdentityToUser } from "../kratos-map.ts";
 import {
   isSupportedValidTemplate,
@@ -41,7 +41,7 @@ function readNumber(
 
 async function dispatchCallback(
   templateId: KratosCourierTemplateId,
-  callbacks: KratosCourierCallbacks,
+  courierCallbacks: KratosCourierCallbacks,
   args: {
     recipient: string;
     user: User;
@@ -54,7 +54,7 @@ async function dispatchCallback(
 
   switch (templateId) {
     case "recovery_code.valid":
-      await callbacks.onRecoveryCodeValid?.({
+      await courierCallbacks.onRecoveryCodeValid?.({
         recipient,
         user,
         templateData: td,
@@ -63,7 +63,7 @@ async function dispatchCallback(
       });
       return;
     case "recovery.valid":
-      await callbacks.onRecoveryValid?.({
+      await courierCallbacks.onRecoveryValid?.({
         recipient,
         user,
         templateData: td,
@@ -71,7 +71,7 @@ async function dispatchCallback(
       });
       return;
     case "verification_code.valid":
-      await callbacks.onVerificationCodeValid?.({
+      await courierCallbacks.onVerificationCodeValid?.({
         recipient,
         user,
         templateData: td,
@@ -81,7 +81,7 @@ async function dispatchCallback(
       });
       return;
     case "verification.valid":
-      await callbacks.onVerificationValid?.({
+      await courierCallbacks.onVerificationValid?.({
         recipient,
         user,
         templateData: td,
@@ -89,7 +89,7 @@ async function dispatchCallback(
       });
       return;
     case "login_code.valid":
-      await callbacks.onLoginCodeValid?.({
+      await courierCallbacks.onLoginCodeValid?.({
         recipient,
         user,
         templateData: td,
@@ -99,7 +99,7 @@ async function dispatchCallback(
       });
       return;
     case "registration_code.valid":
-      await callbacks.onRegistrationCodeValid?.({
+      await courierCallbacks.onRegistrationCodeValid?.({
         recipient,
         user,
         templateData: td,
@@ -116,7 +116,7 @@ async function dispatchCallback(
 }
 
 export function createPostKratosCourierHandler(
-  callbacks: KratosCourierCallbacks = {},
+  courierCallbacks: KratosCourierCallbacks = {},
 ) {
   return createHandler(async (req, res) => {
     const { log } = getSafReporters();
@@ -154,7 +154,7 @@ export function createPostKratosCourierHandler(
       recipient: body.recipient,
     });
 
-    await dispatchCallback(templateId, callbacks, {
+    await dispatchCallback(templateId, courierCallbacks, {
       recipient: body.recipient,
       user,
       td,

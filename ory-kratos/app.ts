@@ -4,11 +4,16 @@ import {
   createErrorMiddleware,
 } from "@saflib/express";
 import type { KratosActionHandler } from "./actions.ts";
-import type { KratosCourierCallbacks } from "./callbacks.ts";
+import type { KratosCourierCallbacks } from "./courier-callbacks.ts";
 import { makePostKratosActionHandler } from "./post-kratos-action.ts";
 import { createPostKratosCourierHandler } from "./routes/post-kratos-courier.ts";
 
 export interface CreateOryKratosAppOptions {
+  courierCallbacks?: KratosCourierCallbacks;
+  /**
+   * @deprecated Use {@link CreateOryKratosAppOptions.courierCallbacks} instead.
+   * If both are set, `courierCallbacks` wins.
+   */
   callbacks?: KratosCourierCallbacks;
   actionHandler?: KratosActionHandler;
 }
@@ -17,12 +22,13 @@ export interface CreateOryKratosAppOptions {
  * Express app for the Ory Kratos HTTP courier callback only (internal network).
  */
 export function createOryKratosApp(options: CreateOryKratosAppOptions = {}) {
-  const callbacks = options.callbacks ?? {};
+  const courierCallbacks =
+    options.courierCallbacks ?? options.callbacks ?? {};
   const app = express();
   app.use(createInternalMiddleware());
   app.post(
     "/email/kratos-courier",
-    createPostKratosCourierHandler(callbacks),
+    createPostKratosCourierHandler(courierCallbacks),
   );
   if (options.actionHandler) {
     app.post(

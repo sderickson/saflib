@@ -1,4 +1,4 @@
-import type { KratosCourierTemplateId } from "./callbacks.ts";
+import type { KratosCourierTemplateId } from "./courier-callbacks.ts";
 
 /** Kratos may send `verification_code.valid` or `verification_code_valid`. */
 export function normalizeKratosTemplateType(raw: string): string {

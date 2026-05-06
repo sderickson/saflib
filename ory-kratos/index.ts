@@ -3,9 +3,14 @@ import { makeSubsystemReporters } from "@saflib/node";
 import { typedEnv } from "./env.ts";
 import { createOryKratosApp } from "./app.ts";
 import type { KratosActionHandler } from "./actions.ts";
-import type { KratosCourierCallbacks } from "./callbacks.ts";
+import type { KratosCourierCallbacks } from "./courier-callbacks.ts";
 
 export interface StartOryKratosServiceOptions {
+  courierCallbacks?: KratosCourierCallbacks;
+  /**
+   * @deprecated Use {@link StartOryKratosServiceOptions.courierCallbacks} instead.
+   * If both are set, `courierCallbacks` wins.
+   */
   callbacks?: KratosCourierCallbacks;
   actionHandler?: KratosActionHandler;
 }
@@ -20,6 +25,7 @@ export function startOryKratosService(options?: StartOryKratosServiceOptions) {
       `Starting Ory Kratos courier server at ${typedEnv.KRATOS_COURIER_HTTP_HOST}`,
     );
     const app = createOryKratosApp({
+      courierCallbacks: options?.courierCallbacks,
       callbacks: options?.callbacks,
       actionHandler: options?.actionHandler,
     });
@@ -54,4 +60,4 @@ export type {
   VerificationValidPayload,
   LoginCodeValidPayload,
   RegistrationCodeValidPayload,
-} from "./callbacks.ts";
+} from "./courier-callbacks.ts";

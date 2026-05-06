@@ -17,7 +17,10 @@ async function onRecoveryCodeValid(payload: RecoveryCodeValidPayload) {
   log.info(`Recovery code email for ${user.id}: ${recoveryCode}`);
 }
 
-export const callbacks: KratosCourierCallbacks = {
+export const courierCallbacks: KratosCourierCallbacks = {
   onVerificationCodeValid,
   onRecoveryCodeValid,
 };
+
+/** @deprecated Use {@link courierCallbacks} instead. */
+export const callbacks = courierCallbacks;

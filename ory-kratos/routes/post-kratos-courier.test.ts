@@ -6,7 +6,7 @@ import {
   createInternalMiddleware,
 } from "@saflib/express";
 import { createPostKratosCourierHandler } from "./post-kratos-courier.ts";
-import type { KratosCourierCallbacks } from "../callbacks.ts";
+import type { KratosCourierCallbacks } from "../courier-callbacks.ts";
 
 describe("createPostKratosCourierHandler", () => {
   let app: express.Express;
@@ -82,9 +82,11 @@ describe("createPostKratosCourierHandler", () => {
 
   it("calls onVerificationCodeValid for verification_code.valid", async () => {
     const onVerificationCodeValid = vi.fn().mockResolvedValue(undefined);
-    const callbacks: KratosCourierCallbacks = { onVerificationCodeValid };
+    const courierCallbacks: KratosCourierCallbacks = {
+      onVerificationCodeValid,
+    };
 
-    const handler = createPostKratosCourierHandler(callbacks);
+    const handler = createPostKratosCourierHandler(courierCallbacks);
     app = express();
     app.use(createInternalMiddleware());
     app.post("/email/kratos-courier", handler);
