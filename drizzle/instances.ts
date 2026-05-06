@@ -204,9 +204,87 @@ export class DbManager<S extends Schema, C extends Config> {
     return this.instances.get(key);
   }
 
+  private closeSqliteDb(instance: DbConnection<S>): void {
+    try {
+      const client = (
+        instance as unknown as {
+          session: { client: { close?: () => void } };
+        }
+      ).session.client;
+      if (client && typeof client.close === "function") {
+        client.close();
+      }
+    } catch {
+      /* ignore close failures */
+    }
+  }
+
+  /** SQLite path for the key, or `:memory:`, or `undefined` if unknown. */
+  getDbPath = (key: DbKey): string | undefined => {
+    return this.dbPaths.get(key);
+  };
+
+  /** Flush WAL pages into the main db file and reset the WAL (SQLite backup-safe). */
+  walCheckpointTruncate = (key: DbKey): void => {
+    const instance = this.instances.get(key);
+    if (!instance) {
+      throw new Error("walCheckpointTruncate: database instance not found");
+    }
+    const client = (
+      instance as unknown as {
+        session: { client: { pragma: (s: string) => unknown } };
+      }
+    ).session.client;
+    client.pragma("wal_checkpoint(TRUNCATE)");
+  };
+
+  /**
+   * Open an on-disk SQLite file and register it under an existing {@link DbKey}
+   * (after {@link disconnect} removed the prior connection). Used for audit seal
+   * rotation so the process keeps the same key while replacing the file.
+   */
+  attachConnection = (
+    key: DbKey,
+    sqlitePath: string,
+    options?: DbOptions,
+  ): void => {
+    if (this.instances.has(key)) {
+      throw new Error("attachConnection: DbKey already has an open connection");
+    }
+    const { log } = makeSubsystemReporters("init", "db.attachConnection");
+    log.info(`Attaching database at ${sqlitePath}`);
+    const sqlite = new Database(sqlitePath);
+    const pragmas = options?.pragmas ?? {};
+    for (const [pragmaKey, value] of Object.entries(pragmas)) {
+      sqlite.pragma(`${pragmaKey} = ${value}`);
+    }
+    const db = drizzle(sqlite, { schema: this.schema });
+    if (this.config.out) {
+      log.info("Running migrations...");
+      let migrationsPath = this.config.out;
+      if (migrationsPath.startsWith("./")) {
+        migrationsPath = path.join(this.rootPath, migrationsPath);
+      }
+      try {
+        migrate(db, {
+          migrationsFolder: migrationsPath,
+        });
+      } catch (error) {
+        if (error instanceof Error && error.cause) {
+          log.error(error.stack);
+          log.error(`Cause:\n\n${error.cause}\n\n`);
+        }
+        throw error;
+      }
+    }
+    this.instances.set(key, db);
+    this.dbPaths.set(key, sqlitePath);
+  };
+
   disconnect = (key: DbKey): boolean => {
     const instance = this.instances.get(key);
     if (instance) {
+      this.closeSqliteDb(instance);
       this.instances.delete(key);
       this.dbPaths.delete(key);
       return true;
@@ -234,14 +312,13 @@ export class DbManager<S extends Schema, C extends Config> {
     log.info(`Restoring database from stream to temporary file: ${tempPath}`);
 
     const writeStream = fs.createWriteStream(tempPath);
-    
+
     return new Promise((resolve, reject) => {
       stream.on("error", async (error) => {
         writeStream.destroy();
         try {
           await fs.promises.unlink(tempPath);
-        } catch {
-        }
+        } catch {}
         log.error(`Stream error during restore: ${error}`);
         reject(error);
       });
@@ -250,8 +327,7 @@ export class DbManager<S extends Schema, C extends Config> {
         stream.destroy();
         try {
           await fs.promises.unlink(tempPath);
-        } catch {
-        }
+        } catch {}
         log.error(`Write error during restore: ${error}`);
         reject(error);
       });
@@ -264,8 +340,7 @@ export class DbManager<S extends Schema, C extends Config> {
         } catch (error) {
           try {
             await fs.promises.unlink(tempPath);
-          } catch {
-          }
+          } catch {}
           log.error(`Failed to rename temporary file: ${error}`);
           reject(error);
         }
@@ -281,6 +356,9 @@ export class DbManager<S extends Schema, C extends Config> {
       disconnect: this.disconnect,
       createBackup: this.createBackup.bind(this),
       restore: this.restore.bind(this),
+      getDbPath: this.getDbPath,
+      walCheckpointTruncate: this.walCheckpointTruncate,
+      attachConnection: this.attachConnection,
     };
   }
 }
