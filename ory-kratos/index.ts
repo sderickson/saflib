@@ -2,10 +2,17 @@ import { startExpressServer } from "@saflib/express";
 import { makeSubsystemReporters } from "@saflib/node";
 import { typedEnv } from "./env.ts";
 import { createOryKratosApp } from "./app.ts";
-import type { KratosCourierCallbacks } from "./callbacks.ts";
+import type { KratosActionHandler } from "./actions.ts";
+import type { KratosCourierCallbacks } from "./courier-callbacks.ts";
 
 export interface StartOryKratosServiceOptions {
+  courierCallbacks?: KratosCourierCallbacks;
+  /**
+   * @deprecated Use {@link StartOryKratosServiceOptions.courierCallbacks} instead.
+   * If both are set, `courierCallbacks` wins.
+   */
   callbacks?: KratosCourierCallbacks;
+  actionHandler?: KratosActionHandler;
 }
 
 export function startOryKratosService(options?: StartOryKratosServiceOptions) {
@@ -15,12 +22,16 @@ export function startOryKratosService(options?: StartOryKratosServiceOptions) {
   );
   try {
     log.info(
-      `Starting Ory Kratos courier server at ${typedEnv.KRATOS_COURIER_HTTP_HOST}`,
+      `Starting Ory Kratos courier server at ${typedEnv.KRATOS_HANDLER_HTTP_HOST}`,
     );
-    const app = createOryKratosApp({ callbacks: options?.callbacks });
+    const app = createOryKratosApp({
+      courierCallbacks: options?.courierCallbacks,
+      callbacks: options?.callbacks,
+      actionHandler: options?.actionHandler,
+    });
 
     const port = parseInt(
-      typedEnv.KRATOS_COURIER_HTTP_HOST.split(":")[1] || "80",
+      typedEnv.KRATOS_HANDLER_HTTP_HOST.split(":")[1] || "80",
       10,
     );
     startExpressServer(app, { port });
@@ -32,7 +43,13 @@ export function startOryKratosService(options?: StartOryKratosServiceOptions) {
 }
 
 export { createOryKratosApp } from "./app.ts";
+export { makePostKratosActionHandler } from "./post-kratos-action.ts";
 export { createPostKratosCourierHandler } from "./routes/post-kratos-courier.ts";
+export type {
+  KratosAction,
+  KratosActionContext,
+  KratosActionHandler,
+} from "./actions.ts";
 export type {
   KratosCourierCallbacks,
   KratosCourierTemplateId,
@@ -43,4 +60,4 @@ export type {
   VerificationValidPayload,
   LoginCodeValidPayload,
   RegistrationCodeValidPayload,
-} from "./callbacks.ts";
+} from "./courier-callbacks.ts";

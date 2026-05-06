@@ -158,4 +158,30 @@ describe("Instance Manager", () => {
     const deleted = manager.disconnect(invalidKey);
     expect(deleted).toBe(false);
   });
+
+  it("applies pragmas when provided", () => {
+    const dbPath = getTempDbPath("pragma-on");
+    const key = manager.connect({
+      onDisk: dbPath,
+      overrideTestDefault: true,
+      pragmas: { journal_mode: "WAL" },
+    });
+    const instance = manager.get(key as DbKey);
+    assert(instance);
+    expect(instance.$client.pragma("journal_mode", { simple: true })).toBe(
+      "wal",
+    );
+    manager.disconnect(key as DbKey);
+    rmSync(dbPath, { force: true });
+  });
+
+  it("no-op when omitted", () => {
+    const key = manager.connect();
+    const instance = manager.get(key as DbKey);
+    assert(instance);
+    expect(instance.$client.pragma("journal_mode", { simple: true })).toBe(
+      "memory",
+    );
+    manager.disconnect(key as DbKey);
+  });
 });

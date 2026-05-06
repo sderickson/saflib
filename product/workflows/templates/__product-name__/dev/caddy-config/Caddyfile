@@ -33,5 +33,7 @@ http://api.docker.localhost {
 
 http://kratos.docker.localhost {
 	import cors docker.localhost
-	reverse_proxy kratos:4433
+	reverse_proxy kratos:4433 {
+		import reverse_proxy_common
+	}
 }

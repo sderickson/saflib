@@ -31,6 +31,15 @@ export interface DbOptions {
    * If you need to override this behavior, set this to true.
    */
   overrideTestDefault?: boolean;
+
+  /**
+   * Optional SQLite pragmas applied immediately after the database connection
+   * is opened, before migrations run. Values are stringified and passed to
+   * `sqlite.pragma(\`${key} = ${value}\`)`.
+   *
+   * Example: `{ journal_mode: "WAL", synchronous: "FULL" }`.
+   */
+  pragmas?: Record<string, string | number>;
 }
 
 /**

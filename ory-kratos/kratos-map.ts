@@ -1,4 +1,4 @@
-import type { User } from "./callbacks.ts";
+import type { User } from "./courier-callbacks.ts";
 
 /** Kratos identity object as embedded in courier `template_data.identity`. */
 export interface KratosIdentityJson {

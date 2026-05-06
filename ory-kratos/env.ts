@@ -31,7 +31,7 @@ export interface OryKratosEnvSchema {
   /**
    * Host URL for the Ory Kratos courier callback server (e.g. recipes-monolith:3000).
    */
-  KRATOS_COURIER_HTTP_HOST: string;
+  KRATOS_HANDLER_HTTP_HOST: string;
   /**
    * The hostname or URL of the Loki instance to send logs to (e.g., http://loki:3100)
    */

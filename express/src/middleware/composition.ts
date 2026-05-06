@@ -36,7 +36,11 @@ export const createInternalMiddleware = (
   return [
     metricsMiddleware,
     everyRequestLogger,
-    json(jsonLimit ? { limit: jsonLimit } : undefined),
+    json(
+      jsonLimit
+        ? { limit: jsonLimit, strict: false }
+        : { strict: false },
+    ),
   ];
 };
 

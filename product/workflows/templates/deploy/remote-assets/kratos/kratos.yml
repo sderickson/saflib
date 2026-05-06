@@ -23,16 +23,54 @@ selfservice:
       enabled: true
       style: unified
       ui_url: https://auth.__domain-name__/registration
+      after:
+        password:
+          hooks:
+            - &kratos_action_webhook
+              hook: web_hook
+              config:
+                url: http://monolith:3000/kratos/action
+                method: POST
+                body: file:///etc/config/kratos/kratos-action-body.jsonnet
+                headers:
+                  Content-Type: application/json
+                response:
+                  ignore: true
 
     login:
       ui_url: https://auth.__domain-name__/login
+      after:
+        hooks:
+          - *kratos_action_webhook
+        password:
+          hooks:
+            - *kratos_action_webhook
 
     recovery:
       enabled: true
       ui_url: https://auth.__domain-name__/recovery
+      after:
+        hooks:
+          - *kratos_action_webhook
 
     settings:
       ui_url: https://auth.__domain-name__/settings
+      after:
+        profile:
+          hooks:
+            - *kratos_action_webhook
+        password:
+          hooks:
+            - *kratos_action_webhook
+        totp:
+          hooks:
+            - *kratos_action_webhook
+        webauthn:
+          hooks:
+            - *kratos_action_webhook
+        passkey:
+          hooks:
+            - *kratos_action_webhook
 
     logout:
       after:
@@ -67,6 +105,31 @@ courier:
       body: file:///etc/config/kratos/courier-body.jsonnet
       headers:
         Content-Type: application/json
+
+# https://www.ory.com/docs/guides/integrate-with-ory-cloud-through-webhooks — default allowlist + proxy headers
+clients:
+  web_hook:
+    header_allowlist:
+      - Accept
+      - Accept-Encoding
+      - Accept-Language
+      - Content-Length
+      - Content-Type
+      - Origin
+      - Priority
+      - Referer
+      - Sec-Ch-Ua
+      - Sec-Ch-Ua-Mobile
+      - Sec-Ch-Ua-Platform
+      - Sec-Fetch-Dest
+      - Sec-Fetch-Mode
+      - Sec-Fetch-Site
+      - Sec-Fetch-User
+      - True-Client-Ip
+      - User-Agent
+      - X-Forwarded-For
+      - X-Real-Ip
+      - X-Request-ID
 
 log:
   level: warning

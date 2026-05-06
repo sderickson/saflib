@@ -55,39 +55,42 @@ export interface I18NObject {
  */
 export const makeReverseTComposable = (strings: I18nMessages) => {
   const stringToKeyMap = makeStringToKeyMap(strings);
-  return () => {
-    const { t } = useI18n();
-    const lookupTKey = (s: string) => {
-      return stringToKeyMap.get(s) ?? s;
-    };
-    // Function overloads to preserve input type
-    function wrappedT(s: string): string;
-    function wrappedT(s: string, values: Record<string, unknown>): string;
-    function wrappedT(s: I18NObject): I18NObject;
-    function wrappedT(
-      s: string | I18NObject,
-      values?: Record<string, unknown>,
-    ): string | I18NObject {
-      if (typeof s === "string") {
-        if (!stringToKeyMap.get(s)) return s;
-        const key = lookupTKey(s);
-        return values !== undefined
-          ? (t(key, values) as string)
-          : (t(key) as string);
+  return {
+    stringToKeyMap,
+    useReverseT: () => {
+      const { t } = useI18n();
+      const lookupTKey = (s: string) => {
+        return stringToKeyMap.get(s) ?? s;
+      };
+      // Function overloads to preserve input type
+      function wrappedT(s: string): string;
+      function wrappedT(s: string, values: Record<string, unknown>): string;
+      function wrappedT(s: I18NObject): I18NObject;
+      function wrappedT(
+        s: string | I18NObject,
+        values?: Record<string, unknown>,
+      ): string | I18NObject {
+        if (typeof s === "string") {
+          if (!stringToKeyMap.get(s)) return s;
+          const key = lookupTKey(s);
+          return values !== undefined
+            ? (t(key, values) as string)
+            : (t(key) as string);
+        }
+        return tObject(s);
       }
-      return tObject(s);
-    }
-    const tObject = (o: I18NObject): I18NObject => {
-      return Object.fromEntries(
-        Object.entries(o).map(([key, value]) => [
-          key,
-          stringToKeyMap.get(value) ? t(lookupTKey(value)) : value,
-        ]),
-      );
-    };
-    return {
-      t: wrappedT,
-      lookupTKey,
-    };
+      const tObject = (o: I18NObject): I18NObject => {
+        return Object.fromEntries(
+          Object.entries(o).map(([key, value]) => [
+            key,
+            stringToKeyMap.get(value) ? t(lookupTKey(value)) : value,
+          ]),
+        );
+      };
+      return {
+        t: wrappedT,
+        lookupTKey,
+      };
+    },
   };
 };
