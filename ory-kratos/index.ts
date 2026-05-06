@@ -2,11 +2,12 @@ import { startExpressServer } from "@saflib/express";
 import { makeSubsystemReporters } from "@saflib/node";
 import { typedEnv } from "./env.ts";
 import { createOryKratosApp } from "./app.ts";
-import type { AuditCallbacks, KratosCourierCallbacks } from "./callbacks.ts";
+import type { KratosActionHandler } from "./actions.ts";
+import type { KratosCourierCallbacks } from "./callbacks.ts";
 
 export interface StartOryKratosServiceOptions {
   callbacks?: KratosCourierCallbacks;
-  auditCallbacks?: AuditCallbacks;
+  actionHandler?: KratosActionHandler;
 }
 
 export function startOryKratosService(options?: StartOryKratosServiceOptions) {
@@ -20,7 +21,7 @@ export function startOryKratosService(options?: StartOryKratosServiceOptions) {
     );
     const app = createOryKratosApp({
       callbacks: options?.callbacks,
-      auditCallbacks: options?.auditCallbacks,
+      actionHandler: options?.actionHandler,
     });
 
     const port = parseInt(
@@ -36,11 +37,14 @@ export function startOryKratosService(options?: StartOryKratosServiceOptions) {
 }
 
 export { createOryKratosApp } from "./app.ts";
-export { makePostAuditHookHandler } from "./post-audit-hook.ts";
+export { makePostKratosActionHandler } from "./post-kratos-action.ts";
 export { createPostKratosCourierHandler } from "./routes/post-kratos-courier.ts";
 export type {
-  AuditCallbacks,
-  KratosAuditEvent,
+  KratosAction,
+  KratosActionContext,
+  KratosActionHandler,
+} from "./actions.ts";
+export type {
   KratosCourierCallbacks,
   KratosCourierTemplateId,
   User,

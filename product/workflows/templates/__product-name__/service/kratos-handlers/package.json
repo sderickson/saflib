@@ -1,6 +1,6 @@
 {
-  "name": "template-package-kratos-courier",
-  "description": "Shared Kratos HTTP courier callbacks for __product-name__",
+  "name": "template-package-kratos-handlers",
+  "description": "Shared Kratos webhook handlers for __product-name__ (email courier callbacks + action handler)",
   "type": "module",
   "exports": {
     ".": "./index.ts"

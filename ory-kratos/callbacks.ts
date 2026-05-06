@@ -77,19 +77,3 @@ export interface KratosCourierCallbacks {
     payload: RegistrationCodeValidPayload,
   ) => Promise<void>;
 }
-
-/** Payload from the internal Kratos audit webhook (JSON body + optional headers). */
-export interface KratosAuditEvent {
-  stage: string; // e.g. "after_login_success"
-  flow_id: string;
-  identity_id: string;
-  success: boolean;
-  methods?: string[];
-  error_reason?: string;
-  user_agent?: string;
-  accept_language?: string;
-}
-
-export interface AuditCallbacks {
-  onAuditEvent: (event: KratosAuditEvent) => Promise<void>;
-}
