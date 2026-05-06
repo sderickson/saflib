@@ -3,11 +3,13 @@ import {
   createInternalMiddleware,
   createErrorMiddleware,
 } from "@saflib/express";
-import type { KratosCourierCallbacks } from "./callbacks.ts";
+import type { AuditCallbacks, KratosCourierCallbacks } from "./callbacks.ts";
+import { makePostAuditHookHandler } from "./post-audit-hook.ts";
 import { createPostKratosCourierHandler } from "./routes/post-kratos-courier.ts";
 
 export interface CreateOryKratosAppOptions {
   callbacks?: KratosCourierCallbacks;
+  auditCallbacks?: AuditCallbacks;
 }
 
 /**
@@ -21,6 +23,12 @@ export function createOryKratosApp(options: CreateOryKratosAppOptions = {}) {
     "/email/kratos-courier",
     createPostKratosCourierHandler(callbacks),
   );
+  if (options.auditCallbacks) {
+    app.post(
+      "/audit/kratos-hook",
+      makePostAuditHookHandler(options.auditCallbacks),
+    );
+  }
   app.use(createErrorMiddleware());
   return app;
 }
