@@ -9,6 +9,6 @@ import type { KratosActionHandler } from "@saflib/ory-kratos";
 export const makeKratosActionHandler = (): KratosActionHandler => ({
   onAction: async (action) => {
     const { log } = getSafReporters();
-    log.info({ action }, "kratos action received");
+    log.info("kratos action received", { action });
   },
 });
