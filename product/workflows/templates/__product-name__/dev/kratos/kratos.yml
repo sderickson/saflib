@@ -107,6 +107,31 @@ courier:
       headers:
         Content-Type: application/json
 
+# https://www.ory.com/docs/guides/integrate-with-ory-cloud-through-webhooks — default allowlist + proxy headers
+clients:
+  web_hook:
+    header_allowlist:
+      - Accept
+      - Accept-Encoding
+      - Accept-Language
+      - Content-Length
+      - Content-Type
+      - Origin
+      - Priority
+      - Referer
+      - Sec-Ch-Ua
+      - Sec-Ch-Ua-Mobile
+      - Sec-Ch-Ua-Platform
+      - Sec-Fetch-Dest
+      - Sec-Fetch-Mode
+      - Sec-Fetch-Site
+      - Sec-Fetch-User
+      - True-Client-Ip
+      - User-Agent
+      - X-Forwarded-For
+      - X-Real-Ip
+      - X-Request-ID
+
 # Required for sessions to survive Kratos restarts: without explicit secrets, each
 # process start uses new random keys, so existing session cookies cannot be decrypted
 # (identities in SQLite still look fine). These are dev-only placeholders, not for prod.
