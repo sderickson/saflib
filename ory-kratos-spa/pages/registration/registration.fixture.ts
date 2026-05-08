@@ -1,6 +1,7 @@
 import { expect, type Page } from "@playwright/test";
 import { linkToHref, type Link } from "@saflib/links";
 import { registration_intro as introStrings } from "./RegistrationIntro.strings.ts";
+import { VerificationPageFixture } from "../verification/verification.fixture.ts";
 
 /**
  * Page helpers for {@link ./Registration.vue} (Kratos registration flow UI).
@@ -112,11 +113,15 @@ export class RegistrationPageFixture {
       },
     });
     await this.page.goto(url);
-    const kratosLink = this.page.locator(
-      'a[href*="verification"], a[href*="self-service"]',
-    ).first();
+    const kratosLink = this.page
+      .locator('a[href*="verification"], a[href*="self-service"]')
+      .first();
     await expect(kratosLink).toBeVisible({ timeout: 60_000 });
     await kratosLink.click();
+    const verificationPage = new VerificationPageFixture(this.page);
+    await verificationPage.toBeVisible();
+    await verificationPage.clickContinue();
+    await verificationPage.expectRedirectToAppSubdomain();
   }
 }
 

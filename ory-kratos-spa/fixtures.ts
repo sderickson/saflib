@@ -16,4 +16,8 @@ export {
   VerifyWallPageFixture,
   verifyWallPageFixture,
 } from "./pages/verify-wall/verify-wall.fixture.ts";
+export {
+  VerificationPageFixture,
+  verificationPageFixture,
+} from "./pages/verification/verification.fixture.ts";
 // END WORKFLOW AREA
