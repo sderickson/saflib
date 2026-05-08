@@ -5,6 +5,10 @@ export {
   loginPageFixture,
 } from "./pages/login/login.fixture.ts";
 export {
+  LogoutPageFixture,
+  logoutPageFixture,
+} from "./pages/logout/logout.fixture.ts";
+export {
   RegistrationPageFixture,
   registrationPageFixture,
 } from "./pages/registration/registration.fixture.ts";
