@@ -70,25 +70,6 @@ http://caddy:2020 {
 	header @has_origin Access-Control-Allow-Origin "{http.request.header.Origin}"
 }
 
-# Used for static assets accessible only to admins.
-# With "browse" enabled, you can go to the subdomain root path
-# and explore the contents.
-(admin-file-server) {
-	import cors
-	encode gzip
-	root * /srv{args[1]}
-	forward_auth {args[0]} {
-		uri /auth/verify?
-		header_up X-Csrf-Skip true
-		header_up X-Require-Admin {$BLOCK_ADMIN_PAGES}
-	}
-
-	file_server {
-		pass_thru
-		browse
-	}
-}
-
 # Recipes API (and similar): probe Kratos /sessions/whoami; copy identity on 2xx, but never short-circuit the client on 401.
 # args[0]: target service host (e.g. monolith:3002)
 (kratos-api-proxy) {
@@ -118,19 +99,5 @@ http://caddy:2020 {
 		reverse_proxy {args[0]} {
 			import reverse_proxy_common
 		}
-	}
-}
-
-# Used for standalone services which provide their own UI, only accessible to admins,
-# such as Grafana and Prometheus.
-(admin-proxy) {
-	forward_auth {args[0]} {
-		uri /auth/verify?
-		header_up X-Csrf-Skip true
-		header_up X-Require-Admin {$BLOCK_ADMIN_PAGES}
-	}
-
-	reverse_proxy {args[1]} {
-		import reverse_proxy_common
 	}
 }

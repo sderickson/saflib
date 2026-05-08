@@ -4,8 +4,7 @@ import { typedEnv } from "@saflib/env";
 const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
 
 /**
- * Require a non-simple header on state-changing requests so cross-site form POSTs
- * cannot mutate state (browser same-origin policy blocks setting custom headers).
+ * Enforce CSRF double-submit token validation on state-changing requests.
  * Skips routes tagged `no-auth` (same convention as auth middleware).
  */
 export const makeCsrfMiddleware = (): Handler => {
@@ -23,9 +22,8 @@ export const makeCsrfMiddleware = (): Handler => {
       return next();
     }
 
-    const xrw = req.headers["x-requested-with"];
     const ok =
-      typeof xrw === "string" && xrw.toLowerCase() === "xmlhttprequest";
+      typeof req.isValidCsrfToken === "function" && req.isValidCsrfToken();
 
     if (!ok) {
       if (!res.headersSent) {
