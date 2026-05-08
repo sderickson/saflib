@@ -63,10 +63,6 @@ import { useLastMockEmailPageLoader } from "./LastMockEmailPage.loader.ts";
 
 const { sentEmailsQuery } = useLastMockEmailPageLoader();
 
-if (!sentEmailsQuery.data.value) {
-  throw new Error("Failed to load sent emails");
-}
-
 const lastEmail = computed(() => {
   const emails = sentEmailsQuery.data.value?.slice() || [];
   emails.sort((a, b) => (b.timeSent || 0) - (a.timeSent || 0));

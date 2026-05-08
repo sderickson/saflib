@@ -1,4 +1,5 @@
 import { expect, type Page } from "@playwright/test";
+import { linkToHref, type Link } from "@saflib/links";
 import { registration_intro as introStrings } from "./RegistrationIntro.strings.ts";
 
 /**
@@ -89,6 +90,32 @@ export class RegistrationPageFixture {
     }
     await this.fillPassword(password);
     await this.submitPasswordStep();
+  }
+
+  /**
+   * Opens the admin last-mock-email page (`adminLinks.lastMockEmail` in `@pathclerk/daemon-links`),
+   * then follows the Kratos verification link from the newest matching mock-sent email.
+   *
+   * @param params.subdomain — SDK service subdomain for `GET /email/sent` (CaseDaemon: `"identity"`).
+   */
+  async completeEmailVerification(
+    adminLastEmailLink: Link,
+    params: { subdomain: string; userEmail: string },
+  ): Promise<void> {
+    const domain = process.env.DOMAIN ?? "daemon.docker.localhost";
+    const url = linkToHref(adminLastEmailLink, {
+      domain,
+      params: {
+        subdomain: params.subdomain,
+        userEmail: params.userEmail,
+      },
+    });
+    await this.page.goto(url);
+    const kratosLink = this.page.locator(
+      'a[href*="verification"], a[href*="self-service"]',
+    ).first();
+    await expect(kratosLink).toBeVisible({ timeout: 60_000 });
+    await kratosLink.click();
   }
 }
 

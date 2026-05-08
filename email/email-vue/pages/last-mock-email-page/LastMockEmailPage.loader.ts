@@ -31,18 +31,18 @@ export function useLastMockEmailPageLoader() {
     throw new Error("Subdomain query param is required");
   }
 
-  // const profileQuery = useQuery(getProfile());
-  // const email = computed(() => profileQuery.data.value?.email);
-  const email = "stub@example.com";
-  const emailLoaded = true;
+  const userEmail = computed(() => {
+    const q = route.query.userEmail;
+    if (typeof q === "string" && q.trim()) {
+      return q.trim();
+    }
+    return "stub@example.com";
+  });
 
   return {
     sentEmailsQuery: useQuery({
-      ...getSentEmails(
-        subdomain,
-        computed(() => email),
-      ),
-      enabled: emailLoaded,
+      ...getSentEmails(subdomain, userEmail),
+      enabled: true,
     }),
   };
 }
