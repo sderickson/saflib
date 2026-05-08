@@ -103,6 +103,9 @@ export class RegistrationPageFixture {
     adminLastEmailLink: Link,
     params: { subdomain?: string; userEmail: string },
   ): Promise<void> {
+    // wait briefly so the user becomes logged in
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
     const domain = process.env.DOMAIN ?? "daemon.docker.localhost";
     const subdomain = params.subdomain ?? "api";
     const url = linkToHref(adminLastEmailLink, {
