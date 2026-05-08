@@ -2,6 +2,7 @@ import { expect, test as setup } from "@playwright/test";
 
 const serviceSubdomains = process.env.SERVICE_SUBDOMAINS?.split(",") || [];
 const domain = process.env.DOMAIN;
+const protocol = process.env.PROTOCOL;
 
 setup("check docker service health", async ({ page }) => {
   let response;
@@ -13,7 +14,7 @@ setup("check docker service health", async ({ page }) => {
     anyUnhealthy = false;
     for (const serviceSubdomain of serviceSubdomains) {
       // uses @saflib/express's health middleware
-      const url = `http://${serviceSubdomain}.${domain}/health`;
+      const url = `${protocol}://${serviceSubdomain}.${domain}/health`;
       response = await page.goto(url);
       console.log(`Response from ${url}: ${response?.status()}`);
       if (response && response.status() !== 200) {
