@@ -116,7 +116,7 @@ export class RegistrationPageFixture {
     const kratosLink = this.page
       .locator('a[href*="verification"], a[href*="self-service"]')
       .first();
-    await expect(kratosLink).toBeVisible({ timeout: 60_000 });
+    await expect(kratosLink).toBeVisible();
     await kratosLink.click();
     const verificationPage = new VerificationPageFixture(this.page);
     await verificationPage.toBeVisible();
