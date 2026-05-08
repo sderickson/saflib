@@ -23,7 +23,7 @@ jobs:
       - name: Generate Docker
         run: node --experimental-strip-types --disable-warning=ExperimentalWarning saflib/dev-tools/src/saf-docker-cli.ts generate
       - name: Pre-build images
-        run: npm run build-no-generate
+        run: npm run build:ci
         working-directory: ./deploy
       - name: Run server
         run: npm run prod-local &> last-docker-compose.log &
