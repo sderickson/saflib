@@ -5,6 +5,15 @@ import { typedEnv } from "@saflib/env";
 import { makeCsrfMiddleware } from "./csrf.ts";
 import { makeCsrfTokenMiddleware } from "./csrf-token.ts";
 
+const getSetCookieValues = (
+  value: string | string[] | undefined,
+): string[] | undefined => {
+  if (value === undefined) {
+    return undefined;
+  }
+  return Array.isArray(value) ? value : [value];
+};
+
 const parseSetCookie = (setCookieHeader: string): Record<string, string> => {
   const parts = setCookieHeader.split(";").map((part) => part.trim());
   const [nameValue, ...attributes] = parts;
@@ -43,10 +52,9 @@ describe("CSRF token middleware", () => {
     const response = await request(app).get("/issue");
 
     expect(response.status).toBe(200);
-    expect(response.headers["set-cookie"]).toBeTruthy();
-    const csrfCookie = (response.headers["set-cookie"] as string[]).find((c) =>
-      c.startsWith("_csrf_token="),
-    );
+    const setCookies = getSetCookieValues(response.headers["set-cookie"]);
+    expect(setCookies).toBeTruthy();
+    const csrfCookie = setCookies!.find((c) => c.startsWith("_csrf_token="));
     expect(csrfCookie).toBeTruthy();
 
     const parsed = parseSetCookie(csrfCookie as string);
@@ -75,8 +83,7 @@ describe("CSRF token middleware", () => {
       .set("Cookie", [`_csrf_token=${token}`]);
 
     expect(response.status).toBe(200);
-    const setCookie = response.headers["set-cookie"] as string[] | undefined;
-    expect(setCookie).toBeUndefined();
+    expect(getSetCookieValues(response.headers["set-cookie"])).toBeUndefined();
   });
 });
 
