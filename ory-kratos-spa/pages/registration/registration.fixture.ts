@@ -8,6 +8,16 @@ export class RegistrationPageFixture {
   constructor(public readonly page: Page) {}
 
   /**
+   * Opens the auth host registration entry route (two-step Kratos flow).
+   * Uses {@link process.env.PROTOCOL} and {@link process.env.DOMAIN} (e.g. Playwright client config).
+   */
+  async gotoRegistration(): Promise<void> {
+    const protocol = process.env.PROTOCOL ?? "http";
+    const domain = process.env.DOMAIN ?? "daemon.docker.localhost";
+    await this.page.goto(`${protocol}://auth.${domain}/new-registration`);
+  }
+
+  /**
    * Asserts the registration view is visible (intro + flow shell), like `expect(locator).toBeVisible()`.
    */
   async toBeVisible(): Promise<void> {
@@ -66,12 +76,17 @@ export class RegistrationPageFixture {
 
   /**
    * Full registration: email step, then password step (two-step Kratos flow).
+   * Fills first/last name only when those traits exist in the flow (schema-dependent).
    */
   async completeRegistration(email: string, password: string): Promise<void> {
     await this.fillEmail(email);
     await this.submitEmailStep();
-    await this.fillFirstName("Test");
-    await this.fillLastName("User");
+    if ((await this.firstNameInput.count()) > 0) {
+      await this.fillFirstName("Test");
+    }
+    if ((await this.lastNameInput.count()) > 0) {
+      await this.fillLastName("User");
+    }
     await this.fillPassword(password);
     await this.submitPasswordStep();
   }
