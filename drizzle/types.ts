@@ -40,6 +40,15 @@ export interface DbOptions {
    * Example: `{ journal_mode: "WAL", synchronous: "FULL" }`.
    */
   pragmas?: Record<string, string | number>;
+
+  /**
+   * If true, skip running drizzle migrations on connect/attach. Use for
+   * read-only or verify-only opens of an existing on-disk SQLite file (e.g.
+   * verifying a sealed audit-log snapshot, opening an archived file for
+   * forensics) where mutating the file's `__drizzle_migrations` table before
+   * read would change the bytes we're about to verify.
+   */
+  skipMigrations?: boolean;
 }
 
 /**

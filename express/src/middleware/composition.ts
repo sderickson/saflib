@@ -12,6 +12,7 @@ import { blockHtml } from "./blockHtml.ts";
 import { metricsMiddleware } from "./metrics.ts";
 import { makeAuthMiddleware } from "./auth.ts";
 import { makeCsrfMiddleware } from "./csrf.ts";
+import { makeCsrfTokenMiddleware } from "./csrf-token.ts";
 import multer from "multer";
 
 /**
@@ -62,6 +63,7 @@ export const createGlobalMiddleware = (
   return [
     metricsMiddleware,
     helmet(),
+    makeCsrfTokenMiddleware(),
     healthRouter,
     everyRequestLogger,
     json(jsonLimit ? { limit: jsonLimit } : undefined),

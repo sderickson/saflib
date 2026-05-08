@@ -1,8 +1,18 @@
 import { getServiceName } from "@saflib/node";
 import promBundle from "express-prom-bundle";
 import { Router } from "express";
+import type { Request } from "express";
 
 export const metricsRouter = Router();
+
+/** Path label: Express route template from OpenAPI, or "unspecified" when no spec match. */
+function normalizeMetricPath(req: Request): string {
+  const expressRoute = req.openapi?.expressRoute;
+  if (typeof expressRoute === "string" && expressRoute.length > 0) {
+    return expressRoute;
+  }
+  return "unspecified";
+}
 
 // block external access to /metrics
 metricsRouter.get("/metrics", (req, res, next) => {
@@ -19,18 +29,14 @@ export const metricsMiddleware = promBundle({
   includeStatusCode: true,
   customLabels: {
     service_name: "",
+    operation_id: "",
   },
   includeUp: true,
-  transformLabels: (labels, req, res) => {
+  normalizePath: normalizeMetricPath,
+  transformLabels: (labels, req) => {
     labels.service_name = getServiceName();
-    // For 404s stemming from random requests trying to find vulnerabilities
-    if (res.statusCode === 404 && !req.openapi) {
-      labels.path = "/#404";
-    }
-    // OPTIONS tend to pollute metrics, so group successful ones
-    if (res.statusCode === 204 && req.method === "OPTIONS") {
-      labels.path = "/#options";
-    }
+    const opId = req.openapi?.schema?.operationId;
+    labels.operation_id = typeof opId === "string" ? opId : "";
     return labels;
   },
 });
