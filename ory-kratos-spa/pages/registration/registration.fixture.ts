@@ -96,17 +96,18 @@ export class RegistrationPageFixture {
    * Opens the admin last-mock-email page (`adminLinks.lastMockEmail` in `@pathclerk/daemon-links`),
    * then follows the Kratos verification link from the newest matching mock-sent email.
    *
-   * @param params.subdomain — SDK service subdomain for `GET /email/sent` (CaseDaemon: `"identity"`).
+   * @param params.subdomain — SDK service subdomain for `GET /email/sent` (defaults to `"api"`).
    */
   async completeEmailVerification(
     adminLastEmailLink: Link,
-    params: { subdomain: string; userEmail: string },
+    params: { subdomain?: string; userEmail: string },
   ): Promise<void> {
     const domain = process.env.DOMAIN ?? "daemon.docker.localhost";
+    const subdomain = params.subdomain ?? "api";
     const url = linkToHref(adminLastEmailLink, {
       domain,
       params: {
-        subdomain: params.subdomain,
+        subdomain,
         userEmail: params.userEmail,
       },
     });

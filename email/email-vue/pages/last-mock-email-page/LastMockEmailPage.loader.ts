@@ -1,22 +1,30 @@
-// import { getProfile } from "@saflib/auth";
 import { computed, type Ref } from "vue";
 import { useQuery } from "@tanstack/vue-query";
 import { useRoute } from "vue-router";
 import { handleClientMethod } from "@saflib/sdk";
 import { createSafClient } from "@saflib/sdk";
 import type { paths as emailPaths } from "@saflib/email-spec";
+import {
+  kratosEmailFromSession,
+  useKratosSession,
+} from "@saflib/ory-kratos-sdk";
 
 export const getSentEmails = (
-  subdomain: string,
-  email?: Ref<string | undefined>,
+  subdomain: Ref<string>,
+  userEmail: Ref<string>,
 ) => {
-  const client = createSafClient<emailPaths>(subdomain);
   return {
-    queryKey: ["sent-emails", "auth", email],
+    queryKey: computed(() => [
+      "sent-emails",
+      subdomain.value,
+      userEmail.value,
+    ]),
     queryFn: async () => {
+      const client = createSafClient<emailPaths>(subdomain.value);
+      const q = userEmail.value.trim();
       return handleClientMethod(
         client.GET("/email/sent", {
-          params: { query: { userEmail: email?.value } },
+          params: { query: { userEmail: q || undefined } },
         }),
       );
     },
@@ -25,24 +33,41 @@ export const getSentEmails = (
 
 export function useLastMockEmailPageLoader() {
   const route = useRoute();
-  const subdomain = route.query.subdomain as string;
-  if (!subdomain) {
-    console.log("subdomain is required", route.query);
-    throw new Error("Subdomain query param is required");
-  }
+  const { data: session, status: sessionStatus } = useKratosSession();
+
+  const subdomain = computed(() => {
+    const q = route.query.subdomain;
+    if (typeof q === "string" && q.trim()) {
+      return q.trim();
+    }
+    return "api";
+  });
 
   const userEmail = computed(() => {
     const q = route.query.userEmail;
     if (typeof q === "string" && q.trim()) {
       return q.trim();
     }
-    return "stub@example.com";
+    return kratosEmailFromSession(session.value) ?? "";
+  });
+
+  const sentEmailsEnabled = computed(() => {
+    const explicitUserEmail =
+      typeof route.query.userEmail === "string" &&
+      route.query.userEmail.trim().length > 0;
+    if (explicitUserEmail) {
+      return true;
+    }
+    return (
+      sessionStatus.value === "success" &&
+      !!kratosEmailFromSession(session.value)
+    );
   });
 
   return {
     sentEmailsQuery: useQuery({
       ...getSentEmails(subdomain, userEmail),
-      enabled: true,
+      enabled: sentEmailsEnabled,
     }),
   };
 }

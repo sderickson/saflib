@@ -33,6 +33,9 @@ const mockEmails: EmailResponseBody["listSentEmails"][200] = [
 ];
 
 const handlers = [
+  http.get("http://kratos.localhost:3000/sessions/whoami", () => {
+    return HttpResponse.json(null, { status: 401 });
+  }),
   http.get("http://app.localhost:3000/email/sent", () => {
     return HttpResponse.json(mockEmails);
   }),
@@ -45,7 +48,7 @@ describe("LastMockEmailPage", () => {
   expect(server).toBeDefined();
 
   const mountComponent = async (component: Component) => {
-    const route = `/last-email?subdomain=app`;
+    const route = `/last-email?subdomain=app&userEmail=recipient@example.com`;
     await router.push(route);
     const res = mountTestApp(component);
     return res;
