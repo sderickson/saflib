@@ -15,10 +15,10 @@
   },
   "dependencies": {
     "@saflib/drizzle": "*",
-    "@saflib/env": "*",
-    "drizzle-kit": "*"
+    "@saflib/env": "*"
   },
   "devDependencies": {
-    "@saflib/vitest": "*"
+    "@saflib/vitest": "*",
+    "drizzle-kit": "*"
   }
 }

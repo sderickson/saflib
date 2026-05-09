@@ -10,7 +10,12 @@ RUN export $(grep -v "^#" /app/env.__product-name__.prod-local | xargs) && DOMAI
 
 # END WORKFLOW AREA
 
-FROM caddy:2.11.2
+FROM caddy:2.11.2-builder-alpine AS caddy-rebuild
+RUN xcaddy build v2.11.2
+
+FROM caddy:2.11.2-alpine
+COPY --from=caddy-rebuild /usr/bin/caddy /usr/bin/caddy
+RUN apk upgrade --no-cache && rm -rf /var/cache/apk/*
 
 # Copy over static client builds here:
 COPY --from=__organization-name__-__product-name__-root-builder /app/__product-name__/clients/root/.vitepress/dist /srv/__product-name__-root

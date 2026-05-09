@@ -18,11 +18,11 @@
     "@saflib/node": "*",
     "@saflib/utils": "*",
     "better-sqlite3": "12.9.0",
-    "drizzle-kit": "^0.31.10",
     "drizzle-orm": "^0.45.1"
   },
   "devDependencies": {
     "@saflib/vitest": "*",
-    "@types/better-sqlite3": "^7.0.0"
+    "@types/better-sqlite3": "^7.0.0",
+    "drizzle-kit": "^0.31.10"
   }
 }
