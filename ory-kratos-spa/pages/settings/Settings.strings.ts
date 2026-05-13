@@ -4,6 +4,8 @@ export const settings_tabs = {
   totp: "Authenticator app (TOTP)",
   passkey: "Passkeys",
   sessions: "Sessions",
+  /** `aria-label` for the settings section nav (sidebar). */
+  nav_aria_label: "Settings sections",
 };
 
 export const settings_sessions = {

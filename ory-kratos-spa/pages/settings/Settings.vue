@@ -1,171 +1,203 @@
 <template>
   <template v-if="queryData instanceof SettingsFlowFetched && flow">
-    <SettingsIntro />
+    <div class="settings-page text-start">
+      <SettingsIntro />
 
-    <v-alert
-      v-if="showPasswordRecoveryPrompt"
-      type="info"
-      variant="tonal"
-      class="mb-4"
-      density="comfortable"
-    >
-      {{ t(passwordRecoveryStrings.prompt) }}
-    </v-alert>
+      <v-alert
+        v-if="showPasswordRecoveryPrompt"
+        type="info"
+        variant="tonal"
+        class="mb-4"
+        density="comfortable"
+      >
+        {{ t(passwordRecoveryStrings.prompt) }}
+      </v-alert>
 
-    <v-alert
-      v-if="submitError"
-      type="error"
-      variant="tonal"
-      class="mb-4"
-      closable
-      @click:close="clearSubmitError"
-    >
-      {{ submitError }}
-    </v-alert>
+      <v-alert
+        v-if="submitError"
+        type="error"
+        variant="tonal"
+        class="mb-4"
+        closable
+        @click:close="clearSubmitError"
+      >
+        {{ submitError }}
+      </v-alert>
 
-    <v-tabs v-model="tab" class="mb-4" color="primary">
-      <v-tab value="email">{{ t(tabs.general) }}</v-tab>
-      <v-tab value="password">{{ t(tabs.password) }}</v-tab>
-      <v-tab v-if="hasTotpSettings" value="totp">{{ t(tabs.totp) }}</v-tab>
-      <v-tab v-if="hasPasskeySettings" value="passkey">{{
-        t(tabs.passkey)
-      }}</v-tab>
-      <v-tab value="sessions">{{ t(tabs.sessions) }}</v-tab>
-    </v-tabs>
-
-    <v-window v-model="tab">
-      <v-window-item value="email">
-        <SettingsGroupUi
-          :flow="flow"
-          group="profile"
-          :submitting="submitting"
-          id-prefix="settings-profile"
-          :message-filter="settingsMessageFilter"
-          @submit="submitSettingsForm"
-        />
-      </v-window-item>
-      <v-window-item value="password">
-        <SettingsGroupUi
-          :flow="flow"
-          group="password"
-          :submitting="submitting"
-          id-prefix="settings-password"
-          :message-filter="settingsMessageFilter"
-          @submit="submitSettingsForm"
-        />
-      </v-window-item>
-      <v-window-item v-if="hasTotpSettings" value="totp">
-        <SettingsGroupUi
-          :flow="flow"
-          group="totp"
-          :submitting="submitting"
-          id-prefix="settings-totp"
-          :message-filter="settingsMessageFilter"
-          @submit="submitSettingsForm"
-        />
-      </v-window-item>
-      <v-window-item v-if="hasPasskeySettings" value="passkey">
-        <SettingsGroupUi
-          :flow="flow"
-          group="passkey"
-          :submitting="submitting"
-          id-prefix="settings-passkey"
-          :message-filter="settingsMessageFilter"
-          :identity-passkey-display-fallback="sessionEmail"
-          @submit="submitSettingsForm"
-        />
-      </v-window-item>
-      <v-window-item value="sessions">
-        <v-alert
-          v-if="sessionsBanner"
-          type="error"
-          variant="tonal"
-          class="mb-4"
-          density="comfortable"
-          closable
-          @click:close="clearSessionsBanner"
+      <div
+        class="settings-body d-flex flex-column flex-md-row ga-6 align-md-start"
+      >
+        <nav
+          class="settings-nav flex-shrink-0"
+          :aria-label="t(tabs.nav_aria_label)"
         >
-          {{ sessionsBanner }}
-        </v-alert>
-        <div class="d-flex flex-wrap ga-2 mb-4">
-          <v-btn
-            color="error"
-            variant="tonal"
-            :disabled="otherSessionsCount === 0"
-            :loading="disableMyOtherSessions.isPending.value"
-            @click="signOutOtherDevices"
-          >
-            {{ t(sessionsStrings.sign_out_others) }}
-          </v-btn>
+          <v-list class="pa-0 settings-nav-list" density="comfortable" nav>
+            <v-list-item
+              v-for="item in sidebarItems"
+              :key="item.value"
+              :active="tab === item.value"
+              color="primary"
+              rounded="lg"
+              link
+              class="mb-1"
+              :aria-current="tab === item.value ? 'page' : undefined"
+              @click="tab = item.value"
+            >
+              <v-list-item-title class="text-body-2 text-wrap">
+                {{ item.title }}
+              </v-list-item-title>
+            </v-list-item>
+          </v-list>
+        </nav>
+
+        <div class="settings-panel flex-grow-1">
+          <v-window v-model="tab" class="settings-window">
+            <v-window-item value="email">
+              <SettingsGroupUi
+                :flow="flow"
+                group="profile"
+                :submitting="submitting"
+                id-prefix="settings-profile"
+                :message-filter="settingsMessageFilter"
+                @submit="submitSettingsForm"
+              />
+            </v-window-item>
+            <v-window-item value="password">
+              <SettingsGroupUi
+                :flow="flow"
+                group="password"
+                :submitting="submitting"
+                id-prefix="settings-password"
+                :message-filter="settingsMessageFilter"
+                @submit="submitSettingsForm"
+              />
+            </v-window-item>
+            <v-window-item v-if="hasTotpSettings" value="totp">
+              <SettingsGroupUi
+                :flow="flow"
+                group="totp"
+                :submitting="submitting"
+                id-prefix="settings-totp"
+                :message-filter="settingsMessageFilter"
+                @submit="submitSettingsForm"
+              />
+            </v-window-item>
+            <v-window-item v-if="hasPasskeySettings" value="passkey">
+              <SettingsGroupUi
+                :flow="flow"
+                group="passkey"
+                :submitting="submitting"
+                id-prefix="settings-passkey"
+                :message-filter="settingsMessageFilter"
+                :identity-passkey-display-fallback="sessionEmail"
+                @submit="submitSettingsForm"
+              />
+            </v-window-item>
+            <v-window-item value="sessions">
+              <v-alert
+                v-if="sessionsBanner"
+                type="error"
+                variant="tonal"
+                class="mb-4"
+                density="comfortable"
+                closable
+                @click:close="clearSessionsBanner"
+              >
+                {{ sessionsBanner }}
+              </v-alert>
+              <div class="d-flex flex-wrap ga-2 mb-4">
+                <v-btn
+                  color="error"
+                  variant="tonal"
+                  :disabled="otherSessionsCount === 0"
+                  :loading="disableMyOtherSessions.isPending.value"
+                  @click="signOutOtherDevices"
+                >
+                  {{ t(sessionsStrings.sign_out_others) }}
+                </v-btn>
+              </div>
+              <v-card>
+                <v-card-text
+                  v-if="sessionsTableLoading"
+                  class="text-center py-8"
+                >
+                  <v-progress-circular indeterminate color="primary" />
+                </v-card-text>
+                <v-card-text
+                  v-else-if="(mySessionsQuery.data.value ?? []).length === 0"
+                  class="text-medium-emphasis"
+                >
+                  —
+                </v-card-text>
+                <v-table v-else>
+                  <thead>
+                    <tr>
+                      <th class="text-left">
+                        {{ t(sessionsStrings.table_device) }}
+                      </th>
+                      <th class="text-left">
+                        {{ t(sessionsStrings.table_ip) }}
+                      </th>
+                      <th class="text-left">
+                        {{ t(sessionsStrings.table_signed_in) }}
+                      </th>
+                      <th class="text-left">
+                        {{ t(sessionsStrings.table_actions) }}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="row in sessionsSorted" :key="row.id">
+                      <td>
+                        <span class="text-body-2">{{
+                          sessionUserAgent(row)
+                        }}</span>
+                        <v-chip
+                          v-if="row.id === currentSessionId"
+                          class="ml-2"
+                          size="small"
+                          color="primary"
+                          variant="flat"
+                        >
+                          {{ t(sessionsStrings.badge_this_device) }}
+                        </v-chip>
+                      </td>
+                      <td>{{ sessionIp(row) }}</td>
+                      <td>{{ formatSessionTime(row.authenticated_at) }}</td>
+                      <td>
+                        <v-btn
+                          v-if="row.id === currentSessionId"
+                          color="error"
+                          variant="text"
+                          size="small"
+                          :loading="browserLogoutPending"
+                          @click="signOutThisDevice"
+                        >
+                          {{ t(sessionsStrings.sign_out_this) }}
+                        </v-btn>
+                        <v-btn
+                          v-else
+                          color="error"
+                          variant="text"
+                          size="small"
+                          :loading="
+                            disableMySession.isPending.value &&
+                            disableMySession.variables.value === row.id
+                          "
+                          @click="revokeSession(row.id)"
+                        >
+                          {{ t(sessionsStrings.revoke) }}
+                        </v-btn>
+                      </td>
+                    </tr>
+                  </tbody>
+                </v-table>
+              </v-card>
+            </v-window-item>
+          </v-window>
         </div>
-        <v-card>
-          <v-card-text v-if="sessionsTableLoading" class="text-center py-8">
-            <v-progress-circular indeterminate color="primary" />
-          </v-card-text>
-          <v-card-text
-            v-else-if="(mySessionsQuery.data.value ?? []).length === 0"
-            class="text-medium-emphasis"
-          >
-            —
-          </v-card-text>
-          <v-table v-else>
-            <thead>
-              <tr>
-                <th class="text-left">{{ t(sessionsStrings.table_device) }}</th>
-                <th class="text-left">{{ t(sessionsStrings.table_ip) }}</th>
-                <th class="text-left">
-                  {{ t(sessionsStrings.table_signed_in) }}
-                </th>
-                <th class="text-left">{{ t(sessionsStrings.table_actions) }}</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="row in sessionsSorted" :key="row.id">
-                <td>
-                  <span class="text-body-2">{{ sessionUserAgent(row) }}</span>
-                  <v-chip
-                    v-if="row.id === currentSessionId"
-                    class="ml-2"
-                    size="small"
-                    color="primary"
-                    variant="flat"
-                  >
-                    {{ t(sessionsStrings.badge_this_device) }}
-                  </v-chip>
-                </td>
-                <td>{{ sessionIp(row) }}</td>
-                <td>{{ formatSessionTime(row.authenticated_at) }}</td>
-                <td>
-                  <v-btn
-                    v-if="row.id === currentSessionId"
-                    color="error"
-                    variant="text"
-                    size="small"
-                    :loading="browserLogoutPending"
-                    @click="signOutThisDevice"
-                  >
-                    {{ t(sessionsStrings.sign_out_this) }}
-                  </v-btn>
-                  <v-btn
-                    v-else
-                    color="error"
-                    variant="text"
-                    size="small"
-                    :loading="
-                      disableMySession.isPending.value &&
-                      disableMySession.variables.value === row.id
-                    "
-                    @click="revokeSession(row.id)"
-                  >
-                    {{ t(sessionsStrings.revoke) }}
-                  </v-btn>
-                </td>
-              </tr>
-            </tbody>
-          </v-table>
-        </v-card>
-      </v-window-item>
-    </v-window>
+      </div>
+    </div>
   </template>
 
   <SettingsAalReauthRedirect
@@ -242,9 +274,14 @@ const flow = computed((): SettingsFlow | null => {
 
 const flowIdForSubmit = computed(() => flow.value?.id ?? "");
 
-const tab = ref<"email" | "password" | "totp" | "passkey" | "sessions">(
-  "email",
-);
+type SettingsSectionTab =
+  | "email"
+  | "password"
+  | "totp"
+  | "passkey"
+  | "sessions";
+
+const tab = ref<SettingsSectionTab>("email");
 
 const { data: kratosSession, isPending: kratosSessionPending } =
   useKratosSession();
@@ -370,6 +407,17 @@ const hasPasskeySettings = computed(() =>
   Boolean(flow.value?.ui.nodes.some((node) => node.group === "passkey")),
 );
 
+const sidebarItems = computed((): { value: SettingsSectionTab; title: string }[] => {
+  const items: { value: SettingsSectionTab; title: string; show: boolean }[] = [
+    { value: "email", title: t(tabs.general), show: true },
+    { value: "password", title: t(tabs.password), show: true },
+    { value: "totp", title: t(tabs.totp), show: hasTotpSettings.value },
+    { value: "passkey", title: t(tabs.passkey), show: hasPasskeySettings.value },
+    { value: "sessions", title: t(tabs.sessions), show: true },
+  ];
+  return items.filter((i) => i.show).map(({ value, title }) => ({ value, title }));
+});
+
 const showPasswordRecoveryPrompt = computed(() =>
   flow.value ? settingsFlowHasPasswordRecoveryMessage(flow.value) : false,
 );
@@ -408,6 +456,11 @@ watch(
   { immediate: true },
 );
 
+watch([tab, hasTotpSettings, hasPasskeySettings], () => {
+  if (tab.value === "totp" && !hasTotpSettings.value) tab.value = "email";
+  if (tab.value === "passkey" && !hasPasskeySettings.value) tab.value = "email";
+});
+
 watch(tab, (next, prev) => {
   if (next !== "sessions") {
     sessionsActionError.value = "";
@@ -439,3 +492,32 @@ const settingsRestartQuery = computed(() => {
   return q;
 });
 </script>
+
+<style scoped>
+.settings-page {
+  width: 100%;
+}
+
+.settings-body {
+  width: 100%;
+}
+
+.settings-nav {
+  width: 100%;
+}
+
+@media (min-width: 960px) {
+  .settings-nav {
+    width: 220px;
+    position: sticky;
+    align-self: flex-start;
+    top: 8px;
+  }
+}
+
+.settings-panel {
+  max-width: 800px;
+  width: 100%;
+  min-width: 0;
+}
+</style>
