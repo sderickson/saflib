@@ -17,6 +17,7 @@
 </template>
 
 <script setup lang="ts">
+import type { RegistrationFlow } from "@ory/client";
 import {
   FlowGone,
   RegistrationFlowFetched,
@@ -27,16 +28,17 @@ import CsrfViolationPanel from "../common/CsrfViolationPanel.vue";
 import FlowGonePanel from "../common/FlowGonePanel.vue";
 import UnhandledResponsePanel from "../common/UnhandledResponsePanel.vue";
 import RegistrationFlowForm from "./RegistrationFlowForm.vue";
+import { registrationFlowHidingPasskeySignup } from "./kratosRegistrationPasskeyUi.logic.ts";
 import { computed, toValue } from "vue";
 
 const { getRegistrationFlowQuery } = useRegistrationLoader();
 
 const queryData = computed(() => toValue(getRegistrationFlowQuery.data));
 
-const flow = computed(() => {
+const flow = computed((): RegistrationFlow | null => {
   const d = queryData.value;
   if (d instanceof RegistrationFlowFetched) {
-    return d.flow;
+    return registrationFlowHidingPasskeySignup(d.flow);
   }
   return null;
 });
