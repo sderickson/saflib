@@ -27,6 +27,7 @@ export function makeAdminHeaders(
     "x-user-email": email,
     "x-user-email-verified": "true",
     "x-user-is-admin": "true",
+    "x-user-mfa-completed": "true",
     "x-requested-with": "XMLHttpRequest",
   };
 }

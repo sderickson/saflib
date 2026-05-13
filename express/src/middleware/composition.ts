@@ -85,6 +85,8 @@ export interface ScopedMiddlewareOptions {
   enforceAuth?: boolean;
   adminRequired?: boolean;
   emailVerificationRequired?: boolean;
+  /** When true, require an MFA session (AAL2+), same as the `mfa-required` OpenAPI tag. */
+  mfaRequired?: boolean;
 }
 
 /**
@@ -100,6 +102,7 @@ export const createScopedMiddleware = (
     enforceAuth,
     adminRequired,
     emailVerificationRequired,
+    mfaRequired,
   } = options;
 
   let openApiValidatorMiddleware: Handler[] = [];
@@ -116,6 +119,7 @@ export const createScopedMiddleware = (
       makeAuthMiddleware({
         adminRequired,
         emailVerificationRequired,
+        mfaRequired,
       }),
     ];
   }

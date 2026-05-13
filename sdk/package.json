@@ -4,6 +4,7 @@
   "type": "module",
   "exports": {
     ".": "./index.ts",
+    "./auth-error-codes": "./src/auth-error-codes.ts",
     "./components": "./components/index.ts",
     "./testing": "./testing/index.ts",
     "./testing/mock": "./testing/mock.ts",

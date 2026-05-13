@@ -10,7 +10,7 @@ import {
 } from "@saflib/node";
 import type { Handler, Request } from "express";
 import createError from "http-errors";
-import type { Session } from "@ory/client";
+import { AuthenticatorAssuranceLevel, type Session } from "@ory/client";
 import { typedEnv } from "@saflib/node";
 
 function defaultKratosBrowserUrl(): string {
@@ -58,12 +58,18 @@ async function resolveKratosAuth(cookie: string): Promise<Auth> {
   );
   const isAdmin = adminEmails.has(userEmail) && emailVerified;
 
+  const aal = session.authenticator_assurance_level;
+  const mfaCompleted =
+    aal === AuthenticatorAssuranceLevel.Aal2 ||
+    aal === AuthenticatorAssuranceLevel.Aal3;
+
   return {
     userId,
     userEmail,
     userPhone,
     isAdmin,
     emailVerified,
+    mfaCompleted,
   };
 }
 
@@ -73,6 +79,7 @@ function resolveTestAuth(req: Request): Auth | undefined {
   const userIsAdmin = req.headers["x-user-is-admin"] === "true";
   const emailVerified = req.headers["x-user-email-verified"];
   const userPhone = req.headers["x-user-phone"];
+  const mfaCompleted = req.headers["x-user-mfa-completed"] === "true";
   if (userId && userEmail) {
     return {
       userId: userId as string,
@@ -83,6 +90,7 @@ function resolveTestAuth(req: Request): Auth | undefined {
           : undefined,
       isAdmin: userIsAdmin && emailVerified === "true",
       emailVerified: emailVerified === "true",
+      mfaCompleted,
     };
   }
   return undefined;
