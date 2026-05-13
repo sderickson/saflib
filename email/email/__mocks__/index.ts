@@ -34,7 +34,8 @@ afterEach(() => {
 });
 
 vi.mock("nodemailer", async (importOriginal) => {
-  const originalModule = await importOriginal<typeof import("nodemailer")>();
+  type Nodemailer = typeof import("nodemailer");
+  const originalModule = await (importOriginal as () => Promise<Nodemailer>)();
   const mockSendMail = vi.fn();
   return {
     ...originalModule,

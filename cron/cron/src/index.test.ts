@@ -194,7 +194,12 @@ describe("startJobs", () => {
 
     const setStatusSpy = vi
       .spyOn(jobSettingsDb, "setLastRunStatus")
-      .mockImplementation(async (dbKey, name, status) => {
+      .mockImplementation(
+        async (
+          dbKey: DbKey,
+          name: string,
+          status: "success" | "fail" | "running" | "timed out",
+        ) => {
         if (status === "fail") {
           // Throw the specific error for the 'fail' case
           throw dbError;

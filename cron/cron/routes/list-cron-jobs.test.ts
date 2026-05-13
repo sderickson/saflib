@@ -33,7 +33,9 @@ describe("GET /jobs", () => {
       "job2",
       false,
     );
-    assert(setting1 && setting2);
+    if (setting1 === undefined || setting2 === undefined) {
+      assert.fail("expected job settings from seed");
+    }
     seededSettings.push(setting1, setting2);
   });
 
