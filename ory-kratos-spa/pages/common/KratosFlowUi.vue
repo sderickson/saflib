@@ -73,7 +73,7 @@ const props = withDefaults(
   defineProps<{
     flow: KratosFlowUiModel | null | undefined;
     /**
-     * When set, render these nodes instead of `flow.ui.nodes` (e.g. settings tabs use a subset).
+     * When set, render these nodes instead of `flow.ui.nodes` (e.g. settings sidebar groups use a subset).
      */
     nodes?: UiNode[];
     submitting: boolean;

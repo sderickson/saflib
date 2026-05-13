@@ -45,7 +45,7 @@ describe("kratos session query", () => {
 });
 
 describe("invalidateKratosSessionQueries", () => {
-  it("calls invalidateQueries with a predicate that only matches session keys", () => {
+  it("calls invalidateQueries with a predicate that matches session and my-sessions keys", () => {
     const qc = new QueryClient();
     const spy = vi.spyOn(qc, "invalidateQueries");
     invalidateKratosSessionQueries(qc);
@@ -56,6 +56,7 @@ describe("invalidateKratosSessionQueries", () => {
     const pred = arg.predicate;
     expect(pred({ queryKey: ["kratos", "session"] } as never)).toBe(true);
     expect(pred({ queryKey: ["kratos", "session", "x"] } as never)).toBe(true);
+    expect(pred({ queryKey: ["kratos", "my-sessions"] } as never)).toBe(true);
     expect(pred({ queryKey: ["kratos", "login"] } as never)).toBe(false);
   });
 });

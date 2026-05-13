@@ -13,6 +13,7 @@ import { kratos_registration_flow } from "./pages/registration/RegistrationFlowF
 import { kratos_verification } from "./pages/verification/Verification.strings.ts";
 import { kratos_verification_flow } from "./pages/verification/VerificationFlowForm.strings.ts";
 import { login_intro } from "./pages/login/LoginIntro.strings.ts";
+import { login_mfa_setup_required } from "./pages/login/Login.strings.ts";
 import { registration_intro } from "./pages/registration/RegistrationIntro.strings.ts";
 import {
   verification_intro,
@@ -39,6 +40,7 @@ export const auth_strings = {
   kratos_verification,
   kratos_verification_flow,
   login_intro,
+  login_mfa_setup_required,
   registration_intro,
   verification_intro,
   verification_verified,

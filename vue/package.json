@@ -22,6 +22,7 @@
     "@mdi/font": "^7.4.47",
     "@saflib/links": "*",
     "@saflib/monorepo": "*",
+    "@saflib/ory-kratos-sdk": "*",
     "@saflib/playwright": "*",
     "@saflib/sdk": "*",
     "@saflib/utils": "*",

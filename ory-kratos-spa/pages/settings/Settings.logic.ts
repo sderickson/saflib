@@ -25,7 +25,13 @@ export function settingsFlowHasPasswordRecoveryMessage(
 }
 
 /** SPA-only query `tab=` values; must match {@link Settings.vue} tab model. */
-const SETTINGS_TAB_QUERY_VALUES = ["email", "password", "totp", "passkey"] as const;
+const SETTINGS_TAB_QUERY_VALUES = [
+  "email",
+  "password",
+  "totp",
+  "passkey",
+  "sessions",
+] as const;
 
 export type SettingsTabQueryValue = (typeof SETTINGS_TAB_QUERY_VALUES)[number];
 

@@ -27,6 +27,22 @@ export const kratosSessionLoggedInHandler = http.get("*/sessions/whoami", () =>
   }),
 );
 
+/** `listMySessions` — settings page and other UIs that list active devices. */
+export const kratosMySessionsHandler = http.get(
+  ({ request }) => new URL(request.url).pathname === "/sessions",
+  () =>
+    HttpResponse.json([
+      {
+        id: "test-session",
+        active: true,
+        authenticated_at: new Date().toISOString(),
+        devices: [
+          { user_agent: "Vitest", ip_address: "127.0.0.1" },
+        ],
+      },
+    ]),
+);
+
 export const registrationBrowserHandler = http.get(
   "*/self-service/registration/browser",
   ({ request }) => {
@@ -257,6 +273,7 @@ export const kratosUpdateVerificationHandler = http.post(
 
 export const kratosFakeHandlers = [
   kratosToSessionHandler,
+  kratosMySessionsHandler,
   registrationBrowserHandler,
   registrationFlowByIdHandler,
   kratosUpdateRegistrationHandler,

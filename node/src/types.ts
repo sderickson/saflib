@@ -10,6 +10,11 @@ export interface Auth {
   userPhone?: string;
   isAdmin?: boolean;
   emailVerified?: boolean;
+  /**
+   * True when the session is at AAL2 or AAL3 (e.g. password plus a second factor).
+   * Used by HTTP auth middleware for `mfa-required` routes and admin routes.
+   */
+  mfaCompleted?: boolean;
 }
 
 /**

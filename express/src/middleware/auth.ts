@@ -1,10 +1,27 @@
 import type { Handler } from "express";
 import { getSafContext } from "@saflib/node";
+import {
+  AUTH_ERROR_EMAIL_VERIFICATION_REQUIRED,
+  AUTH_ERROR_MFA_REQUIRED,
+} from "@saflib/sdk/auth-error-codes";
 
 interface AuthMiddlewareOptions {
   adminRequired?: boolean;
   /** When true, respond with 403 unless `auth.emailVerified` is true. */
   emailVerificationRequired?: boolean;
+  /**
+   * When true, respond with 403 unless the session meets MFA (AAL2+).
+   * Admin routes also require MFA via `adminRequired`.
+   */
+  mfaRequired?: boolean;
+}
+
+function forbiddenPayload(code: string) {
+  return {
+    error: "Forbidden",
+    message: "Forbidden",
+    code,
+  };
 }
 
 /**
@@ -27,14 +44,20 @@ export function drainRequest(req: import("express").Request): Promise<void> {
 export const makeAuthMiddleware = (
   options: AuthMiddlewareOptions = {},
 ): Handler => {
-  const { adminRequired, emailVerificationRequired } = options;
+  const { adminRequired, emailVerificationRequired, mfaRequired } = options;
 
   return (req, res, next): void => {
     const { auth } = getSafContext();
     const tags = req.openapi?.schema?.tags;
     const routeRequiresVerifiedEmail =
       Boolean(emailVerificationRequired) ||
-      tags?.includes("email-verified") === true;
+      tags?.includes("email-verified") === true ||
+      Boolean(adminRequired);
+
+    const routeRequiresMfa =
+      Boolean(mfaRequired) ||
+      tags?.includes("mfa-required") === true ||
+      Boolean(adminRequired);
 
     if (tags?.includes("no-auth")) {
       return next();
@@ -55,10 +78,9 @@ export const makeAuthMiddleware = (
     if (routeRequiresVerifiedEmail && auth.emailVerified !== true) {
       drainRequest(req).then(() => {
         if (!res.headersSent) {
-          res.status(403).json({
-            error: "Forbidden",
-            message: "Forbidden",
-          });
+          res
+            .status(403)
+            .json(forbiddenPayload(AUTH_ERROR_EMAIL_VERIFICATION_REQUIRED));
         }
       });
       return;
@@ -71,6 +93,15 @@ export const makeAuthMiddleware = (
             error: "Forbidden",
             message: "Forbidden",
           });
+        }
+      });
+      return;
+    }
+
+    if (routeRequiresMfa && auth.mfaCompleted !== true) {
+      drainRequest(req).then(() => {
+        if (!res.headersSent) {
+          res.status(403).json(forbiddenPayload(AUTH_ERROR_MFA_REQUIRED));
         }
       });
       return;

@@ -12,9 +12,15 @@ export function useNewLoginLoader() {
       : postAuthFallbackHref.value,
   );
 
+  const aal =
+    typeof route.query.aal === "string" && route.query.aal.trim()
+      ? route.query.aal.trim()
+      : undefined;
+
   return {
     createLoginFlowQuery: useCreateLoginFlowQuery({
       returnTo: returnTo.value,
+      aal,
     }),
   };
 }

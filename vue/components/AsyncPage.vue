@@ -4,8 +4,8 @@
   </div>
 
   <template v-else-if="isError">
-    <slot name="error" :error="firstError" :error-message="errorMessage">
-      <AsyncPageError :error="firstError" :message="errorMessage" />
+    <slot name="error" :error="firstError">
+      <AsyncPageError :error="firstError" />
     </slot>
   </template>
 
@@ -61,29 +61,5 @@ const firstError = computed(() => {
     Object.values(queryResults).find((query) => query.isError.value)?.error
       .value ?? null
   );
-});
-
-const errorMessage = computed(() => {
-  const error = firstError.value;
-
-  if (!error) {
-    return "An unexpected error occurred.";
-  }
-
-  const status = (error as { status?: number })?.status;
-  switch (status) {
-    case 401:
-      return "Not Logged In";
-    case 403:
-      return "Forbidden";
-    case 404:
-      return "Not Found";
-    case 500:
-      return "Server Error";
-    case 0:
-      return "Connection Error";
-    default:
-      return `Failed to load data (Error ${status})`;
-  }
 });
 </script>

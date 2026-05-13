@@ -28,7 +28,8 @@ export const authLinks: LinkMap = {
     params: ["return_to"],
   },
   /**
-   * Kratos login UI (existing flow). Resume with `params.flow`. Start via `/new-login?return_to=`.
+   * Kratos login UI (existing flow). Resume with `params.flow`. Start a browser flow via
+   * `/new-login?return_to=` (and optional `aal`, e.g. `aal2`, for step-up — see `newLogin`).
    */
   login: {
     subdomain,
@@ -37,12 +38,13 @@ export const authLinks: LinkMap = {
   },
   /**
    * Kratos new login UI (browser flow creation). Use `params.return_to` (full URL) for Kratos
-   * `return_to`.
+   * `return_to`. Optional `params.aal` (e.g. `aal2`) asks Kratos to upgrade the browser session’s
+   * authenticator assurance level (step-up / MFA), forwarded to `createBrowserLoginFlow`.
    */
   newLogin: {
     subdomain,
     path: "/new-login",
-    params: ["return_to"],
+    params: ["return_to", "aal"],
   },
   /**
    * Kratos email verification (code flow). Resume with `params.flow`, optional `params.token` from
@@ -119,3 +121,9 @@ export const authLinks: LinkMap = {
 };
 
 export const defaultKratosAuthLinks = authLinks;
+
+/**
+ * Value for `authLinks.newLogin` query param `aal` (and Kratos `createBrowserLoginFlow` `aal`)
+ * when requesting step-up to authenticator assurance level 2 (MFA).
+ */
+export const kratosAal2ParamValue = "aal2" as const;
