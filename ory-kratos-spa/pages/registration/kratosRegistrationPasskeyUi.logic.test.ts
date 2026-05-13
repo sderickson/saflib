@@ -36,9 +36,11 @@ describe("kratosRegistrationPasskeyUi", () => {
       attributes: {
         name: "traits.email",
         type: "email",
+        disabled: false,
         node_type: "input",
       },
       messages: [],
+      meta: {},
     };
     const out = omitRegistrationPasskeySignupNodes([email, passkeyTriggerNode()]);
     expect(out).toHaveLength(1);
