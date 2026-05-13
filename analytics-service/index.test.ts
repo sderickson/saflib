@@ -5,11 +5,17 @@ const { mockCapture, mockIdentify, mockShutdown, PostHogMock } = vi.hoisted(
     const mockCapture = vi.fn();
     const mockIdentify = vi.fn();
     const mockShutdown = vi.fn();
-    const PostHogMock = vi.fn().mockImplementation(() => ({
-      capture: mockCapture,
-      identify: mockIdentify,
-      shutdown: mockShutdown,
-    }));
+    // Vitest 4+: `new PostHog()` requires a non-arrow implementation (constructable).
+    const PostHogMock = vi.fn(function PostHogConstructor(
+      _apiKey: string,
+      _opts?: { host?: string },
+    ) {
+      return {
+        capture: mockCapture,
+        identify: mockIdentify,
+        shutdown: mockShutdown,
+      };
+    });
     return { mockCapture, mockIdentify, mockShutdown, PostHogMock };
   },
 );
