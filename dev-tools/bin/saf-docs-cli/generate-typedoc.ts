@@ -1,6 +1,10 @@
 import { execSync } from "node:child_process";
 import { type MonorepoContext } from "@saflib/dev-tools";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, unlinkSync, writeFileSync } from "node:fs";
+import path from "node:path";
+
+/** Overlay next to the package so `extends` resolves and inferred `include` matches the package. */
+const typedocPackageTsconfigName = ".typedoc-tsconfig.json";
 
 export interface GenerateTypeDocOptions {
   monorepoContext: MonorepoContext;
@@ -45,8 +49,32 @@ export function generateTypeDoc(options: GenerateTypeDocOptions) {
   entrypointCommands.forEach((entrypoint) => {
     console.log(`- ${entrypoint}`);
   });
+
+  const typedocPackageTsconfigPath = path.join(
+    currentPackageDir,
+    typedocPackageTsconfigName,
+  );
+  writeFileSync(
+    typedocPackageTsconfigPath,
+    `${JSON.stringify(
+      {
+        extends: "./tsconfig.json",
+        compilerOptions: {
+          // TypeDoc type-checks transitive workspace imports (e.g. @saflib/workflows →
+          // @saflib/utils). Those packages assume Node; the base tsconfig omits `types`.
+          types: ["node"],
+        },
+      },
+      null,
+      2,
+    )}\n`,
+    "utf-8",
+  );
+
   const command = [
     "typedoc",
+
+    `--tsconfig ./${typedocPackageTsconfigName}`,
 
     // for each entrypoint, add the entrypoint command
     ...entrypointCommands,
@@ -77,12 +105,22 @@ export function generateTypeDoc(options: GenerateTypeDocOptions) {
     "--excludeInternal",
   ].join(" ");
 
+  let typedocFailed = false;
   try {
     execSync(command, {
       stdio: "inherit",
-      cwd: monorepoContext.monorepoPackageDirectories[packageName],
+      cwd: currentPackageDir,
     });
   } catch (e) {
+    typedocFailed = true;
+  } finally {
+    try {
+      unlinkSync(typedocPackageTsconfigPath);
+    } catch {
+      /* ignore missing file */
+    }
+  }
+  if (typedocFailed) {
     console.error("Failed to generate docs. Fix warnings above.");
     process.exit(1);
   }
