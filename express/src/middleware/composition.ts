@@ -10,6 +10,7 @@ import { healthRouter } from "./health.ts";
 import { makeContextMiddleware } from "./context.ts";
 import { blockHtml } from "./blockHtml.ts";
 import { metricsMiddleware } from "./metrics.ts";
+import { noStoreCacheControl } from "./noStore.ts";
 import { makeAuthMiddleware } from "./auth.ts";
 import { makeCsrfMiddleware } from "./csrf.ts";
 import { makeCsrfTokenMiddleware } from "./csrf-token.ts";
@@ -36,6 +37,7 @@ export const createInternalMiddleware = (
   const { jsonLimit } = options;
   return [
     metricsMiddleware,
+    noStoreCacheControl,
     everyRequestLogger,
     json(
       jsonLimit
@@ -62,6 +64,7 @@ export const createGlobalMiddleware = (
   let sanitizeMiddleware: Handler[] = [blockHtml];
   return [
     metricsMiddleware,
+    noStoreCacheControl,
     helmet(),
     makeCsrfTokenMiddleware(),
     healthRouter,

@@ -1,4 +1,4 @@
-import { defineConfig } from "drizzle-kit";
+import type { Config } from "drizzle-kit";
 import path from "path";
 import { fileURLToPath } from "url";
 import { typedEnv } from "@saflib/env";
@@ -19,9 +19,9 @@ export const getMigrationsPath = () => {
   return path.join(getDirname(), "./migrations");
 };
 
-export default defineConfig({
-  out: "./migrations", // Keep relative for drizzle-kit
-  schema: "./schema.ts", // Keep relative for drizzle-kit
-  dialect: "sqlite", // Use dialect instead of driver
+export default {
+  out: "./migrations",
+  schema: "./schema.ts",
+  dialect: "sqlite",
   dbCredentials: { url: `./data/${dbName}` },
-});
+} satisfies Config;

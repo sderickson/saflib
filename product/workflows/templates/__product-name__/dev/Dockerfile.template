@@ -9,6 +9,8 @@ RUN npm run build
 # Monorepo install once — workspace closure of __organization-name__/__product-name__-dev (__product-name__ static builds for this stack).
 FROM node:24-slim AS deps
 
+RUN npm install -g npm@11.14.1
+
 WORKDIR /app
 
 #{ copy_packages }#

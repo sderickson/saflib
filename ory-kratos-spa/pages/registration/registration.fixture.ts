@@ -1,11 +1,23 @@
 import { expect, type Page } from "@playwright/test";
+import { linkToHref, type Link } from "@saflib/links";
 import { registration_intro as introStrings } from "./RegistrationIntro.strings.ts";
+import { VerificationPageFixture } from "../verification/verification.fixture.ts";
 
 /**
  * Page helpers for {@link ./Registration.vue} (Kratos registration flow UI).
  */
 export class RegistrationPageFixture {
   constructor(public readonly page: Page) {}
+
+  /**
+   * Opens the auth host registration entry route (two-step Kratos flow).
+   * Uses {@link process.env.PROTOCOL} and {@link process.env.DOMAIN} (e.g. Playwright client config).
+   */
+  async gotoRegistration(): Promise<void> {
+    const protocol = process.env.PROTOCOL ?? "http";
+    const domain = process.env.DOMAIN ?? "daemon.docker.localhost";
+    await this.page.goto(`${protocol}://auth.${domain}/new-registration`);
+  }
 
   /**
    * Asserts the registration view is visible (intro + flow shell), like `expect(locator).toBeVisible()`.
@@ -66,14 +78,53 @@ export class RegistrationPageFixture {
 
   /**
    * Full registration: email step, then password step (two-step Kratos flow).
+   * Fills first/last name only when those traits exist in the flow (schema-dependent).
    */
   async completeRegistration(email: string, password: string): Promise<void> {
     await this.fillEmail(email);
     await this.submitEmailStep();
-    await this.fillFirstName("Test");
-    await this.fillLastName("User");
+    if ((await this.firstNameInput.count()) > 0) {
+      await this.fillFirstName("Test");
+    }
+    if ((await this.lastNameInput.count()) > 0) {
+      await this.fillLastName("User");
+    }
     await this.fillPassword(password);
     await this.submitPasswordStep();
+  }
+
+  /**
+   * Opens the admin last-mock-email page (`adminLinks.lastMockEmail` in `@pathclerk/daemon-links`),
+   * then follows the Kratos verification link from the newest matching mock-sent email.
+   *
+   * @param params.subdomain — SDK service subdomain for `GET /email/sent` (defaults to `"api"`).
+   */
+  async completeEmailVerification(
+    adminLastEmailLink: Link,
+    params: { subdomain?: string; userEmail: string },
+  ): Promise<void> {
+    // wait briefly so the user becomes logged in
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    const domain = process.env.DOMAIN ?? "daemon.docker.localhost";
+    const subdomain = params.subdomain ?? "api";
+    const url = linkToHref(adminLastEmailLink, {
+      domain,
+      params: {
+        subdomain,
+        userEmail: params.userEmail,
+      },
+    });
+    await this.page.goto(url);
+    const kratosLink = this.page
+      .locator('a[href*="verification"], a[href*="self-service"]')
+      .first();
+    await expect(kratosLink).toBeVisible();
+    await kratosLink.click();
+    const verificationPage = new VerificationPageFixture(this.page);
+    await verificationPage.toBeVisible();
+    await verificationPage.clickContinue();
+    await verificationPage.expectRedirectToAppSubdomain();
   }
 }
 

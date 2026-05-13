@@ -8,6 +8,19 @@ export class LoginPageFixture {
   constructor(public readonly page: Page) {}
 
   /**
+   * Opens the auth host login flow (browser flow creation). Optional {@link returnTo} sets `?return_to=`.
+   */
+  async gotoLogin(options?: { returnTo?: string }): Promise<void> {
+    const protocol = process.env.PROTOCOL ?? "http";
+    const domain = process.env.DOMAIN ?? "daemon.docker.localhost";
+    let url = `${protocol}://auth.${domain}/new-login`;
+    if (options?.returnTo) {
+      url += `?return_to=${encodeURIComponent(options.returnTo)}`;
+    }
+    await this.page.goto(url);
+  }
+
+  /**
    * Asserts the first-step login view is visible, like `expect(locator).toBeVisible()`.
    */
   async toBeVisible(): Promise<void> {

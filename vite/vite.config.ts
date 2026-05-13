@@ -90,13 +90,18 @@ export interface MakeConfigProps {
    * Use subdomain proxy plugin
    */
   useSubdomainProxy?: boolean;
+  /**
+   * Emit `.js.map` files alongside chunks. Disable for production deploys where maps must not be served publicly (Sentry uploads may still use plugin defaults).
+   * @default true
+   */
+  sourcemap?: boolean;
 }
 
 /**
  * Make a Vite config for a multi-SPA, SAF project. Includes all the expected plugins.
  */
 export function makeConfig(config: MakeConfigProps = {}) {
-  const { plugins = [], vuetifyOverrides, monorepoRoot } = config;
+  const { plugins = [], vuetifyOverrides, monorepoRoot, sourcemap } = config;
   if (config.useSubdomainProxy !== false) {
     plugins.push(subDomainProxyPlugin);
   }
@@ -116,7 +121,7 @@ export function makeConfig(config: MakeConfigProps = {}) {
         input,
         plugins: [ignore(["**/*.test.ts"])],
       },
-      sourcemap: true,
+      sourcemap: sourcemap ?? true,
     },
 
     server: {

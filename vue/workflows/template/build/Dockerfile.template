@@ -1,6 +1,8 @@
 # syntax=docker/dockerfile:labs
 FROM node:24-slim AS builder
 
+RUN npm install -g npm@11.14.1
+
 # Copy package.json
 WORKDIR /app
 

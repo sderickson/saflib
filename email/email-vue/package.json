@@ -10,7 +10,11 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
+    "@saflib/email-spec": "*",
+    "@saflib/ory-kratos-sdk": "*",
+    "@saflib/sdk": "*",
     "@saflib/vue": "*",
-    "@saflib/cron-spec": "*"
+    "@saflib/cron-spec": "*",
+    "@tanstack/vue-query": "*"
   }
 }
