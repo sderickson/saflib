@@ -72,6 +72,18 @@ describe("createLoginFlowQueryOptions", () => {
     });
   });
 
+  it("passes aal to createBrowserLoginFlow when set", async () => {
+    mockApi.createBrowserLoginFlow.mockResolvedValue({ data: minimalFlow });
+    const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    await qc.fetchQuery(
+      createLoginFlowQueryOptions({ returnTo: "http://app/", aal: "aal2" }),
+    );
+    expect(mockApi.createBrowserLoginFlow).toHaveBeenCalledWith({
+      returnTo: "http://app/",
+      aal: "aal2",
+    });
+  });
+
   it("returns SessionAlreadyAvailable on 400 session_already_available", async () => {
     const err = new AxiosError("bad");
     err.response = {

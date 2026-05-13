@@ -10,36 +10,45 @@ export class LoginFlowCreated {
   constructor(readonly flow: LoginFlow) {}
 }
 
-export function createLoginFlowQueryKey(returnTo?: string, refresh?: boolean) {
+export function createLoginFlowQueryKey(
+  returnTo?: string,
+  refresh?: boolean,
+  aal?: string,
+) {
   return [
     "kratos",
     "login",
     "create",
-    `${returnTo ?? ""}:${refresh ? "1" : "0"}`,
+    `${returnTo ?? ""}:${refresh ? "1" : "0"}:${aal ?? ""}`,
   ] as const;
 }
 
 interface CreateLoginFlowQueryOptions {
   returnTo?: string;
   refresh?: boolean;
+  /** Kratos `aal` query (e.g. `aal2`) to request step-up / MFA for an existing session. */
+  aal?: string;
   enabled?: Ref<boolean>;
 }
 
 export function createLoginFlowQueryOptions({
   returnTo,
   refresh,
+  aal,
   enabled,
 }: CreateLoginFlowQueryOptions) {
   return queryOptions<
     LoginFlowCreated | SessionAlreadyAvailable | UnhandledResponse,
     TanstackError
   >({
-    queryKey: createLoginFlowQueryKey(returnTo, refresh),
+    queryKey: createLoginFlowQueryKey(returnTo, refresh, aal),
     queryFn: async () => {
       try {
-        const params: { returnTo?: string; refresh?: boolean } = {};
+        const params: { returnTo?: string; refresh?: boolean; aal?: string } =
+          {};
         if (returnTo) params.returnTo = returnTo;
         if (refresh) params.refresh = true;
+        if (aal) params.aal = aal;
         const res = await getKratosFrontendApi().createBrowserLoginFlow(params);
         return new LoginFlowCreated(res.data);
       } catch (e) {

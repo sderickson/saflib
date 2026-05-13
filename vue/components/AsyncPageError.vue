@@ -19,6 +19,7 @@
 import { computed } from "vue";
 import type { Link } from "@saflib/links";
 import { linkToHrefWithHost } from "@saflib/links";
+import { authLinks, kratosAal2ParamValue } from "@saflib/ory-kratos-sdk/links";
 import {
   TanstackError,
   AUTH_ERROR_EMAIL_VERIFICATION_REQUIRED,
@@ -29,12 +30,6 @@ const authNewVerification: Link = {
   subdomain: "auth",
   path: "/new-verification",
   params: ["return_to"],
-};
-
-const authNewSettings: Link = {
-  subdomain: "auth",
-  path: "/new-settings",
-  params: ["return_to", "tab"],
 };
 
 const props = defineProps<{
@@ -66,13 +61,13 @@ const actionCta = computed((): { label: string; href: string } | null => {
   }
   if (err.code === AUTH_ERROR_MFA_REQUIRED) {
     return {
-      label: "Set up two-factor authentication",
+      label: "Sign in with second factor",
       href: rt
-        ? linkToHrefWithHost(authNewSettings, {
-            params: { return_to: rt, tab: "totp" },
+        ? linkToHrefWithHost(authLinks.newLogin, {
+            params: { return_to: rt, aal: kratosAal2ParamValue },
           })
-        : linkToHrefWithHost(authNewSettings, {
-            params: { tab: "totp" },
+        : linkToHrefWithHost(authLinks.newLogin, {
+            params: { aal: kratosAal2ParamValue },
           }),
     };
   }
@@ -88,7 +83,7 @@ const displayMessage = computed(() => {
       return "You need to verify your email address before you can continue.";
     }
     if (error.code === AUTH_ERROR_MFA_REQUIRED) {
-      return "This page requires two-factor authentication on your account.";
+      return "This page requires a stronger sign-in (second factor). Continue to step up your session.";
     }
   }
   const status = (error as { status?: number })?.status;
