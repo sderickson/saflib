@@ -18,6 +18,8 @@
     "@saflib/backup-spec": "*"
   },
   "devDependencies": {
-    "@saflib/vitest": "*"
+    "@saflib/vitest": "*",
+    "@types/better-sqlite3": "^7.0.0",
+    "better-sqlite3": "12.10.0"
   }
 }

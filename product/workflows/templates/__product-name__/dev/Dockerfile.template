@@ -18,5 +18,5 @@ RUN npm install --omit=dev
 
 #{ copy_src }#
 
-FROM caddy:2.11.2
+FROM caddy:2.11.3
 COPY --from=static-root-builder /app/__product-name__/clients/root/.vitepress/dist /srv/__product-name__-static-root
