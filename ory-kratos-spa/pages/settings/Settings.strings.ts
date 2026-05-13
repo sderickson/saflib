@@ -3,6 +3,20 @@ export const settings_tabs = {
   password: "Password",
   totp: "Authenticator app (TOTP)",
   passkey: "Passkeys",
+  sessions: "Sessions",
+};
+
+export const settings_sessions = {
+  table_device: "Device",
+  table_ip: "IP address",
+  table_signed_in: "Signed in",
+  table_actions: "Actions",
+  badge_this_device: "This device",
+  sign_out_this: "Sign out",
+  revoke: "Revoke",
+  sign_out_others: "Sign out of all other devices",
+  load_failed: "Could not load sessions.",
+  action_failed: "Something went wrong. Try again.",
 };
 
 export const settings_page = {

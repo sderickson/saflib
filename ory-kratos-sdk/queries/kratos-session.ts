@@ -8,7 +8,8 @@ import {
 import { isAxiosError } from "axios";
 import { getKratosFrontendApi } from "../kratos-client.ts";
 
-const kratosSessionQueryKey = ["kratos", "session"] as const;
+/** @internal Used by session-related mutations for cache reads. */
+export const kratosSessionQueryKey = ["kratos", "session"] as const;
 
 /** FrontendApi `toSession` (browser cookies). 401 resolves to `null` (not authenticated). */
 async function fetchKratosSession(): Promise<Session | null> {
@@ -35,13 +36,13 @@ export function useKratosSession() {
   return useQuery(kratosSessionQueryOptions());
 }
 
-/** After login, register, or logout — refetches both optional and required session queries. */
+/** After login, register, or logout — refetches session and active-sessions list caches. */
 export function invalidateKratosSessionQueries(qc: QueryClient) {
   return qc.invalidateQueries({
     predicate: (q) =>
       Array.isArray(q.queryKey) &&
       q.queryKey[0] === "kratos" &&
-      q.queryKey[1] === "session",
+      (q.queryKey[1] === "session" || q.queryKey[1] === "my-sessions"),
   });
 }
 

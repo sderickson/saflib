@@ -24,9 +24,17 @@ export {
 
 // ── Queries: session ────────────────────────────────────────────────────────
 export {
+  kratosSessionQueryKey,
   kratosSessionQueryOptions,
   useKratosSession,
 } from "./queries/kratos-session.ts";
+export {
+  invalidateKratosMySessionsQueries,
+  kratosMySessionsQueryKey,
+  kratosMySessionsQueryOptions,
+  useInvalidateKratosMySessions,
+  useKratosMySessions,
+} from "./queries/kratos-my-sessions.ts";
 
 // ── Queries: create flow ────────────────────────────────────────────────────
 export {
@@ -110,3 +118,5 @@ export {
   VerificationFlowUpdated,
   useUpdateVerificationFlowMutation,
 } from "./mutations/update-verification-flow.ts";
+export { useDisableMySessionMutation } from "./mutations/disable-my-session.ts";
+export { useDisableMyOtherSessionsMutation } from "./mutations/disable-my-other-sessions.ts";
