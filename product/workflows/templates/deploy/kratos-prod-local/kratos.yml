@@ -13,10 +13,13 @@ serve:
 selfservice:
   default_browser_return_url: http://auth.docker.localhost/
 
-  # Same as recipes/dev: any HTTP origin on docker.localhost for local prod-like stacks.
+  # Only apex and product hosts (no subdomain wildcard — T-9 open redirect).
   allowed_return_urls:
     - http://docker.localhost/
-    - http://*.docker.localhost/
+    - http://app.docker.localhost/
+    - http://admin.docker.localhost/
+    - http://auth.docker.localhost/
+    - http://account.docker.localhost/
 
   flows:
     registration:
