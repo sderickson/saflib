@@ -4,7 +4,7 @@ FROM node:alpine3.19
 WORKDIR /app
 
 #{ copy_packages }#
-RUN npm install --omit=dev
+RUN npm ci --omit=dev
 #{ copy_src }#
 
 WORKDIR /app/__service-group-dir__/__service-name__-service

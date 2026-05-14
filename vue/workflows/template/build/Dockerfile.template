@@ -7,8 +7,8 @@ RUN npm install -g npm@11.14.1
 WORKDIR /app
 
 #{ copy_packages }#
-RUN npm install --omit=dev
-# RUN npm install @rollup/rollup-linux-arm64-gnu
+RUN npm ci --omit=dev
+# Native Rollup binaries: optionalDependencies from package-lock.json install for the image OS/arch during npm ci.
 
 #{ copy_src }#
 

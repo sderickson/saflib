@@ -7,8 +7,7 @@ RUN npm install -g npm@11.14.1
 WORKDIR /app
 
 #{ copy_packages }#
-RUN npm install
-RUN npm install @rollup/rollup-linux-arm64-gnu
+RUN npm ci
 
 #{ copy_src }#
 
