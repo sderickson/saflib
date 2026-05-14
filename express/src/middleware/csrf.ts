@@ -6,6 +6,8 @@ const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
 /**
  * Enforce CSRF double-submit token validation on state-changing requests.
  * Skips routes tagged `no-auth` (same convention as auth middleware).
+ * Skips `csrf-exempt` for browser-initiated posts that cannot attach our token
+ * (e.g. Content-Security-Policy violation reports).
  */
 export const makeCsrfMiddleware = (): Handler => {
   return (req, res, next): void => {
@@ -13,7 +15,8 @@ export const makeCsrfMiddleware = (): Handler => {
       return next();
     }
 
-    if (req.openapi?.schema?.tags?.includes("no-auth")) {
+    const tags = req.openapi?.schema?.tags;
+    if (tags?.includes("no-auth") || tags?.includes("csrf-exempt")) {
       return next();
     }
 
