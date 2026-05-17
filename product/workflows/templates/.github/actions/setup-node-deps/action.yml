@@ -30,12 +30,3 @@ runs:
       if: steps.node-modules-cache.outputs.cache-hit != 'true'
       shell: bash
       run: npm ci --prefer-offline --no-audit --no-fund
-
-    - name: Verify cached node_modules
-      if: steps.node-modules-cache.outputs.cache-hit == 'true'
-      shell: bash
-      run: |
-        if ! npm ls --depth=0 >/dev/null 2>&1; then
-          echo "node_modules cache incomplete; running npm ci"
-          npm ci --prefer-offline --no-audit --no-fund
-        fi
