@@ -1,8 +1,8 @@
 name: Setup Node dependencies
 description: >-
-  Setup Node.js, restore ~/.npm and node_modules caches, and run npm ci only on
-  cache miss. Skipping npm ci on a warm node_modules cache is much faster than
-  re-extracting the full monorepo tree on every job.
+  Setup Node.js, restore ~/.npm and workspace node_modules caches, and run npm ci
+  only on cache miss. The monorepo installs into nested node_modules (e.g.
+  saflib/node_modules); caching only the repo root tree breaks typecheck.
 inputs:
   node-version:
     description: Node.js version
@@ -21,10 +21,14 @@ runs:
       id: node-modules-cache
       uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
       with:
-        path: node_modules
-        key: node-modules-${{ runner.os }}-node-${{ inputs.node-version }}-${{ hashFiles('package-lock.json') }}
+        path: |
+          node_modules
+          saflib/**/node_modules
+          daemon/**/node_modules
+          deploy/**/node_modules
+        key: node-modules-v2-${{ runner.os }}-node-${{ inputs.node-version }}-${{ hashFiles('package-lock.json') }}
         restore-keys: |
-          node-modules-${{ runner.os }}-node-${{ inputs.node-version }}-
+          node-modules-v2-${{ runner.os }}-node-${{ inputs.node-version }}-
 
     - name: Install dependencies
       if: steps.node-modules-cache.outputs.cache-hit != 'true'
