@@ -1,6 +1,5 @@
 import { QueryClient } from "@tanstack/vue-query";
 import createClient from "openapi-fetch";
-import { isTestEnv } from "@saflib/vue";
 import { getProtocol, getHost } from "@saflib/links";
 import { TanstackError } from "./errors.ts";
 import type { ClientResult } from "./types.ts";
