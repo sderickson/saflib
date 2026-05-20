@@ -1,4 +1,4 @@
-import { getSafContext } from "@saflib/node";
+import { getSafContext, getSafReporters } from "@saflib/node";
 import type { SafContext } from "@saflib/node";
 import type { AnalyticsService, CommonEvent, IdentifyProps } from "./types.ts";
 
@@ -51,6 +51,13 @@ export abstract class AnalyticsServiceBase implements AnalyticsService {
       distinctId,
       event: event.event,
       context: mergedContext,
+    });
+
+    const { log } = getSafReporters();
+    log.info(`Product event: ${event.event}`, {
+      event: event.event,
+      distinct_id: distinctId,
+      ...(mergedContext !== undefined ? { context: mergedContext } : {}),
     });
   }
 
