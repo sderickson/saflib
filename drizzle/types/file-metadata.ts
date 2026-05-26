@@ -20,6 +20,7 @@ export const fileMetadataColumns = {
   file_original_name: text("file_original_name").notNull(),
   mimetype: text("mimetype").notNull(),
   size: integer("size").notNull(),
+  md5_hash: text("md5_hash"),
   created_at: text("created_at")
     .notNull()
     .$defaultFn(() => new Date().toISOString()),
@@ -47,6 +48,7 @@ export interface FileMetadataFields {
   file_original_name: string;
   mimetype: string;
   size: number;
+  md5_hash: string | null;
   created_at: string;
   updated_at: string;
 }
