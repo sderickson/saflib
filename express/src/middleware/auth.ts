@@ -4,6 +4,7 @@ import {
   AUTH_ERROR_EMAIL_VERIFICATION_REQUIRED,
   AUTH_ERROR_MFA_REQUIRED,
 } from "@saflib/sdk/auth-error-codes";
+import { typedEnv } from "@saflib/env";
 
 interface AuthMiddlewareOptions {
   adminRequired?: boolean;
@@ -57,7 +58,7 @@ export const makeAuthMiddleware = (
     const routeRequiresMfa =
       Boolean(mfaRequired) ||
       tags?.includes("mfa-required") === true ||
-      Boolean(adminRequired);
+      (Boolean(adminRequired) && typedEnv.NODE_ENV === "production");
 
     if (tags?.includes("no-auth")) {
       return next();
