@@ -73,15 +73,31 @@ detail/
 ├── questionnaire/
 │   ├── QuestionnairePage.vue
 │   ├── QuestionnairePage.loader.ts
-│   └── QuestionnaireAsync.vue
+│   ├── QuestionnaireAsync.vue
+│   ├── DetailQuestionnaireTab.vue
+│   └── …
 ├── form/
 │   ├── FormPage.vue
 │   ├── FormPage.loader.ts
-│   └── FormAsync.vue
-└── ...
+│   ├── FormAsync.vue
+│   ├── DetailPreviewTab.vue
+│   └── …
+├── requirements/
+│   ├── RequirementsPage.vue
+│   ├── RequirementsPage.loader.ts
+│   ├── RequirementsAsync.vue
+│   ├── DetailStatusTab.vue
+│   └── …
+├── email/
+│   ├── EmailPage.vue
+│   ├── EmailPage.loader.ts
+│   ├── EmailAsync.vue
+│   └── …
+└── review/
+    └── …
 ```
 
-Child folders follow the same page conventions as top-level pages. Reuse existing sub-components from the parent directory when they already exist (for example `DetailQuestionnaireTab.vue` rendered by `QuestionnairePage.vue`).
+Each child folder contains that section's page, loader, async wrapper, and sub-components. Reuse existing sub-components within the same folder rather than leaving them at the parent level.
 
 ## Parent layout component
 
