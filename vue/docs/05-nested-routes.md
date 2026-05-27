@@ -25,16 +25,16 @@ flowchart TB
 
   subgraph parent [Parent route component]
     ParentAsync["ResourceDetailAsync.vue"]
-    ParentLoader["useDetailLoader()"]
-    Chrome["Detail.vue — breadcrumbs + title"]
+    ParentLoader["useResourceDetailLoader()"]
+    Chrome["ResourceDetail.vue — breadcrumbs + title"]
     Sidebar["Sidebar nav with :to links"]
     RV["router-view"]
   end
 
   subgraph child [Child route component]
-    ChildAsync["SectionAsync.vue"]
-    ChildLoader["useSectionPageLoader()"]
-    SectionPage["SectionPage.vue"]
+    ChildAsync["OverviewAsync.vue"]
+    ChildLoader["useOverviewPageLoader()"]
+    OverviewPage["OverviewPage.vue"]
   end
 
   ParentRoute --> ParentAsync
@@ -45,14 +45,14 @@ flowchart TB
   ParentAsync --> RV
   RV --> ChildAsync
   ChildAsync --> ChildLoader
-  ChildAsync --> SectionPage
+  ChildAsync --> OverviewPage
 ```
 
-On navigation to `/resource/:id/section`:
+On navigation to `/resource/:id/overview`:
 
 1. Vue Router mounts the **parent** route component (`ResourceDetailAsync.vue`).
-2. The parent starts its loader and async-imports its chrome page (`Detail.vue`).
-3. The parent's `<router-view>` mounts the **child** route component (`SectionAsync.vue`) immediately — no waiting for the parent loader to finish first.
+2. The parent starts its loader and async-imports its chrome page (`ResourceDetail.vue`).
+3. The parent's `<router-view>` mounts the **child** route component (`OverviewAsync.vue`) immediately — no waiting for the parent loader to finish first.
 4. The child starts its own loader and async-imports its page component.
 5. Parent chrome, child content, parent data, and child data all load **in parallel**. TanStack Query shares cache entries when both loaders use the same query keys.
 
@@ -63,41 +63,32 @@ There is no waterfall for code or data as long as each level uses the standard `
 Extend the usual page directory with one folder per child route:
 
 ```
-detail/
-├── Detail.vue                    # Shared chrome only (breadcrumbs, title)
-├── Detail.loader.ts              # Data needed by chrome
-├── Detail.strings.ts
-├── DetailAsync.vue               # Layout: AsyncPage + sidebar + router-view
-├── Detail.test.ts
+resource-detail/
+├── ResourceDetail.vue              # Shared chrome only (breadcrumbs, title)
+├── ResourceDetail.loader.ts        # Data needed by chrome
+├── ResourceDetail.strings.ts
+├── ResourceDetailAsync.vue         # Layout: AsyncPage + sidebar + router-view
+├── ResourceDetail.test.ts
 │
-├── questionnaire/
-│   ├── QuestionnairePage.vue
-│   ├── QuestionnairePage.loader.ts
-│   ├── QuestionnaireAsync.vue
-│   ├── DetailQuestionnaireTab.vue
+├── overview/
+│   ├── OverviewPage.vue
+│   ├── OverviewPage.loader.ts
+│   ├── OverviewAsync.vue
+│   ├── OverviewPanel.vue           # Section-specific sub-components
 │   └── …
-├── form/
-│   ├── FormPage.vue
-│   ├── FormPage.loader.ts
-│   ├── FormAsync.vue
-│   ├── DetailPreviewTab.vue
+├── settings/
+│   ├── SettingsPage.vue
+│   ├── SettingsPage.loader.ts
+│   ├── SettingsAsync.vue
 │   └── …
-├── requirements/
-│   ├── RequirementsPage.vue
-│   ├── RequirementsPage.loader.ts
-│   ├── RequirementsAsync.vue
-│   ├── DetailStatusTab.vue
-│   └── …
-├── email/
-│   ├── EmailPage.vue
-│   ├── EmailPage.loader.ts
-│   ├── EmailAsync.vue
-│   └── …
-└── review/
+└── activity/
+    ├── ActivityPage.vue
+    ├── ActivityPage.loader.ts
+    ├── ActivityAsync.vue
     └── …
 ```
 
-Each child folder contains that section's page, loader, async wrapper, and sub-components. Reuse existing sub-components within the same folder rather than leaving them at the parent level.
+Each child folder contains that section's page, loader, async wrapper, and sub-components. Keep section-specific components in the child folder rather than at the parent level.
 
 ## Parent layout component
 
@@ -107,12 +98,12 @@ The parent `*Async.vue` is the route component registered in `router.ts`. It ren
 <template>
   <v-container>
     <AsyncPage
-      :loader="useDetailLoader"
-      :page-component="Detail"
+      :loader="useResourceDetailLoader"
+      :page-component="ResourceDetail"
     />
 
     <div class="d-flex ga-4">
-      <v-card class="detail-sidebar flex-shrink-0" variant="outlined">
+      <v-card class="resource-detail-sidebar flex-shrink-0" variant="outlined">
         <v-list nav density="compact">
           <v-list-item
             v-for="item in sidebarItems"
@@ -134,10 +125,12 @@ The parent `*Async.vue` is the route component registered in `router.ts`. It ren
 <script setup lang="ts">
 import { computed, defineAsyncComponent } from "vue";
 import { useRoute } from "vue-router";
-import { useDetailLoader } from "./Detail.loader.ts";
+import { useResourceDetailLoader } from "./ResourceDetail.loader.ts";
 import { AsyncPage } from "@saflib/vue/components";
 
-const Detail = defineAsyncComponent(() => import("./Detail.vue"));
+const ResourceDetail = defineAsyncComponent(
+  () => import("./ResourceDetail.vue"),
+);
 </script>
 ```
 
@@ -145,32 +138,34 @@ Important details:
 
 - **`AsyncPage` and `<router-view>` are siblings.** The child route mounts as soon as the parent component mounts; it does not wait for the parent's loader to resolve.
 - **Navigation uses `:to` on list items** (or `router-link`) so Vue Router handles active state and history.
-- **The parent loader stays minimal** — only queries the chrome needs (entity name, breadcrumb labels, form lineage key, etc.).
+- **The parent loader stays minimal** — only queries the chrome needs (entity name, breadcrumb labels, display metadata, etc.).
 
-The chrome page itself (`Detail.vue`) should be thin: breadcrumbs, title, and any layout logic that applies to every child. It should not render child content.
+The chrome page itself (`ResourceDetail.vue`) should be thin: breadcrumbs, title, and any layout logic that applies to every child. It should not render child content.
 
 ## Child route components
 
-Each child route is a normal page: `SectionAsync.vue` wraps `SectionPage.vue` with `AsyncPage` and a dedicated loader.
+Each child route is a normal page: `OverviewAsync.vue` wraps `OverviewPage.vue` with `AsyncPage` and a dedicated loader.
 
 ```vue
 <template>
   <AsyncPage
-    :loader="useSectionPageLoader"
-    :page-component="SectionPage"
+    :loader="useOverviewPageLoader"
+    :page-component="OverviewPage"
   />
 </template>
 
 <script setup lang="ts">
 import { defineAsyncComponent } from "vue";
-import { useSectionPageLoader } from "./SectionPage.loader.ts";
+import { useOverviewPageLoader } from "./OverviewPage.loader.ts";
 import { AsyncPage } from "@saflib/vue/components";
 
-const SectionPage = defineAsyncComponent(() => import("./SectionPage.vue"));
+const OverviewPage = defineAsyncComponent(
+  () => import("./OverviewPage.vue"),
+);
 </script>
 ```
 
-The child page component calls the same loader and renders the happy path. It can reuse sub-components from the parent directory.
+The child page component calls the same loader and renders the happy path. It composes sub-components from its own folder.
 
 ## Loaders
 
@@ -178,10 +173,10 @@ The child page component calls the same loader and renders the happy path. It ca
 
 | Loader | Owns |
 |---|---|
-| Parent (`useDetailLoader`) | Shared chrome: entity record, display title, breadcrumb matter name |
-| Child (`useSectionPageLoader`) | Section-specific queries: dossier inputs, file resources, etc. |
+| Parent (`useResourceDetailLoader`) | Shared chrome: entity record, display title, breadcrumb context |
+| Child (`useOverviewPageLoader`) | Section-specific queries: related records, section metadata, etc. |
 
-Both loaders may call the same TanStack query (for example `getPacketsQuery(packetId)`). That is fine — TanStack deduplicates by query key, so only one network request runs and both components read the same cached result.
+Both loaders may call the same TanStack query (for example `getResourceQuery(resourceId)`). That is fine — TanStack deduplicates by query key, so only one network request runs and both components read the same cached result.
 
 ### Return only query objects from loaders used by AsyncPage
 
@@ -191,44 +186,42 @@ Do **not** return bare `computed()` refs or other values from a loader passed to
 
 ```typescript
 // Good — loader returns queries only
-export function useQuestionnairePageLoader() {
-  const packetQuery = useQuery({ ...getPacketsQuery(packetId), ... });
-  const matterDossierQuery = useQuery({ ...matterDossierQuery(matterId), ... });
-  return { packetQuery, matterDossierQuery };
+export function useOverviewPageLoader() {
+  const resourceQuery = useQuery({ ...getResourceQuery(resourceId), ... });
+  const relatedQuery = useQuery({ ...listRelatedResourcesQuery(resourceId), ... });
+  return { resourceQuery, relatedQuery };
 }
 
-// In QuestionnairePage.vue — derive schema from query data
-const form = computed(() => loader.packetQuery.data.value?.form);
-const questionnaireSchema = computed(
-  () => form.value?.questionnaireSchema ?? null,
-);
+// In OverviewPage.vue — derive display values from query data
+const resource = computed(() => loader.resourceQuery.data.value?.resource);
+const summary = computed(() => resource.value?.summary ?? null);
 ```
 
 See [Loader: Data Fetching](./02-components.md#loader-data-fetching) for the general loader rules (bounded query count, parallel fetching, no data-dependent query loops).
 
 ## Router configuration
 
-Register the parent as the route component and list children underneath. Redirect the bare parent path to a default child with an **absolute** redirect function — a relative redirect like `{ path: "", redirect: "questionnaire" }` can resolve incorrectly when other routes share path segments (for example wizard routes under the same `:id` prefix).
+Register the parent as the route component and list children underneath. Redirect the bare parent path to a default child with an **absolute** redirect function — a relative redirect like `{ path: "", redirect: "overview" }` can resolve incorrectly when other routes share path segments under the same `:id` prefix.
 
 ```typescript
 {
-  path: appLinks.packetDetail.path, // e.g. "/packet/:id"
-  component: PacketDetailAsync,
+  path: appLinks.resourceDetail.path, // e.g. "/resource/:id"
+  component: ResourceDetailAsync,
   children: [
     {
       path: "",
-      redirect: (to) => `${to.path}/questionnaire`,
+      redirect: (to) => `${to.path}/overview`,
     },
-    { path: "questionnaire", component: PacketQuestionnaireAsync },
-    { path: "form", component: PacketFormAsync },
-    { path: "requirements", component: PacketRequirementsAsync },
+    { path: "overview", component: OverviewAsync },
+    { path: "settings", component: SettingsAsync },
+    { path: "activity", component: ActivityAsync },
   ],
 },
 ```
 
-Child paths are relative to the parent, so `questionnaire` matches `/packet/:id/questionnaire`.
+Child paths are relative to the parent, so `overview` matches `/resource/:id/overview`.
 
-The parent link in your links package stays the base path (`/packet/:id`). The redirect sends users to the default child. You do not need separate link entries for each child unless you link to them directly from elsewhere in the app.
+The parent link in your links package stays the base path (`/resource/:id`). The redirect sends users to the default child. You do not need separate link entries for each child unless you link to them directly from elsewhere in the app.
 
 ## Testing
 
@@ -247,10 +240,14 @@ const RouterViewWrapper = defineComponent({
 
 it("renders the default child", async () => {
   const router = createAppRouter();
-  await router.push("/packet/Pk_test/questionnaire");
+  await router.push("/resource/res_test/overview");
   await router.isReady();
 
-  const wrapper = mountWithPlugins(RouterViewWrapper, {}, { router, i18nMessages: app_strings });
+  const wrapper = mountWithPlugins(
+    RouterViewWrapper,
+    {},
+    { router, i18nMessages: app_strings },
+  );
 
   await vi.waitFor(() =>
     expect(wrapper.text()).toContain("Expected content from child page"),
@@ -258,9 +255,9 @@ it("renders the default child", async () => {
 });
 ```
 
-To exercise sidebar navigation or cross-section behavior, call `router.push("/packet/Pk_test/form")` and `await flushPromises()` rather than clicking list items — route navigation is what you are testing.
+To exercise sidebar navigation or cross-section behavior, call `router.push("/resource/res_test/settings")` and `await flushPromises()` rather than clicking list items — route navigation is what you are testing.
 
-When updating tests that previously expected navigation to the bare parent path, account for the default-child redirect (for example expect `/packet/:id/questionnaire` instead of `/packet/:id`).
+When updating tests that previously expected navigation to the bare parent path, account for the default-child redirect (for example expect `/resource/:id/overview` instead of `/resource/:id`).
 
 See [Testing](./04-testing.md) for general render-test guidance.
 
@@ -272,9 +269,5 @@ When adding a nested route layout:
 2. Create a child folder per section with `*Page.vue`, `*Page.loader.ts`, and `*Async.vue`.
 3. Register nested routes in `router.ts` with an absolute default-child redirect.
 4. Wire sidebar (or tab) navigation with `:to` paths under the parent base path.
-5. Keep sub-components in the parent directory; child pages compose them.
+5. Keep section-specific sub-components in the child folder; child pages compose them.
 6. Add render tests that mount through `<RouterView />` and push to explicit child paths.
-
-## Reference implementation
-
-Pathclerk's packet detail page (`daemon/clients/app/pages/packet/detail/`) is the reference implementation of this pattern: shared chrome in `Detail.vue`, layout in `DetailAsync.vue`, and child routes for questionnaire, form, requirements, review, and email.
