@@ -65,7 +65,9 @@ Contains the components for each page of the SPA. Each page is expected to have:
 5. A test file which mainly checks the component correctly renders on page load.
 6. (optional) a "components" directory for sub-components specific to this page (shared components should go in a "common" package).
 
-For more information, see [Pages](./02-pages.md).
+For more information, see [Components — Views and pages](./02-components.md).
+
+When a page has several URL-addressable sub-views that share chrome (sidebar, breadcrumbs), see [Nested routes with AsyncPage](./05-nested-routes.md).
 
 ### `{Subdomain}App.vue`
 

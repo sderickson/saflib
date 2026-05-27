@@ -71,6 +71,10 @@ It's important that _no other components in the app_ render async components. By
 
 The only exception to this is if the component is not rendered on page load. For example if there's a heavy dialog, the page might render the async component only when the dialog is opened, or after the page is initially loaded to preload the code.
 
+#### Nested routes
+
+When a page has several sub-views that share chrome (sidebar, breadcrumbs, header), use [nested routes with AsyncPage](./05-nested-routes.md). The parent `*Async.vue` renders shared chrome through `AsyncPage` and a sibling `<router-view>`; each child route is its own `*Async.vue` with its own loader. Parent and child loaders run in parallel, child code is split per route, and TanStack Query deduplicates shared requests.
+
 ### Loader: Data Fetching
 
 _[Template file](../workflows/template/__subdomain-name__/__group-name__/__TargetName__.loader.ts)_
