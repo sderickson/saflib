@@ -51,16 +51,33 @@ By default, SAF SPAs will split out every page. This is controlled by the `Async
 
 ```vue
 <template>
-  <AsyncPage :loader="() => usePageLoader()" :page-component="Page" />
+  <AsyncPage :loader="usePageLoader" :page-component="Page" />
 </template>
 
 <script setup lang="ts">
 import { defineAsyncComponent } from "vue";
 import { usePageLoader } from "./PageName.loader.ts";
+import { page_name as strings } from "./PageName.strings.ts";
 import { AsyncPage } from "@saflib/vue/components";
+import { useAsyncPageDocumentTitle } from "@saflib/vue";
+
+useAsyncPageDocumentTitle(strings.documentTitle);
 
 const Page = defineAsyncComponent(() => import("./PageName.vue"));
 </script>
+```
+
+Add a `documentTitle` string to the page's `.strings.ts` file (for example `documentTitle: "Settings"`). The Async component sets `document.title` as soon as it mounts, before the page code loads. Configure the app suffix once in `main.ts` with `configureAppDocumentTitle("My Product")` so tabs read like `Settings — My Product`.
+
+When the tab title should include loaded data (for example a resource name), call the composable with a second argument — a ref or computed from the loader. The Async shell and `AsyncPage` may each call the loader independently; TanStack Query deduplicates the requests.
+
+```ts
+const loader = usePageLoader();
+
+useAsyncPageDocumentTitle(
+  strings.documentTitle,
+  computed(() => loader.resourceQuery.data.value?.name),
+);
 ```
 
 The Vue router, and by extension the Vue app, do not directly import or render the page component. This is where the majority of the app's business logic will go, and so by default only necessary code is loaded by the application at first. The async component decides what will render while the code is loading and the data is being fetched; `AsyncPage` only renders the page component when both are present. `AsyncPage` also handles generic error states when either fail to arrive.

@@ -13,3 +13,5 @@ export * from "./test-mode.ts";
 export * from "./wip-env.ts";
 export * from "./git-hash";
 export * from "./useResolvedHref.ts";
+export * from "./document-title.ts";
+export * from "./useAsyncPageDocumentTitle.ts";

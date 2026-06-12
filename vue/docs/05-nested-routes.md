@@ -157,7 +157,11 @@ Each child route is a normal page: `OverviewAsync.vue` wraps `OverviewPage.vue` 
 <script setup lang="ts">
 import { defineAsyncComponent } from "vue";
 import { useOverviewPageLoader } from "./OverviewPage.loader.ts";
+import { overview_page as strings } from "./OverviewPage.strings.ts";
 import { AsyncPage } from "@saflib/vue/components";
+import { useAsyncPageDocumentTitle } from "@saflib/vue";
+
+useAsyncPageDocumentTitle(strings.documentTitle);
 
 const OverviewPage = defineAsyncComponent(
   () => import("./OverviewPage.vue"),
