@@ -1,5 +1,6 @@
 <template>
   <v-text-field
+    ref="inputRef"
     v-model="displayValue"
     v-bind="$attrs"
     :label="label"
@@ -49,6 +50,11 @@ const emit = defineEmits<{
 
 const displayValue = ref("");
 const isFocused = ref(false);
+const inputRef = ref<{ focus: () => void } | null>(null);
+
+defineExpose({
+  focus: () => inputRef.value?.focus(),
+});
 
 // Handle input changes
 const handleInput = (event: Event) => {
