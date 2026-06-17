@@ -56,9 +56,10 @@ export const makeAuthMiddleware = (
       Boolean(adminRequired);
 
     const routeRequiresMfa =
-      Boolean(mfaRequired) ||
-      tags?.includes("mfa-required") === true ||
-      (Boolean(adminRequired) && typedEnv.NODE_ENV === "production");
+      typedEnv.NODE_ENV === "production" &&
+      (Boolean(mfaRequired) ||
+        tags?.includes("mfa-required") === true ||
+        Boolean(adminRequired));
 
     if (tags?.includes("no-auth")) {
       return next();
