@@ -1,6 +1,5 @@
 import { QueryClient } from "@tanstack/vue-query";
 import createClient from "openapi-fetch";
-import { isTestEnv } from "@saflib/vue";
 import { getProtocol, getHost } from "@saflib/links";
 import { TanstackError } from "./errors.ts";
 import type { ClientResult } from "./types.ts";
@@ -94,9 +93,6 @@ export const handleClientMethod = async <T>(
     // This is because UI should not render the untranslated error message, but instead
     // give the user a message based on the HTTP status or, if that's not sufficient,
     // the error code.
-    if (isTestEnv()) {
-      console.error(result.error);
-    }
     throw new TanstackError(result.response.status, result.error.code);
   }
   if (result.data === undefined) {

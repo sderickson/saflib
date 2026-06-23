@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 
 import express from "express";
 import type { OpenAPIV3 } from "express-openapi-validator/dist/framework/types.ts";
@@ -425,6 +425,10 @@ describe("Auth Middleware admin routes", () => {
 });
 
 describe("Auth Middleware mfaRequired option", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
   it("enforces MFA when mfaRequired is true without OpenAPI tag", async () => {
     const app = express();
     app.use(
@@ -446,5 +450,30 @@ describe("Auth Middleware mfaRequired option", () => {
 
     expect(response.status).toBe(403);
     expect(response.body.code).toBe(AUTH_ERROR_MFA_REQUIRED);
+  });
+
+  it("skips MFA when DISABLE_MFA_ENFORCEMENT is true", async () => {
+    vi.stubEnv("DISABLE_MFA_ENFORCEMENT", "true");
+
+    const app = express();
+    app.use(
+      createScopedMiddleware({
+        enforceAuth: true,
+        mfaRequired: true,
+      }),
+    );
+    app.get("/need-mfa", (_req, res) => {
+      res.status(200).json({ ok: true });
+    });
+    app.use(errorHandler);
+
+    const response = await request(app).get("/need-mfa").set({
+      "x-user-id": "123",
+      "x-user-email": "test@example.com",
+      "x-user-email-verified": "true",
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({ ok: true });
   });
 });

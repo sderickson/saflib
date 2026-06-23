@@ -59,13 +59,15 @@ For more information, see [`@saflib/playwright`](../../playwright/docs/overview.
 Contains the components for each page of the SPA. Each page is expected to have:
 
 1. The main component which handles what is displayed
-2. An "async" component which uses `AsyncPage` to render a loading screen while data is fetched and code is loaded.
+2. An "async" component which uses `AsyncPage` to render a loading screen while data is fetched and code is loaded, and `useAsyncPageDocumentTitle` to set the browser tab title.
 3. A "loader" which is used by both the main and async components to run Tanstack Queries.
-4. A "strings" file which contains the default language strings for the page.
+4. A "strings" file which contains the default language strings for the page (including `documentTitle` for the browser tab).
 5. A test file which mainly checks the component correctly renders on page load.
 6. (optional) a "components" directory for sub-components specific to this page (shared components should go in a "common" package).
 
-For more information, see [Pages](./02-pages.md).
+For more information, see [Components — Views and pages](./02-components.md).
+
+When a page has several URL-addressable sub-views that share chrome (sidebar, breadcrumbs), see [Nested routes with AsyncPage](./05-nested-routes.md).
 
 ### `{Subdomain}App.vue`
 

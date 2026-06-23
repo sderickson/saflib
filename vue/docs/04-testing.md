@@ -103,6 +103,12 @@ The template includes a basic render test (`PageName.test.ts`) that mounts the a
 
 Render tests should **not** attempt to test interactions (clicking buttons, filling forms, submitting). That logic should be extracted into composables and tested there, or covered by Playwright E2E tests. Render tests that simulate interactions are fragile, slow, and duplicate coverage.
 
+### Nested routes
+
+Pages that use [nested routes with AsyncPage](./05-nested-routes.md) must be tested by mounting a root `<RouterView />` wrapper, not the parent async component directly. Push the router to an explicit child path (for example `/resource/:id/section`) before mounting so the parent layout and child route both render at the correct depth.
+
+Use `router.push()` to navigate between child sections in tests rather than clicking sidebar items when you are verifying route-driven content changes.
+
 ## Coverage
 
 ### Excluded Files

@@ -101,10 +101,13 @@ export interface MakeConfigProps {
  * Make a Vite config for a multi-SPA, SAF project. Includes all the expected plugins.
  */
 export function makeConfig(config: MakeConfigProps = {}) {
-  const { plugins = [], vuetifyOverrides, monorepoRoot, sourcemap } = config;
-  if (config.useSubdomainProxy !== false) {
-    plugins.push(subDomainProxyPlugin);
-  }
+  const {
+    plugins: extraPlugins = [],
+    vuetifyOverrides,
+    monorepoRoot,
+    sourcemap,
+  } = config;
+
   return defineConfig({
     base: "/",
     appType: config.appType ?? "mpa",
@@ -114,7 +117,8 @@ export function makeConfig(config: MakeConfigProps = {}) {
       vuetify(
         vuetifyOverrides ? { styles: { configFile: vuetifyOverrides } } : {},
       ),
-      ...plugins,
+      ...(config.useSubdomainProxy !== false ? [subDomainProxyPlugin] : []),
+      ...extraPlugins,
     ],
     build: {
       rollupOptions: {

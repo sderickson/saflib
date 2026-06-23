@@ -51,16 +51,33 @@ By default, SAF SPAs will split out every page. This is controlled by the `Async
 
 ```vue
 <template>
-  <AsyncPage :loader="() => usePageLoader()" :page-component="Page" />
+  <AsyncPage :loader="usePageLoader" :page-component="Page" />
 </template>
 
 <script setup lang="ts">
 import { defineAsyncComponent } from "vue";
 import { usePageLoader } from "./PageName.loader.ts";
+import { page_name as strings } from "./PageName.strings.ts";
 import { AsyncPage } from "@saflib/vue/components";
+import { useAsyncPageDocumentTitle } from "@saflib/vue";
+
+useAsyncPageDocumentTitle(strings.documentTitle);
 
 const Page = defineAsyncComponent(() => import("./PageName.vue"));
 </script>
+```
+
+Add a `documentTitle` string to the page's `.strings.ts` file (for example `documentTitle: "Settings"`). The Async component sets `document.title` as soon as it mounts, before the page code loads. Configure the app suffix once in `main.ts` with `configureAppDocumentTitle("My Product")` so tabs read like `Settings — My Product`.
+
+When the tab title should include loaded data (for example a resource name), call the composable with a second argument — a ref or computed from the loader. The Async shell and `AsyncPage` may each call the loader independently; TanStack Query deduplicates the requests.
+
+```ts
+const loader = usePageLoader();
+
+useAsyncPageDocumentTitle(
+  strings.documentTitle,
+  computed(() => loader.resourceQuery.data.value?.name),
+);
 ```
 
 The Vue router, and by extension the Vue app, do not directly import or render the page component. This is where the majority of the app's business logic will go, and so by default only necessary code is loaded by the application at first. The async component decides what will render while the code is loading and the data is being fetched; `AsyncPage` only renders the page component when both are present. `AsyncPage` also handles generic error states when either fail to arrive.
@@ -70,6 +87,10 @@ If it's important to have certain common landing pages loaded sooner, the tradeo
 It's important that _no other components in the app_ render async components. By centralizing that responsibility on async components, it makes it easier to understand and manage how the app is chunked. If a page becomes large (such as a dashboard with many widgets), the page's async component can render all async components with their own loader methods. This way code and responsibilities can still be broken down, while also loading all code and fetching all data as quickly as possible.
 
 The only exception to this is if the component is not rendered on page load. For example if there's a heavy dialog, the page might render the async component only when the dialog is opened, or after the page is initially loaded to preload the code.
+
+#### Nested routes
+
+When a page has several sub-views that share chrome (sidebar, breadcrumbs, header), use [nested routes with AsyncPage](./05-nested-routes.md). The parent `*Async.vue` renders shared chrome through `AsyncPage` and a sibling `<router-view>`; each child route is its own `*Async.vue` with its own loader. Parent and child loaders run in parallel, child code is split per route, and TanStack Query deduplicates shared requests.
 
 ### Loader: Data Fetching
 

@@ -13,10 +13,13 @@ serve:
 selfservice:
   default_browser_return_url: https://auth.__domain-name__/
 
-  # Permit return_to from any HTTPS app on this domain (wildcard does not match apex).
+  # Only apex and product hosts (no subdomain wildcard — T-9 open redirect).
   allowed_return_urls:
     - https://__domain-name__/
-    - https://*.__domain-name__/
+    - https://app.__domain-name__/
+    - https://admin.__domain-name__/
+    - https://auth.__domain-name__/
+    - https://account.__domain-name__/
 
   flows:
     registration:

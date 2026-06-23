@@ -5,7 +5,7 @@ RUN npm install -g npm@11.14.1
 
 WORKDIR /app
 #{ copy_packages }#
-RUN npm install --omit=dev
+RUN npm ci --omit=dev
 #{ copy_src }#
 
 WORKDIR /app/__product-name__/clients/__static-subdomain-name__

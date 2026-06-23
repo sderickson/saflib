@@ -1,6 +1,8 @@
 export const __full_name__ = {
   // TODO: Replace strings with strings from the actual design
   // Use descriptive keys that work well with translation systems
+  /** Browser tab title (set by the Async component via useAsyncPageDocumentTitle). */
+  documentTitle: "__FullName__",
   title: "Hello, __FullName__!",
   subtitle: "This is a subtitle",
   description: "This is a description of what this page does",

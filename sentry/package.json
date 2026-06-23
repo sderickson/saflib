@@ -24,7 +24,7 @@
   "devDependencies": {
     "@saflib/vitest": "*",
     "@saflib/workflows": "*",
-    "vite": "^8.0.7",
+    "vite": "8.0.13",
     "vitest": "^3.2.4"
   }
 }

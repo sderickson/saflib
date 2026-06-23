@@ -11,7 +11,7 @@ RUN export $(grep -v "^#" /app/env.__product-name__.prod-local | xargs) && DOMAI
 # END WORKFLOW AREA
 
 FROM caddy:2.11.3-builder-alpine AS caddy-rebuild
-RUN xcaddy build v2.11.2
+RUN xcaddy build v2.11.3
 
 FROM caddy:2.11.3-alpine
 COPY --from=caddy-rebuild /usr/bin/caddy /usr/bin/caddy

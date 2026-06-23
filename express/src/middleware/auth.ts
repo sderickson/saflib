@@ -4,6 +4,7 @@ import {
   AUTH_ERROR_EMAIL_VERIFICATION_REQUIRED,
   AUTH_ERROR_MFA_REQUIRED,
 } from "@saflib/sdk/auth-error-codes";
+import { typedEnv } from "../../env.ts";
 
 interface AuthMiddlewareOptions {
   adminRequired?: boolean;
@@ -14,6 +15,10 @@ interface AuthMiddlewareOptions {
    * Admin routes also require MFA via `adminRequired`.
    */
   mfaRequired?: boolean;
+}
+
+function isMfaEnforcementEnabled(): boolean {
+  return typedEnv.DISABLE_MFA_ENFORCEMENT !== "true";
 }
 
 function forbiddenPayload(code: string) {
@@ -55,9 +60,10 @@ export const makeAuthMiddleware = (
       Boolean(adminRequired);
 
     const routeRequiresMfa =
-      Boolean(mfaRequired) ||
-      tags?.includes("mfa-required") === true ||
-      Boolean(adminRequired);
+      isMfaEnforcementEnabled() &&
+      (Boolean(mfaRequired) ||
+        tags?.includes("mfa-required") === true ||
+        Boolean(adminRequired));
 
     if (tags?.includes("no-auth")) {
       return next();

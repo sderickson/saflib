@@ -1,6 +1,6 @@
 import createError, { HttpError } from "http-errors";
 import type { Request, Response, NextFunction, Handler } from "express";
-import { safReportersStorage } from "@saflib/node";
+import { getErrorCollectors, safReportersStorage } from "@saflib/node";
 import { typedEnv } from "@saflib/env";
 /**
  * 404 Handler
@@ -24,13 +24,19 @@ export const errorHandler = (
   const status = err.status || 500;
 
   if (status >= 500) {
-    if (typedEnv.NODE_ENV === "test") {
+    if (
+      typedEnv.NODE_ENV === "test" &&
+      getErrorCollectors().length === 0
+    ) {
       console.error(err.stack);
     }
     const store = safReportersStorage.getStore();
     if (store) {
       store.logError(err);
-    } else {
+    } else if (
+      typedEnv.NODE_ENV !== "test" ||
+      getErrorCollectors().length === 0
+    ) {
       console.log("Error", err);
     }
   }

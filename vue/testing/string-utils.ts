@@ -1,15 +1,57 @@
 import { expect } from "vitest";
-import { type VueWrapper } from "@vue/test-utils";
+import { DOMWrapper, type VueWrapper } from "@vue/test-utils";
 import {
   convertI18NInterpolationToRegex,
   type ElementString,
 } from "@saflib/utils";
 
+type ElementWrapper = VueWrapper | DOMWrapper<Element>;
+
+function findInputForLabel(
+  wrapper: ElementWrapper,
+  labelText: string,
+): ElementWrapper | undefined {
+  const inputs = wrapper.findAll("input, textarea, select");
+  const inputByAria = inputs.find(
+    (el) => el.attributes("aria-label")?.trim() === labelText,
+  );
+  if (inputByAria?.exists()) {
+    return inputByAria;
+  }
+
+  const labelLike = [
+    ...wrapper.findAll("label"),
+    ...wrapper.findAll(".v-label"),
+    ...wrapper.findAll(".v-field-label"),
+  ];
+  const labelEl = labelLike.find((el) => el.text().trim() === labelText);
+  if (!labelEl?.exists()) {
+    return undefined;
+  }
+
+  const forId = labelEl.attributes("for");
+  if (forId) {
+    const linked = wrapper.find(`#${CSS.escape(forId)}`);
+    if (linked.exists()) {
+      return linked;
+    }
+  }
+
+  const fieldInput = labelEl.element
+    .closest(".v-field")
+    ?.querySelector("input, textarea, select");
+  if (fieldInput) {
+    return new DOMWrapper(fieldInput);
+  }
+
+  return labelEl;
+}
+
 /**
  * This should always be used to find elements in tests.
  */
 export const getElementByString = (
-  wrapper: VueWrapper,
+  wrapper: ElementWrapper,
   stringObj: ElementString,
 ) => {
   if (typeof stringObj === "string" || stringObj["text"]) {
@@ -37,8 +79,7 @@ export const getElementByString = (
   }
 
   if (stringObj.label) {
-    const elements = wrapper.findAll("label");
-    const element = elements.find((el) => el.text() === stringObj.label);
+    const element = findInputForLabel(wrapper, stringObj.label);
     expect(element?.exists()).toBe(true);
     return element!;
   }

@@ -18,7 +18,7 @@ export const addErrorCollector = (collector: ErrorCollector) => {
   errorCollectors.push(collector);
 };
 
-const getErrorCollectors = () => {
+export const getErrorCollectors = () => {
   return errorCollectors.slice();
 };
 

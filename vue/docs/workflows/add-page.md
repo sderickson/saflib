@@ -24,7 +24,7 @@ When run, the workflow will:
   - Upsert **WelcomeNewUser.loader.ts** from [template](https://github.com/sderickson/saflib/blob/main/vue/workflows/template/__product-name__-__subdomain-name__-spa/pages/page-template/__TargetName__.loader.ts)
   - Upsert **WelcomeNewUser.vue** from [template](https://github.com/sderickson/saflib/blob/main/vue/workflows/template/__product-name__-__subdomain-name__-spa/pages/page-template/__TargetName__.vue)
   - Upsert **WelcomeNewUserAsync.vue** from [template](https://github.com/sderickson/saflib/blob/main/vue/workflows/template/__product-name__-__subdomain-name__-spa/pages/page-template/__TargetName__Async.vue)
-  - Upsert **WelcomeNewUser.strings.ts** from [template](https://github.com/sderickson/saflib/blob/main/vue/workflows/template/__product-name__-__subdomain-name__-spa/pages/page-template/__TargetName__.strings.ts)
+  - Upsert **WelcomeNewUser.strings.ts** from [template](https://github.com/sderickson/saflib/blob/main/vue/workflows/template/__product-name__-__subdomain-name__-spa/pages/page-template/__TargetName__.strings.ts) (includes `documentTitle` for the browser tab)
   - Upsert **WelcomeNewUser.test.ts** from [template](https://github.com/sderickson/saflib/blob/main/vue/workflows/template/__product-name__-__subdomain-name__-spa/pages/page-template/__TargetName__.test.ts)
 - Update **WelcomeNewUser.loader.ts**: return Tanstack queries needed to render the page.
 - Update **WelcomeNewUser.vue**: take the data from the loader, assert that it's loaded, and render sample data.
