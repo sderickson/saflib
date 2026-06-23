@@ -1,8 +1,7 @@
-import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 import vuetify from "vite-plugin-vuetify";
 import vueDevTools from "vite-plugin-vue-devtools";
-import type { Plugin, PluginOption } from "vite";
+import type { PluginOption, UserConfig } from "vite";
 import path from "path";
 import ignore from "rollup-plugin-ignore";
 // import { htmlHeaderPlugin } from "../../clients/spas/html-header-plugin.ts";
@@ -18,7 +17,7 @@ const hosts = subdomains.map((subdomain) =>
   subdomain === "" ? domain : `${subdomain}.${domain}`,
 );
 
-const subDomainProxyPlugin: Plugin = {
+const subDomainProxyPlugin: PluginOption = {
   name: "sub-domain-proxy",
   configureServer(server) {
     server.middlewares.use((req, _res, next) => {
@@ -97,25 +96,50 @@ export interface MakeConfigProps {
   sourcemap?: boolean;
 }
 
+function buildPlugins({
+  extraPlugins,
+  useSubdomainProxy,
+  vuetifyOverrides,
+}: {
+  extraPlugins: PluginOption[];
+  useSubdomainProxy: boolean;
+  vuetifyOverrides?: string;
+}): PluginOption[] {
+  const plugins: PluginOption[] = [
+    vue(),
+    vueDevTools(),
+    vuetify(
+      vuetifyOverrides ? { styles: { configFile: vuetifyOverrides } } : {},
+    ),
+  ];
+
+  if (useSubdomainProxy) {
+    plugins.push(subDomainProxyPlugin);
+  }
+
+  plugins.push(...extraPlugins);
+  return plugins;
+}
+
 /**
  * Make a Vite config for a multi-SPA, SAF project. Includes all the expected plugins.
  */
-export function makeConfig(config: MakeConfigProps = {}) {
-  const { plugins = [], vuetifyOverrides, monorepoRoot, sourcemap } = config;
-  if (config.useSubdomainProxy !== false) {
-    plugins.push(subDomainProxyPlugin);
-  }
-  return defineConfig({
+export function makeConfig(config: MakeConfigProps = {}): UserConfig {
+  const {
+    plugins: extraPlugins = [],
+    vuetifyOverrides,
+    monorepoRoot,
+    sourcemap,
+  } = config;
+
+  return {
     base: "/",
     appType: config.appType ?? "mpa",
-    plugins: [
-      vue(),
-      vueDevTools(),
-      vuetify(
-        vuetifyOverrides ? { styles: { configFile: vuetifyOverrides } } : {},
-      ),
-      ...plugins,
-    ],
+    plugins: buildPlugins({
+      extraPlugins,
+      useSubdomainProxy: config.useSubdomainProxy !== false,
+      vuetifyOverrides,
+    }),
     build: {
       rollupOptions: {
         input,
@@ -131,5 +155,5 @@ export function makeConfig(config: MakeConfigProps = {}) {
       strictPort: true,
       host: true,
     },
-  });
+  };
 }
