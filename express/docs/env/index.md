@@ -2,6 +2,6 @@
 
 This package uses environment variables. The schema for these variables is as follows:
 
-| Variable                   | Description                                                                | Type   | Required |
-| -------------------------- | -------------------------------------------------------------------------- | ------ | -------- |
-| IDENTITY_SERVICE_GRPC_PORT | The port on which the gRPC server will listen, or the client will connect. | string | Yes      |
+| Variable                   | Description                                                                                          | Type   | Required |
+| -------------------------- | ---------------------------------------------------------------------------------------------------- | ------ | -------- |
+| DISABLE_MFA_ENFORCEMENT    | When 'true', skip MFA gates on admin routes and operations tagged mfa-required. Useful for local development. | string | No       |
