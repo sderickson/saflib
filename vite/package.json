@@ -16,7 +16,7 @@
     "@saflib/vue": "*",
     "@vitejs/plugin-vue": "^6.0.1",
     "rollup-plugin-ignore": "^1.0.10",
-    "vite": "8.0.13",
+    "vite": "8.0.16",
     "vite-plugin-vue-devtools": "^8.0.1",
     "vite-plugin-vuetify": "^2.1.3"
   },
