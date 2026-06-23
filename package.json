@@ -28,6 +28,7 @@
     "saflib-workflows": "^0.2.0"
   },
   "overrides": {
-    "vue-router": "^5.0.0"
+    "vue-router": "^5.0.0",
+    "vite": "8.0.13"
   }
 }
