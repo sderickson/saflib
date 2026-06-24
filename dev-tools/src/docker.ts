@@ -22,9 +22,9 @@ function usesBun(dockerTemplate: string): boolean {
   return !!dockerTemplate.match(/^FROM\s+(.+)$/m)?.[1]?.includes("/bun:");
 }
 
-/** BuildKit cache mount keeps npm's download cache out of image layers; clean avoids duplicate on-disk use during ci. */
+/** BuildKit cache mount keeps npm's download cache out of image layers. Do not run npm cache clean here — it conflicts with the mounted cache dir. */
 const NPM_CI_OMIT_DEV =
-  "RUN --mount=type=cache,target=/root/.npm npm ci --omit=dev && npm cache clean --force";
+  "RUN --mount=type=cache,target=/root/.npm npm ci --omit=dev";
 
 function readDockerfileTemplate(
   packageName: string,
