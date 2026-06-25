@@ -31,6 +31,28 @@ const validateResponses = {
   },
 };
 
+/** Shared validator stacks per spec — avoids re-compiling AJV on every router mount. */
+const validatorCache = new WeakMap<
+  OpenAPIV3.DocumentV3,
+  Map<string, OpenApiRequestHandler[]>
+>();
+
+function fileUploaderCacheKey(fileUploader?: multer.Options): string {
+  return fileUploader ? "multer" : "default";
+}
+
+function buildOpenApiValidatorMiddleware(
+  spec: string | OpenAPIV3.DocumentV3,
+  fileUploader?: multer.Options,
+): OpenApiRequestHandler[] {
+  return OpenApiValidator.middleware({
+    apiSpec: spec,
+    validateRequests: true,
+    validateResponses,
+    fileUploader,
+  });
+}
+
 export interface OpenApiValidatorOptions {
   apiSpec: string | OpenAPIV3.DocumentV3;
   fileUploader?: multer.Options;
@@ -43,19 +65,26 @@ export interface OpenApiValidatorOptions {
 export const createOpenApiValidator = (
   options: OpenApiValidatorOptions,
 ): OpenApiRequestHandler[] => {
-  // Parse spec if it's a string
   const spec =
     typeof options.apiSpec === "string"
       ? require(options.apiSpec)
       : options.apiSpec;
 
-  return [
-    // Request/response validation
-    ...OpenApiValidator.middleware({
-      apiSpec: spec,
-      validateRequests: true,
-      validateResponses,
-      fileUploader: options.fileUploader,
-    }),
-  ];
+  if (typeof spec === "object" && spec !== null) {
+    const uploaderKey = fileUploaderCacheKey(options.fileUploader);
+    let byUploader = validatorCache.get(spec);
+    if (!byUploader) {
+      byUploader = new Map();
+      validatorCache.set(spec, byUploader);
+    }
+    const cached = byUploader.get(uploaderKey);
+    if (cached) {
+      return cached;
+    }
+    const created = buildOpenApiValidatorMiddleware(spec, options.fileUploader);
+    byUploader.set(uploaderKey, created);
+    return created;
+  }
+
+  return buildOpenApiValidatorMiddleware(spec, options.fileUploader);
 };
