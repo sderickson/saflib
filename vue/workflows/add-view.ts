@@ -109,7 +109,6 @@ export const AddSpaViewWorkflowDefinition = defineWorkflow<
     vue: path.join(pageDir, "__TargetName__.vue"),
     async: path.join(pageDir, "__TargetName__Async.vue"),
     strings: path.join(pageDir, "__TargetName__.strings.ts"),
-    test: path.join(pageDir, "__TargetName__.test.ts"),
     stringsIndex: path.join(packageDir, "strings.ts"),
     router: path.join(packageDir, "router.ts"),
 
@@ -221,10 +220,7 @@ Run \`npm run typecheck\` in ${context.cwd} to verify the code is type-safe.
   objects, refs, or mutation callbacks through props. This avoids ref-unwrapping issues in
   templates and keeps parent-child interfaces focused on **what to render**, not
   **how to orchestrate** (except local mutation wiring, which stays inside the child).
-* **Render test**: Update the generated \`${context.targetName}.test.ts\` as necessary — This smoke
-  test drives baseline coverage on the Vue file; uncovered lines highlight logic worth extracting.
-  Don't add interaction tests here — Playwright covers that. Focus deeper tests on the extracted
-  logic files and composables.
+* **Component tests**: Do **not** add render-only smoke tests (\`PageName.test.ts\` that only mount and assert visible copy). Test extracted \`.logic.ts\` and \`use*.ts\` composables instead. Use Playwright for full page flows and navigation. Add a component test only when it exercises **behavior** (clicks, emits, route changes) that is awkward to cover in E2E.
 * **Deciding What to Test**: Don't extract simple logic just to test it. We already have tests for each tanstack query, so there's no need to pull that into a separate composable either. Save testing for more complex logic, for example when multiple or tanstack queries are used together.
 * **When NOT to extract a composable**: A single mutation + local UI state (e.g. edit form + one save, delete + redirect) can stay in the component. Composables are for multi-step or shared flows.
 

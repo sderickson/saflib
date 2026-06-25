@@ -274,4 +274,4 @@ When adding a nested route layout:
 3. Register nested routes in `router.ts` with an absolute default-child redirect.
 4. Wire sidebar (or tab) navigation with `:to` paths under the parent base path.
 5. Keep section-specific sub-components in the child folder; child pages compose them.
-6. Add render tests that mount through `<RouterView />` and push to explicit child paths.
+6. Add component tests only for route-driven **behavior** (mount through `<RouterView />`, push to explicit child paths, assert section content) — not render-only smokes.

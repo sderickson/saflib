@@ -42,7 +42,7 @@ The testing approach for Vue views prioritizes testing **logic**, not **renderin
 | Stateful logic with networking (mutations, flows, state machines) | `withVueQuery` + `setupMockServer` | `useComponentFlow.test.ts` |
 | Data layer (queries, mutations, cache invalidation) | SDK tests with MSW fakes | (in the SDK package) |
 | Full user flows | Playwright E2E tests | (in the test suite) |
-| Initial render smoke test | Mount async component, `vi.waitFor` | `PageName.test.ts` |
+| Component behavior (clicks, emits, navigation) | Mount async component + interactions | `PageName.test.ts` (only when behavior is worth unit-testing) |
 
 ### Logic File Tests
 
@@ -97,11 +97,13 @@ Key points:
 - Use `vi.waitFor` to wait for async state transitions (mutations use callbacks, not await)
 - Always call `app.unmount()` at the end of each test
 
-### Render Tests
+### Component Tests
 
-The template includes a basic render test (`PageName.test.ts`) that mounts the async component and verifies the page loads. This serves as a smoke test that the page's loader, data assertions, and initial render work together.
+Do **not** add render-only smoke tests that only mount a page and assert visible copy. Those are slow, fragile, and duplicate Playwright.
 
-Render tests should **not** attempt to test interactions (clicking buttons, filling forms, submitting). That logic should be extracted into composables and tested there, or covered by Playwright E2E tests. Render tests that simulate interactions are fragile, slow, and duplicate coverage.
+Add `PageName.test.ts` only when it exercises **behavior** — opening dialogs, route redirects, hash-driven updates, button clicks with assertions on side effects. Mount the async component (or a `<RouterView />` wrapper for nested routes), mock API calls from the loader, and use `vi.waitFor` for async UI.
+
+Interaction-heavy flows belong in composable tests (`useComponentFlow.test.ts`) or Playwright, not in broad page mount tests.
 
 ### Nested routes
 
@@ -124,14 +126,12 @@ This keeps the report focused on files with actual logic.
 
 ### Making the Report Useful
 
-Each page should have a render test (`PageName.test.ts`) that mounts the async component and verifies it loads. This drives baseline coverage on the Vue file — the "easy" coverage.
+Coverage focuses on **`.logic.ts`** and **`use*.ts`** composables (enforced when using `defaultConfigWithCoverageEnforcement`). Vue SFCs are excluded from coverage — they should stay thin; Playwright covers page wiring and navigation.
 
-Lines that remain uncovered after the render test indicate logic worth extracting:
+When logic lives inline in a Vue file, extract it:
 
 - Pure logic → `.logic.ts` (covered by fast unit tests)
 - Stateful/networking logic → `useFlow.ts` composable (covered by integration tests)
-
-After extraction, the Vue file is thin, the logic files have high coverage from focused tests, and the remaining uncovered lines in Vue files are simple event handler wiring that Playwright covers.
 
 ### Coverage Enforcement
 
@@ -143,14 +143,13 @@ import { defaultConfigWithCoverageEnforcement } from "@saflib/vue/vitest-config"
 export default defaultConfigWithCoverageEnforcement;
 ```
 
-This enables automatic coverage collection on every `npm run test` and enforces per-file thresholds:
+This enables automatic coverage collection on every `npm run test` and enforces per-file thresholds on logic and composables:
 
 | Pattern | Lines | Branches | Functions | Statements |
 |---|---|---|---|---|
 | `**/*.logic.ts` | 90% | 90% | 90% | 90% |
 | `**/use*.ts` (composables) | 80% | 70% | — | 80% |
-| Global (per file) | 60% | — | — | 60% |
 
-Thresholds are enforced **per file** (`perFile: true`), so a single untested file will fail the build even if aggregate coverage is high. Branch and function thresholds are omitted at the global level because Vue files inherently have uncovered branches (`v-if` paths) and functions (event handlers) that only Playwright exercises.
+Vue SFCs are excluded from coverage (see **Excluded Files** above). Branch and function thresholds are omitted for composables where async paths are only exercised in Playwright.
 
 If coverage falls below these thresholds, `npm run test` fails — including when run by the `vue/add-view` workflow, forcing the agent to write adequate tests before the step passes.
