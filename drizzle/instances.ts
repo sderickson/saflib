@@ -266,7 +266,7 @@ export class DbManager<S extends Schema, C extends Config> {
               run: () => unknown;
             };
             exec: (sql: string) => void;
-            transaction: <T>(fn: () => T) => T;
+            transaction: <T>(fn: () => T) => () => T;
           };
         };
       }
