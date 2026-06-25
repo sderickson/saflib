@@ -160,6 +160,30 @@ describe("Instance Manager", () => {
     expect(deleted).toBe(false);
   });
 
+  it("clearAllTablesForTests removes rows but keeps schema and migrations", () => {
+    const key = manager.connect() as DbKey;
+    const instance = manager.get(key);
+    assert(instance);
+
+    instance
+      .insert(schema.testTable)
+      .values({ name: "before-clear" })
+      .run();
+    expect(
+      instance.select().from(schema.testTable).all(),
+    ).toHaveLength(1);
+
+    manager.clearAllTablesForTests(key);
+    expect(instance.select().from(schema.testTable).all()).toHaveLength(0);
+
+    instance.insert(schema.testTable).values({ name: "after-clear" }).run();
+    expect(
+      instance.select().from(schema.testTable).all(),
+    ).toHaveLength(1);
+
+    manager.disconnect(key);
+  });
+
   it("applies pragmas when provided", () => {
     const dbPath = getTempDbPath("pragma-on");
     const key = manager.connect({

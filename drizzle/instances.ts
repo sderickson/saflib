@@ -240,6 +240,61 @@ export class DbManager<S extends Schema, C extends Config> {
     return this.dbPaths.get(key);
   };
 
+  /**
+   * Deletes all application rows from every table in the connected database.
+   * Preserves `__drizzle_migrations`. For query unit tests that reuse one
+   * in-memory connection per file (`beforeAll` connect + `beforeEach` reset).
+   */
+  clearAllTablesForTests = (key: DbKey): void => {
+    if (typedEnv.NODE_ENV !== "test") {
+      throw new Error(
+        "clearAllTablesForTests is only available when NODE_ENV=test",
+      );
+    }
+
+    const instance = this.instances.get(key);
+    if (!instance) {
+      throw new Error("clearAllTablesForTests: database instance not found");
+    }
+
+    const client = (
+      instance as unknown as {
+        session: {
+          client: {
+            prepare: (sql: string) => {
+              all: () => { name: string }[];
+              run: () => unknown;
+            };
+            exec: (sql: string) => void;
+            transaction: <T>(fn: () => T) => T;
+          };
+        };
+      }
+    ).session.client;
+
+    const tables = client
+      .prepare(
+        `SELECT name FROM sqlite_master
+         WHERE type = 'table'
+           AND name NOT LIKE 'sqlite_%'
+           AND name != '__drizzle_migrations'`,
+      )
+      .all();
+
+    client.exec("PRAGMA foreign_keys = OFF");
+    try {
+      const clearTables = client.transaction(() => {
+        for (const { name } of tables) {
+          const escaped = name.replace(/"/g, '""');
+          client.prepare(`DELETE FROM "${escaped}"`).run();
+        }
+      });
+      clearTables();
+    } finally {
+      client.exec("PRAGMA foreign_keys = ON");
+    }
+  };
+
   /** Flush WAL pages into the main db file and reset the WAL (SQLite backup-safe). */
   walCheckpointTruncate = (key: DbKey): void => {
     const instance = this.instances.get(key);
@@ -393,6 +448,7 @@ export class DbManager<S extends Schema, C extends Config> {
       createBackup: this.createBackup.bind(this),
       restore: this.restore.bind(this),
       getDbPath: this.getDbPath,
+      clearAllTablesForTests: this.clearAllTablesForTests,
       walCheckpointTruncate: this.walCheckpointTruncate,
       attachConnection: this.attachConnection,
       backupTo: this.backupTo.bind(this),

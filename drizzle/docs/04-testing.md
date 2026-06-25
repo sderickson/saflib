@@ -6,33 +6,39 @@ Things to keep an eye out for when writing tests for the SQLite layer.
 
 When testing database queries, always use the package's exported database manager rather than creating database instances directly. This ensures you're testing the same code path that consumers of your package will use per [best practices](../../best-practices.md#have-thorough-test-coverage).
 
-> TODO: Update identity-db tests to always import from its own package per above.
+Reuse **one in-memory connection per test file** and reset row data between tests. Connecting in `beforeEach` re-runs migrations on every test and is much slower at scale.
 
 It will look like this:
 
 ```typescript
-import { mainDb } from "@your-org/your-db-package";
+import { __serviceName__DbManager } from "../../instances.ts";
 import type { DbKey } from "@saflib/drizzle";
 
 describe("such-and-such query", () => {
   let dbKey: DbKey;
 
-  beforeEach(() => {
-    dbKey = mainDb.connect(); // Use the package's manager
+  beforeAll(() => {
+    dbKey = __serviceName__DbManager.connect();
   });
 
-  afterEach(() => {
-    mainDb.disconnect(dbKey);
+  afterAll(() => {
+    __serviceName__DbManager.disconnect(dbKey);
+  });
+
+  beforeEach(() => {
+    __serviceName__DbManager.clearAllTablesForTests(dbKey);
   });
 
   it("should do something", async () => {
-    const { result } = await mainDb.someDomain.list(dbKey);
+    const { result } = await someQuery(dbKey);
     // ... assertions
   });
 });
 ```
 
-See also [this identity example](https://github.com/sderickson/saflib/blob/bc5eecf8253236c3a4455d7caaa3e11c2e12d389/identity/identity-db/queries/users/get-by-id.test.ts).
+`clearAllTablesForTests` deletes application rows from every table while preserving schema and `__drizzle_migrations`. It only works when `NODE_ENV=test`.
+
+If the package exports a `publicInterface()` wrapper (e.g. `mainDb`), the same hooks apply using `mainDb.connect()`, `mainDb.disconnect()`, and `mainDb.clearAllTablesForTests()`.
 
 ## Coverage
 
