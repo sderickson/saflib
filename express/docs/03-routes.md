@@ -43,6 +43,8 @@ In `http.ts`, mount product routers **before** any router that ends with a catch
 
 When that happens, fix the **OpenAPI schema** in the adjacent `-spec` package (then rebuild so `jsonSpec` / `dist/openapi.json` update)—do not chase a handler bug.
 
+**Also see** [@saflib/openapi API Design — Nullable fields](../../openapi/docs/02-api-design.md#nullable-fields-openapi-30): OpenAPI 3.0 does **not** allow `type: "null"` or `oneOf`/`anyOf` null branches. Agents often add those by mistake; they break bundling and validation.
+
 Safe patterns:
 
 - Scalars: `type: string` (or number, etc.) plus `nullable: true`, with constraints inline; or omit `nullable` and omit the property when unset on responses.

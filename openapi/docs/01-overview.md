@@ -12,7 +12,7 @@ Packages using `@saflib/openapi` can generate:
 - JSON schemas
 - API docs
 
-For conventions on designing routes and schemas (URL structure, batch endpoints, binary responses, etc.), see [API Design](./02-api-design.md).
+For conventions on designing routes and schemas (URL structure, batch endpoints, binary responses, nullable fields, etc.), see [API Design](./02-api-design.md).
 
 ## Package Structure
 
@@ -84,6 +84,8 @@ Business object definitions. These are important to get right, as they are share
 Per [best-practices](../../best-practices.md#specify-and-enforce-shared-apis-models-and-strings), keep these objects flat. If they reference some other object, have the field be an identifier.
 
 Schemas should be defined in a way that is easy to reuse across routes.
+
+For nullable and optional fields, follow [API Design — Nullable fields](./02-api-design.md#nullable-fields-openapi-30). **Do not use `type: "null"`** or JSON Schema `oneOf` with a null branch — those are not valid in our OpenAPI 3.0 toolchain.
 
 ### `openapi.yaml`
 
