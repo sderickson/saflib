@@ -31,6 +31,24 @@ For more information on generating types from the spec, see [@saflib/openapi](..
 
 Each handler should be wrapped with [`createHandler`](https://github.com/sderickson/saflib/blob/6070cd5d0bb8d44b7114c0b7dd9b318bd9b1de4a/express/src/handler.ts). It just promisify's the handler, ensuring any uncaught exceptions get passed to `next`. More functionality may be added there such as more advanced typing, instrumentation, so it's important to have this intermediary around all handlers.
 
+## Common pitfalls
+
+### Router mount order
+
+In `http.ts`, mount product routers **before** any router that ends with a catch-all 404. `@saflib/cron`'s `createCronRouter` is the usual case: it terminates unmatched paths, so routers registered after it never run. Symptoms: integration tests get **404** for a route that is correctly defined and imported. Fix: move `app.use(create…Router())` above the cron mount (keep terminators last).
+
+### OpenAPI `nullable` and express-openapi-validator
+
+`createScopedMiddleware({ apiSpec })` validates requests and responses with `express-openapi-validator`. That library rejects schemas that use `nullable: true` with `allOf: [$ref: …]` and **no sibling `type`**, and surfaces it as an unexpected **500** with message `"nullable" cannot be used without "type"`.
+
+When that happens, fix the **OpenAPI schema** in the adjacent `-spec` package (then rebuild so `jsonSpec` / `dist/openapi.json` update)—do not chase a handler bug.
+
+Safe patterns:
+
+- Scalars: `type: string` (or number, etc.) plus `nullable: true`, with constraints inline; or omit `nullable` and omit the property when unset on responses.
+- Objects: `type: object`, `nullable: true`, and `allOf: [$ref: …]` (sibling `type` is required).
+- Avoid: `nullable: true` + `allOf: [$ref]` with no `type`.
+
 ## Error Handling
 
 It is up to the handler to have somewhere in it a return for every specified HTTP response code in the spec, except for 401s because those are handled by `@saflib/express`'s middleware. The handler should be the _only_ place where HTTP responses, successful or otherwise, are created or type checked. Essentially, it is the sole responsibility of the HTTP handler function to handle HTTP concerns.

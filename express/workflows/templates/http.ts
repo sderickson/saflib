@@ -36,6 +36,9 @@ export function create__ServiceName__HttpApp(
   });
 
   // BEGIN WORKFLOW AREA app-use-routes FOR express/add-handler
+  // Mount product routers here. If the app also uses createCronRouter (or any
+  // router that ends with a catch-all 404), register those terminators *after*
+  // every product router — otherwise new routes never run and look like 404s.
   app.use(create__GroupName__Router());
   // END WORKFLOW AREA
 

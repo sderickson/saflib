@@ -141,7 +141,15 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
       - Follow the pattern in the reference doc
       - Use the handler in the adjacent "index.ts" file.
       - Include db -> http mapper functions in the adjacent ${context.copiedFiles?.helpers} file.
-      - For delete handlers that operate on child resources (e.g. deleting a file belonging to a recipe), validate the parent relationship *before* deleting. Fetch the record first, check that the parent ID matches, return 404 if not, and only then perform the delete. This avoids destroying data before returning an error.${
+      - For delete handlers that operate on child resources (e.g. deleting a file belonging to a recipe), validate the parent relationship *before* deleting. Fetch the record first, check that the parent ID matches, return 404 if not, and only then perform the delete. This avoids destroying data before returning an error.
+
+      **Router mount order (http.ts):** When wiring the group router into \`http.ts\`, mount it **before** any router that ends with a catch-all 404 (commonly \`createCronRouter\` from \`@saflib/cron\`). Cron's router terminates unmatched paths; routers registered after it never run, so every request looks like a handler 404 even though the handler is correct. Place new \`app.use(create…Router())\` calls with the other product routers, **above** the cron mount (and any comment like "mount after other routers").
+
+      **OpenAPI schemas and express-openapi-validator:** If integration tests return **500** with message \`"nullable" cannot be used without "type"\`, the bug is in the **spec**, not the handler. \`express-openapi-validator\` rejects properties that use \`nullable: true\` together with \`allOf: [\$ref: …]\` and **no sibling \`type\`**. Fix the adjacent OpenAPI schema (and regenerate the spec package) before debugging the handler:
+      - Prefer \`type: string\` / \`type: object\` **plus** \`nullable: true\` with inline constraints, **or** omit \`nullable\` and treat optional fields as omitted when unset (mappers often omit nulls on responses).
+      - Do **not** write \`nullable: true\` + \`allOf: [\$ref]\` without a sibling \`type\`.
+      - Request bodies that accept null-to-clear should use \`type: …, nullable: true\` (inline or with \`type\` + \`allOf\`), not bare \`nullable\` + \`\$ref\`/\`allOf\` alone.
+      - After schema fixes, rebuild the spec package (\`npm run build\` in the \`-spec\` package) so \`jsonSpec\` / \`dist/openapi.json\` pick up the change.${
         context.upload
           ? `
 
@@ -172,6 +180,8 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
         * Make sure to implement proper test cases that cover both success and error scenarios.
         * Do not do any mocking. Databases are in memory, and integrations have fake implementations. Do not use vitest's mock!
         * Do not test 500 or involve OpenAPI validation. Just success and 400 responses which are handled in the implementation.
+        * If a test unexpectedly gets **404** for a route you registered, check \`http.ts\` mount order: routers after \`createCronRouter\` (or any catch-all 404 middleware) never run.
+        * If a test unexpectedly gets **500** with \`"nullable" cannot be used without "type"\`, fix the OpenAPI schema in the adjacent \`-spec\` package (see handler-step guidance), rebuild the spec, and re-run — do not treat it as a handler bug.
         * Run tests with "npm run test" in ${context.cwd}.
         
         Review ${context.docFiles?.testingGuide} for more details.`,
