@@ -4,7 +4,7 @@ import type {
   OpenApiRequestMetadata,
 } from "express-openapi-validator/dist/framework/types.ts";
 import type { OpenAPIV3 } from "express-openapi-validator/dist/framework/types.ts";
-import type { Request } from "express";
+import type { InternalServerError } from "express-openapi-validator/dist/framework/types.ts";
 import { typedEnv } from "@saflib/env";
 import multer from "multer";
 
@@ -17,7 +17,7 @@ declare global {
 }
 
 const validateResponses = {
-  onError: (err: Error, _json: any, _req: Request) => {
+  onError: (err: InternalServerError, _json: unknown, _req: unknown) => {
     if (typedEnv.NODE_ENV === "test") {
       console.log("======", err.message, "======");
       console.log(
