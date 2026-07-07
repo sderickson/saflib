@@ -45,6 +45,10 @@ export interface MonorepoContext {
   packagesWithDockerfileTemplates: Set<packageName>;
 }
 
+function isWorkspaceFolderName(name: string): boolean {
+  return !name.startsWith(".") && name !== "node_modules";
+}
+
 /**
  * Not for public use. Helper function for `buildMonorepoContext`.
  */
@@ -85,14 +89,37 @@ export function getMonorepoPackages(
         if (file.parentPath.includes("node_modules")) {
           continue;
         }
+        if (!isWorkspaceFolderName(path.basename(file.parentPath))) {
+          continue;
+        }
         if (file.isFile() && file.name.endsWith("package.json")) {
           workspacePackageDirectories.push(file.parentPath);
+        }
+      }
+    } else if (workspace.endsWith("/*/*")) {
+      const workspacesDir = path.join(rootDir, workspace.slice(0, -4));
+      const firstLevelFolders = readdirSync(workspacesDir)
+        .filter(isWorkspaceFolderName)
+        .filter((folder) =>
+          statSync(path.join(workspacesDir, folder)).isDirectory(),
+        );
+      for (const firstLevelFolder of firstLevelFolders) {
+        const secondLevelDir = path.join(workspacesDir, firstLevelFolder);
+        const secondLevelFolders = readdirSync(secondLevelDir)
+          .filter(isWorkspaceFolderName)
+          .filter((folder) =>
+            statSync(path.join(secondLevelDir, folder)).isDirectory(),
+          );
+        for (const secondLevelFolder of secondLevelFolders) {
+          workspacePackageDirectories.push(
+            path.join(secondLevelDir, secondLevelFolder),
+          );
         }
       }
     } else if (workspace.endsWith("/*")) {
       const workspacesDir = path.join(rootDir, workspace.slice(0, -1));
       const workspacesFolders = readdirSync(workspacesDir)
-        .filter((folder) => !folder.startsWith("."))
+        .filter(isWorkspaceFolderName)
         .filter((folder) =>
           statSync(path.join(workspacesDir, folder)).isDirectory(),
         );
