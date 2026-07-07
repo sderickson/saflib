@@ -67,10 +67,6 @@ function usesBun(dockerTemplate: string): boolean {
   return !!dockerTemplate.match(/^FROM\s+(.+)$/m)?.[1]?.includes("/bun:");
 }
 
-/** BuildKit cache mount keeps npm's download cache out of image layers. Do not run npm cache clean here — it conflicts with the mounted cache dir. */
-const NPM_CI_OMIT_DEV =
-  "RUN --mount=type=cache,target=/root/.npm npm ci --omit=dev";
-
 function readDockerfileTemplate(
   packageName: string,
   monorepoContext: MonorepoContext,
@@ -111,8 +107,7 @@ export function generateDockerfiles(
 
     const dockerfileContents = dockerTemplate
       .replace("#{ copy_packages }#", copyPackageJsonCommand)
-      .replace("#{ copy_src }#", copySrcCommand)
-      .replace("RUN npm ci --omit=dev", NPM_CI_OMIT_DEV);
+      .replace("#{ copy_src }#", copySrcCommand);
 
     const dockerfilePath = path.join(
       ctx.monorepoPackageDirectories[packageName],
