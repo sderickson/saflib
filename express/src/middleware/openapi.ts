@@ -16,14 +16,78 @@ declare global {
   }
 }
 
+type OpenApiValidationIssue = {
+  path?: string;
+  message?: string;
+};
+
+function propertyNameFromIssuePath(path?: string): string | undefined {
+  if (!path) {
+    return undefined;
+  }
+  const segments = path.split("/").filter(Boolean);
+  return segments.at(-1);
+}
+
+function formatOpenApiValidationError(err: InternalServerError): string {
+  const issues = (err as InternalServerError & { errors?: OpenApiValidationIssue[] })
+    .errors;
+  if (!issues?.length) {
+    return err.message;
+  }
+
+  const additionalPropertyIssues = issues.filter((issue) =>
+    issue.message?.includes("additional propert"),
+  );
+
+  if (additionalPropertyIssues.length) {
+    const byLocation = new Map<string, string[]>();
+
+    for (const issue of additionalPropertyIssues) {
+      const property = propertyNameFromIssuePath(issue.path);
+      if (!property) {
+        continue;
+      }
+      const location =
+        issue.path?.replace(/\/[^/]+$/, "").replace(/^\/response/, "response") ||
+        "response";
+      const existing = byLocation.get(location) ?? [];
+      existing.push(property);
+      byLocation.set(location, existing);
+    }
+
+    return [...byLocation.entries()]
+      .map(
+        ([location, properties]) =>
+          `${location}: unexpected additional properties [${properties.join(", ")}]`,
+      )
+      .join("; ");
+  }
+
+  const details = issues
+    .map((issue) => {
+      const path = issue.path?.replace(/^\/response/, "response") || "response";
+      return `${path}: ${issue.message ?? "validation failed"}`;
+    })
+    .join("; ");
+
+  return `${err.message} — ${details}`;
+}
+
 const validateResponses = {
   onError: (err: InternalServerError, _json: unknown, _req: unknown) => {
-    if (typedEnv.NODE_ENV === "test") {
-      console.log("======", err.message, "======");
-      console.log(
+    err.message = formatOpenApiValidationError(err);
+
+    if (
+      typedEnv.NODE_ENV === "test" ||
+      typedEnv.NODE_ENV === "development"
+    ) {
+      console.error("====== OpenAPI response validation failed ======");
+      console.error(err.message);
+      console.error(
         "> Please update the spec or match the implementation to the spec.",
       );
-      console.log(
+      console.error(
         "> Also: Don't forget to run `npm exec saf-specs generate` to update your spec.",
       );
     }
