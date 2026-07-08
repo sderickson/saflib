@@ -183,6 +183,8 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
         * If a test unexpectedly gets **404** for a route you registered, check \`http.ts\` mount order: routers after \`createCronRouter\` (or any catch-all 404 middleware) never run.
         * If a test unexpectedly gets **500** with \`"nullable" cannot be used without "type"\`, fix the OpenAPI schema in the adjacent \`-spec\` package (see handler-step guidance), rebuild the spec, and re-run — do not treat it as a handler bug.
         * Run tests with "npm run test" in ${context.cwd}.
+        * **Daemon HTTP (\`-http\` packages):** prefer the **slim** test tier — import \`createDaemonHttpApp\` from \`create-daemon-http-app.ts\` (not \`http.ts\`), mount only the scoped handler under test, use \`acquireSlimRouteTest\` / \`releaseSlimRouteTest\` from \`testing/slim-route-test.ts\`, and \`beforeAll\`/\`afterAll\`. See \`AGENTS.md\` and \`routes/packets/create.test.ts\`. Use \`acquireRouteTestContext\` only for genuine multi-route integration tests.
+        * **Imports:** use \`@pathclerk/daemon-service-common/context\`, \`/analytics\`, \`/forms\`, \`/dossiers\`, \`/llm\`, \`/file-resources\`, \`@pathclerk/daemon-db/queries/*\`, and \`/errors\` — not package root barrels in handlers/tests.
         
         Review ${context.docFiles?.testingGuide} for more details.`,
     })),
