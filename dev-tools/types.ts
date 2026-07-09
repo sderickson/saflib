@@ -10,6 +10,7 @@ export type directoryPath = string;
  */
 export interface PackageJson {
   name: packageName;
+  version?: string;
   workspaces?: string[];
   dependencies?: Record<string, string>;
   description?: string;

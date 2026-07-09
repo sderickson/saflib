@@ -49,7 +49,7 @@ function writeDockerRootPackageJson(
   const rootPackageJson = monorepoContext.monorepoPackageJsons[rootPackageName];
   const dockerPackageJson = {
     name: rootPackageJson.name,
-    version: rootPackageJson.version,
+    version: rootPackageJson.version ?? "0.0.0",
     private: true,
     workspaces: packageRelativePaths.map((relativePath) =>
       relativePath.replace(/^\.\//, ""),
