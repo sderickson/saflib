@@ -4,6 +4,7 @@ get:
   operationId: listCronJobs
   tags:
     - cron
+    - site-admin-only
   security:
     - scopes: ["cron:read"]
   responses:
@@ -34,6 +35,7 @@ put:
   operationId: updateCronJobSettings
   tags:
     - cron
+    - site-admin-only
   security:
     - scopes: ["cron:write"]
   requestBody:
