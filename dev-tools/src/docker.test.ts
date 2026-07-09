@@ -23,10 +23,7 @@ describe("generateDockerfiles", () => {
       "utf-8",
     );
     expect(dockerfile).toContain(
-      "COPY ./.docker/foo-auth-web-client/package.json ./package.json",
-    );
-    expect(dockerfile).toContain(
-      "COPY --parents ./package-lock.json ./clients/web-auth/package.json ./saflib/auth-vue/package.json ./saflib/auth-spec/package.json ./saflib/openapi-specs/package.json ./saflib/vue-spa/package.json",
+      "COPY --parents ./package.json ./package-lock.json ./clients/web-auth/package.json ./saflib/auth-vue/package.json ./saflib/auth-spec/package.json ./saflib/openapi-specs/package.json ./saflib/vue-spa/package.json",
     );
     expect(dockerfile).toContain(
       "COPY --parents ./clients/web-auth ./saflib/auth-vue ./saflib/auth-spec ./saflib/openapi-specs ./saflib/vue-spa ./",

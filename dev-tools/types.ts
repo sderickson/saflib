@@ -11,8 +11,14 @@ export type directoryPath = string;
 export interface PackageJson {
   name: packageName;
   version?: string;
+  private?: boolean;
+  type?: string;
   workspaces?: string[];
   dependencies?: Record<string, string>;
+  devDependencies?: Record<string, string>;
+  optionalDependencies?: Record<string, string>;
+  overrides?: Record<string, string>;
+  engines?: Record<string, string>;
   description?: string;
   scripts?: Record<string, string>;
   bin?: Record<string, string>;

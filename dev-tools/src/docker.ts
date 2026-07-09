@@ -1,4 +1,4 @@
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import {
   getAllPackageWorkspaceDependencies,
@@ -16,51 +16,6 @@ function getPackageRelativePaths(
         monorepoContext.monorepoPackageDirectories[packageName];
       return "./" + path.relative(monorepoContext.rootDir, packageDirectory);
     });
-}
-
-function getRootPackageName(monorepoContext: MonorepoContext): string {
-  const rootPackageName = Object.entries(
-    monorepoContext.monorepoPackageDirectories,
-  ).find(([, directory]) => directory === monorepoContext.rootDir)?.[0];
-
-  if (!rootPackageName) {
-    throw new Error("Could not find root package in monorepo context");
-  }
-
-  return rootPackageName;
-}
-
-function dockerPackageJsonPath(
-  packageName: string,
-  monorepoContext: MonorepoContext,
-): string {
-  const safeName = packageName
-    .replace(/[^a-zA-Z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-  return path.join(monorepoContext.rootDir, ".docker", safeName, "package.json");
-}
-
-function writeDockerRootPackageJson(
-  packageName: string,
-  packageRelativePaths: string[],
-  monorepoContext: MonorepoContext,
-): string {
-  const rootPackageName = getRootPackageName(monorepoContext);
-  const rootPackageJson = monorepoContext.monorepoPackageJsons[rootPackageName];
-  const dockerPackageJson = {
-    name: rootPackageJson.name,
-    version: rootPackageJson.version ?? "0.0.0",
-    private: true,
-    workspaces: packageRelativePaths.map((relativePath) =>
-      relativePath.replace(/^\.\//, ""),
-    ),
-  };
-
-  const outputPath = dockerPackageJsonPath(packageName, monorepoContext);
-  mkdirSync(path.dirname(outputPath), { recursive: true });
-  writeFileSync(outputPath, `${JSON.stringify(dockerPackageJson, null, 2)}\n`);
-
-  return "./" + path.relative(monorepoContext.rootDir, outputPath);
 }
 
 function usesBun(dockerTemplate: string): boolean {
@@ -97,12 +52,7 @@ export function generateDockerfiles(
       ctx,
     ).map((relativePath) => relativePath + "/package.json");
 
-    const dockerRootPackageJson = writeDockerRootPackageJson(
-      packageName,
-      packageRelativePaths,
-      ctx,
-    );
-    const copyPackageJsonCommand = `COPY ${dockerRootPackageJson} ./package.json\nCOPY --parents ./package-lock.json ${packageJsonRelativePaths.join(" ")} ./`;
+    const copyPackageJsonCommand = `COPY --parents ./package.json ./package-lock.json ${packageJsonRelativePaths.join(" ")} ./`;
     const copySrcCommand = `COPY --parents ${packageRelativePaths.join(" ")} ./`;
 
     const dockerfileContents = dockerTemplate
