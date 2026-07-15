@@ -348,7 +348,7 @@ export const executePromptWithCursor = async ({
             } else {
               printLineSlowly(`> Command failed`);
               printLineSlowly(
-                json.tool_call.shellToolCall.result?.failure.stderr ?? "",
+                json.tool_call.shellToolCall.result?.failure?.stderr ?? "",
               );
             }
           }
