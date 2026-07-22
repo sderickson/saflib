@@ -1,7 +1,7 @@
 <template>
   <template v-if="queryData instanceof SettingsFlowFetched && flow">
     <div class="settings-page text-start">
-      <SettingsIntro />
+      <SettingsIntro v-if="!embedded" />
 
       <v-alert
         v-if="showPasswordRecoveryPrompt"
@@ -26,8 +26,10 @@
 
       <div
         class="settings-body d-flex flex-column flex-md-row ga-6 align-md-start"
+        :class="{ 'settings-body--embedded': embedded }"
       >
         <nav
+          v-if="!embedded"
           class="settings-nav flex-shrink-0"
           :aria-label="t(tabs.nav_aria_label)"
         >
@@ -79,17 +81,6 @@
                 :submitting="submitting"
                 id-prefix="settings-totp"
                 :message-filter="settingsMessageFilter"
-                @submit="submitSettingsForm"
-              />
-            </v-window-item>
-            <v-window-item v-if="hasPasskeySettings" value="passkey">
-              <SettingsGroupUi
-                :flow="flow"
-                group="passkey"
-                :submitting="submitting"
-                id-prefix="settings-passkey"
-                :message-filter="settingsMessageFilter"
-                :identity-passkey-display-fallback="sessionEmail"
                 @submit="submitSettingsForm"
               />
             </v-window-item>
@@ -207,13 +198,13 @@
 
   <FlowGonePanel
     v-else-if="queryData instanceof FlowGone"
-    restart-path="/new-settings"
+    :restart-path="flowCreatePath"
     :restart-query="settingsRestartQuery"
     :result="queryData"
   />
   <CsrfViolationPanel
     v-else-if="queryData instanceof SecurityCsrfViolation"
-    restart-path="/new-settings"
+    :restart-path="flowCreatePath"
     :restart-query="settingsRestartQuery"
     :result="queryData"
   />
@@ -222,7 +213,7 @@
 
 <script setup lang="ts">
 import { computed, ref, toValue, watch } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { getTanstackErrorMessage, TanstackError } from "@saflib/sdk";
 import { useReverseT } from "@saflib/ory-kratos-spa/i18n";
 import type { Session, SettingsFlow, UiText } from "@ory/client";
@@ -231,7 +222,6 @@ import {
   FlowGone,
   SecurityCsrfViolation,
   SettingsFlowFetched,
-  kratosEmailFromSession,
   useDisableMyOtherSessionsMutation,
   useDisableMySessionMutation,
   useKratosMySessions,
@@ -244,6 +234,7 @@ import {
   KRATOS_SETTINGS_PASSWORD_RECOVERY_MESSAGE_ID,
   parseSettingsTabQuery,
   settingsFlowHasPasswordRecoveryMessage,
+  type SettingsTabQueryValue,
 } from "./Settings.logic.ts";
 import {
   settings_password_recovery as passwordRecoveryStrings,
@@ -258,8 +249,27 @@ import UnhandledResponsePanel from "../common/UnhandledResponsePanel.vue";
 import SettingsAalReauthRedirect from "./SettingsAalReauthRedirect.vue";
 import { useKratosBrowserLogout } from "../registration/useKratosBrowserLogout.ts";
 
+const props = withDefaults(
+  defineProps<{
+    /**
+     * When set (typically with `embedded`), force this settings section and skip
+     * the in-page sidebar. Host layouts supply their own nav.
+     */
+    section?: SettingsTabQueryValue;
+    /** Hide intro + sidebar (account SPA nest). */
+    embedded?: boolean;
+    /** Path used to restart an expired / CSRF settings flow. */
+    flowCreatePath?: string;
+  }>(),
+  {
+    embedded: false,
+    flowCreatePath: "/new-settings",
+  },
+);
+
 const { t } = useReverseT();
 const route = useRoute();
+const router = useRouter();
 const { getSettingsFlowQuery } = useSettingsLoader();
 
 const queryData = computed(() => toValue(getSettingsFlowQuery.data));
@@ -274,20 +284,12 @@ const flow = computed((): SettingsFlow | null => {
 
 const flowIdForSubmit = computed(() => flow.value?.id ?? "");
 
-type SettingsSectionTab =
-  | "email"
-  | "password"
-  | "totp"
-  | "passkey"
-  | "sessions";
+type SettingsSectionTab = Exclude<SettingsTabQueryValue, "passkey">;
 
 const tab = ref<SettingsSectionTab>("email");
 
 const { data: kratosSession, isPending: kratosSessionPending } =
   useKratosSession();
-const sessionEmail = computed(() =>
-  kratosEmailFromSession(kratosSession.value ?? undefined),
-);
 
 const mySessionsEnabled = computed(
   () => !kratosSessionPending.value && kratosSession.value != null,
@@ -403,16 +405,11 @@ const hasTotpSettings = computed(() =>
   Boolean(flow.value?.ui.nodes.some((node) => node.group === "totp")),
 );
 
-const hasPasskeySettings = computed(() =>
-  Boolean(flow.value?.ui.nodes.some((node) => node.group === "passkey")),
-);
-
 const sidebarItems = computed((): { value: SettingsSectionTab; title: string }[] => {
   const items: { value: SettingsSectionTab; title: string; show: boolean }[] = [
     { value: "email", title: t(tabs.general), show: true },
     { value: "password", title: t(tabs.password), show: true },
     { value: "totp", title: t(tabs.totp), show: hasTotpSettings.value },
-    { value: "passkey", title: t(tabs.passkey), show: hasPasskeySettings.value },
     { value: "sessions", title: t(tabs.sessions), show: true },
   ];
   return items.filter((i) => i.show).map(({ value, title }) => ({ value, title }));
@@ -439,26 +436,47 @@ const settingsMessageFilter = computed(
   },
 );
 
+function asSectionTab(
+  value: SettingsTabQueryValue | undefined,
+): SettingsSectionTab | null {
+  if (!value || value === "passkey") return null;
+  return value;
+}
+
 watch(
-  [flow, () => route.query.tab, hasTotpSettings, hasPasskeySettings],
+  [flow, () => route.query.tab, () => props.section, hasTotpSettings],
   () => {
     const f = flow.value;
     if (f && settingsFlowHasPasswordRecoveryMessage(f)) {
+      if (props.embedded && props.section && props.section !== "password") {
+        const flowId =
+          typeof route.query.flow === "string" ? route.query.flow : undefined;
+        void router.replace({
+          path: "/password",
+          query: flowId ? { flow: flowId } : {},
+        });
+        return;
+      }
       tab.value = "password";
       return;
     }
+    const fromProp = asSectionTab(props.section);
+    if (fromProp) {
+      if (fromProp === "totp" && !hasTotpSettings.value) return;
+      tab.value = fromProp;
+      return;
+    }
     const fromQuery = parseSettingsTabQuery(route.query.tab);
-    if (!fromQuery) return;
-    if (fromQuery === "totp" && !hasTotpSettings.value) return;
-    if (fromQuery === "passkey" && !hasPasskeySettings.value) return;
-    tab.value = fromQuery;
+    const fromQueryTab = asSectionTab(fromQuery ?? undefined);
+    if (!fromQueryTab) return;
+    if (fromQueryTab === "totp" && !hasTotpSettings.value) return;
+    tab.value = fromQueryTab;
   },
   { immediate: true },
 );
 
-watch([tab, hasTotpSettings, hasPasskeySettings], () => {
+watch([tab, hasTotpSettings], () => {
   if (tab.value === "totp" && !hasTotpSettings.value) tab.value = "email";
-  if (tab.value === "passkey" && !hasPasskeySettings.value) tab.value = "email";
 });
 
 watch(tab, (next, prev) => {
@@ -485,8 +503,11 @@ const settingsRestartQuery = computed(() => {
   ) {
     q.return_to = route.query.return_to.trim();
   }
+  if (props.embedded && props.section && props.section !== "passkey") {
+    return q;
+  }
   const tabQ = parseSettingsTabQuery(route.query.tab);
-  if (tabQ) {
+  if (tabQ && tabQ !== "passkey") {
     q.tab = tabQ;
   }
   return q;
@@ -500,6 +521,10 @@ const settingsRestartQuery = computed(() => {
 
 .settings-body {
   width: 100%;
+}
+
+.settings-body--embedded {
+  display: block;
 }
 
 .settings-nav {
