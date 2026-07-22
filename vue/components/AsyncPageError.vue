@@ -90,6 +90,8 @@ const displayMessage = computed(() => {
   switch (status) {
     case 401:
       return "Not Logged In";
+    case 402:
+      return "Payment Required";
     case 403:
       return "Forbidden";
     case 404:
