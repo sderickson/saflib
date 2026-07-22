@@ -21,6 +21,11 @@ export {
   identityNeedsEmailVerification,
   kratosEmailFromIdentity,
 } from "./helpers/kratos-identity.ts";
+export {
+  aal2LoginFlowHasMfaMethods,
+  resolveMfaContinueHref,
+  sessionSatisfiesMfa,
+} from "./helpers/mfa-aal2-probe.ts";
 
 // ── Queries: session ────────────────────────────────────────────────────────
 export {
