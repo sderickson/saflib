@@ -9,6 +9,7 @@ export function makeUserHeaders(
     "x-user-id": userId,
     "x-user-email": email,
     "x-user-email-verified": "true",
+    "x-user-mfa-completed": "true",
     "x-user-is-admin": "false",
     "x-requested-with": "XMLHttpRequest",
   };
