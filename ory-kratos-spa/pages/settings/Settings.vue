@@ -233,6 +233,7 @@ import type { KratosFlowUiMessageFilterContext } from "../common/kratosUiMessage
 import {
   KRATOS_SETTINGS_PASSWORD_RECOVERY_MESSAGE_ID,
   parseSettingsTabQuery,
+  settingsFlowHasLinkedTotp,
   settingsFlowHasPasswordRecoveryMessage,
   type SettingsTabQueryValue,
 } from "./Settings.logic.ts";
@@ -260,6 +261,8 @@ const props = withDefaults(
     embedded?: boolean;
     /** Path used to restart an expired / CSRF settings flow. */
     flowCreatePath?: string;
+    /** Called when TOTP is already linked or after a successful link (embedded hosts use this to advance onboarding). */
+    onTotpLinked?: () => void;
   }>(),
   {
     embedded: false,
@@ -395,8 +398,32 @@ function signOutThisDevice() {
   void startBrowserLogout();
 }
 
+const totpLinkedNotified = ref(false);
+
+function notifyTotpLinked() {
+  if (!props.onTotpLinked || totpLinkedNotified.value) {
+    return;
+  }
+  totpLinkedNotified.value = true;
+  props.onTotpLinked();
+}
+
 const { submitting, submitError, clearSubmitError, submitSettingsForm } =
-  useSettingsFlow(flowIdForSubmit);
+  useSettingsFlow(flowIdForSubmit, {
+    onTotpLinked: notifyTotpLinked,
+  });
+
+/** If TOTP is already linked when the flow loads, notify the host once. */
+watch(
+  flow,
+  (next) => {
+    if (!next || !settingsFlowHasLinkedTotp(next)) {
+      return;
+    }
+    notifyTotpLinked();
+  },
+  { immediate: true },
+);
 
 /** Hide stale Kratos flow-level banners (e.g. “saved”) after switching tabs; cleared when a submit finishes. */
 const suppressFlowLevelKratosMessages = ref(false);

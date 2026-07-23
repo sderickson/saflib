@@ -189,3 +189,15 @@ export function buildSettingsUpdateBodyFromFormData(
     method,
   } as UpdateSettingsFlowBody;
 }
+
+/** True when the settings flow UI shows TOTP already linked (unlink control present). */
+export function settingsFlowHasLinkedTotp(flow: SettingsFlow): boolean {
+  for (const node of flow.ui.nodes) {
+    if (node.type !== "input") continue;
+    const attrs = node.attributes as { name?: string };
+    if (attrs.name === "totp_unlink") {
+      return true;
+    }
+  }
+  return false;
+}

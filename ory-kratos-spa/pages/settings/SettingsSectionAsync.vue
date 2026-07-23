@@ -29,6 +29,10 @@ const props = defineProps<{
   section: SettingsTabQueryValue;
 }>();
 
+const emit = defineEmits<{
+  "totp-linked": [];
+}>();
+
 const route = useRoute();
 
 const flowId = computed(() =>
@@ -46,6 +50,7 @@ const settingsPageProps = computed(() => ({
   section: props.section,
   embedded: true,
   flowCreatePath: settingsPath.value,
+  onTotpLinked: () => emit("totp-linked"),
 }));
 
 const SettingsSectionCreate = defineAsyncComponent(
