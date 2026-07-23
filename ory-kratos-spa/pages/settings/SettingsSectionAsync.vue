@@ -33,6 +33,10 @@ const emit = defineEmits<{
   "totp-linked": [];
 }>();
 
+function emitTotpLinked() {
+  emit("totp-linked");
+}
+
 const route = useRoute();
 
 const flowId = computed(() =>
@@ -50,7 +54,7 @@ const settingsPageProps = computed(() => ({
   section: props.section,
   embedded: true,
   flowCreatePath: settingsPath.value,
-  onTotpLinked: () => emit("totp-linked"),
+  onTotpLinked: emitTotpLinked,
 }));
 
 const SettingsSectionCreate = defineAsyncComponent(
