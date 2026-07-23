@@ -6,6 +6,7 @@ import {
   createBrowserLogoutFlowQueryOptions,
 } from "@saflib/ory-kratos-sdk";
 import { useAuthLoggedOutRootFallbackHref } from "../../authFallbackInject.ts";
+import { useAuthOnBeforeLogout } from "../../configureAuthApp.ts";
 
 export function useKratosBrowserLogout(options?: {
   /**
@@ -17,6 +18,7 @@ export function useKratosBrowserLogout(options?: {
   const queryClient = useQueryClient();
   const route = useRoute();
   const rootHomeFallbackHref = useAuthLoggedOutRootFallbackHref();
+  const onBeforeLogout = useAuthOnBeforeLogout();
   const pending = ref(false);
 
   function resolveReturnTo(): string {
@@ -33,6 +35,7 @@ export function useKratosBrowserLogout(options?: {
     if (pending.value) return;
     pending.value = true;
     try {
+      onBeforeLogout?.();
       const result = await queryClient.fetchQuery({
         ...createBrowserLogoutFlowQueryOptions({
           returnTo: resolveReturnTo(),
