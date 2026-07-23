@@ -7,7 +7,25 @@ import {
   csrfTokenFromUiFlow,
   postRegistrationNavigationUrl,
   traitsEmailFromFormData,
+  verificationFlowIdFromRegistrationContinueWith,
 } from "./Registration.logic.ts";
+
+describe("verificationFlowIdFromRegistrationContinueWith", () => {
+  it("extracts show_verification_ui flow id", () => {
+    expect(
+      verificationFlowIdFromRegistrationContinueWith([
+        { action: "show_verification_ui", flow: { id: "vf-1" } },
+      ]),
+    ).toBe("vf-1");
+  });
+
+  it("returns undefined when missing", () => {
+    expect(verificationFlowIdFromRegistrationContinueWith([])).toBeUndefined();
+    expect(
+      verificationFlowIdFromRegistrationContinueWith(undefined),
+    ).toBeUndefined();
+  });
+});
 
 describe("postRegistrationNavigationUrl", () => {
   it("returns trimmed return_to when set", () => {

@@ -5,7 +5,6 @@ import { linkToHrefWithHost } from "@saflib/links";
 import { authLinks } from "@saflib/ory-kratos-sdk/links";
 import {
   createLoginFlowQueryOptions,
-  identityNeedsEmailVerification,
   LoginFlowCreated,
   RegistrationFlowUpdated,
   useUpdateLoginFlowMutation,
@@ -27,6 +26,7 @@ import {
   buildRegistrationUpdateBodyFromFormData,
   registrationSubmitErrorMessage,
   traitsEmailFromFormData,
+  verificationFlowIdFromRegistrationContinueWith,
 } from "./Registration.logic.ts";
 import { kratos_registration_flow as flowStrings } from "./RegistrationFlowForm.strings.ts";
 
@@ -65,6 +65,24 @@ export function useRegistrationFlow(flow: Ref<RegistrationFlow>) {
     return false;
   }
 
+  function destinationWithOptionalVerificationFlow(
+    destination: string,
+    continueWith: RegistrationCompleted["result"]["continue_with"],
+  ): string {
+    const flowId = verificationFlowIdFromRegistrationContinueWith(continueWith);
+    if (!flowId) {
+      return destination;
+    }
+    try {
+      const url = new URL(destination);
+      url.searchParams.set("flow", flowId);
+      return url.toString();
+    } catch {
+      const join = destination.includes("?") ? "&" : "?";
+      return `${destination}${join}flow=${encodeURIComponent(flowId)}`;
+    }
+  }
+
   async function submitRegistrationForm(form: HTMLFormElement) {
     const fd = new FormData(form);
     registrationSubmitCount.value += 1;
@@ -98,15 +116,12 @@ export function useRegistrationFlow(flow: Ref<RegistrationFlow>) {
         : (flow.value.return_to ?? postRegisterHref.value);
       const registrationSession = updated.result.session;
       if (registrationSession) {
-        if (identityNeedsEmailVerification(registrationSession.identity)) {
-          window.location.assign(
-            linkToHrefWithHost(authLinks.verifyWall, {
-              params: { return_to: destination },
-            }),
-          );
-        } else {
-          window.location.assign(destination);
-        }
+        window.location.assign(
+          destinationWithOptionalVerificationFlow(
+            destination,
+            updated.result.continue_with,
+          ),
+        );
         keepSubmittingUntilNavigation = true;
         return;
       }
@@ -147,20 +162,12 @@ export function useRegistrationFlow(flow: Ref<RegistrationFlow>) {
         return;
       }
 
-      const loginSession = loginResult.session.session;
-
-      if (
-        loginSession &&
-        identityNeedsEmailVerification(loginSession.identity)
-      ) {
-        window.location.assign(
-          linkToHrefWithHost(authLinks.verifyWall, {
-            params: { return_to: destination },
-          }),
-        );
-      } else {
-        window.location.assign(destination);
-      }
+      window.location.assign(
+        destinationWithOptionalVerificationFlow(
+          destination,
+          updated.result.continue_with,
+        ),
+      );
       keepSubmittingUntilNavigation = true;
     } catch (e) {
       submitError.value = registrationSubmitErrorMessage(
