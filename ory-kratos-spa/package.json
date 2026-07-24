@@ -5,6 +5,7 @@
     ".": "./index.ts",
     "./router": "./router.ts",
     "./settings": "./settings.ts",
+    "./registration": "./registration.ts",
     "./fixtures": "./fixtures.ts",
     "./strings": "./strings.ts",
     "./i18n": "./i18n.ts",

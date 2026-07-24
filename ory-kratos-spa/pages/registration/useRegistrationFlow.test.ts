@@ -90,4 +90,86 @@ describe("useRegistrationFlow", () => {
     ).toBe(true);
     app.unmount();
   });
+
+  it("blocks submit when beforeSubmit returns an error", async () => {
+    setMockRegistrationPostResult("success");
+    const assignMock = vi.fn();
+    vi.stubGlobal("location", {
+      href: "http://localhost/",
+      assign: assignMock,
+    });
+    try {
+      const flowRef = ref({ ...mockRegistrationFlow });
+      const [{ submitRegistrationForm, submitError }, app] = withVueQuery(() =>
+        useRegistrationFlow(flowRef, {
+          beforeSubmit: () => "Display name required",
+        }),
+      );
+
+      await submitRegistrationForm(registrationTestForm());
+
+      expect(submitError.value).toBe("Display name required");
+      expect(assignMock).not.toHaveBeenCalled();
+      app.unmount();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it("calls afterRegistration before redirect", async () => {
+    setMockRegistrationPostResult("success");
+    const assignMock = vi.fn();
+    const afterRegistration = vi.fn(async () => undefined);
+    vi.stubGlobal("location", {
+      href: "http://localhost/",
+      assign: assignMock,
+    });
+    try {
+      const flowRef = ref({ ...mockRegistrationFlow });
+      const [{ submitRegistrationForm }, app] = withVueQuery(() =>
+        useRegistrationFlow(flowRef, { afterRegistration }),
+      );
+
+      await submitRegistrationForm(registrationTestForm());
+
+      await vi.waitFor(() => expect(afterRegistration).toHaveBeenCalled());
+      await vi.waitFor(() =>
+        expect(assignMock).toHaveBeenCalledWith("http://app.localhost:3000/"),
+      );
+      expect(afterRegistration.mock.invocationCallOrder[0]!).toBeLessThan(
+        assignMock.mock.invocationCallOrder[0]!,
+      );
+      app.unmount();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it("still redirects when afterRegistration fails", async () => {
+    setMockRegistrationPostResult("success");
+    const assignMock = vi.fn();
+    vi.stubGlobal("location", {
+      href: "http://localhost/",
+      assign: assignMock,
+    });
+    try {
+      const flowRef = ref({ ...mockRegistrationFlow });
+      const [{ submitRegistrationForm }, app] = withVueQuery(() =>
+        useRegistrationFlow(flowRef, {
+          afterRegistration: async () => {
+            throw new Error("put failed");
+          },
+        }),
+      );
+
+      await submitRegistrationForm(registrationTestForm());
+
+      await vi.waitFor(() =>
+        expect(assignMock).toHaveBeenCalledWith("http://app.localhost:3000/"),
+      );
+      app.unmount();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
 });
