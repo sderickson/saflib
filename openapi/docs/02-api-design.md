@@ -199,7 +199,7 @@ Use 422 (not 404) when the **target of the request** is valid (e.g. “create a 
 
 Path and query parameters MUST contain only opaque identifiers (UUIDs, shortIds, slugs that don’t reveal personal data) or non-PII literals (enums, flags, ISO dates). PII — emails, full names, phone numbers, free-form text — MUST travel in request bodies.
 
-Why: URL-shaped data is logged in many places — reverse proxy access logs, browser history, error reports, and the project’s audit log (see `daemon/plans/notes/2026-05-05-audit-log/audit-log.spec.md`). Audit retention is multi-year; you do not want PII to inherit that retention by accident.
+Why: URL-shaped data is logged in many places — reverse proxy access logs, browser history, error reports, and the project’s audit log. Audit retention is multi-year; you do not want PII to inherit that retention by accident.
 
 If you find yourself wanting an email or name in a path, replace it with the resource’s id and accept the lookup cost.
 
@@ -302,9 +302,9 @@ On **update** routes where “omitted clears to null”, omitting a blank nested
 
 ### Quick reference
 
-| Goal | OpenAPI 3.0 (use this) | Do not use |
-|------|------------------------|------------|
-| Optional string | `type: string`, `nullable: true` | `oneOf: [{ type: "null" }, { type: string }]` |
-| Optional object | `type: object`, `nullable: true`, `allOf: [$ref]` | `type: "null"` or `oneOf` with null branch |
-| Unset on create | Document “omitted → null”; client omits key | Client sends `null` unless verified |
-| Clear on update | Document “omitted → null” or accept explicit null after schema fix | Assume `null` always validates |
+| Goal            | OpenAPI 3.0 (use this)                                             | Do not use                                    |
+| --------------- | ------------------------------------------------------------------ | --------------------------------------------- |
+| Optional string | `type: string`, `nullable: true`                                   | `oneOf: [{ type: "null" }, { type: string }]` |
+| Optional object | `type: object`, `nullable: true`, `allOf: [$ref]`                  | `type: "null"` or `oneOf` with null branch    |
+| Unset on create | Document “omitted → null”; client omits key                        | Client sends `null` unless verified           |
+| Clear on update | Document “omitted → null” or accept explicit null after schema fix | Assume `null` always validates                |

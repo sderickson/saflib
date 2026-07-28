@@ -126,7 +126,7 @@ export const SpecProjectWorkflowDefinition = defineWorkflow<
 
       Now that you have a plan, you can write the workflows per the aligned plan to implement the spec. Only one workflow has been generated, but make as many as the plan dictates. Have the main one run the others (orchestrating them).
 
-      **Step shape:** Do not start a phase workflow (or the orchestrator) with a review-only \`PromptStepMachine\` that only tells the agent to read the spec/plan. The first step should be real work (\`CdStepMachine\`, a sub-workflow, or an implementation prompt). Put context in that first step's prompt with \`Use workflow docFiles (**<name>.spec.md**, **<name>.plan.md** Phase N)\` — the workflow's \`docFiles\` block already wires those paths; reading them is not a separate step. Follow \`daemon/plans/notes/2026-05-21-questionnaire-mappings/\` phase workflows as the reference shape.
+      **Step shape:** Do not start a phase workflow (or the orchestrator) with a review-only \`PromptStepMachine\` that only tells the agent to read the spec/plan. The first step should be real work (\`CdStepMachine\`, a sub-workflow, or an implementation prompt). Put context in that first step's prompt with \`Use workflow docFiles (**<name>.spec.md**, **<name>.plan.md** Phase N)\` — the workflow's \`docFiles\` block already wires those paths; reading them is not a separate step.
 
       For each workflow, run "npm exec saf-workflow dry-run ./path/to/workflow.ts" to make sure everything is wired up correctly. One of the more common errors is for the workflow to not include "CdStepMachine" to move into the right directory before running the workflow. Location matters.
       `,
