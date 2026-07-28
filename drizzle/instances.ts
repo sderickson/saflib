@@ -9,6 +9,7 @@ import { makeSubsystemReporters } from "@saflib/node";
 import { typedEnv } from "@saflib/env";
 import { randomUUID } from "crypto";
 import { Readable } from "node:stream";
+import { reconcileSquashedMigrations } from "./reconcile-squashed-migrations.ts";
 
 /**
  * A class which mainly manages "connections" to the sqlite3 database and drizzle
@@ -88,28 +89,40 @@ export class DbManager<S extends Schema, C extends Config> {
     const db = drizzle(sqlite, { schema: this.schema });
 
     if (this.config.out && !options?.skipMigrations) {
-      log.info("Running migrations...");
-      let migrationsPath = this.config.out;
-      if (migrationsPath.startsWith("./")) {
-        migrationsPath = path.join(this.rootPath, migrationsPath);
-      }
-      try {
-        migrate(db, {
-          migrationsFolder: migrationsPath,
-        });
-      } catch (error) {
-        if (error instanceof Error && error.cause) {
-          log.error(error.stack);
-          log.error(`Cause:\n\n${error.cause}\n\n`);
-        }
-        throw error;
-      }
+      this.runMigrations(sqlite, db, log);
     }
 
     const key: DbKey = Symbol(`db-${Date.now()}-${Math.random()}`);
     this.instances.set(key, db);
     this.dbPaths.set(key, dbStorage);
     return key;
+  };
+
+  private runMigrations = (
+    sqlite: Database.Database,
+    db: DbConnection<S>,
+    log: { info: (message: string) => void; error: (message: string) => void },
+  ): void => {
+    log.info("Running migrations...");
+    let migrationsPath = this.config.out!;
+    if (migrationsPath.startsWith("./")) {
+      migrationsPath = path.join(this.rootPath, migrationsPath);
+    }
+    try {
+      reconcileSquashedMigrations(sqlite, migrationsPath, {
+        info: (message) => log.info(message),
+        warn: (message) => log.info(message),
+      });
+      migrate(db, {
+        migrationsFolder: migrationsPath,
+      });
+    } catch (error) {
+      if (error instanceof Error && error.cause) {
+        log.error(error.stack ?? String(error));
+        log.error(`Cause:\n\n${error.cause}\n\n`);
+      }
+      throw error;
+    }
   };
 
   /**
@@ -351,22 +364,7 @@ export class DbManager<S extends Schema, C extends Config> {
     }
     const db = drizzle(sqlite, { schema: this.schema });
     if (this.config.out && !options?.skipMigrations) {
-      log.info("Running migrations...");
-      let migrationsPath = this.config.out;
-      if (migrationsPath.startsWith("./")) {
-        migrationsPath = path.join(this.rootPath, migrationsPath);
-      }
-      try {
-        migrate(db, {
-          migrationsFolder: migrationsPath,
-        });
-      } catch (error) {
-        if (error instanceof Error && error.cause) {
-          log.error(error.stack);
-          log.error(`Cause:\n\n${error.cause}\n\n`);
-        }
-        throw error;
-      }
+      this.runMigrations(sqlite, db, log);
     }
     this.instances.set(key, db);
     this.dbPaths.set(key, sqlitePath);
