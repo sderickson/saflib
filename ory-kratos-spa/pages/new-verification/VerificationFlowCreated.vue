@@ -19,7 +19,7 @@ watchEffect(() => {
   const id = props.result.flow.id;
   if (!id) return;
   const next: Record<string, string> = { flow: id };
-  void router.push({
+  void router.replace({
     path: "/verification",
     query: next,
   });
