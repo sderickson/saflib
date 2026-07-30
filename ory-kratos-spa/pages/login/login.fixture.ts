@@ -9,6 +9,9 @@ export class LoginPageFixture {
 
   /**
    * Opens the auth host login flow (browser flow creation). Optional {@link returnTo} sets `?return_to=`.
+   *
+   * Tolerates an in-flight redirect to the same login URL (e.g. app auth gate
+   * bouncing after logout), which otherwise aborts `page.goto`.
    */
   async gotoLogin(options?: { returnTo?: string }): Promise<void> {
     const protocol = process.env.PROTOCOL ?? "http";
@@ -17,7 +20,25 @@ export class LoginPageFixture {
     if (options?.returnTo) {
       url += `?return_to=${encodeURIComponent(options.returnTo)}`;
     }
-    await this.page.goto(url);
+    try {
+      await this.page.goto(url, { waitUntil: "domcontentloaded" });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      const interrupted =
+        message.includes("interrupted by another navigation") ||
+        message.includes("NS_BINDING_ABORTED");
+      if (!interrupted) {
+        throw error;
+      }
+      await this.page.waitForURL(
+        (u) =>
+          u.hostname === `auth.${domain}` &&
+          (u.pathname === "/new-login" ||
+            u.pathname === "/login" ||
+            u.pathname.startsWith("/login")),
+        { timeout: 5_000 },
+      );
+    }
   }
 
   /**
