@@ -1,6 +1,11 @@
 export interface CommonEvent {
   event: string;
   context?: Record<string, unknown>;
+  /** Org the user is acting under (ProductEvent envelope). Merged into capture properties. */
+  org?: string;
+  client?: string;
+  view?: string;
+  component?: string;
 }
 
 /** Matches PostHog `identify` input closely enough for both integrations. */

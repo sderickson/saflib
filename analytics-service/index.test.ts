@@ -138,6 +138,26 @@ describe("makeTypedAnalytics", () => {
   });
 });
 
+describe("capture merges ProductEvent envelope org", () => {
+  it("includes org in capture properties", () => {
+    clearCapturedAnalyticsCalls();
+    const svc = createAnalyticsService({ type: "in-memory" });
+    svc.capture({
+      event: "org_create",
+      org: "Og4k_wZ7",
+      context: { orgId: "Og4k_wZ7" },
+    });
+    expect(capturedAnalyticsCalls[0]).toMatchObject({
+      kind: "capture",
+      event: "org_create",
+      context: expect.objectContaining({
+        org: "Og4k_wZ7",
+        orgId: "Og4k_wZ7",
+      }),
+    });
+  });
+});
+
 describe("capture merges SafContext (e.g. host)", () => {
   const safWithHost: node.SafContext = {
     requestId: "r1",

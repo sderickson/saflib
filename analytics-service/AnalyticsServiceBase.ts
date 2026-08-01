@@ -42,10 +42,21 @@ export abstract class AnalyticsServiceBase implements AnalyticsService {
     }
     const distinctId = String(userId).trim();
     const fromContext = this.getCapturePropertiesFromSafContext(ctx);
+    const fromEnvelope: Record<string, unknown> = {};
+    const putEnvelope = (key: string, value: string | undefined) => {
+      const trimmed = value?.trim();
+      if (trimmed) fromEnvelope[key] = trimmed;
+    };
+    putEnvelope("org", event.org);
+    putEnvelope("client", event.client);
+    putEnvelope("view", event.view);
+    putEnvelope("component", event.component);
     const mergedContext =
-      event.context === undefined && Object.keys(fromContext).length === 0
+      event.context === undefined &&
+      Object.keys(fromContext).length === 0 &&
+      Object.keys(fromEnvelope).length === 0
         ? undefined
-        : { ...fromContext, ...event.context };
+        : { ...fromContext, ...fromEnvelope, ...event.context };
 
     this.emitCapture({
       distinctId,
