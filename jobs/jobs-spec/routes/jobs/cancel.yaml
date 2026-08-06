@@ -1,0 +1,61 @@
+cancelJob:
+  summary: Cancel a pending or retrying job
+  description: >
+    Cancels a pending or retrying job (`terminalReason: cancelled-by-admin`).
+    Running jobs are not interrupted (409). Mounted as monolith chrome
+    (`site-admin-only`).
+  operationId: cancelJob
+  tags:
+    - jobs
+    - site-admin-only
+
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: Short id of the job to cancel.
+      schema:
+        type: string
+        example: "Jb3k_mN7"
+
+  responses:
+    "200":
+      description: Job cancelled.
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties: false
+            required:
+              - job
+            properties:
+              job:
+                $ref: "../../openapi.yaml#/components/schemas/Job"
+
+    "401":
+      description: Unauthorized - missing or invalid auth headers, or not logged in.
+      content:
+        application/json:
+          schema:
+            $ref: "../../schemas/error.yaml"
+
+    "403":
+      description: Forbidden - site admin privileges required.
+      content:
+        application/json:
+          schema:
+            $ref: "../../schemas/error.yaml"
+
+    "404":
+      description: Job not found.
+      content:
+        application/json:
+          schema:
+            $ref: "../../schemas/error.yaml"
+
+    "409":
+      description: Job is running (or otherwise not cancellable) and was not interrupted.
+      content:
+        application/json:
+          schema:
+            $ref: "../../schemas/error.yaml"

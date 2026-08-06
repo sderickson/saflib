@@ -1,0 +1,15 @@
+{
+  "name": "jobs-spec",
+  "description": "API specs for the jobs service",
+  "type": "module",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc"
+  },
+  "dependencies": {
+    "@saflib/openapi": "*",
+    "openapi-typescript": "*"
+  }
+}

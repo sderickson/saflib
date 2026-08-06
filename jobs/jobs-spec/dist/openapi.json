@@ -1,0 +1,1187 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "jobs API",
+    "version": "1.0.0",
+    "description": "API specification for the jobs service"
+  },
+  "paths": {
+    "/jobs": {
+      "post": {
+        "summary": "Enqueue a background job",
+        "description": "Internal-surface enqueue. Auth is the M1 signed assertion path (not site-admin-only). Assertion claims supply `callingOperationId` and `originalRequestId`. On a live `dedupeKey` collision the existing job is upserted (runAt pushed, request refreshed) and returned with 200; otherwise a new job is created with 201.\n",
+        "operationId": "enqueueJob",
+        "tags": [
+          "jobs"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "operationId",
+                  "request"
+                ],
+                "properties": {
+                  "operationId": {
+                    "type": "string",
+                    "description": "Target OpenAPI operationId (must exist and carry the background tag).",
+                    "example": "jobsDemoStepB"
+                  },
+                  "request": {
+                    "description": "Capped request payload for the target operation (serialized size ≤ 16 KB including this object's pathParams/query/body).\n",
+                    "$ref": "#/components/schemas/request"
+                  },
+                  "runAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "Absolute earliest claim time. Ignored when delayMs is also set if the implementation prefers delayMs; typically use one or the other.\n",
+                    "example": "2026-08-06T21:00:00.000Z"
+                  },
+                  "delayMs": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "Relative delay in milliseconds from enqueue time before the job becomes claimable. Alternative to runAt.\n",
+                    "example": 5000
+                  },
+                  "dedupeKey": {
+                    "type": "string",
+                    "nullable": true,
+                    "description": "Optional key unique among non-terminal jobs. Re-enqueue with the same live key upserts and returns the existing job (200).\n",
+                    "example": "matter:Mt4k_wZ7:claim"
+                  },
+                  "concurrencyKey": {
+                    "type": "string",
+                    "nullable": true,
+                    "description": "Optional key limiting concurrency (at most one running job per key).\n",
+                    "example": "matter:Mt4k_wZ7"
+                  },
+                  "priority": {
+                    "type": "integer",
+                    "description": "Claim priority; higher values are claimed first. Defaults to 0.",
+                    "example": 0
+                  },
+                  "onBehalfOf": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "description": "Explicit authority override for enqueueOnBehalfOf. When present, both userId and authority evidence are required; the job runs as that user under the given grant instead of deriving authority from the caller's request context.\n",
+                    "required": [
+                      "userId",
+                      "authority"
+                    ],
+                    "properties": {
+                      "userId": {
+                        "type": "string",
+                        "description": "Acting user for the enqueued job.",
+                        "example": "Us7k_pQ2"
+                      },
+                      "authority": {
+                        "description": "Evidence grant for the override (request or importer kind).",
+                        "$ref": "#/components/schemas/authority"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Existing job returned after a dedupe-key upsert.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "job"
+                  ],
+                  "properties": {
+                    "job": {
+                      "$ref": "#/components/schemas/job"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Job created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "job"
+                  ],
+                  "properties": {
+                    "job": {
+                      "$ref": "#/components/schemas/job"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request payload exceeds the 16 KB serialized size cap.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - missing or invalid assertion.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - calling operation is not allowed to enqueue the target (trigger-map violation).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unknown operationId, or the target operation is not tagged `background`.\n",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Spawn cap exceeded for this originalRequestId chain.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "List jobs",
+        "description": "Admin list of queued jobs with optional filters and offset pagination. Mounted on the public app as monolith chrome (`site-admin-only`).\n",
+        "operationId": "listJobs",
+        "tags": [
+          "jobs",
+          "site-admin-only"
+        ],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "description": "Filter by job status.",
+            "schema": {
+              "$ref": "#/components/schemas/status"
+            }
+          },
+          {
+            "name": "operationId",
+            "in": "query",
+            "required": false,
+            "description": "Filter by target operationId.",
+            "schema": {
+              "$ref": "#/components/schemas/operationId"
+            }
+          },
+          {
+            "name": "userId",
+            "in": "query",
+            "required": false,
+            "description": "Filter by acting user id.",
+            "schema": {
+              "$ref": "#/components/schemas/userId"
+            }
+          },
+          {
+            "name": "originalRequestId",
+            "in": "query",
+            "required": false,
+            "description": "Filter by chain-root request id.",
+            "schema": {
+              "$ref": "#/components/schemas/originalRequestId"
+            }
+          },
+          {
+            "name": "createdAfter",
+            "in": "query",
+            "required": false,
+            "description": "Only include jobs with createdAt greater than or equal to this instant.",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "createdBefore",
+            "in": "query",
+            "required": false,
+            "description": "Only include jobs with createdAt less than or equal to this instant.",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "Page size (default implementation-defined).",
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "description": "Number of matching jobs to skip before returning results.",
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Matching jobs for this page.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "jobs"
+                  ],
+                  "properties": {
+                    "jobs": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/job"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - missing or invalid auth headers, or not logged in.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - site admin privileges required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jobs/{id}": {
+      "get": {
+        "summary": "Get a job by id",
+        "description": "Admin detail for a single job, including the raw enqueue assertion token (`authorityAssertion`) stored with the authority grant. List responses omit that token to keep payloads small. Mounted as monolith chrome (`site-admin-only`).\n",
+        "operationId": "getJob",
+        "tags": [
+          "jobs",
+          "site-admin-only"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Short id of the job to retrieve.",
+            "schema": {
+              "type": "string",
+              "example": "Jb3k_mN7"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Job detail including the enqueue assertion evidence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "job",
+                    "authorityAssertion"
+                  ],
+                  "properties": {
+                    "job": {
+                      "$ref": "#/components/schemas/job"
+                    },
+                    "authorityAssertion": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "description": "Enqueue-hop identity assertion as stored with the job (payload, signature, keyId). Detail-only; omitted from list.\n",
+                      "required": [
+                        "payload",
+                        "signature",
+                        "keyId"
+                      ],
+                      "properties": {
+                        "payload": {
+                          "type": "string",
+                          "description": "Base64url-encoded assertion JSON payload.",
+                          "example": "eyJ1c2VySWQiOiJVczdrX3BRMiJ9"
+                        },
+                        "signature": {
+                          "type": "string",
+                          "description": "Base64url HMAC-SHA256 signature of the payload.",
+                          "example": "dGVzdC1zaWduYXR1cmU"
+                        },
+                        "keyId": {
+                          "type": "string",
+                          "description": "Id of the key used to sign the assertion.",
+                          "example": "k1"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - missing or invalid auth headers, or not logged in.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - site admin privileges required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Job not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jobs/{id}/retry": {
+      "post": {
+        "summary": "Retry a dead or cancelled job",
+        "description": "Moves a dead or cancelled job back to pending with a full attempt-counter reset. Returns 409 when the job is not in a retryable state. Mounted as monolith chrome (`site-admin-only`).\n",
+        "operationId": "retryJob",
+        "tags": [
+          "jobs",
+          "site-admin-only"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Short id of the job to retry.",
+            "schema": {
+              "type": "string",
+              "example": "Jb3k_mN7"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Job re-queued as pending with attempt counters reset.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "job"
+                  ],
+                  "properties": {
+                    "job": {
+                      "$ref": "#/components/schemas/job"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - missing or invalid auth headers, or not logged in.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - site admin privileges required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Job not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Job is not dead or cancelled and cannot be retried.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jobs/{id}/cancel": {
+      "post": {
+        "summary": "Cancel a pending or retrying job",
+        "description": "Cancels a pending or retrying job (`terminalReason: cancelled-by-admin`). Running jobs are not interrupted (409). Mounted as monolith chrome (`site-admin-only`).\n",
+        "operationId": "cancelJob",
+        "tags": [
+          "jobs",
+          "site-admin-only"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "Short id of the job to cancel.",
+            "schema": {
+              "type": "string",
+              "example": "Jb3k_mN7"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Job cancelled.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "job"
+                  ],
+                  "properties": {
+                    "job": {
+                      "$ref": "#/components/schemas/job"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - missing or invalid auth headers, or not logged in.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - site admin privileges required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Job not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Job is running (or otherwise not cancellable) and was not interrupted.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jobs/cancel-by-original-request": {
+      "post": {
+        "summary": "Mass-cancel jobs in a request chain",
+        "description": "Cancels every non-terminal, non-running job that shares the given `originalRequestId` (`terminalReason: cancelled-by-chain`). Running jobs in the chain are left alone. Returns the jobs that were cancelled. Mounted as monolith chrome (`site-admin-only`).\n",
+        "operationId": "cancelJobsByOriginalRequest",
+        "tags": [
+          "jobs",
+          "site-admin-only"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "originalRequestId"
+                ],
+                "properties": {
+                  "originalRequestId": {
+                    "description": "Chain-root request id whose non-running jobs should be cancelled.",
+                    "$ref": "#/components/schemas/originalRequestId"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Jobs that were cancelled in this chain.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "jobs"
+                  ],
+                  "properties": {
+                    "jobs": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/job"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - missing or invalid auth headers, or not logged in.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - site admin privileges required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Error": {
+        "$ref": "#/components/schemas/error"
+      },
+      "ProductEvent": {
+        "$ref": "#/components/schemas/index"
+      },
+      "Job": {
+        "$ref": "#/components/schemas/job"
+      },
+      "status": {
+        "type": "string",
+        "enum": [
+          "pending",
+          "running",
+          "retrying",
+          "succeeded",
+          "dead",
+          "cancelled"
+        ],
+        "description": "Lifecycle state. `pending`/`retrying` are claimable; `running` is in delivery; `succeeded`/`dead`/`cancelled` are terminal.\n",
+        "example": "pending"
+      },
+      "operationId": {
+        "type": "string",
+        "description": "Target OpenAPI operationId resolved at delivery time.",
+        "example": "jobsDemoStepB"
+      },
+      "userId": {
+        "type": "string",
+        "description": "Acting user whose authority the job runs under.",
+        "example": "Us7k_pQ2"
+      },
+      "originalRequestId": {
+        "type": "string",
+        "description": "Chain-root request id (user request / webhook X-Request-ID, or cron-tick id). Copied from parent on chained enqueues; joins audit_event.request_id.\n",
+        "example": "r-abc123"
+      },
+      "job": {
+        "type": "object",
+        "description": "Wire form of a queued API-call job. CamelCase projection of the `job` row; omits internal columns (`heartbeatAt`, `updatedAt`). Authority is the discriminated evidence grant without the raw enqueue assertion token (detail endpoints may return that separately as `authorityAssertion`).\n",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Short identifier for the job (from generateShortId).",
+            "example": "Jb3k_mN7"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "running",
+              "retrying",
+              "succeeded",
+              "dead",
+              "cancelled"
+            ],
+            "description": "Lifecycle state. `pending`/`retrying` are claimable; `running` is in delivery; `succeeded`/`dead`/`cancelled` are terminal.\n",
+            "example": "pending"
+          },
+          "operationId": {
+            "type": "string",
+            "description": "Target OpenAPI operationId resolved at delivery time.",
+            "example": "jobsDemoStepB"
+          },
+          "request": {
+            "type": "object",
+            "description": "Capped request payload delivered to the target operation (serialized size ≤ 16 KB). Path params, query, and body are optional and substituted into the operation's path template / request.\n",
+            "additionalProperties": false,
+            "properties": {
+              "pathParams": {
+                "type": "object",
+                "description": "Path template substitutions keyed by parameter name.",
+                "additionalProperties": true,
+                "example": {
+                  "id": "Mt4k_wZ7"
+                }
+              },
+              "query": {
+                "type": "object",
+                "description": "Query string parameters keyed by name.",
+                "additionalProperties": true,
+                "example": {
+                  "limit": 10
+                }
+              },
+              "body": {
+                "description": "JSON request body for the target operation, when any.",
+                "example": {
+                  "failuresBeforeSuccess": 2
+                }
+              }
+            },
+            "example": {
+              "pathParams": {
+                "id": "Mt4k_wZ7"
+              },
+              "body": {
+                "failuresBeforeSuccess": 2
+              }
+            }
+          },
+          "userId": {
+            "type": "string",
+            "description": "Acting user whose authority the job runs under.",
+            "example": "Us7k_pQ2"
+          },
+          "authority": {
+            "description": "Root grant for the job chain (copied verbatim by children). Discriminated on `kind`. Wire form excludes the embedded enqueue assertion token.\n",
+            "discriminator": {
+              "propertyName": "kind"
+            },
+            "oneOf": [
+              {
+                "type": "object",
+                "description": "A user's authenticated request (or an admin action) instigated the chain. Evidence is the originating request id (also in the audit log).\n",
+                "additionalProperties": false,
+                "required": [
+                  "kind",
+                  "userId",
+                  "requestId"
+                ],
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "request"
+                    ],
+                    "example": "request"
+                  },
+                  "userId": {
+                    "type": "string",
+                    "description": "User who made the originating request.",
+                    "example": "Us7k_pQ2"
+                  },
+                  "requestId": {
+                    "type": "string",
+                    "description": "Originating request id (e.g. X-Request-ID).",
+                    "example": "r-abc123"
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "description": "A webhook arrived for a channel subscription; the importer's creator authorized scanning this channel. Evidence is the importer row.\n",
+                "additionalProperties": false,
+                "required": [
+                  "kind",
+                  "userId",
+                  "importerId"
+                ],
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "importer"
+                    ],
+                    "example": "importer"
+                  },
+                  "userId": {
+                    "type": "string",
+                    "description": "Importer creator whose authority is used.",
+                    "example": "Us7k_pQ2"
+                  },
+                  "importerId": {
+                    "type": "string",
+                    "description": "Short id of the importer row that authorized the chain.",
+                    "example": "Im7k_mN2"
+                  }
+                }
+              }
+            ]
+          },
+          "originalRequestId": {
+            "type": "string",
+            "description": "Chain-root request id (user request / webhook X-Request-ID, or cron-tick id). Copied from parent on chained enqueues; joins audit_event.request_id.\n",
+            "example": "r-abc123"
+          },
+          "enqueuedByOperationId": {
+            "type": "string",
+            "description": "Calling operationId that enqueued this job (trigger-map edge).",
+            "example": "startJobsDemo"
+          },
+          "parentJobId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Short id of the job that enqueued this one, or null at the chain root.",
+            "example": null
+          },
+          "runAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Earliest time the job may be claimed for delivery.",
+            "example": "2026-08-06T21:00:00.000Z"
+          },
+          "dedupeKey": {
+            "type": "string",
+            "nullable": true,
+            "description": "Optional key unique among non-terminal jobs. Re-enqueue with the same live key upserts (pushes runAt, refreshes request) and returns the existing job.\n",
+            "example": "matter:Mt4k_wZ7:claim"
+          },
+          "concurrencyKey": {
+            "type": "string",
+            "nullable": true,
+            "description": "Optional key limiting concurrency: at most one running job per key (e.g. `matter:{id}`).\n",
+            "example": "matter:Mt4k_wZ7"
+          },
+          "priority": {
+            "type": "integer",
+            "description": "Claim priority; higher values are claimed first. Default 0.",
+            "example": 0
+          },
+          "attempt": {
+            "type": "integer",
+            "description": "Number of delivery attempts consumed so far (0 before first claim).",
+            "example": 0
+          },
+          "maxAttempts": {
+            "type": "integer",
+            "description": "Maximum delivery attempts before the job becomes dead (exhausted).",
+            "example": 5
+          },
+          "result": {
+            "type": "object",
+            "nullable": true,
+            "description": "Outcome of the latest terminal or failed attempt. Null while the job has not yet finished an attempt that records a result. `errorBody` is set only on failure and capped at 8 KB.\n",
+            "additionalProperties": false,
+            "properties": {
+              "statusCode": {
+                "type": "integer",
+                "description": "HTTP status code from the delivery attempt, when available.",
+                "example": 500
+              },
+              "errorBody": {
+                "type": "string",
+                "nullable": true,
+                "description": "Capped error response body recorded only on failure.",
+                "example": "{\"error\":\"upstream timeout\"}"
+              },
+              "terminalReason": {
+                "type": "string",
+                "nullable": true,
+                "enum": [
+                  "exhausted",
+                  "permanent-status",
+                  "rejected-by-endpoint",
+                  "auth-unresolvable",
+                  "cancelled-by-admin",
+                  "cancelled-by-chain",
+                  null
+                ],
+                "description": "Why the job became terminal. Null when the job succeeded or result is from a non-terminal retryable failure mid-flight.\n",
+                "example": "exhausted"
+              }
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the job row was created.",
+            "example": "2026-08-06T20:59:55.000Z"
+          },
+          "startedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "When the current (or last) delivery attempt started; null if never claimed.",
+            "example": null
+          },
+          "finishedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "When the job reached a terminal status; null while still active.",
+            "example": null
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "operationId",
+          "request",
+          "userId",
+          "authority",
+          "originalRequestId",
+          "enqueuedByOperationId",
+          "parentJobId",
+          "runAt",
+          "dedupeKey",
+          "concurrencyKey",
+          "priority",
+          "attempt",
+          "maxAttempts",
+          "result",
+          "createdAt",
+          "startedAt",
+          "finishedAt"
+        ]
+      },
+      "error": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "A short, machine-readable error code, for when HTTP status codes are not sufficient."
+          },
+          "message": {
+            "type": "string",
+            "description": "A human-readable description of the error.",
+            "example": "The requested resource could not be found."
+          }
+        }
+      },
+      "request": {
+        "type": "object",
+        "description": "Capped request payload delivered to the target operation (serialized size ≤ 16 KB). Path params, query, and body are optional and substituted into the operation's path template / request.\n",
+        "additionalProperties": false,
+        "properties": {
+          "pathParams": {
+            "type": "object",
+            "description": "Path template substitutions keyed by parameter name.",
+            "additionalProperties": true,
+            "example": {
+              "id": "Mt4k_wZ7"
+            }
+          },
+          "query": {
+            "type": "object",
+            "description": "Query string parameters keyed by name.",
+            "additionalProperties": true,
+            "example": {
+              "limit": 10
+            }
+          },
+          "body": {
+            "description": "JSON request body for the target operation, when any.",
+            "example": {
+              "failuresBeforeSuccess": 2
+            }
+          }
+        },
+        "example": {
+          "pathParams": {
+            "id": "Mt4k_wZ7"
+          },
+          "body": {
+            "failuresBeforeSuccess": 2
+          }
+        }
+      },
+      "authority": {
+        "description": "Root grant for the job chain (copied verbatim by children). Discriminated on `kind`. Wire form excludes the embedded enqueue assertion token.\n",
+        "discriminator": {
+          "propertyName": "kind"
+        },
+        "oneOf": [
+          {
+            "type": "object",
+            "description": "A user's authenticated request (or an admin action) instigated the chain. Evidence is the originating request id (also in the audit log).\n",
+            "additionalProperties": false,
+            "required": [
+              "kind",
+              "userId",
+              "requestId"
+            ],
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "request"
+                ],
+                "example": "request"
+              },
+              "userId": {
+                "type": "string",
+                "description": "User who made the originating request.",
+                "example": "Us7k_pQ2"
+              },
+              "requestId": {
+                "type": "string",
+                "description": "Originating request id (e.g. X-Request-ID).",
+                "example": "r-abc123"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "description": "A webhook arrived for a channel subscription; the importer's creator authorized scanning this channel. Evidence is the importer row.\n",
+            "additionalProperties": false,
+            "required": [
+              "kind",
+              "userId",
+              "importerId"
+            ],
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "importer"
+                ],
+                "example": "importer"
+              },
+              "userId": {
+                "type": "string",
+                "description": "Importer creator whose authority is used.",
+                "example": "Us7k_pQ2"
+              },
+              "importerId": {
+                "type": "string",
+                "description": "Short id of the importer row that authorized the chain.",
+                "example": "Im7k_mN2"
+              }
+            }
+          }
+        ]
+      },
+      "login": {
+        "type": "object",
+        "properties": {
+          "event": {
+            "type": "string",
+            "enum": [
+              "login"
+            ]
+          },
+          "context": {
+            "type": "object",
+            "properties": {
+              "method": {
+                "type": "string",
+                "enum": [
+                  "email"
+                ]
+              }
+            }
+          }
+        },
+        "required": [
+          "event",
+          "context"
+        ]
+      },
+      "signup": {
+        "type": "object",
+        "properties": {
+          "event": {
+            "type": "string",
+            "enum": [
+              "signup"
+            ]
+          },
+          "context": {
+            "type": "object",
+            "properties": {
+              "method": {
+                "type": "string",
+                "enum": [
+                  "email"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "signup_view": {
+        "type": "object",
+        "properties": {
+          "event": {
+            "type": "string",
+            "enum": [
+              "signup_view"
+            ]
+          }
+        }
+      },
+      "verify_email": {
+        "type": "object",
+        "properties": {
+          "event": {
+            "type": "string",
+            "enum": [
+              "verify_email"
+            ]
+          }
+        }
+      },
+      "index": {
+        "type": "object",
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/login"
+          },
+          {
+            "$ref": "#/components/schemas/signup"
+          },
+          {
+            "$ref": "#/components/schemas/signup_view"
+          },
+          {
+            "$ref": "#/components/schemas/verify_email"
+          }
+        ],
+        "properties": {
+          "event": {
+            "type": "string"
+          },
+          "client": {
+            "type": "string",
+            "description": "The frontend client that triggered the event. For web, it should be \"web-{spa-name}\"."
+          },
+          "view": {
+            "type": "string",
+            "description": "The page that triggered the event. For vue, it should be the route name provided by vue router."
+          },
+          "component": {
+            "type": "string",
+            "description": "The component that triggered the event. For vue, it should be the component name."
+          }
+        },
+        "required": [
+          "event"
+        ]
+      }
+    }
+  }
+}

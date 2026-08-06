@@ -14,6 +14,8 @@ Packages using `@saflib/openapi` can generate:
 
 For conventions on designing routes and schemas (URL structure, batch endpoints, binary responses, nullable fields, etc.), see [API Design](./02-api-design.md).
 
+For OpenAPI operation tags used by middleware and the job queue (`site-admin-only`, `background`, …), see [Operation tags](./03-tags.md).
+
 ## Package Structure
 
 ```

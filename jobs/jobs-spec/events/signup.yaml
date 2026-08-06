@@ -1,0 +1,14 @@
+# Based on https://developers.google.com/analytics/devguides/collection/ga4/reference/events?sjid=1005351918400554708-NC&client_type=gtm#sign_up
+type: object
+properties:
+  event:
+    type: string
+    enum:
+      - signup
+  context:
+    type: object
+    properties:
+      method:
+        type: string
+        enum:
+          - email
