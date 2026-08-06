@@ -124,11 +124,16 @@ export const SpecProjectWorkflowDefinition = defineWorkflow<
       fileId: "workflow",
       promptMessage: `Update **${path.basename(context.copiedFiles!.workflow)}**.
 
-      Now that you have a plan, you can write the workflows per the aligned plan to implement the spec. Only one workflow has been generated, but make as many as the plan dictates. Have the main one run the others (orchestrating them).
+      Now that you have a plan, write the workflows per the aligned plan to implement the spec. The generated file is the **orchestrator**; add as many phase workflows as the plan dictates and have the orchestrator invoke each with \`makeWorkflowMachine\`.
 
-      **Step shape:** Do not start a phase workflow (or the orchestrator) with a review-only \`PromptStepMachine\` that only tells the agent to read the spec/plan. The first step should be real work (\`CdStepMachine\`, a sub-workflow, or an implementation prompt). Put context in that first step's prompt with \`Use workflow docFiles (**<name>.spec.md**, **<name>.plan.md** Phase N)\` — the workflow's \`docFiles\` block already wires those paths; reading them is not a separate step.
+      **Break down into phase workflows** (see e.g. \`daemon/plans/notes/2026-08-06-jobs-m2/\` before cleanup in commit 42b6b611):
+      * One file per plan phase: \`phase-1-<kebab-name>.workflow.ts\`, \`phase-2-...\`, etc.
+      * Each phase workflow gets its own \`id\` (\`plans/<project>/phase-N-<name>\`), \`docFiles\` pointing at the project's spec + plan, and phase-scoped \`versionControl.allowPaths\`.
+      * The orchestrator (\`<name>.workflow.ts\`) imports every phase and runs them in order; keep \`GetFeedbackStep\` only on the orchestrator.
+      * **Phase workflows are run standalone** (one phase per fresh agent). No dedicated orientation \`PromptStepMachine\` — prepend \`phaseOrient()\` (or equivalent) to the **first step that has a prompt** (\`PromptStepMachine\` or a sub-workflow \`prompt\` field). If the workflow opens with \`CdStepMachine\` or a prompt-less sub-workflow, put orientation on the next prompt-bearing step. Later steps use a shorter \`Use workflow docFiles (...)\` line.
+      * Extract shared \`docFiles\` / orientation helpers into a sibling \`<name>.shared.ts\` when multiple phase files repeat the same paths (see \`jobs-m2.shared.ts\`).
 
-      For each workflow, run "npm exec saf-workflow dry-run ./path/to/workflow.ts" to make sure everything is wired up correctly. One of the more common errors is for the workflow to not include "CdStepMachine" to move into the right directory before running the workflow. Location matters.
+      For each workflow, run \`npm exec saf-workflow dry-run ./path/to/workflow.ts\` to make sure everything is wired up. A common error is omitting \`CdStepMachine\` to cd into the right package before a sub-workflow — location matters.
       `,
     })),
 
