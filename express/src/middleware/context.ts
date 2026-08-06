@@ -128,6 +128,8 @@ type AuthResolution = {
   requestId?: string;
   /** Lineage root from assertion claims; unset when absent. */
   originalRequestId?: string;
+  /** Delivering job id from assertion claims; unset when absent. */
+  jobId?: string;
 };
 
 function unauthorized(code: string, message: string): never {
@@ -171,6 +173,7 @@ async function resolveAssertionAuth(
     },
     requestId: assertion.requestId,
     originalRequestId: assertion.claims?.originalRequestId,
+    jobId: assertion.claims?.jobId,
   };
 }
 
@@ -231,6 +234,7 @@ export const makeContextMiddleware = () => {
         const context: SafContext = {
           requestId: reqId,
           originalRequestId: resolution.originalRequestId,
+          jobId: resolution.jobId,
           serviceName: getServiceName(),
           subsystemName: "http",
           operationName,

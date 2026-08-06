@@ -157,39 +157,21 @@ export interface components {
             /**
              * @description Capped request payload delivered to the target operation (serialized size ≤ 16 KB). Path params, query, and body are optional and substituted into the operation's path template / request.
              * @example {
-             *       "pathParams": {
-             *         "id": "Mt4k_wZ7"
-             *       },
              *       "body": {
              *         "failuresBeforeSuccess": 2
              *       }
              *     }
              */
             request: {
-                /**
-                 * @description Path template substitutions keyed by parameter name.
-                 * @example {
-                 *       "id": "Mt4k_wZ7"
-                 *     }
-                 */
+                /** @description Path template substitutions keyed by parameter name. */
                 pathParams?: {
                     [key: string]: unknown;
                 };
-                /**
-                 * @description Query string parameters keyed by name.
-                 * @example {
-                 *       "limit": 10
-                 *     }
-                 */
+                /** @description Query string parameters keyed by name. */
                 query?: {
                     [key: string]: unknown;
                 };
-                /**
-                 * @description JSON request body for the target operation, when any.
-                 * @example {
-                 *       "failuresBeforeSuccess": 2
-                 *     }
-                 */
+                /** @description JSON request body for the target operation, when any. */
                 body?: unknown;
             };
             /**
@@ -254,12 +236,12 @@ export interface components {
             runAt: string;
             /**
              * @description Optional key unique among non-terminal jobs. Re-enqueue with the same live key upserts (pushes runAt, refreshes request) and returns the existing job.
-             * @example matter:Mt4k_wZ7:claim
+             * @example matter:demo-1:claim
              */
             dedupeKey: string | null;
             /**
              * @description Optional key limiting concurrency: at most one running job per key (e.g. `matter:{id}`).
-             * @example matter:Mt4k_wZ7
+             * @example matter:demo-1
              */
             concurrencyKey: string | null;
             /**
@@ -327,39 +309,21 @@ export interface components {
         /**
          * @description Capped request payload delivered to the target operation (serialized size ≤ 16 KB). Path params, query, and body are optional and substituted into the operation's path template / request.
          * @example {
-         *       "pathParams": {
-         *         "id": "Mt4k_wZ7"
-         *       },
          *       "body": {
          *         "failuresBeforeSuccess": 2
          *       }
          *     }
          */
         request: {
-            /**
-             * @description Path template substitutions keyed by parameter name.
-             * @example {
-             *       "id": "Mt4k_wZ7"
-             *     }
-             */
+            /** @description Path template substitutions keyed by parameter name. */
             pathParams?: {
                 [key: string]: unknown;
             };
-            /**
-             * @description Query string parameters keyed by name.
-             * @example {
-             *       "limit": 10
-             *     }
-             */
+            /** @description Query string parameters keyed by name. */
             query?: {
                 [key: string]: unknown;
             };
-            /**
-             * @description JSON request body for the target operation, when any.
-             * @example {
-             *       "failuresBeforeSuccess": 2
-             *     }
-             */
+            /** @description JSON request body for the target operation, when any. */
             body?: unknown;
         };
         /** @description Root grant for the job chain (copied verbatim by children). Discriminated on `kind`. Wire form excludes the embedded enqueue assertion token. */

@@ -20,4 +20,7 @@ test("package exports constants, types helpers, and operation resolver", () => {
   expect(typeof mainExports.validateJobsStartup).toBe("function");
   expect(typeof mainExports.runJobs).toBe("function");
   expect(typeof mainExports.signalJobsWake).toBe("function");
+  expect(typeof mainExports.createJobsApp).toBe("function");
+  expect(typeof mainExports.createJobsRouter).toBe("function");
+  expect(typeof mainExports.enqueue).toBe("function");
 });

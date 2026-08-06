@@ -11,7 +11,7 @@ import {
 } from "@saflib/node";
 import { createInternalCaller } from "@saflib/express";
 import { jobsDb, jobQueries } from "jobs-db";
-import type { JobRequest } from "jobs-db";
+import type { JobAuthority, JobRequest } from "jobs-db";
 import {
   CLAIM_POLL_INTERVAL_MS,
   DEFAULT_TIMEOUT_MS,
@@ -84,6 +84,19 @@ function queryToStrings(
     out[key] = String(value);
   }
   return out;
+}
+
+/** MFA snapshot from the enqueue-hop assertion stored on the job authority. */
+function mfaCompletedFromAuthority(authority: JobAuthority): boolean {
+  try {
+    const raw = Buffer.from(authority.assertion.payload, "base64url").toString(
+      "utf8",
+    );
+    const parsed = JSON.parse(raw) as { mfaCompleted?: unknown };
+    return parsed.mfaCompleted === true;
+  } catch {
+    return false;
+  }
 }
 
 function maxConfiguredTimeoutMs(options: JobsServiceOptions): number {
@@ -270,7 +283,10 @@ export async function runJobs(
             path,
             body: job.request.body,
             query: queryToStrings(job.request.query),
-            asUser: { userId: job.userId },
+            asUser: {
+              userId: job.userId,
+              mfaCompleted: mfaCompletedFromAuthority(job.authority),
+            },
             requestId,
             claims: {
               jobId: job.id,

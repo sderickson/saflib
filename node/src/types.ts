@@ -50,6 +50,12 @@ export interface SafContext {
   originalRequestId?: string;
 
   /**
+   * When this request is a job delivery, the delivering job's id (from assertion
+   * claims). Chained `enqueue()` calls use it as `parentJobId`.
+   */
+  jobId?: string;
+
+  /**
    * Format: "{service}"
    * e.g. "auth", "payment", "logging", or the name of a product.
    * The name should match the docker service and npm package name (not including the org).
