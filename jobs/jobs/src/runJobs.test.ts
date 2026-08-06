@@ -252,6 +252,22 @@ describe("classifyDelivery", () => {
     });
   });
 
+  it("treats X-Jobs-Retry: never on 2xx as succeeded", async () => {
+    const classification = await classifyDelivery({
+      response: new Response(null, {
+        status: 204,
+        headers: { "X-Jobs-Retry": "never" },
+      }),
+      attempt: 1,
+      maxAttempts: 5,
+    });
+    expect(classification).toEqual({
+      kind: "succeeded",
+      statusCode: 204,
+      metricStatus: "succeeded",
+    });
+  });
+
   it("honors X-Jobs-Retry: always on 4xx", async () => {
     const classification = await classifyDelivery({
       response: new Response("later", {
@@ -617,7 +633,6 @@ describe("runJobs", () => {
   it(
     "recovers a stalled running job on startup then redelivers",
     async () => {
-      // Stall cutoff uses max(DEFAULT_TIMEOUT_MS, configured) + grace.
       const stale = new Date(
         Date.now() - (DEFAULT_TIMEOUT_MS + STALL_GRACE_MS + 1_000),
       );
@@ -641,6 +656,64 @@ describe("runJobs", () => {
         (j) => j.status === "succeeded",
       );
       expect(succeeded.attempt).toBeGreaterThanOrEqual(2);
+    },
+    10_000,
+  );
+
+  it(
+    "uses per-operation timeout for stall recovery instead of the global max",
+    async () => {
+      const shortStale = new Date(Date.now() - (2_000 + STALL_GRACE_MS + 500));
+      const longStale = new Date(
+        Date.now() - (DEFAULT_TIMEOUT_MS + STALL_GRACE_MS + 500),
+      );
+
+      await jobQueries.createJob(
+        dbKey,
+        jobParams({
+          id: "job-short-timeout",
+          operationId: "jobsDemoWork",
+          status: "running",
+          attempt: 1,
+          maxAttempts: 5,
+          startedAt: shortStale,
+          heartbeatAt: shortStale,
+          runAt: shortStale,
+        }),
+      );
+      await jobQueries.createJob(
+        dbKey,
+        jobParams({
+          id: "job-long-timeout",
+          operationId: "jobsDemoStepC",
+          status: "running",
+          attempt: 1,
+          maxAttempts: 5,
+          startedAt: longStale,
+          heartbeatAt: longStale,
+          runAt: longStale,
+        }),
+      );
+
+      scripts.push({ status: 200, body: { ok: true } });
+      await startRuntime({
+        operationConfig: {
+          jobsDemoWork: { timeoutMs: 2_000 },
+          jobsDemoStepC: { timeoutMs: 120_000 },
+        },
+      });
+
+      const shortJob = await waitForJob(
+        dbKey,
+        "job-short-timeout",
+        (j) => j.status === "succeeded",
+      );
+      expect(shortJob.attempt).toBeGreaterThanOrEqual(2);
+
+      const { result: longJob } = await jobQueries.getByIdJob(dbKey, {
+        id: "job-long-timeout",
+      });
+      expect(longJob?.status).toBe("running");
     },
     10_000,
   );

@@ -9,6 +9,7 @@ import { retryByIdJob } from "./retry-by-id.ts";
 import { getByIdJob } from "./get-by-id.ts";
 import { listJob } from "./list.ts";
 import { recoverStalledJob } from "./recover-stalled.ts";
+import { listRunningJobsJob } from "./list-running.ts";
 import { deleteExpiredTerminalJob } from "./delete-expired-terminal.ts";
 import { countByOriginalRequestIdJob } from "./count-by-original-request-id.ts";
 import { countByStatusJob } from "./count-by-status.ts";
@@ -26,6 +27,7 @@ export const jobQueries = {
   getByIdJob,
   listJob,
   recoverStalledJob,
+  listRunningJobsJob,
   deleteExpiredTerminalJob,
   countByOriginalRequestIdJob,
   countByStatusJob,

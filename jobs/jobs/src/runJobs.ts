@@ -99,16 +99,6 @@ function mfaCompletedFromAuthority(authority: JobAuthority): boolean {
   }
 }
 
-function maxConfiguredTimeoutMs(options: JobsServiceOptions): number {
-  let max = DEFAULT_TIMEOUT_MS;
-  for (const config of Object.values(options.operationConfig ?? {})) {
-    if (config.timeoutMs != null && config.timeoutMs > max) {
-      max = config.timeoutMs;
-    }
-  }
-  return max;
-}
-
 function timeoutForOperation(
   operationId: string,
   options: JobsServiceOptions,
@@ -116,6 +106,22 @@ function timeoutForOperation(
   return (
     options.operationConfig?.[operationId]?.timeoutMs ?? DEFAULT_TIMEOUT_MS
   );
+}
+
+function isJobStalled(
+  job: {
+    operationId: string;
+    heartbeatAt: Date | null;
+  },
+  now: Date,
+  options: JobsServiceOptions,
+): boolean {
+  if (!job.heartbeatAt) {
+    return false;
+  }
+  const timeoutMs = timeoutForOperation(job.operationId, options);
+  const cutoff = now.getTime() - (timeoutMs + STALL_GRACE_MS);
+  return job.heartbeatAt.getTime() < cutoff;
 }
 
 /**
@@ -177,11 +183,23 @@ export async function runJobs(
   activeWake = wake;
 
   async function recoverStalled(now: Date): Promise<void> {
-    const cutoff = new Date(
-      now.getTime() - (maxConfiguredTimeoutMs(options) + STALL_GRACE_MS),
-    );
+    const { result: running, error: listError } =
+      await jobQueries.listRunningJobsJob(dbKey);
+    if (listError) {
+      logError(listError);
+      return;
+    }
+
+    const stalledIds = (running ?? [])
+      .filter((job) => isJobStalled(job, now, options))
+      .map((job) => job.id);
+
+    if (stalledIds.length === 0) {
+      return;
+    }
+
     const { error } = await jobQueries.recoverStalledJob(dbKey, {
-      cutoff,
+      ids: stalledIds,
       now,
     });
     if (error) {

@@ -12,7 +12,6 @@ export type JobsServiceResponseBody =
 export type JobsServiceRequestBody = ExtractRequestBody<operations>;
 
 export type Error = components["schemas"]["Error"];
-export type ProductEvent = components["schemas"]["ProductEvent"];
 
 // BEGIN WORKFLOW AREA schema-exports FOR openapi/schema
 

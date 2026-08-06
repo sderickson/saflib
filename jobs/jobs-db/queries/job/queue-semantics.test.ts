@@ -160,7 +160,6 @@ describe("queue semantics (Phase 3 exit criteria)", () => {
 
   it("stall recovery: retrying when attempts remain, dead when exhausted", async () => {
     const stale = new Date("2026-08-06T11:00:00.000Z");
-    const cutoff = new Date("2026-08-06T11:30:00.000Z");
 
     await jobQueries.createJob(
       dbKey,
@@ -187,7 +186,7 @@ describe("queue semantics (Phase 3 exit criteria)", () => {
     );
 
     const { result } = await jobQueries.recoverStalledJob(dbKey, {
-      cutoff,
+      ids: ["job-retry", "job-dead"],
       now: t0,
     });
     assert(result);

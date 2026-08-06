@@ -8,6 +8,8 @@ import { jsonSpec } from "jobs-spec";
 import { jobsServiceStorage } from "./context.ts";
 import { listJobsHandler } from "../routes/jobs/list.ts";
 import { getJobHandler } from "../routes/jobs/get.ts";
+import { retryJobHandler } from "../routes/jobs/retry.ts";
+import { cancelJobHandler } from "../routes/jobs/cancel.ts";
 import { cancelJobsByOriginalRequestHandler } from "../routes/jobs/cancel-by-original-request.ts";
 
 /**
@@ -48,11 +50,13 @@ export function createJobsRouter(options: CreateJobsRouterOptions): express.Rout
   );
 
   router.get("/jobs", listJobsHandler);
-  router.get("/jobs/:id", getJobHandler);
   router.post(
     "/jobs/cancel-by-original-request",
     cancelJobsByOriginalRequestHandler,
   );
+  router.post("/jobs/:id/retry", retryJobHandler);
+  router.post("/jobs/:id/cancel", cancelJobHandler);
+  router.get("/jobs/:id", getJobHandler);
 
   router.use(createErrorMiddleware());
   return router;

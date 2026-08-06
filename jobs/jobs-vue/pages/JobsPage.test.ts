@@ -320,13 +320,13 @@ describe("JobsPage", () => {
     await vi.waitFor(() => {
       const massCancelButton = wrapper
         .findAllComponents({ name: "v-btn" })
-        .find((btn) => btn.text() === "Mass Cancel Chain");
+        .find((btn: VueWrapper) => btn.text() === "Mass Cancel Chain");
       expect(massCancelButton?.attributes("disabled")).toBeUndefined();
     });
 
     const massCancelButton = wrapper
       .findAllComponents({ name: "v-btn" })
-      .find((btn) => btn.text() === "Mass Cancel Chain")!;
+      .find((btn: VueWrapper) => btn.text() === "Mass Cancel Chain")!;
     await massCancelButton.trigger("click");
 
     await vi.waitFor(() => {

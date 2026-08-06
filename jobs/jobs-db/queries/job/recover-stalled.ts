@@ -3,11 +3,11 @@ import type { ReturnsError } from "@saflib/monorepo";
 import { queryWrapper } from "@saflib/drizzle";
 import type { DbKey } from "@saflib/drizzle";
 import { jobTable } from "../../schemas/job.ts";
-import { and, eq, lt } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 
 export type RecoverStalledJobParams = {
-  /** Running jobs with `heartbeatAt` strictly before this are stalled. */
-  cutoff: Date;
+  /** Running job ids pre-filtered by per-operation stall thresholds. */
+  ids: (typeof jobTable.$inferSelect)["id"][];
   /** Written to `updatedAt` / `runAt` (retry) / `finishedAt` (dead). */
   now: Date;
 };
@@ -15,9 +15,9 @@ export type RecoverStalledJobParams = {
 export type RecoverStalledJobError = never;
 
 /**
- * Recover stalled deliveries: running jobs whose heartbeat is older than
- * `cutoff` become `retrying` if attempts remain, else `dead` with
- * `terminalReason: exhausted`. Returns the affected rows.
+ * Recover stalled deliveries: running jobs in `ids` become `retrying` if
+ * attempts remain, else `dead` with `terminalReason: exhausted`.
+ * Returns the affected rows.
  */
 export const recoverStalledJob = queryWrapper(
   async (
@@ -28,6 +28,10 @@ export const recoverStalledJob = queryWrapper(
   > => {
     const db = jobsDbManager.get(dbKey)!;
 
+    if (params.ids.length === 0) {
+      return { result: [] };
+    }
+
     return db.transaction((tx) => {
       const stalled = tx
         .select()
@@ -35,7 +39,7 @@ export const recoverStalledJob = queryWrapper(
         .where(
           and(
             eq(jobTable.status, "running"),
-            lt(jobTable.heartbeatAt, params.cutoff),
+            inArray(jobTable.id, params.ids),
           ),
         )
         .all();

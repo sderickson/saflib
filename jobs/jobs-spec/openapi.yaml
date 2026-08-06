@@ -29,8 +29,6 @@ components:
   schemas:
     Error:
       $ref: "./schemas/error.yaml"
-    ProductEvent:
-      $ref: "./events/index.yaml"
     # BEGIN WORKFLOW AREA schema-components FOR openapi/schema
 
 

@@ -113,7 +113,6 @@ export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
         Error: components["schemas"]["error"];
-        ProductEvent: components["schemas"]["index"];
         Job: components["schemas"]["job"];
         /**
          * @description Lifecycle state. `pending`/`retrying` are claimable; `running` is in delivery; `succeeded`/`dead`/`cancelled` are terminal.
@@ -360,39 +359,6 @@ export interface components {
              */
             importerId: string;
         };
-        login: {
-            /** @enum {string} */
-            event: "login";
-            context: {
-                /** @enum {string} */
-                method?: "email";
-            };
-        };
-        signup: {
-            /** @enum {string} */
-            event?: "signup";
-            context?: {
-                /** @enum {string} */
-                method?: "email";
-            };
-        };
-        signup_view: {
-            /** @enum {string} */
-            event?: "signup_view";
-        };
-        verify_email: {
-            /** @enum {string} */
-            event?: "verify_email";
-        };
-        index: {
-            event: string;
-            /** @description The frontend client that triggered the event. For web, it should be "web-{spa-name}". */
-            client?: string;
-            /** @description The page that triggered the event. For vue, it should be the route name provided by vue router. */
-            view?: string;
-            /** @description The component that triggered the event. For vue, it should be the component name. */
-            component?: string;
-        } & (components["schemas"]["login"] | components["schemas"]["signup"] | components["schemas"]["signup_view"] | components["schemas"]["verify_email"]);
     };
     responses: never;
     parameters: never;

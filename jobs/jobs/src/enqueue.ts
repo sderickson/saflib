@@ -1,4 +1,4 @@
-import { createInternalCaller } from "@saflib/express";
+import { createInternalCaller, type InternalCaller } from "@saflib/express";
 import { getSafContextWithAuth } from "@saflib/node";
 import type { Job, JobsServiceRequestBody } from "jobs-spec";
 import createError from "http-errors";
@@ -39,6 +39,25 @@ function resolveJobsSocketPath(options?: EnqueueClientOptions): string {
   );
 }
 
+const callerBySocketPath = new Map<string, InternalCaller>();
+
+function getEnqueueCaller(socketPath: string): InternalCaller {
+  let caller = callerBySocketPath.get(socketPath);
+  if (!caller) {
+    caller = createInternalCaller({ socketPath });
+    callerBySocketPath.set(socketPath, caller);
+  }
+  return caller;
+}
+
+/** @internal test helper — close cached callers between tests. */
+export async function _resetEnqueueCallersForTests(): Promise<void> {
+  await Promise.all(
+    [...callerBySocketPath.values()].map((caller) => caller.close()),
+  );
+  callerBySocketPath.clear();
+}
+
 async function postEnqueue(
   body: JobsServiceRequestBody["enqueueJob"],
   options?: EnqueueClientOptions,
@@ -50,7 +69,7 @@ async function postEnqueue(
   }
 
   const socketPath = resolveJobsSocketPath(options);
-  const caller = createInternalCaller({ socketPath });
+  const caller = getEnqueueCaller(socketPath);
 
   const claims: Record<string, string> = {
     callingOperationId: ctx.operationName,
@@ -60,41 +79,37 @@ async function postEnqueue(
     claims.jobId = ctx.jobId;
   }
 
-  try {
-    const response = await caller({
-      operationId: "enqueueJob",
-      method: "POST",
-      path: "/jobs",
-      body,
-      asUser: {
-        userId,
-        mfaCompleted: ctx.auth.mfaCompleted,
-      },
-      requestId: ctx.requestId,
-      claims,
-    });
+  const response = await caller({
+    operationId: "enqueueJob",
+    method: "POST",
+    path: "/jobs",
+    body,
+    asUser: {
+      userId,
+      mfaCompleted: ctx.auth.mfaCompleted,
+    },
+    requestId: ctx.requestId,
+    claims,
+  });
 
-    if (response.status !== 200 && response.status !== 201) {
-      let message = `Enqueue failed with status ${response.status}`;
-      try {
-        const errBody = (await response.json()) as { message?: string };
-        if (errBody.message) {
-          message = errBody.message;
-        }
-      } catch {
-        // ignore parse errors
+  if (response.status !== 200 && response.status !== 201) {
+    let message = `Enqueue failed with status ${response.status}`;
+    try {
+      const errBody = (await response.json()) as { message?: string };
+      if (errBody.message) {
+        message = errBody.message;
       }
-      throw createError(response.status, message);
+    } catch {
+      // ignore parse errors
     }
-
-    const payload = (await response.json()) as { job: Job };
-    return {
-      job: payload.job,
-      deduped: response.status === 200,
-    };
-  } finally {
-    await caller.close();
+    throw createError(response.status, message);
   }
+
+  const payload = (await response.json()) as { job: Job };
+  return {
+    job: payload.job,
+    deduped: response.status === 200,
+  };
 }
 
 /**

@@ -15,9 +15,7 @@ import { recoverStalledJob } from "./recover-stalled.ts";
 import { jobQueries } from "./index.ts";
 
 const now = new Date("2026-08-06T12:00:00.000Z");
-const cutoff = new Date("2026-08-06T11:59:00.000Z");
 const staleHeartbeat = new Date("2026-08-06T11:50:00.000Z");
-const freshHeartbeat = new Date("2026-08-06T11:59:30.000Z");
 
 function jobParams(
   overrides: Partial<CreateJobParams> & Pick<CreateJobParams, "id">,
@@ -72,19 +70,26 @@ describe("recoverStalledJob", () => {
     expect(jobQueries.recoverStalledJob).toBe(recoverStalledJob);
   });
 
-  it("returns an empty array when nothing is stalled", async () => {
+  it("returns an empty array when no ids are provided", async () => {
+    const { result, error } = await recoverStalledJob(dbKey, { ids: [], now });
+    expect(error).toBeUndefined();
+    assert(result);
+    expect(result).toEqual([]);
+  });
+
+  it("returns an empty array when ids are not running", async () => {
     await createJob(
       dbKey,
       jobParams({
-        id: "job-fresh",
-        status: "running",
-        attempt: 1,
-        startedAt: now,
-        heartbeatAt: freshHeartbeat,
+        id: "job-pending",
+        status: "pending",
       }),
     );
 
-    const { result, error } = await recoverStalledJob(dbKey, { cutoff, now });
+    const { result, error } = await recoverStalledJob(dbKey, {
+      ids: ["job-pending"],
+      now,
+    });
     expect(error).toBeUndefined();
     assert(result);
     expect(result).toEqual([]);
@@ -103,7 +108,10 @@ describe("recoverStalledJob", () => {
       }),
     );
 
-    const { result } = await recoverStalledJob(dbKey, { cutoff, now });
+    const { result } = await recoverStalledJob(dbKey, {
+      ids: ["job-stale"],
+      now,
+    });
     assert(result);
     expect(result).toHaveLength(1);
     expect(result[0]!.id).toBe("job-stale");
@@ -128,7 +136,10 @@ describe("recoverStalledJob", () => {
       }),
     );
 
-    const { result } = await recoverStalledJob(dbKey, { cutoff, now });
+    const { result } = await recoverStalledJob(dbKey, {
+      ids: ["job-exhausted"],
+      now,
+    });
     assert(result);
     expect(result).toHaveLength(1);
     expect(result[0]!.id).toBe("job-exhausted");
@@ -137,7 +148,7 @@ describe("recoverStalledJob", () => {
     expect(result[0]!.finishedAt).toEqual(now);
   });
 
-  it("recovers both outcomes in one pass and leaves non-stalled alone", async () => {
+  it("recovers both outcomes in one pass and ignores non-matching ids", async () => {
     await createJob(
       dbKey,
       jobParams({
@@ -164,18 +175,6 @@ describe("recoverStalledJob", () => {
     await createJob(
       dbKey,
       jobParams({
-        id: "job-ok",
-        status: "running",
-        attempt: 1,
-        maxAttempts: 3,
-        startedAt: freshHeartbeat,
-        heartbeatAt: freshHeartbeat,
-        originalRequestId: "r-3",
-      }),
-    );
-    await createJob(
-      dbKey,
-      jobParams({
         id: "job-pending",
         status: "pending",
         attempt: 0,
@@ -183,14 +182,20 @@ describe("recoverStalledJob", () => {
       }),
     );
 
-    const { result } = await recoverStalledJob(dbKey, { cutoff, now });
+    const { result } = await recoverStalledJob(dbKey, {
+      ids: ["job-retry", "job-dead", "job-pending"],
+      now,
+    });
     assert(result);
     expect(result).toHaveLength(2);
     const byId = Object.fromEntries(result.map((j) => [j.id, j]));
     expect(byId["job-retry"]!.status).toBe("retrying");
     expect(byId["job-dead"]!.status).toBe("dead");
 
-    const { result: again } = await recoverStalledJob(dbKey, { cutoff, now });
+    const { result: again } = await recoverStalledJob(dbKey, {
+      ids: ["job-retry", "job-dead"],
+      now,
+    });
     assert(again);
     expect(again).toEqual([]);
   });

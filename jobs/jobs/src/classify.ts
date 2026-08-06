@@ -170,6 +170,9 @@ export async function classifyDelivery(
   const retryHeader = response.headers.get("x-jobs-retry")?.toLowerCase();
 
   if (retryHeader === "never") {
+    if (statusCode >= 200 && statusCode < 300) {
+      return { kind: "succeeded", statusCode, metricStatus: "succeeded" };
+    }
     return {
       kind: "dead",
       statusCode,
