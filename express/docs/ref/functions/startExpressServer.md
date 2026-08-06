@@ -4,7 +4,7 @@
 
 # Function: startExpressServer()
 
-> **startExpressServer**(`app`, `options`): `void`
+> **startExpressServer**(`app`, `options`): [`StartedExpressServer`](../interfaces/StartedExpressServer.md)
 
 Given an Express app and options, starts the server and sets it up for graceful shutdown.
 
@@ -17,4 +17,4 @@ Given an Express app and options, starts the server and sets it up for graceful 
 
 ## Returns
 
-`void`
+[`StartedExpressServer`](../interfaces/StartedExpressServer.md)

@@ -7,11 +7,15 @@ import {
   type Auth,
   defaultErrorReporter,
   getServiceName,
+  verifyAssertion,
+  AssertionError,
 } from "@saflib/node";
 import type { Handler, Request } from "express";
 import createError from "http-errors";
 import { AuthenticatorAssuranceLevel, type Session } from "@ory/client";
 import { typedEnv } from "@saflib/node";
+import { resolveAuthFromIdentityId } from "@saflib/ory-kratos";
+import { isInternalRequest } from "../markInternal.ts";
 
 function defaultKratosBrowserUrl(): string {
   // TODO: use env var?
@@ -118,16 +122,80 @@ function resolveClientIp(req: Request): string | undefined {
   return undefined;
 }
 
-async function resolveAuth(req: Request): Promise<Auth | undefined> {
+type AuthResolution = {
+  auth?: Auth;
+  /** From a verified identity assertion; overrides `x-request-id` when set. */
+  requestId?: string;
+};
+
+function unauthorized(code: string, message: string): never {
+  throw Object.assign(createError(401, message), { code });
+}
+
+async function resolveAssertionAuth(
+  req: Request,
+  token: string,
+): Promise<AuthResolution> {
+  let assertion;
+  try {
+    assertion = verifyAssertion(token);
+  } catch (error) {
+    if (error instanceof AssertionError) {
+      unauthorized("assertion_invalid", "Invalid identity assertion");
+    }
+    throw error;
+  }
+
+  const operationId = req.openapi?.schema?.operationId;
+  if (
+    typeof operationId !== "string" ||
+    assertion.targetOperationId !== operationId
+  ) {
+    unauthorized("assertion_invalid", "Invalid identity assertion");
+  }
+
+  const baseAuth = await resolveAuthFromIdentityId(assertion.userId);
+  if (!baseAuth) {
+    unauthorized(
+      "auth_unresolvable",
+      "Asserted identity could not be resolved",
+    );
+  }
+
+  return {
+    auth: {
+      ...baseAuth,
+      mfaCompleted: assertion.mfaCompleted === true,
+    },
+    requestId: assertion.requestId,
+  };
+}
+
+async function resolveAuth(req: Request): Promise<AuthResolution> {
+  // Order: assertion (internal only) → kratos header → test headers → anonymous.
+  // The assertion header is never read on non-internal requests.
+  if (isInternalRequest(req)) {
+    const token = req.headers["x-saf-identity-assertion"];
+    if (typeof token === "string" && token.length > 0) {
+      // OpenAPI validator binds operationId; some apps run context middleware
+      // both before and after the validator. Defer until operationId is known
+      // so an earlier pass does not reject a valid assertion.
+      if (req.openapi?.schema?.operationId) {
+        return await resolveAssertionAuth(req, token);
+      }
+      return {};
+    }
+  }
+
   const kratosId = req.headers["x-kratos-authenticated-identity-id"];
   if (typeof kratosId === "string" && kratosId.length > 0) {
-    return await resolveKratosAuth(req.headers.cookie as string);
+    return { auth: await resolveKratosAuth(req.headers.cookie as string) };
   }
   if (typedEnv.NODE_ENV === "test") {
-    return resolveTestAuth(req);
+    return { auth: resolveTestAuth(req) };
   }
   // No Kratos identity header (e.g. Caddy whoami returned 401, or request bypassed edge auth): treat as anonymous.
-  return undefined;
+  return {};
 }
 
 export const makeContextMiddleware = () => {
@@ -136,13 +204,16 @@ export const makeContextMiddleware = () => {
       req.openapi?.schema.operationId ??
       req.openapi?.openApiRoute ??
       "unknown-operation";
-    let reqId = "no-request-id";
-    if (req.headers && req.headers["x-request-id"]) {
-      reqId = req.headers["x-request-id"] as string;
-    }
 
     resolveAuth(req)
-      .then((auth) => {
+      .then((resolution) => {
+        let reqId = "no-request-id";
+        if (resolution.requestId) {
+          reqId = resolution.requestId;
+        } else if (req.headers && req.headers["x-request-id"]) {
+          reqId = req.headers["x-request-id"] as string;
+        }
+
         const hostHeader = req.headers?.host;
         const host =
           typeof hostHeader === "string" && hostHeader.trim() !== ""
@@ -159,7 +230,7 @@ export const makeContextMiddleware = () => {
           serviceName: getServiceName(),
           subsystemName: "http",
           operationName,
-          auth,
+          auth: resolution.auth,
           host,
           origin,
           userAgent,

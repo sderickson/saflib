@@ -7,7 +7,7 @@
 ## Usage
 
 ```bash
-npm exec saf-workflow kickoff express/add-handler <path>
+npm exec saf-workflow kickoff express/add-handler <path> [--upload] [--download]
 ```
 
 To run this workflow automatically, tell the agent to:
@@ -20,14 +20,12 @@ To run this workflow automatically, tell the agent to:
 
 When run, the workflow will:
 
-- Copy template files and rename placeholders.
-  - Upsert **example-handler.ts** from [template](https://github.com/sderickson/saflib/blob/main/express/workflows/templates/routes/__group-name__/__target-name__.ts)
-  - Upsert **example-handler.test.ts** from [template](https://github.com/sderickson/saflib/blob/main/express/workflows/templates/routes/__group-name__/__target-name__.test.ts)
-  - Upsert **index.ts** from [template](https://github.com/sderickson/saflib/blob/main/express/workflows/templates/routes/__group-name__/index.ts)
-  - Upsert **http.ts** from [template](https://github.com/sderickson/saflib/blob/main/express/workflows/templates/http.ts)
-  - Upsert **\_helpers.ts** from [template](https://github.com/sderickson/saflib/blob/main/express/workflows/templates/routes/__group-name__/_helpers.ts)
+Kicking off workflow express/add-handler
+
+- Change working directory to ../common
+- Change working directory to
+- Upsert 5 templates.
 - Implement the example-handler route handler.
-- Update the feature router to include the new route handler.
 - Update the generated example-handler.test.ts file following the testing guide patterns.
 - Run `npm run typecheck`
 - Run `npm run test`
@@ -35,12 +33,14 @@ When run, the workflow will:
 ## Help Docs
 
 ```bash
-Usage: npm exec saf-workflow kickoff express/add-handler <path>
+Usage: npm exec saf-workflow kickoff express/add-handler <path> [--upload] [--download]
 
 Add a new route to an Express.js service.
 
 Arguments:
   path        Path of the new handler (e.g. 'routes/todos/create')
               Example: "./routes/example-subpath/example-handler.ts"
+  upload      Include file upload handling (multipart); shunt file data to a container in the store (optional flag)
+  download    Return binary response (e.g. stream/send file from store or generated content) (optional flag)
 
 ```

@@ -20,6 +20,12 @@ Options for creating scoped middleware.
 
 ---
 
+### emailVerificationRequired?
+
+> `optional` **emailVerificationRequired**: `boolean`
+
+---
+
 ### enforceAuth?
 
 > `optional` **enforceAuth**: `boolean`
@@ -29,3 +35,11 @@ Options for creating scoped middleware.
 ### fileUploader?
 
 > `optional` **fileUploader**: `Options`
+
+---
+
+### mfaRequired?
+
+> `optional` **mfaRequired**: `boolean`
+
+When true, require an MFA session (AAL2+), same as the `mfa-required` OpenAPI tag.

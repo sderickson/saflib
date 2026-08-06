@@ -1,3 +1,5 @@
+import { signAssertion } from "@saflib/node";
+
 let mockCounter = 0;
 
 export function makeUserHeaders(
@@ -30,5 +32,29 @@ export function makeAdminHeaders(
     "x-user-is-admin": "true",
     "x-user-mfa-completed": "true",
     "x-requested-with": "XMLHttpRequest",
+  };
+}
+
+/**
+ * Signs an identity assertion for use in tests via `X-Saf-Identity-Assertion`.
+ *
+ * Requires `SAF_INTERNAL_ASSERTION_KEYS` to be set (e.g. via `vi.stubEnv` in
+ * test setup) to a value like `test:dGVzdC1zZWNyZXQ=`.
+ */
+export function makeAssertionHeaders(
+  user: { userId: string; mfaCompleted?: boolean },
+  options: { operationId: string; requestId?: string },
+): Record<string, string> {
+  const issuedAt = Date.now();
+  const token = signAssertion({
+    userId: user.userId,
+    targetOperationId: options.operationId,
+    requestId: options.requestId,
+    mfaCompleted: user.mfaCompleted,
+    issuedAt,
+    expiresAt: issuedAt + 30_000,
+  });
+  return {
+    "x-saf-identity-assertion": token,
   };
 }

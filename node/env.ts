@@ -45,6 +45,10 @@ export interface NodeEnvSchema {
    */
   PROTOCOL: "https" | "http";
   /**
+   * HMAC keys for signing/verifying internal identity assertions. Format: keyId:base64secret[,keyId:base64secret]. Sign with the first entry; verify against all (rotation = prepend a new key). Optional — only required in environments that use the internal request channel.
+   */
+  SAF_INTERNAL_ASSERTION_KEYS?: string;
+  /**
    * Comma-separated list of service subdomains, e.g. 'revenue,geo,core'.
    */
   SERVICE_SUBDOMAINS: string;
@@ -61,6 +65,4 @@ export interface NodeEnvSchema {
 /**
  * `process.env` casted to the `NodeEnvSchema` type.
  */
-export const typedEnv = (globalThis.process
-  ? process.env
-  : {}) as unknown as NodeEnvSchema;
+export const typedEnv = (globalThis.process ? process.env : {}) as unknown as NodeEnvSchema;

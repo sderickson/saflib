@@ -6,7 +6,7 @@ import {
 } from "@saflib/sdk/auth-error-codes";
 import { typedEnv } from "../../env.ts";
 
-interface AuthMiddlewareOptions {
+export interface AuthMiddlewareOptions {
   /**
    * @deprecated Prefer the OpenAPI `site-admin-only` tag. Kept for callers that
    * do not run OpenAPI validation middleware.
