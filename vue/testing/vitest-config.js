@@ -14,6 +14,8 @@ const baseTest = {
   globals: true,
   exclude: ["**/e2e/**"],
   setupFiles: [setupFile],
+  // SPAs may have no unit tests until add-view extracts logic/composables.
+  passWithNoTests: true,
   // Default Vitest is 5s; AsyncPage + MSW + dynamic imports use asyncUiWaitForOptions (10s).
   testTimeout: 15_000,
   server: {
