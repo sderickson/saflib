@@ -24,6 +24,7 @@ export type SubsystemName =
   | "http" // an http server, typically express
   | "grpc" // a grpc server
   | "cron" // a cron process running jobs in the background (no server)
+  | "jobs" // a job queue process delivering background work
   | "init" // code that's running on startup
   | "cli" // running as part of a CLI command
   | "db" // database operations
@@ -41,6 +42,12 @@ export interface SafContext {
    * a request ID and should use it to correlate requests across processes.
    */
   requestId?: string;
+
+  /**
+   * Lineage root of a background chain. Set from assertion claims when present;
+   * consumers fall back to `requestId` when absent.
+   */
+  originalRequestId?: string;
 
   /**
    * Format: "{service}"

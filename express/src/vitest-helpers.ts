@@ -43,7 +43,11 @@ export function makeAdminHeaders(
  */
 export function makeAssertionHeaders(
   user: { userId: string; mfaCompleted?: boolean },
-  options: { operationId: string; requestId?: string },
+  options: {
+    operationId: string;
+    requestId?: string;
+    claims?: Record<string, string>;
+  },
 ): Record<string, string> {
   const issuedAt = Date.now();
   const token = signAssertion({
@@ -51,6 +55,7 @@ export function makeAssertionHeaders(
     targetOperationId: options.operationId,
     requestId: options.requestId,
     mfaCompleted: user.mfaCompleted,
+    claims: options.claims,
     issuedAt,
     expiresAt: issuedAt + 30_000,
   });

@@ -36,6 +36,7 @@ const probeSpec: OpenAPIV3.DocumentV3 = {
                   properties: {
                     auth: { type: "object", nullable: true },
                     requestId: { type: "string" },
+                    originalRequestId: { type: "string", nullable: true },
                   },
                 },
               },
@@ -135,7 +136,11 @@ function makeApp(options: { enforceAuth?: boolean } = {}) {
   );
   app.get("/probe", (_req, res) => {
     const ctx = getSafContext();
-    res.status(200).json({ auth: ctx.auth ?? null, requestId: ctx.requestId });
+    res.status(200).json({
+      auth: ctx.auth ?? null,
+      requestId: ctx.requestId,
+      originalRequestId: ctx.originalRequestId ?? null,
+    });
   });
   app.get("/admin-probe", (_req, res) => {
     res.status(200).json({ ok: true });
@@ -194,7 +199,27 @@ describe("assertion auth path", () => {
       mfaCompleted: true,
     });
     expect(res.body.requestId).toBe("from-assertion");
+    expect(res.body.originalRequestId).toBeNull();
     expect(globalThis.fetch).toHaveBeenCalled();
+  });
+
+  it("sets originalRequestId from assertion claims", async () => {
+    mockActiveIdentity({ id: "user-1", email: "user@example.com" });
+    const app = makeApp();
+    const headers = makeAssertionHeaders(
+      { userId: "user-1", mfaCompleted: true },
+      {
+        operationId: "probeOperation",
+        requestId: "per-attempt",
+        claims: { originalRequestId: "chain-root" },
+      },
+    );
+
+    const res = await request(markInternal(app)).get("/probe").set(headers);
+
+    expect(res.status).toBe(200);
+    expect(res.body.requestId).toBe("per-attempt");
+    expect(res.body.originalRequestId).toBe("chain-root");
   });
 
   it("enforces site-admin-only against the resolved Auth", async () => {
@@ -316,6 +341,7 @@ describe("assertion auth path", () => {
       userId: "test-user",
       userEmail: "test@example.com",
     });
+    expect(res.body.originalRequestId).toBeNull();
     expect(globalThis.fetch).not.toHaveBeenCalled();
   });
 

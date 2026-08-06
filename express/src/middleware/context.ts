@@ -126,6 +126,8 @@ type AuthResolution = {
   auth?: Auth;
   /** From a verified identity assertion; overrides `x-request-id` when set. */
   requestId?: string;
+  /** Lineage root from assertion claims; unset when absent. */
+  originalRequestId?: string;
 };
 
 function unauthorized(code: string, message: string): never {
@@ -168,6 +170,7 @@ async function resolveAssertionAuth(
       mfaCompleted: assertion.mfaCompleted === true,
     },
     requestId: assertion.requestId,
+    originalRequestId: assertion.claims?.originalRequestId,
   };
 }
 
@@ -227,6 +230,7 @@ export const makeContextMiddleware = () => {
 
         const context: SafContext = {
           requestId: reqId,
+          originalRequestId: resolution.originalRequestId,
           serviceName: getServiceName(),
           subsystemName: "http",
           operationName,
