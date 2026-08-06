@@ -7,7 +7,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import express from "express";
 import type { OpenAPIV3 } from "express-openapi-validator/dist/framework/types.ts";
 import { getSafContext } from "@saflib/node";
-import { createInternalCaller } from "./createInternalCaller.ts";
+import {
+  createInternalCaller,
+  type InternalCaller,
+} from "./createInternalCaller.ts";
 import { startExpressServer } from "./bin/www.ts";
 import { createScopedMiddleware } from "./middleware/composition.ts";
 import { errorHandler } from "./middleware/errors.ts";
@@ -110,6 +113,7 @@ function makeProbeApp() {
 describe("createInternalCaller", () => {
   const started: Array<{ close: () => Promise<void>; socketPath: string }> =
     [];
+  const callers: InternalCaller[] = [];
 
   beforeEach(async () => {
     const actual = await vi.importActual<typeof import("undici")>("undici");
@@ -133,6 +137,9 @@ describe("createInternalCaller", () => {
   });
 
   afterEach(async () => {
+    while (callers.length > 0) {
+      await callers.pop()!.close();
+    }
     while (started.length > 0) {
       const entry = started.pop()!;
       await entry.close();
@@ -154,6 +161,7 @@ describe("createInternalCaller", () => {
     await waitForListening(result.internalServer!);
 
     const call = createInternalCaller({ socketPath });
+    callers.push(call);
     const res = await call({
       operationId: "probeOperation",
       method: "GET",
@@ -198,6 +206,7 @@ describe("createInternalCaller", () => {
 
     vi.stubEnv("SAF_INTERNAL_ASSERTION_KEYS", WRONG_KEYS);
     const call = createInternalCaller({ socketPath });
+    callers.push(call);
     const res = await call({
       operationId: "probeOperation",
       method: "GET",

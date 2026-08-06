@@ -18,9 +18,11 @@ export interface InternalCallerRequest {
   requestId?: string;
 }
 
-export type InternalCaller = (
-  input: InternalCallerRequest,
-) => Promise<Response>;
+export interface InternalCaller {
+  (input: InternalCallerRequest): Promise<Response>;
+  /** Closes the underlying undici Agent (drains keep-alive sockets). Call in test teardown or when retiring the caller. */
+  close: () => Promise<void>;
+}
 
 const ASSERTION_TTL_MS = 30_000;
 
@@ -38,7 +40,7 @@ export function createInternalCaller(
     connect: { socketPath: options.socketPath },
   });
 
-  return async (input: InternalCallerRequest): Promise<Response> => {
+  const caller = async (input: InternalCallerRequest): Promise<Response> => {
     const issuedAt = Date.now();
     const token = signAssertion({
       userId: input.asUser.userId,
@@ -73,4 +75,8 @@ export function createInternalCaller(
       dispatcher: agent,
     }) as unknown as Promise<Response>;
   };
+
+  return Object.assign(caller, {
+    close: () => agent.close(),
+  });
 }

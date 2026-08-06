@@ -88,6 +88,26 @@ describe("resolveAuthFromIdentityId", () => {
     });
   });
 
+  it("throws on network errors (transient, not unresolvable)", async () => {
+    vi.mocked(globalThis.fetch).mockRejectedValue(
+      new TypeError("fetch failed"),
+    );
+
+    await expect(resolveAuthFromIdentityId("user-1")).rejects.toThrow(
+      "fetch failed",
+    );
+  });
+
+  it("throws on non-404 error statuses (transient, not unresolvable)", async () => {
+    vi.mocked(globalThis.fetch).mockResolvedValue(
+      jsonResponse(503, { error: "unavailable" }),
+    );
+
+    await expect(resolveAuthFromIdentityId("user-1")).rejects.toThrow(
+      "Kratos admin identity lookup failed: 503",
+    );
+  });
+
   it("does not set isAdmin when admin email is unverified", async () => {
     vi.mocked(globalThis.fetch).mockResolvedValue(
       jsonResponse(200, {
