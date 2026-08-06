@@ -18,4 +18,6 @@ test("package exports constants, types helpers, and operation resolver", () => {
   expect(mainExports.BACKGROUND_TAG).toBe("background");
   expect(typeof mainExports.buildOperationMap).toBe("function");
   expect(typeof mainExports.validateJobsStartup).toBe("function");
+  expect(typeof mainExports.runJobs).toBe("function");
+  expect(typeof mainExports.signalJobsWake).toBe("function");
 });
