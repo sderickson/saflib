@@ -107,8 +107,36 @@ export const kratosBrowserLogoutHandler = http.get(
 export const loginBrowserHandler = http.get(
   "*/self-service/login/browser",
   ({ request }) => {
-    const returnTo =
-      new URL(request.url).searchParams.get("return_to") ?? undefined;
+    const url = new URL(request.url);
+    const returnTo = url.searchParams.get("return_to") ?? undefined;
+    const aal = url.searchParams.get("aal");
+    if (aal === "aal2") {
+      // Empty interactive UI → MFA not enrolled (probe sends user to setup).
+      return HttpResponse.json({
+        ...mockLoginFlow,
+        id: "mock-aal2-login-flow",
+        requested_aal: "aal2",
+        return_to: returnTo ?? mockLoginFlow.return_to,
+        ui: {
+          ...mockLoginFlow.ui,
+          action:
+            "http://kratos.localhost/self-service/login?flow=mock-aal2-login-flow",
+          nodes: [
+            {
+              type: "input",
+              group: "default",
+              attributes: {
+                node_type: "input",
+                name: "csrf_token",
+                type: "hidden",
+                value: "mock-aal2-csrf",
+              },
+              meta: {},
+            },
+          ],
+        },
+      });
+    }
     return HttpResponse.json({
       ...mockLoginFlow,
       return_to: returnTo ?? mockLoginFlow.return_to,

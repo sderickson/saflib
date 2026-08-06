@@ -1,5 +1,5 @@
 import { afterEach, describe, it, expect, vi } from "vitest";
-import { stubGlobals } from "@saflib/vue/testing";
+import { stubGlobals, asyncUiWaitForOptions } from "@saflib/vue/testing";
 import loginAsync from "./LoginAsync.vue";
 import {
   mountTestApp,
@@ -24,7 +24,10 @@ describe("login", () => {
     await router.isReady();
 
     const wrapper = mountTestApp(loginAsync, {}, { router });
-    await vi.waitFor(() => expect(wrapper.text()).toContain("Sign in"));
+    await vi.waitFor(
+      () => expect(wrapper.text()).toContain("Sign in"),
+      asyncUiWaitForOptions,
+    );
     wrapper.unmount();
   });
 });

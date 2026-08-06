@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, it, expect, vi } from "vitest";
-import { stubGlobals } from "@saflib/vue/testing";
+import { stubGlobals, asyncUiWaitForOptions } from "@saflib/vue/testing";
 import settingsAsync from "./SettingsAsync.vue";
 import {
   mountTestApp,
@@ -29,8 +29,9 @@ describe("settings", () => {
     await router.isReady();
 
     const wrapper = mountTestApp(settingsAsync, {}, { router });
-    await vi.waitFor(() =>
-      expect(wrapper.text()).toContain("Account settings"),
+    await vi.waitFor(
+      () => expect(wrapper.text()).toContain("Account settings"),
+      asyncUiWaitForOptions,
     );
     wrapper.unmount();
   });

@@ -98,6 +98,7 @@ export const AddDrizzleQueryWorkflowDefinition = defineWorkflow<
         * A resource not being found by ID is an error.
         * Error subclasses should be simple, no special constructors or anything.
         * You don't need to export error types from the types.ts file.
+        * If this is a **new query domain** (new \`queries/<group>/\` folder), add a subpath export to the package \`package.json\`: \`"./queries/<group-name>": "./queries/<group-name>/index.ts"\` (see existing entries in daemon-db for the pattern).
         
         Please reference the documentation here for more information: ${context.docFiles?.refDoc}`,
     })),

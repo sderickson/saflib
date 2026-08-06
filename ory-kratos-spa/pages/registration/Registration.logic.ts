@@ -84,3 +84,27 @@ export function postRegistrationNavigationUrl(flow: RegistrationFlow): string | 
   const u = flow.return_to?.trim();
   return u || undefined;
 }
+
+/**
+ * Pull a verification flow id from Kratos registration `continue_with`, when present.
+ */
+export function verificationFlowIdFromRegistrationContinueWith(
+  continueWith:
+    | readonly { action?: string; flow?: { id?: string } }[]
+    | null
+    | undefined,
+): string | undefined {
+  if (!continueWith?.length) {
+    return undefined;
+  }
+  for (const item of continueWith) {
+    if (item.action !== "show_verification_ui") {
+      continue;
+    }
+    const id = item.flow?.id?.trim();
+    if (id) {
+      return id;
+    }
+  }
+  return undefined;
+}

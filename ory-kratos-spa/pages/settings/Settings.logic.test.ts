@@ -4,6 +4,7 @@ import {
   buildSettingsUpdateBodyFromFormData,
   dedupeKratosProfileTraitNodes,
   parseSettingsTabQuery,
+  settingsFlowHasLinkedTotp,
   settingsFlowHasPasswordRecoveryMessage,
   settingsFlowShouldFetch,
   settingsNodesForGroup,
@@ -293,5 +294,41 @@ describe("parseSettingsTabQuery", () => {
   it("accepts known tab keys", () => {
     expect(parseSettingsTabQuery("password")).toBe("password");
     expect(parseSettingsTabQuery(" email ")).toBe("email");
+  });
+});
+
+describe("settingsFlowHasLinkedTotp", () => {
+  it("is true when totp_unlink is present", () => {
+    const flow = {
+      ui: {
+        nodes: [
+          {
+            type: "input",
+            group: "totp",
+            attributes: {
+              node_type: "input",
+              name: "totp_unlink",
+              type: "submit",
+            },
+          },
+        ],
+      },
+    } as SettingsFlow;
+    expect(settingsFlowHasLinkedTotp(flow)).toBe(true);
+  });
+
+  it("is false during setup (code/QR only)", () => {
+    const flow = {
+      ui: {
+        nodes: [
+          {
+            type: "input",
+            group: "totp",
+            attributes: { node_type: "input", name: "totp_code", type: "text" },
+          },
+        ],
+      },
+    } as SettingsFlow;
+    expect(settingsFlowHasLinkedTotp(flow)).toBe(false);
   });
 });

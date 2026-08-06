@@ -1,6 +1,7 @@
 import { execSync } from "node:child_process";
-import path, { join } from "node:path";
+import path, { dirname, join } from "node:path";
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 
 export interface GitHashesEnvOptions {
   cwd?: string;
@@ -24,15 +25,41 @@ function execGit(
   }
 }
 
-function findGitRepoRoot(startDir: string): string | null {
-  let currentDir = startDir;
+/**
+ * saflib root: this file lives at `saflib/dev-tools/src/git-hashes.ts`.
+ * Prefer that over assuming `./saflib` under the git root (submodules / nested monorepos).
+ */
+export function findSaflibDir(): string {
+  return path.resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
+}
+
+/**
+ * Product / workspace root: nearest ancestor with `package-lock.json`
+ * (npm workspaces root). Falls back to the git root enclosing `startDir`.
+ */
+export function findProductRoot(startDir: string): string {
+  let currentDir = path.resolve(startDir);
+  while (true) {
+    if (existsSync(join(currentDir, "package-lock.json"))) {
+      return currentDir;
+    }
+    const parentDir = path.dirname(currentDir);
+    if (parentDir === currentDir) break;
+    currentDir = parentDir;
+  }
+
+  currentDir = path.resolve(startDir);
   while (true) {
     // `.git` can be either a directory or a file (submodules).
     if (existsSync(join(currentDir, ".git"))) {
       return currentDir;
     }
     const parentDir = path.dirname(currentDir);
-    if (parentDir === currentDir) return null;
+    if (parentDir === currentDir) {
+      throw new Error(
+        `Unable to locate product root from cwd=${startDir}. Expected a package-lock.json or .git ancestor.`,
+      );
+    }
     currentDir = parentDir;
   }
 }
@@ -56,40 +83,41 @@ function getGitHash(cwd: string): string | null {
   return out.stdout;
 }
 
+function withDirtySuffix(cwd: string, hash: string): string {
+  return hasUncommittedChanges(cwd) ? `${hash}-dirty` : hash;
+}
+
 export function writeGitHashesEnvFile(options: GitHashesEnvOptions = {}): {
   root: string;
   saflib: string;
 } {
   const cwd = options.cwd ?? process.cwd();
 
-  const repoRoot = findGitRepoRoot(cwd);
-  if (!repoRoot) {
-    throw new Error(
-      `Unable to locate git repo root from cwd=${cwd}. Make sure you're running inside the repo.`,
-    );
-  }
+  const productRoot = findProductRoot(cwd);
+  const saflibDir = findSaflibDir();
 
-  const rootHash = getGitHash(repoRoot) ?? "unknown";
-  const rootDirty = hasUncommittedChanges(repoRoot);
-  const rootWithDirty = rootDirty ? `${rootHash}-dirty` : rootHash;
+  const rootHash = getGitHash(productRoot) ?? "unknown";
+  const rootWithDirty =
+    rootHash === "unknown" ? rootHash : withDirtySuffix(productRoot, rootHash);
 
-  const saflibDir = join(repoRoot, "saflib");
   let saflibWithDirty = "unknown";
   if (existsSync(saflibDir)) {
     const saflibHash = getGitHash(saflibDir) ?? "unknown";
-    const saflibDirty = hasUncommittedChanges(saflibDir);
-    saflibWithDirty = saflibDirty ? `${saflibHash}-dirty` : saflibHash;
+    saflibWithDirty =
+      saflibHash === "unknown"
+        ? saflibHash
+        : withDirtySuffix(saflibDir, saflibHash);
   }
 
   const jsonContent =
     JSON.stringify({ root: rootWithDirty, saflib: saflibWithDirty }, null, 2) +
     "\n";
 
-  const nodeJsonPath = join(repoRoot, "saflib", "node", "git-hashes.json");
+  const nodeJsonPath = join(saflibDir, "node", "git-hashes.json");
   mkdirSync(path.dirname(nodeJsonPath), { recursive: true });
   writeFileSync(nodeJsonPath, jsonContent, "utf8");
 
-  const vueJsonPath = join(repoRoot, "saflib", "vue", "src", "git-hashes.json");
+  const vueJsonPath = join(saflibDir, "vue", "src", "git-hashes.json");
   mkdirSync(path.dirname(vueJsonPath), { recursive: true });
   writeFileSync(vueJsonPath, jsonContent, "utf8");
 

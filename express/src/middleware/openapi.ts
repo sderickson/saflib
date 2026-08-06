@@ -4,7 +4,7 @@ import type {
   OpenApiRequestMetadata,
 } from "express-openapi-validator/dist/framework/types.ts";
 import type { OpenAPIV3 } from "express-openapi-validator/dist/framework/types.ts";
-import type { Request } from "express";
+import type { InternalServerError } from "express-openapi-validator/dist/framework/types.ts";
 import { typedEnv } from "@saflib/env";
 import multer from "multer";
 
@@ -16,20 +16,106 @@ declare global {
   }
 }
 
+type OpenApiValidationIssue = {
+  path?: string;
+  message?: string;
+};
+
+function propertyNameFromIssuePath(path?: string): string | undefined {
+  if (!path) {
+    return undefined;
+  }
+  const segments = path.split("/").filter(Boolean);
+  return segments.at(-1);
+}
+
+function formatOpenApiValidationError(err: InternalServerError): string {
+  const issues = (err as InternalServerError & { errors?: OpenApiValidationIssue[] })
+    .errors;
+  if (!issues?.length) {
+    return err.message;
+  }
+
+  const additionalPropertyIssues = issues.filter((issue) =>
+    issue.message?.includes("additional propert"),
+  );
+
+  if (additionalPropertyIssues.length) {
+    const byLocation = new Map<string, string[]>();
+
+    for (const issue of additionalPropertyIssues) {
+      const property = propertyNameFromIssuePath(issue.path);
+      if (!property) {
+        continue;
+      }
+      const location =
+        issue.path?.replace(/\/[^/]+$/, "").replace(/^\/response/, "response") ||
+        "response";
+      const existing = byLocation.get(location) ?? [];
+      existing.push(property);
+      byLocation.set(location, existing);
+    }
+
+    return [...byLocation.entries()]
+      .map(
+        ([location, properties]) =>
+          `${location}: unexpected additional properties [${properties.join(", ")}]`,
+      )
+      .join("; ");
+  }
+
+  const details = issues
+    .map((issue) => {
+      const path = issue.path?.replace(/^\/response/, "response") || "response";
+      return `${path}: ${issue.message ?? "validation failed"}`;
+    })
+    .join("; ");
+
+  return `${err.message} — ${details}`;
+}
+
 const validateResponses = {
-  onError: (err: Error, _json: any, _req: Request) => {
-    if (typedEnv.NODE_ENV === "test") {
-      console.log("======", err.message, "======");
-      console.log(
+  onError: (err: InternalServerError, _json: unknown, _req: unknown) => {
+    err.message = formatOpenApiValidationError(err);
+
+    if (
+      typedEnv.NODE_ENV === "test" ||
+      typedEnv.NODE_ENV === "development"
+    ) {
+      console.error("====== OpenAPI response validation failed ======");
+      console.error(err.message);
+      console.error(
         "> Please update the spec or match the implementation to the spec.",
       );
-      console.log(
+      console.error(
         "> Also: Don't forget to run `npm exec saf-specs generate` to update your spec.",
       );
     }
     throw err;
   },
 };
+
+/** Shared validator stacks per spec — avoids re-compiling AJV on every router mount. */
+const validatorCache = new WeakMap<
+  OpenAPIV3.DocumentV3,
+  Map<string, OpenApiRequestHandler[]>
+>();
+
+function fileUploaderCacheKey(fileUploader?: multer.Options): string {
+  return fileUploader ? "multer" : "default";
+}
+
+function buildOpenApiValidatorMiddleware(
+  spec: string | OpenAPIV3.DocumentV3,
+  fileUploader?: multer.Options,
+): OpenApiRequestHandler[] {
+  return OpenApiValidator.middleware({
+    apiSpec: spec,
+    validateRequests: true,
+    validateResponses,
+    fileUploader,
+  });
+}
 
 export interface OpenApiValidatorOptions {
   apiSpec: string | OpenAPIV3.DocumentV3;
@@ -43,19 +129,26 @@ export interface OpenApiValidatorOptions {
 export const createOpenApiValidator = (
   options: OpenApiValidatorOptions,
 ): OpenApiRequestHandler[] => {
-  // Parse spec if it's a string
   const spec =
     typeof options.apiSpec === "string"
       ? require(options.apiSpec)
       : options.apiSpec;
 
-  return [
-    // Request/response validation
-    ...OpenApiValidator.middleware({
-      apiSpec: spec,
-      validateRequests: true,
-      validateResponses,
-      fileUploader: options.fileUploader,
-    }),
-  ];
+  if (typeof spec === "object" && spec !== null) {
+    const uploaderKey = fileUploaderCacheKey(options.fileUploader);
+    let byUploader = validatorCache.get(spec);
+    if (!byUploader) {
+      byUploader = new Map();
+      validatorCache.set(spec, byUploader);
+    }
+    const cached = byUploader.get(uploaderKey);
+    if (cached) {
+      return cached;
+    }
+    const created = buildOpenApiValidatorMiddleware(spec, options.fileUploader);
+    byUploader.set(uploaderKey, created);
+    return created;
+  }
+
+  return buildOpenApiValidatorMiddleware(spec, options.fileUploader);
 };

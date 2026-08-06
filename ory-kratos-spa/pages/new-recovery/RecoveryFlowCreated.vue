@@ -18,7 +18,7 @@ const router = useRouter();
 watchEffect(() => {
   const id = props.result.flow.id;
   if (!id) return;
-  void router.push({
+  void router.replace({
     path: "/recovery",
     query: { flow: id },
   });

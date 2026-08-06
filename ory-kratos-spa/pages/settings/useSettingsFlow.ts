@@ -1,19 +1,27 @@
 import { ref, toValue, type MaybeRefOrGetter } from "vue";
 import {
   BrowserRedirectRequired,
+  SettingsFlowUpdated,
   useUpdateSettingsFlowMutation,
 } from "@saflib/ory-kratos-sdk";
 import { kratosSubmitErrorMessage } from "../common/kratosErrorMessage.ts";
 import {
   buildSettingsUpdateBodyFromFormData,
   formDataFromsettingsForm,
+  settingsFlowHasLinkedTotp,
 } from "./Settings.logic.ts";
 import { settings_page as pageStrings } from "./Settings.strings.ts";
 
 /**
  * Submit profile / password / TOTP updates for the active settings flow.
  */
-export function useSettingsFlow(flowId: MaybeRefOrGetter<string>) {
+export function useSettingsFlow(
+  flowId: MaybeRefOrGetter<string>,
+  options?: {
+    /** Fired after a successful TOTP link (not unlink). */
+    onTotpLinked?: () => void;
+  },
+) {
   const updateSettings = useUpdateSettingsFlowMutation();
 
   const submitting = ref(false);
@@ -43,6 +51,14 @@ export function useSettingsFlow(flowId: MaybeRefOrGetter<string>) {
         }
         window.location.assign(updated.payload.redirect_browser_to);
         return;
+      }
+      if (
+        updated instanceof SettingsFlowUpdated &&
+        String(fd.get("totp_code") ?? "").trim() &&
+        !String(fd.get("totp_unlink") ?? "").trim() &&
+        settingsFlowHasLinkedTotp(updated.flow)
+      ) {
+        options?.onTotpLinked?.();
       }
     } catch (e) {
       submitError.value = kratosSubmitErrorMessage(

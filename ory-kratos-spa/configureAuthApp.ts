@@ -55,10 +55,19 @@ export interface ConfigureAuthAppOptions extends Partial<AuthAppConfig> {
    * See {@link AUTH_POST_REGISTER_FALLBACK_HREF}.
    */
   postRegisterOverrideHref?: MaybeRefOrGetter<string>;
+  /**
+   * Called immediately before starting the Kratos browser logout redirect
+   * (e.g. clear product cookies that should not survive sign-out).
+   */
+  onBeforeLogout?: () => void;
 }
 
 export const AUTH_APP_CONFIG: InjectionKey<ComputedRef<AuthAppConfig>> =
   Symbol("authAppConfig");
+
+export const AUTH_ON_BEFORE_LOGOUT: InjectionKey<() => void> = Symbol(
+  "authOnBeforeLogout",
+);
 
 const fallbackAuthAppConfig = computed<AuthAppConfig>(
   () => defaultAuthAppConfig,
@@ -127,9 +136,18 @@ export function configureAuthApp(
   });
   provide(AUTH_ROOT_HOME_FALLBACK_HREF, rootHomeHref);
 
+  provide(AUTH_ON_BEFORE_LOGOUT, () => {
+    toValue(options).onBeforeLogout?.();
+  });
+
   return config;
 }
 
 export function useAuthAppConfig(): ComputedRef<AuthAppConfig> {
   return inject(AUTH_APP_CONFIG, fallbackAuthAppConfig);
+}
+
+/** Optional host callback to run before Kratos browser logout. */
+export function useAuthOnBeforeLogout(): (() => void) | undefined {
+  return inject(AUTH_ON_BEFORE_LOGOUT, undefined);
 }

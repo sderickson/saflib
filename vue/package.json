@@ -23,16 +23,16 @@
     "@saflib/links": "*",
     "@saflib/monorepo": "*",
     "@saflib/ory-kratos-sdk": "*",
-    "@saflib/playwright": "*",
     "@saflib/sdk": "*",
     "@saflib/utils": "*",
     "@tanstack/vue-query": "^5.85.9",
     "vue": "^3.0.0",
     "vue-i18n": "^11.1.11",
     "vue-router": "^5.0.0",
-    "vuetify": "^4.0.0"
+    "vuetify": "^4.1.6"
   },
   "devDependencies": {
+    "@saflib/playwright": "*",
     "@saflib/vitest": "*",
     "@saflib/workflows": "*",
     "@types/node": "^24.3.0",

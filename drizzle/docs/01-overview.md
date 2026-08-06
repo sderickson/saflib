@@ -110,6 +110,8 @@ Where Drizzle's migration files are stored. See [Migrations with Drizzle Kit](ht
 
 Drizzle also provides [this helpful guide](https://orm.drizzle.team/docs/migrations) on different database migration approaches. I have only done "Option 4" (apply during runtime) so far as that's the simplest (not necessarily the safest for preventing downtime) but there's nothing in this library preventing the others.
 
+When the folder gets large, you can collapse history into a single baseline — see [Squashing Migrations](./05-squashing-migrations.md).
+
 ### `package.json`
 
 Aside from including `"@saflib/drizzle": "*"` in the dependencies, you can include some `drizzle-kit` commands in package scripts. The most useful would be `"generate": "drizzle-kit generate"`, which will create migration files if the schema has changed. You can also use the kit through `npx` directly.

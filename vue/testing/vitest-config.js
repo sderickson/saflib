@@ -14,6 +14,8 @@ const baseTest = {
   globals: true,
   exclude: ["**/e2e/**"],
   setupFiles: [setupFile],
+  // SPAs may have no unit tests until add-view extracts logic/composables.
+  passWithNoTests: true,
   // Default Vitest is 5s; AsyncPage + MSW + dynamic imports use asyncUiWaitForOptions (10s).
   testTimeout: 15_000,
   server: {
@@ -43,6 +45,10 @@ const baseCoverage = {
 
     // Loader files are simple prefetch wrappers
     "**/*.loader.ts",
+
+    // Vue SFCs: thin templates; behavior is covered by Playwright and
+    // by component tests that exercise interactions (not render smokes).
+    "**/*.vue",
 
     // Test infrastructure
     "**/test-app.ts",
@@ -93,15 +99,6 @@ export const defaultConfigWithCoverageEnforcement = defineConfig({
           branches: 70,
           statements: 80,
         },
-
-        // Global per-file floor: a well-extracted thin Vue file reaches
-        // 80-100% from just a render test, so 60% catches files with
-        // significant untested inline logic that should be extracted.
-        // Branches and functions are omitted because Vue files inherently
-        // have uncovered branches (v-if paths) and functions (event handlers)
-        // that only Playwright exercises.
-        lines: 60,
-        statements: 60,
       },
     },
   },

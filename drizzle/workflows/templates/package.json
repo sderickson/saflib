@@ -4,7 +4,10 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./index.ts"
+    ".": "./index.ts",
+    "./instances": "./instances.ts",
+    "./errors": "./errors.ts",
+    "./types": "./types.ts"
   },
   "scripts": {
     "test": "vitest run",

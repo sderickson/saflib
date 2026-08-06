@@ -31,6 +31,8 @@ When run, the workflow will:
 - Run `npm exec saf-specs generate`
 - Run `npx tsc --noEmit`
 
+For nullable request/response fields, use `nullable: true` on a typed schema — **not** `type: "null"` or JSON Schema `oneOf` null branches. See [API Design — Nullable fields](../02-api-design.md#nullable-fields-openapi-30).
+
 ## Help Docs
 
 ```bash

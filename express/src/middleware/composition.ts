@@ -110,7 +110,7 @@ export const createScopedMiddleware = (
     openApiValidatorMiddleware = createOpenApiValidator({
       apiSpec,
       fileUploader,
-    });
+    }) as unknown as Handler[];
   }
 
   let authMiddleware: Handler[] = [];

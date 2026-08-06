@@ -1,11 +1,10 @@
 import type { RegistrationFlow, UiText } from "@ory/client";
 import { useQueryClient } from "@tanstack/vue-query";
-import { ref, type Ref } from "vue";
+import { ref, toValue, type MaybeRefOrGetter, type Ref } from "vue";
 import { linkToHrefWithHost } from "@saflib/links";
 import { authLinks } from "@saflib/ory-kratos-sdk/links";
 import {
   createLoginFlowQueryOptions,
-  identityNeedsEmailVerification,
   LoginFlowCreated,
   RegistrationFlowUpdated,
   useUpdateLoginFlowMutation,
@@ -27,14 +26,31 @@ import {
   buildRegistrationUpdateBodyFromFormData,
   registrationSubmitErrorMessage,
   traitsEmailFromFormData,
+  verificationFlowIdFromRegistrationContinueWith,
 } from "./Registration.logic.ts";
 import { kratos_registration_flow as flowStrings } from "./RegistrationFlowForm.strings.ts";
+
+export type UseRegistrationFlowOptions = {
+  /**
+   * Run after FormData is collected and before the Kratos update.
+   * Return an error string to block submit (e.g. host-owned required fields).
+   */
+  beforeSubmit?: (fd: FormData) => string | null | Promise<string | null>;
+  /**
+   * Run after the account (and session, when applicable) exists, before navigating
+   * away from registration. Errors are soft-failed so the user is not stuck.
+   */
+  afterRegistration?: (fd: FormData) => void | Promise<void>;
+};
 
 /**
  * Submit and post-login navigation for an existing registration flow.
  * Flow creation and `?flow=` URL sync live on the page (`Registration.vue` + loader).
  */
-export function useRegistrationFlow(flow: Ref<RegistrationFlow>) {
+export function useRegistrationFlow(
+  flow: Ref<RegistrationFlow>,
+  options: MaybeRefOrGetter<UseRegistrationFlowOptions> = {},
+) {
   const queryClient = useQueryClient();
   const updateRegistration = useUpdateRegistrationFlowMutation();
   const updateLogin = useUpdateLoginFlowMutation();
@@ -65,8 +81,51 @@ export function useRegistrationFlow(flow: Ref<RegistrationFlow>) {
     return false;
   }
 
+  function destinationWithOptionalVerificationFlow(
+    destination: string,
+    continueWith: RegistrationCompleted["result"]["continue_with"],
+  ): string {
+    const flowId = verificationFlowIdFromRegistrationContinueWith(continueWith);
+    if (!flowId) {
+      return destination;
+    }
+    try {
+      const url = new URL(destination);
+      url.searchParams.set("flow", flowId);
+      return url.toString();
+    } catch {
+      const join = destination.includes("?") ? "&" : "?";
+      return `${destination}${join}flow=${encodeURIComponent(flowId)}`;
+    }
+  }
+
+  async function runAfterRegistration(fd: FormData): Promise<void> {
+    try {
+      await toValue(options).afterRegistration?.(fd);
+    } catch {
+      // Host can capture missing profile data later (e.g. onboarding).
+    }
+  }
+
+  async function navigateAfterRegistration(
+    destination: string,
+    continueWith: RegistrationCompleted["result"]["continue_with"],
+    fd: FormData,
+  ): Promise<void> {
+    await runAfterRegistration(fd);
+    window.location.assign(
+      destinationWithOptionalVerificationFlow(destination, continueWith),
+    );
+  }
+
   async function submitRegistrationForm(form: HTMLFormElement) {
     const fd = new FormData(form);
+    const beforeError = await toValue(options).beforeSubmit?.(fd);
+    if (beforeError) {
+      submitError.value = beforeError;
+      return;
+    }
+
     registrationSubmitCount.value += 1;
     submitting.value = true;
     submitError.value = null;
@@ -98,15 +157,11 @@ export function useRegistrationFlow(flow: Ref<RegistrationFlow>) {
         : (flow.value.return_to ?? postRegisterHref.value);
       const registrationSession = updated.result.session;
       if (registrationSession) {
-        if (identityNeedsEmailVerification(registrationSession.identity)) {
-          window.location.assign(
-            linkToHrefWithHost(authLinks.verifyWall, {
-              params: { return_to: destination },
-            }),
-          );
-        } else {
-          window.location.assign(destination);
-        }
+        await navigateAfterRegistration(
+          destination,
+          updated.result.continue_with,
+          fd,
+        );
         keepSubmittingUntilNavigation = true;
         return;
       }
@@ -147,20 +202,11 @@ export function useRegistrationFlow(flow: Ref<RegistrationFlow>) {
         return;
       }
 
-      const loginSession = loginResult.session.session;
-
-      if (
-        loginSession &&
-        identityNeedsEmailVerification(loginSession.identity)
-      ) {
-        window.location.assign(
-          linkToHrefWithHost(authLinks.verifyWall, {
-            params: { return_to: destination },
-          }),
-        );
-      } else {
-        window.location.assign(destination);
-      }
+      await navigateAfterRegistration(
+        destination,
+        updated.result.continue_with,
+        fd,
+      );
       keepSubmittingUntilNavigation = true;
     } catch (e) {
       submitError.value = registrationSubmitErrorMessage(

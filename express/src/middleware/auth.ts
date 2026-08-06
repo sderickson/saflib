@@ -7,12 +7,16 @@ import {
 import { typedEnv } from "../../env.ts";
 
 interface AuthMiddlewareOptions {
+  /**
+   * @deprecated Prefer the OpenAPI `site-admin-only` tag. Kept for callers that
+   * do not run OpenAPI validation middleware.
+   */
   adminRequired?: boolean;
   /** When true, respond with 403 unless `auth.emailVerified` is true. */
   emailVerificationRequired?: boolean;
   /**
    * When true, respond with 403 unless the session meets MFA (AAL2+).
-   * Admin routes also require MFA via `adminRequired`.
+   * Site-admin routes also require MFA via the `site-admin-only` tag.
    */
   mfaRequired?: boolean;
 }
@@ -54,16 +58,19 @@ export const makeAuthMiddleware = (
   return (req, res, next): void => {
     const { auth } = getSafContext();
     const tags = req.openapi?.schema?.tags;
+    const routeRequiresSiteAdmin =
+      tags?.includes("site-admin-only") === true || Boolean(adminRequired);
+
     const routeRequiresVerifiedEmail =
       Boolean(emailVerificationRequired) ||
       tags?.includes("email-verified") === true ||
-      Boolean(adminRequired);
+      routeRequiresSiteAdmin;
 
     const routeRequiresMfa =
       isMfaEnforcementEnabled() &&
       (Boolean(mfaRequired) ||
         tags?.includes("mfa-required") === true ||
-        Boolean(adminRequired));
+        routeRequiresSiteAdmin);
 
     if (tags?.includes("no-auth")) {
       return next();
@@ -92,7 +99,7 @@ export const makeAuthMiddleware = (
       return;
     }
 
-    if (adminRequired && !auth.isAdmin) {
+    if (routeRequiresSiteAdmin && !auth.isAdmin) {
       drainRequest(req).then(() => {
         if (!res.headersSent) {
           res.status(403).json({

@@ -20,6 +20,6 @@
   "devDependencies": {
     "@saflib/vitest": "*",
     "@types/better-sqlite3": "^7.0.0",
-    "better-sqlite3": "12.10.0"
+    "better-sqlite3": "12.11.1"
   }
 }

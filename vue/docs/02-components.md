@@ -205,9 +205,7 @@ it("create without file: creates eval, calls onClose", async () => {
 
 ### Test: Integration Testing
 
-_[Template file](../workflows/template/__subdomain-name__/__group-name__/__TargetName__.test.ts)_
-
-Since Vue components depend on a great number of things, it's most useful to have integration (or component) tests for them. These tests run the page within a complete Vue app, with browser interfaces and network requests stubbed.
+Component tests are optional. Prefer `.logic.test.ts`, `use*.test.ts`, and Playwright. When a page needs a component test, mount the async component (or `<RouterView />` for nested routes) only to exercise **behavior** — not render-only smokes.
 
 See [testing](./04-testing.md) for more info.
 

@@ -345,7 +345,149 @@ describe("Auth Middleware mfa-required OpenAPI tag", () => {
   });
 });
 
-describe("Auth Middleware admin routes", () => {
+describe("Auth Middleware site-admin-only OpenAPI tag", () => {
+  const specWithSiteAdminTag: OpenAPIV3.DocumentV3 = {
+    openapi: "3.0.0",
+    info: { title: "test", version: "1.0.0" },
+    paths: {
+      "/admin-route": {
+        get: {
+          tags: ["site-admin-only"],
+          responses: {
+            "200": {
+              description: "ok",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: { ok: { type: "boolean" } },
+                  },
+                },
+              },
+            },
+            "403": {
+              description: "forbidden",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: forbiddenSchemaProps,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  };
+
+  it("returns EMAIL_VERIFICATION_REQUIRED before admin role when site-admin-only and email unverified", async () => {
+    const app = express();
+    app.use(
+      createScopedMiddleware({
+        enforceAuth: true,
+        apiSpec: specWithSiteAdminTag,
+      }),
+    );
+    app.get("/admin-route", (_req, res) => {
+      res.status(200).json({ ok: true });
+    });
+    app.use(errorHandler);
+
+    const response = await request(app).get("/admin-route").set({
+      "x-user-id": "123",
+      "x-user-email": "admin@example.com",
+      "x-user-email-verified": "false",
+      "x-user-is-admin": "true",
+    });
+
+    expect(response.status).toBe(403);
+    expect(response.body.code).toBe(AUTH_ERROR_EMAIL_VERIFICATION_REQUIRED);
+  });
+
+  it("returns MFA_REQUIRED for site-admin-only when verified admin but no MFA", async () => {
+    const app = express();
+    app.use(
+      createScopedMiddleware({
+        enforceAuth: true,
+        apiSpec: specWithSiteAdminTag,
+      }),
+    );
+    app.get("/admin-route", (_req, res) => {
+      res.status(200).json({ ok: true });
+    });
+    app.use(errorHandler);
+
+    const response = await request(app).get("/admin-route").set({
+      "x-user-id": "123",
+      "x-user-email": "admin@example.com",
+      "x-user-email-verified": "true",
+      "x-user-is-admin": "true",
+    });
+
+    expect(response.status).toBe(403);
+    expect(response.body).toEqual({
+      error: "Forbidden",
+      message: "Forbidden",
+      code: AUTH_ERROR_MFA_REQUIRED,
+    });
+  });
+
+  it("allows site admin when email verified, isAdmin, and MFA complete", async () => {
+    const app = express();
+    app.use(
+      createScopedMiddleware({
+        enforceAuth: true,
+        apiSpec: specWithSiteAdminTag,
+      }),
+    );
+    app.get("/admin-route", (_req, res) => {
+      res.status(200).json({ ok: true });
+    });
+    app.use(errorHandler);
+
+    const response = await request(app).get("/admin-route").set({
+      "x-user-id": "123",
+      "x-user-email": "admin@example.com",
+      "x-user-email-verified": "true",
+      "x-user-is-admin": "true",
+      "x-user-mfa-completed": "true",
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({ ok: true });
+  });
+
+  it("returns 403 for non-admin users on site-admin-only routes", async () => {
+    const app = express();
+    app.use(
+      createScopedMiddleware({
+        enforceAuth: true,
+        apiSpec: specWithSiteAdminTag,
+      }),
+    );
+    app.get("/admin-route", (_req, res) => {
+      res.status(200).json({ ok: true });
+    });
+    app.use(errorHandler);
+
+    const response = await request(app).get("/admin-route").set({
+      "x-user-id": "123",
+      "x-user-email": "user@example.com",
+      "x-user-email-verified": "true",
+      "x-user-mfa-completed": "true",
+    });
+
+    expect(response.status).toBe(403);
+    expect(response.body).toEqual({
+      error: "Forbidden",
+      message: "Forbidden",
+    });
+  });
+});
+
+describe("Auth Middleware adminRequired option (deprecated)", () => {
   it("returns EMAIL_VERIFICATION_REQUIRED before admin role when adminRequired and email unverified", async () => {
     const app = express();
     app.use(

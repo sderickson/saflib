@@ -58,6 +58,7 @@ export const typedCreateHandler = <Paths extends Record<string, any>>() => {
       body: ExtractRequestBody<
         Paths[P][V] extends Record<string, any> ? Paths[P][V] : never
       >;
+      headers: Record<string, string>;
     }) => Promise<
       | ExtractResponseBody<
           Paths[P][V] extends Record<string, any> ? Paths[P][V] : never,
@@ -102,14 +103,20 @@ export const typedCreateHandler = <Paths extends Record<string, any>>() => {
         ) as query;
       }
       const params = { ...request.params };
-      return HttpResponse.json(
-        await handler({
-          query: queryParams,
-          params,
-          body,
-        }),
-        { status },
-      );
+      const headers: Record<string, string> = {};
+      request.request.headers.forEach((value, key) => {
+        headers[key] = value;
+      });
+      const result = await handler({
+        query: queryParams,
+        params,
+        body,
+        headers,
+      });
+      if (status === 204) {
+        return new HttpResponse(null, { status: 204 });
+      }
+      return HttpResponse.json(result, { status });
     });
   };
   return { createHandler };

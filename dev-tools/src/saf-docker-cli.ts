@@ -1,5 +1,6 @@
 #!/usr/bin/env -S node --experimental-strip-types --disable-warning=ExperimentalWarning
 
+import { execSync } from "node:child_process";
 import { Command } from "commander";
 import { generateDockerfiles } from "./docker.ts";
 import { buildMonorepoContext } from "./workspace.ts";
@@ -8,6 +9,15 @@ import { setupContext } from "@saflib/commander";
 const program = new Command()
   .name("saf-docker")
   .description("Helps manage Docker-related files in SAF packages.");
+
+program
+  .command("prune")
+  .description(
+    "Free unused Docker build cache before image builds (avoids ENOSPC during npm ci).",
+  )
+  .action(() => {
+    execSync("docker builder prune -f", { stdio: "inherit" });
+  });
 
 program
   .command("generate")

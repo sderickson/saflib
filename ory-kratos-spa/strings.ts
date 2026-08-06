@@ -6,6 +6,7 @@ import {
   settings_group_empty,
   settings_page,
   settings_password_recovery,
+  settings_sessions,
   settings_tabs,
 } from "./pages/settings/Settings.strings.ts";
 import { settings_intro } from "./pages/settings/SettingsIntro.strings.ts";
@@ -35,6 +36,7 @@ export const auth_strings = {
   settings_intro,
   settings_page,
   settings_password_recovery,
+  settings_sessions,
   settings_tabs,
   kratos_registration_flow,
   kratos_verification,

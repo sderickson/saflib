@@ -50,7 +50,7 @@ export function generateDockerfiles(
       // see: https://github.com/oven-sh/bun/issues/5792#issuecomment-2673078285
       usesBun(dockerTemplate) ? ctx.packages : packages,
       ctx,
-    ).map((path) => path + "/package.json");
+    ).map((relativePath) => relativePath + "/package.json");
 
     const copyPackageJsonCommand = `COPY --parents ./package.json ./package-lock.json ${packageJsonRelativePaths.join(" ")} ./`;
     const copySrcCommand = `COPY --parents ${packageRelativePaths.join(" ")} ./`;

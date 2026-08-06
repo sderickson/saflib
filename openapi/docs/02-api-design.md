@@ -199,7 +199,7 @@ Use 422 (not 404) when the **target of the request** is valid (e.g. “create a 
 
 Path and query parameters MUST contain only opaque identifiers (UUIDs, shortIds, slugs that don’t reveal personal data) or non-PII literals (enums, flags, ISO dates). PII — emails, full names, phone numbers, free-form text — MUST travel in request bodies.
 
-Why: URL-shaped data is logged in many places — reverse proxy access logs, browser history, error reports, and the project’s audit log (see `daemon/plans/notes/2026-05-05-audit-log/audit-log.spec.md`). Audit retention is multi-year; you do not want PII to inherit that retention by accident.
+Why: URL-shaped data is logged in many places — reverse proxy access logs, browser history, error reports, and the project’s audit log. Audit retention is multi-year; you do not want PII to inherit that retention by accident.
 
 If you find yourself wanting an email or name in a path, replace it with the resource’s id and accept the lookup cost.
 
@@ -226,3 +226,85 @@ Look for these during spec/planning:
 - The frontend would otherwise need `useQueries` with a dynamic, data-dependent array of queries.
 
 In these cases, add a batch endpoint that accepts multiple parent IDs and returns all matching child resources. Group the response by parent ID for easy client-side mapping.
+
+## Nullable fields (OpenAPI 3.0)
+
+SAF specs use **OpenAPI 3.0**, not OpenAPI 3.1 / full JSON Schema. Agents often reach for JSON Schema patterns that look correct in isolation but **fail spec bundling, code generation, or request validation**. The most common mistake is representing “this field can be null” with `type: "null"`.
+
+### Do not use `type: "null"`
+
+OpenAPI 3.0 allows only these `type` values: `array`, `boolean`, `integer`, `number`, `object`, `string`. **`null` is not one of them.**
+
+These patterns are **invalid** in SAF specs and must not be added:
+
+```yaml
+# Bad — "null" is not an OpenAPI 3.0 type
+mailingAddress:
+  type: "null"
+
+# Bad — JSON Schema / OpenAPI 3.1 style; breaks express-openapi-validator
+mailingAddress:
+  oneOf:
+    - type: "null"
+    - $ref: "./flat-address.yaml"
+
+# Bad — same problem with anyOf
+value:
+  anyOf:
+    - type: "null"
+    - type: string
+```
+
+Symptoms when this slips in:
+
+- Route tests or the running service return **500** during startup or first request, with validator errors mentioning `type` / `enum` / `oneOf`.
+- Clients sending JSON `null` get **400** with messages like `request/body/mailingAddress must be object` even when the YAML comment says the field is nullable.
+
+### Use `nullable: true` instead
+
+In OpenAPI 3.0, mark a field as nullable with **`nullable: true`** on a normal typed schema:
+
+```yaml
+# Good — scalar
+email:
+  type: string
+  nullable: true
+  maxLength: 38
+
+# Good — object with a $ref (sibling type is required)
+mailingAddress:
+  type: object
+  nullable: true
+  description: Flat mailing address. Null clears the field.
+  allOf:
+    - $ref: "../../schemas/dossier/embeds/flat-address.yaml"
+```
+
+**Avoid** `nullable: true` with `allOf: [$ref: …]` and **no sibling `type`**. That also breaks `express-openapi-validator` (often as a **500** with `"nullable" cannot be used without "type"`). See [@saflib/express routes — OpenAPI nullable](../../express/docs/03-routes.md#openapi-nullable-and-express-openapi-validator).
+
+### Omit properties instead of sending JSON `null` (clients)
+
+Even when a request field is documented as `nullable: true`, **clients should usually omit the property** when they have no value, rather than sending `"field": null`.
+
+Reason: `express-openapi-validator` can reject explicit `null` on nullable object schemas that use `allOf` + `$ref`, while still accepting the property when it is **omitted**. Prefer omission in SDKs and form builders unless the route contract explicitly requires sending `null` to clear a field on update.
+
+Example:
+
+```ts
+// Good — partial create; server stores omitted fields as null
+{ familyName: "Chen", givenName: "Wei" }
+
+// Risky — may 400 on nullable object + $ref schemas
+{ familyName: "Chen", givenName: "Wei", mailingAddress: null }
+```
+
+On **update** routes where “omitted clears to null”, omitting a blank nested object is often the intended way to clear it — same as sending null — without tripping validation.
+
+### Quick reference
+
+| Goal            | OpenAPI 3.0 (use this)                                             | Do not use                                    |
+| --------------- | ------------------------------------------------------------------ | --------------------------------------------- |
+| Optional string | `type: string`, `nullable: true`                                   | `oneOf: [{ type: "null" }, { type: string }]` |
+| Optional object | `type: object`, `nullable: true`, `allOf: [$ref]`                  | `type: "null"` or `oneOf` with null branch    |
+| Unset on create | Document “omitted → null”; client omits key                        | Client sends `null` unless verified           |
+| Clear on update | Document “omitted → null” or accept explicit null after schema fix | Assume `null` always validates                |

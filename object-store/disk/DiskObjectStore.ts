@@ -102,13 +102,28 @@ export class DiskObjectStore extends ObjectStore {
           const relativePath = baseRelative
             ? `${baseRelative}/${entry.name}`
             : entry.name;
-          if (searchPrefix !== undefined && !relativePath.startsWith(searchPrefix)) {
-            continue;
+          if (searchPrefix !== undefined) {
+            const underPrefix = relativePath.startsWith(searchPrefix);
+            const ancestorOfPrefix =
+              entry.isDirectory() &&
+              (searchPrefix === relativePath ||
+                searchPrefix.startsWith(`${relativePath}/`));
+            if (!underPrefix && !ancestorOfPrefix) {
+              continue;
+            }
           }
           const fullPath = path.join(dir, entry.name);
           if (entry.isDirectory()) {
             await walk(fullPath, relativePath);
           } else if (entry.isFile()) {
+            // Only include files under the prefix (not sibling paths that share a string prefix).
+            if (
+              searchPrefix !== undefined &&
+              relativePath !== searchPrefix &&
+              !relativePath.startsWith(`${searchPrefix}/`)
+            ) {
+              continue;
+            }
             const stats = await stat(fullPath);
             files.push({
               path: relativePath,

@@ -44,13 +44,53 @@ describe("useLoginFlow", () => {
     vi.restoreAllMocks();
   });
 
-  it("assigns window.location to hub app home after successful login when flow has no return_to", async () => {
+  it("assigns window.location to account MFA setup after AAL1 login when MFA is not enrolled", async () => {
     const assignMock = vi.fn();
     vi.stubGlobal("location", {
-      href: "http://localhost/",
+      href: "http://auth.localhost:3000/",
+      host: "auth.localhost:3000",
+      protocol: "http:",
+      assign: assignMock,
+    });
+    const mfaSetup = "http://account.localhost:3000/mfa";
+
+    try {
+      const [{ submitLoginForm }, app] = withVueQuery(() =>
+        useLoginFlow(ref(mockLoginFlow)),
+      );
+
+      await submitLoginForm(loginTestForm());
+
+      await vi.waitFor(() =>
+        expect(assignMock).toHaveBeenCalledWith(mfaSetup),
+      );
+      app.unmount();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it("assigns window.location to return_to after login when session is already aal2", async () => {
+    const assignMock = vi.fn();
+    vi.stubGlobal("location", {
+      href: "http://auth.localhost:3000/",
+      host: "auth.localhost:3000",
+      protocol: "http:",
       assign: assignMock,
     });
     const hubAppHome = "http://app.localhost:3000/";
+
+    server.use(
+      http.post("*/self-service/login", () =>
+        HttpResponse.json({
+          session: {
+            id: "mock-session-aal2",
+            active: true,
+            authenticator_assurance_level: "aal2",
+          },
+        }),
+      ),
+    );
 
     try {
       const [{ submitLoginForm }, app] = withVueQuery(() =>
