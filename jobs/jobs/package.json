@@ -1,0 +1,27 @@
+{
+  "name": "@saflib/jobs",
+  "description": "Async jobs runtime, HTTP surfaces, and enqueue client",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc"
+  },
+  "dependencies": {
+    "@saflib/drizzle": "*",
+    "@saflib/express": "*",
+    "@saflib/node": "*",
+    "jobs-db": "*",
+    "jobs-spec": "*",
+    "undici": "^6.24.0"
+  },
+  "devDependencies": {
+    "@saflib/vitest": "*",
+    "@saflib/monorepo": "*"
+  }
+}

@@ -16,6 +16,10 @@ export interface InternalCallerRequest {
   query?: Record<string, string>;
   asUser: { userId: string; mfaCompleted?: boolean };
   requestId?: string;
+  /** Extension claims (e.g. jobId, originalRequestId for jobs delivery). */
+  claims?: Record<string, string>;
+  /** Optional abort signal (delivery timeout). */
+  signal?: AbortSignal;
 }
 
 export interface InternalCaller {
@@ -49,6 +53,7 @@ export function createInternalCaller(
       mfaCompleted: input.asUser.mfaCompleted,
       issuedAt,
       expiresAt: issuedAt + ASSERTION_TTL_MS,
+      claims: input.claims,
     });
 
     const url = new URL(input.path, "http://localhost");
@@ -73,6 +78,7 @@ export function createInternalCaller(
       headers,
       body,
       dispatcher: agent,
+      signal: input.signal,
     }) as unknown as Promise<Response>;
   };
 
