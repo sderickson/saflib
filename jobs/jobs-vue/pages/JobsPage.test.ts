@@ -173,7 +173,7 @@ describe("JobsPage", () => {
     const row = getRowByJobId(wrapper, jobId);
     const button = row
       .findAllComponents({ name: "v-btn" })
-      .find((btn) => btn.text().trim() === expectedText);
+      .find((btn: VueWrapper) => btn.text().trim() === expectedText);
     expect(
       button,
       `Button with text "${expectedText}" for job "${jobId}" not found`,
