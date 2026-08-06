@@ -1,4 +1,4 @@
-import type { JobEntity } from "jobs-db";
+import type { JobEntity } from "@saflib/jobs-db";
 import type { Job } from "jobs-spec";
 
 /**

@@ -1,7 +1,7 @@
 import { createHandler } from "@saflib/express";
 import createError from "http-errors";
 import type { JobsServiceResponseBody } from "jobs-spec";
-import { jobQueries, JobNotFoundError } from "jobs-db";
+import { jobQueries, JobNotFoundError } from "@saflib/jobs-db";
 import { jobsServiceStorage } from "../../src/context.ts";
 import { mapJobToWire } from "../../src/mapJob.ts";
 

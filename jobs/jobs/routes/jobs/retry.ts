@@ -5,7 +5,7 @@ import {
   jobQueries,
   JobNotFoundError,
   JobNotRetryableError,
-} from "jobs-db";
+} from "@saflib/jobs-db";
 import { jobsServiceStorage } from "../../src/context.ts";
 import { mapJobToWire } from "../../src/mapJob.ts";
 import { signalJobsWake } from "../../src/runJobs.ts";

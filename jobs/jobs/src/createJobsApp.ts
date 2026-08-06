@@ -4,7 +4,7 @@ import {
   createInternalMiddleware,
   createScopedMiddleware,
 } from "@saflib/express";
-import { jobsDb } from "jobs-db";
+import { jobsDb } from "@saflib/jobs-db";
 import { jsonSpec } from "jobs-spec";
 import type { DbKey } from "@saflib/drizzle";
 import { buildOperationMap } from "../src/operations.ts";

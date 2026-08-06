@@ -5,7 +5,7 @@ import {
   jobQueries,
   JobNotCancellableError,
   JobNotFoundError,
-} from "jobs-db";
+} from "@saflib/jobs-db";
 import { jobsServiceStorage } from "../../src/context.ts";
 import { mapJobToWire } from "../../src/mapJob.ts";
 

@@ -10,8 +10,8 @@ import {
   type SafReporters,
 } from "@saflib/node";
 import { createInternalCaller } from "@saflib/express";
-import { jobsDb, jobQueries } from "jobs-db";
-import type { JobAuthority, JobRequest } from "jobs-db";
+import { jobsDb, jobQueries } from "@saflib/jobs-db";
+import type { JobAuthority, JobRequest } from "@saflib/jobs-db";
 import {
   CLAIM_POLL_INTERVAL_MS,
   DEFAULT_TIMEOUT_MS,

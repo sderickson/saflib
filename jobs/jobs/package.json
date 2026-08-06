@@ -17,7 +17,7 @@
     "@saflib/express": "*",
     "@saflib/node": "*",
     "http-errors": "^2.0.0",
-    "jobs-db": "*",
+    "@saflib/jobs-db": "*",
     "jobs-spec": "*",
     "undici": "^6.24.0"
   },

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import * as exports from "jobs-db";
+import * as exports from "@saflib/jobs-db";
 
 describe("jobs-db", () => {
   it("should be defined", () => {

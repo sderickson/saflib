@@ -10,7 +10,7 @@ import {
   type JobAuthority,
   type JobAuthorityAssertion,
   type JobRequest,
-} from "jobs-db";
+} from "@saflib/jobs-db";
 import type {
   JobsServiceRequestBody,
   JobsServiceResponseBody,

@@ -2,8 +2,8 @@ import { createHandler } from "@saflib/express";
 import type {
   JobsServiceResponseBody,
 } from "jobs-spec";
-import { jobQueries } from "jobs-db";
-import type { JobStatus } from "jobs-db";
+import { jobQueries } from "@saflib/jobs-db";
+import type { JobStatus } from "@saflib/jobs-db";
 import { jobsServiceStorage } from "../../src/context.ts";
 import { mapJobToWire } from "../../src/mapJob.ts";
 

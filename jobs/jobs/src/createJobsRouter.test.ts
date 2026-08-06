@@ -10,8 +10,8 @@ import request from "supertest";
 import express from "express";
 import type { DbKey } from "@saflib/drizzle";
 import { makeAdminHeaders } from "@saflib/express";
-import { jobsDbManager } from "jobs-db/instances";
-import { jobQueries } from "jobs-db";
+import { jobsDbManager } from "@saflib/jobs-db/instances";
+import { jobQueries } from "@saflib/jobs-db";
 import { createJobsRouter } from "./createJobsRouter.ts";
 import { _resetJobsWakeForTests } from "./runJobs.ts";
 

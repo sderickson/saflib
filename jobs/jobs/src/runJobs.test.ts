@@ -18,9 +18,9 @@ import type { OpenAPIV3 } from "express-openapi-validator/dist/framework/types.t
 import type { DbKey } from "@saflib/drizzle";
 import { verifyAssertion } from "@saflib/node";
 import { startExpressServer } from "@saflib/express";
-import { jobsDbManager } from "jobs-db/instances";
-import { jobQueries } from "jobs-db";
-import type { JobAuthority, JobRequest, JobStatus } from "jobs-db";
+import { jobsDbManager } from "@saflib/jobs-db/instances";
+import { jobQueries } from "@saflib/jobs-db";
+import type { JobAuthority, JobRequest, JobStatus } from "@saflib/jobs-db";
 import {
   BACKOFF_BASE_MS,
   DEFAULT_TIMEOUT_MS,

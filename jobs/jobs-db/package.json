@@ -1,5 +1,5 @@
 {
-  "name": "jobs-db",
+  "name": "@saflib/jobs-db",
   "description": "Database package for jobs.",
   "private": true,
   "type": "module",

@@ -1,6 +1,6 @@
 import { metricHistogramDefaultBuckets, getServiceName } from "@saflib/node";
 import client from "prom-client";
-import type { JobStatus } from "jobs-db";
+import type { JobStatus } from "@saflib/jobs-db";
 
 export type JobsDeliveryMetricStatus =
   | "succeeded"

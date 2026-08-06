@@ -1,4 +1,4 @@
-import type { JobTerminalReason } from "jobs-db";
+import type { JobTerminalReason } from "@saflib/jobs-db";
 import {
   BACKOFF_BASE_MS,
   BACKOFF_FACTOR,
