@@ -1,3 +1,9 @@
 {
-  "extends": ["@saflib/vue/tsconfig.app.json"]
+  "extends": ["@saflib/vue/tsconfig.app.json"],
+  "exclude": [
+    "node_modules",
+    "vite.config.ts",
+    "workflows/template/**",
+    "**/fixtures/**"
+  ]
 }
