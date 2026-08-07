@@ -1,5 +1,6 @@
 import type { Handler } from "express";
 import { typedEnv } from "@saflib/env";
+import { isInternalRequest } from "../markInternal.ts";
 
 const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
 
@@ -8,10 +9,16 @@ const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
  * Skips routes tagged `no-auth` (same convention as auth middleware).
  * Skips `csrf-exempt` for browser-initiated posts that cannot attach our token
  * (e.g. Content-Security-Policy violation reports).
+ * Skips internal-listener traffic (assertion-authenticated unix socket); CSRF
+ * protects browser cookie sessions, not in-process/service hops.
  */
 export const makeCsrfMiddleware = (): Handler => {
   return (req, res, next): void => {
     if (typedEnv.NODE_ENV === "test") {
+      return next();
+    }
+
+    if (isInternalRequest(req)) {
       return next();
     }
 

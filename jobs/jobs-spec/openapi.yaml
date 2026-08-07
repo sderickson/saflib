@@ -1,0 +1,37 @@
+openapi: 3.0.0
+info:
+  title: jobs API
+  version: 1.0.0
+  description: API specification for the jobs service
+
+paths:
+  # BEGIN WORKFLOW AREA route-paths FOR openapi/route
+  /jobs:
+    post:
+      $ref: "./routes/jobs/create.yaml#/enqueueJob"
+    get:
+      $ref: "./routes/jobs/list.yaml#/listJobs"
+  /jobs/{id}:
+    get:
+      $ref: "./routes/jobs/get.yaml#/getJob"
+  /jobs/{id}/retry:
+    post:
+      $ref: "./routes/jobs/retry.yaml#/retryJob"
+  /jobs/{id}/cancel:
+    post:
+      $ref: "./routes/jobs/cancel.yaml#/cancelJob"
+  /jobs/cancel-by-original-request:
+    post:
+      $ref: "./routes/jobs/cancel-by-original-request.yaml#/cancelJobsByOriginalRequest"
+  # END WORKFLOW AREA
+
+components:
+  schemas:
+    Error:
+      $ref: "./schemas/error.yaml"
+    # BEGIN WORKFLOW AREA schema-components FOR openapi/schema
+
+
+    Job:
+      $ref: "./schemas/job.yaml"
+    # END WORKFLOW AREA

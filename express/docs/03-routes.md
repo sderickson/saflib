@@ -89,7 +89,7 @@ Routes that accept file uploads need additional setup beyond a standard handler:
 
 4. **Write order**: Create the DB record first (with blob_name, file_original_name, mimetype, size), then upload to the container. On upload failure, delete the DB record and return 500. This ensures partial state is cleaned up.
 
-5. **Delete validation**: For delete handlers on child resources (e.g. deleting a file belonging to a recipe), fetch the record first and validate the parent relationship *before* deleting. This prevents destroying data when the request should return 404.
+5. **Delete validation**: For delete handlers on child resources (e.g. deleting a file belonging to a recipe), fetch the record first and validate the parent relationship _before_ deleting. This prevents destroying data when the request should return 404.
 
 ## Business Logic
 

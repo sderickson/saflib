@@ -1,0 +1,20 @@
+{
+  "name": "@saflib/notify",
+  "description": "In-process change-event pub/sub and SSE stream helpers",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@saflib/monorepo": "*",
+    "@saflib/vitest": "*",
+    "@types/node": "^24.0.0"
+  }
+}

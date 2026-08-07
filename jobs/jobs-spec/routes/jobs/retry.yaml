@@ -1,0 +1,61 @@
+retryJob:
+  summary: Retry a dead or cancelled job
+  description: >
+    Moves a dead or cancelled job back to pending with a full attempt-counter
+    reset. Returns 409 when the job is not in a retryable state. Mounted as
+    monolith chrome (`site-admin-only`).
+  operationId: retryJob
+  tags:
+    - jobs
+    - site-admin-only
+
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: Short id of the job to retry.
+      schema:
+        type: string
+        example: "Jb3k_mN7"
+
+  responses:
+    "200":
+      description: Job re-queued as pending with attempt counters reset.
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties: false
+            required:
+              - job
+            properties:
+              job:
+                $ref: "../../openapi.yaml#/components/schemas/Job"
+
+    "401":
+      description: Unauthorized - missing or invalid auth headers, or not logged in.
+      content:
+        application/json:
+          schema:
+            $ref: "../../schemas/error.yaml"
+
+    "403":
+      description: Forbidden - site admin privileges required.
+      content:
+        application/json:
+          schema:
+            $ref: "../../schemas/error.yaml"
+
+    "404":
+      description: Job not found.
+      content:
+        application/json:
+          schema:
+            $ref: "../../schemas/error.yaml"
+
+    "409":
+      description: Job is not dead or cancelled and cannot be retried.
+      content:
+        application/json:
+          schema:
+            $ref: "../../schemas/error.yaml"

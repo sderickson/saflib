@@ -42,9 +42,13 @@ export function startOryKratosService(options?: StartOryKratosServiceOptions) {
   }
 }
 
-export { createOryKratosApp } from "./app.ts";
+export {
+  createOryKratosApp,
+  type CreateOryKratosAppOptions,
+} from "./app.ts";
 export { makePostKratosActionHandler } from "./post-kratos-action.ts";
 export { createPostKratosCourierHandler } from "./routes/post-kratos-courier.ts";
+export { resolveAuthFromIdentityId } from "./resolveAuthFromIdentityId.ts";
 export type {
   KratosAction,
   KratosActionContext,

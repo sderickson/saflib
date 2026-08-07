@@ -5,7 +5,7 @@ import { createApp } from "../http.ts";
 import { cronDb, jobSettingsDb, type JobSetting } from "@saflib/cron-db";
 import type { JobSettings } from "@saflib/cron-spec";
 import type { DbKey } from "@saflib/drizzle";
-import { mockJobs } from "../mock-jobs.ts";
+import { mockEnqueueJob, mockJobs } from "../mock-jobs.ts";
 import { makeAdminHeaders } from "@saflib/express";
 
 describe("GET /jobs", () => {
@@ -18,7 +18,7 @@ describe("GET /jobs", () => {
   beforeEach(async () => {
     // Recreate db instance for each test for isolation
     dbKey = cronDb.connect();
-    app = createApp({ dbKey, jobs: mockJobs });
+    app = createApp({ dbKey, jobs: mockJobs, enqueueJob: mockEnqueueJob });
 
     seededSettings = []; // Reset seeded settings
 
@@ -27,6 +27,7 @@ describe("GET /jobs", () => {
       dbKey,
       "job1",
       true,
+      "admin-1",
     );
     const { result: setting2 } = await jobSettingsDb.setEnabled(
       dbKey,
@@ -46,12 +47,14 @@ describe("GET /jobs", () => {
 
     // Construct expected body based on the actual seeded data and the mapping
     const expectedBody: JobSettings[] = seededSettings.map((setting) => ({
-      // Map fields returned by the API (_helpers.ts format)
-      id: setting.id, // Use the actual ID from seeding
+      id: setting.id,
       jobName: setting.jobName,
       enabled: setting.enabled,
+      enabledBy: setting.enabledBy,
       lastRunAt: setting.lastRunAt ? setting.lastRunAt.toISOString() : null,
       lastRunStatus: setting.lastRunStatus,
+      schedule: null,
+      runsNextAt: null,
       createdAt: setting.createdAt.toISOString(),
       updatedAt: setting.updatedAt.toISOString(),
     }));

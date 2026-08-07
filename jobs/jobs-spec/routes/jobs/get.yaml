@@ -1,0 +1,78 @@
+getJob:
+  summary: Get a job by id
+  description: >
+    Admin detail for a single job, including the raw enqueue assertion token
+    (`authorityAssertion`) stored with the authority grant. List responses omit
+    that token to keep payloads small. Mounted as monolith chrome (`site-admin-only`).
+  operationId: getJob
+  tags:
+    - jobs
+    - site-admin-only
+
+  parameters:
+    - name: id
+      in: path
+      required: true
+      description: Short id of the job to retrieve.
+      schema:
+        type: string
+        example: "Jb3k_mN7"
+
+  responses:
+    "200":
+      description: Job detail including the enqueue assertion evidence.
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties: false
+            required:
+              - job
+              - authorityAssertion
+            properties:
+              job:
+                $ref: "../../openapi.yaml#/components/schemas/Job"
+              authorityAssertion:
+                type: object
+                additionalProperties: false
+                description: >
+                  Enqueue-hop identity assertion as stored with the job
+                  (payload, signature, keyId). Detail-only; omitted from list.
+                required:
+                  - payload
+                  - signature
+                  - keyId
+                properties:
+                  payload:
+                    type: string
+                    description: Base64url-encoded assertion JSON payload.
+                    example: "eyJ1c2VySWQiOiJVczdrX3BRMiJ9"
+                  signature:
+                    type: string
+                    description: Base64url HMAC-SHA256 signature of the payload.
+                    example: "dGVzdC1zaWduYXR1cmU"
+                  keyId:
+                    type: string
+                    description: Id of the key used to sign the assertion.
+                    example: "k1"
+
+    "401":
+      description: Unauthorized - missing or invalid auth headers, or not logged in.
+      content:
+        application/json:
+          schema:
+            $ref: "../../schemas/error.yaml"
+
+    "403":
+      description: Forbidden - site admin privileges required.
+      content:
+        application/json:
+          schema:
+            $ref: "../../schemas/error.yaml"
+
+    "404":
+      description: Job not found.
+      content:
+        application/json:
+          schema:
+            $ref: "../../schemas/error.yaml"

@@ -53,12 +53,16 @@ URL: GET /recipes/:id/notes/:noteId/files
                                → queryKey: ["recipes", recipeId, "notes", noteId, "files"]
 ```
 
+Do **not** insert verb segments like `"get"` or operationIds into keys (`["recipes", "get", id]` is wrong; use `["recipes", id]`).
+
 For non-CRUD action endpoints, use the action name as the final segment:
 
 ```
 URL: GET /recipe-note-files/by-note-ids?noteIds=...
                                → queryKey: ["recipe-note-files", "by-note-ids", noteIds]
 ```
+
+Every read should export a `*QueryKey()` helper (or stable `*_QUERY_KEY` constant). Product SDKs should re-export them from a central `requests/query-keys.ts` registry for invalidation maps and mutations.
 
 This convention means mutations can invalidate broadly or narrowly:
 

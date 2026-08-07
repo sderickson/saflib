@@ -1,10 +1,13 @@
-import { __serviceName__ServiceStorage } from "template-package-service-common";
-import { getSafReporters } from "@saflib/node";
+import type { JobConfig } from "@saflib/cron";
 
-export const __targetName__ = async () => {
-  const { __serviceName__DbKey: dbKey } =
-    __serviceName__ServiceStorage.getStore()!;
-  const { log } = getSafReporters();
-  // TODO: Implement the job logic here
-  log.info(`__targetName__ job running with dbKey: ${String(dbKey)}`);
+/**
+ * Declarative cron job config. Work runs in the background operation named by
+ * `enqueue.operationId` — implement that HTTP handler in the product service,
+ * not here.
+ */
+export const __targetName__Config: JobConfig = {
+  schedule: "*/15 * * * *",
+  enqueue: {
+    operationId: "__targetName__", // TODO: product background operationId
+  },
 };

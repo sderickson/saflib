@@ -1,4 +1,5 @@
 export * from "./src/logger.ts";
+export * from "./src/logFormat.ts";
 export * from "./src/reporters.ts";
 export * from "./src/context.ts";
 export * from "./src/errors.ts";
@@ -6,4 +7,5 @@ export * from "./src/git-hashes.ts";
 export * from "./src/loki.ts";
 export * from "./src/metrics.ts";
 export * from "./src/types.ts";
+export * from "./src/signAssertion.ts";
 export * from "./env.ts";

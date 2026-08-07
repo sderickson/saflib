@@ -1,16 +1,14 @@
-import { describe, it } from "vitest";
+import { describe, expect, it } from "vitest";
 
-import {
-  makeContext,
-  __serviceName__ServiceStorage,
-} from "template-package-service-common";
-import { __targetName__ } from "./__target-name__.ts";
+import { __targetName__Config } from "./__target-name__.ts";
 
-describe("RunScheduledCalls RPC", () => {
-  it("should run the job", async () => {
-    const context = makeContext();
-    await __serviceName__ServiceStorage.run(context, async () => {
-      await __targetName__();
-    });
+describe("__targetName__ cron config", () => {
+  it("declares an enqueue-only JobConfig", () => {
+    expect(__targetName__Config.schedule).toBeTruthy();
+    expect(__targetName__Config.enqueue.operationId).toBeTruthy();
+    expect(
+      "handler" in __targetName__Config,
+      "JobConfig must not include a handler",
+    ).toBe(false);
   });
 });

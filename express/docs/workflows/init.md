@@ -20,13 +20,9 @@ To run this workflow automatically, tell the agent to:
 
 When run, the workflow will:
 
-- Copy template files and rename placeholders.
-  - Upsert **http.ts** from [template](https://github.com/sderickson/saflib/blob/main/express/workflows/templates/http.ts)
-  - Upsert **index.ts** from [template](https://github.com/sderickson/saflib/blob/main/express/workflows/templates/index.ts)
-  - Upsert **package.json** from [template](https://github.com/sderickson/saflib/blob/main/express/workflows/templates/package.json)
-  - Upsert **tsconfig.json** from [template](https://github.com/sderickson/saflib/blob/main/express/workflows/templates/tsconfig.json)
-  - Upsert **vitest.config.js** from [template](https://github.com/sderickson/saflib/blob/main/express/workflows/templates/vitest.config.js)
-  - Upsert **index.test.ts** from [template](https://github.com/sderickson/saflib/blob/main/express/workflows/templates/index.test.ts)
+Kicking off workflow express/init
+
+- Upsert 6 templates.
 - Change working directory to services/example
 - Run `npm install`
 - Run `npm test`

@@ -29,6 +29,10 @@ export interface NodeEnvSchema {
    */
   DOMAIN_REDIRECTS?: string;
   /**
+   * Minimum Winston log level for console output (error, warn, info, verbose, debug, silly). HTTP access lines via Morgan are unaffected.
+   */
+  LOG_LEVEL?: "error" | "warn" | "info" | "verbose" | "debug" | "silly";
+  /**
    * The hostname or URL of the Loki instance to send logs to (e.g., http://loki:3100)
    */
   LOKI_HOSTNAME?: string;
@@ -44,6 +48,10 @@ export interface NodeEnvSchema {
    * The protocol of the deployment, e.g. 'https'
    */
   PROTOCOL: "https" | "http";
+  /**
+   * HMAC keys for signing/verifying internal identity assertions. Format: keyId:base64secret[,keyId:base64secret]. Sign with the first entry; verify against all (rotation = prepend a new key). Optional — only required in environments that use the internal request channel.
+   */
+  SAF_INTERNAL_ASSERTION_KEYS?: string;
   /**
    * Comma-separated list of service subdomains, e.g. 'revenue,geo,core'.
    */
@@ -61,6 +69,4 @@ export interface NodeEnvSchema {
 /**
  * `process.env` casted to the `NodeEnvSchema` type.
  */
-export const typedEnv = (globalThis.process
-  ? process.env
-  : {}) as unknown as NodeEnvSchema;
+export const typedEnv = (globalThis.process ? process.env : {}) as unknown as NodeEnvSchema;

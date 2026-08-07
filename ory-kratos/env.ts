@@ -21,6 +21,10 @@ export interface OryKratosEnvSchema {
    */
   DEPLOYMENT_NAME: string;
   /**
+   * When 'true', skip MFA gates on admin routes and operations tagged mfa-required. Useful for local development.
+   */
+  DISABLE_MFA_ENFORCEMENT?: "true" | "false";
+  /**
    * The root domain of the deployment, e.g. 'saf.com'.
    */
   DOMAIN: string;
@@ -28,6 +32,10 @@ export interface OryKratosEnvSchema {
    * Comma-separated list of domains to redirect to the root domain, e.g. 'old-subdomain1.saf.com,old-subdomain2.saf.com'.
    */
   DOMAIN_REDIRECTS?: string;
+  /**
+   * Base URL for the Ory Kratos admin API (e.g. http://kratos:4434). Used for server-side identity lookups.
+   */
+  KRATOS_ADMIN_API_URL?: string;
   /**
    * Host URL for the Ory Kratos courier callback server (e.g. recipes-monolith:3000).
    */
@@ -49,6 +57,10 @@ export interface OryKratosEnvSchema {
    */
   PROTOCOL: "https" | "http";
   /**
+   * HMAC keys for signing/verifying internal identity assertions. Format: keyId:base64secret[,keyId:base64secret]. Sign with the first entry; verify against all (rotation = prepend a new key). Optional — only required in environments that use the internal request channel.
+   */
+  SAF_INTERNAL_ASSERTION_KEYS?: string;
+  /**
    * Comma-separated list of service subdomains, e.g. 'revenue,geo,core'.
    */
   SERVICE_SUBDOMAINS: string;
@@ -65,6 +77,4 @@ export interface OryKratosEnvSchema {
 /**
  * `process.env` casted to the `OryKratosEnvSchema` type.
  */
-export const typedEnv = (globalThis.process
-  ? process.env
-  : {}) as unknown as OryKratosEnvSchema;
+export const typedEnv = (globalThis.process ? process.env : {}) as unknown as OryKratosEnvSchema;

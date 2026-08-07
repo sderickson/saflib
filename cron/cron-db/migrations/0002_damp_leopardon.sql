@@ -1,0 +1,1 @@
+ALTER TABLE `job_settings` ADD `enabled_by` text;

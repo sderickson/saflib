@@ -15,6 +15,10 @@ export type {
   CustomLogError,
   JobConfig,
   CustomLogErrorMeta,
+  CronEnqueueParams,
+  CronEnqueueResult,
+  CronEnqueuer,
+  CronJobRequest,
 } from "./src/types.ts";
 
 /**
@@ -32,7 +36,10 @@ export async function runCron(
       { dbKey, jobs: options.jobs },
       async () => {
         log.info("Starting jobs...");
-        const jobs = await startJobs(options.jobs, { dbKey });
+        const jobs = await startJobs(options.jobs, {
+          dbKey,
+          enqueueJob: options.enqueueJob,
+        });
         log.info("Cron service startup complete.");
         return jobs;
       },

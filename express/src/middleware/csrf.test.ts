@@ -4,6 +4,7 @@ import request from "supertest";
 import { typedEnv } from "@saflib/env";
 import { makeCsrfMiddleware } from "./csrf.ts";
 import { makeCsrfTokenMiddleware } from "./csrf-token.ts";
+import { markInternal } from "../markInternal.ts";
 
 const getSetCookieValues = (
   value: string | string[] | undefined,
@@ -161,6 +162,19 @@ describe("CSRF validator middleware", () => {
     });
 
     const response = await request(app).get("/safe");
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({ ok: true });
+  });
+
+  it("bypasses csrf for internal-listener requests", async () => {
+    const app = express();
+    app.use(makeCsrfTokenMiddleware());
+    app.use(makeCsrfMiddleware());
+    app.post("/internal-only", (_req, res) => {
+      res.status(200).json({ ok: true });
+    });
+
+    const response = await request(markInternal(app)).post("/internal-only");
     expect(response.status).toBe(200);
     expect(response.body).toEqual({ ok: true });
   });

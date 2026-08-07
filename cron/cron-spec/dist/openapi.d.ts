@@ -50,6 +50,8 @@ export interface components {
             jobName: string;
             /** @description Whether the job is enabled to run. */
             enabled: boolean;
+            /** @description Kratos identity id of the admin who last enabled the job. Null for pre-migration rows until re-enabled. Ticks skip when enabled with null. */
+            enabledBy?: string | null;
             /**
              * Format: date-time
              * @description Timestamp of the last time the job ran.
@@ -60,6 +62,13 @@ export interface components {
              * @enum {string|null}
              */
             lastRunStatus?: "success" | "fail" | "running" | "timed out" | null;
+            /** @description Cron schedule string from the registered JobsMap (e.g. `*\/15 * * * *`). */
+            readonly schedule?: string | null;
+            /**
+             * Format: date-time
+             * @description Next scheduled tick when the job is enabled; null when disabled or schedule is unknown.
+             */
+            readonly runsNextAt?: string | null;
             /**
              * Format: date-time
              * @description Timestamp when the job setting was created.

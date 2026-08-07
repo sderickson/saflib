@@ -1,0 +1,20 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1786052845899,
+      "tag": "0000_amusing_wild_child",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1786119000000,
+      "tag": "0001_dedupe_key_queued_only",
+      "breakpoints": true
+    }
+  ]
+}

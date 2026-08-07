@@ -13,6 +13,7 @@
     "typecheck": "tsc"
   },
   "dependencies": {
+    "@saflib/env": "*",
     "@saflib/express": "*",
     "@saflib/node": "*"
   },

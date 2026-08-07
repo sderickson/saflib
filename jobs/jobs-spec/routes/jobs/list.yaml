@@ -1,0 +1,93 @@
+listJobs:
+  summary: List jobs
+  description: >
+    Admin list of queued jobs with optional filters and offset pagination.
+    Mounted on the public app as monolith chrome (`site-admin-only`).
+  operationId: listJobs
+  tags:
+    - jobs
+    - site-admin-only
+
+  parameters:
+    - name: status
+      in: query
+      required: false
+      description: Filter by job status.
+      schema:
+        $ref: "../../schemas/job.yaml#/properties/status"
+    - name: operationId
+      in: query
+      required: false
+      description: Filter by target operationId.
+      schema:
+        $ref: "../../schemas/job.yaml#/properties/operationId"
+    - name: userId
+      in: query
+      required: false
+      description: Filter by acting user id.
+      schema:
+        $ref: "../../schemas/job.yaml#/properties/userId"
+    - name: originalRequestId
+      in: query
+      required: false
+      description: Filter by chain-root request id.
+      schema:
+        $ref: "../../schemas/job.yaml#/properties/originalRequestId"
+    - name: createdAfter
+      in: query
+      required: false
+      description: Only include jobs with createdAt greater than or equal to this instant.
+      schema:
+        type: string
+        format: date-time
+    - name: createdBefore
+      in: query
+      required: false
+      description: Only include jobs with createdAt less than or equal to this instant.
+      schema:
+        type: string
+        format: date-time
+    - name: limit
+      in: query
+      required: false
+      description: Page size (default implementation-defined).
+      schema:
+        type: integer
+        minimum: 1
+    - name: offset
+      in: query
+      required: false
+      description: Number of matching jobs to skip before returning results.
+      schema:
+        type: integer
+        minimum: 0
+
+  responses:
+    "200":
+      description: Matching jobs for this page.
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties: false
+            required:
+              - jobs
+            properties:
+              jobs:
+                type: array
+                items:
+                  $ref: "../../openapi.yaml#/components/schemas/Job"
+
+    "401":
+      description: Unauthorized - missing or invalid auth headers, or not logged in.
+      content:
+        application/json:
+          schema:
+            $ref: "../../schemas/error.yaml"
+
+    "403":
+      description: Forbidden - site admin privileges required.
+      content:
+        application/json:
+          schema:
+            $ref: "../../schemas/error.yaml"

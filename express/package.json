@@ -9,8 +9,11 @@
     "typecheck": "tsc"
   },
   "dependencies": {
+    "@ory/client": "^1.22.28",
     "@saflib/env": "*",
     "@saflib/node": "*",
+    "@saflib/notify": "*",
+    "@saflib/ory-kratos": "*",
     "@saflib/sdk": "*",
     "@saflib/utils": "*",
     "cors": "^2.0.0",
@@ -21,7 +24,7 @@
     "http-errors": "^2.0.0",
     "morgan": "^1.0.0",
     "multer": "^2.0.2",
-    "@ory/client": "^1.22.28"
+    "undici": "^6.24.0"
   },
   "devDependencies": {
     "@saflib/service": "*",
