@@ -1,15 +1,16 @@
 import type { JobsMap } from "@saflib/cron";
 
-import { automatic } from "./automatic.ts";
-import { cleanup } from "./cleanup.ts";
-
+/**
+ * Declarative cron → enqueue map. Target operations are implemented by the
+ * backup HTTP service when it wires `runCron` with `makeCronEnqueuer`.
+ */
 export const backupJobs: JobsMap = {
   automatic: {
     schedule: "0 0 * * *",
-    handler: automatic,
+    enqueue: { operationId: "runAutomaticBackup" },
   },
   cleanup: {
     schedule: "0 1 * * *",
-    handler: cleanup,
+    enqueue: { operationId: "runBackupCleanup" },
   },
 };
