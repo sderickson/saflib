@@ -6,7 +6,8 @@ import type { DbKey } from "@saflib/drizzle";
 import { jobTable } from "../../schemas/job.ts";
 import { and, count, eq, inArray } from "drizzle-orm";
 
-const liveStatuses = ["pending", "running", "retrying"] as const;
+/** Dedupe upsert only collapses queued intent — not jobs already claimed for delivery. */
+const queuedDedupeStatuses = ["pending", "retrying"] as const;
 
 export type CreateJobParams = typeof jobTable.$inferInsert & {
   /** Max jobs allowed for `originalRequestId`; reject when count is already ≥ this. */
@@ -15,7 +16,7 @@ export type CreateJobParams = typeof jobTable.$inferInsert & {
 
 export type CreateJobData = {
   job: typeof jobTable.$inferSelect;
-  /** True when an existing live row with the same `dedupeKey` was upserted. */
+  /** True when an existing queued row with the same `dedupeKey` was upserted. */
   deduped: boolean;
 };
 
@@ -37,7 +38,7 @@ export const createJob = queryWrapper(
           .where(
             and(
               eq(jobTable.dedupeKey, jobValues.dedupeKey),
-              inArray(jobTable.status, liveStatuses),
+              inArray(jobTable.status, queuedDedupeStatuses),
             ),
           )
           .limit(1)

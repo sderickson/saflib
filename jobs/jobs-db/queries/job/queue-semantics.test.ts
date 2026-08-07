@@ -121,6 +121,38 @@ describe("queue semantics (Phase 3 exit criteria)", () => {
     expect(count.result).toBe(1);
   });
 
+  it("inserts a follow-up when a running job holds the same dedupe_key (queued-only dedupe)", async () => {
+    await jobQueries.createJob(
+      dbKey,
+      jobParams({
+        id: "job-running",
+        status: "running",
+        dedupeKey: "matter:1:auto-claim",
+        attempt: 1,
+        startedAt: t0,
+        heartbeatAt: t0,
+      }),
+    );
+
+    const followUp = await jobQueries.createJob(
+      dbKey,
+      jobParams({
+        id: "job-follow-up",
+        dedupeKey: "matter:1:auto-claim",
+        request: { body: { drain: true } },
+      }),
+    );
+    assert(followUp.result);
+    expect(followUp.result.deduped).toBe(false);
+    expect(followUp.result.job.id).toBe("job-follow-up");
+    expect(followUp.result.job.status).toBe("pending");
+
+    const count = await jobQueries.countByOriginalRequestIdJob(dbKey, {
+      originalRequestId: "r-chain",
+    });
+    expect(count.result).toBe(2);
+  });
+
   it("concurrency-key exclusion: blocked while a peer is running", async () => {
     await jobQueries.createJob(
       dbKey,
@@ -298,6 +330,6 @@ describe("queue semantics (Phase 3 exit criteria)", () => {
     );
     const indexNames = indexes.map((i) => i.name);
     expect(indexNames).toContain("job_status_run_at_priority_idx");
-    expect(indexNames).toContain("job_dedupe_key_live_uidx");
+    expect(indexNames).toContain("job_dedupe_key_queued_uidx");
   });
 });

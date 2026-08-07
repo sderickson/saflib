@@ -136,11 +136,9 @@ export const jobTable = sqliteTable(
     index("job_original_request_id_idx").on(table.originalRequestId),
     index("job_concurrency_key_idx").on(table.concurrencyKey),
     index("job_finished_at_idx").on(table.finishedAt),
-    uniqueIndex("job_dedupe_key_live_uidx")
+    uniqueIndex("job_dedupe_key_queued_uidx")
       .on(table.dedupeKey)
-      .where(
-        sql`${table.status} IN ('pending', 'running', 'retrying')`,
-      ),
+      .where(sql`${table.status} IN ('pending', 'retrying')`),
   ],
 );
 

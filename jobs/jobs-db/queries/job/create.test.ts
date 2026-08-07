@@ -88,8 +88,8 @@ describe("createJob", () => {
     expect(result.job.originalRequestId).toBe("r-1");
   });
 
-  it.each(["pending", "running", "retrying"] as const)(
-    "upserts on live dedupe_key when existing status is %s",
+  it.each(["pending", "retrying"] as const)(
+    "upserts on queued dedupe_key when existing status is %s",
     async (status) => {
       const first = await createJob(
         dbKey,
@@ -129,6 +129,36 @@ describe("createJob", () => {
       expect(second.result.job.updatedAt).toEqual(laterUpdatedAt);
     },
   );
+
+  it("inserts a new queued job when the only matching dedupe_key row is running", async () => {
+    await createJob(
+      dbKey,
+      baseParams({
+        id: "job-running",
+        originalRequestId: "r-1",
+        status: "running",
+        dedupeKey: "matter:1:auto-claim",
+        startedAt: new Date("2026-08-06T12:00:01.000Z"),
+      }),
+    );
+
+    const { result, error } = await createJob(
+      dbKey,
+      baseParams({
+        id: "job-follow-up",
+        originalRequestId: "r-1",
+        dedupeKey: "matter:1:auto-claim",
+        request: { body: { drain: true } },
+      }),
+    );
+
+    expect(error).toBeUndefined();
+    assert(result);
+    expect(result.deduped).toBe(false);
+    expect(result.job.id).toBe("job-follow-up");
+    expect(result.job.status).toBe("pending");
+    expect(result.job.request).toEqual({ body: { drain: true } });
+  });
 
   it.each(["succeeded", "dead", "cancelled"] as const)(
     "allows reuse of dedupe_key after prior job is %s",
