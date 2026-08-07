@@ -11,7 +11,10 @@ npm exec saf-imports cycles [--package <name>]
 npm exec saf-imports budget [--mode warn|error]
 npm exec saf-imports exports generate --package <name>
 npm exec saf-imports exports check --package <name>
+npm exec saf-imports references cycles [--root <dir>]
+npm exec saf-imports references generate [--root <dir>] [--write]
 ```
+
 
 ## Vitest reporter (opt-in)
 

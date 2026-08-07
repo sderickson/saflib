@@ -8,5 +8,8 @@
       "default": "./index.ts"
     },
     "./types": "./types.ts"
+  },
+  "devDependencies": {
+    "@fixture/pkg-a": "*"
   }
 }

@@ -4,5 +4,11 @@
   "type": "module",
   "exports": {
     ".": "./App.vue"
+  },
+  "dependencies": {
+    "@fixture/pkg-a": "*"
+  },
+  "devDependencies": {
+    "@fixture/pkg-b": "*"
   }
 }

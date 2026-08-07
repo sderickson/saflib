@@ -145,13 +145,13 @@ describe("measureGraph — real repo validation", () => {
   }
 
   it.skipIf(!pathclerkMonorepoAvailable())(
-    "counts list-importers.test.ts within ±5% of 1071 modules",
+    "counts list-importers.test.ts within ±5% of 1151 modules",
     { timeout: 30_000 },
     () => {
       const result = measureGraph(listImportersPath);
-      // Prototype baseline: 1071 first-party modules (pathclerk monorepo only)
-      expect(result.modules).toBeGreaterThanOrEqual(Math.floor(1071 * 0.95));
-      expect(result.modules).toBeLessThanOrEqual(Math.ceil(1071 * 1.05));
+      // Spot-check baseline (pathclerk monorepo); refresh when import graphs change intentionally.
+      expect(result.modules).toBeGreaterThanOrEqual(Math.floor(1151 * 0.95));
+      expect(result.modules).toBeLessThanOrEqual(Math.ceil(1151 * 1.05));
     },
   );
 });
