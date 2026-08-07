@@ -4,6 +4,8 @@ import { setupContext } from "@saflib/commander";
 import { addMeasureCommand } from "./measure.ts";
 import { addWhyCommand } from "./why.ts";
 import { addCyclesCommand } from "./cycles.ts";
+import { addBudgetCommand } from "./budget.ts";
+import { addExportsCommand } from "./exports.ts";
 
 const program = new Command()
   .name("saf-imports")
@@ -14,6 +16,8 @@ const program = new Command()
 addMeasureCommand(program);
 addWhyCommand(program);
 addCyclesCommand(program);
+addBudgetCommand(program);
+addExportsCommand(program);
 
 setupContext(
   {

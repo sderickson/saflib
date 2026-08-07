@@ -15,6 +15,10 @@ Commands:
                                   file to a target module or package
   cycles [options]                Detect circular dependencies in the
                                   first-party import graph
+  budget [options]                Compare measured import graphs against
+                                  package.json importBudget limits
+  exports                         Generate or verify package.json exports maps
+                                  from directory structure
   help [command]                  display help for command
 
 ```

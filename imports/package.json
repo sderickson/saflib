@@ -6,8 +6,29 @@
   "bin": {
     "saf-imports": "bin/saf-imports/index.ts"
   },
+  "importBudget": {
+    "testFiles": {
+      "maxModules": 100,
+      "maxExternalPackages": 20
+    },
+    "entries": {
+      "./index.ts": {
+        "maxModules": 50,
+        "maxExternalPackages": 15
+      }
+    }
+  },
   "exports": {
-    ".": "./index.ts"
+    ".": "./index.ts",
+    "./src/budget/check-budgets": "./src/budget/check-budgets.ts",
+    "./src/exports/generate-exports": "./src/exports/generate-exports.ts",
+    "./src/graph/detect-cycles": "./src/graph/detect-cycles.ts",
+    "./src/graph/extract-imports": "./src/graph/extract-imports.ts",
+    "./src/graph/find-path": "./src/graph/find-path.ts",
+    "./src/graph/read-source": "./src/graph/read-source.ts",
+    "./src/graph/walk-graph": "./src/graph/walk-graph.ts",
+    "./src/resolve": "./src/resolve/index.ts",
+    "./src/types": "./src/types.ts"
   },
   "scripts": {
     "test": "vitest run",
