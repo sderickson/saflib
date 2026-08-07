@@ -4,5 +4,5 @@ import type { PkgBType } from "@fixture/pkg-b/types";
 export const entry = fromB;
 export type { PkgBType };
 
-/** External npm root for graph tests (no stripe package in the fixture). */
-export const loadStripe = (): Promise<unknown> => import("stripe");
+/** External root for graph tests (node: built-in — no npm install needed). */
+import "node:fs";

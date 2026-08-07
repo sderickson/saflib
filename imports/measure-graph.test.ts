@@ -86,7 +86,7 @@ describe("measureGraph — workspace exports", () => {
     const result = measureGraph(path.join(pkgB, "entry.ts"), {
       root: fixtureRoot,
     });
-    // entry.ts → pkg-b/index.ts → pkg-a/util.ts; stripe counted as ext
+    // entry.ts → pkg-b/index.ts → pkg-a/util.ts; node:fs counted as ext
     expect(result.modules).toBe(3);
     expect(result.ext).toBe(1);
   });
