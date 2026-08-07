@@ -19,6 +19,8 @@ Commands:
                                   package.json importBudget limits
   exports                         Generate or verify package.json exports maps
                                   from directory structure
+  baseline                        Generate or diff a committed import-graph
+                                  baseline snapshot
   help [command]                  display help for command
 
 ```

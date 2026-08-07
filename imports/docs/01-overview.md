@@ -29,11 +29,14 @@ package-name form so Vitest loads the TypeScript module via Vite (a static
 ```js
 import { defineConfig, mergeConfig } from "vitest/config";
 
-export default mergeConfig(defaultConfig, defineConfig({
-  test: {
-    reporters: ["default", "@saflib/imports/reporter"],
-  },
-}));
+export default mergeConfig(
+  defaultConfig,
+  defineConfig({
+    test: {
+      reporters: ["default", "@saflib/imports/reporter"],
+    },
+  }),
+);
 ```
 
 Add `@saflib/imports` as a devDependency of the package.
@@ -42,10 +45,10 @@ Add `@saflib/imports` as a devDependency of the package.
 
 Measured on `daemon/service/http` full suite (162 files), same machine:
 
-| Config | Wall (real) | Vitest Duration |
-| --- | ---: | ---: |
-| Without reporter (`--reporter=default`) | 17.40s | 16.70s |
-| With `@saflib/imports/reporter` | ~29.4s | ~28.7s |
+| Config                                  | Wall (real) | Vitest Duration |
+| --------------------------------------- | ----------: | --------------: |
+| Without reporter (`--reporter=default`) |      17.40s |          16.70s |
+| With `@saflib/imports/reporter`         |      ~29.4s |          ~28.7s |
 
 Overhead ≈ **+70%** wall time — **above the 10% promotion threshold**. Keep
 opt-in only; do **not** add to `base-vitest.config.js` until measuring is

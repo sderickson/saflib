@@ -6,6 +6,7 @@ import { addWhyCommand } from "./why.ts";
 import { addCyclesCommand } from "./cycles.ts";
 import { addBudgetCommand } from "./budget.ts";
 import { addExportsCommand } from "./exports.ts";
+import { addBaselineCommand } from "./baseline.ts";
 
 const program = new Command()
   .name("saf-imports")
@@ -18,6 +19,7 @@ addWhyCommand(program);
 addCyclesCommand(program);
 addBudgetCommand(program);
 addExportsCommand(program);
+addBaselineCommand(program);
 
 setupContext(
   {

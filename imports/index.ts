@@ -25,6 +25,20 @@ export {
   type ExportsMap,
   type CheckExportsResult,
 } from "./src/exports/generate-exports.ts";
+export {
+  generateBaseline,
+  diffBaseline,
+  formatRegression,
+  type BaselineSnapshot,
+  type BaselineGraphStats,
+  type BaselineSuiteTiming,
+  type BaselineTypecheck,
+  type BaselineBundles,
+  type GenerateBaselineOptions,
+  type DiffBaselineOptions,
+  type BaselineRegression,
+  type DiffBaselineResult,
+} from "./src/baseline/baseline.ts";
 export type {
   MeasureGraphOptions,
   MeasureGraphResult,
