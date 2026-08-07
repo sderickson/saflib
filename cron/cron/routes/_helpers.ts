@@ -1,4 +1,4 @@
-import { CronJob } from "cron";
+import { CronTime } from "cron";
 import type { JobSetting } from "@saflib/cron-db";
 import type { JobSettings } from "@saflib/cron-spec";
 
@@ -13,8 +13,8 @@ export function computeRunsNextAt(
     return null;
   }
   try {
-    const cronJob = CronJob.from({ cronTime: schedule });
-    const next = cronJob.nextDate();
+    const cronTime = new CronTime(schedule);
+    const next = cronTime.sendAt();
     const jsDate = next?.toJSDate();
     return jsDate ? jsDate.toISOString() : null;
   } catch {
