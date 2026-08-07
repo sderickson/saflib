@@ -12,6 +12,8 @@ export interface JobSetting {
   id: number;
   jobName: string;
   enabled: boolean;
+  /** Kratos identity id of the admin who last enabled the job; null until re-enabled post-migration. */
+  enabledBy: string | null;
   lastRunAt: Date | null;
   lastRunStatus: (typeof lastRunStatusEnum)[number] | null;
   createdAt: Date;
@@ -22,6 +24,7 @@ export const jobSettings = sqliteTable("job_settings", {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
   jobName: text("job_name").notNull().unique(),
   enabled: integer("enabled", { mode: "boolean" }).notNull(), // Store boolean as integer 0/1
+  enabledBy: text("enabled_by"), // Nullable Kratos identity id
   lastRunAt: integer("last_run_at", { mode: "timestamp" }), // Nullable timestamp
   lastRunStatus: text("last_run_status", {
     enum: lastRunStatusEnum,

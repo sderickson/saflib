@@ -69,7 +69,8 @@
         "summary": "Update settings for a specific cron job by name",
         "operationId": "updateCronJobSettings",
         "tags": [
-          "cron"
+          "cron",
+          "site-admin-only"
         ],
         "security": [
           {
@@ -168,6 +169,11 @@
           "enabled": {
             "type": "boolean",
             "description": "Whether the job is enabled to run."
+          },
+          "enabledBy": {
+            "type": "string",
+            "nullable": true,
+            "description": "Kratos identity id of the admin who last enabled the job. Null for pre-migration rows until re-enabled. Ticks skip when enabled with null.\n"
           },
           "lastRunAt": {
             "type": "string",

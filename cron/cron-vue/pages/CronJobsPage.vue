@@ -25,6 +25,22 @@
             <v-chip :color="item.enabled ? 'success' : 'error'">
               {{ item.enabled ? "Enabled" : "Disabled" }}
             </v-chip>
+            <v-chip
+              v-if="item.enabled && !item.enabledBy"
+              color="warning"
+              class="ml-2"
+              size="small"
+            >
+              Re-enable required
+            </v-chip>
+          </template>
+
+          <template #[`item.enabledBy`]="{ item }">
+            <span v-if="item.enabledBy">{{ item.enabledBy }}</span>
+            <span v-else-if="item.enabled" class="text-warning">
+              Missing — re-enable to record authority (job is not running)
+            </span>
+            <span v-else>N/A</span>
           </template>
 
           <template #[`item.lastRunStatus`]="{ item }">
@@ -82,6 +98,7 @@ const updatingJobId = ref<string | null>(null);
 const headers = [
   { title: "Job Name", key: "jobName", sortable: true },
   { title: "Status", key: "enabled", sortable: true },
+  { title: "Enabled By", key: "enabledBy", sortable: true },
   { title: "Last Run Status", key: "lastRunStatus", sortable: true },
   { title: "Last Run At", key: "lastRunAt", sortable: true },
   { title: "Created At", key: "createdAt", sortable: true },

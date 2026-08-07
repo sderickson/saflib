@@ -1,34 +1,38 @@
-import type { JobsMap } from "./src/types.ts";
+import type { JobsMap, CronEnqueuer } from "./src/types.ts";
 import { vi } from "vitest";
 
-export const mockJobHandler = vi.fn();
-export const mockMinuteJobHandler = vi.fn();
+export const mockEnqueueJob: CronEnqueuer = vi.fn().mockResolvedValue({
+  deduped: false,
+});
 
 export const mockJobs: JobsMap = {
   "every-second-job": {
     schedule: "* * * * * *",
-    handler: mockJobHandler,
+    enqueue: { operationId: "everySecondOp" },
   },
   "every-minute-job": {
     schedule: "0 * * * * *",
-    handler: mockMinuteJobHandler,
+    enqueue: { operationId: "everyMinuteOp" },
   },
   "disabled-job": {
     schedule: "* * * * * *",
-    handler: vi.fn(),
-  },
-  "timeout-default-job": {
-    schedule: "0 * * * * *",
-    handler: vi.fn().mockImplementation(async () => {
-      await vi.advanceTimersByTimeAsync(11 * 1000);
-    }),
+    enqueue: { operationId: "disabledOp" },
   },
   "new-job": {
     schedule: "* * * * *",
-    handler: vi.fn(),
+    enqueue: { operationId: "newJobOp" },
   },
   "fail-job": {
     schedule: "* * * * *",
-    handler: vi.fn(),
+    enqueue: { operationId: "failJobOp" },
+  },
+  "custom-dedupe-job": {
+    schedule: "* * * * * *",
+    enqueue: {
+      operationId: "customDedupeOp",
+      dedupeKey: "custom:dedupe",
+      request: { body: { foo: 1 } },
+      priority: 5,
+    },
   },
 };

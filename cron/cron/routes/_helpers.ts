@@ -10,6 +10,7 @@ export function mapJobSettingToResponse(setting: JobSetting): JobSettings {
     id: setting.id,
     jobName: setting.jobName,
     enabled: setting.enabled,
+    enabledBy: setting.enabledBy,
     lastRunAt: setting.lastRunAt ? setting.lastRunAt.toISOString() : null,
     lastRunStatus: setting.lastRunStatus,
     createdAt: setting.createdAt.toISOString(),

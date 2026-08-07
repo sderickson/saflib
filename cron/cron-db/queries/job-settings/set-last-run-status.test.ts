@@ -37,7 +37,7 @@ describe("setLastRunStatus", () => {
     vi.setSystemTime(now);
   });
 
-  it("should update status and updatedAt but not lastRunAt for 'success'", async () => {
+  it("should update status, updatedAt, and lastRunAt for 'success'", async () => {
     const initialJob = await throwError(
       jobSettingsDb.getByName(dbKey, jobName),
     );
@@ -48,9 +48,12 @@ describe("setLastRunStatus", () => {
     );
 
     expect(updatedJob.lastRunStatus).toBe("success");
-    expect(updatedJob.lastRunAt).toBe(initialJob.lastRunAt); // Should remain null or previous value
-    expect(updatedJob.updatedAt.getTime()).toBeGreaterThan(
+    expect(updatedJob.lastRunAt).toBeInstanceOf(Date);
+    expect(updatedJob.lastRunAt?.getTime()).toBeGreaterThan(
       initialJob.updatedAt.getTime(),
+    );
+    expect(updatedJob.updatedAt.getTime()).toEqual(
+      updatedJob.lastRunAt?.getTime(),
     );
   });
 

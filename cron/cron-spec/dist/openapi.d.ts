@@ -50,6 +50,8 @@ export interface components {
             jobName: string;
             /** @description Whether the job is enabled to run. */
             enabled: boolean;
+            /** @description Kratos identity id of the admin who last enabled the job. Null for pre-migration rows until re-enabled. Ticks skip when enabled with null. */
+            enabledBy?: string | null;
             /**
              * Format: date-time
              * @description Timestamp of the last time the job ran.

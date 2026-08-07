@@ -4,7 +4,7 @@ import { createErrorMiddleware, createGlobalMiddleware } from "@saflib/express";
 import { cronDb } from "@saflib/cron-db";
 import type { DbKey } from "@saflib/drizzle";
 import { cronServiceStorage } from "./context.ts";
-import type { JobsMap } from "./src/types.ts";
+import type { CronEnqueuer, JobsMap } from "./src/types.ts";
 import type { DbOptions } from "@saflib/drizzle";
 
 /**
@@ -23,6 +23,11 @@ export interface CronServiceOptions {
    * Map of job names to their configurations.
    */
   jobs: JobsMap;
+  /**
+   * Enqueues a background job for a cron tick. Typically `makeCronEnqueuer`
+   * from `@saflib/jobs`, wired by the product monolith.
+   */
+  enqueueJob: CronEnqueuer;
 }
 
 export function createApp(options: CronServiceOptions) {

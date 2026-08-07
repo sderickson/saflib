@@ -26,8 +26,15 @@ export const setLastRunStatus = queryWrapper(
       updatedAt: now,
     };
 
-    // Only update lastRunAt if the status is 'running'
-    if (status === "running") {
+    // Record when the tick ran. Historically only "running" stamped lastRunAt
+    // (start of an inline handler). Enqueue-only ticks write success/fail
+    // directly, so those statuses must stamp lastRunAt too.
+    if (
+      status === "running" ||
+      status === "success" ||
+      status === "fail" ||
+      status === "timed out"
+    ) {
       updateData.lastRunAt = now;
     }
 

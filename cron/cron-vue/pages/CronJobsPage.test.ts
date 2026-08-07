@@ -16,6 +16,7 @@ const mockJobs: ListCronJobsResponse = [
   {
     jobName: "job-1",
     enabled: true,
+    enabledBy: "admin-user-1",
     lastRunAt: new Date(Date.now() - 3600 * 1000).toISOString(), // 1 hour ago
     lastRunStatus: "success",
     createdAt: new Date(Date.now() - 86400 * 1000 * 7).toISOString(), // 7 days ago
@@ -24,6 +25,7 @@ const mockJobs: ListCronJobsResponse = [
   {
     jobName: "job-2",
     enabled: false,
+    enabledBy: null,
     lastRunAt: null,
     lastRunStatus: null,
     createdAt: new Date(Date.now() - 86400 * 1000 * 14).toISOString(), // 14 days ago
@@ -32,6 +34,7 @@ const mockJobs: ListCronJobsResponse = [
   {
     jobName: "job-3",
     enabled: true,
+    enabledBy: null,
     lastRunAt: new Date(Date.now() - 60 * 1000).toISOString(), // 1 min ago
     lastRunStatus: "fail",
     createdAt: new Date(Date.now() - 86400 * 1000 * 1).toISOString(), // 1 day ago
@@ -58,7 +61,7 @@ const handlers = [
     "http://test.localhost:3000/cron/jobs",
     () => {
       return HttpResponse.json(mockJobs);
-    }
+    },
   ),
   // Default success for updating settings
   http.put<PathParams, UpdateSettingsRequest, UpdateSettingsResponse>(
@@ -68,8 +71,9 @@ const handlers = [
       return HttpResponse.json({
         jobName: body.jobName,
         enabled: body.enabled,
+        enabledBy: body.enabled ? "admin-user-1" : null,
       });
-    }
+    },
   ),
 ];
 
@@ -87,7 +91,7 @@ describe("CronJobsPage", () => {
     if (waitForData) {
       await vi.waitFor(() => {
         expect(
-          wrapper.findComponent({ name: "v-progress-linear" }).exists()
+          wrapper.findComponent({ name: "v-progress-linear" }).exists(),
         ).toBe(false);
       });
     }
@@ -107,14 +111,14 @@ describe("CronJobsPage", () => {
   const getActionButton = (
     wrapper: VueWrapper,
     jobName: string,
-    expectedText: string
+    expectedText: string,
   ): VueWrapper => {
     const row = getRowByJobName(wrapper, jobName);
     // Find the button component within the row's DOM element
     const button = row.findComponent({ name: "v-btn", text: expectedText });
     expect(
       button.exists(),
-      `Button with text "${expectedText}" for job "${jobName}" not found`
+      `Button with text "${expectedText}" for job "${jobName}" not found`,
     ).toBe(true);
     return button;
   };
@@ -146,6 +150,7 @@ describe("CronJobsPage", () => {
     expect(headers.map((h) => h.text())).toEqual([
       "Job Name",
       "Status",
+      "Enabled By",
       "Last Run Status",
       "Last Run At",
       "Created At",
@@ -161,15 +166,27 @@ describe("CronJobsPage", () => {
     const row1 = getRowByJobName(wrapper, "job-1");
     expect(row1.text()).toContain("job-1"); // Job Name
     expect(
-      row1.findComponent({ name: "v-chip", text: "Enabled" }).exists()
+      row1.findComponent({ name: "v-chip", text: "Enabled" }).exists(),
     ).toBe(true); // Status Chip
+    expect(row1.text()).toContain("admin-user-1");
     expect(
-      row1.findComponent({ name: "v-chip", text: "success" }).exists()
+      row1.findComponent({ name: "v-chip", text: "success" }).exists(),
     ).toBe(true); // Last Run Status Chip
     expect(row1.text()).toContain(formatDateTime(mockJobs[0].lastRunAt)); // Last Run At
     expect(row1.text()).toContain(formatDateTime(mockJobs[0].createdAt)); // Created At
     expect(row1.text()).toContain(formatDateTime(mockJobs[0].updatedAt)); // Updated At
     expect(getActionButton(wrapper, "job-1", "Disable").exists()).toBe(true); // Action Button
+  });
+
+  it("warns when enabled but enabledBy is null", async () => {
+    const wrapper = await mountComponent();
+    const row3 = getRowByJobName(wrapper, "job-3");
+    expect(
+      row3.findComponent({ name: "v-chip", text: "Re-enable required" }).exists(),
+    ).toBe(true);
+    expect(row3.text()).toContain(
+      "Missing — re-enable to record authority (job is not running)",
+    );
   });
 
   it("should disable an enabled job when the Disable button is clicked", async () => {
@@ -184,9 +201,13 @@ describe("CronJobsPage", () => {
         "http://test.localhost:3000/cron/jobs/settings",
         async ({ request }) => {
           receivedRequestBody = await request.json();
-          return HttpResponse.json({ jobName: jobToDisable, enabled: false });
-        }
-      )
+          return HttpResponse.json({
+            jobName: jobToDisable,
+            enabled: false,
+            enabledBy: "admin-user-1",
+          });
+        },
+      ),
     );
 
     await disableButton.trigger("click");
@@ -223,9 +244,13 @@ describe("CronJobsPage", () => {
         "http://test.localhost:3000/cron/jobs/settings",
         async ({ request }) => {
           receivedRequestBody = await request.json();
-          return HttpResponse.json({ jobName: jobToEnable, enabled: true });
-        }
-      )
+          return HttpResponse.json({
+            jobName: jobToEnable,
+            enabled: true,
+            enabledBy: "admin-user-1",
+          });
+        },
+      ),
     );
 
     await enableButton.trigger("click");

@@ -23,10 +23,12 @@ describe("setEnabledByName", () => {
       dbKey,
       jobName,
       true,
+      "admin-user-1",
     );
     assert(job);
     expect(job.jobName).toBe(jobName);
     expect(job.enabled).toBe(true);
+    expect(job.enabledBy).toBe("admin-user-1");
     expect(job.createdAt).toBeInstanceOf(Date);
     expect(job.updatedAt).toBeInstanceOf(Date);
   });
@@ -37,6 +39,7 @@ describe("setEnabledByName", () => {
       dbKey,
       jobName,
       true,
+      "admin-user-1",
     );
     assert(initialJob);
     // Advance time by more than a second to ensure timestamp difference
@@ -49,10 +52,52 @@ describe("setEnabledByName", () => {
     assert(updatedJob);
     expect(updatedJob.jobName).toBe(jobName);
     expect(updatedJob.enabled).toBe(false);
+    expect(updatedJob.enabledBy).toBe("admin-user-1");
     expect(updatedJob.id).toBe(initialJob.id);
     expect(updatedJob.createdAt).toEqual(initialJob.createdAt);
     expect(updatedJob.updatedAt.getTime()).toBeGreaterThan(
       initialJob.updatedAt.getTime(),
     );
+  });
+
+  it("records enabledBy when enabling", async () => {
+    const jobName = "test-job-enabled-by-record";
+    const { result: job } = await jobSettingsDb.setEnabled(
+      dbKey,
+      jobName,
+      true,
+      "enabler-id",
+    );
+    assert(job);
+    expect(job.enabled).toBe(true);
+    expect(job.enabledBy).toBe("enabler-id");
+  });
+
+  it("retains enabledBy when disabling", async () => {
+    const jobName = "test-job-enabled-by-retain";
+    await jobSettingsDb.setEnabled(dbKey, jobName, true, "original-enabler");
+    const { result: disabled } = await jobSettingsDb.setEnabled(
+      dbKey,
+      jobName,
+      false,
+    );
+    assert(disabled);
+    expect(disabled.enabled).toBe(false);
+    expect(disabled.enabledBy).toBe("original-enabler");
+  });
+
+  it("updates enabledBy when re-enabling as a different admin", async () => {
+    const jobName = "test-job-enabled-by-reenable";
+    await jobSettingsDb.setEnabled(dbKey, jobName, true, "admin-a");
+    await jobSettingsDb.setEnabled(dbKey, jobName, false);
+    const { result: reenabled } = await jobSettingsDb.setEnabled(
+      dbKey,
+      jobName,
+      true,
+      "admin-b",
+    );
+    assert(reenabled);
+    expect(reenabled.enabled).toBe(true);
+    expect(reenabled.enabledBy).toBe("admin-b");
   });
 });

@@ -12,16 +12,17 @@ import {
   getServiceName,
 } from "@saflib/node";
 import { jobSettingsDb } from "@saflib/cron-db";
-import type { JobConfig, JobsMap } from "./types.ts";
+import type { CronEnqueuer, JobConfig, JobsMap } from "./types.ts";
 import type { DbKey } from "@saflib/drizzle";
 import { JobSettingNotFoundError } from "@saflib/cron-db";
 import { cronMetric, type CronLabels } from "./metrics.ts";
-// --- Helper Function for Job Execution and Error Handling ---
 
 async function executeJobWithHandling(
   jobName: string,
   jobConfig: JobConfig,
   dbKey: DbKey,
+  enabledBy: string,
+  enqueueJob: CronEnqueuer,
 ) {
   const reqId = generateRequestId();
   const context: SafContext = {
@@ -37,10 +38,8 @@ async function executeJobWithHandling(
 
   await safContextStorage.run(context, async () => {
     await safReportersStorage.run(reporters, async () => {
-      const jobTimeoutSeconds = 10;
-      const timeoutMs = jobTimeoutSeconds * 1000;
       const { logError } = getSafReporters();
-      let statusToSet: "success" | "fail" | "timed out" = "fail"; // Default to fail
+      let statusToSet: "success" | "fail" = "fail";
 
       const labels: CronLabels = {
         service_name: getServiceName(),
@@ -49,44 +48,22 @@ async function executeJobWithHandling(
       };
       const timer = cronMetric.startTimer(labels);
       try {
-        // Set status to running *before* starting the handler/timeout race
-        await jobSettingsDb.setLastRunStatus(dbKey, jobName, "running");
+        await enqueueJob({
+          jobName,
+          enabledBy,
+          operationId: jobConfig.enqueue.operationId,
+          request: jobConfig.enqueue.request,
+          dedupeKey: jobConfig.enqueue.dedupeKey ?? `cron:${jobName}`,
+          priority: jobConfig.enqueue.priority,
+          requestId: reqId,
+        });
 
-        const timeoutPromise = new Promise((_, reject) =>
-          setTimeout(
-            () =>
-              reject(
-                new Error(
-                  `Job ${jobName} timed out after ${jobTimeoutSeconds} seconds`,
-                ),
-              ),
-            timeoutMs,
-          ),
-        );
-
-        // Race the handler against the timeout
-        await Promise.race([jobConfig.handler(reqId), timeoutPromise]);
-
-        // If race succeeds without error
         statusToSet = "success";
         labels.status = "success";
       } catch (error) {
-        // Log the error
-        const isErrorInstance = error instanceof Error;
         logError(error);
-
-        // Determine the job status
-        const errorMessage = isErrorInstance
-          ? (error as Error).message
-          : String(error);
-
-        if (errorMessage.includes("timed out")) {
-          statusToSet = "timed out";
-          labels.status = "timeout";
-        } else {
-          statusToSet = "fail";
-          labels.status = "error";
-        }
+        statusToSet = "fail";
+        labels.status = "error";
       } finally {
         timer();
         try {
@@ -106,6 +83,7 @@ async function executeJobWithHandling(
 // --- Main Job Scheduling Logic ---
 interface StartJobConfig {
   dbKey: DbKey;
+  enqueueJob: CronEnqueuer;
 }
 
 export const startJobs = async (
@@ -113,7 +91,7 @@ export const startJobs = async (
   config: StartJobConfig,
 ) => {
   const { log, logError } = makeSubsystemReporters("cron", "startJobs");
-  const { dbKey } = config;
+  const { dbKey, enqueueJob } = config;
   const jobs: CronJob[] = [];
   for (const [jobName, jobConfig] of Object.entries(jobsToStart)) {
     const { error } = await jobSettingsDb.getByName(dbKey, jobName);
@@ -135,7 +113,6 @@ export const startJobs = async (
       CronJob.from({
         cronTime: jobConfig.schedule,
         onTick: async () => {
-          // Use schedulerLogger for logs before entering job-specific context
           try {
             const { result: currentJobSetting, error } =
               await jobSettingsDb.getByName(dbKey, jobName);
@@ -146,8 +123,20 @@ export const startJobs = async (
             if (!currentJobSetting.enabled) {
               return;
             }
+            if (!currentJobSetting.enabledBy) {
+              log.warn(
+                `Cron job '${jobName}' is enabled but enabled_by is null; skipping tick until an admin re-enables to record authority.`,
+              );
+              return;
+            }
 
-            await executeJobWithHandling(jobName, jobConfig, dbKey);
+            await executeJobWithHandling(
+              jobName,
+              jobConfig,
+              dbKey,
+              currentJobSetting.enabledBy,
+              enqueueJob,
+            );
           } catch (error) {
             logError(error);
           }

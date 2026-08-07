@@ -2,7 +2,11 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { cronDb } from "@saflib/cron-db";
-import { runCron, type JobsMap } from "@saflib/cron";
+import {
+  runCron,
+  type CronEnqueuer,
+  type JobsMap,
+} from "@saflib/cron";
 import type { DbKey } from "@saflib/drizzle";
 import { typedEnv } from "@saflib/env";
 import {
@@ -26,7 +30,7 @@ let cronJobSettingsDbKey: DbKey | undefined;
 
 /**
  * Opaque key for `@saflib/cron-db` (not the main app DB key). Use this for
- * `createCronRouter({ dbKey: get__ServiceName__CronDbKey(), jobs: __serviceName__Jobs })` and `runCron`.
+ * `createCronRouter({ dbKey: get__ServiceName__CronDbKey(), jobs: __serviceName__Jobs, enqueueJob })` and `runCron`.
  */
 export function get__ServiceName__CronDbKey(): DbKey {
   if (!cronJobSettingsDbKey) {
@@ -41,11 +45,13 @@ export function get__ServiceName__CronDbKey(): DbKey {
 
 export const run__ServiceName__Cron = (
   context: __ServiceName__ServiceContext,
+  enqueueJob: CronEnqueuer,
 ) => {
   return __serviceName__ServiceStorage.run(context, () =>
     runCron({
       jobs: __serviceName__Jobs,
       dbKey: get__ServiceName__CronDbKey(),
+      enqueueJob,
     }),
   );
 };

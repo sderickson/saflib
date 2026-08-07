@@ -81,11 +81,11 @@ export const CronAddJobWorkflowDefinition = defineWorkflow<
 
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "job",
-      promptMessage: `Implement the ${context.targetName} cron job handler. Make sure to:
-        1. Use the service storage pattern to access database context
-        2. Use getSafReporters() for logging
-        3. Implement the actual job logic based on the job's purpose
-        4. Do not use try/catch! Use the ReturnsError pattern and let unexpected errors propagate up.
+      promptMessage: `Finalize the ${context.targetName} declarative JobConfig. Make sure to:
+        1. Set a real cron \`schedule\`
+        2. Set \`enqueue.operationId\` to an existing (or newly added) background API operation
+        3. Optionally set \`enqueue.request\`, \`enqueue.dedupeKey\` (default \`cron:{jobName}\`), and \`enqueue.priority\`
+        4. Do **not** add a \`handler\` — cron only enqueues; work lives in the HTTP operation
         
         Please review documentation here first: ${context.docFiles?.overview}`,
     })),
@@ -94,17 +94,18 @@ export const CronAddJobWorkflowDefinition = defineWorkflow<
       promptText: `Add the new job to the rest of the package.
       
       * Make sure it's included in the adjacent index.ts file.
-      * Make sure those jobs are included in the root cron.ts file.`,
+      * Make sure those jobs are included in the root cron.ts file.
+      * Ensure \`runCron\` / \`createCronRouter\` receive a required \`enqueueJob\` (e.g. \`makeCronEnqueuer\` from \`@saflib/jobs\`).
+      * Add the matching \`cron:{jobName}\` trigger-map edge in the jobs package if applicable.`,
     })),
 
     step(UpdateStepMachine, ({ context }) => ({
       fileId: "test",
-      promptMessage: `Update the generated ${context.targetName}.test.ts file to test the cron job functionality.
+      promptMessage: `Update the generated ${context.targetName}.test.ts file to assert the declarative JobConfig.
         
-        * Make sure to implement proper test cases that cover the job execution
-        * Use the service storage pattern for testing context
-        * Test both success and error scenarios
-        * Do not do any mocking - use the actual implementations`,
+        * Assert schedule and enqueue.operationId are set
+        * Assert there is no \`handler\` property
+        * Keep the test free of mocks — it only checks config shape`,
     })),
 
     step(CommandStepMachine, () => ({
