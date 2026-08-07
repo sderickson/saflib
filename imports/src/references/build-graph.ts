@@ -12,6 +12,9 @@ const META_PACKAGE_NAMES = new Set([
   "@saflib/saflib",
 ]);
 
+/** Composition root: references every typecheckable `daemon/service/*` package. */
+export const MONOLITH_PACKAGE_NAME = "@pathclerk/daemon-monolith";
+
 export interface ReferenceGraphNode {
   name: string;
   dir: string;
@@ -121,6 +124,8 @@ export function buildReferenceGraph(
     });
   }
 
+  applyMonolithServiceReferences(graph, context.rootDir);
+
   return {
     rootDir: context.rootDir,
     context,
@@ -128,4 +133,29 @@ export function buildReferenceGraph(
     missingTsconfig,
     skippedMeta,
   };
+}
+
+/**
+ * `@pathclerk/daemon-monolith` must reference every typecheckable package under
+ * `daemon/service/` (package.json deps alone are incomplete for the composition root).
+ */
+export function applyMonolithServiceReferences(
+  graph: ReferenceGraph,
+  rootDir: string,
+): void {
+  const monolith = graph.get(MONOLITH_PACKAGE_NAME);
+  if (!monolith) return;
+
+  const serviceRoot = path.join(rootDir, "daemon/service");
+  const servicePackages: string[] = [];
+  for (const node of graph.values()) {
+    if (node.name === MONOLITH_PACKAGE_NAME) continue;
+    const rel = path.relative(serviceRoot, node.dir);
+    if (rel.startsWith("..") || path.isAbsolute(rel)) continue;
+    servicePackages.push(node.name);
+  }
+
+  monolith.references = [
+    ...new Set([...monolith.references, ...servicePackages]),
+  ].sort();
 }

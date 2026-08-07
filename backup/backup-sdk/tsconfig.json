@@ -1,3 +1,25 @@
 {
-  "extends": ["@saflib/vue/tsconfig.app.json"]
+  "extends": [
+    "@saflib/vue/tsconfig.app.json"
+  ],
+  "references": [
+    {
+      "path": "../../monorepo"
+    },
+    {
+      "path": "../../sdk"
+    },
+    {
+      "path": "../../vite"
+    },
+    {
+      "path": "../../vitest"
+    },
+    {
+      "path": "../../vue"
+    },
+    {
+      "path": "../backup-spec"
+    }
+  ]
 }

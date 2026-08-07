@@ -1,3 +1,20 @@
 {
-  "extends": "@saflib/monorepo/tsconfig.json"
+  "extends": "@saflib/monorepo/tsconfig.json",
+  "references": [
+    {
+      "path": "../../express"
+    },
+    {
+      "path": "../../monorepo"
+    },
+    {
+      "path": "../../node"
+    },
+    {
+      "path": "../../vitest"
+    },
+    {
+      "path": "../email-spec"
+    }
+  ]
 }

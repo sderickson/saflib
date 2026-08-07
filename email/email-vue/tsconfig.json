@@ -1,0 +1,30 @@
+{
+  "extends": [
+    "@saflib/vue/tsconfig.app.json"
+  ],
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+    "outDir": "./dist/types"
+  },
+  "exclude": [
+    "node_modules",
+    "dist"
+  ],
+  "references": [
+    {
+      "path": "../../cron/cron-spec"
+    },
+    {
+      "path": "../../ory-kratos-sdk"
+    },
+    {
+      "path": "../../sdk"
+    },
+    {
+      "path": "../../vue"
+    },
+    {
+      "path": "../email-spec"
+    }
+  ]
+}

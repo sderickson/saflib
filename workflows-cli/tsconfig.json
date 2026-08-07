@@ -1,3 +1,72 @@
 {
-  "extends": "@saflib/monorepo/tsconfig.json"
+  "extends": "@saflib/monorepo/tsconfig.json",
+  "include": [
+    "**/*.ts",
+    "**/*.json"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist/types"
+  ],
+  "compilerOptions": {
+    "rootDir": ".",
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.tsbuildinfo",
+    "outDir": "./dist/types",
+    "types": [
+      "node"
+    ]
+  },
+  "references": [
+    {
+      "path": "../commander"
+    },
+    {
+      "path": "../cron/cron"
+    },
+    {
+      "path": "../drizzle"
+    },
+    {
+      "path": "../email/email"
+    },
+    {
+      "path": "../env"
+    },
+    {
+      "path": "../express"
+    },
+    {
+      "path": "../grpc/grpc"
+    },
+    {
+      "path": "../integrations"
+    },
+    {
+      "path": "../monorepo"
+    },
+    {
+      "path": "../openapi"
+    },
+    {
+      "path": "../processes"
+    },
+    {
+      "path": "../sdk"
+    },
+    {
+      "path": "../sentry"
+    },
+    {
+      "path": "../service"
+    },
+    {
+      "path": "../vue"
+    },
+    {
+      "path": "../workflows"
+    },
+    {
+      "path": "../xstate"
+    }
+  ]
 }

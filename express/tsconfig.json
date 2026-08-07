@@ -1,4 +1,33 @@
 {
   "extends": "@saflib/monorepo/tsconfig.json",
-  "exclude": ["./workflows/query-template/**", "workflows/handler-template/**"]
+  "exclude": [
+    "./workflows/query-template/**",
+    "workflows/handler-template/**"
+  ],
+  "references": [
+    {
+      "path": "../env"
+    },
+    {
+      "path": "../node"
+    },
+    {
+      "path": "../notify/notify"
+    },
+    {
+      "path": "../ory-kratos"
+    },
+    {
+      "path": "../sdk"
+    },
+    {
+      "path": "../service"
+    },
+    {
+      "path": "../utils"
+    },
+    {
+      "path": "../vitest"
+    }
+  ]
 }

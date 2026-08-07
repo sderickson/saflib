@@ -1,3 +1,16 @@
 {
-  "extends": ["@saflib/vue/tsconfig.app.json"]
+  "extends": [
+    "@saflib/vue/tsconfig.app.json"
+  ],
+  "references": [
+    {
+      "path": "../cron/cron-vue"
+    },
+    {
+      "path": "../email/email-vue"
+    },
+    {
+      "path": "../vue"
+    }
+  ]
 }

@@ -1,3 +1,23 @@
 {
-  "extends": "@saflib/monorepo/tsconfig.json"
+  "extends": "@saflib/monorepo/tsconfig.json",
+  "references": [
+    {
+      "path": "../.."
+    },
+    {
+      "path": "../../../drizzle/workflows/templates"
+    },
+    {
+      "path": "../../../monorepo"
+    },
+    {
+      "path": "../../../openapi/workflows/templates"
+    },
+    {
+      "path": "../../../service/workflows/common-templates"
+    },
+    {
+      "path": "../../../vitest"
+    }
+  ]
 }

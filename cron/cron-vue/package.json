@@ -7,7 +7,8 @@
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "vue-tsc -b"
   },
   "dependencies": {
     "@saflib/cron-spec": "*",

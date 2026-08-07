@@ -1,6 +1,8 @@
 export {
   buildReferenceGraph,
   workspaceDepsOf,
+  applyMonolithServiceReferences,
+  MONOLITH_PACKAGE_NAME,
   type ReferenceGraph,
   type ReferenceGraphNode,
   type BuildReferenceGraphResult,
@@ -12,6 +14,20 @@ export {
 export { resolveTsconfigEntry } from "./resolve-entry.ts";
 export {
   previewReferencesGenerate,
+  generateReferences,
+  checkReferences,
+  computeSolutions,
+  isWorkflowTemplatePackage,
   type GenerateReferencesPreview,
   type PackageReferencePreview,
+  type SolutionReferencePreview,
+  type CheckReferencesResult,
+  type ReferenceDrift,
 } from "./generate.ts";
+export {
+  mergePackageReferences,
+  isInternalReference,
+  referencesEqual,
+  sortReferences,
+  type TsconfigReference,
+} from "./tsconfig-io.ts";

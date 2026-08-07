@@ -1,9 +1,158 @@
 {
-  "extends": ["@saflib/vue/tsconfig.app.json"],
-  "exclude": [
-    "node_modules",
-    "vite.config.ts",
-    "workflows/template/**",
-    "**/fixtures/**"
+  "files": [],
+  "references": [
+    {
+      "path": "./admin"
+    },
+    {
+      "path": "./analytics-service"
+    },
+    {
+      "path": "./backup/backup-cron"
+    },
+    {
+      "path": "./backup/backup-http"
+    },
+    {
+      "path": "./backup/backup-sdk"
+    },
+    {
+      "path": "./backup/backup-service-common"
+    },
+    {
+      "path": "./backup/backup-spec"
+    },
+    {
+      "path": "./commander"
+    },
+    {
+      "path": "./cron/cron"
+    },
+    {
+      "path": "./cron/cron-db"
+    },
+    {
+      "path": "./cron/cron-spec"
+    },
+    {
+      "path": "./cron/cron-vue"
+    },
+    {
+      "path": "./dev-tools"
+    },
+    {
+      "path": "./drizzle"
+    },
+    {
+      "path": "./email/email"
+    },
+    {
+      "path": "./email/email-service"
+    },
+    {
+      "path": "./email/email-spec"
+    },
+    {
+      "path": "./email/email-vue"
+    },
+    {
+      "path": "./env"
+    },
+    {
+      "path": "./express"
+    },
+    {
+      "path": "./grpc/grpc"
+    },
+    {
+      "path": "./imports"
+    },
+    {
+      "path": "./integrations"
+    },
+    {
+      "path": "./jobs/jobs"
+    },
+    {
+      "path": "./jobs/jobs-db"
+    },
+    {
+      "path": "./jobs/jobs-spec"
+    },
+    {
+      "path": "./jobs/jobs-vue"
+    },
+    {
+      "path": "./links"
+    },
+    {
+      "path": "./monorepo"
+    },
+    {
+      "path": "./node"
+    },
+    {
+      "path": "./notify/notify"
+    },
+    {
+      "path": "./object-store"
+    },
+    {
+      "path": "./openapi"
+    },
+    {
+      "path": "./ory-kratos"
+    },
+    {
+      "path": "./ory-kratos-sdk"
+    },
+    {
+      "path": "./ory-kratos-spa"
+    },
+    {
+      "path": "./playwright"
+    },
+    {
+      "path": "./posthog-client"
+    },
+    {
+      "path": "./processes"
+    },
+    {
+      "path": "./product"
+    },
+    {
+      "path": "./sdk"
+    },
+    {
+      "path": "./secret-store"
+    },
+    {
+      "path": "./sentry"
+    },
+    {
+      "path": "./service"
+    },
+    {
+      "path": "./utils"
+    },
+    {
+      "path": "./vite"
+    },
+    {
+      "path": "./vitest"
+    },
+    {
+      "path": "./vue"
+    },
+    {
+      "path": "./workflows"
+    },
+    {
+      "path": "./workflows-cli"
+    },
+    {
+      "path": "./xstate"
+    }
   ]
 }

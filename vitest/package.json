@@ -12,5 +12,8 @@
   },
   "bin": {
     "test-coverage": "./test-coverage.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -b"
   }
 }

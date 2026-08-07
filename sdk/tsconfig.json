@@ -1,3 +1,22 @@
 {
-  "extends": ["@saflib/vue/tsconfig.app.json"]
+  "extends": [
+    "@saflib/vue/tsconfig.app.json"
+  ],
+  "references": [
+    {
+      "path": "../dev-tools"
+    },
+    {
+      "path": "../links"
+    },
+    {
+      "path": "../vitest"
+    },
+    {
+      "path": "../vue"
+    },
+    {
+      "path": "../workflows"
+    }
+  ]
 }

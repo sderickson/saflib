@@ -6,6 +6,7 @@
   },
   "type": "module",
   "scripts": {
+    "typecheck": "tsc -b",
     "regen-kratos-secrets": "NODE_OPTIONS='--experimental-strip-types --disable-warning=ExperimentalWarning' node ./regen-kratos-secrets.ts",
     "generate": "saf-docker generate",
     "prod-local": ". ./env.remote && CONTAINER_REGISTRY=$CONTAINER_REGISTRY docker compose -f docker-compose.prod-local.yaml up",

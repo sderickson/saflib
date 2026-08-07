@@ -1,3 +1,14 @@
 {
-  "extends": "@saflib/monorepo/tsconfig.json"
+  "extends": "@saflib/monorepo/tsconfig.json",
+  "references": [
+    {
+      "path": "../../drizzle"
+    },
+    {
+      "path": "../../env"
+    },
+    {
+      "path": "../../vitest"
+    }
+  ]
 }

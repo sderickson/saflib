@@ -15,5 +15,10 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
     "verbatimModuleSyntax": true
-  }
+  },
+  "references": [
+    {
+      "path": "../vitest"
+    }
+  ]
 }

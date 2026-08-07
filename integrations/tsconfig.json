@@ -1,4 +1,16 @@
 {
   "extends": "@saflib/monorepo/tsconfig.json",
-  "exclude": ["**/node_modules/**", "**/dist/**", "**/templates/**"]
+  "exclude": [
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/templates/**"
+  ],
+  "references": [
+    {
+      "path": "../vitest"
+    },
+    {
+      "path": "../workflows"
+    }
+  ]
 }

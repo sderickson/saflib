@@ -1,3 +1,26 @@
 {
-  "extends": "@saflib/monorepo/tsconfig.json"
+  "extends": "@saflib/monorepo/tsconfig.json",
+  "references": [
+    {
+      "path": "../../drizzle"
+    },
+    {
+      "path": "../../express"
+    },
+    {
+      "path": "../../monorepo"
+    },
+    {
+      "path": "../../node"
+    },
+    {
+      "path": "../../vitest"
+    },
+    {
+      "path": "../jobs-db"
+    },
+    {
+      "path": "../jobs-spec"
+    }
+  ]
 }

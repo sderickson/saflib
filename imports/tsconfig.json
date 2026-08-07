@@ -1,4 +1,22 @@
 {
   "extends": "@saflib/monorepo/tsconfig.json",
-  "exclude": ["**/node_modules/**", "**/dist/**", "fixtures/**"]
+  "exclude": [
+    "**/node_modules/**",
+    "**/dist/**",
+    "fixtures/**"
+  ],
+  "references": [
+    {
+      "path": "../commander"
+    },
+    {
+      "path": "../dev-tools"
+    },
+    {
+      "path": "../monorepo"
+    },
+    {
+      "path": "../vitest"
+    }
+  ]
 }

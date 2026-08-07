@@ -1,7 +1,35 @@
 {
   "files": [],
   "references": [
-    { "path": "./tsconfig.app.json" },
-    { "path": "./tsconfig.node.json" }
+    {
+      "path": "../links"
+    },
+    {
+      "path": "../monorepo"
+    },
+    {
+      "path": "../ory-kratos-sdk"
+    },
+    {
+      "path": "../playwright"
+    },
+    {
+      "path": "../sdk"
+    },
+    {
+      "path": "../utils"
+    },
+    {
+      "path": "../vitest"
+    },
+    {
+      "path": "../workflows"
+    },
+    {
+      "path": "./tsconfig.app.json"
+    },
+    {
+      "path": "./tsconfig.node.json"
+    }
   ]
 }

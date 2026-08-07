@@ -1,7 +1,29 @@
 {
   "files": [],
   "references": [
-    { "path": "./tsconfig.app.json" },
-    { "path": "./tsconfig.node.json" }
+    {
+      "path": "../../.."
+    },
+    {
+      "path": "../../../../links"
+    },
+    {
+      "path": "../../../../ory-kratos-sdk"
+    },
+    {
+      "path": "../../../../sdk/workflows/templates"
+    },
+    {
+      "path": "../common"
+    },
+    {
+      "path": "../links"
+    },
+    {
+      "path": "./tsconfig.app.json"
+    },
+    {
+      "path": "./tsconfig.node.json"
+    }
   ]
 }

@@ -1,0 +1,24 @@
+{
+  "extends": [
+    "@saflib/vue/tsconfig.app.json"
+  ],
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+    "outDir": "./dist/types"
+  },
+  "exclude": [
+    "node_modules",
+    "dist"
+  ],
+  "references": [
+    {
+      "path": "../../sdk"
+    },
+    {
+      "path": "../../vue"
+    },
+    {
+      "path": "../cron-spec"
+    }
+  ]
+}

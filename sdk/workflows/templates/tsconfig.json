@@ -1,3 +1,28 @@
 {
-  "extends": ["@saflib/vue/tsconfig.app.json"]
+  "extends": [
+    "@saflib/vue/tsconfig.app.json"
+  ],
+  "references": [
+    {
+      "path": "../.."
+    },
+    {
+      "path": "../../../monorepo"
+    },
+    {
+      "path": "../../../openapi/workflows/templates"
+    },
+    {
+      "path": "../../../ory-kratos-sdk"
+    },
+    {
+      "path": "../../../vite"
+    },
+    {
+      "path": "../../../vitest"
+    },
+    {
+      "path": "../../../vue"
+    }
+  ]
 }

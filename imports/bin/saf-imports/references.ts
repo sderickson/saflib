@@ -2,6 +2,7 @@ import path from "node:path";
 import type { Command } from "commander";
 import {
   buildReferenceGraph,
+  checkReferences,
   detectReferenceCycles,
   previewReferencesGenerate,
 } from "../../src/references/index.ts";
@@ -16,6 +17,10 @@ interface GenerateOptions extends ReferencesRootOptions {
 
 function formatCycle(cycle: string[]): string {
   return cycle.join(" → ");
+}
+
+function relFromCwd(absPath: string): string {
+  return path.relative(process.cwd(), absPath) || absPath;
 }
 
 export const addReferencesCommand = (program: Command) => {
@@ -51,9 +56,7 @@ export const addReferencesCommand = (program: Command) => {
       }
 
       console.log(`\nFound ${cycles.length} cycle(s):\n`);
-      console.log(
-        `${"#".padEnd(4)}${"Length".padEnd(8)}Path`,
-      );
+      console.log(`${"#".padEnd(4)}${"Length".padEnd(8)}Path`);
       cycles.forEach((cycle, i) => {
         const nodes = cycle.length - 1;
         console.log(
@@ -69,13 +72,10 @@ export const addReferencesCommand = (program: Command) => {
   referencesCmd
     .command("generate")
     .description(
-      "Preview package tsconfig references from the workspace dependency graph (phase 1: stdout only)",
+      "Generate package and solution tsconfig references from the workspace dependency graph",
     )
     .option("--root <dir>", "Monorepo root (default: auto-detect from cwd)")
-    .option(
-      "--write",
-      "Write references to disk (stubbed in phase 1 — preview only)",
-    )
+    .option("--write", "Write references to package and solution tsconfigs")
     .action((options: GenerateOptions) => {
       const preview = previewReferencesGenerate({
         root: options.root ? path.resolve(options.root) : undefined,
@@ -83,11 +83,65 @@ export const addReferencesCommand = (program: Command) => {
       });
 
       if (options.write) {
-        console.error(
-          "Note: --write is not implemented yet (phase 4). Printing preview only.",
+        console.log(`Reference generate root: ${preview.rootDir}`);
+        console.log(
+          `Wrote ${preview.written.length} file(s); ${preview.unchanged.length} unchanged.`,
         );
+        for (const file of preview.written) {
+          console.log(`  wrote ${relFromCwd(file)}`);
+        }
+        if (preview.missingTsconfig.length > 0) {
+          console.log(
+            `\nMissing tsconfig (${preview.missingTsconfig.length}): ${preview.missingTsconfig.join(", ")}`,
+          );
+        }
+        return;
       }
 
       console.log(JSON.stringify(preview, null, 2));
+    });
+
+  referencesCmd
+    .command("check")
+    .description(
+      "Fail if on-disk tsconfig references drift from generated output, or if the graph has cycles",
+    )
+    .option("--root <dir>", "Monorepo root (default: auto-detect from cwd)")
+    .action((options: ReferencesRootOptions) => {
+      const result = checkReferences({
+        root: options.root ? path.resolve(options.root) : undefined,
+      });
+
+      console.log(`Reference check root: ${result.rootDir}`);
+
+      if (result.cycles.length > 0) {
+        console.log(`\nFound ${result.cycles.length} cycle(s):\n`);
+        result.cycles.forEach((cycle, i) => {
+          console.log(`  ${i + 1}. ${formatCycle(cycle)}`);
+        });
+      }
+
+      if (result.drifts.length > 0) {
+        console.log(`\nFound ${result.drifts.length} drift(s):\n`);
+        for (const drift of result.drifts) {
+          console.log(`  ${relFromCwd(drift.tsconfig)}`);
+          console.log(
+            `    expected: ${JSON.stringify(drift.expected.map((r) => r.path))}`,
+          );
+          console.log(
+            `    actual:   ${JSON.stringify(drift.actual.map((r) => r.path))}`,
+          );
+        }
+        console.log(
+          "\nRemediation: run `saf-imports references generate --write`.",
+        );
+      }
+
+      if (result.ok) {
+        console.log("References check passed.");
+        return;
+      }
+
+      process.exitCode = 1;
     });
 };

@@ -1,4 +1,20 @@
 {
   "extends": "@saflib/monorepo/tsconfig.json",
-  "exclude": ["./workflows/query-template/**"]
+  "exclude": [
+    "./workflows/query-template/**"
+  ],
+  "references": [
+    {
+      "path": "../env"
+    },
+    {
+      "path": "../node"
+    },
+    {
+      "path": "../utils"
+    },
+    {
+      "path": "../vitest"
+    }
+  ]
 }
