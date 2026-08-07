@@ -42,6 +42,12 @@ When creating scoped middleware, `auth.ts` can be disabled, but it's on by defau
 
 As a broad guard against scripting attacks, this simply checks if there are any HTML tags inside any of the body of the JSON submitted to the server, and returns 400 if it detects anything.
 
+### `changeEvent.ts`
+
+**Type**: Scoped (mount after OpenAPI so `operationId` is available)
+
+`createChangeEventMiddleware({ emitter, getOrgId, skipOperationIds? })` publishes a `@saflib/notify` `ChangeEvent` on `res.on("finish")` when the response is a successful (2xx) non-read (not GET/HEAD/OPTIONS) request with an OpenAPI `operationId`. Path params are included as a string map; `getOrgId` supplies the org channel (skip when missing). Use `skipOperationIds` for noisy writes that should not fan out to SSE clients.
+
 ### `context.ts`
 
 **Type**: Scoped

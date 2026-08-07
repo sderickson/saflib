@@ -12,6 +12,7 @@
     "@ory/client": "^1.22.28",
     "@saflib/env": "*",
     "@saflib/node": "*",
+    "@saflib/notify": "*",
     "@saflib/ory-kratos": "*",
     "@saflib/sdk": "*",
     "@saflib/utils": "*",

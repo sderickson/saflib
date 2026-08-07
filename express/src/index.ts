@@ -32,6 +32,10 @@ export { makeContextMiddleware } from "./middleware/context.ts";
 export { makeAuthMiddleware, drainRequest, type AuthMiddlewareOptions } from "./middleware/auth.ts";
 export { makeCsrfMiddleware } from "./middleware/csrf.ts";
 export { makeCsrfTokenMiddleware } from "./middleware/csrf-token.ts";
+export {
+  createChangeEventMiddleware,
+  type CreateChangeEventMiddlewareOptions,
+} from "./middleware/changeEvent.ts";
 
 // multer options
 export * from "./middleware/multer.ts";
