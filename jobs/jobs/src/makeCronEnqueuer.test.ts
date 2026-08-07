@@ -145,13 +145,15 @@ describe("makeCronEnqueuer", () => {
       Buffer.from(stored!.authority.assertion.payload, "base64url").toString(
         "utf8",
       ),
-    ) as {
+    )     as {
       userId: string;
       requestId?: string;
+      mfaCompleted?: boolean;
       claims?: Record<string, string>;
     };
     expect(assertionPayload.userId).toBe("admin-enabled-by");
     expect(assertionPayload.requestId).toBe("tick-req-1");
+    expect(assertionPayload.mfaCompleted).toBe(true);
     expect(assertionPayload.claims).toMatchObject({
       callingOperationId: "cron:purgeClaudeFiles",
       originalRequestId: "tick-req-1",

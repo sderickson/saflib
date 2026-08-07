@@ -75,6 +75,9 @@ export function makeCronEnqueuer(
       body,
       asUser: {
         userId: params.enabledBy,
+        // Enabling a cron job requires site-admin MFA; ticks deliver under that
+        // recorded authority so site-admin-only maintenance routes accept them.
+        mfaCompleted: true,
       },
       requestId: params.requestId,
       claims: {
