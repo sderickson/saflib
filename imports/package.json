@@ -20,6 +20,7 @@
   },
   "exports": {
     ".": "./index.ts",
+    "./reporter": "./reporter.ts",
     "./src/budget/check-budgets": "./src/budget/check-budgets.ts",
     "./src/exports/generate-exports": "./src/exports/generate-exports.ts",
     "./src/graph/detect-cycles": "./src/graph/detect-cycles.ts",
@@ -27,6 +28,7 @@
     "./src/graph/find-path": "./src/graph/find-path.ts",
     "./src/graph/read-source": "./src/graph/read-source.ts",
     "./src/graph/walk-graph": "./src/graph/walk-graph.ts",
+    "./src/reporter/vitest-reporter": "./src/reporter/vitest-reporter.ts",
     "./src/resolve": "./src/resolve/index.ts",
     "./src/types": "./src/types.ts"
   },
