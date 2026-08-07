@@ -79,7 +79,7 @@
                         "example": "Us7k_pQ2"
                       },
                       "authority": {
-                        "description": "Evidence grant for the override (request or importer kind).",
+                        "description": "Evidence grant for the override (request, importer, or cron kind).",
                         "$ref": "#/components/schemas/authority"
                       }
                     }
@@ -814,6 +814,35 @@
                     "example": "Im7k_mN2"
                   }
                 }
+              },
+              {
+                "type": "object",
+                "description": "A cron tick fired for an enabled job; the admin who last enabled it is the recorded authority. Evidence is the cron job name.\n",
+                "additionalProperties": false,
+                "required": [
+                  "kind",
+                  "userId",
+                  "cronJobName"
+                ],
+                "properties": {
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "cron"
+                    ],
+                    "example": "cron"
+                  },
+                  "userId": {
+                    "type": "string",
+                    "description": "Admin who enabled the cron job (`enabled_by`).",
+                    "example": "Us7k_pQ2"
+                  },
+                  "cronJobName": {
+                    "type": "string",
+                    "description": "Name of the cron job that enqueued this chain.",
+                    "example": "recoverySweep"
+                  }
+                }
               }
             ]
           },
@@ -1043,6 +1072,35 @@
                 "type": "string",
                 "description": "Short id of the importer row that authorized the chain.",
                 "example": "Im7k_mN2"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "description": "A cron tick fired for an enabled job; the admin who last enabled it is the recorded authority. Evidence is the cron job name.\n",
+            "additionalProperties": false,
+            "required": [
+              "kind",
+              "userId",
+              "cronJobName"
+            ],
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "cron"
+                ],
+                "example": "cron"
+              },
+              "userId": {
+                "type": "string",
+                "description": "Admin who enabled the cron job (`enabled_by`).",
+                "example": "Us7k_pQ2"
+              },
+              "cronJobName": {
+                "type": "string",
+                "description": "Name of the cron job that enqueued this chain.",
+                "example": "recoverySweep"
               }
             }
           }

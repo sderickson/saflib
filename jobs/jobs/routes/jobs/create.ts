@@ -112,6 +112,13 @@ export const enqueueJobHandler = createHandler(async (req, res) => {
         importerId: evidence.importerId,
         assertion: assertionEvidence,
       };
+    } else if (evidence.kind === "cron") {
+      authority = {
+        kind: "cron",
+        userId: data.onBehalfOf.userId,
+        cronJobName: evidence.cronJobName,
+        assertion: assertionEvidence,
+      };
     } else {
       throw createError(400, "onBehalfOf.authority requires evidence", {
         code: "invalid_authority",

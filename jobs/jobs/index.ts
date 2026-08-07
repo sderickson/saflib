@@ -7,7 +7,13 @@ export type {
   ResolvedOperation,
   OperationMap,
 } from "./src/types.ts";
-export { buildOperationMap, validateJobsStartup } from "./src/operations.ts";
+export {
+  buildOperationMap,
+  validateJobsStartup,
+  isCronTriggerKey,
+  cronTriggerKey,
+  validateCronTriggerKeys,
+} from "./src/operations.ts";
 export type { ValidateJobsStartupParams } from "./src/operations.ts";
 export {
   runJobs,
@@ -27,5 +33,12 @@ export {
   type EnqueueResult,
   type EnqueueClientOptions,
 } from "./src/enqueue.ts";
+export {
+  makeCronEnqueuer,
+  type MakeCronEnqueuerOptions,
+  type CronEnqueueParams,
+  type CronEnqueueResult,
+  type CronEnqueuer,
+} from "./src/makeCronEnqueuer.ts";
 export { mapJobToWire } from "./src/mapJob.ts";
 export { jobsServiceStorage, type JobsServiceContext } from "./src/context.ts";

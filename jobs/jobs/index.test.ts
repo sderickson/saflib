@@ -16,11 +16,16 @@ test("package exports constants, types helpers, and operation resolver", () => {
   expect(mainExports.STALL_GRACE_MS).toBe(30_000);
   expect(mainExports.SPAWN_CAP).toBe(1_000);
   expect(mainExports.BACKGROUND_TAG).toBe("background");
+  expect(mainExports.CRON_TRIGGER_PREFIX).toBe("cron:");
   expect(typeof mainExports.buildOperationMap).toBe("function");
   expect(typeof mainExports.validateJobsStartup).toBe("function");
+  expect(typeof mainExports.validateCronTriggerKeys).toBe("function");
+  expect(typeof mainExports.cronTriggerKey).toBe("function");
+  expect(typeof mainExports.isCronTriggerKey).toBe("function");
   expect(typeof mainExports.runJobs).toBe("function");
   expect(typeof mainExports.signalJobsWake).toBe("function");
   expect(typeof mainExports.createJobsApp).toBe("function");
   expect(typeof mainExports.createJobsRouter).toBe("function");
   expect(typeof mainExports.enqueue).toBe("function");
+  expect(typeof mainExports.makeCronEnqueuer).toBe("function");
 });

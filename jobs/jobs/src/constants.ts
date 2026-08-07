@@ -51,3 +51,9 @@ export const SPAWN_CAP = 1_000;
 
 /** OpenAPI tag that marks an operation as invocable by the job queue. */
 export const BACKGROUND_TAG = "background";
+
+/**
+ * Prefix for trigger-map keys that represent cron schedules rather than
+ * OpenAPI operationIds (`cron:{jobName}`).
+ */
+export const CRON_TRIGGER_PREFIX = "cron:";

@@ -1,11 +1,65 @@
 import type { OpenAPIV3 } from "express-openapi-validator/dist/framework/types.ts";
-import { BACKGROUND_TAG, TIMEOUT_CEILING_MS } from "./constants.ts";
+import {
+  BACKGROUND_TAG,
+  CRON_TRIGGER_PREFIX,
+  TIMEOUT_CEILING_MS,
+} from "./constants.ts";
 import type {
   JobOperationConfigMap,
   OperationMap,
   ResolvedOperation,
   TriggerMap,
 } from "./types.ts";
+
+/** True when a trigger-map key is a cron schedule source (`cron:{jobName}`). */
+export function isCronTriggerKey(key: string): boolean {
+  return key.startsWith(CRON_TRIGGER_PREFIX);
+}
+
+/** Trigger-map / assertion callingOperationId for a cron job name. */
+export function cronTriggerKey(jobName: string): string {
+  return `${CRON_TRIGGER_PREFIX}${jobName}`;
+}
+
+/**
+ * Product-side check: every `cron:` trigger-map key names a registered cron
+ * job, and every registered cron job has a `cron:` trigger-map entry.
+ * Call at daemon startup with `Object.keys(jobsMap)` (no `@saflib/cron` import).
+ */
+export function validateCronTriggerKeys(
+  triggerMap: TriggerMap,
+  cronJobNames: Iterable<string>,
+): void {
+  const names = new Set(cronJobNames);
+  const errors: string[] = [];
+
+  for (const key of Object.keys(triggerMap)) {
+    if (!isCronTriggerKey(key)) {
+      continue;
+    }
+    const jobName = key.slice(CRON_TRIGGER_PREFIX.length);
+    if (!names.has(jobName)) {
+      errors.push(
+        `trigger map key "${key}" has no matching cron job "${jobName}"`,
+      );
+    }
+  }
+
+  for (const jobName of names) {
+    const key = cronTriggerKey(jobName);
+    if (!(key in triggerMap)) {
+      errors.push(
+        `cron job "${jobName}" has no trigger map key "${key}"`,
+      );
+    }
+  }
+
+  if (errors.length > 0) {
+    throw new Error(
+      `Cron trigger map validation failed:\n- ${errors.join("\n- ")}`,
+    );
+  }
+}
 
 const HTTP_METHODS = [
   "get",
@@ -84,7 +138,7 @@ export function validateJobsStartup(params: ValidateJobsStartupParams): void {
   const errors: string[] = [];
 
   for (const [caller, targets] of Object.entries(params.triggerMap)) {
-    if (!operations.has(caller)) {
+    if (!isCronTriggerKey(caller) && !operations.has(caller)) {
       errors.push(`trigger map key "${caller}" is not a known operationId`);
     }
     for (const target of targets) {

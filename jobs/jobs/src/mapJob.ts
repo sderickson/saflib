@@ -19,13 +19,17 @@ export function mapJobToWire(job: JobEntity): Job {
       userId: job.authority.userId,
       importerId: job.authority.importerId,
     };
-  } else {
-    // M2 wire schema has no cron kind yet; surface as request-shaped evidence.
+  } else if (job.authority.kind === "cron") {
     authority = {
-      kind: "request",
+      kind: "cron",
       userId: job.authority.userId,
-      requestId: job.authority.cronJobName,
+      cronJobName: job.authority.cronJobName,
     };
+  } else {
+    const _exhaustive: never = job.authority;
+    throw new Error(
+      `Unknown job authority kind: ${(_exhaustive as { kind: string }).kind}`,
+    );
   }
 
   return {

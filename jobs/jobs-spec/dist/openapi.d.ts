@@ -211,6 +211,22 @@ export interface components {
                  * @example Im7k_mN2
                  */
                 importerId: string;
+            } | {
+                /**
+                 * @example cron
+                 * @enum {string}
+                 */
+                kind: "cron";
+                /**
+                 * @description Admin who enabled the cron job (`enabled_by`).
+                 * @example Us7k_pQ2
+                 */
+                userId: string;
+                /**
+                 * @description Name of the cron job that enqueued this chain.
+                 * @example recoverySweep
+                 */
+                cronJobName: string;
             };
             /**
              * @description Chain-root request id (user request / webhook X-Request-ID, or cron-tick id). Copied from parent on chained enqueues; joins audit_event.request_id.
@@ -358,6 +374,22 @@ export interface components {
              * @example Im7k_mN2
              */
             importerId: string;
+        } | {
+            /**
+             * @example cron
+             * @enum {string}
+             */
+            kind: "cron";
+            /**
+             * @description Admin who enabled the cron job (`enabled_by`).
+             * @example Us7k_pQ2
+             */
+            userId: string;
+            /**
+             * @description Name of the cron job that enqueued this chain.
+             * @example recoverySweep
+             */
+            cronJobName: string;
         };
     };
     responses: never;
@@ -475,7 +507,7 @@ export interface operations {
                          * @example Us7k_pQ2
                          */
                         userId: string;
-                        /** @description Evidence grant for the override (request or importer kind). */
+                        /** @description Evidence grant for the override (request, importer, or cron kind). */
                         authority: components["schemas"]["authority"];
                     };
                 };

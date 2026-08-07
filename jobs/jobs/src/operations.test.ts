@@ -1,7 +1,13 @@
 import { describe, expect, it } from "vitest";
 import type { OpenAPIV3 } from "express-openapi-validator/dist/framework/types.ts";
 import { TIMEOUT_CEILING_MS } from "./constants.ts";
-import { buildOperationMap, validateJobsStartup } from "./operations.ts";
+import {
+  buildOperationMap,
+  cronTriggerKey,
+  isCronTriggerKey,
+  validateCronTriggerKeys,
+  validateJobsStartup,
+} from "./operations.ts";
 
 const sampleSpec: OpenAPIV3.DocumentV3 = {
   openapi: "3.0.0",
@@ -28,6 +34,13 @@ const sampleSpec: OpenAPIV3.DocumentV3 = {
         responses: { "200": { description: "ok" } },
       },
     },
+    "/maintenance/purge": {
+      post: {
+        operationId: "purgeClaudeFilesMaintenance",
+        tags: ["background"],
+        responses: { "200": { description: "ok" } },
+      },
+    },
   },
 };
 
@@ -46,6 +59,61 @@ describe("buildOperationMap", () => {
       isBackground: true,
     });
     expect(map.get("jobsDemoStepC")?.isBackground).toBe(true);
+  });
+});
+
+describe("cron trigger keys", () => {
+  it("detects and builds cron: keys", () => {
+    expect(isCronTriggerKey("cron:purgeClaudeFiles")).toBe(true);
+    expect(isCronTriggerKey("purgeClaudeFiles")).toBe(false);
+    expect(cronTriggerKey("purgeClaudeFiles")).toBe("cron:purgeClaudeFiles");
+  });
+
+  it("validateJobsStartup accepts cron: keys that are not operationIds", () => {
+    expect(() =>
+      validateJobsStartup({
+        triggerMap: {
+          "cron:purgeClaudeFiles": ["purgeClaudeFilesMaintenance"],
+          startJobsDemo: ["jobsDemoStepB"],
+        },
+        operations: sampleSpec,
+      }),
+    ).not.toThrow();
+  });
+
+  it("validateJobsStartup still requires cron: targets to be background ops", () => {
+    expect(() =>
+      validateJobsStartup({
+        triggerMap: {
+          "cron:purgeClaudeFiles": ["startJobsDemo"],
+        },
+        operations: sampleSpec,
+      }),
+    ).toThrow(/missing the "background" tag/);
+  });
+
+  it("validateCronTriggerKeys accepts matching JobsMap names", () => {
+    expect(() =>
+      validateCronTriggerKeys(
+        {
+          "cron:purgeClaudeFiles": ["purgeClaudeFilesMaintenance"],
+          "cron:recoverySweep": ["runRecoverySweep"],
+        },
+        ["purgeClaudeFiles", "recoverySweep"],
+      ),
+    ).not.toThrow();
+  });
+
+  it("validateCronTriggerKeys rejects orphan cron: keys and missing jobs", () => {
+    expect(() =>
+      validateCronTriggerKeys(
+        {
+          "cron:purgeClaudeFiles": ["purgeClaudeFilesMaintenance"],
+          "cron:unknownJob": ["purgeClaudeFilesMaintenance"],
+        },
+        ["purgeClaudeFiles", "recoverySweep"],
+      ),
+    ).toThrow(/unknownJob[\s\S]*recoverySweep/);
   });
 });
 
