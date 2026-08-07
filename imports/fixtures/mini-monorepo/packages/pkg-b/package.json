@@ -1,0 +1,12 @@
+{
+  "name": "@fixture/pkg-b",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./index.ts",
+      "default": "./index.ts"
+    },
+    "./types": "./types.ts"
+  }
+}

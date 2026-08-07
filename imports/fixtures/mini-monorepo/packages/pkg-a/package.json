@@ -1,0 +1,9 @@
+{
+  "name": "@fixture/pkg-a",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts",
+    "./util": "./src/util.ts"
+  }
+}
