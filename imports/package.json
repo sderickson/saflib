@@ -3,6 +3,9 @@
   "description": "SAF import-graph measurement and enforcement tooling",
   "private": true,
   "type": "module",
+  "bin": {
+    "saf-imports": "bin/saf-imports/index.ts"
+  },
   "exports": {
     ".": "./index.ts"
   },
@@ -16,6 +19,7 @@
     "@saflib/commander": "*"
   },
   "devDependencies": {
+    "@saflib/dev-tools": "*",
     "@saflib/monorepo": "*",
     "@saflib/vitest": "*",
     "vitest": "^3.0.0"

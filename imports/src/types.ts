@@ -41,3 +41,13 @@ export interface MeasureGraphResult {
   /** Distinct external npm package roots. */
   ext: number;
 }
+
+/** Shared options for graph walks (`measure`, `why`, `cycles`). */
+export type GraphWalkOptions = MeasureGraphOptions;
+
+/**
+ * Shortest import path from entry to target as display labels
+ * (entry path, then each import specifier along the chain).
+ * `null` if unreachable.
+ */
+export type FindPathResult = string[] | null;
