@@ -1,4 +1,5 @@
 export * from "./src/logger.ts";
+export * from "./src/logFormat.ts";
 export * from "./src/reporters.ts";
 export * from "./src/context.ts";
 export * from "./src/errors.ts";

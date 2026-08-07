@@ -1,25 +1,45 @@
 import type { Handler } from "express";
 import morgan from "morgan";
+import { formatHttpAccessLine } from "@saflib/node";
 import { getSafReporters } from "@saflib/node";
 import { typedEnv } from "@saflib/env";
+import { isInternalRequest } from "../markInternal.ts";
 
 /**
  * HTTP request logging middleware using Morgan.
  * Mainly used for debugging in development, not propagated to something like Loki in production.
- * Format: ":date[iso] <:id> :method :url :status :response-time ms - :res[content-length]"
+ *
+ * Channel markers (4-char column, asymmetric weight + direction):
+ * - `◀━━ ` browser/client — bold in development (heavy bar, inbound from the left)
+ * - ` ──▷` internal background — dim in development (light bar, outbound to the right)
  */
 export const everyRequestLogger: Handler = (() => {
   if (typedEnv.NODE_ENV === "test") {
     return (_, __, next) => next();
   }
 
-  // Define custom token for request ID
-  morgan.token("id", (req) => (req as any).shortId);
+  return morgan((tokens, req, res) => {
+    const method = tokens.method(req, res) ?? "-";
+    const url = tokens.url(req, res) ?? "-";
+    const status = tokens.status(req, res);
+    const responseTime = tokens["response-time"](req, res);
+    const durationMs = Number(responseTime ?? 0);
+    const contentLength = res.getHeader("content-length");
 
-  // Return configured morgan middleware
-  return morgan(
-    ":date[iso] <:id> :method :url :status :response-time ms - :res[content-length]",
-  );
+    return formatHttpAccessLine({
+      internal: isInternalRequest(req),
+      status: status ? Number(status) : undefined,
+      durationMs,
+      sizeBytes:
+        contentLength == null
+          ? undefined
+          : typeof contentLength === "number"
+            ? contentLength
+            : String(contentLength),
+      method,
+      url,
+    });
+  });
 })();
 
 const safeMethods = ["GET", "HEAD", "OPTIONS"];

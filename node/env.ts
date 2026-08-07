@@ -29,6 +29,10 @@ export interface NodeEnvSchema {
    */
   DOMAIN_REDIRECTS?: string;
   /**
+   * Minimum Winston log level for console output (error, warn, info, verbose, debug, silly). HTTP access lines via Morgan are unaffected.
+   */
+  LOG_LEVEL?: "error" | "warn" | "info" | "verbose" | "debug" | "silly";
+  /**
    * The hostname or URL of the Loki instance to send logs to (e.g., http://loki:3100)
    */
   LOKI_HOSTNAME?: string;

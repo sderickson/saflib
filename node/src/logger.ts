@@ -2,23 +2,31 @@ import winston, { type Logger, format } from "winston";
 import { type TransformableInfo } from "logform";
 import { type SafContext } from "./types.ts";
 import { getServiceName, testContext } from "./context.ts";
-import { typedEnv } from "@saflib/env";
+import { typedEnv } from "../env.ts";
+import { formatCompactTimestamp } from "./logFormat.ts";
 
 type WinstonLogger = Logger;
+
+const consoleLevel = typedEnv.LOG_LEVEL ?? "info";
 
 const consoleTransport = new winston.transports.Console({
   silent: typedEnv.NODE_ENV === "test",
 });
 
+const compactTimestamp = format((info) => {
+  info.timestamp = formatCompactTimestamp();
+  return info;
+});
+
 const baseLogger = winston.createLogger({
+  level: consoleLevel,
   transports: [consoleTransport],
   format: format.combine(
-    format.timestamp(),
-    format.json(),
+    compactTimestamp(),
     format.printf(
       (info: TransformableInfo & { timestamp?: string; reqId?: string }) => {
         const { timestamp, level, message, reqId } = info;
-        const reqIdStr = reqId ? `<${reqId.slice(0, 8)}> ` : ""; // Keep reqId optional here for the base logger
+        const reqIdStr = reqId ? `<${reqId.slice(0, 8)}> ` : "";
         return `${timestamp} ${reqIdStr}[${level}]: ${message}`;
       },
     ),
@@ -73,6 +81,7 @@ export const createLogger = (options?: LoggerOptions): WinstonLogger => {
   };
   if (options.format) {
     return winston.createLogger({
+      level: consoleLevel,
       transports: [consoleTransport],
       format: options.format,
     });
