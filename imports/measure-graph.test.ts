@@ -1,4 +1,5 @@
 import path from "node:path";
+import fs from "node:fs";
 import { describe, expect, it } from "vitest";
 import { measureGraph } from "./index.ts";
 import { extractImports } from "./src/graph/extract-imports.ts";
@@ -126,16 +127,29 @@ describe("measureGraph — Vue SFC", () => {
 });
 
 describe("measureGraph — real repo validation", () => {
-  it(
+  const listImportersPath = path.resolve(
+    import.meta.dirname,
+    "../../daemon/service/http/routes/matters/list-importers.test.ts",
+  );
+
+  function pathclerkMonorepoAvailable(): boolean {
+    if (!fs.existsSync(listImportersPath)) {
+      return false;
+    }
+    try {
+      findMonorepoRoot(path.dirname(listImportersPath));
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  it.skipIf(!pathclerkMonorepoAvailable())(
     "counts list-importers.test.ts within ±5% of 1071 modules",
     { timeout: 30_000 },
     () => {
-      const entry = path.resolve(
-        import.meta.dirname,
-        "../../daemon/service/http/routes/matters/list-importers.test.ts",
-      );
-      const result = measureGraph(entry);
-      // Prototype baseline: 1071 first-party modules
+      const result = measureGraph(listImportersPath);
+      // Prototype baseline: 1071 first-party modules (pathclerk monorepo only)
       expect(result.modules).toBeGreaterThanOrEqual(Math.floor(1071 * 0.95));
       expect(result.modules).toBeLessThanOrEqual(Math.ceil(1071 * 1.05));
     },
