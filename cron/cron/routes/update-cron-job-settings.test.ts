@@ -41,7 +41,10 @@ describe("PUT /jobs/settings", () => {
     );
 
     const expectedBody: CronResponseBody["updateCronJobSettings"][200] =
-      mapJobSettingToResponse(updatedSetting);
+      mapJobSettingToResponse(
+        updatedSetting,
+        mockJobs[existingJobName]?.schedule,
+      );
 
     expect(response.body).toEqual(expectedBody);
     expect(response.body.enabled).toBe(false); // Double-check the change
