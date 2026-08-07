@@ -3,7 +3,7 @@ import type { WorkflowInput, WorkflowOutput } from "../types.ts";
 import { contextFromInput } from "../utils.ts";
 import { workflowActions, workflowActors } from "../xstate.ts";
 import path from "node:path";
-import { existsSync } from "node:fs";
+import { validateCdTarget } from "./cd-validation.ts";
 
 /**
  * Input for the CdStepMachine.
@@ -49,23 +49,8 @@ export const CdStepMachine = setup({
     const newCwd = input.path.startsWith("/")
       ? input.path
       : path.join(originalWorkingDirectory, input.path);
-    // In checklist/dry/script mode, skip validation so workflow can produce a checklist from any cwd
-    // (dry mode in particular doesn't materialize files from CopyStepMachine, so a CD into a
-    // newly-created package would always fail existSync if we validated here).
     const runMode = input.runMode ?? "print";
-    if (runMode === "print" || runMode === "run") {
-      if (!existsSync(newCwd)) {
-        throw new Error(
-          `Directory ${newCwd} does not exist. You should only cd into packages.`,
-        );
-      }
-      const packagePath = path.join(newCwd, "package.json");
-      if (!existsSync(packagePath)) {
-        throw new Error(
-          `Package.json not found in ${newCwd}. You should only cd into packages.`,
-        );
-      }
-    }
+    validateCdTarget(newCwd, runMode, input.copiedFiles);
     return {
       ...contextFromInput(input),
       newCwd,
