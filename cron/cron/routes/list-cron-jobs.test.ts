@@ -47,13 +47,14 @@ describe("GET /jobs", () => {
 
     // Construct expected body based on the actual seeded data and the mapping
     const expectedBody: JobSettings[] = seededSettings.map((setting) => ({
-      // Map fields returned by the API (_helpers.ts format)
-      id: setting.id, // Use the actual ID from seeding
+      id: setting.id,
       jobName: setting.jobName,
       enabled: setting.enabled,
       enabledBy: setting.enabledBy,
       lastRunAt: setting.lastRunAt ? setting.lastRunAt.toISOString() : null,
       lastRunStatus: setting.lastRunStatus,
+      schedule: null,
+      runsNextAt: null,
       createdAt: setting.createdAt.toISOString(),
       updatedAt: setting.updatedAt.toISOString(),
     }));

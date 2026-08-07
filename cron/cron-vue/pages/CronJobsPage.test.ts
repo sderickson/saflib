@@ -17,10 +17,12 @@ const mockJobs: ListCronJobsResponse = [
     jobName: "job-1",
     enabled: true,
     enabledBy: "admin-user-1",
-    lastRunAt: new Date(Date.now() - 3600 * 1000).toISOString(), // 1 hour ago
+    lastRunAt: new Date(Date.now() - 3600 * 1000).toISOString(),
     lastRunStatus: "success",
-    createdAt: new Date(Date.now() - 86400 * 1000 * 7).toISOString(), // 7 days ago
-    updatedAt: new Date(Date.now() - 86400 * 1000).toISOString(), // 1 day ago
+    schedule: "*/15 * * * *",
+    runsNextAt: new Date(Date.now() + 900 * 1000).toISOString(),
+    createdAt: new Date(Date.now() - 86400 * 1000 * 7).toISOString(),
+    updatedAt: new Date(Date.now() - 86400 * 1000).toISOString(),
   },
   {
     jobName: "job-2",
@@ -28,17 +30,21 @@ const mockJobs: ListCronJobsResponse = [
     enabledBy: null,
     lastRunAt: null,
     lastRunStatus: null,
-    createdAt: new Date(Date.now() - 86400 * 1000 * 14).toISOString(), // 14 days ago
-    updatedAt: new Date(Date.now() - 86400 * 1000 * 2).toISOString(), // 2 days ago
+    schedule: "0 3 * * *",
+    runsNextAt: null,
+    createdAt: new Date(Date.now() - 86400 * 1000 * 14).toISOString(),
+    updatedAt: new Date(Date.now() - 86400 * 1000 * 2).toISOString(),
   },
   {
     jobName: "job-3",
     enabled: true,
     enabledBy: null,
-    lastRunAt: new Date(Date.now() - 60 * 1000).toISOString(), // 1 min ago
+    lastRunAt: new Date(Date.now() - 60 * 1000).toISOString(),
     lastRunStatus: "fail",
-    createdAt: new Date(Date.now() - 86400 * 1000 * 1).toISOString(), // 1 day ago
-    updatedAt: new Date(Date.now() - 3600 * 1000).toISOString(), // 1 hour ago
+    schedule: "* * * * *",
+    runsNextAt: null,
+    createdAt: new Date(Date.now() - 86400 * 1000 * 1).toISOString(),
+    updatedAt: new Date(Date.now() - 3600 * 1000).toISOString(),
   },
 ];
 
@@ -153,8 +159,7 @@ describe("CronJobsPage", () => {
       "Enabled By",
       "Last Run Status",
       "Last Run At",
-      "Created At",
-      "Updated At",
+      "Runs Next",
       "Actions",
     ]);
 
@@ -172,10 +177,9 @@ describe("CronJobsPage", () => {
     expect(
       row1.findComponent({ name: "v-chip", text: "success" }).exists(),
     ).toBe(true); // Last Run Status Chip
-    expect(row1.text()).toContain(formatDateTime(mockJobs[0].lastRunAt)); // Last Run At
-    expect(row1.text()).toContain(formatDateTime(mockJobs[0].createdAt)); // Created At
-    expect(row1.text()).toContain(formatDateTime(mockJobs[0].updatedAt)); // Updated At
-    expect(getActionButton(wrapper, "job-1", "Disable").exists()).toBe(true); // Action Button
+    expect(row1.text()).toContain(formatDateTime(mockJobs[0].lastRunAt));
+    expect(row1.text()).toContain(formatDateTime(mockJobs[0].runsNextAt));
+    expect(getActionButton(wrapper, "job-1", "Disable").exists()).toBe(true);
   });
 
   it("warns when enabled but enabledBy is null", async () => {

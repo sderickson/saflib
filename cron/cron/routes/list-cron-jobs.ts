@@ -5,7 +5,7 @@ import { mapJobSettingToResponse } from "./_helpers.ts";
 import { cronServiceStorage } from "../context.ts";
 
 export const listCronJobsHandler = createHandler(async function (_req, res) {
-  const { dbKey } = cronServiceStorage.getStore()!;
+  const { dbKey, jobs: jobsMap } = cronServiceStorage.getStore()!;
   const { result: jobs, error } = await jobSettingsDb.getAll(dbKey);
   if (error) {
     switch (true) {
@@ -13,8 +13,8 @@ export const listCronJobsHandler = createHandler(async function (_req, res) {
         throw error satisfies never;
     }
   }
-  const response: CronResponseBody["listCronJobs"][200] = jobs.map(
-    mapJobSettingToResponse,
+  const response: CronResponseBody["listCronJobs"][200] = jobs.map((setting) =>
+    mapJobSettingToResponse(setting, jobsMap[setting.jobName]?.schedule),
   );
   res.status(200).json(response);
 });

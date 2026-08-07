@@ -29,7 +29,7 @@ export const updateCronJobSettingsHandler = createHandler(
     }
 
     const response: CronResponseBody["updateCronJobSettings"][200] =
-      mapJobSettingToResponse(updatedSetting);
+      mapJobSettingToResponse(updatedSetting, jobs[body.jobName]?.schedule);
     res.status(200).json(response);
   },
 );

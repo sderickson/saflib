@@ -56,11 +56,9 @@
           <template #[`item.lastRunAt`]="{ item }">
             {{ formatDateTime(item.lastRunAt) }}
           </template>
-          <template #[`item.createdAt`]="{ item }">
-            {{ formatDateTime(item.createdAt) }}
-          </template>
-          <template #[`item.updatedAt`]="{ item }">
-            {{ formatDateTime(item.updatedAt) }}
+
+          <template #[`item.runsNextAt`]="{ item }">
+            {{ formatRunsNext(item) }}
           </template>
 
           <template #[`item.actions`]="{ item }">
@@ -75,7 +73,6 @@
           </template>
 
           <template #bottom></template>
-          <!-- Optional: Removes default footer -->
         </v-data-table>
         <p v-else-if="!isLoadingJobs && !jobsError" class="text-body-1">
           No cron jobs found.
@@ -87,6 +84,7 @@
 
 <script setup lang="ts">
 import { ref } from "vue";
+import type { JobSettings } from "@saflib/cron-spec";
 import { useListCronJobs, useUpdateCronJobSettings } from "../requests/queries";
 
 const { subdomain } = defineProps<{
@@ -101,8 +99,7 @@ const headers = [
   { title: "Enabled By", key: "enabledBy", sortable: true },
   { title: "Last Run Status", key: "lastRunStatus", sortable: true },
   { title: "Last Run At", key: "lastRunAt", sortable: true },
-  { title: "Created At", key: "createdAt", sortable: true },
-  { title: "Updated At", key: "updatedAt", sortable: true },
+  { title: "Runs Next", key: "runsNextAt", sortable: true },
   { title: "Actions", key: "actions", sortable: false },
 ];
 
@@ -139,8 +136,21 @@ const formatDateTime = (dateTimeString: string | null | undefined): string => {
     }).format(new Date(dateTimeString));
   } catch (e) {
     console.error("Error formatting date:", e);
-    return dateTimeString; // Fallback to original string if formatting fails
+    return dateTimeString;
   }
+};
+
+const formatRunsNext = (item: JobSettings): string => {
+  if (!item.enabled) {
+    return "—";
+  }
+  if (item.enabled && !item.enabledBy) {
+    return "Re-enable required";
+  }
+  if (!item.runsNextAt) {
+    return item.schedule ? "Unknown" : "—";
+  }
+  return formatDateTime(item.runsNextAt);
 };
 
 const statusColor = (status: string | null | undefined): string => {

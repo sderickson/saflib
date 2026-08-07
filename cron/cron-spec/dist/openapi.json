@@ -193,6 +193,19 @@
             "nullable": true,
             "description": "Status of the last job run."
           },
+          "schedule": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true,
+            "description": "Cron schedule string from the registered JobsMap (e.g. `*/15 * * * *`)."
+          },
+          "runsNextAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "readOnly": true,
+            "description": "Next scheduled tick when the job is enabled; null when disabled or schedule is unknown.\n"
+          },
           "createdAt": {
             "type": "string",
             "format": "date-time",
