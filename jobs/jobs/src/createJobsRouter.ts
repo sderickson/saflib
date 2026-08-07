@@ -22,10 +22,12 @@ export interface CreateJobsRouterOptions {
 
 /**
  * Admin jobs router for monolith chrome (list/get/cancel-by-chain).
- * Mount **before** any router that ends with a catch-all 404 (e.g. cron),
- * and after product routers — same mount-last contract as `createCronRouter`.
+ * Only handles `/jobs/*` — other paths fall through so sibling chrome routers
+ * (e.g. cron) can run. Error middleware is scoped to `/jobs` for the same reason.
  */
-export function createJobsRouter(options: CreateJobsRouterOptions): express.Router {
+export function createJobsRouter(
+  options: CreateJobsRouterOptions,
+): express.Router {
   const router = express.Router();
 
   const context = {
@@ -35,29 +37,30 @@ export function createJobsRouter(options: CreateJobsRouterOptions): express.Rout
     operations: new Map(),
   };
 
-  router.use((_req, _res, next) => {
+  const jobsRouter = express.Router();
+
+  jobsRouter.use((_req, _res, next) => {
     jobsServiceStorage.run(context, () => {
       next();
     });
   });
 
-  router.use(
-    "/jobs",
+  jobsRouter.use(
     ...createScopedMiddleware({
       apiSpec: jsonSpec,
       enforceAuth: true,
     }),
   );
 
-  router.get("/jobs", listJobsHandler);
-  router.post(
-    "/jobs/cancel-by-original-request",
-    cancelJobsByOriginalRequestHandler,
-  );
-  router.post("/jobs/:id/retry", retryJobHandler);
-  router.post("/jobs/:id/cancel", cancelJobHandler);
-  router.get("/jobs/:id", getJobHandler);
+  jobsRouter.get("/", listJobsHandler);
+  jobsRouter.post("/cancel-by-original-request", cancelJobsByOriginalRequestHandler);
+  jobsRouter.post("/:id/retry", retryJobHandler);
+  jobsRouter.post("/:id/cancel", cancelJobHandler);
+  jobsRouter.get("/:id", getJobHandler);
 
-  router.use(createErrorMiddleware());
+  jobsRouter.use(createErrorMiddleware());
+
+  router.use("/jobs", jobsRouter);
+
   return router;
 }
