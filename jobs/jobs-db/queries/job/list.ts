@@ -12,6 +12,7 @@ export type ListJobParams = {
   operationId?: (typeof jobTable.$inferSelect)["operationId"];
   userId?: (typeof jobTable.$inferSelect)["userId"];
   originalRequestId?: (typeof jobTable.$inferSelect)["originalRequestId"];
+  concurrencyKey?: string;
   /** Inclusive lower bound on `createdAt`. */
   createdAfter?: Date;
   /** Inclusive upper bound on `createdAt`. */
@@ -48,6 +49,9 @@ export const listJob = queryWrapper(
     }
     if (params.originalRequestId !== undefined) {
       conditions.push(eq(jobTable.originalRequestId, params.originalRequestId));
+    }
+    if (params.concurrencyKey !== undefined) {
+      conditions.push(eq(jobTable.concurrencyKey, params.concurrencyKey));
     }
     if (params.createdAfter !== undefined) {
       conditions.push(gte(jobTable.createdAt, params.createdAfter));
