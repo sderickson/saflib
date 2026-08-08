@@ -19,9 +19,11 @@
     "saf-git-hashes": "./src/git-hashes-cli.ts",
     "saf-docs": "./bin/saf-docs-cli/index.ts"
   },
+  "dependencies": {
+    "@saflib/monorepo": "*"
+  },
   "devDependencies": {
     "@saflib/commander": "*",
-    "@saflib/monorepo": "*",
     "@saflib/vitest": "*",
     "memfs": "^4.17.0",
     "typedoc": "^0.28.10",

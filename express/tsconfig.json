@@ -15,9 +15,6 @@
       "path": "../notify/notify"
     },
     {
-      "path": "../ory-kratos"
-    },
-    {
       "path": "../sdk"
     },
     {

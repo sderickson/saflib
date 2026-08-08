@@ -14,12 +14,12 @@
     "typecheck": "tsc -b"
   },
   "dependencies": {
+    "@saflib/node": "*",
     "commander": "^14.0.0",
     "winston": "^3.11.0"
   },
   "devDependencies": {
     "@saflib/monorepo": "*",
-    "@saflib/node": "*",
     "@saflib/vitest": "*"
   }
 }

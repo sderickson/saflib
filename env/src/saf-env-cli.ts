@@ -2,9 +2,8 @@
 import { Command } from "commander";
 import { getCombinedEnvSchema, makeEnvParserSnippet } from "./env.ts";
 import { writeFileSync, existsSync } from "fs";
-import { buildMonorepoContext, getCurrentPackageName } from "@saflib/dev-tools";
+import { buildMonorepoContext, getCurrentPackageName } from "@saflib/monorepo/workspace";
 import path from "path";
-import { setupContext } from "@saflib/commander";
 import { formatPath } from "@saflib/monorepo/dev";
 
 const program = new Command();
@@ -107,6 +106,4 @@ program
     console.log("Generate-all completed!");
   });
 
-setupContext({ serviceName: "saf-env" }, () => {
-  program.parse(process.argv);
-});
+program.parse(process.argv);

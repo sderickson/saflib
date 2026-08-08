@@ -2,7 +2,7 @@ import {
   buildMonorepoContext,
   getCurrentPackageName,
   getAllPackageWorkspaceDependencies,
-} from "@saflib/dev-tools";
+} from "@saflib/monorepo/workspace";
 import type { JSONSchema4 } from "json-schema";
 import { readFileSync } from "fs";
 import { existsSync } from "fs";

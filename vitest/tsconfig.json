@@ -13,9 +13,5 @@
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.tsbuildinfo",
     "outDir": "./dist/types"
   },
-  "references": [
-    {
-      "path": "../commander"
-    }
-  ]
+  "references": []
 }

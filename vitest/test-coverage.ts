@@ -6,7 +6,6 @@
 import { Command } from "commander";
 import { spawn } from "child_process";
 import { writeFile } from "fs/promises";
-import { setupContext } from "@saflib/commander";
 
 const program = new Command()
   .name("saf-test-coverage")
@@ -61,6 +60,4 @@ const program = new Command()
     process.exit(0);
   });
 
-setupContext({ serviceName: "saf-test-coverage" }, () => {
-  program.parse(process.argv);
-});
+program.parse(process.argv);

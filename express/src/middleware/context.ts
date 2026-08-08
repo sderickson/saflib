@@ -14,7 +14,7 @@ import type { Handler, Request } from "express";
 import createError from "http-errors";
 import { AuthenticatorAssuranceLevel, type Session } from "@ory/client";
 import { typedEnv } from "@saflib/node";
-import { resolveAuthFromIdentityId } from "@saflib/ory-kratos";
+import { resolveAuthFromIdentityId } from "../resolveAuthFromIdentityId.ts";
 import { isInternalRequest } from "../markInternal.ts";
 
 function defaultKratosBrowserUrl(): string {
