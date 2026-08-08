@@ -136,6 +136,24 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       targetDir: context.cwd,
       lineReplace: makeLineReplace(context),
     })),
+    // Product templates include pathclerk CI workflows; never keep them in @saflib/saflib.
+    step(
+      CommandStepMachine,
+      () => ({
+        command: "rm",
+        args: [
+          "-rf",
+          ".github/workflows/playwright.yml",
+          ".github/workflows/typecheck.yml",
+          ".github/workflows/push.yml",
+          ".github/actions/setup-node-deps",
+        ],
+      }),
+      {
+        skipIf: ({ context }) =>
+          getPackageName(context.cwd) !== "@saflib/saflib",
+      },
+    ),
     step(CommandStepMachine, ({ context }) => ({
       command: "rm",
       args: [
