@@ -18,6 +18,9 @@ const SKIP_DIRS = new Set([
 
 const WORKFLOW_AREA_RE = /BEGIN\s+(?:ONCE\s+)?(?:SORTED\s+)?WORKFLOW AREA/;
 
+/** Package-local files excluded from generated export maps (internal wiring). */
+const SKIP_FILES = new Set(["env.ts"]);
+
 export type ExportsMap = Record<string, string>;
 
 export interface ComputeExportsOptions {
@@ -42,50 +45,48 @@ function isExportableTs(name: string): boolean {
   return true;
 }
 
+function walkExportableFiles(dir: string, out: string[]) {
+  let entries: fs.Dirent[];
+  try {
+    entries = fs.readdirSync(dir, { withFileTypes: true });
+  } catch {
+    return;
+  }
+  for (const e of entries) {
+    if (e.name.startsWith(".")) continue;
+    const full = path.join(dir, e.name);
+    if (e.isDirectory()) {
+      if (SKIP_DIRS.has(e.name)) continue;
+      walkExportableFiles(full, out);
+    } else if (
+      e.isFile() &&
+      isExportableTs(e.name) &&
+      !SKIP_FILES.has(e.name)
+    ) {
+      out.push(full);
+    }
+  }
+}
+
 /**
- * List exportable source files: top-level package `.ts`/`.tsx` plus everything
- * under `src/` (recursive). Excludes tests, fixtures, bin, docs, workflows.
+ * List exportable source files: all `.ts`/`.tsx` under the package directory
+ * (recursive). Excludes tests, fixtures, bin, docs, workflows, and `env.ts`.
  */
 export function listExportableFiles(pkgDir: string): string[] {
   const out: string[] = [];
-
-  // Package root (non-recursive)
-  let rootEntries: fs.Dirent[];
-  try {
-    rootEntries = fs.readdirSync(pkgDir, { withFileTypes: true });
-  } catch {
-    return out;
-  }
-  for (const e of rootEntries) {
-    if (!e.isFile()) continue;
-    if (isExportableTs(e.name)) {
-      out.push(path.join(pkgDir, e.name));
-    }
-  }
-
-  // src/ recursive
-  const srcDir = path.join(pkgDir, "src");
-  function walk(dir: string) {
-    let entries: fs.Dirent[];
-    try {
-      entries = fs.readdirSync(dir, { withFileTypes: true });
-    } catch {
-      return;
-    }
-    for (const e of entries) {
-      if (e.name.startsWith(".")) continue;
-      const full = path.join(dir, e.name);
-      if (e.isDirectory()) {
-        if (SKIP_DIRS.has(e.name)) continue;
-        walk(full);
-      } else if (e.isFile() && isExportableTs(e.name)) {
-        out.push(full);
-      }
-    }
-  }
-  walk(srcDir);
-
+  walkExportableFiles(pkgDir, out);
   return out.sort();
+}
+
+function readExportsAliases(pkgDir: string): ExportsMap {
+  try {
+    const pj = JSON.parse(
+      fs.readFileSync(path.join(pkgDir, "package.json"), "utf8"),
+    ) as { exportsAliases?: ExportsMap };
+    return sortExportsMap(pj.exportsAliases ?? {});
+  } catch {
+    return {};
+  }
 }
 
 /** True if package.json text contains a WORKFLOW AREA marker. */
@@ -120,7 +121,7 @@ export function computeExportsMap(pkgDir: string): ExportsMap {
     map[exportKey] = "./" + rel;
   }
 
-  return sortExportsMap(map);
+  return sortExportsMap({ ...map, ...readExportsAliases(pkgDir) });
 }
 
 export function sortExportsMap(map: ExportsMap): ExportsMap {
@@ -207,8 +208,12 @@ export function generateExports(pkgDir: string): {
     string,
     unknown
   >;
+  const exportsAliases = readExportsAliases(pkgDir);
   const exports = computeExportsMap(pkgDir);
   pj.exports = exports;
+  if (Object.keys(exportsAliases).length > 0) {
+    pj.exportsAliases = exportsAliases;
+  }
   fs.writeFileSync(pjPath, JSON.stringify(pj, null, 2) + "\n", "utf8");
   return { written: true, exports };
 }

@@ -22,6 +22,50 @@ describe("computeExportsMap", () => {
     expect(map["./src/chain-a"]).toBe("./src/chain-a.ts");
   });
 
+  it("maps nested package subdirectories (e.g. lib/) to subpaths", () => {
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "saf-imports-exports-lib-"));
+    try {
+      fs.writeFileSync(
+        path.join(tmp, "package.json"),
+        JSON.stringify({ name: "@tmp/nested", type: "module" }, null, 2) + "\n",
+      );
+      fs.writeFileSync(path.join(tmp, "index.ts"), "export {};\n");
+      fs.mkdirSync(path.join(tmp, "lib"));
+      fs.writeFileSync(path.join(tmp, "lib", "leaf.ts"), "export const leaf = 1;\n");
+
+      const map = computeExportsMap(tmp);
+      expect(map["./lib/leaf"]).toBe("./lib/leaf.ts");
+      expect(map["./env"]).toBeUndefined();
+    } finally {
+      fs.rmSync(tmp, { recursive: true, force: true });
+    }
+  });
+
+  it("merges exportsAliases from package.json", () => {
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "saf-imports-exports-alias-"));
+    try {
+      fs.writeFileSync(
+        path.join(tmp, "package.json"),
+        JSON.stringify(
+          {
+            name: "@tmp/alias",
+            type: "module",
+            exportsAliases: { "./short": "./long-name.ts" },
+          },
+          null,
+          2,
+        ) + "\n",
+      );
+      fs.writeFileSync(path.join(tmp, "long-name.ts"), "export {};\n");
+
+      const map = computeExportsMap(tmp);
+      expect(map["./short"]).toBe("./long-name.ts");
+      expect(map["./long-name"]).toBe("./long-name.ts");
+    } finally {
+      fs.rmSync(tmp, { recursive: true, force: true });
+    }
+  });
+
   it("excludes test files and fixtures", () => {
     const files = listExportableFiles(path.join(import.meta.dirname));
     expect(files.some((f) => f.includes("measure-graph.test.ts"))).toBe(false);
