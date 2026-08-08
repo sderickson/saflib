@@ -106,9 +106,14 @@ const SKIP_DIRS = new Set([
 const DEFAULT_ENTRY_PROBES: { label: string; packageName: string; exportPath: string }[] =
   [
     {
-      label: "@pathclerk/daemon-service-common",
+      label: "@pathclerk/daemon-service-common/lib/site-admin-access",
       packageName: "@pathclerk/daemon-service-common",
-      exportPath: ".",
+      exportPath: "./lib/site-admin-access",
+    },
+    {
+      label: "@pathclerk/daemon-service-common/context",
+      packageName: "@pathclerk/daemon-service-common",
+      exportPath: "./context",
     },
     {
       label: "@pathclerk/daemon-clients-common",
