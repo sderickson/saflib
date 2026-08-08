@@ -5,9 +5,6 @@
       "path": "../../../drizzle/workflows/templates"
     },
     {
-      "path": "../../../express"
-    },
-    {
       "path": "../../../monorepo"
     },
     {

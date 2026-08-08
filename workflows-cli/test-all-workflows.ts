@@ -45,6 +45,13 @@ import {
 import { CommandStepMachine } from "@saflib/workflows";
 import { AddWorkflowDefinition } from "@saflib/workflows/workflows";
 import { SpecProjectWorkflowDefinition } from "@saflib/processes/workflows";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const saflibRoot = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "..",
+);
 
 const input = [] as const;
 interface TestAllWorkflowsContext {}
@@ -267,6 +274,9 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
 
     // Product init copies pathclerk-style CI/deploy templates to repo root; remove them
     // so workflow-script does not pollute the saflib repository.
+    step(CdStepMachine, () => ({
+      path: saflibRoot,
+    })),
     step(CommandStepMachine, () => ({
       command: "rm",
       args: [
