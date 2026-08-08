@@ -1,8 +1,46 @@
 {
-  "extends": ["@saflib/vue/tsconfig.app.json"],
+  "extends": [
+    "@saflib/vue/tsconfig.app.json"
+  ],
   "compilerOptions": {
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
-    "outDir": "./dist/types"
+    "outDir": "./dist/types",
+    "noEmit": false,
+    "emitDeclarationOnly": true,
+    "types": [
+      "vite/client"
+    ]
   },
-  "exclude": ["node_modules", "dist", "e2e", "playwright.config.ts"]
+  "exclude": [
+    "node_modules",
+    "e2e",
+    "playwright.config.ts",
+    "dist/types",
+    "playwright-report",
+    "test-results",
+    "workflows/template/**",
+    "workflows/templates/**",
+    "**/workflows/template/**",
+    "**/workflows/templates/**"
+  ],
+  "references": [
+    {
+      "path": "../../.."
+    },
+    {
+      "path": "../../../../links"
+    },
+    {
+      "path": "../../../../ory-kratos-sdk"
+    },
+    {
+      "path": "../../../../sdk/workflows/templates"
+    },
+    {
+      "path": "../common"
+    },
+    {
+      "path": "../links"
+    }
+  ]
 }

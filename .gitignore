@@ -19,3 +19,9 @@ saf-workflow-status.error.json
 # TypeScript incremental / composite emit
 *.tsbuildinfo
 **/dist/types/
+**/*.d.ts.map
+
+# Co-located declaration emit artifacts (outDir should be dist/types; exclude ambient modules)
+**/*.d.ts
+!**/assets.d.ts
+!**/vitest-config.d.ts

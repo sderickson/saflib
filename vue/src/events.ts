@@ -1,5 +1,5 @@
 import { useRoute } from "vue-router";
-import { getClientName } from "../../links/utils.ts";
+import { getClientName } from "@saflib/links";
 import { ref } from "vue";
 import { isTestEnv } from "./wip-env.ts";
 import { isTestMode } from "./test-mode.ts";

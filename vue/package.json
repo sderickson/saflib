@@ -8,7 +8,8 @@
     "./components": "./components/index.ts",
     "./fixtures": "./fixtures/index.ts",
     "./testing": "./testing/index.ts",
-    "./tsconfig.app.json": "./tsconfig.app.json",
+    "./tsconfig.app.json": "./tsconfig.app.base.json",
+    "./tsconfig.node.json": "./tsconfig.node.json",
     "./workflows": "./workflows/index.ts",
     "./vitest-config": "./testing/vitest-config.js"
   },

@@ -230,6 +230,198 @@ function expectedPackageReferences(
   return mergePackageReferences(packageDir, existing, workspaceRefs);
 }
 
+function isSolutionConfig(config: Record<string, unknown>): boolean {
+  return (
+    Array.isArray(config.files) &&
+    config.files.length === 0 &&
+    !("extends" in config)
+  );
+}
+
+function isTypecheckOnlyConfig(tsconfigPath: string): boolean {
+  return path.basename(tsconfigPath).includes("typecheck");
+}
+
+function emitDefaultsFor(tsconfigPath: string): Record<string, string> {
+  const base = path.basename(tsconfigPath);
+  if (base === "tsconfig.app.json") {
+    return {
+      outDir: "./dist/types",
+      tsBuildInfoFile: "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+    };
+  }
+  if (base === "tsconfig.node.json") {
+    return {
+      outDir: "./dist/types",
+      tsBuildInfoFile: "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
+    };
+  }
+  return {
+    outDir: "./dist/types",
+    tsBuildInfoFile: "./node_modules/.tmp/tsconfig.tsbuildinfo",
+  };
+}
+
+function isExportedPreset(tsconfigPath: string): boolean {
+  return (
+    tsconfigPath.endsWith(`${path.sep}tsconfig.base.json`) ||
+    tsconfigPath.endsWith(`${path.sep}tsconfig.app.base.json`)
+  );
+}
+
+/** Ensure per-package emit paths and strip legacy noEmit overrides. */
+export function ensurePackageEmitOptions(tsconfigPath: string): boolean {
+  if (
+    !fs.existsSync(tsconfigPath) ||
+    isTypecheckOnlyConfig(tsconfigPath) ||
+    isExportedPreset(tsconfigPath)
+  ) {
+    return false;
+  }
+
+  const config = readTsconfigJson(tsconfigPath);
+  let changed = false;
+
+  if (isSolutionConfig(config)) {
+    const existing = (config.compilerOptions ?? {}) as Record<string, unknown>;
+    if (existing.composite !== true) {
+      config.compilerOptions = { ...existing, composite: true };
+      changed = true;
+    }
+    if (changed) writeTsconfigJson(tsconfigPath, config);
+    return changed;
+  }
+
+  const defaults = emitDefaultsFor(tsconfigPath);
+  const existing = { ...((config.compilerOptions ?? {}) as Record<string, unknown>) };
+  const next = { ...existing };
+
+  for (const [key, value] of Object.entries(defaults)) {
+    if (next[key] !== value) {
+      next[key] = value;
+      changed = true;
+    }
+  }
+
+  if (next.noEmit !== false) {
+    next.noEmit = false;
+    changed = true;
+  }
+  if (next.emitDeclarationOnly !== true && !isSolutionConfig(config)) {
+    next.emitDeclarationOnly = true;
+    changed = true;
+  }
+
+  for (const key of [
+    "composite",
+    "declaration",
+    "declarationMap",
+  ] as const) {
+    if (next[key] === false) {
+      delete next[key];
+      changed = true;
+    }
+  }
+
+  const exclude = Array.isArray(config.exclude) ? [...config.exclude] : [];
+  if (exclude.includes("dist")) {
+    const withoutDist = exclude.filter((p) => p !== "dist");
+    exclude.length = 0;
+    exclude.push(...withoutDist);
+    changed = true;
+  }
+  for (const pattern of [
+    "node_modules",
+    "dist/types",
+    "e2e",
+    "playwright-report",
+    "test-results",
+  ]) {
+    if (!exclude.includes(pattern)) {
+      exclude.push(pattern);
+      changed = true;
+    }
+  }
+  if (changed) config.exclude = exclude;
+
+  const base = path.basename(tsconfigPath);
+  const extendsMonorepo = JSON.stringify(config.extends ?? "").includes(
+    "@saflib/monorepo",
+  );
+  const extendsVue =
+    base === "tsconfig.app.json" ||
+    JSON.stringify(config.extends ?? "").includes("@saflib/vue/tsconfig.app");
+
+  if (!isSolutionConfig(config) && (extendsMonorepo || extendsVue)) {
+    for (const pattern of [
+      "workflows/template/**",
+      "workflows/templates/**",
+      "**/workflows/template/**",
+      "**/workflows/templates/**",
+    ]) {
+      if (!exclude.includes(pattern)) {
+        exclude.push(pattern);
+        changed = true;
+      }
+    }
+    if (changed) config.exclude = exclude;
+  }
+
+  if (
+    !isSolutionConfig(config) &&
+    !Array.isArray(config.include) &&
+    extendsMonorepo
+  ) {
+    config.include = ["**/*.ts", "**/*.json"];
+    changed = true;
+  }
+  if (
+    !isSolutionConfig(config) &&
+    !Array.isArray(config.include) &&
+    extendsVue &&
+    !extendsMonorepo
+  ) {
+    config.include = ["**/*.ts", "**/*.tsx", "**/*.vue", "**/*.json"];
+    changed = true;
+  }
+
+  if (extendsVue) {
+    const types = Array.isArray(next.types) ? [...next.types] : [];
+    if (!types.includes("vite/client")) {
+      next.types = ["vite/client"];
+      changed = true;
+    }
+  }
+
+  if (!changed) return false;
+  config.compilerOptions = next;
+  writeTsconfigJson(tsconfigPath, config);
+  return true;
+}
+
+function relatedTsconfigLeaves(packageDir: string): string[] {
+  const leaves = ["tsconfig.app.json", "tsconfig.node.json"];
+  return leaves
+    .map((name) => path.join(packageDir, name))
+    .filter((p) => fs.existsSync(p));
+}
+
+function patchLeafTsconfigReferences(
+  packageDir: string,
+  workspaceRefs: TsconfigReference[],
+): boolean {
+  const appPath = path.join(packageDir, "tsconfig.app.json");
+  if (!fs.existsSync(appPath)) return false;
+
+  const config = readTsconfigJson(appPath);
+  const existing = (config.references ?? []).map((r) => ({ path: r.path }));
+  const next = mergePackageReferences(packageDir, existing, workspaceRefs);
+  if (referencesEqual(existing, next)) return false;
+  config.references = next;
+  writeTsconfigJson(appPath, config);
+  return true;
+}
+
 function patchPackageTsconfig(
   tsconfigPath: string,
   workspaceRefs: TsconfigReference[],
@@ -237,14 +429,24 @@ function patchPackageTsconfig(
   if (!fs.existsSync(tsconfigPath)) {
     throw new Error(`Missing tsconfig: ${tsconfigPath}`);
   }
-  const config = readTsconfigJson(tsconfigPath);
   const packageDir = path.dirname(tsconfigPath);
+  const config = readTsconfigJson(tsconfigPath);
   const existing = (config.references ?? []).map((r) => ({ path: r.path }));
   const next = mergePackageReferences(packageDir, existing, workspaceRefs);
-  if (referencesEqual(existing, next)) return false;
-  config.references = next;
-  writeTsconfigJson(tsconfigPath, config);
-  return true;
+  let changed = false;
+  if (!referencesEqual(existing, next)) {
+    config.references = next;
+    writeTsconfigJson(tsconfigPath, config);
+    changed = true;
+  }
+  if (ensurePackageEmitOptions(tsconfigPath)) changed = true;
+  for (const leaf of relatedTsconfigLeaves(packageDir)) {
+    if (ensurePackageEmitOptions(leaf)) changed = true;
+    if (path.basename(leaf) === "tsconfig.app.json") {
+      if (patchLeafTsconfigReferences(packageDir, workspaceRefs)) changed = true;
+    }
+  }
+  return changed;
 }
 
 function writeSolutionTsconfig(solution: SolutionReferencePreview): boolean {
@@ -256,10 +458,14 @@ function writeSolutionTsconfig(solution: SolutionReferencePreview): boolean {
         Array.isArray(existing.files) &&
         existing.files.length === 0 &&
         !("extends" in existing) &&
-        !("include" in existing) &&
-        !("compilerOptions" in existing);
+        !("include" in existing);
+      const compositeOk =
+        !("compilerOptions" in existing) ||
+        (existing.compilerOptions as { composite?: boolean } | undefined)
+          ?.composite === true;
       if (
         isSolutionShape &&
+        compositeOk &&
         referencesEqual(existing.references ?? [], expected)
       ) {
         return false;
@@ -270,6 +476,7 @@ function writeSolutionTsconfig(solution: SolutionReferencePreview): boolean {
   }
   writeTsconfigJson(solution.tsconfig, {
     files: [],
+    compilerOptions: { composite: true },
     references: expected,
   });
   return true;
@@ -342,6 +549,14 @@ export function checkReferences(options: {
     if (!referencesEqual(expected, actual)) {
       drifts.push({ tsconfig: pkg.tsconfig, expected, actual });
     }
+    const appPath = path.join(path.dirname(pkg.tsconfig), "tsconfig.app.json");
+    if (fs.existsSync(appPath)) {
+      const expectedApp = expectedPackageReferences(appPath, pkg.references);
+      const actualApp = readReferences(appPath);
+      if (!referencesEqual(expectedApp, actualApp)) {
+        drifts.push({ tsconfig: appPath, expected: expectedApp, actual: actualApp });
+      }
+    }
   }
 
   for (const solution of solutions) {
@@ -357,7 +572,9 @@ export function checkReferences(options: {
           config.files.length === 0 &&
           !("extends" in config) &&
           !("include" in config) &&
-          !("compilerOptions" in config);
+          (!("compilerOptions" in config) ||
+            (config.compilerOptions as { composite?: boolean } | undefined)
+              ?.composite === true);
       } catch {
         shapeOk = false;
       }

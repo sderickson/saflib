@@ -1,4 +1,4 @@
-import type { Handler } from "express";
+import type { ErrorRequestHandler, Handler, RequestHandler } from "express";
 import { json, urlencoded } from "express";
 import type { OpenAPIV3 } from "express-openapi-validator/dist/framework/types.ts";
 import { corsRouter } from "./cors.ts";
@@ -136,6 +136,8 @@ export const createScopedMiddleware = (
 /**
  * Middleware which should be placed after all routes.
  */
-export const createErrorMiddleware = () => {
+export const createErrorMiddleware = (): Array<
+  RequestHandler | ErrorRequestHandler
+> => {
   return [notFoundHandler, errorHandler];
 };

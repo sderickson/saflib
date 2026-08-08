@@ -6,7 +6,14 @@
   ],
   "exclude": [
     "node_modules",
-    "dist/types"
+    "dist/types",
+    "e2e",
+    "playwright-report",
+    "test-results",
+    "workflows/template/**",
+    "workflows/templates/**",
+    "**/workflows/template/**",
+    "**/workflows/templates/**"
   ],
   "compilerOptions": {
     "rootDir": ".",
@@ -14,7 +21,9 @@
     "outDir": "./dist/types",
     "types": [
       "node"
-    ]
+    ],
+    "noEmit": false,
+    "emitDeclarationOnly": true
   },
   "references": [
     {

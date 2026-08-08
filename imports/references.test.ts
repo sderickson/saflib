@@ -16,7 +16,6 @@ import {
 
 const fixtureRoot = path.join(import.meta.dirname, "fixtures/mini-monorepo");
 const pkgA = path.join(fixtureRoot, "packages/pkg-a");
-const pkgB = path.join(fixtureRoot, "packages/pkg-b");
 const pkgC = path.join(fixtureRoot, "packages/pkg-c");
 const vueApp = path.join(fixtureRoot, "packages/vue-app");
 
