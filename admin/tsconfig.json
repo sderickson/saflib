@@ -32,5 +32,11 @@
     "workflows/templates/**",
     "**/workflows/template/**",
     "**/workflows/templates/**"
+  ],
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "**/*.vue",
+    "**/*.json"
   ]
 }

@@ -1,3 +1,4 @@
+import fs from "node:fs";
 import path from "node:path";
 import {
   buildMonorepoContext,
@@ -58,6 +59,12 @@ function isFixturePackage(packageDir: string, rootDir: string): boolean {
   return rel.split(path.sep).includes("fixtures");
 }
 
+/** Published npm artifact under a package's `dist/` (e.g. `saflib/workflows/dist`). */
+function isPublishedDistPackage(packageDir: string): boolean {
+  if (path.basename(packageDir) !== "dist") return false;
+  return fs.existsSync(path.join(packageDir, "..", "package.json"));
+}
+
 /**
  * Collect workspace package names listed in dependencies ∪ devDependencies.
  */
@@ -94,7 +101,11 @@ export function buildReferenceGraph(
   for (const name of packages) {
     const pj = monorepoPackageJsons[name]!;
     const dir = monorepoPackageDirectories[name]!;
-    if (isMetaPackage(name, pj) || isFixturePackage(dir, context.rootDir)) {
+    if (
+      isMetaPackage(name, pj) ||
+      isFixturePackage(dir, context.rootDir) ||
+      isPublishedDistPackage(dir)
+    ) {
       skippedMeta.push(name);
       continue;
     }

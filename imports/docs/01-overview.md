@@ -13,7 +13,10 @@ npm exec saf-imports exports generate --package <name>
 npm exec saf-imports exports check --package <name>
 npm exec saf-imports references cycles [--root <dir>]
 npm exec saf-imports references generate [--root <dir>] [--write]
+npm exec saf-imports references check [--root <dir>]
 ```
+
+See [03-project-references.md](./03-project-references.md) for the M1 dev loop and troubleshooting.
 
 
 ## Vitest reporter (opt-in)

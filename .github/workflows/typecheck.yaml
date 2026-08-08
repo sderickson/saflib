@@ -16,5 +16,7 @@ jobs:
           node-version: 24
       - name: Install dependencies
         run: npm install
+      - name: Check TypeScript project references
+        run: node --experimental-strip-types imports/bin/saf-imports/index.ts references check
       - name: Run Typecheck
         run: npm run typecheck

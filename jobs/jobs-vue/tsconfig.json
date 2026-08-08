@@ -32,5 +32,11 @@
     {
       "path": "../jobs-spec"
     }
+  ],
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "**/*.vue",
+    "**/*.json"
   ]
 }
