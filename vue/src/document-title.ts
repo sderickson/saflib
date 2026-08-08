@@ -2,7 +2,7 @@ export const DEFAULT_APP_DOCUMENT_TITLE = "App";
 
 let appDocumentTitle = DEFAULT_APP_DOCUMENT_TITLE;
 
-/** Set the app name appended to page titles, e.g. `Home — CaseDaemon`. */
+/** Set the app name appended to page titles, e.g. `Home — ExampleApp`. */
 export function configureAppDocumentTitle(title: string): void {
   const trimmed = title.trim();
   appDocumentTitle = trimmed.length > 0 ? trimmed : DEFAULT_APP_DOCUMENT_TITLE;

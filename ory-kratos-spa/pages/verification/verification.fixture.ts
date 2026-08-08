@@ -32,7 +32,7 @@ export class VerificationPageFixture {
    * Waits until the browser lands on the app host after post-verification redirect.
    */
   async expectRedirectToAppSubdomain(): Promise<void> {
-    const domain = process.env.DOMAIN ?? "daemon.docker.localhost";
+    const domain = process.env.DOMAIN ?? "app.docker.localhost";
     const escaped = domain.replace(/\./g, "\\.");
     await expect(this.page).toHaveURL(
       new RegExp(`^https?://app\\.${escaped}(/|\\?|#|$)`),

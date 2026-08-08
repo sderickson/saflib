@@ -27,10 +27,10 @@ Prints one line per test file after it finishes:
 import-graph  list-importers.test.ts  modules=1071  ext=56  collect=4.98s
 ```
 
-Wire it in a package's `vitest.config.js` (pilot: `daemon/service/http` only —
-not in `@saflib/vitest` base config until overhead stays ≤ 10%). Prefer the
-package-name form so Vitest loads the TypeScript module via Vite (a static
-`import` of `@saflib/imports/reporter` from a `.js` config fails under plain Node):
+Wire it in a package's `vitest.config.js` (opt-in per package — not in `@saflib/vitest`
+base config until overhead stays ≤ 10%). Prefer the package-name form so Vitest loads
+the TypeScript module via Vite (a static `import` of `@saflib/imports/reporter` from a
+`.js` config fails under plain Node):
 
 ```js
 import { defineConfig, mergeConfig } from "vitest/config";
@@ -49,7 +49,7 @@ Add `@saflib/imports` as a devDependency of the package.
 
 ## Reporter overhead (2026-08-07 pilot)
 
-Measured on `daemon/service/http` full suite (162 files), same machine:
+Measured on a large HTTP service test suite (162 files), same machine:
 
 | Config                                  | Wall (real) | Vitest Duration |
 | --------------------------------------- | ----------: | --------------: |
@@ -58,35 +58,31 @@ Measured on `daemon/service/http` full suite (162 files), same machine:
 
 Overhead ≈ **+70%** wall time — **above the 10% promotion threshold**. Keep
 opt-in only; do **not** add to `base-vitest.config.js` until measuring is
-cheaper (e.g. shared package-index cache across files). Promotion to the
-Vitest base config is deferred.
+cheap enough for default-on use.
 
 ## `importBudget`
 
-Optional field in a package's `package.json`. Packages without it are skipped by
-`saf-imports budget`.
+Declare per-package limits in `package.json`:
 
 ```json
 {
   "importBudget": {
-    "testFiles": {
-      "maxModules": 400,
-      "maxExternalPackages": 25
-    },
+    "testFiles": { "maxModules": 400, "maxExternalPackages": 30 },
     "entries": {
-      "./index.ts": { "maxModules": 50 }
+      "./lib/foo.ts": { "maxModules": 5 }
     }
   }
 }
 ```
 
-`testFiles` uses the **max** modules/ext across all `*.test.ts` files in the package.
+Run `npm exec saf-imports budget [--mode warn|error]` to compare measured graphs.
 
-## Exports codegen (M0)
+## Baseline snapshots
 
-`saf-imports exports generate|check` builds a heuristic `exports` map from
-top-level and `src/` TypeScript files (`index.ts` → directory subpath).
+Product repos can commit a baseline JSON and configure entry probes / suite timings via
+root `package.json` → `safImports.baseline` (see `@saflib/imports` source for the schema).
 
-**M0 limitation:** packages whose `package.json` contains `BEGIN WORKFLOW AREA`
-markers are **not** supported by `generate` (refuses to write). Mass rollout and
-WORKFLOW AREA merge land in later milestones. Pilot: `@saflib/imports` only.
+```bash
+npm exec saf-imports baseline generate --out notes/import-graph/baseline.json --skip-timings
+npm exec saf-imports baseline diff --baseline notes/import-graph/baseline.json
+```

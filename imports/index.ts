@@ -49,7 +49,7 @@ export {
   workspaceDepsOf,
   mergePackageReferences,
   isInternalReference,
-  MONOLITH_PACKAGE_NAME,
+  applyCompositionRootReferences,
   type ReferenceGraph,
   type ReferenceGraphNode,
   type BuildReferenceGraphResult,

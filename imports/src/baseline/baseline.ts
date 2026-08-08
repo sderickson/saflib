@@ -7,6 +7,7 @@ import {
   findMonorepoRoot,
 } from "../resolve/index.ts";
 import { measureGraph } from "../graph/walk-graph.ts";
+import { readRootSafImportsConfig } from "../config/read-saf-imports-config.ts";
 
 /** Per-entry graph measurement stored in the baseline snapshot. */
 export interface BaselineGraphStats {
@@ -26,7 +27,7 @@ export interface BaselineTypecheck {
   serialWorkspacesWallMs: number;
   /** Warm 2nd-run wall time for root `npm run typecheck` (`vue-tsc -b`). */
   rootBuildWallMs?: number;
-  /** Warm 2nd-run wall time for a single-package pilot (`daemon/service/http`). */
+  /** Warm 2nd-run wall time for a single-package pilot (repo `safImports.baseline.warmTypecheckPackageDir`). */
   warmSinglePackageWallMs?: number;
   warmSinglePackage?: string;
   peakRssMb?: number;
@@ -101,31 +102,6 @@ const SKIP_DIRS = new Set([
   "coverage",
   "fixtures",
 ]);
-
-/** Default entry probes for PathClerk daemon packages (by workspace name). */
-const DEFAULT_ENTRY_PROBES: { label: string; packageName: string; exportPath: string }[] =
-  [
-    {
-      label: "@pathclerk/daemon-service-common/lib/site-admin-access",
-      packageName: "@pathclerk/daemon-service-common",
-      exportPath: "./lib/site-admin-access",
-    },
-    {
-      label: "@pathclerk/daemon-service-common/context",
-      packageName: "@pathclerk/daemon-service-common",
-      exportPath: "./context",
-    },
-    {
-      label: "@pathclerk/daemon-clients-common",
-      packageName: "@pathclerk/daemon-clients-common",
-      exportPath: ".",
-    },
-    {
-      label: "@pathclerk/daemon-sdk/fakes",
-      packageName: "@pathclerk/daemon-sdk",
-      exportPath: "./fakes",
-    },
-  ];
 
 function listTestFiles(dir: string, out: string[] = []): string[] {
   let entries: fs.Dirent[];
@@ -222,7 +198,13 @@ function measureEntryProbes(
   const entries: Record<string, BaselineGraphStats> = {};
   onProgress?.("Measuring entry-point probes…");
 
-  for (const probe of DEFAULT_ENTRY_PROBES) {
+  const probes = readRootSafImportsConfig(root).baseline?.entryProbes ?? [];
+  if (probes.length === 0) {
+    onProgress?.("  skip entry probes (no safImports.baseline.entryProbes in root package.json)");
+    return entries;
+  }
+
+  for (const probe of probes) {
     const pkg = index.get(probe.packageName);
     if (!pkg) {
       onProgress?.(`  skip ${probe.label} (package not found)`);
@@ -313,35 +295,31 @@ function measureSuites(
   onProgress?: (msg: string) => void,
 ): Record<string, BaselineSuiteTiming> {
   const suites: Record<string, BaselineSuiteTiming> = {};
-  const httpDir = path.join(root, "daemon/service/http");
-  if (!fs.existsSync(path.join(httpDir, "package.json"))) {
-    onProgress?.("  skip daemon/service/http suite (not found)");
+  const targets = readRootSafImportsConfig(root).baseline?.suites ?? [];
+  if (targets.length === 0) {
+    onProgress?.("  skip suite timings (no safImports.baseline.suites in root package.json)");
     return suites;
   }
 
-  onProgress?.("Timing daemon/service/http full suite…");
-  const full = runTimedCommand("npm", ["run", "test"], httpDir);
-  const parsed = parseVitestDuration(full.stdout + "\n" + full.stderr);
-  suites["daemon/service/http"] = parsed ?? { wallMs: full.wallMs };
-  onProgress?.(
-    `  daemon/service/http wallMs=${suites["daemon/service/http"]!.wallMs}` +
-      (suites["daemon/service/http"]!.collectCpuMs != null
-        ? ` collectCpuMs=${suites["daemon/service/http"]!.collectCpuMs}`
-        : ""),
-  );
+  for (const target of targets) {
+    const packageDir = path.join(root, target.packageDir);
+    if (!fs.existsSync(path.join(packageDir, "package.json"))) {
+      onProgress?.(`  skip ${target.key} (package not found)`);
+      continue;
+    }
 
-  onProgress?.("Timing list-importers.test.ts…");
-  const single = runTimedCommand(
-    "npx",
-    ["vitest", "run", "--", "routes/matters/list-importers"],
-    httpDir,
-  );
-  const singleParsed = parseVitestDuration(single.stdout + "\n" + single.stderr);
-  suites["daemon/service/http/routes/matters/list-importers.test.ts"] =
-    singleParsed ?? { wallMs: single.wallMs };
-  onProgress?.(
-    `  list-importers wallMs=${suites["daemon/service/http/routes/matters/list-importers.test.ts"]!.wallMs}`,
-  );
+    onProgress?.(`Timing ${target.key}…`);
+    const result = target.vitestPattern
+      ? runTimedCommand(
+          "npx",
+          ["vitest", "run", "--", target.vitestPattern],
+          packageDir,
+        )
+      : runTimedCommand("npm", ["run", "test"], packageDir);
+    const parsed = parseVitestDuration(result.stdout + "\n" + result.stderr);
+    suites[target.key] = parsed ?? { wallMs: result.wallMs };
+    onProgress?.(`  ${target.key} wallMs=${suites[target.key]!.wallMs}`);
+  }
 
   return suites;
 }
@@ -395,19 +373,21 @@ function measureTypecheck(
       (typecheck.peakRssMb != null ? ` peakRssMb=${typecheck.peakRssMb}` : ""),
   );
 
-  const httpDir = path.join(root, "daemon/service/http");
-  if (fs.existsSync(path.join(httpDir, "package.json"))) {
-    onProgress?.("Timing warm single-package typecheck (daemon/service/http)…");
-    const httpWarmup = runTimedCommand("npm", ["run", "typecheck"], httpDir);
-    if (httpWarmup.status !== 0 && httpWarmup.status !== null) {
-      onProgress?.(`  http warmup exited ${httpWarmup.status}`);
+  const warmPackageDir = readRootSafImportsConfig(root).baseline
+    ?.warmTypecheckPackageDir;
+  if (warmPackageDir) {
+    const packageDir = path.join(root, warmPackageDir);
+    if (fs.existsSync(path.join(packageDir, "package.json"))) {
+      onProgress?.(`Timing warm single-package typecheck (${warmPackageDir})…`);
+      const warmup = runTimedCommand("npm", ["run", "typecheck"], packageDir);
+      if (warmup.status !== 0 && warmup.status !== null) {
+        onProgress?.(`  warmup exited ${warmup.status}`);
+      }
+      const warm = runTimedCommand("npm", ["run", "typecheck"], packageDir);
+      typecheck.warmSinglePackage = warmPackageDir;
+      typecheck.warmSinglePackageWallMs = warm.wallMs;
+      onProgress?.(`  warm wallMs=${typecheck.warmSinglePackageWallMs}`);
     }
-    const httpWarm = runTimedCommand("npm", ["run", "typecheck"], httpDir);
-    typecheck.warmSinglePackage = "daemon/service/http";
-    typecheck.warmSinglePackageWallMs = httpWarm.wallMs;
-    onProgress?.(
-      `  http warm wallMs=${typecheck.warmSinglePackageWallMs}`,
-    );
   }
 
   return typecheck;
@@ -436,24 +416,32 @@ function measureBundles(
   root: string,
   onProgress?: (msg: string) => void,
 ): BaselineBundles {
-  const command =
-    "NODE_OPTIONS='--experimental-strip-types' npm run build --workspace=daemon/clients/build";
+  const bundleConfig = readRootSafImportsConfig(root).baseline?.bundles;
+  if (!bundleConfig) {
+    onProgress?.("  skip bundle baseline (no safImports.baseline.bundles in root package.json)");
+    return {
+      status: "skipped",
+      reason: "no safImports.baseline.bundles configured",
+    };
+  }
+
+  const command = `npm run build --workspace=${bundleConfig.buildWorkspace}`;
   onProgress?.("Attempting multi-SPA bundle baseline…");
   onProgress?.(`  ${command}`);
 
-  const buildDir = path.join(root, "daemon/clients/build");
+  const buildDir = path.join(root, bundleConfig.buildWorkspace);
   if (!fs.existsSync(path.join(buildDir, "package.json"))) {
     return {
       status: "blocked",
-      reason: "daemon/clients/build package not found",
-      fallback: "daemon/clients/form-editor single-SPA",
+      reason: `${bundleConfig.buildWorkspace} package not found`,
+      fallback: bundleConfig.singleSpaFallback,
       command,
     };
   }
 
   const result = spawnSync(
     "npm",
-    ["run", "build", "--workspace=daemon/clients/build"],
+    ["run", "build", "--workspace", bundleConfig.buildWorkspace],
     {
       cwd: root,
       env: {
@@ -466,10 +454,9 @@ function measureBundles(
   );
 
   const combined = `${result.stdout ?? ""}\n${result.stderr ?? ""}`;
-  // Vite default outDir is often dist under the build package or clients
   const candidateDists = [
     path.join(buildDir, "dist"),
-    path.join(root, "daemon/clients/build/dist"),
+    path.join(root, bundleConfig.buildWorkspace, "dist"),
     path.join(root, "dist"),
   ];
   let chunks: { chunkName: string; bytes: number }[] = [];
@@ -478,7 +465,6 @@ function measureBundles(
     if (chunks.length > 0) break;
   }
 
-  // Meaningful multi-SPA build emits more than a bare shell index.html
   const jsChunks = chunks.filter((c) => c.chunkName.endsWith(".js"));
   if (result.status === 0 && jsChunks.length >= 2) {
     onProgress?.(`  ok: ${chunks.length} asset(s), ${jsChunks.length} JS chunk(s)`);
@@ -501,28 +487,29 @@ function measureBundles(
     .join("; ");
   if (errSnippet) reasonParts.push(errSnippet);
 
-  // Optional form-editor fallback measurement
-  const formEditorDist = path.join(root, "daemon/clients/form-editor/dist");
-  const formEditorPkg = path.join(root, "daemon/clients/form-editor/package.json");
   let fallbackChunks: { chunkName: string; bytes: number }[] | undefined;
-  if (fs.existsSync(formEditorPkg)) {
-    onProgress?.("  trying form-editor single-SPA fallback…");
-    const fe = spawnSync("npm", ["run", "build"], {
-      cwd: path.join(root, "daemon/clients/form-editor"),
-      env: {
-        ...process.env,
-        NODE_OPTIONS: "--experimental-strip-types",
-      },
-      encoding: "utf8",
-      maxBuffer: 20 * 1024 * 1024,
-    });
-    if (fe.status === 0) {
-      fallbackChunks = listDistAssets(formEditorDist);
-      if (fallbackChunks.length === 0) {
-        // vite may write elsewhere
-        fallbackChunks = listDistAssets(
-          path.join(root, "daemon/clients/form-editor"),
-        ).filter((c) => c.chunkName.includes("dist/"));
+  if (bundleConfig.singleSpaFallback) {
+    const fallbackPkg = path.join(root, bundleConfig.singleSpaFallback, "package.json");
+    const fallbackDir = path.join(root, bundleConfig.singleSpaFallback);
+    const fallbackDist = path.join(fallbackDir, "dist");
+    if (fs.existsSync(fallbackPkg)) {
+      onProgress?.(`  trying single-SPA fallback (${bundleConfig.singleSpaFallback})…`);
+      const fe = spawnSync("npm", ["run", "build"], {
+        cwd: fallbackDir,
+        env: {
+          ...process.env,
+          NODE_OPTIONS: "--experimental-strip-types",
+        },
+        encoding: "utf8",
+        maxBuffer: 20 * 1024 * 1024,
+      });
+      if (fe.status === 0) {
+        fallbackChunks = listDistAssets(fallbackDist);
+        if (fallbackChunks.length === 0) {
+          fallbackChunks = listDistAssets(fallbackDir).filter((c) =>
+            c.chunkName.includes("dist/"),
+          );
+        }
       }
     }
   }
@@ -530,16 +517,16 @@ function measureBundles(
   const bundles: BaselineBundles = {
     status: "blocked",
     reason: reasonParts.join(" — ") || "multi-SPA build did not emit SPA chunks",
-    fallback: "daemon/clients/form-editor single-SPA",
+    fallback: bundleConfig.singleSpaFallback,
     command,
   };
   if (fallbackChunks && fallbackChunks.length > 0) {
     bundles.chunks = fallbackChunks.map((c) => ({
       ...c,
-      chunkName: `form-editor/${c.chunkName}`,
+      chunkName: `${path.basename(bundleConfig.singleSpaFallback ?? "fallback")}/${c.chunkName}`,
     }));
     onProgress?.(
-      `  blocked multi-SPA; recorded ${fallbackChunks.length} form-editor asset(s) as fallback`,
+      `  blocked multi-SPA; recorded ${fallbackChunks.length} fallback asset(s)`,
     );
   } else {
     onProgress?.(`  blocked: ${bundles.reason}`);

@@ -27,7 +27,7 @@ export interface SolutionReferencePreview {
   /** Absolute path to the solution tsconfig. */
   tsconfig: string;
   /** Role label for CLI output. */
-  kind: "pathclerk-root" | "saflib-root" | "generic-root";
+  kind: "product-root" | "saflib-root" | "generic-root";
   references: TsconfigReference[];
 }
 
@@ -138,7 +138,7 @@ function solutionRefsForPackages(
 /**
  * Compute solution-style root configs for the given monorepo scope.
  *
- * - pathclerk root → `{ "./saflib" }` hub + non-saflib leaves; also emits saflib nested solution
+ * - product root (nested `saflib/`) → `{ "./saflib" }` hub + product leaves; also emits saflib nested solution
  * - saflib root → every saflib leaf
  * - generic fixture → every typecheckable package
  */
@@ -167,16 +167,16 @@ export function computeSolutions(
   const saflibDir = findNestedSaflibDir(rootDir);
   if (saflibDir) {
     const saflibLeaves = nodes.filter((n) => isUnderDir(n.dir, saflibDir));
-    const pathclerkLeaves = nodes.filter((n) => !isUnderDir(n.dir, saflibDir));
+    const productLeaves = nodes.filter((n) => !isUnderDir(n.dir, saflibDir));
     return [
       {
         tsconfig: path.join(rootDir, "tsconfig.json"),
-        kind: "pathclerk-root",
+        kind: "product-root",
         references: sortReferences([
           { path: relativeReferencePath(rootDir, saflibDir) },
           ...solutionRefsForPackages(
             rootDir,
-            pathclerkLeaves.map((n) => n.dir),
+            productLeaves.map((n) => n.dir),
           ),
         ]),
       },

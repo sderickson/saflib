@@ -15,7 +15,7 @@ export class LoginPageFixture {
    */
   async gotoLogin(options?: { returnTo?: string }): Promise<void> {
     const protocol = process.env.PROTOCOL ?? "http";
-    const domain = process.env.DOMAIN ?? "daemon.docker.localhost";
+    const domain = process.env.DOMAIN ?? "app.docker.localhost";
     let url = `${protocol}://auth.${domain}/new-login`;
     if (options?.returnTo) {
       url += `?return_to=${encodeURIComponent(options.returnTo)}`;

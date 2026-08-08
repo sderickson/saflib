@@ -27,15 +27,16 @@ export interface EnqueueResult {
 }
 
 export interface EnqueueClientOptions {
-  /** Jobs app unix socket. Defaults to `DAEMON_SERVICE_JOBS_SOCKET` or `/tmp/daemon-jobs-internal.sock`. */
+  /** Jobs app unix socket. Defaults to `SAF_JOBS_SOCKET` or `/tmp/saf-jobs-internal.sock`. */
   socketPath?: string;
 }
 
 function resolveJobsSocketPath(options?: EnqueueClientOptions): string {
   return (
     options?.socketPath ??
-    process.env.DAEMON_SERVICE_JOBS_SOCKET ??
-    "/tmp/daemon-jobs-internal.sock"
+    process.env.SAF_JOBS_SOCKET ??
+    process.env.DAEMON_SERVICE_JOBS_SOCKET ?? // legacy alias
+    "/tmp/saf-jobs-internal.sock"
   );
 }
 

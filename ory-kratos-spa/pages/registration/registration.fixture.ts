@@ -15,7 +15,7 @@ export class RegistrationPageFixture {
    */
   async gotoRegistration(): Promise<void> {
     const protocol = process.env.PROTOCOL ?? "http";
-    const domain = process.env.DOMAIN ?? "daemon.docker.localhost";
+    const domain = process.env.DOMAIN ?? "app.docker.localhost";
     await this.page.goto(`${protocol}://auth.${domain}/new-registration`);
   }
 
@@ -94,7 +94,7 @@ export class RegistrationPageFixture {
   }
 
   /**
-   * Opens the admin last-mock-email page (`adminLinks.lastMockEmail` in `@pathclerk/daemon-links`),
+   * Opens the admin last-mock-email page (`adminLinks.lastMockEmail` from the product links package),
    * then follows the Kratos verification link from the newest matching mock-sent email.
    *
    * @param params.subdomain — SDK service subdomain for `GET /email/sent` (defaults to `"api"`).
@@ -106,7 +106,7 @@ export class RegistrationPageFixture {
     // wait briefly so the user becomes logged in
     await new Promise((resolve) => setTimeout(resolve, 100));
 
-    const domain = process.env.DOMAIN ?? "daemon.docker.localhost";
+    const domain = process.env.DOMAIN ?? "app.docker.localhost";
     const subdomain = params.subdomain ?? "api";
     const url = linkToHref(adminLastEmailLink, {
       domain,

@@ -20,7 +20,7 @@ export type ChangeEventListener = (event: ChangeEventWithId) => void;
 
 /**
  * Transport-agnostic change bus. In-process today; later Redis/NATS or HTTP.
- * Never import product/daemon types into implementations.
+ * Never import product-specific types into implementations.
  */
 export interface ChangeEmitter {
   /** Publish a change for the event's `orgId` channel. */

@@ -5,7 +5,7 @@ incrementally typecheck only what changed.
 
 ## Developer loop
 
-From the **pathclerk repo root**:
+From the **monorepo root**:
 
 ```bash
 # Full incremental solution (preferred gate)
@@ -21,7 +21,7 @@ node --experimental-strip-types saflib/imports/bin/saf-imports/index.ts referenc
 From a **single package** (fast inner loop):
 
 ```bash
-cd daemon/service/http
+cd service/http
 npm run typecheck        # 1st run — builds this package + upstream refs
 npm run typecheck        # 2nd run — warm incremental (target ≤ 15s)
 ```
@@ -34,9 +34,10 @@ Vue SPAs use `vue-tsc -b` at the package root; backend packages use `tsc -b`.
 `references` array from workspace `dependencies` ∪ `devDependencies`. It also
 maintains:
 
-- **pathclerk root** `tsconfig.json` — `{ "path": "./saflib" }` hub + daemon/deploy leaves
+- **Product root** `tsconfig.json` — `{ "path": "./saflib" }` hub + product leaves
 - **saflib root** `tsconfig.json` — all saflib leaf packages (submodule standalone CI)
-- **Monolith rule** — `@pathclerk/daemon-monolith` references every `daemon/service/*` package
+- **Composition root** — packages with `safImports.compositionRoot` in `package.json`
+  union additional sibling or subtree references (e.g. a monolith entrypoint)
 
 Rules:
 
@@ -73,11 +74,11 @@ when authoring types, queries, and cross-package imports under composite project
 
 ## CI
 
-Both pathclerk and saflib typecheck workflows run `saf-imports references check` before
+Product and saflib typecheck workflows should run `saf-imports references check` before
 `npm run typecheck`. Drift or cycles fail the job.
 
 ## Root driver
 
-The pathclerk root uses **`vue-tsc -b`** so Vue SFCs and backend packages share one solution
-graph. Warm incremental root builds are typically well under the 90s M1 target on a dev laptop
-after the initial cold build.
+Product repos that mix Vue SPAs and backend packages often use **`vue-tsc -b`** at the root
+so SFCs and services share one solution graph. Warm incremental root builds are typically
+well under the 90s M1 target on a dev laptop after the initial cold build.

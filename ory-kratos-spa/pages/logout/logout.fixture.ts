@@ -12,7 +12,7 @@ export class LogoutPageFixture {
    */
   async gotoLogout(options?: { returnTo?: string }): Promise<void> {
     const protocol = process.env.PROTOCOL ?? "http";
-    const domain = process.env.DOMAIN ?? "daemon.docker.localhost";
+    const domain = process.env.DOMAIN ?? "app.docker.localhost";
     const siteRoot = `${protocol}://${domain}/`;
     const returnTo = options?.returnTo ?? siteRoot;
     const url = `${protocol}://auth.${domain}/logout?return_to=${encodeURIComponent(returnTo)}`;

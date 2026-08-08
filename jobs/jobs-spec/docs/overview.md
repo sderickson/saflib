@@ -13,7 +13,7 @@ the `Job` wire schema and the internal + admin HTTP surfaces.
 ## `background` tag
 
 Work endpoints that the queue may deliver to must carry the OpenAPI tag
-`background` on their route YAML in the **product** spec (e.g. daemon), not
+`background` on their route YAML in the **product** spec (e.g. the main API service spec), not
 on jobs-spec control-plane routes.
 
 - Marks the operation as invocable by the job queue.

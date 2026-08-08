@@ -11,7 +11,7 @@ export interface JobsServiceContext {
   dbKey: DbKey;
   triggerMap: TriggerMap;
   operationConfig: JobOperationConfigMap;
-  /** Resolved product operations (daemon/app spec), for background checks. */
+  /** Resolved product operations (app spec), for background checks. */
   operations: OperationMap;
 }
 

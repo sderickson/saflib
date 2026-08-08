@@ -9,7 +9,6 @@ import {
   generateReferences,
   isInternalReference,
   mergePackageReferences,
-  MONOLITH_PACKAGE_NAME,
   previewReferencesGenerate,
   resolveTsconfigEntry,
 } from "./index.ts";
@@ -251,15 +250,15 @@ describe("generateReferences --write", () => {
       "./tsconfig.node.json",
     ]);
 
-    const pathclerkRoot = JSON.parse(
+    const productRoot = JSON.parse(
       fs.readFileSync(path.join(root, "tsconfig.json"), "utf8"),
     ) as { files: string[]; references: { path: string }[] };
-    expect(pathclerkRoot.files).toEqual([]);
-    expect(pathclerkRoot.references.map((r) => r.path)).toContain("./saflib");
-    expect(pathclerkRoot.references.map((r) => r.path)).toContain(
+    expect(productRoot.files).toEqual([]);
+    expect(productRoot.references.map((r) => r.path)).toContain("./saflib");
+    expect(productRoot.references.map((r) => r.path)).toContain(
       "./packages/leaf-a",
     );
-    expect(pathclerkRoot.references.map((r) => r.path)).not.toContain(
+    expect(productRoot.references.map((r) => r.path)).not.toContain(
       "./saflib/core",
     );
 
@@ -295,14 +294,18 @@ describe("generateReferences --write", () => {
   });
 });
 
-describe("monolith special-case", () => {
-  it("unions all daemon/service packages into monolith references", () => {
+describe("composition root special-case", () => {
+  const COMPOSITION_ROOT = "@tmp/composition-root";
+  const HTTP_API = "@tmp/http-api";
+  const INTEGRATION = "@tmp/integration-x";
+
+  it("unions sibling service packages into composition-root references", () => {
     const root = makeTempMonorepo();
-    const service = path.join(root, "daemon/service");
-    for (const [rel, name] of [
-      ["monolith", MONOLITH_PACKAGE_NAME],
-      ["http", "@tmp/daemon-http"],
-      ["integrations/x", "@tmp/daemon-x"],
+    const service = path.join(root, "apps/service");
+    for (const [rel, name, compositionRoot] of [
+      ["composition-root", COMPOSITION_ROOT, true],
+      ["http", HTTP_API, false],
+      ["worker", INTEGRATION, false],
     ] as const) {
       const dir = path.join(service, rel);
       fs.mkdirSync(dir, { recursive: true });
@@ -313,10 +316,11 @@ describe("monolith special-case", () => {
             name,
             private: true,
             type: "module",
+            ...(compositionRoot
+              ? { safImports: { compositionRoot: { includeSiblingPackages: true } } }
+              : {}),
             dependencies:
-              name === MONOLITH_PACKAGE_NAME
-                ? { "@tmp/daemon-http": "*" }
-                : {},
+              name === COMPOSITION_ROOT ? { [HTTP_API]: "*" } : {},
           },
           null,
           2,
@@ -328,22 +332,18 @@ describe("monolith special-case", () => {
       );
     }
 
-    // Expand workspaces so buildMonorepoContext discovers daemon packages.
     const rootPj = JSON.parse(
       fs.readFileSync(path.join(root, "package.json"), "utf8"),
     ) as { workspaces: string[] };
-    rootPj.workspaces = ["packages/*", "saflib/*", "daemon/service/**"];
+    rootPj.workspaces = ["packages/*", "saflib/*", "apps/service/**"];
     fs.writeFileSync(
       path.join(root, "package.json"),
       `${JSON.stringify(rootPj, null, 2)}\n`,
     );
 
     const { graph } = buildReferenceGraph(root);
-    const mono = graph.get(MONOLITH_PACKAGE_NAME);
-    expect(mono).toBeDefined();
-    expect(mono!.references.sort()).toEqual([
-      "@tmp/daemon-http",
-      "@tmp/daemon-x",
-    ]);
+    const rootNode = graph.get(COMPOSITION_ROOT);
+    expect(rootNode).toBeDefined();
+    expect(rootNode!.references.sort()).toEqual([HTTP_API, INTEGRATION]);
   });
 });

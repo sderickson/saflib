@@ -1,8 +1,7 @@
 export {
   buildReferenceGraph,
   workspaceDepsOf,
-  applyMonolithServiceReferences,
-  MONOLITH_PACKAGE_NAME,
+  applyCompositionRootReferences,
   type ReferenceGraph,
   type ReferenceGraphNode,
   type BuildReferenceGraphResult,

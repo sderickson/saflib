@@ -11,14 +11,14 @@ describe("formatDocumentTitle", () => {
   });
 
   it("appends the configured app name when a segment is provided", () => {
-    configureAppDocumentTitle("CaseDaemon");
-    expect(formatDocumentTitle("Home")).toBe("Home — CaseDaemon");
+    configureAppDocumentTitle("ExampleApp");
+    expect(formatDocumentTitle("Home")).toBe("Home — ExampleApp");
   });
 
   it("returns only the app name when the segment is empty", () => {
-    configureAppDocumentTitle("CaseDaemon");
-    expect(formatDocumentTitle(null)).toBe("CaseDaemon");
-    expect(formatDocumentTitle("   ")).toBe("CaseDaemon");
+    configureAppDocumentTitle("ExampleApp");
+    expect(formatDocumentTitle(null)).toBe("ExampleApp");
+    expect(formatDocumentTitle("   ")).toBe("ExampleApp");
   });
 
   it("allows a per-call app title override", () => {

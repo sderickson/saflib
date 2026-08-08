@@ -5,16 +5,11 @@ import {
   type MonorepoContext,
   type PackageJson,
 } from "@saflib/dev-tools";
+import { readPackageSafImportsConfig } from "../config/read-saf-imports-config.ts";
 import { resolveTsconfigEntry } from "./resolve-entry.ts";
 
 /** Known meta packages that are not compilable TypeScript units. */
-const META_PACKAGE_NAMES = new Set([
-  "@pathclerk/pathclerk",
-  "@saflib/saflib",
-]);
-
-/** Composition root: references every typecheckable `daemon/service/*` package. */
-export const MONOLITH_PACKAGE_NAME = "@pathclerk/daemon-monolith";
+const META_PACKAGE_NAMES = new Set(["@saflib/saflib"]);
 
 export interface ReferenceGraphNode {
   name: string;
@@ -63,6 +58,11 @@ function isFixturePackage(packageDir: string, rootDir: string): boolean {
 function isPublishedDistPackage(packageDir: string): boolean {
   if (path.basename(packageDir) !== "dist") return false;
   return fs.existsSync(path.join(packageDir, "..", "package.json"));
+}
+
+function isUnderDir(dir: string, parentDir: string): boolean {
+  const rel = path.relative(parentDir, dir);
+  return rel === "" || (!rel.startsWith("..") && !path.isAbsolute(rel));
 }
 
 /**
@@ -135,7 +135,7 @@ export function buildReferenceGraph(
     });
   }
 
-  applyMonolithServiceReferences(graph, context.rootDir);
+  applyCompositionRootReferences(graph, context.rootDir);
 
   return {
     rootDir: context.rootDir,
@@ -147,26 +147,41 @@ export function buildReferenceGraph(
 }
 
 /**
- * `@pathclerk/daemon-monolith` must reference every typecheckable package under
- * `daemon/service/` (package.json deps alone are incomplete for the composition root).
+ * Packages may declare `safImports.compositionRoot` in `package.json` to union
+ * additional project references beyond workspace dependencies (e.g. a monolith
+ * composition root that must reference every sibling service package).
  */
-export function applyMonolithServiceReferences(
+export function applyCompositionRootReferences(
   graph: ReferenceGraph,
   rootDir: string,
 ): void {
-  const monolith = graph.get(MONOLITH_PACKAGE_NAME);
-  if (!monolith) return;
-
-  const serviceRoot = path.join(rootDir, "daemon/service");
-  const servicePackages: string[] = [];
   for (const node of graph.values()) {
-    if (node.name === MONOLITH_PACKAGE_NAME) continue;
-    const rel = path.relative(serviceRoot, node.dir);
-    if (rel.startsWith("..") || path.isAbsolute(rel)) continue;
-    servicePackages.push(node.name);
-  }
+    const config = readPackageSafImportsConfig(node.dir).compositionRoot;
+    if (!config) continue;
 
-  monolith.references = [
-    ...new Set([...monolith.references, ...servicePackages]),
-  ].sort();
+    const extra: string[] = [];
+
+    if (config.includeSiblingPackages) {
+      const parentDir = path.dirname(node.dir);
+      for (const candidate of graph.values()) {
+        if (candidate.name === node.name) continue;
+        if (path.dirname(candidate.dir) === parentDir) {
+          extra.push(candidate.name);
+        }
+      }
+    }
+
+    if (config.includePackagesUnder) {
+      const underRoot = path.join(rootDir, config.includePackagesUnder);
+      for (const candidate of graph.values()) {
+        if (candidate.name === node.name) continue;
+        if (isUnderDir(candidate.dir, underRoot)) {
+          extra.push(candidate.name);
+        }
+      }
+    }
+
+    if (extra.length === 0) continue;
+    node.references = [...new Set([...node.references, ...extra])].sort();
+  }
 }

@@ -125,33 +125,3 @@ describe("measureGraph — Vue SFC", () => {
     expect(result.ext).toBe(0);
   });
 });
-
-describe("measureGraph — real repo validation", () => {
-  const listImportersPath = path.resolve(
-    import.meta.dirname,
-    "../../daemon/service/http/routes/matters/list-importers.test.ts",
-  );
-
-  function pathclerkMonorepoAvailable(): boolean {
-    if (!fs.existsSync(listImportersPath)) {
-      return false;
-    }
-    try {
-      findMonorepoRoot(path.dirname(listImportersPath));
-      return true;
-    } catch {
-      return false;
-    }
-  }
-
-  it.skipIf(!pathclerkMonorepoAvailable())(
-    "counts list-importers.test.ts within ±5% of 1151 modules",
-    { timeout: 30_000 },
-    () => {
-      const result = measureGraph(listImportersPath);
-      // Spot-check baseline (pathclerk monorepo); refresh when import graphs change intentionally.
-      expect(result.modules).toBeGreaterThanOrEqual(Math.floor(1151 * 0.95));
-      expect(result.modules).toBeLessThanOrEqual(Math.ceil(1151 * 1.05));
-    },
-  );
-});
