@@ -276,6 +276,15 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
         ".github/workflows/push.yml",
         ".github/actions/setup-node-deps",
         "deploy",
+        "tmp",
+      ],
+    })),
+    step(CommandStepMachine, () => ({
+      command: "node",
+      args: [
+        "--experimental-strip-types",
+        "--disable-warning=ExperimentalWarning",
+        "./workflows-cli/cleanup-product-init-artifacts.ts",
       ],
     })),
   ],

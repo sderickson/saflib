@@ -11,6 +11,9 @@
       "path": "../../../sdk/workflows/templates"
     },
     {
+      "path": "../../../vue"
+    },
+    {
       "path": "../common"
     },
     {

@@ -81,6 +81,9 @@ export function getMonorepoPackages(
     if (workspace.endsWith("/**")) {
       // recursively find all workspaces
       const workspacesDir = path.join(rootDir, workspace.slice(0, -2));
+      if (!existsSync(workspacesDir)) {
+        continue;
+      }
       const workspacesFolders = readdirSync(workspacesDir, {
         recursive: true,
         withFileTypes: true,
@@ -98,6 +101,9 @@ export function getMonorepoPackages(
       }
     } else if (workspace.endsWith("/*/*")) {
       const workspacesDir = path.join(rootDir, workspace.slice(0, -4));
+      if (!existsSync(workspacesDir)) {
+        continue;
+      }
       const firstLevelFolders = readdirSync(workspacesDir)
         .filter(isWorkspaceFolderName)
         .filter((folder) =>
@@ -118,6 +124,9 @@ export function getMonorepoPackages(
       }
     } else if (workspace.endsWith("/*")) {
       const workspacesDir = path.join(rootDir, workspace.slice(0, -1));
+      if (!existsSync(workspacesDir)) {
+        continue;
+      }
       const workspacesFolders = readdirSync(workspacesDir)
         .filter(isWorkspaceFolderName)
         .filter((folder) =>

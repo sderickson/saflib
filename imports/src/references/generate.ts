@@ -498,6 +498,9 @@ export function previewReferencesGenerate(options: {
 
   if (options.write) {
     for (const pkg of packages) {
+      if (isWorkflowTemplatePackage(path.dirname(pkg.tsconfig), built.rootDir)) {
+        continue;
+      }
       const changed = patchPackageTsconfig(pkg.tsconfig, pkg.references);
       (changed ? written : unchanged).push(pkg.tsconfig);
     }
@@ -542,6 +545,10 @@ export function checkReferences(options: {
   const drifts: ReferenceDrift[] = [];
 
   for (const pkg of packages) {
+    const packageDir = path.dirname(pkg.tsconfig);
+    if (isWorkflowTemplatePackage(packageDir, built.rootDir)) {
+      continue;
+    }
     const expected = expectedPackageReferences(pkg.tsconfig, pkg.references);
     const actual = fs.existsSync(pkg.tsconfig)
       ? readReferences(pkg.tsconfig)

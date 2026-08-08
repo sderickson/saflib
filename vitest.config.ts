@@ -16,6 +16,7 @@ export default defineConfig({
       "!integrations/workflows/templates/**",
       "!vue/workflows/template/**",
       "!tmp/**",
+      "tmp/**/vitest.config.{ts,js,mts,mjs}",
       // END WORKFLOW AREA
     ],
   },
