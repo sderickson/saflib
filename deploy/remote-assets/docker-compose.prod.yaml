@@ -1,0 +1,124 @@
+services:
+  caddy:
+    cap_add:
+      - NET_ADMIN
+    image: $CONTAINER_REGISTRY/saflib-caddy:latest
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    env_file:
+      # BEGIN WORKFLOW AREA env-caddy FOR product/init
+      - ./env.tmp.caddy
+      # END WORKFLOW AREA
+    environment:
+      - DISABLE_VITE_DEV_SERVER=#
+    volumes:
+      - ./config:/etc/caddy/
+      - caddy_data:/data
+      - caddy_config:/config
+    restart: unless-stopped
+    labels:
+      com.centurylinklabs.watchtower.enable: "true"
+
+  # BEGIN WORKFLOW AREA monolith FOR product/init
+  tmp-monolith:
+    image: $CONTAINER_REGISTRY/saflib-tmp-monolith:latest
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
+    memswap_limit: 2G
+    volumes:
+      - /opt/tmp/cron:/app/tmp/service/cron/data
+      - /opt/tmp/db:/app/tmp/service/db/data
+      - /opt/tmp/identity:/app/tmp/service/identity/data
+      - /opt/tmp/identity-http:/app/saflib/identity/identity-http/data
+    build:
+      context: ../..
+      dockerfile: tmp/service/monolith/Dockerfile
+    env_file:
+      - ./env.tmp.config
+      - ./.env.tmp.secrets
+    labels:
+      com.centurylinklabs.watchtower.enable: "true"
+  # END WORKFLOW AREA
+
+  kratos-migrate:
+    image: oryd/kratos:v26.2.0
+    command: migrate sql -e --yes
+    environment:
+      - DSN=sqlite:///var/lib/sqlite/db.sqlite?_fk=true&mode=rwc
+    volumes:
+      - /opt/kratos/data:/var/lib/sqlite
+      - ./kratos:/etc/config/kratos
+
+  kratos:
+    image: oryd/kratos:v26.2.0
+    depends_on:
+      kratos-migrate:
+        condition: service_completed_successfully
+    command: serve -c /etc/config/kratos/kratos.yml --watch-courier
+    environment:
+      - DSN=sqlite:///var/lib/sqlite/db.sqlite?_fk=true&mode=rwc
+    env_file:
+      - ./env.kratos.config
+      - ./.env.kratos.secrets
+    volumes:
+      - /opt/kratos/data:/var/lib/sqlite
+      - ./kratos:/etc/config/kratos
+    restart: unless-stopped
+  
+  prometheus:
+    image: prom/prometheus:v3.11.3
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+
+  loki:
+    image: grafana/loki:3.7
+    volumes:
+      - ./loki-config.yaml:/etc/loki/loki-config.yaml
+    command: -config.file=/etc/loki/loki-config.yaml
+
+  grafana:
+    image: grafana/grafana:13.0
+    volumes:
+      - grafana_storage:/var/lib/grafana
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
+
+  node_exporter:
+    image: prom/node-exporter:v1.11.1
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - "--path.procfs=/host/proc"
+      - "--path.sysfs=/host/sys"
+      - "--path.rootfs=/rootfs"
+      - "--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($|/)"
+
+  watchtower:
+    image: containrrr/watchtower:1.7.1
+    command:
+      # Poll every 60 seconds so local "push new :latest" tests are fast.
+      - "--interval=60"
+      # Only update containers explicitly opted-in via the enable label.
+      - "--label-enable"
+      - "--cleanup"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      # GHCR auth: assume docker login has written credentials to ~/.docker/config.json on the host.
+      - ${HOME}/.docker/config.json:/config.json:ro
+    restart: unless-stopped
+
+volumes:
+  caddy_data:
+  caddy_config:
+  grafana_storage:

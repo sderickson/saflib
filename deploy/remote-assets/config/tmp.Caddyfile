@@ -1,0 +1,50 @@
+# Curried snippets
+
+(tmp-spa) {
+	import spa /tmp-clients {args[0]}
+}
+
+# Client subdomains
+
+{$TMP_PROTOCOL}://{$TMP_DOMAIN} {
+	import static-site /tmp-root
+}
+
+{$TMP_PROTOCOL}://auth.{$TMP_DOMAIN} {
+	import tmp-spa /auth/index.html
+}
+
+{$TMP_PROTOCOL}://app.{$TMP_DOMAIN} {
+	import tmp-spa /app/index.html
+}
+
+{$TMP_PROTOCOL}://admin.{$TMP_DOMAIN} {
+	import tmp-spa /admin/index.html
+}
+
+{$TMP_PROTOCOL}://account.{$TMP_DOMAIN} {
+	import tmp-spa /account/index.html
+}
+
+# API subdomains
+
+{$TMP_PROTOCOL}://tmp.{$TMP_DOMAIN} {
+	import cors {$DOMAIN}
+	import kratos-api-proxy {$TMP_SERVICE_HTTP_HOST}
+}
+
+{$TMP_PROTOCOL}://kratos.{$TMP_DOMAIN} {
+	import cors {$TMP_DOMAIN}
+	reverse_proxy kratos:4433
+}
+
+{$TMP_PROTOCOL}://grafana.{$TMP_DOMAIN} {
+	import cors {$TMP_DOMAIN}
+	reverse_proxy grafana:3000 {
+		import reverse_proxy_common
+	}
+}
+
+{$TMP_DOMAIN_REDIRECTS} {
+	import redirect {$TMP_DOMAIN}
+}

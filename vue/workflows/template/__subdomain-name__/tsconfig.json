@@ -2,16 +2,13 @@
   "files": [],
   "references": [
     {
-      "path": "../../.."
+      "path": "../../../links"
     },
     {
-      "path": "../../../../links"
+      "path": "../../../ory-kratos-sdk"
     },
     {
-      "path": "../../../../ory-kratos-sdk"
-    },
-    {
-      "path": "../../../../sdk/workflows/templates"
+      "path": "../../../sdk/workflows/templates"
     },
     {
       "path": "../common"

@@ -14,10 +14,7 @@
       "path": "../../../monorepo"
     },
     {
-      "path": "../../../vitest"
-    },
-    {
-      "path": "../common-templates"
+      "path": "../../../service/workflows/common-templates"
     }
   ],
   "compilerOptions": {

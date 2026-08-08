@@ -4,9 +4,6 @@
   ],
   "references": [
     {
-      "path": "../.."
-    },
-    {
       "path": "../../../monorepo"
     },
     {
@@ -16,10 +13,10 @@
       "path": "../../../ory-kratos-sdk"
     },
     {
-      "path": "../../../vite"
+      "path": "../../../sdk"
     },
     {
-      "path": "../../../vitest"
+      "path": "../../../vite"
     },
     {
       "path": "../../../vue"

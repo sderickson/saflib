@@ -2,31 +2,25 @@
   "extends": "@saflib/monorepo/tsconfig.json",
   "references": [
     {
-      "path": "../.."
+      "path": "../../../drizzle"
     },
     {
-      "path": "../../../../drizzle"
+      "path": "../../../drizzle/workflows/templates"
     },
     {
-      "path": "../../../../drizzle/workflows/templates"
+      "path": "../../../env"
     },
     {
-      "path": "../../../../env"
+      "path": "../../../monorepo"
     },
     {
-      "path": "../../../../monorepo"
+      "path": "../../../node"
     },
     {
-      "path": "../../../../node"
+      "path": "../../../service/workflows/common-templates"
     },
     {
-      "path": "../../../../service/workflows/common-templates"
-    },
-    {
-      "path": "../../../../vitest"
-    },
-    {
-      "path": "../../../cron-db"
+      "path": "../../../cron/cron-db"
     }
   ],
   "compilerOptions": {

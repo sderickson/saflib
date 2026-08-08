@@ -2,16 +2,13 @@
   "extends": "@saflib/monorepo/tsconfig.json",
   "references": [
     {
-      "path": "../../../env"
+      "path": "../../../../env"
     },
     {
-      "path": "../../../monorepo"
+      "path": "../../../../monorepo"
     },
     {
-      "path": "../../../secret-store"
-    },
-    {
-      "path": "../../../vitest"
+      "path": "../../../../secret-store"
     }
   ],
   "compilerOptions": {

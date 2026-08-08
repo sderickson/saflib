@@ -2,10 +2,10 @@
   "extends": "@saflib/monorepo/tsconfig.json",
   "references": [
     {
-      "path": "../.."
+      "path": "../../../drizzle/workflows/templates"
     },
     {
-      "path": "../../../drizzle/workflows/templates"
+      "path": "../../../express"
     },
     {
       "path": "../../../monorepo"
@@ -15,9 +15,6 @@
     },
     {
       "path": "../../../service/workflows/common-templates"
-    },
-    {
-      "path": "../../../vitest"
     }
   ],
   "compilerOptions": {

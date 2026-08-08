@@ -24,13 +24,13 @@
   ],
   "references": [
     {
-      "path": "../../.."
+      "path": "../../../openapi/workflows/templates"
     },
     {
-      "path": "../../../../openapi/workflows/templates"
+      "path": "../../../ory-kratos-sdk"
     },
     {
-      "path": "../../../../ory-kratos-sdk"
+      "path": "../../../playwright"
     }
   ],
   "include": [

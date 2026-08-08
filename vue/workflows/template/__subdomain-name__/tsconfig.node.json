@@ -13,7 +13,10 @@
     "isolatedModules": true,
     "moduleDetection": "force",
     "noEmit": false,
-    "emitDeclarationOnly": true
+    "emitDeclarationOnly": true,
+    "types": [
+      "node"
+    ]
   },
   "include": [
     "playwright.config.ts"
