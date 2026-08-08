@@ -1,0 +1,24 @@
+{
+  "extends": [
+    "@saflib/monorepo/tsconfig.json",
+    "@vue/tsconfig/tsconfig.dom.json"
+  ],
+  "compilerOptions": {
+    "composite": true,
+    "noEmit": false,
+    "emitDeclarationOnly": true,
+    "target": "esnext",
+    "lib": ["esnext", "dom"],
+    "types": ["vite/client"]
+  },
+  "exclude": [
+    "**/node_modules/**",
+    "**/dist/types/**",
+    "**/workflows/template/**",
+    "**/workflows/templates/**",
+    "**/e2e/**",
+    "**/playwright-report/**",
+    "**/test-results/**",
+    "**/vite.config.ts"
+  ]
+}

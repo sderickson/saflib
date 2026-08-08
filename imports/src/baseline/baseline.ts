@@ -24,6 +24,11 @@ export interface BaselineSuiteTiming {
 /** Serial workspace typecheck timing. */
 export interface BaselineTypecheck {
   serialWorkspacesWallMs: number;
+  /** Warm 2nd-run wall time for root `npm run typecheck` (`vue-tsc -b`). */
+  rootBuildWallMs?: number;
+  /** Warm 2nd-run wall time for a single-package pilot (`daemon/service/http`). */
+  warmSinglePackageWallMs?: number;
+  warmSinglePackage?: string;
   peakRssMb?: number;
   status?: "ok" | "failed" | "skipped";
   reason?: string;
@@ -341,28 +346,65 @@ function measureTypecheck(
   onProgress?: (msg: string) => void,
 ): BaselineTypecheck {
   onProgress?.("Timing serial workspace typecheck…");
-  const result = runTimedCommand(
+  const serial = runTimedCommand(
     "npm",
     ["run", "typecheck", "--workspaces", "--if-present"],
     root,
   );
-  if (result.status !== 0 && result.status !== null) {
+  if (serial.status !== 0 && serial.status !== null) {
     onProgress?.(
-      `  typecheck exited ${result.status}; recording wall time anyway`,
+      `  serial typecheck exited ${serial.status}; recording wall time anyway`,
     );
   }
+
   const typecheck: BaselineTypecheck = {
-    serialWorkspacesWallMs: result.wallMs,
-    peakRssMb: result.peakRssMb,
-    status: result.status === 0 ? "ok" : "failed",
+    serialWorkspacesWallMs: serial.wallMs,
+    status: serial.status === 0 ? "ok" : "failed",
   };
-  if (result.status !== 0) {
-    typecheck.reason = `typecheck exit ${result.status}`;
+  if (serial.status !== 0) {
+    typecheck.reason = `serial typecheck exit ${serial.status}`;
+  }
+  onProgress?.(`  serial typecheck wallMs=${typecheck.serialWorkspacesWallMs}`);
+
+  onProgress?.("Timing warm root project-reference build (vue-tsc -b)…");
+  const rootWarmup = runTimedCommand("npm", ["run", "typecheck"], root, {
+    NODE_OPTIONS: "--max-old-space-size=8192",
+  });
+  if (rootWarmup.status !== 0 && rootWarmup.status !== null) {
+    onProgress?.(`  root warmup exited ${rootWarmup.status}`);
+  }
+  const rootWarm = runTimedCommand("npm", ["run", "typecheck"], root, {
+    NODE_OPTIONS: "--max-old-space-size=8192",
+  });
+  typecheck.rootBuildWallMs = rootWarm.wallMs;
+  typecheck.peakRssMb = rootWarm.peakRssMb;
+  if (rootWarm.status !== 0) {
+    typecheck.status = "failed";
+    typecheck.reason = `root typecheck exit ${rootWarm.status}`;
+  } else {
+    typecheck.status = "ok";
+    delete typecheck.reason;
   }
   onProgress?.(
-    `  typecheck wallMs=${typecheck.serialWorkspacesWallMs}` +
+    `  root warm wallMs=${typecheck.rootBuildWallMs}` +
       (typecheck.peakRssMb != null ? ` peakRssMb=${typecheck.peakRssMb}` : ""),
   );
+
+  const httpDir = path.join(root, "daemon/service/http");
+  if (fs.existsSync(path.join(httpDir, "package.json"))) {
+    onProgress?.("Timing warm single-package typecheck (daemon/service/http)…");
+    const httpWarmup = runTimedCommand("npm", ["run", "typecheck"], httpDir);
+    if (httpWarmup.status !== 0 && httpWarmup.status !== null) {
+      onProgress?.(`  http warmup exited ${httpWarmup.status}`);
+    }
+    const httpWarm = runTimedCommand("npm", ["run", "typecheck"], httpDir);
+    typecheck.warmSinglePackage = "daemon/service/http";
+    typecheck.warmSinglePackageWallMs = httpWarm.wallMs;
+    onProgress?.(
+      `  http warm wallMs=${typecheck.warmSinglePackageWallMs}`,
+    );
+  }
+
   return typecheck;
 }
 

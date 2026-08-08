@@ -25,5 +25,8 @@
     "@saflib/workflows": "*",
     "@saflib/xstate": "*",
     "product": "*"
+  },
+  "scripts": {
+    "typecheck": "tsc --incremental -p tsconfig.typecheck.json"
   }
 }

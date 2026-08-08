@@ -9,6 +9,7 @@
     "./testing": "./test-service.ts"
   },
   "scripts": {
+    "typecheck": "tsc -b",
     "clean": "rm -rf dist/*",
     "generate": "./generate.sh"
   },

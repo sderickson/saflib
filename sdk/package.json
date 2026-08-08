@@ -25,7 +25,6 @@
   "devDependencies": {
     "@saflib/dev-tools": "*",
     "@saflib/vitest": "*",
-    "@saflib/vue": "*",
     "@saflib/workflows": "*",
     "msw": "^2.0.0"
   }

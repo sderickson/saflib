@@ -2,6 +2,7 @@
   "name": "template-package-monolith",
   "type": "module",
   "scripts": {
+    "typecheck": "tsc -b",
     "start": "node --experimental-strip-types ./run.ts"
   },
   "exports": {},

@@ -25,7 +25,6 @@
   "devDependencies": {
     "@saflib/monorepo": "*",
     "@saflib/vitest": "*",
-    "@saflib/vue": "*",
     "msw": "^2.11.3"
   }
 }

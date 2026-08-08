@@ -1,7 +1,3 @@
-import { defineConfig } from "vitest/config";
+import { defaultConfig } from "@saflib/vitest/vitest.config.js";
 
-export default defineConfig({
-  test: {
-    globals: true,
-  },
-});
+export default defaultConfig;

@@ -15,3 +15,22 @@ Dockerfile
 *.sw?
 saf-workflow-prompt.log
 saf-workflow-status.error.json
+
+# TypeScript incremental / composite emit
+*.tsbuildinfo
+**/dist/types/
+**/*.d.ts.map
+
+# Co-located declaration emit artifacts (outDir should be dist/types; exclude ambient modules)
+**/*.d.ts
+!**/assets.d.ts
+!**/vitest-config.d.ts
+!**/env.d.ts
+
+# Product init workflow-script artifacts (must not land in saflib repo root)
+/tmp/
+/deploy/
+.github/workflows/playwright.yml
+.github/workflows/typecheck.yml
+.github/workflows/push.yml
+.github/actions/setup-node-deps/

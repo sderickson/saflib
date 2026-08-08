@@ -36,7 +36,10 @@ let scrollToOriginal = window.scrollTo;
 
 function stubGlobalsSetup() {
   vi.stubGlobal("location", {
-    href: "http://localhost",
+    href: "http://localhost:3000/",
+    host: "localhost:3000",
+    hostname: "localhost",
+    protocol: "http:",
   });
   vi.stubGlobal("ResizeObserver", ResizeObserverMock);
   vi.stubGlobal("matchMedia", matchMediaMock);

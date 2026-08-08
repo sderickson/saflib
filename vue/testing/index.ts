@@ -4,7 +4,7 @@
  */
 
 export * from "./mount.ts";
-export * from "../../sdk/testing/with-vue-query.ts";
+export * from "@saflib/sdk/testing";
 export * from "./string-utils.ts";
 export * from "./globals.ts";
 export * from "./async-ui-wait.ts";

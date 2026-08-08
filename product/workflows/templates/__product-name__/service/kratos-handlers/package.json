@@ -11,5 +11,8 @@
   },
   "devDependencies": {
     "@saflib/monorepo": "*"
+  },
+  "scripts": {
+    "typecheck": "tsc -b"
   }
 }

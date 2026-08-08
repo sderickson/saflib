@@ -29,6 +29,12 @@
     "./src/graph/find-path": "./src/graph/find-path.ts",
     "./src/graph/read-source": "./src/graph/read-source.ts",
     "./src/graph/walk-graph": "./src/graph/walk-graph.ts",
+    "./src/references": "./src/references/index.ts",
+    "./src/references/build-graph": "./src/references/build-graph.ts",
+    "./src/references/detect-cycles": "./src/references/detect-cycles.ts",
+    "./src/references/generate": "./src/references/generate.ts",
+    "./src/references/resolve-entry": "./src/references/resolve-entry.ts",
+    "./src/references/tsconfig-io": "./src/references/tsconfig-io.ts",
     "./src/reporter/vitest-reporter": "./src/reporter/vitest-reporter.ts",
     "./src/resolve": "./src/resolve/index.ts",
     "./src/types": "./src/types.ts"

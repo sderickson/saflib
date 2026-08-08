@@ -11,7 +11,13 @@ npm exec saf-imports cycles [--package <name>]
 npm exec saf-imports budget [--mode warn|error]
 npm exec saf-imports exports generate --package <name>
 npm exec saf-imports exports check --package <name>
+npm exec saf-imports references cycles [--root <dir>]
+npm exec saf-imports references generate [--root <dir>] [--write]
+npm exec saf-imports references check [--root <dir>]
 ```
+
+See [03-project-references.md](./03-project-references.md) for the dev loop and troubleshooting, and [04-composite-type-guidance.md](./04-composite-type-guidance.md) for do's and don'ts when writing types across composite packages.
+
 
 ## Vitest reporter (opt-in)
 

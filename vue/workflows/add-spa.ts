@@ -91,6 +91,7 @@ export const AddSpaWorkflowDefinition = defineWorkflow<
 
   templateFiles: {
     spa: path.join(subdomainDir, "__SubdomainName__Spa.vue"),
+    envDts: path.join(subdomainDir, "env.d.ts"),
     fixtures: path.join(subdomainDir, "fixtures.ts"),
     i18n: path.join(subdomainDir, "i18n.ts"),
     main: path.join(subdomainDir, "main.ts"),
@@ -100,6 +101,8 @@ export const AddSpaWorkflowDefinition = defineWorkflow<
     strings: path.join(subdomainDir, "strings.ts"),
     testApp: path.join(subdomainDir, "test-app.ts"),
     tsconfig: path.join(subdomainDir, "tsconfig.json"),
+    tsconfigApp: path.join(subdomainDir, "tsconfig.app.json"),
+    tsconfigNode: path.join(subdomainDir, "tsconfig.node.json"),
     vitestConfig: path.join(subdomainDir, "vitest.config.ts"),
 
     linksPackage: linksDir,

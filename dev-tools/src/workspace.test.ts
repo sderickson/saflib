@@ -1,13 +1,12 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { vol } from "memfs";
 import {
-  // generateDockerfile,
+  getAllPackageWorkspaceDependencies,
+  buildMonorepoContext,
   getMonorepoPackages,
   buildWorkspaceDependencyGraph,
   findPackagesWithDockerfileTemplates,
-  getAllPackageWorkspaceDependencies,
-  buildMonorepoContext,
-} from "./workspace.ts";
+} from "@saflib/monorepo/workspace";
 import { monorepoPackageMock } from "./monorepo.mock.ts";
 vi.mock("node:fs");
 vi.mock("node:fs/promises");

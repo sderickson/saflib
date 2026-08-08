@@ -6,7 +6,7 @@
     ".": "./index.ts"
   },
   "scripts": {
-    "typecheck": "tsc"
+    "typecheck": "tsc -b"
   },
   "dependencies": {
     "@saflib/openapi": "*",

@@ -8,5 +8,8 @@
   },
   "dependencies": {
     "@saflib/links": "*"
+  },
+  "scripts": {
+    "typecheck": "tsc --incremental -p tsconfig.typecheck.json"
   }
 }

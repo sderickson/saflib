@@ -3,6 +3,7 @@
   "description": "Static __subdomain-name__ site for __Product Name__ using VitePress + Vuetify",
   "type": "module",
   "scripts": {
+    "typecheck": "vue-tsc --incremental -p tsconfig.typecheck.json",
     "dev": "vitepress dev",
     "build": "vitepress build",
     "preview": "vitepress preview"

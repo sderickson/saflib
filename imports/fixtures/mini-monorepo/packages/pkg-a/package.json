@@ -5,5 +5,9 @@
   "exports": {
     ".": "./index.ts",
     "./util": "./src/util.ts"
+  },
+  "dependencies": {
+    "@fixture/pkg-b": "*",
+    "@fixture/pkg-c": "*"
   }
 }

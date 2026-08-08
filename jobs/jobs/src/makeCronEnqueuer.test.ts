@@ -1,6 +1,7 @@
 import { once } from "node:events";
 import fs from "node:fs";
 import http from "node:http";
+import type { AddressInfo } from "node:net";
 import os from "node:os";
 import path from "node:path";
 import {
@@ -16,7 +17,6 @@ import {
 import type { OpenAPIV3 } from "express-openapi-validator/dist/framework/types.ts";
 import type { DbKey } from "@saflib/drizzle";
 import { startExpressServer } from "@saflib/express";
-import * as oryKratos from "@saflib/ory-kratos";
 import { jobsDbManager } from "@saflib/jobs-db/instances";
 import { jobQueries } from "@saflib/jobs-db";
 import { createJobsApp } from "./createJobsApp.ts";
@@ -53,14 +53,65 @@ async function waitForListening(server: http.Server): Promise<void> {
   await new Promise<void>((resolve) => setImmediate(resolve));
 }
 
+/** Minimal Kratos admin fake so assertion auth can resolve identities. */
+function startFakeKratos(identities: Map<string, { email: string }>): Promise<{
+  server: http.Server;
+  baseUrl: string;
+}> {
+  const server = http.createServer((req, res) => {
+    const match = req.url?.match(/^\/admin\/identities\/([^/?]+)/);
+    if (!match?.[1]) {
+      res.writeHead(404);
+      res.end();
+      return;
+    }
+    const id = decodeURIComponent(match[1]);
+    const identity = identities.get(id);
+    if (!identity) {
+      res.writeHead(404);
+      res.end(JSON.stringify({ error: "Not Found" }));
+      return;
+    }
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(
+      JSON.stringify({
+        id,
+        state: "active",
+        traits: { email: identity.email },
+        verifiable_addresses: [{ via: "email", verified: true }],
+      }),
+    );
+  });
+
+  return new Promise((resolve) => {
+    server.listen(0, "127.0.0.1", () => {
+      const addr = server.address() as AddressInfo;
+      resolve({
+        server,
+        baseUrl: `http://127.0.0.1:${addr.port}`,
+      });
+    });
+  });
+}
+
 describe("makeCronEnqueuer", () => {
   let dbKey: DbKey;
   let socketPath: string;
   let closeServer: (() => Promise<void>) | undefined;
+  let kratosServer: http.Server | undefined;
+  let kratosBaseUrl: string;
+  const identities = new Map<string, { email: string }>();
 
   beforeAll(async () => {
+    const kratos = await startFakeKratos(identities);
+    kratosServer = kratos.server;
+    kratosBaseUrl = kratos.baseUrl;
+
     vi.stubEnv("SAF_INTERNAL_ASSERTION_KEYS", TEST_KEYS);
+    vi.stubEnv("KRATOS_ADMIN_API_URL", kratosBaseUrl);
     vi.stubEnv("ADMIN_EMAILS", "admin@example.com");
+    identities.set("admin-enabled-by", { email: "admin@example.com" });
+
     dbKey = jobsDbManager.connect();
     socketPath = path.join(os.tmpdir(), `jc${process.pid}.sock`);
     if (fs.existsSync(socketPath)) {
@@ -80,22 +131,14 @@ describe("makeCronEnqueuer", () => {
 
   beforeEach(() => {
     vi.stubEnv("SAF_INTERNAL_ASSERTION_KEYS", TEST_KEYS);
+    vi.stubEnv("KRATOS_ADMIN_API_URL", kratosBaseUrl);
     vi.stubEnv("ADMIN_EMAILS", "admin@example.com");
     jobsDbManager.clearAllTablesForTests(dbKey);
     _resetJobsWakeForTests();
-    vi.spyOn(oryKratos, "resolveAuthFromIdentityId").mockImplementation(
-      async (userId) => ({
-        userId,
-        userEmail: "admin@example.com",
-        isAdmin: true,
-        emailVerified: true,
-      }),
-    );
   });
 
   afterEach(() => {
     _resetJobsWakeForTests();
-    vi.restoreAllMocks();
   });
 
   afterAll(async () => {
@@ -103,6 +146,7 @@ describe("makeCronEnqueuer", () => {
     if (socketPath && fs.existsSync(socketPath)) {
       fs.unlinkSync(socketPath);
     }
+    kratosServer?.close();
     jobsDbManager.disconnect(dbKey);
     vi.unstubAllEnvs();
   });

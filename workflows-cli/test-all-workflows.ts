@@ -45,6 +45,13 @@ import {
 import { CommandStepMachine } from "@saflib/workflows";
 import { AddWorkflowDefinition } from "@saflib/workflows/workflows";
 import { SpecProjectWorkflowDefinition } from "@saflib/processes/workflows";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const saflibRoot = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "..",
+);
 
 const input = [] as const;
 interface TestAllWorkflowsContext {}
@@ -263,6 +270,32 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
     step(makeWorkflowMachine(AddSpaViewWorkflowDefinition), () => ({
       path: "./pages/welcome-new-user",
       urlPath: "/welcome-new-user",
+    })),
+
+    // Product init copies pathclerk-style CI/deploy templates to repo root; remove them
+    // so workflow-script does not pollute the saflib repository.
+    step(CdStepMachine, () => ({
+      path: saflibRoot,
+    })),
+    step(CommandStepMachine, () => ({
+      command: "rm",
+      args: [
+        "-rf",
+        ".github/workflows/playwright.yml",
+        ".github/workflows/typecheck.yml",
+        ".github/workflows/push.yml",
+        ".github/actions/setup-node-deps",
+        "deploy",
+        "tmp",
+      ],
+    })),
+    step(CommandStepMachine, () => ({
+      command: "node",
+      args: [
+        "--experimental-strip-types",
+        "--disable-warning=ExperimentalWarning",
+        "./workflows-cli/cleanup-product-init-artifacts.ts",
+      ],
     })),
   ],
 });

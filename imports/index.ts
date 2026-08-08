@@ -39,6 +39,25 @@ export {
   type BaselineRegression,
   type DiffBaselineResult,
 } from "./src/baseline/baseline.ts";
+export {
+  buildReferenceGraph,
+  detectReferenceCycles,
+  resolveTsconfigEntry,
+  previewReferencesGenerate,
+  generateReferences,
+  checkReferences,
+  workspaceDepsOf,
+  mergePackageReferences,
+  isInternalReference,
+  MONOLITH_PACKAGE_NAME,
+  type ReferenceGraph,
+  type ReferenceGraphNode,
+  type BuildReferenceGraphResult,
+  type ReferenceCycle,
+  type GenerateReferencesPreview,
+  type PackageReferencePreview,
+  type CheckReferencesResult,
+} from "./src/references/index.ts";
 export type {
   MeasureGraphOptions,
   MeasureGraphResult,
