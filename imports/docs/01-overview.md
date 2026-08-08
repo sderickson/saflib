@@ -16,7 +16,7 @@ npm exec saf-imports references generate [--root <dir>] [--write]
 npm exec saf-imports references check [--root <dir>]
 ```
 
-See [03-project-references.md](./03-project-references.md) for the M1 dev loop and troubleshooting.
+See [03-project-references.md](./03-project-references.md) for the dev loop and troubleshooting, and [04-composite-type-guidance.md](./04-composite-type-guidance.md) for do's and don'ts when writing types across composite packages.
 
 
 ## Vitest reporter (opt-in)

@@ -117,4 +117,6 @@ Exports a `mountTestApp` function which wraps and extends Vue Test Utils' [`moun
 - _[tsconfig.json template file](../workflows/spa-template/tsconfig.json)_
 - _[vitest.config.ts template file](../workflows/spa-template/vitest.config.ts)_
 
-These use ones provided by `@saflib/vue` due to needs peculiar to Vue.
+These use ones provided by `@saflib/vue` due to needs peculiar to Vue. For composite
+build conventions (app/node split, external references, query typing), see
+[@saflib/imports composite type guidance](../../imports/docs/04-composite-type-guidance.md).

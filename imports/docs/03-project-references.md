@@ -66,6 +66,11 @@ npm run typecheck -- --force   # or: npx vue-tsc -b --force
 Deleting `dist/types` without clearing `.tsbuildinfo` can make TypeScript think projects are
 up to date when declarations are missing.
 
+## Type and import conventions
+
+See [04-composite-type-guidance.md](./04-composite-type-guidance.md) for do's and don'ts
+when authoring types, queries, and cross-package imports under composite project references.
+
 ## CI
 
 Both pathclerk and saflib typecheck workflows run `saf-imports references check` before

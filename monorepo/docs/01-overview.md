@@ -7,6 +7,10 @@ Includes:
 - `@saflib/monorepo` - constants and type utilities
 - `@saflib/monorepo/tsconfig.json` - each package should import and extend it
 
+For composite project references (`composite: true`, incremental `tsc -b` /
+`vue-tsc -b`), see [@saflib/imports composite type guidance](../../imports/docs/04-composite-type-guidance.md)
+and [project references](../../imports/docs/03-project-references.md).
+
 See [Code Reference](./ref/index.md) for more information on package exports.
 
 ## Monorepo Structure
