@@ -25,3 +25,7 @@ saf-workflow-status.error.json
 **/*.d.ts
 !**/assets.d.ts
 !**/vitest-config.d.ts
+
+# Product init workflow-script artifacts (must not land in saflib repo root)
+/tmp/
+/deploy/

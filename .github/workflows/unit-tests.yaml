@@ -15,7 +15,6 @@ jobs:
           # Bit of a hack so tests pass. Might move these tests elsewhere.
           # BEGIN WORKFLOW AREA test-product-dependencies FOR product/init
           - saflib
-          - tmp
           # END WORKFLOW AREA
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6

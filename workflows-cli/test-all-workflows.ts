@@ -264,6 +264,20 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
       path: "./pages/welcome-new-user",
       urlPath: "/welcome-new-user",
     })),
+
+    // Product init copies pathclerk-style CI/deploy templates to repo root; remove them
+    // so workflow-script does not pollute the saflib repository.
+    step(CommandStepMachine, () => ({
+      command: "rm",
+      args: [
+        "-rf",
+        ".github/workflows/playwright.yml",
+        ".github/workflows/typecheck.yml",
+        ".github/workflows/push.yml",
+        ".github/actions/setup-node-deps",
+        "deploy",
+      ],
+    })),
   ],
 });
 
