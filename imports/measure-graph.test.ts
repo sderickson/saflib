@@ -1,5 +1,4 @@
 import path from "node:path";
-import fs from "node:fs";
 import { describe, expect, it } from "vitest";
 import { measureGraph } from "./index.ts";
 import { extractImports } from "./src/graph/extract-imports.ts";
