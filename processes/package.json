@@ -16,5 +16,6 @@
   },
   "dependencies": {
     "@saflib/workflows": "*"
-  }
+  },
+  "sideEffects": false
 }

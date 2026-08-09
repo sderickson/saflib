@@ -16,5 +16,6 @@
     "@saflib/monorepo": "*",
     "@saflib/node": "*",
     "@saflib/secret-store": "*"
-  }
+  },
+  "sideEffects": false
 }

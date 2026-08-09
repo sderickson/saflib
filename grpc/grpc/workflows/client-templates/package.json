@@ -17,5 +17,6 @@
   },
   "scripts": {
     "typecheck": "tsc --noEmit"
-  }
+  },
+  "sideEffects": false
 }

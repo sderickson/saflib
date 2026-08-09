@@ -15,5 +15,6 @@
   "dependencies": {
     "@saflib/monorepo": "*",
     "@saflib/node": "*"
-  }
+  },
+  "sideEffects": false
 }

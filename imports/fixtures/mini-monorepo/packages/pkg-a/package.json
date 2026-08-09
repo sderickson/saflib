@@ -9,5 +9,6 @@
   "dependencies": {
     "@fixture/pkg-b": "*",
     "@fixture/pkg-c": "*"
-  }
+  },
+  "sideEffects": false
 }

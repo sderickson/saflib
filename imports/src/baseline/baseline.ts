@@ -8,6 +8,8 @@ import {
 } from "../resolve/index.ts";
 import { measureGraph } from "../graph/walk-graph.ts";
 import { readRootSafImportsConfig } from "../config/read-saf-imports-config.ts";
+import { analyzeSpaRouter, listGateSpas } from "../spa/analyze-router.ts";
+import { measureSpaFromManifest } from "../spa/measure-spa.ts";
 
 /** Per-entry graph measurement stored in the baseline snapshot. */
 export interface BaselineGraphStats {
@@ -35,13 +37,33 @@ export interface BaselineTypecheck {
   reason?: string;
 }
 
+/** Per-route SPA bundle baseline. */
+export interface SpaRouteBaseline {
+  routeKey: string;
+  pathPattern: string;
+  pageChunksGzipBytes: number;
+}
+
+/** SPA shell + route page-chunk baseline. */
+export interface SpaBundleBaseline {
+  shellJsGzipBytes: number;
+  shellCssGzipBytes?: number;
+  routes: SpaRouteBaseline[];
+}
+
 /** Frontend bundle baseline — measured or blocked. */
 export interface BaselineBundles {
   status: "ok" | "blocked" | "skipped";
   reason?: string;
   fallback?: string;
   command?: string;
+  note?: string;
   chunks?: { chunkName: string; bytes: number; gzipBytes?: number }[];
+  spas?: Record<string, SpaBundleBaseline>;
+  preSideEffects?: {
+    note?: string;
+    spas?: Record<string, SpaBundleBaseline>;
+  };
 }
 
 /** Committed baseline snapshot shape. */
@@ -411,6 +433,61 @@ function listDistAssets(dir: string): { chunkName: string; bytes: number }[] {
   walk(dir);
   return chunks.sort((a, b) => a.chunkName.localeCompare(b.chunkName));
 }
+function loadEnvDev(root: string): Record<string, string> {
+  const envPath = path.join(root, "daemon/dev/env.dev");
+  if (!fs.existsSync(envPath)) return {};
+  const out: Record<string, string> = {};
+  for (const line of fs.readFileSync(envPath, "utf8").split("\n")) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#")) continue;
+    const eq = trimmed.indexOf("=");
+    if (eq === -1) continue;
+    out[trimmed.slice(0, eq)] = trimmed.slice(eq + 1);
+  }
+  return out;
+}
+
+function spaMeasureToBaseline(
+  results: Record<string, Awaited<ReturnType<typeof measureSpaFromManifest>> | undefined>,
+): Record<string, SpaBundleBaseline> {
+  const spas: Record<string, SpaBundleBaseline> = {};
+  for (const [spa, m] of Object.entries(results)) {
+    if (!m) continue;
+    spas[spa] = {
+      shellJsGzipBytes: m.shell.shellJsGzipBytes,
+      shellCssGzipBytes: m.shell.shellCssGzipBytes,
+      routes: m.routes.map((r) => ({
+        routeKey: r.routeKey,
+        pathPattern: r.pathPattern,
+        pageChunksGzipBytes: r.pageChunksGzipBytes,
+      })),
+    };
+  }
+  return spas;
+}
+
+function measureSpaBundles(
+  root: string,
+  onProgress?: (msg: string) => void,
+): Record<string, SpaBundleBaseline> | undefined {
+  const distDir = path.join(root, "daemon/clients/build/dist");
+  if (!fs.existsSync(path.join(distDir, ".vite", "manifest.json"))) {
+    onProgress?.("  spa measure skipped (no vite manifest — run client build)");
+    return undefined;
+  }
+  const results: Record<string, ReturnType<typeof measureSpaFromManifest>> = {};
+  for (const spa of listGateSpas()) {
+    const catalog = analyzeSpaRouter(root, spa);
+    if (!catalog) continue;
+    results[spa] = measureSpaFromManifest(root, spa, catalog, distDir);
+    if (results[spa]) {
+      onProgress?.(
+        `  spa ${spa}: shell gzip ${results[spa]!.shell.shellJsGzipBytes} (${results[spa]!.routes.length} routes)`,
+      );
+    }
+  }
+  return spaMeasureToBaseline(results);
+}
 
 function measureBundles(
   root: string,
@@ -446,6 +523,7 @@ function measureBundles(
       cwd: root,
       env: {
         ...process.env,
+        ...loadEnvDev(root),
         NODE_OPTIONS: "--experimental-strip-types",
       },
       encoding: "utf8",
@@ -468,7 +546,14 @@ function measureBundles(
   const jsChunks = chunks.filter((c) => c.chunkName.endsWith(".js"));
   if (result.status === 0 && jsChunks.length >= 2) {
     onProgress?.(`  ok: ${chunks.length} asset(s), ${jsChunks.length} JS chunk(s)`);
-    return { status: "ok", command, chunks };
+    const spas = measureSpaBundles(root, onProgress);
+    return {
+      status: "ok",
+      command,
+      chunks,
+      spas,
+      note: "post-sideEffects regression baseline",
+    };
   }
 
   const reasonParts: string[] = [];
@@ -675,7 +760,54 @@ export function diffBaseline(options: DiffBaselineOptions): DiffBaselineResult {
     compareGraph(`entry:${label}`, base, entries[label]);
   }
 
-  // Timing regressions only when baseline has suite timings and caller re-ran
+  const bundleThreshold = 0.05;
+  const baseSpas = baseline.bundles?.spas;
+  if (baseSpas && options.onProgress) {
+    options.onProgress?.("Comparing SPA shell budgets vs baseline…");
+    const distDir = path.join(root, "daemon/clients/build/dist");
+    if (fs.existsSync(path.join(distDir, ".vite", "manifest.json"))) {
+      const currentSpas = measureSpaBundles(root, options.onProgress) ?? {};
+      for (const [spa, base] of Object.entries(baseSpas)) {
+        const cur = currentSpas[spa];
+        if (!cur) continue;
+        if (base.shellJsGzipBytes > 0) {
+          const delta =
+            (cur.shellJsGzipBytes - base.shellJsGzipBytes) / base.shellJsGzipBytes;
+          if (delta > bundleThreshold) {
+            regressions.push({
+              kind: "timing",
+              path: `bundle:${spa}:shellJsGzipBytes`,
+              baseline: base.shellJsGzipBytes,
+              current: cur.shellJsGzipBytes,
+              deltaPct: Math.round(delta * 1000) / 10,
+            });
+          }
+        }
+        for (const baseRoute of base.routes) {
+          const curRoute = cur.routes.find(
+            (r) => r.routeKey === baseRoute.routeKey,
+          );
+          if (!curRoute) continue;
+          if (baseRoute.pageChunksGzipBytes > 0) {
+            const delta =
+              (curRoute.pageChunksGzipBytes - baseRoute.pageChunksGzipBytes) /
+              baseRoute.pageChunksGzipBytes;
+            if (delta > 0.1) {
+              regressions.push({
+                kind: "timing",
+                path: `bundle:${spa}:${baseRoute.routeKey}`,
+                baseline: baseRoute.pageChunksGzipBytes,
+                current: curRoute.pageChunksGzipBytes,
+                deltaPct: Math.round(delta * 1000) / 10,
+              });
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Timing regressions only when baseline has suite timings
   // generate with timings; diff itself does not re-time (too slow for CI).
   // Compare committed baseline suite numbers against themselves is a no-op —
   // instead, if current.suites were populated we'd compare. Document that

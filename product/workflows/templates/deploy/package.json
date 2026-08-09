@@ -25,5 +25,6 @@
   },
   "dependencies": {
     "@saflib/dev-tools": "*"
-  }
+  },
+  "sideEffects": false
 }

@@ -53,5 +53,9 @@
     "@saflib/monorepo": "*",
     "@saflib/vitest": "*",
     "vitest": "^3.0.0"
-  }
+  },
+  "sideEffects": [
+    "./../../scripts/apply-side-effects.mjs",
+    "./../../src/side-effects/scan-package.ts"
+  ]
 }

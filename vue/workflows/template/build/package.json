@@ -15,5 +15,6 @@
   },
   "workspaces": [
     "clients/*"
-  ]
+  ],
+  "sideEffects": false
 }

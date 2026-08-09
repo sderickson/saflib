@@ -26,5 +26,6 @@
     "@saflib/vue": "*",
     "@saflib/links": "*",
     "vue-router": "^5.0.0"
-  }
+  },
+  "sideEffects": false
 }

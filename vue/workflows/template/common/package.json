@@ -24,5 +24,6 @@
     "@sentry/vue": "^10.21.0",
     "@saflib/ory-kratos-sdk": "*",
     "template-package-spec": "*"
-  }
+  },
+  "sideEffects": false
 }

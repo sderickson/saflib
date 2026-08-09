@@ -11,5 +11,6 @@
   "dependencies": {
     "@saflib/openapi": "*",
     "openapi-typescript": "*"
-  }
+  },
+  "sideEffects": false
 }

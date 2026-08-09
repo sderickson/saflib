@@ -22,5 +22,6 @@
     "@saflib/vitest": "*",
     "@types/nodemailer": "^8.0.0",
     "nodemailer": "^8.0.0"
-  }
+  },
+  "sideEffects": false
 }

@@ -15,5 +15,6 @@
   "dependencies": {},
   "devDependencies": {
     "@saflib/vitest": "*"
-  }
+  },
+  "sideEffects": false
 }

@@ -35,5 +35,8 @@
     "workerDirectory": [
       "public"
     ]
-  }
+  },
+  "sideEffects": [
+    "./../../../../client.ts"
+  ]
 }

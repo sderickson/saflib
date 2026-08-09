@@ -40,5 +40,6 @@
     ".": "./src/index.ts",
     "./workflows": "./workflows/index.ts",
     "./resolveAuthFromIdentityId": "./src/resolveAuthFromIdentityId.ts"
-  }
+  },
+  "sideEffects": false
 }

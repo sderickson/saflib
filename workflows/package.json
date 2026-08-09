@@ -26,5 +26,6 @@
     "@saflib/vitest": "*",
     "tsup": "^8.5.0",
     "typescript": "^6.0.0"
-  }
+  },
+  "sideEffects": false
 }

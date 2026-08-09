@@ -25,5 +25,6 @@
     "@redocly/cli": "^2.0.0",
     "@saflib/vitest": "*",
     "serve": "^14.0.0"
-  }
+  },
+  "sideEffects": false
 }

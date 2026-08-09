@@ -8,6 +8,8 @@ import { addBudgetCommand } from "./budget.ts";
 import { addExportsCommand } from "./exports.ts";
 import { addBaselineCommand } from "./baseline.ts";
 import { addReferencesCommand } from "./references.ts";
+import { addSpaCommand } from "./spa.ts";
+import { addSideEffectsCommand } from "./side-effects.ts";
 
 const program = new Command()
   .name("saf-imports")
@@ -22,6 +24,8 @@ addBudgetCommand(program);
 addExportsCommand(program);
 addBaselineCommand(program);
 addReferencesCommand(program);
+addSpaCommand(program);
+addSideEffectsCommand(program);
 
 setupContext(
   {
