@@ -18,6 +18,7 @@ export {
 export {
   computeExportsMap,
   checkExports,
+  checkExportPatternCoverage,
   generateExports,
   listExportableFiles,
   packageHasWorkflowMarkers,
@@ -25,6 +26,13 @@ export {
   type ExportsMap,
   type CheckExportsResult,
 } from "./src/exports/generate-exports.ts";
+export {
+  buildPackageIndex,
+  findMonorepoRoot,
+  matchExportPattern,
+  resolvePackageExportPath,
+  resolveSpecifier,
+} from "./src/resolve/index.ts";
 export {
   generateBaseline,
   diffBaseline,

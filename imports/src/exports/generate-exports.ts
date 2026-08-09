@@ -2,8 +2,11 @@ import fs from "node:fs";
 import path from "node:path";
 import {
   buildPackageIndex,
+  existsResolve,
   findMonorepoRoot,
+  resolvePackageExportPath,
 } from "../resolve/index.ts";
+import type { PackageInfo } from "../types.ts";
 
 const SKIP_DIRS = new Set([
   "node_modules",
@@ -14,12 +17,18 @@ const SKIP_DIRS = new Set([
   "bin",
   "docs",
   "workflows",
+  "testing",
 ]);
 
 const WORKFLOW_AREA_RE = /BEGIN\s+(?:ONCE\s+)?(?:SORTED\s+)?WORKFLOW AREA/;
 
 /** Package-local files excluded from generated export maps (internal wiring). */
-const SKIP_FILES = new Set(["env.ts"]);
+const SKIP_FILES = new Set([
+  "env.ts",
+  "schema.ts",
+  "drizzle.config.ts",
+  "instances-registry.ts",
+]);
 
 export type ExportsMap = Record<string, string>;
 
@@ -135,6 +144,10 @@ export function sortExportsMap(map: ExportsMap): ExportsMap {
   return out;
 }
 
+function exportsHasPatterns(map: ExportsMap): boolean {
+  return Object.keys(map).some((k) => k.includes("*"));
+}
+
 function readActualExports(pkgDir: string): ExportsMap {
   const pj = JSON.parse(
     fs.readFileSync(path.join(pkgDir, "package.json"), "utf8"),
@@ -154,15 +167,68 @@ function readActualExports(pkgDir: string): ExportsMap {
   return sortExportsMap(out);
 }
 
+function resolveExportSubpath(pkg: PackageInfo, subpath: string): string | null {
+  return resolvePackageExportPath(pkg, subpath);
+}
+
+/**
+ * Verify export patterns cover every exportable file (hybrid / wildcard maps).
+ */
+export function checkExportPatternCoverage(pkgDir: string): CheckExportsResult {
+  const expected = computeExportsMap(pkgDir);
+  const actual = readActualExports(pkgDir);
+  const aliases = readExportsAliases(pkgDir);
+  const hasWorkflowMarkers = packageHasWorkflowMarkers(pkgDir);
+  const pkg: PackageInfo = {
+    dir: pkgDir,
+    exports: sortExportsMap({ ...actual, ...aliases }),
+  };
+  const diffs: string[] = [];
+
+  for (const [key, relTarget] of Object.entries(expected)) {
+    const subpath = key === "." ? "" : key.slice(2);
+    const exportPath = resolveExportSubpath(pkg, subpath);
+    if (!exportPath) {
+      diffs.push(`uncovered: ${key} → ${relTarget}`);
+      continue;
+    }
+    const resolved = existsResolve(exportPath);
+    if (!resolved) {
+      diffs.push(`unresolvable: ${key} → ${exportPath}`);
+      continue;
+    }
+    const expectedAbs = path.join(pkgDir, relTarget.replace(/^\.\//, ""));
+    if (path.normalize(resolved) !== path.normalize(expectedAbs)) {
+      diffs.push(
+        `wrong target: ${key} → ${path.relative(pkgDir, resolved)} (expected ${relTarget})`,
+      );
+    }
+  }
+
+  return {
+    ok: diffs.length === 0,
+    expected,
+    actual,
+    diffs,
+    hasWorkflowMarkers,
+  };
+}
+
 /**
  * Diff generated exports against committed `package.json` exports.
+ * Packages with wildcard export keys use pattern coverage validation instead.
  */
 export function checkExports(pkgDir: string): CheckExportsResult {
   const expected = computeExportsMap(pkgDir);
   const actual = readActualExports(pkgDir);
+  const aliases = readExportsAliases(pkgDir);
   const hasWorkflowMarkers = packageHasWorkflowMarkers(pkgDir);
-  const diffs: string[] = [];
 
+  if (exportsHasPatterns(actual) || exportsHasPatterns(aliases)) {
+    return checkExportPatternCoverage(pkgDir);
+  }
+
+  const diffs: string[] = [];
   const allKeys = new Set([...Object.keys(expected), ...Object.keys(actual)]);
   for (const key of [...allKeys].sort()) {
     const e = expected[key];

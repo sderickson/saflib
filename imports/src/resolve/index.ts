@@ -67,6 +67,43 @@ export function buildPackageIndex(root: string): PackageIndex {
   return index;
 }
 
+/** Substitute `*` segments in an export pattern target using a matched import key. */
+export function matchExportPattern(
+  importKey: string,
+  patternKey: string,
+  patternTarget: string,
+): string | null {
+  const pkParts = patternKey.split("/");
+  const ikParts = importKey.split("/");
+  if (pkParts.length !== ikParts.length) return null;
+  const captures: string[] = [];
+  for (let i = 0; i < pkParts.length; i++) {
+    if (pkParts[i] === "*") {
+      captures.push(ikParts[i]!);
+    } else if (pkParts[i] !== ikParts[i]) {
+      return null;
+    }
+  }
+  let out = patternTarget;
+  for (const c of captures) {
+    const idx = out.indexOf("*");
+    if (idx === -1) return null;
+    out = out.slice(0, idx) + c + out.slice(idx + 1);
+  }
+  return out.includes("*") ? null : out;
+}
+
+function sortExportPatternKeys(keys: string[]): string[] {
+  return keys.sort((a, b) => {
+    const aParts = a.split("/").length;
+    const bParts = b.split("/").length;
+    if (aParts !== bParts) return bParts - aParts;
+    const aStars = (a.match(/\*/g) ?? []).length;
+    const bStars = (b.match(/\*/g) ?? []).length;
+    return aStars - bStars;
+  });
+}
+
 function resolveExportTarget(pkg: PackageInfo, subpath: string): string | null {
   const exp = pkg.exports;
   const key = subpath === "" ? "." : "./" + subpath;
@@ -75,14 +112,33 @@ function resolveExportTarget(pkg: PackageInfo, subpath: string): string | null {
     return key === "." ? path.join(pkg.dir, exp) : null;
   }
   if (typeof exp !== "object" || exp === null) return null;
-  const target = (exp as Record<string, unknown>)[key];
+  const map = exp as Record<string, unknown>;
+  const target = map[key];
   if (typeof target === "string") return path.join(pkg.dir, target);
   if (target && typeof target === "object") {
     const cond = target as Record<string, unknown>;
     const t = cond.import ?? cond.default ?? cond.node;
     if (typeof t === "string") return path.join(pkg.dir, t);
   }
+
+  const patternKeys = sortExportPatternKeys(
+    Object.keys(map).filter((k) => k.includes("*")),
+  );
+  for (const patternKey of patternKeys) {
+    const patternTarget = map[patternKey];
+    if (typeof patternTarget !== "string") continue;
+    const substituted = matchExportPattern(key, patternKey, patternTarget);
+    if (substituted) return path.join(pkg.dir, substituted);
+  }
   return null;
+}
+
+/** Resolve a package export subpath to an absolute file path (no extension probing). */
+export function resolvePackageExportPath(
+  pkg: PackageInfo,
+  subpath: string,
+): string | null {
+  return resolveExportTarget(pkg, subpath);
 }
 
 /** Resolve a path candidate with common TS/Vue extensions and index files. */

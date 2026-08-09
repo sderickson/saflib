@@ -9,6 +9,10 @@ import {
   generateExports,
   listExportableFiles,
   packageHasWorkflowMarkers,
+  matchExportPattern,
+  resolveSpecifier,
+  buildPackageIndex,
+  findMonorepoRoot,
 } from "./index.ts";
 
 const fixtureRoot = path.join(import.meta.dirname, "fixtures/mini-monorepo");
@@ -121,6 +125,82 @@ describe("checkExports / generateExports", () => {
     } finally {
       fs.rmSync(tmp, { recursive: true, force: true });
     }
+  });
+});
+
+describe("export patterns", () => {
+  it("substitutes wildcard export targets", () => {
+    expect(
+      matchExportPattern(
+        "./requests/matters/list",
+        "./requests/*/*",
+        "./requests/*/*.ts",
+      ),
+    ).toBe("./requests/matters/list.ts");
+    expect(
+      matchExportPattern(
+        "./schemas/matter",
+        "./schemas/*",
+        "./schemas/*.ts",
+      ),
+    ).toBe("./schemas/matter.ts");
+  });
+
+  it("validates pattern exports on a temp package", () => {
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "saf-imports-pattern-"));
+    try {
+      fs.writeFileSync(
+        path.join(tmp, "package.json"),
+        JSON.stringify(
+          {
+            name: "@tmp/pattern",
+            type: "module",
+            exports: {
+              "./groups/*": "./groups/*/index.ts",
+              "./groups/*/*": "./groups/*/*.ts",
+            },
+          },
+          null,
+          2,
+        ) + "\n",
+      );
+      fs.mkdirSync(path.join(tmp, "groups", "foo"), { recursive: true });
+      fs.writeFileSync(path.join(tmp, "groups", "foo", "index.ts"), "export {};\n");
+      fs.writeFileSync(path.join(tmp, "groups", "foo", "bar.ts"), "export const bar = 1;\n");
+
+      const check = checkExports(tmp);
+      expect(check.ok).toBe(true);
+    } finally {
+      fs.rmSync(tmp, { recursive: true, force: true });
+    }
+  });
+
+  it("covers daemon-db and daemon-sdk hybrid export maps", () => {
+    const root = findMonorepoRoot(path.join(import.meta.dirname, "..", ".."));
+    const dbDir = path.join(root, "daemon/service/db");
+    const sdkDir = path.join(root, "daemon/service/sdk");
+    expect(checkExports(dbDir).ok).toBe(true);
+    expect(checkExports(sdkDir).ok).toBe(true);
+  });
+
+  it("covers service-common, forms, and clients-common hybrid export maps", () => {
+    const root = findMonorepoRoot(path.join(import.meta.dirname, "..", ".."));
+    expect(checkExports(path.join(root, "daemon/service/common")).ok).toBe(true);
+    expect(checkExports(path.join(root, "daemon/forms")).ok).toBe(true);
+    expect(checkExports(path.join(root, "daemon/clients/common")).ok).toBe(true);
+  });
+
+  it("resolves pattern exports in resolveSpecifier", () => {
+    const root = findMonorepoRoot(path.join(import.meta.dirname, "..", ".."));
+    const index = buildPackageIndex(root);
+    const from = path.join(root, "daemon/service/http/routes/foo.ts");
+    const result = resolveSpecifier(
+      "@pathclerk/daemon-db/schemas/matter",
+      from,
+      index,
+    );
+    expect(result?.kind).toBe("file");
+    expect(result?.path).toMatch(/schemas\/matter\.ts$/);
   });
 });
 
