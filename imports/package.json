@@ -6,18 +6,6 @@
   "bin": {
     "saf-imports": "bin/saf-imports/index.ts"
   },
-  "importBudget": {
-    "testFiles": {
-      "maxModules": 100,
-      "maxExternalPackages": 20
-    },
-    "entries": {
-      "./index.ts": {
-        "maxModules": 50,
-        "maxExternalPackages": 15
-      }
-    }
-  },
   "exports": {
     ".": "./index.ts",
     "./reporter": "./reporter.ts",
