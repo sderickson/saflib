@@ -18,7 +18,8 @@
     "saf-specs": "./bin/saf-specs/index.ts"
   },
   "dependencies": {
-    "openapi-typescript": "^7.13.0"
+    "openapi-typescript": "^7.13.0",
+    "yaml": "^2.8.1"
   },
   "devDependencies": {
     "@redocly/cli": "^2.0.0",

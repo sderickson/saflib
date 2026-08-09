@@ -47,6 +47,16 @@ export const addGenerateCommand = (program: Command) => {
         });
       }
 
+      const outputDir = path.resolve(process.cwd(), output);
+
+      log.info("Generating per-operation and schema fragments...");
+      const {
+        generateOperationFragments,
+        generateSchemaFragments,
+      } = await import("./generate-fragments.ts");
+      await generateOperationFragments(outputDir);
+      generateSchemaFragments(outputDir);
+
       log.info("✅ OpenAPI generation completed successfully!");
     });
 };
