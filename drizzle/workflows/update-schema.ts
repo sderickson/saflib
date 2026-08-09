@@ -98,6 +98,7 @@ export const UpdateSchemaWorkflowDefinition = defineWorkflow<
 
       Use generateShortId() from @saflib/drizzle for primary key id columns (not crypto.randomUUID()).
       If there's a foreign key relationship, DO NOT set it to cascade on delete.
+      Add a \`package.json\` export for the new table: \`"./schemas/<name>": "./schemas/<name>.ts"\` (match existing \`./schemas/*\` entries in product db packages).
       
       Please reference the documentation here for more information: ${context.docFiles?.schemaDoc}`,
     })),
