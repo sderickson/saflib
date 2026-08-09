@@ -109,7 +109,6 @@ export const AddSdkMutationWorkflowDefinition = defineWorkflow<
       sourceDir,
       "requests/__group-name__/__mutation-name__.test.ts",
     ),
-    rootIndex: path.join(sourceDir, "index.ts"),
     rootFakes: path.join(sourceDir, "fakes.ts"),
   },
 
@@ -149,6 +148,19 @@ As part of this, also update **${context.targetName}.test.ts** to implement simp
 Include:
 * One test that makes sure it works at all.
 * Another test for making sure the caching works (that related queries are invalidated after the mutation).`,
+    })),
+
+    step(CommandStepMachine, () => ({
+      command: "node",
+      args: [
+        "../../../saflib/imports/bin/saf-imports/index.ts",
+        "exports",
+        "generate",
+        "--package",
+        "@pathclerk/daemon-sdk",
+      ],
+      description:
+        "Regenerate package.json export map for the new mutation subpath.",
     })),
 
     step(CommandStepMachine, () => ({

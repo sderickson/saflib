@@ -1,14 +1,14 @@
 import { afterEach, describe, it, expect } from "vitest";
 import { __queryName____GroupName__Query } from "./__query-name__.ts";
-import { __serviceName__ServiceFakeHandlers } from "../../fakes.ts";
 import { withVueQuery } from "@saflib/sdk/testing";
 import { setupMockServer } from "@saflib/sdk/testing/mock";
 import { useQuery } from "@tanstack/vue-query";
 // @ts-expect-error TODO: use mock data
 import { mock__GroupName__, resetMocks } from "./mocks.ts";
+import { __groupName__FakeHandlers } from "./index.fakes.ts";
 
 describe("__queryName____GroupName__", () => {
-  setupMockServer(__serviceName__ServiceFakeHandlers);
+  setupMockServer(__groupName__FakeHandlers);
   afterEach(resetMocks);
 
   // TODO: Make sure the fake data gets returned, and unskip this test
