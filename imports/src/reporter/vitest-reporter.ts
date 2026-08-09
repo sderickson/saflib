@@ -6,14 +6,17 @@ import type { MeasureGraphResult } from "../types.ts";
 /**
  * Vitest reporter that prints static import-graph stats after each test file.
  *
- * Opt-in via package vitest config — not enabled in `@saflib/vitest` defaults
- * until suite overhead is confirmed ≤ 10%.
+ * **Opt-in only** — enable with `IMPORT_GRAPH_REPORT=1` in package vitest config.
+ * CI regression checks use `saf-imports baseline diff` / `saf-imports budget`, not
+ * this reporter (it re-walks the graph and adds suite overhead).
  *
  * Prefer registering by package name so Vitest loads the module via Vite
  * (plain `vitest.config.js` cannot import `.ts` package exports under Node):
  *
  * ```js
- * reporters: ["default", "@saflib/imports/reporter"]
+ * reporters: process.env.IMPORT_GRAPH_REPORT === "1"
+ *   ? ["default", "@saflib/imports/reporter"]
+ *   : ["default"]
  * ```
  */
 export class ImportGraphReporter implements Reporter {
