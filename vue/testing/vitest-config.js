@@ -62,6 +62,18 @@ const baseCoverage = {
  */
 export const defaultConfig = defineConfig({
   plugins: [vue(), vuetify()],
+  resolve: {
+    // Root and saflib can resolve different vue copies; mixed runtimes break Vuetify slots.
+    dedupe: [
+      "vue",
+      "vue-router",
+      "vue-i18n",
+      "@vue/runtime-core",
+      "@vue/runtime-dom",
+      "@vue/reactivity",
+      "@vue/shared",
+    ],
+  },
   test: {
     ...baseTest,
     coverage: baseCoverage,
@@ -75,6 +87,7 @@ export const defaultConfig = defineConfig({
  */
 export const defaultConfigWithCoverageEnforcement = defineConfig({
   plugins: [vue(), vuetify()],
+  resolve: defaultConfig.resolve,
   test: {
     ...baseTest,
     coverage: {
