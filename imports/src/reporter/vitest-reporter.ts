@@ -1,13 +1,39 @@
+import fs from "node:fs";
 import path from "node:path";
 import type { Reporter, TestModule } from "vitest/node";
 import { measureGraph } from "../graph/walk-graph.ts";
 import type { MeasureGraphResult } from "../types.ts";
 
 interface FileRecord {
-  basename: string;
+  relPath: string;
   modules: number;
   ext: number;
   collectMs: number | undefined;
+}
+
+function resolveAbsolute(filePath: string): string {
+  return path.isAbsolute(filePath)
+    ? filePath
+    : path.resolve(process.cwd(), filePath);
+}
+
+/** Nearest directory containing `package.json` (workspace package root). */
+function findPackageRoot(absFilePath: string): string {
+  let dir = path.dirname(absFilePath);
+  const fsRoot = path.parse(dir).root;
+  while (dir !== fsRoot) {
+    if (fs.existsSync(path.join(dir, "package.json"))) {
+      return dir;
+    }
+    dir = path.dirname(dir);
+  }
+  return process.cwd();
+}
+
+function packageRelativePath(filePath: string): string {
+  const abs = resolveAbsolute(filePath);
+  const rel = path.relative(findPackageRoot(abs), abs);
+  return rel.split(path.sep).join("/");
 }
 
 function median(values: number[]): number {
@@ -56,7 +82,7 @@ export class ImportGraphReporter implements Reporter {
 
     const collectMs = testModule.diagnostic()?.collectDuration;
     const record: FileRecord = {
-      basename: path.basename(filePath),
+      relPath: packageRelativePath(filePath),
       modules: result.modules,
       ext: result.ext,
       collectMs:
@@ -70,7 +96,7 @@ export class ImportGraphReporter implements Reporter {
         : "";
 
     console.log(
-      `import-graph  ${record.basename}  modules=${record.modules}  ext=${record.ext}${collect}`,
+      `import-graph  ${record.relPath}  modules=${record.modules}  ext=${record.ext}${collect}`,
     );
   }
 
@@ -102,7 +128,7 @@ export class ImportGraphReporter implements Reporter {
         console.log("  slowest collect:");
         for (const [i, file] of slowest.entries()) {
           console.log(
-            `    ${i + 1}. ${file.basename}  collect=${formatSeconds(file.collectMs!)}  modules=${file.modules}  ext=${file.ext}`,
+            `    ${i + 1}. ${file.relPath}  collect=${formatSeconds(file.collectMs!)}  modules=${file.modules}  ext=${file.ext}`,
           );
         }
       }
@@ -121,7 +147,7 @@ export class ImportGraphReporter implements Reporter {
             ? `  collect=${formatSeconds(file.collectMs)}`
             : "";
         console.log(
-          `    ${i + 1}. ${file.basename}  modules=${file.modules}  ext=${file.ext}${collect}`,
+          `    ${i + 1}. ${file.relPath}  modules=${file.modules}  ext=${file.ext}${collect}`,
         );
       }
     }

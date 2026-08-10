@@ -45,12 +45,12 @@ See [03-project-references.md](./03-project-references.md) for the dev loop and 
 Prints one line per test file after it finishes, then a run summary:
 
 ```
-import-graph  list-importers.test.ts  modules=1071  ext=56  collect=4.98s
+import-graph  routes/matters/list-importers.test.ts  modules=1071  ext=56  collect=4.98s
 
 import-graph summary (162 test files)
   collect: min=0.04s  mean=1.23s  median=0.89s  max=4.98s  (n=162)
   slowest collect:
-    1. list-importers.test.ts  collect=4.98s  modules=1071  ext=56
+    1. routes/matters/list-importers.test.ts  collect=4.98s  modules=1071  ext=56
     …
   largest graphs:
     1. …
