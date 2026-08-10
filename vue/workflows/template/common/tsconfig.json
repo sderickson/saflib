@@ -15,6 +15,7 @@
     "node_modules",
     "dist/types",
     "e2e",
+    "playwright.config.ts",
     "playwright-report",
     "test-results",
     "workflows/template/**",
@@ -28,9 +29,6 @@
     },
     {
       "path": "../../../ory-kratos-sdk"
-    },
-    {
-      "path": "../../../playwright"
     }
   ],
   "include": [
