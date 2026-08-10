@@ -5,6 +5,7 @@
   "main": "./index.ts",
   "exports": {
     ".": "./index.ts",
+    "./ajv-formats": "./ajv-formats.ts",
     "./error": "./error.ts",
     "./workflows": "./workflows/index.ts"
   },

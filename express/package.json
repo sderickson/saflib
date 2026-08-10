@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@ory/client": "^1.22.28",
+    "@saflib/openapi": "*",
     "@saflib/env": "*",
     "@saflib/node": "*",
     "@saflib/notify": "*",
