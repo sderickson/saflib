@@ -8,3 +8,5 @@ export const __serviceName__DbManager = new DbManager(
   config,
   import.meta.url,
 );
+
+export const __serviceName__Db = __serviceName__DbManager.publicInterface();

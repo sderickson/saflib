@@ -1,11 +1,11 @@
 import { createErrorMiddleware, createGlobalMiddleware } from "@saflib/express";
 import express from "express";
-import { __serviceName__Db } from "template-package-db";
+import { __serviceName__Db } from "template-package-db/instances";
 import {
   __serviceName__ServiceStorage,
   type __ServiceName__ServiceContextOptions,
   makeContext,
-} from "template-package-service-common";
+} from "template-package-service-common/context";
 
 // BEGIN WORKFLOW AREA router-imports FOR express/add-handler
 import { create__GroupName__Router } from "./routes/__group-name__/index.ts";

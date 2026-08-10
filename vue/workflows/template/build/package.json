@@ -16,5 +16,8 @@
   "workspaces": [
     "clients/*"
   ],
-  "sideEffects": false
+  "sideEffects": [
+    "**/*.css",
+    "**/*.scss"
+  ]
 }

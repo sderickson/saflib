@@ -1,9 +1,9 @@
 import { startExpressServer } from "@saflib/express";
-import { create__ServiceName__HttpApp } from "template-package-http";
-import { __serviceName__Db } from "template-package-db";
+import { create__ServiceName__HttpApp } from "template-package-http/http";
+import { __serviceName__Db } from "template-package-db/instances";
 import { makeSubsystemReporters } from "@saflib/node";
 import { typedEnv } from "./env.ts";
-import { makeContext } from "template-package-service-common";
+import { makeContext } from "template-package-service-common/context";
 
 export function start__ServiceName__Service() {
   const { log, logError } = makeSubsystemReporters("init", "main");

@@ -227,6 +227,16 @@ Run \`npm run typecheck\` in ${context.cwd} to verify the code is type-safe.
 For more information, see ${context.docFiles?.components} and ${context.docFiles?.i18n}.`,
     })),
 
+    step(PromptStepMachine, () => ({
+      prompt: `## Import graph / SPA bundles
+
+New routes appear automatically in \`saf-imports spa analyze\`. Refresh the bundle baseline only if this route adds a materially heavy page chunk (not every add-view):
+
+\`node saflib/imports/scripts/update-baseline-bundles.mjs\`
+
+See saflib/imports/docs/06-spa-bundles.md.`,
+    })),
+
     step(CommandStepMachine, () => ({
       command: "npm",
       args: ["run", "test"],

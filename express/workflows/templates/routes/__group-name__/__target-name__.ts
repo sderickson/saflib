@@ -6,7 +6,7 @@ import type {
 } from "template-package-spec";
 import { getSafContextWithAuth } from "@saflib/node";
 // BEGIN ONCE WORKFLOW AREA uploadImports FOR express/add-handler IF upload
-import { __serviceName__ServiceStorage } from "template-package-service-common";
+import { __serviceName__ServiceStorage } from "template-package-service-common/context";
 import createError from "http-errors";
 import { createReadStream } from "fs";
 import { unlink } from "fs/promises";

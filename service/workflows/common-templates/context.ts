@@ -1,6 +1,6 @@
 import { AsyncLocalStorage } from "async_hooks";
 import type { DbKey } from "@saflib/drizzle";
-import { __serviceName__Db } from "template-package-db";
+import { __serviceName__Db } from "template-package-db/instances";
 // BEGIN WORKFLOW AREA storeImports FOR service/add-store
 import { createObjectStore } from "@saflib/object-store";
 import type { ObjectStore } from "@saflib/object-store";

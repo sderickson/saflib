@@ -4,10 +4,12 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./index.ts",
     "./instances": "./instances.ts",
     "./errors": "./errors.ts",
-    "./types": "./types.ts"
+    "./types": "./types.ts",
+    "./queries/*": "./queries/*/index.ts",
+    "./queries/*/*": "./queries/*/*.ts",
+    "./schemas/*": "./schemas/*.ts"
   },
   "scripts": {
     "test": "vitest run",

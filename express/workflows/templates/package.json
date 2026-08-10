@@ -3,7 +3,9 @@
   "description": "HTTP server for the __service-name__ service",
   "type": "module",
   "exports": {
-    ".": "./index.ts"
+    "./http": "./http.ts",
+    "./routes/*": "./routes/*/index.ts",
+    "./routes/*/*": "./routes/*/*.ts"
   },
   "scripts": {
     "test": "vitest run",

@@ -12,7 +12,7 @@ import { typedEnv } from "@saflib/env";
 import {
   __serviceName__ServiceStorage,
   type __ServiceName__ServiceContext,
-} from "template-package-service-common";
+} from "template-package-service-common/context";
 
 // TODO: Import job groups and spread into this map (e.g. `...exampleGroupJobs`).
 export const __serviceName__Jobs: JobsMap = {};
