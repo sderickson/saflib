@@ -51,6 +51,8 @@ For OpenAPI operation tags used by middleware and the job queue (`site-admin-onl
 
 Generated files. These are checked into the repo, per [best-practices](../../best-practices.md#check-in-generated-files).
 
+`saf-specs generate` deletes the entire output directory before writing, so removed routes and schemas do not leave stale fragments in `dist/`.
+
 ```bash
 npm run saf-specs generate
 ```
