@@ -1,7 +1,7 @@
 # Scaffold defaults (import graph)
 
 Init workflows (`sdk/init`, `express/init`, `service/init`, `drizzle/init`, etc.) should emit packages
-that pass `import-graph:check` without manual follow-up.
+with correct `exports` and `sideEffects` without manual follow-up.
 
 ## `package.json` fields
 

@@ -9,8 +9,9 @@ M8 introduced static bundle budgets for gate SPAs: **app**, **admin**, **account
 | **Shell** | SPA entry + all `*Async.vue` + `*.loader.ts` chunks (by design — loaders live in shell) |
 | **Page chunks** | Lazy `.vue` page files per route key from router analysis |
 
-Shell gzip JS is the **M9 error** budget target. Per-route page chunk regressions are **warn-only** until
-nested-route `pageVueFiles` includes full ancestor chains (e.g. review tab + parent `Detail.vue`).
+Shell gzip JS is a primary budget target when comparing local snapshots. Per-route page chunk
+regressions are warn-only in snapshot check until nested-route `pageVueFiles` includes full ancestor
+chains (e.g. review tab + parent `Detail.vue`).
 
 ## Commands
 
@@ -28,14 +29,19 @@ Build prerequisites:
 - `daemon/dev/env.dev` present
 - `npm run build` in `daemon/clients/build` (or workspace build) with `build.manifest: true`
 
-## Baseline
+## Local snapshot bundles
 
-Committed in `daemon/plans/notes/2026-08-07-test-import-graph/baseline.json` under `bundles`.
-
-Refresh after intentional shell changes:
+Store bundle metrics in a local snapshot (`safImports.snapshot` in root `package.json`):
 
 ```bash
-node saflib/imports/scripts/update-baseline-bundles.mjs
+npm exec saf-imports snapshot generate --out notes/import-graph/snapshot.json
+npm exec saf-imports snapshot check --against notes/import-graph/snapshot.json
+```
+
+Or measure ad hoc:
+
+```bash
+npm exec saf-imports spa measure --spa app
 ```
 
 Configured in root `package.json` → `safImports.snapshot.bundles` (SPA list, gzip thresholds).

@@ -42,31 +42,58 @@ See [03-project-references.md](./03-project-references.md) for the dev loop and 
 
 ## Vitest reporter (opt-in)
 
-Prints one line per test file after it finishes:
+Prints one line per test file after it finishes, then a run summary:
 
 ```
 import-graph  list-importers.test.ts  modules=1071  ext=56  collect=4.98s
+
+import-graph summary (162 test files)
+  collect: min=0.04s  mean=1.23s  median=0.89s  max=4.98s  (n=162)
+  slowest collect:
+    1. list-importers.test.ts  collect=4.98s  modules=1071  ext=56
+    …
+  largest graphs:
+    1. …
 ```
 
-Wire it in a package's `vitest.config.js` (opt-in per package — not in `@saflib/vitest`
-base config until overhead stays ≤ 10%). Prefer the package-name form so Vitest loads
-the TypeScript module via Vite (a static `import` of `@saflib/imports/reporter` from a
-`.js` config fails under plain Node):
+### Any package using `@saflib/vitest`
+
+`defaultConfig` in `@saflib/vitest` wires the reporter when `IMPORT_GRAPH_REPORT=1`. No per-package
+`vitest.config.js` changes needed unless you override `reporters` entirely.
+
+### Root shortcut
+
+```bash
+npm run import-graph:report -- @pathclerk/daemon-http
+npm run import-graph:report -- daemon-http -- routes/matters/list-importers
+```
+
+The script sets `IMPORT_GRAPH_REPORT=1` and runs `npm run test -w <workspace>` with optional Vitest
+pattern args after `--`.
+
+### Manual enable
+
+```bash
+IMPORT_GRAPH_REPORT=1 npm run test -w @pathclerk/daemon-http
+```
+
+### Packages with custom `reporters`
+
+If a workspace overrides `test.reporters` in its own `vitest.config.js`, merge with
+`importGraphReporters()` from `@saflib/vitest/import-graph-reporter.js`:
 
 ```js
-import { defineConfig, mergeConfig } from "vitest/config";
+import { importGraphReporters } from "@saflib/vitest/import-graph-reporter.js";
 
 export default mergeConfig(
   defaultConfig,
   defineConfig({
     test: {
-      reporters: ["default", "@saflib/imports/reporter"],
+      reporters: importGraphReporters(),
     },
   }),
 );
 ```
-
-Add `@saflib/imports` as a devDependency of the package.
 
 ## Reporter overhead (2026-08-07 pilot)
 
@@ -77,9 +104,7 @@ Measured on a large HTTP service test suite (162 files), same machine:
 | Without reporter (`--reporter=default`) |      17.40s |          16.70s |
 | With `@saflib/imports/reporter`         |      ~29.4s |          ~28.7s |
 
-Overhead ≈ **+70%** wall time — **above the 10% promotion threshold**. Keep
-opt-in only; do **not** add to `base-vitest.config.js` until measuring is
-cheap enough for default-on use.
+Overhead ≈ **+70%** wall time — keep opt-in only (`IMPORT_GRAPH_REPORT=1` or `import-graph:report`).
 
 ## Metrics snapshots
 
