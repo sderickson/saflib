@@ -8,14 +8,32 @@ import typescriptEslint from "typescript-eslint";
 
 const tsconfigRootDir = path.dirname(fileURLToPath(import.meta.url));
 
+const sharedParserOptions = { tsconfigRootDir };
+
+const withTsconfigRoot = (config) => ({
+  ...config,
+  languageOptions: {
+    ...config.languageOptions,
+    parserOptions: {
+      ...config.languageOptions?.parserOptions,
+      ...sharedParserOptions,
+    },
+  },
+});
+
 // TODO: Add linters for everything other than "clients"
 
 export const config = typescriptEslint.config(
-  { ignores: ["*.d.ts", "**/coverage", "**/dist", "**/cache"] },
+  { ignores: ["*.d.ts", "**/coverage", "**/dist", "**/cache", "eslint.config.js"] },
+  {
+    languageOptions: {
+      parserOptions: sharedParserOptions,
+    },
+  },
   {
     extends: [
       eslint.configs.recommended,
-      ...typescriptEslint.configs.recommended,
+      ...typescriptEslint.configs.recommended.map(withTsconfigRoot),
       ...eslintPluginVue.configs["flat/recommended"],
     ],
     files: ["clients/**/*.{ts,vue}"],
@@ -25,7 +43,7 @@ export const config = typescriptEslint.config(
       globals: { ...globals.browser },
       parserOptions: {
         parser: typescriptEslint.parser,
-        tsconfigRootDir,
+        ...sharedParserOptions,
       },
     },
     rules: {
