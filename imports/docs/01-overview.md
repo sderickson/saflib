@@ -34,7 +34,7 @@ npm exec saf-imports baseline diff --baseline <path>
 npm exec saf-imports spa analyze --spa <app|admin|account|auth>
 npm exec saf-imports spa measure --spa <name>
 npm exec saf-imports side-effects scan [--package <name>]
-npm exec saf-imports references cycles|generate|check [--root <dir>]
+npm exec saf-imports tsconfig cycles|generate|check [--root <dir>]
 ```
 
 See [03-project-references.md](./03-project-references.md) for the dev loop and troubleshooting, and [04-composite-type-guidance.md](./04-composite-type-guidance.md) for do's and don'ts when writing types across composite packages.

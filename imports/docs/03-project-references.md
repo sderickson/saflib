@@ -12,10 +12,10 @@ From the **monorepo root**:
 npm run typecheck
 
 # After changing workspace deps or adding packages — regenerate references
-node --experimental-strip-types saflib/imports/bin/saf-imports/index.ts references generate --write
+node --experimental-strip-types saflib/imports/bin/saf-imports/index.ts tsconfig generate --write
 
 # Verify references match the workspace graph (same check CI runs)
-node --experimental-strip-types saflib/imports/bin/saf-imports/index.ts references check
+node --experimental-strip-types saflib/imports/bin/saf-imports/index.ts tsconfig check
 ```
 
 From a **single package** (fast inner loop):
@@ -30,7 +30,7 @@ Vue SPAs use `vue-tsc -b` at the package root; backend packages use `tsc -b`.
 
 ## How references are generated
 
-`saf-imports references generate --write` patches each package's `tsconfig.json`
+`saf-imports tsconfig generate --write` patches each package's `tsconfig.json`
 `references` array from workspace `dependencies` ∪ `devDependencies`. It also
 maintains:
 
@@ -48,7 +48,7 @@ Rules:
 ## Troubleshooting cycles
 
 ```bash
-node --experimental-strip-types saflib/imports/bin/saf-imports/index.ts references cycles
+node --experimental-strip-types saflib/imports/bin/saf-imports/index.ts tsconfig cycles
 ```
 
 Package-level cycles block `composite` builds. **Fix the dependency graph** — merge packages,
@@ -74,7 +74,7 @@ when authoring types, queries, and cross-package imports under composite project
 
 ## CI
 
-Product and saflib typecheck workflows should run `saf-imports references check` before
+Product and saflib typecheck workflows should run `saf-imports tsconfig check` before
 `npm run typecheck`. Drift or cycles fail the job.
 
 ## Root driver

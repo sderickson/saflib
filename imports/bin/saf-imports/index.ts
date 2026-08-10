@@ -6,7 +6,7 @@ import { addWhyCommand } from "./why.ts";
 import { addCyclesCommand } from "./cycles.ts";
 import { addExportsCommand } from "./exports.ts";
 import { addBaselineCommand } from "./baseline.ts";
-import { addReferencesCommand } from "./references.ts";
+import { addTsconfigCommand } from "./tsconfig.ts";
 import { addSpaCommand } from "./spa.ts";
 import { addSideEffectsCommand } from "./side-effects.ts";
 
@@ -21,7 +21,7 @@ addWhyCommand(program);
 addCyclesCommand(program);
 addExportsCommand(program);
 addBaselineCommand(program);
-addReferencesCommand(program);
+addTsconfigCommand(program);
 addSpaCommand(program);
 addSideEffectsCommand(program);
 

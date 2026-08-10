@@ -7,11 +7,11 @@ import {
   previewReferencesGenerate,
 } from "../../src/references/index.ts";
 
-interface ReferencesRootOptions {
+interface TsconfigRootOptions {
   root?: string;
 }
 
-interface GenerateOptions extends ReferencesRootOptions {
+interface GenerateOptions extends TsconfigRootOptions {
   write?: boolean;
 }
 
@@ -23,35 +23,35 @@ function relFromCwd(absPath: string): string {
   return path.relative(process.cwd(), absPath) || absPath;
 }
 
-export const addReferencesCommand = (program: Command) => {
-  const referencesCmd = program
-    .command("references")
+export const addTsconfigCommand = (program: Command) => {
+  const tsconfigCmd = program
+    .command("tsconfig")
     .description(
-      "TypeScript project-reference graph helpers (generate, cycles, check)",
+      "TypeScript project-reference helpers for package tsconfig.json files",
     )
     .action(() => {
-      referencesCmd.outputHelp();
+      tsconfigCmd.outputHelp();
     });
 
-  referencesCmd
+  tsconfigCmd
     .command("cycles")
     .description(
       "Detect circular workspace dependencies in the package-level reference graph",
     )
     .option("--root <dir>", "Monorepo root (default: auto-detect from cwd)")
-    .action((options: ReferencesRootOptions) => {
+    .action((options: TsconfigRootOptions) => {
       const root = options.root ? path.resolve(options.root) : undefined;
       const { graph, missingTsconfig, skippedMeta, rootDir } =
         buildReferenceGraph(root);
       const cycles = detectReferenceCycles(graph);
 
-      console.log(`Reference graph root: ${rootDir}`);
+      console.log(`Tsconfig reference graph root: ${rootDir}`);
       console.log(
         `Packages: ${graph.size} typecheckable, ${missingTsconfig.length} missing tsconfig, ${skippedMeta.length} meta skipped`,
       );
 
       if (cycles.length === 0) {
-        console.log("No reference cycles found.");
+        console.log("No tsconfig reference cycles found.");
         return;
       }
 
@@ -69,7 +69,7 @@ export const addReferencesCommand = (program: Command) => {
       process.exitCode = 1;
     });
 
-  referencesCmd
+  tsconfigCmd
     .command("generate")
     .description(
       "Generate package and solution tsconfig references from the workspace dependency graph",
@@ -83,7 +83,7 @@ export const addReferencesCommand = (program: Command) => {
       });
 
       if (options.write) {
-        console.log(`Reference generate root: ${preview.rootDir}`);
+        console.log(`Tsconfig generate root: ${preview.rootDir}`);
         console.log(
           `Wrote ${preview.written.length} file(s); ${preview.unchanged.length} unchanged.`,
         );
@@ -101,18 +101,18 @@ export const addReferencesCommand = (program: Command) => {
       console.log(JSON.stringify(preview, null, 2));
     });
 
-  referencesCmd
+  tsconfigCmd
     .command("check")
     .description(
       "Fail if on-disk tsconfig references drift from generated output, or if the graph has cycles",
     )
     .option("--root <dir>", "Monorepo root (default: auto-detect from cwd)")
-    .action((options: ReferencesRootOptions) => {
+    .action((options: TsconfigRootOptions) => {
       const result = checkReferences({
         root: options.root ? path.resolve(options.root) : undefined,
       });
 
-      console.log(`Reference check root: ${result.rootDir}`);
+      console.log(`Tsconfig check root: ${result.rootDir}`);
 
       if (result.cycles.length > 0) {
         console.log(`\nFound ${result.cycles.length} cycle(s):\n`);
@@ -133,12 +133,12 @@ export const addReferencesCommand = (program: Command) => {
           );
         }
         console.log(
-          "\nRemediation: run `saf-imports references generate --write`.",
+          "\nRemediation: run `saf-imports tsconfig generate --write`.",
         );
       }
 
       if (result.ok) {
-        console.log("References check passed.");
+        console.log("Tsconfig check passed.");
         return;
       }
 

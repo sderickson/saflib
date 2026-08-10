@@ -28,7 +28,7 @@ incremental typecheck only rebuilds what changed.
 - Import across packages via **published export paths**:
   `@org/product-sdk`, `@org/product-spec`, `@saflib/vue`, etc.
 - Add or update `package.json` `exports` when exposing a new entry point, then run
-  `saf-imports references generate --write`.
+  `saf-imports tsconfig generate --write`.
 - Break **workspace dependency cycles** by restructuring deps (merge packages,
   extract shared types to a lower layer, move helpers to a leaf library).
 - Keep shared null/empty/fixture helpers in **low-level spec or util packages** so
@@ -39,7 +39,7 @@ incremental typecheck only rebuilds what changed.
 - Use relative imports that cross package roots (`../../../other-package/src/...`).
   They pull source into the wrong compilation unit and cause `TS6059` / `TS6307`.
 - "Fix" a type error by adding a cross-package relative import.
-- Omit a `references` edge to hide a cycle — `saf-imports references check` fails
+- Omit a `references` edge to hide a cycle — `saf-imports tsconfig check` fails
   CI when the graph is inconsistent or cyclic.
 
 ## tsconfig and presets
@@ -144,4 +144,4 @@ overload resolution:
 2. **Keep presets dumb** — per-package `outDir` / `include` / `references` on leaves.
 3. **Prefer inference at the call site** — type `queryFn` / variables, not huge hook return types.
 4. **Fix cycles in the graph**, not in the type checker.
-5. **Run `references check`** before considering typecheck work done.
+5. **Run `tsconfig check`** before considering typecheck work done.
