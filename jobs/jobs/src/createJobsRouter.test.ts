@@ -23,7 +23,7 @@ function jobParams(
 ) {
   return {
     status: "pending" as const,
-    operationId: "jobsDemoStepB",
+    operationId: "testJobStepB",
     request: { body: {} },
     userId: "user-1",
     authority: {
@@ -33,7 +33,7 @@ function jobParams(
       assertion: { payload: "p", signature: "s", keyId: "k1" },
     },
     originalRequestId: "r-1",
-    enqueuedByOperationId: "startJobsDemo",
+    enqueuedByOperationId: "testJobStart",
     parentJobId: null,
     runAt: now,
     dedupeKey: null,
@@ -145,6 +145,30 @@ describe("createJobsRouter admin actions", () => {
       .set(makeAdminHeaders());
 
     expect(response.status).toBe(409);
+  });
+
+  it("POST /jobs/cancel-by-original-request cancels pending jobs in a chain", async () => {
+    const chainId = "r-cancel-chain";
+    await jobQueries.createJob(
+      dbKey,
+      jobParams({
+        id: "job-cancel-chain",
+        status: "pending",
+        originalRequestId: chainId,
+        runAt: new Date(Date.now() + 60_000),
+      }),
+    );
+
+    const { result: cancelledRows } = await jobQueries.cancelByOriginalRequestIdJob(
+      dbKey,
+      { originalRequestId: chainId, now: new Date() },
+    );
+    expect(cancelledRows!.length).toBe(1);
+    expect(cancelledRows![0]).toMatchObject({
+      status: "cancelled",
+      originalRequestId: chainId,
+      result: { terminalReason: "cancelled-by-chain" },
+    });
   });
 
   it("POST /jobs/:id/cancel returns 404 when missing", async () => {

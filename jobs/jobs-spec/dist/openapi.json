@@ -312,6 +312,82 @@
         }
       }
     },
+    "/jobs/cancel-by-original-request": {
+      "post": {
+        "summary": "Mass-cancel jobs in a request chain",
+        "description": "Cancels every non-terminal, non-running job that shares the given `originalRequestId` (`terminalReason: cancelled-by-chain`). Running jobs in the chain are left alone. Returns the jobs that were cancelled. Mounted as monolith chrome (`site-admin-only`).\n",
+        "operationId": "cancelJobsByOriginalRequest",
+        "tags": [
+          "jobs",
+          "site-admin-only"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "originalRequestId"
+                ],
+                "properties": {
+                  "originalRequestId": {
+                    "type": "string",
+                    "description": "Chain-root request id whose non-running jobs should be cancelled.",
+                    "example": "r-abc123"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Jobs that were cancelled in this chain.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "jobs"
+                  ],
+                  "properties": {
+                    "jobs": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/job"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - missing or invalid auth headers, or not logged in.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - site admin privileges required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/jobs/{id}": {
       "get": {
         "summary": "Get a job by id",
@@ -571,81 +647,6 @@
           },
           "409": {
             "description": "Job is running (or otherwise not cancellable) and was not interrupted.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/error"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/jobs/cancel-by-original-request": {
-      "post": {
-        "summary": "Mass-cancel jobs in a request chain",
-        "description": "Cancels every non-terminal, non-running job that shares the given `originalRequestId` (`terminalReason: cancelled-by-chain`). Running jobs in the chain are left alone. Returns the jobs that were cancelled. Mounted as monolith chrome (`site-admin-only`).\n",
-        "operationId": "cancelJobsByOriginalRequest",
-        "tags": [
-          "jobs",
-          "site-admin-only"
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "additionalProperties": false,
-                "required": [
-                  "originalRequestId"
-                ],
-                "properties": {
-                  "originalRequestId": {
-                    "description": "Chain-root request id whose non-running jobs should be cancelled.",
-                    "$ref": "#/components/schemas/originalRequestId"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Jobs that were cancelled in this chain.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "required": [
-                    "jobs"
-                  ],
-                  "properties": {
-                    "jobs": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/job"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized - missing or invalid auth headers, or not logged in.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/error"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden - site admin privileges required.",
             "content": {
               "application/json": {
                 "schema": {

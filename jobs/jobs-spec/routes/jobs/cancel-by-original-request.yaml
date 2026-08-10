@@ -21,8 +21,9 @@ cancelJobsByOriginalRequest:
             - originalRequestId
           properties:
             originalRequestId:
+              type: string
               description: Chain-root request id whose non-running jobs should be cancelled.
-              $ref: "../../schemas/job.yaml#/properties/originalRequestId"
+              example: "r-abc123"
 
   responses:
     "200":
