@@ -201,7 +201,7 @@ Large static import graphs slow tests, inflate bundles, and hide coupling. SAF t
 - **Slim test harnesses** — route tests mount one handler; component tests use scoped MSW, not full app boot.
 
 **Tooling:** [`@saflib/imports`](./imports/docs/01-overview.md) — `measure`, `why`, `snapshot`,
-`spa`, `exports`, `side-effects scan`. CI: ESLint import-graph rules in `daemon/`. See
+`spa`, `exports`, `side-effects scan`. Subpath `exports` enforce import boundaries. See
 [import graph CI docs](./imports/docs/02-ci.md) and [scaffold defaults](./imports/docs/05-scaffold.md).
 
 **Benefits:**
