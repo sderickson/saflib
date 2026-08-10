@@ -3,7 +3,6 @@ import fs from "node:fs";
 import os from "node:os";
 import { describe, expect, it } from "vitest";
 import {
-  checkBudgets,
   computeExportsMap,
   checkExports,
   generateExports,
@@ -200,62 +199,8 @@ describe("export patterns", () => {
       index,
     );
     expect(result?.kind).toBe("file");
-    expect(result?.path).toMatch(/schemas\/matter\.ts$/);
-  });
-});
-
-describe("checkBudgets", () => {
-  it("skips packages without importBudget", () => {
-    const { packagesChecked, violations } = checkBudgets({
-      root: fixtureRoot,
-    });
-    expect(packagesChecked).toBe(0);
-    expect(violations).toEqual([]);
-  });
-
-  it("reports violations when max is exceeded", () => {
-    const tmpRoot = fs.mkdtempSync(
-      path.join(os.tmpdir(), "saf-imports-budget-"),
-    );
-    try {
-      fs.writeFileSync(
-        path.join(tmpRoot, "package.json"),
-        JSON.stringify({ name: "root", workspaces: ["packages/*"] }, null, 2) +
-          "\n",
-      );
-      const pkgDir = path.join(tmpRoot, "packages", "p");
-      fs.mkdirSync(pkgDir, { recursive: true });
-      fs.writeFileSync(
-        path.join(pkgDir, "package.json"),
-        JSON.stringify(
-          {
-            name: "@tmp/budget-pkg",
-            type: "module",
-            importBudget: {
-              testFiles: { maxModules: 0, maxExternalPackages: 0 },
-              entries: { "./index.ts": { maxModules: 0 } },
-            },
-          },
-          null,
-          2,
-        ) + "\n",
-      );
-      fs.writeFileSync(path.join(pkgDir, "index.ts"), "export const a = 1;\n");
-      fs.writeFileSync(
-        path.join(pkgDir, "thing.test.ts"),
-        'import "./index.ts";\n',
-      );
-
-      const { packagesChecked, violations } = checkBudgets({ root: tmpRoot });
-      expect(packagesChecked).toBe(1);
-      expect(violations.length).toBeGreaterThan(0);
-      expect(
-        violations.some(
-          (v) => v.kind === "testFiles" && v.metric === "modules",
-        ),
-      ).toBe(true);
-    } finally {
-      fs.rmSync(tmpRoot, { recursive: true, force: true });
+    if (result?.kind === "file") {
+      expect(result.path).toMatch(/schemas\/matter\.ts$/);
     }
   });
 });

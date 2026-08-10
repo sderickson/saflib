@@ -11,7 +11,6 @@
 | [index](index/index.md)                                               | -           |
 | [reporter](reporter/index.md)                                         | -           |
 | [src/baseline/baseline](src/baseline/baseline/index.md)               | -           |
-| [src/budget/check-budgets](src/budget/check-budgets/index.md)         | -           |
 | [src/exports/generate-exports](src/exports/generate-exports/index.md) | -           |
 | [src/graph/detect-cycles](src/graph/detect-cycles/index.md)           | -           |
 | [src/graph/extract-imports](src/graph/extract-imports/index.md)       | -           |

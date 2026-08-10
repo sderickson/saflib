@@ -199,11 +199,9 @@ Large static import graphs slow tests, inflate bundles, and hide coupling. SAF t
   exceptions. Validated with `saf-imports exports check`.
 - **`sideEffects: false`** (or explicit CSS/client entry paths) so bundlers can tree-shake.
 - **Slim test harnesses** — route tests mount one handler; component tests use scoped MSW, not full app boot.
-- **`importBudget`** — optional per-package limits; default CI uses **baseline diff** instead.
 
 **Tooling:** [`@saflib/imports`](./imports/docs/01-overview.md) — `measure`, `why`, `baseline diff`,
-`spa`, `exports`, `side-effects scan`. Package cost table:
-`node saflib/imports/scripts/generate-import-budgets.mjs`. CI: `npm run import-graph:check`. See
+`spa`, `exports`, `side-effects scan`. CI: `npm run import-graph:check`. See
 [import graph CI docs](./imports/docs/02-ci.md) and [scaffold defaults](./imports/docs/05-scaffold.md).
 
 **Benefits:**

@@ -6,11 +6,11 @@ SAF-specific import-graph measurement and enforcement tooling.
 
 | Doc | Topic |
 | --- | --- |
-| [01-overview.md](./01-overview.md) | This page — CLI summary, `importBudget`, baseline |
+| [01-overview.md](./01-overview.md) | This page — CLI summary, baseline |
 | [02-ci.md](./02-ci.md) | `import-graph:check`, fixing regressions, PR checklist |
 | [03-project-references.md](./03-project-references.md) | TypeScript project references |
 | [04-composite-type-guidance.md](./04-composite-type-guidance.md) | Types across composite packages |
-| [05-scaffold.md](./05-scaffold.md) | Init workflow defaults (`sideEffects`, exports, budgets) |
+| [05-scaffold.md](./05-scaffold.md) | Init workflow defaults (`sideEffects`, exports) |
 | [06-spa-bundles.md](./06-spa-bundles.md) | SPA shell vs page chunk measurement |
 | [cli/](./cli/index.md) | Generated CLI reference |
 
@@ -19,7 +19,7 @@ SAF-specific import-graph measurement and enforcement tooling.
 - **No root barrels** — import `@scope/pkg/subpath`, not deleted package roots.
 - **Hybrid `exports`** — wildcard patterns + `exportsAliases` for large packages (see [05-scaffold.md](./05-scaffold.md)).
 - **`sideEffects: false`** (or explicit CSS/client entry exceptions) for tree-shaking.
-- **`importBudget`** — per-package test-file graph limits; CI enforces via `saf-imports budget`.
+- **Baseline diff** — committed test-graph snapshots; CI fails on regressions.
 
 ## CLI
 
@@ -27,7 +27,6 @@ SAF-specific import-graph measurement and enforcement tooling.
 npm exec saf-imports measure <entry...>
 npm exec saf-imports why <entry> <target>
 npm exec saf-imports cycles [--package <name>]
-npm exec saf-imports budget [--mode warn|error]
 npm exec saf-imports exports generate --package <name>
 npm exec saf-imports exports check --package <name>
 npm exec saf-imports baseline generate --out <path> [--skip-timings]
@@ -81,28 +80,6 @@ Measured on a large HTTP service test suite (162 files), same machine:
 Overhead ≈ **+70%** wall time — **above the 10% promotion threshold**. Keep
 opt-in only; do **not** add to `base-vitest.config.js` until measuring is
 cheap enough for default-on use.
-
-## `importBudget`
-
-Declare per-package limits in `package.json`:
-
-```json
-{
-  "importBudget": {
-    "testFiles": { "maxModules": 400, "maxExternalPackages": 30 },
-    "entries": {
-      "./lib/foo.ts": { "maxModules": 5 }
-    }
-  }
-}
-```
-
-Run `npm exec saf-imports budget [--mode warn|error]` to compare against optional per-package
-`importBudget` limits (skipped when unset). Report all package costs:
-
-```bash
-node saflib/imports/scripts/generate-import-budgets.mjs
-```
 
 ## Baseline snapshots
 

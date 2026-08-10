@@ -10,15 +10,6 @@ that pass `import-graph:check` without manual follow-up.
 | `sideEffects` | `false` | Vue/client: `["**/*.css", "**/*.scss"]` + entry files with side effects (`client.ts`) |
 | `exports` | **Hybrid patterns** | Wildcards + explicit exceptions — not per-file leaf maps |
 | `exportsAliases` | optional | Short paths, legacy names, `lib.ts` barrels |
-| `importBudget` | **optional** | Not baked into every package; see cost report script |
-
-Report per-package test graph cost (no writes):
-
-```bash
-node saflib/imports/scripts/generate-import-budgets.mjs
-```
-
-Opt-in write to `package.json` (discouraged for CI): pass `--write`.
 
 ## Export pattern examples
 

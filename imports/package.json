@@ -10,7 +10,6 @@
     ".": "./index.ts",
     "./reporter": "./reporter.ts",
     "./src/baseline/baseline": "./src/baseline/baseline.ts",
-    "./src/budget/check-budgets": "./src/budget/check-budgets.ts",
     "./src/exports/generate-exports": "./src/exports/generate-exports.ts",
     "./src/graph/detect-cycles": "./src/graph/detect-cycles.ts",
     "./src/graph/extract-imports": "./src/graph/extract-imports.ts",

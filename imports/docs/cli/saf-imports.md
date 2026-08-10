@@ -3,7 +3,7 @@
 ```
 Usage: saf-imports [options] [command]
 
-Measure and enforce import-graph budgets for SAF monorepo packages
+Measure and enforce import graphs for SAF monorepo packages
 
 Options:
   -h, --help                      display help for command
@@ -15,8 +15,6 @@ Commands:
                                   file to a target module or package
   cycles [options]                Detect circular dependencies in the
                                   first-party import graph
-  budget [options]                Compare measured import graphs against
-                                  package.json importBudget limits
   exports                         Generate or verify package.json exports maps
                                   from directory structure
   baseline                        Generate or diff a committed import-graph
