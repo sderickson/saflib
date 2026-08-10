@@ -23,7 +23,7 @@ export const defaultConfig = defineConfig({
     environment: "node",
     env: {
       TZ: "UTC",
-      NODE_OPTIONS: "--disable-warning=DEP0040",
+      NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=ExperimentalWarning",
       NODE_ENV: "test",
       TRADEMARK: "Some Product",
     },
