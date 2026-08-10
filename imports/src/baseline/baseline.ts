@@ -4,8 +4,11 @@ import path from "node:path";
 import { spawnSync } from "node:child_process";
 import {
   buildPackageIndex,
+  existsResolve,
   findMonorepoRoot,
+  resolvePackageExportPath,
 } from "../resolve/index.ts";
+import type { PackageInfo } from "../types.ts";
 import { measureGraph } from "../graph/walk-graph.ts";
 import { readRootSafImportsConfig } from "../config/read-saf-imports-config.ts";
 import { analyzeSpaRouter, listGateSpas } from "../spa/analyze-router.ts";
@@ -100,6 +103,8 @@ export interface DiffBaselineOptions {
   moduleThreshold?: number;
   /** Timing regression threshold (default 0.10 = 10%). */
   timingThreshold?: number;
+  /** `error` exits non-zero on regressions (shell/route timing warn-only for routes). */
+  mode?: "warn" | "error";
   onProgress?: (msg: string) => void;
 }
 
@@ -149,31 +154,14 @@ function toPosixRel(root: string, abs: string): string {
   return path.relative(root, abs).split(path.sep).join("/");
 }
 
-function resolveExportFile(
-  pkgDir: string,
-  exportsField: unknown,
-  exportPath: string,
-): string | null {
-  if (!exportsField) {
-    const fallback = path.join(pkgDir, "index.ts");
-    return fs.existsSync(fallback) ? fallback : null;
-  }
-  if (typeof exportsField === "string") {
-    return exportPath === "." ? path.join(pkgDir, exportsField) : null;
-  }
-  if (typeof exportsField !== "object" || exportsField === null) return null;
-  const key = exportPath === "." ? "." : exportPath.startsWith("./")
-    ? exportPath
-    : `./${exportPath}`;
-  const target = (exportsField as Record<string, unknown>)[key];
-  if (typeof target === "string") return path.join(pkgDir, target);
-  if (target && typeof target === "object") {
-    const cond = target as Record<string, unknown>;
-    for (const k of ["import", "default", "node", "require"]) {
-      if (typeof cond[k] === "string") return path.join(pkgDir, cond[k] as string);
-    }
-  }
-  return null;
+function resolveExportFile(pkg: PackageInfo, exportPath: string): string | null {
+  const subpath =
+    exportPath === "." || exportPath === ""
+      ? ""
+      : exportPath.replace(/^\.\//, "");
+  const target = resolvePackageExportPath(pkg, subpath);
+  if (!target) return null;
+  return existsResolve(target);
 }
 
 function readRepoName(root: string): string {
@@ -232,7 +220,7 @@ function measureEntryProbes(
       onProgress?.(`  skip ${probe.label} (package not found)`);
       continue;
     }
-    const file = resolveExportFile(pkg.dir, pkg.exports, probe.exportPath);
+    const file = resolveExportFile(pkg, probe.exportPath);
     if (!file || !fs.existsSync(file)) {
       onProgress?.(`  skip ${probe.label} (export file missing)`);
       continue;
@@ -817,6 +805,20 @@ export function diffBaseline(options: DiffBaselineOptions): DiffBaselineResult {
   void timingThreshold;
 
   return { regressions, current, baseline };
+}
+
+/** Route page-chunk timing regressions are warn-only even in error mode (M9). */
+export function isRoutePageChunkRegression(r: BaselineRegression): boolean {
+  return (
+    r.kind === "timing" &&
+    r.path.startsWith("bundle:") &&
+    !r.path.endsWith(":shellJsGzipBytes")
+  );
+}
+
+/** Regressions that should fail CI when `baseline diff --mode error`. */
+export function isFatalBaselineRegression(r: BaselineRegression): boolean {
+  return !isRoutePageChunkRegression(r);
 }
 
 /** Format a regression line for CLI output. */
