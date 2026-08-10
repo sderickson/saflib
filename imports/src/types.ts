@@ -31,6 +31,8 @@ export interface MeasureGraphOptions {
   includeTypes?: boolean;
   /** Monorepo root; auto-detected from the entry file when omitted. */
   root?: string;
+  /** When true, include sorted first-party paths and external package roots. */
+  verbose?: boolean;
 }
 
 export interface MeasureGraphResult {
@@ -40,6 +42,10 @@ export interface MeasureGraphResult {
   lines: number;
   /** Distinct external npm package roots. */
   ext: number;
+  /** Repo-root-relative first-party paths (only when `verbose: true`). */
+  files?: string[];
+  /** Sorted external package roots (only when `verbose: true`). */
+  externals?: string[];
 }
 
 /** Shared options for graph walks (`measure`, `why`, `cycles`). */

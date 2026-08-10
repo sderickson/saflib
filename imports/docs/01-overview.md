@@ -24,8 +24,9 @@ SAF-specific import-graph measurement and enforcement tooling.
 ## CLI
 
 ```bash
-npm exec saf-imports measure <entry...>
-npm exec saf-imports why <entry> <target>
+npm exec saf-imports -- measure <entry...>
+npm exec saf-imports -- measure --verbose path/to/my.test.ts
+npm exec saf-imports -- why <entry> <target>
 npm exec saf-imports cycles [--package <name>]
 npm exec saf-imports exports generate --package <name>
 npm exec saf-imports exports check --package <name>
@@ -35,6 +36,13 @@ npm exec saf-imports spa analyze --spa <app|admin|account|auth>
 npm exec saf-imports spa measure --spa <name>
 npm exec saf-imports side-effects scan [--package <name>]
 npm exec saf-imports tsconfig cycles|generate|check [--root <dir>]
+```
+
+`measure --verbose` lists every first-party file (repo-root-relative, sorted) and external
+package the entry statically imports:
+
+```bash
+npm exec saf-imports -- measure --verbose daemon/service/http/routes/audit-logs/seal.test.ts
 ```
 
 See [03-project-references.md](./03-project-references.md) for the dev loop and troubleshooting, and [04-composite-type-guidance.md](./04-composite-type-guidance.md) for do's and don'ts when writing types across composite packages.

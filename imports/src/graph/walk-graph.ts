@@ -9,6 +9,10 @@ import {
 import { extractImports } from "./extract-imports.ts";
 import { readSource } from "./read-source.ts";
 
+function rootRelativePath(root: string, filePath: string): string {
+  return path.relative(root, filePath).split(path.sep).join("/");
+}
+
 /**
  * Walk the static import graph from `entryPath` and count first-party modules,
  * total lines, and distinct external npm package roots.
@@ -18,6 +22,7 @@ export function measureGraph(
   options: MeasureGraphOptions = {},
 ): MeasureGraphResult {
   const includeTypes = options.includeTypes ?? false;
+  const verbose = options.verbose ?? false;
   const entry = path.resolve(entryPath);
   const root = options.root ?? findMonorepoRoot(path.dirname(entry));
   const index = buildPackageIndex(root);
@@ -53,9 +58,18 @@ export function measureGraph(
     }
   }
 
-  return {
+  const result: MeasureGraphResult = {
     modules: seen.size,
     lines,
     ext: external.size,
   };
+
+  if (verbose) {
+    result.files = [...seen]
+      .map((file) => rootRelativePath(root, file))
+      .sort();
+    result.externals = [...external].sort();
+  }
+
+  return result;
 }
