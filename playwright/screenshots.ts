@@ -1,6 +1,5 @@
 import { test, type Page } from "@playwright/test";
-import { unlink } from "fs/promises";
-import { readdir } from "fs/promises";
+import { unlink, readdir } from "fs/promises";
 import path, { dirname } from "path";
 
 const countForTest: Record<string, number> = {};

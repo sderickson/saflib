@@ -10,8 +10,7 @@
     "./strings": "./strings.ts",
     "./test-app": "./test-app.ts",
     "./typed-fake": "./typed-fake.ts",
-    "./requests/*": "./requests/*/index.ts",
-    "./requests/*/*": "./requests/*/*.ts"
+    "./requests/*": "./requests/*.ts"
   },
   "scripts": {
     "test": "vitest run",
