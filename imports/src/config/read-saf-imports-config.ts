@@ -2,16 +2,16 @@ import fs from "node:fs";
 import path from "node:path";
 import type { PackageJson } from "@saflib/dev-tools";
 
-/** Entry probe for baseline `entries` measurement. */
+/** Entry probe for snapshot `entries` measurement. */
 export interface SafImportsEntryProbe {
   label: string;
   packageName: string;
   exportPath: string;
 }
 
-/** Vitest/npm suite timing target stored in baseline `suites`. */
+/** Vitest/npm suite timing target stored in snapshot `suites`. */
 export interface SafImportsSuiteTarget {
-  /** Key in baseline.json `suites` map. */
+  /** Key in snapshot JSON `suites` map. */
   key: string;
   /** Repo-relative package directory (cwd for the command). */
   packageDir: string;
@@ -19,14 +19,14 @@ export interface SafImportsSuiteTarget {
   vitestPattern?: string;
 }
 
-/** Optional bundle measurement targets for baseline generation. */
+/** Optional bundle measurement targets for snapshot generation. */
 export interface SafImportsBundleTarget {
   buildWorkspace: string;
   singleSpaFallback?: string;
 }
 
-/** Repo-root `package.json` → `safImports.baseline` (product-specific; optional). */
-export interface SafImportsBaselineConfig {
+/** Repo-root `package.json` → `safImports.snapshot` (product-specific; optional). */
+export interface SafImportsSnapshotConfig {
   entryProbes?: SafImportsEntryProbe[];
   suites?: SafImportsSuiteTarget[];
   warmTypecheckPackageDir?: string;
@@ -46,7 +46,7 @@ export interface SafImportsPackageConfig {
 }
 
 export interface SafImportsRootConfig {
-  baseline?: SafImportsBaselineConfig;
+  snapshot?: SafImportsSnapshotConfig;
 }
 
 function readPackageJson(filePath: string): PackageJson & {
@@ -57,7 +57,7 @@ function readPackageJson(filePath: string): PackageJson & {
   };
 }
 
-/** Read `safImports.baseline` from the monorepo root `package.json`, if present. */
+/** Read `safImports.snapshot` from the monorepo root `package.json`, if present. */
 export function readRootSafImportsConfig(root: string): SafImportsRootConfig {
   const pjPath = path.join(root, "package.json");
   if (!fs.existsSync(pjPath)) return {};

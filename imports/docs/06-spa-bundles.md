@@ -38,7 +38,7 @@ Refresh after intentional shell changes:
 node saflib/imports/scripts/update-baseline-bundles.mjs
 ```
 
-Configured in root `package.json` → `safImports.baseline.bundles` (SPA list, gzip thresholds).
+Configured in root `package.json` → `safImports.snapshot.bundles` (SPA list, gzip thresholds).
 
 ## `sideEffects`
 

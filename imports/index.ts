@@ -24,19 +24,19 @@ export {
   resolveSpecifier,
 } from "./src/resolve/index.ts";
 export {
-  generateBaseline,
-  diffBaseline,
+  generateSnapshot,
+  checkSnapshot,
   formatRegression,
-  type BaselineSnapshot,
-  type BaselineGraphStats,
-  type BaselineSuiteTiming,
-  type BaselineTypecheck,
-  type BaselineBundles,
-  type GenerateBaselineOptions,
-  type DiffBaselineOptions,
-  type BaselineRegression,
-  type DiffBaselineResult,
-} from "./src/baseline/baseline.ts";
+  type MetricsSnapshot,
+  type SnapshotGraphStats,
+  type SnapshotSuiteTiming,
+  type SnapshotTypecheck,
+  type SnapshotBundles,
+  type GenerateSnapshotOptions,
+  type CheckSnapshotOptions,
+  type SnapshotRegression,
+  type CheckSnapshotResult,
+} from "./src/snapshot/snapshot.ts";
 export {
   buildReferenceGraph,
   detectReferenceCycles,

@@ -3,17 +3,17 @@ import fs from "node:fs";
 import os from "node:os";
 import { describe, expect, it } from "vitest";
 import {
-  generateBaseline,
-  diffBaseline,
+  generateSnapshot,
+  checkSnapshot,
   formatRegression,
-} from "./src/baseline/baseline.ts";
+} from "./src/snapshot/snapshot.ts";
 
 const fixtureRoot = path.join(import.meta.dirname, "fixtures/mini-monorepo");
 
-describe("generateBaseline", () => {
+describe("generateSnapshot", () => {
   it("writes a snapshot covering fixture *.test.ts files and entries when present", () => {
-    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "saf-imports-baseline-"));
-    const outPath = path.join(tmp, "baseline.json");
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "saf-imports-snapshot-"));
+    const outPath = path.join(tmp, "snapshot.json");
     try {
       // Fixture has no *.test.ts — create one that imports pkg-a
       const testDir = path.join(fixtureRoot, "packages/pkg-a");
@@ -26,7 +26,7 @@ describe("generateBaseline", () => {
         );
       }
       try {
-        const snap = generateBaseline({
+        const snap = generateSnapshot({
           root: fixtureRoot,
           outPath,
           skipTimings: true,
@@ -48,11 +48,11 @@ describe("generateBaseline", () => {
   });
 });
 
-describe("diffBaseline", () => {
+describe("checkSnapshot", () => {
   it("reports module regressions above 5%", () => {
-    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "saf-imports-diff-"));
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "saf-imports-check-"));
     try {
-      const baselinePath = path.join(tmp, "baseline.json");
+      const snapshotPath = path.join(tmp, "snapshot.json");
       const testDir = path.join(fixtureRoot, "packages/pkg-a");
       const testFile = path.join(testDir, "diff.test.ts");
       fs.writeFileSync(
@@ -60,23 +60,21 @@ describe("diffBaseline", () => {
         `import { util } from "./src/util.ts";\nexport const t = util;\n`,
       );
       try {
-        generateBaseline({
+        generateSnapshot({
           root: fixtureRoot,
-          outPath: baselinePath,
+          outPath: snapshotPath,
           skipTimings: true,
           skipBundles: true,
         });
 
-        // Inflate baseline so current looks like a regression when we re-measure…
-        // Actually: shrink baseline modules so current > baseline * 1.05
-        const snap = JSON.parse(fs.readFileSync(baselinePath, "utf8"));
+        const snap = JSON.parse(fs.readFileSync(snapshotPath, "utf8"));
         const key = "packages/pkg-a/diff.test.ts";
         const actual = snap.tests[key].modules;
         snap.tests[key].modules = Math.max(1, Math.floor(actual / 2));
-        fs.writeFileSync(baselinePath, JSON.stringify(snap, null, 2));
+        fs.writeFileSync(snapshotPath, JSON.stringify(snap, null, 2));
 
-        const { regressions } = diffBaseline({
-          baselinePath,
+        const { regressions } = checkSnapshot({
+          againstPath: snapshotPath,
           root: fixtureRoot,
         });
         expect(regressions.some((r) => r.kind === "modules" && r.path === key)).toBe(

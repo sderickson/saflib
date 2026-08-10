@@ -14,25 +14,25 @@ import { readRootSafImportsConfig } from "../config/read-saf-imports-config.ts";
 import { analyzeSpaRouter, listGateSpas } from "../spa/analyze-router.ts";
 import { measureSpaFromManifest } from "../spa/measure-spa.ts";
 
-/** Per-entry graph measurement stored in the baseline snapshot. */
-export interface BaselineGraphStats {
+/** Per-entry graph measurement stored in a metrics snapshot. */
+export interface SnapshotGraphStats {
   modules: number;
   lines: number;
   ext: number;
 }
 
 /** Suite wall / collect timings. */
-export interface BaselineSuiteTiming {
+export interface SnapshotSuiteTiming {
   wallMs: number;
   collectCpuMs?: number;
 }
 
 /** Serial workspace typecheck timing. */
-export interface BaselineTypecheck {
+export interface SnapshotTypecheck {
   serialWorkspacesWallMs: number;
   /** Warm 2nd-run wall time for root `npm run typecheck` (`vue-tsc -b`). */
   rootBuildWallMs?: number;
-  /** Warm 2nd-run wall time for a single-package pilot (repo `safImports.baseline.warmTypecheckPackageDir`). */
+  /** Warm 2nd-run wall time for a single-package pilot (repo `safImports.snapshot.warmTypecheckPackageDir`). */
   warmSinglePackageWallMs?: number;
   warmSinglePackage?: string;
   peakRssMb?: number;
@@ -40,51 +40,51 @@ export interface BaselineTypecheck {
   reason?: string;
 }
 
-/** Per-route SPA bundle baseline. */
-export interface SpaRouteBaseline {
+/** Per-route SPA bundle snapshot. */
+export interface SpaRouteSnapshot {
   routeKey: string;
   pathPattern: string;
   pageChunksGzipBytes: number;
 }
 
-/** SPA shell + route page-chunk baseline. */
-export interface SpaBundleBaseline {
+/** SPA shell + route page-chunk snapshot. */
+export interface SpaBundleSnapshot {
   shellJsGzipBytes: number;
   shellCssGzipBytes?: number;
-  routes: SpaRouteBaseline[];
+  routes: SpaRouteSnapshot[];
 }
 
-/** Frontend bundle baseline — measured or blocked. */
-export interface BaselineBundles {
+/** Frontend bundle snapshot — measured or blocked. */
+export interface SnapshotBundles {
   status: "ok" | "blocked" | "skipped";
   reason?: string;
   fallback?: string;
   command?: string;
   note?: string;
   chunks?: { chunkName: string; bytes: number; gzipBytes?: number }[];
-  spas?: Record<string, SpaBundleBaseline>;
+  spas?: Record<string, SpaBundleSnapshot>;
   preSideEffects?: {
     note?: string;
-    spas?: Record<string, SpaBundleBaseline>;
+    spas?: Record<string, SpaBundleSnapshot>;
   };
 }
 
-/** Committed baseline snapshot shape. */
-export interface BaselineSnapshot {
+/** Committed metrics snapshot shape. */
+export interface MetricsSnapshot {
   generatedAt: string;
   repo: string;
   testFileCount: number;
-  tests: Record<string, BaselineGraphStats>;
-  entries: Record<string, BaselineGraphStats>;
-  suites: Record<string, BaselineSuiteTiming>;
-  typecheck: BaselineTypecheck;
-  bundles: BaselineBundles;
+  tests: Record<string, SnapshotGraphStats>;
+  entries: Record<string, SnapshotGraphStats>;
+  suites: Record<string, SnapshotSuiteTiming>;
+  typecheck: SnapshotTypecheck;
+  bundles: SnapshotBundles;
 }
 
-export interface GenerateBaselineOptions {
+export interface GenerateSnapshotOptions {
   /** Monorepo root; auto-detected from cwd when omitted. */
   root?: string;
-  /** Absolute path to write the baseline JSON. */
+  /** Absolute path to write the snapshot JSON. */
   outPath: string;
   /** Skip suite / typecheck shell timings. */
   skipTimings?: boolean;
@@ -94,9 +94,9 @@ export interface GenerateBaselineOptions {
   onProgress?: (msg: string) => void;
 }
 
-export interface DiffBaselineOptions {
-  /** Path to committed baseline JSON. */
-  baselinePath: string;
+export interface CheckSnapshotOptions {
+  /** Path to committed snapshot JSON. */
+  againstPath: string;
   /** Monorepo root; auto-detected from cwd when omitted. */
   root?: string;
   /** Module-count regression threshold (default 0.05 = 5%). */
@@ -108,18 +108,18 @@ export interface DiffBaselineOptions {
   onProgress?: (msg: string) => void;
 }
 
-export interface BaselineRegression {
+export interface SnapshotRegression {
   kind: "modules" | "ext" | "timing" | "missing" | "new";
   path: string;
-  baseline?: number;
+  prior?: number;
   current?: number;
   deltaPct?: number;
 }
 
-export interface DiffBaselineResult {
-  regressions: BaselineRegression[];
-  current: BaselineSnapshot;
-  baseline: BaselineSnapshot;
+export interface CheckSnapshotResult {
+  regressions: SnapshotRegression[];
+  current: MetricsSnapshot;
+  reference: MetricsSnapshot;
 }
 
 const SKIP_DIRS = new Set([
@@ -178,9 +178,9 @@ function readRepoName(root: string): string {
 function measureAllTests(
   root: string,
   onProgress?: (msg: string) => void,
-): Record<string, BaselineGraphStats> {
+): Record<string, SnapshotGraphStats> {
   const files = listTestFiles(root).sort();
-  const tests: Record<string, BaselineGraphStats> = {};
+  const tests: Record<string, SnapshotGraphStats> = {};
   const total = files.length;
   onProgress?.(`Measuring ${total} test file(s)…`);
 
@@ -203,14 +203,14 @@ function measureAllTests(
 function measureEntryProbes(
   root: string,
   onProgress?: (msg: string) => void,
-): Record<string, BaselineGraphStats> {
+): Record<string, SnapshotGraphStats> {
   const index = buildPackageIndex(root);
-  const entries: Record<string, BaselineGraphStats> = {};
+  const entries: Record<string, SnapshotGraphStats> = {};
   onProgress?.("Measuring entry-point probes…");
 
-  const probes = readRootSafImportsConfig(root).baseline?.entryProbes ?? [];
+  const probes = readRootSafImportsConfig(root).snapshot?.entryProbes ?? [];
   if (probes.length === 0) {
-    onProgress?.("  skip entry probes (no safImports.baseline.entryProbes in root package.json)");
+    onProgress?.("  skip entry probes (no safImports.snapshot.entryProbes in root package.json)");
     return entries;
   }
 
@@ -238,7 +238,7 @@ function measureEntryProbes(
   return entries;
 }
 
-function parseVitestDuration(output: string): BaselineSuiteTiming | null {
+function parseVitestDuration(output: string): SnapshotSuiteTiming | null {
   // Duration  25.80s (transform …, collect 66.90s, …)
   const wallMatch = output.match(/Duration\s+([\d.]+)\s*s/i);
   if (!wallMatch) return null;
@@ -303,11 +303,11 @@ function runTimedCommand(
 function measureSuites(
   root: string,
   onProgress?: (msg: string) => void,
-): Record<string, BaselineSuiteTiming> {
-  const suites: Record<string, BaselineSuiteTiming> = {};
-  const targets = readRootSafImportsConfig(root).baseline?.suites ?? [];
+): Record<string, SnapshotSuiteTiming> {
+  const suites: Record<string, SnapshotSuiteTiming> = {};
+  const targets = readRootSafImportsConfig(root).snapshot?.suites ?? [];
   if (targets.length === 0) {
-    onProgress?.("  skip suite timings (no safImports.baseline.suites in root package.json)");
+    onProgress?.("  skip suite timings (no safImports.snapshot.suites in root package.json)");
     return suites;
   }
 
@@ -337,7 +337,7 @@ function measureSuites(
 function measureTypecheck(
   root: string,
   onProgress?: (msg: string) => void,
-): BaselineTypecheck {
+): SnapshotTypecheck {
   onProgress?.("Timing serial workspace typecheck…");
   const serial = runTimedCommand(
     "npm",
@@ -350,7 +350,7 @@ function measureTypecheck(
     );
   }
 
-  const typecheck: BaselineTypecheck = {
+  const typecheck: SnapshotTypecheck = {
     serialWorkspacesWallMs: serial.wallMs,
     status: serial.status === 0 ? "ok" : "failed",
   };
@@ -383,7 +383,7 @@ function measureTypecheck(
       (typecheck.peakRssMb != null ? ` peakRssMb=${typecheck.peakRssMb}` : ""),
   );
 
-  const warmPackageDir = readRootSafImportsConfig(root).baseline
+  const warmPackageDir = readRootSafImportsConfig(root).snapshot
     ?.warmTypecheckPackageDir;
   if (warmPackageDir) {
     const packageDir = path.join(root, warmPackageDir);
@@ -435,10 +435,10 @@ function loadEnvDev(root: string): Record<string, string> {
   return out;
 }
 
-function spaMeasureToBaseline(
+function spaMeasureToSnapshot(
   results: Record<string, Awaited<ReturnType<typeof measureSpaFromManifest>> | undefined>,
-): Record<string, SpaBundleBaseline> {
-  const spas: Record<string, SpaBundleBaseline> = {};
+): Record<string, SpaBundleSnapshot> {
+  const spas: Record<string, SpaBundleSnapshot> = {};
   for (const [spa, m] of Object.entries(results)) {
     if (!m) continue;
     spas[spa] = {
@@ -457,7 +457,7 @@ function spaMeasureToBaseline(
 function measureSpaBundles(
   root: string,
   onProgress?: (msg: string) => void,
-): Record<string, SpaBundleBaseline> | undefined {
+): Record<string, SpaBundleSnapshot> | undefined {
   const distDir = path.join(root, "daemon/clients/build/dist");
   if (!fs.existsSync(path.join(distDir, ".vite", "manifest.json"))) {
     onProgress?.("  spa measure skipped (no vite manifest — run client build)");
@@ -474,24 +474,24 @@ function measureSpaBundles(
       );
     }
   }
-  return spaMeasureToBaseline(results);
+  return spaMeasureToSnapshot(results);
 }
 
 function measureBundles(
   root: string,
   onProgress?: (msg: string) => void,
-): BaselineBundles {
-  const bundleConfig = readRootSafImportsConfig(root).baseline?.bundles;
+): SnapshotBundles {
+  const bundleConfig = readRootSafImportsConfig(root).snapshot?.bundles;
   if (!bundleConfig) {
-    onProgress?.("  skip bundle baseline (no safImports.baseline.bundles in root package.json)");
+    onProgress?.("  skip bundle snapshot (no safImports.snapshot.bundles in root package.json)");
     return {
       status: "skipped",
-      reason: "no safImports.baseline.bundles configured",
+      reason: "no safImports.snapshot.bundles configured",
     };
   }
 
   const command = `npm run build --workspace=${bundleConfig.buildWorkspace}`;
-  onProgress?.("Attempting multi-SPA bundle baseline…");
+  onProgress?.("Attempting multi-SPA bundle snapshot…");
   onProgress?.(`  ${command}`);
 
   const buildDir = path.join(root, bundleConfig.buildWorkspace);
@@ -540,7 +540,7 @@ function measureBundles(
       command,
       chunks,
       spas,
-      note: "post-sideEffects regression baseline",
+      note: "post-sideEffects regression snapshot",
     };
   }
 
@@ -587,7 +587,7 @@ function measureBundles(
     }
   }
 
-  const bundles: BaselineBundles = {
+  const bundles: SnapshotBundles = {
     status: "blocked",
     reason: reasonParts.join(" — ") || "multi-SPA build did not emit SPA chunks",
     fallback: bundleConfig.singleSpaFallback,
@@ -608,24 +608,24 @@ function measureBundles(
 }
 
 /**
- * Generate a baseline snapshot: all `*.test.ts` graphs, entry probes,
+ * Generate a metrics snapshot: all `*.test.ts` graphs, entry probes,
  * optional suite/typecheck timings, and best-effort bundle sizes.
  */
-export function generateBaseline(
-  options: GenerateBaselineOptions,
-): BaselineSnapshot {
+export function generateSnapshot(
+  options: GenerateSnapshotOptions,
+): MetricsSnapshot {
   const root = options.root ?? findMonorepoRoot(process.cwd());
   const onProgress = options.onProgress;
   const cpus = os.availableParallelism?.() ?? os.cpus().length;
   onProgress?.(
-    `Baseline generate root=${root} (cpus=${cpus}; measuring serially)`,
+    `Metrics snapshot generate root=${root} (cpus=${cpus}; measuring serially)`,
   );
 
   const tests = measureAllTests(root, onProgress);
   const entries = measureEntryProbes(root, onProgress);
 
-  let suites: Record<string, BaselineSuiteTiming> = {};
-  let typecheck: BaselineTypecheck = {
+  let suites: Record<string, SnapshotSuiteTiming> = {};
+  let typecheck: SnapshotTypecheck = {
     serialWorkspacesWallMs: 0,
     status: "skipped",
     reason: "skipped via --skip-timings",
@@ -635,11 +635,11 @@ export function generateBaseline(
     typecheck = measureTypecheck(root, onProgress);
   }
 
-  const bundles: BaselineBundles = options.skipBundles
+  const bundles: SnapshotBundles = options.skipBundles
     ? { status: "skipped", reason: "skipped via --skip-bundles" }
     : measureBundles(root, onProgress);
 
-  const snapshot: BaselineSnapshot = {
+  const snapshot: MetricsSnapshot = {
     generatedAt: new Date().toISOString(),
     repo: readRepoName(root),
     testFileCount: Object.keys(tests).length,
@@ -659,23 +659,23 @@ export function generateBaseline(
   return snapshot;
 }
 
-function loadBaseline(baselinePath: string): BaselineSnapshot {
-  const abs = path.resolve(baselinePath);
+function loadSnapshot(againstPath: string): MetricsSnapshot {
+  const abs = path.resolve(againstPath);
   if (!fs.existsSync(abs)) {
-    throw new Error(`Baseline file not found: ${abs}`);
+    throw new Error(`Snapshot file not found: ${abs}`);
   }
-  return JSON.parse(fs.readFileSync(abs, "utf8")) as BaselineSnapshot;
+  return JSON.parse(fs.readFileSync(abs, "utf8")) as MetricsSnapshot;
 }
 
 /**
- * Re-measure graphs and compare to a committed baseline.
+ * Re-measure graphs and compare to a committed snapshot.
  * Reports regressions; caller exits 0 in M0 (report-only).
  */
-export function diffBaseline(options: DiffBaselineOptions): DiffBaselineResult {
+export function checkSnapshot(options: CheckSnapshotOptions): CheckSnapshotResult {
   const root = options.root ?? findMonorepoRoot(process.cwd());
   const moduleThreshold = options.moduleThreshold ?? 0.05;
   const timingThreshold = options.timingThreshold ?? 0.1;
-  const baseline = loadBaseline(options.baselinePath);
+  const reference = loadSnapshot(options.againstPath);
 
   // Diff focuses on graph counts (fast). Timings compared only if present in
   // both snapshots after a fresh generate of graph portions.
@@ -683,7 +683,7 @@ export function diffBaseline(options: DiffBaselineOptions): DiffBaselineResult {
   const tests = measureAllTests(root, options.onProgress);
   const entries = measureEntryProbes(root, options.onProgress);
 
-  const current: BaselineSnapshot = {
+  const current: MetricsSnapshot = {
     generatedAt: new Date().toISOString(),
     repo: readRepoName(root),
     testFileCount: Object.keys(tests).length,
@@ -694,19 +694,19 @@ export function diffBaseline(options: DiffBaselineOptions): DiffBaselineResult {
     bundles: { status: "skipped", reason: "diff skips bundles" },
   };
 
-  const regressions: BaselineRegression[] = [];
+  const regressions: SnapshotRegression[] = [];
 
   const compareGraph = (
     label: string,
-    base: BaselineGraphStats | undefined,
-    cur: BaselineGraphStats | undefined,
+    base: SnapshotGraphStats | undefined,
+    cur: SnapshotGraphStats | undefined,
   ) => {
     if (!base && cur) {
       regressions.push({ kind: "new", path: label, current: cur.modules });
       return;
     }
     if (base && !cur) {
-      regressions.push({ kind: "missing", path: label, baseline: base.modules });
+      regressions.push({ kind: "missing", path: label, prior: base.modules });
       return;
     }
     if (!base || !cur) return;
@@ -716,7 +716,7 @@ export function diffBaseline(options: DiffBaselineOptions): DiffBaselineResult {
         regressions.push({
           kind: "modules",
           path: label,
-          baseline: base.modules,
+          prior: base.modules,
           current: cur.modules,
           deltaPct: Math.round(delta * 1000) / 10,
         });
@@ -728,7 +728,7 @@ export function diffBaseline(options: DiffBaselineOptions): DiffBaselineResult {
         regressions.push({
           kind: "ext",
           path: label,
-          baseline: base.ext,
+          prior: base.ext,
           current: cur.ext,
           deltaPct: Math.round(delta * 1000) / 10,
         });
@@ -736,22 +736,22 @@ export function diffBaseline(options: DiffBaselineOptions): DiffBaselineResult {
     }
   };
 
-  for (const [rel, base] of Object.entries(baseline.tests)) {
+  for (const [rel, base] of Object.entries(reference.tests)) {
     compareGraph(rel, base, tests[rel]);
   }
   for (const rel of Object.keys(tests)) {
-    if (!(rel in baseline.tests)) {
+    if (!(rel in reference.tests)) {
       compareGraph(rel, undefined, tests[rel]);
     }
   }
-  for (const [label, base] of Object.entries(baseline.entries ?? {})) {
+  for (const [label, base] of Object.entries(reference.entries ?? {})) {
     compareGraph(`entry:${label}`, base, entries[label]);
   }
 
   const bundleThreshold = 0.05;
-  const baseSpas = baseline.bundles?.spas;
+  const baseSpas = reference.bundles?.spas;
   if (baseSpas && options.onProgress) {
-    options.onProgress?.("Comparing SPA shell budgets vs baseline…");
+    options.onProgress?.("Comparing SPA shell budgets vs snapshot…");
     const distDir = path.join(root, "daemon/clients/build/dist");
     if (fs.existsSync(path.join(distDir, ".vite", "manifest.json"))) {
       const currentSpas = measureSpaBundles(root, options.onProgress) ?? {};
@@ -765,7 +765,7 @@ export function diffBaseline(options: DiffBaselineOptions): DiffBaselineResult {
             regressions.push({
               kind: "timing",
               path: `bundle:${spa}:shellJsGzipBytes`,
-              baseline: base.shellJsGzipBytes,
+              prior: base.shellJsGzipBytes,
               current: cur.shellJsGzipBytes,
               deltaPct: Math.round(delta * 1000) / 10,
             });
@@ -784,7 +784,7 @@ export function diffBaseline(options: DiffBaselineOptions): DiffBaselineResult {
               regressions.push({
                 kind: "timing",
                 path: `bundle:${spa}:${baseRoute.routeKey}`,
-                baseline: baseRoute.pageChunksGzipBytes,
+                prior: baseRoute.pageChunksGzipBytes,
                 current: curRoute.pageChunksGzipBytes,
                 deltaPct: Math.round(delta * 1000) / 10,
               });
@@ -795,20 +795,20 @@ export function diffBaseline(options: DiffBaselineOptions): DiffBaselineResult {
     }
   }
 
-  // Timing regressions only when baseline has suite timings
-  // generate with timings; diff itself does not re-time (too slow for CI).
-  // Compare committed baseline suite numbers against themselves is a no-op —
+  // Timing regressions only when the reference snapshot has suite timings from
+  // a full generate; check itself does not re-time (too slow for CI).
+  // Compare committed snapshot suite numbers against themselves is a no-op —
   // instead, if current.suites were populated we'd compare. Document that
-  // timing gates need a full generate. Still surface baseline typecheck growth
-  // when both have numbers from a previous generate stored alongside — skip.
+  // timing gates need a full generate. Still surface typecheck growth when
+  // both have numbers from a previous generate stored alongside — skip.
 
   void timingThreshold;
 
-  return { regressions, current, baseline };
+  return { regressions, current, reference };
 }
 
 /** Route page-chunk timing regressions are warn-only even in error mode (M9). */
-export function isRoutePageChunkRegression(r: BaselineRegression): boolean {
+export function isRoutePageChunkRegression(r: SnapshotRegression): boolean {
   return (
     r.kind === "timing" &&
     r.path.startsWith("bundle:") &&
@@ -816,20 +816,20 @@ export function isRoutePageChunkRegression(r: BaselineRegression): boolean {
   );
 }
 
-/** Regressions that should fail CI when `baseline diff --mode error`. */
-export function isFatalBaselineRegression(r: BaselineRegression): boolean {
+/** Regressions that fail when `snapshot check --mode error`. */
+export function isFatalSnapshotRegression(r: SnapshotRegression): boolean {
   return !isRoutePageChunkRegression(r);
 }
 
 /** Format a regression line for CLI output. */
-export function formatRegression(r: BaselineRegression): string {
+export function formatRegression(r: SnapshotRegression): string {
   switch (r.kind) {
     case "modules":
     case "ext":
     case "timing":
-      return `${r.kind} ${r.path}: ${r.baseline} → ${r.current} (+${r.deltaPct}%)`;
+      return `${r.kind} ${r.path}: ${r.prior} → ${r.current} (+${r.deltaPct}%)`;
     case "missing":
-      return `missing ${r.path} (was ${r.baseline})`;
+      return `missing ${r.path} (was ${r.prior})`;
     case "new":
       return `new ${r.path} (modules=${r.current})`;
   }
