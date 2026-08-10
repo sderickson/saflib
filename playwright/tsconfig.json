@@ -19,9 +19,6 @@
     "rootDir": ".",
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.tsbuildinfo",
     "outDir": "./dist/types",
-    "types": [
-      "node"
-    ],
     "noEmit": false,
     "emitDeclarationOnly": true
   },

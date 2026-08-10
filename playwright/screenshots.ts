@@ -1,6 +1,7 @@
+/// <reference types="node" />
 import { test, type Page } from "@playwright/test";
-import { unlink, readdir } from "fs/promises";
-import path, { dirname } from "path";
+import { unlink, readdir } from "node:fs/promises";
+import path, { dirname } from "node:path";
 
 const countForTest: Record<string, number> = {};
 
