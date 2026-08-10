@@ -295,11 +295,18 @@ export async function runJobs(
             resolved.pathTemplate,
             job.request.pathParams,
           );
+          const method = resolved.method.toLowerCase();
+          const body =
+            job.request.body !== undefined
+              ? job.request.body
+              : method === "post" || method === "put" || method === "patch"
+                ? {}
+                : undefined;
           response = await caller({
             operationId: job.operationId,
             method: resolved.method,
             path,
-            body: job.request.body,
+            body,
             query: queryToStrings(job.request.query),
             asUser: {
               userId: job.userId,

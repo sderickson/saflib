@@ -53,9 +53,13 @@ export function makeCronEnqueuer(
     const callingOperationId = cronTriggerKey(params.jobName);
     const dedupeKey = params.dedupeKey ?? callingOperationId;
 
+    const request = params.request ?? {};
     const body: JobsServiceRequestBody["enqueueJob"] = {
       operationId: params.operationId,
-      request: params.request ?? {},
+      request: {
+        ...request,
+        body: request.body ?? {},
+      },
       dedupeKey,
       priority: params.priority,
       onBehalfOf: {
