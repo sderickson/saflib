@@ -54,7 +54,8 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
 >({
   id: "express/add-handler",
 
-  description: "Add a new route to an Express.js service.",
+  description:
+    "Add a route handler, group router, slim test, and http.ts mount. Run openapi/route and saf-specs generate first.",
 
   checklistDescription: ({ packageName, targetName }) =>
     `Add ${targetName} route handler to ${packageName}.`,
