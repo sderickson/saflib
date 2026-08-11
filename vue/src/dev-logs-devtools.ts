@@ -526,7 +526,7 @@ onUnmounted(() => {
   addCustomTab({
     name: "saf-dev-logs",
     title: "Server Logs",
-    icon: "i-carbon-terminal",
+    icon: "i-carbon-document",
     category: "app",
     view: {
       type: "sfc",
