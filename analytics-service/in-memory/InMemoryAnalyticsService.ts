@@ -41,6 +41,7 @@ export class InMemoryAnalyticsService extends AnalyticsServiceBase {
     event: string;
     context?: Record<string, unknown>;
   }): void {
+    log.info(`Analytics event: (${event.event})`, event);
     capturedAnalyticsCalls.push({
       kind: "capture",
       distinctId: event.distinctId,

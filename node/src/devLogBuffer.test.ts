@@ -49,4 +49,21 @@ describe("devLogBuffer", () => {
     ]);
     expect(getDevLogs({ limit: 1 }).map((e) => e.message)).toEqual(["three"]);
   });
+
+  it("captures Winston meta args from splat", () => {
+    enableDevLogBuffer({ capacity: 10 });
+    const transport = createDevLogBufferTransport();
+    transport.log(
+      {
+        level: "info",
+        message: "audit event recorded",
+        event_type: "x",
+        [Symbol.for("splat")]: [{ event_type: "x", resource_id: "y" }],
+      },
+      () => {},
+    );
+    const [entry] = getDevLogs();
+    expect(entry?.message).toBe("audit event recorded");
+    expect(entry?.meta).toEqual({ event_type: "x", resource_id: "y" });
+  });
 });

@@ -76,6 +76,13 @@ export const createVueApp = (
     callback(app);
   }
 
+  // Vite DEV only — Vue DevTools tab for monolith Winston ring buffer.
+  if (import.meta.env.DEV) {
+    void import("./dev-logs-devtools.ts").then(({ registerDevLogsDevtoolsTab }) => {
+      registerDevLogsDevtoolsTab();
+    });
+  }
+
   app.mount("#app");
   return app;
 };

@@ -2,6 +2,7 @@ import TransportStream from "winston-transport";
 import type { TransformableInfo } from "logform";
 
 const DEFAULT_CAPACITY = 1000;
+const SPLAT = Symbol.for("splat");
 
 export interface DevLogEntry {
   /** Monotonic id for SSE `Last-Event-ID` / `?after=` pagination. */
@@ -13,6 +14,11 @@ export interface DevLogEntry {
   service_name?: string;
   subsystem_name?: string;
   operation_name?: string;
+  /**
+   * Extra args passed to Winston (e.g. `log.info("msg", { … })`),
+   * JSON-serializable snapshot for the DevTools / HTTP viewers.
+   */
+  meta?: unknown;
 }
 
 type DevLogListener = (entry: DevLogEntry) => void;
@@ -23,6 +29,56 @@ let capacity = DEFAULT_CAPACITY;
 const listeners = new Set<DevLogListener>();
 let enabled = false;
 
+const KNOWN_INFO_KEYS = new Set([
+  "level",
+  "message",
+  "timestamp",
+  "reqId",
+  "request_id",
+  "service_name",
+  "subsystem_name",
+  "operation_name",
+  "user_id",
+  "splat",
+]);
+
+function jsonSafe(value: unknown): unknown {
+  const seen = new WeakSet<object>();
+  try {
+    return JSON.parse(
+      JSON.stringify(value, (_key, v) => {
+        if (typeof v === "bigint") return v.toString();
+        if (v instanceof Error) {
+          return { name: v.name, message: v.message, stack: v.stack };
+        }
+        if (v && typeof v === "object") {
+          if (seen.has(v as object)) return "[Circular]";
+          seen.add(v as object);
+        }
+        return v;
+      }),
+    );
+  } catch {
+    return String(value);
+  }
+}
+
+function extractMeta(info: TransformableInfo): unknown | undefined {
+  const splat = (info as Record<symbol, unknown>)[SPLAT];
+  if (Array.isArray(splat) && splat.length > 0) {
+    return jsonSafe(splat.length === 1 ? splat[0] : splat);
+  }
+
+  const rest: Record<string, unknown> = {};
+  let found = false;
+  for (const key of Object.keys(info)) {
+    if (KNOWN_INFO_KEYS.has(key)) continue;
+    rest[key] = (info as Record<string, unknown>)[key];
+    found = true;
+  }
+  return found ? jsonSafe(rest) : undefined;
+}
+
 function toEntry(info: TransformableInfo): DevLogEntry {
   const message =
     typeof info.message === "string"
@@ -30,6 +86,7 @@ function toEntry(info: TransformableInfo): DevLogEntry {
       : info.message == null
         ? ""
         : String(info.message);
+  const meta = extractMeta(info);
   return {
     id: nextId++,
     timestamp:
@@ -52,6 +109,7 @@ function toEntry(info: TransformableInfo): DevLogEntry {
       typeof info.operation_name === "string"
         ? info.operation_name
         : undefined,
+    ...(meta !== undefined ? { meta } : {}),
   };
 }
 
