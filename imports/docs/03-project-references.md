@@ -12,11 +12,16 @@ From the **monorepo root**:
 npm run typecheck
 
 # After changing workspace deps or adding packages — regenerate references
-node --experimental-strip-types saflib/imports/bin/saf-imports/index.ts tsconfig generate --write
+npm run tsconfig:sync
+# or: npm exec saf-imports tsconfig generate --write
 
 # Verify references match the workspace graph (same check CI runs)
 node --experimental-strip-types saflib/imports/bin/saf-imports/index.ts tsconfig check
 ```
+
+Root `npm install` also runs `postinstall`, which syncs references when workspace
+dependencies change (skipped in CI). Use `SAF_SKIP_TS_CONFIG_SYNC=1` to disable
+for a single install.
 
 From a **single package** (fast inner loop):
 

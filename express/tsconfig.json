@@ -24,6 +24,9 @@
       "path": "../notify/notify"
     },
     {
+      "path": "../openapi"
+    },
+    {
       "path": "../sdk"
     },
     {
