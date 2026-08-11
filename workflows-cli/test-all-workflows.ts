@@ -272,7 +272,7 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
       urlPath: "/welcome-new-user",
     })),
 
-    // Product init copies pathclerk-style CI/deploy templates to repo root; remove them
+    // Product init copies repo-root CI/deploy templates; remove them
     // so workflow-script does not pollute the saflib repository.
     step(CdStepMachine, () => ({
       path: saflibRoot,

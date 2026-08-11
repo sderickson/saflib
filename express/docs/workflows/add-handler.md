@@ -12,7 +12,7 @@ npm exec saf-workflow kickoff express/add-handler <path> [--upload] [--download]
 
 To run this workflow automatically, tell the agent to:
 
-1. Navigate to the target HTTP package (e.g. `daemon/service/http`)
+1. Navigate to the target HTTP package (e.g. `myproduct/service/http`)
 2. Run this command
 3. Follow the instructions until done
 

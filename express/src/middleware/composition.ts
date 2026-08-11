@@ -90,7 +90,7 @@ export interface ScopedMiddlewareOptions {
 }
 
 /**
- * Scoped middleware for a single OpenAPI operation fragment (from `@pathclerk/<spec>/operations/<operationId>`).
+ * Scoped middleware for a single OpenAPI operation fragment (from `@<org>/<spec>/operations/<operationId>`).
  */
 export const createOperationScopedMiddleware = (
   apiSpec: OpenAPIV3.DocumentV3,

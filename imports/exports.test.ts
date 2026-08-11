@@ -174,33 +174,21 @@ describe("export patterns", () => {
     }
   });
 
-  it("covers daemon-db and daemon-sdk hybrid export maps", () => {
-    const root = findMonorepoRoot(path.join(import.meta.dirname, "..", ".."));
-    const dbDir = path.join(root, "daemon/service/db");
-    const sdkDir = path.join(root, "daemon/service/sdk");
-    expect(checkExports(dbDir).ok).toBe(true);
-    expect(checkExports(sdkDir).ok).toBe(true);
-  });
-
-  it("covers service-common, forms, and clients-common hybrid export maps", () => {
-    const root = findMonorepoRoot(path.join(import.meta.dirname, "..", ".."));
-    expect(checkExports(path.join(root, "daemon/service/common")).ok).toBe(true);
-    expect(checkExports(path.join(root, "daemon/forms")).ok).toBe(true);
-    expect(checkExports(path.join(root, "daemon/clients/common")).ok).toBe(true);
-  });
-
   it("resolves pattern exports in resolveSpecifier", () => {
     const root = findMonorepoRoot(path.join(import.meta.dirname, "..", ".."));
     const index = buildPackageIndex(root);
-    const from = path.join(root, "daemon/service/http/routes/foo.ts");
+    const from = path.join(
+      root,
+      "saflib/express/workflows/templates/routes/foo/handler.ts",
+    );
     const result = resolveSpecifier(
-      "@pathclerk/daemon-db/schemas/matter",
+      "template-package-http/routes/__group-name__/index",
       from,
       index,
     );
     expect(result?.kind).toBe("file");
     if (result?.kind === "file") {
-      expect(result.path).toMatch(/schemas\/matter\.ts$/);
+      expect(result.path).toMatch(/routes\/__group-name__\/index\.ts$/);
     }
   });
 });

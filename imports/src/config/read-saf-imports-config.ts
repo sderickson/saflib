@@ -23,7 +23,13 @@ export interface SafImportsSuiteTarget {
 export interface SafImportsBundleTarget {
   buildWorkspace: string;
   singleSpaFallback?: string;
+  /** SPA keys measured via `saf-imports spa` (e.g. app, admin). */
+  spas?: string[];
+  budgets?: Record<string, { maxShellJsGzipBytes?: number }>;
 }
+
+/** Manual `sideEffects` overrides for `apply-side-effects.mjs` (product-specific). */
+export type SafImportsSideEffectsOverrides = Record<string, string[] | false>;
 
 /** Repo-root `package.json` → `safImports.snapshot` (product-specific; optional). */
 export interface SafImportsSnapshotConfig {
@@ -31,9 +37,9 @@ export interface SafImportsSnapshotConfig {
   suites?: SafImportsSuiteTarget[];
   warmTypecheckPackageDir?: string;
   bundles?: SafImportsBundleTarget;
+  /** Repo-relative path for update-baseline-bundles.mjs output. */
+  baselineBundlesPath?: string;
 }
-
-/** Per-package `package.json` → `safImports.compositionRoot`. */
 export interface SafImportsCompositionRootConfig {
   /** Union every typecheckable package sharing this package's parent directory. */
   includeSiblingPackages?: boolean;
@@ -47,6 +53,11 @@ export interface SafImportsPackageConfig {
 
 export interface SafImportsRootConfig {
   snapshot?: SafImportsSnapshotConfig;
+  /** Repo-relative parent of SPA client packages (e.g. `myproduct/clients`). */
+  clientsRoot?: string;
+  /** Repo-relative env file loaded during client bundle snapshot builds. */
+  devEnvFile?: string;
+  sideEffectsOverrides?: SafImportsSideEffectsOverrides;
 }
 
 function readPackageJson(filePath: string): PackageJson & {

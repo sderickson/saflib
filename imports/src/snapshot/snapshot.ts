@@ -11,6 +11,10 @@ import {
 import type { PackageInfo } from "../types.ts";
 import { measureGraph } from "../graph/walk-graph.ts";
 import { readRootSafImportsConfig } from "../config/read-saf-imports-config.ts";
+import {
+  resolveClientsDistDir,
+  resolveDevEnvPath,
+} from "../spa/paths.ts";
 import { analyzeSpaRouter, listGateSpas } from "../spa/analyze-router.ts";
 import { measureSpaFromManifest } from "../spa/measure-spa.ts";
 
@@ -422,8 +426,8 @@ function listDistAssets(dir: string): { chunkName: string; bytes: number }[] {
   return chunks.sort((a, b) => a.chunkName.localeCompare(b.chunkName));
 }
 function loadEnvDev(root: string): Record<string, string> {
-  const envPath = path.join(root, "daemon/dev/env.dev");
-  if (!fs.existsSync(envPath)) return {};
+  const envPath = resolveDevEnvPath(root);
+  if (!envPath || !fs.existsSync(envPath)) return {};
   const out: Record<string, string> = {};
   for (const line of fs.readFileSync(envPath, "utf8").split("\n")) {
     const trimmed = line.trim();
@@ -458,13 +462,13 @@ function measureSpaBundles(
   root: string,
   onProgress?: (msg: string) => void,
 ): Record<string, SpaBundleSnapshot> | undefined {
-  const distDir = path.join(root, "daemon/clients/build/dist");
-  if (!fs.existsSync(path.join(distDir, ".vite", "manifest.json"))) {
+  const distDir = resolveClientsDistDir(root);
+  if (!distDir || !fs.existsSync(path.join(distDir, ".vite", "manifest.json"))) {
     onProgress?.("  spa measure skipped (no vite manifest — run client build)");
     return undefined;
   }
   const results: Record<string, ReturnType<typeof measureSpaFromManifest>> = {};
-  for (const spa of listGateSpas()) {
+  for (const spa of listGateSpas(root)) {
     const catalog = analyzeSpaRouter(root, spa);
     if (!catalog) continue;
     results[spa] = measureSpaFromManifest(root, spa, catalog, distDir);
@@ -752,8 +756,11 @@ export function checkSnapshot(options: CheckSnapshotOptions): CheckSnapshotResul
   const baseSpas = reference.bundles?.spas;
   if (baseSpas && options.onProgress) {
     options.onProgress?.("Comparing SPA shell budgets vs snapshot…");
-    const distDir = path.join(root, "daemon/clients/build/dist");
-    if (fs.existsSync(path.join(distDir, ".vite", "manifest.json"))) {
+    const distDir = resolveClientsDistDir(root);
+    if (
+      distDir &&
+      fs.existsSync(path.join(distDir, ".vite", "manifest.json"))
+    ) {
       const currentSpas = measureSpaBundles(root, options.onProgress) ?? {};
       for (const [spa, base] of Object.entries(baseSpas)) {
         const cur = currentSpas[spa];

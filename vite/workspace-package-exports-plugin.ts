@@ -191,10 +191,9 @@ export interface WorkspacePackageExportsPluginOptions {
 }
 
 /**
- * Resolve `@pathclerk/*` and `@saflib/*` through workspace `package.json` exports
- * (including wildcard patterns). Node and Vite greedily match single `*` export
- * keys across path segments; this plugin matches one segment per `*` like
- * `saf-imports` does.
+ * Resolve workspace packages through `package.json` exports (including wildcard
+ * patterns). Node and Vite greedily match single `*` export keys across path
+ * segments; this plugin matches one segment per `*` like `saf-imports` does.
  *
  * Self-contained (no `@saflib/imports`) so minimal Docker images stay small.
  */
@@ -210,12 +209,7 @@ export function workspacePackageExportsPlugin(
     name: "workspace-package-exports",
     enforce: "pre",
     resolveId(source, importer) {
-      if (
-        !source.startsWith("@pathclerk/") &&
-        !source.startsWith("@saflib/")
-      ) {
-        return null;
-      }
+      if (source.startsWith(".")) return null;
       const fromFile = importer
         ? path.normalize(importer.replace(/\?.*$/, ""))
         : pluginDir;

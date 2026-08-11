@@ -150,14 +150,14 @@ Include:
 * Another test for making sure the caching works (that related queries are invalidated after the mutation).`,
     })),
 
-    step(CommandStepMachine, () => ({
+    step(CommandStepMachine, ({ context }) => ({
       command: "node",
       args: [
         "../../../saflib/imports/bin/saf-imports/index.ts",
         "exports",
         "generate",
         "--package",
-        "@pathclerk/daemon-sdk",
+        context.packageName,
       ],
       description:
         "Regenerate package.json export map for the new mutation subpath.",

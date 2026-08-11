@@ -35,7 +35,6 @@ function resolveJobsSocketPath(options?: EnqueueClientOptions): string {
   return (
     options?.socketPath ??
     process.env.SAF_JOBS_SOCKET ??
-    process.env.DAEMON_SERVICE_JOBS_SOCKET ?? // legacy alias
     "/tmp/saf-jobs-internal.sock"
   );
 }

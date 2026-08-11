@@ -99,7 +99,7 @@ export const AddDrizzleQueryWorkflowDefinition = defineWorkflow<
         * Error subclasses should be simple, no special constructors or anything.
         * You don't need to export error types from the types.ts file.
         * If this is a **new query domain** (new \`queries/<group>/\` folder), add a subpath export to the package \`package.json\`: \`"./queries/<group-name>": "./queries/<group-name>/index.ts"\` (see existing entries in the product db package for the pattern).
-        * Packages without a root barrel (e.g. \`@pathclerk/daemon-db\`) do **not** use \`index.ts\` re-exports — only \`package.json\` sub-paths and the group \`index.ts\`.
+        * Packages without a root barrel (e.g. \`template-package-db\`) do **not** use \`index.ts\` re-exports — only \`package.json\` sub-paths and the group \`index.ts\`.
         Please reference the documentation here for more information: ${context.docFiles?.refDoc}`,
     })),
 

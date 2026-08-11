@@ -42,7 +42,7 @@ npm exec saf-imports tsconfig cycles|generate|check [--root <dir>]
 package the entry statically imports:
 
 ```bash
-npm exec saf-imports -- measure --verbose daemon/service/http/routes/audit-logs/seal.test.ts
+npm exec saf-imports -- measure --verbose myproduct/service/http/routes/audit-logs/seal.test.ts
 ```
 
 See [03-project-references.md](./03-project-references.md) for the dev loop and troubleshooting, and [04-composite-type-guidance.md](./04-composite-type-guidance.md) for do's and don'ts when writing types across composite packages.
@@ -72,8 +72,8 @@ import-graph summary (162 test files)
 ### Root shortcut
 
 ```bash
-npm run import-graph:report -- @pathclerk/daemon-http
-npm run import-graph:report -- daemon-http -- routes/matters/list-importers
+npm run import-graph:report -- @myorg/myproduct-http
+npm run import-graph:report -- myproduct-http -- routes/matters/list-importers
 ```
 
 The script sets `IMPORT_GRAPH_REPORT=1` and runs `npm run test -w <workspace>` with optional Vitest
@@ -82,7 +82,7 @@ pattern args after `--`.
 ### Manual enable
 
 ```bash
-IMPORT_GRAPH_REPORT=1 npm run test -w @pathclerk/daemon-http
+IMPORT_GRAPH_REPORT=1 npm run test -w @myorg/myproduct-http
 ```
 
 ### Packages with custom `reporters`

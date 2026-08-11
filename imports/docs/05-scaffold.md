@@ -21,11 +21,11 @@ with correct `exports` and `sideEffects` without manual follow-up.
 | Service common | `./*` root files; `./lib/*`, `./dossiers/*` |
 | Vue clients-common | `./components/*` barrels; `./components/*/*` logic; explicit `.vue` entry points |
 
-Reference implementations:
+Reference implementations (workflow templates):
 
-- `@pathclerk/daemon-spec` — `./operations/*`, `./schemas/*`
-- `@pathclerk/daemon-sdk`, `@pathclerk/daemon-db`, `@pathclerk/daemon-service-common`,
-  `@pathclerk/daemon-forms`, `@pathclerk/daemon-clients-common`
+- `template-package-spec` — `./operations/*`, `./schemas/*`
+- `template-package-sdk`, `template-package-db`, `template-package-service-common`,
+  `template-package-forms`, `template-package-clients-common`
 
 Validate with:
 

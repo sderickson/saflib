@@ -250,7 +250,7 @@ describe("jobs integration", () => {
     jobsDbManager.clearAllTablesForTests(dbKey);
     stepCCompletions.length = 0;
     _resetJobsWakeForTests();
-    vi.stubEnv("DAEMON_SERVICE_JOBS_SOCKET", jobsSocketPath);
+    vi.stubEnv("SAF_JOBS_SOCKET", jobsSocketPath);
   });
 
   afterEach(async () => {

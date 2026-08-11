@@ -5,35 +5,17 @@
  */
 import fs from "node:fs";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 import { buildPackageIndex, findMonorepoRoot } from "../src/resolve/index.ts";
+import { readRootSafImportsConfig } from "../src/config/read-saf-imports-config.ts";
 import { scanPackageSideEffects } from "../src/side-effects/scan-package.ts";
 
 const root = findMonorepoRoot(process.cwd());
-
-/** Manual overrides where scan heuristics are insufficient. */
-const MANUAL = {
-  "@pathclerk/daemon-clients-common": [
-    "**/*.css",
-    "**/*.scss",
-    "./font-imports.ts",
-  ],
-  "@pathclerk/daemon-sdk": ["./client.ts"],
-  "@pathclerk/oauth-sdk": ["./client.ts"],
-  "@pathclerk/daemon-oauth-sdk": ["./client.ts"],
-  "@saflib/ory-kratos-sdk": ["./index.ts", "./vue-query-register.ts"],
-  "@saflib/vue": ["**/*.css", "**/*.scss"],
-  "@pathclerk/daemon-clients-root": ["**/*.css"],
-};
+const manualOverrides = readRootSafImportsConfig(root).sideEffectsOverrides ?? {};
 
 let updated = 0;
 let skipped = 0;
 
 for (const [name, pkg] of buildPackageIndex(root)) {
-  if (name === "@pathclerk/pathclerk") {
-    skipped++;
-    continue;
-  }
   const pjPath = path.join(pkg.dir, "package.json");
   const pj = JSON.parse(fs.readFileSync(pjPath, "utf8"));
   if (pj.sideEffects !== undefined) {
@@ -41,7 +23,7 @@ for (const [name, pkg] of buildPackageIndex(root)) {
     continue;
   }
 
-  const manual = MANUAL[name];
+  const manual = manualOverrides[name];
   let value;
   if (manual !== undefined) {
     value = manual;

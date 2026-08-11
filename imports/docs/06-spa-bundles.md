@@ -24,10 +24,10 @@ npm exec saf-imports spa measure --spa app
 npm exec saf-imports spa measure-all
 ```
 
-Build prerequisites:
+Build prerequisites (configure in root `package.json` → `safImports`):
 
-- `daemon/dev/env.dev` present
-- `npm run build` in `daemon/clients/build` (or workspace build) with `build.manifest: true`
+- `devEnvFile` — local env file for client builds (e.g. `myproduct/dev/env.dev`)
+- `snapshot.bundles.buildWorkspace` — client build package with `build.manifest: true`
 
 ## Local snapshot bundles
 

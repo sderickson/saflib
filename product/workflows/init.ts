@@ -136,7 +136,7 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       targetDir: context.cwd,
       lineReplace: makeLineReplace(context),
     })),
-    // Product templates include pathclerk CI workflows; never keep them in @saflib/saflib.
+    // Product templates may include repo-root CI workflows; never keep them in @saflib/saflib.
     step(
       CommandStepMachine,
       () => ({

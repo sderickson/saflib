@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { parseAsyncVuePageTarget } from "./parse-async-vue.ts";
+import { listGateSpas, spaClientDir } from "./paths.ts";
 
 export interface SpaRouteCatalogEntry {
   routeKey: string;
@@ -15,17 +16,6 @@ export interface SpaRouteCatalog {
   spaPackageDir: string;
   routerFile: string;
   routes: SpaRouteCatalogEntry[];
-}
-
-const SPA_CLIENT_DIRS: Record<string, string> = {
-  app: "daemon/clients/app",
-  admin: "daemon/clients/admin",
-  account: "daemon/clients/account",
-  auth: "daemon/clients/auth",
-};
-
-export function spaClientDir(spa: string): string | undefined {
-  return SPA_CLIENT_DIRS[spa];
 }
 
 function extractWorkflowSection(
@@ -141,7 +131,7 @@ export function analyzeSpaRouter(
   root: string,
   spa: string,
 ): SpaRouteCatalog | undefined {
-  const relDir = spaClientDir(spa);
+  const relDir = spaClientDir(root, spa);
   if (!relDir) return undefined;
   const spaDir = path.join(root, relDir);
   const routerFile = path.join(spaDir, "router.ts");
@@ -187,6 +177,4 @@ export function analyzeSpaRouter(
   };
 }
 
-export function listGateSpas(): string[] {
-  return Object.keys(SPA_CLIENT_DIRS);
-}
+export { listGateSpas } from "./paths.ts";

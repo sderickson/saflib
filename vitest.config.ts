@@ -14,6 +14,9 @@ export default defineConfig({
       // their source paths under saflib; those packages are tested by workflow-script CI.
       "!cron/cron/workflows/templates/**",
       "!integrations/workflows/templates/**",
+      "!express/workflows/templates/**",
+      "!sdk/workflows/templates/**",
+      "!service/workflows/service-templates/**",
       "!vue/workflows/template/**",
       "!tmp/**",
       "tmp/**/vitest.config.{ts,js,mts,mjs}",

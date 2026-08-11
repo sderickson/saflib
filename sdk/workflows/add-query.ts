@@ -131,14 +131,14 @@ Include:
 * One test that makes sure it works at all.`,
     })),
 
-    step(CommandStepMachine, () => ({
+    step(CommandStepMachine, ({ context }) => ({
       command: "node",
       args: [
         "../../../saflib/imports/bin/saf-imports/index.ts",
         "exports",
         "generate",
         "--package",
-        "@pathclerk/daemon-sdk",
+        context.packageName,
       ],
       description:
         "Regenerate package.json export map for the new query subpath.",

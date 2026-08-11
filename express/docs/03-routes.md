@@ -33,7 +33,7 @@ router.post(
 
 ### Product-specific middleware
 
-When a product needs extra middleware (org context, webhook auth, public routes), add a **product** helper that wraps `createOperationScopedMiddleware` and documents middleware **order**. Example: Pathclerk's `registerOrgScopedRoute` runs org context **after** OpenAPI + session auth. Do not add those rules to generic `@saflib/express` templates — add them when the product workflow proves the pattern.
+When a product needs extra middleware (org context, webhook auth, public routes), add a **product** helper that wraps `createOperationScopedMiddleware` and documents middleware **order**. Do not add those rules to generic `@saflib/express` templates — add them when the product workflow proves the pattern.
 
 ### Monolith `http.ts`
 

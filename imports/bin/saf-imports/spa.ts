@@ -4,6 +4,7 @@ import {
   analyzeSpaRouter,
   listGateSpas,
 } from "../../src/spa/analyze-router.ts";
+import { resolveClientsDistDir } from "../../src/spa/paths.ts";
 import {
   measureSpaFromManifest,
   formatRouteCatalogEntry,
@@ -12,12 +13,12 @@ import {
 export const addSpaCommand = (program: Command) => {
   const spaCmd = program
     .command("spa")
-    .description("Analyze and measure daemon client SPA route bundles");
+    .description("Analyze and measure SPA client route bundles");
 
   spaCmd
     .command("analyze")
     .description("Parse router.ts and *Async.vue lazy boundaries (no build)")
-    .requiredOption("--spa <name>", "SPA key: app, admin, account, or auth")
+    .requiredOption("--spa <name>", "SPA key from safImports.snapshot.bundles.spas")
     .option("--root <dir>", "Monorepo root")
     .action((options: { spa: string; root?: string }) => {
       const root = options.root
@@ -35,11 +36,11 @@ export const addSpaCommand = (program: Command) => {
   spaCmd
     .command("measure")
     .description("Measure shell + per-route page chunks from vite manifest")
-    .requiredOption("--spa <name>", "SPA key: app, admin, account, or auth")
+    .requiredOption("--spa <name>", "SPA key from safImports.snapshot.bundles.spas")
     .option("--root <dir>", "Monorepo root")
     .option(
       "--dist <dir>",
-      "Dist directory (default: daemon/clients/build/dist)",
+      "Dist directory (default: from safImports.snapshot.bundles.buildWorkspace/dist)",
     )
     .action((options: { spa: string; root?: string; dist?: string }) => {
       const root = options.root
@@ -51,10 +52,20 @@ export const addSpaCommand = (program: Command) => {
         process.exitCode = 1;
         return;
       }
-      const distDir = options.dist
-        ? options.dist
-        : `${root}/daemon/clients/build/dist`;
-      const result = measureSpaFromManifest(root, options.spa, catalog, distDir);
+      const distDir = options.dist ?? resolveClientsDistDir(root);
+      if (!distDir) {
+        console.error(
+          "No client dist directory configured (set safImports.snapshot.bundles.buildWorkspace)",
+        );
+        process.exitCode = 1;
+        return;
+      }
+      const result = measureSpaFromManifest(
+        root,
+        options.spa,
+        catalog,
+        distDir,
+      );
       if (!result) {
         console.error("Manifest missing or SPA entry not found — run client build first");
         process.exitCode = 1;
@@ -72,7 +83,7 @@ export const addSpaCommand = (program: Command) => {
         ? options.root
         : findMonorepoRoot(process.cwd());
       const out: Record<string, unknown> = {};
-      for (const spa of listGateSpas()) {
+      for (const spa of listGateSpas(root)) {
         const catalog = analyzeSpaRouter(root, spa);
         if (!catalog) continue;
         out[spa] = measureSpaFromManifest(root, spa, catalog);

@@ -1,6 +1,10 @@
 import fs from "node:fs";
 import path from "node:path";
 import type { SpaRouteCatalog, SpaRouteCatalogEntry } from "./analyze-router.ts";
+import {
+  resolveClientsBuildDir,
+  resolveClientsDistDir,
+} from "./paths.ts";
 import { sumGzipBytes } from "./gzip-bytes.ts";
 
 export interface ViteManifestChunk {
@@ -84,7 +88,8 @@ function manifestKeyForPageVue(
   root: string,
   pageVueRepoPath: string,
 ): string | undefined {
-  const buildDir = path.join(root, "daemon/clients/build");
+  const buildDir = resolveClientsBuildDir(root);
+  if (!buildDir) return undefined;
   const relFromBuild = path.relative(buildDir, path.join(root, pageVueRepoPath));
   const posix = relFromBuild.replace(/\\/g, "/");
   for (const [key, chunk] of Object.entries(manifest)) {
@@ -111,7 +116,8 @@ function measurePageChunkClosure(
       if (!shellKeys.has(k)) pageOnlyKeys.add(k);
     }
   }
-  const distDir = path.join(root, "daemon/clients/build/dist");
+  const distDir = resolveClientsDistDir(root);
+  if (!distDir) return { bytes: 0, gzipBytes: 0 };
   const files = chunkFilesForKeys(manifest, pageOnlyKeys);
   return sumGzipBytes(distDir, files);
 }
@@ -120,9 +126,11 @@ export function measureSpaFromManifest(
   root: string,
   spa: string,
   catalog: SpaRouteCatalog,
-  distDir = path.join(root, "daemon/clients/build/dist"),
+  distDir?: string,
 ): SpaMeasureResult | undefined {
-  const manifest = loadManifest(distDir);
+  const resolvedDist = distDir ?? resolveClientsDistDir(root);
+  if (!resolvedDist) return undefined;
+  const manifest = loadManifest(resolvedDist);
   if (!manifest) return undefined;
 
   const entryKey = manifestKeyForSpaEntry(spa);
@@ -131,13 +139,16 @@ export function measureSpaFromManifest(
 
   const shellKeys = collectStaticClosure(manifest, [entryKey]);
   const shellFiles = chunkFilesForKeys(manifest, shellKeys);
-  const shellJs = sumGzipBytes(distDir, shellFiles.filter((f) => f.endsWith(".js")));
+  const shellJs = sumGzipBytes(
+    resolvedDist,
+    shellFiles.filter((f) => f.endsWith(".js")),
+  );
 
   let shellCssGzip = 0;
   for (const key of shellKeys) {
     const css = manifest[key]?.css ?? [];
     for (const c of css) {
-      shellCssGzip += sumGzipBytes(distDir, [c]).gzipBytes;
+      shellCssGzip += sumGzipBytes(resolvedDist, [c]).gzipBytes;
     }
   }
 
