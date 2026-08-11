@@ -2,6 +2,7 @@ export {
   buildReferenceGraph,
   workspaceDepsOf,
   applyCompositionRootReferences,
+  isGitIgnoredPackageDirectory,
   type ReferenceGraph,
   type ReferenceGraphNode,
   type BuildReferenceGraphResult,

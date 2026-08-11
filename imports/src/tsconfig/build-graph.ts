@@ -1,3 +1,4 @@
+import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import {
@@ -32,7 +33,7 @@ export interface BuildReferenceGraphResult {
   graph: ReferenceGraph;
   /** Workspace packages skipped because they lack a tsconfig.json. */
   missingTsconfig: string[];
-  /** Meta / root packages skipped from the graph. */
+  /** Meta / root / fixture / gitignored packages skipped from the graph. */
   skippedMeta: string[];
 }
 
@@ -58,6 +59,19 @@ function isFixturePackage(packageDir: string, rootDir: string): boolean {
 function isPublishedDistPackage(packageDir: string): boolean {
   if (path.basename(packageDir) !== "dist") return false;
   return fs.existsSync(path.join(packageDir, "..", "package.json"));
+}
+
+/**
+ * Workspace members that exist on disk but are gitignored (e.g. saflib's
+ * product-init `deploy/`) are absent in CI. Skip them so local generate/check
+ * matches a clean checkout.
+ */
+export function isGitIgnoredPackageDirectory(packageDir: string): boolean {
+  const result = spawnSync("git", ["check-ignore", "-q", "."], {
+    cwd: packageDir,
+    encoding: "utf8",
+  });
+  return result.status === 0;
 }
 
 function isUnderDir(dir: string, parentDir: string): boolean {
@@ -104,7 +118,8 @@ export function buildReferenceGraph(
     if (
       isMetaPackage(name, pj) ||
       isFixturePackage(dir, context.rootDir) ||
-      isPublishedDistPackage(dir)
+      isPublishedDistPackage(dir) ||
+      isGitIgnoredPackageDirectory(dir)
     ) {
       skippedMeta.push(name);
       continue;

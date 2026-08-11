@@ -41,9 +41,6 @@
       "path": "./cron/cron-vue"
     },
     {
-      "path": "./deploy"
-    },
-    {
       "path": "./dev-tools"
     },
     {
