@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { parseAsyncVuePageTarget } from "./parse-async-vue.ts";
-import { listGateSpas, spaClientDir } from "./paths.ts";
+import { spaClientDir } from "./paths.ts";
 
 export interface SpaRouteCatalogEntry {
   routeKey: string;
@@ -32,7 +32,10 @@ function extractWorkflowSection(
   return content.slice(from, endIdx);
 }
 
-function parsePageImports(section: string, spaDir: string): Map<string, string> {
+function parsePageImports(
+  section: string,
+  spaDir: string,
+): Map<string, string> {
   const map = new Map<string, string>();
   const re = /import\s+(\w+)\s+from\s+["'](\.[^"']+)["']/g;
   let m: RegExpExecArray | null;
@@ -50,7 +53,9 @@ function pathPatternFromExpr(expr: string): string {
   const trimmed = expr.trim();
   const str = trimmed.match(/^["']([^"']+)["']$/);
   if (str) return str[1];
-  const segment = trimmed.match(/accountPathSegment\(\s*accountLinks\.(\w+)\.path\s*\)/);
+  const segment = trimmed.match(
+    /accountPathSegment\(\s*accountLinks\.(\w+)\.path\s*\)/,
+  );
   if (segment) return `accountLinks.${segment[1]}`;
   const link = trimmed.match(/(\w+Links)\.(\w+)\.path/);
   if (link) return `${link[1]}.${link[2]}`;
@@ -101,14 +106,14 @@ function flattenRoutes(
       if (pageVue) {
         chain = [...chain, pageVue];
       }
-      const relAsync = path
-        .relative(root, asyncVueFile)
-        .replace(/\\/g, "/");
+      const relAsync = path.relative(root, asyncVueFile).replace(/\\/g, "/");
       out.push({
         routeKey: `${spa}:${relAsync}`,
         pathPattern,
         asyncVueFile: relAsync,
-        pageVueFiles: chain.map((p) => path.relative(root, p).replace(/\\/g, "/")),
+        pageVueFiles: chain.map((p) =>
+          path.relative(root, p).replace(/\\/g, "/"),
+        ),
         componentName: node.componentName,
       });
     }
@@ -138,8 +143,14 @@ export function analyzeSpaRouter(
   if (!fs.existsSync(routerFile)) return undefined;
 
   const content = fs.readFileSync(routerFile, "utf8");
-  const importsSection = extractWorkflowSection(content, "page-imports FOR vue/add-view");
-  const routesSection = extractWorkflowSection(content, "page-routes FOR vue/add-view");
+  const importsSection = extractWorkflowSection(
+    content,
+    "page-imports FOR vue/add-view",
+  );
+  const routesSection = extractWorkflowSection(
+    content,
+    "page-routes FOR vue/add-view",
+  );
 
   const importMap = new Map<string, string>();
   if (importsSection) {
