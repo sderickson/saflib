@@ -44,6 +44,8 @@ export * from "./middleware/multer.ts";
 // route handler utilities
 export { createHandler } from "./handler.ts";
 
+export { createDevLogsRouter } from "./dev-logs-router.ts";
+
 export {
   makeUserHeaders,
   makeAdminHeaders,
