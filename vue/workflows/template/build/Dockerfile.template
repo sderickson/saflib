@@ -7,8 +7,7 @@ RUN npm install -g npm@11.14.1
 WORKDIR /app
 
 #{ copy_packages }#
-RUN --mount=type=cache,target=/root/.npm \
-  npm ci --omit=dev
+RUN npm ci --omit=dev
 # Native Rollup binaries: optionalDependencies from package-lock.json install for the image OS/arch during npm ci.
 
 #{ copy_src }#
