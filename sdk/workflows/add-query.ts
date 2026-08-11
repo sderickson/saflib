@@ -141,7 +141,7 @@ Include:
         context.packageName,
       ],
       description:
-        "Regenerate package.json export map for the new query subpath.",
+        "Regenerate package.json exports so the new query file is importable.",
     })),
 
     step(CommandStepMachine, () => ({

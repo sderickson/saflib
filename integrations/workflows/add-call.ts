@@ -106,7 +106,7 @@ This call wraps the scoped client to provide product-specific functionality. It 
 3. When \`isMocked\` is true, return the mock from \`${context.targetName}.mocks.ts\`.
 4. When not mocked, use the scoped client to make the real API call and return the result.
 
-See \`calls/parse-file.ts\` in the anthropic integration for an example of a complex call with validation and caching.`,
+See other integration packages in the monorepo for examples of complex calls with validation and caching.`,
     })),
 
     step(UpdateStepMachine, () => ({

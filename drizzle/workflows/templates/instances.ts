@@ -2,7 +2,7 @@ import { DbManager } from "@saflib/drizzle";
 import * as schema from "./schema.ts";
 import config from "./drizzle.config.ts";
 
-// Full \`schema.ts\` import is for connect/migrate paths only; query modules import \`instances\` without the barrel.
+// `schema.ts` is imported here for connect/migrate; query modules import `instances` directly.
 export const __serviceName__DbManager = new DbManager(
   schema,
   config,

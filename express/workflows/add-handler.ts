@@ -211,9 +211,22 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
         * **Default tier:** mount \`create${kebabCaseToPascalCase(context.groupName)}Router\` (the group \`index.ts\` factory) via \`acquireRouterSlimRouteTest\` from \`testing/slim-route-test.ts\`, with \`beforeAll\`/\`afterAll\` and \`releaseSlimRouteTest\` in \`afterAll\`.
         * Do **not** import \`create…HttpApp\` from \`http.ts\` in handler tests — that mounts every product router (slow, heavy imports).
         * Multi-route chains: \`acquireRouterSlimRouteTestMulti([createA, createB])\` or a dedicated \`*.integration.test.ts\` with explicit scope.
-        * **Imports:** use package sub-path exports (e.g. \`/context\`, \`/queries/*\`, \`/errors\`) — not root barrels in handlers/tests.
+        * **Imports:** use package subpath exports (e.g. \`@scope/my-db/queries/<group>/<name>\`, \`@scope/my-service-common/context\`) — never import from a package root.
         
         Review ${context.docFiles?.testingGuide} for more details.`,
+    })),
+
+    step(CommandStepMachine, ({ context }) => ({
+      command: "node",
+      args: [
+        "../../../saflib/imports/bin/saf-imports/index.ts",
+        "exports",
+        "generate",
+        "--package",
+        context.packageName,
+      ],
+      description:
+        "Regenerate package.json exports so the new route handler is importable.",
     })),
 
     step(CommandStepMachine, () => ({

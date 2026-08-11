@@ -72,7 +72,6 @@ export const AddDrizzleQueryWorkflowDefinition = defineWorkflow<
       "queries/__group-name__/__target-name__.test.ts",
     ),
     groupIndex: path.join(sourceDir, "queries/__group-name__/index.ts"),
-    rootIndex: path.join(sourceDir, "index.ts"),
     types: path.join(sourceDir, "types.ts"),
     errors: path.join(sourceDir, "errors.ts"),
   },
@@ -98,9 +97,23 @@ export const AddDrizzleQueryWorkflowDefinition = defineWorkflow<
         * A resource not being found by ID is an error.
         * Error subclasses should be simple, no special constructors or anything.
         * You don't need to export error types from the types.ts file.
-        * If this is a **new query domain** (new \`queries/<group>/\` folder), add a subpath export to the package \`package.json\`: \`"./queries/<group-name>": "./queries/<group-name>/index.ts"\` (see existing entries in the product db package for the pattern).
-        * Packages without a root barrel (e.g. \`template-package-db\`) do **not** use \`index.ts\` re-exports — only \`package.json\` sub-paths and the group \`index.ts\`.
+        * Import queries via package subpaths (e.g. \`@scope/my-db/queries/<group>/<name>\`). New **group** folders are covered by the \`./queries/*\` export pattern — do not add per-group entries to \`package.json\`.
+        * After implementing the query, run \`saf-imports exports generate --package <db-package-name>\` (this workflow runs it automatically) so the new leaf file has an explicit export.
+        * Group \`index.ts\` files aggregate queries within a domain for router wiring and local imports.
         Please reference the documentation here for more information: ${context.docFiles?.refDoc}`,
+    })),
+
+    step(CommandStepMachine, ({ context }) => ({
+      command: "node",
+      args: [
+        "../../../saflib/imports/bin/saf-imports/index.ts",
+        "exports",
+        "generate",
+        "--package",
+        context.packageName,
+      ],
+      description:
+        "Regenerate package.json exports so the new query file is importable.",
     })),
 
     step(CommandStepMachine, () => ({

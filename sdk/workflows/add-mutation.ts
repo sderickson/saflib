@@ -160,7 +160,7 @@ Include:
         context.packageName,
       ],
       description:
-        "Regenerate package.json export map for the new mutation subpath.",
+        "Regenerate package.json exports so the new mutation file is importable.",
     })),
 
     step(CommandStepMachine, () => ({
