@@ -113,6 +113,12 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
       urlPath: "/users",
       method: "post",
     })),
+    step(makeWorkflowMachine(OpenApiRouteWorkflowDefinition), () => ({
+      path: "./routes/users/upload.yaml",
+      urlPath: "/users/upload",
+      method: "post",
+      upload: true,
+    })),
     step(makeWorkflowMachine(AddEventWorkflowDefinition), () => ({
       path: "./events/signup.yaml",
     })),

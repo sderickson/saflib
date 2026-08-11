@@ -23,14 +23,7 @@
     "**/workflows/template/**",
     "**/workflows/templates/**"
   ],
-  "references": [
-    {
-      "path": "../../../openapi/workflows/templates"
-    },
-    {
-      "path": "../../../ory-kratos-sdk"
-    }
-  ],
+  "references": [],
   "include": [
     "**/*.ts",
     "**/*.tsx",

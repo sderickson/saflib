@@ -208,6 +208,23 @@ export const InitProductWorkflowDefinition = defineWorkflow<
 * have strings.ts import the strings from @saflib/ory-kratos-spa/strings and spread them into auth_strings
 * have test-app.ts import and re-export @saflib/ory-kratos-sdk/fakes as testAppHandlers`,
     })),
+    step(CdStepMachine, ({ context }) => ({
+      path: context.cwd,
+    })),
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: [
+        "exec",
+        "saf-imports",
+        "tsconfig",
+        "generate",
+        "--",
+        "--write",
+      ],
+    })),
+    step(CdStepMachine, ({ context }) => ({
+      path: `./${context.productName}/clients/auth`,
+    })),
     step(CommandStepMachine, () => ({
       command: "npm",
       args: ["run", "typecheck"],

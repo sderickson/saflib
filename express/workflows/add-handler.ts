@@ -141,7 +141,7 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
       
       Make sure to:
       - Use createHandler from @saflib/express
-      - Use types from your OpenAPI spec for request/response bodies
+      - Import \`RequestBody\` / \`ResponseBody\` from \`@…-spec/operations/${context.operationId}\` (per-operation fragments — not a root barrel type)
       - Use mapper functions from routes/_helpers.ts to convert database models to API responses
       - Import types from both the adjacent spec and db packages; don't declare new ones
       - Handle expected errors from service/DB layers, with "satisfies never" for exhaustive error handling

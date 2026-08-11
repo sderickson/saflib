@@ -137,6 +137,22 @@ export const AddStaticSiteWorkflowDefinition = defineWorkflow<
       args: ["install", "@vue/tsconfig"],
     })),
 
+    step(CdStepMachine, ({ context }) => ({
+      path: context.cwd,
+    })),
+
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: [
+        "exec",
+        "saf-imports",
+        "tsconfig",
+        "generate",
+        "--",
+        "--write",
+      ],
+    })),
+
     // TODO: I think it would be better to automate this somehow... than to lean on the agent.
     // step(PromptStepMachine, () => ({
     //   promptText: `Update the root level deploy/ to incorporate the new static site.

@@ -2,9 +2,9 @@
 // TODO: remove @ts-nocheck and @ts-expect-error lines as part of workflow
 import { createHandler } from "@saflib/express";
 import type {
-  __ServiceName__ServiceRequestBody,
-  __ServiceName__ServiceResponseBody,
-} from "template-package-spec";
+  RequestBody as __targetName____GroupName__RequestBody,
+  ResponseBody as __targetName____GroupName__ResponseBody,
+} from "template-package-spec/operations/__operationId__";
 import { getSafContextWithAuth } from "@saflib/node";
 // BEGIN ONCE WORKFLOW AREA uploadImports FOR express/add-handler IF upload
 import { __serviceName__ServiceStorage } from "template-package-service-common/context";
@@ -42,7 +42,7 @@ export const __targetName____GroupName__Handler = createHandler(
     const fileSize = multerFile.size;
     // END WORKFLOW AREA
     // @ts-expect-error
-    const data: __ServiceName__ServiceRequestBody["__targetName____GroupName__"] =
+    const data: __targetName____GroupName__RequestBody["__operationId__"] =
       req.body || {};
     
     // TODO: Call your service/DB function here
@@ -83,7 +83,7 @@ export const __targetName____GroupName__Handler = createHandler(
 
     // TODO: Map result to API response
     // @ts-expect-error - TODO: remove ts-expect-error as part of workflow
-    const response: __ServiceName__ServiceResponseBody["__targetName____GroupName__"][201] =
+    const response: __targetName____GroupName__ResponseBody["__operationId__"][201] =
       {
         // Map service result to API response, using _helpers.ts mapper function
       };

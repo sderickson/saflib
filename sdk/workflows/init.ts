@@ -81,6 +81,7 @@ export const SdkInitWorkflowDefinition = defineWorkflow<
     router: path.join(sourceDir, "router.ts"),
     strings: path.join(sourceDir, "strings.ts"),
     testApp: path.join(sourceDir, "test-app.ts"),
+    testing: path.join(sourceDir, "testing.ts"),
     tsconfig: path.join(sourceDir, "tsconfig.json"),
     typedFake: path.join(sourceDir, "typed-fake.ts"),
     viteConfig: path.join(sourceDir, "vite.config.ts"),

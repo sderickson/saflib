@@ -23,26 +23,7 @@
     "**/workflows/template/**",
     "**/workflows/templates/**"
   ],
-  "references": [
-    {
-      "path": "../../../links"
-    },
-    {
-      "path": "../../../ory-kratos-sdk"
-    },
-    {
-      "path": "../../../sdk/workflows/templates"
-    },
-    {
-      "path": "../../../vue"
-    },
-    {
-      "path": "../common"
-    },
-    {
-      "path": "../links"
-    }
-  ],
+  "references": [],
   "include": [
     "**/*.ts",
     "**/*.tsx",

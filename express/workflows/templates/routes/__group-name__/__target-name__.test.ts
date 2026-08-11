@@ -1,7 +1,7 @@
 import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import request from "supertest";
 import { makeUserHeaders } from "@saflib/express";
-import type { __ServiceName__ServiceRequestBody } from "template-package-spec";
+import type { RequestBody as __targetName____GroupName__RequestBody } from "template-package-spec/operations/__operationId__";
 import {
   acquireRouterSlimRouteTest,
   releaseSlimRouteTest,
@@ -48,7 +48,7 @@ describe("__targetName____GroupName__", () => {
       .set(makeUserHeaders())
       .send({
         // @ts-expect-error - TODO: remove this line as part of workflow
-      } satisfies __ServiceName__ServiceRequestBody["__targetName____GroupName__"]);
+      } satisfies __targetName____GroupName__RequestBody["__operationId__"]);
 
     expect(response.status).toBe(201);
     expect(response.body).toMatchObject({

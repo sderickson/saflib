@@ -14,7 +14,6 @@
     "@saflib/env": "*",
     "@saflib/node": "*",
     "@saflib/notify": "*",
-    "@saflib/sdk": "*",
     "@saflib/utils": "*",
     "cors": "^2.0.0",
     "express": "^5.0.0",

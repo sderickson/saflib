@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/vue-query";
 import { handleClientMethod } from "@saflib/sdk";
 import { getClient } from "../../client.ts";
-import type { __ServiceName__ServiceRequestBody } from "template-package-spec";
+import type { RequestBody as __mutationName____GroupName__RequestBody } from "template-package-spec/operations/__operationId__";
 
 // BEGIN ONCE WORKFLOW AREA instructions FOR sdk/add-mutation IF upload
 /*
@@ -37,7 +37,7 @@ export const use__MutationName____GroupName__Mutation = () => {
   return useMutation({
     mutationFn: async (
       // @ts-ignore TODO: update params to match the route
-      data: __ServiceName__ServiceRequestBody["__mutationName____GroupName__"],
+      data: __mutationName____GroupName__RequestBody["__operationId__"],
     ) => {
       return handleClientMethod(
         // @ts-ignore TODO: update params to match the route
