@@ -67,32 +67,13 @@ See [Queries](./03-queries.md) for more information on error handling.
 
 See also [example Identity DB Errors](https://github.com/sderickson/saflib/blob/f1864114bbd38b20996ea0dfe486767dff42d3b2/identity/identity-db/errors.ts)
 
-### `index.ts`
+### `instances.ts` / `errors.ts` / `types.ts`
 
-The interface of the database package, and what will be received when importing the package with no subpath.
+Export these via package subpaths (`./instances`, `./errors`, `./types`). Do not add a package-root `index.ts` barrel.
 
-It should return a spread of the public interface provided by `instances.ts`, as well as the queries for each domain. It should also re-export `types.ts` and `errors.ts`.
+The `DbManager` public interface lives on `instances.ts` (e.g. `__serviceName__Db`). Queries are imported from `@scope/my-db/queries/<group>/<name>` or `@scope/my-db/queries/<group>/index`.
 
-```typescript
-export type * from "./types.ts";
-export * from "./errors.ts";
-
-import { mainDbManager } from "./instances.ts";
-import * as users from "./queries/users/index.ts";
-import * as todos from "./queries/todos/index.ts";
-
-export const mainDb = {
-  ...mainDbManager.publicInterface(),
-  users,
-  todos,
-};
-```
-
-See [instances.ts](https://github.com/sderickson/saflib/blob/main/drizzle-sqlite3/instances.ts) for details on the public interface but in a nutshell, consumers can "connect" to the file (or in-memory) db instance and receive a `DbKey` which they can pass to queries. This keeps queries simple (in that they don't need to be associated our bound to a specific instance) and prevents direct access to the database by consumers.
-
-### `instances.ts`
-
-The glue between the schema, config, and this library's logic. It will likely be exactly this:
+`instances.ts` is the glue between the schema, config, and this library's logic. It will likely be exactly this:
 
 ```typescript
 import { DbManager } from "@saflib/drizzle";
@@ -100,9 +81,10 @@ import * as schema from "./schema.ts";
 import config from "./drizzle.config.ts";
 
 export const mainDbManager = new DbManager(schema, config, import.meta.url);
+export const mainDb = mainDbManager.publicInterface();
 ```
 
-The `DbManager` constructor needs the url of the current file to resolve the relative paths to the migration folder and the data folder.
+The `DbManager` constructor needs the url of the current file to resolve the relative paths to the migration folder and the data folder. Consumers "connect" to receive a `DbKey` which they pass to queries. This keeps queries simple and prevents direct access to the database by consumers.
 
 ### `migrations/`
 

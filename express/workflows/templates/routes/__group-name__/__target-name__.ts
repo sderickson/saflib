@@ -15,7 +15,7 @@ import { Readable } from "stream";
 import { sanitizeFilename } from "@saflib/utils";
 // END WORKFLOW AREA
 // TODO: Import neccessary db functions and error classes, as well as any other deps
-// import { __serviceName__Db } from "template-package-db";
+// import { __serviceName__Db } from "template-package-db/instances";
 
 export const __targetName____GroupName__Handler = createHandler(
   async (req, res) => {

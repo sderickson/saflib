@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import { Dynamic__ProductName__Layout } from "template-package-clients-common";
+import { Dynamic__ProductName__Layout } from "template-package-clients-common/components";
 import { useKratosSession } from "@saflib/ory-kratos-sdk";
 const { data: session } = useKratosSession();
 const loggedIn = computed(() => !!session);

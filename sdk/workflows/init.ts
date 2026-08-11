@@ -76,7 +76,6 @@ export const SdkInitWorkflowDefinition = defineWorkflow<
     i18n: path.join(sourceDir, "i18n.ts"),
     indexHtml: path.join(sourceDir, "index.html"),
     indexTest: path.join(sourceDir, "index.test.ts"),
-    index: path.join(sourceDir, "index.ts"),
     mainTs: path.join(sourceDir, "main.ts"),
     packageJson: path.join(sourceDir, "package.json"),
     router: path.join(sourceDir, "router.ts"),
