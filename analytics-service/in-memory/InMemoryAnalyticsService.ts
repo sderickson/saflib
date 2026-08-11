@@ -1,5 +1,6 @@
 import { AnalyticsServiceBase } from "../AnalyticsServiceBase.ts";
 import type { IdentifyProps } from "../types.ts";
+import { getSafReporters } from "@saflib/node";
 
 export type CapturedAnalyticsCall =
   | {
@@ -41,6 +42,7 @@ export class InMemoryAnalyticsService extends AnalyticsServiceBase {
     event: string;
     context?: Record<string, unknown>;
   }): void {
+    const { log } = getSafReporters();
     log.info(`Analytics event: (${event.event})`, event);
     capturedAnalyticsCalls.push({
       kind: "capture",
