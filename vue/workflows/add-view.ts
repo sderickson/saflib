@@ -230,9 +230,11 @@ For more information, see ${context.docFiles?.components} and ${context.docFiles
     step(PromptStepMachine, () => ({
       prompt: `## Import graph / SPA bundles
 
-New routes appear automatically in \`saf-imports spa analyze\`. Refresh the bundle baseline only if this route adds a materially heavy page chunk (not every add-view):
+New routes appear automatically in \`saf-imports spa analyze\`. Refresh bundle metrics in a local snapshot only if this route adds a materially heavy page chunk (not every add-view):
 
-\`node saflib/imports/scripts/update-baseline-bundles.mjs\`
+\`\`\`bash
+npm exec saf-imports snapshot generate --out daemon/plans/notes/import-graph/snapshot.json --skip-timings
+\`\`\`
 
 See saflib/imports/docs/06-spa-bundles.md.`,
     })),
