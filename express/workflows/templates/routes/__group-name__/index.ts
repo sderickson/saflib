@@ -1,3 +1,4 @@
+// @ts-nocheck — scaffold placeholders until express/add-handler copies this file.
 import express, { type IRouter } from "express";
 import {
   createOperationScopedMiddleware,

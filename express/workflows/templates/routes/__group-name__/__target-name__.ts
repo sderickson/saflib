@@ -1,4 +1,5 @@
-// TODO: remove @ts-expect-error lines as part of workflow
+// @ts-nocheck — scaffold placeholders until express/add-handler copies this file.
+// TODO: remove @ts-nocheck and @ts-expect-error lines as part of workflow
 import { createHandler } from "@saflib/express";
 import type {
   __ServiceName__ServiceRequestBody,

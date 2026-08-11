@@ -19,8 +19,8 @@ export async function start__ServiceName__Service() {
     log.info("__service-name__-db connection complete.");
 
     log.info("Starting __service-name__-http...");
-    const expressApp = create__ServiceName__HttpApp({ __serviceName__DbKey: dbKey });
-    startExpressServer(expressApp, {
+    const httpLease = create__ServiceName__HttpApp({ __serviceName__DbKey: dbKey });
+    startExpressServer(httpLease.app, {
       port: parseInt(
         typedEnv.__SERVICE_NAME___SERVICE_HTTP_HOST.split(":")[1] || "3000",
         10,

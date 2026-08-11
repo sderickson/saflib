@@ -217,6 +217,7 @@ describe("jobs integration", () => {
       triggerMap,
       apiSpec: workApiSpec,
       dbKey,
+      targetSocketPath: workSocketPath,
     });
     const jobsStarted = startExpressServer(jobsApp, {
       socketPath: jobsSocketPath,

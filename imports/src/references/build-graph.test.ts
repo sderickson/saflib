@@ -20,6 +20,7 @@ describe("workspaceDepsOf", () => {
     ]);
     const deps = workspaceDepsOf(
       {
+        name: "@test/pkg",
         devDependencies: {
           "@saflib/playwright": "*",
           "@saflib/vitest": "*",

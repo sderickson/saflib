@@ -1,4 +1,4 @@
-import type { components, operations } from "./dist/openapi.d.ts";
+import type { components } from "./dist/openapi.d.ts";
 
 export type { paths } from "./dist/openapi.d.ts";
 import { castJson } from "@saflib/openapi";

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import Ajv from "ajv";
+import AjvDefault from "ajv";
+const Ajv = AjvDefault as unknown as typeof import("ajv").default;
 import {
   lenientEmailValidate,
   registerLenientOpenApiAjvFormats,
@@ -25,7 +26,9 @@ describe("lenientEmailValidate", () => {
 describe("registerLenientOpenApiAjvFormats", () => {
   it("registers email before compiling schemas with format: email", () => {
     const ajv = new Ajv({ allErrors: true, strict: false });
-    registerLenientOpenApiAjvFormats(ajv);
+    registerLenientOpenApiAjvFormats(
+      ajv as Parameters<typeof registerLenientOpenApiAjvFormats>[0],
+    );
     ajv.addSchema(
       {
         oneOf: [
