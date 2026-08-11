@@ -4,7 +4,8 @@ FROM node:alpine3.19
 WORKDIR /app
 
 #{ copy_packages }#
-RUN npm ci --omit=dev
+RUN --mount=type=cache,target=/root/.npm \
+  npm ci --omit=dev
 #{ copy_src }#
 
 WORKDIR /app/services/cron
