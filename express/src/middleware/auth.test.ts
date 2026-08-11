@@ -6,7 +6,7 @@ import request from "supertest";
 import {
   AUTH_ERROR_EMAIL_VERIFICATION_REQUIRED,
   AUTH_ERROR_MFA_REQUIRED,
-} from "@saflib/sdk/auth-error-codes";
+} from "@saflib/utils/auth-error-codes";
 import { createScopedMiddleware } from "./composition.ts";
 import { errorHandler } from "./errors.ts"; // Import errorHandler for a complete setup
 import { getSafContext } from "@saflib/node";

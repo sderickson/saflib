@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./index.ts"
+    ".": "./index.ts",
+    "./auth-error-codes": "./auth-error-codes.ts"
   },
   "scripts": {
     "test": "vitest run",

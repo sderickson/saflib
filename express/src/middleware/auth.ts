@@ -3,7 +3,7 @@ import { getSafContext } from "@saflib/node";
 import {
   AUTH_ERROR_EMAIL_VERIFICATION_REQUIRED,
   AUTH_ERROR_MFA_REQUIRED,
-} from "@saflib/sdk/auth-error-codes";
+} from "@saflib/utils/auth-error-codes";
 import { typedEnv } from "../../env.ts";
 
 export interface AuthMiddlewareOptions {
