@@ -1,6 +1,6 @@
 import { http, HttpResponse } from "msw";
 import { afterEach, describe, it, expect, vi } from "vitest";
-import { stubGlobals } from "@saflib/vue/testing";
+import { stubGlobals, asyncUiWaitForOptions } from "@saflib/vue/testing";
 import verifyWallAsync from "./VerifyWallAsync.vue";
 import {
   mountTestApp,
@@ -45,8 +45,9 @@ describe("verifyWall", () => {
     await router.isReady();
 
     const wrapper = mountTestApp(verifyWallAsync, {}, { router });
-    await vi.waitFor(() =>
-      expect(wrapper.text()).toContain("Confirm your email"),
+    await vi.waitFor(
+      () => expect(wrapper.text()).toContain("Confirm your email"),
+      asyncUiWaitForOptions,
     );
     wrapper.unmount();
   });

@@ -1,5 +1,5 @@
 import { afterEach, describe, it, expect, vi } from "vitest";
-import { stubGlobals } from "@saflib/vue/testing";
+import { stubGlobals, asyncUiWaitForOptions } from "@saflib/vue/testing";
 import verificationAsync from "./VerificationAsync.vue";
 import {
   mountTestApp,
@@ -26,8 +26,9 @@ describe("verification", () => {
     await router.isReady();
 
     const wrapper = mountTestApp(verificationAsync, {}, { router });
-    await vi.waitFor(() =>
-      expect(wrapper.text()).toContain("Verify your email"),
+    await vi.waitFor(
+      () => expect(wrapper.text()).toContain("Verify your email"),
+      asyncUiWaitForOptions,
     );
     wrapper.unmount();
   });
