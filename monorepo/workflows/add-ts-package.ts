@@ -112,12 +112,13 @@ export const AddTsPackageWorkflowDefinition = defineWorkflow<
     })),
 
     step(CommandStepMachine, () => ({
-      command: "node",
+      command: "npm",
       args: [
-        "--experimental-strip-types",
-        "saflib/imports/bin/saf-imports/index.ts",
+        "exec",
+        "saf-imports",
         "tsconfig",
         "generate",
+        "--",
         "--write",
       ],
     })),

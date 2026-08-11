@@ -13,10 +13,10 @@ npm run typecheck
 
 # After changing workspace deps or adding packages — regenerate references
 npm run tsconfig:sync
-# or: npm exec saf-imports tsconfig generate --write
+# or: npm exec saf-imports tsconfig generate -- --write
 
 # Verify references match the workspace graph (same check CI runs)
-node --experimental-strip-types saflib/imports/bin/saf-imports/index.ts tsconfig check
+npm exec saf-imports tsconfig check
 ```
 
 Root `npm install` also runs `postinstall`, which syncs references when workspace
@@ -55,7 +55,7 @@ Rules:
 ## Troubleshooting cycles
 
 ```bash
-node --experimental-strip-types saflib/imports/bin/saf-imports/index.ts tsconfig cycles
+npm exec saf-imports tsconfig cycles
 ```
 
 Package-level cycles block `composite` builds. **Fix the dependency graph** — merge packages,
