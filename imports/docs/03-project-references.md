@@ -20,8 +20,9 @@ node --experimental-strip-types saflib/imports/bin/saf-imports/index.ts tsconfig
 ```
 
 Root `npm install` also runs `postinstall`, which syncs references when workspace
-dependencies change (skipped in CI). Use `SAF_SKIP_TS_CONFIG_SYNC=1` to disable
-for a single install.
+dependencies change (skipped in CI, `npm ci --omit=dev`, and when source is not
+yet present e.g. Docker layer installs). Use `SAF_SKIP_TS_CONFIG_SYNC=1` to
+disable for a single install.
 
 From a **single package** (fast inner loop):
 
@@ -36,8 +37,9 @@ Vue SPAs use `vue-tsc -b` at the package root; backend packages use `tsc -b`.
 ## How references are generated
 
 `saf-imports tsconfig generate --write` patches each package's `tsconfig.json`
-`references` array from workspace `dependencies` ∪ `devDependencies`. It also
-maintains:
+`references` array from workspace `dependencies` (not `devDependencies` — test
+tooling is omitted so production Docker builds and Vite bundles stay valid). It
+also maintains:
 
 - **Product root** `tsconfig.json` — `{ "path": "./saflib" }` hub + product leaves
 - **saflib root** `tsconfig.json` — all saflib leaf packages (submodule standalone CI)

@@ -22,12 +22,5 @@
     "noEmit": false,
     "emitDeclarationOnly": true
   },
-  "references": [
-    {
-      "path": "../monorepo"
-    },
-    {
-      "path": "../vitest"
-    }
-  ]
+  "references": []
 }

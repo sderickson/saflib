@@ -2,13 +2,7 @@
   "extends": "@saflib/monorepo/tsconfig.json",
   "references": [
     {
-      "path": "../commander"
-    },
-    {
       "path": "../monorepo"
-    },
-    {
-      "path": "../vitest"
     }
   ],
   "compilerOptions": {

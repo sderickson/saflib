@@ -22,9 +22,5 @@
     "noEmit": false,
     "emitDeclarationOnly": true
   },
-  "references": [
-    {
-      "path": "../vitest"
-    }
-  ]
+  "references": []
 }

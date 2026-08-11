@@ -66,7 +66,10 @@ function isUnderDir(dir: string, parentDir: string): boolean {
 }
 
 /**
- * Collect workspace package names listed in dependencies ∪ devDependencies.
+ * Collect workspace package names listed in `dependencies` only.
+ * Dev dependencies (test harnesses, vitest, playwright, etc.) are omitted —
+ * they are not installed in production Docker builds and must not become
+ * composite project references.
  */
 export function workspaceDepsOf(
   pj: PackageJson,
@@ -76,16 +79,13 @@ export function workspaceDepsOf(
   for (const dep of Object.keys(pj.dependencies ?? {})) {
     if (packages.has(dep)) names.add(dep);
   }
-  for (const dep of Object.keys(pj.devDependencies ?? {})) {
-    if (packages.has(dep)) names.add(dep);
-  }
   return [...names].sort();
 }
 
 /**
  * Build a package-level TypeScript project-reference graph from workspace
- * `dependencies` + `devDependencies`. Only packages with a typecheckable
- * `tsconfig.json` become nodes; edges to packages without a tsconfig are dropped.
+ * `dependencies`. Only packages with a typecheckable `tsconfig.json` become
+ * nodes; edges to packages without a tsconfig are dropped.
  */
 export function buildReferenceGraph(
   root?: string,

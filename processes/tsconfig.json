@@ -24,9 +24,6 @@
   },
   "references": [
     {
-      "path": "../vitest"
-    },
-    {
       "path": "../workflows"
     }
   ]

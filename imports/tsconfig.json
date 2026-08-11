@@ -17,15 +17,6 @@
   "references": [
     {
       "path": "../commander"
-    },
-    {
-      "path": "../dev-tools"
-    },
-    {
-      "path": "../monorepo"
-    },
-    {
-      "path": "../vitest"
     }
   ],
   "compilerOptions": {

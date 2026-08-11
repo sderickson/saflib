@@ -17,22 +17,10 @@
       "path": "../monorepo"
     },
     {
-      "path": "../ory-kratos-sdk"
-    },
-    {
-      "path": "../playwright"
-    },
-    {
       "path": "../sdk"
     },
     {
       "path": "../utils"
-    },
-    {
-      "path": "../vitest"
-    },
-    {
-      "path": "../workflows"
     }
   ],
   "include": [
