@@ -7,14 +7,9 @@ services:
       - "80:80"
       - "443:443"
       - "443:443/udp"
-    env_file:
-      # BEGIN WORKFLOW AREA env-caddy FOR product/init
-      - ./env.__product-name__.caddy
-      # END WORKFLOW AREA
     environment:
       - DISABLE_VITE_DEV_SERVER=#
     volumes:
-      - ./config:/etc/caddy/
       - caddy_data:/data
       - caddy_config:/config
     restart: unless-stopped
@@ -41,14 +36,13 @@ services:
       context: ../..
       dockerfile: __product-name__/service/monolith/Dockerfile
     env_file:
-      - ./env.__product-name__.config
       - ./.env.__product-name__.secrets
     labels:
       com.centurylinklabs.watchtower.enable: "true"
   # END WORKFLOW AREA
 
   kratos-migrate:
-    image: oryd/kratos:v26.2.0
+    image: $CONTAINER_REGISTRY/__organization-name__-kratos:v26.2.0
     # SQL applied lines flood compose logs; keep output only on failure.
     entrypoint: ["/bin/sh", "-c"]
     command:
@@ -65,10 +59,9 @@ services:
       - LOG_LEVEL=warn
     volumes:
       - /opt/kratos/data:/var/lib/sqlite
-      - ./kratos:/etc/config/kratos
 
   kratos:
-    image: oryd/kratos:v26.2.0
+    image: $CONTAINER_REGISTRY/__organization-name__-kratos:v26.2.0
     depends_on:
       kratos-migrate:
         condition: service_completed_successfully
@@ -76,32 +69,10 @@ services:
     environment:
       - DSN=sqlite:///var/lib/sqlite/db.sqlite?_fk=true&mode=rwc
     env_file:
-      - ./env.kratos.config
       - ./.env.kratos.secrets
     volumes:
       - /opt/kratos/data:/var/lib/sqlite
-      - ./kratos:/etc/config/kratos
     restart: unless-stopped
-  
-  prometheus:
-    image: prom/prometheus:v3.11.3
-    volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
-
-  loki:
-    image: grafana/loki:3.7
-    volumes:
-      - ./loki-config.yaml:/etc/loki/loki-config.yaml
-    command: -config.file=/etc/loki/loki-config.yaml
-
-  grafana:
-    image: grafana/grafana:13.0
-    volumes:
-      - grafana_storage:/var/lib/grafana
-    environment:
-      - GF_AUTH_ANONYMOUS_ENABLED=true
-      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
-      - GF_AUTH_DISABLE_LOGIN_FORM=true
 
   node_exporter:
     image: prom/node-exporter:v1.11.1
@@ -132,4 +103,3 @@ services:
 volumes:
   caddy_data:
   caddy_config:
-  grafana_storage:

@@ -24,4 +24,10 @@ COPY --from=__organization-name__-__product-name__-root-builder /app/__product-n
 COPY --from=__product-name__-builder /app/__product-name__/clients/build/dist /srv/__product-name__-clients
 # END WORKFLOW AREA
 
-COPY ./deploy/remote-assets/config /etc/caddy/
+COPY ./deploy/caddy/Caddyfile ./deploy/caddy/common.Caddyfile ./deploy/caddy/__product-name__.Caddyfile /etc/caddy/
+COPY ./deploy/caddy/env.defaults /etc/pathclerk/env.defaults
+COPY ./deploy/scripts/apply-env-defaults.sh /usr/local/bin/apply-env-defaults.sh
+RUN chmod +x /usr/local/bin/apply-env-defaults.sh
+
+ENTRYPOINT ["/usr/local/bin/apply-env-defaults.sh", "caddy"]
+CMD ["run", "--config", "/etc/caddy/Caddyfile", "--adapter", "caddyfile"]

@@ -75,6 +75,11 @@ docker_build ./__product-name__/clients/build/Dockerfile \
 pids+=($!)
 # END WORKFLOW AREA
 
+docker_build ./deploy/Dockerfile.kratos \
+  -t __organization-name__-kratos:v26.2.0 \
+  -t "$CONTAINER_REGISTRY/__organization-name__-kratos:v26.2.0" &
+pids+=($!)
+
 wait_all "${pids[@]}"
 
 docker_build ./deploy/Dockerfile.prod \
