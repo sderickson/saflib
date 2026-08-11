@@ -145,7 +145,7 @@ describe("resolveTsconfigEntry", () => {
 });
 
 describe("buildReferenceGraph", () => {
-  it("includes deps and devDeps edges among typecheckable packages", () => {
+  it("includes dependency edges among typecheckable packages", () => {
     const { graph, missingTsconfig, skippedMeta } =
       buildReferenceGraph(fixtureRoot);
 
@@ -167,7 +167,6 @@ describe("buildReferenceGraph", () => {
 
     expect(graph.get("@fixture/vue-app")!.references).toEqual([
       "@fixture/pkg-a",
-      "@fixture/pkg-b",
     ]);
   });
 });
@@ -226,10 +225,7 @@ describe("previewReferencesGenerate", () => {
     expect(a!.references).toEqual([{ path: "../pkg-b" }]);
 
     const vue = preview.packages.find((p) => p.package === "@fixture/vue-app");
-    expect(vue!.references.map((r) => r.path).sort()).toEqual([
-      "../pkg-a",
-      "../pkg-b",
-    ]);
+    expect(vue!.references.map((r) => r.path).sort()).toEqual(["../pkg-a"]);
   });
 });
 
