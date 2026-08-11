@@ -122,9 +122,9 @@ export function computeExportsMap(pkgDir: string): ExportsMap {
     let exportKey: string;
     if (withoutExt === "index") {
       exportKey = ".";
-    } else if (withoutExt.endsWith("/index")) {
-      exportKey = "./" + withoutExt.slice(0, -"/index".length);
     } else {
+      // Keep `/index` for nested barrels so imports are explicit
+      // (`@scope/pkg/queries/foo/index`) and match `./queries/*` → `./queries/*.ts`.
       exportKey = "./" + withoutExt;
     }
     map[exportKey] = "./" + rel;
@@ -155,7 +155,7 @@ function invalidMultiStarPatternDiffs(map: ExportsMap): string[] {
     const keyStars = (key.match(/\*/g) ?? []).length;
     if (keyStars > 1) {
       diffs.push(
-        `invalid pattern key: ${key} (${keyStars} '*' — Node allows one per key; use explicit exports for nested paths)`,
+        `invalid pattern key: ${key} (${keyStars} '*' — Node allows one '*' per key; that '*' may match nested path segments)`,
       );
     }
     const valStars = (value.match(/\*/g) ?? []).length;

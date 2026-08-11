@@ -72,39 +72,46 @@ function buildPackageIndex(root: string): PackageIndex {
   return index;
 }
 
+/** Node exports `*`: one star, capture may include `/`. */
 function matchExportPattern(
   importKey: string,
   patternKey: string,
   patternTarget: string,
 ): string | null {
-  const pkParts = patternKey.split("/");
-  const ikParts = importKey.split("/");
-  if (pkParts.length !== ikParts.length) return null;
-  const captures: string[] = [];
-  for (let i = 0; i < pkParts.length; i++) {
-    if (pkParts[i] === "*") {
-      captures.push(ikParts[i]!);
-    } else if (pkParts[i] !== ikParts[i]) {
+  const keyStars = (patternKey.match(/\*/g) ?? []).length;
+  const targetStars = (patternTarget.match(/\*/g) ?? []).length;
+  if (keyStars !== 1 || targetStars !== 1) return null;
+
+  const starIdx = patternKey.indexOf("*");
+  const keyPrefix = patternKey.slice(0, starIdx);
+  const keySuffix = patternKey.slice(starIdx + 1);
+
+  if (!importKey.startsWith(keyPrefix)) return null;
+  if (keySuffix.length > 0 && !importKey.endsWith(keySuffix)) return null;
+
+  const captureEnd = importKey.length - keySuffix.length;
+  if (captureEnd < keyPrefix.length) return null;
+  const capture = importKey.slice(keyPrefix.length, captureEnd);
+
+  if (capture.length === 0) return null;
+  for (const segment of capture.split("/")) {
+    if (
+      segment === "" ||
+      segment === "." ||
+      segment === ".." ||
+      segment === "node_modules"
+    ) {
       return null;
     }
   }
-  let out = patternTarget;
-  for (const c of captures) {
-    const idx = out.indexOf("*");
-    if (idx === -1) return null;
-    out = out.slice(0, idx) + c + out.slice(idx + 1);
-  }
-  return out.includes("*") ? null : out;
+
+  return patternTarget.replace("*", capture);
 }
 
 function sortExportPatternKeys(keys: string[]): string[] {
-  return keys.sort((a, b) => {
-    const aParts = a.split("/").length;
-    const bParts = b.split("/").length;
-    if (aParts !== bParts) return bParts - aParts;
-    const aStars = (a.match(/\*/g) ?? []).length;
-    const bStars = (b.match(/\*/g) ?? []).length;
-    return aStars - bStars;
+  return [...keys].sort((a, b) => {
+    if (b.length !== a.length) return b.length - a.length;
+    return a.localeCompare(b);
   });
 }
 

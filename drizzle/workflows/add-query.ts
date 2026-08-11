@@ -97,23 +97,10 @@ export const AddDrizzleQueryWorkflowDefinition = defineWorkflow<
         * A resource not being found by ID is an error.
         * Error subclasses should be simple, no special constructors or anything.
         * You don't need to export error types from the types.ts file.
-        * Import queries via package subpaths (e.g. \`@scope/my-db/queries/<group>/<name>\`). New **group** folders are covered by the \`./queries/*\` export pattern — do not add per-group entries to \`package.json\`.
-        * After implementing the query, run \`saf-imports exports generate --package <db-package-name>\` (this workflow runs it automatically) so the new leaf file has an explicit export.
+        * Import queries via package subpaths. Leaf files: \`@scope/my-db/queries/<group>/<name>\`. Group barrels: \`@scope/my-db/queries/<group>/index\` (include \`index\` — \`./queries/*\` maps to \`./queries/*.ts\`).
+        * New folders and files are covered by \`./queries/*\` — do not edit \`package.json\` exports when adding queries.
         * Group \`index.ts\` files aggregate queries within a domain for router wiring and local imports.
         Please reference the documentation here for more information: ${context.docFiles?.refDoc}`,
-    })),
-
-    step(CommandStepMachine, ({ context }) => ({
-      command: "node",
-      args: [
-        "../../../saflib/imports/bin/saf-imports/index.ts",
-        "exports",
-        "generate",
-        "--package",
-        context.packageName,
-      ],
-      description:
-        "Regenerate package.json exports so the new query file is importable.",
     })),
 
     step(CommandStepMachine, () => ({

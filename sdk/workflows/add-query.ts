@@ -131,19 +131,6 @@ Include:
 * One test that makes sure it works at all.`,
     })),
 
-    step(CommandStepMachine, ({ context }) => ({
-      command: "node",
-      args: [
-        "../../../saflib/imports/bin/saf-imports/index.ts",
-        "exports",
-        "generate",
-        "--package",
-        context.packageName,
-      ],
-      description:
-        "Regenerate package.json exports so the new query file is importable.",
-    })),
-
     step(CommandStepMachine, () => ({
       command: "npm",
       args: ["run", "typecheck"],

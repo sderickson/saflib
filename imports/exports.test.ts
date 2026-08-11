@@ -128,13 +128,21 @@ describe("checkExports / generateExports", () => {
 });
 
 describe("export patterns", () => {
-  it("substitutes wildcard export targets (saf-imports matcher)", () => {
-    // matchExportPattern supports multiple * for tooling; Node package exports do not.
+  it("substitutes wildcard export targets with nested captures (Node semantics)", () => {
+    // Multi-star keys are invalid for Node package exports.
     expect(
       matchExportPattern(
         "./requests/matters/list",
         "./requests/*/*",
         "./requests/*/*.ts",
+      ),
+    ).toBeNull();
+    // Single `*` may include `/`.
+    expect(
+      matchExportPattern(
+        "./requests/matters/list",
+        "./requests/*",
+        "./requests/*.ts",
       ),
     ).toBe("./requests/matters/list.ts");
     expect(
@@ -156,7 +164,7 @@ describe("export patterns", () => {
             name: "@tmp/pattern",
             type: "module",
             exports: {
-              "./groups/*": "./groups/*/index.ts",
+              "./groups/*": "./groups/*.ts",
               "./groups/*/*": "./groups/*/*.ts",
             },
           },
@@ -184,8 +192,7 @@ describe("export patterns", () => {
             name: "@tmp/pattern",
             type: "module",
             exports: {
-              "./groups/*": "./groups/*/index.ts",
-              "./groups/foo/bar": "./groups/foo/bar.ts",
+              "./groups/*": "./groups/*.ts",
             },
           },
           null,
@@ -203,6 +210,23 @@ describe("export patterns", () => {
     }
   });
 
+  it("keeps /index in nested export keys from computeExportsMap", () => {
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "saf-imports-index-key-"));
+    try {
+      fs.writeFileSync(
+        path.join(tmp, "package.json"),
+        JSON.stringify({ name: "@tmp/idx", type: "module" }, null, 2) + "\n",
+      );
+      fs.mkdirSync(path.join(tmp, "groups", "foo"), { recursive: true });
+      fs.writeFileSync(path.join(tmp, "groups", "foo", "index.ts"), "export {};\n");
+      const map = computeExportsMap(tmp);
+      expect(map["./groups/foo/index"]).toBe("./groups/foo/index.ts");
+      expect(map["./groups/foo"]).toBeUndefined();
+    } finally {
+      fs.rmSync(tmp, { recursive: true, force: true });
+    }
+  });
+
   it("resolves pattern exports in resolveSpecifier", () => {
     const root = findMonorepoRoot(path.join(import.meta.dirname, "..", ".."));
     const index = buildPackageIndex(root);
@@ -211,7 +235,7 @@ describe("export patterns", () => {
       "saflib/express/workflows/templates/routes/foo/handler.ts",
     );
     const result = resolveSpecifier(
-      "template-package-http/routes/__group-name__",
+      "template-package-http/routes/__group-name__/index",
       from,
       index,
     );

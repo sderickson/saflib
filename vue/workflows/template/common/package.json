@@ -7,7 +7,7 @@
     "./assets": "./assets/index.ts",
     "./clients": "./clients/index.ts",
     "./components": "./components/index.ts",
-    "./components/*": "./components/*/index.ts",
+    "./components/*": "./components/*.ts",
     "./composables": "./composables/index.ts",
     "./fixtures": "./fixtures/index.ts",
     "./utils": "./utils/index.ts",

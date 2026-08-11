@@ -1,6 +1,12 @@
 import fs from "node:fs";
 import path from "node:path";
 import type { PackageIndex, PackageInfo, ResolveResult } from "../types.ts";
+import {
+  matchExportPattern,
+  sortExportPatternKeys,
+} from "./match-export-pattern.ts";
+
+export { matchExportPattern, sortExportPatternKeys } from "./match-export-pattern.ts";
 
 const SKIP_DIRS = new Set(["node_modules", ".git", "dist", "coverage"]);
 
@@ -65,43 +71,6 @@ export function buildPackageIndex(root: string): PackageIndex {
     }
   }
   return index;
-}
-
-/** Substitute `*` segments in an export pattern target using a matched import key. */
-export function matchExportPattern(
-  importKey: string,
-  patternKey: string,
-  patternTarget: string,
-): string | null {
-  const pkParts = patternKey.split("/");
-  const ikParts = importKey.split("/");
-  if (pkParts.length !== ikParts.length) return null;
-  const captures: string[] = [];
-  for (let i = 0; i < pkParts.length; i++) {
-    if (pkParts[i] === "*") {
-      captures.push(ikParts[i]!);
-    } else if (pkParts[i] !== ikParts[i]) {
-      return null;
-    }
-  }
-  let out = patternTarget;
-  for (const c of captures) {
-    const idx = out.indexOf("*");
-    if (idx === -1) return null;
-    out = out.slice(0, idx) + c + out.slice(idx + 1);
-  }
-  return out.includes("*") ? null : out;
-}
-
-function sortExportPatternKeys(keys: string[]): string[] {
-  return keys.sort((a, b) => {
-    const aParts = a.split("/").length;
-    const bParts = b.split("/").length;
-    if (aParts !== bParts) return bParts - aParts;
-    const aStars = (a.match(/\*/g) ?? []).length;
-    const bStars = (b.match(/\*/g) ?? []).length;
-    return aStars - bStars;
-  });
 }
 
 function resolveExportTarget(pkg: PackageInfo, subpath: string): string | null {

@@ -116,11 +116,22 @@ When the folder gets large, you can collapse history into a single baseline — 
 
 Aside from including `"@saflib/drizzle": "*"` in the dependencies, you can include some `drizzle-kit` commands in package scripts. The most useful would be `"generate": "drizzle-kit generate"`, which will create migration files if the schema has changed. You can also use the kit through `npx` directly.
 
+Export queries with a single-star glob (Node `*` may include `/`):
+
+```json
+"exports": {
+  "./queries/*": "./queries/*.ts",
+  "./schemas/*": "./schemas/*.ts"
+}
+```
+
+Import leaves as `@scope/my-db/queries/<group>/<name>` and group barrels as `@scope/my-db/queries/<group>/index`. Adding a query file does not require editing `package.json`.
+
 See [Migrations with Drizzle Kit](https://orm.drizzle.team/docs/kit-overview) for more info.
 
 ### `queries/`
 
-The meat of the database package. Queries should be organized into sub-folders by domain, and each of those folders should include an `index.ts` file which exports all queries in that folder in a single bundle which `index.ts` will import.
+The meat of the database package. Queries should be organized into sub-folders by domain, and each of those folders should include an `index.ts` file which aggregates the individual query files for that domain.
 
 See [Queries](./03-queries.md) for more information.
 

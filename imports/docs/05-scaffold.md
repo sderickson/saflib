@@ -8,22 +8,33 @@ with correct `exports` and `sideEffects` without manual follow-up.
 | Field | Default | Notes |
 | --- | --- | --- |
 | `sideEffects` | `false` | Vue/client: `["**/*.css", "**/*.scss"]` + entry files with side effects (`client.ts`) |
-| `exports` | **Hybrid patterns** | Wildcards + explicit exceptions — not per-file leaf maps |
-| `exportsAliases` | optional | Short paths, legacy names, `lib.ts` barrels |
+| `exports` | **Single-star globs** | `./dir/*` → `./dir/*.ts` — not per-file leaf maps |
+| `exportsAliases` | optional | Short paths, legacy names, remaps (e.g. `lib.ts`) |
 
 ## Export pattern examples
 
-Node subpath exports allow **only one `*` per pattern key** (and per target). Patterns like
-`./queries/*/*` are not valid for native `import` / `require` resolution — use explicit leaf
-exports for nested files instead.
+Node subpath exports allow **only one `*` per pattern key** (and per target). That `*` is
+**string substitution** and may include `/` (nested paths). Do **not** use `./foo/*/*`.
 
 | Package kind | Pattern shape |
 | --- | --- |
-| SDK / HTTP requests | `./requests/*` → group `index.ts`; leaf ops added explicitly (workflows run `exports generate`) |
-| DB queries | `./queries/*` → group `index.ts`; leaf handlers explicit |
-| DB schemas | `./schemas/*` → `*.ts` (one segment) |
-| Service common | `./*` root files; `./lib/*` single-segment wildcards |
-| Vue clients-common | `./components/*` barrels; nested `.logic.ts` via explicit exports |
+| SDK requests | `./requests/*` → `./requests/*.ts` |
+| DB queries | `./queries/*` → `./queries/*.ts` |
+| DB schemas | `./schemas/*` → `./schemas/*.ts` |
+| HTTP routes | `./routes/*` → `./routes/*.ts` |
+| Service common / forms | `./*` → `./*.ts` (plus aliases when useful) |
+| Vue clients-common | `./components/*` → `./components/*.ts` |
+| Spec operations | `./operations/*` → `./dist/operations/*/index.ts` |
+
+Group barrels (`index.ts`) are imported **explicitly**:
+
+```ts
+import { packetQueries } from "@scope/my-db/queries/packet/index";
+import { listEvalsQuery } from "@scope/my-sdk/requests/evals/list";
+```
+
+Adding a new query/handler/request file does **not** require editing `package.json` or running
+`exports generate`.
 
 Reference implementations (workflow templates):
 
@@ -43,16 +54,13 @@ npm exec saf-imports exports check --package <name>
 
 - **No root barrels** — no `export *` from package `index.ts` that re-exports the whole tree.
 - **Deep imports** — consumers import `@scope/pkg/subpath`, not package root.
+- **Explicit index** — import `…/group/index` when you want the group barrel (globs map to `*.ts`, not `*/index.ts`).
 - **Slim test harnesses** — route tests use `slim-route-test`; component tests use scoped MSW, not full app boot.
 
 ## `saf-imports exports`
 
-- `exports generate --package <name>` — writes a **leaf** map (refuses WORKFLOW AREA packages).
+- `exports generate --package <name>` — writes a **leaf** map (refuses WORKFLOW AREA packages). Prefer hand-authored single-`*` patterns for large packages.
 - `exports check --package <name>` — leaf diff, or **pattern coverage** when `*` keys are present.
-
-For large packages, prefer hand-authored single-`*` patterns plus explicit nested exports over
-`exports generate` on every file — or run `exports generate` after adding routes/queries to refresh
-the leaf map.
 
 ## `vue/add-view`
 

@@ -6,7 +6,7 @@ In addition, all queries should use `queryWrapper` to catch and normalize unhand
 
 ## File Organization
 
-All queries should be organized by domain (table or logical group) within the `queries/` directory. Each specific query operation (get, list, create, update, delete) should reside in its own file per [best practice](../../best-practices.md#keep-files-small). An `index.ts` file within each domain directory aggregates the individual query files.
+All queries should be organized by domain (table or logical group) within the `queries/` directory. Each specific query operation (get, list, create, update, delete) should reside in its own file per [best practice](../../best-practices.md#keep-files-small). An `index.ts` file within each domain directory aggregates the individual query files. Consumers import leaves via `@scope/my-db/queries/<group>/<name>` and the group barrel via `@scope/my-db/queries/<group>/index` (`package.json` uses `./queries/*` → `./queries/*.ts`).
 
 ```
 package/
