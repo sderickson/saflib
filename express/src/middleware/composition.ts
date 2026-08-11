@@ -137,7 +137,9 @@ export const createScopedMiddleware = (
 
   return [
     ...openApiValidatorMiddleware,
-    makeCsrfMiddleware(),
+    // CSRF reads OpenAPI tags (`no-auth`, `csrf-exempt`); only mount when a
+    // validator will attach `req.openapi.schema` on this chain.
+    ...(apiSpec ? [makeCsrfMiddleware()] : []),
     makeContextMiddleware(),
     unsafeRequestLogger,
     ...authMiddleware,

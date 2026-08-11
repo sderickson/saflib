@@ -6,6 +6,11 @@ const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
 
 /**
  * Enforce CSRF double-submit token validation on state-changing requests.
+ *
+ * Must run after OpenAPI validation has matched an operation (`req.openapi.schema`).
+ * Missing schema on an unsafe method is a misconfiguration (500), not a skip —
+ * otherwise `no-auth` / `csrf-exempt` tags cannot be trusted.
+ *
  * Skips routes tagged `no-auth` (same convention as auth middleware).
  * Skips `csrf-exempt` for browser-initiated posts that cannot attach our token
  * (e.g. Content-Security-Policy violation reports).
@@ -22,13 +27,22 @@ export const makeCsrfMiddleware = (): Handler => {
       return next();
     }
 
-    const tags = req.openapi?.schema?.tags;
-    if (tags?.includes("no-auth") || tags?.includes("csrf-exempt")) {
+    const method = req.method.toUpperCase();
+    if (SAFE_METHODS.has(method)) {
       return next();
     }
 
-    const method = req.method.toUpperCase();
-    if (SAFE_METHODS.has(method)) {
+    if (!req.openapi?.schema) {
+      next(
+        new Error(
+          "CSRF middleware requires a matched OpenAPI operation (mount createScopedMiddleware with apiSpec before CSRF)",
+        ),
+      );
+      return;
+    }
+
+    const tags = req.openapi.schema.tags;
+    if (tags?.includes("no-auth") || tags?.includes("csrf-exempt")) {
       return next();
     }
 

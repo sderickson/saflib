@@ -99,8 +99,14 @@ describe("CSRF validator middleware", () => {
     process.env.NODE_ENV = originalNodeEnv;
   });
 
+  const attachProtectedSchema: express.RequestHandler = (req, _res, next) => {
+    req.openapi = { schema: { tags: [] } } as any;
+    next();
+  };
+
   it("returns 403 for mismatched token", async () => {
     const app = express();
+    app.use(attachProtectedSchema);
     app.use(makeCsrfTokenMiddleware());
     app.use(makeCsrfMiddleware());
     app.post("/protected", (_req, res) => {
@@ -121,6 +127,7 @@ describe("CSRF validator middleware", () => {
 
   it("allows state-changing request when cookie and header match", async () => {
     const app = express();
+    app.use(attachProtectedSchema);
     app.use(makeCsrfTokenMiddleware());
     app.use(makeCsrfMiddleware());
     app.post("/protected", (_req, res) => {
@@ -135,6 +142,29 @@ describe("CSRF validator middleware", () => {
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual({ ok: true });
+  });
+
+  it("errors when OpenAPI schema is not attached on unsafe methods", async () => {
+    const app = express();
+    app.use(makeCsrfTokenMiddleware());
+    app.use(makeCsrfMiddleware());
+    app.post("/misconfigured", (_req, res) => {
+      res.status(200).json({ ok: true });
+    });
+    app.use(
+      (
+        err: Error,
+        _req: express.Request,
+        res: express.Response,
+        _next: express.NextFunction,
+      ) => {
+        res.status(500).json({ error: err.message });
+      },
+    );
+
+    const response = await request(app).post("/misconfigured");
+    expect(response.status).toBe(500);
+    expect(response.body.error).toMatch(/OpenAPI operation/);
   });
 
   it("bypasses csrf for routes tagged no-auth", async () => {
