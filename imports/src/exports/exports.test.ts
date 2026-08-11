@@ -12,9 +12,9 @@ import {
   resolveSpecifier,
   buildPackageIndex,
   findMonorepoRoot,
-} from "./index.ts";
+} from "../../index.ts";
 
-const fixtureRoot = path.join(import.meta.dirname, "fixtures/mini-monorepo");
+const fixtureRoot = path.join(import.meta.dirname, "../../fixtures/mini-monorepo");
 const pkgA = path.join(fixtureRoot, "packages/pkg-a");
 
 describe("computeExportsMap", () => {
@@ -228,7 +228,7 @@ describe("export patterns", () => {
   });
 
   it("resolves pattern exports in resolveSpecifier", () => {
-    const root = findMonorepoRoot(path.join(import.meta.dirname, "..", ".."));
+    const root = findMonorepoRoot(path.join(import.meta.dirname, "../../.."));
     const index = buildPackageIndex(root);
     const from = path.join(
       root,

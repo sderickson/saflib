@@ -8,7 +8,7 @@ SAF-specific import-graph measurement and enforcement tooling.
 | --- | --- |
 | [01-overview.md](./01-overview.md) | This page — CLI summary, snapshot tool |
 | [02-ci.md](./02-ci.md) | ESLint import-graph rules, PR checklist |
-| [03-project-references.md](./03-project-references.md) | TypeScript project references |
+| [03-project-references.md](./03-project-references.md) | TypeScript project references (`saf-imports tsconfig`, `src/tsconfig/`) |
 | [04-composite-type-guidance.md](./04-composite-type-guidance.md) | Types across composite packages |
 | [05-scaffold.md](./05-scaffold.md) | Init workflow defaults (`sideEffects`, exports) |
 | [06-spa-bundles.md](./06-spa-bundles.md) | SPA shell vs page chunk measurement |

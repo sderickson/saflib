@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 import path from "node:path";
-import { findMonorepoRoot } from "./src/resolve/index.ts";
-import { analyzeSpaRouter, listGateSpas } from "./src/spa/analyze-router.ts";
-import { parseAsyncVuePageTarget } from "./src/spa/parse-async-vue.ts";
-import { spaClientDir } from "./src/spa/paths.ts";
+import { findMonorepoRoot } from "../resolve/index.ts";
+import { analyzeSpaRouter, listGateSpas } from "./analyze-router.ts";
+import { parseAsyncVuePageTarget } from "./parse-async-vue.ts";
+import { spaClientDir } from "./paths.ts";
 
 describe("spa analyze-router", () => {
-  const root = findMonorepoRoot(path.join(import.meta.dirname, "..", ".."));
+  const root = findMonorepoRoot(path.join(import.meta.dirname, "../../../.."));
   const spas = listGateSpas(root);
 
   it.skipIf(spas.length === 0)(

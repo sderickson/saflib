@@ -1,8 +1,8 @@
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { measureGraph } from "./src/graph/walk-graph.ts";
+import { measureGraph } from "./walk-graph.ts";
 
-const fixtureRoot = path.join(import.meta.dirname, "fixtures/mini-monorepo");
+const fixtureRoot = path.join(import.meta.dirname, "../../fixtures/mini-monorepo");
 
 describe("measureGraph", () => {
   it("returns sorted repo-root-relative paths and externals when verbose", () => {

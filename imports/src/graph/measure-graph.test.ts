@@ -1,15 +1,15 @@
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { measureGraph } from "./index.ts";
-import { extractImports } from "./src/graph/extract-imports.ts";
-import { readSource } from "./src/graph/read-source.ts";
+import { measureGraph } from "../../index.ts";
+import { extractImports } from "./extract-imports.ts";
+import { readSource } from "./read-source.ts";
 import {
   buildPackageIndex,
   findMonorepoRoot,
   resolveSpecifier,
-} from "./src/resolve/index.ts";
+} from "../resolve/index.ts";
 
-const fixtureRoot = path.join(import.meta.dirname, "fixtures/mini-monorepo");
+const fixtureRoot = path.join(import.meta.dirname, "../../fixtures/mini-monorepo");
 const pkgA = path.join(fixtureRoot, "packages/pkg-a");
 const pkgB = path.join(fixtureRoot, "packages/pkg-b");
 const vueApp = path.join(fixtureRoot, "packages/vue-app");

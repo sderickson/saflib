@@ -55,7 +55,7 @@ export {
   type GenerateReferencesPreview,
   type PackageReferencePreview,
   type CheckReferencesResult,
-} from "./src/references/index.ts";
+} from "./src/tsconfig/index.ts";
 export type {
   MeasureGraphOptions,
   MeasureGraphResult,

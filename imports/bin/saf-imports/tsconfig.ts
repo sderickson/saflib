@@ -5,7 +5,7 @@ import {
   checkReferences,
   detectReferenceCycles,
   previewReferencesGenerate,
-} from "../../src/references/index.ts";
+} from "../../src/tsconfig/index.ts";
 
 interface TsconfigRootOptions {
   root?: string;

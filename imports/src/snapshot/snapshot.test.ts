@@ -6,9 +6,9 @@ import {
   generateSnapshot,
   checkSnapshot,
   formatRegression,
-} from "./src/snapshot/snapshot.ts";
+} from "./snapshot.ts";
 
-const fixtureRoot = path.join(import.meta.dirname, "fixtures/mini-monorepo");
+const fixtureRoot = path.join(import.meta.dirname, "../../fixtures/mini-monorepo");
 
 describe("generateSnapshot", () => {
   it("writes a snapshot covering fixture *.test.ts files and entries when present", () => {

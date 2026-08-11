@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 
-const monorepoRoot = path.join(import.meta.dirname, "..", "..");
+const monorepoRoot = path.join(import.meta.dirname, "../../../..");
 
 function readTemplatePackageJson(relativePath: string) {
   const filePath = path.join(monorepoRoot, relativePath);
