@@ -13,6 +13,7 @@ import {
   makeLineReplace,
   CdStepMachine,
 } from "@saflib/workflows";
+import { kebabCaseToCamelCase, kebabCaseToPascalCase } from "@saflib/utils";
 import { ServiceAddStoreWorkflowDefinition } from "@saflib/service/workflows/add-store";
 import path from "node:path";
 
@@ -44,6 +45,7 @@ interface AddHandlerWorkflowContext
   upload: boolean;
   download: boolean;
   storeName: string;
+  operationId: string;
 }
 
 export const AddHandlerWorkflowDefinition = defineWorkflow<
@@ -68,6 +70,9 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
       requiredPrefix: "./routes/",
     });
     const storeName = `${pathResult.groupName}-file-container`;
+    const operationId =
+      kebabCaseToCamelCase(pathResult.targetName.split(".")[0]) +
+      kebabCaseToPascalCase(pathResult.groupName);
     return {
       ...parsePackageName(getPackageName(input.cwd), {
         silentError: true, // so checklists don't error
@@ -75,6 +80,7 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
       }),
       ...pathResult,
       storeName,
+      operationId,
       targetDir: input.cwd,
       upload: input.upload ?? false,
       download: input.download ?? false,
@@ -100,6 +106,7 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
       "**/common/package.json",
       "**/http.ts",
       "**/package.json",
+      "**/testing/slim-route-test.ts",
     ],
   },
 
@@ -139,11 +146,29 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
       - Handle expected errors from service/DB layers, with "satisfies never" for exhaustive error handling
       - Let unexpected errors propagate to central error handler (no try/catch!)
       - Follow the pattern in the reference doc
-      - Use the handler in the adjacent "index.ts" file.
+      - Wire the handler in the adjacent \`index.ts\` using **per-operation** OpenAPI fragments (see below).
       - Include db -> http mapper functions in the adjacent ${context.copiedFiles?.helpers} file.
       - For delete handlers that operate on child resources (e.g. deleting a file belonging to a recipe), validate the parent relationship *before* deleting. Fetch the record first, check that the parent ID matches, return 404 if not, and only then perform the delete. This avoids destroying data before returning an error.
 
-      **Router mount order (http.ts):** When wiring the group router into \`http.ts\`, mount it **before** any router that ends with a catch-all 404 (commonly \`createCronRouter\` from \`@saflib/cron\`). Cron's router terminates unmatched paths; routers registered after it never run, so every request looks like a handler 404 even though the handler is correct. Place new \`app.use(create…Router())\` calls with the other product routers, **above** the cron mount (and any comment like "mount after other routers").
+      **Prerequisite:** \`openapi/route\` (or equivalent) must exist for operationId \`${context.operationId}\` and \`saf-specs generate\` must have produced \`dist/operations/${context.operationId}\`.
+
+      **Router index.ts (per-operation OpenAPI):** Register each route with Express \`router.METHOD\`, spread \`createOperationScopedMiddleware(operationJsonSpec, options)\`, then the handler. Example:
+
+      \`\`\`ts
+      router.post(
+        "/path-from-spec",
+        ...createOperationScopedMiddleware(createTodosOperationJsonSpec),
+        createTodosHandler,
+      );
+      \`\`\`
+
+      - Import \`operationJsonSpec\` from \`@…-spec/operations/${context.operationId}\` (not full \`jsonSpec\`).
+      - Do **not** mount \`createScopedMiddleware({ apiSpec: jsonSpec })\` on a router prefix.
+      - Products with extra middleware (e.g. org context) use a **product** helper such as \`registerOrgScopedRoute\` that wraps \`createOperationScopedMiddleware\` — do not add that to generic SAF templates.
+
+      **Monolith http.ts:** Add the group's \`create…Router()\` to \`defaultRouterMounts()\` in \`http.ts\` (workflow area). Route handler tests mount the **group router** via \`acquireRouterSlimRouteTest\` in \`testing/slim-route-test.ts\`, not \`create…HttpApp()\` with the full default mount list.
+
+      **Router mount order (http.ts):** When wiring routers into \`defaultRouterMounts()\`, list product routers **before** any router that ends with a catch-all 404 (commonly \`createCronRouter\` from \`@saflib/cron\`). Cron's router terminates unmatched paths; routers registered after it never run, so every request looks like a handler 404 even though the handler is correct.
 
       **OpenAPI schemas and express-openapi-validator:** If integration tests return **500** with message \`"nullable" cannot be used without "type"\`, the bug is in the **spec**, not the handler. \`express-openapi-validator\` rejects properties that use \`nullable: true\` together with \`allOf: [\$ref: …]\` and **no sibling \`type\`**. Fix the adjacent OpenAPI schema (and regenerate the spec package) before debugging the handler:
       - Prefer \`type: string\` / \`type: object\` **plus** \`nullable: true\` with inline constraints, **or** omit \`nullable\` and treat optional fields as omitted when unset (mappers often omit nulls on responses).
@@ -154,7 +179,7 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
           ? `
 
       This handler includes file upload support:
-      - Ensure the router's index.ts passes \`fileUploader: uploadToDiskOptions\` (from @saflib/express) to \`createScopedMiddleware\` so multipart requests are parsed. Import \`uploadToDiskOptions\` if not already imported.
+      - Ensure the router's index.ts passes \`fileUploader: uploadToDiskOptions\` (from @saflib/express) to \`createOperationScopedMiddleware(spec, { fileUploader: uploadToDiskOptions })\` so multipart requests are parsed.
       - The file container property in the store is \`${context.groupName}FileContainer\` (e.g. recipesFileContainer). Use it to uploadFile / deleteFile / readFile.
       - \`req.files\` may be an array (multer \`.any()\`) or a keyed object (multer \`.fields()\`); the template handles both. Match the field name from the spec (e.g. \`"file"\`).
       - Create the DB record first with file metadata (blob_name, file_original_name, mimetype, size), then upload to the container. On upload failure, clean up the DB record and throw 500.`
@@ -183,7 +208,9 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
         * If a test unexpectedly gets **404** for a route you registered, check \`http.ts\` mount order: routers after \`createCronRouter\` (or any catch-all 404 middleware) never run.
         * If a test unexpectedly gets **500** with \`"nullable" cannot be used without "type"\`, fix the OpenAPI schema in the adjacent \`-spec\` package (see handler-step guidance), rebuild the spec, and re-run — do not treat it as a handler bug.
         * Run tests with "npm run test" in ${context.cwd}.
-        * **HTTP service packages:** prefer the **slim** test tier — import the slim app factory (not the full router barrel), mount only the scoped handler under test, use slim route-test helpers with \`beforeAll\`/\`afterAll\`. Use full route-test context only for genuine multi-route integration tests.
+        * **Default tier:** mount \`create${kebabCaseToPascalCase(context.groupName)}Router\` (the group \`index.ts\` factory) via \`acquireRouterSlimRouteTest\` from \`testing/slim-route-test.ts\`, with \`beforeAll\`/\`afterAll\` and \`releaseSlimRouteTest\` in \`afterAll\`.
+        * Do **not** import \`create…HttpApp\` from \`http.ts\` in handler tests — that mounts every product router (slow, heavy imports).
+        * Multi-route chains: \`acquireRouterSlimRouteTestMulti([createA, createB])\` or a dedicated \`*.integration.test.ts\` with explicit scope.
         * **Imports:** use package sub-path exports (e.g. \`/context\`, \`/queries/*\`, \`/errors\`) — not root barrels in handlers/tests.
         
         Review ${context.docFiles?.testingGuide} for more details.`,

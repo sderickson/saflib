@@ -2,17 +2,62 @@
 
 Things to keep in mind when writing tests for API routes served by Express.
 
-## Application Interface
+## Application interface
 
 Tests should mainly test the API interface per [best practices](../../best-practices.md#have-thorough-test-coverage).
 
-To do this:
+### Default: slim router mount
 
-- Create an Express app for each test, using the app exported by [http.ts](./01-overview.md#httpsts), using `beforeEach`.
-- Use `@saflib/express`'s `makeUserHeaders` to create headers that would otherwise be provided by the identity service via Caddy.
-- Use `supertest`'s `request` to make the request.
+Route handler tests should **not** build the full HTTP app from `http.ts` on every test.
 
-Tests should include at least one test for each response code. It does not need to test invalid inputs (one can assume [express-openapi-validator](https://www.npmjs.com/package/express-openapi-validator) will do its job).
+1. Mount the **production group router** from `routes/<group>/index.ts` (e.g. `createTodosRouter`).
+2. Use the slim harness from `testing/slim-route-test.ts` (`acquireRouterSlimRouteTest`, `releaseSlimRouteTest`).
+3. Use `beforeAll` / `afterAll` — not `beforeEach` — so OpenAPI middleware is not re-installed per test.
+4. Use `@saflib/express`'s `makeUserHeaders` (or product fixtures) for identity-shaped headers.
+5. Use `supertest`'s `request` against `ctx.app`.
+
+```ts
+import { createTodosRouter } from "./index.ts";
+import {
+  acquireRouterSlimRouteTest,
+  releaseSlimRouteTest,
+} from "../../testing/slim-route-test.ts";
+
+describe("createTodos", () => {
+  let ctx: SlimRouteTestContext;
+
+  beforeAll(() => {
+    ctx = acquireRouterSlimRouteTest(createTodosRouter);
+  });
+
+  afterAll(() => {
+    releaseSlimRouteTest(ctx.lease);
+  });
+
+  it("creates a todo", async () => {
+    const response = await request(ctx.app)
+      .post("/todos")
+      .set(makeUserHeaders())
+      .send({ title: "Buy milk" });
+    expect(response.status).toBe(201);
+  });
+});
+```
+
+### When to use the full app
+
+Use `create…HttpApp()` from `http.ts` (default mount list) only for:
+
+- Monolith smoke tests (`index.test.ts` at package root).
+- Explicit `*.integration.test.ts` files that need multiple routers or monolith chrome (cron, jobs, OAuth, etc.).
+
+For a small multi-router chain, prefer `acquireRouterSlimRouteTestMulti([createA, createB])` over the full app when possible.
+
+## Coverage expectations
+
+Tests should include at least one test for each response code the **handler** implements. Do not test invalid inputs that OpenAPI validation owns (malformed bodies, wrong types) — assume [express-openapi-validator](https://www.npmjs.com/package/express-openapi-validator) does its job for those.
+
+Do not test 500 responses in handler tests.
 
 ## Mocking
 

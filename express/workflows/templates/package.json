@@ -4,6 +4,7 @@
   "type": "module",
   "exports": {
     "./http": "./http.ts",
+    "./testing/slim-route-test": "./testing/slim-route-test.ts",
     "./routes/*": "./routes/*/index.ts",
     "./routes/*/*": "./routes/*/*.ts"
   },

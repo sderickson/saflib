@@ -1,15 +1,23 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { beforeAll, afterAll, describe, it, expect } from "vitest";
 import request from "supertest";
-import express from "express";
-import { create__ServiceName__HttpApp } from "../../http.ts";
 import { makeUserHeaders } from "@saflib/express";
 import type { __ServiceName__ServiceRequestBody } from "template-package-spec";
+import {
+  acquireRouterSlimRouteTest,
+  releaseSlimRouteTest,
+  type SlimRouteTestContext,
+} from "../../testing/slim-route-test.ts";
+import { create__GroupName__Router } from "./index.ts";
 
 describe("__targetName____GroupName__", () => {
-  let app: express.Express;
+  let ctx: SlimRouteTestContext;
 
-  beforeEach(() => {
-    app = create__ServiceName__HttpApp({});
+  beforeAll(() => {
+    ctx = acquireRouterSlimRouteTest(create__GroupName__Router);
+  });
+
+  afterAll(() => {
+    releaseSlimRouteTest(ctx.lease);
   });
 
   // BEGIN ONCE WORKFLOW AREA instructions FOR express/add-handler IF upload
@@ -17,7 +25,7 @@ describe("__targetName____GroupName__", () => {
   For file-upload handlers, send the file with supertest using .attach() instead of .send():
 
   const fileContent = "test,data\n1,2";
-  const response = await request(app)
+  const response = await request(ctx.app)
     .post("/__group-name__/__target-name__")
     .set(makeUserHeaders())
     .attach("file", Buffer.from(fileContent), "test.csv");
@@ -35,7 +43,7 @@ describe("__targetName____GroupName__", () => {
 
   // TODO: unskip this test
   it.skip("should handle successful requests", async () => {
-    const response = await request(app)
+    const response = await request(ctx.app)
       .post("/__group-name__/__target-name__")
       .set(makeUserHeaders())
       .send({
@@ -54,7 +62,7 @@ describe("__targetName____GroupName__", () => {
   // TODO: unskip this test
   it.skip("should return 4xx for ...", async () => {
     // make a request which will return the targeted error
-    const response = await request(app)
+    const response = await request(ctx.app)
       .post("/__group-name__/__target-name__")
       .set(makeUserHeaders())
       .send({
