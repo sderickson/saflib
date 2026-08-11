@@ -49,9 +49,20 @@ services:
 
   kratos-migrate:
     image: oryd/kratos:v26.2.0
-    command: migrate sql -e --yes
+    # SQL applied lines flood compose logs; keep output only on failure.
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        /usr/bin/kratos migrate sql -e --yes > /tmp/kratos-migrate.log 2>&1
+        status=$$?
+        if [ $$status -ne 0 ]; then
+          cat /tmp/kratos-migrate.log >&2
+          exit $$status
+        fi
+        echo "kratos-migrate: ok"
     environment:
       - DSN=sqlite:///var/lib/sqlite/db.sqlite?_fk=true&mode=rwc
+      - LOG_LEVEL=warn
     volumes:
       - /opt/kratos/data:/var/lib/sqlite
       - ./kratos:/etc/config/kratos

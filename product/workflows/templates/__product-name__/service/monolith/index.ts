@@ -23,7 +23,25 @@ export function start__ServiceName__Service() {
       ),
     });
     log.info("__service-name__-http startup complete.");
+    logClientAccessUrls(log);
   } catch (error) {
     logError(error);
+  }
+}
+
+/** Print SPA URLs from CLIENT_SUBDOMAINS for local/prod-local quick access. */
+function logClientAccessUrls(log: { info: (msg: string) => void }) {
+  const { PROTOCOL: protocol, DOMAIN: domain, CLIENT_SUBDOMAINS } = typedEnv;
+  const skip = new Set(["grafana"]);
+  const urls = CLIENT_SUBDOMAINS.split(",")
+    .map((s) => s.trim())
+    .filter((s) => !skip.has(s))
+    .map((sub) =>
+      sub === "" ? `${protocol}://${domain}/` : `${protocol}://${sub}.${domain}/`,
+    );
+  if (urls.length === 0) return;
+  log.info("Ready — open a SPA:");
+  for (const url of urls) {
+    log.info(`  ${url}`);
   }
 }
