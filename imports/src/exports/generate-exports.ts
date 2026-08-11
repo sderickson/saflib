@@ -148,6 +148,26 @@ function exportsHasPatterns(map: ExportsMap): boolean {
   return Object.keys(map).some((k) => k.includes("*"));
 }
 
+/** Node subpath exports allow only one `*` per pattern key and target. */
+function invalidMultiStarPatternDiffs(map: ExportsMap): string[] {
+  const diffs: string[] = [];
+  for (const [key, value] of Object.entries(map)) {
+    const keyStars = (key.match(/\*/g) ?? []).length;
+    if (keyStars > 1) {
+      diffs.push(
+        `invalid pattern key: ${key} (${keyStars} '*' — Node allows one per key; use explicit exports for nested paths)`,
+      );
+    }
+    const valStars = (value.match(/\*/g) ?? []).length;
+    if (valStars > 1) {
+      diffs.push(
+        `invalid pattern target: ${key} → ${value} (${valStars} '*' in target)`,
+      );
+    }
+  }
+  return diffs;
+}
+
 function readActualExports(pkgDir: string): ExportsMap {
   const pj = JSON.parse(
     fs.readFileSync(path.join(pkgDir, "package.json"), "utf8"),
@@ -183,7 +203,10 @@ export function checkExportPatternCoverage(pkgDir: string): CheckExportsResult {
     dir: pkgDir,
     exports: sortExportsMap({ ...actual, ...aliases }),
   };
-  const diffs: string[] = [];
+  const diffs: string[] = [
+    ...invalidMultiStarPatternDiffs(actual),
+    ...invalidMultiStarPatternDiffs(aliases),
+  ];
 
   for (const [key, relTarget] of Object.entries(expected)) {
     const subpath = key === "." ? "" : key.slice(2);

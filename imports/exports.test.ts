@@ -128,7 +128,8 @@ describe("checkExports / generateExports", () => {
 });
 
 describe("export patterns", () => {
-  it("substitutes wildcard export targets", () => {
+  it("substitutes wildcard export targets (saf-imports matcher)", () => {
+    // matchExportPattern supports multiple * for tooling; Node package exports do not.
     expect(
       matchExportPattern(
         "./requests/matters/list",
@@ -145,7 +146,7 @@ describe("export patterns", () => {
     ).toBe("./schemas/matter.ts");
   });
 
-  it("validates pattern exports on a temp package", () => {
+  it("rejects export keys with more than one *", () => {
     const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "saf-imports-pattern-"));
     try {
       fs.writeFileSync(
@@ -157,6 +158,34 @@ describe("export patterns", () => {
             exports: {
               "./groups/*": "./groups/*/index.ts",
               "./groups/*/*": "./groups/*/*.ts",
+            },
+          },
+          null,
+          2,
+        ) + "\n",
+      );
+      const check = checkExports(tmp);
+      expect(check.ok).toBe(false);
+      expect(check.diffs.some((d) => d.includes("invalid pattern key"))).toBe(
+        true,
+      );
+    } finally {
+      fs.rmSync(tmp, { recursive: true, force: true });
+    }
+  });
+
+  it("validates single-star pattern exports on a temp package", () => {
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "saf-imports-pattern-"));
+    try {
+      fs.writeFileSync(
+        path.join(tmp, "package.json"),
+        JSON.stringify(
+          {
+            name: "@tmp/pattern",
+            type: "module",
+            exports: {
+              "./groups/*": "./groups/*/index.ts",
+              "./groups/foo/bar": "./groups/foo/bar.ts",
             },
           },
           null,
@@ -182,7 +211,7 @@ describe("export patterns", () => {
       "saflib/express/workflows/templates/routes/foo/handler.ts",
     );
     const result = resolveSpecifier(
-      "template-package-http/routes/__group-name__/index",
+      "template-package-http/routes/__group-name__",
       from,
       index,
     );

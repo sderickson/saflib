@@ -8,7 +8,6 @@
     "./errors": "./errors.ts",
     "./types": "./types.ts",
     "./queries/*": "./queries/*/index.ts",
-    "./queries/*/*": "./queries/*/*.ts",
     "./schemas/*": "./schemas/*.ts"
   },
   "scripts": {

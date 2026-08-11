@@ -13,13 +13,17 @@ with correct `exports` and `sideEffects` without manual follow-up.
 
 ## Export pattern examples
 
+Node subpath exports allow **only one `*` per pattern key** (and per target). Patterns like
+`./queries/*/*` are not valid for native `import` / `require` resolution — use explicit leaf
+exports for nested files instead.
+
 | Package kind | Pattern shape |
 | --- | --- |
-| SDK / HTTP requests | `./requests/*` → `index.ts`; `./requests/*/*` → ops/fakes |
-| DB queries | `./queries/*` → `index.ts`; `./queries/*/*` → leaf handlers |
-| DB schemas | `./schemas/*` → `*.ts` |
-| Service common | `./*` root files; `./lib/*`, `./dossiers/*` |
-| Vue clients-common | `./components/*` barrels; `./components/*/*` logic; explicit `.vue` entry points |
+| SDK / HTTP requests | `./requests/*` → group `index.ts`; leaf ops added explicitly (workflows run `exports generate`) |
+| DB queries | `./queries/*` → group `index.ts`; leaf handlers explicit |
+| DB schemas | `./schemas/*` → `*.ts` (one segment) |
+| Service common | `./*` root files; `./lib/*` single-segment wildcards |
+| Vue clients-common | `./components/*` barrels; nested `.logic.ts` via explicit exports |
 
 Reference implementations (workflow templates):
 
@@ -33,6 +37,8 @@ Validate with:
 npm exec saf-imports exports check --package <name>
 ```
 
+`exports check` fails on export keys with more than one `*`.
+
 ## Principles
 
 - **No root barrels** — no `export *` from package `index.ts` that re-exports the whole tree.
@@ -44,7 +50,9 @@ npm exec saf-imports exports check --package <name>
 - `exports generate --package <name>` — writes a **leaf** map (refuses WORKFLOW AREA packages).
 - `exports check --package <name>` — leaf diff, or **pattern coverage** when `*` keys are present.
 
-For large packages, prefer hand-authored patterns over `exports generate`.
+For large packages, prefer hand-authored single-`*` patterns plus explicit nested exports over
+`exports generate` on every file — or run `exports generate` after adding routes/queries to refresh
+the leaf map.
 
 ## `vue/add-view`
 
