@@ -1,25 +1,32 @@
-import express from "express";
-import { createScopedMiddleware } from "@saflib/express";
-// TODO: import the appropriate spec package
-// import { jsonSpec } from "@saflib/cron-spec";
+// @ts-nocheck — scaffold placeholders until express/add-handler copies this file.
+import express, { type IRouter } from "express";
+import {
+  createOperationScopedMiddleware,
+  uploadToDiskOptions,
+} from "@saflib/express";
+import { operationJsonSpec as __targetName____GroupName__OperationJsonSpec } from "template-package-spec/operations/__operationId__";
 
 // BEGIN WORKFLOW AREA handler-imports FOR express/add-handler
-// import { __targetName____GroupName__Handler } from "./__target-name__.ts";
+import { __targetName____GroupName__Handler } from "./__target-name__.ts";
 // END WORKFLOW AREA
 
-export const create__GroupName__Router = () => {
+/**
+ * __group-name__ routes. Each route uses its own operation OpenAPI fragment —
+ * do not mount full `jsonSpec` on a shared prefix.
+ */
+export function create__GroupName__Router(): IRouter {
   const router = express.Router();
 
-  // Define routes based on cron_routes.yaml
-  router.use(
-    "/__group-name__",
-    createScopedMiddleware({
-      // TODO: uncomment this once the right jsonSpec is imported
-      // apiSpec: jsonSpec,
-    }),
+  // BEGIN WORKFLOW AREA route-registrations FOR express/add-handler
+  // TODO: set method and path from openapi/route (match urlPath in the spec).
+  router.post(
+    "/__group-name__/__target-name__",
+    ...createOperationScopedMiddleware(
+      __targetName____GroupName__OperationJsonSpec,
+    ),
+    __targetName____GroupName__Handler,
   );
-  // TODO: Add routes here using the imported handlers
-  // Example: router.get("/__group-name__/__target-name__", __targetName__Handler);
+  // END WORKFLOW AREA
 
   return router;
-};
+}

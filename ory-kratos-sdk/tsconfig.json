@@ -7,13 +7,7 @@
       "path": "../links"
     },
     {
-      "path": "../monorepo"
-    },
-    {
       "path": "../sdk"
-    },
-    {
-      "path": "../vitest"
     }
   ],
   "compilerOptions": {

@@ -28,6 +28,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/jobs/cancel-by-original-request": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Mass-cancel jobs in a request chain
+         * @description Cancels every non-terminal, non-running job that shares the given `originalRequestId` (`terminalReason: cancelled-by-chain`). Running jobs in the chain are left alone. Returns the jobs that were cancelled. Mounted as monolith chrome (`site-admin-only`).
+         */
+        post: operations["cancelJobsByOriginalRequest"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/jobs/{id}": {
         parameters: {
             query?: never;
@@ -82,26 +102,6 @@ export interface paths {
          * @description Cancels a pending or retrying job (`terminalReason: cancelled-by-admin`). Running jobs are not interrupted (409). Mounted as monolith chrome (`site-admin-only`).
          */
         post: operations["cancelJob"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/jobs/cancel-by-original-request": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Mass-cancel jobs in a request chain
-         * @description Cancels every non-terminal, non-running job that shares the given `originalRequestId` (`terminalReason: cancelled-by-chain`). Running jobs in the chain are left alone. Returns the jobs that were cancelled. Mounted as monolith chrome (`site-admin-only`).
-         */
-        post: operations["cancelJobsByOriginalRequest"];
         delete?: never;
         options?: never;
         head?: never;
@@ -583,6 +583,56 @@ export interface operations {
             };
         };
     };
+    cancelJobsByOriginalRequest: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /**
+                     * @description Chain-root request id whose non-running jobs should be cancelled.
+                     * @example r-abc123
+                     */
+                    originalRequestId: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Jobs that were cancelled in this chain. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        jobs: components["schemas"]["job"][];
+                    };
+                };
+            };
+            /** @description Unauthorized - missing or invalid auth headers, or not logged in. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Forbidden - site admin privileges required. */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+        };
+    };
     getJob: {
         parameters: {
             query?: never;
@@ -766,53 +816,6 @@ export interface operations {
             };
             /** @description Job is running (or otherwise not cancellable) and was not interrupted. */
             409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["error"];
-                };
-            };
-        };
-    };
-    cancelJobsByOriginalRequest: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": {
-                    /** @description Chain-root request id whose non-running jobs should be cancelled. */
-                    originalRequestId: components["schemas"]["originalRequestId"];
-                };
-            };
-        };
-        responses: {
-            /** @description Jobs that were cancelled in this chain. */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        jobs: components["schemas"]["job"][];
-                    };
-                };
-            };
-            /** @description Unauthorized - missing or invalid auth headers, or not logged in. */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["error"];
-                };
-            };
-            /** @description Forbidden - site admin privileges required. */
-            403: {
                 headers: {
                     [name: string]: unknown;
                 };

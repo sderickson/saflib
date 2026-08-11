@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@saflib/links": "*",
+    "@saflib/utils": "*",
     "@tanstack/vue-query": "^5.85.9",
     "openapi-fetch": "^0.17.0"
   },
@@ -27,5 +28,8 @@
     "@saflib/vitest": "*",
     "@saflib/workflows": "*",
     "msw": "^2.0.0"
-  }
+  },
+  "sideEffects": [
+    "./../../workflows/templates/client.ts"
+  ]
 }

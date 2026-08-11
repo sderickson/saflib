@@ -8,13 +8,7 @@
       "path": "../express"
     },
     {
-      "path": "../monorepo"
-    },
-    {
       "path": "../node"
-    },
-    {
-      "path": "../vitest"
     }
   ],
   "compilerOptions": {

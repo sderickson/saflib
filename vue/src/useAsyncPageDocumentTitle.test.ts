@@ -10,18 +10,18 @@ describe("useAsyncPageDocumentTitle", () => {
   });
 
   it("sets the static page title immediately", () => {
-    configureAppDocumentTitle("CaseDaemon");
+    configureAppDocumentTitle("ExampleApp");
     const scope = effectScope();
     scope.run(() => {
       useAsyncPageDocumentTitle("Matters");
     });
     scope.stop();
 
-    expect(document.title).toBe("Matters — CaseDaemon");
+    expect(document.title).toBe("Matters — ExampleApp");
   });
 
   it("prepends loader detail when it becomes available", async () => {
-    configureAppDocumentTitle("CaseDaemon");
+    configureAppDocumentTitle("ExampleApp");
     const matterName = ref<string | null>(null);
     const scope = effectScope();
 
@@ -32,13 +32,13 @@ describe("useAsyncPageDocumentTitle", () => {
       );
     });
 
-    expect(document.title).toBe("Review — CaseDaemon");
+    expect(document.title).toBe("Review — ExampleApp");
 
     matterName.value = "Immigration Case A";
     await Promise.resolve();
 
     expect(document.title).toBe(
-      "Immigration Case A — Review — CaseDaemon",
+      "Immigration Case A — Review — ExampleApp",
     );
 
     scope.stop();

@@ -33,6 +33,7 @@ interface AddTsPackageWorkflowContext {
   packageName: string; // e.g. "@your-org/package-name"
   packageDirName: string; // e.g. "package-name"
   path: string; // Relative path from monorepo root
+  rootDir: string;
 }
 
 export const AddTsPackageWorkflowDefinition = defineWorkflow<
@@ -58,6 +59,7 @@ export const AddTsPackageWorkflowDefinition = defineWorkflow<
       packageName: input.name,
       packageDirName,
       path: input.path,
+      rootDir: input.cwd,
     };
   },
 
@@ -103,6 +105,26 @@ export const AddTsPackageWorkflowDefinition = defineWorkflow<
     step(CommandStepMachine, () => ({
       command: "npm",
       args: ["install"],
+    })),
+
+    step(CdStepMachine, ({ context }) => ({
+      path: context.rootDir,
+    })),
+
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: [
+        "exec",
+        "saf-imports",
+        "tsconfig",
+        "generate",
+        "--",
+        "--write",
+      ],
+    })),
+
+    step(CdStepMachine, ({ context }) => ({
+      path: context.targetDir,
     })),
 
     step(CommandStepMachine, () => ({

@@ -1,8 +1,8 @@
 import { describe, it, expect } from "vitest";
-import * as exports from "template-package-db";
+import { __serviceName__DbManager } from "template-package-db/instances";
 
 describe("template-package-db", () => {
   it("should be defined", () => {
-    expect(exports).toBeDefined();
+    expect(__serviceName__DbManager).toBeDefined();
   });
 });

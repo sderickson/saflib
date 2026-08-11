@@ -7,6 +7,7 @@ import type { OpenAPIV3 } from "express-openapi-validator/dist/framework/types.t
 import type { InternalServerError } from "express-openapi-validator/dist/framework/types.ts";
 import { typedEnv } from "@saflib/env";
 import multer from "multer";
+import { lenientEmailOpenApiFormat } from "./openapi-formats.ts";
 
 declare global {
   namespace Express {
@@ -34,6 +35,23 @@ function formatOpenApiValidationError(err: InternalServerError): string {
     .errors;
   if (!issues?.length) {
     return err.message;
+  }
+
+  const formatIssues = issues.filter((issue) =>
+    issue.message?.includes("must match format"),
+  );
+
+  if (formatIssues.length) {
+    return formatIssues
+      .map((issue) => {
+        const path = issue.path?.replace(/^\/response/, "response") || "value";
+        const property = propertyNameFromIssuePath(issue.path);
+        const formatMatch = issue.message?.match(/format "([^"]+)"/);
+        const formatName = formatMatch?.[1] ?? "unknown";
+        const label = property ? `${path} (${property})` : path;
+        return `${label}: invalid ${formatName}`;
+      })
+      .join("; ");
   }
 
   const additionalPropertyIssues = issues.filter((issue) =>
@@ -113,6 +131,12 @@ function buildOpenApiValidatorMiddleware(
     apiSpec: spec,
     validateRequests: true,
     validateResponses,
+    formats: {
+      email: {
+        type: "string",
+        validate: lenientEmailOpenApiFormat.validate,
+      },
+    },
     fileUploader,
   });
 }

@@ -46,7 +46,7 @@ describe("CdStepMachine", () => {
   const jobsSpec = path.join(repoRoot, "saflib/jobs/jobs-spec");
 
   it("fails in dry mode when cd target does not exist", () => {
-    const plansCwd = path.join(repoRoot, "daemon/plans");
+    const plansCwd = path.join(repoRoot, "product/plans");
     expect(() =>
       validateCdTarget(
         path.join(plansCwd, "../../../saflib/jobs/jobs-spec"),

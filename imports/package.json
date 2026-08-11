@@ -6,35 +6,22 @@
   "bin": {
     "saf-imports": "bin/saf-imports/index.ts"
   },
-  "importBudget": {
-    "testFiles": {
-      "maxModules": 100,
-      "maxExternalPackages": 20
-    },
-    "entries": {
-      "./index.ts": {
-        "maxModules": 50,
-        "maxExternalPackages": 15
-      }
-    }
-  },
   "exports": {
     ".": "./index.ts",
     "./reporter": "./reporter.ts",
-    "./src/baseline/baseline": "./src/baseline/baseline.ts",
-    "./src/budget/check-budgets": "./src/budget/check-budgets.ts",
+    "./src/snapshot/snapshot": "./src/snapshot/snapshot.ts",
     "./src/exports/generate-exports": "./src/exports/generate-exports.ts",
     "./src/graph/detect-cycles": "./src/graph/detect-cycles.ts",
     "./src/graph/extract-imports": "./src/graph/extract-imports.ts",
     "./src/graph/find-path": "./src/graph/find-path.ts",
     "./src/graph/read-source": "./src/graph/read-source.ts",
     "./src/graph/walk-graph": "./src/graph/walk-graph.ts",
-    "./src/references": "./src/references/index.ts",
-    "./src/references/build-graph": "./src/references/build-graph.ts",
-    "./src/references/detect-cycles": "./src/references/detect-cycles.ts",
-    "./src/references/generate": "./src/references/generate.ts",
-    "./src/references/resolve-entry": "./src/references/resolve-entry.ts",
-    "./src/references/tsconfig-io": "./src/references/tsconfig-io.ts",
+    "./src/tsconfig": "./src/tsconfig/index.ts",
+    "./src/tsconfig/build-graph": "./src/tsconfig/build-graph.ts",
+    "./src/tsconfig/detect-cycles": "./src/tsconfig/detect-cycles.ts",
+    "./src/tsconfig/generate": "./src/tsconfig/generate.ts",
+    "./src/tsconfig/resolve-entry": "./src/tsconfig/resolve-entry.ts",
+    "./src/tsconfig/tsconfig-io": "./src/tsconfig/tsconfig-io.ts",
     "./src/reporter/vitest-reporter": "./src/reporter/vitest-reporter.ts",
     "./src/resolve": "./src/resolve/index.ts",
     "./src/types": "./src/types.ts"
@@ -46,12 +33,16 @@
     "typecheck": "tsc"
   },
   "dependencies": {
-    "@saflib/commander": "*"
+    "@saflib/commander": "*",
+    "@saflib/dev-tools": "*"
   },
   "devDependencies": {
-    "@saflib/dev-tools": "*",
     "@saflib/monorepo": "*",
     "@saflib/vitest": "*",
     "vitest": "^3.0.0"
-  }
+  },
+  "sideEffects": [
+    "./../../scripts/apply-side-effects.mjs",
+    "./../../src/side-effects/scan-package.ts"
+  ]
 }

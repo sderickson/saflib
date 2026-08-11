@@ -15,6 +15,7 @@
     "node_modules",
     "dist/types",
     "e2e",
+    "playwright.config.ts",
     "playwright-report",
     "test-results",
     "workflows/template/**",
@@ -22,17 +23,7 @@
     "**/workflows/template/**",
     "**/workflows/templates/**"
   ],
-  "references": [
-    {
-      "path": "../../../openapi/workflows/templates"
-    },
-    {
-      "path": "../../../ory-kratos-sdk"
-    },
-    {
-      "path": "../../../playwright"
-    }
-  ],
+  "references": [],
   "include": [
     "**/*.ts",
     "**/*.tsx",

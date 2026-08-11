@@ -1,6 +1,12 @@
 import fs from "node:fs";
 import path from "node:path";
 import type { PackageIndex, PackageInfo, ResolveResult } from "../types.ts";
+import {
+  matchExportPattern,
+  sortExportPatternKeys,
+} from "./match-export-pattern.ts";
+
+export { matchExportPattern, sortExportPatternKeys } from "./match-export-pattern.ts";
 
 const SKIP_DIRS = new Set(["node_modules", ".git", "dist", "coverage"]);
 
@@ -75,14 +81,33 @@ function resolveExportTarget(pkg: PackageInfo, subpath: string): string | null {
     return key === "." ? path.join(pkg.dir, exp) : null;
   }
   if (typeof exp !== "object" || exp === null) return null;
-  const target = (exp as Record<string, unknown>)[key];
+  const map = exp as Record<string, unknown>;
+  const target = map[key];
   if (typeof target === "string") return path.join(pkg.dir, target);
   if (target && typeof target === "object") {
     const cond = target as Record<string, unknown>;
     const t = cond.import ?? cond.default ?? cond.node;
     if (typeof t === "string") return path.join(pkg.dir, t);
   }
+
+  const patternKeys = sortExportPatternKeys(
+    Object.keys(map).filter((k) => k.includes("*")),
+  );
+  for (const patternKey of patternKeys) {
+    const patternTarget = map[patternKey];
+    if (typeof patternTarget !== "string") continue;
+    const substituted = matchExportPattern(key, patternKey, patternTarget);
+    if (substituted) return path.join(pkg.dir, substituted);
+  }
   return null;
+}
+
+/** Resolve a package export subpath to an absolute file path (no extension probing). */
+export function resolvePackageExportPath(
+  pkg: PackageInfo,
+  subpath: string,
+): string | null {
+  return resolveExportTarget(pkg, subpath);
 }
 
 /** Resolve a path candidate with common TS/Vue extensions and index files. */

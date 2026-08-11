@@ -24,16 +24,10 @@
       "path": "../notify/notify"
     },
     {
-      "path": "../sdk"
-    },
-    {
-      "path": "../service"
+      "path": "../openapi"
     },
     {
       "path": "../utils"
-    },
-    {
-      "path": "../vitest"
     }
   ],
   "compilerOptions": {

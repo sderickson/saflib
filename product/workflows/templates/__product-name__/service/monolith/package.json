@@ -14,5 +14,6 @@
     "template-package-http": "*",
     "template-package-kratos-handlers": "*",
     "template-package-service-common": "*"
-  }
+  },
+  "sideEffects": false
 }

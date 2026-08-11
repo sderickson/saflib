@@ -5,13 +5,7 @@
       "path": "../../express"
     },
     {
-      "path": "../../monorepo"
-    },
-    {
       "path": "../../node"
-    },
-    {
-      "path": "../../vitest"
     },
     {
       "path": "../email-spec"

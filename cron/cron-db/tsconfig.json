@@ -6,9 +6,6 @@
     },
     {
       "path": "../../env"
-    },
-    {
-      "path": "../../vitest"
     }
   ],
   "compilerOptions": {

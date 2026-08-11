@@ -25,12 +25,6 @@
   "references": [
     {
       "path": "../env"
-    },
-    {
-      "path": "../monorepo"
-    },
-    {
-      "path": "../vitest"
     }
   ]
 }

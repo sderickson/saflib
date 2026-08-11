@@ -22,27 +22,5 @@
     "noEmit": false,
     "emitDeclarationOnly": true
   },
-  "references": [
-    {
-      "path": "../../../../../../drizzle/workflows/templates"
-    },
-    {
-      "path": "../../../../../../env"
-    },
-    {
-      "path": "../../../../../../express/workflows/templates"
-    },
-    {
-      "path": "../../../../../../monorepo"
-    },
-    {
-      "path": "../../../../../../sentry"
-    },
-    {
-      "path": "../../../../../../service/workflows/common-templates"
-    },
-    {
-      "path": "../kratos-handlers"
-    }
-  ]
+  "references": []
 }

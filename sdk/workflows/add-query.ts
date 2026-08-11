@@ -94,7 +94,6 @@ export const AddSdkQueryWorkflowDefinition = defineWorkflow<
       sourceDir,
       "requests/__group-name__/__query-name__.test.ts",
     ),
-    rootIndex: path.join(sourceDir, "index.ts"),
     rootFakes: path.join(sourceDir, "fakes.ts"),
   },
 

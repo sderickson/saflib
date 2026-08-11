@@ -126,7 +126,7 @@ export const SpecProjectWorkflowDefinition = defineWorkflow<
 
       Now that you have a plan, write the workflows per the aligned plan to implement the spec. The generated file is the **orchestrator**; add as many phase workflows as the plan dictates and have the orchestrator invoke each with \`makeWorkflowMachine\`.
 
-      **Break down into phase workflows** (see e.g. \`daemon/plans/notes/2026-08-06-jobs-m2/\` before cleanup in commit 42b6b611):
+      **Break down into phase workflows** (see e.g. \`product/plans/notes/<project>/\` in your repo):
       * One file per plan phase: \`phase-1-<kebab-name>.workflow.ts\`, \`phase-2-...\`, etc.
       * Each phase workflow gets its own \`id\` (\`plans/<project>/phase-N-<name>\`), \`docFiles\` pointing at the project's spec + plan, and phase-scoped \`versionControl.allowPaths\`.
       * The orchestrator (\`<name>.workflow.ts\`) imports every phase and runs them in order; keep \`GetFeedbackStep\` only on the orchestrator.

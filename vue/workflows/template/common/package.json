@@ -4,13 +4,18 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./index.ts",
+    "./assets/*": "./assets/*.ts",
+    "./clients": "./clients/index.ts",
+    "./clients/*": "./clients/*.ts",
     "./components": "./components/index.ts",
-    "./components/__product-name__-layout": "./components/__product-name__-layout/__ProductName__Layout.vue",
+    "./components/*": "./components/*.ts",
+    "./composables/*": "./composables/*.ts",
+    "./fixtures": "./fixtures/index.ts",
+    "./fixtures/*": "./fixtures/*.ts",
+    "./utils/*": "./utils/*.ts",
     "./vuetify-config": "./vuetify-config.ts",
     "./strings": "./strings.ts",
     "./i18n": "./i18n.ts",
-    "./fixtures": "./fixtures/index.ts",
     "./playwright.config": "./playwright.config.ts"
   },
   "scripts": {
@@ -24,5 +29,6 @@
     "@sentry/vue": "^10.21.0",
     "@saflib/ory-kratos-sdk": "*",
     "template-package-spec": "*"
-  }
+  },
+  "sideEffects": false
 }

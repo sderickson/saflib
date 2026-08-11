@@ -10,5 +10,6 @@
   },
   "dependencies": {
     "@saflib/openapi": "*"
-  }
+  },
+  "sideEffects": false
 }

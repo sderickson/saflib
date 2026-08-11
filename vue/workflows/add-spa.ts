@@ -159,5 +159,21 @@ export const AddSpaWorkflowDefinition = defineWorkflow<
       command: "npm",
       args: ["install", context.spaPackageName],
     })),
+
+    step(CdStepMachine, ({ context }) => ({
+      path: context.cwd,
+    })),
+
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: [
+        "exec",
+        "saf-imports",
+        "tsconfig",
+        "generate",
+        "--",
+        "--write",
+      ],
+    })),
   ],
 });

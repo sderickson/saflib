@@ -16,5 +16,6 @@
     "@saflib/monorepo": "*",
     "@saflib/vitest": "*",
     "@types/node": "^24.0.0"
-  }
+  },
+  "sideEffects": false
 }

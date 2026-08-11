@@ -28,12 +28,6 @@
     },
     {
       "path": "../node"
-    },
-    {
-      "path": "../vitest"
-    },
-    {
-      "path": "../workflows"
     }
   ]
 }

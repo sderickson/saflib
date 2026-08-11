@@ -56,11 +56,11 @@ export const ExpressInitWorkflowDefinition = defineWorkflow<
 
   templateFiles: {
     http: path.join(sourceDir, "http.ts"),
-    index: path.join(sourceDir, "index.ts"),
     packageJson: path.join(sourceDir, "package.json"),
     tsconfig: path.join(sourceDir, "tsconfig.json"),
     vitestConfig: path.join(sourceDir, "vitest.config.js"),
     test: path.join(sourceDir, "index.test.ts"),
+    slimRouteTest: path.join(sourceDir, "testing/slim-route-test.ts"),
   },
 
   docFiles: {

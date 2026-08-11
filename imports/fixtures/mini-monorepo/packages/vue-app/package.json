@@ -10,5 +10,6 @@
   },
   "devDependencies": {
     "@fixture/pkg-b": "*"
-  }
+  },
+  "sideEffects": false
 }

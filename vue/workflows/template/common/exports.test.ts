@@ -1,5 +1,5 @@
 import { expect, it, describe } from "vitest";
-import { vuetifyConfig } from "template-package-clients-common";
+import { vuetifyConfig } from "template-package-clients-common/vuetify-config";
 import { __product_name___common_strings } from "template-package-clients-common/strings";
 
 describe("__product-name__-clients-common package exports", () => {

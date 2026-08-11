@@ -14,5 +14,6 @@
   },
   "scripts": {
     "typecheck": "tsc -b"
-  }
+  },
+  "sideEffects": false
 }

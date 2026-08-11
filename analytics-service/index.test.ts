@@ -66,7 +66,7 @@ describe("createAnalyticsService", () => {
   it("uses PostHog when not in test and type is posthog", () => {
     vi.stubEnv("NODE_ENV", "development");
     vi.spyOn(node, "getSafContext").mockReturnValue({
-      serviceName: "daemon-http",
+      serviceName: "example-http",
       subsystemName: "http",
       operationName: "op",
       auth: { userId: "u2" },
@@ -91,7 +91,7 @@ describe("createAnalyticsService", () => {
   it("uses in-memory when type is in-memory and not in test", () => {
     vi.stubEnv("NODE_ENV", "development");
     vi.spyOn(node, "getSafContext").mockReturnValue({
-      serviceName: "daemon-http",
+      serviceName: "example-http",
       subsystemName: "http",
       operationName: "op",
       auth: { userId: "u" },
@@ -105,7 +105,7 @@ describe("createAnalyticsService", () => {
   it("throws when SafContext has no auth.userId", () => {
     vi.stubEnv("NODE_ENV", "development");
     vi.spyOn(node, "getSafContext").mockReturnValue({
-      serviceName: "daemon-http",
+      serviceName: "example-http",
       subsystemName: "http",
       operationName: "op",
     });
@@ -161,7 +161,7 @@ describe("capture merges ProductEvent envelope org", () => {
 describe("capture merges SafContext (e.g. host)", () => {
   const safWithHost: node.SafContext = {
     requestId: "r1",
-    serviceName: "daemon-http",
+    serviceName: "example-http",
     subsystemName: "http",
     operationName: "PostMatter",
     host: "api.example.com",

@@ -11,6 +11,9 @@ paths:
       $ref: "./routes/jobs/create.yaml#/enqueueJob"
     get:
       $ref: "./routes/jobs/list.yaml#/listJobs"
+  /jobs/cancel-by-original-request:
+    post:
+      $ref: "./routes/jobs/cancel-by-original-request.yaml#/cancelJobsByOriginalRequest"
   /jobs/{id}:
     get:
       $ref: "./routes/jobs/get.yaml#/getJob"
@@ -20,9 +23,6 @@ paths:
   /jobs/{id}/cancel:
     post:
       $ref: "./routes/jobs/cancel.yaml#/cancelJob"
-  /jobs/cancel-by-original-request:
-    post:
-      $ref: "./routes/jobs/cancel-by-original-request.yaml#/cancelJobsByOriginalRequest"
   # END WORKFLOW AREA
 
 components:

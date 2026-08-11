@@ -1,8 +1,8 @@
 import { describe, it, expect } from "vitest";
-import * as exports from "template-package-service-common";
+import { __serviceName__ServiceStorage } from "template-package-service-common/context";
 
 describe("template-package-service-common", () => {
   it("should be defined", () => {
-    expect(exports).toBeDefined();
+    expect(__serviceName__ServiceStorage).toBeDefined();
   });
 });

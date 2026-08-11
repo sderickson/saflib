@@ -1,5 +1,5 @@
 import { afterEach, describe, it, expect, vi } from "vitest";
-import { stubGlobals } from "@saflib/vue/testing";
+import { stubGlobals, asyncUiWaitForOptions } from "@saflib/vue/testing";
 import recoveryAsync from "./RecoveryAsync.vue";
 import {
   mountTestApp,
@@ -27,8 +27,9 @@ describe("recovery", () => {
     await router.isReady();
 
     const wrapper = mountTestApp(recoveryAsync, {}, { router });
-    await vi.waitFor(() =>
-      expect(wrapper.text()).toContain("Reset your password"),
+    await vi.waitFor(
+      () => expect(wrapper.text()).toContain("Reset your password"),
+      asyncUiWaitForOptions,
     );
     wrapper.unmount();
   });

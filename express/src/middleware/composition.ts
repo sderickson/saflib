@@ -90,6 +90,14 @@ export interface ScopedMiddlewareOptions {
 }
 
 /**
+ * Scoped middleware for a single OpenAPI operation fragment (from `@<org>/<spec>/operations/<operationId>`).
+ */
+export const createOperationScopedMiddleware = (
+  apiSpec: OpenAPIV3.DocumentV3,
+  options: Omit<ScopedMiddlewareOptions, "apiSpec"> = {},
+): Handler[] => createScopedMiddleware({ ...options, apiSpec });
+
+/**
  * Middleware which should only be applied to a subset of routes in an express server.
  * This middleware all depends on the OpenAPI spec for those routes.
  */

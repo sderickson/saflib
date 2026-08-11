@@ -1,12 +1,13 @@
-// TODO: remove @ts-expect-error lines as part of workflow
+// @ts-nocheck — scaffold placeholders until express/add-handler copies this file.
+// TODO: remove @ts-nocheck and @ts-expect-error lines as part of workflow
 import { createHandler } from "@saflib/express";
 import type {
-  __ServiceName__ServiceRequestBody,
-  __ServiceName__ServiceResponseBody,
-} from "template-package-spec";
+  RequestBody as __targetName____GroupName__RequestBody,
+  ResponseBody as __targetName____GroupName__ResponseBody,
+} from "template-package-spec/operations/__operationId__";
 import { getSafContextWithAuth } from "@saflib/node";
 // BEGIN ONCE WORKFLOW AREA uploadImports FOR express/add-handler IF upload
-import { __serviceName__ServiceStorage } from "template-package-service-common";
+import { __serviceName__ServiceStorage } from "template-package-service-common/context";
 import createError from "http-errors";
 import { createReadStream } from "fs";
 import { unlink } from "fs/promises";
@@ -14,7 +15,7 @@ import { Readable } from "stream";
 import { sanitizeFilename } from "@saflib/utils";
 // END WORKFLOW AREA
 // TODO: Import neccessary db functions and error classes, as well as any other deps
-// import { __serviceName__Db } from "template-package-db";
+// import { __serviceName__Db } from "template-package-db/instances";
 
 export const __targetName____GroupName__Handler = createHandler(
   async (req, res) => {
@@ -41,7 +42,7 @@ export const __targetName____GroupName__Handler = createHandler(
     const fileSize = multerFile.size;
     // END WORKFLOW AREA
     // @ts-expect-error
-    const data: __ServiceName__ServiceRequestBody["__targetName____GroupName__"] =
+    const data: __targetName____GroupName__RequestBody["__operationId__"] =
       req.body || {};
     
     // TODO: Call your service/DB function here
@@ -82,7 +83,7 @@ export const __targetName____GroupName__Handler = createHandler(
 
     // TODO: Map result to API response
     // @ts-expect-error - TODO: remove ts-expect-error as part of workflow
-    const response: __ServiceName__ServiceResponseBody["__targetName____GroupName__"][201] =
+    const response: __targetName____GroupName__ResponseBody["__operationId__"][201] =
       {
         // Map service result to API response, using _helpers.ts mapper function
       };

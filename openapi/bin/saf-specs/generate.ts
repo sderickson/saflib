@@ -3,7 +3,7 @@ import { addNewLinesToString } from "@saflib/utils";
 import { execSync } from "child_process";
 import { getSafReporters } from "@saflib/node";
 import { errorSchema } from "@saflib/openapi/error";
-import { mkdirSync, writeFileSync } from "fs";
+import { mkdirSync, rmSync, writeFileSync } from "fs";
 import path from "path";
 
 export const addGenerateCommand = (program: Command) => {
@@ -21,6 +21,10 @@ export const addGenerateCommand = (program: Command) => {
       const { log } = getSafReporters();
 
       const { file, output } = options;
+      const outputDir = path.resolve(process.cwd(), output);
+
+      rmSync(outputDir, { recursive: true, force: true });
+      mkdirSync(outputDir, { recursive: true });
 
       mkdirSync(path.join(process.cwd(), "./schemas"), { recursive: true });
 
@@ -46,6 +50,14 @@ export const addGenerateCommand = (program: Command) => {
           stdio: "inherit",
         });
       }
+
+      log.info("Generating per-operation and schema fragments...");
+      const {
+        generateOperationFragments,
+        generateSchemaFragments,
+      } = await import("./generate-fragments.ts");
+      await generateOperationFragments(outputDir);
+      generateSchemaFragments(outputDir);
 
       log.info("✅ OpenAPI generation completed successfully!");
     });

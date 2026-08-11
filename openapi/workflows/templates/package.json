@@ -3,7 +3,9 @@
   "description": "API specs for the __service-name__ service",
   "type": "module",
   "exports": {
-    ".": "./index.ts"
+    ".": "./index.ts",
+    "./operations/*": "./dist/operations/*/index.ts",
+    "./schemas/*": "./dist/schemas/*/index.ts"
   },
   "scripts": {
     "typecheck": "tsc -b"
@@ -11,5 +13,6 @@
   "dependencies": {
     "@saflib/openapi": "*",
     "openapi-typescript": "*"
-  }
+  },
+  "sideEffects": false
 }

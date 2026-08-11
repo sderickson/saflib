@@ -10,10 +10,10 @@
   },
   "dependencies": {
     "@ory/client": "^1.22.28",
+    "@saflib/openapi": "*",
     "@saflib/env": "*",
     "@saflib/node": "*",
     "@saflib/notify": "*",
-    "@saflib/sdk": "*",
     "@saflib/utils": "*",
     "cors": "^2.0.0",
     "express": "^5.0.0",
@@ -40,5 +40,6 @@
     ".": "./src/index.ts",
     "./workflows": "./workflows/index.ts",
     "./resolveAuthFromIdentityId": "./src/resolveAuthFromIdentityId.ts"
-  }
+  },
+  "sideEffects": false
 }

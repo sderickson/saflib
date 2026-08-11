@@ -1,11 +1,13 @@
 import path from "node:path";
 import { defineConfig } from "vitest/config";
+import { importGraphReporters } from "./import-graph-reporter.js";
 
 const testSetupFile = path.join(import.meta.dirname, "test-setup.ts");
 
 export const defaultConfig = defineConfig({
   test: {
     setupFiles: [testSetupFile],
+    reporters: importGraphReporters(),
     /*
      * By default, isolate tests. There's no apparent change in performance, but sometimes tests
      * will break in CI or when you run them locally with --no-file-parallelism, particularly when
@@ -21,7 +23,7 @@ export const defaultConfig = defineConfig({
     environment: "node",
     env: {
       TZ: "UTC",
-      NODE_OPTIONS: "--disable-warning=DEP0040",
+      NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=ExperimentalWarning",
       NODE_ENV: "test",
       TRADEMARK: "Some Product",
     },

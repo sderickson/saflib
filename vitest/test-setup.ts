@@ -1,4 +1,7 @@
 import { addErrorCollector } from "@saflib/node";
+import { installLocalStorageStub } from "./local-storage-stub.ts";
+
+installLocalStorageStub();
 
 /**
  * Register a no-op collector so {@link defaultErrorReporter} and

@@ -24,13 +24,7 @@
   },
   "references": [
     {
-      "path": "../monorepo"
-    },
-    {
       "path": "../node"
-    },
-    {
-      "path": "../vitest"
     }
   ]
 }

@@ -9,7 +9,8 @@
     },
     "./types": "./types.ts"
   },
-  "devDependencies": {
+  "dependencies": {
     "@fixture/pkg-a": "*"
-  }
+  },
+  "sideEffects": false
 }

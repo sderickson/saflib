@@ -42,42 +42,6 @@ Re-exports [BaselineTypecheck](../src/baseline/baseline/interfaces/BaselineTypec
 
 ---
 
-### BudgetLimits
-
-Re-exports [BudgetLimits](../src/budget/check-budgets/interfaces/BudgetLimits.md)
-
----
-
-### BudgetMode
-
-Re-exports [BudgetMode](../src/budget/check-budgets/type-aliases/BudgetMode.md)
-
----
-
-### BudgetViolation
-
-Re-exports [BudgetViolation](../src/budget/check-budgets/interfaces/BudgetViolation.md)
-
----
-
-### checkBudgets
-
-Re-exports [checkBudgets](../src/budget/check-budgets/functions/checkBudgets.md)
-
----
-
-### CheckBudgetsOptions
-
-Re-exports [CheckBudgetsOptions](../src/budget/check-budgets/interfaces/CheckBudgetsOptions.md)
-
----
-
-### CheckBudgetsResult
-
-Re-exports [CheckBudgetsResult](../src/budget/check-budgets/interfaces/CheckBudgetsResult.md)
-
----
-
 ### checkExports
 
 Re-exports [checkExports](../src/exports/generate-exports/functions/checkExports.md)
@@ -156,12 +120,6 @@ Re-exports [formatRegression](../src/baseline/baseline/functions/formatRegressio
 
 ---
 
-### formatViolation
-
-Re-exports [formatViolation](../src/budget/check-budgets/functions/formatViolation.md)
-
----
-
 ### generateBaseline
 
 Re-exports [generateBaseline](../src/baseline/baseline/functions/generateBaseline.md)
@@ -183,12 +141,6 @@ Re-exports [generateExports](../src/exports/generate-exports/functions/generateE
 ### GraphWalkOptions
 
 Re-exports [GraphWalkOptions](../src/types/type-aliases/GraphWalkOptions.md)
-
----
-
-### ImportBudget
-
-Re-exports [ImportBudget](../src/budget/check-budgets/interfaces/ImportBudget.md)
 
 ---
 

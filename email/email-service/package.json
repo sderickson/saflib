@@ -26,5 +26,6 @@
     "@types/supertest": "^7.0.0",
     "express": "^5.0.0",
     "supertest": "^7.0.0"
-  }
+  },
+  "sideEffects": false
 }

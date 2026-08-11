@@ -25,6 +25,7 @@ export {
   createInternalMiddleware,
   createErrorMiddleware,
   createScopedMiddleware,
+  createOperationScopedMiddleware,
   type ScopedMiddlewareOptions,
   type GlobalMiddlewareOptions,
 } from "./middleware/composition.ts";

@@ -30,7 +30,7 @@ of the trigger map crashes the process if a mapped target is missing the tag.
 
 Do **not** put `background` on jobs-service admin/internal routes themselves —
 those are control-plane APIs. Put it on the **work** endpoints in the product
-spec that the queue will call (e.g. daemon demo chain `jobsDemoStepB`).
+spec that the queue will call (e.g. a demo chain `jobsDemoStepB`).
 
 ## Grouping tags
 

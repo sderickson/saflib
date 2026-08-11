@@ -2,8 +2,11 @@ import fs from "node:fs";
 import path from "node:path";
 import {
   buildPackageIndex,
+  existsResolve,
   findMonorepoRoot,
+  resolvePackageExportPath,
 } from "../resolve/index.ts";
+import type { PackageInfo } from "../types.ts";
 
 const SKIP_DIRS = new Set([
   "node_modules",
@@ -14,9 +17,18 @@ const SKIP_DIRS = new Set([
   "bin",
   "docs",
   "workflows",
+  "testing",
 ]);
 
 const WORKFLOW_AREA_RE = /BEGIN\s+(?:ONCE\s+)?(?:SORTED\s+)?WORKFLOW AREA/;
+
+/** Package-local files excluded from generated export maps (internal wiring). */
+const SKIP_FILES = new Set([
+  "env.ts",
+  "schema.ts",
+  "drizzle.config.ts",
+  "instances-registry.ts",
+]);
 
 export type ExportsMap = Record<string, string>;
 
@@ -42,50 +54,48 @@ function isExportableTs(name: string): boolean {
   return true;
 }
 
+function walkExportableFiles(dir: string, out: string[]) {
+  let entries: fs.Dirent[];
+  try {
+    entries = fs.readdirSync(dir, { withFileTypes: true });
+  } catch {
+    return;
+  }
+  for (const e of entries) {
+    if (e.name.startsWith(".")) continue;
+    const full = path.join(dir, e.name);
+    if (e.isDirectory()) {
+      if (SKIP_DIRS.has(e.name)) continue;
+      walkExportableFiles(full, out);
+    } else if (
+      e.isFile() &&
+      isExportableTs(e.name) &&
+      !SKIP_FILES.has(e.name)
+    ) {
+      out.push(full);
+    }
+  }
+}
+
 /**
- * List exportable source files: top-level package `.ts`/`.tsx` plus everything
- * under `src/` (recursive). Excludes tests, fixtures, bin, docs, workflows.
+ * List exportable source files: all `.ts`/`.tsx` under the package directory
+ * (recursive). Excludes tests, fixtures, bin, docs, workflows, and `env.ts`.
  */
 export function listExportableFiles(pkgDir: string): string[] {
   const out: string[] = [];
-
-  // Package root (non-recursive)
-  let rootEntries: fs.Dirent[];
-  try {
-    rootEntries = fs.readdirSync(pkgDir, { withFileTypes: true });
-  } catch {
-    return out;
-  }
-  for (const e of rootEntries) {
-    if (!e.isFile()) continue;
-    if (isExportableTs(e.name)) {
-      out.push(path.join(pkgDir, e.name));
-    }
-  }
-
-  // src/ recursive
-  const srcDir = path.join(pkgDir, "src");
-  function walk(dir: string) {
-    let entries: fs.Dirent[];
-    try {
-      entries = fs.readdirSync(dir, { withFileTypes: true });
-    } catch {
-      return;
-    }
-    for (const e of entries) {
-      if (e.name.startsWith(".")) continue;
-      const full = path.join(dir, e.name);
-      if (e.isDirectory()) {
-        if (SKIP_DIRS.has(e.name)) continue;
-        walk(full);
-      } else if (e.isFile() && isExportableTs(e.name)) {
-        out.push(full);
-      }
-    }
-  }
-  walk(srcDir);
-
+  walkExportableFiles(pkgDir, out);
   return out.sort();
+}
+
+function readExportsAliases(pkgDir: string): ExportsMap {
+  try {
+    const pj = JSON.parse(
+      fs.readFileSync(path.join(pkgDir, "package.json"), "utf8"),
+    ) as { exportsAliases?: ExportsMap };
+    return sortExportsMap(pj.exportsAliases ?? {});
+  } catch {
+    return {};
+  }
 }
 
 /** True if package.json text contains a WORKFLOW AREA marker. */
@@ -112,15 +122,15 @@ export function computeExportsMap(pkgDir: string): ExportsMap {
     let exportKey: string;
     if (withoutExt === "index") {
       exportKey = ".";
-    } else if (withoutExt.endsWith("/index")) {
-      exportKey = "./" + withoutExt.slice(0, -"/index".length);
     } else {
+      // Keep `/index` for nested barrels so imports are explicit
+      // (`@scope/pkg/queries/foo/index`) and match `./queries/*` → `./queries/*.ts`.
       exportKey = "./" + withoutExt;
     }
     map[exportKey] = "./" + rel;
   }
 
-  return sortExportsMap(map);
+  return sortExportsMap({ ...map, ...readExportsAliases(pkgDir) });
 }
 
 export function sortExportsMap(map: ExportsMap): ExportsMap {
@@ -132,6 +142,30 @@ export function sortExportsMap(map: ExportsMap): ExportsMap {
   const out: ExportsMap = {};
   for (const k of keys) out[k] = map[k]!;
   return out;
+}
+
+function exportsHasPatterns(map: ExportsMap): boolean {
+  return Object.keys(map).some((k) => k.includes("*"));
+}
+
+/** Node subpath exports allow only one `*` per pattern key and target. */
+function invalidMultiStarPatternDiffs(map: ExportsMap): string[] {
+  const diffs: string[] = [];
+  for (const [key, value] of Object.entries(map)) {
+    const keyStars = (key.match(/\*/g) ?? []).length;
+    if (keyStars > 1) {
+      diffs.push(
+        `invalid pattern key: ${key} (${keyStars} '*' — Node allows one '*' per key; that '*' may match nested path segments)`,
+      );
+    }
+    const valStars = (value.match(/\*/g) ?? []).length;
+    if (valStars > 1) {
+      diffs.push(
+        `invalid pattern target: ${key} → ${value} (${valStars} '*' in target)`,
+      );
+    }
+  }
+  return diffs;
 }
 
 function readActualExports(pkgDir: string): ExportsMap {
@@ -153,15 +187,71 @@ function readActualExports(pkgDir: string): ExportsMap {
   return sortExportsMap(out);
 }
 
+function resolveExportSubpath(pkg: PackageInfo, subpath: string): string | null {
+  return resolvePackageExportPath(pkg, subpath);
+}
+
+/**
+ * Verify export patterns cover every exportable file (hybrid / wildcard maps).
+ */
+export function checkExportPatternCoverage(pkgDir: string): CheckExportsResult {
+  const expected = computeExportsMap(pkgDir);
+  const actual = readActualExports(pkgDir);
+  const aliases = readExportsAliases(pkgDir);
+  const hasWorkflowMarkers = packageHasWorkflowMarkers(pkgDir);
+  const pkg: PackageInfo = {
+    dir: pkgDir,
+    exports: sortExportsMap({ ...actual, ...aliases }),
+  };
+  const diffs: string[] = [
+    ...invalidMultiStarPatternDiffs(actual),
+    ...invalidMultiStarPatternDiffs(aliases),
+  ];
+
+  for (const [key, relTarget] of Object.entries(expected)) {
+    const subpath = key === "." ? "" : key.slice(2);
+    const exportPath = resolveExportSubpath(pkg, subpath);
+    if (!exportPath) {
+      diffs.push(`uncovered: ${key} → ${relTarget}`);
+      continue;
+    }
+    const resolved = existsResolve(exportPath);
+    if (!resolved) {
+      diffs.push(`unresolvable: ${key} → ${exportPath}`);
+      continue;
+    }
+    const expectedAbs = path.join(pkgDir, relTarget.replace(/^\.\//, ""));
+    if (path.normalize(resolved) !== path.normalize(expectedAbs)) {
+      diffs.push(
+        `wrong target: ${key} → ${path.relative(pkgDir, resolved)} (expected ${relTarget})`,
+      );
+    }
+  }
+
+  return {
+    ok: diffs.length === 0,
+    expected,
+    actual,
+    diffs,
+    hasWorkflowMarkers,
+  };
+}
+
 /**
  * Diff generated exports against committed `package.json` exports.
+ * Packages with wildcard export keys use pattern coverage validation instead.
  */
 export function checkExports(pkgDir: string): CheckExportsResult {
   const expected = computeExportsMap(pkgDir);
   const actual = readActualExports(pkgDir);
+  const aliases = readExportsAliases(pkgDir);
   const hasWorkflowMarkers = packageHasWorkflowMarkers(pkgDir);
-  const diffs: string[] = [];
 
+  if (exportsHasPatterns(actual) || exportsHasPatterns(aliases)) {
+    return checkExportPatternCoverage(pkgDir);
+  }
+
+  const diffs: string[] = [];
   const allKeys = new Set([...Object.keys(expected), ...Object.keys(actual)]);
   for (const key of [...allKeys].sort()) {
     const e = expected[key];
@@ -207,8 +297,12 @@ export function generateExports(pkgDir: string): {
     string,
     unknown
   >;
+  const exportsAliases = readExportsAliases(pkgDir);
   const exports = computeExportsMap(pkgDir);
   pj.exports = exports;
+  if (Object.keys(exportsAliases).length > 0) {
+    pj.exportsAliases = exportsAliases;
+  }
   fs.writeFileSync(pjPath, JSON.stringify(pj, null, 2) + "\n", "utf8");
   return { written: true, exports };
 }

@@ -11,5 +11,6 @@
   },
   "scripts": {
     "typecheck": "tsc --incremental -p tsconfig.typecheck.json"
-  }
+  },
+  "sideEffects": false
 }

@@ -136,7 +136,7 @@ export const InitProductWorkflowDefinition = defineWorkflow<
       targetDir: context.cwd,
       lineReplace: makeLineReplace(context),
     })),
-    // Product templates include pathclerk CI workflows; never keep them in @saflib/saflib.
+    // Product templates may include repo-root CI workflows; never keep them in @saflib/saflib.
     step(
       CommandStepMachine,
       () => ({
@@ -207,6 +207,23 @@ export const InitProductWorkflowDefinition = defineWorkflow<
 * have router.ts import and use createKratosAuthRouter from @saflib/ory-kratos-spa/router
 * have strings.ts import the strings from @saflib/ory-kratos-spa/strings and spread them into auth_strings
 * have test-app.ts import and re-export @saflib/ory-kratos-sdk/fakes as testAppHandlers`,
+    })),
+    step(CdStepMachine, ({ context }) => ({
+      path: context.cwd,
+    })),
+    step(CommandStepMachine, () => ({
+      command: "npm",
+      args: [
+        "exec",
+        "saf-imports",
+        "tsconfig",
+        "generate",
+        "--",
+        "--write",
+      ],
+    })),
+    step(CdStepMachine, ({ context }) => ({
+      path: `./${context.productName}/clients/auth`,
     })),
     step(CommandStepMachine, () => ({
       command: "npm",

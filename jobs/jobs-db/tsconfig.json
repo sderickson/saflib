@@ -3,9 +3,6 @@
   "references": [
     {
       "path": "../../drizzle"
-    },
-    {
-      "path": "../../vitest"
     }
   ],
   "compilerOptions": {

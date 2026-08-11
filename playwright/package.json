@@ -11,7 +11,11 @@
     "@playwright/test": "^1.53.2",
     "@saflib/utils": "*"
   },
+  "devDependencies": {
+    "@types/node": "^24.3.0"
+  },
   "scripts": {
     "typecheck": "tsc -b"
-  }
+  },
+  "sideEffects": false
 }

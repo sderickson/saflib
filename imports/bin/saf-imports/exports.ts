@@ -80,8 +80,12 @@ export const addExportsCommand = (program: Command) => {
 
       const result = checkExports(dir);
       if (result.ok) {
+        const usesPatterns = Object.keys(result.actual).some((k) =>
+          k.includes("*"),
+        );
+        const mode = usesPatterns ? "pattern coverage" : "heuristic";
         console.log(
-          `OK: exports for ${options.package} match heuristic (${Object.keys(result.expected).length} entries).`,
+          `OK: exports for ${options.package} (${mode}, ${Object.keys(result.expected).length} files).`,
         );
         return;
       }

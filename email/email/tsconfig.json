@@ -17,9 +17,6 @@
       "path": "../../env"
     },
     {
-      "path": "../../vitest"
-    },
-    {
       "path": "../email-service"
     },
     {

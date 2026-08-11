@@ -9,6 +9,7 @@ import ignore from "rollup-plugin-ignore";
 import { typedEnv } from "./env.ts";
 import fs from "fs";
 import { getSubdomainProxyRewrite } from "./subdomain-proxy.ts";
+import { workspacePackageExportsPlugin } from "./workspace-package-exports-plugin.ts";
 
 export { getSubdomainProxyRewrite } from "./subdomain-proxy.ts";
 
@@ -117,6 +118,9 @@ export function makeConfig(config: MakeConfigProps = {}) {
       vuetify(
         vuetifyOverrides ? { styles: { configFile: vuetifyOverrides } } : {},
       ),
+      ...(monorepoRoot
+        ? [workspacePackageExportsPlugin({ monorepoRoot })]
+        : []),
       ...(config.useSubdomainProxy !== false ? [subDomainProxyPlugin] : []),
       ...extraPlugins,
     ],

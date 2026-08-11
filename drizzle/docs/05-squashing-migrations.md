@@ -12,7 +12,7 @@ Over time the `migrations/` folder grows — mostly from per-migration snapshot 
 
 ## Steps
 
-Work from the db package (e.g. `daemon/service/db`).
+Work from the db package (e.g. `service/db`).
 
 1. **Backup** any on-disk DB you care about keeping:
 

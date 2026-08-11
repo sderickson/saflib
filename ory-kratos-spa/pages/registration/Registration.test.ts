@@ -1,5 +1,5 @@
 import { afterEach, describe, it, expect, vi } from "vitest";
-import { stubGlobals } from "@saflib/vue/testing";
+import { stubGlobals, asyncUiWaitForOptions } from "@saflib/vue/testing";
 import registrationAsync from "./RegistrationAsync.vue";
 import {
   mountTestApp,
@@ -23,8 +23,9 @@ describe("registration", () => {
     await router.isReady();
 
     const wrapper = mountTestApp(registrationAsync, {}, { router });
-    await vi.waitFor(() =>
-      expect(wrapper.text()).toContain("Create your account"),
+    await vi.waitFor(
+      () => expect(wrapper.text()).toContain("Create your account"),
+      asyncUiWaitForOptions,
     );
     wrapper.unmount();
   });

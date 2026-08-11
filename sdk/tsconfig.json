@@ -4,16 +4,10 @@
   ],
   "references": [
     {
-      "path": "../dev-tools"
-    },
-    {
       "path": "../links"
     },
     {
-      "path": "../vitest"
-    },
-    {
-      "path": "../workflows"
+      "path": "../utils"
     }
   ],
   "compilerOptions": {

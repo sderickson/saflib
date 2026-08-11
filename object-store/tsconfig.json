@@ -5,13 +5,7 @@
       "path": "../env"
     },
     {
-      "path": "../monorepo"
-    },
-    {
       "path": "../node"
-    },
-    {
-      "path": "../vitest"
     }
   ],
   "compilerOptions": {

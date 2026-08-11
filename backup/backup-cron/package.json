@@ -20,5 +20,6 @@
   },
   "devDependencies": {
     "@saflib/vitest": "*"
-  }
+  },
+  "sideEffects": false
 }

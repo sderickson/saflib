@@ -55,7 +55,8 @@ export const unsafeRequestLogger: Handler = (req, res, next) => {
   }
 
   const { log } = getSafReporters();
-  const operationName = req.openapi?.schema?.operationId || "unknown";
+  const operationName =
+    req.openapi?.schema?.operationId ?? req.openapi?.openApiRoute ?? "unknown";
   res.on("finish", () => {
     if (operationName === "unknown") {
       log.warn("Unknown operation name", {

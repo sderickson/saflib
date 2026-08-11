@@ -15,5 +15,6 @@
     "@saflib/sdk": "*",
     "@saflib/vue": "*",
     "@tanstack/vue-query": "*"
-  }
+  },
+  "sideEffects": false
 }

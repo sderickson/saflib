@@ -24,5 +24,6 @@
     "@saflib/vitest": "*",
     "@types/better-sqlite3": "^7.0.0",
     "drizzle-kit": "^0.31.10"
-  }
+  },
+  "sideEffects": false
 }

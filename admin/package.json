@@ -17,5 +17,6 @@
     "@saflib/cron-vue": "*",
     "@saflib/email-vue": "*",
     "@saflib/vue": "*"
-  }
+  },
+  "sideEffects": false
 }

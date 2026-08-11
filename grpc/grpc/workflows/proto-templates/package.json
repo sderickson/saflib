@@ -19,5 +19,6 @@
   "devDependencies": {
     "@saflib/monorepo": "*",
     "@types/google-protobuf": "*"
-  }
+  },
+  "sideEffects": false
 }

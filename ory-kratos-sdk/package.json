@@ -26,5 +26,9 @@
     "@saflib/monorepo": "*",
     "@saflib/vitest": "*",
     "msw": "^2.11.3"
-  }
+  },
+  "sideEffects": [
+    "./index.ts",
+    "./vue-query-register.ts"
+  ]
 }

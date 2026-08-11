@@ -95,6 +95,9 @@ export const startExpressServer = (
      * Event listener for HTTP server "listening" event.
      */
     function onListening() {
+      if (process.env.NODE_ENV === "test") {
+        return;
+      }
       const addr = server!.address();
       const bind =
         typeof addr === "string" ? "pipe " + addr : "port " + addr?.port;
@@ -123,7 +126,9 @@ export const startExpressServer = (
     });
     internalServer.listen(socketPath, () => {
       fs.chmodSync(socketPath, 0o700);
-      console.log("Express internal server started on " + socketPath);
+      if (process.env.NODE_ENV !== "test") {
+        console.log("Express internal server started on " + socketPath);
+      }
     });
   }
 

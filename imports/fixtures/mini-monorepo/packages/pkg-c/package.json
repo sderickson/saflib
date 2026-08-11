@@ -4,5 +4,6 @@
   "type": "module",
   "exports": {
     ".": "./index.ts"
-  }
+  },
+  "sideEffects": false
 }

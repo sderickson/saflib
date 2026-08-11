@@ -59,7 +59,6 @@ export const DrizzleInitWorkflowDefinition = defineWorkflow<
     instances: path.join(sourceDir, "instances.ts"),
     errors: path.join(sourceDir, "errors.ts"),
     types: path.join(sourceDir, "types.ts"),
-    index: path.join(sourceDir, "index.ts"),
     tsconfig: path.join(sourceDir, "tsconfig.json"),
     vitestConfig: path.join(sourceDir, "vitest.config.js"),
     gitignore: path.join(sourceDir, ".gitignore"),

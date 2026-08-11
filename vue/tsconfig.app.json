@@ -17,22 +17,10 @@
       "path": "../monorepo"
     },
     {
-      "path": "../ory-kratos-sdk"
-    },
-    {
-      "path": "../playwright"
-    },
-    {
       "path": "../sdk"
     },
     {
       "path": "../utils"
-    },
-    {
-      "path": "../vitest"
-    },
-    {
-      "path": "../workflows"
     }
   ],
   "include": [
@@ -47,6 +35,7 @@
     "e2e",
     "playwright-report",
     "test-results",
+    "workflows/**/*.test.ts",
     "workflows/template/**",
     "workflows/templates/**",
     "**/workflows/template/**",

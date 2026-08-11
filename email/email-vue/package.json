@@ -17,5 +17,6 @@
     "@saflib/vue": "*",
     "@saflib/cron-spec": "*",
     "@tanstack/vue-query": "*"
-  }
+  },
+  "sideEffects": false
 }

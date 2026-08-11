@@ -34,7 +34,7 @@ describe("CSRF token middleware", () => {
   const originalProtocol = process.env.PROTOCOL;
 
   beforeAll(() => {
-    process.env.DOMAIN = "daemon.docker.localhost";
+    process.env.DOMAIN = "app.docker.localhost";
     process.env.PROTOCOL = "http";
   });
 
@@ -62,7 +62,7 @@ describe("CSRF token middleware", () => {
     expect(parsed.value).toMatch(/^[a-f0-9]{48}$/);
     expect(parsed.path).toBe("/");
     expect(parsed.samesite).toBe("Lax");
-    expect(parsed.domain).toBe(".daemon.docker.localhost");
+    expect(parsed.domain).toBe(".app.docker.localhost");
 
     if (typedEnv.PROTOCOL === "https") {
       expect(parsed.secure).toBe("true");

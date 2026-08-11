@@ -14,6 +14,10 @@ const baseTest = {
   globals: true,
   exclude: ["**/e2e/**"],
   setupFiles: [setupFile],
+  env: {
+    NODE_OPTIONS:
+      "--disable-warning=DEP0040 --disable-warning=ExperimentalWarning",
+  },
   // SPAs may have no unit tests until add-view extracts logic/composables.
   passWithNoTests: true,
   // Default Vitest is 5s; AsyncPage + MSW + dynamic imports use asyncUiWaitForOptions (10s).
@@ -62,6 +66,18 @@ const baseCoverage = {
  */
 export const defaultConfig = defineConfig({
   plugins: [vue(), vuetify()],
+  resolve: {
+    // Root and saflib can resolve different vue copies; mixed runtimes break Vuetify slots.
+    dedupe: [
+      "vue",
+      "vue-router",
+      "vue-i18n",
+      "@vue/runtime-core",
+      "@vue/runtime-dom",
+      "@vue/reactivity",
+      "@vue/shared",
+    ],
+  },
   test: {
     ...baseTest,
     coverage: baseCoverage,
@@ -75,6 +91,7 @@ export const defaultConfig = defineConfig({
  */
 export const defaultConfigWithCoverageEnforcement = defineConfig({
   plugins: [vue(), vuetify()],
+  resolve: defaultConfig.resolve,
   test: {
     ...baseTest,
     coverage: {

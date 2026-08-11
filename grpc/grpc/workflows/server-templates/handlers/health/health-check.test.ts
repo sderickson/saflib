@@ -2,7 +2,7 @@ import { describe, it, beforeEach, expect } from "vitest";
 import {
   makeContext,
   __serviceName__ServiceStorage,
-} from "template-package-service-common";
+} from "template-package-service-common/context";
 import { testContext, safContextStorage } from "@saflib/node";
 import { handleHealthCheck } from "./health-check.ts";
 import { __ServiceName__HealthCheckRequest } from "template-package-grpc-proto";

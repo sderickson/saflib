@@ -43,13 +43,14 @@ export function createJobsApp(options: JobsServiceOptions): express.Express {
     });
   });
 
-  app.use(
+  app.post(
+    "/jobs",
     ...createScopedMiddleware({
       apiSpec: jsonSpec,
       enforceAuth: true,
     }),
+    enqueueJobHandler,
   );
-  app.post("/jobs", enqueueJobHandler);
   app.use(createErrorMiddleware());
 
   return app;

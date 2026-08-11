@@ -24,7 +24,7 @@ export function cronTriggerKey(jobName: string): string {
 /**
  * Product-side check: every `cron:` trigger-map key names a registered cron
  * job, and every registered cron job has a `cron:` trigger-map entry.
- * Call at daemon startup with `Object.keys(jobsMap)` (no `@saflib/cron` import).
+ * Call at service startup with `Object.keys(jobsMap)` (no `@saflib/cron` import).
  */
 export function validateCronTriggerKeys(
   triggerMap: TriggerMap,

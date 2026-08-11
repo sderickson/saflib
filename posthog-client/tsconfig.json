@@ -28,9 +28,6 @@
     },
     {
       "path": "../ory-kratos-sdk"
-    },
-    {
-      "path": "../vitest"
     }
   ]
 }

@@ -98,7 +98,7 @@ export const CronInitWorkflowDefinition = defineWorkflow<
 **Admin SPA (optional but typical)**  
 - Add \`@saflib/cron-vue\` to the admin client package if missing.
 - Register a route that renders \`CronJobsPage\` from \`@saflib/cron-vue\` (often via a thin wrapper component).
-- Pass the \`subdomain\` prop the same way other admin API clients do in this repo (often \`"api"\` when the daemon SDK uses \`createSafClient("api")\` so \`/cron/jobs\` hits the same host as the rest of the API).
+- Pass the \`subdomain\` prop the same way other admin API clients do in this repo (often \`"api"\` when the product SDK uses \`createSafClient("api")\` so \`/cron/jobs\` hits the same host as the rest of the API).
 - Add a sidebar / nav link (e.g. next to other admin pages).
 
 **Process entry (monolith vs standalone service)**  
@@ -108,7 +108,7 @@ export const CronInitWorkflowDefinition = defineWorkflow<
 - If the app uses \`initializeDependencies()\` or similar for secrets/integrations, ensure it runs before \`run*Cron\` when jobs need those clients.
 
 **Docker / deploy (persistent cron job settings DB)**  
-- Persist the **directory containing** the SQLite file you pass to \`cronDb.connect({ onDisk: ".../file.sqlite" })\` (e.g. mount \`<repo>/daemon/service/cron/data:/app/daemon/service/cron/data\` when the file is under \`daemon/service/cron/data/\` in the image).
+- Persist the **directory containing** the SQLite file you pass to \`cronDb.connect({ onDisk: ".../file.sqlite" })\` (e.g. mount \`<repo>/service/cron/data:/app/service/cron/data\` when the file lives under that path in the image).
 - If you use \`onDisk: true\` without a path, SQLite defaults to \`saflib/cron/cron-db/data/\` in the image—mount that path instead.
 - Ensure first deploy can create the DB (migrations run on connect; align with \`ALLOW_DB_CREATION\` / ops conventions used for the main app DB when applicable).
 

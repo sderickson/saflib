@@ -2,7 +2,9 @@
 // This setup file is referenced by vitest-config.js and runs before each test file.
 
 import { addErrorCollector } from "@saflib/node";
+import { installLocalStorageStub } from "@saflib/vitest/local-storage-stub";
 
+installLocalStorageStub();
 addErrorCollector(() => {});
 
 const originalConsoleWarn = console.warn;

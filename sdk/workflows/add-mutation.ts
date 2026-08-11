@@ -12,6 +12,7 @@ import {
   makeLineReplace,
   PromptStepMachine,
 } from "@saflib/workflows";
+import { kebabCaseToCamelCase, kebabCaseToPascalCase } from "@saflib/utils";
 import path from "node:path";
 
 const sourceDir = path.join(import.meta.dirname, "templates");
@@ -51,6 +52,7 @@ interface AddMutationWorkflowContext
   extends ParsePackageNameOutput,
     ParsePathOutput {
   mutationName: string;
+  operationId: string;
   upload: boolean;
   download: boolean;
   urlPath: string;
@@ -78,6 +80,9 @@ export const AddSdkMutationWorkflowDefinition = defineWorkflow<
       cwd: input.cwd,
       requiredPrefix: "./requests/",
     });
+    const operationId =
+      kebabCaseToCamelCase(pathResult.targetName.split(".")[0]) +
+      kebabCaseToPascalCase(pathResult.groupName);
     return {
       ...parsePackageName(getPackageName(input.cwd), {
         requiredSuffix: "-sdk",
@@ -86,6 +91,7 @@ export const AddSdkMutationWorkflowDefinition = defineWorkflow<
       ...pathResult,
       targetDir: input.cwd,
       mutationName: pathResult.targetName,
+      operationId,
       upload: input.upload ?? false,
       download: input.download ?? false,
       urlPath: input.urlPath,
@@ -109,7 +115,6 @@ export const AddSdkMutationWorkflowDefinition = defineWorkflow<
       sourceDir,
       "requests/__group-name__/__mutation-name__.test.ts",
     ),
-    rootIndex: path.join(sourceDir, "index.ts"),
     rootFakes: path.join(sourceDir, "fakes.ts"),
   },
 
