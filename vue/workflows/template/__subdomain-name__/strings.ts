@@ -1,4 +1,4 @@
-import { __product_name___common_strings } from "../common/strings.ts";
+import { __product_name___common_strings } from "template-package-clients-common/strings";
 
 // BEGIN WORKFLOW AREA string-imports FOR vue/add-view sdk/add-component
 import { __full_name__ } from "./__group-name__/__TargetName__.strings.ts";
