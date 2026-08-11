@@ -1,5 +1,8 @@
 {
   "files": [],
+  "compilerOptions": {
+    "composite": true
+  },
   "references": [
     {
       "path": "./admin"
@@ -36,6 +39,9 @@
     },
     {
       "path": "./cron/cron-vue"
+    },
+    {
+      "path": "./deploy"
     },
     {
       "path": "./dev-tools"

@@ -26,6 +26,8 @@ saf-workflow-status.error.json
 !**/assets.d.ts
 !**/vitest-config.d.ts
 !**/env.d.ts
+# OpenAPI typed fragments (saf-specs generate) — co-located next to openapi.json
+!**/openapi.d.ts
 
 # Product init workflow-script artifacts (must not land in saflib repo root)
 /tmp/

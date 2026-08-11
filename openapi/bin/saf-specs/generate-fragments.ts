@@ -47,6 +47,30 @@ function schemaTypeExportName(schemaName: string): string {
   return camel.charAt(0).toUpperCase() + camel.slice(1);
 }
 
+/**
+ * OpenAPI bundles often expose the same schema under two keys that differ only
+ * by casing (e.g. components `Error` plus a file ref that becomes `error`).
+ * Emitting both `dist/schemas/Error` and `dist/schemas/error` breaks
+ * `tsc` on case-sensitive filesystems (CI Linux). Keep one canonical name.
+ */
+export function canonicalSchemaFragmentNames(schemaNames: string[]): string[] {
+  const byLower = new Map<string, string>();
+  for (const name of [...schemaNames].sort((a, b) => a.localeCompare(b))) {
+    const lower = name.toLowerCase();
+    const existing = byLower.get(lower);
+    if (!existing) {
+      byLower.set(lower, name);
+      continue;
+    }
+    // Prefer PascalCase component ids (OpenAPI convention) over filename-derived keys.
+    const preferNew = /^[A-Z]/.test(name) && !/^[A-Z]/.test(existing);
+    if (preferNew) {
+      byLower.set(lower, name);
+    }
+  }
+  return [...byLower.values()].sort((a, b) => a.localeCompare(b));
+}
+
 function writeSchemaIndex(schemaDir: string, schemaName: string): void {
   const typeName = schemaTypeExportName(schemaName);
   writeFileSync(
@@ -124,7 +148,9 @@ export function generateSchemaFragments(outputDir: string): number {
   const bundledJsonPath = path.join(outputDir, "openapi.json");
   const bundled = JSON.parse(readFileSync(bundledJsonPath, "utf8")) as OpenApiDoc;
 
-  const schemaNames = Object.keys(bundled.components?.schemas ?? {}).sort();
+  const schemaNames = canonicalSchemaFragmentNames(
+    Object.keys(bundled.components?.schemas ?? {}),
+  );
   const schemasRoot = path.join(outputDir, "schemas");
   mkdirSync(schemasRoot, { recursive: true });
 

@@ -60,18 +60,18 @@ __operationId__:
       content:
         application/json:
           schema:
-            $ref: "../../schemas/error.yaml"
+            $ref: "#/components/schemas/Error"
 
     "403":
       description: "Forbidden - user does not have required privileges."
       content:
         application/json:
           schema:
-            $ref: "../../schemas/error.yaml"
+            $ref: "#/components/schemas/Error"
 
     "404":
       description: "Not Found"
       content:
         application/json:
           schema:
-            $ref: "../../schemas/error.yaml"
+            $ref: "#/components/schemas/Error"

@@ -33,10 +33,10 @@
     "typecheck": "tsc"
   },
   "dependencies": {
-    "@saflib/commander": "*"
+    "@saflib/commander": "*",
+    "@saflib/dev-tools": "*"
   },
   "devDependencies": {
-    "@saflib/dev-tools": "*",
     "@saflib/monorepo": "*",
     "@saflib/vitest": "*",
     "vitest": "^3.0.0"

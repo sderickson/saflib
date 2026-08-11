@@ -27,9 +27,6 @@
       "path": "../openapi"
     },
     {
-      "path": "../sdk"
-    },
-    {
       "path": "../utils"
     }
   ],

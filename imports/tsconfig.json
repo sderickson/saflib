@@ -17,6 +17,9 @@
   "references": [
     {
       "path": "../commander"
+    },
+    {
+      "path": "../dev-tools"
     }
   ],
   "compilerOptions": {
