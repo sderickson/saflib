@@ -15,6 +15,11 @@ export type {
   TestFileNavNode,
   TestScope,
 } from "./test-tree.ts";
+export {
+  extractLeadingJsDocProse,
+  shortenMarkdownSummary,
+  parsePackageDescription,
+} from "./scope-docs.ts";
 export { buildPackageDirTree, packageKindIcon } from "./package-dir-tree.ts";
 export type { PackageDirNode } from "./package-dir-tree.ts";
 export { sourceOpenUrls, openSource } from "./source-links.ts";

@@ -217,3 +217,40 @@ export function useRepoFile(
     },
   });
 }
+
+/**
+ * Try several repo paths at a commit; return the first file that exists.
+ * Used for adjacent-source / README fallbacks where 404 is expected.
+ */
+export function useFirstRepoFile(
+  subdomain: string,
+  params: MaybeRefOrGetter<{ ref: string; paths: string[] }>,
+) {
+  const client = createDevSiteClient(subdomain);
+  return useQuery<
+    DevSiteResponseBody["getRepoFile"][200] | null,
+    TanstackError
+  >({
+    queryKey: ["dev-site", "repo-file-first", params],
+    enabled: () => {
+      const p = toValue(params);
+      return Boolean(p.ref && p.paths.length);
+    },
+    queryFn: async () => {
+      const p = toValue(params);
+      for (const path of p.paths) {
+        try {
+          return await handleClientMethod(
+            client.GET("/api/repo/file", {
+              params: { query: { ref: p.ref, path } },
+            }),
+          );
+        } catch (err) {
+          if (err instanceof TanstackError && err.status === 404) continue;
+          throw err;
+        }
+      }
+      return null;
+    },
+  });
+}

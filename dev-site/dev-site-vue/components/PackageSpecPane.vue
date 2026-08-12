@@ -26,9 +26,19 @@
       </aside>
 
       <section class="spec-split__panel">
-        <div class="text-caption text-medium-emphasis mb-2">
+        <div class="text-caption text-medium-emphasis mb-1">
           {{ scopeLabel }}
         </div>
+        <p v-if="scopeSummary" class="scope-summary mb-3">
+          {{ scopeSummary }}
+        </p>
+        <p
+          v-else-if="scope.kind !== 'all' && !scopeDocLoading"
+          class="text-caption text-medium-emphasis mb-3"
+        >
+          {{ missingScopeHint }}
+        </p>
+
         <TestTree
           v-if="testTree.length"
           :nodes="testTree"
@@ -72,12 +82,18 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
-import { useCommitPackage } from "../requests/queries";
+import { useCommitPackage, useFirstRepoFile } from "../requests/queries";
 import {
   buildPackageTestTree,
   buildTestFileNav,
   type TestScope,
 } from "../test-tree";
+import {
+  extractLeadingJsDocProse,
+  fileScopeDocCandidates,
+  shortenMarkdownSummary,
+} from "../scope-docs";
+import { repoPathPrefix } from "../repo-paths";
 import { openSource } from "../source-links";
 import TestTree from "./TestTree.vue";
 import TestFileNav from "./TestFileNav.vue";
@@ -110,6 +126,49 @@ const { data, isLoading, error } = useCommitPackage(
 );
 
 const detail = computed(() => data.value?.packageDetail);
+
+const pkgPrefix = computed(() =>
+  repoPathPrefix(props.productRoot, props.packageDirectory),
+);
+
+const scopeDocPaths = computed(() => {
+  const prefix = pkgPrefix.value;
+  const s = scope.value;
+  if (s.kind === "all") return [] as string[];
+  if (s.kind === "dir") {
+    const base = [prefix, s.localPath].filter(Boolean).join("/");
+    return [`${base}/README.md`, `${base}/readme.md`];
+  }
+  const testRepoPath = [prefix, s.localPath].filter(Boolean).join("/");
+  return fileScopeDocCandidates(testRepoPath);
+});
+
+const {
+  data: scopeDocFile,
+  isLoading: scopeDocLoading,
+} = useFirstRepoFile(props.subdomain, () => ({
+  ref: props.commitHash,
+  paths: scopeDocPaths.value,
+}));
+
+const scopeSummary = computed(() => {
+  const file = scopeDocFile.value;
+  if (!file?.content) return null;
+  if (file.path.toLowerCase().endsWith(".md")) {
+    return shortenMarkdownSummary(file.content);
+  }
+  return extractLeadingJsDocProse(file.content);
+});
+
+const missingScopeHint = computed(() => {
+  if (scope.value.kind === "dir") {
+    return "Add a README.md in this directory to describe what belongs here.";
+  }
+  if (scope.value.kind === "file") {
+    return "Add a file-level /** … */ on the adjacent source (or this test) to describe its scope.";
+  }
+  return "";
+});
 
 const fileNav = computed(() => {
   const d = detail.value;
@@ -209,6 +268,13 @@ const openFile = (path: string) => {
 }
 .spec-split__panel {
   min-width: 0;
+}
+.scope-summary {
+  margin: 0;
+  max-width: 42rem;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: rgba(var(--v-theme-on-surface), 0.78);
 }
 .unlinked__list {
   list-style: none;

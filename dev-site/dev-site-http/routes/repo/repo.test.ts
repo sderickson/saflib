@@ -115,6 +115,25 @@ describe("repo routes", () => {
     });
   });
 
+  it("GET /api/repo/file prefers working tree at HEAD", async () => {
+    writeFileSync(join(repoRoot, "docs/guide.md"), "# Guide (edited)\n");
+    writeFileSync(join(repoRoot, "docs/new-readme.md"), "# New\n");
+    const edited = await request(lease.app)
+      .get("/api/repo/file")
+      .query({ ref: headHash, path: "docs/guide.md" });
+    expect(edited.status).toBe(200);
+    expect(edited.body.content).toBe("# Guide (edited)\n");
+
+    const created = await request(lease.app)
+      .get("/api/repo/file")
+      .query({ ref: "HEAD", path: "docs/new-readme.md" });
+    expect(created.status).toBe(200);
+    expect(created.body.content).toBe("# New\n");
+
+    // Restore for other tests / cleanup cleanliness
+    writeFileSync(join(repoRoot, "docs/guide.md"), "# Guide\n");
+  });
+
   it("GET /api/repo/file returns 404 when missing", async () => {
     const response = await request(lease.app)
       .get("/api/repo/file")

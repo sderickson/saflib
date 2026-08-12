@@ -56,11 +56,14 @@
 
         <section class="checkout-split__panel">
           <template v-if="selectedPkg">
-            <div class="d-flex flex-wrap align-center ga-2 mb-3">
+            <div class="d-flex flex-wrap align-center ga-2 mb-2">
               <v-icon :icon="packageKindIcon(selectedPkg.kind)" />
               <h2 class="text-h6 mb-0">{{ selectedPkg.packageName }}</h2>
               <v-chip size="small" variant="tonal">{{ selectedPkg.kind }}</v-chip>
             </div>
+            <p v-if="packageDescription" class="text-body-2 mb-2 package-desc">
+              {{ packageDescription }}
+            </p>
             <p class="text-body-2 text-medium-emphasis mb-3">
               {{ selectedPkg.sourceLines }} src /
               {{ selectedPkg.testLines }} test LOC ·
@@ -114,12 +117,14 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { useCheckout, useScanMutation } from "../requests/queries";
+import { useCheckout, useRepoFile, useScanMutation } from "../requests/queries";
 import { classifyPackageKind } from "../package-kind";
 import {
   buildPackageDirTree,
   packageKindIcon,
 } from "../package-dir-tree";
+import { parsePackageDescription } from "../scope-docs";
+import { repoPathPrefix } from "../repo-paths";
 import PackageDirTree from "../components/PackageDirTree.vue";
 import PackageDocsPane from "../components/PackageDocsPane.vue";
 import PackageSpecPane from "../components/PackageSpecPane.vue";
@@ -174,6 +179,26 @@ const selectedPackageName = computed(() => {
 const selectedPkg = computed(() =>
   packageRows.value.find((p) => p.packageName === selectedPackageName.value),
 );
+
+const packageJsonPath = computed(() => {
+  if (!selectedPkg.value || !checkout.value?.analyzed) return "";
+  const prefix = repoPathPrefix(
+    checkout.value.productRoot,
+    selectedPkg.value.directory,
+  );
+  return prefix ? `${prefix}/package.json` : "package.json";
+});
+
+const { data: packageJsonFile } = useRepoFile(props.subdomain, () => ({
+  ref: checkout.value?.analyzed ? checkout.value.hash : "",
+  path: packageJsonPath.value,
+}));
+
+const packageDescription = computed(() => {
+  const content = packageJsonFile.value?.content;
+  if (!content) return null;
+  return parsePackageDescription(content);
+});
 
 watch(
   [checkout, selectedPackageName],
@@ -254,5 +279,9 @@ const formatDateTime = (dateTimeString: string): string => {
 }
 .checkout-split__panel {
   min-width: 0;
+}
+.package-desc {
+  max-width: 42rem;
+  line-height: 1.45;
 }
 </style>
