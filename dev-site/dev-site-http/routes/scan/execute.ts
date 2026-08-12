@@ -1,16 +1,21 @@
 import { createHandler } from "@saflib/express";
-import type { ResponseBody } from "@saflib/dev-site-spec/operations/executeScan";
+import type {
+  ResponseBody,
+  RequestBody,
+} from "@saflib/dev-site-spec/operations/executeScan";
 import createError from "http-errors";
 import { GitCommandError } from "@saflib/git";
 import { getDevSiteHttpContext } from "../../context.ts";
 import { scanCommits } from "../../scan.ts";
 
-export const executeScanHandler = createHandler(async (_req, res) => {
+export const executeScanHandler = createHandler(async (req, res) => {
   const { dbKey, repoRoot, productRoot, mainRef } = getDevSiteHttpContext();
+  const body = (req.body ?? {}) as NonNullable<RequestBody["executeScan"]>;
   const { result, error } = await scanCommits(dbKey, {
     repoRoot,
     productRoot,
     mainRef,
+    limit: body.limit,
   });
   if (error) {
     switch (true) {

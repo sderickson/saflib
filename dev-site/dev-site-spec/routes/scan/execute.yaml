@@ -15,8 +15,15 @@ executeScan:
         schema:
           type: object
           additionalProperties: false
-          description: Empty object; scan options are server-configured for v1.
-          properties: {}
+          description: >
+            Scan options. Empty object is fine for a full scan; `limit` caps how
+            many new mainline commits are analyzed in this run (feature-branch
+            tips are skipped when limit is set).
+          properties:
+            limit:
+              type: integer
+              minimum: 1
+              description: Max new mainline commits to analyze this run.
   responses:
     "200":
       description: Scan completed; returns which commits were ingested.

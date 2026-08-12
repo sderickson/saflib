@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/vue-query";
 import type { MaybeRefOrGetter } from "vue";
 import { toValue } from "vue";
+import createClient from "openapi-fetch";
 import type {
   paths,
   DevSiteResponseBody,
@@ -8,11 +9,42 @@ import type {
 } from "@saflib/dev-site-spec";
 import { TanstackError, handleClientMethod, createSafClient } from "@saflib/sdk";
 
+/**
+ * Create an openapi-fetch client for the dev-site API.
+ *
+ * - Pass a short subdomain (e.g. `"test"`) for the usual SAF `subdomain.host` client
+ *   (component tests / MSW).
+ * - Pass `""` for same-origin requests (SPA behind Vite proxy or Express static).
+ */
+export function createDevSiteClient(subdomain: string) {
+  if (subdomain === "") {
+    return createClient<paths>({
+      baseUrl: "",
+      credentials: "include",
+      fetch: (request) => {
+        const csrfToken = document.cookie
+          .split("; ")
+          .find((row) => row.startsWith("_csrf_token="))
+          ?.split("=")[1];
+        if (csrfToken) {
+          request.headers.set("X-CSRF-Token", csrfToken);
+        }
+        const method = request.method.toUpperCase();
+        if (!["GET", "HEAD", "OPTIONS"].includes(method)) {
+          request.headers.set("X-Requested-With", "XMLHttpRequest");
+        }
+        return fetch(request);
+      },
+    });
+  }
+  return createSafClient<paths>(subdomain);
+}
+
 export function useCommits(
   subdomain: string,
   params: MaybeRefOrGetter<{ cursor?: string; limit?: number }> = {},
 ) {
-  const client = createSafClient<paths>(subdomain);
+  const client = createDevSiteClient(subdomain);
   return useQuery<DevSiteResponseBody["listCommits"][200], TanstackError>({
     queryKey: ["dev-site", "commits", params],
     queryFn: () => {
@@ -35,7 +67,7 @@ export function useCommit(
   subdomain: string,
   hash: MaybeRefOrGetter<string>,
 ) {
-  const client = createSafClient<paths>(subdomain);
+  const client = createDevSiteClient(subdomain);
   return useQuery<DevSiteResponseBody["getCommits"][200], TanstackError>({
     queryKey: ["dev-site", "commit", hash],
     enabled: () => Boolean(toValue(hash)),
@@ -54,7 +86,7 @@ export function useCommitDiff(
   fromHash: MaybeRefOrGetter<string>,
   toHash: MaybeRefOrGetter<string>,
 ) {
-  const client = createSafClient<paths>(subdomain);
+  const client = createDevSiteClient(subdomain);
   return useQuery<DevSiteResponseBody["diffCommits"][200], TanstackError>({
     queryKey: ["dev-site", "diff", fromHash, toHash],
     enabled: () => Boolean(toValue(fromHash) && toValue(toHash)),
@@ -74,7 +106,7 @@ export function useCommitDiff(
 }
 
 export function useScanMutation(subdomain: string) {
-  const client = createSafClient<paths>(subdomain);
+  const client = createDevSiteClient(subdomain);
   const queryClient = useQueryClient();
   return useMutation<
     DevSiteResponseBody["executeScan"][200],

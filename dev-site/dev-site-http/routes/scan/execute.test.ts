@@ -70,7 +70,7 @@ describe("POST /scan", () => {
   it("scans and returns newly ingested hashes", async () => {
     const response = await request(lease.app)
       .post("/scan")
-      .send({});
+      .send({ limit: 5 });
 
     expect(response.status).toBe(200);
     expect(response.body.scanned).toEqual([commitHash]);
@@ -79,8 +79,8 @@ describe("POST /scan", () => {
   });
 
   it("skips already-scanned commits on a second call", async () => {
-    await request(lease.app).post("/scan").send({});
-    const response = await request(lease.app).post("/scan").send({});
+    await request(lease.app).post("/scan").send({ limit: 5 });
+    const response = await request(lease.app).post("/scan").send({ limit: 5 });
     expect(response.status).toBe(200);
     expect(response.body.scanned).toEqual([]);
     // No new candidates after the latest hash → empty skipped set.

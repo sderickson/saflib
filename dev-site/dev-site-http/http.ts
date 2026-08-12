@@ -4,6 +4,8 @@ import {
 } from "@saflib/express";
 import express, { type Router } from "express";
 import type { DbKey } from "@saflib/drizzle";
+import path from "node:path";
+import fs from "node:fs";
 import { devSiteDb } from "@saflib/dev-site-db/instances";
 import { devSiteHttpStorage } from "./context.ts";
 
@@ -25,6 +27,11 @@ export type CreateDevSiteHttpAppOptions = {
   productRoot?: string;
   /** Main branch ref. Defaults to `main`. */
   mainRef?: string;
+  /**
+   * Directory of built SPA assets (Vite `dist`). When set, Express serves them
+   * and falls back to `index.html` for client-side routes.
+   */
+  staticDir?: string;
   /**
    * Slim route tests mount one or more production routers. When omitted, every
    * product router from the workflow area below is mounted (monolith / smoke).
@@ -87,6 +94,23 @@ export function createDevSiteHttpApp(
   // BEGIN WORKFLOW AREA app-use-routes FOR express/add-handler
 
   // END WORKFLOW AREA
+
+  if (options.staticDir) {
+    const staticRoot = path.resolve(options.staticDir);
+    const indexHtml = path.join(staticRoot, "index.html");
+    app.use(express.static(staticRoot, { index: false }));
+    app.get(/.*/, (req, res, next) => {
+      if (req.method !== "GET" && req.method !== "HEAD") {
+        next();
+        return;
+      }
+      if (!fs.existsSync(indexHtml)) {
+        next();
+        return;
+      }
+      res.sendFile(indexHtml);
+    });
+  }
 
   app.use(createErrorMiddleware());
 

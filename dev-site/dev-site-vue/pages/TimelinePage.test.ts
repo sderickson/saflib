@@ -59,14 +59,18 @@ const handlers = [
     "http://test.localhost:3000/commits",
     () => HttpResponse.json(mockList),
   ),
-  http.post<PathParams, Record<string, never>, ScanResponse>(
+  http.post<PathParams, { limit?: number }, ScanResponse>(
     "http://test.localhost:3000/scan",
-    () =>
-      HttpResponse.json({
-        scanned: ["cccccccccccccccccccccccccccccccccccccccc"],
+    async ({ request }) => {
+      const body = (await request.json()) as { limit?: number };
+      return HttpResponse.json({
+        scanned: body.limit
+          ? ["cccccccccccccccccccccccccccccccccccccccc"]
+          : ["cccccccccccccccccccccccccccccccccccccccc"],
         skipped: [],
         failed: [],
-      }),
+      });
+    },
   ),
 ];
 

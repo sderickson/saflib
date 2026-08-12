@@ -45,7 +45,10 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": Record<string, never>;
+                "application/json": {
+                    /** @description Max new mainline commits to analyze this run. */
+                    limit?: number;
+                };
             };
         };
         responses: {

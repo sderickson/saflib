@@ -118,7 +118,9 @@ const {
 } = useScanMutation(props.subdomain);
 
 const runScan = () => {
-  scan({});
+  // Bounded batch so the UI stays responsive on large histories.
+  // Re-click Scan to continue from the latest stored commit.
+  scan({ limit: 10 });
 };
 
 const shortHash = (hash: string) => hash.slice(0, 10);
