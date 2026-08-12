@@ -57,9 +57,11 @@
         <section class="checkout-split__panel">
           <template v-if="selectedPkg">
             <div class="d-flex flex-wrap align-center ga-2 mb-2">
-              <v-icon :icon="packageKindIcon(selectedPkg.kind)" />
+              <v-icon
+                :icon="packageKindIcon(selectedPkg.kind)"
+                :title="selectedPkg.kind"
+              />
               <h2 class="text-h6 mb-0">{{ selectedPkg.packageName }}</h2>
-              <v-chip size="small" variant="tonal">{{ selectedPkg.kind }}</v-chip>
               <v-chip
                 size="small"
                 variant="tonal"

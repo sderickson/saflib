@@ -19,6 +19,7 @@
               : 'mdi-folder-outline'
           "
           class="pkg-tree__icon"
+          :title="node.kind === 'package' ? node.packageKind : undefined"
         />
         <span class="pkg-tree__label">{{ node.label }}</span>
         <span v-if="node.kind === 'package'" class="pkg-tree__meta">
@@ -28,7 +29,6 @@
             :class="`pkg-tree__size--${node.packageSize}`"
             :title="sizeTitle(node.packageSize)"
           >{{ node.packageSize }}</span>
-          <span class="pkg-tree__kind">{{ node.packageKind }}</span>
         </span>
       </button>
       <PackageDirTree
@@ -138,11 +138,6 @@ const sizeTitle = (tier: PackageSizeTier) =>
 .pkg-tree__size--XL {
   background: rgba(var(--v-theme-error), 0.18);
   color: rgb(var(--v-theme-error));
-}
-.pkg-tree__kind {
-  font-size: 0.65rem;
-  text-transform: uppercase;
-  color: rgba(var(--v-theme-on-surface), 0.45);
 }
 .pkg-tree__icon {
   opacity: 0.75;
