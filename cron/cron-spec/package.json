@@ -4,7 +4,9 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./index.ts"
+    ".": "./index.ts",
+    "./operations/*": "./dist/operations/*/index.ts",
+    "./schemas/*": "./dist/schemas/*/index.ts"
   },
   "dependencies": {
     "@saflib/openapi": "*"
@@ -16,6 +18,7 @@
     "dist"
   ],
   "scripts": {
+    "build": "saf-specs generate -f openapi.yaml -o dist",
     "typecheck": "tsc -b"
   },
   "sideEffects": false

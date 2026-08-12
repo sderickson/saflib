@@ -9,7 +9,7 @@ Options:
   -h, --help      display help for command
 
 Commands:
+  prune           Free unused Docker build cache before image builds.
   generate        Generate all Dockerfiles from templates across the monorepo.
   help [command]  display help for command
-
 ```
