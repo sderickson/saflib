@@ -58,7 +58,15 @@
       </section>
 
       <section v-else-if="node.kind === 'file'" class="tree-section tree-section--file">
-        <h4 class="tree-section__title tree-section__title--file">
+        <button
+          v-if="node.sourcePath"
+          type="button"
+          class="tree-section__title tree-section__title--file tree-section__title--link"
+          @click="$emit('open-source', node.sourcePath!)"
+        >
+          {{ node.label }}
+        </button>
+        <h4 v-else class="tree-section__title tree-section__title--file">
           {{ node.label }}
         </h4>
         <TestTree
@@ -130,6 +138,16 @@ const nestedSuites = (node: TestTreeNode) =>
   font-size: 0.8rem;
   font-weight: 500;
   color: rgba(var(--v-theme-on-surface), 0.7);
+}
+.tree-section__title--link {
+  display: inline;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+  text-decoration: underline;
+  text-decoration-color: rgba(var(--v-theme-on-surface), 0.25);
 }
 .tree-section--file {
   margin-top: 0.85rem;

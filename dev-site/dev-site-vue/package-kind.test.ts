@@ -84,6 +84,7 @@ describe("buildPackageTestTree", () => {
     expect(tree[0].label).toBe("src");
     const mathFile = tree[0].children.find((c) => c.label === "math.test.ts")!;
     expect(mathFile.kind).toBe("file");
+    expect(mathFile.sourcePath).toBe("src/math.test.ts");
     expect(mathFile.children[0].kind).toBe("suite");
     expect(mathFile.children[0].label).toBe("math");
     expect(mathFile.children[0].subjectSignature).toBe("(a: number, b: number)");

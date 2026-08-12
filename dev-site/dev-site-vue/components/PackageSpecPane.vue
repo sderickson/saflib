@@ -13,7 +13,7 @@
           type="button"
           class="spec-all"
           :class="{ 'spec-all--selected': scope.kind === 'all' }"
-          @click="scope = { kind: 'all' }"
+          @click="setScope({ kind: 'all' })"
         >
           <v-icon size="x-small" icon="mdi-folder-outline" />
           <span>All tests</span>
@@ -21,7 +21,7 @@
         <TestFileNav
           :nodes="fileNav"
           :selected="scope"
-          @select="scope = $event"
+          @select="setScope"
         />
       </aside>
 
@@ -34,7 +34,17 @@
           "
         >
           <h3 class="scope-header__title">
-            {{ scope.kind === 'dir' ? `${scope.localPath}/` : scopeFileName }}
+            <button
+              v-if="scope.kind === 'file' && scopeTestRepoPath"
+              type="button"
+              class="scope-header__link"
+              @click="openFile(scopeTestRepoPath)"
+            >
+              {{ scopeFileName }}
+            </button>
+            <template v-else>
+              {{ scope.kind === "dir" ? `${scope.localPath}/` : scopeFileName }}
+            </template>
           </h3>
           <p v-if="scopeSummary" class="scope-header__summary">
             {{ scopeSummary }}
@@ -92,7 +102,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
+import { computed } from "vue";
 import { useCommitPackage, useFirstRepoFile } from "../requests/queries";
 import {
   buildPackageTestTree,
@@ -111,26 +121,34 @@ import TestFileNav from "./TestFileNav.vue";
 
 const SPEC_EXPORT_KINDS = new Set(["function", "class"]);
 
-const props = defineProps<{
-  subdomain: string;
-  commitHash: string;
-  packageName: string;
-  packageDirectory: string;
-  productRoot?: string;
-  githubRepo?: string;
-  /** Branch/tag for GitHub links (default `main`). */
-  githubRef?: string;
-  localRepoRoot?: string;
-}>();
-
-const scope = ref<TestScope>({ kind: "all" });
-
-watch(
-  () => props.packageName,
-  () => {
-    scope.value = { kind: "all" };
+const props = withDefaults(
+  defineProps<{
+    subdomain: string;
+    commitHash: string;
+    packageName: string;
+    packageDirectory: string;
+    productRoot?: string;
+    githubRepo?: string;
+    /** Branch/tag for GitHub links (default `main`). */
+    githubRef?: string;
+    localRepoRoot?: string;
+    /** Controlled Spec scope (from checkout URL). */
+    scope?: TestScope;
+  }>(),
+  {
+    scope: () => ({ kind: "all" }),
   },
 );
+
+const emit = defineEmits<{
+  "update:scope": [scope: TestScope];
+}>();
+
+const scope = computed(() => props.scope ?? { kind: "all" as const });
+
+const setScope = (next: TestScope) => {
+  emit("update:scope", next);
+};
 
 const { data, isLoading, error } = useCommitPackage(
   props.subdomain,
@@ -212,6 +230,11 @@ const scopeFileName = computed(() => {
   return parts[parts.length - 1] ?? scope.value.localPath;
 });
 
+const scopeTestRepoPath = computed(() => {
+  if (scope.value.kind !== "file") return "";
+  return [pkgPrefix.value, scope.value.localPath].filter(Boolean).join("/");
+});
+
 const linkedSubjectNames = computed(() => {
   const names = new Set<string>();
   for (const t of detail.value?.testCases ?? []) {
@@ -291,6 +314,18 @@ const openFile = (path: string) => {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-weight: 600;
   color: inherit;
+}
+.scope-header__link {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: rgba(var(--v-theme-on-surface), 0.25);
+  text-align: left;
 }
 .scope-header--file .scope-header__title {
   font-size: 0.95rem;

@@ -71,12 +71,17 @@
               <code>{{ selectedPkg.directory || "." }}</code>
             </p>
 
-            <v-tabs v-model="tab" density="compact" class="mb-3">
+            <v-tabs
+              :model-value="tab"
+              density="compact"
+              class="mb-3"
+              @update:model-value="setTab"
+            >
               <v-tab value="spec">Spec</v-tab>
               <v-tab value="docs">Docs</v-tab>
             </v-tabs>
 
-            <v-tabs-window v-model="tab">
+            <v-tabs-window :model-value="tab">
               <v-tabs-window-item value="spec">
                 <PackageSpecPane
                   :subdomain="subdomain"
@@ -87,6 +92,8 @@
                   :github-repo="githubRepo"
                   :github-ref="githubRef"
                   :local-repo-root="localRepoRoot"
+                  :scope="specScope"
+                  @update:scope="setSpecScope"
                 />
               </v-tabs-window-item>
 
@@ -127,6 +134,7 @@ import {
 } from "../package-dir-tree";
 import { parsePackageDescription } from "../scope-docs";
 import { repoPathPrefix } from "../repo-paths";
+import type { TestScope } from "../test-tree";
 import PackageDirTree from "../components/PackageDirTree.vue";
 import PackageDocsPane from "../components/PackageDocsPane.vue";
 import PackageSpecPane from "../components/PackageSpecPane.vue";
@@ -151,7 +159,6 @@ const props = withDefaults(
 const route = useRoute();
 const router = useRouter();
 
-const tab = ref<"spec" | "docs">("spec");
 const docsPane = ref<{ openDoc: (path: string) => void } | null>(null);
 
 const {
@@ -185,6 +192,54 @@ const selectedPkg = computed(() =>
   packageRows.value.find((p) => p.packageName === selectedPackageName.value),
 );
 
+const tab = computed<"spec" | "docs">(() =>
+  route.query.tab === "docs" ? "docs" : "spec",
+);
+
+const specScope = computed<TestScope>(() => {
+  const file = route.query.file;
+  const dir = route.query.dir;
+  if (typeof file === "string" && file) {
+    return { kind: "file", localPath: file };
+  }
+  if (typeof dir === "string" && dir) {
+    return { kind: "dir", localPath: dir };
+  }
+  return { kind: "all" };
+});
+
+const replaceQuery = (patch: Record<string, string | undefined>) => {
+  const next: Record<string, string> = {};
+  for (const [k, v] of Object.entries(route.query)) {
+    if (Object.prototype.hasOwnProperty.call(patch, k)) continue;
+    if (typeof v === "string" && v) next[k] = v;
+    else if (Array.isArray(v) && typeof v[0] === "string" && v[0]) {
+      next[k] = v[0];
+    }
+  }
+  for (const [k, v] of Object.entries(patch)) {
+    if (v !== undefined && v !== "") next[k] = v;
+  }
+  router.replace({ query: next });
+};
+
+const setTab = (value: unknown) => {
+  const next = value === "docs" ? "docs" : "spec";
+  replaceQuery({ tab: next === "spec" ? undefined : next });
+};
+
+const setSpecScope = (scope: TestScope) => {
+  if (scope.kind === "all") {
+    replaceQuery({ file: undefined, dir: undefined });
+    return;
+  }
+  if (scope.kind === "file") {
+    replaceQuery({ file: scope.localPath, dir: undefined });
+    return;
+  }
+  replaceQuery({ dir: scope.localPath, file: undefined });
+};
+
 const packageJsonPath = computed(() => {
   if (!selectedPkg.value || !checkout.value?.analyzed) return "";
   const prefix = repoPathPrefix(
@@ -215,26 +270,30 @@ watch(
     ) {
       return;
     }
-    // Default to first package if none selected / invalid
     const first = packageRows.value[0];
     if (first) {
-      router.replace({
-        query: { ...route.query, package: first.packageName },
-      });
+      replaceQuery({ package: first.packageName });
     }
   },
   { immediate: true },
 );
 
 const selectPackage = (name: string) => {
-  tab.value = "spec";
-  router.replace({ query: { ...route.query, package: name } });
+  replaceQuery({
+    package: name,
+    tab: undefined,
+    file: undefined,
+    dir: undefined,
+  });
 };
 
 const onDocNavigatePackage = (packageName: string, docPath: string) => {
-  tab.value = "docs";
-  router.replace({ query: { ...route.query, package: packageName } });
-  // Open doc after pane remounts for new package
+  replaceQuery({
+    package: packageName,
+    tab: "docs",
+    file: undefined,
+    dir: undefined,
+  });
   requestAnimationFrame(() => {
     docsPane.value?.openDoc(docPath);
   });

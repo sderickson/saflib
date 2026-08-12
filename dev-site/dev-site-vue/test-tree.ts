@@ -16,6 +16,8 @@ export interface TestTreeNode {
   label: string;
   kind: TestTreeNodeKind;
   children: TestTreeNode[];
+  /** Repo-relative path for file nodes (opens in IDE/GitHub). */
+  sourcePath?: string | null;
   /** Linked export — only attached to matching suite nodes. */
   subjectName?: string | null;
   subjectSignature?: string | null;
@@ -66,6 +68,7 @@ function ensureChild(
   parent: TestTreeNode,
   label: string,
   kind: TestTreeNodeKind,
+  sourcePath?: string,
 ): TestTreeNode {
   let child = parent.children.find((c) => c.label === label && c.kind === kind);
   if (!child) {
@@ -74,8 +77,11 @@ function ensureChild(
       label,
       kind,
       children: [],
+      ...(sourcePath ? { sourcePath } : {}),
     };
     parent.children.push(child);
+  } else if (sourcePath && !child.sourcePath) {
+    child.sourcePath = sourcePath;
   }
   return child;
 }
@@ -232,7 +238,7 @@ export function buildPackageTestTree(
     for (const dir of parts) {
       node = ensureChild(node, dir, "dir");
     }
-    node = ensureChild(node, fileName, "file");
+    node = ensureChild(node, fileName, "file", t.filePath);
     addSuitesAndLeaf(node, t);
   }
 
