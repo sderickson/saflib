@@ -5,7 +5,7 @@
     "version": "1.0.0"
   },
   "paths": {
-    "/scan": {
+    "/api/scan": {
       "post": {
         "summary": "Scan and ingest new commits",
         "operationId": "executeScan",
@@ -26,7 +26,11 @@
                     "type": "integer",
                     "minimum": 1,
                     "default": 1,
-                    "description": "Max new mainline commits to analyze this run (default 1). Feature-branch tips are skipped when limit is set.\n"
+                    "description": "Max new mainline commits to analyze this run (default 1). Feature-branch tips are skipped when limit is set. Ignored when `commitHash` is set.\n"
+                  },
+                  "commitHash": {
+                    "type": "string",
+                    "description": "Analyze exactly this commit (if not already stored). Used by Current checkout \"Scan this commit\".\n"
                   }
                 }
               }

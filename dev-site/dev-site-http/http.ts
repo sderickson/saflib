@@ -12,6 +12,7 @@ import { devSiteHttpStorage } from "./context.ts";
 // BEGIN WORKFLOW AREA router-imports FOR express/add-handler
 import { createCommitsRouter } from "./routes/commits/index.ts";
 import { createScanRouter } from "./routes/scan/index.ts";
+import { createCheckoutRouter } from "./routes/checkout/index.ts";
 // END WORKFLOW AREA
 
 export type HttpRouterMount = {
@@ -29,7 +30,8 @@ export type CreateDevSiteHttpAppOptions = {
   mainRef?: string;
   /**
    * Directory of built SPA assets (Vite `dist`). When set, Express serves them
-   * and falls back to `index.html` for client-side routes.
+   * and falls back to `index.html` for client-side routes. API routes live under
+   * `/api/*` so they do not collide with SPA paths like `/checkout`.
    */
   staticDir?: string;
   /**
@@ -49,6 +51,7 @@ function defaultRouterMounts(): HttpRouterMount[] {
     // BEGIN WORKFLOW AREA default-router-mounts FOR express/add-handler
     { kind: "router", createRouter: createCommitsRouter },
     { kind: "router", createRouter: createScanRouter },
+    { kind: "router", createRouter: createCheckoutRouter },
     // END WORKFLOW AREA
   ];
 }
@@ -102,6 +105,10 @@ export function createDevSiteHttpApp(
     app.use(express.static(staticRoot, { index: false }));
     app.get(/.*/, (req, res, next) => {
       if (req.method !== "GET" && req.method !== "HEAD") {
+        next();
+        return;
+      }
+      if (req.path.startsWith("/api/")) {
         next();
         return;
       }

@@ -6,18 +6,23 @@ info:
 
 paths:
   # BEGIN WORKFLOW AREA route-paths FOR openapi/route
-  /commits:
+  # Prefixed with /api so SPA page routes (/checkout, /history, …) do not collide
+  # when Express serves the built site and the API on the same origin.
+  /api/commits:
     get:
       $ref: "./routes/commits/list.yaml#/listCommits"
-  /commits/{hash}:
+  /api/commits/{hash}:
     get:
       $ref: "./routes/commits/get.yaml#/getCommits"
-  /commits/{hash}/diff/{otherHash}:
+  /api/commits/{hash}/diff/{otherHash}:
     get:
       $ref: "./routes/commits/diff.yaml#/diffCommits"
-  /scan:
+  /api/scan:
     post:
       $ref: "./routes/scan/execute.yaml#/executeScan"
+  /api/checkout:
+    get:
+      $ref: "./routes/checkout/get.yaml#/getCheckout"
   # END WORKFLOW AREA
 
 components:

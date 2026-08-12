@@ -11,11 +11,13 @@ import { mkdtempSync, rmSync, writeFileSync, mkdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { execFileSync } from "node:child_process";
-import { createScanRouter } from "./index.ts";
+import { throwError } from "@saflib/monorepo";
+import { createCheckoutRouter } from "./index.ts";
 import { createDevSiteHttpApp } from "../../http.ts";
 import { releaseSlimRouteTest } from "../../testing/slim-route-test.ts";
 import type { DevSiteHttpAppLease } from "../../http.ts";
 import { devSiteDbManager } from "@saflib/dev-site-db/instances";
+import { scanCommits } from "../../scan.ts";
 
 function git(repoRoot: string, args: string[]): string {
   return execFileSync("git", args, {
@@ -32,29 +34,33 @@ function git(repoRoot: string, args: string[]): string {
   }).trim();
 }
 
-describe("POST /api/scan", () => {
+describe("checkout routes", () => {
   let lease: DevSiteHttpAppLease;
   let repoRoot: string;
-  let commitHash: string;
+  let headHash: string;
 
   beforeAll(() => {
-    repoRoot = mkdtempSync(join(tmpdir(), "dev-site-scan-route-"));
+    repoRoot = mkdtempSync(join(tmpdir(), "dev-site-checkout-route-"));
     git(repoRoot, ["init"]);
     git(repoRoot, ["checkout", "-b", "main"]);
     writeFileSync(
       join(repoRoot, "package.json"),
-      JSON.stringify({ name: "@fixture/scan" }),
+      JSON.stringify({ name: "@fixture/root" }),
     );
     mkdirSync(join(repoRoot, "src"));
     writeFileSync(join(repoRoot, "src/a.ts"), "export const a = 1;\n");
+    writeFileSync(
+      join(repoRoot, "src/a.test.ts"),
+      'import { describe, it } from "vitest";\ndescribe("a", () => {\n  it("works", () => {});\n});\n',
+    );
     git(repoRoot, ["add", "."]);
     git(repoRoot, ["commit", "-m", "init"]);
-    commitHash = git(repoRoot, ["rev-parse", "HEAD"]);
+    headHash = git(repoRoot, ["rev-parse", "HEAD"]);
 
     lease = createDevSiteHttpApp({
       repoRoot,
       mainRef: "main",
-      mounts: [{ kind: "router", createRouter: createScanRouter }],
+      mounts: [{ kind: "router", createRouter: createCheckoutRouter }],
     });
   });
 
@@ -67,23 +73,29 @@ describe("POST /api/scan", () => {
     devSiteDbManager.clearAllTablesForTests(lease.devSiteDbKey);
   });
 
-  it("scans and returns newly ingested hashes", async () => {
-    const response = await request(lease.app)
-      .post("/api/scan")
-      .send({ limit: 5 });
-
+  it("GET /api/checkout reports HEAD not analyzed", async () => {
+    const response = await request(lease.app).get("/api/checkout");
     expect(response.status).toBe(200);
-    expect(response.body.scanned).toEqual([commitHash]);
-    expect(response.body.skipped).toEqual([]);
-    expect(response.body.failed).toEqual([]);
+    expect(response.body).toMatchObject({
+      hash: headHash,
+      analyzed: false,
+      packages: [],
+    });
+    expect(response.body.message).toContain("init");
   });
 
-  it("skips already-scanned commits on a second call", async () => {
-    await request(lease.app).post("/api/scan").send({ limit: 5 });
-    const response = await request(lease.app).post("/api/scan").send({ limit: 5 });
+  it("GET /api/checkout includes packages after scan", async () => {
+    await throwError(
+      scanCommits(lease.devSiteDbKey, {
+        repoRoot,
+        mainRef: "main",
+        commitHash: headHash,
+      }),
+    );
+    const response = await request(lease.app).get("/api/checkout");
     expect(response.status).toBe(200);
-    expect(response.body.scanned).toEqual([]);
-    expect(response.body.skipped).toEqual([commitHash]);
-    expect(response.body.failed).toEqual([]);
+    expect(response.body.analyzed).toBe(true);
+    expect(response.body.packages.length).toBeGreaterThan(0);
+    expect(response.body.packages[0].packageName).toBe("@fixture/root");
   });
 });

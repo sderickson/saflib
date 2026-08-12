@@ -5,7 +5,7 @@
     "version": "1.0.0"
   },
   "paths": {
-    "/commits": {
+    "/api/commits": {
       "get": {
         "summary": "List analyzed commits (newest first)",
         "operationId": "listCommits",

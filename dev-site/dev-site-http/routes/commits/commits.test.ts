@@ -116,8 +116,8 @@ describe("commits routes", () => {
     );
   });
 
-  it("GET /commits lists summaries newest-first", async () => {
-    const response = await request(lease.app).get("/commits");
+  it("GET /api/commits lists summaries newest-first", async () => {
+    const response = await request(lease.app).get("/api/commits");
     expect(response.status).toBe(200);
     expect(response.body.commits.map((c: { hash: string }) => c.hash)).toEqual(
       [commit2, commit1],
@@ -128,8 +128,8 @@ describe("commits routes", () => {
     });
   });
 
-  it("GET /commits/:hash returns commit detail", async () => {
-    const response = await request(lease.app).get(`/commits/${commit2}`);
+  it("GET /api/commits/:hash returns commit detail", async () => {
+    const response = await request(lease.app).get(`/api/commits/${commit2}`);
     expect(response.status).toBe(200);
     expect(response.body.commitDetail.commit.hash).toBe(commit2);
     expect(
@@ -139,17 +139,17 @@ describe("commits routes", () => {
     ).toEqual(["ZERO", "add"].sort());
   });
 
-  it("GET /commits/:hash returns 404 for unknown hash", async () => {
+  it("GET /api/commits/:hash returns 404 for unknown hash", async () => {
     const response = await request(lease.app).get(
-      "/commits/cccccccccccccccccccccccccccccccccccccccc",
+      "/api/commits/cccccccccccccccccccccccccccccccccccccccc",
     );
     expect(response.status).toBe(404);
     expect(response.body.code).toBe("COMMIT_NOT_FOUND");
   });
 
-  it("GET /commits/:hash/diff/:otherHash diffs two commits", async () => {
+  it("GET /api/commits/:hash/diff/:otherHash diffs two commits", async () => {
     const response = await request(lease.app).get(
-      `/commits/${commit1}/diff/${commit2}`,
+      `/api/commits/${commit1}/diff/${commit2}`,
     );
     expect(response.status).toBe(200);
     expect(response.body.commitDiff.fromHash).toBe(commit1);

@@ -4,7 +4,8 @@ export { getCommit, listCommitSummaries } from "./get-commit.ts";
 export type { CommitDetail, CommitSummary } from "./get-commit.ts";
 export { diffCommits } from "./diff-commits.ts";
 export type { CommitDiff } from "./diff-commits.ts";
-export { ANALYZER_VERSION } from "./analyze-commit.ts";
+export { getCheckoutStatus } from "./checkout.ts";
+export type { CheckoutStatus, CheckoutPackage } from "./checkout.ts";
 export { createDevSiteHttpApp } from "./http.ts";
 export type {
   CreateDevSiteHttpAppOptions,

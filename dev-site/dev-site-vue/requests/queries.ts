@@ -50,7 +50,7 @@ export function useCommits(
     queryFn: () => {
       const p = toValue(params);
       return handleClientMethod(
-        client.GET("/commits", {
+        client.GET("/api/commits", {
           params: {
             query: {
               cursor: p.cursor,
@@ -73,7 +73,7 @@ export function useCommit(
     enabled: () => Boolean(toValue(hash)),
     queryFn: () => {
       return handleClientMethod(
-        client.GET("/commits/{hash}", {
+        client.GET("/api/commits/{hash}", {
           params: { path: { hash: toValue(hash) } },
         }),
       );
@@ -92,7 +92,7 @@ export function useCommitDiff(
     enabled: () => Boolean(toValue(fromHash) && toValue(toHash)),
     queryFn: () => {
       return handleClientMethod(
-        client.GET("/commits/{hash}/diff/{otherHash}", {
+        client.GET("/api/commits/{hash}/diff/{otherHash}", {
           params: {
             path: {
               hash: toValue(fromHash),
@@ -114,10 +114,20 @@ export function useScanMutation(subdomain: string) {
     DevSiteRequestBody["executeScan"]
   >({
     mutationFn: (body) => {
-      return handleClientMethod(client.POST("/scan", { body: body ?? {} }));
+      return handleClientMethod(client.POST("/api/scan", { body: body ?? {} }));
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["dev-site", "commits"] });
+      queryClient.invalidateQueries({ queryKey: ["dev-site", "checkout"] });
+      queryClient.invalidateQueries({ queryKey: ["dev-site", "commit"] });
     },
+  });
+}
+
+export function useCheckout(subdomain: string) {
+  const client = createDevSiteClient(subdomain);
+  return useQuery<DevSiteResponseBody["getCheckout"][200], TanstackError>({
+    queryKey: ["dev-site", "checkout"],
+    queryFn: () => handleClientMethod(client.GET("/api/checkout")),
   });
 }

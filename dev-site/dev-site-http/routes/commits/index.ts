@@ -11,21 +11,21 @@ export function createCommitsRouter(): IRouter {
   const router = express.Router();
 
   router.get(
-    "/commits",
+    "/api/commits",
     ...createOperationScopedMiddleware(listCommitsOperationJsonSpec, {
       enforceAuth: false,
     }),
     listCommitsHandler,
   );
   router.get(
-    "/commits/:hash",
+    "/api/commits/:hash",
     ...createOperationScopedMiddleware(getCommitsOperationJsonSpec, {
       enforceAuth: false,
     }),
     getCommitsHandler,
   );
   router.get(
-    "/commits/:hash/diff/:otherHash",
+    "/api/commits/:hash/diff/:otherHash",
     ...createOperationScopedMiddleware(diffCommitsOperationJsonSpec, {
       enforceAuth: false,
     }),

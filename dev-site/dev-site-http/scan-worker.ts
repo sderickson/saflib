@@ -46,6 +46,7 @@ async function main(): Promise<void> {
       productRoot: data.productRoot,
       mainRef: data.mainRef,
       limit: data.limit,
+      commitHash: data.commitHash,
     });
     if (error) {
       const msg: ScanWorkerMessage = {

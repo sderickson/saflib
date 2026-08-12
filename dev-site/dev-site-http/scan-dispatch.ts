@@ -50,8 +50,11 @@ async function runScan(
   dbKey: DbKey,
   options: DispatchScanOptions,
 ): Promise<ReturnsError<ScanResult, ScanError>> {
-  const limit = options.limit ?? DEFAULT_HTTP_SCAN_LIMIT;
   const dbPath = options.dbPath ?? devSiteDb.getDbPath(dbKey);
+  const limit =
+    options.commitHash !== undefined
+      ? undefined
+      : (options.limit ?? DEFAULT_HTTP_SCAN_LIMIT);
 
   if (!dbPath || dbPath === ":memory:") {
     return scanCommits(dbKey, { ...options, limit });
@@ -62,7 +65,8 @@ async function runScan(
     repoRoot: options.repoRoot,
     productRoot: options.productRoot,
     mainRef: options.mainRef,
-    limit,
+    limit: options.commitHash ? undefined : limit,
+    commitHash: options.commitHash,
   });
 }
 

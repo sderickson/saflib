@@ -4,7 +4,7 @@
  */
 
 export interface paths {
-    "/commits/{hash}/diff/{otherHash}": {
+    "/api/commits/{hash}/diff/{otherHash}": {
         parameters: {
             query?: never;
             header?: never;

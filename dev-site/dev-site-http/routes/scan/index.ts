@@ -7,7 +7,7 @@ export function createScanRouter(): IRouter {
   const router = express.Router();
 
   router.post(
-    "/scan",
+    "/api/scan",
     ...createOperationScopedMiddleware(executeScanOperationJsonSpec, {
       enforceAuth: false,
     }),

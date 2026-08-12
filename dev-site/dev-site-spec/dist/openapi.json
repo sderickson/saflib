@@ -6,7 +6,7 @@
     "description": "API specification for the dev-site service"
   },
   "paths": {
-    "/commits": {
+    "/api/commits": {
       "get": {
         "summary": "List analyzed commits (newest first)",
         "operationId": "listCommits",
@@ -67,7 +67,7 @@
         }
       }
     },
-    "/commits/{hash}": {
+    "/api/commits/{hash}": {
       "get": {
         "summary": "Get the full analysis snapshot for a commit",
         "operationId": "getCommits",
@@ -118,7 +118,7 @@
         }
       }
     },
-    "/commits/{hash}/diff/{otherHash}": {
+    "/api/commits/{hash}/diff/{otherHash}": {
       "get": {
         "summary": "Diff two analyzed commits",
         "operationId": "diffCommits",
@@ -178,7 +178,7 @@
         }
       }
     },
-    "/scan": {
+    "/api/scan": {
       "post": {
         "summary": "Scan and ingest new commits",
         "operationId": "executeScan",
@@ -199,7 +199,11 @@
                     "type": "integer",
                     "minimum": 1,
                     "default": 1,
-                    "description": "Max new mainline commits to analyze this run (default 1). Feature-branch tips are skipped when limit is set.\n"
+                    "description": "Max new mainline commits to analyze this run (default 1). Feature-branch tips are skipped when limit is set. Ignored when `commitHash` is set.\n"
+                  },
+                  "commitHash": {
+                    "type": "string",
+                    "description": "Analyze exactly this commit (if not already stored). Used by Current checkout \"Scan this commit\".\n"
                   }
                 }
               }
@@ -253,6 +257,98 @@
                       }
                     }
                   }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/checkout": {
+      "get": {
+        "summary": "Current checkout (HEAD) analysis status",
+        "operationId": "getCheckout",
+        "tags": [
+          "no-auth"
+        ],
+        "description": "Resolve git HEAD and report whether that commit has been analyzed, plus package metrics when it has. Used by the Current checkout UI.\n",
+        "responses": {
+          "200": {
+            "description": "Checkout status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "hash",
+                    "message",
+                    "authoredAt",
+                    "analyzed",
+                    "packages"
+                  ],
+                  "properties": {
+                    "hash": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "authoredAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "analyzed": {
+                      "type": "boolean"
+                    },
+                    "packages": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "packageName",
+                          "directory",
+                          "sourceFiles",
+                          "sourceLines",
+                          "prodLines",
+                          "testLines",
+                          "testFiles"
+                        ],
+                        "properties": {
+                          "packageName": {
+                            "type": "string"
+                          },
+                          "directory": {
+                            "type": "string"
+                          },
+                          "sourceFiles": {
+                            "type": "integer"
+                          },
+                          "sourceLines": {
+                            "type": "integer"
+                          },
+                          "prodLines": {
+                            "type": "integer"
+                          },
+                          "testLines": {
+                            "type": "integer"
+                          },
+                          "testFiles": {
+                            "type": "integer"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Git command failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
                 }
               }
             }

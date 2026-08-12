@@ -5,7 +5,7 @@
     "version": "1.0.0"
   },
   "paths": {
-    "/commits/{hash}": {
+    "/api/commits/{hash}": {
       "get": {
         "summary": "Get the full analysis snapshot for a commit",
         "operationId": "getCommits",

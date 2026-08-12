@@ -27,6 +27,12 @@ executeScan:
               description: >
                 Max new mainline commits to analyze this run (default 1).
                 Feature-branch tips are skipped when limit is set.
+                Ignored when `commitHash` is set.
+            commitHash:
+              type: string
+              description: >
+                Analyze exactly this commit (if not already stored). Used by
+                Current checkout "Scan this commit".
   responses:
     "200":
       description: Scan completed; returns which commits were ingested.

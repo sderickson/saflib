@@ -5,7 +5,7 @@
     "version": "1.0.0"
   },
   "paths": {
-    "/commits/{hash}/diff/{otherHash}": {
+    "/api/commits/{hash}/diff/{otherHash}": {
       "get": {
         "summary": "Diff two analyzed commits",
         "operationId": "diffCommits",

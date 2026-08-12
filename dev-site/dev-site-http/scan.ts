@@ -21,8 +21,14 @@ export interface ScanOptions {
    * Max new commits to analyze in this run. Mainline is walked newest-first
    * (tip of `mainRef` first), skipping commits already in the DB, so repeated
    * limited scans fill history backward from HEAD.
+   * Ignored when {@link commitHash} is set.
    */
   limit?: number;
+  /**
+   * Analyze exactly this commit (if not already stored). Skips history walk
+   * and feature-branch tip discovery.
+   */
+  commitHash?: string;
 }
 
 export interface ScanFailure {
@@ -38,9 +44,49 @@ export interface ScanResult {
 
 export type ScanError = GitCommandError;
 
+async function persistCommit(
+  dbKey: DbKey,
+  commit: GitCommit,
+  options: {
+    repoRoot: string;
+    productRoot?: string;
+    mainRef: string;
+  },
+): Promise<ReturnsError<void, GitCommandError>> {
+  const analyzed = await analyzeCommit(dbKey, commit, {
+    repoRoot: options.repoRoot,
+    productRoot: options.productRoot,
+    mainRef: options.mainRef,
+  });
+  if (analyzed.error) {
+    return { error: analyzed.error };
+  }
+  const snap = analyzed.result;
+
+  await analyzedCommitsDb.insert(dbKey, {
+    hash: commit.hash,
+    parentHashes: snap.parentHashes,
+    authoredAt: snap.authoredAt,
+    message: snap.message,
+    refs: snap.refs,
+    analyzerVersion: snap.analyzerVersion || ANALYZER_VERSION,
+    computedAt: new Date(),
+    status: "complete",
+    exportCount: snap.exportCount,
+    testCaseCount: snap.testCaseCount,
+  });
+
+  await packageMetricsDb.insertMany(
+    dbKey,
+    snap.packageMetrics.map((m) => ({ ...m, commitHash: commit.hash })),
+  );
+
+  return { result: undefined };
+}
+
 /**
  * Ingest mainline commits newest-first (tip first), plus divergent feature-branch
- * tips when `limit` is unset.
+ * tips when `limit` is unset. Or analyze a single {@link ScanOptions.commitHash}.
  */
 export async function scanCommits(
   dbKey: DbKey,
@@ -50,6 +96,55 @@ export async function scanCommits(
   const scanned: string[] = [];
   const skipped: string[] = [];
   const failed: ScanFailure[] = [];
+
+  if (options.commitHash) {
+    const existing = await analyzedCommitsDb.getByHash(
+      dbKey,
+      options.commitHash,
+    );
+    if (existing.result) {
+      return {
+        result: {
+          scanned: [],
+          skipped: [options.commitHash],
+          failed: [],
+        },
+      };
+    }
+
+    const tipLog = log(options.repoRoot, {
+      ref: options.commitHash,
+      limit: 1,
+    });
+    if (tipLog.error) return { error: tipLog.error };
+    const commit = tipLog.result[0];
+    if (!commit) {
+      return {
+        result: {
+          scanned: [],
+          skipped: [],
+          failed: [
+            {
+              hash: options.commitHash,
+              message: "No commit found for hash",
+            },
+          ],
+        },
+      };
+    }
+
+    const persisted = await persistCommit(dbKey, commit, {
+      repoRoot: options.repoRoot,
+      productRoot: options.productRoot,
+      mainRef,
+    });
+    if (persisted.error) {
+      failed.push({ hash: commit.hash, message: persisted.error.message });
+    } else {
+      scanned.push(commit.hash);
+    }
+    return { result: { scanned, skipped, failed } };
+  }
 
   const logResult = log(options.repoRoot, { ref: mainRef });
   if (logResult.error) {
@@ -111,35 +206,15 @@ export async function scanCommits(
   }
 
   for (const commit of toAnalyze) {
-    const analyzed = await analyzeCommit(dbKey, commit, {
+    const persisted = await persistCommit(dbKey, commit, {
       repoRoot: options.repoRoot,
       productRoot: options.productRoot,
       mainRef,
     });
-    if (analyzed.error) {
-      failed.push({ hash: commit.hash, message: analyzed.error.message });
+    if (persisted.error) {
+      failed.push({ hash: commit.hash, message: persisted.error.message });
       continue;
     }
-    const snap = analyzed.result;
-
-    await analyzedCommitsDb.insert(dbKey, {
-      hash: commit.hash,
-      parentHashes: snap.parentHashes,
-      authoredAt: snap.authoredAt,
-      message: snap.message,
-      refs: snap.refs,
-      analyzerVersion: snap.analyzerVersion || ANALYZER_VERSION,
-      computedAt: new Date(),
-      status: "complete",
-      exportCount: snap.exportCount,
-      testCaseCount: snap.testCaseCount,
-    });
-
-    await packageMetricsDb.insertMany(
-      dbKey,
-      snap.packageMetrics.map((m) => ({ ...m, commitHash: commit.hash })),
-    );
-
     scanned.push(commit.hash);
   }
 

@@ -4,7 +4,7 @@
  */
 
 export interface paths {
-    "/commits": {
+    "/api/commits": {
         parameters: {
             query?: never;
             header?: never;

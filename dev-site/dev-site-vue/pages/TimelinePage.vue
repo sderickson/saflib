@@ -3,14 +3,17 @@
     <v-row>
       <v-col>
         <div class="d-flex align-center justify-space-between mb-4">
-          <h1 class="text-h4">Commit timeline</h1>
+          <div class="d-flex align-center ga-2">
+            <v-btn variant="text" :to="hubPath">← Hub</v-btn>
+            <h1 class="text-h4">History</h1>
+          </div>
           <v-btn
             color="primary"
             :loading="isScanning"
             :disabled="isScanning"
             @click="runScan"
           >
-            Scan
+            Scan next
           </v-btn>
         </div>
 
@@ -85,13 +88,19 @@ import { computed } from "vue";
 import { useCommits, useScanMutation } from "../requests/queries";
 import { commitHealth } from "../health";
 
-const props = defineProps<{
-  subdomain: string;
-  /** Optional Vue Router path builder for detail links. */
-  detailPath?: (hash: string) => string;
-  /** Optional Vue Router path builder for compare links (hash as the "to" side). */
-  comparePath?: (hash: string) => string;
-}>();
+const props = withDefaults(
+  defineProps<{
+    subdomain: string;
+    hubPath?: string;
+    /** Optional Vue Router path builder for detail links. */
+    detailPath?: (hash: string) => string;
+    /** Optional Vue Router path builder for compare links (hash as the "to" side). */
+    comparePath?: (hash: string) => string;
+  }>(),
+  {
+    hubPath: "/",
+  },
+);
 
 const headers = [
   { title: "Health", key: "health", sortable: false },

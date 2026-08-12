@@ -20,7 +20,8 @@ export const executeScanHandler = createHandler(async (req, res) => {
     productRoot,
     mainRef,
     dbPath,
-    limit: body.limit ?? DEFAULT_HTTP_SCAN_LIMIT,
+    limit: body.commitHash ? undefined : (body.limit ?? DEFAULT_HTTP_SCAN_LIMIT),
+    commitHash: body.commitHash,
   });
   if (error) {
     switch (true) {

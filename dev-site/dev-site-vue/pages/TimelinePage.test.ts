@@ -56,11 +56,11 @@ const mockList: ListResponse = {
 
 const handlers = [
   http.get<PathParams, never, ListResponse>(
-    "http://test.localhost:3000/commits",
+    "http://test.localhost:3000/api/commits",
     () => HttpResponse.json(mockList),
   ),
   http.post<PathParams, { limit?: number }, ScanResponse>(
-    "http://test.localhost:3000/scan",
+    "http://test.localhost:3000/api/scan",
     async ({ request }) => {
       const body = (await request.json()) as { limit?: number };
       return HttpResponse.json({
@@ -79,7 +79,7 @@ describe("TimelinePage", () => {
   setupMockServer(handlers);
 
   const mountComponent = async (waitForData = true) => {
-    await router.push("/");
+    await router.push("/history");
     const wrapper = mountTestApp(TimelinePage, {
       propsData: { subdomain: "test" },
     });
@@ -95,7 +95,7 @@ describe("TimelinePage", () => {
 
   it("renders the title and loading indicator initially", async () => {
     const wrapper = await mountComponent(false);
-    expect(wrapper.find("h1").text()).toBe("Commit timeline");
+    expect(wrapper.find("h1").text()).toBe("History");
     expect(wrapper.findComponent({ name: "v-progress-linear" }).exists()).toBe(
       true,
     );
@@ -115,11 +115,11 @@ describe("TimelinePage", () => {
     ).toBe(true);
   });
 
-  it("runs a scan when Scan is clicked", async () => {
+  it("runs a scan when Scan next is clicked", async () => {
     const wrapper = await mountComponent();
     const scanBtn = wrapper
       .findAllComponents({ name: "v-btn" })
-      .find((b) => b.text() === "Scan");
+      .find((b) => b.text() === "Scan next");
     expect(scanBtn).toBeDefined();
     await scanBtn!.trigger("click");
     await vi.waitFor(() => {

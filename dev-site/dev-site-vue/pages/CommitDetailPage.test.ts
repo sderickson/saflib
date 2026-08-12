@@ -54,7 +54,7 @@ const mockDetail: GetResponse = {
 
 const handlers = [
   http.get<PathParams, never, GetResponse>(
-    `http://test.localhost:3000/commits/${HASH}`,
+    `http://test.localhost:3000/api/commits/${HASH}`,
     () => HttpResponse.json(mockDetail),
   ),
 ];

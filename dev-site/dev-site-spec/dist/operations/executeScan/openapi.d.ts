@@ -4,7 +4,7 @@
  */
 
 export interface paths {
-    "/scan": {
+    "/api/scan": {
         parameters: {
             query?: never;
             header?: never;
@@ -47,10 +47,12 @@ export interface operations {
             content: {
                 "application/json": {
                     /**
-                     * @description Max new mainline commits to analyze this run (default 1). Feature-branch tips are skipped when limit is set.
+                     * @description Max new mainline commits to analyze this run (default 1). Feature-branch tips are skipped when limit is set. Ignored when `commitHash` is set.
                      * @default 1
                      */
                     limit?: number;
+                    /** @description Analyze exactly this commit (if not already stored). Used by Current checkout "Scan this commit". */
+                    commitHash?: string;
                 };
             };
         };

@@ -4,7 +4,7 @@
  */
 
 export interface paths {
-    "/commits": {
+    "/api/commits": {
         parameters: {
             query?: never;
             header?: never;
@@ -24,7 +24,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/commits/{hash}": {
+    "/api/commits/{hash}": {
         parameters: {
             query?: never;
             header?: never;
@@ -44,7 +44,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/commits/{hash}/diff/{otherHash}": {
+    "/api/commits/{hash}/diff/{otherHash}": {
         parameters: {
             query?: never;
             header?: never;
@@ -64,7 +64,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/scan": {
+    "/api/scan": {
         parameters: {
             query?: never;
             header?: never;
@@ -78,6 +78,26 @@ export interface paths {
          * @description Walk git history since the last recorded commit (plus feature-branch tips) and store static-analysis snapshots. Manual trigger — no automatic poller in v1. Request body is an empty object so clients can POST JSON without special-casing.
          */
         post: operations["executeScan"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/checkout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Current checkout (HEAD) analysis status
+         * @description Resolve git HEAD and report whether that commit has been analyzed, plus package metrics when it has. Used by the Current checkout UI.
+         */
+        get: operations["getCheckout"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -437,10 +457,12 @@ export interface operations {
             content: {
                 "application/json": {
                     /**
-                     * @description Max new mainline commits to analyze this run (default 1). Feature-branch tips are skipped when limit is set.
+                     * @description Max new mainline commits to analyze this run (default 1). Feature-branch tips are skipped when limit is set. Ignored when `commitHash` is set.
                      * @default 1
                      */
                     limit?: number;
+                    /** @description Analyze exactly this commit (if not already stored). Used by Current checkout "Scan this commit". */
+                    commitHash?: string;
                 };
             };
         };
@@ -462,6 +484,50 @@ export interface operations {
                             message: string;
                         }[];
                     };
+                };
+            };
+        };
+    };
+    getCheckout: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Checkout status */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        hash: string;
+                        message: string;
+                        /** Format: date-time */
+                        authoredAt: string;
+                        analyzed: boolean;
+                        packages: {
+                            packageName: string;
+                            directory: string;
+                            sourceFiles: number;
+                            sourceLines: number;
+                            prodLines: number;
+                            testLines: number;
+                            testFiles: number;
+                        }[];
+                    };
+                };
+            };
+            /** @description Git command failed */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
                 };
             };
         };

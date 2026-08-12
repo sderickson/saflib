@@ -113,11 +113,11 @@ const mockDiff: DiffResponse = {
 
 const handlers = [
   http.get<PathParams, never, ListResponse>(
-    "http://test.localhost:3000/commits",
+    "http://test.localhost:3000/api/commits",
     () => HttpResponse.json(mockList),
   ),
   http.get<PathParams, never, DiffResponse>(
-    `http://test.localhost:3000/commits/${FROM}/diff/${TO}`,
+    `http://test.localhost:3000/api/commits/${FROM}/diff/${TO}`,
     () => HttpResponse.json(mockDiff),
   ),
 ];
