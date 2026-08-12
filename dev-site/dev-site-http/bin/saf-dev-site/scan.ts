@@ -7,7 +7,7 @@ export const addScanCommand = (program: Command) => {
   program
     .command("scan")
     .description(
-      "Ingest new commits since the last recorded one (plus feature-branch tips).",
+      "Ingest mainline commits newest-first from tip (plus feature-branch tips when --limit is unset).",
     )
     .option(
       "--repo-root <path>",
@@ -26,7 +26,7 @@ export const addScanCommand = (program: Command) => {
     )
     .option(
       "--limit <n>",
-      "Max new commits to analyze this run (after the since cursor)",
+      "Max new commits to analyze this run (newest unanalyzed first)",
       (v) => Number(v),
     )
     .action(async (opts: {

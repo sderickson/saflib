@@ -12,7 +12,6 @@ export type GetLatestResult = ReturnsError<AnalyzedCommitEntity | null, never>;
 
 /**
  * Most recently authored analyzed commit, or null when the table is empty.
- * Used by `scan` as the `since` cursor.
  */
 export const getLatest = queryWrapper(
   async (dbKey: DbKey): Promise<GetLatestResult> => {

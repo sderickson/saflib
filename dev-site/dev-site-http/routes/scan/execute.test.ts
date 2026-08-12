@@ -83,8 +83,7 @@ describe("POST /scan", () => {
     const response = await request(lease.app).post("/scan").send({ limit: 5 });
     expect(response.status).toBe(200);
     expect(response.body.scanned).toEqual([]);
-    // No new candidates after the latest hash → empty skipped set.
-    expect(response.body.skipped).toEqual([]);
+    expect(response.body.skipped).toEqual([commitHash]);
     expect(response.body.failed).toEqual([]);
   });
 });

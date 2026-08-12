@@ -119,18 +119,30 @@ describe("orchestration", () => {
     const first = await throwError(
       scanCommits(dbKey, { repoRoot, mainRef: "main" }),
     );
-    expect(first.scanned.sort()).toEqual([commit1, commit2].sort());
+    expect(first.scanned).toEqual([commit2, commit1]);
     expect(first.skipped).toEqual([]);
     expect(first.failed).toEqual([]);
 
     const second = await throwError(
       scanCommits(dbKey, { repoRoot, mainRef: "main" }),
     );
-    // Incremental scan only considers commits after the latest stored hash,
-    // so a no-op re-scan reports empty scanned/skipped (not every known hash).
     expect(second.scanned).toEqual([]);
-    expect(second.skipped).toEqual([]);
+    expect(second.skipped).toEqual([commit2, commit1]);
     expect(second.failed).toEqual([]);
+  });
+
+  it("scanCommits with limit analyzes newest main commits first", async () => {
+    const first = await throwError(
+      scanCommits(dbKey, { repoRoot, mainRef: "main", limit: 1 }),
+    );
+    expect(first.scanned).toEqual([commit2]);
+    expect(first.skipped).toEqual([]);
+
+    const second = await throwError(
+      scanCommits(dbKey, { repoRoot, mainRef: "main", limit: 1 }),
+    );
+    expect(second.scanned).toEqual([commit1]);
+    expect(second.skipped).toEqual([commit2]);
   });
 
   it("getCommit returns metrics, exports, and test cases", async () => {

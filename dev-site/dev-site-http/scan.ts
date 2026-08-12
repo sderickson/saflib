@@ -19,7 +19,11 @@ export interface ScanOptions {
   productRoot?: string;
   /** Main branch ref. Defaults to `main`. */
   mainRef?: string;
-  /** Max new commits to analyze in this run (after applying the since cursor). */
+  /**
+   * Max new commits to analyze in this run. Mainline is walked newest-first
+   * (tip of `mainRef` first), skipping commits already in the DB, so repeated
+   * limited scans fill history backward from HEAD.
+   */
   limit?: number;
 }
 
@@ -37,7 +41,8 @@ export interface ScanResult {
 export type ScanError = GitCommandError;
 
 /**
- * Ingest new commits since the last recorded one, plus divergent feature-branch tips.
+ * Ingest mainline commits newest-first (tip first), plus divergent feature-branch
+ * tips when `limit` is unset.
  */
 export async function scanCommits(
   dbKey: DbKey,
@@ -48,13 +53,7 @@ export async function scanCommits(
   const skipped: string[] = [];
   const failed: ScanFailure[] = [];
 
-  const latest = await analyzedCommitsDb.getLatest(dbKey);
-  const since = latest.result?.hash;
-
-  const logResult = log(options.repoRoot, {
-    ref: mainRef,
-    since,
-  });
+  const logResult = log(options.repoRoot, { ref: mainRef });
   if (logResult.error) {
     // Empty repo / missing main — treat as no mainline commits rather than hard fail
     // when the ref simply doesn't exist yet.
@@ -64,30 +63,35 @@ export async function scanCommits(
       return { error: logResult.error };
     }
   }
-  // log returns newest-first; analyze oldest-first for nicer chronology.
-  let mainline: GitCommit[] = [...(logResult.result ?? [])].reverse();
-  if (options.limit !== undefined && options.limit >= 0) {
-    // Keep the oldest `limit` among the new window so chronology stays contiguous.
-    if (mainline.length > options.limit) {
-      mainline = mainline.slice(0, options.limit);
-    }
-  }
+  // git log is newest-first; keep that order so limited scans start at tip.
+  const mainline: GitCommit[] = logResult.result ?? [];
 
   const refsResult = listRefs(options.repoRoot);
   if (refsResult.error) return { error: refsResult.error };
 
-  const tipCommits = new Map<string, GitCommit>();
+  const toAnalyze: GitCommit[] = [];
   for (const commit of mainline) {
-    tipCommits.set(commit.hash, commit);
+    const existing = await analyzedCommitsDb.getByHash(dbKey, commit.hash);
+    if (existing.result) {
+      skipped.push(commit.hash);
+      continue;
+    }
+    toAnalyze.push(commit);
+    if (options.limit !== undefined && options.limit >= 0) {
+      if (toAnalyze.length >= options.limit) break;
+    }
   }
 
   // When `--limit` is set (CLI/dev convenience), skip feature-branch tip discovery
   // so the run stays bounded to mainline commits only.
   if (options.limit === undefined) {
+    const scheduled = new Set(toAnalyze.map((c) => c.hash));
+    for (const h of skipped) scheduled.add(h);
+
     for (const ref of refsResult.result) {
       if (ref.type !== "branch") continue;
       if (ref.name === mainRef) continue;
-      if (tipCommits.has(ref.hash)) continue;
+      if (scheduled.has(ref.hash)) continue;
 
       const ancestor = isAncestor(options.repoRoot, ref.hash, mainRef);
       if (ancestor.error && ancestor.error.exitCode !== 128) {
@@ -95,29 +99,25 @@ export async function scanCommits(
       }
       if (ancestor.result) continue; // already on main history
 
-      // Synthesize a GitCommit for the tip from log -n1
       const tipLog = log(options.repoRoot, { ref: ref.hash, limit: 1 });
       if (tipLog.error) {
         failed.push({ hash: ref.hash, message: tipLog.error.message });
         continue;
       }
-      if (tipLog.result[0]) {
-        tipCommits.set(ref.hash, tipLog.result[0]);
+      const tip = tipLog.result[0];
+      if (!tip) continue;
+
+      const existing = await analyzedCommitsDb.getByHash(dbKey, tip.hash);
+      if (existing.result) {
+        skipped.push(tip.hash);
+        continue;
       }
+      toAnalyze.push(tip);
+      scheduled.add(tip.hash);
     }
   }
 
-  for (const commit of tipCommits.values()) {
-    const existing = await analyzedCommitsDb.getByHash(dbKey, commit.hash);
-    if (existing.result) {
-      skipped.push(commit.hash);
-      continue;
-    }
-    // NotFound is expected for new commits
-    if (existing.error) {
-      // proceed
-    }
-
+  for (const commit of toAnalyze) {
     const analyzed = analyzeCommit(commit, {
       repoRoot: options.repoRoot,
       productRoot: options.productRoot,
