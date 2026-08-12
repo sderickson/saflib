@@ -5,7 +5,13 @@
     "version": "1.0.0",
     "description": "API specification for the __service-name__ service"
   },
-  "paths": null,
+  "paths": {
+    "__url-path__": {
+      "__method__": {
+        "$ref": "./routes/__group-name__/__target-name__.yaml#/__operationId__"
+      }
+    }
+  },
   "components": {
     "schemas": {
       "Error": {
@@ -101,6 +107,25 @@
           }
         }
       },
+      "__target_name__": {
+        "type": "object",
+        "properties": {
+          "event": {
+            "type": "string",
+            "enum": [
+              "__target_name__"
+            ]
+          },
+          "context": {
+            "type": "object",
+            "properties": null
+          }
+        },
+        "required": [
+          "event",
+          "context"
+        ]
+      },
       "index": {
         "type": "object",
         "oneOf": [
@@ -115,6 +140,9 @@
           },
           {
             "$ref": "#/components/schemas/verify_email"
+          },
+          {
+            "$ref": "#/components/schemas/__target_name__"
           }
         ],
         "properties": {
@@ -143,8 +171,8 @@
         "properties": {
           "id": {
             "type": "string",
-            "description": "Unique identifier for the template-resource",
-            "example": "123e4567-e89b-12d3-a456-426614174000"
+            "description": "Unique identifier for the template-resource (short id, e.g. from generateShortId)",
+            "example": "K3m9_xR2"
           },
           "name": {
             "type": "string",

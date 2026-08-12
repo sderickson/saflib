@@ -3,7 +3,24 @@
  * Do not make direct changes to the file.
  */
 
-export type paths = Record<string, never>;
+export interface paths {
+    "__url-path__": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+}
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
@@ -43,6 +60,11 @@ export interface components {
             /** @enum {string} */
             event?: "verify_email";
         };
+        __target_name__: {
+            /** @enum {string} */
+            event: "__target_name__";
+            context: Record<string, never>;
+        };
         index: {
             event: string;
             /** @description The frontend client that triggered the event. For web, it should be "web-{spa-name}". */
@@ -51,11 +73,11 @@ export interface components {
             view?: string;
             /** @description The component that triggered the event. For vue, it should be the component name. */
             component?: string;
-        } & (components["schemas"]["login"] | components["schemas"]["signup"] | components["schemas"]["signup_view"] | components["schemas"]["verify_email"]);
+        } & (components["schemas"]["login"] | components["schemas"]["signup"] | components["schemas"]["signup_view"] | components["schemas"]["verify_email"] | components["schemas"]["__target_name__"]);
         "__target-name__": {
             /**
-             * @description Unique identifier for the template-resource
-             * @example 123e4567-e89b-12d3-a456-426614174000
+             * @description Unique identifier for the template-resource (short id, e.g. from generateShortId)
+             * @example K3m9_xR2
              */
             id: string;
             /**

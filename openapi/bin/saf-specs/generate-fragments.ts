@@ -3,6 +3,7 @@ import { execFile } from "child_process";
 import { mkdirSync, readFileSync, writeFileSync } from "fs";
 import path from "path";
 import { promisify } from "util";
+import { resolvePackageBin } from "./resolve-bin.ts";
 import {
   collectOperationsFromBundled,
   type OpenApiDoc,
@@ -83,9 +84,10 @@ export type ${typeName} = components["schemas"]["${schemaName}"];
 }
 
 const execFileAsync = promisify(execFile);
+const openapiTypescriptBin = resolvePackageBin("openapi-typescript");
 
 async function runOpenApiTypegen(jsonPath: string, dtsPath: string): Promise<void> {
-  await execFileAsync("openapi-typescript", [jsonPath, "-o", dtsPath]);
+  await execFileAsync(openapiTypescriptBin, [jsonPath, "-o", dtsPath]);
 }
 
 async function runOpenApiTypegenPool(
