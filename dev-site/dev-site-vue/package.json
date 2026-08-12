@@ -1,8 +1,9 @@
 {
   "name": "@saflib/dev-site-vue",
-  "description": "TODO: Add package description",
+  "description": "Vue pages/widgets for browsing static-analysis commit snapshots",
   "private": true,
   "type": "module",
+  "main": "./index.ts",
   "exports": {
     ".": "./index.ts"
   },
@@ -10,12 +11,13 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "typecheck": "tsc -b"
+    "typecheck": "vue-tsc -b"
   },
-  "dependencies": {},
-  "devDependencies": {
-    "@saflib/vitest": "*",
-    "@saflib/monorepo": "*"
+  "dependencies": {
+    "@saflib/dev-site-spec": "*",
+    "@saflib/sdk": "*",
+    "@saflib/vue": "*",
+    "@tanstack/vue-query": "*"
   },
   "sideEffects": false
 }

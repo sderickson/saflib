@@ -1,5 +1,7 @@
-// Export your public API from here
-export const greet = (name: string): string => `Hello, ${name}!`;
+import TimelinePage from "./pages/TimelinePage.vue";
+import CommitDetailPage from "./pages/CommitDetailPage.vue";
+import ComparePage from "./pages/ComparePage.vue";
+export { commitHealth } from "./health.ts";
+export type { CommitHealth, CommitHealthStatus } from "./health.ts";
 
-// Placeholder for other exports
-export const meaningOfLife = 42;
+export { TimelinePage, CommitDetailPage, ComparePage };
