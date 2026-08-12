@@ -26,18 +26,29 @@
       </aside>
 
       <section class="spec-split__panel">
-        <div class="text-caption text-medium-emphasis mb-1">
-          {{ scopeLabel }}
-        </div>
-        <p v-if="scopeSummary" class="scope-summary mb-3">
-          {{ scopeSummary }}
-        </p>
-        <p
-          v-else-if="scope.kind !== 'all' && !scopeDocLoading"
-          class="text-caption text-medium-emphasis mb-3"
+        <header
+          v-if="scope.kind !== 'all'"
+          class="scope-header"
+          :class="
+            scope.kind === 'dir' ? 'scope-header--dir' : 'scope-header--file'
+          "
         >
-          {{ missingScopeHint }}
-        </p>
+          <h3 class="scope-header__title">
+            {{ scope.kind === 'dir' ? `${scope.localPath}/` : scopeFileName }}
+          </h3>
+          <p v-if="scopeSummary" class="scope-header__summary">
+            {{ scopeSummary }}
+          </p>
+          <p
+            v-else-if="!scopeDocLoading"
+            class="scope-header__hint"
+          >
+            {{ missingScopeHint }}
+          </p>
+        </header>
+        <div v-else class="scope-header scope-header--all">
+          <h3 class="scope-header__title">All test files</h3>
+        </div>
 
         <TestTree
           v-if="testTree.length"
@@ -193,10 +204,10 @@ const testTree = computed(() => {
   );
 });
 
-const scopeLabel = computed(() => {
-  if (scope.value.kind === "all") return "All test files";
-  if (scope.value.kind === "dir") return `${scope.value.localPath}/`;
-  return scope.value.localPath;
+const scopeFileName = computed(() => {
+  if (scope.value.kind !== "file") return "";
+  const parts = scope.value.localPath.split("/");
+  return parts[parts.length - 1] ?? scope.value.localPath;
 });
 
 const linkedSubjectNames = computed(() => {
@@ -269,12 +280,40 @@ const openFile = (path: string) => {
 .spec-split__panel {
   min-width: 0;
 }
-.scope-summary {
+.scope-header {
+  margin-bottom: 1rem;
+  max-width: 44rem;
+}
+.scope-header__title {
   margin: 0;
-  max-width: 42rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-weight: 600;
+  color: inherit;
+}
+.scope-header--file .scope-header__title {
+  font-size: 0.95rem;
+}
+.scope-header--dir .scope-header__title {
+  font-size: 1.15rem;
+}
+.scope-header--all .scope-header__title {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: rgba(var(--v-theme-on-surface), 0.65);
+}
+.scope-header__summary {
+  margin: 0.4rem 0 0;
   font-size: 0.9rem;
   line-height: 1.45;
   color: rgba(var(--v-theme-on-surface), 0.78);
+}
+.scope-header--dir .scope-header__summary {
+  font-size: 0.95rem;
+}
+.scope-header__hint {
+  margin: 0.35rem 0 0;
+  font-size: 0.75rem;
+  color: rgba(var(--v-theme-on-surface), 0.45);
 }
 .unlinked__list {
   list-style: none;

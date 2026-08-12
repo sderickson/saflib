@@ -1,17 +1,8 @@
 <template>
   <ul class="test-tree" :class="{ 'test-tree--root': depth === 0 }">
     <li v-for="node in nodes" :key="node.id" class="test-tree__item">
-      <!-- Suite card -->
       <article v-if="node.kind === 'suite'" class="suite-card">
         <header class="suite-card__head">
-          <button
-            type="button"
-            class="suite-card__toggle"
-            :aria-expanded="open.has(node.id)"
-            @click="toggle(node.id)"
-          >
-            {{ open.has(node.id) ? "▾" : "▸" }}
-          </button>
           <button
             v-if="node.subjectFilePath"
             type="button"
@@ -35,7 +26,7 @@
           </p>
         </div>
 
-        <div v-if="open.has(node.id)" class="suite-card__tests">
+        <div class="suite-card__tests">
           <ul v-if="testLeaves(node).length" class="suite-card__cases">
             <li
               v-for="t in testLeaves(node)"
@@ -54,37 +45,39 @@
         </div>
       </article>
 
-      <!-- Dir / file / bare test (outside a card) -->
-      <template v-else>
-        <div class="test-tree__row" :class="`test-tree__row--${node.kind}`">
-          <button
-            v-if="node.children.length"
-            type="button"
-            class="test-tree__toggle"
-            @click="toggle(node.id)"
-          >
-            {{ open.has(node.id) ? "▾" : "▸" }}
-          </button>
-          <span v-else class="test-tree__toggle-spacer" />
-          <span class="test-tree__label">{{ node.label }}</span>
-          <span class="test-tree__kind">{{ node.kind }}</span>
-        </div>
+      <section v-else-if="node.kind === 'dir'" class="tree-section tree-section--dir">
+        <h3 class="tree-section__title tree-section__title--dir">
+          {{ node.label }}/
+        </h3>
         <TestTree
-          v-if="node.children.length && open.has(node.id)"
+          v-if="node.children.length"
           :nodes="node.children"
           :depth="depth + 1"
           @open-source="$emit('open-source', $event)"
         />
-      </template>
+      </section>
+
+      <section v-else-if="node.kind === 'file'" class="tree-section tree-section--file">
+        <h4 class="tree-section__title tree-section__title--file">
+          {{ node.label }}
+        </h4>
+        <TestTree
+          v-if="node.children.length"
+          :nodes="node.children"
+          :depth="depth + 1"
+          @open-source="$emit('open-source', $event)"
+        />
+      </section>
+
+      <div v-else class="test-tree__bare-test">{{ node.label }}</div>
     </li>
   </ul>
 </template>
 
 <script setup lang="ts">
-import { reactive, watch } from "vue";
 import type { TestTreeNode } from "../test-tree";
 
-const props = withDefaults(
+withDefaults(
   defineProps<{
     nodes: TestTreeNode[];
     depth?: number;
@@ -95,31 +88,6 @@ const props = withDefaults(
 defineEmits<{
   "open-source": [filePath: string];
 }>();
-
-const open = reactive(new Set<string>());
-
-const expandAll = (nodes: TestTreeNode[]) => {
-  for (const n of nodes) {
-    if (n.children.length) {
-      open.add(n.id);
-      expandAll(n.children);
-    }
-  }
-};
-
-watch(
-  () => props.nodes,
-  (nodes) => {
-    open.clear();
-    expandAll(nodes);
-  },
-  { immediate: true },
-);
-
-const toggle = (id: string) => {
-  if (open.has(id)) open.delete(id);
-  else open.add(id);
-};
 
 const testLeaves = (node: TestTreeNode) =>
   node.children.filter((c) => c.kind === "test");
@@ -132,41 +100,47 @@ const nestedSuites = (node: TestTreeNode) =>
 .test-tree {
   list-style: none;
   margin: 0;
-  padding-left: 0.75rem;
-}
-.test-tree--root {
   padding-left: 0;
 }
 .test-tree__item {
-  margin: 0.35rem 0;
+  margin: 0.5rem 0;
 }
-.test-tree__row {
-  display: flex;
-  align-items: baseline;
-  gap: 0.35rem;
+.test-tree--root > .test-tree__item {
+  margin-top: 0.75rem;
+}
+.test-tree--root > .test-tree__item:first-child {
+  margin-top: 0;
+}
+
+.tree-section {
+  margin: 0;
+}
+.tree-section__title {
+  margin: 0 0 0.5rem;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-weight: 600;
+  color: inherit;
+}
+.tree-section__title--dir {
+  font-size: 0.95rem;
+  padding-bottom: 0.25rem;
+  border-bottom: 1px solid rgba(var(--v-theme-on-surface), 0.1);
+}
+.tree-section__title--file {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: rgba(var(--v-theme-on-surface), 0.7);
+}
+.tree-section--file {
+  margin-top: 0.85rem;
+}
+.tree-section--dir + .tree-section--dir {
+  margin-top: 1.25rem;
+}
+
+.test-tree__bare-test {
   font-size: 0.875rem;
-}
-.test-tree__toggle,
-.test-tree__toggle-spacer {
-  width: 1rem;
-  border: 0;
-  background: transparent;
-  padding: 0;
-  cursor: pointer;
-  color: inherit;
-}
-.test-tree__toggle-spacer {
-  cursor: default;
-}
-.test-tree__label {
-  color: inherit;
-  font: inherit;
-}
-.test-tree__kind {
-  color: rgba(var(--v-theme-on-surface), 0.45);
-  font-size: 0.7rem;
-  text-transform: uppercase;
+  padding-left: 0.5rem;
 }
 
 .suite-card {
@@ -175,6 +149,7 @@ const nestedSuites = (node: TestTreeNode) =>
   background: rgba(var(--v-theme-surface), 1);
   overflow: hidden;
   max-width: 44rem;
+  margin-bottom: 0.65rem;
 }
 .suite-card__head {
   display: flex;
@@ -183,15 +158,6 @@ const nestedSuites = (node: TestTreeNode) =>
   padding: 0.55rem 0.75rem;
   border-bottom: 1px solid rgba(var(--v-theme-on-surface), 0.1);
   background: rgba(var(--v-theme-on-surface), 0.03);
-}
-.suite-card__toggle {
-  width: 1rem;
-  border: 0;
-  background: transparent;
-  padding: 0;
-  cursor: pointer;
-  color: inherit;
-  flex-shrink: 0;
 }
 .suite-card__name {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
@@ -259,7 +225,6 @@ const nestedSuites = (node: TestTreeNode) =>
   background: rgba(var(--v-theme-on-surface), 0.28);
 }
 .suite-card__tests > .test-tree {
-  padding-left: 0;
   margin-top: 0.5rem;
 }
 </style>
