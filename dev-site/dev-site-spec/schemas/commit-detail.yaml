@@ -1,0 +1,24 @@
+type: object
+description: >
+  Full static-analysis snapshot for one commit — metadata plus per-package
+  metrics, exports, and test cases.
+properties:
+  commit:
+    $ref: "./commit.yaml"
+  packageMetrics:
+    type: array
+    items:
+      $ref: "./package-metrics.yaml"
+  exports:
+    type: array
+    items:
+      $ref: "./export-entry.yaml"
+  testCases:
+    type: array
+    items:
+      $ref: "./test-case.yaml"
+required:
+  - commit
+  - packageMetrics
+  - exports
+  - testCases

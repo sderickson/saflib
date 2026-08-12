@@ -1,0 +1,82 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "executeScan",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/scan": {
+      "post": {
+        "summary": "Scan and ingest new commits",
+        "operationId": "executeScan",
+        "description": "Walk git history since the last recorded commit (plus feature-branch tips) and store static-analysis snapshots. Manual trigger — no automatic poller in v1. Request body is an empty object so clients can POST JSON without special-casing.\n",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "description": "Empty object; scan options are server-configured for v1.",
+                "properties": {}
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Scan completed; returns which commits were ingested.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "scanned",
+                    "skipped",
+                    "failed"
+                  ],
+                  "properties": {
+                    "scanned": {
+                      "type": "array",
+                      "description": "Commit hashes newly analyzed and stored.",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "skipped": {
+                      "type": "array",
+                      "description": "Commit hashes already present (no re-analysis).",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "failed": {
+                      "type": "array",
+                      "description": "Commits that failed analysis (hash + error message).",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "hash",
+                          "message"
+                        ],
+                        "properties": {
+                          "hash": {
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {}
+}

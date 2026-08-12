@@ -1,0 +1,22 @@
+type: object
+description: >
+  One `describe`/`it`/`test` case extracted from a test file. `fullName` uses
+  the `" > "` separator from `@saflib/parser` (e.g. `"outer > inner > does the
+  thing"`).
+properties:
+  packageName:
+    type: string
+    description: npm package that owns this file.
+    example: "@saflib/git"
+  filePath:
+    type: string
+    description: Path relative to the repo root.
+    example: "saflib/git/index.test.ts"
+  fullName:
+    type: string
+    description: Nested describe/it titles joined with `" > "`.
+    example: "log > returns commits newest-first (git log order)"
+required:
+  - packageName
+  - filePath
+  - fullName

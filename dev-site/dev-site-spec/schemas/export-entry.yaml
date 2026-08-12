@@ -1,0 +1,31 @@
+type: object
+description: One exported symbol extracted from a source file at a commit.
+properties:
+  packageName:
+    type: string
+    description: npm package that owns this file.
+    example: "@saflib/git"
+  filePath:
+    type: string
+    description: Path relative to the repo root.
+    example: "saflib/git/log.ts"
+  name:
+    type: string
+    description: Exported symbol name.
+    example: "log"
+  kind:
+    type: string
+    description: Declaration kind (mirrors `@saflib/parser`'s ExportKind).
+    enum:
+      - function
+      - class
+      - interface
+      - type
+      - const
+      - enum
+      - variable
+required:
+  - packageName
+  - filePath
+  - name
+  - kind

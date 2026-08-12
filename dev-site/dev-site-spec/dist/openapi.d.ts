@@ -3,12 +3,256 @@
  * Do not make direct changes to the file.
  */
 
-export type paths = Record<string, never>;
+export interface paths {
+    "/commits": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List analyzed commits (newest first)
+         * @description Paginated list of analyzed commits with rollup summary metrics for timeline display. Does not include per-package / export / test-case inventories — fetch those via GET /commits/{hash}.
+         */
+        get: operations["listCommits"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/commits/{hash}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get the full analysis snapshot for a commit
+         * @description Returns commit metadata plus per-package metrics, exports, and test cases for a single analyzed commit.
+         */
+        get: operations["getCommits"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/commits/{hash}/diff/{otherHash}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Diff two analyzed commits
+         * @description Compare the analysis snapshots of two commits. `hash` is the baseline ("before"); `otherHash` is the comparison ("after"). Returns added/removed (and changed, for package metrics) inventories.
+         */
+        get: operations["diffCommits"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/scan": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Scan and ingest new commits
+         * @description Walk git history since the last recorded commit (plus feature-branch tips) and store static-analysis snapshots. Manual trigger — no automatic poller in v1. Request body is an empty object so clients can POST JSON without special-casing.
+         */
+        post: operations["executeScan"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+}
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
         Error: components["schemas"]["error"];
         ProductEvent: components["schemas"]["index"];
+        Commit: components["schemas"]["commit"];
+        CommitSummary: components["schemas"]["commit-summary"];
+        PackageMetrics: components["schemas"]["package-metrics"];
+        ExportEntry: components["schemas"]["export-entry"];
+        TestCase: components["schemas"]["test-case"];
+        CommitDetail: components["schemas"]["commit-detail"];
+        CommitDiff: components["schemas"]["commit-diff"];
+        CommitRef: components["schemas"]["commit-ref"];
+        /** @description A branch or tag pointer observed at scan time for a commit. */
+        "commit-ref": {
+            /**
+             * @description Ref name without the `refs/heads/` or `refs/tags/` prefix.
+             * @example main
+             */
+            name: string;
+            /**
+             * @description Whether this ref is a branch or a tag.
+             * @enum {string}
+             */
+            type: "branch" | "tag";
+            /** @description True when this commit is an ancestor of the configured main branch (including main itself). Used to distinguish mainline history from feature-branch tips. */
+            isMainAncestor: boolean;
+        };
+        /** @description List-friendly commit row — same metadata as Commit, without the nested inventory payloads. Used by GET /commits. */
+        "commit-summary": {
+            /**
+             * @description Full 40-char commit object hash.
+             * @example a1b2c3d4e5f6789012345678901234567890abcd
+             */
+            hash: string;
+            parentHashes: string[];
+            /** Format: date-time */
+            authoredAt: string;
+            /** @description Full commit message (subject + body). */
+            message: string;
+            refs: components["schemas"]["commit-ref"][];
+            analyzerVersion: string;
+            /** Format: date-time */
+            computedAt: string;
+            /** @enum {string} */
+            status: "pending" | "complete" | "failed";
+            /** @description Rollup counts across all packages at this commit, for timeline health indicators without fetching CommitDetail. */
+            summaryMetrics: {
+                packageCount: number;
+                sourceFiles: number;
+                sourceLines: number;
+                testFiles: number;
+                testLines: number;
+                exportCount: number;
+                testCaseCount: number;
+            };
+        };
+        /** @description Analyzed commit metadata — one row per scanned commit. Does not include per-package / export / test-case payloads (see CommitDetail for those). */
+        commit: {
+            /**
+             * @description Full 40-char commit object hash.
+             * @example a1b2c3d4e5f6789012345678901234567890abcd
+             */
+            hash: string;
+            /** @description Parent commit hashes (empty for the root commit). */
+            parentHashes: string[];
+            /**
+             * Format: date-time
+             * @description Author date from the commit (`%aI`).
+             * @example 2026-08-12T10:00:00-07:00
+             */
+            authoredAt: string;
+            /**
+             * @description Full commit message (subject + body).
+             * @example Add inventory for package metrics
+             */
+            message: string;
+            /** @description Branch/tag pointers that currently resolve to this commit. */
+            refs: components["schemas"]["commit-ref"][];
+            /**
+             * @description Version string of the analyzer that produced this snapshot.
+             * @example 1
+             */
+            analyzerVersion: string;
+            /**
+             * Format: date-time
+             * @description When this snapshot was written to the database.
+             * @example 2026-08-12T11:00:00-07:00
+             */
+            computedAt: string;
+            /**
+             * @description Analysis status for this commit.
+             * @example complete
+             * @enum {string}
+             */
+            status: "pending" | "complete" | "failed";
+        };
+        /** @description Per-package file/LOC inventory at a single commit. */
+        "package-metrics": {
+            /**
+             * @description npm package name (e.g. `@saflib/git`).
+             * @example @saflib/git
+             */
+            packageName: string;
+            /**
+             * @description Package directory relative to the analyzed product root.
+             * @example saflib/git
+             */
+            directory: string;
+            /** @description Count of source files (excluding tests). */
+            sourceFiles: number;
+            /** @description Total lines across source files. */
+            sourceLines: number;
+            /** @description Production (non-test) source lines. */
+            prodLines: number;
+            /** @description Test file lines. */
+            testLines: number;
+            /** @description Count of test files. */
+            testFiles: number;
+        };
+        /** @description One exported symbol extracted from a source file at a commit. */
+        "export-entry": {
+            /**
+             * @description npm package that owns this file.
+             * @example @saflib/git
+             */
+            packageName: string;
+            /**
+             * @description Path relative to the repo root.
+             * @example saflib/git/log.ts
+             */
+            filePath: string;
+            /**
+             * @description Exported symbol name.
+             * @example log
+             */
+            name: string;
+            /**
+             * @description Declaration kind (mirrors `@saflib/parser`'s ExportKind).
+             * @enum {string}
+             */
+            kind: "function" | "class" | "interface" | "type" | "const" | "enum" | "variable";
+        };
+        /** @description One `describe`/`it`/`test` case extracted from a test file. `fullName` uses the `" > "` separator from `@saflib/parser` (e.g. `"outer > inner > does the thing"`). */
+        "test-case": {
+            /**
+             * @description npm package that owns this file.
+             * @example @saflib/git
+             */
+            packageName: string;
+            /**
+             * @description Path relative to the repo root.
+             * @example saflib/git/index.test.ts
+             */
+            filePath: string;
+            /**
+             * @description Nested describe/it titles joined with `" > "`.
+             * @example log > returns commits newest-first (git log order)
+             */
+            fullName: string;
+        };
+        /** @description Full static-analysis snapshot for one commit — metadata plus per-package metrics, exports, and test cases. */
+        "commit-detail": {
+            commit: components["schemas"]["commit"];
+            packageMetrics: components["schemas"]["package-metrics"][];
+            exports: components["schemas"]["export-entry"][];
+            testCases: components["schemas"]["test-case"][];
+        };
         error: {
             /** @description A short, machine-readable error code, for when HTTP status codes are not sufficient. */
             code?: string;
@@ -17,6 +261,29 @@ export interface components {
              * @example The requested resource could not be found.
              */
             message?: string;
+        };
+        /** @description Delta between two analyzed commits. Exports and test cases are identity-based (add/remove only — a rename shows up as remove + add). Package metrics include a `changed` list when the same packageName exists on both sides with different counts. */
+        "commit-diff": {
+            /** @description Baseline commit hash (the "before"). */
+            fromHash: string;
+            /** @description Comparison commit hash (the "after"). */
+            toHash: string;
+            packageMetrics: {
+                added: components["schemas"]["package-metrics"][];
+                removed: components["schemas"]["package-metrics"][];
+                changed: {
+                    before: components["schemas"]["package-metrics"];
+                    after: components["schemas"]["package-metrics"];
+                }[];
+            };
+            exports: {
+                added: components["schemas"]["export-entry"][];
+                removed: components["schemas"]["export-entry"][];
+            };
+            testCases: {
+                added: components["schemas"]["test-case"][];
+                removed: components["schemas"]["test-case"][];
+            };
         };
         login: {
             /** @enum {string} */
@@ -59,4 +326,138 @@ export interface components {
     pathItems: never;
 }
 export type $defs = Record<string, never>;
-export type operations = Record<string, never>;
+export interface operations {
+    listCommits: {
+        parameters: {
+            query?: {
+                /** @description Opaque pagination cursor (commit hash of the last item from the previous page). Omit for the first page. */
+                cursor?: string;
+                /** @description Max commits to return. */
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description A page of analyzed commits. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        commits: components["schemas"]["commit-summary"][];
+                        /** @description Pass as `cursor` on the next request. Null when there are no more pages. */
+                        nextCursor?: string | null;
+                    };
+                };
+            };
+        };
+    };
+    getCommits: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Full 40-char commit object hash. */
+                hash: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Full commit analysis snapshot. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        commitDetail: components["schemas"]["commit-detail"];
+                    };
+                };
+            };
+            /** @description No analysis snapshot found for this commit hash. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+        };
+    };
+    diffCommits: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Baseline commit hash (the "before"). */
+                hash: string;
+                /** @description Comparison commit hash (the "after"). */
+                otherHash: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Delta between the two commit snapshots. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        commitDiff: components["schemas"]["commit-diff"];
+                    };
+                };
+            };
+            /** @description One or both commit hashes have no analysis snapshot. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+        };
+    };
+    executeScan: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": Record<string, never>;
+            };
+        };
+        responses: {
+            /** @description Scan completed; returns which commits were ingested. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        /** @description Commit hashes newly analyzed and stored. */
+                        scanned: string[];
+                        /** @description Commit hashes already present (no re-analysis). */
+                        skipped: string[];
+                        /** @description Commits that failed analysis (hash + error message). */
+                        failed: {
+                            hash: string;
+                            message: string;
+                        }[];
+                    };
+                };
+            };
+        };
+    };
+}

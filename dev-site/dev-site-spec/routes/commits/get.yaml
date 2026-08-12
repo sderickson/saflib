@@ -1,0 +1,31 @@
+getCommits:
+  summary: Get the full analysis snapshot for a commit
+  operationId: getCommits
+  description: >
+    Returns commit metadata plus per-package metrics, exports, and test cases
+    for a single analyzed commit.
+  parameters:
+    - name: hash
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Full 40-char commit object hash.
+  responses:
+    "200":
+      description: Full commit analysis snapshot.
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - commitDetail
+            properties:
+              commitDetail:
+                $ref: "../../schemas/commit-detail.yaml"
+    "404":
+      description: No analysis snapshot found for this commit hash.
+      content:
+        application/json:
+          schema:
+            $ref: "../../schemas/error.yaml"

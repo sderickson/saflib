@@ -1,0 +1,74 @@
+type: object
+description: >
+  Delta between two analyzed commits. Exports and test cases are identity-based
+  (add/remove only — a rename shows up as remove + add). Package metrics include
+  a `changed` list when the same packageName exists on both sides with different
+  counts.
+properties:
+  fromHash:
+    type: string
+    description: Baseline commit hash (the "before").
+  toHash:
+    type: string
+    description: Comparison commit hash (the "after").
+  packageMetrics:
+    type: object
+    properties:
+      added:
+        type: array
+        items:
+          $ref: "./package-metrics.yaml"
+      removed:
+        type: array
+        items:
+          $ref: "./package-metrics.yaml"
+      changed:
+        type: array
+        items:
+          type: object
+          properties:
+            before:
+              $ref: "./package-metrics.yaml"
+            after:
+              $ref: "./package-metrics.yaml"
+          required:
+            - before
+            - after
+    required:
+      - added
+      - removed
+      - changed
+  exports:
+    type: object
+    properties:
+      added:
+        type: array
+        items:
+          $ref: "./export-entry.yaml"
+      removed:
+        type: array
+        items:
+          $ref: "./export-entry.yaml"
+    required:
+      - added
+      - removed
+  testCases:
+    type: object
+    properties:
+      added:
+        type: array
+        items:
+          $ref: "./test-case.yaml"
+      removed:
+        type: array
+        items:
+          $ref: "./test-case.yaml"
+    required:
+      - added
+      - removed
+required:
+  - fromHash
+  - toHash
+  - packageMetrics
+  - exports
+  - testCases

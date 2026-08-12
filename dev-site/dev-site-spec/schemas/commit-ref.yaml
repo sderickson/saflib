@@ -1,0 +1,21 @@
+type: object
+description: A branch or tag pointer observed at scan time for a commit.
+properties:
+  name:
+    type: string
+    description: Ref name without the `refs/heads/` or `refs/tags/` prefix.
+    example: "main"
+  type:
+    type: string
+    enum: ["branch", "tag"]
+    description: Whether this ref is a branch or a tag.
+  isMainAncestor:
+    type: boolean
+    description: >
+      True when this commit is an ancestor of the configured main branch
+      (including main itself). Used to distinguish mainline history from
+      feature-branch tips.
+required:
+  - name
+  - type
+  - isMainAncestor

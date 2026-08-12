@@ -6,9 +6,18 @@ info:
 
 paths:
   # BEGIN WORKFLOW AREA route-paths FOR openapi/route
-
-
-
+  /commits:
+    get:
+      $ref: "./routes/commits/list.yaml#/listCommits"
+  /commits/{hash}:
+    get:
+      $ref: "./routes/commits/get.yaml#/getCommits"
+  /commits/{hash}/diff/{otherHash}:
+    get:
+      $ref: "./routes/commits/diff.yaml#/diffCommits"
+  /scan:
+    post:
+      $ref: "./routes/scan/execute.yaml#/executeScan"
   # END WORKFLOW AREA
 
 components:
@@ -20,4 +29,20 @@ components:
     # BEGIN WORKFLOW AREA schema-components FOR openapi/schema
 
 
+    Commit:
+      $ref: "./schemas/commit.yaml"
+    CommitSummary:
+      $ref: "./schemas/commit-summary.yaml"
+    PackageMetrics:
+      $ref: "./schemas/package-metrics.yaml"
+    ExportEntry:
+      $ref: "./schemas/export-entry.yaml"
+    TestCase:
+      $ref: "./schemas/test-case.yaml"
+    CommitDetail:
+      $ref: "./schemas/commit-detail.yaml"
+    CommitDiff:
+      $ref: "./schemas/commit-diff.yaml"
+    CommitRef:
+      $ref: "./schemas/commit-ref.yaml"
     # END WORKFLOW AREA
