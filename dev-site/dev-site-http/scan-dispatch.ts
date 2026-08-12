@@ -3,6 +3,7 @@ import { fileURLToPath } from "node:url";
 import type { DbKey } from "@saflib/drizzle";
 import { GitCommandError } from "@saflib/git";
 import type { ReturnsError } from "@saflib/monorepo";
+import { makeSubsystemReporters } from "@saflib/node";
 import { devSiteDb } from "@saflib/dev-site-db/instances";
 import {
   scanCommits,
@@ -57,9 +58,17 @@ async function runScan(
       : (options.limit ?? DEFAULT_HTTP_SCAN_LIMIT);
 
   if (!dbPath || dbPath === ":memory:") {
+    const { log } = makeSubsystemReporters("dev-site", "scan");
+    log.info("Running scan in-process (:memory: db)");
     return scanCommits(dbKey, { ...options, limit });
   }
 
+  const { log } = makeSubsystemReporters("dev-site", "scan");
+  log.info(
+    options.commitHash
+      ? `Dispatching scan worker for commit ${options.commitHash.slice(0, 10)}`
+      : `Dispatching scan worker (limit=${limit ?? "none"})`,
+  );
   return scanCommitsInWorker({
     dbPath,
     repoRoot: options.repoRoot,

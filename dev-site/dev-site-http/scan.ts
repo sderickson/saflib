@@ -7,6 +7,7 @@ import {
 } from "@saflib/git";
 import type { DbKey } from "@saflib/drizzle";
 import type { ReturnsError } from "@saflib/monorepo";
+import { makeSubsystemReporters } from "@saflib/node";
 import { analyzedCommitsDb } from "@saflib/dev-site-db/queries/analyzed-commits/index";
 import { packageMetricsDb } from "@saflib/dev-site-db/queries/package-metrics/index";
 import { analyzeCommit, ANALYZER_VERSION } from "./analyze-commit.ts";
@@ -43,6 +44,14 @@ export interface ScanResult {
 }
 
 export type ScanError = GitCommandError;
+
+function shortHash(hash: string): string {
+  return hash.slice(0, 10);
+}
+
+function firstLine(message: string): string {
+  return message.split("\n")[0] ?? message;
+}
 
 async function persistCommit(
   dbKey: DbKey,
@@ -84,6 +93,34 @@ async function persistCommit(
   return { result: undefined };
 }
 
+async function analyzeAndPersist(
+  dbKey: DbKey,
+  commit: GitCommit,
+  options: {
+    repoRoot: string;
+    productRoot?: string;
+    mainRef: string;
+  },
+  progress: { index: number; total: number },
+): Promise<ReturnsError<"scanned" | "failed", GitCommandError>> {
+  const { log: scanLog } = makeSubsystemReporters("dev-site", "scan");
+  const label = `${progress.index}/${progress.total} ${shortHash(commit.hash)}`;
+  scanLog.info(
+    `Analyzing ${label} — ${firstLine(commit.subject || commit.hash)}`,
+  );
+  const started = Date.now();
+  const persisted = await persistCommit(dbKey, commit, options);
+  const ms = Date.now() - started;
+  if (persisted.error) {
+    scanLog.warn(
+      `Failed ${label} after ${ms}ms: ${persisted.error.message}`,
+    );
+    return { error: persisted.error };
+  }
+  scanLog.info(`Done ${label} in ${ms}ms`);
+  return { result: "scanned" };
+}
+
 /**
  * Ingest mainline commits newest-first (tip first), plus divergent feature-branch
  * tips when `limit` is unset. Or analyze a single {@link ScanOptions.commitHash}.
@@ -92,17 +129,25 @@ export async function scanCommits(
   dbKey: DbKey,
   options: ScanOptions,
 ): Promise<ReturnsError<ScanResult, ScanError>> {
+  const { log: scanLog } = makeSubsystemReporters("dev-site", "scan");
   const mainRef = options.mainRef ?? "main";
   const scanned: string[] = [];
   const skipped: string[] = [];
   const failed: ScanFailure[] = [];
+  const runStarted = Date.now();
 
   if (options.commitHash) {
+    scanLog.info(
+      `Scan start: single commit ${shortHash(options.commitHash)} (productRoot=${options.productRoot ?? ""})`,
+    );
     const existing = await analyzedCommitsDb.getByHash(
       dbKey,
       options.commitHash,
     );
     if (existing.result) {
+      scanLog.info(
+        `Scan skip: ${shortHash(options.commitHash)} already analyzed`,
+      );
       return {
         result: {
           scanned: [],
@@ -133,18 +178,32 @@ export async function scanCommits(
       };
     }
 
-    const persisted = await persistCommit(dbKey, commit, {
-      repoRoot: options.repoRoot,
-      productRoot: options.productRoot,
-      mainRef,
-    });
-    if (persisted.error) {
-      failed.push({ hash: commit.hash, message: persisted.error.message });
+    const outcome = await analyzeAndPersist(
+      dbKey,
+      commit,
+      {
+        repoRoot: options.repoRoot,
+        productRoot: options.productRoot,
+        mainRef,
+      },
+      { index: 1, total: 1 },
+    );
+    if (outcome.error) {
+      failed.push({ hash: commit.hash, message: outcome.error.message });
     } else {
       scanned.push(commit.hash);
     }
+    scanLog.info(
+      `Scan finished in ${Date.now() - runStarted}ms: scanned=${scanned.length} skipped=${skipped.length} failed=${failed.length}`,
+    );
     return { result: { scanned, skipped, failed } };
   }
+
+  scanLog.info(
+    `Scan start: mainline ${mainRef} newest-first` +
+      (options.limit !== undefined ? ` limit=${options.limit}` : " (no limit)") +
+      ` productRoot=${options.productRoot ?? ""}`,
+  );
 
   const logResult = log(options.repoRoot, { ref: mainRef });
   if (logResult.error) {
@@ -205,18 +264,32 @@ export async function scanCommits(
     }
   }
 
-  for (const commit of toAnalyze) {
-    const persisted = await persistCommit(dbKey, commit, {
-      repoRoot: options.repoRoot,
-      productRoot: options.productRoot,
-      mainRef,
-    });
-    if (persisted.error) {
-      failed.push({ hash: commit.hash, message: persisted.error.message });
+  scanLog.info(
+    `Plan: ${toAnalyze.length} to analyze, ${skipped.length} already stored` +
+      (mainline.length ? ` (mainline has ${mainline.length} commits)` : ""),
+  );
+
+  for (let i = 0; i < toAnalyze.length; i++) {
+    const commit = toAnalyze[i]!;
+    const outcome = await analyzeAndPersist(
+      dbKey,
+      commit,
+      {
+        repoRoot: options.repoRoot,
+        productRoot: options.productRoot,
+        mainRef,
+      },
+      { index: i + 1, total: toAnalyze.length },
+    );
+    if (outcome.error) {
+      failed.push({ hash: commit.hash, message: outcome.error.message });
       continue;
     }
     scanned.push(commit.hash);
   }
 
+  scanLog.info(
+    `Scan finished in ${Date.now() - runStarted}ms: scanned=${scanned.length} skipped=${skipped.length} failed=${failed.length}`,
+  );
   return { result: { scanned, skipped, failed } };
 }

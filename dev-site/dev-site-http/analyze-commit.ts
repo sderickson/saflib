@@ -14,6 +14,7 @@ import { blobFactsDb } from "@saflib/dev-site-db/queries/blob-facts/index";
 import { extractExports, extractTestCases } from "@saflib/parser";
 import type { ReturnsError } from "@saflib/monorepo";
 import type { GitCommandError } from "@saflib/git";
+import { makeSubsystemReporters } from "@saflib/node";
 import {
   countLines,
   isSourcePath,
@@ -112,14 +113,25 @@ export async function ensureBlobFacts(
     return { result: byHash };
   }
 
+  const { log: analyzeLog } = makeSubsystemReporters("dev-site", "analyze");
+  analyzeLog.info(
+    `Parsing ${missing.length} new blob(s) (${unique.length - missing.length} cached of ${unique.length})`,
+  );
+  const parseStarted = Date.now();
+
   const blobs = readBlobs(repoRoot, missing);
   if (blobs.error) return { error: blobs.error };
 
   const toUpsert: InsertBlobFactParams[] = [];
-  for (const hash of missing) {
+  const progressEvery = Math.max(25, Math.ceil(missing.length / 10));
+  for (let i = 0; i < missing.length; i++) {
+    const hash = missing[i]!;
     const source = blobs.result.get(hash);
     if (source === undefined) continue;
     toUpsert.push(parseBlobFact(hash, source));
+    if ((i + 1) % progressEvery === 0 || i + 1 === missing.length) {
+      analyzeLog.info(`Parsed blobs ${i + 1}/${missing.length}`);
+    }
   }
   if (toUpsert.length > 0) {
     await blobFactsDb.upsertMany(dbKey, toUpsert);
@@ -127,6 +139,9 @@ export async function ensureBlobFacts(
       byHash.set(row.blobHash, row);
     }
   }
+  analyzeLog.info(
+    `Blob facts ready: ${toUpsert.length} upserted in ${Date.now() - parseStarted}ms`,
+  );
   return { result: byHash };
 }
 
