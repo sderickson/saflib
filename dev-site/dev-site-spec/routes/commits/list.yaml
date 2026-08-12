@@ -1,0 +1,47 @@
+listCommits:
+  summary: List analyzed commits (newest first)
+  operationId: listCommits
+  tags:
+    - no-auth
+  description: >
+    Paginated list of analyzed commits with rollup summary metrics for timeline
+    display. Does not include per-package / export / test-case inventories —
+    fetch those via GET /commits/{hash}.
+  parameters:
+    - name: cursor
+      in: query
+      required: false
+      schema:
+        type: string
+      description: >
+        Opaque pagination cursor (commit hash of the last item from the previous
+        page). Omit for the first page.
+    - name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 50
+      description: Max commits to return.
+  responses:
+    "200":
+      description: A page of analyzed commits.
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - commits
+            properties:
+              commits:
+                type: array
+                items:
+                  $ref: "../../schemas/commit-summary.yaml"
+              nextCursor:
+                type: string
+                nullable: true
+                description: >
+                  Pass as `cursor` on the next request. Null when there are no
+                  more pages.

@@ -41,6 +41,18 @@
       "path": "./cron/cron-vue"
     },
     {
+      "path": "./dev-site/dev-site-db"
+    },
+    {
+      "path": "./dev-site/dev-site-http"
+    },
+    {
+      "path": "./dev-site/dev-site-spec"
+    },
+    {
+      "path": "./dev-site/dev-site-vue"
+    },
+    {
       "path": "./dev-tools"
     },
     {
@@ -63,6 +75,9 @@
     },
     {
       "path": "./express"
+    },
+    {
+      "path": "./git"
     },
     {
       "path": "./grpc/grpc"
@@ -111,6 +126,9 @@
     },
     {
       "path": "./ory-kratos-spa"
+    },
+    {
+      "path": "./parser"
     },
     {
       "path": "./playwright"

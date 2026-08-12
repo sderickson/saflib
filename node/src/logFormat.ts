@@ -62,7 +62,7 @@ export function httpChannelIndicator(
 /** Fixed 6-char response size; kb when > 1024 bytes. */
 export const HTTP_ACCESS_SIZE_WIDTH = 6;
 
-/** Fixed 6-char duration (` 325ms`); whole milliseconds. */
+/** Fixed 6-char duration (` 325ms` / ` 72.2s`). */
 export const HTTP_ACCESS_DURATION_WIDTH = 6;
 
 /** Fixed 3-char HTTP status for access-log alignment. */
@@ -73,13 +73,37 @@ export function formatHttpStatus(status: number | undefined): string {
   return String(status).padStart(3, " ");
 }
 
-/** Fixed 6-char duration (` 325ms`); whole milliseconds. */
+/**
+ * Fixed 6-char duration for access-log columns.
+ * Under 10s: ` 325ms`. At/above 10s: ` 72.2s` / ` 999s` so long requests
+ * are never left-truncated (e.g. `72233ms` must not become `2233ms`).
+ */
 export function formatHttpDurationMs(ms: number): string {
   const rounded = Math.max(0, Math.round(ms));
-  const raw = `${rounded}ms`;
-  return raw.length > HTTP_ACCESS_DURATION_WIDTH
-    ? raw.slice(-HTTP_ACCESS_DURATION_WIDTH)
-    : raw.padStart(HTTP_ACCESS_DURATION_WIDTH, " ");
+  let raw: string;
+  if (rounded < 10_000) {
+    raw = `${rounded}ms`;
+  } else if (rounded < 1_000_000) {
+    const secs = rounded / 1000;
+    raw =
+      secs < 100 ? `${secs.toFixed(1)}s` : `${Math.round(secs)}s`;
+  } else {
+    const mins = rounded / 60_000;
+    raw =
+      mins < 100 ? `${mins.toFixed(1)}m` : `${Math.round(mins)}m`;
+  }
+  if (raw.length > HTTP_ACCESS_DURATION_WIDTH) {
+    // Prefer a coarser unit over chopping leading digits.
+    if (rounded >= 10_000 && rounded < 1_000_000) {
+      raw = `${Math.round(rounded / 1000)}s`;
+    } else if (rounded >= 1_000_000) {
+      raw = `${Math.round(rounded / 60_000)}m`;
+    }
+    if (raw.length > HTTP_ACCESS_DURATION_WIDTH) {
+      raw = raw.slice(0, HTTP_ACCESS_DURATION_WIDTH);
+    }
+  }
+  return raw.padStart(HTTP_ACCESS_DURATION_WIDTH, " ");
 }
 
 /** Fixed 6-char response size; kb when > 1024 bytes. */

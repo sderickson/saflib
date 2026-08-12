@@ -1,0 +1,37 @@
+/** Kind of a top-level export declaration. */
+export type ExportKind =
+  | "function"
+  | "class"
+  | "interface"
+  | "type"
+  | "const"
+  | "enum"
+  | "variable";
+
+/** One exported symbol found by {@link extractExports}. */
+export interface ExportEntry {
+  name: string;
+  kind: ExportKind;
+  /**
+   * Syntactic display signature (no type-checker).
+   * Examples: `(a: number, b: string) => Promise<void>`, `{ name: string }`, `= 1`.
+   * `null` when the local declaration has no useful surface (e.g. `export { a }` re-export).
+   */
+  signature: string | null;
+  /**
+   * First prose line of the leading JSDoc block, or `null` when absent
+   * (including bare re-exports like `export { a }`).
+   */
+  docstring: string | null;
+}
+
+/**
+ * One test case found by {@link extractTestCases}.
+ *
+ * `fullName` joins enclosing `describe` titles and the leaf `it`/`test` title with
+ * `" > "` (e.g. `"outer > inner > does the thing"`). That separator is part of the
+ * public contract — blob_facts stores it as-is for assembly across commits.
+ */
+export interface TestCaseEntry {
+  fullName: string;
+}

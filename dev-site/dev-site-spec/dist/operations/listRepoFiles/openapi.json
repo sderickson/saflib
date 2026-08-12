@@ -1,0 +1,118 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "listRepoFiles",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/repo/files": {
+      "get": {
+        "summary": "List files at a commit",
+        "operationId": "listRepoFiles",
+        "tags": [
+          "no-auth"
+        ],
+        "description": "List blob paths at a commit (git ls-tree), optionally filtered by path prefix and/or file extension(s). Used for browsing docs and source without checking out.\n",
+        "parameters": [
+          {
+            "name": "ref",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Commit hash (or other tree-ish) to list."
+          },
+          {
+            "name": "prefix",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Optional path prefix (repo-relative). Matches exact path or descendants (`docs` matches `docs` and `docs/guide.md`).\n"
+          },
+          {
+            "name": "ext",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "style": "form",
+            "explode": true,
+            "description": "Optional file extension filter (e.g. `.md`). May be repeated (`ext=.md&ext=.txt`) or comma-separated (`ext=.md,.txt`).\n"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Matching files at the ref",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "files"
+                  ],
+                  "properties": {
+                    "files": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "path",
+                          "blobHash"
+                        ],
+                        "properties": {
+                          "path": {
+                            "type": "string",
+                            "description": "Path relative to the repo root."
+                          },
+                          "blobHash": {
+                            "type": "string",
+                            "description": "Git blob object hash."
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Git command failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "error": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "A short, machine-readable error code, for when HTTP status codes are not sufficient."
+          },
+          "message": {
+            "type": "string",
+            "description": "A human-readable description of the error.",
+            "example": "The requested resource could not be found."
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,62 @@
+openapi: 3.0.0
+info:
+  title: dev-site API
+  version: 1.0.0
+  description: API specification for the dev-site service
+
+paths:
+  # BEGIN WORKFLOW AREA route-paths FOR openapi/route
+  # Prefixed with /api so SPA page routes (/checkout, /history, …) do not collide
+  # when Express serves the built site and the API on the same origin.
+  /api/commits:
+    get:
+      $ref: "./routes/commits/list.yaml#/listCommits"
+  /api/commits/{hash}:
+    get:
+      $ref: "./routes/commits/get.yaml#/getCommits"
+  /api/commits/{hash}/diff/{otherHash}:
+    get:
+      $ref: "./routes/commits/diff.yaml#/diffCommits"
+  /api/commits/{hash}/packages/{packageName}:
+    get:
+      $ref: "./routes/commits/package.yaml#/getCommitPackage"
+  /api/scan:
+    post:
+      $ref: "./routes/scan/execute.yaml#/executeScan"
+  /api/checkout:
+    get:
+      $ref: "./routes/checkout/get.yaml#/getCheckout"
+  /api/repo/files:
+    get:
+      $ref: "./routes/repo/files.yaml#/listRepoFiles"
+  /api/repo/file:
+    get:
+      $ref: "./routes/repo/file.yaml#/getRepoFile"
+  # END WORKFLOW AREA
+
+components:
+  schemas:
+    Error:
+      $ref: "./schemas/error.yaml"
+    ProductEvent:
+      $ref: "./events/index.yaml"
+    # BEGIN WORKFLOW AREA schema-components FOR openapi/schema
+
+
+    Commit:
+      $ref: "./schemas/commit.yaml"
+    CommitSummary:
+      $ref: "./schemas/commit-summary.yaml"
+    PackageMetrics:
+      $ref: "./schemas/package-metrics.yaml"
+    ExportEntry:
+      $ref: "./schemas/export-entry.yaml"
+    TestCase:
+      $ref: "./schemas/test-case.yaml"
+    CommitDetail:
+      $ref: "./schemas/commit-detail.yaml"
+    CommitDiff:
+      $ref: "./schemas/commit-diff.yaml"
+    CommitRef:
+      $ref: "./schemas/commit-ref.yaml"
+    # END WORKFLOW AREA

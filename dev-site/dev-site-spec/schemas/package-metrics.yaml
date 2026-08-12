@@ -1,0 +1,39 @@
+type: object
+description: Per-package file/LOC inventory at a single commit.
+properties:
+  packageName:
+    type: string
+    description: npm package name (e.g. `@saflib/git`).
+    example: "@saflib/git"
+  directory:
+    type: string
+    description: Package directory relative to the analyzed product root.
+    example: "saflib/git"
+  sourceFiles:
+    type: integer
+    minimum: 0
+    description: Count of source files (excluding tests).
+  sourceLines:
+    type: integer
+    minimum: 0
+    description: Total lines across source files.
+  prodLines:
+    type: integer
+    minimum: 0
+    description: Production (non-test) source lines.
+  testLines:
+    type: integer
+    minimum: 0
+    description: Test file lines.
+  testFiles:
+    type: integer
+    minimum: 0
+    description: Count of test files.
+required:
+  - packageName
+  - directory
+  - sourceFiles
+  - sourceLines
+  - prodLines
+  - testLines
+  - testFiles

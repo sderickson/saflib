@@ -1,0 +1,349 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "diffCommits",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/commits/{hash}/diff/{otherHash}": {
+      "get": {
+        "summary": "Diff two analyzed commits",
+        "operationId": "diffCommits",
+        "tags": [
+          "no-auth"
+        ],
+        "description": "Compare the analysis snapshots of two commits. `hash` is the baseline (\"before\"); `otherHash` is the comparison (\"after\"). Returns added/removed (and changed, for package metrics) inventories.\n",
+        "parameters": [
+          {
+            "name": "hash",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Baseline commit hash (the \"before\")."
+          },
+          {
+            "name": "otherHash",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Comparison commit hash (the \"after\")."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Delta between the two commit snapshots.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "commitDiff"
+                  ],
+                  "properties": {
+                    "commitDiff": {
+                      "$ref": "#/components/schemas/commit-diff"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "One or both commit hashes have no analysis snapshot.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "commit-diff": {
+        "type": "object",
+        "description": "Delta between two analyzed commits. Exports and test cases are identity-based (add/remove only — a rename shows up as remove + add). Package metrics include a `changed` list when the same packageName exists on both sides with different counts.\n",
+        "properties": {
+          "fromHash": {
+            "type": "string",
+            "description": "Baseline commit hash (the \"before\")."
+          },
+          "toHash": {
+            "type": "string",
+            "description": "Comparison commit hash (the \"after\")."
+          },
+          "packageMetrics": {
+            "type": "object",
+            "properties": {
+              "added": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/package-metrics"
+                }
+              },
+              "removed": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/package-metrics"
+                }
+              },
+              "changed": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "before": {
+                      "$ref": "#/components/schemas/package-metrics"
+                    },
+                    "after": {
+                      "$ref": "#/components/schemas/package-metrics"
+                    }
+                  },
+                  "required": [
+                    "before",
+                    "after"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "added",
+              "removed",
+              "changed"
+            ]
+          },
+          "exports": {
+            "type": "object",
+            "properties": {
+              "added": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/export-entry"
+                }
+              },
+              "removed": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/export-entry"
+                }
+              }
+            },
+            "required": [
+              "added",
+              "removed"
+            ]
+          },
+          "testCases": {
+            "type": "object",
+            "properties": {
+              "added": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/test-case"
+                }
+              },
+              "removed": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/test-case"
+                }
+              }
+            },
+            "required": [
+              "added",
+              "removed"
+            ]
+          }
+        },
+        "required": [
+          "fromHash",
+          "toHash",
+          "packageMetrics",
+          "exports",
+          "testCases"
+        ]
+      },
+      "package-metrics": {
+        "type": "object",
+        "description": "Per-package file/LOC inventory at a single commit.",
+        "properties": {
+          "packageName": {
+            "type": "string",
+            "description": "npm package name (e.g. `@saflib/git`).",
+            "example": "@saflib/git"
+          },
+          "directory": {
+            "type": "string",
+            "description": "Package directory relative to the analyzed product root.",
+            "example": "saflib/git"
+          },
+          "sourceFiles": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Count of source files (excluding tests)."
+          },
+          "sourceLines": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Total lines across source files."
+          },
+          "prodLines": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Production (non-test) source lines."
+          },
+          "testLines": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Test file lines."
+          },
+          "testFiles": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Count of test files."
+          }
+        },
+        "required": [
+          "packageName",
+          "directory",
+          "sourceFiles",
+          "sourceLines",
+          "prodLines",
+          "testLines",
+          "testFiles"
+        ]
+      },
+      "export-entry": {
+        "type": "object",
+        "description": "One exported symbol extracted from a source file at a commit.",
+        "properties": {
+          "packageName": {
+            "type": "string",
+            "description": "npm package that owns this file.",
+            "example": "@saflib/git"
+          },
+          "filePath": {
+            "type": "string",
+            "description": "Path relative to the repo root.",
+            "example": "saflib/git/log.ts"
+          },
+          "name": {
+            "type": "string",
+            "description": "Exported symbol name.",
+            "example": "log"
+          },
+          "kind": {
+            "type": "string",
+            "description": "Declaration kind (mirrors `@saflib/parser`'s ExportKind).",
+            "enum": [
+              "function",
+              "class",
+              "interface",
+              "type",
+              "const",
+              "enum",
+              "variable"
+            ]
+          },
+          "signature": {
+            "type": "string",
+            "nullable": true,
+            "description": "Syntactic display signature from the AST (no type-checker). Null for re-exports without a local declaration.\n",
+            "example": "(repoRoot: string, options?: LogOptions)"
+          },
+          "docstring": {
+            "type": "string",
+            "nullable": true,
+            "description": "First prose line of the leading JSDoc on the export declaration. Null when absent or for bare re-exports (`export { a }`).\n",
+            "example": "Walk commits newest-first without checking out."
+          }
+        },
+        "required": [
+          "packageName",
+          "filePath",
+          "name",
+          "kind",
+          "signature",
+          "docstring"
+        ]
+      },
+      "test-case": {
+        "type": "object",
+        "description": "One `describe`/`it`/`test` case extracted from a test file. `fullName` uses the `\" > \"` separator from `@saflib/parser` (e.g. `\"outer > inner > does the thing\"`). Optional `subject*` fields soft-link to an exported symbol by convention (suite title matching an adjacent or same-package export).\n",
+        "properties": {
+          "packageName": {
+            "type": "string",
+            "description": "npm package that owns this file.",
+            "example": "@saflib/git"
+          },
+          "filePath": {
+            "type": "string",
+            "description": "Path relative to the repo root.",
+            "example": "saflib/git/index.test.ts"
+          },
+          "fullName": {
+            "type": "string",
+            "description": "Nested describe/it titles joined with `\" > \"`.",
+            "example": "log > returns commits newest-first (git log order)"
+          },
+          "subjectName": {
+            "type": "string",
+            "description": "Linked export name when a suite title matches by convention.",
+            "example": "log"
+          },
+          "subjectSignature": {
+            "type": "string",
+            "nullable": true,
+            "description": "Signature of the linked export at this commit (null if unknown).",
+            "example": "(repoRoot: string, options?: LogOptions)"
+          },
+          "subjectDocstring": {
+            "type": "string",
+            "nullable": true,
+            "description": "First JSDoc prose line of the linked export, when present."
+          },
+          "subjectFilePath": {
+            "type": "string",
+            "description": "Repo-relative path of the file that declares the linked export.",
+            "example": "saflib/git/log.ts"
+          },
+          "subjectConfidence": {
+            "type": "string",
+            "description": "How the link was made (`adjacent` file vs elsewhere in package).",
+            "enum": [
+              "adjacent",
+              "package"
+            ]
+          }
+        },
+        "required": [
+          "packageName",
+          "filePath",
+          "fullName"
+        ]
+      },
+      "error": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "A short, machine-readable error code, for when HTTP status codes are not sufficient."
+          },
+          "message": {
+            "type": "string",
+            "description": "A human-readable description of the error.",
+            "example": "The requested resource could not be found."
+          }
+        }
+      }
+    }
+  }
+}

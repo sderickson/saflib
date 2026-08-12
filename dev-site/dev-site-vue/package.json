@@ -1,0 +1,24 @@
+{
+  "name": "@saflib/dev-site-vue",
+  "description": "Vue pages/widgets for browsing static-analysis commit snapshots",
+  "private": true,
+  "type": "module",
+  "main": "./index.ts",
+  "exports": {
+    ".": "./index.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "vue-tsc -b"
+  },
+  "dependencies": {
+    "@saflib/dev-site-spec": "*",
+    "@saflib/sdk": "*",
+    "@saflib/vue": "*",
+    "@tanstack/vue-query": "*",
+    "marked": "^15.0.12"
+  },
+  "sideEffects": false
+}

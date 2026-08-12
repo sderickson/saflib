@@ -1,0 +1,47 @@
+type: object
+description: One exported symbol extracted from a source file at a commit.
+properties:
+  packageName:
+    type: string
+    description: npm package that owns this file.
+    example: "@saflib/git"
+  filePath:
+    type: string
+    description: Path relative to the repo root.
+    example: "saflib/git/log.ts"
+  name:
+    type: string
+    description: Exported symbol name.
+    example: "log"
+  kind:
+    type: string
+    description: Declaration kind (mirrors `@saflib/parser`'s ExportKind).
+    enum:
+      - function
+      - class
+      - interface
+      - type
+      - const
+      - enum
+      - variable
+  signature:
+    type: string
+    nullable: true
+    description: >
+      Syntactic display signature from the AST (no type-checker). Null for
+      re-exports without a local declaration.
+    example: "(repoRoot: string, options?: LogOptions)"
+  docstring:
+    type: string
+    nullable: true
+    description: >
+      First prose line of the leading JSDoc on the export declaration. Null when
+      absent or for bare re-exports (`export { a }`).
+    example: "Walk commits newest-first without checking out."
+required:
+  - packageName
+  - filePath
+  - name
+  - kind
+  - signature
+  - docstring

@@ -1,0 +1,1305 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "dev-site API",
+    "version": "1.0.0",
+    "description": "API specification for the dev-site service"
+  },
+  "paths": {
+    "/api/commits": {
+      "get": {
+        "summary": "List analyzed commits (newest first)",
+        "operationId": "listCommits",
+        "tags": [
+          "no-auth"
+        ],
+        "description": "Paginated list of analyzed commits with rollup summary metrics for timeline display. Does not include per-package / export / test-case inventories — fetch those via GET /commits/{hash}.\n",
+        "parameters": [
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Opaque pagination cursor (commit hash of the last item from the previous page). Omit for the first page.\n"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            },
+            "description": "Max commits to return."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A page of analyzed commits.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "commits"
+                  ],
+                  "properties": {
+                    "commits": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/commit-summary"
+                      }
+                    },
+                    "nextCursor": {
+                      "type": "string",
+                      "nullable": true,
+                      "description": "Pass as `cursor` on the next request. Null when there are no more pages.\n"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/commits/{hash}": {
+      "get": {
+        "summary": "Get the full analysis snapshot for a commit",
+        "operationId": "getCommits",
+        "tags": [
+          "no-auth"
+        ],
+        "description": "Returns commit metadata plus per-package metrics, exports, and test cases for a single analyzed commit.\n",
+        "parameters": [
+          {
+            "name": "hash",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Full 40-char commit object hash."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Full commit analysis snapshot.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "commitDetail"
+                  ],
+                  "properties": {
+                    "commitDetail": {
+                      "$ref": "#/components/schemas/commit-detail"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No analysis snapshot found for this commit hash.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/commits/{hash}/diff/{otherHash}": {
+      "get": {
+        "summary": "Diff two analyzed commits",
+        "operationId": "diffCommits",
+        "tags": [
+          "no-auth"
+        ],
+        "description": "Compare the analysis snapshots of two commits. `hash` is the baseline (\"before\"); `otherHash` is the comparison (\"after\"). Returns added/removed (and changed, for package metrics) inventories.\n",
+        "parameters": [
+          {
+            "name": "hash",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Baseline commit hash (the \"before\")."
+          },
+          {
+            "name": "otherHash",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Comparison commit hash (the \"after\")."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Delta between the two commit snapshots.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "commitDiff"
+                  ],
+                  "properties": {
+                    "commitDiff": {
+                      "$ref": "#/components/schemas/commit-diff"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "One or both commit hashes have no analysis snapshot.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/commits/{hash}/packages/{packageName}": {
+      "get": {
+        "summary": "Package-scoped symbols for one analyzed commit",
+        "operationId": "getCommitPackage",
+        "tags": [
+          "no-auth"
+        ],
+        "description": "Returns metrics, exports, and test cases for a single package at a commit. Prefer this over full commit detail for the checkout Spec panel — assembly only touches that package's source blobs.\n",
+        "parameters": [
+          {
+            "name": "hash",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "packageName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "npm package name (URL-encoded), e.g. `%40pathclerk%2Fdaemon-forms`"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Package detail at commit",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "packageDetail"
+                  ],
+                  "properties": {
+                    "packageDetail": {
+                      "type": "object",
+                      "required": [
+                        "commitHash",
+                        "packageName",
+                        "directory",
+                        "sourceFiles",
+                        "sourceLines",
+                        "prodLines",
+                        "testLines",
+                        "testFiles",
+                        "exports",
+                        "testCases"
+                      ],
+                      "properties": {
+                        "commitHash": {
+                          "type": "string"
+                        },
+                        "packageName": {
+                          "type": "string"
+                        },
+                        "directory": {
+                          "type": "string"
+                        },
+                        "sourceFiles": {
+                          "type": "integer"
+                        },
+                        "sourceLines": {
+                          "type": "integer"
+                        },
+                        "prodLines": {
+                          "type": "integer"
+                        },
+                        "testLines": {
+                          "type": "integer"
+                        },
+                        "testFiles": {
+                          "type": "integer"
+                        },
+                        "exports": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/export-entry"
+                          }
+                        },
+                        "testCases": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/test-case"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Commit or package not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Git command failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/scan": {
+      "post": {
+        "summary": "Scan and ingest new commits",
+        "operationId": "executeScan",
+        "tags": [
+          "no-auth"
+        ],
+        "description": "Walk git history since the last recorded commit (plus feature-branch tips) and store static-analysis snapshots. Manual trigger — no automatic poller in v1. Request body is an empty object so clients can POST JSON without special-casing.\n",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "description": "Scan options. Empty object is fine for a full scan; `limit` caps how many new mainline commits are analyzed in this run (feature-branch tips are skipped when limit is set).\n",
+                "properties": {
+                  "limit": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "default": 1,
+                    "description": "Max new mainline commits to analyze this run (default 1). Feature-branch tips are skipped when limit is set. Ignored when `commitHash` is set.\n"
+                  },
+                  "commitHash": {
+                    "type": "string",
+                    "description": "Analyze exactly this commit (if not already stored). Used by Current checkout \"Scan this commit\".\n"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Scan completed with no per-commit failures; returns which commits were ingested.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "scanned",
+                    "skipped",
+                    "failed"
+                  ],
+                  "properties": {
+                    "scanned": {
+                      "type": "array",
+                      "description": "Commit hashes newly analyzed and stored.",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "skipped": {
+                      "type": "array",
+                      "description": "Commit hashes already present (no re-analysis).",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "failed": {
+                      "type": "array",
+                      "description": "Always empty on 200; non-empty failures use 500.",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "hash",
+                          "message"
+                        ],
+                        "properties": {
+                          "hash": {
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Git plumbing failed, or one or more commits failed analysis (`SCAN_FAILED`).\n",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/checkout": {
+      "get": {
+        "summary": "Current checkout (HEAD) analysis status",
+        "operationId": "getCheckout",
+        "tags": [
+          "no-auth"
+        ],
+        "description": "Resolve git HEAD and report whether that commit has been analyzed, plus package metrics when it has. Used by the Current checkout UI.\n",
+        "responses": {
+          "200": {
+            "description": "Checkout status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "hash",
+                    "message",
+                    "authoredAt",
+                    "analyzed",
+                    "productRoot",
+                    "packages"
+                  ],
+                  "properties": {
+                    "hash": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "authoredAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "analyzed": {
+                      "type": "boolean"
+                    },
+                    "productRoot": {
+                      "type": "string",
+                      "description": "Analysis path prefix within the repo (e.g. `daemon`). Empty string means the whole repository. Package `directory` values are relative to this prefix; prepend it for repo-absolute paths.\n"
+                    },
+                    "packages": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "packageName",
+                          "directory",
+                          "sourceFiles",
+                          "sourceLines",
+                          "prodLines",
+                          "testLines",
+                          "testFiles"
+                        ],
+                        "properties": {
+                          "packageName": {
+                            "type": "string"
+                          },
+                          "directory": {
+                            "type": "string"
+                          },
+                          "sourceFiles": {
+                            "type": "integer"
+                          },
+                          "sourceLines": {
+                            "type": "integer"
+                          },
+                          "prodLines": {
+                            "type": "integer"
+                          },
+                          "testLines": {
+                            "type": "integer"
+                          },
+                          "testFiles": {
+                            "type": "integer"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Git command failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/repo/files": {
+      "get": {
+        "summary": "List files at a commit",
+        "operationId": "listRepoFiles",
+        "tags": [
+          "no-auth"
+        ],
+        "description": "List blob paths at a commit (git ls-tree), optionally filtered by path prefix and/or file extension(s). Used for browsing docs and source without checking out.\n",
+        "parameters": [
+          {
+            "name": "ref",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Commit hash (or other tree-ish) to list."
+          },
+          {
+            "name": "prefix",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Optional path prefix (repo-relative). Matches exact path or descendants (`docs` matches `docs` and `docs/guide.md`).\n"
+          },
+          {
+            "name": "ext",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "style": "form",
+            "explode": true,
+            "description": "Optional file extension filter (e.g. `.md`). May be repeated (`ext=.md&ext=.txt`) or comma-separated (`ext=.md,.txt`).\n"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Matching files at the ref",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "files"
+                  ],
+                  "properties": {
+                    "files": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "path",
+                          "blobHash"
+                        ],
+                        "properties": {
+                          "path": {
+                            "type": "string",
+                            "description": "Path relative to the repo root."
+                          },
+                          "blobHash": {
+                            "type": "string",
+                            "description": "Git blob object hash."
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Git command failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/repo/file": {
+      "get": {
+        "summary": "Read a file at a commit",
+        "operationId": "getRepoFile",
+        "tags": [
+          "no-auth"
+        ],
+        "description": "Read the UTF-8 contents of one blob at a commit by repo-relative path. Returns 404 when the path is missing at that ref.\n",
+        "parameters": [
+          {
+            "name": "ref",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Commit hash (or other tree-ish) to read from."
+          },
+          {
+            "name": "path",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Path relative to the repo root."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "File contents",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "path",
+                    "content"
+                  ],
+                  "properties": {
+                    "path": {
+                      "type": "string"
+                    },
+                    "content": {
+                      "type": "string",
+                      "description": "UTF-8 file text."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Path not found at ref",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Git command failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Error": {
+        "$ref": "#/components/schemas/error"
+      },
+      "ProductEvent": {
+        "$ref": "#/components/schemas/index"
+      },
+      "Commit": {
+        "$ref": "#/components/schemas/commit"
+      },
+      "CommitSummary": {
+        "$ref": "#/components/schemas/commit-summary"
+      },
+      "PackageMetrics": {
+        "$ref": "#/components/schemas/package-metrics"
+      },
+      "ExportEntry": {
+        "$ref": "#/components/schemas/export-entry"
+      },
+      "TestCase": {
+        "$ref": "#/components/schemas/test-case"
+      },
+      "CommitDetail": {
+        "$ref": "#/components/schemas/commit-detail"
+      },
+      "CommitDiff": {
+        "$ref": "#/components/schemas/commit-diff"
+      },
+      "CommitRef": {
+        "$ref": "#/components/schemas/commit-ref"
+      },
+      "commit-ref": {
+        "type": "object",
+        "description": "A branch or tag pointer observed at scan time for a commit.",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Ref name without the `refs/heads/` or `refs/tags/` prefix.",
+            "example": "main"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "branch",
+              "tag"
+            ],
+            "description": "Whether this ref is a branch or a tag."
+          },
+          "isMainAncestor": {
+            "type": "boolean",
+            "description": "True when this commit is an ancestor of the configured main branch (including main itself). Used to distinguish mainline history from feature-branch tips.\n"
+          }
+        },
+        "required": [
+          "name",
+          "type",
+          "isMainAncestor"
+        ]
+      },
+      "commit-summary": {
+        "type": "object",
+        "description": "List-friendly commit row — same metadata as Commit, without the nested inventory payloads. Used by GET /commits.\n",
+        "properties": {
+          "hash": {
+            "type": "string",
+            "description": "Full 40-char commit object hash.",
+            "example": "a1b2c3d4e5f6789012345678901234567890abcd"
+          },
+          "parentHashes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "authoredAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "message": {
+            "type": "string",
+            "description": "Full commit message (subject + body)."
+          },
+          "refs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/commit-ref"
+            }
+          },
+          "analyzerVersion": {
+            "type": "string"
+          },
+          "computedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "complete",
+              "failed"
+            ]
+          },
+          "summaryMetrics": {
+            "type": "object",
+            "description": "Rollup counts across all packages at this commit, for timeline health indicators without fetching CommitDetail.\n",
+            "properties": {
+              "packageCount": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "sourceFiles": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "sourceLines": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "testFiles": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "testLines": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "exportCount": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "testCaseCount": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "packageCount",
+              "sourceFiles",
+              "sourceLines",
+              "testFiles",
+              "testLines",
+              "exportCount",
+              "testCaseCount"
+            ]
+          }
+        },
+        "required": [
+          "hash",
+          "parentHashes",
+          "authoredAt",
+          "message",
+          "refs",
+          "analyzerVersion",
+          "computedAt",
+          "status",
+          "summaryMetrics"
+        ]
+      },
+      "commit": {
+        "type": "object",
+        "description": "Analyzed commit metadata — one row per scanned commit. Does not include per-package / export / test-case payloads (see CommitDetail for those).\n",
+        "properties": {
+          "hash": {
+            "type": "string",
+            "description": "Full 40-char commit object hash.",
+            "example": "a1b2c3d4e5f6789012345678901234567890abcd"
+          },
+          "parentHashes": {
+            "type": "array",
+            "description": "Parent commit hashes (empty for the root commit).",
+            "items": {
+              "type": "string"
+            }
+          },
+          "authoredAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Author date from the commit (`%aI`).",
+            "example": "2026-08-12T10:00:00-07:00"
+          },
+          "message": {
+            "type": "string",
+            "description": "Full commit message (subject + body).",
+            "example": "Add inventory for package metrics"
+          },
+          "refs": {
+            "type": "array",
+            "description": "Branch/tag pointers that currently resolve to this commit.",
+            "items": {
+              "$ref": "#/components/schemas/commit-ref"
+            }
+          },
+          "analyzerVersion": {
+            "type": "string",
+            "description": "Version string of the analyzer that produced this snapshot.",
+            "example": "1"
+          },
+          "computedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When this snapshot was written to the database.",
+            "example": "2026-08-12T11:00:00-07:00"
+          },
+          "status": {
+            "type": "string",
+            "description": "Analysis status for this commit.",
+            "enum": [
+              "pending",
+              "complete",
+              "failed"
+            ],
+            "example": "complete"
+          }
+        },
+        "required": [
+          "hash",
+          "parentHashes",
+          "authoredAt",
+          "message",
+          "refs",
+          "analyzerVersion",
+          "computedAt",
+          "status"
+        ]
+      },
+      "package-metrics": {
+        "type": "object",
+        "description": "Per-package file/LOC inventory at a single commit.",
+        "properties": {
+          "packageName": {
+            "type": "string",
+            "description": "npm package name (e.g. `@saflib/git`).",
+            "example": "@saflib/git"
+          },
+          "directory": {
+            "type": "string",
+            "description": "Package directory relative to the analyzed product root.",
+            "example": "saflib/git"
+          },
+          "sourceFiles": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Count of source files (excluding tests)."
+          },
+          "sourceLines": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Total lines across source files."
+          },
+          "prodLines": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Production (non-test) source lines."
+          },
+          "testLines": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Test file lines."
+          },
+          "testFiles": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Count of test files."
+          }
+        },
+        "required": [
+          "packageName",
+          "directory",
+          "sourceFiles",
+          "sourceLines",
+          "prodLines",
+          "testLines",
+          "testFiles"
+        ]
+      },
+      "export-entry": {
+        "type": "object",
+        "description": "One exported symbol extracted from a source file at a commit.",
+        "properties": {
+          "packageName": {
+            "type": "string",
+            "description": "npm package that owns this file.",
+            "example": "@saflib/git"
+          },
+          "filePath": {
+            "type": "string",
+            "description": "Path relative to the repo root.",
+            "example": "saflib/git/log.ts"
+          },
+          "name": {
+            "type": "string",
+            "description": "Exported symbol name.",
+            "example": "log"
+          },
+          "kind": {
+            "type": "string",
+            "description": "Declaration kind (mirrors `@saflib/parser`'s ExportKind).",
+            "enum": [
+              "function",
+              "class",
+              "interface",
+              "type",
+              "const",
+              "enum",
+              "variable"
+            ]
+          },
+          "signature": {
+            "type": "string",
+            "nullable": true,
+            "description": "Syntactic display signature from the AST (no type-checker). Null for re-exports without a local declaration.\n",
+            "example": "(repoRoot: string, options?: LogOptions)"
+          },
+          "docstring": {
+            "type": "string",
+            "nullable": true,
+            "description": "First prose line of the leading JSDoc on the export declaration. Null when absent or for bare re-exports (`export { a }`).\n",
+            "example": "Walk commits newest-first without checking out."
+          }
+        },
+        "required": [
+          "packageName",
+          "filePath",
+          "name",
+          "kind",
+          "signature",
+          "docstring"
+        ]
+      },
+      "test-case": {
+        "type": "object",
+        "description": "One `describe`/`it`/`test` case extracted from a test file. `fullName` uses the `\" > \"` separator from `@saflib/parser` (e.g. `\"outer > inner > does the thing\"`). Optional `subject*` fields soft-link to an exported symbol by convention (suite title matching an adjacent or same-package export).\n",
+        "properties": {
+          "packageName": {
+            "type": "string",
+            "description": "npm package that owns this file.",
+            "example": "@saflib/git"
+          },
+          "filePath": {
+            "type": "string",
+            "description": "Path relative to the repo root.",
+            "example": "saflib/git/index.test.ts"
+          },
+          "fullName": {
+            "type": "string",
+            "description": "Nested describe/it titles joined with `\" > \"`.",
+            "example": "log > returns commits newest-first (git log order)"
+          },
+          "subjectName": {
+            "type": "string",
+            "description": "Linked export name when a suite title matches by convention.",
+            "example": "log"
+          },
+          "subjectSignature": {
+            "type": "string",
+            "nullable": true,
+            "description": "Signature of the linked export at this commit (null if unknown).",
+            "example": "(repoRoot: string, options?: LogOptions)"
+          },
+          "subjectDocstring": {
+            "type": "string",
+            "nullable": true,
+            "description": "First JSDoc prose line of the linked export, when present."
+          },
+          "subjectFilePath": {
+            "type": "string",
+            "description": "Repo-relative path of the file that declares the linked export.",
+            "example": "saflib/git/log.ts"
+          },
+          "subjectConfidence": {
+            "type": "string",
+            "description": "How the link was made (`adjacent` file vs elsewhere in package).",
+            "enum": [
+              "adjacent",
+              "package"
+            ]
+          }
+        },
+        "required": [
+          "packageName",
+          "filePath",
+          "fullName"
+        ]
+      },
+      "commit-detail": {
+        "type": "object",
+        "description": "Full static-analysis snapshot for one commit — metadata plus per-package metrics, exports, and test cases.\n",
+        "properties": {
+          "commit": {
+            "$ref": "#/components/schemas/commit"
+          },
+          "packageMetrics": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/package-metrics"
+            }
+          },
+          "exports": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/export-entry"
+            }
+          },
+          "testCases": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/test-case"
+            }
+          }
+        },
+        "required": [
+          "commit",
+          "packageMetrics",
+          "exports",
+          "testCases"
+        ]
+      },
+      "error": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "A short, machine-readable error code, for when HTTP status codes are not sufficient."
+          },
+          "message": {
+            "type": "string",
+            "description": "A human-readable description of the error.",
+            "example": "The requested resource could not be found."
+          }
+        }
+      },
+      "commit-diff": {
+        "type": "object",
+        "description": "Delta between two analyzed commits. Exports and test cases are identity-based (add/remove only — a rename shows up as remove + add). Package metrics include a `changed` list when the same packageName exists on both sides with different counts.\n",
+        "properties": {
+          "fromHash": {
+            "type": "string",
+            "description": "Baseline commit hash (the \"before\")."
+          },
+          "toHash": {
+            "type": "string",
+            "description": "Comparison commit hash (the \"after\")."
+          },
+          "packageMetrics": {
+            "type": "object",
+            "properties": {
+              "added": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/package-metrics"
+                }
+              },
+              "removed": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/package-metrics"
+                }
+              },
+              "changed": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "before": {
+                      "$ref": "#/components/schemas/package-metrics"
+                    },
+                    "after": {
+                      "$ref": "#/components/schemas/package-metrics"
+                    }
+                  },
+                  "required": [
+                    "before",
+                    "after"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "added",
+              "removed",
+              "changed"
+            ]
+          },
+          "exports": {
+            "type": "object",
+            "properties": {
+              "added": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/export-entry"
+                }
+              },
+              "removed": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/export-entry"
+                }
+              }
+            },
+            "required": [
+              "added",
+              "removed"
+            ]
+          },
+          "testCases": {
+            "type": "object",
+            "properties": {
+              "added": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/test-case"
+                }
+              },
+              "removed": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/test-case"
+                }
+              }
+            },
+            "required": [
+              "added",
+              "removed"
+            ]
+          }
+        },
+        "required": [
+          "fromHash",
+          "toHash",
+          "packageMetrics",
+          "exports",
+          "testCases"
+        ]
+      },
+      "login": {
+        "type": "object",
+        "properties": {
+          "event": {
+            "type": "string",
+            "enum": [
+              "login"
+            ]
+          },
+          "context": {
+            "type": "object",
+            "properties": {
+              "method": {
+                "type": "string",
+                "enum": [
+                  "email"
+                ]
+              }
+            }
+          }
+        },
+        "required": [
+          "event",
+          "context"
+        ]
+      },
+      "signup": {
+        "type": "object",
+        "properties": {
+          "event": {
+            "type": "string",
+            "enum": [
+              "signup"
+            ]
+          },
+          "context": {
+            "type": "object",
+            "properties": {
+              "method": {
+                "type": "string",
+                "enum": [
+                  "email"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "signup_view": {
+        "type": "object",
+        "properties": {
+          "event": {
+            "type": "string",
+            "enum": [
+              "signup_view"
+            ]
+          }
+        }
+      },
+      "verify_email": {
+        "type": "object",
+        "properties": {
+          "event": {
+            "type": "string",
+            "enum": [
+              "verify_email"
+            ]
+          }
+        }
+      },
+      "index": {
+        "type": "object",
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/login"
+          },
+          {
+            "$ref": "#/components/schemas/signup"
+          },
+          {
+            "$ref": "#/components/schemas/signup_view"
+          },
+          {
+            "$ref": "#/components/schemas/verify_email"
+          }
+        ],
+        "properties": {
+          "event": {
+            "type": "string"
+          },
+          "client": {
+            "type": "string",
+            "description": "The frontend client that triggered the event. For web, it should be \"web-{spa-name}\"."
+          },
+          "view": {
+            "type": "string",
+            "description": "The page that triggered the event. For vue, it should be the route name provided by vue router."
+          },
+          "component": {
+            "type": "string",
+            "description": "The component that triggered the event. For vue, it should be the component name."
+          }
+        },
+        "required": [
+          "event"
+        ]
+      }
+    }
+  }
+}

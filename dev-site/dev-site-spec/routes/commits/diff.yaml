@@ -1,0 +1,40 @@
+diffCommits:
+  summary: Diff two analyzed commits
+  operationId: diffCommits
+  tags:
+    - no-auth
+  description: >
+    Compare the analysis snapshots of two commits. `hash` is the baseline
+    ("before"); `otherHash` is the comparison ("after"). Returns added/removed
+    (and changed, for package metrics) inventories.
+  parameters:
+    - name: hash
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Baseline commit hash (the "before").
+    - name: otherHash
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Comparison commit hash (the "after").
+  responses:
+    "200":
+      description: Delta between the two commit snapshots.
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - commitDiff
+            properties:
+              commitDiff:
+                $ref: "../../schemas/commit-diff.yaml"
+    "404":
+      description: One or both commit hashes have no analysis snapshot.
+      content:
+        application/json:
+          schema:
+            $ref: "../../schemas/error.yaml"

@@ -1,0 +1,77 @@
+executeScan:
+  summary: Scan and ingest new commits
+  operationId: executeScan
+  tags:
+    - no-auth
+  description: >
+    Walk git history since the last recorded commit (plus feature-branch tips)
+    and store static-analysis snapshots. Manual trigger — no automatic poller
+    in v1. Request body is an empty object so clients can POST JSON without
+    special-casing.
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          additionalProperties: false
+          description: >
+            Scan options. Empty object is fine for a full scan; `limit` caps how
+            many new mainline commits are analyzed in this run (feature-branch
+            tips are skipped when limit is set).
+          properties:
+            limit:
+              type: integer
+              minimum: 1
+              default: 1
+              description: >
+                Max new mainline commits to analyze this run (default 1).
+                Feature-branch tips are skipped when limit is set.
+                Ignored when `commitHash` is set.
+            commitHash:
+              type: string
+              description: >
+                Analyze exactly this commit (if not already stored). Used by
+                Current checkout "Scan this commit".
+  responses:
+    "200":
+      description: Scan completed with no per-commit failures; returns which commits were ingested.
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - scanned
+              - skipped
+              - failed
+            properties:
+              scanned:
+                type: array
+                description: Commit hashes newly analyzed and stored.
+                items:
+                  type: string
+              skipped:
+                type: array
+                description: Commit hashes already present (no re-analysis).
+                items:
+                  type: string
+              failed:
+                type: array
+                description: Always empty on 200; non-empty failures use 500.
+                items:
+                  type: object
+                  required:
+                    - hash
+                    - message
+                  properties:
+                    hash:
+                      type: string
+                    message:
+                      type: string
+    "500":
+      description: >
+        Git plumbing failed, or one or more commits failed analysis (`SCAN_FAILED`).
+      content:
+        application/json:
+          schema:
+            $ref: "../../schemas/error.yaml"

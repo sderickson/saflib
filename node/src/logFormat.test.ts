@@ -48,6 +48,19 @@ describe("formatHttpDurationMs", () => {
   it("rounds to whole ms with fixed width", () => {
     expect(formatHttpDurationMs(12.934)).toBe("  13ms");
     expect(formatHttpDurationMs(325.053)).toBe(" 325ms");
+    expect(formatHttpDurationMs(9999)).toBe("9999ms");
+  });
+
+  it("switches to seconds above 10s instead of truncating digits", () => {
+    // Regression: slicing a 6-char window turned 72233ms into "2233ms".
+    expect(formatHttpDurationMs(72233)).toBe(" 72.2s");
+    expect(formatHttpDurationMs(10_000)).toBe(" 10.0s");
+    expect(formatHttpDurationMs(99_950)).toBe("100.0s");
+    expect(formatHttpDurationMs(150_000)).toBe("  150s");
+  });
+
+  it("switches to minutes for very long requests", () => {
+    expect(formatHttpDurationMs(1_200_000)).toBe(" 20.0m");
   });
 });
 
