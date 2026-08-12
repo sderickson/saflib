@@ -9,8 +9,12 @@ import {
 import { commitTestCasesTable } from "../../schemas/commit-test-cases.ts";
 import type { InsertTestCaseParams } from "../../types.ts";
 import { hashTestCaseIdentity } from "../../hashes.ts";
+import { chunkArray, insertBatchSize } from "../../sqlite-batch.ts";
 
 export type InsertManyResult = ReturnsError<TestCaseDefEntity[], never>;
+
+const DEF_BATCH = insertBatchSize(4); // hash, package, path, full_name
+const LINK_BATCH = insertBatchSize(2); // commit_hash, test_case_hash
 
 export const insertMany = queryWrapper(
   async (
@@ -43,12 +47,19 @@ export const insertMany = queryWrapper(
       });
     }
     const defs = [...defsByHash.values()];
+    const links = [...linkKeys.values()];
 
-    await db.insert(testCaseDefsTable).values(defs).onConflictDoNothing();
-    await db
-      .insert(commitTestCasesTable)
-      .values([...linkKeys.values()])
-      .onConflictDoNothing();
+    db.transaction((tx) => {
+      for (const batch of chunkArray(defs, DEF_BATCH)) {
+        tx.insert(testCaseDefsTable).values(batch).onConflictDoNothing().run();
+      }
+      for (const batch of chunkArray(links, LINK_BATCH)) {
+        tx.insert(commitTestCasesTable)
+          .values(batch)
+          .onConflictDoNothing()
+          .run();
+      }
+    });
 
     return { result: defs };
   },

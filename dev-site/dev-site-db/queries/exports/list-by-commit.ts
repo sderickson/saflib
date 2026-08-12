@@ -8,6 +8,7 @@ import {
   type ExportDefEntity,
 } from "../../schemas/exports.ts";
 import { commitExportsTable } from "../../schemas/commit-exports.ts";
+import { chunkArray, insertBatchSize } from "../../sqlite-batch.ts";
 
 export type ListByCommitResult = ReturnsError<ExportDefEntity[], never>;
 
@@ -75,10 +76,14 @@ export const getByHashes = queryWrapper(
       return { result: [] };
     }
     const db = devSiteDbManager.get(dbKey)!;
-    const result = await db
-      .select()
-      .from(exportDefsTable)
-      .where(inArray(exportDefsTable.hash, hashes));
+    const result: ExportDefEntity[] = [];
+    for (const batch of chunkArray(hashes, insertBatchSize(1))) {
+      const rows = await db
+        .select()
+        .from(exportDefsTable)
+        .where(inArray(exportDefsTable.hash, batch));
+      result.push(...rows);
+    }
     return { result };
   },
 );

@@ -8,6 +8,7 @@ import {
   type TestCaseDefEntity,
 } from "../../schemas/test-cases.ts";
 import { commitTestCasesTable } from "../../schemas/commit-test-cases.ts";
+import { chunkArray, insertBatchSize } from "../../sqlite-batch.ts";
 
 export type ListByCommitResult = ReturnsError<TestCaseDefEntity[], never>;
 
@@ -73,10 +74,14 @@ export const getByHashes = queryWrapper(
       return { result: [] };
     }
     const db = devSiteDbManager.get(dbKey)!;
-    const result = await db
-      .select()
-      .from(testCaseDefsTable)
-      .where(inArray(testCaseDefsTable.hash, hashes));
+    const result: TestCaseDefEntity[] = [];
+    for (const batch of chunkArray(hashes, insertBatchSize(1))) {
+      const rows = await db
+        .select()
+        .from(testCaseDefsTable)
+        .where(inArray(testCaseDefsTable.hash, batch));
+      result.push(...rows);
+    }
     return { result };
   },
 );

@@ -86,6 +86,20 @@ describe("exports", () => {
     expect(await throwError(insertMany(dbKey, []))).toEqual([]);
   });
 
+  it("batches inserts above sqlite variable limits", async () => {
+    // 5 cols/def → safe batch ~180; insert well above that.
+    const rows = Array.from({ length: 400 }, (_, i) => ({
+      commitHash,
+      packageName: "@saflib/git",
+      filePath: `saflib/git/f${i}.ts`,
+      name: `fn${i}`,
+      kind: "function" as const,
+    }));
+    const inserted = await throwError(insertMany(dbKey, rows));
+    expect(inserted).toHaveLength(400);
+    expect(await throwError(countByCommit(dbKey, commitHash))).toBe(400);
+  });
+
   it("is idempotent when re-linking the same commit", async () => {
     const row = {
       commitHash,
