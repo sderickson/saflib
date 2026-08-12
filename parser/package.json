@@ -1,6 +1,6 @@
 {
   "name": "@saflib/parser",
-  "description": "TODO: Add package description",
+  "description": "Syntactic TypeScript helpers — extractExports / extractTestCases (no type-checker)",
   "private": true,
   "type": "module",
   "exports": {
@@ -12,10 +12,11 @@
     "test:coverage": "vitest run --coverage",
     "typecheck": "tsc -b"
   },
-  "dependencies": {},
+  "dependencies": {
+    "typescript": "*"
+  },
   "devDependencies": {
-    "@saflib/vitest": "*",
-    "@saflib/monorepo": "*"
+    "@saflib/vitest": "*"
   },
   "sideEffects": false
 }

@@ -1,5 +1,3 @@
-// Export your public API from here
-export const greet = (name: string): string => `Hello, ${name}!`;
-
-// Placeholder for other exports
-export const meaningOfLife = 42;
+export { extractExports } from "./extract-exports.ts";
+export { extractTestCases } from "./extract-test-cases.ts";
+export type { ExportEntry, ExportKind, TestCaseEntry } from "./types.ts";
