@@ -20,5 +20,9 @@
     "noEmit": false,
     "emitDeclarationOnly": true
   },
-  "references": []
+  "references": [
+    {
+      "path": "../monorepo"
+    }
+  ]
 }

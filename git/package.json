@@ -1,6 +1,6 @@
 {
   "name": "@saflib/git",
-  "description": "TODO: Add package description",
+  "description": "Thin git plumbing wrappers (log / ls-tree / cat-file) — no checkout required",
   "private": true,
   "type": "module",
   "exports": {
@@ -12,10 +12,11 @@
     "test:coverage": "vitest run --coverage",
     "typecheck": "tsc -b"
   },
-  "dependencies": {},
-  "devDependencies": {
-    "@saflib/vitest": "*",
+  "dependencies": {
     "@saflib/monorepo": "*"
+  },
+  "devDependencies": {
+    "@saflib/vitest": "*"
   },
   "sideEffects": false
 }
