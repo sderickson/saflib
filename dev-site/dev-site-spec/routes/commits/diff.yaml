@@ -1,6 +1,8 @@
 diffCommits:
   summary: Diff two analyzed commits
   operationId: diffCommits
+  tags:
+    - no-auth
   description: >
     Compare the analysis snapshots of two commits. `hash` is the baseline
     ("before"); `otherHash` is the comparison ("after"). Returns added/removed

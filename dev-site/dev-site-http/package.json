@@ -1,11 +1,15 @@
 {
   "name": "@saflib/dev-site-http",
-  "description": "HTTP server for the dev-site service",
+  "description": "Dev-site orchestration — scan/store/diff static analysis + Express routes + saf-dev-site CLI",
   "type": "module",
   "exports": {
+    ".": "./index.ts",
     "./http": "./http.ts",
     "./testing/slim-route-test": "./testing/slim-route-test.ts",
     "./routes/*": "./routes/*.ts"
+  },
+  "bin": {
+    "saf-dev-site": "./bin/saf-dev-site/index.ts"
   },
   "scripts": {
     "test": "vitest run",
@@ -17,8 +21,12 @@
     "@saflib/commander": "*",
     "@saflib/dev-site-db": "*",
     "@saflib/dev-site-spec": "*",
+    "@saflib/drizzle": "*",
     "@saflib/express": "*",
-    "@saflib/monorepo": "*"
+    "@saflib/git": "*",
+    "@saflib/monorepo": "*",
+    "@saflib/parser": "*",
+    "http-errors": "*"
   },
   "devDependencies": {
     "@saflib/vitest": "*"

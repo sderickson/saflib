@@ -9,7 +9,14 @@ import { mkdtempSync, rmSync, writeFileSync, mkdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { execFileSync } from "node:child_process";
-import { GitCommandError, listTree, log, readBlob } from "./index.ts";
+import {
+  GitCommandError,
+  isAncestor,
+  listRefs,
+  listTree,
+  log,
+  readBlob,
+} from "./index.ts";
 
 function git(repoRoot: string, args: string[]): string {
   return execFileSync("git", args, {
@@ -115,6 +122,23 @@ describe("@saflib/git", () => {
         "a.txt",
         "src/b.ts",
       ]);
+    });
+  });
+
+  describe("listRefs", () => {
+    it("lists local branches", () => {
+      const { result, error } = listRefs(repoRoot);
+      expect(error).toBeUndefined();
+      const main = result!.find((r) => r.name === "main" && r.type === "branch");
+      expect(main?.hash).toBe(commit3);
+    });
+  });
+
+  describe("isAncestor", () => {
+    it("detects ancestry along first-parent history", () => {
+      expect(isAncestor(repoRoot, commit1, commit3).result).toBe(true);
+      expect(isAncestor(repoRoot, commit3, commit1).result).toBe(false);
+      expect(isAncestor(repoRoot, commit2, commit2).result).toBe(true);
     });
   });
 

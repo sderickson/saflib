@@ -1,16 +1,24 @@
 #!/usr/bin/env -S node --experimental-strip-types --disable-warning=ExperimentalWarning
 import { Command } from "commander";
 import { setupContext } from "@saflib/commander";
+import { addScanCommand } from "./scan.ts";
+import { addShowCommand } from "./show.ts";
+import { addDiffCommand } from "./diff.ts";
 
 const program = new Command()
   .name("saf-dev-site")
-  .description("TODO: Add CLI description");
+  .description(
+    "Static-analysis snapshots of a SAF product's git history — scan, show, and diff commits.",
+  );
 
 setupContext(
   {
     serviceName: "saf-dev-site",
   },
   () => {
+    addScanCommand(program);
+    addShowCommand(program);
+    addDiffCommand(program);
     program.parse(process.argv);
   },
 );

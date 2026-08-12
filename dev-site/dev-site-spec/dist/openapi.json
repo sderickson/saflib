@@ -10,6 +10,9 @@
       "get": {
         "summary": "List analyzed commits (newest first)",
         "operationId": "listCommits",
+        "tags": [
+          "no-auth"
+        ],
         "description": "Paginated list of analyzed commits with rollup summary metrics for timeline display. Does not include per-package / export / test-case inventories — fetch those via GET /commits/{hash}.\n",
         "parameters": [
           {
@@ -68,6 +71,9 @@
       "get": {
         "summary": "Get the full analysis snapshot for a commit",
         "operationId": "getCommits",
+        "tags": [
+          "no-auth"
+        ],
         "description": "Returns commit metadata plus per-package metrics, exports, and test cases for a single analyzed commit.\n",
         "parameters": [
           {
@@ -116,6 +122,9 @@
       "get": {
         "summary": "Diff two analyzed commits",
         "operationId": "diffCommits",
+        "tags": [
+          "no-auth"
+        ],
         "description": "Compare the analysis snapshots of two commits. `hash` is the baseline (\"before\"); `otherHash` is the comparison (\"after\"). Returns added/removed (and changed, for package metrics) inventories.\n",
         "parameters": [
           {
@@ -173,6 +182,9 @@
       "post": {
         "summary": "Scan and ingest new commits",
         "operationId": "executeScan",
+        "tags": [
+          "no-auth"
+        ],
         "description": "Walk git history since the last recorded commit (plus feature-branch tips) and store static-analysis snapshots. Manual trigger — no automatic poller in v1. Request body is an empty object so clients can POST JSON without special-casing.\n",
         "requestBody": {
           "required": true,

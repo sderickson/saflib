@@ -5,10 +5,19 @@
       "path": "../../commander"
     },
     {
+      "path": "../../drizzle"
+    },
+    {
       "path": "../../express"
     },
     {
+      "path": "../../git"
+    },
+    {
       "path": "../../monorepo"
+    },
+    {
+      "path": "../../parser"
     },
     {
       "path": "../dev-site-db"

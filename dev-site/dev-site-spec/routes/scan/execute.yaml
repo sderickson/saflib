@@ -1,6 +1,8 @@
 executeScan:
   summary: Scan and ingest new commits
   operationId: executeScan
+  tags:
+    - no-auth
   description: >
     Walk git history since the last recorded commit (plus feature-branch tips)
     and store static-analysis snapshots. Manual trigger — no automatic poller

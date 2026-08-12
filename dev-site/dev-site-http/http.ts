@@ -5,9 +5,11 @@ import {
 import express, { type Router } from "express";
 import type { DbKey } from "@saflib/drizzle";
 import { devSiteDb } from "@saflib/dev-site-db/instances";
+import { devSiteHttpStorage } from "./context.ts";
 
 // BEGIN WORKFLOW AREA router-imports FOR express/add-handler
-
+import { createCommitsRouter } from "./routes/commits/index.ts";
+import { createScanRouter } from "./routes/scan/index.ts";
 // END WORKFLOW AREA
 
 export type HttpRouterMount = {
@@ -17,6 +19,12 @@ export type HttpRouterMount = {
 
 export type CreateDevSiteHttpAppOptions = {
   devSiteDbKey?: DbKey;
+  /** Absolute path to the git repo to analyze. Defaults to process.cwd(). */
+  repoRoot?: string;
+  /** Path prefix within the repo (e.g. `daemon`). Defaults to "". */
+  productRoot?: string;
+  /** Main branch ref. Defaults to `main`. */
+  mainRef?: string;
   /**
    * Slim route tests mount one or more production routers. When omitted, every
    * product router from the workflow area below is mounted (monolith / smoke).
@@ -32,7 +40,8 @@ export type DevSiteHttpAppLease = {
 function defaultRouterMounts(): HttpRouterMount[] {
   return [
     // BEGIN WORKFLOW AREA default-router-mounts FOR express/add-handler
-
+    { kind: "router", createRouter: createCommitsRouter },
+    { kind: "router", createRouter: createScanRouter },
     // END WORKFLOW AREA
   ];
 }
@@ -42,7 +51,6 @@ function defaultRouterMounts(): HttpRouterMount[] {
  *
  * Route handler tests should mount a **group router** via {@link acquireRouterSlimRouteTest}
  * in `testing/slim-route-test.ts`, not this factory with the default mount list.
- * Use default mounts only for monolith smoke tests (`index.test.ts`) or `*.integration.test.ts`.
  */
 export function createDevSiteHttpApp(
   options: CreateDevSiteHttpAppOptions = {},
@@ -52,6 +60,10 @@ export function createDevSiteHttpApp(
     dbKey = devSiteDb.connect();
   }
 
+  const repoRoot = options.repoRoot ?? process.cwd();
+  const productRoot = options.productRoot ?? "";
+  const mainRef = options.mainRef ?? "main";
+
   const app = express();
   app.use(
     createGlobalMiddleware({
@@ -60,8 +72,12 @@ export function createDevSiteHttpApp(
   );
   app.set("trust proxy", 1);
 
-  // NOTE: no per-request context/auth middleware (dev-site is a local,
-  // single-operator tool for v1 -- see dev-site.spec.md "Security" section).
+  app.use((_req, _res, next) => {
+    devSiteHttpStorage.run(
+      { dbKey: dbKey!, repoRoot, productRoot, mainRef },
+      () => next(),
+    );
+  });
 
   const mounts = options.mounts ?? defaultRouterMounts();
   for (const mount of mounts) {
@@ -69,7 +85,6 @@ export function createDevSiteHttpApp(
   }
 
   // BEGIN WORKFLOW AREA app-use-routes FOR express/add-handler
-
 
   // END WORKFLOW AREA
 

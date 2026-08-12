@@ -9,6 +9,9 @@
       "get": {
         "summary": "Get the full analysis snapshot for a commit",
         "operationId": "getCommits",
+        "tags": [
+          "no-auth"
+        ],
         "description": "Returns commit metadata plus per-package metrics, exports, and test cases for a single analyzed commit.\n",
         "parameters": [
           {
