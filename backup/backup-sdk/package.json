@@ -13,12 +13,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "typecheck": "vue-tsc",
-    "dev": "NODE_OPTIONS='--experimental-strip-types --disable-warning=ExperimentalWarning' vite",
-    "dev-docker": "saf-docker generate && docker compose up --build"
+    "typecheck": "vue-tsc"
   },
   "devDependencies": {
-    "@saflib/dev-tools": "*",
     "@saflib/vitest": "*",
     "@testing-library/vue": "^8.1.0"
   },
@@ -26,7 +23,6 @@
     "@saflib/monorepo": "*",
     "@saflib/sdk": "*",
     "@saflib/backup-spec": "*",
-    "@saflib/vite": "*",
     "@saflib/vue": "*",
     "msw": "^2.11.3"
   },

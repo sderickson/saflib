@@ -6,4 +6,9 @@ Currently it's pretty lightweight, just providing a convenience function for pro
 
 See the [`saf-workflow`](https://github.com/sderickson/saflib/blob/main/workflows/src/saf-workflow-cli/index.ts) CLI implementation for an example of how to set up a command in a SAF package.
 
-> TODO: Add workflows
+For how product packages should **call** platform bins from `package.json` scripts (and when to add new ones), see [Package scripts and platform bins](./package-scripts-and-bins.md).
+
+## Workflows
+
+- [`commander/add-cli`](./workflows/add-cli.md) — scaffold a new bin CLI
+- [`commander/add-command`](./workflows/add-command.md) — add a subcommand to an existing CLI
