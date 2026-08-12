@@ -467,7 +467,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Scan completed; returns which commits were ingested. */
+            /** @description Scan completed with no per-commit failures; returns which commits were ingested. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -478,12 +478,21 @@ export interface operations {
                         scanned: string[];
                         /** @description Commit hashes already present (no re-analysis). */
                         skipped: string[];
-                        /** @description Commits that failed analysis (hash + error message). */
+                        /** @description Always empty on 200; non-empty failures use 500. */
                         failed: {
                             hash: string;
                             message: string;
                         }[];
                     };
+                };
+            };
+            /** @description Git plumbing failed, or one or more commits failed analysis (`SCAN_FAILED`). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
                 };
             };
         };

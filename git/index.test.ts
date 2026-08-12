@@ -192,5 +192,19 @@ describe("@saflib/git", () => {
       expect(result!.get(a.blobHash)).toBe("alpha\nbeta\n");
       expect(result!.get(b.blobHash)).toBe("export const b = 1;\n");
     });
+
+    it("stays framed when blob contents include multi-byte UTF-8", () => {
+      writeFileSync(join(repoRoot, "unicode.txt"), "café 日本語 🎉\n");
+      git(repoRoot, ["add", "unicode.txt"]);
+      git(repoRoot, ["commit", "-m", "unicode blob"]);
+      const tip = git(repoRoot, ["rev-parse", "HEAD"]);
+      const tree = listTree(repoRoot, tip);
+      const uni = tree.result!.find((e) => e.path === "unicode.txt")!;
+      const a = tree.result!.find((e) => e.path === "a.txt")!;
+      const { result, error } = readBlobs(repoRoot, [uni.blobHash, a.blobHash]);
+      expect(error).toBeUndefined();
+      expect(result!.get(uni.blobHash)).toBe("café 日本語 🎉\n");
+      expect(result!.get(a.blobHash)).toBe("alpha\nbeta\n");
+    });
   });
 });

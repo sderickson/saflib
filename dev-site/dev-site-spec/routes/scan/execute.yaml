@@ -35,7 +35,7 @@ executeScan:
                 Current checkout "Scan this commit".
   responses:
     "200":
-      description: Scan completed; returns which commits were ingested.
+      description: Scan completed with no per-commit failures; returns which commits were ingested.
       content:
         application/json:
           schema:
@@ -57,7 +57,7 @@ executeScan:
                   type: string
               failed:
                 type: array
-                description: Commits that failed analysis (hash + error message).
+                description: Always empty on 200; non-empty failures use 500.
                 items:
                   type: object
                   required:
@@ -68,3 +68,10 @@ executeScan:
                       type: string
                     message:
                       type: string
+    "500":
+      description: >
+        Git plumbing failed, or one or more commits failed analysis (`SCAN_FAILED`).
+      content:
+        application/json:
+          schema:
+            $ref: "../../schemas/error.yaml"

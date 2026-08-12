@@ -1,6 +1,6 @@
 import type { ReturnsError } from "@saflib/monorepo";
 import { GitCommandError } from "./errors.ts";
-import { execGit } from "./exec-git.ts";
+import { execGit, execGitBuffer } from "./exec-git.ts";
 
 /**
  * Read a blob's contents by hash without checking anything out.
@@ -17,6 +17,9 @@ export function readBlob(
 /**
  * Read many blobs in one `git cat-file --batch` invocation.
  * Missing/invalid objects are omitted from the result map (caller treats as miss).
+ *
+ * Parses stdout as a {@link Buffer}: git's size field is in **bytes**, so decoding
+ * to a UTF-8 string before slicing desyncs on any multi-byte content.
  */
 export function readBlobs(
   repoRoot: string,
@@ -28,7 +31,7 @@ export function readBlobs(
     return { result: out };
   }
 
-  const { result: stdout, error } = execGit(
+  const { result: stdout, error } = execGitBuffer(
     repoRoot,
     ["cat-file", "--batch"],
     { input: unique.map((h) => `${h}\n`).join("") },
@@ -38,9 +41,9 @@ export function readBlobs(
   let i = 0;
   const len = stdout.length;
   while (i < len) {
-    const headerEnd = stdout.indexOf("\n", i);
+    const headerEnd = stdout.indexOf(0x0a, i);
     if (headerEnd === -1) break;
-    const header = stdout.slice(i, headerEnd);
+    const header = stdout.subarray(i, headerEnd).toString("utf8");
     i = headerEnd + 1;
 
     if (header.endsWith(" missing")) {
@@ -57,14 +60,19 @@ export function readBlobs(
     }
     const [hash, type, sizeStr] = parts;
     const size = Number(sizeStr);
-    if (!Number.isFinite(size) || size < 0) {
-      continue;
+    if (!Number.isFinite(size) || size < 0 || i + size > len) {
+      return {
+        error: new GitCommandError(
+          `Invalid git cat-file --batch size in header: ${JSON.stringify(header)}`,
+          { args: ["cat-file", "--batch"], stderr: "" },
+        ),
+      };
     }
     if (type === "blob") {
-      out.set(hash, stdout.slice(i, i + size));
+      out.set(hash, stdout.subarray(i, i + size).toString("utf8"));
     }
     i += size;
-    if (stdout[i] === "\n") i += 1;
+    if (stdout[i] === 0x0a) i += 1;
   }
 
   return { result: out };

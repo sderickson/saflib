@@ -39,7 +39,7 @@
         },
         "responses": {
           "200": {
-            "description": "Scan completed; returns which commits were ingested.",
+            "description": "Scan completed with no per-commit failures; returns which commits were ingested.",
             "content": {
               "application/json": {
                 "schema": {
@@ -66,7 +66,7 @@
                     },
                     "failed": {
                       "type": "array",
-                      "description": "Commits that failed analysis (hash + error message).",
+                      "description": "Always empty on 200; non-empty failures use 500.",
                       "items": {
                         "type": "object",
                         "required": [
@@ -87,10 +87,37 @@
                 }
               }
             }
+          },
+          "500": {
+            "description": "Git plumbing failed, or one or more commits failed analysis (`SCAN_FAILED`).\n",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
           }
         }
       }
     }
   },
-  "components": {}
+  "components": {
+    "schemas": {
+      "error": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "A short, machine-readable error code, for when HTTP status codes are not sufficient."
+          },
+          "message": {
+            "type": "string",
+            "description": "A human-readable description of the error.",
+            "example": "The requested resource could not be found."
+          }
+        }
+      }
+    }
+  }
 }

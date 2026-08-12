@@ -31,6 +31,16 @@ export const executeScanHandler = createHandler(async (req, res) => {
         throw error satisfies never;
     }
   }
+  if (result.failed.length > 0) {
+    const first = result.failed[0]!;
+    const detail =
+      result.failed.length === 1
+        ? `${first.hash.slice(0, 10)}: ${first.message}`
+        : `${result.failed.length} commits (first ${first.hash.slice(0, 10)}: ${first.message})`;
+    throw createError(500, `Scan failed for ${detail}`, {
+      code: "SCAN_FAILED",
+    });
+  }
   const response: ResponseBody["executeScan"][200] = result;
   res.status(200).json(response);
 });

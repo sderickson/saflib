@@ -27,7 +27,17 @@ export interface paths {
 }
 export type webhooks = Record<string, never>;
 export interface components {
-    schemas: never;
+    schemas: {
+        error: {
+            /** @description A short, machine-readable error code, for when HTTP status codes are not sufficient. */
+            code?: string;
+            /**
+             * @description A human-readable description of the error.
+             * @example The requested resource could not be found.
+             */
+            message?: string;
+        };
+    };
     responses: never;
     parameters: never;
     requestBodies: never;
@@ -57,7 +67,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Scan completed; returns which commits were ingested. */
+            /** @description Scan completed with no per-commit failures; returns which commits were ingested. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -68,12 +78,21 @@ export interface operations {
                         scanned: string[];
                         /** @description Commit hashes already present (no re-analysis). */
                         skipped: string[];
-                        /** @description Commits that failed analysis (hash + error message). */
+                        /** @description Always empty on 200; non-empty failures use 500. */
                         failed: {
                             hash: string;
                             message: string;
                         }[];
                     };
+                };
+            };
+            /** @description Git plumbing failed, or one or more commits failed analysis (`SCAN_FAILED`). */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
                 };
             };
         };
