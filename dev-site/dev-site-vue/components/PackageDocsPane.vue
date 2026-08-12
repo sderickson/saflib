@@ -66,6 +66,8 @@ const props = defineProps<{
   /** All analyzed packages — used to resolve cross-package doc links. */
   packages: Array<{ packageName: string; directory: string }>;
   githubRepo?: string;
+  /** Branch/tag for GitHub links (default `main`). */
+  githubRef?: string;
   localRepoRoot?: string;
 }>();
 
@@ -138,7 +140,7 @@ const localPath = (path: string) => {
 const openSelected = () => {
   if (!selectedPath.value) return;
   openSource(selectedPath.value, {
-    commitHash: props.commitHash,
+    githubRef: props.githubRef,
     githubRepo: props.githubRepo,
     localRepoRoot: props.localRepoRoot,
   });
@@ -200,7 +202,7 @@ const onDocClick = (ev: MouseEvent) => {
   ev.preventDefault();
   if (resolved.kind === "source") {
     openSource(resolved.path, {
-      commitHash: props.commitHash,
+      githubRef: props.githubRef,
       githubRepo: props.githubRepo,
       localRepoRoot: props.localRepoRoot,
     });

@@ -85,6 +85,7 @@
                   :package-directory="selectedPkg.directory"
                   :product-root="checkout.productRoot"
                   :github-repo="githubRepo"
+                  :github-ref="githubRef"
                   :local-repo-root="localRepoRoot"
                 />
               </v-tabs-window-item>
@@ -99,6 +100,7 @@
                   :product-root="checkout.productRoot"
                   :packages="checkout.packages"
                   :github-repo="githubRepo"
+                  :github-ref="githubRef"
                   :local-repo-root="localRepoRoot"
                   @navigate-package="onDocNavigatePackage"
                 />
@@ -135,11 +137,14 @@ const props = withDefaults(
     hubPath?: string;
     /** `owner/repo` for GitHub blob links. */
     githubRepo?: string;
+    /** Branch/tag for GitHub blob links (default `main`). */
+    githubRef?: string;
     /** Absolute host path to the analyzed checkout (IDE deep links). */
     localRepoRoot?: string;
   }>(),
   {
     hubPath: "/",
+    githubRef: "main",
   },
 );
 

@@ -118,6 +118,8 @@ const props = defineProps<{
   packageDirectory: string;
   productRoot?: string;
   githubRepo?: string;
+  /** Branch/tag for GitHub links (default `main`). */
+  githubRef?: string;
   localRepoRoot?: string;
 }>();
 
@@ -228,7 +230,7 @@ const unlinkedExports = computed(() => {
 
 const openFile = (path: string) => {
   openSource(path, {
-    commitHash: props.commitHash,
+    githubRef: props.githubRef,
     githubRepo: props.githubRepo,
     localRepoRoot: props.localRepoRoot,
   });

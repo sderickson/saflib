@@ -3,10 +3,16 @@
  *
  * `githubRepo` is `owner/name`. `localRepoRoot` is an absolute host path to the
  * checkout (for `cursor://` / `vscode://` file URLs). Either may be omitted.
+ *
+ * GitHub links use a branch/tag (`githubRef`, default `main`) — not a commit —
+ * so unpushed local commits still resolve when the path exists on the branch.
  */
 export function sourceOpenUrls(
   repoRelativePath: string,
   options: {
+    /** Branch or tag for GitHub blob URLs (default `main`). */
+    githubRef?: string;
+    /** @deprecated Prefer {@link githubRef}; ignored when `githubRef` is set. */
     commitHash?: string;
     line?: number;
     githubRepo?: string;
@@ -18,7 +24,7 @@ export function sourceOpenUrls(
   const out: { github?: string; ide?: string } = {};
 
   if (options.githubRepo) {
-    const ref = options.commitHash || "main";
+    const ref = options.githubRef || "main";
     const line = options.line ? `#L${options.line}` : "";
     out.github = `https://github.com/${options.githubRepo}/blob/${ref}/${path}${line}`;
   }
