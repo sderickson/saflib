@@ -31,6 +31,7 @@ function toApiTestCase(t: {
   fullName: string;
   subjectName: string | null;
   subjectSignature: string | null;
+  subjectDocstring: string | null;
   subjectFilePath: string | null;
   subjectConfidence: "adjacent" | "package" | null;
 }) {
@@ -47,6 +48,7 @@ function toApiTestCase(t: {
     fullName: t.fullName,
     subjectName: t.subjectName,
     subjectSignature: t.subjectSignature,
+    subjectDocstring: t.subjectDocstring,
     subjectFilePath: t.subjectFilePath,
     subjectConfidence: t.subjectConfidence,
   };

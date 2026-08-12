@@ -70,6 +70,10 @@ describe("buildPackageTestTree", () => {
       "adds",
       "zero",
     ]);
+    for (const leaf of file.children[0].children) {
+      expect(leaf.kind).toBe("test");
+      expect(leaf.subjectSignature).toBeUndefined();
+    }
   });
 
   it("strips package directory prefix", () => {

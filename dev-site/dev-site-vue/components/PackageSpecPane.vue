@@ -3,29 +3,36 @@
     <v-progress-linear v-if="isLoading" indeterminate class="mb-2" />
     <v-alert v-if="error" type="error" class="mb-2">{{ error.message }}</v-alert>
 
-    <div v-if="!grouped.length && !isLoading" class="text-body-2 text-medium-emphasis">
-      No exports found for this package.
-    </div>
+    <TestTree
+      v-if="testTree.length"
+      :nodes="testTree"
+      @open-source="openFile"
+    />
+    <p
+      v-else-if="!isLoading"
+      class="text-body-2 text-medium-emphasis"
+    >
+      No test cases found for this package.
+    </p>
 
-    <div v-for="group in grouped" :key="group.filePath" class="spec-file mb-4">
-      <div class="spec-file__header d-flex align-center ga-2 mb-1">
-        <code class="text-body-2">{{ group.localPath }}</code>
-        <v-btn size="x-small" variant="text" @click="openFile(group.filePath)">
-          Open
-        </v-btn>
+    <div v-if="unlinkedExports.length" class="unlinked mt-6">
+      <div class="text-caption text-medium-emphasis mb-2">
+        Exports without a matching suite
       </div>
-      <ul class="spec-exports">
-        <li v-for="exp in group.exports" :key="`${exp.name}:${exp.kind}`" class="spec-exports__item">
-          <button type="button" class="spec-exports__btn" @click="openFile(exp.filePath)">
-            <span class="spec-exports__name">{{ exp.name }}</span>
-            <span class="spec-exports__kind">{{ exp.kind }}</span>
-            <span v-if="exp.signature" class="spec-exports__sig">{{
+      <ul class="unlinked__list">
+        <li
+          v-for="exp in unlinkedExports"
+          :key="`${exp.filePath}:${exp.name}:${exp.kind}`"
+          class="unlinked__item"
+        >
+          <button type="button" class="unlinked__btn" @click="openFile(exp.filePath)">
+            <span class="unlinked__name">{{ exp.name }}</span>
+            <span class="unlinked__kind">{{ exp.kind }}</span>
+            <code v-if="exp.signature" class="unlinked__sig">{{
               exp.signature
-            }}</span>
+            }}</code>
           </button>
-          <div v-if="exp.docstring" class="spec-exports__doc">
-            {{ exp.docstring }}
-          </div>
+          <div v-if="exp.docstring" class="unlinked__doc">{{ exp.docstring }}</div>
         </li>
       </ul>
     </div>
@@ -34,9 +41,10 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
-import { useCommit } from "../requests/queries";
+import { useCommitPackage } from "../requests/queries";
+import { buildPackageTestTree } from "../test-tree";
 import { openSource } from "../source-links";
-import { packageLocalFilePath } from "../repo-paths";
+import TestTree from "./TestTree.vue";
 
 const props = defineProps<{
   subdomain: string;
@@ -48,42 +56,39 @@ const props = defineProps<{
   localRepoRoot?: string;
 }>();
 
-const { data, isLoading, error } = useCommit(
+const { data, isLoading, error } = useCommitPackage(
   props.subdomain,
   () => props.commitHash,
+  () => props.packageName,
 );
 
-const grouped = computed(() => {
-  const exports = (data.value?.commitDetail.exports ?? []).filter(
-    (e) => e.packageName === props.packageName,
+const detail = computed(() => data.value?.packageDetail);
+
+const testTree = computed(() => {
+  const d = detail.value;
+  if (!d) return [];
+  return buildPackageTestTree(
+    d.testCases,
+    d.packageName,
+    props.packageDirectory,
+    props.productRoot ?? "",
   );
-  const byFile = new Map<
-    string,
-    {
-      filePath: string;
-      localPath: string;
-      exports: typeof exports;
-    }
-  >();
-  for (const exp of exports) {
-    let g = byFile.get(exp.filePath);
-    if (!g) {
-      g = {
-        filePath: exp.filePath,
-        localPath: packageLocalFilePath(
-          exp.filePath,
-          props.productRoot,
-          props.packageDirectory,
-        ),
-        exports: [],
-      };
-      byFile.set(exp.filePath, g);
-    }
-    g.exports.push(exp);
+});
+
+const linkedSubjectNames = computed(() => {
+  const names = new Set<string>();
+  for (const t of detail.value?.testCases ?? []) {
+    if (t.subjectName) names.add(t.subjectName);
   }
-  return [...byFile.values()].sort((a, b) =>
-    a.localPath.localeCompare(b.localPath),
-  );
+  return names;
+});
+
+const unlinkedExports = computed(() => {
+  const linked = linkedSubjectNames.value;
+  return (detail.value?.exports ?? [])
+    .filter((e) => !linked.has(e.name))
+    .slice()
+    .sort((a, b) => a.name.localeCompare(b.name));
 });
 
 const openFile = (path: string) => {
@@ -96,18 +101,15 @@ const openFile = (path: string) => {
 </script>
 
 <style scoped>
-.spec-file__header code {
-  font-size: 0.85rem;
-}
-.spec-exports {
+.unlinked__list {
   list-style: none;
   margin: 0;
   padding: 0;
 }
-.spec-exports__item {
+.unlinked__item {
   margin: 0.35rem 0 0.6rem;
 }
-.spec-exports__btn {
+.unlinked__btn {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
@@ -120,22 +122,23 @@ const openFile = (path: string) => {
   font: inherit;
   text-align: left;
 }
-.spec-exports__name {
+.unlinked__name {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-weight: 600;
   font-size: 0.875rem;
 }
-.spec-exports__kind {
+.unlinked__kind {
   font-size: 0.65rem;
   text-transform: uppercase;
   color: rgba(var(--v-theme-on-surface), 0.45);
 }
-.spec-exports__sig {
+.unlinked__sig {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 0.75rem;
   color: rgba(var(--v-theme-on-surface), 0.55);
+  font-weight: 400;
 }
-.spec-exports__doc {
+.unlinked__doc {
   margin-top: 0.15rem;
   font-size: 0.85rem;
   color: rgba(var(--v-theme-on-surface), 0.7);

@@ -17,6 +17,9 @@ paths:
   /api/commits/{hash}/diff/{otherHash}:
     get:
       $ref: "./routes/commits/diff.yaml#/diffCommits"
+  /api/commits/{hash}/packages/{packageName}:
+    get:
+      $ref: "./routes/commits/package.yaml#/getCommitPackage"
   /api/scan:
     post:
       $ref: "./routes/scan/execute.yaml#/executeScan"

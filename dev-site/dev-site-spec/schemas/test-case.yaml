@@ -26,6 +26,10 @@ properties:
     nullable: true
     description: Signature of the linked export at this commit (null if unknown).
     example: "(repoRoot: string, options?: LogOptions)"
+  subjectDocstring:
+    type: string
+    nullable: true
+    description: First JSDoc prose line of the linked export, when present.
   subjectFilePath:
     type: string
     description: Repo-relative path of the file that declares the linked export.

@@ -11,17 +11,32 @@
           {{ open.has(node.id) ? "▾" : "▸" }}
         </button>
         <span v-else class="test-tree__toggle-spacer" />
-        <span class="test-tree__label">{{ node.label }}</span>
-        <span
-          v-if="node.subjectSignature"
-          class="test-tree__sig"
-          :title="subjectTitle(node)"
-        >{{ node.subjectSignature }}</span>
+        <button
+          v-if="node.subjectFilePath"
+          type="button"
+          class="test-tree__label test-tree__label--link"
+          @click="$emit('open-source', node.subjectFilePath!)"
+        >
+          {{ node.label }}
+        </button>
+        <span v-else class="test-tree__label">{{ node.label }}</span>
         <span class="test-tree__kind">{{ node.kind }}</span>
+      </div>
+      <div
+        v-if="node.kind === 'suite' && (node.subjectSignature || node.subjectDocstring)"
+        class="test-tree__subject"
+      >
+        <code v-if="node.subjectSignature" class="test-tree__sig">{{
+          node.subjectSignature
+        }}</code>
+        <div v-if="node.subjectDocstring" class="test-tree__doc">
+          {{ node.subjectDocstring }}
+        </div>
       </div>
       <TestTree
         v-if="node.children.length && open.has(node.id)"
         :nodes="node.children"
+        @open-source="$emit('open-source', $event)"
       />
     </li>
   </ul>
@@ -33,6 +48,10 @@ import type { TestTreeNode } from "../test-tree";
 
 const props = defineProps<{
   nodes: TestTreeNode[];
+}>();
+
+defineEmits<{
+  "open-source": [filePath: string];
 }>();
 
 const open = reactive(new Set<string>());
@@ -58,14 +77,6 @@ watch(
 const toggle = (id: string) => {
   if (open.has(id)) open.delete(id);
   else open.add(id);
-};
-
-const subjectTitle = (node: TestTreeNode) => {
-  const parts = [
-    node.subjectName ? `subject: ${node.subjectName}` : null,
-    node.subjectConfidence ? `via ${node.subjectConfidence}` : null,
-  ].filter(Boolean);
-  return parts.join(" · ");
 };
 </script>
 
@@ -97,19 +108,38 @@ const subjectTitle = (node: TestTreeNode) => {
 .test-tree__toggle-spacer {
   cursor: default;
 }
+.test-tree__label {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: inherit;
+  font: inherit;
+}
+.test-tree__label--link {
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: rgba(var(--v-theme-on-surface), 0.25);
+}
 .test-tree__kind {
   color: rgba(var(--v-theme-on-surface), 0.45);
   font-size: 0.7rem;
   text-transform: uppercase;
 }
+.test-tree__subject {
+  margin: 0.15rem 0 0.35rem 1.35rem;
+  max-width: 48rem;
+}
 .test-tree__sig {
-  color: rgba(var(--v-theme-on-surface), 0.55);
+  display: block;
   font-size: 0.75rem;
+  color: rgba(var(--v-theme-on-surface), 0.6);
   font-weight: 400;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 36rem;
+}
+.test-tree__doc {
+  margin-top: 0.1rem;
+  font-size: 0.8rem;
+  color: rgba(var(--v-theme-on-surface), 0.7);
+  font-family: system-ui, sans-serif;
 }
 .test-tree__row--test .test-tree__label {
   font-weight: 500;

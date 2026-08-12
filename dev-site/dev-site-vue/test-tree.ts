@@ -4,6 +4,7 @@ export interface TestCaseLike {
   fullName: string;
   subjectName?: string | null;
   subjectSignature?: string | null;
+  subjectDocstring?: string | null;
   subjectFilePath?: string | null;
   subjectConfidence?: "adjacent" | "package" | null;
 }
@@ -15,18 +16,32 @@ export interface TestTreeNode {
   label: string;
   kind: TestTreeNodeKind;
   children: TestTreeNode[];
-  /** Linked export name when this suite/test matches a symbol by convention. */
+  /** Linked export — only attached to matching suite nodes. */
   subjectName?: string | null;
   subjectSignature?: string | null;
+  subjectDocstring?: string | null;
   subjectConfidence?: "adjacent" | "package" | null;
+  subjectFilePath?: string | null;
 }
 
-function packageLocalPath(filePath: string, packageDirectory: string): string {
+function packageLocalPath(
+  filePath: string,
+  packageDirectory: string,
+  productRoot: string = "",
+): string {
+  const parts = [productRoot, packageDirectory]
+    .map((p) => p.replace(/^\/+|\/+$/g, ""))
+    .filter(Boolean);
+  const prefix = parts.join("/");
+  if (!prefix) return filePath;
+  const withSlash = prefix.endsWith("/") ? prefix : `${prefix}/`;
+  if (filePath === prefix) return ".";
+  if (filePath.startsWith(withSlash)) return filePath.slice(withSlash.length);
   const dir = packageDirectory.replace(/^\/+|\/+$/g, "");
-  if (!dir) return filePath;
-  const prefix = dir.endsWith("/") ? dir : `${dir}/`;
-  if (filePath === dir) return ".";
-  if (filePath.startsWith(prefix)) return filePath.slice(prefix.length);
+  if (dir) {
+    const d = dir.endsWith("/") ? dir : `${dir}/`;
+    if (filePath.startsWith(d)) return filePath.slice(d.length);
+  }
   return filePath;
 }
 
@@ -48,28 +63,30 @@ function ensureChild(
   return child;
 }
 
-function attachSubject(
+function attachSubjectToSuite(
   node: TestTreeNode,
   t: TestCaseLike,
-  suiteOrLeafLabel: string,
+  suiteLabel: string,
 ): void {
-  if (!t.subjectName || t.subjectName !== suiteOrLeafLabel) return;
-  if (!node.subjectName) {
-    node.subjectName = t.subjectName;
-    node.subjectSignature = t.subjectSignature ?? null;
-    node.subjectConfidence = t.subjectConfidence ?? null;
-  }
+  if (!t.subjectName || t.subjectName !== suiteLabel) return;
+  if (node.subjectName) return;
+  node.subjectName = t.subjectName;
+  node.subjectSignature = t.subjectSignature ?? null;
+  node.subjectDocstring = t.subjectDocstring ?? null;
+  node.subjectConfidence = t.subjectConfidence ?? null;
+  node.subjectFilePath = t.subjectFilePath ?? null;
 }
 
 /**
  * Build a nested test tree for one package:
  * path dirs → file → describe suites → it leaf.
- * Suite nodes that match a linked export carry `subjectSignature` for display.
+ * Signature/docstring attach only to suite nodes whose title matches the subject.
  */
 export function buildPackageTestTree(
   tests: TestCaseLike[],
   packageName: string,
   packageDirectory: string = "",
+  productRoot: string = "",
 ): TestTreeNode[] {
   const root: TestTreeNode = {
     id: `pkg:${packageName}`,
@@ -80,7 +97,7 @@ export function buildPackageTestTree(
 
   const filtered = tests.filter((t) => t.packageName === packageName);
   for (const t of filtered) {
-    const local = packageLocalPath(t.filePath, packageDirectory);
+    const local = packageLocalPath(t.filePath, packageDirectory, productRoot);
     const parts = local.split("/").filter(Boolean);
     const fileName = parts.pop() ?? local;
     let node = root;
@@ -93,15 +110,9 @@ export function buildPackageTestTree(
     const leaf = suiteParts.pop() ?? t.fullName;
     for (const suite of suiteParts) {
       node = ensureChild(node, suite, "suite");
-      attachSubject(node, t, suite);
+      attachSubjectToSuite(node, t, suite);
     }
-    const leafNode = ensureChild(node, leaf, "test");
-    // Surface subject on the leaf when the suite matched, so the it-row shows sig too.
-    if (t.subjectName && !leafNode.subjectSignature) {
-      leafNode.subjectName = t.subjectName;
-      leafNode.subjectSignature = t.subjectSignature ?? null;
-      leafNode.subjectConfidence = t.subjectConfidence ?? null;
-    }
+    ensureChild(node, leaf, "test");
   }
 
   sortTree(root);

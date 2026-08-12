@@ -58,6 +58,7 @@ function toApiTestCase(t: AnalyzedTestCase): TestCase {
     fullName: t.fullName,
     subjectName: t.subjectName,
     subjectSignature: t.subjectSignature,
+    subjectDocstring: t.subjectDocstring,
     subjectFilePath: t.subjectFilePath,
     subjectConfidence: t.subjectConfidence,
   };

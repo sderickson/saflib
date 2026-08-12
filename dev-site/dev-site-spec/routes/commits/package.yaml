@@ -1,0 +1,81 @@
+getCommitPackage:
+  summary: Package-scoped symbols for one analyzed commit
+  operationId: getCommitPackage
+  tags:
+    - no-auth
+  description: >
+    Returns metrics, exports, and test cases for a single package at a commit.
+    Prefer this over full commit detail for the checkout Spec panel — assembly
+    only touches that package's source blobs.
+  parameters:
+    - name: hash
+      in: path
+      required: true
+      schema:
+        type: string
+    - name: packageName
+      in: path
+      required: true
+      schema:
+        type: string
+      description: npm package name (URL-encoded), e.g. `%40pathclerk%2Fdaemon-forms`
+  responses:
+    "200":
+      description: Package detail at commit
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - packageDetail
+            properties:
+              packageDetail:
+                type: object
+                required:
+                  - commitHash
+                  - packageName
+                  - directory
+                  - sourceFiles
+                  - sourceLines
+                  - prodLines
+                  - testLines
+                  - testFiles
+                  - exports
+                  - testCases
+                properties:
+                  commitHash:
+                    type: string
+                  packageName:
+                    type: string
+                  directory:
+                    type: string
+                  sourceFiles:
+                    type: integer
+                  sourceLines:
+                    type: integer
+                  prodLines:
+                    type: integer
+                  testLines:
+                    type: integer
+                  testFiles:
+                    type: integer
+                  exports:
+                    type: array
+                    items:
+                      $ref: "../../schemas/export-entry.yaml"
+                  testCases:
+                    type: array
+                    items:
+                      $ref: "../../schemas/test-case.yaml"
+    "404":
+      description: Commit or package not found
+      content:
+        application/json:
+          schema:
+            $ref: "../../schemas/error.yaml"
+    "500":
+      description: Git command failed
+      content:
+        application/json:
+          schema:
+            $ref: "../../schemas/error.yaml"

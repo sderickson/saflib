@@ -134,6 +134,8 @@ export interface components {
              * @example (repoRoot: string, options?: LogOptions)
              */
             subjectSignature?: string | null;
+            /** @description First JSDoc prose line of the linked export, when present. */
+            subjectDocstring?: string | null;
             /**
              * @description Repo-relative path of the file that declares the linked export.
              * @example saflib/git/log.ts

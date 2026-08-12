@@ -1,18 +1,18 @@
 {
   "openapi": "3.0.0",
   "info": {
-    "title": "diffCommits",
+    "title": "getCommitPackage",
     "version": "1.0.0"
   },
   "paths": {
-    "/api/commits/{hash}/diff/{otherHash}": {
+    "/api/commits/{hash}/packages/{packageName}": {
       "get": {
-        "summary": "Diff two analyzed commits",
-        "operationId": "diffCommits",
+        "summary": "Package-scoped symbols for one analyzed commit",
+        "operationId": "getCommitPackage",
         "tags": [
           "no-auth"
         ],
-        "description": "Compare the analysis snapshots of two commits. `hash` is the baseline (\"before\"); `otherHash` is the comparison (\"after\"). Returns added/removed (and changed, for package metrics) inventories.\n",
+        "description": "Returns metrics, exports, and test cases for a single package at a commit. Prefer this over full commit detail for the checkout Spec panel — assembly only touches that package's source blobs.\n",
         "parameters": [
           {
             "name": "hash",
@@ -20,32 +20,81 @@
             "required": true,
             "schema": {
               "type": "string"
-            },
-            "description": "Baseline commit hash (the \"before\")."
+            }
           },
           {
-            "name": "otherHash",
+            "name": "packageName",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string"
             },
-            "description": "Comparison commit hash (the \"after\")."
+            "description": "npm package name (URL-encoded), e.g. `%40pathclerk%2Fdaemon-forms`"
           }
         ],
         "responses": {
           "200": {
-            "description": "Delta between the two commit snapshots.",
+            "description": "Package detail at commit",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "required": [
-                    "commitDiff"
+                    "packageDetail"
                   ],
                   "properties": {
-                    "commitDiff": {
-                      "$ref": "#/components/schemas/commit-diff"
+                    "packageDetail": {
+                      "type": "object",
+                      "required": [
+                        "commitHash",
+                        "packageName",
+                        "directory",
+                        "sourceFiles",
+                        "sourceLines",
+                        "prodLines",
+                        "testLines",
+                        "testFiles",
+                        "exports",
+                        "testCases"
+                      ],
+                      "properties": {
+                        "commitHash": {
+                          "type": "string"
+                        },
+                        "packageName": {
+                          "type": "string"
+                        },
+                        "directory": {
+                          "type": "string"
+                        },
+                        "sourceFiles": {
+                          "type": "integer"
+                        },
+                        "sourceLines": {
+                          "type": "integer"
+                        },
+                        "prodLines": {
+                          "type": "integer"
+                        },
+                        "testLines": {
+                          "type": "integer"
+                        },
+                        "testFiles": {
+                          "type": "integer"
+                        },
+                        "exports": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/export-entry"
+                          }
+                        },
+                        "testCases": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/test-case"
+                          }
+                        }
+                      }
                     }
                   }
                 }
@@ -53,7 +102,17 @@
             }
           },
           "404": {
-            "description": "One or both commit hashes have no analysis snapshot.",
+            "description": "Commit or package not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Git command failed",
             "content": {
               "application/json": {
                 "schema": {
@@ -68,159 +127,6 @@
   },
   "components": {
     "schemas": {
-      "commit-diff": {
-        "type": "object",
-        "description": "Delta between two analyzed commits. Exports and test cases are identity-based (add/remove only — a rename shows up as remove + add). Package metrics include a `changed` list when the same packageName exists on both sides with different counts.\n",
-        "properties": {
-          "fromHash": {
-            "type": "string",
-            "description": "Baseline commit hash (the \"before\")."
-          },
-          "toHash": {
-            "type": "string",
-            "description": "Comparison commit hash (the \"after\")."
-          },
-          "packageMetrics": {
-            "type": "object",
-            "properties": {
-              "added": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/package-metrics"
-                }
-              },
-              "removed": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/package-metrics"
-                }
-              },
-              "changed": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "before": {
-                      "$ref": "#/components/schemas/package-metrics"
-                    },
-                    "after": {
-                      "$ref": "#/components/schemas/package-metrics"
-                    }
-                  },
-                  "required": [
-                    "before",
-                    "after"
-                  ]
-                }
-              }
-            },
-            "required": [
-              "added",
-              "removed",
-              "changed"
-            ]
-          },
-          "exports": {
-            "type": "object",
-            "properties": {
-              "added": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/export-entry"
-                }
-              },
-              "removed": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/export-entry"
-                }
-              }
-            },
-            "required": [
-              "added",
-              "removed"
-            ]
-          },
-          "testCases": {
-            "type": "object",
-            "properties": {
-              "added": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/test-case"
-                }
-              },
-              "removed": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/test-case"
-                }
-              }
-            },
-            "required": [
-              "added",
-              "removed"
-            ]
-          }
-        },
-        "required": [
-          "fromHash",
-          "toHash",
-          "packageMetrics",
-          "exports",
-          "testCases"
-        ]
-      },
-      "package-metrics": {
-        "type": "object",
-        "description": "Per-package file/LOC inventory at a single commit.",
-        "properties": {
-          "packageName": {
-            "type": "string",
-            "description": "npm package name (e.g. `@saflib/git`).",
-            "example": "@saflib/git"
-          },
-          "directory": {
-            "type": "string",
-            "description": "Package directory relative to the analyzed product root.",
-            "example": "saflib/git"
-          },
-          "sourceFiles": {
-            "type": "integer",
-            "minimum": 0,
-            "description": "Count of source files (excluding tests)."
-          },
-          "sourceLines": {
-            "type": "integer",
-            "minimum": 0,
-            "description": "Total lines across source files."
-          },
-          "prodLines": {
-            "type": "integer",
-            "minimum": 0,
-            "description": "Production (non-test) source lines."
-          },
-          "testLines": {
-            "type": "integer",
-            "minimum": 0,
-            "description": "Test file lines."
-          },
-          "testFiles": {
-            "type": "integer",
-            "minimum": 0,
-            "description": "Count of test files."
-          }
-        },
-        "required": [
-          "packageName",
-          "directory",
-          "sourceFiles",
-          "sourceLines",
-          "prodLines",
-          "testLines",
-          "testFiles"
-        ]
-      },
       "export-entry": {
         "type": "object",
         "description": "One exported symbol extracted from a source file at a commit.",

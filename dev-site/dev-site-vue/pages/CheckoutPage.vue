@@ -69,25 +69,21 @@
             </p>
 
             <v-tabs v-model="tab" density="compact" class="mb-3">
-              <v-tab value="tests">Tests</v-tab>
-              <v-tab value="docs">Docs</v-tab>
               <v-tab value="spec">Spec</v-tab>
+              <v-tab value="docs">Docs</v-tab>
             </v-tabs>
 
             <v-tabs-window v-model="tab">
-              <v-tabs-window-item value="tests">
-                <v-progress-linear
-                  v-if="commitLoading"
-                  indeterminate
-                  class="mb-2"
+              <v-tabs-window-item value="spec">
+                <PackageSpecPane
+                  :subdomain="subdomain"
+                  :commit-hash="checkout.hash"
+                  :package-name="selectedPkg.packageName"
+                  :package-directory="selectedPkg.directory"
+                  :product-root="checkout.productRoot"
+                  :github-repo="githubRepo"
+                  :local-repo-root="localRepoRoot"
                 />
-                <TestTree v-if="testTree.length" :nodes="testTree" />
-                <p
-                  v-else-if="!commitLoading"
-                  class="text-body-2 text-medium-emphasis"
-                >
-                  No test cases found for this package.
-                </p>
               </v-tabs-window-item>
 
               <v-tabs-window-item value="docs">
@@ -104,18 +100,6 @@
                   @navigate-package="onDocNavigatePackage"
                 />
               </v-tabs-window-item>
-
-              <v-tabs-window-item value="spec">
-                <PackageSpecPane
-                  :subdomain="subdomain"
-                  :commit-hash="checkout.hash"
-                  :package-name="selectedPkg.packageName"
-                  :package-directory="selectedPkg.directory"
-                  :product-root="checkout.productRoot"
-                  :github-repo="githubRepo"
-                  :local-repo-root="localRepoRoot"
-                />
-              </v-tabs-window-item>
             </v-tabs-window>
           </template>
           <p v-else class="text-body-2 text-medium-emphasis">
@@ -130,17 +114,15 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { useCheckout, useCommit, useScanMutation } from "../requests/queries";
+import { useCheckout, useScanMutation } from "../requests/queries";
 import { classifyPackageKind } from "../package-kind";
 import {
   buildPackageDirTree,
   packageKindIcon,
 } from "../package-dir-tree";
-import { buildPackageTestTree } from "../test-tree";
 import PackageDirTree from "../components/PackageDirTree.vue";
 import PackageDocsPane from "../components/PackageDocsPane.vue";
 import PackageSpecPane from "../components/PackageSpecPane.vue";
-import TestTree from "../components/TestTree.vue";
 
 const props = withDefaults(
   defineProps<{
@@ -159,7 +141,7 @@ const props = withDefaults(
 const route = useRoute();
 const router = useRouter();
 
-const tab = ref<"tests" | "docs" | "spec">("tests");
+const tab = ref<"spec" | "docs">("spec");
 const docsPane = ref<{ openDoc: (path: string) => void } | null>(null);
 
 const {
@@ -215,7 +197,7 @@ watch(
 );
 
 const selectPackage = (name: string) => {
-  tab.value = "tests";
+  tab.value = "spec";
   router.replace({ query: { ...route.query, package: name } });
 };
 
@@ -227,25 +209,6 @@ const onDocNavigatePackage = (packageName: string, docPath: string) => {
     docsPane.value?.openDoc(docPath);
   });
 };
-
-const commitHash = computed(() =>
-  checkout.value?.analyzed ? checkout.value.hash : "",
-);
-
-const {
-  data: commitData,
-  isLoading: commitLoading,
-} = useCommit(props.subdomain, commitHash);
-
-const testTree = computed(() => {
-  const detail = commitData.value?.commitDetail;
-  if (!detail || !selectedPkg.value) return [];
-  return buildPackageTestTree(
-    detail.testCases,
-    selectedPkg.value.packageName,
-    selectedPkg.value.directory,
-  );
-});
 
 const scanThisCommit = () => {
   if (!checkout.value) return;

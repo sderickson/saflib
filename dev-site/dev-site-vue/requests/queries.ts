@@ -81,6 +81,30 @@ export function useCommit(
   });
 }
 
+export function useCommitPackage(
+  subdomain: string,
+  hash: MaybeRefOrGetter<string>,
+  packageName: MaybeRefOrGetter<string>,
+) {
+  const client = createDevSiteClient(subdomain);
+  return useQuery<DevSiteResponseBody["getCommitPackage"][200], TanstackError>({
+    queryKey: ["dev-site", "commit-package", hash, packageName],
+    enabled: () => Boolean(toValue(hash) && toValue(packageName)),
+    queryFn: () => {
+      return handleClientMethod(
+        client.GET("/api/commits/{hash}/packages/{packageName}", {
+          params: {
+            path: {
+              hash: toValue(hash),
+              packageName: toValue(packageName),
+            },
+          },
+        }),
+      );
+    },
+  });
+}
+
 export function useCommitDiff(
   subdomain: string,
   fromHash: MaybeRefOrGetter<string>,
@@ -120,6 +144,7 @@ export function useScanMutation(subdomain: string) {
       queryClient.invalidateQueries({ queryKey: ["dev-site", "commits"] });
       queryClient.invalidateQueries({ queryKey: ["dev-site", "checkout"] });
       queryClient.invalidateQueries({ queryKey: ["dev-site", "commit"] });
+      queryClient.invalidateQueries({ queryKey: ["dev-site", "commit-package"] });
     },
   });
 }

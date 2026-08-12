@@ -147,6 +147,25 @@ describe("commits routes", () => {
     expect(response.body.code).toBe("COMMIT_NOT_FOUND");
   });
 
+  it("GET /api/commits/:hash/packages/:packageName returns package detail", async () => {
+    const encoded = encodeURIComponent("@fixture/root");
+    const response = await request(lease.app).get(
+      `/api/commits/${commit2}/packages/${encoded}`,
+    );
+    expect(response.status).toBe(200);
+    expect(response.body.packageDetail.packageName).toBe("@fixture/root");
+    expect(
+      response.body.packageDetail.exports
+        .map((e: { name: string }) => e.name)
+        .sort(),
+    ).toEqual(["ZERO", "add"].sort());
+    expect(
+      response.body.packageDetail.testCases.map(
+        (t: { fullName: string }) => t.fullName,
+      ),
+    ).toEqual(["math > adds", "math > zero"]);
+  });
+
   it("GET /api/commits/:hash/diff/:otherHash diffs two commits", async () => {
     const response = await request(lease.app).get(
       `/api/commits/${commit1}/diff/${commit2}`,

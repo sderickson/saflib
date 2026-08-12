@@ -50,6 +50,7 @@ export interface AnalyzedTestCase {
   fullName: string;
   subjectName: string | null;
   subjectSignature: string | null;
+  subjectDocstring: string | null;
   subjectFilePath: string | null;
   subjectConfidence: "adjacent" | "package" | null;
 }
@@ -255,6 +256,7 @@ export async function analyzeCommit(
           fullName: tc.fullName,
           subjectName: null,
           subjectSignature: null,
+          subjectDocstring: null,
           subjectFilePath: null,
           subjectConfidence: null,
         });
@@ -332,4 +334,116 @@ export async function assembleCommitSymbols(
       testCases: snap.result.testCases,
     },
   };
+}
+
+/**
+ * Like {@link assembleCommitSymbols} but only for one package — much cheaper
+ * for the checkout package panel (skips blob-fact work for other packages).
+ */
+export async function assemblePackageSymbols(
+  dbKey: DbKey,
+  commitHash: string,
+  packageName: string,
+  options: AnalyzeCommitOptions,
+): Promise<
+  ReturnsError<
+    { exports: AnalyzedExport[]; testCases: AnalyzedTestCase[] },
+    AnalyzeCommitError
+  >
+> {
+  const repoRoot = options.repoRoot;
+  const productRoot = (options.productRoot ?? "").replace(/^\/+|\/+$/g, "");
+
+  const treeResult = listTree(repoRoot, commitHash);
+  if (treeResult.error) return { error: treeResult.error };
+  const tree = treeResult.result.filter((e) =>
+    underProductRoot(e.path, productRoot),
+  );
+
+  const packageJsonEntries = tree.filter(
+    (e) => e.path === "package.json" || e.path.endsWith("/package.json"),
+  );
+  const pkgBlobHashes = packageJsonEntries.map((e) => e.blobHash);
+  const pkgBlobs = readBlobs(repoRoot, pkgBlobHashes);
+  if (pkgBlobs.error) return { error: pkgBlobs.error };
+
+  const nameByPath = new Map<string, string>();
+  for (const entry of packageJsonEntries) {
+    const text = pkgBlobs.result.get(entry.blobHash);
+    if (text === undefined) continue;
+    const name = parsePackageName(text);
+    if (name) nameByPath.set(entry.path, name);
+  }
+  const roots = packageRootsFromPackageJsonPaths(
+    packageJsonEntries.map((e) => e.path),
+    nameByPath,
+  );
+  const targetRoot = roots.find((r) => r.packageName === packageName);
+  if (!targetRoot) {
+    return { result: { exports: [], testCases: [] } };
+  }
+
+  const underPackage = (path: string) => {
+    const d = targetRoot.directory;
+    if (!d) return true;
+    return path === d || path.startsWith(d + "/");
+  };
+
+  const sourceEntries = tree.filter(
+    (e) => isSourcePath(e.path) && underPackage(e.path),
+  );
+  const factsResult = await ensureBlobFacts(
+    dbKey,
+    repoRoot,
+    sourceEntries.map((e) => e.blobHash),
+  );
+  if (factsResult.error) return { error: factsResult.error };
+  const facts = factsResult.result;
+
+  const exportsOut: AnalyzedExport[] = [];
+  const testCasesOut: AnalyzedTestCase[] = [];
+
+  for (const entry of sourceEntries) {
+    const fact = facts.get(entry.blobHash);
+    if (!fact) continue;
+    const fileName = entry.path.split("/").pop() ?? entry.path;
+    const isTest = isTestSourcePath(entry.path, fileName);
+    if (isTest) {
+      for (const tc of fact.testCases) {
+        testCasesOut.push({
+          packageName,
+          filePath: entry.path,
+          fullName: tc.fullName,
+          subjectName: null,
+          subjectSignature: null,
+          subjectDocstring: null,
+          subjectFilePath: null,
+          subjectConfidence: null,
+        });
+      }
+    } else {
+      for (const exp of fact.exports) {
+        exportsOut.push({
+          packageName,
+          filePath: entry.path,
+          name: exp.name,
+          kind: exp.kind,
+          signature: exp.signature ?? null,
+          docstring: exp.docstring ?? null,
+        });
+      }
+    }
+  }
+
+  exportsOut.sort((a, b) =>
+    `${a.filePath}\0${a.name}\0${a.kind}`.localeCompare(
+      `${b.filePath}\0${b.name}\0${b.kind}`,
+    ),
+  );
+  const linkedTests = linkTestSubjects(testCasesOut, exportsOut);
+  linkedTests.sort((a, b) =>
+    `${a.filePath}\0${a.fullName}`.localeCompare(`${b.filePath}\0${b.fullName}`),
+  );
+
+  return { result: { exports: exportsOut, testCases: linkedTests } };
 }

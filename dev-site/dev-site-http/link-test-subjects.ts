@@ -22,6 +22,28 @@ function suiteTitles(fullName: string): string[] {
   return parts.slice(0, -1);
 }
 
+function unlink(t: AnalyzedTestCase): AnalyzedTestCase {
+  return {
+    ...t,
+    subjectName: null,
+    subjectSignature: null,
+    subjectDocstring: null,
+    subjectFilePath: null,
+    subjectConfidence: null,
+  };
+}
+
+function linkTo(t: AnalyzedTestCase, exp: AnalyzedExport, confidence: SubjectConfidence): AnalyzedTestCase {
+  return {
+    ...t,
+    subjectName: exp.name,
+    subjectSignature: exp.signature,
+    subjectDocstring: exp.docstring,
+    subjectFilePath: exp.filePath,
+    subjectConfidence: confidence,
+  };
+}
+
 /**
  * Soft-link each test case to an exported symbol by convention:
  * 1. Suite title matches an export in an adjacent source file (strong).
@@ -42,54 +64,23 @@ export function linkTestSubjects(
 
   return tests.map((t) => {
     const titles = suiteTitles(t.fullName);
-    if (titles.length === 0) {
-      return {
-        ...t,
-        subjectName: null,
-        subjectSignature: null,
-        subjectFilePath: null,
-        subjectConfidence: null,
-      };
-    }
+    if (titles.length === 0) return unlink(t);
 
     const pkgExports = byPackage.get(t.packageName) ?? [];
     const adjacent = new Set(adjacentSourcePaths(t.filePath));
     const adjacentExports = pkgExports.filter((e) => adjacent.has(e.filePath));
 
-    // Innermost suite first (closest to the `it`).
     for (let i = titles.length - 1; i >= 0; i--) {
       const title = titles[i]!;
       const adjHit = adjacentExports.find((e) => e.name === title);
-      if (adjHit) {
-        return {
-          ...t,
-          subjectName: adjHit.name,
-          subjectSignature: adjHit.signature,
-          subjectFilePath: adjHit.filePath,
-          subjectConfidence: "adjacent" as const,
-        };
-      }
+      if (adjHit) return linkTo(t, adjHit, "adjacent");
     }
     for (let i = titles.length - 1; i >= 0; i--) {
       const title = titles[i]!;
       const pkgHit = pkgExports.find((e) => e.name === title);
-      if (pkgHit) {
-        return {
-          ...t,
-          subjectName: pkgHit.name,
-          subjectSignature: pkgHit.signature,
-          subjectFilePath: pkgHit.filePath,
-          subjectConfidence: "package" as const,
-        };
-      }
+      if (pkgHit) return linkTo(t, pkgHit, "package");
     }
 
-    return {
-      ...t,
-      subjectName: null,
-      subjectSignature: null,
-      subjectFilePath: null,
-      subjectConfidence: null,
-    };
+    return unlink(t);
   });
 }

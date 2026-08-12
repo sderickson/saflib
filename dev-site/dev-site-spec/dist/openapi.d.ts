@@ -64,6 +64,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/commits/{hash}/packages/{packageName}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Package-scoped symbols for one analyzed commit
+         * @description Returns metrics, exports, and test cases for a single package at a commit. Prefer this over full commit detail for the checkout Spec panel — assembly only touches that package's source blobs.
+         */
+        get: operations["getCommitPackage"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/scan": {
         parameters: {
             query?: never;
@@ -325,6 +345,8 @@ export interface components {
              * @example (repoRoot: string, options?: LogOptions)
              */
             subjectSignature?: string | null;
+            /** @description First JSDoc prose line of the linked export, when present. */
+            subjectDocstring?: string | null;
             /**
              * @description Repo-relative path of the file that declares the linked export.
              * @example saflib/git/log.ts
@@ -507,6 +529,61 @@ export interface operations {
             };
             /** @description One or both commit hashes have no analysis snapshot. */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+        };
+    };
+    getCommitPackage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                hash: string;
+                /** @description npm package name (URL-encoded), e.g. `%40pathclerk%2Fdaemon-forms` */
+                packageName: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Package detail at commit */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        packageDetail: {
+                            commitHash: string;
+                            packageName: string;
+                            directory: string;
+                            sourceFiles: number;
+                            sourceLines: number;
+                            prodLines: number;
+                            testLines: number;
+                            testFiles: number;
+                            exports: components["schemas"]["export-entry"][];
+                            testCases: components["schemas"]["test-case"][];
+                        };
+                    };
+                };
+            };
+            /** @description Commit or package not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Git command failed */
+            500: {
                 headers: {
                     [name: string]: unknown;
                 };

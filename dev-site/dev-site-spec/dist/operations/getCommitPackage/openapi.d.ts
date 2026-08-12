@@ -4,7 +4,7 @@
  */
 
 export interface paths {
-    "/api/commits/{hash}": {
+    "/api/commits/{hash}/packages/{packageName}": {
         parameters: {
             query?: never;
             header?: never;
@@ -12,10 +12,10 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Get the full analysis snapshot for a commit
-         * @description Returns commit metadata plus per-package metrics, exports, and test cases for a single analyzed commit.
+         * Package-scoped symbols for one analyzed commit
+         * @description Returns metrics, exports, and test cases for a single package at a commit. Prefer this over full commit detail for the checkout Spec panel — assembly only touches that package's source blobs.
          */
-        get: operations["getCommits"];
+        get: operations["getCommitPackage"];
         put?: never;
         post?: never;
         delete?: never;
@@ -28,91 +28,6 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        /** @description Full static-analysis snapshot for one commit — metadata plus per-package metrics, exports, and test cases. */
-        "commit-detail": {
-            commit: components["schemas"]["commit"];
-            packageMetrics: components["schemas"]["package-metrics"][];
-            exports: components["schemas"]["export-entry"][];
-            testCases: components["schemas"]["test-case"][];
-        };
-        /** @description Analyzed commit metadata — one row per scanned commit. Does not include per-package / export / test-case payloads (see CommitDetail for those). */
-        commit: {
-            /**
-             * @description Full 40-char commit object hash.
-             * @example a1b2c3d4e5f6789012345678901234567890abcd
-             */
-            hash: string;
-            /** @description Parent commit hashes (empty for the root commit). */
-            parentHashes: string[];
-            /**
-             * Format: date-time
-             * @description Author date from the commit (`%aI`).
-             * @example 2026-08-12T10:00:00-07:00
-             */
-            authoredAt: string;
-            /**
-             * @description Full commit message (subject + body).
-             * @example Add inventory for package metrics
-             */
-            message: string;
-            /** @description Branch/tag pointers that currently resolve to this commit. */
-            refs: components["schemas"]["commit-ref"][];
-            /**
-             * @description Version string of the analyzer that produced this snapshot.
-             * @example 1
-             */
-            analyzerVersion: string;
-            /**
-             * Format: date-time
-             * @description When this snapshot was written to the database.
-             * @example 2026-08-12T11:00:00-07:00
-             */
-            computedAt: string;
-            /**
-             * @description Analysis status for this commit.
-             * @example complete
-             * @enum {string}
-             */
-            status: "pending" | "complete" | "failed";
-        };
-        /** @description A branch or tag pointer observed at scan time for a commit. */
-        "commit-ref": {
-            /**
-             * @description Ref name without the `refs/heads/` or `refs/tags/` prefix.
-             * @example main
-             */
-            name: string;
-            /**
-             * @description Whether this ref is a branch or a tag.
-             * @enum {string}
-             */
-            type: "branch" | "tag";
-            /** @description True when this commit is an ancestor of the configured main branch (including main itself). Used to distinguish mainline history from feature-branch tips. */
-            isMainAncestor: boolean;
-        };
-        /** @description Per-package file/LOC inventory at a single commit. */
-        "package-metrics": {
-            /**
-             * @description npm package name (e.g. `@saflib/git`).
-             * @example @saflib/git
-             */
-            packageName: string;
-            /**
-             * @description Package directory relative to the analyzed product root.
-             * @example saflib/git
-             */
-            directory: string;
-            /** @description Count of source files (excluding tests). */
-            sourceFiles: number;
-            /** @description Total lines across source files. */
-            sourceLines: number;
-            /** @description Production (non-test) source lines. */
-            prodLines: number;
-            /** @description Test file lines. */
-            testLines: number;
-            /** @description Count of test files. */
-            testFiles: number;
-        };
         /** @description One exported symbol extracted from a source file at a commit. */
         "export-entry": {
             /**
@@ -204,31 +119,52 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    getCommits: {
+    getCommitPackage: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                /** @description Full 40-char commit object hash. */
                 hash: string;
+                /** @description npm package name (URL-encoded), e.g. `%40pathclerk%2Fdaemon-forms` */
+                packageName: string;
             };
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description Full commit analysis snapshot. */
+            /** @description Package detail at commit */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        commitDetail: components["schemas"]["commit-detail"];
+                        packageDetail: {
+                            commitHash: string;
+                            packageName: string;
+                            directory: string;
+                            sourceFiles: number;
+                            sourceLines: number;
+                            prodLines: number;
+                            testLines: number;
+                            testFiles: number;
+                            exports: components["schemas"]["export-entry"][];
+                            testCases: components["schemas"]["test-case"][];
+                        };
                     };
                 };
             };
-            /** @description No analysis snapshot found for this commit hash. */
+            /** @description Commit or package not found */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+            /** @description Git command failed */
+            500: {
                 headers: {
                     [name: string]: unknown;
                 };
