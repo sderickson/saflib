@@ -131,3 +131,64 @@ export function useCheckout(subdomain: string) {
     queryFn: () => handleClientMethod(client.GET("/api/checkout")),
   });
 }
+
+export function useRepoFiles(
+  subdomain: string,
+  params: MaybeRefOrGetter<{
+    ref: string;
+    prefix?: string;
+    ext?: string | string[];
+  }>,
+) {
+  const client = createDevSiteClient(subdomain);
+  return useQuery<DevSiteResponseBody["listRepoFiles"][200], TanstackError>({
+    queryKey: ["dev-site", "repo-files", params],
+    enabled: () => Boolean(toValue(params).ref),
+    queryFn: () => {
+      const p = toValue(params);
+      const ext = p.ext
+        ? Array.isArray(p.ext)
+          ? p.ext
+          : [p.ext]
+        : undefined;
+      return handleClientMethod(
+        client.GET("/api/repo/files", {
+          params: {
+            query: {
+              ref: p.ref,
+              prefix: p.prefix,
+              ext,
+            },
+          },
+        }),
+      );
+    },
+  });
+}
+
+export function useRepoFile(
+  subdomain: string,
+  params: MaybeRefOrGetter<{ ref: string; path: string }>,
+) {
+  const client = createDevSiteClient(subdomain);
+  return useQuery<DevSiteResponseBody["getRepoFile"][200], TanstackError>({
+    queryKey: ["dev-site", "repo-file", params],
+    enabled: () => {
+      const p = toValue(params);
+      return Boolean(p.ref && p.path);
+    },
+    queryFn: () => {
+      const p = toValue(params);
+      return handleClientMethod(
+        client.GET("/api/repo/file", {
+          params: {
+            query: {
+              ref: p.ref,
+              path: p.path,
+            },
+          },
+        }),
+      );
+    },
+  });
+}

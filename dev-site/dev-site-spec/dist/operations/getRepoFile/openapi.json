@@ -1,0 +1,102 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "getRepoFile",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/repo/file": {
+      "get": {
+        "summary": "Read a file at a commit",
+        "operationId": "getRepoFile",
+        "tags": [
+          "no-auth"
+        ],
+        "description": "Read the UTF-8 contents of one blob at a commit by repo-relative path. Returns 404 when the path is missing at that ref.\n",
+        "parameters": [
+          {
+            "name": "ref",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Commit hash (or other tree-ish) to read from."
+          },
+          {
+            "name": "path",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Path relative to the repo root."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "File contents",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "path",
+                    "content"
+                  ],
+                  "properties": {
+                    "path": {
+                      "type": "string"
+                    },
+                    "content": {
+                      "type": "string",
+                      "description": "UTF-8 file text."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Path not found at ref",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Git command failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "error": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "A short, machine-readable error code, for when HTTP status codes are not sufficient."
+          },
+          "message": {
+            "type": "string",
+            "description": "A human-readable description of the error.",
+            "example": "The requested resource could not be found."
+          }
+        }
+      }
+    }
+  }
+}

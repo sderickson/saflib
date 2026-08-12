@@ -28,7 +28,7 @@ describe("blob-facts", () => {
           blobHash: hash,
           analyzerVersion: "1",
           lineCount: 3,
-          exports: [{ name: "add", kind: "function", signature: "(a: number)" }],
+          exports: [{ name: "add", kind: "function", signature: "(a: number)", docstring: null }],
           testCases: [],
           computedAt: new Date("2026-01-01T00:00:00Z"),
         },
@@ -37,7 +37,7 @@ describe("blob-facts", () => {
     const listed = await throwError(getByHashes(dbKey, [hash]));
     expect(listed).toHaveLength(1);
     expect(listed[0].exports).toEqual([
-      { name: "add", kind: "function", signature: "(a: number)" },
+      { name: "add", kind: "function", signature: "(a: number)", docstring: null },
     ]);
   });
 
@@ -61,7 +61,7 @@ describe("blob-facts", () => {
           blobHash: hash,
           analyzerVersion: "2",
           lineCount: 2,
-          exports: [{ name: "x", kind: "const", signature: "= 1" }],
+          exports: [{ name: "x", kind: "const", signature: "= 1", docstring: "X value." }],
           testCases: [],
           computedAt: new Date("2026-01-02T00:00:00Z"),
         },
@@ -71,7 +71,7 @@ describe("blob-facts", () => {
     expect(listed[0].analyzerVersion).toBe("2");
     expect(listed[0].lineCount).toBe(2);
     expect(listed[0].exports).toEqual([
-      { name: "x", kind: "const", signature: "= 1" },
+      { name: "x", kind: "const", signature: "= 1", docstring: "X value." },
     ]);
   });
 });

@@ -1,0 +1,49 @@
+getRepoFile:
+  summary: Read a file at a commit
+  operationId: getRepoFile
+  tags:
+    - no-auth
+  description: >
+    Read the UTF-8 contents of one blob at a commit by repo-relative path.
+    Returns 404 when the path is missing at that ref.
+  parameters:
+    - name: ref
+      in: query
+      required: true
+      schema:
+        type: string
+      description: Commit hash (or other tree-ish) to read from.
+    - name: path
+      in: query
+      required: true
+      schema:
+        type: string
+      description: Path relative to the repo root.
+  responses:
+    "200":
+      description: File contents
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+              - path
+              - content
+            properties:
+              path:
+                type: string
+              content:
+                type: string
+                description: UTF-8 file text.
+    "404":
+      description: Path not found at ref
+      content:
+        application/json:
+          schema:
+            $ref: "../../schemas/error.yaml"
+    "500":
+      description: Git command failed
+      content:
+        application/json:
+          schema:
+            $ref: "../../schemas/error.yaml"

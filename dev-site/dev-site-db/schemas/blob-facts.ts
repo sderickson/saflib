@@ -7,6 +7,8 @@ export interface BlobExportFact {
   kind: ExportKind;
   /** Syntactic signature; null for re-exports without a local declaration. */
   signature: string | null;
+  /** First prose line of leading JSDoc; null when absent or for bare re-exports. */
+  docstring: string | null;
 }
 
 export interface BlobTestCaseFact {

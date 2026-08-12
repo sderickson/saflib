@@ -23,6 +23,12 @@ paths:
   /api/checkout:
     get:
       $ref: "./routes/checkout/get.yaml#/getCheckout"
+  /api/repo/files:
+    get:
+      $ref: "./routes/repo/files.yaml#/listRepoFiles"
+  /api/repo/file:
+    get:
+      $ref: "./routes/repo/file.yaml#/getRepoFile"
   # END WORKFLOW AREA
 
 components:

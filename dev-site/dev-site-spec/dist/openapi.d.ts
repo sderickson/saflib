@@ -104,6 +104,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/repo/files": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List files at a commit
+         * @description List blob paths at a commit (git ls-tree), optionally filtered by path prefix and/or file extension(s). Used for browsing docs and source without checking out.
+         */
+        get: operations["listRepoFiles"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/repo/file": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read a file at a commit
+         * @description Read the UTF-8 contents of one blob at a commit by repo-relative path. Returns 404 when the path is missing at that ref.
+         */
+        get: operations["getRepoFile"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -252,6 +292,11 @@ export interface components {
              * @example (repoRoot: string, options?: LogOptions)
              */
             signature: string | null;
+            /**
+             * @description First prose line of the leading JSDoc on the export declaration. Null when absent or for bare re-exports (`export { a }`).
+             * @example Walk commits newest-first without checking out.
+             */
+            docstring: string | null;
         };
         /** @description One `describe`/`it`/`test` case extracted from a test file. `fullName` uses the `" > "` separator from `@saflib/parser` (e.g. `"outer > inner > does the thing"`). Optional `subject*` fields soft-link to an exported symbol by convention (suite title matching an adjacent or same-package export). */
         "test-case": {
@@ -543,6 +588,8 @@ export interface operations {
                         /** Format: date-time */
                         authoredAt: string;
                         analyzed: boolean;
+                        /** @description Analysis path prefix within the repo (e.g. `daemon`). Empty string means the whole repository. Package `directory` values are relative to this prefix; prepend it for repo-absolute paths. */
+                        productRoot: string;
                         packages: {
                             packageName: string;
                             directory: string;
@@ -553,6 +600,96 @@ export interface operations {
                             testFiles: number;
                         }[];
                     };
+                };
+            };
+            /** @description Git command failed */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+        };
+    };
+    listRepoFiles: {
+        parameters: {
+            query: {
+                /** @description Commit hash (or other tree-ish) to list. */
+                ref: string;
+                /** @description Optional path prefix (repo-relative). Matches exact path or descendants (`docs` matches `docs` and `docs/guide.md`). */
+                prefix?: string;
+                /** @description Optional file extension filter (e.g. `.md`). May be repeated (`ext=.md&ext=.txt`) or comma-separated (`ext=.md,.txt`). */
+                ext?: string[];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Matching files at the ref */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        files: {
+                            /** @description Path relative to the repo root. */
+                            path: string;
+                            /** @description Git blob object hash. */
+                            blobHash: string;
+                        }[];
+                    };
+                };
+            };
+            /** @description Git command failed */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
+                };
+            };
+        };
+    };
+    getRepoFile: {
+        parameters: {
+            query: {
+                /** @description Commit hash (or other tree-ish) to read from. */
+                ref: string;
+                /** @description Path relative to the repo root. */
+                path: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description File contents */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        path: string;
+                        /** @description UTF-8 file text. */
+                        content: string;
+                    };
+                };
+            };
+            /** @description Path not found at ref */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
                 };
             };
             /** @description Git command failed */

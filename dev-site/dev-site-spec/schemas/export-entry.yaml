@@ -31,9 +31,17 @@ properties:
       Syntactic display signature from the AST (no type-checker). Null for
       re-exports without a local declaration.
     example: "(repoRoot: string, options?: LogOptions)"
+  docstring:
+    type: string
+    nullable: true
+    description: >
+      First prose line of the leading JSDoc on the export declaration. Null when
+      absent or for bare re-exports (`export { a }`).
+    example: "Walk commits newest-first without checking out."
 required:
   - packageName
   - filePath
   - name
   - kind
   - signature
+  - docstring

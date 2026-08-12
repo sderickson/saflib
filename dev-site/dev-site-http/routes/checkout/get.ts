@@ -6,8 +6,11 @@ import { getDevSiteHttpContext } from "../../context.ts";
 import { getCheckoutStatus } from "../../checkout.ts";
 
 export const getCheckoutHandler = createHandler(async (_req, res) => {
-  const { dbKey, repoRoot } = getDevSiteHttpContext();
-  const { result, error } = await getCheckoutStatus(dbKey, { repoRoot });
+  const { dbKey, repoRoot, productRoot } = getDevSiteHttpContext();
+  const { result, error } = await getCheckoutStatus(dbKey, {
+    repoRoot,
+    productRoot,
+  });
   if (error) {
     switch (true) {
       case error instanceof GitCommandError:

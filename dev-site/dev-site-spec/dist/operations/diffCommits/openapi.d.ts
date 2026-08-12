@@ -101,6 +101,11 @@ export interface components {
              * @example (repoRoot: string, options?: LogOptions)
              */
             signature: string | null;
+            /**
+             * @description First prose line of the leading JSDoc on the export declaration. Null when absent or for bare re-exports (`export { a }`).
+             * @example Walk commits newest-first without checking out.
+             */
+            docstring: string | null;
         };
         /** @description One `describe`/`it`/`test` case extracted from a test file. `fullName` uses the `" > "` separator from `@saflib/parser` (e.g. `"outer > inner > does the thing"`). Optional `subject*` fields soft-link to an exported symbol by convention (suite title matching an adjacent or same-package export). */
         "test-case": {

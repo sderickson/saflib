@@ -5,11 +5,11 @@ import {
   ComparePage,
   HubPage,
   CheckoutPage,
-  PackageMapPage,
   BuildPage,
   commitHealth,
   classifyPackageKind,
   buildPackageTestTree,
+  buildPackageDirTree,
 } from "./index.ts";
 
 describe("@saflib/dev-site-vue", () => {
@@ -19,10 +19,10 @@ describe("@saflib/dev-site-vue", () => {
     expect(ComparePage).toBeDefined();
     expect(HubPage).toBeDefined();
     expect(CheckoutPage).toBeDefined();
-    expect(PackageMapPage).toBeDefined();
     expect(BuildPage).toBeDefined();
     expect(commitHealth).toBeDefined();
     expect(classifyPackageKind).toBeDefined();
     expect(buildPackageTestTree).toBeDefined();
+    expect(buildPackageDirTree).toBeDefined();
   });
 });

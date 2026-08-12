@@ -18,6 +18,11 @@ export interface ExportEntry {
    * `null` when the local declaration has no useful surface (e.g. `export { a }` re-export).
    */
   signature: string | null;
+  /**
+   * First prose line of the leading JSDoc block, or `null` when absent
+   * (including bare re-exports like `export { a }`).
+   */
+  docstring: string | null;
 }
 
 /**

@@ -4,7 +4,7 @@
  */
 
 export interface paths {
-    "/api/checkout": {
+    "/api/repo/files": {
         parameters: {
             query?: never;
             header?: never;
@@ -12,10 +12,10 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Current checkout (HEAD) analysis status
-         * @description Resolve git HEAD and report whether that commit has been analyzed, plus package metrics when it has. Used by the Current checkout UI.
+         * List files at a commit
+         * @description List blob paths at a commit (git ls-tree), optionally filtered by path prefix and/or file extension(s). Used for browsing docs and source without checking out.
          */
-        get: operations["getCheckout"];
+        get: operations["listRepoFiles"];
         put?: never;
         post?: never;
         delete?: never;
@@ -46,37 +46,34 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    getCheckout: {
+    listRepoFiles: {
         parameters: {
-            query?: never;
+            query: {
+                /** @description Commit hash (or other tree-ish) to list. */
+                ref: string;
+                /** @description Optional path prefix (repo-relative). Matches exact path or descendants (`docs` matches `docs` and `docs/guide.md`). */
+                prefix?: string;
+                /** @description Optional file extension filter (e.g. `.md`). May be repeated (`ext=.md&ext=.txt`) or comma-separated (`ext=.md,.txt`). */
+                ext?: string[];
+            };
             header?: never;
             path?: never;
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description Checkout status */
+            /** @description Matching files at the ref */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        hash: string;
-                        message: string;
-                        /** Format: date-time */
-                        authoredAt: string;
-                        analyzed: boolean;
-                        /** @description Analysis path prefix within the repo (e.g. `daemon`). Empty string means the whole repository. Package `directory` values are relative to this prefix; prepend it for repo-absolute paths. */
-                        productRoot: string;
-                        packages: {
-                            packageName: string;
-                            directory: string;
-                            sourceFiles: number;
-                            sourceLines: number;
-                            prodLines: number;
-                            testLines: number;
-                            testFiles: number;
+                        files: {
+                            /** @description Path relative to the repo root. */
+                            path: string;
+                            /** @description Git blob object hash. */
+                            blobHash: string;
                         }[];
                     };
                 };

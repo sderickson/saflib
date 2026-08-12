@@ -17,7 +17,8 @@
     "@saflib/dev-site-spec": "*",
     "@saflib/sdk": "*",
     "@saflib/vue": "*",
-    "@tanstack/vue-query": "*"
+    "@tanstack/vue-query": "*",
+    "marked": "^15.0.12"
   },
   "sideEffects": false
 }

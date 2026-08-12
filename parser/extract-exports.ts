@@ -1,6 +1,8 @@
 import ts from "typescript";
 import type { ExportEntry, ExportKind } from "./types.ts";
 
+const DOCSTRING_MAX_LEN = 200;
+
 /**
  * Extract exported symbols from TypeScript/JavaScript source using the syntactic
  * parser only (`ts.createSourceFile` — no type-checker, no `node_modules`).
@@ -11,7 +13,8 @@ import type { ExportEntry, ExportKind } from "./types.ts";
  * the export clause alone). Skips `export * from` and default-export expressions
  * without a name.
  *
- * Each entry includes a syntactic {@link ExportEntry.signature} for display/diff.
+ * Each entry includes a syntactic {@link ExportEntry.signature} for display/diff
+ * and an optional {@link ExportEntry.docstring} from leading JSDoc.
  */
 export function extractExports(source: string): ExportEntry[] {
   const sf = ts.createSourceFile(
@@ -30,7 +33,12 @@ export function extractExports(source: string): ExportEntry[] {
       if (statement.exportClause && ts.isNamedExports(statement.exportClause)) {
         for (const el of statement.exportClause.elements) {
           // el.name is the exported name (`bee` in `export { b as bee }`).
-          entries.push({ name: el.name.text, kind: "variable", signature: null });
+          entries.push({
+            name: el.name.text,
+            kind: "variable",
+            signature: null,
+            docstring: null,
+          });
         }
       }
       continue;
@@ -38,11 +46,14 @@ export function extractExports(source: string): ExportEntry[] {
 
     if (!hasExportModifier(statement)) continue;
 
+    const docstring = leadingDocstring(sf, statement);
+
     if (ts.isFunctionDeclaration(statement) && statement.name) {
       entries.push({
         name: statement.name.text,
         kind: "function",
         signature: functionLikeSignature(sf, statement),
+        docstring,
       });
       continue;
     }
@@ -51,6 +62,7 @@ export function extractExports(source: string): ExportEntry[] {
         name: statement.name.text,
         kind: "class",
         signature: classSignature(sf, statement),
+        docstring,
       });
       continue;
     }
@@ -59,6 +71,7 @@ export function extractExports(source: string): ExportEntry[] {
         name: statement.name.text,
         kind: "interface",
         signature: typeLiteralSignature(sf, statement),
+        docstring,
       });
       continue;
     }
@@ -67,6 +80,7 @@ export function extractExports(source: string): ExportEntry[] {
         name: statement.name.text,
         kind: "type",
         signature: `= ${compact(statement.type.getText(sf))}`,
+        docstring,
       });
       continue;
     }
@@ -75,6 +89,7 @@ export function extractExports(source: string): ExportEntry[] {
         name: statement.name.text,
         kind: "enum",
         signature: enumSignature(sf, statement),
+        docstring,
       });
       continue;
     }
@@ -86,6 +101,8 @@ export function extractExports(source: string): ExportEntry[] {
             name: decl.name.text,
             kind,
             signature: variableSignature(sf, decl),
+            // JSDoc lives on the variable statement, not each declarator.
+            docstring,
           });
         }
       }
@@ -93,6 +110,38 @@ export function extractExports(source: string): ExportEntry[] {
   }
 
   return entries;
+}
+
+/**
+ * First prose line of a leading JSDoc block on `node`, or `null`.
+ * Skips `@tags`; prefers `/**` over `//` / plain block comments.
+ */
+function leadingDocstring(sf: ts.SourceFile, node: ts.Node): string | null {
+  const text = sf.getFullText();
+  const ranges = ts.getLeadingCommentRanges(text, node.getFullStart());
+  if (!ranges?.length) return null;
+
+  // Prefer the last /** ... */ closest to the declaration.
+  let jsdoc: string | undefined;
+  for (const range of ranges) {
+    const comment = text.slice(range.pos, range.end);
+    if (comment.startsWith("/**")) {
+      jsdoc = comment;
+    }
+  }
+  if (!jsdoc) return null;
+
+  const body = jsdoc.replace(/^\/\*\*?/, "").replace(/\*\/$/, "");
+  for (const rawLine of body.split("\n")) {
+    let line = rawLine.replace(/^\s*\*\s?/, "").trim();
+    if (!line || line.startsWith("@")) continue;
+    line = compact(line);
+    if (!line) continue;
+    return line.length > DOCSTRING_MAX_LEN
+      ? line.slice(0, DOCSTRING_MAX_LEN)
+      : line;
+  }
+  return null;
 }
 
 function hasExportModifier(node: ts.Node): boolean {

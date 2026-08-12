@@ -95,6 +95,7 @@ const mockDiff: DiffResponse = {
           name: "b",
           kind: "const",
           signature: "= 1",
+          docstring: null,
         },
       ],
       removed: [],

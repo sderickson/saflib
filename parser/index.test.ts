@@ -17,21 +17,24 @@ describe("extractExports", () => {
         name: "greet",
         kind: "function",
         signature: "(name: string)",
+        docstring: null,
       },
       {
         name: "Greeter",
         kind: "class",
         signature: "constructor(public x: number)",
+        docstring: null,
       },
       {
         name: "Person",
         kind: "interface",
         signature: "{ name: string }",
+        docstring: null,
       },
-      { name: "Id", kind: "type", signature: "= string" },
-      { name: "VERSION", kind: "const", signature: "= 1" },
-      { name: "Color", kind: "enum", signature: "{ Red, Green }" },
-      { name: "mutable", kind: "variable", signature: "= 0" },
+      { name: "Id", kind: "type", signature: "= string", docstring: null },
+      { name: "VERSION", kind: "const", signature: "= 1", docstring: null },
+      { name: "Color", kind: "enum", signature: "{ Red, Green }", docstring: null },
+      { name: "mutable", kind: "variable", signature: "= 0", docstring: null },
     ]);
   });
 
@@ -44,6 +47,7 @@ describe("extractExports", () => {
         name: "add",
         kind: "const",
         signature: "(a: number, b: number): number",
+        docstring: null,
       },
     ]);
   });
@@ -55,8 +59,8 @@ describe("extractExports", () => {
       export { a, b as bee };
     `;
     expect(extractExports(source)).toEqual([
-      { name: "a", kind: "variable", signature: null },
-      { name: "bee", kind: "variable", signature: null },
+      { name: "a", kind: "variable", signature: null, docstring: null },
+      { name: "bee", kind: "variable", signature: null, docstring: null },
     ]);
   });
 
@@ -67,13 +71,51 @@ describe("extractExports", () => {
       export const y = 2;
     `;
     expect(extractExports(source)).toEqual([
-      { name: "y", kind: "const", signature: "= 2" },
+      { name: "y", kind: "const", signature: "= 2", docstring: null },
     ]);
   });
 
   it("returns an empty array when there are no exports", () => {
     expect(extractExports("const x = 1;\n")).toEqual([]);
     expect(extractExports("")).toEqual([]);
+  });
+
+  it("extracts first prose line of leading JSDoc", () => {
+    const source = `
+      /**
+       * Greets someone by name.
+       * @param name who to greet
+       */
+      export function greet(name: string) { return name; }
+
+      /** Version constant. */
+      export const VERSION = 1;
+
+      /**
+       * @deprecated
+       */
+      export type Id = string;
+    `;
+    expect(extractExports(source)).toEqual([
+      {
+        name: "greet",
+        kind: "function",
+        signature: "(name: string)",
+        docstring: "Greets someone by name.",
+      },
+      {
+        name: "VERSION",
+        kind: "const",
+        signature: "= 1",
+        docstring: "Version constant.",
+      },
+      {
+        name: "Id",
+        kind: "type",
+        signature: "= string",
+        docstring: null,
+      },
+    ]);
   });
 });
 

@@ -294,6 +294,7 @@
                     "message",
                     "authoredAt",
                     "analyzed",
+                    "productRoot",
                     "packages"
                   ],
                   "properties": {
@@ -309,6 +310,10 @@
                     },
                     "analyzed": {
                       "type": "boolean"
+                    },
+                    "productRoot": {
+                      "type": "string",
+                      "description": "Analysis path prefix within the repo (e.g. `daemon`). Empty string means the whole repository. Package `directory` values are relative to this prefix; prepend it for repo-absolute paths.\n"
                     },
                     "packages": {
                       "type": "array",
@@ -349,6 +354,172 @@
                       }
                     }
                   }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Git command failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/repo/files": {
+      "get": {
+        "summary": "List files at a commit",
+        "operationId": "listRepoFiles",
+        "tags": [
+          "no-auth"
+        ],
+        "description": "List blob paths at a commit (git ls-tree), optionally filtered by path prefix and/or file extension(s). Used for browsing docs and source without checking out.\n",
+        "parameters": [
+          {
+            "name": "ref",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Commit hash (or other tree-ish) to list."
+          },
+          {
+            "name": "prefix",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Optional path prefix (repo-relative). Matches exact path or descendants (`docs` matches `docs` and `docs/guide.md`).\n"
+          },
+          {
+            "name": "ext",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "style": "form",
+            "explode": true,
+            "description": "Optional file extension filter (e.g. `.md`). May be repeated (`ext=.md&ext=.txt`) or comma-separated (`ext=.md,.txt`).\n"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Matching files at the ref",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "files"
+                  ],
+                  "properties": {
+                    "files": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "path",
+                          "blobHash"
+                        ],
+                        "properties": {
+                          "path": {
+                            "type": "string",
+                            "description": "Path relative to the repo root."
+                          },
+                          "blobHash": {
+                            "type": "string",
+                            "description": "Git blob object hash."
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Git command failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/repo/file": {
+      "get": {
+        "summary": "Read a file at a commit",
+        "operationId": "getRepoFile",
+        "tags": [
+          "no-auth"
+        ],
+        "description": "Read the UTF-8 contents of one blob at a commit by repo-relative path. Returns 404 when the path is missing at that ref.\n",
+        "parameters": [
+          {
+            "name": "ref",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Commit hash (or other tree-ish) to read from."
+          },
+          {
+            "name": "path",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Path relative to the repo root."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "File contents",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "path",
+                    "content"
+                  ],
+                  "properties": {
+                    "path": {
+                      "type": "string"
+                    },
+                    "content": {
+                      "type": "string",
+                      "description": "UTF-8 file text."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Path not found at ref",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/error"
                 }
               }
             }
@@ -681,6 +852,12 @@
             "nullable": true,
             "description": "Syntactic display signature from the AST (no type-checker). Null for re-exports without a local declaration.\n",
             "example": "(repoRoot: string, options?: LogOptions)"
+          },
+          "docstring": {
+            "type": "string",
+            "nullable": true,
+            "description": "First prose line of the leading JSDoc on the export declaration. Null when absent or for bare re-exports (`export { a }`).\n",
+            "example": "Walk commits newest-first without checking out."
           }
         },
         "required": [
@@ -688,7 +865,8 @@
           "filePath",
           "name",
           "kind",
-          "signature"
+          "signature",
+          "docstring"
         ]
       },
       "test-case": {

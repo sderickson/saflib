@@ -19,6 +19,8 @@ export interface CheckoutStatus {
   message: string;
   authoredAt: string;
   analyzed: boolean;
+  /** Path prefix used when analyzing (e.g. `daemon`). Empty = whole repo. */
+  productRoot: string;
   packages: CheckoutPackage[];
 }
 
@@ -29,8 +31,9 @@ export type GetCheckoutError = GitCommandError;
  */
 export async function getCheckoutStatus(
   dbKey: DbKey,
-  options: { repoRoot: string },
+  options: { repoRoot: string; productRoot?: string },
 ): Promise<ReturnsError<CheckoutStatus, GetCheckoutError>> {
+  const productRoot = (options.productRoot ?? "").replace(/^\/+|\/+$/g, "");
   const head = resolveRef(options.repoRoot, "HEAD");
   if (head.error) return { error: head.error };
 
@@ -54,6 +57,7 @@ export async function getCheckoutStatus(
         message: tip.subject,
         authoredAt: tip.authoredAt,
         analyzed: false,
+        productRoot,
         packages: [],
       },
     };
@@ -66,6 +70,7 @@ export async function getCheckoutStatus(
       message: tip.subject,
       authoredAt: tip.authoredAt,
       analyzed: true,
+      productRoot,
       packages: metrics.map((m) => ({
         packageName: m.packageName,
         directory: m.directory,

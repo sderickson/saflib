@@ -4,7 +4,7 @@
  */
 
 export interface paths {
-    "/api/checkout": {
+    "/api/repo/file": {
         parameters: {
             query?: never;
             header?: never;
@@ -12,10 +12,10 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Current checkout (HEAD) analysis status
-         * @description Resolve git HEAD and report whether that commit has been analyzed, plus package metrics when it has. Used by the Current checkout UI.
+         * Read a file at a commit
+         * @description Read the UTF-8 contents of one blob at a commit by repo-relative path. Returns 404 when the path is missing at that ref.
          */
-        get: operations["getCheckout"];
+        get: operations["getRepoFile"];
         put?: never;
         post?: never;
         delete?: never;
@@ -46,39 +46,40 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    getCheckout: {
+    getRepoFile: {
         parameters: {
-            query?: never;
+            query: {
+                /** @description Commit hash (or other tree-ish) to read from. */
+                ref: string;
+                /** @description Path relative to the repo root. */
+                path: string;
+            };
             header?: never;
             path?: never;
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description Checkout status */
+            /** @description File contents */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        hash: string;
-                        message: string;
-                        /** Format: date-time */
-                        authoredAt: string;
-                        analyzed: boolean;
-                        /** @description Analysis path prefix within the repo (e.g. `daemon`). Empty string means the whole repository. Package `directory` values are relative to this prefix; prepend it for repo-absolute paths. */
-                        productRoot: string;
-                        packages: {
-                            packageName: string;
-                            directory: string;
-                            sourceFiles: number;
-                            sourceLines: number;
-                            prodLines: number;
-                            testLines: number;
-                            testFiles: number;
-                        }[];
+                        path: string;
+                        /** @description UTF-8 file text. */
+                        content: string;
                     };
+                };
+            };
+            /** @description Path not found at ref */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
                 };
             };
             /** @description Git command failed */

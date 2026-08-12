@@ -26,6 +26,7 @@ describe("linkTestSubjects", () => {
       name: "log",
       kind: "function",
       signature: "(repoRoot: string)",
+      docstring: null,
     },
     {
       packageName: "@saflib/git",
@@ -33,6 +34,7 @@ describe("linkTestSubjects", () => {
       name: "readBlobs",
       kind: "function",
       signature: "(repoRoot: string, hashes: string[])",
+      docstring: null,
     },
   ];
 

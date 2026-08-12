@@ -18,6 +18,7 @@ getCheckout:
               - message
               - authoredAt
               - analyzed
+              - productRoot
               - packages
             properties:
               hash:
@@ -29,6 +30,12 @@ getCheckout:
                 format: date-time
               analyzed:
                 type: boolean
+              productRoot:
+                type: string
+                description: >
+                  Analysis path prefix within the repo (e.g. `daemon`). Empty
+                  string means the whole repository. Package `directory` values
+                  are relative to this prefix; prepend it for repo-absolute paths.
               packages:
                 type: array
                 items:

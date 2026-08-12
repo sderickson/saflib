@@ -167,6 +167,7 @@ export async function diffCommits(
         name: e.name,
         kind: e.kind,
         signature: e.signature,
+        docstring: e.docstring,
       })),
       removed: exportDiff.removed.map((e) => ({
         packageName: e.packageName,
@@ -174,6 +175,7 @@ export async function diffCommits(
         name: e.name,
         kind: e.kind,
         signature: e.signature,
+        docstring: e.docstring,
       })),
     },
     testCases: {

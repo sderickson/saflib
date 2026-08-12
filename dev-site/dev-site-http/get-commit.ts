@@ -102,6 +102,7 @@ export async function getCommit(
       name: e.name,
       kind: e.kind,
       signature: e.signature,
+      docstring: e.docstring,
     })),
     testCases: testRows.map(toApiTestCase),
   };

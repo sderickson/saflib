@@ -25,7 +25,7 @@ import {
 } from "./classify.ts";
 import { linkTestSubjects } from "./link-test-subjects.ts";
 
-export const ANALYZER_VERSION = "2";
+export const ANALYZER_VERSION = "3";
 
 export interface AnalyzeCommitOptions {
   repoRoot: string;
@@ -41,6 +41,7 @@ export interface AnalyzedExport {
   name: string;
   kind: InsertBlobFactParams["exports"][number]["kind"];
   signature: string | null;
+  docstring: string | null;
 }
 
 export interface AnalyzedTestCase {
@@ -267,6 +268,7 @@ export async function analyzeCommit(
           name: exp.name,
           kind: exp.kind,
           signature: exp.signature ?? null,
+          docstring: exp.docstring ?? null,
         });
       }
     }

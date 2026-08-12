@@ -41,6 +41,7 @@ const mockDetail: GetResponse = {
         name: "add",
         kind: "function",
         signature: "(a: number, b: number)",
+        docstring: null,
       },
     ],
     testCases: [
