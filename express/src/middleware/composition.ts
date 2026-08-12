@@ -7,6 +7,7 @@ import { everyRequestLogger, unsafeRequestLogger } from "./httpLogger.ts";
 import { createOpenApiValidator } from "./openapi.ts";
 import helmet from "helmet";
 import { healthRouter } from "./health.ts";
+import { createDevLogsRouter } from "../dev-logs-router.ts";
 import { makeContextMiddleware } from "./context.ts";
 import { blockHtml } from "./blockHtml.ts";
 import { metricsMiddleware } from "./metrics.ts";
@@ -68,6 +69,8 @@ export const createGlobalMiddleware = (
     helmet(),
     makeCsrfTokenMiddleware(),
     healthRouter,
+    // Development Winston ring buffer (403 unless DEPLOYMENT_NAME=development).
+    createDevLogsRouter(),
     everyRequestLogger,
     json(jsonLimit ? { limit: jsonLimit } : undefined),
     urlencoded({ extended: false }),
@@ -134,7 +137,9 @@ export const createScopedMiddleware = (
 
   return [
     ...openApiValidatorMiddleware,
-    makeCsrfMiddleware(),
+    // CSRF reads OpenAPI tags (`no-auth`, `csrf-exempt`); only mount when a
+    // validator will attach `req.openapi.schema` on this chain.
+    ...(apiSpec ? [makeCsrfMiddleware()] : []),
     makeContextMiddleware(),
     unsafeRequestLogger,
     ...authMiddleware,

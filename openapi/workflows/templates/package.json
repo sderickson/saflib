@@ -8,11 +8,11 @@
     "./schemas/*": "./dist/schemas/*/index.ts"
   },
   "scripts": {
+    "build": "saf-specs generate -f openapi.yaml -o dist",
     "typecheck": "tsc -b"
   },
   "dependencies": {
-    "@saflib/openapi": "*",
-    "openapi-typescript": "*"
+    "@saflib/openapi": "*"
   },
   "sideEffects": false
 }

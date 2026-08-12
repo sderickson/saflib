@@ -19,6 +19,37 @@ const hosts = subdomains.map((subdomain) =>
   subdomain === "" ? domain : `${subdomain}.${domain}`,
 );
 
+/** SPA origins for local docker/Caddy (skip ops UIs that aren't Vite apps). */
+function clientAccessUrls(): string[] {
+  const protocol = typedEnv.PROTOCOL ?? "http";
+  const skip = new Set(["grafana"]);
+  if (!domain || !typedEnv.CLIENT_SUBDOMAINS) return [];
+  return typedEnv.CLIENT_SUBDOMAINS.split(",")
+    .map((s) => s.trim())
+    .filter((s) => !skip.has(s))
+    .map((sub) =>
+      sub === "" ? `${protocol}://${domain}/` : `${protocol}://${sub}.${domain}/`,
+    );
+}
+
+/**
+ * Replace Vite's Local/Network (container IP) banner with Caddy SPA links.
+ */
+const printClientAccessUrlsPlugin: Plugin = {
+  name: "print-client-access-urls",
+  configureServer(server) {
+    const urls = clientAccessUrls();
+    if (urls.length === 0) return;
+    const { printUrls } = server;
+    server.printUrls = () => {
+      const previous = server.resolvedUrls;
+      server.resolvedUrls = { local: urls, network: [] };
+      printUrls();
+      server.resolvedUrls = previous;
+    };
+  },
+};
+
 const subDomainProxyPlugin: Plugin = {
   name: "sub-domain-proxy",
   configureServer(server) {
@@ -122,6 +153,7 @@ export function makeConfig(config: MakeConfigProps = {}) {
         ? [workspacePackageExportsPlugin({ monorepoRoot })]
         : []),
       ...(config.useSubdomainProxy !== false ? [subDomainProxyPlugin] : []),
+      printClientAccessUrlsPlugin,
       ...extraPlugins,
     ],
     build: {

@@ -4,13 +4,43 @@ import { type SafContext } from "./types.ts";
 import { getServiceName, testContext } from "./context.ts";
 import { typedEnv } from "../env.ts";
 import { formatCompactTimestamp } from "./logFormat.ts";
+import {
+  createDevLogBufferTransport,
+  enableDevLogBuffer,
+} from "./devLogBuffer.ts";
 
 type WinstonLogger = Logger;
 
-const consoleLevel = typedEnv.LOG_LEVEL ?? "info";
+const LEVEL_ORDER = [
+  "error",
+  "warn",
+  "info",
+  "verbose",
+  "debug",
+  "silly",
+] as const;
+
+type LogLevel = (typeof LEVEL_ORDER)[number];
+
+const consoleLevel = (typedEnv.LOG_LEVEL ?? "info") as LogLevel;
+const isDevelopment = typedEnv.DEPLOYMENT_NAME === "development";
+
+/**
+ * In development, keep the logger at least at `info` so the in-memory buffer
+ * captures startup/request logs while the console can stay quieter via LOG_LEVEL.
+ */
+function resolveLoggerLevel(): LogLevel {
+  if (!isDevelopment) return consoleLevel;
+  const consoleIdx = LEVEL_ORDER.indexOf(consoleLevel);
+  const infoIdx = LEVEL_ORDER.indexOf("info");
+  return LEVEL_ORDER[Math.max(consoleIdx, infoIdx)] ?? "info";
+}
+
+const loggerLevel = resolveLoggerLevel();
 
 const consoleTransport = new winston.transports.Console({
   silent: typedEnv.NODE_ENV === "test",
+  level: consoleLevel,
 });
 
 const compactTimestamp = format((info) => {
@@ -19,7 +49,7 @@ const compactTimestamp = format((info) => {
 });
 
 const baseLogger = winston.createLogger({
-  level: consoleLevel,
+  level: loggerLevel,
   transports: [consoleTransport],
   format: format.combine(
     compactTimestamp(),
@@ -32,6 +62,11 @@ const baseLogger = winston.createLogger({
     ),
   ),
 });
+
+if (isDevelopment) {
+  enableDevLogBuffer({ capacity: 1000 });
+  baseLogger.add(createDevLogBufferTransport());
+}
 
 /**
  * For production, when the application starts, it should add any transports using this function. Then all SAF-based applications will log to winston and they'll propagate to loggers such as Loki.
@@ -81,7 +116,7 @@ export const createLogger = (options?: LoggerOptions): WinstonLogger => {
   };
   if (options.format) {
     return winston.createLogger({
-      level: consoleLevel,
+      level: loggerLevel,
       transports: [consoleTransport],
       format: options.format,
     });

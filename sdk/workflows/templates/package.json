@@ -16,9 +16,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "typecheck": "vue-tsc -b",
-    "dev": "NODE_OPTIONS='--experimental-strip-types --disable-warning=ExperimentalWarning' vite",
-    "dev-docker": "npm exec saf-docker generate && docker compose up --build"
+    "typecheck": "vue-tsc -b"
   },
   "devDependencies": {
     "@saflib/vitest": "*",
@@ -28,7 +26,6 @@
     "@saflib/monorepo": "*",
     "@saflib/sdk": "*",
     "template-package-spec": "*",
-    "@saflib/vite": "*",
     "@saflib/vue": "*",
     "@saflib/ory-kratos-sdk": "*",
     "msw": "^2.11.3"

@@ -53,14 +53,28 @@ Generated files. These are checked into the repo, per [best-practices](../../bes
 
 `saf-specs generate` deletes the entire output directory before writing, so removed routes and schemas do not leave stale fragments in `dist/`.
 
+From a spec package (with `@saflib/openapi` depended on and a `build` script), run:
+
 ```bash
-npm run saf-specs generate
+npm run build
+```
+
+Or invoke the bin directly:
+
+```bash
+saf-specs generate
 ```
 
 To generate HTML docs as well, run
 
 ```bash
-npm run saf-specs generate -- --html
+saf-specs generate --html
+```
+
+From outside the package (or in agent workflows), use `npm exec`:
+
+```bash
+npm exec saf-specs generate
 ```
 
 ### `events/`

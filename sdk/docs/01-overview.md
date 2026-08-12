@@ -53,6 +53,8 @@ There may be more folders, such as for:
 
 At minimum, the packages should provide the means to make API requests to a service, and and to test on a fake version of the service.
 
+SDK packages are libraries consumed by SPAs — they are **not** standalone Vite apps. Do not add `dev` / `dev-docker` scripts, `vite.config.ts`, `index.html`, or Docker harnesses here; develop SDK UI through the product SPA packages and Vitest (`test-app`).
+
 Because this package is essentially a package of frontend tools for a service, the package should be named `{service-name}-sdk`, and live and be owned with the other packages for the service.
 
 ## Files and Directories Explained

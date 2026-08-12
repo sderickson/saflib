@@ -26,6 +26,12 @@ http://account.docker.localhost {
 
 http://api.docker.localhost {
 	import cors docker.localhost
+	@public_monolith path /health /dev/logs /dev/logs/stream
+	handle @public_monolith {
+		reverse_proxy monolith:3001 {
+			import reverse_proxy_common
+		}
+	}
 	import kratos-api-proxy monolith:3001
 }
 

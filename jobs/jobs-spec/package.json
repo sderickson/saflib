@@ -3,14 +3,16 @@
   "description": "API specs for the jobs service",
   "type": "module",
   "exports": {
-    ".": "./index.ts"
+    ".": "./index.ts",
+    "./operations/*": "./dist/operations/*/index.ts",
+    "./schemas/*": "./dist/schemas/*/index.ts"
   },
   "scripts": {
+    "build": "saf-specs generate -f openapi.yaml -o dist",
     "typecheck": "tsc"
   },
   "dependencies": {
-    "@saflib/openapi": "*",
-    "openapi-typescript": "*"
+    "@saflib/openapi": "*"
   },
   "sideEffects": false
 }
