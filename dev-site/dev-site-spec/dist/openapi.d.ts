@@ -436,7 +436,10 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": {
-                    /** @description Max new mainline commits to analyze this run. */
+                    /**
+                     * @description Max new mainline commits to analyze this run (default 1). Feature-branch tips are skipped when limit is set.
+                     * @default 1
+                     */
                     limit?: number;
                 };
             };

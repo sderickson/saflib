@@ -6,6 +6,8 @@ export interface DevSiteHttpContext {
   repoRoot: string;
   productRoot: string;
   mainRef: string;
+  /** On-disk sqlite path when available; undefined for `:memory:`. */
+  dbPath?: string;
 }
 
 export const devSiteHttpStorage = new AsyncLocalStorage<DevSiteHttpContext>();

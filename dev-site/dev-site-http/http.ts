@@ -70,6 +70,7 @@ export function createDevSiteHttpApp(
   const repoRoot = options.repoRoot ?? process.cwd();
   const productRoot = options.productRoot ?? "";
   const mainRef = options.mainRef ?? "main";
+  const dbPath = devSiteDb.getDbPath(dbKey!);
 
   const app = express();
   app.use(
@@ -81,7 +82,7 @@ export function createDevSiteHttpApp(
 
   app.use((_req, _res, next) => {
     devSiteHttpStorage.run(
-      { dbKey: dbKey!, repoRoot, productRoot, mainRef },
+      { dbKey: dbKey!, repoRoot, productRoot, mainRef, dbPath },
       () => next(),
     );
   });

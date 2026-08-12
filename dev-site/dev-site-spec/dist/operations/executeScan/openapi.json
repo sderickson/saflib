@@ -25,7 +25,8 @@
                   "limit": {
                     "type": "integer",
                     "minimum": 1,
-                    "description": "Max new mainline commits to analyze this run."
+                    "default": 1,
+                    "description": "Max new mainline commits to analyze this run (default 1). Feature-branch tips are skipped when limit is set.\n"
                   }
                 }
               }

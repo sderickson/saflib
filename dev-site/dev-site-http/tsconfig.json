@@ -17,6 +17,9 @@
       "path": "../../monorepo"
     },
     {
+      "path": "../../node"
+    },
+    {
       "path": "../../parser"
     },
     {

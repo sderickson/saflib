@@ -6,16 +6,21 @@ import type {
 import createError from "http-errors";
 import { GitCommandError } from "@saflib/git";
 import { getDevSiteHttpContext } from "../../context.ts";
-import { scanCommits } from "../../scan.ts";
+import {
+  DEFAULT_HTTP_SCAN_LIMIT,
+  dispatchScan,
+} from "../../scan-dispatch.ts";
 
 export const executeScanHandler = createHandler(async (req, res) => {
-  const { dbKey, repoRoot, productRoot, mainRef } = getDevSiteHttpContext();
+  const { dbKey, repoRoot, productRoot, mainRef, dbPath } =
+    getDevSiteHttpContext();
   const body = (req.body ?? {}) as NonNullable<RequestBody["executeScan"]>;
-  const { result, error } = await scanCommits(dbKey, {
+  const { result, error } = await dispatchScan(dbKey, {
     repoRoot,
     productRoot,
     mainRef,
-    limit: body.limit,
+    dbPath,
+    limit: body.limit ?? DEFAULT_HTTP_SCAN_LIMIT,
   });
   if (error) {
     switch (true) {

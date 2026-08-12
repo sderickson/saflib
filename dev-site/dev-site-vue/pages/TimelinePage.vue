@@ -118,9 +118,8 @@ const {
 } = useScanMutation(props.subdomain);
 
 const runScan = () => {
-  // Bounded batch so the UI stays responsive on large histories.
-  // Re-click Scan to continue from the latest stored commit.
-  scan({ limit: 10 });
+  // One commit per click — analysis is CPU-heavy; the API runs it in a worker.
+  scan({ limit: 1 });
 };
 
 const shortHash = (hash: string) => hash.slice(0, 10);

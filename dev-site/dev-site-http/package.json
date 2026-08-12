@@ -25,6 +25,7 @@
     "@saflib/express": "*",
     "@saflib/git": "*",
     "@saflib/monorepo": "*",
+    "@saflib/node": "*",
     "@saflib/parser": "*",
     "http-errors": "*"
   },
