@@ -1,18 +1,36 @@
-// TODO: Add types for your database package
-// These are typically re-exports of Drizzle's $inferInsert or $inferSelect,
-// or altered versions of those using Pick or Omit
+export type {
+  AnalyzedCommitEntity,
+  AnalyzedCommitRef,
+  AnalyzedCommitRefType,
+  AnalyzedCommitStatus,
+} from "./schemas/analyzed-commits.ts";
+export type {
+  PackageMetricsEntity,
+} from "./schemas/package-metrics.ts";
+export type {
+  ExportEntity,
+  ExportKind,
+} from "./schemas/exports.ts";
+export type {
+  TestCaseEntity,
+} from "./schemas/test-cases.ts";
 
-export type * from "./schema.ts";
+export type InsertAnalyzedCommitParams = Omit<
+  import("./schemas/analyzed-commits.ts").AnalyzedCommitEntity,
+  never
+>;
 
-// Stubs are used as placeholders for templates
-export type StubEntity = any;
-export type StubParams = any;
+export type InsertPackageMetricsParams = Omit<
+  import("./schemas/package-metrics.ts").PackageMetricsEntity,
+  "id"
+>;
 
-// Re-export commonly used types for convenience
-// Example:
-// import type { ExampleEntity } from "./schemas/example.ts";
-// export type { ExampleEntity };
-// export type CreateExampleParams = Omit<
-//   ExampleEntity,
-//   "id" | "createdAt" | "updatedAt"
-// >;
+export type InsertExportParams = Omit<
+  import("./schemas/exports.ts").ExportEntity,
+  "id"
+>;
+
+export type InsertTestCaseParams = Omit<
+  import("./schemas/test-cases.ts").TestCaseEntity,
+  "id"
+>;

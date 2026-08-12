@@ -5,5 +5,4 @@ import { HandledDatabaseError } from "@saflib/drizzle";
  */
 export class DevSiteDatabaseError extends HandledDatabaseError {}
 
-// TODO: Add specific error classes for your database
-export class StubError extends DevSiteDatabaseError {}
+export class AnalyzedCommitNotFoundError extends DevSiteDatabaseError {}
