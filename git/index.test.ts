@@ -16,6 +16,7 @@ import {
   listTree,
   log,
   readBlob,
+  readBlobs,
 } from "./index.ts";
 
 function git(repoRoot: string, args: string[]): string {
@@ -174,6 +175,22 @@ describe("@saflib/git", () => {
       );
       expect(result).toBeUndefined();
       expect(error).toBeInstanceOf(GitCommandError);
+    });
+  });
+
+  describe("readBlobs", () => {
+    it("batch-reads multiple blobs", () => {
+      const tree = listTree(repoRoot, commit3);
+      const a = tree.result!.find((e) => e.path === "a.txt")!;
+      const b = tree.result!.find((e) => e.path === "src/b.ts")!;
+      const { result, error } = readBlobs(repoRoot, [
+        a.blobHash,
+        b.blobHash,
+        a.blobHash,
+      ]);
+      expect(error).toBeUndefined();
+      expect(result!.get(a.blobHash)).toBe("alpha\nbeta\n");
+      expect(result!.get(b.blobHash)).toBe("export const b = 1;\n");
     });
   });
 });

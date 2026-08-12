@@ -1,148 +1,146 @@
-import { beforeAll, afterAll, beforeEach, describe, it, expect } from "vitest";
+import {
+  beforeAll,
+  afterAll,
+  beforeEach,
+  describe,
+  it,
+  expect,
+} from "vitest";
 import request from "supertest";
-import { analyzedCommitsDb } from "@saflib/dev-site-db/queries/analyzed-commits/index";
-import { packageMetricsDb } from "@saflib/dev-site-db/queries/package-metrics/index";
-import { exportsDb } from "@saflib/dev-site-db/queries/exports/index";
-import { testCasesDb } from "@saflib/dev-site-db/queries/test-cases/index";
+import { mkdtempSync, rmSync, writeFileSync, mkdirSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { execFileSync } from "node:child_process";
 import { throwError } from "@saflib/monorepo";
 import { createCommitsRouter } from "./index.ts";
-import {
-  acquireRouterSlimRouteTest,
-  releaseSlimRouteTest,
-  type SlimRouteTestContext,
-} from "../../testing/slim-route-test.ts";
+import { createDevSiteHttpApp } from "../../http.ts";
+import { releaseSlimRouteTest } from "../../testing/slim-route-test.ts";
+import type { DevSiteHttpAppLease } from "../../http.ts";
+import { devSiteDbManager } from "@saflib/dev-site-db/instances";
+import { scanCommits } from "../../scan.ts";
 
-const HASH_A = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
-const HASH_B = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
-
-async function seedTwoCommits(dbKey: SlimRouteTestContext["dbKey"]) {
-  await throwError(
-    analyzedCommitsDb.insert(dbKey, {
-      hash: HASH_A,
-      parentHashes: [],
-      authoredAt: new Date("2026-01-01T00:00:00.000Z"),
-      message: "first",
-      refs: [],
-      analyzerVersion: "1",
-      computedAt: new Date("2026-01-01T01:00:00.000Z"),
-      status: "complete",
-    }),
-  );
-  await throwError(
-    analyzedCommitsDb.insert(dbKey, {
-      hash: HASH_B,
-      parentHashes: [HASH_A],
-      authoredAt: new Date("2026-01-02T00:00:00.000Z"),
-      message: "second",
-      refs: [{ name: "main", type: "branch", isMainAncestor: true }],
-      analyzerVersion: "1",
-      computedAt: new Date("2026-01-02T01:00:00.000Z"),
-      status: "complete",
-    }),
-  );
-  await throwError(
-    packageMetricsDb.insertMany(dbKey, [
-      {
-        commitHash: HASH_A,
-        packageName: "@fixture/root",
-        directory: "",
-        sourceFiles: 1,
-        sourceLines: 10,
-        prodLines: 10,
-        testLines: 0,
-        testFiles: 0,
-      },
-      {
-        commitHash: HASH_B,
-        packageName: "@fixture/root",
-        directory: "",
-        sourceFiles: 2,
-        sourceLines: 20,
-        prodLines: 15,
-        testLines: 5,
-        testFiles: 1,
-      },
-    ]),
-  );
-  await throwError(
-    exportsDb.insertMany(dbKey, [
-      {
-        commitHash: HASH_A,
-        packageName: "@fixture/root",
-        filePath: "src/a.ts",
-        name: "a",
-        kind: "function",
-      },
-      {
-        commitHash: HASH_B,
-        packageName: "@fixture/root",
-        filePath: "src/a.ts",
-        name: "a",
-        kind: "function",
-      },
-      {
-        commitHash: HASH_B,
-        packageName: "@fixture/root",
-        filePath: "src/b.ts",
-        name: "b",
-        kind: "const",
-      },
-    ]),
-  );
-  await throwError(
-    testCasesDb.insertMany(dbKey, [
-      {
-        commitHash: HASH_B,
-        packageName: "@fixture/root",
-        filePath: "src/a.test.ts",
-        fullName: "a > works",
-      },
-    ]),
-  );
+function git(repoRoot: string, args: string[]): string {
+  return execFileSync("git", args, {
+    cwd: repoRoot,
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "pipe"],
+    env: {
+      ...process.env,
+      GIT_AUTHOR_NAME: "Test",
+      GIT_AUTHOR_EMAIL: "test@example.com",
+      GIT_COMMITTER_NAME: "Test",
+      GIT_COMMITTER_EMAIL: "test@example.com",
+    },
+  }).trim();
 }
 
 describe("commits routes", () => {
-  let ctx: SlimRouteTestContext;
+  let lease: DevSiteHttpAppLease;
+  let repoRoot: string;
+  let commit1: string;
+  let commit2: string;
 
   beforeAll(() => {
-    ctx = acquireRouterSlimRouteTest(createCommitsRouter);
+    repoRoot = mkdtempSync(join(tmpdir(), "dev-site-commits-route-"));
+    git(repoRoot, ["init"]);
+    git(repoRoot, ["checkout", "-b", "main"]);
+    writeFileSync(
+      join(repoRoot, "package.json"),
+      JSON.stringify({ name: "@fixture/root" }),
+    );
+    mkdirSync(join(repoRoot, "src"));
+    writeFileSync(
+      join(repoRoot, "src/math.ts"),
+      "export function add(a: number, b: number) { return a + b; }\n",
+    );
+    writeFileSync(
+      join(repoRoot, "src/math.test.ts"),
+      'import { describe, it } from "vitest";\ndescribe("math", () => {\n  it("adds", () => {});\n});\n',
+    );
+    git(repoRoot, ["add", "."]);
+    execFileSync("git", ["commit", "-m", "first"], {
+      cwd: repoRoot,
+      env: {
+        ...process.env,
+        GIT_AUTHOR_NAME: "Test",
+        GIT_AUTHOR_EMAIL: "test@example.com",
+        GIT_COMMITTER_NAME: "Test",
+        GIT_COMMITTER_EMAIL: "test@example.com",
+        GIT_AUTHOR_DATE: "2026-01-01T12:00:00Z",
+        GIT_COMMITTER_DATE: "2026-01-01T12:00:00Z",
+      },
+      stdio: ["ignore", "pipe", "pipe"],
+    });
+    commit1 = git(repoRoot, ["rev-parse", "HEAD"]);
+
+    writeFileSync(
+      join(repoRoot, "src/math.ts"),
+      "export function add(a: number, b: number) { return a + b; }\nexport const ZERO = 0;\n",
+    );
+    writeFileSync(
+      join(repoRoot, "src/math.test.ts"),
+      'import { describe, it } from "vitest";\ndescribe("math", () => {\n  it("adds", () => {});\n  it("zero", () => {});\n});\n',
+    );
+    git(repoRoot, ["add", "."]);
+    execFileSync("git", ["commit", "-m", "second"], {
+      cwd: repoRoot,
+      env: {
+        ...process.env,
+        GIT_AUTHOR_NAME: "Test",
+        GIT_AUTHOR_EMAIL: "test@example.com",
+        GIT_COMMITTER_NAME: "Test",
+        GIT_COMMITTER_EMAIL: "test@example.com",
+        GIT_AUTHOR_DATE: "2026-01-02T12:00:00Z",
+        GIT_COMMITTER_DATE: "2026-01-02T12:00:00Z",
+      },
+      stdio: ["ignore", "pipe", "pipe"],
+    });
+    commit2 = git(repoRoot, ["rev-parse", "HEAD"]);
+
+    lease = createDevSiteHttpApp({
+      repoRoot,
+      mainRef: "main",
+      mounts: [{ kind: "router", createRouter: createCommitsRouter }],
+    });
   });
 
   afterAll(() => {
-    releaseSlimRouteTest(ctx.lease);
+    releaseSlimRouteTest(lease);
+    rmSync(repoRoot, { recursive: true, force: true });
   });
 
   beforeEach(async () => {
-    const { devSiteDbManager } = await import(
-      "@saflib/dev-site-db/instances"
+    devSiteDbManager.clearAllTablesForTests(lease.devSiteDbKey);
+    await throwError(
+      scanCommits(lease.devSiteDbKey, { repoRoot, mainRef: "main" }),
     );
-    devSiteDbManager.clearAllTablesForTests(ctx.dbKey);
-    await seedTwoCommits(ctx.dbKey);
   });
 
   it("GET /commits lists summaries newest-first", async () => {
-    const response = await request(ctx.app).get("/commits");
+    const response = await request(lease.app).get("/commits");
     expect(response.status).toBe(200);
     expect(response.body.commits.map((c: { hash: string }) => c.hash)).toEqual(
-      [HASH_B, HASH_A],
+      [commit2, commit1],
     );
     expect(response.body.commits[0].summaryMetrics).toMatchObject({
       exportCount: 2,
-      testCaseCount: 1,
+      testCaseCount: 2,
     });
   });
 
   it("GET /commits/:hash returns commit detail", async () => {
-    const response = await request(ctx.app).get(`/commits/${HASH_B}`);
+    const response = await request(lease.app).get(`/commits/${commit2}`);
     expect(response.status).toBe(200);
-    expect(response.body.commitDetail.commit.hash).toBe(HASH_B);
-    expect(response.body.commitDetail.exports.map((e: { name: string }) => e.name)).toEqual(
-      ["a", "b"],
-    );
+    expect(response.body.commitDetail.commit.hash).toBe(commit2);
+    expect(
+      response.body.commitDetail.exports
+        .map((e: { name: string }) => e.name)
+        .sort(),
+    ).toEqual(["ZERO", "add"].sort());
   });
 
   it("GET /commits/:hash returns 404 for unknown hash", async () => {
-    const response = await request(ctx.app).get(
+    const response = await request(lease.app).get(
       "/commits/cccccccccccccccccccccccccccccccccccccccc",
     );
     expect(response.status).toBe(404);
@@ -150,19 +148,19 @@ describe("commits routes", () => {
   });
 
   it("GET /commits/:hash/diff/:otherHash diffs two commits", async () => {
-    const response = await request(ctx.app).get(
-      `/commits/${HASH_A}/diff/${HASH_B}`,
+    const response = await request(lease.app).get(
+      `/commits/${commit1}/diff/${commit2}`,
     );
     expect(response.status).toBe(200);
-    expect(response.body.commitDiff.fromHash).toBe(HASH_A);
-    expect(response.body.commitDiff.toHash).toBe(HASH_B);
+    expect(response.body.commitDiff.fromHash).toBe(commit1);
+    expect(response.body.commitDiff.toHash).toBe(commit2);
     expect(
       response.body.commitDiff.exports.added.map((e: { name: string }) => e.name),
-    ).toEqual(["b"]);
+    ).toEqual(["ZERO"]);
     expect(
       response.body.commitDiff.testCases.added.map(
         (t: { fullName: string }) => t.fullName,
       ),
-    ).toEqual(["a > works"]);
+    ).toEqual(["math > zero"]);
   });
 });

@@ -9,9 +9,13 @@ import { getDevSiteHttpContext } from "../../context.ts";
 import { getCommit } from "../../get-commit.ts";
 
 export const getCommitsHandler = createHandler(async (req, res) => {
-  const { dbKey } = getDevSiteHttpContext();
+  const { dbKey, repoRoot, productRoot, mainRef } = getDevSiteHttpContext();
   const { hash } = req.params as PathParams["getCommits"];
-  const { result, error } = await getCommit(dbKey, hash);
+  const { result, error } = await getCommit(dbKey, hash, {
+    repoRoot,
+    productRoot,
+    mainRef,
+  });
   if (error) {
     switch (true) {
       case error instanceof AnalyzedCommitNotFoundError:

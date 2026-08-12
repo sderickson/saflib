@@ -3,10 +3,9 @@ import type { ReturnsError } from "@saflib/monorepo";
 import { AnalyzedCommitNotFoundError } from "@saflib/dev-site-db/errors";
 import { analyzedCommitsDb } from "@saflib/dev-site-db/queries/analyzed-commits/index";
 import { packageMetricsDb } from "@saflib/dev-site-db/queries/package-metrics/index";
-import { exportsDb } from "@saflib/dev-site-db/queries/exports/index";
-import { testCasesDb } from "@saflib/dev-site-db/queries/test-cases/index";
 import type { components as GetCommitComponents } from "@saflib/dev-site-spec/operations/getCommits";
 import type { components as ListCommitsComponents } from "@saflib/dev-site-spec/operations/listCommits";
+import { assembleCommitSymbols } from "./analyze-commit.ts";
 
 export type CommitDetail = GetCommitComponents["schemas"]["commit-detail"];
 export type CommitSummary = ListCommitsComponents["schemas"]["commit-summary"];
@@ -16,6 +15,12 @@ export type GetCommitResult = ReturnsError<
   AnalyzedCommitNotFoundError
 >;
 
+export interface RepoReadOptions {
+  repoRoot: string;
+  productRoot?: string;
+  mainRef?: string;
+}
+
 function toIso(d: Date): string {
   return d.toISOString();
 }
@@ -23,6 +28,7 @@ function toIso(d: Date): string {
 export async function getCommit(
   dbKey: DbKey,
   hash: string,
+  repo: RepoReadOptions,
 ): Promise<GetCommitResult> {
   const commitRes = await analyzedCommitsDb.getByHash(dbKey, hash);
   if (commitRes.error) {
@@ -30,15 +36,18 @@ export async function getCommit(
   }
   const commit = commitRes.result;
 
-  const [metricsRes, exportsRes, testsRes] = await Promise.all([
-    packageMetricsDb.listByCommit(dbKey, hash),
-    exportsDb.listByCommit(dbKey, hash),
-    testCasesDb.listByCommit(dbKey, hash),
-  ]);
-  // These list queries are typed as never-error.
+  const metricsRes = await packageMetricsDb.listByCommit(dbKey, hash);
   const metrics = metricsRes.result!;
-  const exportRows = exportsRes.result!;
-  const testRows = testsRes.result!;
+
+  const symbols = await assembleCommitSymbols(dbKey, hash, {
+    repoRoot: repo.repoRoot,
+    productRoot: repo.productRoot,
+    mainRef: repo.mainRef,
+  });
+  // Git errors while assembling are unexpected for an analyzed commit; surface as empty
+  // rather than 500 if the tree vanished — still return metrics.
+  const exportRows = symbols.result?.exports ?? [];
+  const testRows = symbols.result?.testCases ?? [];
 
   const detail: CommitDetail = {
     commit: {
@@ -91,9 +100,6 @@ export async function listCommitSummaries(
   for (const c of page.result.commits) {
     const metrics = (await packageMetricsDb.listByCommit(dbKey, c.hash))
       .result!;
-    const exportCount = (await exportsDb.countByCommit(dbKey, c.hash)).result!;
-    const testCaseCount = (await testCasesDb.countByCommit(dbKey, c.hash))
-      .result!;
     commits.push({
       hash: c.hash,
       parentHashes: c.parentHashes,
@@ -109,8 +115,8 @@ export async function listCommitSummaries(
         sourceLines: metrics.reduce((n, m) => n + m.sourceLines, 0),
         testFiles: metrics.reduce((n, m) => n + m.testFiles, 0),
         testLines: metrics.reduce((n, m) => n + m.testLines, 0),
-        exportCount,
-        testCaseCount,
+        exportCount: c.exportCount,
+        testCaseCount: c.testCaseCount,
       },
     });
   }

@@ -7,7 +7,6 @@
     "./instances": "./instances.ts",
     "./errors": "./errors.ts",
     "./types": "./types.ts",
-    "./hashes": "./hashes.ts",
     "./queries/*": "./queries/*.ts",
     "./schemas/*": "./schemas/*.ts"
   },
@@ -20,6 +19,7 @@
   },
   "dependencies": {
     "@saflib/drizzle": "*",
+    "@saflib/parser": "*",
     "drizzle-orm": "^0.45.2"
   },
   "devDependencies": {

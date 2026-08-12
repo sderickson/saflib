@@ -19,8 +19,7 @@ export interface ExportEntry {
  *
  * `fullName` joins enclosing `describe` titles and the leaf `it`/`test` title with
  * `" > "` (e.g. `"outer > inner > does the thing"`). That separator is part of the
- * public contract — `@saflib/dev-site-db`'s `test_cases.fullName` column stores it
- * as-is for diffing across commits.
+ * public contract — blob_facts stores it as-is for assembly across commits.
  */
 export interface TestCaseEntry {
   fullName: string;

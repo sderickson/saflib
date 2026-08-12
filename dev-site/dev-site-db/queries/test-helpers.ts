@@ -20,5 +20,7 @@ export function makeCommit(
     analyzerVersion: overrides.analyzerVersion ?? "1",
     computedAt: overrides.computedAt ?? new Date(base + 1000),
     status: overrides.status ?? "complete",
+    exportCount: overrides.exportCount ?? 0,
+    testCaseCount: overrides.testCaseCount ?? 0,
   };
 }

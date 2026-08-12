@@ -9,8 +9,6 @@ import type { DbKey } from "@saflib/drizzle";
 import type { ReturnsError } from "@saflib/monorepo";
 import { analyzedCommitsDb } from "@saflib/dev-site-db/queries/analyzed-commits/index";
 import { packageMetricsDb } from "@saflib/dev-site-db/queries/package-metrics/index";
-import { exportsDb } from "@saflib/dev-site-db/queries/exports/index";
-import { testCasesDb } from "@saflib/dev-site-db/queries/test-cases/index";
 import { analyzeCommit, ANALYZER_VERSION } from "./analyze-commit.ts";
 
 export interface ScanOptions {
@@ -55,15 +53,12 @@ export async function scanCommits(
 
   const logResult = log(options.repoRoot, { ref: mainRef });
   if (logResult.error) {
-    // Empty repo / missing main — treat as no mainline commits rather than hard fail
-    // when the ref simply doesn't exist yet.
     if (logResult.error.exitCode === 128) {
-      // fall through with no mainline commits
+      // fall through
     } else {
       return { error: logResult.error };
     }
   }
-  // git log is newest-first; keep that order so limited scans start at tip.
   const mainline: GitCommit[] = logResult.result ?? [];
 
   const refsResult = listRefs(options.repoRoot);
@@ -82,8 +77,6 @@ export async function scanCommits(
     }
   }
 
-  // When `--limit` is set (CLI/dev convenience), skip feature-branch tip discovery
-  // so the run stays bounded to mainline commits only.
   if (options.limit === undefined) {
     const scheduled = new Set(toAnalyze.map((c) => c.hash));
     for (const h of skipped) scheduled.add(h);
@@ -97,7 +90,7 @@ export async function scanCommits(
       if (ancestor.error && ancestor.error.exitCode !== 128) {
         return { error: ancestor.error };
       }
-      if (ancestor.result) continue; // already on main history
+      if (ancestor.result) continue;
 
       const tipLog = log(options.repoRoot, { ref: ref.hash, limit: 1 });
       if (tipLog.error) {
@@ -118,7 +111,7 @@ export async function scanCommits(
   }
 
   for (const commit of toAnalyze) {
-    const analyzed = analyzeCommit(commit, {
+    const analyzed = await analyzeCommit(dbKey, commit, {
       repoRoot: options.repoRoot,
       productRoot: options.productRoot,
       mainRef,
@@ -138,21 +131,13 @@ export async function scanCommits(
       analyzerVersion: snap.analyzerVersion || ANALYZER_VERSION,
       computedAt: new Date(),
       status: "complete",
+      exportCount: snap.exportCount,
+      testCaseCount: snap.testCaseCount,
     });
 
     await packageMetricsDb.insertMany(
       dbKey,
       snap.packageMetrics.map((m) => ({ ...m, commitHash: commit.hash })),
-    );
-
-    await exportsDb.insertMany(
-      dbKey,
-      snap.exports.map((e) => ({ ...e, commitHash: commit.hash })),
-    );
-
-    await testCasesDb.insertMany(
-      dbKey,
-      snap.testCases.map((t) => ({ ...t, commitHash: commit.hash })),
     );
 
     scanned.push(commit.hash);

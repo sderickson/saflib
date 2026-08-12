@@ -9,18 +9,45 @@ export const addShowCommand = (program: Command) => {
     .description("Print the full analysis snapshot for a commit hash.")
     .argument("<hash>", "Commit hash")
     .option(
+      "--repo-root <path>",
+      "Git repository root (needed to assemble exports/tests from blob facts)",
+      process.cwd(),
+    )
+    .option(
+      "--product-root <path>",
+      "Path prefix within the repo (e.g. daemon)",
+      "",
+    )
+    .option("--main-ref <ref>", "Main branch ref", "main")
+    .option(
       "--db <path>",
       "SQLite file path. Defaults to an on-disk file under @saflib/dev-site-db/data/.",
     )
-    .action(async (hash: string, opts: { db?: string }) => {
-      const dbKey = devSiteDb.connect({
-        onDisk: opts.db ?? true,
-      });
-      try {
-        const result = await throwError(getCommit(dbKey, hash));
-        console.log(JSON.stringify(result, null, 2));
-      } finally {
-        devSiteDb.disconnect(dbKey);
-      }
-    });
+    .action(
+      async (
+        hash: string,
+        opts: {
+          db?: string;
+          repoRoot: string;
+          productRoot: string;
+          mainRef: string;
+        },
+      ) => {
+        const dbKey = devSiteDb.connect({
+          onDisk: opts.db ?? true,
+        });
+        try {
+          const result = await throwError(
+            getCommit(dbKey, hash, {
+              repoRoot: opts.repoRoot,
+              productRoot: opts.productRoot || undefined,
+              mainRef: opts.mainRef,
+            }),
+          );
+          console.log(JSON.stringify(result, null, 2));
+        } finally {
+          devSiteDb.disconnect(dbKey);
+        }
+      },
+    );
 };

@@ -2,6 +2,11 @@ import { execFileSync } from "node:child_process";
 import type { ReturnsError } from "@saflib/monorepo";
 import { GitCommandError } from "./errors.ts";
 
+export interface ExecGitOptions {
+  /** Data written to the git process stdin (e.g. for `cat-file --batch`). */
+  input?: string;
+}
+
 /**
  * Thin `git` runner for this package.
  *
@@ -15,12 +20,14 @@ import { GitCommandError } from "./errors.ts";
 export function execGit(
   repoRoot: string,
   args: readonly string[],
+  options: ExecGitOptions = {},
 ): ReturnsError<string, GitCommandError> {
   try {
     const stdout = execFileSync("git", [...args], {
       cwd: repoRoot,
       encoding: "utf8",
-      stdio: ["ignore", "pipe", "pipe"],
+      input: options.input,
+      stdio: ["pipe", "pipe", "pipe"],
       maxBuffer: 64 * 1024 * 1024,
     });
     return { result: stdout };

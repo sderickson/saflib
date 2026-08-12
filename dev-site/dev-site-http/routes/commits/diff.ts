@@ -9,9 +9,13 @@ import { getDevSiteHttpContext } from "../../context.ts";
 import { diffCommits } from "../../diff-commits.ts";
 
 export const diffCommitsHandler = createHandler(async (req, res) => {
-  const { dbKey } = getDevSiteHttpContext();
+  const { dbKey, repoRoot, productRoot, mainRef } = getDevSiteHttpContext();
   const { hash, otherHash } = req.params as PathParams["diffCommits"];
-  const { result, error } = await diffCommits(dbKey, hash, otherHash);
+  const { result, error } = await diffCommits(dbKey, hash, otherHash, {
+    repoRoot,
+    productRoot,
+    mainRef,
+  });
   if (error) {
     switch (true) {
       case error instanceof AnalyzedCommitNotFoundError:

@@ -28,6 +28,8 @@ export interface AnalyzedCommitEntity {
   analyzerVersion: string;
   computedAt: Date;
   status: AnalyzedCommitStatus;
+  exportCount: number;
+  testCaseCount: number;
 }
 
 export const analyzedCommitsTable = sqliteTable(
@@ -45,6 +47,8 @@ export const analyzedCommitsTable = sqliteTable(
     analyzerVersion: text("analyzer_version").notNull(),
     computedAt: integer("computed_at", { mode: "timestamp" }).notNull(),
     status: text("status", { enum: analyzedCommitStatusEnum }).notNull(),
+    exportCount: integer("export_count").notNull(),
+    testCaseCount: integer("test_case_count").notNull(),
   },
   (table) => [index("analyzed_commits_authored_at_idx").on(table.authoredAt)],
 );

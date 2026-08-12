@@ -3,9 +3,13 @@ import type { ReturnsError } from "@saflib/monorepo";
 import { AnalyzedCommitNotFoundError } from "@saflib/dev-site-db/errors";
 import { analyzedCommitsDb } from "@saflib/dev-site-db/queries/analyzed-commits/index";
 import { packageMetricsDb } from "@saflib/dev-site-db/queries/package-metrics/index";
-import { exportsDb } from "@saflib/dev-site-db/queries/exports/index";
-import { testCasesDb } from "@saflib/dev-site-db/queries/test-cases/index";
 import type { components } from "@saflib/dev-site-spec/operations/diffCommits";
+import {
+  assembleCommitSymbols,
+  type AnalyzedExport,
+  type AnalyzedTestCase,
+} from "./analyze-commit.ts";
+import type { RepoReadOptions } from "./get-commit.ts";
 
 export type CommitDiff = components["schemas"]["commit-diff"];
 export type PackageMetrics = components["schemas"]["package-metrics"];
@@ -32,17 +36,28 @@ function metricsEqual(a: PackageMetrics, b: PackageMetrics): boolean {
   );
 }
 
-function setDiff(
-  from: Set<string>,
-  to: Set<string>,
-): { added: string[]; removed: string[] } {
-  const added: string[] = [];
-  const removed: string[] = [];
-  for (const h of to) {
-    if (!from.has(h)) added.push(h);
+function exportKey(e: AnalyzedExport | ExportEntry): string {
+  return `${e.packageName}\0${e.filePath}\0${e.name}\0${e.kind}`;
+}
+
+function testCaseKey(t: AnalyzedTestCase | TestCase): string {
+  return `${t.packageName}\0${t.filePath}\0${t.fullName}`;
+}
+
+function diffLists<T>(
+  before: T[],
+  after: T[],
+  keyOf: (item: T) => string,
+): { added: T[]; removed: T[] } {
+  const beforeMap = new Map(before.map((i) => [keyOf(i), i]));
+  const afterMap = new Map(after.map((i) => [keyOf(i), i]));
+  const added: T[] = [];
+  const removed: T[] = [];
+  for (const [k, v] of afterMap) {
+    if (!beforeMap.has(k)) added.push(v);
   }
-  for (const h of from) {
-    if (!to.has(h)) removed.push(h);
+  for (const [k, v] of beforeMap) {
+    if (!afterMap.has(k)) removed.push(v);
   }
   return { added, removed };
 }
@@ -70,14 +85,12 @@ function toPackageMetrics(m: {
 /**
  * Diff two analyzed commits. `fromHash` is the baseline ("before");
  * `toHash` is the comparison ("after").
- *
- * Export/test deltas use junction content-hashes (set difference), then
- * fetch only the def payloads for added/removed hashes.
  */
 export async function diffCommits(
   dbKey: DbKey,
   fromHash: string,
   toHash: string,
+  repo: RepoReadOptions,
 ): Promise<DiffCommitsResult> {
   const [fromCommit, toCommit] = await Promise.all([
     analyzedCommitsDb.getByHash(dbKey, fromHash),
@@ -86,10 +99,14 @@ export async function diffCommits(
   if (fromCommit.error) return { error: fromCommit.error };
   if (toCommit.error) return { error: toCommit.error };
 
-  const [fromMetricsRes, toMetricsRes] = await Promise.all([
-    packageMetricsDb.listByCommit(dbKey, fromHash),
-    packageMetricsDb.listByCommit(dbKey, toHash),
-  ]);
+  const [fromMetricsRes, toMetricsRes, fromSymbols, toSymbols] =
+    await Promise.all([
+      packageMetricsDb.listByCommit(dbKey, fromHash),
+      packageMetricsDb.listByCommit(dbKey, toHash),
+      assembleCommitSymbols(dbKey, fromHash, repo),
+      assembleCommitSymbols(dbKey, toHash, repo),
+    ]);
+
   const fromMetrics = fromMetricsRes.result!.map(toPackageMetrics);
   const toMetrics = toMetricsRes.result!.map(toPackageMetrics);
 
@@ -112,63 +129,43 @@ export async function diffCommits(
     if (!afterPkgs.has(k)) removed.push(before);
   }
 
-  const [fromExportHashes, toExportHashes, fromTestHashes, toTestHashes] =
-    await Promise.all([
-      exportsDb.listHashesByCommit(dbKey, fromHash),
-      exportsDb.listHashesByCommit(dbKey, toHash),
-      testCasesDb.listHashesByCommit(dbKey, fromHash),
-      testCasesDb.listHashesByCommit(dbKey, toHash),
-    ]);
+  const fromExports = fromSymbols.result?.exports ?? [];
+  const toExports = toSymbols.result?.exports ?? [];
+  const fromTests = fromSymbols.result?.testCases ?? [];
+  const toTests = toSymbols.result?.testCases ?? [];
 
-  const exportHashDiff = setDiff(
-    new Set(fromExportHashes.result!),
-    new Set(toExportHashes.result!),
-  );
-  const testHashDiff = setDiff(
-    new Set(fromTestHashes.result!),
-    new Set(toTestHashes.result!),
-  );
-
-  const [addedExports, removedExports, addedTests, removedTests] =
-    await Promise.all([
-      exportsDb.getByHashes(dbKey, exportHashDiff.added),
-      exportsDb.getByHashes(dbKey, exportHashDiff.removed),
-      testCasesDb.getByHashes(dbKey, testHashDiff.added),
-      testCasesDb.getByHashes(dbKey, testHashDiff.removed),
-    ]);
-
-  const toExportEntry = (e: {
-    packageName: string;
-    filePath: string;
-    name: string;
-    kind: ExportEntry["kind"];
-  }): ExportEntry => ({
-    packageName: e.packageName,
-    filePath: e.filePath,
-    name: e.name,
-    kind: e.kind,
-  });
-  const toTestCase = (t: {
-    packageName: string;
-    filePath: string;
-    fullName: string;
-  }): TestCase => ({
-    packageName: t.packageName,
-    filePath: t.filePath,
-    fullName: t.fullName,
-  });
+  const exportDiff = diffLists(fromExports, toExports, exportKey);
+  const testDiff = diffLists(fromTests, toTests, testCaseKey);
 
   const commitDiff: CommitDiff = {
     fromHash,
     toHash,
     packageMetrics: { added, removed, changed },
     exports: {
-      added: addedExports.result!.map(toExportEntry),
-      removed: removedExports.result!.map(toExportEntry),
+      added: exportDiff.added.map((e) => ({
+        packageName: e.packageName,
+        filePath: e.filePath,
+        name: e.name,
+        kind: e.kind,
+      })),
+      removed: exportDiff.removed.map((e) => ({
+        packageName: e.packageName,
+        filePath: e.filePath,
+        name: e.name,
+        kind: e.kind,
+      })),
     },
     testCases: {
-      added: addedTests.result!.map(toTestCase),
-      removed: removedTests.result!.map(toTestCase),
+      added: testDiff.added.map((t) => ({
+        packageName: t.packageName,
+        filePath: t.filePath,
+        fullName: t.fullName,
+      })),
+      removed: testDiff.removed.map((t) => ({
+        packageName: t.packageName,
+        filePath: t.filePath,
+        fullName: t.fullName,
+      })),
     },
   };
   return { result: commitDiff };

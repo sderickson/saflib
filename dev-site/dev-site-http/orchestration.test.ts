@@ -148,7 +148,9 @@ describe("orchestration", () => {
   it("getCommit returns metrics, exports, and test cases", async () => {
     await throwError(scanCommits(dbKey, { repoRoot, mainRef: "main" }));
 
-    const detail = await throwError(getCommit(dbKey, commit2));
+    const detail = await throwError(
+      getCommit(dbKey, commit2, { repoRoot, mainRef: "main" }),
+    );
     expect(detail.commit.hash).toBe(commit2);
     expect(detail.commit.analyzerVersion).toBe(ANALYZER_VERSION);
     expect(detail.commit.status).toBe("complete");
@@ -180,7 +182,9 @@ describe("orchestration", () => {
   it("diffCommits reports added exports and test cases", async () => {
     await throwError(scanCommits(dbKey, { repoRoot, mainRef: "main" }));
 
-    const diff = await throwError(diffCommits(dbKey, commit1, commit2));
+    const diff = await throwError(
+      diffCommits(dbKey, commit1, commit2, { repoRoot, mainRef: "main" }),
+    );
     expect(diff.fromHash).toBe(commit1);
     expect(diff.toHash).toBe(commit2);
     expect(diff.exports.added.map((e) => e.name)).toEqual(["ZERO"]);
