@@ -12,6 +12,11 @@
         </button>
         <span v-else class="test-tree__toggle-spacer" />
         <span class="test-tree__label">{{ node.label }}</span>
+        <span
+          v-if="node.subjectSignature"
+          class="test-tree__sig"
+          :title="subjectTitle(node)"
+        >{{ node.subjectSignature }}</span>
         <span class="test-tree__kind">{{ node.kind }}</span>
       </div>
       <TestTree
@@ -54,6 +59,14 @@ const toggle = (id: string) => {
   if (open.has(id)) open.delete(id);
   else open.add(id);
 };
+
+const subjectTitle = (node: TestTreeNode) => {
+  const parts = [
+    node.subjectName ? `subject: ${node.subjectName}` : null,
+    node.subjectConfidence ? `via ${node.subjectConfidence}` : null,
+  ].filter(Boolean);
+  return parts.join(" · ");
+};
 </script>
 
 <style scoped>
@@ -88,6 +101,15 @@ const toggle = (id: string) => {
   color: rgba(var(--v-theme-on-surface), 0.45);
   font-size: 0.7rem;
   text-transform: uppercase;
+}
+.test-tree__sig {
+  color: rgba(var(--v-theme-on-surface), 0.55);
+  font-size: 0.75rem;
+  font-weight: 400;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 36rem;
 }
 .test-tree__row--test .test-tree__label {
   font-weight: 500;

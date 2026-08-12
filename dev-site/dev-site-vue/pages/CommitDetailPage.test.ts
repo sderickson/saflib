@@ -40,6 +40,7 @@ const mockDetail: GetResponse = {
         filePath: "src/math.ts",
         name: "add",
         kind: "function",
+        signature: "(a: number, b: number)",
       },
     ],
     testCases: [
@@ -47,6 +48,10 @@ const mockDetail: GetResponse = {
         packageName: "@fixture/root",
         filePath: "src/math.test.ts",
         fullName: "math > adds",
+        subjectName: null,
+        subjectSignature: null,
+        subjectFilePath: null,
+        subjectConfidence: null,
       },
     ],
   },

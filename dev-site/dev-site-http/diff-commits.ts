@@ -44,6 +44,25 @@ function testCaseKey(t: AnalyzedTestCase | TestCase): string {
   return `${t.packageName}\0${t.filePath}\0${t.fullName}`;
 }
 
+function toApiTestCase(t: AnalyzedTestCase): TestCase {
+  if (!t.subjectName || !t.subjectConfidence || !t.subjectFilePath) {
+    return {
+      packageName: t.packageName,
+      filePath: t.filePath,
+      fullName: t.fullName,
+    };
+  }
+  return {
+    packageName: t.packageName,
+    filePath: t.filePath,
+    fullName: t.fullName,
+    subjectName: t.subjectName,
+    subjectSignature: t.subjectSignature,
+    subjectFilePath: t.subjectFilePath,
+    subjectConfidence: t.subjectConfidence,
+  };
+}
+
 function diffLists<T>(
   before: T[],
   after: T[],
@@ -147,25 +166,19 @@ export async function diffCommits(
         filePath: e.filePath,
         name: e.name,
         kind: e.kind,
+        signature: e.signature,
       })),
       removed: exportDiff.removed.map((e) => ({
         packageName: e.packageName,
         filePath: e.filePath,
         name: e.name,
         kind: e.kind,
+        signature: e.signature,
       })),
     },
     testCases: {
-      added: testDiff.added.map((t) => ({
-        packageName: t.packageName,
-        filePath: t.filePath,
-        fullName: t.fullName,
-      })),
-      removed: testDiff.removed.map((t) => ({
-        packageName: t.packageName,
-        filePath: t.filePath,
-        fullName: t.fullName,
-      })),
+      added: testDiff.added.map(toApiTestCase),
+      removed: testDiff.removed.map(toApiTestCase),
     },
   };
   return { result: commitDiff };

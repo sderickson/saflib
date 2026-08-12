@@ -23,8 +23,9 @@ import {
   packageRootsFromPackageJsonPaths,
   parsePackageName,
 } from "./classify.ts";
+import { linkTestSubjects } from "./link-test-subjects.ts";
 
-export const ANALYZER_VERSION = "1";
+export const ANALYZER_VERSION = "2";
 
 export interface AnalyzeCommitOptions {
   repoRoot: string;
@@ -39,12 +40,17 @@ export interface AnalyzedExport {
   filePath: string;
   name: string;
   kind: InsertBlobFactParams["exports"][number]["kind"];
+  signature: string | null;
 }
 
 export interface AnalyzedTestCase {
   packageName: string;
   filePath: string;
   fullName: string;
+  subjectName: string | null;
+  subjectSignature: string | null;
+  subjectFilePath: string | null;
+  subjectConfidence: "adjacent" | "package" | null;
 }
 
 export interface AnalyzedSnapshot {
@@ -246,6 +252,10 @@ export async function analyzeCommit(
           packageName: pkg.packageName,
           filePath: entry.path,
           fullName: tc.fullName,
+          subjectName: null,
+          subjectSignature: null,
+          subjectFilePath: null,
+          subjectConfidence: null,
         });
       }
     } else {
@@ -256,6 +266,7 @@ export async function analyzeCommit(
           filePath: entry.path,
           name: exp.name,
           kind: exp.kind,
+          signature: exp.signature ?? null,
         });
       }
     }
@@ -267,7 +278,9 @@ export async function analyzeCommit(
       `${b.packageName}\0${b.filePath}\0${b.name}\0${b.kind}`,
     ),
   );
-  testCasesOut.sort((a, b) =>
+
+  const linkedTests = linkTestSubjects(testCasesOut, exportsOut);
+  linkedTests.sort((a, b) =>
     `${a.packageName}\0${a.filePath}\0${a.fullName}`.localeCompare(
       `${b.packageName}\0${b.filePath}\0${b.fullName}`,
     ),
@@ -282,9 +295,9 @@ export async function analyzeCommit(
       analyzerVersion: ANALYZER_VERSION,
       packageMetrics: [...byPackage.values()],
       exports: exportsOut,
-      testCases: testCasesOut,
+      testCases: linkedTests,
       exportCount: exportsOut.length,
-      testCaseCount: testCasesOut.length,
+      testCaseCount: linkedTests.length,
     },
   };
 }

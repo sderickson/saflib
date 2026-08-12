@@ -12,6 +12,12 @@ export type ExportKind =
 export interface ExportEntry {
   name: string;
   kind: ExportKind;
+  /**
+   * Syntactic display signature (no type-checker).
+   * Examples: `(a: number, b: string) => Promise<void>`, `{ name: string }`, `= 1`.
+   * `null` when the local declaration has no useful surface (e.g. `export { a }` re-export).
+   */
+  signature: string | null;
 }
 
 /**

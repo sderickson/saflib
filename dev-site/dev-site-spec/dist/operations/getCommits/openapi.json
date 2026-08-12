@@ -268,18 +268,25 @@
               "enum",
               "variable"
             ]
+          },
+          "signature": {
+            "type": "string",
+            "nullable": true,
+            "description": "Syntactic display signature from the AST (no type-checker). Null for re-exports without a local declaration.\n",
+            "example": "(repoRoot: string, options?: LogOptions)"
           }
         },
         "required": [
           "packageName",
           "filePath",
           "name",
-          "kind"
+          "kind",
+          "signature"
         ]
       },
       "test-case": {
         "type": "object",
-        "description": "One `describe`/`it`/`test` case extracted from a test file. `fullName` uses the `\" > \"` separator from `@saflib/parser` (e.g. `\"outer > inner > does the thing\"`).\n",
+        "description": "One `describe`/`it`/`test` case extracted from a test file. `fullName` uses the `\" > \"` separator from `@saflib/parser` (e.g. `\"outer > inner > does the thing\"`). Optional `subject*` fields soft-link to an exported symbol by convention (suite title matching an adjacent or same-package export).\n",
         "properties": {
           "packageName": {
             "type": "string",
@@ -295,6 +302,30 @@
             "type": "string",
             "description": "Nested describe/it titles joined with `\" > \"`.",
             "example": "log > returns commits newest-first (git log order)"
+          },
+          "subjectName": {
+            "type": "string",
+            "description": "Linked export name when a suite title matches by convention.",
+            "example": "log"
+          },
+          "subjectSignature": {
+            "type": "string",
+            "nullable": true,
+            "description": "Signature of the linked export at this commit (null if unknown).",
+            "example": "(repoRoot: string, options?: LogOptions)"
+          },
+          "subjectFilePath": {
+            "type": "string",
+            "description": "Repo-relative path of the file that declares the linked export.",
+            "example": "saflib/git/log.ts"
+          },
+          "subjectConfidence": {
+            "type": "string",
+            "description": "How the link was made (`adjacent` file vs elsewhere in package).",
+            "enum": [
+              "adjacent",
+              "package"
+            ]
           }
         },
         "required": [

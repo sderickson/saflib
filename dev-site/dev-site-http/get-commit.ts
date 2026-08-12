@@ -25,6 +25,33 @@ function toIso(d: Date): string {
   return d.toISOString();
 }
 
+function toApiTestCase(t: {
+  packageName: string;
+  filePath: string;
+  fullName: string;
+  subjectName: string | null;
+  subjectSignature: string | null;
+  subjectFilePath: string | null;
+  subjectConfidence: "adjacent" | "package" | null;
+}) {
+  if (!t.subjectName || !t.subjectConfidence || !t.subjectFilePath) {
+    return {
+      packageName: t.packageName,
+      filePath: t.filePath,
+      fullName: t.fullName,
+    };
+  }
+  return {
+    packageName: t.packageName,
+    filePath: t.filePath,
+    fullName: t.fullName,
+    subjectName: t.subjectName,
+    subjectSignature: t.subjectSignature,
+    subjectFilePath: t.subjectFilePath,
+    subjectConfidence: t.subjectConfidence,
+  };
+}
+
 export async function getCommit(
   dbKey: DbKey,
   hash: string,
@@ -74,12 +101,9 @@ export async function getCommit(
       filePath: e.filePath,
       name: e.name,
       kind: e.kind,
+      signature: e.signature,
     })),
-    testCases: testRows.map((t) => ({
-      packageName: t.packageName,
-      filePath: t.filePath,
-      fullName: t.fullName,
-    })),
+    testCases: testRows.map(toApiTestCase),
   };
   return { result: detail };
 }

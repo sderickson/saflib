@@ -5,6 +5,8 @@ import type { ExportKind } from "@saflib/parser";
 export interface BlobExportFact {
   name: string;
   kind: ExportKind;
+  /** Syntactic signature; null for re-exports without a local declaration. */
+  signature: string | null;
 }
 
 export interface BlobTestCaseFact {

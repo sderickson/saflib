@@ -2,10 +2,10 @@ import { describe, expect, it } from "vitest";
 import { extractExports, extractTestCases } from "./index.ts";
 
 describe("extractExports", () => {
-  it("collects function / class / interface / type / const / enum", () => {
+  it("collects function / class / interface / type / const / enum with signatures", () => {
     const source = `
       export function greet(name: string) { return name; }
-      export class Greeter {}
+      export class Greeter { constructor(public x: number) {} }
       export interface Person { name: string }
       export type Id = string;
       export const VERSION = 1;
@@ -13,25 +13,50 @@ describe("extractExports", () => {
       export let mutable = 0;
     `;
     expect(extractExports(source)).toEqual([
-      { name: "greet", kind: "function" },
-      { name: "Greeter", kind: "class" },
-      { name: "Person", kind: "interface" },
-      { name: "Id", kind: "type" },
-      { name: "VERSION", kind: "const" },
-      { name: "Color", kind: "enum" },
-      { name: "mutable", kind: "variable" },
+      {
+        name: "greet",
+        kind: "function",
+        signature: "(name: string)",
+      },
+      {
+        name: "Greeter",
+        kind: "class",
+        signature: "constructor(public x: number)",
+      },
+      {
+        name: "Person",
+        kind: "interface",
+        signature: "{ name: string }",
+      },
+      { name: "Id", kind: "type", signature: "= string" },
+      { name: "VERSION", kind: "const", signature: "= 1" },
+      { name: "Color", kind: "enum", signature: "{ Red, Green }" },
+      { name: "mutable", kind: "variable", signature: "= 0" },
     ]);
   });
 
-  it("collects named export clauses", () => {
+  it("captures arrow-const function signatures", () => {
+    const source = `
+      export const add = (a: number, b: number): number => a + b;
+    `;
+    expect(extractExports(source)).toEqual([
+      {
+        name: "add",
+        kind: "const",
+        signature: "(a: number, b: number): number",
+      },
+    ]);
+  });
+
+  it("collects named export clauses with null signature", () => {
     const source = `
       const a = 1;
       const b = 2;
       export { a, b as bee };
     `;
     expect(extractExports(source)).toEqual([
-      { name: "a", kind: "variable" },
-      { name: "bee", kind: "variable" },
+      { name: "a", kind: "variable", signature: null },
+      { name: "bee", kind: "variable", signature: null },
     ]);
   });
 
@@ -41,7 +66,9 @@ describe("extractExports", () => {
       const x = 1;
       export const y = 2;
     `;
-    expect(extractExports(source)).toEqual([{ name: "y", kind: "const" }]);
+    expect(extractExports(source)).toEqual([
+      { name: "y", kind: "const", signature: "= 2" },
+    ]);
   });
 
   it("returns an empty array when there are no exports", () => {

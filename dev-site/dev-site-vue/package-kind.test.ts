@@ -36,11 +36,17 @@ describe("buildPackageTestTree", () => {
           packageName: "@fixture/root",
           filePath: "src/math.test.ts",
           fullName: "math > adds",
+          subjectName: "math",
+          subjectSignature: "(a: number, b: number)",
+          subjectConfidence: "adjacent",
         },
         {
           packageName: "@fixture/root",
           filePath: "src/math.test.ts",
           fullName: "math > zero",
+          subjectName: "math",
+          subjectSignature: "(a: number, b: number)",
+          subjectConfidence: "adjacent",
         },
         {
           packageName: "@other/pkg",
@@ -59,6 +65,7 @@ describe("buildPackageTestTree", () => {
     expect(file.label).toBe("math.test.ts");
     expect(file.children[0].kind).toBe("suite");
     expect(file.children[0].label).toBe("math");
+    expect(file.children[0].subjectSignature).toBe("(a: number, b: number)");
     expect(file.children[0].children.map((c) => c.label).sort()).toEqual([
       "adds",
       "zero",

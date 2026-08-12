@@ -85,6 +85,7 @@ export function scanCommitsInWorker(
   return new Promise((resolve, reject) => {
     const worker = new Worker(fileURLToPath(workerUrl), {
       workerData: data,
+      // Explicit argv so we do not inherit the API process's `node --watch`.
       execArgv: [
         "--experimental-strip-types",
         "--disable-warning=ExperimentalWarning",
@@ -98,7 +99,11 @@ export function scanCommitsInWorker(
       fn();
     };
 
-    worker.on("message", (msg: ScanWorkerMessage) => {
+    worker.on("message", (msg: unknown) => {
+      // `node --watch` on the parent can still emit watch IPC (e.g. `watch:import`)
+      // on this channel — ignore anything that isn't our scan protocol.
+      if (!isScanWorkerMessage(msg)) return;
+
       settle(() => {
         switch (msg.type) {
           case "ok":
@@ -116,8 +121,6 @@ export function scanCommitsInWorker(
           case "error":
             reject(Object.assign(new Error(msg.message), { stack: msg.stack }));
             break;
-          default:
-            reject(new Error(`Unknown scan worker message: ${JSON.stringify(msg)}`));
         }
       });
     });
@@ -136,4 +139,12 @@ export function scanCommitsInWorker(
       });
     });
   });
+}
+
+function isScanWorkerMessage(msg: unknown): msg is ScanWorkerMessage {
+  if (typeof msg !== "object" || msg === null || !("type" in msg)) {
+    return false;
+  }
+  const type = (msg as { type: unknown }).type;
+  return type === "ok" || type === "git-error" || type === "error";
 }

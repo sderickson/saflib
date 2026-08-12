@@ -24,8 +24,16 @@ properties:
       - const
       - enum
       - variable
+  signature:
+    type: string
+    nullable: true
+    description: >
+      Syntactic display signature from the AST (no type-checker). Null for
+      re-exports without a local declaration.
+    example: "(repoRoot: string, options?: LogOptions)"
 required:
   - packageName
   - filePath
   - name
   - kind
+  - signature

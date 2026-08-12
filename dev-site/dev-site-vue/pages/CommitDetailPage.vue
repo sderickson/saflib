@@ -80,12 +80,15 @@ const exportHeaders = [
   { title: "File", key: "filePath" },
   { title: "Name", key: "name" },
   { title: "Kind", key: "kind" },
+  { title: "Signature", key: "signature" },
 ];
 
 const testHeaders = [
   { title: "Package", key: "packageName" },
   { title: "File", key: "filePath" },
   { title: "Full name", key: "fullName" },
+  { title: "Subject", key: "subjectName" },
+  { title: "Signature", key: "subjectSignature" },
 ];
 
 const {

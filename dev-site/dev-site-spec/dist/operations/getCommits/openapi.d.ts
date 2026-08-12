@@ -135,8 +135,13 @@ export interface components {
              * @enum {string}
              */
             kind: "function" | "class" | "interface" | "type" | "const" | "enum" | "variable";
+            /**
+             * @description Syntactic display signature from the AST (no type-checker). Null for re-exports without a local declaration.
+             * @example (repoRoot: string, options?: LogOptions)
+             */
+            signature: string | null;
         };
-        /** @description One `describe`/`it`/`test` case extracted from a test file. `fullName` uses the `" > "` separator from `@saflib/parser` (e.g. `"outer > inner > does the thing"`). */
+        /** @description One `describe`/`it`/`test` case extracted from a test file. `fullName` uses the `" > "` separator from `@saflib/parser` (e.g. `"outer > inner > does the thing"`). Optional `subject*` fields soft-link to an exported symbol by convention (suite title matching an adjacent or same-package export). */
         "test-case": {
             /**
              * @description npm package that owns this file.
@@ -153,6 +158,26 @@ export interface components {
              * @example log > returns commits newest-first (git log order)
              */
             fullName: string;
+            /**
+             * @description Linked export name when a suite title matches by convention.
+             * @example log
+             */
+            subjectName?: string;
+            /**
+             * @description Signature of the linked export at this commit (null if unknown).
+             * @example (repoRoot: string, options?: LogOptions)
+             */
+            subjectSignature?: string | null;
+            /**
+             * @description Repo-relative path of the file that declares the linked export.
+             * @example saflib/git/log.ts
+             */
+            subjectFilePath?: string;
+            /**
+             * @description How the link was made (`adjacent` file vs elsewhere in package).
+             * @enum {string}
+             */
+            subjectConfidence?: "adjacent" | "package";
         };
         error: {
             /** @description A short, machine-readable error code, for when HTTP status codes are not sufficient. */
