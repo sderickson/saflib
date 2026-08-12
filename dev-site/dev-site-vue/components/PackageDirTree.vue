@@ -21,9 +21,15 @@
           class="pkg-tree__icon"
         />
         <span class="pkg-tree__label">{{ node.label }}</span>
-        <span v-if="node.kind === 'package'" class="pkg-tree__kind">{{
-          node.packageKind
-        }}</span>
+        <span v-if="node.kind === 'package'" class="pkg-tree__meta">
+          <span
+            v-if="node.packageSize"
+            class="pkg-tree__size"
+            :class="`pkg-tree__size--${node.packageSize}`"
+            :title="sizeTitle(node.packageSize)"
+          >{{ node.packageSize }}</span>
+          <span class="pkg-tree__kind">{{ node.packageKind }}</span>
+        </span>
       </button>
       <PackageDirTree
         v-if="node.children.length"
@@ -38,6 +44,10 @@
 <script setup lang="ts">
 import type { PackageDirNode } from "../package-dir-tree";
 import { packageKindIcon } from "../package-dir-tree";
+import {
+  PACKAGE_SIZE_LABELS,
+  type PackageSizeTier,
+} from "../package-size";
 
 defineProps<{
   nodes: PackageDirNode[];
@@ -53,6 +63,9 @@ const onClick = (node: PackageDirNode) => {
     emit("select", node.packageName);
   }
 };
+
+const sizeTitle = (tier: PackageSizeTier) =>
+  `Size: ${PACKAGE_SIZE_LABELS[tier]}`;
 </script>
 
 <style scoped>
@@ -90,14 +103,49 @@ const onClick = (node: PackageDirNode) => {
 .pkg-tree__label {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 0.8rem;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pkg-tree__meta {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-shrink: 0;
+}
+.pkg-tree__size {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  padding: 0.05rem 0.28rem;
+  border-radius: 3px;
+  line-height: 1.2;
+}
+.pkg-tree__size--S {
+  background: rgba(var(--v-theme-success), 0.18);
+  color: rgb(var(--v-theme-success));
+}
+.pkg-tree__size--M {
+  background: rgba(var(--v-theme-info), 0.18);
+  color: rgb(var(--v-theme-info));
+}
+.pkg-tree__size--L {
+  background: rgba(var(--v-theme-warning), 0.22);
+  color: rgb(var(--v-theme-warning));
+}
+.pkg-tree__size--XL {
+  background: rgba(var(--v-theme-error), 0.18);
+  color: rgb(var(--v-theme-error));
 }
 .pkg-tree__kind {
-  margin-left: auto;
   font-size: 0.65rem;
   text-transform: uppercase;
   color: rgba(var(--v-theme-on-surface), 0.45);
 }
 .pkg-tree__icon {
   opacity: 0.75;
+  flex-shrink: 0;
 }
 </style>

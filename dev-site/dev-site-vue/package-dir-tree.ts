@@ -1,5 +1,7 @@
 import type { PackageKind } from "./package-kind.ts";
 import { classifyPackageKind } from "./package-kind.ts";
+import type { PackageSizeTier } from "./package-size.ts";
+import { classifyPackageSize } from "./package-size.ts";
 
 export type PackageDirNodeKind = "dir" | "package";
 
@@ -10,6 +12,7 @@ export interface PackageDirNode {
   /** Present when kind === "package". */
   packageName?: string;
   packageKind?: PackageKind;
+  packageSize?: PackageSizeTier;
   directory?: string;
   children: PackageDirNode[];
 }
@@ -17,6 +20,8 @@ export interface PackageDirNode {
 export interface PackageDirInput {
   packageName: string;
   directory: string;
+  sourceLines?: number;
+  testFiles?: number;
 }
 
 /**
@@ -38,18 +43,22 @@ export function buildPackageDirTree(
   );
 
   for (const pkg of sorted) {
+    const size = classifyPackageSize({
+      sourceLines: pkg.sourceLines ?? 0,
+      testFiles: pkg.testFiles,
+    });
     const dir = pkg.directory.replace(/^\/+|\/+$/g, "");
     const parts = dir ? dir.split("/").filter(Boolean) : [];
     let node = root;
 
     if (parts.length === 0) {
-      // Root package.json
       const child: PackageDirNode = {
         id: `pkg:${pkg.packageName}`,
         label: pkg.packageName,
         kind: "package",
         packageName: pkg.packageName,
         packageKind: classifyPackageKind(pkg.packageName, pkg.directory),
+        packageSize: size,
         directory: pkg.directory,
         children: [],
       };
@@ -73,6 +82,7 @@ export function buildPackageDirTree(
             kind: "package",
             packageName: pkg.packageName,
             packageKind: classifyPackageKind(pkg.packageName, pkg.directory),
+            packageSize: size,
             directory: pkg.directory,
             children: [],
           };

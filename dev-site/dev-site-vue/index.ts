@@ -8,6 +8,13 @@ export { commitHealth } from "./health.ts";
 export type { CommitHealth, CommitHealthStatus } from "./health.ts";
 export { classifyPackageKind, PACKAGE_KIND_SURFACES } from "./package-kind.ts";
 export type { PackageKind } from "./package-kind.ts";
+export {
+  classifyPackageSize,
+  PACKAGE_SIZE_LABELS,
+  PACKAGE_SIZE_LOC_BOUNDS,
+  packageSizeColor,
+} from "./package-size.ts";
+export type { PackageSizeTier } from "./package-size.ts";
 export { buildPackageTestTree, buildTestFileNav } from "./test-tree.ts";
 export type {
   TestTreeNode,

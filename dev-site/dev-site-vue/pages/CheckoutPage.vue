@@ -60,6 +60,14 @@
               <v-icon :icon="packageKindIcon(selectedPkg.kind)" />
               <h2 class="text-h6 mb-0">{{ selectedPkg.packageName }}</h2>
               <v-chip size="small" variant="tonal">{{ selectedPkg.kind }}</v-chip>
+              <v-chip
+                size="small"
+                variant="tonal"
+                :color="packageSizeColor(selectedPkg.size)"
+                :title="`Size: ${PACKAGE_SIZE_LABELS[selectedPkg.size]}`"
+              >
+                {{ selectedPkg.size }} · {{ PACKAGE_SIZE_LABELS[selectedPkg.size] }}
+              </v-chip>
             </div>
             <p v-if="packageDescription" class="text-body-2 mb-2 package-desc">
               {{ packageDescription }}
@@ -132,6 +140,11 @@ import {
   buildPackageDirTree,
   packageKindIcon,
 } from "../package-dir-tree";
+import {
+  classifyPackageSize,
+  PACKAGE_SIZE_LABELS,
+  packageSizeColor,
+} from "../package-size";
 import { parsePackageDescription } from "../scope-docs";
 import { repoPathPrefix } from "../repo-paths";
 import type { TestScope } from "../test-tree";
@@ -178,6 +191,10 @@ const packageRows = computed(() =>
   (checkout.value?.packages ?? []).map((p) => ({
     ...p,
     kind: classifyPackageKind(p.packageName, p.directory),
+    size: classifyPackageSize({
+      sourceLines: p.sourceLines,
+      testFiles: p.testFiles,
+    }),
   })),
 );
 
