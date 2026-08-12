@@ -103,7 +103,7 @@ async function analyzeAndPersist(
   },
   progress: { index: number; total: number },
 ): Promise<ReturnsError<"scanned" | "failed", GitCommandError>> {
-  const { log: scanLog } = makeSubsystemReporters("dev-site", "scan");
+  const { log: scanLog } = makeSubsystemReporters("http", "scan");
   const label = `${progress.index}/${progress.total} ${shortHash(commit.hash)}`;
   scanLog.info(
     `Analyzing ${label} — ${firstLine(commit.subject || commit.hash)}`,
@@ -129,7 +129,7 @@ export async function scanCommits(
   dbKey: DbKey,
   options: ScanOptions,
 ): Promise<ReturnsError<ScanResult, ScanError>> {
-  const { log: scanLog } = makeSubsystemReporters("dev-site", "scan");
+  const { log: scanLog } = makeSubsystemReporters("http", "scan");
   const mainRef = options.mainRef ?? "main";
   const scanned: string[] = [];
   const skipped: string[] = [];

@@ -58,12 +58,12 @@ async function runScan(
       : (options.limit ?? DEFAULT_HTTP_SCAN_LIMIT);
 
   if (!dbPath || dbPath === ":memory:") {
-    const { log } = makeSubsystemReporters("dev-site", "scan");
+    const { log } = makeSubsystemReporters("http", "scan");
     log.info("Running scan in-process (:memory: db)");
     return scanCommits(dbKey, { ...options, limit });
   }
 
-  const { log } = makeSubsystemReporters("dev-site", "scan");
+  const { log } = makeSubsystemReporters("http", "scan");
   log.info(
     options.commitHash
       ? `Dispatching scan worker for commit ${options.commitHash.slice(0, 10)}`

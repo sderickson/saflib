@@ -121,7 +121,7 @@ export async function ensureBlobFacts(
     return { result: byHash };
   }
 
-  const { log: analyzeLog } = makeSubsystemReporters("dev-site", "analyze");
+  const { log: analyzeLog } = makeSubsystemReporters("http", "analyze");
   analyzeLog.info(
     `Parsing ${missing.length} new blob(s) (${unique.length - missing.length} cached of ${unique.length})`,
   );
