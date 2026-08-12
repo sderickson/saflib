@@ -8,8 +8,13 @@ export { commitHealth } from "./health.ts";
 export type { CommitHealth, CommitHealthStatus } from "./health.ts";
 export { classifyPackageKind, PACKAGE_KIND_SURFACES } from "./package-kind.ts";
 export type { PackageKind } from "./package-kind.ts";
-export { buildPackageTestTree } from "./test-tree.ts";
-export type { TestTreeNode, TestTreeNodeKind } from "./test-tree.ts";
+export { buildPackageTestTree, buildTestFileNav } from "./test-tree.ts";
+export type {
+  TestTreeNode,
+  TestTreeNodeKind,
+  TestFileNavNode,
+  TestScope,
+} from "./test-tree.ts";
 export { buildPackageDirTree, packageKindIcon } from "./package-dir-tree.ts";
 export type { PackageDirNode } from "./package-dir-tree.ts";
 export { sourceOpenUrls, openSource } from "./source-links.ts";

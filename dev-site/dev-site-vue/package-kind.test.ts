@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { classifyPackageKind, PACKAGE_KIND_SURFACES } from "./package-kind.ts";
-import { buildPackageTestTree } from "./test-tree.ts";
+import { buildPackageTestTree, buildTestFileNav } from "./test-tree.ts";
 
 describe("classifyPackageKind", () => {
   it("classifies common saflib suffixes", () => {
@@ -28,52 +28,94 @@ describe("classifyPackageKind", () => {
   });
 });
 
+const fixtureTests = [
+  {
+    packageName: "@fixture/root",
+    filePath: "src/math.test.ts",
+    fullName: "math > adds",
+    subjectName: "math",
+    subjectSignature: "(a: number, b: number)",
+    subjectConfidence: "adjacent" as const,
+  },
+  {
+    packageName: "@fixture/root",
+    filePath: "src/math.test.ts",
+    fullName: "math > zero",
+    subjectName: "math",
+    subjectSignature: "(a: number, b: number)",
+    subjectConfidence: "adjacent" as const,
+  },
+  {
+    packageName: "@fixture/root",
+    filePath: "src/util/fmt.test.ts",
+    fullName: "fmt > pads",
+  },
+  {
+    packageName: "@other/pkg",
+    filePath: "x.test.ts",
+    fullName: "ignored",
+  },
+];
+
+describe("buildTestFileNav", () => {
+  it("lists dirs and test files only", () => {
+    const nav = buildTestFileNav(fixtureTests, "@fixture/root", "");
+    expect(nav).toHaveLength(1);
+    expect(nav[0]).toMatchObject({ kind: "dir", label: "src", localPath: "src" });
+    expect(nav[0].children.map((c) => c.label).sort()).toEqual([
+      "math.test.ts",
+      "util",
+    ]);
+    const util = nav[0].children.find((c) => c.label === "util")!;
+    expect(util.kind).toBe("dir");
+    expect(util.children[0]).toMatchObject({
+      kind: "file",
+      label: "fmt.test.ts",
+      localPath: "src/util/fmt.test.ts",
+    });
+  });
+});
+
 describe("buildPackageTestTree", () => {
   it("nests path, file, suite, and test", () => {
-    const tree = buildPackageTestTree(
-      [
-        {
-          packageName: "@fixture/root",
-          filePath: "src/math.test.ts",
-          fullName: "math > adds",
-          subjectName: "math",
-          subjectSignature: "(a: number, b: number)",
-          subjectConfidence: "adjacent",
-        },
-        {
-          packageName: "@fixture/root",
-          filePath: "src/math.test.ts",
-          fullName: "math > zero",
-          subjectName: "math",
-          subjectSignature: "(a: number, b: number)",
-          subjectConfidence: "adjacent",
-        },
-        {
-          packageName: "@other/pkg",
-          filePath: "x.test.ts",
-          fullName: "ignored",
-        },
-      ],
-      "@fixture/root",
-      "",
-    );
+    const tree = buildPackageTestTree(fixtureTests, "@fixture/root", "");
     expect(tree).toHaveLength(1);
     expect(tree[0].kind).toBe("dir");
     expect(tree[0].label).toBe("src");
-    const file = tree[0].children[0];
-    expect(file.kind).toBe("file");
-    expect(file.label).toBe("math.test.ts");
-    expect(file.children[0].kind).toBe("suite");
-    expect(file.children[0].label).toBe("math");
-    expect(file.children[0].subjectSignature).toBe("(a: number, b: number)");
-    expect(file.children[0].children.map((c) => c.label).sort()).toEqual([
+    const mathFile = tree[0].children.find((c) => c.label === "math.test.ts")!;
+    expect(mathFile.kind).toBe("file");
+    expect(mathFile.children[0].kind).toBe("suite");
+    expect(mathFile.children[0].label).toBe("math");
+    expect(mathFile.children[0].subjectSignature).toBe("(a: number, b: number)");
+    expect(mathFile.children[0].children.map((c) => c.label).sort()).toEqual([
       "adds",
       "zero",
     ]);
-    for (const leaf of file.children[0].children) {
+    for (const leaf of mathFile.children[0].children) {
       expect(leaf.kind).toBe("test");
       expect(leaf.subjectSignature).toBeUndefined();
     }
+  });
+
+  it("scopes to a single file without file wrapper", () => {
+    const tree = buildPackageTestTree(fixtureTests, "@fixture/root", "", "", {
+      kind: "file",
+      localPath: "src/math.test.ts",
+    });
+    expect(tree).toHaveLength(1);
+    expect(tree[0].kind).toBe("suite");
+    expect(tree[0].label).toBe("math");
+    expect(tree[0].children).toHaveLength(2);
+  });
+
+  it("scopes to a directory", () => {
+    const tree = buildPackageTestTree(fixtureTests, "@fixture/root", "", "", {
+      kind: "dir",
+      localPath: "src/util",
+    });
+    expect(tree).toHaveLength(1);
+    expect(tree[0].kind).toBe("file");
+    expect(tree[0].label).toBe("fmt.test.ts");
   });
 
   it("strips package directory prefix", () => {
