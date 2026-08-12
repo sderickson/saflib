@@ -9,8 +9,12 @@ const NAME_SEP = " > ";
  *
  * `it.skip` / `it.only` / `test.skip` / `test.only` / `describe.skip` /
  * `describe.only` **count** — they are still declared tests; skip/only is a
- * runtime concern, not an inventory concern. `*.each` and non-string titles are
- * skipped (no usable stable name).
+ * runtime concern, not an inventory concern.
+ *
+ * `it.each` / `test.each` / `describe.each` **count** using the title template
+ * string (e.g. `"matches committed schema for %s"`). Rows are not expanded —
+ * only the template is stable without evaluating the table.
+ * Non-string titles are skipped.
  */
 export function extractTestCases(source: string): TestCaseEntry[] {
   const sf = ts.createSourceFile(
@@ -64,9 +68,10 @@ function asTestFrameworkCall(
 }
 
 /**
- * Matches `describe` / `it` / `test`, plus `.skip` / `.only` property access
- * (e.g. `it.skip(...)`). Does not match `.each` (parameterized titles aren't
- * stable strings we can inventory).
+ * Matches:
+ * - `describe` / `it` / `test`
+ * - `.skip` / `.only` (e.g. `it.skip(...)`)
+ * - `.each(table)(title, fn)` (e.g. `it.each(rows)("case %s", ...)`)
  */
 function frameworkCalleeKind(expr: ts.Expression): FrameworkKind | undefined {
   if (ts.isIdentifier(expr)) {
@@ -78,6 +83,17 @@ function frameworkCalleeKind(expr: ts.Expression): FrameworkKind | undefined {
     (expr.name.text === "skip" || expr.name.text === "only")
   ) {
     return asFrameworkName(expr.expression.text);
+  }
+  // `it.each(table)(title, fn)` — outer callee is the inner call `it.each(table)`.
+  if (ts.isCallExpression(expr)) {
+    const inner = expr.expression;
+    if (
+      ts.isPropertyAccessExpression(inner) &&
+      ts.isIdentifier(inner.expression) &&
+      inner.name.text === "each"
+    ) {
+      return asFrameworkName(inner.expression.text);
+    }
   }
   return undefined;
 }

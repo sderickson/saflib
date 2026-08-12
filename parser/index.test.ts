@@ -156,16 +156,35 @@ describe("extractTestCases", () => {
     ]);
   });
 
-  it("skips non-string titles and *.each", () => {
+  it("skips non-string titles", () => {
     const source = `
       describe("ok", () => {
         it(nameOfThing, () => {});
-        it.each([1, 2])("param %s", () => {});
         it("kept", () => {});
       });
     `;
     expect(extractTestCases(source).map((t) => t.fullName)).toEqual([
       "ok > kept",
+    ]);
+  });
+
+  it("inventories *.each title templates (does not expand rows)", () => {
+    const source = `
+      describe("parsePdfFormFields", () => {
+        it.each(SHIPPED_LINEAGES)(
+          "matches committed schema for %s",
+          async (lineageKey) => {},
+        );
+        test.each([1, 2])("param %s", () => {});
+      });
+      describe.each(TABLE)("suite %s", () => {
+        it("inside", () => {});
+      });
+    `;
+    expect(extractTestCases(source).map((t) => t.fullName)).toEqual([
+      "parsePdfFormFields > matches committed schema for %s",
+      "parsePdfFormFields > param %s",
+      "suite %s > inside",
     ]);
   });
 

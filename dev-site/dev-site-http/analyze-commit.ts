@@ -25,7 +25,7 @@ import {
 } from "./classify.ts";
 import { linkTestSubjects } from "./link-test-subjects.ts";
 
-export const ANALYZER_VERSION = "3";
+export const ANALYZER_VERSION = "4";
 
 export interface AnalyzeCommitOptions {
   repoRoot: string;
