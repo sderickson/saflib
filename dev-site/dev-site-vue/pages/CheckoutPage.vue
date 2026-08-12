@@ -48,6 +48,7 @@
           :headers="headers"
           :items="packageRows"
           item-value="packageName"
+          :items-per-page="-1"
           class="elevation-1"
         >
           <template #[`item.kind`]="{ item }">

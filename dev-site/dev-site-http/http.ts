@@ -118,6 +118,32 @@ export function createDevSiteHttpApp(
       }
       res.sendFile(indexHtml);
     });
+  } else {
+    // Live-dev: API has no SPA. Soft-hint browsers that still hit :3099.
+    app.use((req, res, next) => {
+      if (req.method !== "GET" && req.method !== "HEAD") {
+        next();
+        return;
+      }
+      if (req.path.startsWith("/api")) {
+        next();
+        return;
+      }
+      const accept = req.headers.accept ?? "";
+      if (!accept.includes("text/html")) {
+        next();
+        return;
+      }
+      const ui = `http://localhost:5199${req.path === "/" ? "/" : req.path}`;
+      res.status(404).type("html").send(`<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>dev-site API</title></head>
+<body style="font-family:system-ui;line-height:1.4;padding:2rem;max-width:36rem">
+  <h1>API only on this port</h1>
+  <p>Live-dev serves the UI from Vite (HMR), not Express.</p>
+  <p>Open <a href="${ui}">${ui}</a></p>
+  <p>API routes are under <code>/api/*</code> (e.g. <code>/api/checkout</code>).</p>
+</body></html>`);
+    });
   }
 
   app.use(createErrorMiddleware());
