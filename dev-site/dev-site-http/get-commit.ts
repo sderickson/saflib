@@ -91,8 +91,9 @@ export async function listCommitSummaries(
   for (const c of page.result.commits) {
     const metrics = (await packageMetricsDb.listByCommit(dbKey, c.hash))
       .result!;
-    const exportRows = (await exportsDb.listByCommit(dbKey, c.hash)).result!;
-    const testRows = (await testCasesDb.listByCommit(dbKey, c.hash)).result!;
+    const exportCount = (await exportsDb.countByCommit(dbKey, c.hash)).result!;
+    const testCaseCount = (await testCasesDb.countByCommit(dbKey, c.hash))
+      .result!;
     commits.push({
       hash: c.hash,
       parentHashes: c.parentHashes,
@@ -108,8 +109,8 @@ export async function listCommitSummaries(
         sourceLines: metrics.reduce((n, m) => n + m.sourceLines, 0),
         testFiles: metrics.reduce((n, m) => n + m.testFiles, 0),
         testLines: metrics.reduce((n, m) => n + m.testLines, 0),
-        exportCount: exportRows.length,
-        testCaseCount: testRows.length,
+        exportCount,
+        testCaseCount,
       },
     });
   }

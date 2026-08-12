@@ -8,12 +8,18 @@ export type {
   PackageMetricsEntity,
 } from "./schemas/package-metrics.ts";
 export type {
-  ExportEntity,
+  ExportDefEntity,
   ExportKind,
 } from "./schemas/exports.ts";
 export type {
-  TestCaseEntity,
+  CommitExportEntity,
+} from "./schemas/commit-exports.ts";
+export type {
+  TestCaseDefEntity,
 } from "./schemas/test-cases.ts";
+export type {
+  CommitTestCaseEntity,
+} from "./schemas/commit-test-cases.ts";
 
 export type InsertAnalyzedCommitParams = Omit<
   import("./schemas/analyzed-commits.ts").AnalyzedCommitEntity,
@@ -25,12 +31,19 @@ export type InsertPackageMetricsParams = Omit<
   "id"
 >;
 
-export type InsertExportParams = Omit<
-  import("./schemas/exports.ts").ExportEntity,
-  "id"
->;
+/** Fields needed to upsert an export def and link it to a commit. */
+export type InsertExportParams = {
+  commitHash: string;
+  packageName: string;
+  filePath: string;
+  name: string;
+  kind: import("./schemas/exports.ts").ExportKind;
+};
 
-export type InsertTestCaseParams = Omit<
-  import("./schemas/test-cases.ts").TestCaseEntity,
-  "id"
->;
+/** Fields needed to upsert a test-case def and link it to a commit. */
+export type InsertTestCaseParams = {
+  commitHash: string;
+  packageName: string;
+  filePath: string;
+  fullName: string;
+};

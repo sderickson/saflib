@@ -1,11 +1,5 @@
-import {
-  index,
-  sqliteTable,
-  text,
-} from "drizzle-orm/sqlite-core";
+import { sqliteTable, text } from "drizzle-orm/sqlite-core";
 import type { Expect, Equal } from "@saflib/drizzle";
-import { generateShortId } from "@saflib/drizzle";
-import { analyzedCommitsTable } from "./analyzed-commits.ts";
 
 const exportKindEnum = [
   "function",
@@ -18,32 +12,23 @@ const exportKindEnum = [
 ] as const;
 export type ExportKind = (typeof exportKindEnum)[number];
 
-export interface ExportEntity {
-  id: string;
-  commitHash: string;
+/** Content-addressed export identity (shared across commits). */
+export interface ExportDefEntity {
+  hash: string;
   packageName: string;
   filePath: string;
   name: string;
   kind: ExportKind;
 }
 
-export const exportsTable = sqliteTable(
-  "exports",
-  {
-    id: text("id")
-      .primaryKey()
-      .$defaultFn(() => generateShortId()),
-    commitHash: text("commit_hash")
-      .notNull()
-      .references(() => analyzedCommitsTable.hash),
-    packageName: text("package_name").notNull(),
-    filePath: text("file_path").notNull(),
-    name: text("name").notNull(),
-    kind: text("kind", { enum: exportKindEnum }).notNull(),
-  },
-  (table) => [index("exports_commit_hash_idx").on(table.commitHash)],
-);
+export const exportDefsTable = sqliteTable("export_defs", {
+  hash: text("hash").primaryKey(),
+  packageName: text("package_name").notNull(),
+  filePath: text("file_path").notNull(),
+  name: text("name").notNull(),
+  kind: text("kind", { enum: exportKindEnum }).notNull(),
+});
 
-export type ExportEntityTest = Expect<
-  Equal<ExportEntity, typeof exportsTable.$inferSelect>
+export type ExportDefEntityTest = Expect<
+  Equal<ExportDefEntity, typeof exportDefsTable.$inferSelect>
 >;

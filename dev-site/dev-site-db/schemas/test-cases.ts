@@ -1,36 +1,21 @@
-import {
-  index,
-  sqliteTable,
-  text,
-} from "drizzle-orm/sqlite-core";
+import { sqliteTable, text } from "drizzle-orm/sqlite-core";
 import type { Expect, Equal } from "@saflib/drizzle";
-import { generateShortId } from "@saflib/drizzle";
-import { analyzedCommitsTable } from "./analyzed-commits.ts";
 
-export interface TestCaseEntity {
-  id: string;
-  commitHash: string;
+/** Content-addressed test-case identity (shared across commits). */
+export interface TestCaseDefEntity {
+  hash: string;
   packageName: string;
   filePath: string;
   fullName: string;
 }
 
-export const testCasesTable = sqliteTable(
-  "test_cases",
-  {
-    id: text("id")
-      .primaryKey()
-      .$defaultFn(() => generateShortId()),
-    commitHash: text("commit_hash")
-      .notNull()
-      .references(() => analyzedCommitsTable.hash),
-    packageName: text("package_name").notNull(),
-    filePath: text("file_path").notNull(),
-    fullName: text("full_name").notNull(),
-  },
-  (table) => [index("test_cases_commit_hash_idx").on(table.commitHash)],
-);
+export const testCaseDefsTable = sqliteTable("test_case_defs", {
+  hash: text("hash").primaryKey(),
+  packageName: text("package_name").notNull(),
+  filePath: text("file_path").notNull(),
+  fullName: text("full_name").notNull(),
+});
 
-export type TestCaseEntityTest = Expect<
-  Equal<TestCaseEntity, typeof testCasesTable.$inferSelect>
+export type TestCaseDefEntityTest = Expect<
+  Equal<TestCaseDefEntity, typeof testCaseDefsTable.$inferSelect>
 >;

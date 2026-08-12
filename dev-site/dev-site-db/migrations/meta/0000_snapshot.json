@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "a812c5eb-6b9e-40fd-8273-eb5f3a532255",
+  "id": "8a06a71c-37d4-4981-b755-898c3f730536",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "analyzed_commits": {
@@ -173,20 +173,13 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "exports": {
-      "name": "exports",
+    "export_defs": {
+      "name": "export_defs",
       "columns": {
-        "id": {
-          "name": "id",
+        "hash": {
+          "name": "hash",
           "type": "text",
           "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "commit_hash": {
-          "name": "commit_hash",
-          "type": "text",
-          "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
@@ -219,19 +212,50 @@
           "autoincrement": false
         }
       },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "commit_exports": {
+      "name": "commit_exports",
+      "columns": {
+        "commit_hash": {
+          "name": "commit_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "export_hash": {
+          "name": "export_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
       "indexes": {
-        "exports_commit_hash_idx": {
-          "name": "exports_commit_hash_idx",
+        "commit_exports_commit_hash_idx": {
+          "name": "commit_exports_commit_hash_idx",
           "columns": [
             "commit_hash"
+          ],
+          "isUnique": false
+        },
+        "commit_exports_export_hash_idx": {
+          "name": "commit_exports_export_hash_idx",
+          "columns": [
+            "export_hash"
           ],
           "isUnique": false
         }
       },
       "foreignKeys": {
-        "exports_commit_hash_analyzed_commits_hash_fk": {
-          "name": "exports_commit_hash_analyzed_commits_hash_fk",
-          "tableFrom": "exports",
+        "commit_exports_commit_hash_analyzed_commits_hash_fk": {
+          "name": "commit_exports_commit_hash_analyzed_commits_hash_fk",
+          "tableFrom": "commit_exports",
           "tableTo": "analyzed_commits",
           "columnsFrom": [
             "commit_hash"
@@ -241,26 +265,40 @@
           ],
           "onDelete": "no action",
           "onUpdate": "no action"
+        },
+        "commit_exports_export_hash_export_defs_hash_fk": {
+          "name": "commit_exports_export_hash_export_defs_hash_fk",
+          "tableFrom": "commit_exports",
+          "tableTo": "export_defs",
+          "columnsFrom": [
+            "export_hash"
+          ],
+          "columnsTo": [
+            "hash"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
-      "compositePrimaryKeys": {},
+      "compositePrimaryKeys": {
+        "commit_exports_commit_hash_export_hash_pk": {
+          "columns": [
+            "commit_hash",
+            "export_hash"
+          ],
+          "name": "commit_exports_commit_hash_export_hash_pk"
+        }
+      },
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "test_cases": {
-      "name": "test_cases",
+    "test_case_defs": {
+      "name": "test_case_defs",
       "columns": {
-        "id": {
-          "name": "id",
+        "hash": {
+          "name": "hash",
           "type": "text",
           "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "commit_hash": {
-          "name": "commit_hash",
-          "type": "text",
-          "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
@@ -286,19 +324,50 @@
           "autoincrement": false
         }
       },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "commit_test_cases": {
+      "name": "commit_test_cases",
+      "columns": {
+        "commit_hash": {
+          "name": "commit_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "test_case_hash": {
+          "name": "test_case_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
       "indexes": {
-        "test_cases_commit_hash_idx": {
-          "name": "test_cases_commit_hash_idx",
+        "commit_test_cases_commit_hash_idx": {
+          "name": "commit_test_cases_commit_hash_idx",
           "columns": [
             "commit_hash"
+          ],
+          "isUnique": false
+        },
+        "commit_test_cases_test_case_hash_idx": {
+          "name": "commit_test_cases_test_case_hash_idx",
+          "columns": [
+            "test_case_hash"
           ],
           "isUnique": false
         }
       },
       "foreignKeys": {
-        "test_cases_commit_hash_analyzed_commits_hash_fk": {
-          "name": "test_cases_commit_hash_analyzed_commits_hash_fk",
-          "tableFrom": "test_cases",
+        "commit_test_cases_commit_hash_analyzed_commits_hash_fk": {
+          "name": "commit_test_cases_commit_hash_analyzed_commits_hash_fk",
+          "tableFrom": "commit_test_cases",
           "tableTo": "analyzed_commits",
           "columnsFrom": [
             "commit_hash"
@@ -308,9 +377,30 @@
           ],
           "onDelete": "no action",
           "onUpdate": "no action"
+        },
+        "commit_test_cases_test_case_hash_test_case_defs_hash_fk": {
+          "name": "commit_test_cases_test_case_hash_test_case_defs_hash_fk",
+          "tableFrom": "commit_test_cases",
+          "tableTo": "test_case_defs",
+          "columnsFrom": [
+            "test_case_hash"
+          ],
+          "columnsTo": [
+            "hash"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
-      "compositePrimaryKeys": {},
+      "compositePrimaryKeys": {
+        "commit_test_cases_commit_hash_test_case_hash_pk": {
+          "columns": [
+            "commit_hash",
+            "test_case_hash"
+          ],
+          "name": "commit_test_cases_commit_hash_test_case_hash_pk"
+        }
+      },
       "uniqueConstraints": {},
       "checkConstraints": {}
     }
