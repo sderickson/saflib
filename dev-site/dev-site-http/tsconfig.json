@@ -1,0 +1,41 @@
+{
+  "extends": "@saflib/monorepo/tsconfig.json",
+  "references": [
+    {
+      "path": "../../commander"
+    },
+    {
+      "path": "../../express"
+    },
+    {
+      "path": "../../monorepo"
+    },
+    {
+      "path": "../dev-site-db"
+    },
+    {
+      "path": "../dev-site-spec"
+    }
+  ],
+  "compilerOptions": {
+    "outDir": "./dist/types",
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.tsbuildinfo",
+    "noEmit": false,
+    "emitDeclarationOnly": true
+  },
+  "exclude": [
+    "node_modules",
+    "dist/types",
+    "e2e",
+    "playwright-report",
+    "test-results",
+    "workflows/template/**",
+    "workflows/templates/**",
+    "**/workflows/template/**",
+    "**/workflows/templates/**"
+  ],
+  "include": [
+    "**/*.ts",
+    "**/*.json"
+  ]
+}

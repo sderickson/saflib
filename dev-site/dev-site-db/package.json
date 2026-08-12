@@ -1,0 +1,28 @@
+{
+  "name": "@saflib/dev-site-db",
+  "description": "Database package for dev-site.",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./instances": "./instances.ts",
+    "./errors": "./errors.ts",
+    "./types": "./types.ts",
+    "./queries/*": "./queries/*.ts",
+    "./schemas/*": "./schemas/*.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "generate": "drizzle-kit generate",
+    "typecheck": "tsc -b"
+  },
+  "dependencies": {
+    "@saflib/drizzle": "*",
+    "drizzle-orm": "^0.45.2"
+  },
+  "devDependencies": {
+    "@saflib/vitest": "*"
+  },
+  "sideEffects": false
+}
