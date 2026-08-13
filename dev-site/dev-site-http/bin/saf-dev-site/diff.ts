@@ -16,7 +16,7 @@ export const addDiffCommand = (program: Command) => {
     )
     .option(
       "--product-root <path>",
-      "Path prefix within the repo (e.g. daemon)",
+      "Path prefix within the repo (e.g. products)",
       "",
     )
     .option("--main-ref <ref>", "Main branch ref", "main")

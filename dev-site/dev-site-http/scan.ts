@@ -14,7 +14,7 @@ import { analyzeCommit, ANALYZER_VERSION } from "./analyze-commit.ts";
 
 export interface ScanOptions {
   repoRoot: string;
-  /** Limit analysis to this path prefix (e.g. `daemon`). */
+  /** Limit analysis to this path prefix (e.g. `products`). */
   productRoot?: string;
   /** Main branch ref. Defaults to `main`. */
   mainRef?: string;

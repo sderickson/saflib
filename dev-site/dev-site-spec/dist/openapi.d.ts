@@ -544,7 +544,7 @@ export interface operations {
             header?: never;
             path: {
                 hash: string;
-                /** @description npm package name (URL-encoded), e.g. `%40pathclerk%2Fdaemon-forms` */
+                /** @description npm package name (URL-encoded), e.g. `%40example%2Fbilling-http` */
                 packageName: string;
             };
             cookie?: never;
@@ -665,7 +665,7 @@ export interface operations {
                         /** Format: date-time */
                         authoredAt: string;
                         analyzed: boolean;
-                        /** @description Analysis path prefix within the repo (e.g. `daemon`). Empty string means the whole repository. Package `directory` values are relative to this prefix; prepend it for repo-absolute paths. */
+                        /** @description Analysis path prefix within the repo (e.g. `products`). Empty string means the whole repository. Package `directory` values are relative to this prefix; prepend it for repo-absolute paths. */
                         productRoot: string;
                         packages: {
                             packageName: string;

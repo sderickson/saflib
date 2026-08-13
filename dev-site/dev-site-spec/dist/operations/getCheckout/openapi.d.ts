@@ -67,7 +67,7 @@ export interface operations {
                         /** Format: date-time */
                         authoredAt: string;
                         analyzed: boolean;
-                        /** @description Analysis path prefix within the repo (e.g. `daemon`). Empty string means the whole repository. Package `directory` values are relative to this prefix; prepend it for repo-absolute paths. */
+                        /** @description Analysis path prefix within the repo (e.g. `products`). Empty string means the whole repository. Package `directory` values are relative to this prefix; prepend it for repo-absolute paths. */
                         productRoot: string;
                         packages: {
                             packageName: string;

@@ -7,10 +7,10 @@ COPY ./deploy/kratos/courier-body.jsonnet \
      ./deploy/kratos/kratos-action-body.jsonnet \
      ./deploy/kratos/kratos.yml \
      /etc/config/kratos/
-COPY ./deploy/kratos/env.defaults /etc/pathclerk/env.defaults
+COPY ./deploy/kratos/env.defaults /etc/__product-name__/env.defaults
 COPY ./deploy/scripts/apply-env-defaults.sh /usr/local/bin/apply-env-defaults.sh
 RUN chmod +x /usr/local/bin/apply-env-defaults.sh \
-    && chown -R 10000:10000 /etc/config/kratos /etc/pathclerk
+    && chown -R 10000:10000 /etc/config/kratos /etc/__product-name__
 
 USER 10000
 

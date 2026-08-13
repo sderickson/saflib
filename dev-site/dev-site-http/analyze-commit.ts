@@ -29,7 +29,7 @@ export const ANALYZER_VERSION = "4";
 
 export interface AnalyzeCommitOptions {
   repoRoot: string;
-  /** Limit analysis to paths under this prefix (e.g. `daemon`). Empty = whole repo. */
+  /** Limit analysis to paths under this prefix (e.g. `products`). Empty = whole repo. */
   productRoot?: string;
   /** Main branch ref for isMainAncestor. Defaults to `main`. */
   mainRef?: string;

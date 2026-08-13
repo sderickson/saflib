@@ -125,7 +125,7 @@ export interface operations {
             header?: never;
             path: {
                 hash: string;
-                /** @description npm package name (URL-encoded), e.g. `%40pathclerk%2Fdaemon-forms` */
+                /** @description npm package name (URL-encoded), e.g. `%40example%2Fbilling-http` */
                 packageName: string;
             };
             cookie?: never;
