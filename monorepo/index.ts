@@ -43,6 +43,7 @@ export type ReturnsError<T, E extends Error = Error> = OneOf<{
   result: T;
 }>;
 
+
 type NonUndefined<T> = T extends undefined ? never : T;
 
 /**
@@ -65,6 +66,14 @@ export const throwError = async <T>(
   }
   return result as NonUndefined<T>; // not sure why TS thinks result might be undefined
 };
+
+export {
+  checkPackageLayout,
+  DEFAULT_MAX_SOURCE_LINES,
+  type CheckPackageLayoutOptions,
+  type PackageLayoutIssue,
+  type PackageLayoutIssueKind,
+} from "./src/package-layout.ts";
 
 // Hack so TS doesn't complain about dirname and filename
 declare global {

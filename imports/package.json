@@ -8,6 +8,8 @@
   },
   "exports": {
     ".": "./index.ts",
+    "./facts": "./src/facts/index.ts",
+    "./issues": "./src/issues/index.ts",
     "./reporter": "./reporter.ts",
     "./src/snapshot/snapshot": "./src/snapshot/snapshot.ts",
     "./src/exports/generate-exports": "./src/exports/generate-exports.ts",
@@ -16,6 +18,8 @@
     "./src/graph/find-path": "./src/graph/find-path.ts",
     "./src/graph/read-source": "./src/graph/read-source.ts",
     "./src/graph/walk-graph": "./src/graph/walk-graph.ts",
+    "./src/graph/assemble-used-by": "./src/graph/assemble-used-by.ts",
+    "./src/graph/import-resolution": "./src/graph/import-resolution.ts",
     "./src/tsconfig": "./src/tsconfig/index.ts",
     "./src/tsconfig/build-graph": "./src/tsconfig/build-graph.ts",
     "./src/tsconfig/detect-cycles": "./src/tsconfig/detect-cycles.ts",
@@ -34,10 +38,10 @@
   },
   "dependencies": {
     "@saflib/commander": "*",
-    "@saflib/dev-tools": "*"
+    "@saflib/monorepo": "*",
+    "@saflib/parser": "*"
   },
   "devDependencies": {
-    "@saflib/monorepo": "*",
     "@saflib/vitest": "*",
     "vitest": "^3.0.0"
   },

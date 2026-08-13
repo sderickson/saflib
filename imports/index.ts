@@ -6,6 +6,45 @@ export {
   type Cycle,
 } from "./src/graph/detect-cycles.ts";
 export {
+  assembleUsedBy,
+  type ExportUsedBy,
+  type ExportUsedByMap,
+  type UsedByImporterUnit,
+} from "./src/graph/assemble-used-by.ts";
+export {
+  exportUsedByKey,
+  moduleTargetFromImport,
+  packageLocalPath,
+  resolveRelative,
+  stripTsExt,
+  type ImportUsedBy,
+} from "./src/graph/import-resolution.ts";
+export {
+  ANALYZER_VERSION,
+  MemoryFactStore,
+  buildFileSpecialty,
+  countSourceLines,
+  fileFactFromSource,
+  specialtyExports,
+  specialtyImports,
+  specialtyTables,
+  specialtyTestCases,
+  type FactStore,
+  type FileExportFact,
+  type FileFact,
+  type FileImportFact,
+  type FileSpecialty,
+  type FileTableColumnFact,
+  type FileTableFact,
+  type FileTestCaseFact,
+} from "./src/facts/index.ts";
+export {
+  collectPackageIssues,
+  type PackageDetailForIssues,
+  type PackageIssue,
+  type PackageIssueKind,
+} from "./src/issues/index.ts";
+export {
   computeExportsMap,
   checkExports,
   checkExportPatternCoverage,
@@ -13,6 +52,7 @@ export {
   listExportableFiles,
   packageHasWorkflowMarkers,
   resolvePackageDir,
+  leafExportRemapDiffs,
   type ExportsMap,
   type CheckExportsResult,
 } from "./src/exports/generate-exports.ts";

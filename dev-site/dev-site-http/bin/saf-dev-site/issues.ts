@@ -20,12 +20,15 @@ function printIssuesText(args: {
   label: string;
   productRoot: string;
   metaLine: string;
-  issues: Array<{ filePath: string; name: string; kindLabel: string }>;
+  issues: Array<{
+    filePath: string;
+    name: string;
+    kindLabel: string;
+    kind?: string;
+  }>;
 }): void {
-  console.log(`# Dead code in ${args.packageName} @ ${args.label}`);
-  console.log(
-    `# ${args.issues.length} issue(s) — exports/queries with no non-test importers`,
-  );
+  console.log(`# Issues in ${args.packageName} @ ${args.label}`);
+  console.log(`# ${args.issues.length} issue(s)`);
   console.log(args.metaLine);
   console.log("");
   if (!args.issues.length) {
@@ -33,7 +36,10 @@ function printIssuesText(args: {
     return;
   }
   for (const issue of args.issues) {
-    console.log(`${issue.filePath}\t${issue.name}\t${issue.kindLabel}`);
+    const kind = issue.kind ? `${issue.kind}\t` : "";
+    console.log(
+      `${kind}${issue.filePath}\t${issue.name}\t${issue.kindLabel}`,
+    );
   }
 }
 

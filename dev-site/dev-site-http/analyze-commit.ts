@@ -6,23 +6,22 @@ import {
   type GitCommit,
 } from "@saflib/git";
 import type { DbKey } from "@saflib/drizzle";
-import type { AnalyzedCommitRef, BlobFactEntity, BlobSpecialty, InsertBlobFactParams, InsertPackageMetricsParams } from "@saflib/dev-site-db/types";
+import type { AnalyzedCommitRef, BlobFactEntity, InsertBlobFactParams, InsertPackageMetricsParams } from "@saflib/dev-site-db/types";
 import {
   blobFactExports,
   blobFactTestCases,
 } from "@saflib/dev-site-db/types";
 
 import {
-  extractDrizzleTables,
-  extractExports,
-  extractImports,
-  extractTestCases,
-} from "@saflib/parser";
+  ANALYZER_VERSION,
+  buildFileSpecialty,
+  countSourceLines,
+  type FileSpecialty,
+} from "@saflib/imports";
 import type { ReturnsError } from "@saflib/monorepo";
 import type { GitCommandError } from "@saflib/git";
 import { makeSubsystemReporters } from "@saflib/node";
 import {
-  countLines,
   isSourcePath,
   isTestSourcePath,
   packageForPath,
@@ -33,7 +32,7 @@ import { linkTestSubjects } from "./link-test-subjects.ts";
 
 import { getByHashes } from "@saflib/dev-site-db/queries/blob-facts/get-by-hashes";
 import { upsertMany } from "@saflib/dev-site-db/queries/blob-facts/upsert-many";
-export const ANALYZER_VERSION = "7";
+export { ANALYZER_VERSION };
 
 export interface AnalyzeCommitOptions {
   repoRoot: string;
@@ -92,43 +91,9 @@ function stripProductRoot(path: string, productRoot: string): string {
   return path;
 }
 
-function buildSpecialty(source: string): BlobSpecialty {
-  const exports = extractExports(source).map((e) => ({
-    name: e.name,
-    kind: e.kind,
-    signature: e.signature,
-    docstring: e.docstring,
-  }));
-  const imports = extractImports(source).map((i) => ({
-    specifier: i.specifier,
-    names: i.names,
-  }));
-  const tables = extractDrizzleTables(source).map((t) => ({
-    exportName: t.exportName,
-    tableName: t.tableName,
-    docstring: t.docstring,
-    columns: t.columns.map((c) => ({
-      propName: c.propName,
-      sqlName: c.sqlName,
-      typeKind: c.typeKind,
-      docstring: c.docstring,
-    })),
-  }));
-  if (tables.length > 0) {
-    return { kind: "sql-table", exports, imports, tables };
-  }
-  const testCases = extractTestCases(source).map((t) => ({
-    fullName: t.fullName,
-  }));
-  if (testCases.length > 0) {
-    return { kind: "test", exports, imports, testCases };
-  }
-  return { kind: "source", exports, imports };
-}
-
 /** Parse exports/imports(/tests/tables) from source text — no git or DB. */
-export function parseSourceSpecialty(source: string): BlobSpecialty {
-  return buildSpecialty(source);
+export function parseSourceSpecialty(source: string): FileSpecialty {
+  return buildFileSpecialty(source);
 }
 
 function parseBlobFact(
@@ -138,8 +103,8 @@ function parseBlobFact(
   return {
     blobHash,
     analyzerVersion: ANALYZER_VERSION,
-    lineCount: countLines(source),
-    specialty: buildSpecialty(source),
+    lineCount: countSourceLines(source),
+    specialty: buildFileSpecialty(source),
     computedAt: new Date(),
   };
 }

@@ -27,7 +27,7 @@ describe("import-resolution", () => {
         "daemon/service/http/routes/x.ts",
         "@pathclerk/daemon-form-artifacts/paths/form-artifact-paths",
       ),
-    ).toBe("form-artifact-paths");
+    ).toBe("paths/form-artifact-paths");
 
     expect(
       moduleTargetFromImport(

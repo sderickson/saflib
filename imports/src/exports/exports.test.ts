@@ -44,7 +44,7 @@ describe("computeExportsMap", () => {
     }
   });
 
-  it("merges exportsAliases from package.json", () => {
+  it("does not merge exportsAliases into the exports map", () => {
     const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "saf-imports-exports-alias-"));
     try {
       fs.writeFileSync(
@@ -62,8 +62,36 @@ describe("computeExportsMap", () => {
       fs.writeFileSync(path.join(tmp, "long-name.ts"), "export {};\n");
 
       const map = computeExportsMap(tmp);
-      expect(map["./short"]).toBe("./long-name.ts");
+      expect(map["./short"]).toBeUndefined();
       expect(map["./long-name"]).toBe("./long-name.ts");
+    } finally {
+      fs.rmSync(tmp, { recursive: true, force: true });
+    }
+  });
+
+  it("flags leaf remaps and exportsAliases in checkExports", () => {
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "saf-imports-remap-"));
+    try {
+      fs.writeFileSync(
+        path.join(tmp, "package.json"),
+        JSON.stringify(
+          {
+            name: "@tmp/remap",
+            type: "module",
+            exports: { "./short": "./lib/long.ts" },
+            exportsAliases: { "./a": "./b.ts" },
+          },
+          null,
+          2,
+        ) + "\n",
+      );
+      fs.mkdirSync(path.join(tmp, "lib"));
+      fs.writeFileSync(path.join(tmp, "lib/long.ts"), "export {};\n");
+      fs.writeFileSync(path.join(tmp, "b.ts"), "export {};\n");
+
+      const result = checkExports(tmp);
+      expect(result.ok).toBe(false);
+      expect(result.diffs.some((d) => d.includes("remap"))).toBe(true);
     } finally {
       fs.rmSync(tmp, { recursive: true, force: true });
     }

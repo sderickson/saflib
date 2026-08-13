@@ -25,11 +25,11 @@
     </div>
 
     <section v-else-if="issues.length" class="issues">
-      <h3 class="issues__heading">Dead code</h3>
+      <h3 class="issues__heading">Package issues</h3>
       <p class="issues__hint">
-        Exports with no non-test importers in this checkout. May mean the symbol
-        is unused, only covered by tests, or missed by import resolution
-        (barrels, dynamic imports).
+        Dead code and same-file-only exports (no non-test importers outside the
+        defining file). Layout / LoC: use the CLI below or
+        <code>analyze-package</code>.
       </p>
       <ul class="issues__list">
         <li

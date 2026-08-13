@@ -18,9 +18,11 @@
     "saf-tests": "./src/saf-tests-cli.ts",
     "saf-git-hashes": "./src/git-hashes-cli.ts",
     "saf-docs": "./bin/saf-docs-cli/index.ts",
-    "saf-ts-run": "./src/saf-ts-run-cli.ts"
+    "saf-ts-run": "./src/saf-ts-run-cli.ts",
+    "analyze-package": "./src/analyze-package-cli.ts"
   },
   "dependencies": {
+    "@saflib/imports": "*",
     "@saflib/monorepo": "*"
   },
   "devDependencies": {

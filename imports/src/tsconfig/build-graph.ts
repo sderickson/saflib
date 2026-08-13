@@ -5,7 +5,7 @@ import {
   buildMonorepoContext,
   type MonorepoContext,
   type PackageJson,
-} from "@saflib/dev-tools";
+} from "@saflib/monorepo/workspace";
 import { readPackageSafImportsConfig } from "../config/read-saf-imports-config.ts";
 import { resolveTsconfigEntry } from "./resolve-entry.ts";
 

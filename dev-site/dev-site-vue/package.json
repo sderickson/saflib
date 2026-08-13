@@ -16,6 +16,7 @@
   "dependencies": {
     "@saflib/dev-site-http": "*",
     "@saflib/dev-site-spec": "*",
+    "@saflib/imports": "*",
     "@saflib/sdk": "*",
     "@saflib/vue": "*",
     "@tanstack/vue-query": "*",

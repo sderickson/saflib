@@ -25,6 +25,7 @@
     "@saflib/drizzle": "*",
     "@saflib/express": "*",
     "@saflib/git": "*",
+    "@saflib/imports": "*",
     "@saflib/monorepo": "*",
     "@saflib/node": "*",
     "@saflib/parser": "*",

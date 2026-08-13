@@ -8,7 +8,8 @@
     "./tsconfig.json": "./tsconfig.base.json",
     "./eslint.config.js": "./eslint.config.js",
     "./dev": "./dev.ts",
-    "./workspace": "./src/workspace.ts"
+    "./workspace": "./src/workspace.ts",
+    "./package-layout": "./src/package-layout.ts"
   },
   "scripts": {
     "test": "vitest run",

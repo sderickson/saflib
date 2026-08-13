@@ -1,0 +1,208 @@
+/**
+ * Package layout + oversized-file checks (npm package as monorepo unit).
+ */
+import fs from "node:fs";
+import path from "node:path";
+
+export const DEFAULT_MAX_SOURCE_LINES = 500;
+
+export type PackageLayoutIssueKind = "package-layout" | "oversized-file";
+
+export interface PackageLayoutIssue {
+  kind: PackageLayoutIssueKind;
+  title: string;
+  name: string;
+  kindLabel: string;
+  /** Package-local path (or `package.json`). */
+  filePath: string;
+  repoPath: string;
+}
+
+export interface CheckPackageLayoutOptions {
+  /** Absolute package directory. */
+  packageDir: string;
+  /** Repo-relative package directory for repoPath (optional). */
+  packageRepoPath?: string;
+  maxSourceLines?: number;
+}
+
+function readPackageJson(pkgDir: string): {
+  bin?: Record<string, string> | string;
+  scripts?: Record<string, string>;
+} {
+  const text = fs.readFileSync(path.join(pkgDir, "package.json"), "utf8");
+  return JSON.parse(text) as {
+    bin?: Record<string, string> | string;
+    scripts?: Record<string, string>;
+  };
+}
+
+function isUnderBin(rel: string): boolean {
+  const n = rel.replace(/^\.\//, "").replace(/\\/g, "/");
+  return n === "bin" || n.startsWith("bin/");
+}
+
+function isUnderScripts(rel: string): boolean {
+  const n = rel.replace(/^\.\//, "").replace(/\\/g, "/");
+  return n === "scripts" || n.startsWith("scripts/");
+}
+
+/** Extract a path-like token after saf-ts-run or node strip-types. */
+function scriptTargetPath(script: string): string | null {
+  const saf = script.match(/saf-ts-run\s+(\S+)/);
+  if (saf) return saf[1]!.replace(/^['"]|['"]$/g, "");
+  const node = script.match(
+    /node\s+--experimental-strip-types(?:\s+--disable-warning=ExperimentalWarning)?\s+(\S+)/,
+  );
+  if (node) return node[1]!.replace(/^['"]|['"]$/g, "");
+  return null;
+}
+
+function usesStripTypesDirectly(script: string): boolean {
+  return /node\s+--experimental-strip-types/.test(script);
+}
+
+function usesSafTsRun(script: string): boolean {
+  return /\bsaf-ts-run\b/.test(script);
+}
+
+const SKIP_DIRS = new Set([
+  "node_modules",
+  ".git",
+  "dist",
+  "coverage",
+  "docs",
+  "fixtures",
+  "workflows",
+]);
+
+function walkSourceFiles(dir: string, out: string[]) {
+  let entries: fs.Dirent[];
+  try {
+    entries = fs.readdirSync(dir, { withFileTypes: true });
+  } catch {
+    return;
+  }
+  for (const e of entries) {
+    if (e.name.startsWith(".")) continue;
+    const full = path.join(dir, e.name);
+    if (e.isDirectory()) {
+      if (SKIP_DIRS.has(e.name)) continue;
+      walkSourceFiles(full, out);
+    } else if (
+      e.isFile() &&
+      (e.name.endsWith(".ts") || e.name.endsWith(".tsx")) &&
+      !e.name.endsWith(".d.ts") &&
+      !/\.(test|spec)\.(ts|tsx)$/.test(e.name)
+    ) {
+      out.push(full);
+    }
+  }
+}
+
+function countLines(text: string): number {
+  if (text.length === 0) return 0;
+  let n = 0;
+  for (let i = 0; i < text.length; i++) {
+    if (text.charCodeAt(i) === 10) n++;
+  }
+  if (text.charCodeAt(text.length - 1) !== 10) n++;
+  return n;
+}
+
+/**
+ * Check bin/scripts layout conventions and oversized source files.
+ */
+export function checkPackageLayout(
+  options: CheckPackageLayoutOptions,
+): PackageLayoutIssue[] {
+  const pkgDir = options.packageDir;
+  const repoBase = (options.packageRepoPath ?? "").replace(/\/+$/, "");
+  const maxLines = options.maxSourceLines ?? DEFAULT_MAX_SOURCE_LINES;
+  const issues: PackageLayoutIssue[] = [];
+  const repoPathFor = (local: string) =>
+    repoBase ? `${repoBase}/${local}` : local;
+
+  let pj: ReturnType<typeof readPackageJson>;
+  try {
+    pj = readPackageJson(pkgDir);
+  } catch {
+    return issues;
+  }
+
+  const bins: Record<string, string> =
+    typeof pj.bin === "string"
+      ? { [path.basename(pkgDir)]: pj.bin }
+      : (pj.bin ?? {});
+
+  for (const [name, target] of Object.entries(bins)) {
+    const rel = target.replace(/^\.\//, "");
+    if (!isUnderBin(rel)) {
+      issues.push({
+        kind: "package-layout",
+        title: "Package layout",
+        name,
+        kindLabel: "bin",
+        filePath: "package.json",
+        repoPath: repoPathFor("package.json"),
+      });
+      // Encode detail in name for CLI readability
+      issues[issues.length - 1]!.name = `bin.${name} → ${target} (must be under ./bin/)`;
+    }
+  }
+
+  for (const [scriptName, script] of Object.entries(pj.scripts ?? {})) {
+    if (usesStripTypesDirectly(script) && !usesSafTsRun(script)) {
+      issues.push({
+        kind: "package-layout",
+        title: "Package layout",
+        name: `scripts.${scriptName} uses node --experimental-strip-types (use saf-ts-run)`,
+        kindLabel: "scripts",
+        filePath: "package.json",
+        repoPath: repoPathFor("package.json"),
+      });
+    }
+    if (usesSafTsRun(script)) {
+      const target = scriptTargetPath(script);
+      if (target && !isUnderScripts(target)) {
+        issues.push({
+          kind: "package-layout",
+          title: "Package layout",
+          name: `scripts.${scriptName} → ${target} (saf-ts-run must target ./scripts/)`,
+          kindLabel: "scripts",
+          filePath: "package.json",
+          repoPath: repoPathFor("package.json"),
+        });
+      }
+    }
+  }
+
+  const sources: string[] = [];
+  walkSourceFiles(pkgDir, sources);
+  for (const abs of sources) {
+    const local = path.relative(pkgDir, abs).split(path.sep).join("/");
+    let text: string;
+    try {
+      text = fs.readFileSync(abs, "utf8");
+    } catch {
+      continue;
+    }
+    const lines = countLines(text);
+    if (lines > maxLines) {
+      issues.push({
+        kind: "oversized-file",
+        title: "Oversized file",
+        name: `${local} (${lines} LoC > ${maxLines})`,
+        kindLabel: "file",
+        filePath: local,
+        repoPath: repoPathFor(local),
+      });
+    }
+  }
+
+  issues.sort(
+    (a, b) =>
+      a.filePath.localeCompare(b.filePath) || a.name.localeCompare(b.name),
+  );
+  return issues;
+}

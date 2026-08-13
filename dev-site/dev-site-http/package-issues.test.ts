@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { collectPackageIssues } from "./package-issues.ts";
+import { collectPackageIssues } from "@saflib/imports";
 
-describe("collectPackageIssues", () => {
+describe("collectPackageIssues (re-export)", () => {
   it("lists card exports with empty usedBy as dead code", () => {
     const issues = collectPackageIssues(
       {
@@ -40,40 +40,5 @@ describe("collectPackageIssues", () => {
     expect(issues[0]!.name).toBe("deadFn");
     expect(issues[0]!.kind).toBe("dead-code");
     expect(issues[0]!.filePath).toBe("b.ts");
-  });
-
-  it("lists unused db queries", () => {
-    const issues = collectPackageIssues({
-      packageName: "@pkg-db",
-      dbInventory: {
-        entities: [
-          {
-            entity: "matter",
-            queries: [
-              {
-                fileName: "create.ts",
-                filePath: "db/queries/matter/create.ts",
-                exportName: "createMatter",
-                usedBy: [],
-              },
-              {
-                fileName: "get.ts",
-                filePath: "db/queries/matter/get.ts",
-                exportName: "getMatter",
-                usedBy: [
-                  {
-                    packageName: "@http",
-                    filePath: "r.ts",
-                    repoPath: "http/r.ts",
-                  },
-                ],
-              },
-            ],
-          },
-        ],
-      },
-    });
-
-    expect(issues.map((i) => i.name)).toEqual(["createMatter"]);
   });
 });

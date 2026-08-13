@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import type { PackageJson } from "@saflib/dev-tools";
+import type { PackageJson } from "@saflib/monorepo/workspace";
 
 /** Entry probe for snapshot `entries` measurement. */
 export interface SafImportsEntryProbe {
