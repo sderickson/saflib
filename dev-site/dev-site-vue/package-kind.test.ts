@@ -58,20 +58,20 @@ const fixtureTests = [
 ];
 
 describe("buildTestFileNav", () => {
-  it("lists dirs and test files only", () => {
+  it("lists dirs and module stems only", () => {
     const nav = buildTestFileNav(fixtureTests, "@fixture/root", "");
     expect(nav).toHaveLength(1);
     expect(nav[0]).toMatchObject({ kind: "dir", label: "src", localPath: "src" });
     expect(nav[0].children.map((c) => c.label).sort()).toEqual([
-      "math.test.ts",
+      "math",
       "util",
     ]);
     const util = nav[0].children.find((c) => c.label === "util")!;
     expect(util.kind).toBe("dir");
     expect(util.children[0]).toMatchObject({
       kind: "file",
-      label: "fmt.test.ts",
-      localPath: "src/util/fmt.test.ts",
+      label: "fmt",
+      localPath: "src/util/fmt",
     });
   });
 });
@@ -82,7 +82,7 @@ describe("buildPackageTestTree", () => {
     expect(tree).toHaveLength(1);
     expect(tree[0].kind).toBe("dir");
     expect(tree[0].label).toBe("src");
-    const mathFile = tree[0].children.find((c) => c.label === "math.test.ts")!;
+    const mathFile = tree[0].children.find((c) => c.label === "math")!;
     expect(mathFile.kind).toBe("file");
     expect(mathFile.sourcePath).toBe("src/math.test.ts");
     expect(mathFile.children[0].kind).toBe("suite");
@@ -116,7 +116,7 @@ describe("buildPackageTestTree", () => {
     });
     expect(tree).toHaveLength(1);
     expect(tree[0].kind).toBe("file");
-    expect(tree[0].label).toBe("fmt.test.ts");
+    expect(tree[0].label).toBe("fmt");
   });
 
   it("strips package directory prefix", () => {
@@ -132,6 +132,6 @@ describe("buildPackageTestTree", () => {
       "saflib/git",
     );
     expect(tree[0].kind).toBe("file");
-    expect(tree[0].label).toBe("index.test.ts");
+    expect(tree[0].label).toBe("index");
   });
 });

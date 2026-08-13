@@ -18,25 +18,26 @@ describe("collectWorkdirPackageIssues", () => {
     tmpDirs.push(root);
 
     const pkgDir = path.join(root, "pkg");
-    mkdirSync(pkgDir, { recursive: true });
+    const srcDir = path.join(pkgDir, "src");
+    mkdirSync(srcDir, { recursive: true });
     writeFileSync(
       path.join(pkgDir, "package.json"),
       JSON.stringify({ name: "@test/pkg" }),
     );
     writeFileSync(
-      path.join(pkgDir, "dead.ts"),
+      path.join(srcDir, "dead.ts"),
       "export function unusedOnly() { return 1; }\n",
     );
     writeFileSync(
-      path.join(pkgDir, "live.ts"),
+      path.join(srcDir, "live.ts"),
       "export function usedFn() { return 2; }\n",
     );
     writeFileSync(
-      path.join(pkgDir, "caller.ts"),
+      path.join(srcDir, "caller.ts"),
       'import { usedFn } from "./live.ts";\nusedFn();\n',
     );
     writeFileSync(
-      path.join(pkgDir, "live.test.ts"),
+      path.join(srcDir, "live.test.ts"),
       'import { unusedOnly } from "./dead.ts";\nit("x", () => { unusedOnly(); });\n',
     );
 
