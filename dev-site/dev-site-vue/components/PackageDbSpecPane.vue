@@ -18,20 +18,26 @@
           :class="{ 'spec-all--selected': selectedEntity === null }"
           @click="selectedEntity = null"
         >
-          <v-icon size="x-small" icon="mdi-folder-outline" />
+          <v-icon size="x-small" icon="mdi-folder-outline" class="entity-nav__icon" />
           <span>All entities</span>
         </button>
-        <button
-          v-for="e in entities"
-          :key="e.entity"
-          type="button"
-          class="entity-nav"
-          :class="{ 'entity-nav--selected': selectedEntity === e.entity }"
-          @click="selectedEntity = e.entity"
-        >
-          <v-icon size="x-small" icon="mdi-table" />
-          <span>{{ e.entity }}</span>
-        </button>
+        <ul class="entity-nav">
+          <li v-for="e in entities" :key="e.entity" class="entity-nav__item">
+            <button
+              type="button"
+              class="entity-nav__row"
+              :class="{ 'entity-nav__row--selected': selectedEntity === e.entity }"
+              @click="selectedEntity = e.entity"
+            >
+              <v-icon
+                size="x-small"
+                :icon="e.table ? 'mdi-table' : 'mdi-file-outline'"
+                class="entity-nav__icon"
+              />
+              <span class="entity-nav__label">{{ e.entity }}</span>
+            </button>
+          </li>
+        </ul>
       </aside>
 
       <section class="spec-split__panel">
@@ -162,32 +168,82 @@ function openFile(path: string) {
   gap: 1rem;
   align-items: start;
 }
+@media (max-width: 720px) {
+  .spec-split {
+    grid-template-columns: 1fr;
+  }
+}
 .spec-split__nav {
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-  position: sticky;
-  top: 0.5rem;
-  max-height: calc(100vh - 8rem);
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.12);
+  border-radius: 6px;
+  padding: 0.5rem 0.35rem;
+  max-height: 60vh;
   overflow: auto;
 }
-.spec-all,
-.entity-nav {
+.spec-all {
   display: flex;
   align-items: center;
-  gap: 0.35rem;
-  text-align: left;
-  border: none;
+  gap: 0.3rem;
+  width: 100%;
+  border: 0;
   background: transparent;
-  padding: 0.35rem 0.5rem;
+  text-align: left;
+  padding: 0.2rem 0.3rem;
   border-radius: 4px;
   cursor: pointer;
-  font: inherit;
   color: inherit;
+  font: inherit;
+  font-size: 0.75rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  margin-bottom: 0.15rem;
 }
-.spec-all--selected,
-.entity-nav--selected {
+.spec-all:hover {
+  background: rgba(var(--v-theme-on-surface), 0.06);
+}
+.spec-all--selected {
   background: rgba(var(--v-theme-primary), 0.12);
+}
+.entity-nav {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.entity-nav__item {
+  margin: 0.05rem 0;
+}
+.entity-nav__row {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  padding: 0.15rem 0.3rem;
+  border-radius: 4px;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+}
+.entity-nav__row:hover {
+  background: rgba(var(--v-theme-on-surface), 0.06);
+}
+.entity-nav__row--selected {
+  background: rgba(var(--v-theme-primary), 0.12);
+}
+.entity-nav__label {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.75rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.entity-nav__icon {
+  opacity: 0.7;
+  flex-shrink: 0;
+}
+.spec-split__panel {
+  min-width: 0;
 }
 .entity-block {
   margin-bottom: 1.75rem;
