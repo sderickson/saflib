@@ -5,6 +5,7 @@
   "exports": {
     ".": "./index.ts",
     "./http": "./http.ts",
+    "./package-issues": "./package-issues.ts",
     "./testing/slim-route-test": "./testing/slim-route-test.ts",
     "./routes/*": "./routes/*.ts"
   },

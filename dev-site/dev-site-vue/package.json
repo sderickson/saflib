@@ -14,6 +14,7 @@
     "typecheck": "vue-tsc -b"
   },
   "dependencies": {
+    "@saflib/dev-site-http": "*",
     "@saflib/dev-site-spec": "*",
     "@saflib/sdk": "*",
     "@saflib/vue": "*",

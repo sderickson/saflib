@@ -3,6 +3,23 @@
     <v-progress-linear v-if="isLoading" indeterminate class="mb-2" />
     <v-alert v-if="error" type="error" class="mb-2">{{ error.message }}</v-alert>
 
+    <div class="issues-cli mb-4">
+      <div class="text-caption text-medium-emphasis mb-1">
+        Same list via CLI (paste to an agent to triage / fix):
+      </div>
+      <div class="issues-cli__row">
+        <code class="issues-cli__cmd">{{ cliCommand }}</code>
+        <v-btn
+          size="small"
+          variant="tonal"
+          :color="copied ? 'success' : undefined"
+          @click="copyCli"
+        >
+          {{ copied ? "Copied" : "Copy" }}
+        </v-btn>
+      </div>
+    </div>
+
     <div v-if="!isLoading && !issues.length" class="text-body-2 text-medium-emphasis">
       No issues found for this package.
     </div>
@@ -43,7 +60,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import { useCommitPackage } from "../requests/queries";
 import { collectPackageIssues } from "../package-issues";
 import { openSource } from "../source-links";
@@ -57,6 +74,8 @@ const props = defineProps<{
   githubRepo?: string;
   githubRef?: string;
   localRepoRoot?: string;
+  /** Relative path to the on-disk sqlite used by the running API (from monorepo root). */
+  dbPath?: string;
 }>();
 
 const { data, isLoading, error } = useCommitPackage(
@@ -74,6 +93,50 @@ const issues = computed(() => {
   });
 });
 
+const cliCommand = computed(() => {
+  const parts = [
+    "npm exec -- saf-dev-site issues",
+    `--package ${shellQuote(props.packageName)}`,
+  ];
+  if (props.productRoot) {
+    parts.push(`--product-root ${shellQuote(props.productRoot)}`);
+  }
+  if (props.dbPath) {
+    parts.push(`--db ${shellQuote(props.dbPath)}`);
+  }
+  if (props.commitHash) {
+    parts.push(props.commitHash);
+  }
+  return parts.join(" ");
+});
+
+const copied = ref(false);
+let copyTimer: ReturnType<typeof setTimeout> | undefined;
+
+async function copyCli() {
+  const text = [
+    `Address Spec Issues (dead code) for ${props.packageName}.`,
+    `Use the same rules as the dev-site Issues tab. Run this from the monorepo root, then triage/fix each listed export (delete unused, wire real callers, or note false positives):`,
+    "",
+    cliCommand.value,
+  ].join("\n");
+  try {
+    await navigator.clipboard.writeText(text);
+    copied.value = true;
+    if (copyTimer) clearTimeout(copyTimer);
+    copyTimer = setTimeout(() => {
+      copied.value = false;
+    }, 2000);
+  } catch {
+    // ignore
+  }
+}
+
+function shellQuote(s: string): string {
+  if (/^[A-Za-z0-9_@./+=:-]+$/.test(s)) return s;
+  return `'${s.replace(/'/g, `'\\''`)}'`;
+}
+
 const openFile = (path: string) => {
   openSource(path, {
     githubRef: props.githubRef,
@@ -88,6 +151,26 @@ defineExpose({
 </script>
 
 <style scoped>
+.issues-cli__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+.issues-cli__cmd {
+  flex: 1 1 16rem;
+  display: block;
+  padding: 0.45rem 0.6rem;
+  border-radius: 6px;
+  border: 1px solid rgba(var(--v-theme-on-surface), 0.12);
+  background: rgba(var(--v-theme-on-surface), 0.04);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.72rem;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  word-break: break-word;
+  user-select: text;
+}
 .issues__heading {
   margin: 0 0 0.35rem;
   font-size: 0.95rem;

@@ -36,6 +36,9 @@
       "path": "../../vue"
     },
     {
+      "path": "../dev-site-http"
+    },
+    {
       "path": "../dev-site-spec"
     }
   ]
