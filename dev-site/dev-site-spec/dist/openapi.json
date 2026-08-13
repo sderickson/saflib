@@ -989,6 +989,31 @@
             "nullable": true,
             "description": "First prose line of the leading JSDoc on the export declaration. Null when absent or for bare re-exports (`export { a }`).\n",
             "example": "Walk commits newest-first without checking out."
+          },
+          "usedBy": {
+            "type": "array",
+            "description": "Non-test product files that import this export (named import match, or whole-module import when names are `*` / default / empty).\n",
+            "items": {
+              "type": "object",
+              "required": [
+                "packageName",
+                "filePath",
+                "repoPath"
+              ],
+              "properties": {
+                "packageName": {
+                  "type": "string"
+                },
+                "filePath": {
+                  "type": "string",
+                  "description": "Path within the importing package (no package-root prefix)."
+                },
+                "repoPath": {
+                  "type": "string",
+                  "description": "Repo-relative path for source links."
+                }
+              }
+            }
           }
         },
         "required": [

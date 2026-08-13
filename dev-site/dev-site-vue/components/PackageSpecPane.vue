@@ -93,6 +93,20 @@
               <div v-if="exp.docstring" class="unlinked__doc">
                 {{ exp.docstring }}
               </div>
+              <ul v-if="exp.usedBy?.length" class="unlinked__used">
+                <li
+                  v-for="u in exp.usedBy"
+                  :key="u.packageName + ':' + u.repoPath"
+                >
+                  <a
+                    href="#"
+                    class="unlinked__importer"
+                    @click.prevent="openFile(u.repoPath)"
+                  >
+                    {{ u.packageName }}/{{ u.filePath }}
+                  </a>
+                </li>
+              </ul>
             </li>
           </ul>
         </div>
@@ -108,6 +122,7 @@ import {
   buildPackageTestTree,
   buildTestFileNav,
   type TestScope,
+  type TestTreeNode,
 } from "../test-tree";
 import {
   extractLeadingJsDocProse,
@@ -215,14 +230,56 @@ const fileNav = computed(() => {
 const testTree = computed(() => {
   const d = detail.value;
   if (!d) return [];
-  return buildPackageTestTree(
+  const tree = buildPackageTestTree(
     d.testCases,
     d.packageName,
     props.packageDirectory,
     props.productRoot ?? "",
     scope.value,
   );
+  return attachExportUsedBy(tree, d.exports ?? []);
 });
+
+function walkSuites(nodes: TestTreeNode[], out: TestTreeNode[] = []): TestTreeNode[] {
+  for (const n of nodes) {
+    if (n.kind === "suite") out.push(n);
+    if (n.children.length) walkSuites(n.children, out);
+  }
+  return out;
+}
+
+/** Stamp importers from linked exports onto suite cards (same UX as db Spec). */
+function attachExportUsedBy(
+  tree: TestTreeNode[],
+  exports: Array<{
+    filePath: string;
+    name: string;
+    usedBy?: Array<{
+      packageName: string;
+      filePath: string;
+      repoPath: string;
+    }>;
+  }>,
+): TestTreeNode[] {
+  const bySubject = new Map<
+    string,
+    Array<{ packageName: string; filePath: string; repoPath: string }>
+  >();
+  for (const e of exports) {
+    if (!e.usedBy?.length) continue;
+    bySubject.set(`${e.filePath}\0${e.name}`, e.usedBy);
+  }
+  if (!bySubject.size) return tree;
+
+  for (const suite of walkSuites(tree)) {
+    if (!suite.subjectName || !suite.subjectFilePath) continue;
+    const used = bySubject.get(
+      `${suite.subjectFilePath}\0${suite.subjectName}`,
+    );
+    if (used?.length) suite.usedBy = used;
+  }
+  return tree;
+}
 
 const scopeFileName = computed(() => {
   if (scope.value.kind !== "file") return "";
@@ -392,5 +449,21 @@ const openFile = (path: string) => {
   font-size: 0.85rem;
   color: rgba(var(--v-theme-on-surface), 0.7);
   max-width: 48rem;
+}
+.unlinked__used {
+  list-style: disc;
+  margin: 0.35rem 0 0;
+  padding-left: 1.15rem;
+  display: grid;
+  gap: 0.15rem;
+}
+.unlinked__importer {
+  color: rgb(var(--v-theme-primary));
+  cursor: pointer;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.72rem;
+  text-decoration: underline;
+  word-break: break-all;
+  user-select: text;
 }
 </style>

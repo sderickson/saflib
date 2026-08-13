@@ -16,6 +16,12 @@ import {
   packageRootsFromPackageJsonPaths,
   parsePackageName,
 } from "./classify.ts";
+import {
+  moduleTargetFromImport,
+  packageLocalPath,
+  stripTsExt,
+  type ImportUsedBy,
+} from "./import-resolution.ts";
 
 export interface DbInventoryTable {
   exportName: string;
@@ -30,13 +36,7 @@ export interface DbInventoryTable {
   filePath: string;
 }
 
-export interface DbInventoryUsedBy {
-  packageName: string;
-  /** Path within the importing package (no package-root prefix). */
-  filePath: string;
-  /** Repo-relative path for source links. */
-  repoPath: string;
-}
+export type DbInventoryUsedBy = ImportUsedBy;
 
 export interface DbInventoryQuery {
   /** Leaf filename without path, e.g. `create.ts`. */
@@ -77,28 +77,6 @@ function entityFromTableName(tableName: string): string {
   return tableName.replace(/_/g, "-");
 }
 
-/** POSIX-ish resolve of `fromDir/specifier` without touching the filesystem. */
-function resolveRelative(fromFile: string, specifier: string): string {
-  const fromDir = fromFile.includes("/")
-    ? fromFile.slice(0, fromFile.lastIndexOf("/"))
-    : "";
-  const joined = fromDir ? `${fromDir}/${specifier}` : specifier;
-  const parts: string[] = [];
-  for (const p of joined.split("/")) {
-    if (!p || p === ".") continue;
-    if (p === "..") {
-      parts.pop();
-      continue;
-    }
-    parts.push(p);
-  }
-  return parts.join("/");
-}
-
-function stripTsExt(path: string): string {
-  return path.replace(/\.(tsx?|jsx?|mjs|cjs)$/, "");
-}
-
 /**
  * If specifier targets this package's `queries/<entity>/<leaf>`, return
  * `{ entity, leaf }` where leaf is the module stem (`create`, not `create.ts`).
@@ -109,33 +87,17 @@ function queryTargetFromImport(
   importerPath: string,
   specifier: string,
 ): { entity: string; leaf: string } | null {
-  const absPrefix = `${packageName}/queries/`;
-  let relUnderQueries: string | null = null;
-
-  if (specifier.startsWith(absPrefix)) {
-    relUnderQueries = specifier.slice(absPrefix.length);
-  } else if (specifier.startsWith(".")) {
-    const resolved = stripTsExt(resolveRelative(importerPath, specifier));
-    const pkgPrefix = packageDirectory
-      ? packageDirectory.replace(/\/+$/, "") + "/"
-      : "";
-    const rel =
-      pkgPrefix && resolved.startsWith(pkgPrefix)
-        ? resolved.slice(pkgPrefix.length)
-        : !pkgPrefix
-          ? resolved
-          : null;
-    if (rel === null) return null;
-    const m = /^queries\/(.+)$/.exec(rel);
-    if (!m) return null;
-    relUnderQueries = m[1]!;
-  }
-
-  if (!relUnderQueries) return null;
-  const parts = relUnderQueries.split("/").filter(Boolean);
-  if (parts.length < 2) return null;
-  const entity = parts[0]!;
-  const leaf = stripTsExt(parts[parts.length - 1]!);
+  const mod = moduleTargetFromImport(
+    packageName,
+    packageDirectory,
+    importerPath,
+    specifier,
+  );
+  if (!mod) return null;
+  const m = /^queries\/([^/]+)\/(.+)$/.exec(mod);
+  if (!m) return null;
+  const entity = m[1]!;
+  const leaf = stripTsExt(m[2]!.split("/").pop()!);
   if (!entity || !leaf || leaf === "index") return null;
   return { entity, leaf };
 }
@@ -350,11 +312,7 @@ export async function assemblePackageDbInventory(
     if (!fact) continue;
     const importerRoot = packageForPath(entry.path, roots);
     const importerPkg = importerRoot.packageName;
-    const localPath =
-      importerRoot.directory &&
-      entry.path.startsWith(`${importerRoot.directory}/`)
-        ? entry.path.slice(importerRoot.directory.length + 1)
-        : entry.path;
+    const localPath = packageLocalPath(entry.path, importerRoot.directory);
     for (const imp of blobFactImports(fact)) {
       const target = queryTargetFromImport(
         packageName,
