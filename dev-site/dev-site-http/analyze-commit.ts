@@ -126,6 +126,11 @@ function buildSpecialty(source: string): BlobSpecialty {
   return { kind: "source", exports, imports };
 }
 
+/** Parse exports/imports(/tests/tables) from source text — no git or DB. */
+export function parseSourceSpecialty(source: string): BlobSpecialty {
+  return buildSpecialty(source);
+}
+
 function parseBlobFact(
   blobHash: string,
   source: string,

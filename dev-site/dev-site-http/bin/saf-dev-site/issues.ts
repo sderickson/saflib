@@ -5,34 +5,59 @@ import { AnalyzedCommitNotFoundError } from "@saflib/dev-site-db/errors";
 import { devSiteDb } from "@saflib/dev-site-db/instances";
 import { getCommitPackage } from "../../get-package.ts";
 import { collectPackageIssues } from "../../package-issues.ts";
+import { collectWorkdirPackageIssues } from "../../workdir-package-issues.ts";
 import {
   resolveDbPath,
   resolveMainRef,
   resolveProductRoot,
   resolveRepoRoot,
+  resolveWorkdirProductRoot,
 } from "./defaults.ts";
 import { ensureCliDbAvailable } from "./ensure-db.ts";
+
+function printIssuesText(args: {
+  packageName: string;
+  label: string;
+  productRoot: string;
+  metaLine: string;
+  issues: Array<{ filePath: string; name: string; kindLabel: string }>;
+}): void {
+  console.log(`# Dead code in ${args.packageName} @ ${args.label}`);
+  console.log(
+    `# ${args.issues.length} issue(s) — exports/queries with no non-test importers`,
+  );
+  console.log(args.metaLine);
+  console.log("");
+  if (!args.issues.length) {
+    console.log("(none)");
+    return;
+  }
+  for (const issue of args.issues) {
+    console.log(`${issue.filePath}\t${issue.name}\t${issue.kindLabel}`);
+  }
+}
 
 export const addIssuesCommand = (program: Command) => {
   program
     .command("issues")
     .description(
-      "List Spec Issues for a package (dead code = exports/queries with no non-test importers). Uses the same analyzed DB + assemblers as the UI. Defaults to HEAD and the daemon HTTP sqlite when present.",
+      "List Spec Issues for a package (dead code = exports with no non-test importers). Default: analyzed DB at HEAD. Pass --workdir to scan the live tree (no DB / commit).",
     )
     .requiredOption(
       "-p, --package <name>",
       "Package name (e.g. @pathclerk/daemon-form-artifacts)",
     )
-    .argument("[hash]", "Commit hash (default: HEAD)")
+    .argument("[hash]", "Commit hash (default: HEAD; ignored with --workdir)")
+    .option("--workdir", "Analyze the working tree (no sqlite / no scan)", false)
     .option("--repo-root <path>", "Git repository root (default: cwd / DEV_SITE_REPO_ROOT)")
     .option(
       "--product-root <path>",
-      "Path prefix within the repo (default: daemon when using daemon DB, else DEV_SITE_PRODUCT_ROOT / empty)",
+      "Path prefix within the repo (default: daemon when using daemon DB or --workdir, else DEV_SITE_PRODUCT_ROOT / empty)",
     )
     .option("--main-ref <ref>", "Main branch ref (default: main / DEV_SITE_MAIN_REF)")
     .option(
       "--db <path>",
-      "SQLite file path (default: DEV_SITE_DB_PATH, else daemon/.../dev-site.sqlite if present; opens read-only)",
+      "SQLite file path (default: DEV_SITE_DB_PATH, else daemon/.../dev-site.sqlite if present; opens read-only; ignored with --workdir)",
     )
     .option("--json", "Print machine-readable JSON", false)
     .action(
@@ -40,6 +65,7 @@ export const addIssuesCommand = (program: Command) => {
         hashArg: string | undefined,
         opts: {
           package: string;
+          workdir?: boolean;
           db?: string;
           repoRoot?: string;
           productRoot?: string;
@@ -48,6 +74,35 @@ export const addIssuesCommand = (program: Command) => {
         },
       ) => {
         const repoRoot = resolveRepoRoot(opts.repoRoot);
+
+        if (opts.workdir) {
+          const dbPath = resolveDbPath(repoRoot, opts.db);
+          const productRoot = resolveWorkdirProductRoot(
+            repoRoot,
+            opts.productRoot,
+            dbPath,
+          );
+          const result = await collectWorkdirPackageIssues({
+            repoRoot,
+            productRoot: productRoot || undefined,
+            packageName: opts.package,
+          });
+
+          if (opts.json) {
+            console.log(JSON.stringify(result, null, 2));
+            return;
+          }
+
+          printIssuesText({
+            packageName: result.packageName,
+            label: "workdir",
+            productRoot: result.productRoot,
+            metaLine: `# source=workdir product-root=${result.productRoot || "(repo root)"} exports=${result.exportCount}`,
+            issues: result.issues,
+          });
+          return;
+        }
+
         const dbPath = resolveDbPath(repoRoot, opts.db);
         ensureCliDbAvailable(dbPath, "read");
         const productRoot = resolveProductRoot(opts.productRoot, dbPath);
@@ -82,7 +137,9 @@ export const addIssuesCommand = (program: Command) => {
               console.error(
                 `Commit ${hash.slice(0, 12)} (${ref}) is not analyzed in the dev-site DB.`,
               );
-              console.error(`Run: npm exec -- saf-dev-site scan`);
+              console.error(
+                `Run a UI/DB scan, or use --workdir to analyze the live tree without the DB.`,
+              );
               process.exitCode = 1;
               return;
             }
@@ -101,6 +158,7 @@ export const addIssuesCommand = (program: Command) => {
                   commitHash: detail.commitHash,
                   packageName: detail.packageName,
                   directory: detail.directory,
+                  source: "db",
                   dbPath: dbPath === true ? "(library default)" : dbPath,
                   productRoot,
                   issueCount: issues.length,
@@ -113,25 +171,13 @@ export const addIssuesCommand = (program: Command) => {
             return;
           }
 
-          console.log(
-            `# Dead code in ${detail.packageName} @ ${detail.commitHash.slice(0, 12)}`,
-          );
-          console.log(
-            `# ${issues.length} issue(s) — exports/queries with no non-test importers`,
-          );
-          console.log(
-            `# db=${dbPath === true ? "(library default)" : dbPath} product-root=${productRoot || "(repo root)"}`,
-          );
-          console.log("");
-          if (!issues.length) {
-            console.log("(none)");
-            return;
-          }
-          for (const issue of issues) {
-            console.log(
-              `${issue.filePath}\t${issue.name}\t${issue.kindLabel}`,
-            );
-          }
+          printIssuesText({
+            packageName: detail.packageName,
+            label: detail.commitHash.slice(0, 12),
+            productRoot,
+            metaLine: `# db=${dbPath === true ? "(library default)" : dbPath} product-root=${productRoot || "(repo root)"}`,
+            issues,
+          });
         } finally {
           devSiteDb.disconnect(dbKey);
         }

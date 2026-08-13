@@ -51,6 +51,23 @@ export function resolveMainRef(explicit?: string): string {
   return explicit || process.env.DEV_SITE_MAIN_REF || "main";
 }
 
+/**
+ * Like {@link resolveProductRoot}, but when the result would be whole-repo and
+ * `daemon/` exists under the repo (typical PathClerk layout), prefer `daemon`
+ * for workdir scans.
+ */
+export function resolveWorkdirProductRoot(
+  repoRoot: string,
+  explicit: string | undefined,
+  dbPath: string | true,
+): string {
+  const fromDefaults = resolveProductRoot(explicit, dbPath);
+  if (fromDefaults) return fromDefaults;
+  if (explicit !== undefined) return explicit;
+  if (fs.existsSync(path.resolve(repoRoot, "daemon"))) return "daemon";
+  return "";
+}
+
 export function isDaemonSharedDbPath(dbPath: string): boolean {
   const normalized = dbPath.replace(/\\/g, "/");
   return (
