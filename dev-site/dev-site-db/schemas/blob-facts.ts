@@ -19,11 +19,15 @@ export interface BlobTableColumnFact {
   propName: string;
   sqlName: string;
   typeKind: string;
+  /** First prose line of leading JSDoc; null when absent. */
+  docstring: string | null;
 }
 
 export interface BlobTableFact {
   exportName: string;
   tableName: string;
+  /** First prose line of leading JSDoc on the table const; null when absent. */
+  docstring: string | null;
   columns: BlobTableColumnFact[];
 }
 

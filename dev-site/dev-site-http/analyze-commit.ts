@@ -33,7 +33,7 @@ import {
 } from "./classify.ts";
 import { linkTestSubjects } from "./link-test-subjects.ts";
 
-export const ANALYZER_VERSION = "5";
+export const ANALYZER_VERSION = "6";
 
 export interface AnalyzeCommitOptions {
   repoRoot: string;
@@ -102,10 +102,12 @@ function buildSpecialty(source: string): BlobSpecialty {
   const tables = extractDrizzleTables(source).map((t) => ({
     exportName: t.exportName,
     tableName: t.tableName,
+    docstring: t.docstring,
     columns: t.columns.map((c) => ({
       propName: c.propName,
       sqlName: c.sqlName,
       typeKind: c.typeKind,
+      docstring: c.docstring,
     })),
   }));
   if (tables.length > 0) {

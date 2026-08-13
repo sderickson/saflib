@@ -53,35 +53,28 @@
                 {{ fileName(e.table.filePath) }}
               </button>
             </div>
+            <p v-if="e.table.docstring" class="table-card__doc">
+              {{ e.table.docstring }}
+            </p>
             <ul class="table-card__cols">
               <li
                 v-for="c in e.table.columns"
                 :key="c.sqlName"
                 class="table-card__col"
               >
-                <code>{{ c.sqlName }}</code>
-                <span class="text-medium-emphasis">{{ c.typeKind }}</span>
+                <div class="table-card__col-main">
+                  <code>{{ c.sqlName }}</code>
+                  <span class="text-medium-emphasis">{{ c.typeKind }}</span>
+                </div>
+                <p v-if="c.docstring" class="table-card__col-doc">
+                  {{ c.docstring }}
+                </p>
               </li>
             </ul>
           </div>
           <p v-else class="text-body-2 text-medium-emphasis mb-3">
             No matching drizzle table for this query directory.
           </p>
-
-          <div v-if="e.queryFiles.length" class="query-list mb-4">
-            <div class="text-caption text-medium-emphasis mb-1">Queries</div>
-            <ul>
-              <li v-for="f in e.queryFiles" :key="f">
-                <button
-                  type="button"
-                  class="query-link"
-                  @click="openFile(queryPath(e.entity, f))"
-                >
-                  {{ f }}
-                </button>
-              </li>
-            </ul>
-          </div>
 
           <div v-if="testsFor(e.entity).length" class="entity-tests">
             <div class="text-caption text-medium-emphasis mb-1">Tests</div>
@@ -135,13 +128,6 @@ const visibleEntities = computed(() => {
 
 function fileName(path: string): string {
   return path.split("/").pop() ?? path;
-}
-
-function queryPath(entity: string, file: string): string {
-  const dir = props.packageDirectory.replace(/\/+$/, "");
-  return dir
-    ? `${dir}/queries/${entity}/${file}`
-    : `queries/${entity}/${file}`;
 }
 
 function testsFor(entity: string): TestTreeNode[] {
@@ -222,13 +208,12 @@ function openFile(path: string) {
   flex-wrap: wrap;
   align-items: baseline;
   gap: 0.75rem;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.35rem;
 }
 .table-card__name {
   font-weight: 600;
 }
-.table-card__file,
-.query-link {
+.table-card__file {
   border: none;
   background: none;
   padding: 0;
@@ -237,23 +222,26 @@ function openFile(path: string) {
   font: inherit;
   text-decoration: underline;
 }
+.table-card__doc {
+  margin: 0 0 0.65rem;
+  font-size: 0.875rem;
+  color: rgba(var(--v-theme-on-surface), 0.7);
+}
 .table-card__cols {
   list-style: none;
   margin: 0;
   padding: 0;
   display: grid;
-  gap: 0.25rem;
+  gap: 0.45rem;
 }
-.table-card__col {
+.table-card__col-main {
   display: flex;
   gap: 0.75rem;
   font-size: 0.875rem;
 }
-.query-list ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: 0.25rem;
+.table-card__col-doc {
+  margin: 0.15rem 0 0;
+  font-size: 0.8125rem;
+  color: rgba(var(--v-theme-on-surface), 0.65);
 }
 </style>

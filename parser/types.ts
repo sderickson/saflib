@@ -42,6 +42,11 @@ export interface DrizzleTableColumn {
   sqlName: string;
   /** Builder callee: `text`, `integer`, … */
   typeKind: string;
+  /**
+   * First prose line of leading JSDoc on the column property (or a matching
+   * `*Entity` interface property in the same file), or `null` when absent.
+   */
+  docstring: string | null;
 }
 
 /** One drizzle `sqliteTable` / `pgTable` / `mysqlTable` found by {@link extractDrizzleTables}. */
@@ -50,5 +55,10 @@ export interface DrizzleTableEntry {
   exportName: string;
   /** SQL table name (first arg to `sqliteTable`). */
   tableName: string;
+  /**
+   * First prose line of leading JSDoc on the table `const` declaration,
+   * or `null` when absent.
+   */
+  docstring: string | null;
   columns: DrizzleTableColumn[];
 }

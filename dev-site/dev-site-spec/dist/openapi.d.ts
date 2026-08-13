@@ -383,6 +383,7 @@ export interface components {
             tableName: string;
             exportName: string;
             filePath: string;
+            docstring?: string | null;
         };
         /** @description A drizzle column identity for schema diffs. */
         "db-schema-column": {
@@ -391,6 +392,7 @@ export interface components {
             sqlName: string;
             typeKind: string;
             propName: string;
+            docstring?: string | null;
         };
         /** @description Delta between two analyzed commits. Exports and test cases are identity-based (add/remove only — a rename shows up as remove + add). Package metrics include a `changed` list when the same packageName exists on both sides with different counts. */
         "commit-diff": {
@@ -439,14 +441,16 @@ export interface components {
                     exportName: string;
                     tableName: string;
                     filePath: string;
+                    /** @description First prose line of leading JSDoc on the table const. */
+                    docstring?: string | null;
                     columns: {
                         propName: string;
                         sqlName: string;
                         typeKind: string;
+                        /** @description First prose line of leading JSDoc on the column. */
+                        docstring?: string | null;
                     }[];
                 } | null;
-                /** @description Filenames under queries/<entity>/ (excluding index.ts and tests). */
-                queryFiles: string[];
             }[];
         };
         login: {

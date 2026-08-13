@@ -212,13 +212,25 @@ describe("extractDrizzleTables", () => {
       {
         exportName: "packageMetricsTable",
         tableName: "package_metrics",
+        docstring: null,
         columns: [
-          { propName: "id", sqlName: "id", typeKind: "text" },
-          { propName: "commitHash", sqlName: "commit_hash", typeKind: "text" },
+          {
+            propName: "id",
+            sqlName: "id",
+            typeKind: "text",
+            docstring: null,
+          },
+          {
+            propName: "commitHash",
+            sqlName: "commit_hash",
+            typeKind: "text",
+            docstring: null,
+          },
           {
             propName: "sourceFiles",
             sqlName: "source_files",
             typeKind: "integer",
+            docstring: null,
           },
         ],
       },
@@ -238,17 +250,78 @@ describe("extractDrizzleTables", () => {
       {
         exportName: "a",
         tableName: "a",
-        columns: [{ propName: "id", sqlName: "id", typeKind: "text" }],
+        docstring: null,
+        columns: [
+          {
+            propName: "id",
+            sqlName: "id",
+            typeKind: "text",
+            docstring: null,
+          },
+        ],
       },
       {
         exportName: "b",
         tableName: "b",
-        columns: [{ propName: "name", sqlName: "name", typeKind: "text" }],
+        docstring: null,
+        columns: [
+          {
+            propName: "name",
+            sqlName: "name",
+            typeKind: "text",
+            docstring: null,
+          },
+        ],
       },
     ]);
   });
 
   it("returns empty when there are no table calls", () => {
     expect(extractDrizzleTables("export const x = 1;\n")).toEqual([]);
+  });
+
+  it("extracts table and column JSDoc, with Entity interface fallback", () => {
+    const source = `
+      export interface PackageMetricsEntity {
+        id: string;
+        /** Number of source files in the package. */
+        source_files: number;
+      }
+
+      /** Per-package LOC and file counts for one analyzed commit. */
+      export const packageMetricsTable = sqliteTable("package_metrics", {
+        id: text("id").primaryKey(),
+        /** Commit that owns this row. */
+        commitHash: text("commit_hash").notNull(),
+        sourceFiles: integer("source_files").notNull(),
+      });
+    `;
+    expect(extractDrizzleTables(source)).toEqual([
+      {
+        exportName: "packageMetricsTable",
+        tableName: "package_metrics",
+        docstring: "Per-package LOC and file counts for one analyzed commit.",
+        columns: [
+          {
+            propName: "id",
+            sqlName: "id",
+            typeKind: "text",
+            docstring: null,
+          },
+          {
+            propName: "commitHash",
+            sqlName: "commit_hash",
+            typeKind: "text",
+            docstring: "Commit that owns this row.",
+          },
+          {
+            propName: "sourceFiles",
+            sqlName: "source_files",
+            typeKind: "integer",
+            docstring: "Number of source files in the package.",
+          },
+        ],
+      },
+    ]);
   });
 });

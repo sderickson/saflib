@@ -1,11 +1,16 @@
 import ts from "typescript";
 import type { DrizzleTableColumn, DrizzleTableEntry } from "./types.ts";
+import { leadingDocstring } from "./jsdoc.ts";
 
 const TABLE_CALLEES = new Set(["sqliteTable", "pgTable", "mysqlTable"]);
 
 /**
  * Extract drizzle `sqliteTable` / `pgTable` / `mysqlTable` definitions from
  * TypeScript source using the syntactic parser only (no type-checker).
+ *
+ * Column JSDoc prefers the property assignment; when absent, falls back to a
+ * matching property on an `*Entity` interface in the same file (common pattern
+ * in this monorepo).
  */
 export function extractDrizzleTables(source: string): DrizzleTableEntry[] {
   const sf = ts.createSourceFile(
@@ -16,17 +21,20 @@ export function extractDrizzleTables(source: string): DrizzleTableEntry[] {
     ts.ScriptKind.TS,
   );
 
+  const entityDocs = entityPropertyDocstrings(sf);
   const entries: DrizzleTableEntry[] = [];
 
   for (const statement of sf.statements) {
     if (!ts.isVariableStatement(statement)) continue;
+    const tableDocstring = leadingDocstring(sf, statement);
     for (const decl of statement.declarationList.declarations) {
       if (!ts.isIdentifier(decl.name) || !decl.initializer) continue;
-      const table = tableFromCall(sf, decl.initializer);
+      const table = tableFromCall(sf, decl.initializer, entityDocs);
       if (!table) continue;
       entries.push({
         exportName: decl.name.text,
         tableName: table.tableName,
+        docstring: tableDocstring,
         columns: table.columns,
       });
     }
@@ -35,9 +43,30 @@ export function extractDrizzleTables(source: string): DrizzleTableEntry[] {
   return entries;
 }
 
+/**
+ * Map property name → docstring from interfaces whose names end with `Entity`.
+ * Later interfaces win on duplicate property names.
+ */
+function entityPropertyDocstrings(sf: ts.SourceFile): Map<string, string> {
+  const docs = new Map<string, string>();
+  for (const statement of sf.statements) {
+    if (!ts.isInterfaceDeclaration(statement)) continue;
+    if (!statement.name.text.endsWith("Entity")) continue;
+    for (const member of statement.members) {
+      if (!ts.isPropertySignature(member) || !member.name) continue;
+      const name = propertyNameText(member.name);
+      if (!name) continue;
+      const doc = leadingDocstring(sf, member);
+      if (doc) docs.set(name, doc);
+    }
+  }
+  return docs;
+}
+
 function tableFromCall(
   sf: ts.SourceFile,
   expr: ts.Expression,
+  entityDocs: Map<string, string>,
 ): { tableName: string; columns: DrizzleTableColumn[] } | null {
   if (!ts.isCallExpression(expr)) return null;
   const callee = expr.expression;
@@ -64,7 +93,13 @@ function tableFromCall(
     const propName = propertyNameText(prop.name);
     if (!propName) continue;
     const col = columnFromInitializer(sf, propName, prop.initializer);
-    if (col) columns.push(col);
+    if (!col) continue;
+    const docstring =
+      leadingDocstring(sf, prop) ??
+      entityDocs.get(propName) ??
+      entityDocs.get(col.sqlName) ??
+      null;
+    columns.push({ ...col, docstring });
   }
 
   return { tableName, columns };
@@ -82,7 +117,7 @@ function columnFromInitializer(
   _sf: ts.SourceFile,
   propName: string,
   init: ts.Expression,
-): DrizzleTableColumn | null {
+): Omit<DrizzleTableColumn, "docstring"> | null {
   const call = outermostColumnCall(init);
   if (!call) return null;
   const callee = call.expression;

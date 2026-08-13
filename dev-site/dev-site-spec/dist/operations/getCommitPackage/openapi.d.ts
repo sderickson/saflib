@@ -110,14 +110,16 @@ export interface components {
                     exportName: string;
                     tableName: string;
                     filePath: string;
+                    /** @description First prose line of leading JSDoc on the table const. */
+                    docstring?: string | null;
                     columns: {
                         propName: string;
                         sqlName: string;
                         typeKind: string;
+                        /** @description First prose line of leading JSDoc on the column. */
+                        docstring?: string | null;
                     }[];
                 } | null;
-                /** @description Filenames under queries/<entity>/ (excluding index.ts and tests). */
-                queryFiles: string[];
             }[];
         };
         error: {

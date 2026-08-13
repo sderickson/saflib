@@ -17,3 +17,6 @@ properties:
     type: string
   propName:
     type: string
+  docstring:
+    type: string
+    nullable: true

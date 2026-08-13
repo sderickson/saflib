@@ -195,6 +195,7 @@ export async function diffCommits(
         tableName: t.tableName,
         exportName: t.exportName,
         filePath: t.filePath,
+        docstring: t.docstring,
       });
       for (const c of t.columns) {
         fromCols.push({
@@ -203,6 +204,7 @@ export async function diffCommits(
           sqlName: c.sqlName,
           typeKind: c.typeKind,
           propName: c.propName,
+          docstring: c.docstring,
         });
       }
     }
@@ -212,6 +214,7 @@ export async function diffCommits(
         tableName: t.tableName,
         exportName: t.exportName,
         filePath: t.filePath,
+        docstring: t.docstring,
       });
       for (const c of t.columns) {
         toCols.push({
@@ -220,6 +223,7 @@ export async function diffCommits(
           sqlName: c.sqlName,
           typeKind: c.typeKind,
           propName: c.propName,
+          docstring: c.docstring,
         });
       }
     }
@@ -243,7 +247,8 @@ export async function diffCommits(
       colsAdded.push(after);
     } else if (
       before.typeKind !== after.typeKind ||
-      before.propName !== after.propName
+      before.propName !== after.propName ||
+      before.docstring !== after.docstring
     ) {
       colsChanged.push({ before, after });
     }

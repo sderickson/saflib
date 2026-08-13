@@ -251,8 +251,7 @@
             "items": {
               "type": "object",
               "required": [
-                "entity",
-                "queryFiles"
+                "entity"
               ],
               "properties": {
                 "entity": {
@@ -278,6 +277,11 @@
                     "filePath": {
                       "type": "string"
                     },
+                    "docstring": {
+                      "type": "string",
+                      "nullable": true,
+                      "description": "First prose line of leading JSDoc on the table const."
+                    },
                     "columns": {
                       "type": "array",
                       "items": {
@@ -296,18 +300,16 @@
                           },
                           "typeKind": {
                             "type": "string"
+                          },
+                          "docstring": {
+                            "type": "string",
+                            "nullable": true,
+                            "description": "First prose line of leading JSDoc on the column."
                           }
                         }
                       }
                     }
                   }
-                },
-                "queryFiles": {
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  },
-                  "description": "Filenames under queries/<entity>/ (excluding index.ts and tests)."
                 }
               }
             }

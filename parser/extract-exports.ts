@@ -1,7 +1,6 @@
 import ts from "typescript";
 import type { ExportEntry, ExportKind } from "./types.ts";
-
-const DOCSTRING_MAX_LEN = 200;
+import { leadingDocstring } from "./jsdoc.ts";
 
 /**
  * Extract exported symbols from TypeScript/JavaScript source using the syntactic
@@ -110,38 +109,6 @@ export function extractExports(source: string): ExportEntry[] {
   }
 
   return entries;
-}
-
-/**
- * First prose line of a leading JSDoc block on `node`, or `null`.
- * Skips `@tags`; prefers `/**` over `//` / plain block comments.
- */
-function leadingDocstring(sf: ts.SourceFile, node: ts.Node): string | null {
-  const text = sf.getFullText();
-  const ranges = ts.getLeadingCommentRanges(text, node.getFullStart());
-  if (!ranges?.length) return null;
-
-  // Prefer the last /** ... */ closest to the declaration.
-  let jsdoc: string | undefined;
-  for (const range of ranges) {
-    const comment = text.slice(range.pos, range.end);
-    if (comment.startsWith("/**")) {
-      jsdoc = comment;
-    }
-  }
-  if (!jsdoc) return null;
-
-  const body = jsdoc.replace(/^\/\*\*?/, "").replace(/\*\/$/, "");
-  for (const rawLine of body.split("\n")) {
-    let line = rawLine.replace(/^\s*\*\s?/, "").trim();
-    if (!line || line.startsWith("@")) continue;
-    line = compact(line);
-    if (!line) continue;
-    return line.length > DOCSTRING_MAX_LEN
-      ? line.slice(0, DOCSTRING_MAX_LEN)
-      : line;
-  }
-  return null;
 }
 
 function hasExportModifier(node: ts.Node): boolean {

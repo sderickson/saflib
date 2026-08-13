@@ -16,10 +16,12 @@ import {
 export interface DbInventoryTable {
   exportName: string;
   tableName: string;
+  docstring: string | null;
   columns: Array<{
     propName: string;
     sqlName: string;
     typeKind: string;
+    docstring: string | null;
   }>;
   filePath: string;
 }
@@ -28,7 +30,6 @@ export interface DbInventoryEntity {
   /** Query dir name or schema stem, e.g. `package-metrics`. */
   entity: string;
   table: DbInventoryTable | null;
-  queryFiles: string[];
 }
 
 export interface PackageDbInventory {
@@ -45,7 +46,8 @@ function entityFromTableName(tableName: string): string {
 
 /**
  * Assemble drizzle tables (from blob_facts) + query dirs (from ls-tree)
- * for one db package.
+ * for one db package. Query dirs discover entities; query filenames are not
+ * surfaced (tests under the dir are the Spec).
  */
 export async function assemblePackageDbInventory(
   dbKey: DbKey,
@@ -121,18 +123,13 @@ export async function assemblePackageDbInventory(
     }
   }
 
-  const queryFilesByEntity = new Map<string, string[]>();
+  const queryEntities = new Set<string>();
   for (const entry of tree) {
     if (!underPackage(entry.path)) continue;
     const rel = relativeToPackage(entry.path);
-    const m = /^queries\/([^/]+)\/([^/]+\.ts)$/.exec(rel);
+    const m = /^queries\/([^/]+)\//.exec(rel);
     if (!m) continue;
-    const entity = m[1]!;
-    const file = m[2]!;
-    if (file === "index.ts" || file.endsWith(".test.ts")) continue;
-    const list = queryFilesByEntity.get(entity) ?? [];
-    list.push(file);
-    queryFilesByEntity.set(entity, list);
+    queryEntities.add(m[1]!);
   }
 
   const byKey = new Map<string, DbInventoryEntity>();
@@ -146,17 +143,15 @@ export async function assemblePackageDbInventory(
           ? entityLabel.replace(/_/g, "-")
           : entityLabel,
         table: null,
-        queryFiles: [],
       };
       byKey.set(key, row);
     }
     return row;
   };
 
-  for (const [entity, files] of queryFilesByEntity) {
+  for (const entity of queryEntities) {
     const row = ensureEntity(entity);
     row.entity = entity;
-    row.queryFiles = [...files].sort((a, b) => a.localeCompare(b));
   }
 
   for (const t of tables) {
@@ -165,10 +160,12 @@ export async function assemblePackageDbInventory(
     row.table = {
       exportName: t.exportName,
       tableName: t.tableName,
+      docstring: t.docstring ?? null,
       columns: t.columns.map((c) => ({
         propName: c.propName,
         sqlName: c.sqlName,
         typeKind: c.typeKind,
+        docstring: c.docstring ?? null,
       })),
       filePath: t.filePath,
     };
@@ -190,14 +187,26 @@ export function flattenInventoryTables(
   tableName: string;
   exportName: string;
   filePath: string;
-  columns: Array<{ sqlName: string; typeKind: string; propName: string }>;
+  docstring: string | null;
+  columns: Array<{
+    sqlName: string;
+    typeKind: string;
+    propName: string;
+    docstring: string | null;
+  }>;
 }> {
   const out: Array<{
     packageName: string;
     tableName: string;
     exportName: string;
     filePath: string;
-    columns: Array<{ sqlName: string; typeKind: string; propName: string }>;
+    docstring: string | null;
+    columns: Array<{
+      sqlName: string;
+      typeKind: string;
+      propName: string;
+      docstring: string | null;
+    }>;
   }> = [];
   for (const e of inventory.entities) {
     if (!e.table) continue;
@@ -206,6 +215,7 @@ export function flattenInventoryTables(
       tableName: e.table.tableName,
       exportName: e.table.exportName,
       filePath: e.table.filePath,
+      docstring: e.table.docstring,
       columns: e.table.columns,
     });
   }

@@ -168,6 +168,7 @@ export interface components {
             tableName: string;
             exportName: string;
             filePath: string;
+            docstring?: string | null;
         };
         /** @description A drizzle column identity for schema diffs. */
         "db-schema-column": {
@@ -176,6 +177,7 @@ export interface components {
             sqlName: string;
             typeKind: string;
             propName: string;
+            docstring?: string | null;
         };
         error: {
             /** @description A short, machine-readable error code, for when HTTP status codes are not sufficient. */

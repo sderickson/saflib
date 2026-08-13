@@ -9,7 +9,6 @@ properties:
       type: object
       required:
         - entity
-        - queryFiles
       properties:
         entity:
           type: string
@@ -29,6 +28,10 @@ properties:
               type: string
             filePath:
               type: string
+            docstring:
+              type: string
+              nullable: true
+              description: First prose line of leading JSDoc on the table const.
             columns:
               type: array
               items:
@@ -44,8 +47,7 @@ properties:
                     type: string
                   typeKind:
                     type: string
-        queryFiles:
-          type: array
-          items:
-            type: string
-          description: Filenames under queries/<entity>/ (excluding index.ts and tests).
+                  docstring:
+                    type: string
+                    nullable: true
+                    description: First prose line of leading JSDoc on the column.
