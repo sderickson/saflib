@@ -5,7 +5,7 @@
 
     <div class="issues-cli mb-4">
       <div class="text-caption text-medium-emphasis mb-1">
-        Same list via CLI (HEAD + daemon DB by default — paste to an agent):
+        Same list via CLI (working tree — no DB scan required):
       </div>
       <div class="issues-cli__row">
         <code class="issues-cli__cmd">{{ cliCommand }}</code>
@@ -93,21 +93,15 @@ const issues = computed(() => {
 
 const cliCommand = computed(
   () =>
-    `npm exec -- saf-dev-site issues --package ${shellQuote(props.packageName)}`,
+    `npm exec -- saf-dev-site issues --workdir --package ${shellQuote(props.packageName)}`,
 );
 
 const copied = ref(false);
 let copyTimer: ReturnType<typeof setTimeout> | undefined;
 
 async function copyCli() {
-  const text = [
-    `Address Spec Issues (dead code) for ${props.packageName}.`,
-    `Use the same rules as the dev-site Issues tab. Run this from the monorepo root, then triage/fix each listed export (delete unused, wire real callers, or note false positives):`,
-    "",
-    cliCommand.value,
-  ].join("\n");
   try {
-    await navigator.clipboard.writeText(text);
+    await navigator.clipboard.writeText(cliCommand.value);
     copied.value = true;
     if (copyTimer) clearTimeout(copyTimer);
     copyTimer = setTimeout(() => {
