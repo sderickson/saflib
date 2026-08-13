@@ -59,6 +59,7 @@ function isAnalyzableTs(rel: string): boolean {
 function isTestPath(rel: string): boolean {
   const base = rel.split("/").pop() ?? rel;
   if (/\.(test|spec)\.(ts|tsx)$/.test(base)) return true;
+  if (/\.fixtures\.(ts|tsx)$/.test(base)) return true;
   const parts = rel.split("/");
   return parts.includes("tests") || parts.includes("__tests__");
 }

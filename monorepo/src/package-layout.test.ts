@@ -27,7 +27,7 @@ describe("checkPackageLayout", () => {
           bin: { "my-cli": "./generate.ts" },
           scripts: {},
         }),
-        "generate.ts": "export {};\n",
+        "src/generate.ts": "export {};\n",
       },
       (dir) => {
         const issues = checkPackageLayout({ packageDir: dir });
@@ -36,14 +36,32 @@ describe("checkPackageLayout", () => {
     );
   });
 
-  it("flags saf-ts-run not targeting scripts/", () => {
+  it("allows saf-ts-run targeting ./bin/", () => {
     withTempPkg(
       {
         "package.json": JSON.stringify({
           name: "@t/p",
-          scripts: { gen: "saf-ts-run ./generate.ts" },
+          scripts: { gen: "saf-ts-run ./bin/generate.ts" },
         }),
-        "generate.ts": "export {};\n",
+        "bin/generate.ts": "export {};\n",
+      },
+      (dir) => {
+        const issues = checkPackageLayout({ packageDir: dir });
+        expect(
+          issues.some((i) => i.name.includes("saf-ts-run must target")),
+        ).toBe(false);
+      },
+    );
+  });
+
+  it("flags saf-ts-run not targeting scripts/ or bin/", () => {
+    withTempPkg(
+      {
+        "package.json": JSON.stringify({
+          name: "@t/p",
+          scripts: { gen: "saf-ts-run ./src/generate.ts" },
+        }),
+        "src/generate.ts": "export {};\n",
       },
       (dir) => {
         const issues = checkPackageLayout({ packageDir: dir });
@@ -54,19 +72,48 @@ describe("checkPackageLayout", () => {
     );
   });
 
-  it("flags oversized files", () => {
-    const body = Array.from({ length: 501 }, (_, i) => `// ${i}`).join("\n");
+  it("flags source files at package root", () => {
     withTempPkg(
       {
         "package.json": JSON.stringify({ name: "@t/p", scripts: {} }),
-        "big.ts": body + "\n",
+        "helper.ts": "export const x = 1;\n",
+        "helper.test.ts": "import { describe } from 'vitest';\n",
       },
       (dir) => {
-        const issues = checkPackageLayout({
-          packageDir: dir,
-          maxSourceLines: 500,
-        });
+        const issues = checkPackageLayout({ packageDir: dir });
+        const root = issues.filter((i) => i.kindLabel === "root");
+        expect(root.map((i) => i.filePath).sort()).toEqual([
+          "helper.test.ts",
+          "helper.ts",
+        ]);
+      },
+    );
+  });
+
+  it("flags oversized files above default 800", () => {
+    const body = Array.from({ length: 801 }, (_, i) => `// ${i}`).join("\n");
+    withTempPkg(
+      {
+        "package.json": JSON.stringify({ name: "@t/p", scripts: {} }),
+        "src/big.ts": body + "\n",
+      },
+      (dir) => {
+        const issues = checkPackageLayout({ packageDir: dir });
         expect(issues.some((i) => i.kind === "oversized-file")).toBe(true);
+      },
+    );
+  });
+
+  it("skips *.fixtures.ts for oversized checks", () => {
+    const body = Array.from({ length: 900 }, (_, i) => `// ${i}`).join("\n");
+    withTempPkg(
+      {
+        "package.json": JSON.stringify({ name: "@t/p", scripts: {} }),
+        "src/big.fixtures.ts": body + "\n",
+      },
+      (dir) => {
+        const issues = checkPackageLayout({ packageDir: dir });
+        expect(issues.some((i) => i.kind === "oversized-file")).toBe(false);
       },
     );
   });

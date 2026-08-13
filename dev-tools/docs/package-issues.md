@@ -25,8 +25,8 @@ Do **not** blindly delete exports. Triage each item.
 4. **Truly unused** — no production and no meaningful test surface  
    → **Delete** (and drop tests that only existed for it).
 
-5. **Shared test fixture** used by other packages' tests (`fixtures/`, `empties` helpers)  
-   → Prefer keeping; do **not** invent a fake prod caller. Note as **tool gap** if noisy (fixture specialty / allowlist) rather than polluting `bin/` / `scripts/`.
+5. **Shared test fixture** — name it `*.fixtures.ts` (not scanned for dead-code / LoC).  
+   Do **not** invent a fake prod caller.
 
 6. **False positive** — real prod importers exist but Issues still flags  
    → **Fix the tool**, usually:
@@ -38,8 +38,8 @@ Do **not** blindly delete exports. Triage each item.
 
 | Kind | Typical fix |
 | --- | --- |
-| `oversized-file` (>500 LoC) | Split into folders/modules; don't silence without splitting |
-| `package-layout` | `bin` → `./bin/…`; `saf-ts-run` scripts → `./scripts/…`; ban `node --experimental-strip-types` in scripts |
+| `oversized-file` (>800 LoC) | Split into folders/modules; don't silence without splitting |
+| `package-layout` | No `.ts` at package root; `bin` → `./bin/…`; `saf-ts-run` → `./scripts/` or `./bin/`; ban `node --experimental-strip-types` in scripts |
 | exports remaps | Make import path = file path; `saf-imports exports check` / `analyze-package` |
 
 ## Verify

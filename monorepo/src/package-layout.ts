@@ -4,7 +4,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
-export const DEFAULT_MAX_SOURCE_LINES = 500;
+export const DEFAULT_MAX_SOURCE_LINES = 800;
 
 export type PackageLayoutIssueKind = "package-layout" | "oversized-file";
 
@@ -76,6 +76,12 @@ const SKIP_DIRS = new Set([
   "workflows",
 ]);
 
+function isTestOrFixtureFileName(name: string): boolean {
+  return (
+    /\.(test|spec)\.(ts|tsx)$/.test(name) || /\.fixtures\.(ts|tsx)$/.test(name)
+  );
+}
+
 function walkSourceFiles(dir: string, out: string[]) {
   let entries: fs.Dirent[];
   try {
@@ -93,7 +99,7 @@ function walkSourceFiles(dir: string, out: string[]) {
       e.isFile() &&
       (e.name.endsWith(".ts") || e.name.endsWith(".tsx")) &&
       !e.name.endsWith(".d.ts") &&
-      !/\.(test|spec)\.(ts|tsx)$/.test(e.name)
+      !isTestOrFixtureFileName(e.name)
     ) {
       out.push(full);
     }
@@ -111,7 +117,7 @@ function countLines(text: string): number {
 }
 
 /**
- * Check bin/scripts layout conventions and oversized source files.
+ * Check bin/scripts layout conventions, no root-level TS, and oversized files.
  */
 export function checkPackageLayout(
   options: CheckPackageLayoutOptions,
@@ -141,13 +147,11 @@ export function checkPackageLayout(
       issues.push({
         kind: "package-layout",
         title: "Package layout",
-        name,
+        name: `bin.${name} → ${target} (must be under ./bin/)`,
         kindLabel: "bin",
         filePath: "package.json",
         repoPath: repoPathFor("package.json"),
       });
-      // Encode detail in name for CLI readability
-      issues[issues.length - 1]!.name = `bin.${name} → ${target} (must be under ./bin/)`;
     }
   }
 
@@ -164,17 +168,40 @@ export function checkPackageLayout(
     }
     if (usesSafTsRun(script)) {
       const target = scriptTargetPath(script);
-      if (target && !isUnderScripts(target)) {
+      if (target && !isUnderScripts(target) && !isUnderBin(target)) {
         issues.push({
           kind: "package-layout",
           title: "Package layout",
-          name: `scripts.${scriptName} → ${target} (saf-ts-run must target ./scripts/)`,
+          name: `scripts.${scriptName} → ${target} (saf-ts-run must target ./scripts/ or ./bin/)`,
           kindLabel: "scripts",
           filePath: "package.json",
           repoPath: repoPathFor("package.json"),
         });
       }
     }
+  }
+
+  // No source/test/fixture TS at package root — put modules in thematic folders.
+  try {
+    for (const e of fs.readdirSync(pkgDir, { withFileTypes: true })) {
+      if (!e.isFile()) continue;
+      const name = e.name;
+      if (
+        (name.endsWith(".ts") || name.endsWith(".tsx")) &&
+        !name.endsWith(".d.ts")
+      ) {
+        issues.push({
+          kind: "package-layout",
+          title: "Package layout",
+          name: `${name} at package root (move into a thematic folder)`,
+          kindLabel: "root",
+          filePath: name,
+          repoPath: repoPathFor(name),
+        });
+      }
+    }
+  } catch {
+    // ignore
   }
 
   const sources: string[] = [];

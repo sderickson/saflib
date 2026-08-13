@@ -51,6 +51,7 @@ function isExportableTs(name: string): boolean {
   if (!name.endsWith(".ts") && !name.endsWith(".tsx")) return false;
   if (name.endsWith(".d.ts")) return false;
   if (/\.(test|spec)\.(ts|tsx)$/.test(name)) return false;
+  if (/\.fixtures\.(ts|tsx)$/.test(name)) return false;
   return true;
 }
 
