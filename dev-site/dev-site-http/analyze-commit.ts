@@ -9,9 +9,17 @@ import type { DbKey } from "@saflib/drizzle";
 import type { AnalyzedCommitRef } from "@saflib/dev-site-db/types";
 import type { InsertPackageMetricsParams } from "@saflib/dev-site-db/types";
 import type { InsertBlobFactParams } from "@saflib/dev-site-db/types";
-import type { BlobFactEntity } from "@saflib/dev-site-db/types";
+import type { BlobFactEntity, BlobSpecialty } from "@saflib/dev-site-db/types";
+import {
+  blobFactExports,
+  blobFactTestCases,
+} from "@saflib/dev-site-db/types";
 import { blobFactsDb } from "@saflib/dev-site-db/queries/blob-facts/index";
-import { extractExports, extractTestCases } from "@saflib/parser";
+import {
+  extractDrizzleTables,
+  extractExports,
+  extractTestCases,
+} from "@saflib/parser";
 import type { ReturnsError } from "@saflib/monorepo";
 import type { GitCommandError } from "@saflib/git";
 import { makeSubsystemReporters } from "@saflib/node";
@@ -25,7 +33,7 @@ import {
 } from "./classify.ts";
 import { linkTestSubjects } from "./link-test-subjects.ts";
 
-export const ANALYZER_VERSION = "4";
+export const ANALYZER_VERSION = "5";
 
 export interface AnalyzeCommitOptions {
   repoRoot: string;
@@ -39,7 +47,7 @@ export interface AnalyzedExport {
   packageName: string;
   filePath: string;
   name: string;
-  kind: InsertBlobFactParams["exports"][number]["kind"];
+  kind: InsertBlobFactParams["specialty"]["exports"][number]["kind"];
   signature: string | null;
   docstring: string | null;
 }
@@ -84,6 +92,34 @@ function stripProductRoot(path: string, productRoot: string): string {
   return path;
 }
 
+function buildSpecialty(source: string): BlobSpecialty {
+  const exports = extractExports(source).map((e) => ({
+    name: e.name,
+    kind: e.kind,
+    signature: e.signature,
+    docstring: e.docstring,
+  }));
+  const tables = extractDrizzleTables(source).map((t) => ({
+    exportName: t.exportName,
+    tableName: t.tableName,
+    columns: t.columns.map((c) => ({
+      propName: c.propName,
+      sqlName: c.sqlName,
+      typeKind: c.typeKind,
+    })),
+  }));
+  if (tables.length > 0) {
+    return { kind: "sql-table", exports, tables };
+  }
+  const testCases = extractTestCases(source).map((t) => ({
+    fullName: t.fullName,
+  }));
+  if (testCases.length > 0) {
+    return { kind: "test", exports, testCases };
+  }
+  return { kind: "source", exports };
+}
+
 function parseBlobFact(
   blobHash: string,
   source: string,
@@ -92,8 +128,7 @@ function parseBlobFact(
     blobHash,
     analyzerVersion: ANALYZER_VERSION,
     lineCount: countLines(source),
-    exports: extractExports(source),
-    testCases: extractTestCases(source).map((t) => ({ fullName: t.fullName })),
+    specialty: buildSpecialty(source),
     computedAt: new Date(),
   };
 }
@@ -249,7 +284,7 @@ export async function analyzeCommit(
     if (isTest) {
       agg.testFiles += 1;
       agg.testLines += fact.lineCount;
-      for (const tc of fact.testCases) {
+      for (const tc of blobFactTestCases(fact)) {
         testCasesOut.push({
           packageName: pkg.packageName,
           filePath: entry.path,
@@ -263,7 +298,7 @@ export async function analyzeCommit(
       }
     } else {
       agg.prodLines += fact.lineCount;
-      for (const exp of fact.exports) {
+      for (const exp of blobFactExports(fact)) {
         exportsOut.push({
           packageName: pkg.packageName,
           filePath: entry.path,
@@ -409,7 +444,7 @@ export async function assemblePackageSymbols(
     const fileName = entry.path.split("/").pop() ?? entry.path;
     const isTest = isTestSourcePath(entry.path, fileName);
     if (isTest) {
-      for (const tc of fact.testCases) {
+      for (const tc of blobFactTestCases(fact)) {
         testCasesOut.push({
           packageName,
           filePath: entry.path,
@@ -422,7 +457,7 @@ export async function assemblePackageSymbols(
         });
       }
     } else {
-      for (const exp of fact.exports) {
+      for (const exp of blobFactExports(fact)) {
         exportsOut.push({
           packageName,
           filePath: entry.path,

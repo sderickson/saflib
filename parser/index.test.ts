@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { extractExports, extractTestCases } from "./index.ts";
+import {
+  extractDrizzleTables,
+  extractExports,
+  extractTestCases,
+} from "./index.ts";
 
 describe("extractExports", () => {
   it("collects function / class / interface / type / const / enum with signatures", () => {
@@ -191,5 +195,60 @@ describe("extractTestCases", () => {
   it("returns an empty array when there are no tests", () => {
     expect(extractTestCases("export const x = 1;\n")).toEqual([]);
     expect(extractTestCases("")).toEqual([]);
+  });
+});
+
+describe("extractDrizzleTables", () => {
+  it("extracts sqliteTable name, export binding, and columns", () => {
+    const source = `
+      import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+      export const packageMetricsTable = sqliteTable("package_metrics", {
+        id: text("id").primaryKey(),
+        commitHash: text("commit_hash").notNull(),
+        sourceFiles: integer("source_files").notNull(),
+      });
+    `;
+    expect(extractDrizzleTables(source)).toEqual([
+      {
+        exportName: "packageMetricsTable",
+        tableName: "package_metrics",
+        columns: [
+          { propName: "id", sqlName: "id", typeKind: "text" },
+          { propName: "commitHash", sqlName: "commit_hash", typeKind: "text" },
+          {
+            propName: "sourceFiles",
+            sqlName: "source_files",
+            typeKind: "integer",
+          },
+        ],
+      },
+    ]);
+  });
+
+  it("extracts multiple tables and ignores third-arg index callbacks", () => {
+    const source = `
+      export const a = sqliteTable("a", {
+        id: text("id").primaryKey(),
+      }, (table) => [index("a_idx").on(table.id)]);
+      export const b = sqliteTable("b", {
+        name: text("name"),
+      });
+    `;
+    expect(extractDrizzleTables(source)).toEqual([
+      {
+        exportName: "a",
+        tableName: "a",
+        columns: [{ propName: "id", sqlName: "id", typeKind: "text" }],
+      },
+      {
+        exportName: "b",
+        tableName: "b",
+        columns: [{ propName: "name", sqlName: "name", typeKind: "text" }],
+      },
+    ]);
+  });
+
+  it("returns empty when there are no table calls", () => {
+    expect(extractDrizzleTables("export const x = 1;\n")).toEqual([]);
   });
 });

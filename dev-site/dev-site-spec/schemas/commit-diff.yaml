@@ -66,9 +66,58 @@ properties:
     required:
       - added
       - removed
+  dbSchemas:
+    type: object
+    description: Structural drizzle table/column deltas across both commits.
+    properties:
+      tables:
+        type: object
+        required:
+          - added
+          - removed
+        properties:
+          added:
+            type: array
+            items:
+              $ref: "./db-schema-table.yaml"
+          removed:
+            type: array
+            items:
+              $ref: "./db-schema-table.yaml"
+      columns:
+        type: object
+        required:
+          - added
+          - removed
+          - changed
+        properties:
+          added:
+            type: array
+            items:
+              $ref: "./db-schema-column.yaml"
+          removed:
+            type: array
+            items:
+              $ref: "./db-schema-column.yaml"
+          changed:
+            type: array
+            items:
+              type: object
+              required:
+                - before
+                - after
+              properties:
+                before:
+                  $ref: "./db-schema-column.yaml"
+                after:
+                  $ref: "./db-schema-column.yaml"
+    required:
+      - tables
+      - columns
 required:
   - fromHash
   - toHash
   - packageMetrics
   - exports
   - testCases
+  - dbSchemas

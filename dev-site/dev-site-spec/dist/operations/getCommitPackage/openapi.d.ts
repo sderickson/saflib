@@ -13,7 +13,7 @@ export interface paths {
         };
         /**
          * Package-scoped symbols for one analyzed commit
-         * @description Returns metrics, exports, and test cases for a single package at a commit. Prefer this over full commit detail for the checkout Spec panel — assembly only touches that package's source blobs.
+         * @description Returns metrics, exports, and test cases for a single package at a commit. Prefer this over full commit detail for the checkout Spec panel — assembly only touches that package's source blobs. For db packages, also includes `dbInventory` (drizzle tables + query dirs).
          */
         get: operations["getCommitPackage"];
         put?: never;
@@ -101,6 +101,25 @@ export interface components {
              */
             subjectConfidence?: "adjacent" | "package";
         };
+        /** @description Drizzle table inventory for one db package (schemas + query dirs). */
+        "db-inventory": {
+            entities: {
+                /** @description Query directory name or kebab form of table name (e.g. package-metrics). */
+                entity: string;
+                table?: {
+                    exportName: string;
+                    tableName: string;
+                    filePath: string;
+                    columns: {
+                        propName: string;
+                        sqlName: string;
+                        typeKind: string;
+                    }[];
+                } | null;
+                /** @description Filenames under queries/<entity>/ (excluding index.ts and tests). */
+                queryFiles: string[];
+            }[];
+        };
         error: {
             /** @description A short, machine-readable error code, for when HTTP status codes are not sufficient. */
             code?: string;
@@ -150,6 +169,7 @@ export interface operations {
                             testFiles: number;
                             exports: components["schemas"]["export-entry"][];
                             testCases: components["schemas"]["test-case"][];
+                            dbInventory?: components["schemas"]["db-inventory"];
                         };
                     };
                 };

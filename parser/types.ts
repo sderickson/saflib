@@ -35,3 +35,20 @@ export interface ExportEntry {
 export interface TestCaseEntry {
   fullName: string;
 }
+
+/** One column inside a drizzle table definition. */
+export interface DrizzleTableColumn {
+  propName: string;
+  sqlName: string;
+  /** Builder callee: `text`, `integer`, … */
+  typeKind: string;
+}
+
+/** One drizzle `sqliteTable` / `pgTable` / `mysqlTable` found by {@link extractDrizzleTables}. */
+export interface DrizzleTableEntry {
+  /** Binding name of the const (`packageMetricsTable`). */
+  exportName: string;
+  /** SQL table name (first arg to `sqliteTable`). */
+  tableName: string;
+  columns: DrizzleTableColumn[];
+}

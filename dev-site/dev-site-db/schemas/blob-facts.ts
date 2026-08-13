@@ -15,25 +15,65 @@ export interface BlobTestCaseFact {
   fullName: string;
 }
 
+export interface BlobTableColumnFact {
+  propName: string;
+  sqlName: string;
+  typeKind: string;
+}
+
+export interface BlobTableFact {
+  exportName: string;
+  tableName: string;
+  columns: BlobTableColumnFact[];
+}
+
+/**
+ * Discriminated specialty for one blob. `exports` are on every kind; kind-only
+ * props are `testCases` (test) and `tables` (sql-table).
+ */
+export type BlobSpecialty =
+  | {
+      kind: "source";
+      exports: BlobExportFact[];
+    }
+  | {
+      kind: "test";
+      exports: BlobExportFact[];
+      testCases: BlobTestCaseFact[];
+    }
+  | {
+      kind: "sql-table";
+      exports: BlobExportFact[];
+      tables: BlobTableFact[];
+    };
+
 /** Path-agnostic parse results for one git blob. */
 export interface BlobFactEntity {
   blobHash: string;
   analyzerVersion: string;
   lineCount: number;
-  exports: BlobExportFact[];
-  testCases: BlobTestCaseFact[];
+  specialty: BlobSpecialty;
   computedAt: Date;
+}
+
+export function blobFactExports(fact: BlobFactEntity): BlobExportFact[] {
+  return fact.specialty.exports;
+}
+
+export function blobFactTestCases(fact: BlobFactEntity): BlobTestCaseFact[] {
+  return fact.specialty.kind === "test" ? fact.specialty.testCases : [];
+}
+
+export function blobFactTables(fact: BlobFactEntity): BlobTableFact[] {
+  return fact.specialty.kind === "sql-table" ? fact.specialty.tables : [];
 }
 
 export const blobFactsTable = sqliteTable("blob_facts", {
   blobHash: text("blob_hash").primaryKey(),
   analyzerVersion: text("analyzer_version").notNull(),
   lineCount: integer("line_count").notNull(),
-  exports: text("exports_json", { mode: "json" })
-    .$type<BlobExportFact[]>()
-    .notNull(),
-  testCases: text("test_cases_json", { mode: "json" })
-    .$type<BlobTestCaseFact[]>()
+  specialty: text("specialty_json", { mode: "json" })
+    .$type<BlobSpecialty>()
     .notNull(),
   computedAt: integer("computed_at", { mode: "timestamp" }).notNull(),
 });

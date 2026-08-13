@@ -50,6 +50,21 @@ export interface components {
                 added: components["schemas"]["test-case"][];
                 removed: components["schemas"]["test-case"][];
             };
+            /** @description Structural drizzle table/column deltas across both commits. */
+            dbSchemas: {
+                tables: {
+                    added: components["schemas"]["db-schema-table"][];
+                    removed: components["schemas"]["db-schema-table"][];
+                };
+                columns: {
+                    added: components["schemas"]["db-schema-column"][];
+                    removed: components["schemas"]["db-schema-column"][];
+                    changed: {
+                        before: components["schemas"]["db-schema-column"];
+                        after: components["schemas"]["db-schema-column"];
+                    }[];
+                };
+            };
         };
         /** @description Per-package file/LOC inventory at a single commit. */
         "package-metrics": {
@@ -146,6 +161,21 @@ export interface components {
              * @enum {string}
              */
             subjectConfidence?: "adjacent" | "package";
+        };
+        /** @description A drizzle table identity for schema diffs. */
+        "db-schema-table": {
+            packageName: string;
+            tableName: string;
+            exportName: string;
+            filePath: string;
+        };
+        /** @description A drizzle column identity for schema diffs. */
+        "db-schema-column": {
+            packageName: string;
+            tableName: string;
+            sqlName: string;
+            typeKind: string;
+            propName: string;
         };
         error: {
             /** @description A short, machine-readable error code, for when HTTP status codes are not sufficient. */

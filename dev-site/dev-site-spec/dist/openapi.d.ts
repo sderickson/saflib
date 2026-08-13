@@ -73,7 +73,7 @@ export interface paths {
         };
         /**
          * Package-scoped symbols for one analyzed commit
-         * @description Returns metrics, exports, and test cases for a single package at a commit. Prefer this over full commit detail for the checkout Spec panel — assembly only touches that package's source blobs.
+         * @description Returns metrics, exports, and test cases for a single package at a commit. Prefer this over full commit detail for the checkout Spec panel — assembly only touches that package's source blobs. For db packages, also includes `dbInventory` (drizzle tables + query dirs).
          */
         get: operations["getCommitPackage"];
         put?: never;
@@ -178,6 +178,9 @@ export interface components {
         CommitDetail: components["schemas"]["commit-detail"];
         CommitDiff: components["schemas"]["commit-diff"];
         CommitRef: components["schemas"]["commit-ref"];
+        DbInventory: components["schemas"]["db-inventory"];
+        DbSchemaTable: components["schemas"]["db-schema-table"];
+        DbSchemaColumn: components["schemas"]["db-schema-column"];
         /** @description A branch or tag pointer observed at scan time for a commit. */
         "commit-ref": {
             /**
@@ -374,6 +377,21 @@ export interface components {
              */
             message?: string;
         };
+        /** @description A drizzle table identity for schema diffs. */
+        "db-schema-table": {
+            packageName: string;
+            tableName: string;
+            exportName: string;
+            filePath: string;
+        };
+        /** @description A drizzle column identity for schema diffs. */
+        "db-schema-column": {
+            packageName: string;
+            tableName: string;
+            sqlName: string;
+            typeKind: string;
+            propName: string;
+        };
         /** @description Delta between two analyzed commits. Exports and test cases are identity-based (add/remove only — a rename shows up as remove + add). Package metrics include a `changed` list when the same packageName exists on both sides with different counts. */
         "commit-diff": {
             /** @description Baseline commit hash (the "before"). */
@@ -396,6 +414,40 @@ export interface components {
                 added: components["schemas"]["test-case"][];
                 removed: components["schemas"]["test-case"][];
             };
+            /** @description Structural drizzle table/column deltas across both commits. */
+            dbSchemas: {
+                tables: {
+                    added: components["schemas"]["db-schema-table"][];
+                    removed: components["schemas"]["db-schema-table"][];
+                };
+                columns: {
+                    added: components["schemas"]["db-schema-column"][];
+                    removed: components["schemas"]["db-schema-column"][];
+                    changed: {
+                        before: components["schemas"]["db-schema-column"];
+                        after: components["schemas"]["db-schema-column"];
+                    }[];
+                };
+            };
+        };
+        /** @description Drizzle table inventory for one db package (schemas + query dirs). */
+        "db-inventory": {
+            entities: {
+                /** @description Query directory name or kebab form of table name (e.g. package-metrics). */
+                entity: string;
+                table?: {
+                    exportName: string;
+                    tableName: string;
+                    filePath: string;
+                    columns: {
+                        propName: string;
+                        sqlName: string;
+                        typeKind: string;
+                    }[];
+                } | null;
+                /** @description Filenames under queries/<entity>/ (excluding index.ts and tests). */
+                queryFiles: string[];
+            }[];
         };
         login: {
             /** @enum {string} */
@@ -569,6 +621,7 @@ export interface operations {
                             testFiles: number;
                             exports: components["schemas"]["export-entry"][];
                             testCases: components["schemas"]["test-case"][];
+                            dbInventory?: components["schemas"]["db-inventory"];
                         };
                     };
                 };

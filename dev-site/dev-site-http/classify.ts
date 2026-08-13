@@ -137,3 +137,19 @@ export function parsePackageName(packageJsonText: string): string | undefined {
     return undefined;
   }
 }
+
+/** Heuristic: npm name / directory looks like a drizzle db package. */
+export function looksLikeDbPackage(
+  packageName: string,
+  directory: string = "",
+): boolean {
+  const name = packageName.toLowerCase();
+  const dir = directory.replace(/\\/g, "/").toLowerCase();
+  return (
+    name.endsWith("-db") ||
+    name.includes("-db-") ||
+    /\/[^/]*-db$/.test(dir) ||
+    dir.endsWith("/service/db") ||
+    /(^|\/)db$/.test(dir)
+  );
+}

@@ -34,8 +34,7 @@ export const upsertMany = queryWrapper(
             set: {
               analyzerVersion: row.analyzerVersion,
               lineCount: row.lineCount,
-              exports: row.exports,
-              testCases: row.testCases,
+              specialty: row.specialty,
               computedAt: row.computedAt,
             },
           })

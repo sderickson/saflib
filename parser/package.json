@@ -1,6 +1,6 @@
 {
   "name": "@saflib/parser",
-  "description": "Syntactic TypeScript helpers — extractExports / extractTestCases (no type-checker)",
+  "description": "Syntactic TypeScript helpers — extractExports / extractTestCases / extractDrizzleTables (no type-checker)",
   "private": true,
   "type": "module",
   "exports": {

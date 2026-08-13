@@ -4,7 +4,10 @@ import { AnalyzedCommitNotFoundError } from "@saflib/dev-site-db/errors";
 import { analyzedCommitsDb } from "@saflib/dev-site-db/queries/analyzed-commits/index";
 import { packageMetricsDb } from "@saflib/dev-site-db/queries/package-metrics/index";
 import { assemblePackageSymbols } from "./analyze-commit.ts";
+import { assemblePackageDbInventory } from "./assemble-package-db-inventory.ts";
+import { looksLikeDbPackage } from "./classify.ts";
 import type { RepoReadOptions } from "./get-commit.ts";
+import type { PackageDbInventory } from "./assemble-package-db-inventory.ts";
 
 export interface CommitPackageDetail {
   commitHash: string;
@@ -33,6 +36,7 @@ export interface CommitPackageDetail {
     subjectFilePath?: string;
     subjectConfidence?: "adjacent" | "package";
   }>;
+  dbInventory?: PackageDbInventory;
 }
 
 export type GetCommitPackageError = AnalyzedCommitNotFoundError;
@@ -78,6 +82,23 @@ export async function getCommitPackage(
   const exports = symbols.result?.exports ?? [];
   const testCases = symbols.result?.testCases ?? [];
 
+  let dbInventory: PackageDbInventory | undefined;
+  if (looksLikeDbPackage(metrics.packageName, metrics.directory)) {
+    const inv = await assemblePackageDbInventory(
+      dbKey,
+      hash,
+      packageName,
+      {
+        repoRoot: repo.repoRoot,
+        productRoot: repo.productRoot,
+        mainRef: repo.mainRef,
+      },
+    );
+    if (!inv.error) {
+      dbInventory = inv.result;
+    }
+  }
+
   return {
     result: {
       commitHash: hash,
@@ -115,6 +136,7 @@ export async function getCommitPackage(
           subjectConfidence: t.subjectConfidence,
         };
       }),
+      ...(dbInventory ? { dbInventory } : {}),
     },
   };
 }

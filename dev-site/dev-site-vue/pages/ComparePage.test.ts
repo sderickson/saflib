@@ -114,6 +114,10 @@ const mockDiff: DiffResponse = {
       ],
       removed: [],
     },
+    dbSchemas: {
+      tables: { added: [], removed: [] },
+      columns: { added: [], removed: [], changed: [] },
+    },
   },
 };
 

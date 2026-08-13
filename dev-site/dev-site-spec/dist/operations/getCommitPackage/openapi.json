@@ -12,7 +12,7 @@
         "tags": [
           "no-auth"
         ],
-        "description": "Returns metrics, exports, and test cases for a single package at a commit. Prefer this over full commit detail for the checkout Spec panel — assembly only touches that package's source blobs.\n",
+        "description": "Returns metrics, exports, and test cases for a single package at a commit. Prefer this over full commit detail for the checkout Spec panel — assembly only touches that package's source blobs. For db packages, also includes `dbInventory` (drizzle tables + query dirs).\n",
         "parameters": [
           {
             "name": "hash",
@@ -93,6 +93,9 @@
                           "items": {
                             "$ref": "#/components/schemas/test-case"
                           }
+                        },
+                        "dbInventory": {
+                          "$ref": "#/components/schemas/db-inventory"
                         }
                       }
                     }
@@ -235,6 +238,81 @@
           "filePath",
           "fullName"
         ]
+      },
+      "db-inventory": {
+        "type": "object",
+        "description": "Drizzle table inventory for one db package (schemas + query dirs).",
+        "required": [
+          "entities"
+        ],
+        "properties": {
+          "entities": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "entity",
+                "queryFiles"
+              ],
+              "properties": {
+                "entity": {
+                  "type": "string",
+                  "description": "Query directory name or kebab form of table name (e.g. package-metrics)."
+                },
+                "table": {
+                  "type": "object",
+                  "nullable": true,
+                  "required": [
+                    "exportName",
+                    "tableName",
+                    "columns",
+                    "filePath"
+                  ],
+                  "properties": {
+                    "exportName": {
+                      "type": "string"
+                    },
+                    "tableName": {
+                      "type": "string"
+                    },
+                    "filePath": {
+                      "type": "string"
+                    },
+                    "columns": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "propName",
+                          "sqlName",
+                          "typeKind"
+                        ],
+                        "properties": {
+                          "propName": {
+                            "type": "string"
+                          },
+                          "sqlName": {
+                            "type": "string"
+                          },
+                          "typeKind": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "queryFiles": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "Filenames under queries/<entity>/ (excluding index.ts and tests)."
+                }
+              }
+            }
+          }
+        }
       },
       "error": {
         "type": "object",

@@ -59,4 +59,10 @@ components:
       $ref: "./schemas/commit-diff.yaml"
     CommitRef:
       $ref: "./schemas/commit-ref.yaml"
+    DbInventory:
+      $ref: "./schemas/db-inventory.yaml"
+    DbSchemaTable:
+      $ref: "./schemas/db-schema-table.yaml"
+    DbSchemaColumn:
+      $ref: "./schemas/db-schema-column.yaml"
     # END WORKFLOW AREA

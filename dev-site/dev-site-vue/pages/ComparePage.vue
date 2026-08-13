@@ -120,6 +120,60 @@
             <template #bottom></template>
           </v-data-table>
           <p v-else class="text-body-2">No test case changes.</p>
+
+          <h2 class="text-h6 mt-6 mb-2">
+            Database schemas —
+            tables +{{ diff.dbSchemas.tables.added.length }} /
+            −{{ diff.dbSchemas.tables.removed.length }},
+            columns +{{ diff.dbSchemas.columns.added.length }} /
+            −{{ diff.dbSchemas.columns.removed.length }} /
+            ~{{ diff.dbSchemas.columns.changed.length }}
+          </h2>
+          <v-list
+            v-if="hasDbSchemaChanges"
+            density="compact"
+            class="mb-4"
+          >
+            <v-list-item
+              v-for="t in diff.dbSchemas.tables.added"
+              :key="'ta-' + t.packageName + t.tableName"
+            >
+              <v-chip color="success" size="x-small" class="mr-2">table+</v-chip>
+              {{ t.packageName }} · <code>{{ t.tableName }}</code>
+            </v-list-item>
+            <v-list-item
+              v-for="t in diff.dbSchemas.tables.removed"
+              :key="'tr-' + t.packageName + t.tableName"
+            >
+              <v-chip color="error" size="x-small" class="mr-2">table−</v-chip>
+              {{ t.packageName }} · <code>{{ t.tableName }}</code>
+            </v-list-item>
+            <v-list-item
+              v-for="c in diff.dbSchemas.columns.added"
+              :key="'ca-' + c.packageName + c.tableName + c.sqlName"
+            >
+              <v-chip color="success" size="x-small" class="mr-2">col+</v-chip>
+              <code>{{ c.tableName }}.{{ c.sqlName }}</code>
+              · {{ c.typeKind }}
+            </v-list-item>
+            <v-list-item
+              v-for="c in diff.dbSchemas.columns.removed"
+              :key="'cr-' + c.packageName + c.tableName + c.sqlName"
+            >
+              <v-chip color="error" size="x-small" class="mr-2">col−</v-chip>
+              <code>{{ c.tableName }}.{{ c.sqlName }}</code>
+              · {{ c.typeKind }}
+            </v-list-item>
+            <v-list-item
+              v-for="chg in diff.dbSchemas.columns.changed"
+              :key="'cc-' + chg.after.packageName + chg.after.tableName + chg.after.sqlName"
+            >
+              <v-chip color="warning" size="x-small" class="mr-2">col~</v-chip>
+              <code>{{ chg.after.tableName }}.{{ chg.after.sqlName }}</code>:
+              {{ chg.before.typeKind }}→{{ chg.after.typeKind }}
+            </v-list-item>
+          </v-list>
+          <p v-else class="text-body-2 mb-4">No database schema changes.</p>
         </template>
 
         <p
@@ -184,6 +238,20 @@ const hasPackageChanges = computed(() => {
     d.packageMetrics.added.length +
       d.packageMetrics.removed.length +
       d.packageMetrics.changed.length >
+    0
+  );
+});
+
+const hasDbSchemaChanges = computed(() => {
+  const d = diff.value;
+  if (!d) return false;
+  const s = d.dbSchemas;
+  return (
+    s.tables.added.length +
+      s.tables.removed.length +
+      s.columns.added.length +
+      s.columns.removed.length +
+      s.columns.changed.length >
     0
   );
 });

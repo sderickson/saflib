@@ -1,0 +1,51 @@
+type: object
+description: Drizzle table inventory for one db package (schemas + query dirs).
+required:
+  - entities
+properties:
+  entities:
+    type: array
+    items:
+      type: object
+      required:
+        - entity
+        - queryFiles
+      properties:
+        entity:
+          type: string
+          description: Query directory name or kebab form of table name (e.g. package-metrics).
+        table:
+          type: object
+          nullable: true
+          required:
+            - exportName
+            - tableName
+            - columns
+            - filePath
+          properties:
+            exportName:
+              type: string
+            tableName:
+              type: string
+            filePath:
+              type: string
+            columns:
+              type: array
+              items:
+                type: object
+                required:
+                  - propName
+                  - sqlName
+                  - typeKind
+                properties:
+                  propName:
+                    type: string
+                  sqlName:
+                    type: string
+                  typeKind:
+                    type: string
+        queryFiles:
+          type: array
+          items:
+            type: string
+          description: Filenames under queries/<entity>/ (excluding index.ts and tests).

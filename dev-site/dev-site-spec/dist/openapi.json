@@ -185,7 +185,7 @@
         "tags": [
           "no-auth"
         ],
-        "description": "Returns metrics, exports, and test cases for a single package at a commit. Prefer this over full commit detail for the checkout Spec panel — assembly only touches that package's source blobs.\n",
+        "description": "Returns metrics, exports, and test cases for a single package at a commit. Prefer this over full commit detail for the checkout Spec panel — assembly only touches that package's source blobs. For db packages, also includes `dbInventory` (drizzle tables + query dirs).\n",
         "parameters": [
           {
             "name": "hash",
@@ -266,6 +266,9 @@
                           "items": {
                             "$ref": "#/components/schemas/test-case"
                           }
+                        },
+                        "dbInventory": {
+                          "$ref": "#/components/schemas/db-inventory"
                         }
                       }
                     }
@@ -689,6 +692,15 @@
       "CommitRef": {
         "$ref": "#/components/schemas/commit-ref"
       },
+      "DbInventory": {
+        "$ref": "#/components/schemas/db-inventory"
+      },
+      "DbSchemaTable": {
+        "$ref": "#/components/schemas/db-schema-table"
+      },
+      "DbSchemaColumn": {
+        "$ref": "#/components/schemas/db-schema-column"
+      },
       "commit-ref": {
         "type": "object",
         "description": "A branch or tag pointer observed at scan time for a commit.",
@@ -1090,6 +1102,58 @@
           }
         }
       },
+      "db-schema-table": {
+        "type": "object",
+        "description": "A drizzle table identity for schema diffs.",
+        "required": [
+          "packageName",
+          "tableName",
+          "exportName",
+          "filePath"
+        ],
+        "properties": {
+          "packageName": {
+            "type": "string"
+          },
+          "tableName": {
+            "type": "string"
+          },
+          "exportName": {
+            "type": "string"
+          },
+          "filePath": {
+            "type": "string"
+          }
+        }
+      },
+      "db-schema-column": {
+        "type": "object",
+        "description": "A drizzle column identity for schema diffs.",
+        "required": [
+          "packageName",
+          "tableName",
+          "sqlName",
+          "typeKind",
+          "propName"
+        ],
+        "properties": {
+          "packageName": {
+            "type": "string"
+          },
+          "tableName": {
+            "type": "string"
+          },
+          "sqlName": {
+            "type": "string"
+          },
+          "typeKind": {
+            "type": "string"
+          },
+          "propName": {
+            "type": "string"
+          }
+        }
+      },
       "commit-diff": {
         "type": "object",
         "description": "Delta between two analyzed commits. Exports and test cases are identity-based (add/remove only — a rename shows up as remove + add). Package metrics include a `changed` list when the same packageName exists on both sides with different counts.\n",
@@ -1183,6 +1247,77 @@
               "added",
               "removed"
             ]
+          },
+          "dbSchemas": {
+            "type": "object",
+            "description": "Structural drizzle table/column deltas across both commits.",
+            "properties": {
+              "tables": {
+                "type": "object",
+                "required": [
+                  "added",
+                  "removed"
+                ],
+                "properties": {
+                  "added": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/db-schema-table"
+                    }
+                  },
+                  "removed": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/db-schema-table"
+                    }
+                  }
+                }
+              },
+              "columns": {
+                "type": "object",
+                "required": [
+                  "added",
+                  "removed",
+                  "changed"
+                ],
+                "properties": {
+                  "added": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/db-schema-column"
+                    }
+                  },
+                  "removed": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/db-schema-column"
+                    }
+                  },
+                  "changed": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": [
+                        "before",
+                        "after"
+                      ],
+                      "properties": {
+                        "before": {
+                          "$ref": "#/components/schemas/db-schema-column"
+                        },
+                        "after": {
+                          "$ref": "#/components/schemas/db-schema-column"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "required": [
+              "tables",
+              "columns"
+            ]
           }
         },
         "required": [
@@ -1190,8 +1325,84 @@
           "toHash",
           "packageMetrics",
           "exports",
-          "testCases"
+          "testCases",
+          "dbSchemas"
         ]
+      },
+      "db-inventory": {
+        "type": "object",
+        "description": "Drizzle table inventory for one db package (schemas + query dirs).",
+        "required": [
+          "entities"
+        ],
+        "properties": {
+          "entities": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "entity",
+                "queryFiles"
+              ],
+              "properties": {
+                "entity": {
+                  "type": "string",
+                  "description": "Query directory name or kebab form of table name (e.g. package-metrics)."
+                },
+                "table": {
+                  "type": "object",
+                  "nullable": true,
+                  "required": [
+                    "exportName",
+                    "tableName",
+                    "columns",
+                    "filePath"
+                  ],
+                  "properties": {
+                    "exportName": {
+                      "type": "string"
+                    },
+                    "tableName": {
+                      "type": "string"
+                    },
+                    "filePath": {
+                      "type": "string"
+                    },
+                    "columns": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "propName",
+                          "sqlName",
+                          "typeKind"
+                        ],
+                        "properties": {
+                          "propName": {
+                            "type": "string"
+                          },
+                          "sqlName": {
+                            "type": "string"
+                          },
+                          "typeKind": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "queryFiles": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "Filenames under queries/<entity>/ (excluding index.ts and tests)."
+                }
+              }
+            }
+          }
+        }
       },
       "login": {
         "type": "object",
