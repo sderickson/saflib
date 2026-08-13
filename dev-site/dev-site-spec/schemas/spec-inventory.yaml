@@ -1,0 +1,137 @@
+type: object
+description: >
+  OpenAPI inventory for one `-spec` package — business objects (schemas/) and/or
+  REST resources (routes/), linked by normalized name stems.
+required:
+  - entities
+properties:
+  entities:
+    type: array
+    description: Flat alphabetical list of object / both / routes entities.
+    items:
+      type: object
+      required:
+        - key
+        - label
+        - presence
+        - usedByPackages
+        - operations
+      properties:
+        key:
+          type: string
+          description: Stable entity key (e.g. both:Matter, routes:admin, object:Error).
+        label:
+          type: string
+          description: Display name — schema component name when present, else resource folder.
+        presence:
+          type: string
+          enum:
+            - object
+            - routes
+            - both
+          description: >
+            object = schema only; routes = REST resource only; both = schema + matching resource.
+        resource:
+          type: string
+          nullable: true
+          description: routes/<resource> folder name when present.
+        schema:
+          type: object
+          nullable: true
+          required:
+            - name
+            - yamlPath
+            - properties
+            - usedBy
+            - referencedByOperations
+          properties:
+            name:
+              type: string
+              description: components/schemas name (e.g. Matter).
+            yamlPath:
+              type: string
+              description: Package-relative path to the schema YAML.
+            description:
+              type: string
+              nullable: true
+            properties:
+              type: array
+              items:
+                type: object
+                required:
+                  - name
+                  - typeKind
+                properties:
+                  name:
+                    type: string
+                  typeKind:
+                    type: string
+                  docstring:
+                    type: string
+                    nullable: true
+            usedBy:
+              type: array
+              description: Non-test product files importing schemas/<Name>.
+              items:
+                $ref: "#/properties/entities/items/properties/operations/items/properties/usedBy/items"
+            referencedByOperations:
+              type: array
+              description: operationIds whose request/2xx response $ref this schema.
+              items:
+                type: string
+        usedByPackages:
+          type: array
+          description: Distinct packages importing any schema or operation under this entity.
+          items:
+            type: string
+        operations:
+          type: array
+          description: REST operations under the linked resource (empty for object-only).
+          items:
+            type: object
+            required:
+              - operationId
+              - method
+              - path
+              - yamlPath
+              - requestSchemas
+              - responseSchemas
+              - usedBy
+            properties:
+              operationId:
+                type: string
+              method:
+                type: string
+              path:
+                type: string
+              summary:
+                type: string
+                nullable: true
+              yamlPath:
+                type: string
+              requestSchemas:
+                type: array
+                items:
+                  type: string
+              responseSchemas:
+                type: array
+                items:
+                  type: string
+              usedBy:
+                type: array
+                description: Non-test product files importing operations/<operationId>.
+                items:
+                  type: object
+                  required:
+                    - packageName
+                    - filePath
+                    - repoPath
+                  properties:
+                    packageName:
+                      type: string
+                    filePath:
+                      type: string
+                      description: Path within the importing package (no package-root prefix).
+                    repoPath:
+                      type: string
+                      description: Repo-relative path for source links.

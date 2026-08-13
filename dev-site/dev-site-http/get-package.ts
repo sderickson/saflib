@@ -4,14 +4,16 @@ import { AnalyzedCommitNotFoundError } from "@saflib/dev-site-db/errors";
 
 import { assemblePackageSymbols } from "./analyze-commit.ts";
 import { assemblePackageDbInventory } from "./assemble-package-db-inventory.ts";
+import { assemblePackageSpecInventory } from "./assemble-package-spec-inventory.ts";
 import {
   assembleExportUsedBy,
   exportUsedByKey,
   type ExportUsedBy,
 } from "./assemble-export-used-by.ts";
-import { looksLikeDbPackage } from "./classify.ts";
+import { looksLikeDbPackage, looksLikeSpecPackage } from "./classify.ts";
 import type { RepoReadOptions } from "./get-commit.ts";
 import type { PackageDbInventory } from "./assemble-package-db-inventory.ts";
+import type { PackageSpecInventory } from "./assemble-package-spec-inventory.ts";
 
 import { getByHash } from "@saflib/dev-site-db/queries/analyzed-commits/get-by-hash";
 import { listByCommit } from "@saflib/dev-site-db/queries/package-metrics/list-by-commit";
@@ -44,6 +46,7 @@ export interface CommitPackageDetail {
     subjectConfidence?: "adjacent" | "package";
   }>;
   dbInventory?: PackageDbInventory;
+  specInventory?: PackageSpecInventory;
 }
 
 export type GetCommitPackageError = AnalyzedCommitNotFoundError;
@@ -92,7 +95,9 @@ export async function getCommitPackage(
   const testCases = symbols.result?.testCases ?? [];
 
   let dbInventory: PackageDbInventory | undefined;
+  let specInventory: PackageSpecInventory | undefined;
   const isDb = looksLikeDbPackage(metrics.packageName, metrics.directory);
+  const isSpec = looksLikeSpecPackage(metrics.packageName, metrics.directory);
   if (isDb) {
     const inv = await assemblePackageDbInventory(
       dbKey,
@@ -103,12 +108,22 @@ export async function getCommitPackage(
     if (!inv.error) {
       dbInventory = inv.result;
     }
+  } else if (isSpec) {
+    const inv = await assemblePackageSpecInventory(
+      dbKey,
+      hash,
+      packageName,
+      repoOpts,
+    );
+    if (!inv.error) {
+      specInventory = inv.result;
+    }
   }
 
-  // Source Spec: reverse-index importers onto exports. Db packages use
-  // dbInventory.queries[].usedBy instead (same whole-repo walk).
+  // Source Spec: reverse-index importers onto exports. Db/spec packages use
+  // inventory usedBy instead (same whole-repo walk).
   let usedByMap = new Map<string, ExportUsedBy[]>();
-  if (!isDb) {
+  if (!isDb && !isSpec) {
     const usedByRes = await assembleExportUsedBy(
       dbKey,
       hash,
@@ -158,6 +173,7 @@ export async function getCommitPackage(
         };
       }),
       ...(dbInventory ? { dbInventory } : {}),
+      ...(specInventory ? { specInventory } : {}),
     },
   };
 }

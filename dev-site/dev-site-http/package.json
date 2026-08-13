@@ -29,7 +29,8 @@
     "@saflib/monorepo": "*",
     "@saflib/node": "*",
     "@saflib/parser": "*",
-    "http-errors": "*"
+    "http-errors": "*",
+    "yaml": "^2.9.0"
   },
   "devDependencies": {
     "@saflib/vitest": "*"

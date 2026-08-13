@@ -6,6 +6,8 @@ import {
   packageRootsFromPackageJsonPaths,
   packageForPath,
   parsePackageName,
+  looksLikeDbPackage,
+  looksLikeSpecPackage,
 } from "./classify.ts";
 
 describe("classify", () => {
@@ -69,6 +71,23 @@ describe("classify", () => {
     it("parses package.json name", () => {
       expect(parsePackageName('{"name":"@x/y"}')).toBe("@x/y");
       expect(parsePackageName("not-json")).toBeUndefined();
+    });
+  });
+
+  describe("looksLikeSpecPackage / looksLikeDbPackage", () => {
+    it("detects -spec and -db naming", () => {
+      expect(
+        looksLikeSpecPackage("@pathclerk/daemon-spec", "daemon/service/spec"),
+      ).toBe(true);
+      expect(
+        looksLikeSpecPackage("@saflib/dev-site-spec", "saflib/dev-site/dev-site-spec"),
+      ).toBe(true);
+      expect(looksLikeSpecPackage("@pathclerk/daemon-db", "daemon/service/db")).toBe(
+        false,
+      );
+      expect(looksLikeDbPackage("@pathclerk/daemon-db", "daemon/service/db")).toBe(
+        true,
+      );
     });
   });
 });

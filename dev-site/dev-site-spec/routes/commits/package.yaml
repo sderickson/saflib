@@ -7,7 +7,8 @@ getCommitPackage:
     Returns metrics, exports, and test cases for a single package at a commit.
     Prefer this over full commit detail for the checkout Spec panel — assembly
     only touches that package's source blobs. For db packages, also includes
-    `dbInventory` (drizzle tables + query dirs).
+    `dbInventory` (drizzle tables + query dirs). For `-spec` packages, also
+    includes `specInventory` (OpenAPI schemas + REST resources).
   parameters:
     - name: hash
       in: path
@@ -70,6 +71,8 @@ getCommitPackage:
                       $ref: "../../schemas/test-case.yaml"
                   dbInventory:
                     $ref: "../../schemas/db-inventory.yaml"
+                  specInventory:
+                    $ref: "../../schemas/spec-inventory.yaml"
     "404":
       description: Commit or package not found
       content:

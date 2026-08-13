@@ -61,6 +61,8 @@ components:
       $ref: "./schemas/commit-ref.yaml"
     DbInventory:
       $ref: "./schemas/db-inventory.yaml"
+    SpecInventory:
+      $ref: "./schemas/spec-inventory.yaml"
     DbSchemaTable:
       $ref: "./schemas/db-schema-table.yaml"
     DbSchemaColumn:

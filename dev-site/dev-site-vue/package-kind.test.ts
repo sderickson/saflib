@@ -24,6 +24,7 @@ describe("classifyPackageKind", () => {
 
   it("lists future surfaces per kind", () => {
     expect(PACKAGE_KIND_SURFACES.http).toContain("Routes");
+    expect(PACKAGE_KIND_SURFACES.spec).toContain("Objects / routes");
     expect(PACKAGE_KIND_SURFACES.lib).toContain("Exports");
   });
 });

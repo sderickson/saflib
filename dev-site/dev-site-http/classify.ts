@@ -154,3 +154,19 @@ export function looksLikeDbPackage(
     /(^|\/)db$/.test(dir)
   );
 }
+
+/** Heuristic: npm name / directory looks like an OpenAPI `-spec` package. */
+export function looksLikeSpecPackage(
+  packageName: string,
+  directory: string = "",
+): boolean {
+  const name = packageName.toLowerCase();
+  const dir = directory.replace(/\\/g, "/").toLowerCase();
+  return (
+    name.endsWith("-spec") ||
+    name.includes("-spec-") ||
+    /\/[^/]*-spec$/.test(dir) ||
+    dir.endsWith("/service/spec") ||
+    /(^|\/)spec$/.test(dir)
+  );
+}

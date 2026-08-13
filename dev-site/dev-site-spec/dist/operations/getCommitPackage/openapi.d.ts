@@ -13,7 +13,7 @@ export interface paths {
         };
         /**
          * Package-scoped symbols for one analyzed commit
-         * @description Returns metrics, exports, and test cases for a single package at a commit. Prefer this over full commit detail for the checkout Spec panel — assembly only touches that package's source blobs. For db packages, also includes `dbInventory` (drizzle tables + query dirs).
+         * @description Returns metrics, exports, and test cases for a single package at a commit. Prefer this over full commit detail for the checkout Spec panel — assembly only touches that package's source blobs. For db packages, also includes `dbInventory` (drizzle tables + query dirs). For `-spec` packages, also includes `specInventory` (OpenAPI schemas + REST resources).
          */
         get: operations["getCommitPackage"];
         put?: never;
@@ -148,6 +148,66 @@ export interface components {
                 }[];
             }[];
         };
+        /** @description OpenAPI inventory for one `-spec` package — business objects (schemas/) and/or REST resources (routes/), linked by normalized name stems. */
+        "spec-inventory": {
+            /** @description Flat alphabetical list of object / both / routes entities. */
+            entities: {
+                /** @description Stable entity key (e.g. both:Matter, routes:admin, object:Error). */
+                key: string;
+                /** @description Display name — schema component name when present, else resource folder. */
+                label: string;
+                /**
+                 * @description object = schema only; routes = REST resource only; both = schema + matching resource.
+                 * @enum {string}
+                 */
+                presence: "object" | "routes" | "both";
+                /** @description routes/<resource> folder name when present. */
+                resource?: string | null;
+                schema?: {
+                    /** @description components/schemas name (e.g. Matter). */
+                    name: string;
+                    /** @description Package-relative path to the schema YAML. */
+                    yamlPath: string;
+                    description?: string | null;
+                    properties: {
+                        name: string;
+                        typeKind: string;
+                        docstring?: string | null;
+                    }[];
+                    /** @description Non-test product files importing schemas/<Name>. */
+                    usedBy: components["schemas"]["items"][];
+                    /** @description operationIds whose request/2xx response $ref this schema. */
+                    referencedByOperations: string[];
+                } | null;
+                /** @description Distinct packages importing any schema or operation under this entity. */
+                usedByPackages: string[];
+                /** @description REST operations under the linked resource (empty for object-only). */
+                operations: {
+                    operationId: string;
+                    method: string;
+                    path: string;
+                    summary?: string | null;
+                    yamlPath: string;
+                    requestSchemas: string[];
+                    responseSchemas: string[];
+                    /** @description Non-test product files importing operations/<operationId>. */
+                    usedBy: {
+                        packageName: string;
+                        /** @description Path within the importing package (no package-root prefix). */
+                        filePath: string;
+                        /** @description Repo-relative path for source links. */
+                        repoPath: string;
+                    }[];
+                }[];
+            }[];
+        };
+        items: {
+            packageName: string;
+            /** @description Path within the importing package (no package-root prefix). */
+            filePath: string;
+            /** @description Repo-relative path for source links. */
+            repoPath: string;
+        };
         error: {
             /** @description A short, machine-readable error code, for when HTTP status codes are not sufficient. */
             code?: string;
@@ -198,6 +258,7 @@ export interface operations {
                             exports: components["schemas"]["export-entry"][];
                             testCases: components["schemas"]["test-case"][];
                             dbInventory?: components["schemas"]["db-inventory"];
+                            specInventory?: components["schemas"]["spec-inventory"];
                         };
                     };
                 };

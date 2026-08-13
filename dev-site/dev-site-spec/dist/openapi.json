@@ -185,7 +185,7 @@
         "tags": [
           "no-auth"
         ],
-        "description": "Returns metrics, exports, and test cases for a single package at a commit. Prefer this over full commit detail for the checkout Spec panel — assembly only touches that package's source blobs. For db packages, also includes `dbInventory` (drizzle tables + query dirs).\n",
+        "description": "Returns metrics, exports, and test cases for a single package at a commit. Prefer this over full commit detail for the checkout Spec panel — assembly only touches that package's source blobs. For db packages, also includes `dbInventory` (drizzle tables + query dirs). For `-spec` packages, also includes `specInventory` (OpenAPI schemas + REST resources).\n",
         "parameters": [
           {
             "name": "hash",
@@ -269,6 +269,9 @@
                         },
                         "dbInventory": {
                           "$ref": "#/components/schemas/db-inventory"
+                        },
+                        "specInventory": {
+                          "$ref": "#/components/schemas/spec-inventory"
                         }
                       }
                     }
@@ -694,6 +697,9 @@
       },
       "DbInventory": {
         "$ref": "#/components/schemas/db-inventory"
+      },
+      "SpecInventory": {
+        "$ref": "#/components/schemas/spec-inventory"
       },
       "DbSchemaTable": {
         "$ref": "#/components/schemas/db-schema-table"
@@ -1475,6 +1481,213 @@
                       "usedBy": {
                         "type": "array",
                         "description": "Non-test product files that import this leaf query module.",
+                        "items": {
+                          "type": "object",
+                          "required": [
+                            "packageName",
+                            "filePath",
+                            "repoPath"
+                          ],
+                          "properties": {
+                            "packageName": {
+                              "type": "string"
+                            },
+                            "filePath": {
+                              "type": "string",
+                              "description": "Path within the importing package (no package-root prefix)."
+                            },
+                            "repoPath": {
+                              "type": "string",
+                              "description": "Repo-relative path for source links."
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "items": {
+        "type": "object",
+        "required": [
+          "packageName",
+          "filePath",
+          "repoPath"
+        ],
+        "properties": {
+          "packageName": {
+            "type": "string"
+          },
+          "filePath": {
+            "type": "string",
+            "description": "Path within the importing package (no package-root prefix)."
+          },
+          "repoPath": {
+            "type": "string",
+            "description": "Repo-relative path for source links."
+          }
+        }
+      },
+      "spec-inventory": {
+        "type": "object",
+        "description": "OpenAPI inventory for one `-spec` package — business objects (schemas/) and/or REST resources (routes/), linked by normalized name stems.\n",
+        "required": [
+          "entities"
+        ],
+        "properties": {
+          "entities": {
+            "type": "array",
+            "description": "Flat alphabetical list of object / both / routes entities.",
+            "items": {
+              "type": "object",
+              "required": [
+                "key",
+                "label",
+                "presence",
+                "usedByPackages",
+                "operations"
+              ],
+              "properties": {
+                "key": {
+                  "type": "string",
+                  "description": "Stable entity key (e.g. both:Matter, routes:admin, object:Error)."
+                },
+                "label": {
+                  "type": "string",
+                  "description": "Display name — schema component name when present, else resource folder."
+                },
+                "presence": {
+                  "type": "string",
+                  "enum": [
+                    "object",
+                    "routes",
+                    "both"
+                  ],
+                  "description": "object = schema only; routes = REST resource only; both = schema + matching resource.\n"
+                },
+                "resource": {
+                  "type": "string",
+                  "nullable": true,
+                  "description": "routes/<resource> folder name when present."
+                },
+                "schema": {
+                  "type": "object",
+                  "nullable": true,
+                  "required": [
+                    "name",
+                    "yamlPath",
+                    "properties",
+                    "usedBy",
+                    "referencedByOperations"
+                  ],
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "description": "components/schemas name (e.g. Matter)."
+                    },
+                    "yamlPath": {
+                      "type": "string",
+                      "description": "Package-relative path to the schema YAML."
+                    },
+                    "description": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "properties": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "name",
+                          "typeKind"
+                        ],
+                        "properties": {
+                          "name": {
+                            "type": "string"
+                          },
+                          "typeKind": {
+                            "type": "string"
+                          },
+                          "docstring": {
+                            "type": "string",
+                            "nullable": true
+                          }
+                        }
+                      }
+                    },
+                    "usedBy": {
+                      "type": "array",
+                      "description": "Non-test product files importing schemas/<Name>.",
+                      "items": {
+                        "$ref": "#/components/schemas/items"
+                      }
+                    },
+                    "referencedByOperations": {
+                      "type": "array",
+                      "description": "operationIds whose request/2xx response $ref this schema.",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "usedByPackages": {
+                  "type": "array",
+                  "description": "Distinct packages importing any schema or operation under this entity.",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "operations": {
+                  "type": "array",
+                  "description": "REST operations under the linked resource (empty for object-only).",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "operationId",
+                      "method",
+                      "path",
+                      "yamlPath",
+                      "requestSchemas",
+                      "responseSchemas",
+                      "usedBy"
+                    ],
+                    "properties": {
+                      "operationId": {
+                        "type": "string"
+                      },
+                      "method": {
+                        "type": "string"
+                      },
+                      "path": {
+                        "type": "string"
+                      },
+                      "summary": {
+                        "type": "string",
+                        "nullable": true
+                      },
+                      "yamlPath": {
+                        "type": "string"
+                      },
+                      "requestSchemas": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "responseSchemas": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "usedBy": {
+                        "type": "array",
+                        "description": "Non-test product files importing operations/<operationId>.",
                         "items": {
                           "type": "object",
                           "required": [
