@@ -79,7 +79,6 @@ export const AddSdkQueryWorkflowDefinition = defineWorkflow<
   },
 
   templateFiles: {
-    index: path.join(sourceDir, "requests/__group-name__/index.ts"),
     indexFakes: path.join(sourceDir, "requests/__group-name__/index.fakes.ts"),
     mocks: path.join(sourceDir, "requests/__group-name__/mocks.ts"),
     templateFile: path.join(
