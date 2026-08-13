@@ -25,7 +25,7 @@ COPY --from=__product-name__-builder /app/__product-name__/clients/build/dist /s
 # END WORKFLOW AREA
 
 COPY ./deploy/caddy/Caddyfile ./deploy/caddy/common.Caddyfile ./deploy/caddy/__product-name__.Caddyfile /etc/caddy/
-COPY ./deploy/caddy/env.defaults /etc/pathclerk/env.defaults
+COPY ./deploy/caddy/env.defaults /etc/__product-name__/env.defaults
 COPY ./deploy/scripts/apply-env-defaults.sh /usr/local/bin/apply-env-defaults.sh
 RUN chmod +x /usr/local/bin/apply-env-defaults.sh
 

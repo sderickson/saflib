@@ -1,9 +1,9 @@
 #!/bin/sh
-# Apply /etc/pathclerk/env.defaults for any vars not already set (Compose
+# Apply /etc/__product-name__/env.defaults for any vars not already set (Compose
 # env_file / secrets / prod-local overrides win).
 set -eu
 
-DEFAULTS="${PATHCLERK_ENV_DEFAULTS:-/etc/pathclerk/env.defaults}"
+DEFAULTS="${SAF_ENV_DEFAULTS:-/etc/__product-name__/env.defaults}"
 
 if [ -f "$DEFAULTS" ]; then
   while IFS= read -r line || [ -n "$line" ]; do

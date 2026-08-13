@@ -8,24 +8,28 @@ describe("buildPackageDirTree", () => {
   it("stops at package roots and nests path segments", () => {
     const tree = buildPackageDirTree([
       {
-        packageName: "@pathclerk/daemon-forms",
-        directory: "daemon/forms",
+        packageName: "@example/billing-db",
+        directory: "products/billing/service/db",
       },
       {
-        packageName: "@pathclerk/daemon-dev-site-http",
-        directory: "daemon/dev-site/service/http",
+        packageName: "@example/billing-http",
+        directory: "products/billing/service/http",
       },
       {
         packageName: "@saflib/git",
         directory: "saflib/git",
       },
     ]);
-    expect(tree.map((n) => n.label).sort()).toEqual(["daemon", "saflib"]);
-    const daemon = tree.find((n) => n.label === "daemon")!;
-    const forms = daemon.children.find((c) => c.label === "forms");
-    expect(forms?.kind).toBe("package");
-    expect(forms?.packageName).toBe("@pathclerk/daemon-forms");
-    expect(forms?.packageKind).toBe("other");
+    expect(tree.map((n) => n.label).sort()).toEqual(["products", "saflib"]);
+    const products = tree.find((n) => n.label === "products")!;
+    const billing = products.children.find((c) => c.label === "billing")!;
+    expect(billing.kind).toBe("dir");
+    const db = billing.children
+      .find((c) => c.label === "service")!
+      .children.find((c) => c.label === "db");
+    expect(db?.kind).toBe("package");
+    expect(db?.packageName).toBe("@example/billing-db");
+    expect(db?.packageKind).toBe("db");
   });
 });
 

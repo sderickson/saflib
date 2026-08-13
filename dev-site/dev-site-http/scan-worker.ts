@@ -28,7 +28,7 @@ async function main(): Promise<void> {
     throw new Error("scan-worker must run as a worker thread");
   }
   // DbManager logging uses @saflib/node reporters, which require a service name.
-  setServiceName("daemon-dev-site-scan-worker");
+  setServiceName("dev-site-scan-worker");
 
   const data = workerData as ScanWorkerData;
   const dbKey = devSiteDb.connect({

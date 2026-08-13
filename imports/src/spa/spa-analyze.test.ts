@@ -7,8 +7,8 @@ import { spaClientDir } from "./paths.ts";
 
 /**
  * Nearest workspace root from this file. When saflib is nested under a product
- * monorepo (pathclerk) that configures SPA gates, prefer that outer root so
- * analyze-router exercises real routers; standalone saflib CI just skips.
+ * monorepo that configures SPA gates, prefer that outer root so analyze-router
+ * exercises real routers; standalone saflib CI just skips.
  */
 function resolveSpaTestRoot(): string | undefined {
   let nearest: string;

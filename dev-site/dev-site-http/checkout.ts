@@ -19,7 +19,7 @@ export interface CheckoutStatus {
   message: string;
   authoredAt: string;
   analyzed: boolean;
-  /** Path prefix used when analyzing (e.g. `daemon`). Empty = whole repo. */
+  /** Path prefix used when analyzing (e.g. `products`). Empty = whole repo. */
   productRoot: string;
   packages: CheckoutPackage[];
 }

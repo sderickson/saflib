@@ -9,7 +9,7 @@ RUN npm ci --omit=dev
 
 WORKDIR /app/__product-name__/service/monolith
 
-COPY ./deploy/__product-name__/env.defaults /etc/pathclerk/env.defaults
+COPY ./deploy/__product-name__/env.defaults /etc/__product-name__/env.defaults
 COPY ./deploy/scripts/apply-env-defaults.sh /usr/local/bin/apply-env-defaults.sh
 RUN chmod +x /usr/local/bin/apply-env-defaults.sh
 

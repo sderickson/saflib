@@ -1,5 +1,5 @@
 /**
- * Classification heuristics ported/generalized from `daemon/code-health/inventory.ts`.
+ * Classification heuristics for inventory-style package/file categorization.
  * Applied to git-tree paths (no checkout) so historical commits classify the same way.
  */
 

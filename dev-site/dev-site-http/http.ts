@@ -25,7 +25,7 @@ export type CreateDevSiteHttpAppOptions = {
   devSiteDbKey?: DbKey;
   /** Absolute path to the git repo to analyze. Defaults to process.cwd(). */
   repoRoot?: string;
-  /** Path prefix within the repo (e.g. `daemon`). Defaults to "". */
+  /** Path prefix within the repo (e.g. `products`). Defaults to "". */
   productRoot?: string;
   /** Main branch ref. Defaults to `main`. */
   mainRef?: string;
