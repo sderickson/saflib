@@ -40,7 +40,7 @@ import {
   type JobsRuntimeHandle,
 } from "./runJobs.ts";
 
-import { claimNextJob, createJob, getByIdJob } from "@saflib/jobs-db";
+import { createJob, getByIdJob } from "@saflib/jobs-db";
 const SERVER_SECRET = Buffer.from("jobs-runtime-test-secret!!!!").toString(
   "base64",
 );
