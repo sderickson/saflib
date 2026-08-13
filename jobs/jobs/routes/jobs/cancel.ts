@@ -1,11 +1,7 @@
 import { createHandler } from "@saflib/express";
 import createError from "http-errors";
 import type { JobsServiceResponseBody } from "jobs-spec";
-import {
-  jobQueries,
-  JobNotCancellableError,
-  JobNotFoundError,
-} from "@saflib/jobs-db";
+import { JobNotCancellableError, JobNotFoundError, cancelByIdJob } from "@saflib/jobs-db";
 import { jobsServiceStorage } from "../../src/context.ts";
 import { mapJobToWire } from "../../src/mapJob.ts";
 
@@ -13,7 +9,7 @@ export const cancelJobHandler = createHandler(async (req, res) => {
   const ctx = jobsServiceStorage.getStore()!;
   const id = req.params.id as string;
 
-  const { result, error } = await jobQueries.cancelByIdJob(ctx.dbKey, {
+  const { result, error } = await cancelByIdJob(ctx.dbKey, {
     id,
     now: new Date(),
   });

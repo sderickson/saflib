@@ -36,6 +36,17 @@ export interface TestCaseEntry {
   fullName: string;
 }
 
+/** One static import / re-export-from found by {@link extractImports}. */
+export interface ImportEntry {
+  /** Module specifier string as written (`@scope/pkg/…` or relative). */
+  specifier: string;
+  /**
+   * Exported names pulled from the module. Empty for side-effect-only imports.
+   * `"default"` for default import; `"*"` for namespace / `export *`.
+   */
+  names: string[];
+}
+
 /** One column inside a drizzle table definition. */
 export interface DrizzleTableColumn {
   propName: string;

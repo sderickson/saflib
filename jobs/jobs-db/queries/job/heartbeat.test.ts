@@ -13,7 +13,6 @@ import { JobNotFoundError, JobNotRunningError } from "../../errors.ts";
 import type { CreateJobParams } from "./create.ts";
 import { createJob } from "./create.ts";
 import { heartbeatJob } from "./heartbeat.ts";
-import { jobQueries } from "./index.ts";
 
 const now = new Date("2026-08-06T12:00:00.000Z");
 const later = new Date("2026-08-06T12:00:30.000Z");
@@ -65,10 +64,6 @@ describe("heartbeatJob", () => {
 
   beforeEach(() => {
     jobsDbManager.clearAllTablesForTests(dbKey);
-  });
-
-  it("exports the query on jobQueries", () => {
-    expect(jobQueries.heartbeatJob).toBe(heartbeatJob);
   });
 
   it("refreshes heartbeatAt and updatedAt for a running job", async () => {

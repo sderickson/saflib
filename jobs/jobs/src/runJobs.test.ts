@@ -19,7 +19,7 @@ import type { DbKey } from "@saflib/drizzle";
 import { verifyAssertion } from "@saflib/node";
 import { startExpressServer } from "@saflib/express";
 import { jobsDbManager } from "@saflib/jobs-db/instances";
-import { jobQueries } from "@saflib/jobs-db";
+
 import type { JobAuthority, JobRequest, JobStatus } from "@saflib/jobs-db";
 import {
   BACKOFF_BASE_MS,
@@ -40,6 +40,7 @@ import {
   type JobsRuntimeHandle,
 } from "./runJobs.ts";
 
+import { claimNextJob, createJob, getByIdJob } from "@saflib/jobs-db";
 const SERVER_SECRET = Buffer.from("jobs-runtime-test-secret!!!!").toString(
   "base64",
 );
@@ -164,21 +165,21 @@ async function waitForJob(
   id: string,
   predicate: (
     job: NonNullable<
-      Awaited<ReturnType<typeof jobQueries.getByIdJob>>["result"]
+      Awaited<ReturnType<typeof getByIdJob>>["result"]
     >,
   ) => boolean,
   timeoutMs = 8_000,
 ) {
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
-    const { result, error } = await jobQueries.getByIdJob(dbKey, { id });
+    const { result, error } = await getByIdJob(dbKey, { id });
     expect(error).toBeUndefined();
     if (result && predicate(result)) {
       return result;
     }
     await new Promise((r) => setTimeout(r, 25));
   }
-  const { result } = await jobQueries.getByIdJob(dbKey, { id });
+  const { result } = await getByIdJob(dbKey, { id });
   throw new Error(
     `Timed out waiting for job ${id}; last status=${result?.status} result=${JSON.stringify(result?.result)}`,
   );
@@ -456,7 +457,7 @@ describe("runJobs", () => {
 
   it("delivers a pending job to success with assertion claims", async () => {
     scripts.push({ status: 200, body: { ok: true } });
-    await jobQueries.createJob(dbKey, jobParams({ id: "job-ok" }));
+    await createJob(dbKey, jobParams({ id: "job-ok" }));
     await startRuntime();
 
     const job = await waitForJob(
@@ -475,7 +476,7 @@ describe("runJobs", () => {
 
   it("classifies permanent 4xx as dead", async () => {
     scripts.push({ status: 422, body: { error: "gone" } });
-    await jobQueries.createJob(dbKey, jobParams({ id: "job-4xx" }));
+    await createJob(dbKey, jobParams({ id: "job-4xx" }));
     await startRuntime();
 
     const job = await waitForJob(dbKey, "job-4xx", (j) => j.status === "dead");
@@ -489,7 +490,7 @@ describe("runJobs", () => {
       vi.spyOn(Math, "random").mockReturnValue(1);
       scripts.push({ status: 503, body: "try again" });
       scripts.push({ status: 200, body: { ok: true } });
-      await jobQueries.createJob(dbKey, jobParams({ id: "job-5xx" }));
+      await createJob(dbKey, jobParams({ id: "job-5xx" }));
       await startRuntime();
 
       const retrying = await waitForJob(
@@ -522,7 +523,7 @@ describe("runJobs", () => {
       headers: { "X-Jobs-Retry": "never" },
       body: "stop",
     });
-    await jobQueries.createJob(dbKey, jobParams({ id: "job-never" }));
+    await createJob(dbKey, jobParams({ id: "job-never" }));
     await startRuntime();
     const dead = await waitForJob(
       dbKey,
@@ -539,7 +540,7 @@ describe("runJobs", () => {
       headers: { "X-Jobs-Retry": "always" },
       body: "retry me",
     });
-    await jobQueries.createJob(dbKey, jobParams({ id: "job-always" }));
+    await createJob(dbKey, jobParams({ id: "job-always" }));
     await startRuntime();
     const retrying = await waitForJob(
       dbKey,
@@ -556,7 +557,7 @@ describe("runJobs", () => {
       headers: { "Retry-After": "90" },
       body: "slow",
     });
-    await jobQueries.createJob(dbKey, jobParams({ id: "job-429" }));
+    await createJob(dbKey, jobParams({ id: "job-429" }));
     const before = Date.now();
     await startRuntime();
     const retrying = await waitForJob(
@@ -574,7 +575,7 @@ describe("runJobs", () => {
       status: 401,
       body: { code: "auth_unresolvable", message: "gone" },
     });
-    await jobQueries.createJob(dbKey, jobParams({ id: "job-auth" }));
+    await createJob(dbKey, jobParams({ id: "job-auth" }));
     await startRuntime();
     const dead = await waitForJob(
       dbKey,
@@ -586,7 +587,7 @@ describe("runJobs", () => {
 
   it("aborts at the operation timeout and schedules retry", async () => {
     scripts.push({ status: 200, delayMs: 500, body: { too: "late" } });
-    await jobQueries.createJob(dbKey, jobParams({ id: "job-timeout" }));
+    await createJob(dbKey, jobParams({ id: "job-timeout" }));
     await startRuntime({
       operationConfig: {
         jobsDemoWork: { timeoutMs: 50 },
@@ -604,7 +605,7 @@ describe("runJobs", () => {
   it("caps stored errorBody at 8KB", async () => {
     const huge = "x".repeat(ERROR_BODY_CAP_BYTES + 2048);
     scripts.push({ status: 500, body: huge });
-    await jobQueries.createJob(dbKey, jobParams({ id: "job-cap" }));
+    await createJob(dbKey, jobParams({ id: "job-cap" }));
     await startRuntime();
     const retrying = await waitForJob(
       dbKey,
@@ -618,11 +619,11 @@ describe("runJobs", () => {
 
   it("wake claims without waiting for the poll interval", async () => {
     await startRuntime();
-    const claimSpy = vi.spyOn(jobQueries, "claimNextJob");
+    const claimSpy = vi.spyOn(await import("@saflib/jobs-db"), "claimNextJob");
     claimSpy.mockClear();
 
     scripts.push({ status: 200, body: { ok: true } });
-    await jobQueries.createJob(dbKey, jobParams({ id: "job-wake" }));
+    await createJob(dbKey, jobParams({ id: "job-wake" }));
     const start = Date.now();
     signalJobsWake();
     await waitForJob(dbKey, "job-wake", (j) => j.status === "succeeded");
@@ -636,7 +637,7 @@ describe("runJobs", () => {
       const stale = new Date(
         Date.now() - (DEFAULT_TIMEOUT_MS + STALL_GRACE_MS + 1_000),
       );
-      await jobQueries.createJob(
+      await createJob(
         dbKey,
         jobParams({
           id: "job-stalled",
@@ -668,7 +669,7 @@ describe("runJobs", () => {
         Date.now() - (DEFAULT_TIMEOUT_MS + STALL_GRACE_MS + 500),
       );
 
-      await jobQueries.createJob(
+      await createJob(
         dbKey,
         jobParams({
           id: "job-short-timeout",
@@ -681,7 +682,7 @@ describe("runJobs", () => {
           runAt: shortStale,
         }),
       );
-      await jobQueries.createJob(
+      await createJob(
         dbKey,
         jobParams({
           id: "job-long-timeout",
@@ -710,7 +711,7 @@ describe("runJobs", () => {
       );
       expect(shortJob.attempt).toBeGreaterThanOrEqual(2);
 
-      const { result: longJob } = await jobQueries.getByIdJob(dbKey, {
+      const { result: longJob } = await getByIdJob(dbKey, {
         id: "job-long-timeout",
       });
       expect(longJob?.status).toBe("running");
@@ -724,14 +725,14 @@ describe("runJobs", () => {
       let heartbeatAtStart: Date | null | undefined;
       let heartbeatAtAfterInterval: Date | null | undefined;
       scripts.push(async (_req, res) => {
-        const start = await jobQueries.getByIdJob(dbKey, { id: "job-hb" });
+        const start = await getByIdJob(dbKey, { id: "job-hb" });
         heartbeatAtStart = start.result?.heartbeatAt;
         await new Promise((r) => setTimeout(r, HEARTBEAT_INTERVAL_MS + 300));
-        const mid = await jobQueries.getByIdJob(dbKey, { id: "job-hb" });
+        const mid = await getByIdJob(dbKey, { id: "job-hb" });
         heartbeatAtAfterInterval = mid.result?.heartbeatAt;
         res.status(200).json({ ok: true });
       });
-      await jobQueries.createJob(dbKey, jobParams({ id: "job-hb" }));
+      await createJob(dbKey, jobParams({ id: "job-hb" }));
       // Delivery timeout must exceed the heartbeat interval for this test.
       await startRuntime({
         operationConfig: {
@@ -756,7 +757,7 @@ describe("runJobs", () => {
   it("runs a scripted A→B→C chain end-to-end", async () => {
     scripts.push(async (_req, res) => {
       const now = new Date();
-      await jobQueries.createJob(
+      await createJob(
         dbKey,
         jobParams({
           id: "job-c",
@@ -774,7 +775,7 @@ describe("runJobs", () => {
     });
     scripts.push({ status: 200, body: { done: true } });
 
-    await jobQueries.createJob(
+    await createJob(
       dbKey,
       jobParams({
         id: "job-b",

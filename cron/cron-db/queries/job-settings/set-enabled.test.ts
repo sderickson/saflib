@@ -1,8 +1,9 @@
 import { describe, it, expect, vi, beforeAll, afterAll } from "vitest";
 import type { DbKey } from "@saflib/drizzle";
-import { cronDb, jobSettingsDb } from "@saflib/cron-db";
+import { cronDb } from "@saflib/cron-db";
 import assert from "assert";
 
+import { setEnabled } from "./set-enabled.ts";
 describe("setEnabledByName", () => {
   let dbKey: DbKey;
   beforeAll(() => {
@@ -19,7 +20,7 @@ describe("setEnabledByName", () => {
 
   it("should create a new job setting if it doesn't exist", async () => {
     const jobName = "test-job-set-new";
-    const { result: job } = await jobSettingsDb.setEnabled(
+    const { result: job } = await setEnabled(
       dbKey,
       jobName,
       true,
@@ -35,7 +36,7 @@ describe("setEnabledByName", () => {
 
   it("should update an existing job setting", async () => {
     const jobName = "test-job-set-update";
-    const { result: initialJob } = await jobSettingsDb.setEnabled(
+    const { result: initialJob } = await setEnabled(
       dbKey,
       jobName,
       true,
@@ -44,7 +45,7 @@ describe("setEnabledByName", () => {
     assert(initialJob);
     // Advance time by more than a second to ensure timestamp difference
     vi.advanceTimersByTime(1100);
-    const { result: updatedJob } = await jobSettingsDb.setEnabled(
+    const { result: updatedJob } = await setEnabled(
       dbKey,
       jobName,
       false,
@@ -62,7 +63,7 @@ describe("setEnabledByName", () => {
 
   it("records enabledBy when enabling", async () => {
     const jobName = "test-job-enabled-by-record";
-    const { result: job } = await jobSettingsDb.setEnabled(
+    const { result: job } = await setEnabled(
       dbKey,
       jobName,
       true,
@@ -75,8 +76,8 @@ describe("setEnabledByName", () => {
 
   it("retains enabledBy when disabling", async () => {
     const jobName = "test-job-enabled-by-retain";
-    await jobSettingsDb.setEnabled(dbKey, jobName, true, "original-enabler");
-    const { result: disabled } = await jobSettingsDb.setEnabled(
+    await setEnabled(dbKey, jobName, true, "original-enabler");
+    const { result: disabled } = await setEnabled(
       dbKey,
       jobName,
       false,
@@ -88,9 +89,9 @@ describe("setEnabledByName", () => {
 
   it("updates enabledBy when re-enabling as a different admin", async () => {
     const jobName = "test-job-enabled-by-reenable";
-    await jobSettingsDb.setEnabled(dbKey, jobName, true, "admin-a");
-    await jobSettingsDb.setEnabled(dbKey, jobName, false);
-    const { result: reenabled } = await jobSettingsDb.setEnabled(
+    await setEnabled(dbKey, jobName, true, "admin-a");
+    await setEnabled(dbKey, jobName, false);
+    const { result: reenabled } = await setEnabled(
       dbKey,
       jobName,
       true,

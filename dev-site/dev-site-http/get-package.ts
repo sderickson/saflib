@@ -1,14 +1,15 @@
 import type { DbKey } from "@saflib/drizzle";
 import type { ReturnsError } from "@saflib/monorepo";
 import { AnalyzedCommitNotFoundError } from "@saflib/dev-site-db/errors";
-import { analyzedCommitsDb } from "@saflib/dev-site-db/queries/analyzed-commits/index";
-import { packageMetricsDb } from "@saflib/dev-site-db/queries/package-metrics/index";
+
 import { assemblePackageSymbols } from "./analyze-commit.ts";
 import { assemblePackageDbInventory } from "./assemble-package-db-inventory.ts";
 import { looksLikeDbPackage } from "./classify.ts";
 import type { RepoReadOptions } from "./get-commit.ts";
 import type { PackageDbInventory } from "./assemble-package-db-inventory.ts";
 
+import { getByHash } from "@saflib/dev-site-db/queries/analyzed-commits/get-by-hash";
+import { listByCommit } from "@saflib/dev-site-db/queries/package-metrics/list-by-commit";
 export interface CommitPackageDetail {
   commitHash: string;
   packageName: string;
@@ -56,12 +57,12 @@ export async function getCommitPackage(
   packageName: string,
   repo: RepoReadOptions,
 ): Promise<GetCommitPackageResult> {
-  const commitRes = await analyzedCommitsDb.getByHash(dbKey, hash);
+  const commitRes = await getByHash(dbKey, hash);
   if (commitRes.error) {
     return { error: commitRes.error };
   }
 
-  const metricsRes = await packageMetricsDb.listByCommit(dbKey, hash);
+  const metricsRes = await listByCommit(dbKey, hash);
   const metrics = (metricsRes.result ?? []).find(
     (m) => m.packageName === packageName,
   );

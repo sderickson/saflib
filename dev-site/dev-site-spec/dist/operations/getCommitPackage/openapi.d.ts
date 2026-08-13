@@ -120,6 +120,11 @@ export interface components {
                         docstring?: string | null;
                     }[];
                 } | null;
+                /** @description Non-test product files that import queries under this entity. */
+                usedBy: {
+                    packageName: string;
+                    filePath: string;
+                }[];
             }[];
         };
         error: {

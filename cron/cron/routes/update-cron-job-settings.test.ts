@@ -4,7 +4,7 @@ import express from "express";
 import { createApp } from "../http.ts";
 import type { CronRequestBody, CronResponseBody } from "@saflib/cron-spec";
 import { mapJobSettingToResponse } from "./_helpers.ts"; // Need helper for response check
-import { cronDb, jobSettingsDb } from "@saflib/cron-db";
+import { cronDb, getByName } from "@saflib/cron-db";
 import type { DbKey } from "@saflib/drizzle";
 import { throwError } from "@saflib/monorepo";
 import { mockEnqueueJob, mockJobs } from "../mock-jobs.ts";
@@ -37,7 +37,7 @@ describe("PUT /jobs/settings", () => {
 
     // Fetch the updated setting directly from db to create the expected response
     const updatedSetting = await throwError(
-      jobSettingsDb.getByName(dbKey, existingJobName),
+      getByName(dbKey, existingJobName),
     );
 
     const expectedBody: CronResponseBody["updateCronJobSettings"][200] =
@@ -67,7 +67,7 @@ describe("PUT /jobs/settings", () => {
     expect(response.body.enabledBy).toBe(adminId);
 
     const updatedSetting = await throwError(
-      jobSettingsDb.getByName(dbKey, existingJobName),
+      getByName(dbKey, existingJobName),
     );
     expect(updatedSetting.enabledBy).toBe(adminId);
   });

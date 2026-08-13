@@ -1,12 +1,14 @@
 import type { DbKey } from "@saflib/drizzle";
 import type { ReturnsError } from "@saflib/monorepo";
 import { AnalyzedCommitNotFoundError } from "@saflib/dev-site-db/errors";
-import { analyzedCommitsDb } from "@saflib/dev-site-db/queries/analyzed-commits/index";
-import { packageMetricsDb } from "@saflib/dev-site-db/queries/package-metrics/index";
+
 import type { components as GetCommitComponents } from "@saflib/dev-site-spec/operations/getCommits";
 import type { components as ListCommitsComponents } from "@saflib/dev-site-spec/operations/listCommits";
 import { assembleCommitSymbols } from "./analyze-commit.ts";
 
+import { getByHash } from "@saflib/dev-site-db/queries/analyzed-commits/get-by-hash";
+import { list } from "@saflib/dev-site-db/queries/analyzed-commits/list";
+import { listByCommit } from "@saflib/dev-site-db/queries/package-metrics/list-by-commit";
 export type CommitDetail = GetCommitComponents["schemas"]["commit-detail"];
 export type CommitSummary = ListCommitsComponents["schemas"]["commit-summary"];
 
@@ -59,13 +61,13 @@ export async function getCommit(
   hash: string,
   repo: RepoReadOptions,
 ): Promise<GetCommitResult> {
-  const commitRes = await analyzedCommitsDb.getByHash(dbKey, hash);
+  const commitRes = await getByHash(dbKey, hash);
   if (commitRes.error) {
     return { error: commitRes.error };
   }
   const commit = commitRes.result;
 
-  const metricsRes = await packageMetricsDb.listByCommit(dbKey, hash);
+  const metricsRes = await listByCommit(dbKey, hash);
   const metrics = metricsRes.result!;
 
   const symbols = await assembleCommitSymbols(dbKey, hash, {
@@ -120,12 +122,12 @@ export async function listCommitSummaries(
     AnalyzedCommitNotFoundError
   >
 > {
-  const page = await analyzedCommitsDb.list(dbKey, params);
+  const page = await list(dbKey, params);
   if (page.error) return { error: page.error };
 
   const commits: CommitSummary[] = [];
   for (const c of page.result.commits) {
-    const metrics = (await packageMetricsDb.listByCommit(dbKey, c.hash))
+    const metrics = (await listByCommit(dbKey, c.hash))
       .result!;
     commits.push({
       hash: c.hash,

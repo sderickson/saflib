@@ -2,10 +2,11 @@ import { describe, it, expect, beforeAll, afterAll, beforeEach } from "vitest";
 import type { DbKey } from "@saflib/drizzle";
 import { throwError } from "@saflib/monorepo";
 import { devSiteDbManager } from "../../instances.ts";
-import { analyzedCommitsDb } from "../analyzed-commits/index.ts";
+
 import { listByCommit } from "./list-by-commit.ts";
 import { makeCommit } from "../test-helpers.ts";
 
+import { insert } from "@saflib/dev-site-db/queries/analyzed-commits/insert";
 describe("package-metrics/list-by-commit", () => {
   let dbKey: DbKey;
 
@@ -25,7 +26,7 @@ describe("package-metrics/list-by-commit", () => {
     const commit = makeCommit({
       hash: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
     });
-    await throwError(analyzedCommitsDb.insert(dbKey, commit));
+    await throwError(insert(dbKey, commit));
     const result = await throwError(listByCommit(dbKey, commit.hash));
     expect(result).toEqual([]);
   });

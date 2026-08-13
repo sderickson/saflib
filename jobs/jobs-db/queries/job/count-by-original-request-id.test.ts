@@ -11,7 +11,6 @@ import { jobsDbManager } from "../../instances.ts";
 import type { CreateJobParams } from "./create.ts";
 import { createJob } from "./create.ts";
 import { countByOriginalRequestIdJob } from "./count-by-original-request-id.ts";
-import { jobQueries } from "./index.ts";
 
 const now = new Date("2026-08-06T12:00:00.000Z");
 
@@ -64,11 +63,7 @@ describe("countByOriginalRequestIdJob", () => {
     jobsDbManager.clearAllTablesForTests(dbKey);
   });
 
-  it("exports the query on jobQueries", () => {
-    expect(jobQueries.countByOriginalRequestIdJob).toBe(
-      countByOriginalRequestIdJob,
-    );
-  });
+
 
   it("returns 0 when no jobs share the originalRequestId", async () => {
     const { result, error } = await countByOriginalRequestIdJob(dbKey, {

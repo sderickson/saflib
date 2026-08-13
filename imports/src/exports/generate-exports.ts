@@ -124,7 +124,8 @@ export function computeExportsMap(pkgDir: string): ExportsMap {
       exportKey = ".";
     } else {
       // Keep `/index` for nested barrels so imports are explicit
-      // (`@scope/pkg/queries/foo/index`) and match `./queries/*` → `./queries/*.ts`.
+      // Prefer leaf query paths (`@scope/pkg/queries/foo/create`) that match
+      // `./queries/*` → `./queries/*.ts`. Do not emit group `index` barrels.
       exportKey = "./" + withoutExt;
     }
     map[exportKey] = "./" + rel;

@@ -9,9 +9,12 @@ import {
 } from "vitest";
 import type { DbKey } from "@saflib/drizzle";
 import { JobSettingNotFoundError } from "../../errors.ts";
-import { cronDb, jobSettingsDb } from "@saflib/cron-db";
+import { cronDb } from "@saflib/cron-db";
 import { throwError } from "@saflib/monorepo";
 
+import { setEnabled } from "./set-enabled.ts";
+import { getByName } from "./get-by-name.ts";
+import { setLastRunStatus } from "./set-last-run-status.ts";
 describe("setLastRunStatus", () => {
   let dbKey: DbKey;
   beforeAll(() => {
@@ -30,7 +33,7 @@ describe("setLastRunStatus", () => {
 
   beforeEach(async () => {
     // Ensure the job exists before each status test
-    await jobSettingsDb.setEnabled(dbKey, jobName, true);
+    await setEnabled(dbKey, jobName, true);
     // Reset time for consistent starting point within this describe block
     const now = new Date();
     now.setMilliseconds(0);
@@ -39,12 +42,12 @@ describe("setLastRunStatus", () => {
 
   it("should update status, updatedAt, and lastRunAt for 'success'", async () => {
     const initialJob = await throwError(
-      jobSettingsDb.getByName(dbKey, jobName),
+      getByName(dbKey, jobName),
     );
     // Advance time by more than a second
     vi.advanceTimersByTime(1100);
     const updatedJob = await throwError(
-      jobSettingsDb.setLastRunStatus(dbKey, jobName, "success"),
+      setLastRunStatus(dbKey, jobName, "success"),
     );
 
     expect(updatedJob.lastRunStatus).toBe("success");
@@ -59,12 +62,12 @@ describe("setLastRunStatus", () => {
 
   it("should update status, updatedAt, and lastRunAt for 'running'", async () => {
     const initialJob = await throwError(
-      jobSettingsDb.getByName(dbKey, jobName),
+      getByName(dbKey, jobName),
     );
     // Advance time by more than a second
     vi.advanceTimersByTime(1100);
-    await jobSettingsDb.setLastRunStatus(dbKey, jobName, "running");
-    const finalJob = await throwError(jobSettingsDb.getByName(dbKey, jobName)); // Re-fetch to confirm
+    await setLastRunStatus(dbKey, jobName, "running");
+    const finalJob = await throwError(getByName(dbKey, jobName)); // Re-fetch to confirm
 
     expect(finalJob.lastRunStatus).toBe("running");
     expect(finalJob.lastRunAt).toBeInstanceOf(Date);
@@ -81,7 +84,7 @@ describe("setLastRunStatus", () => {
 
   it("should throw JobSettingNotFoundError if the job doesn't exist", async () => {
     const nonExistentJobName = "non-existent-status-job";
-    const { error } = await jobSettingsDb.setLastRunStatus(
+    const { error } = await setLastRunStatus(
       dbKey,
       nonExistentJobName,
       "fail",

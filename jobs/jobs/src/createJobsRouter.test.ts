@@ -11,15 +11,16 @@ import express from "express";
 import type { DbKey } from "@saflib/drizzle";
 import { makeAdminHeaders } from "@saflib/express";
 import { jobsDbManager } from "@saflib/jobs-db/instances";
-import { jobQueries } from "@saflib/jobs-db";
+
 import { createJobsRouter } from "./createJobsRouter.ts";
 import { _resetJobsWakeForTests } from "./runJobs.ts";
 
+import { cancelByOriginalRequestIdJob, createJob } from "@saflib/jobs-db";
 const now = new Date("2026-08-06T12:00:00.000Z");
 
 function jobParams(
-  overrides: Partial<Parameters<typeof jobQueries.createJob>[1]> &
-    Pick<Parameters<typeof jobQueries.createJob>[1], "id">,
+  overrides: Partial<Parameters<typeof createJob>[1]> &
+    Pick<Parameters<typeof createJob>[1], "id">,
 ) {
   return {
     status: "pending" as const,
@@ -72,7 +73,7 @@ describe("createJobsRouter admin actions", () => {
   });
 
   it("POST /jobs/:id/retry re-queues a dead job", async () => {
-    await jobQueries.createJob(
+    await createJob(
       dbKey,
       jobParams({
         id: "job-dead",
@@ -96,7 +97,7 @@ describe("createJobsRouter admin actions", () => {
   });
 
   it("POST /jobs/:id/retry returns 409 for a pending job", async () => {
-    await jobQueries.createJob(dbKey, jobParams({ id: "job-pending", status: "pending" }));
+    await createJob(dbKey, jobParams({ id: "job-pending", status: "pending" }));
 
     const response = await request(app)
       .post("/jobs/job-pending/retry")
@@ -114,7 +115,7 @@ describe("createJobsRouter admin actions", () => {
   });
 
   it("POST /jobs/:id/cancel cancels a pending job", async () => {
-    await jobQueries.createJob(dbKey, jobParams({ id: "job-pending", status: "pending" }));
+    await createJob(dbKey, jobParams({ id: "job-pending", status: "pending" }));
 
     const response = await request(app)
       .post("/jobs/job-pending/cancel")
@@ -129,7 +130,7 @@ describe("createJobsRouter admin actions", () => {
   });
 
   it("POST /jobs/:id/cancel returns 409 for a running job", async () => {
-    await jobQueries.createJob(
+    await createJob(
       dbKey,
       jobParams({
         id: "job-running",
@@ -149,7 +150,7 @@ describe("createJobsRouter admin actions", () => {
 
   it("POST /jobs/cancel-by-original-request cancels pending jobs in a chain", async () => {
     const chainId = "r-cancel-chain";
-    await jobQueries.createJob(
+    await createJob(
       dbKey,
       jobParams({
         id: "job-cancel-chain",
@@ -159,7 +160,7 @@ describe("createJobsRouter admin actions", () => {
       }),
     );
 
-    const { result: cancelledRows } = await jobQueries.cancelByOriginalRequestIdJob(
+    const { result: cancelledRows } = await cancelByOriginalRequestIdJob(
       dbKey,
       { originalRequestId: chainId, now: new Date() },
     );

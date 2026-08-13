@@ -1,7 +1,7 @@
 import { createHandler } from "@saflib/express";
 import createError from "http-errors";
 import type { JobsServiceResponseBody } from "jobs-spec";
-import { jobQueries, JobNotFoundError } from "@saflib/jobs-db";
+import { JobNotFoundError, getByIdJob } from "@saflib/jobs-db";
 import { jobsServiceStorage } from "../../src/context.ts";
 import { mapJobToWire } from "../../src/mapJob.ts";
 
@@ -9,7 +9,7 @@ export const getJobHandler = createHandler(async (req, res) => {
   const ctx = jobsServiceStorage.getStore()!;
   const id = req.params.id as string;
 
-  const { result, error } = await jobQueries.getByIdJob(ctx.dbKey, { id });
+  const { result, error } = await getByIdJob(ctx.dbKey, { id });
   if (error) {
     switch (true) {
       case error instanceof JobNotFoundError:

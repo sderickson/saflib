@@ -12,7 +12,7 @@ import { jobsDbManager } from "../../instances.ts";
 import type { CreateJobParams } from "./create.ts";
 import { createJob } from "./create.ts";
 import { cancelByOriginalRequestIdJob } from "./cancel-by-original-request-id.ts";
-import { jobQueries } from "./index.ts";
+
 import { eq } from "drizzle-orm";
 import { jobTable } from "../../schemas/job.ts";
 
@@ -68,11 +68,7 @@ describe("cancelByOriginalRequestIdJob", () => {
     jobsDbManager.clearAllTablesForTests(dbKey);
   });
 
-  it("exports the query on jobQueries", () => {
-    expect(jobQueries.cancelByOriginalRequestIdJob).toBe(
-      cancelByOriginalRequestIdJob,
-    );
-  });
+
 
   it("returns an empty array when nothing matches", async () => {
     const { result, error } = await cancelByOriginalRequestIdJob(dbKey, {

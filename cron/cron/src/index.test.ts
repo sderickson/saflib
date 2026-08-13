@@ -7,13 +7,12 @@ import {
   afterEach,
   type MockInstance,
 } from "vitest";
-import { addErrorCollector } from "@saflib/node";
+import { addErrorCollector, getSafReporters } from "@saflib/node";
 import { startJobs } from "./index.ts";
-import { cronDb, jobSettingsDb } from "@saflib/cron-db";
+import { cronDb, getByName, setEnabled, setLastRunStatus } from "@saflib/cron-db";
 import type { DbKey } from "@saflib/drizzle";
 import { throwError } from "@saflib/monorepo";
 import { mockEnqueueJob, mockJobs } from "../mock-jobs.ts";
-import { getSafReporters } from "@saflib/node";
 import type { LeveledLogMethod } from "winston";
 import type { CronEnqueuer } from "./types.ts";
 
@@ -51,7 +50,7 @@ describe("startJobs", () => {
 
   it("should create default disabled setting if job doesn't exist in DB", async () => {
     await startWithMock({ "new-job": mockJobs["new-job"] });
-    const setting = await throwError(jobSettingsDb.getByName(dbKey, "new-job"));
+    const setting = await throwError(getByName(dbKey, "new-job"));
     expect(setting).toBeDefined();
     expect(setting.enabled).toBe(false);
     expect(warnSpy).toHaveBeenCalledWith(
@@ -62,7 +61,7 @@ describe("startJobs", () => {
   });
 
   it("should skip scheduling if initial fetch fails unexpectedly", async () => {
-    const getByNameSpy = vi.spyOn(jobSettingsDb, "getByName").mockReturnValue(
+    const getByNameSpy = vi.spyOn(await import("@saflib/cron-db"), "getByName").mockReturnValue(
       Promise.resolve({
         error: new Error("Unexpected error...."),
       }),
@@ -84,7 +83,7 @@ describe("startJobs", () => {
     await startWithMock({
       "every-second-job": mockJobs["every-second-job"],
     });
-    await jobSettingsDb.setEnabled(
+    await setEnabled(
       dbKey,
       "every-second-job",
       true,
@@ -104,19 +103,19 @@ describe("startJobs", () => {
       }),
     );
     const setting = await throwError(
-      jobSettingsDb.getByName(dbKey, "every-second-job"),
+      getByName(dbKey, "every-second-job"),
     );
     expect(setting.lastRunStatus).toBe("success");
     expect(setting.lastRunAt).toEqual(new Date(baseTime.getTime() + 1000));
   });
 
   it("should not enqueue disabled job on schedule tick", async () => {
-    await jobSettingsDb.setEnabled(dbKey, "disabled-job", false);
+    await setEnabled(dbKey, "disabled-job", false);
     await startWithMock({ "disabled-job": mockJobs["disabled-job"] });
     await vi.advanceTimersByTimeAsync(1000);
     expect(mockEnqueueJob).not.toHaveBeenCalled();
     const setting = await throwError(
-      jobSettingsDb.getByName(dbKey, "disabled-job"),
+      getByName(dbKey, "disabled-job"),
     );
     expect(setting.enabled).toBe(false);
     expect(setting.lastRunStatus).toBeNull();
@@ -127,7 +126,7 @@ describe("startJobs", () => {
       "every-second-job": mockJobs["every-second-job"],
     });
     // Enable without recording authority (pre-migration / incomplete row)
-    await jobSettingsDb.setEnabled(dbKey, "every-second-job", true);
+    await setEnabled(dbKey, "every-second-job", true);
 
     await vi.advanceTimersByTimeAsync(1000);
     expect(mockEnqueueJob).not.toHaveBeenCalled();
@@ -137,7 +136,7 @@ describe("startJobs", () => {
       ),
     );
     const setting = await throwError(
-      jobSettingsDb.getByName(dbKey, "every-second-job"),
+      getByName(dbKey, "every-second-job"),
     );
     expect(setting.lastRunStatus).toBeNull();
   });
@@ -146,7 +145,7 @@ describe("startJobs", () => {
     await startWithMock({
       "custom-dedupe-job": mockJobs["custom-dedupe-job"],
     });
-    await jobSettingsDb.setEnabled(
+    await setEnabled(
       dbKey,
       "custom-dedupe-job",
       true,
@@ -171,7 +170,7 @@ describe("startJobs", () => {
     await startWithMock({
       "every-second-job": mockJobs["every-second-job"],
     });
-    await jobSettingsDb.setEnabled(
+    await setEnabled(
       dbKey,
       "every-second-job",
       true,
@@ -181,7 +180,7 @@ describe("startJobs", () => {
     await vi.advanceTimersByTimeAsync(1000);
     expect(mockEnqueueJob).toHaveBeenCalledTimes(1);
     const setting = await throwError(
-      jobSettingsDb.getByName(dbKey, "every-second-job"),
+      getByName(dbKey, "every-second-job"),
     );
     expect(setting.lastRunStatus).toBe("fail");
     expect(setting.lastRunAt).toEqual(new Date(baseTime.getTime() + 1000));
@@ -197,9 +196,9 @@ describe("startJobs", () => {
     vi.mocked(mockEnqueueJob).mockRejectedValueOnce(enqueueError);
     const dbError = new Error("DB Write Failed");
 
-    const originalSetStatus = jobSettingsDb.setLastRunStatus;
+    const originalSetStatus = setLastRunStatus;
     const setStatusSpy = vi
-      .spyOn(jobSettingsDb, "setLastRunStatus")
+      .spyOn(await import("@saflib/cron-db"), "setLastRunStatus")
       .mockImplementation(async (dbKeyArg, name, status) => {
         if (status === "fail") {
           throw dbError;
@@ -210,7 +209,7 @@ describe("startJobs", () => {
     await startWithMock({
       "every-second-job": mockJobs["every-second-job"],
     });
-    await jobSettingsDb.setEnabled(
+    await setEnabled(
       dbKey,
       "every-second-job",
       true,
@@ -239,7 +238,7 @@ describe("startJobs", () => {
       { "every-second-job": mockJobs["every-second-job"] },
       { dbKey, enqueueJob: customEnqueue },
     );
-    await jobSettingsDb.setEnabled(
+    await setEnabled(
       dbKey,
       "every-second-job",
       true,

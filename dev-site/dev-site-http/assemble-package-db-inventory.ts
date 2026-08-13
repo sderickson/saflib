@@ -3,12 +3,15 @@ import type { ReturnsError } from "@saflib/monorepo";
 import type { GitCommandError } from "@saflib/git";
 import { listTree, readBlobs } from "@saflib/git";
 import {
+  blobFactImports,
   blobFactTables,
   type BlobTableFact,
 } from "@saflib/dev-site-db/types";
 import { ensureBlobFacts, type AnalyzeCommitOptions } from "./analyze-commit.ts";
 import {
   isSourcePath,
+  isTestSourcePath,
+  packageForPath,
   packageRootsFromPackageJsonPaths,
   parsePackageName,
 } from "./classify.ts";
@@ -26,10 +29,17 @@ export interface DbInventoryTable {
   filePath: string;
 }
 
+export interface DbInventoryUsedBy {
+  packageName: string;
+  filePath: string;
+}
+
 export interface DbInventoryEntity {
   /** Query dir name or schema stem, e.g. `package-metrics`. */
   entity: string;
   table: DbInventoryTable | null;
+  /** Non-test product files that import this entity's query modules. */
+  usedBy: DbInventoryUsedBy[];
 }
 
 export interface PackageDbInventory {
@@ -44,10 +54,66 @@ function entityFromTableName(tableName: string): string {
   return tableName.replace(/_/g, "-");
 }
 
+/** POSIX-ish resolve of `fromDir/specifier` without touching the filesystem. */
+function resolveRelative(fromFile: string, specifier: string): string {
+  const fromDir = fromFile.includes("/")
+    ? fromFile.slice(0, fromFile.lastIndexOf("/"))
+    : "";
+  const joined = fromDir ? `${fromDir}/${specifier}` : specifier;
+  const parts: string[] = [];
+  for (const p of joined.split("/")) {
+    if (!p || p === ".") continue;
+    if (p === "..") {
+      parts.pop();
+      continue;
+    }
+    parts.push(p);
+  }
+  return parts.join("/");
+}
+
+function stripTsExt(path: string): string {
+  return path.replace(/\.(tsx?|jsx?|mjs|cjs)$/, "");
+}
+
+/**
+ * If `specifier` (absolute or relative to `importerPath`) targets
+ * `${packageName}/queries/<entity>/…` or `<pkgDir>/queries/<entity>/…`,
+ * return the entity name.
+ */
+function entityFromQueryImport(
+  packageName: string,
+  packageDirectory: string,
+  importerPath: string,
+  specifier: string,
+): string | null {
+  const absPrefix = `${packageName}/queries/`;
+  if (specifier.startsWith(absPrefix)) {
+    const rest = specifier.slice(absPrefix.length);
+    const entity = rest.split("/")[0];
+    return entity || null;
+  }
+
+  if (!specifier.startsWith(".")) return null;
+  const resolved = stripTsExt(resolveRelative(importerPath, specifier));
+  const pkgPrefix = packageDirectory
+    ? packageDirectory.replace(/\/+$/, "") + "/"
+    : "";
+  const rel = pkgPrefix && resolved.startsWith(pkgPrefix)
+    ? resolved.slice(pkgPrefix.length)
+    : !pkgPrefix
+      ? resolved
+      : null;
+  if (rel === null) return null;
+  const m = /^queries\/([^/]+)\//.exec(rel);
+  return m?.[1] ?? null;
+}
+
 /**
  * Assemble drizzle tables (from blob_facts) + query dirs (from ls-tree)
  * for one db package. Query dirs discover entities; query filenames are not
- * surfaced (tests under the dir are the Spec).
+ * surfaced (tests under the dir are the Spec). `usedBy` is a reverse index of
+ * non-test product files importing `queries/<entity>/…`.
  */
 export async function assemblePackageDbInventory(
   dbKey: DbKey,
@@ -102,20 +168,21 @@ export async function assemblePackageDbInventory(
       ? path.slice(pkgPrefix.length)
       : path;
 
-  const sourceEntries = tree.filter(
+  const packageSourceEntries = tree.filter(
     (e) => isSourcePath(e.path) && underPackage(e.path),
   );
+  const allSourceEntries = tree.filter((e) => isSourcePath(e.path));
   const factsResult = await ensureBlobFacts(
     dbKey,
     repoRoot,
-    sourceEntries.map((e) => e.blobHash),
+    allSourceEntries.map((e) => e.blobHash),
   );
   if (factsResult.error) return { error: factsResult.error };
   const facts = factsResult.result;
 
   type TableWithPath = BlobTableFact & { filePath: string };
   const tables: TableWithPath[] = [];
-  for (const entry of sourceEntries) {
+  for (const entry of packageSourceEntries) {
     const fact = facts.get(entry.blobHash);
     if (!fact) continue;
     for (const t of blobFactTables(fact)) {
@@ -143,6 +210,7 @@ export async function assemblePackageDbInventory(
           ? entityLabel.replace(/_/g, "-")
           : entityLabel,
         table: null,
+        usedBy: [],
       };
       byKey.set(key, row);
     }
@@ -169,6 +237,46 @@ export async function assemblePackageDbInventory(
       })),
       filePath: t.filePath,
     };
+  }
+
+  const usedBySets = new Map<string, Map<string, DbInventoryUsedBy>>();
+  for (const entry of allSourceEntries) {
+    const fileName = entry.path.split("/").pop() ?? entry.path;
+    if (isTestSourcePath(entry.path, fileName)) continue;
+    const fact = facts.get(entry.blobHash);
+    if (!fact) continue;
+    const importerPkg = packageForPath(entry.path, roots).packageName;
+    for (const imp of blobFactImports(fact)) {
+      const entity = entityFromQueryImport(
+        packageName,
+        targetRoot.directory,
+        entry.path,
+        imp.specifier,
+      );
+      if (!entity) continue;
+      const key = normalizeEntityKey(entity);
+      // Only record for entities we already track (table or query dir).
+      if (!byKey.has(key)) continue;
+      let set = usedBySets.get(key);
+      if (!set) {
+        set = new Map();
+        usedBySets.set(key, set);
+      }
+      set.set(`${importerPkg}\0${entry.path}`, {
+        packageName: importerPkg,
+        filePath: entry.path,
+      });
+    }
+  }
+
+  for (const [key, set] of usedBySets) {
+    const row = byKey.get(key);
+    if (!row) continue;
+    row.usedBy = [...set.values()].sort(
+      (a, b) =>
+        a.packageName.localeCompare(b.packageName) ||
+        a.filePath.localeCompare(b.filePath),
+    );
   }
 
   const entities = [...byKey.values()].sort((a, b) =>

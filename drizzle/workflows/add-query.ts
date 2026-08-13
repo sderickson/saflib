@@ -71,7 +71,6 @@ export const AddDrizzleQueryWorkflowDefinition = defineWorkflow<
       sourceDir,
       "queries/__group-name__/__target-name__.test.ts",
     ),
-    groupIndex: path.join(sourceDir, "queries/__group-name__/index.ts"),
     types: path.join(sourceDir, "types.ts"),
     errors: path.join(sourceDir, "errors.ts"),
   },
@@ -97,9 +96,9 @@ export const AddDrizzleQueryWorkflowDefinition = defineWorkflow<
         * A resource not being found by ID is an error.
         * Error subclasses should be simple, no special constructors or anything.
         * You don't need to export error types from the types.ts file.
-        * Import queries via package subpaths. Leaf files: \`@scope/my-db/queries/<group>/<name>\`. Group barrels: \`@scope/my-db/queries/<group>/index\` (include \`index\` — \`./queries/*\` maps to \`./queries/*.ts\`).
+        * Import query functions via package subpaths from leaf files only: \`@scope/my-db/queries/<group>/<name>\` (\`./queries/*\` maps to \`./queries/*.ts\` — do not use bare \`queries/<group>\` or group \`index\` barrels).
         * New folders and files are covered by \`./queries/*\` — do not edit \`package.json\` exports when adding queries.
-        * Group \`index.ts\` files aggregate queries within a domain for router wiring and local imports.
+        * Do not create or update a group \`index.ts\` barrel; consumers import leaf query functions directly.
         Please reference the documentation here for more information: ${context.docFiles?.refDoc}`,
     })),
 

@@ -6,18 +6,16 @@ import {
   type GitCommit,
 } from "@saflib/git";
 import type { DbKey } from "@saflib/drizzle";
-import type { AnalyzedCommitRef } from "@saflib/dev-site-db/types";
-import type { InsertPackageMetricsParams } from "@saflib/dev-site-db/types";
-import type { InsertBlobFactParams } from "@saflib/dev-site-db/types";
-import type { BlobFactEntity, BlobSpecialty } from "@saflib/dev-site-db/types";
+import type { AnalyzedCommitRef, BlobFactEntity, BlobSpecialty, InsertBlobFactParams, InsertPackageMetricsParams } from "@saflib/dev-site-db/types";
 import {
   blobFactExports,
   blobFactTestCases,
 } from "@saflib/dev-site-db/types";
-import { blobFactsDb } from "@saflib/dev-site-db/queries/blob-facts/index";
+
 import {
   extractDrizzleTables,
   extractExports,
+  extractImports,
   extractTestCases,
 } from "@saflib/parser";
 import type { ReturnsError } from "@saflib/monorepo";
@@ -33,7 +31,9 @@ import {
 } from "./classify.ts";
 import { linkTestSubjects } from "./link-test-subjects.ts";
 
-export const ANALYZER_VERSION = "6";
+import { getByHashes } from "@saflib/dev-site-db/queries/blob-facts/get-by-hashes";
+import { upsertMany } from "@saflib/dev-site-db/queries/blob-facts/upsert-many";
+export const ANALYZER_VERSION = "7";
 
 export interface AnalyzeCommitOptions {
   repoRoot: string;
@@ -99,6 +99,10 @@ function buildSpecialty(source: string): BlobSpecialty {
     signature: e.signature,
     docstring: e.docstring,
   }));
+  const imports = extractImports(source).map((i) => ({
+    specifier: i.specifier,
+    names: i.names,
+  }));
   const tables = extractDrizzleTables(source).map((t) => ({
     exportName: t.exportName,
     tableName: t.tableName,
@@ -111,15 +115,15 @@ function buildSpecialty(source: string): BlobSpecialty {
     })),
   }));
   if (tables.length > 0) {
-    return { kind: "sql-table", exports, tables };
+    return { kind: "sql-table", exports, imports, tables };
   }
   const testCases = extractTestCases(source).map((t) => ({
     fullName: t.fullName,
   }));
   if (testCases.length > 0) {
-    return { kind: "test", exports, testCases };
+    return { kind: "test", exports, imports, testCases };
   }
-  return { kind: "source", exports };
+  return { kind: "source", exports, imports };
 }
 
 function parseBlobFact(
@@ -145,7 +149,7 @@ export async function ensureBlobFacts(
   blobHashes: string[],
 ): Promise<ReturnsError<Map<string, BlobFactEntity>, GitCommandError>> {
   const unique = [...new Set(blobHashes)];
-  const existing = (await blobFactsDb.getByHashes(dbKey, unique)).result!;
+  const existing = (await getByHashes(dbKey, unique)).result!;
   const byHash = new Map<string, BlobFactEntity>();
   for (const row of existing) {
     if (row.analyzerVersion === ANALYZER_VERSION) {
@@ -179,7 +183,7 @@ export async function ensureBlobFacts(
     }
   }
   if (toUpsert.length > 0) {
-    await blobFactsDb.upsertMany(dbKey, toUpsert);
+    await upsertMany(dbKey, toUpsert);
     for (const row of toUpsert) {
       byHash.set(row.blobHash, row);
     }

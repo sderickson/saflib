@@ -8,7 +8,7 @@
     "./instances": "./instances.ts",
     "./errors": "./errors.ts",
     "./types": "./types.ts",
-    "./queries/job": "./queries/job/index.ts"
+    "./queries/*": "./queries/*.ts"
   },
   "scripts": {
     "test": "vitest run",

@@ -3,17 +3,18 @@ import type {
   JobsServiceRequestBody,
   JobsServiceResponseBody,
 } from "jobs-spec";
-import { jobQueries } from "@saflib/jobs-db";
+
 import { jobsServiceStorage } from "../../src/context.ts";
 import { mapJobToWire } from "../../src/mapJob.ts";
 
+import { cancelByOriginalRequestIdJob } from "@saflib/jobs-db";
 export const cancelJobsByOriginalRequestHandler = createHandler(
   async (req, res) => {
     const ctx = jobsServiceStorage.getStore()!;
     const data: JobsServiceRequestBody["cancelJobsByOriginalRequest"] =
       req.body;
 
-    const { result } = await jobQueries.cancelByOriginalRequestIdJob(
+    const { result } = await cancelByOriginalRequestIdJob(
       ctx.dbKey,
       {
         originalRequestId: data.originalRequestId,

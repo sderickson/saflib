@@ -1,8 +1,7 @@
 import type { DbKey } from "@saflib/drizzle";
 import type { ReturnsError } from "@saflib/monorepo";
 import { AnalyzedCommitNotFoundError } from "@saflib/dev-site-db/errors";
-import { analyzedCommitsDb } from "@saflib/dev-site-db/queries/analyzed-commits/index";
-import { packageMetricsDb } from "@saflib/dev-site-db/queries/package-metrics/index";
+
 import type { components } from "@saflib/dev-site-spec/operations/diffCommits";
 import {
   assembleCommitSymbols,
@@ -16,6 +15,8 @@ import {
 import { looksLikeDbPackage } from "./classify.ts";
 import type { RepoReadOptions } from "./get-commit.ts";
 
+import { getByHash } from "@saflib/dev-site-db/queries/analyzed-commits/get-by-hash";
+import { listByCommit } from "@saflib/dev-site-db/queries/package-metrics/list-by-commit";
 export type CommitDiff = components["schemas"]["commit-diff"];
 export type PackageMetrics = components["schemas"]["package-metrics"];
 export type ExportEntry = components["schemas"]["export-entry"];
@@ -120,16 +121,16 @@ export async function diffCommits(
   repo: RepoReadOptions,
 ): Promise<DiffCommitsResult> {
   const [fromCommit, toCommit] = await Promise.all([
-    analyzedCommitsDb.getByHash(dbKey, fromHash),
-    analyzedCommitsDb.getByHash(dbKey, toHash),
+    getByHash(dbKey, fromHash),
+    getByHash(dbKey, toHash),
   ]);
   if (fromCommit.error) return { error: fromCommit.error };
   if (toCommit.error) return { error: toCommit.error };
 
   const [fromMetricsRes, toMetricsRes, fromSymbols, toSymbols] =
     await Promise.all([
-      packageMetricsDb.listByCommit(dbKey, fromHash),
-      packageMetricsDb.listByCommit(dbKey, toHash),
+      listByCommit(dbKey, fromHash),
+      listByCommit(dbKey, toHash),
       assembleCommitSymbols(dbKey, fromHash, repo),
       assembleCommitSymbols(dbKey, toHash, repo),
     ]);

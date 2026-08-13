@@ -10,7 +10,7 @@ import {
   type SafReporters,
 } from "@saflib/node";
 import { createInternalCaller } from "@saflib/express";
-import { jobsDb, jobQueries } from "@saflib/jobs-db";
+import { claimNextJob, countByStatusJob, deleteExpiredTerminalJob, heartbeatJob, jobsDb, listRunningJobsJob, recordAttemptResultJob, recoverStalledJob } from "@saflib/jobs-db";
 import type { JobAuthority, JobRequest } from "@saflib/jobs-db";
 import {
   CLAIM_POLL_INTERVAL_MS,
@@ -184,7 +184,7 @@ export async function runJobs(
 
   async function recoverStalled(now: Date): Promise<void> {
     const { result: running, error: listError } =
-      await jobQueries.listRunningJobsJob(dbKey);
+      await listRunningJobsJob(dbKey);
     if (listError) {
       logError(listError);
       return;
@@ -198,7 +198,7 @@ export async function runJobs(
       return;
     }
 
-    const { error } = await jobQueries.recoverStalledJob(dbKey, {
+    const { error } = await recoverStalledJob(dbKey, {
       ids: stalledIds,
       now,
     });
@@ -209,7 +209,7 @@ export async function runJobs(
 
   async function retentionSweep(now: Date): Promise<void> {
     const cutoff = new Date(now.getTime() - RETENTION_MS);
-    const { error } = await jobQueries.deleteExpiredTerminalJob(dbKey, {
+    const { error } = await deleteExpiredTerminalJob(dbKey, {
       cutoff,
     });
     if (error) {
@@ -218,7 +218,7 @@ export async function runJobs(
   }
 
   async function sampleQueueDepth(): Promise<void> {
-    const { result, error } = await jobQueries.countByStatusJob(dbKey);
+    const { result, error } = await countByStatusJob(dbKey);
     if (error) {
       logError(error);
       return;
@@ -230,7 +230,7 @@ export async function runJobs(
 
   async function deliverOne(
     job: NonNullable<
-      Awaited<ReturnType<typeof jobQueries.claimNextJob>>["result"]
+      Awaited<ReturnType<typeof claimNextJob>>["result"]
     >,
     ops: OperationMap,
   ): Promise<void> {
@@ -254,7 +254,7 @@ export async function runJobs(
         const now = () => new Date();
 
         if (!resolved) {
-          const { error } = await jobQueries.recordAttemptResultJob(dbKey, {
+          const { error } = await recordAttemptResultJob(dbKey, {
             id: job.id,
             now: now(),
             outcome: "dead",
@@ -275,7 +275,7 @@ export async function runJobs(
         const timeoutHandle = setTimeout(() => controller.abort(), timeoutMs);
 
         const heartbeatHandle = setInterval(() => {
-          void jobQueries.heartbeatJob(dbKey, {
+          void heartbeatJob(dbKey, {
             id: job.id,
             now: now(),
           }).then(({ error }) => {
@@ -344,7 +344,7 @@ export async function runJobs(
 
         const recordedAt = now();
         if (classification.kind === "succeeded") {
-          const { error } = await jobQueries.recordAttemptResultJob(dbKey, {
+          const { error } = await recordAttemptResultJob(dbKey, {
             id: job.id,
             now: recordedAt,
             outcome: "succeeded",
@@ -358,7 +358,7 @@ export async function runJobs(
             computeBackoffMs(job.attempt),
             classification.retryAfterMs ?? 0,
           );
-          const { error } = await jobQueries.recordAttemptResultJob(dbKey, {
+          const { error } = await recordAttemptResultJob(dbKey, {
             id: job.id,
             now: recordedAt,
             outcome: "retry",
@@ -372,7 +372,7 @@ export async function runJobs(
             logError(error);
           }
         } else {
-          const { error } = await jobQueries.recordAttemptResultJob(dbKey, {
+          const { error } = await recordAttemptResultJob(dbKey, {
             id: job.id,
             now: recordedAt,
             outcome: "dead",
@@ -398,7 +398,7 @@ export async function runJobs(
     }
 
     while (!stopped && inFlight < GLOBAL_CONCURRENCY) {
-      const { result: job, error } = await jobQueries.claimNextJob(dbKey, {
+      const { result: job, error } = await claimNextJob(dbKey, {
         now: new Date(),
       });
       if (error) {

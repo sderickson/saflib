@@ -251,7 +251,8 @@
             "items": {
               "type": "object",
               "required": [
-                "entity"
+                "entity",
+                "usedBy"
               ],
               "properties": {
                 "entity": {
@@ -307,6 +308,25 @@
                             "description": "First prose line of leading JSDoc on the column."
                           }
                         }
+                      }
+                    }
+                  }
+                },
+                "usedBy": {
+                  "type": "array",
+                  "description": "Non-test product files that import queries under this entity.",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "packageName",
+                      "filePath"
+                    ],
+                    "properties": {
+                      "packageName": {
+                        "type": "string"
+                      },
+                      "filePath": {
+                        "type": "string"
                       }
                     }
                   }

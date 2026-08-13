@@ -27,7 +27,7 @@ import {
   startExpressServer,
 } from "@saflib/express";
 import { jobsDbManager } from "@saflib/jobs-db/instances";
-import { jobQueries } from "@saflib/jobs-db";
+
 import {
   _resetEnqueueCallersForTests,
   createJobsApp,
@@ -38,6 +38,7 @@ import {
 } from "../index.ts";
 import { _resetJobsWakeForTests } from "./runJobs.ts";
 
+import { cancelByOriginalRequestIdJob, createJob, getByIdJob, listJob } from "@saflib/jobs-db";
 const TEST_SECRET = Buffer.from("jobs-integration-test-secret!!").toString(
   "base64",
 );
@@ -300,19 +301,19 @@ describe("jobs integration", () => {
         const jobBId = enqueueBody.job.id;
 
         await waitUntil(async () => {
-          const { result } = await jobQueries.getByIdJob(dbKey, { id: jobBId });
+          const { result } = await getByIdJob(dbKey, { id: jobBId });
           return result?.status === "succeeded";
         });
 
         await waitUntil(async () => {
-          const { result } = await jobQueries.listJob(dbKey, {
+          const { result } = await listJob(dbKey, {
             originalRequestId: chainRoot,
             operationId: "testJobStepC",
           });
           return result?.some((j) => j.status === "succeeded") ?? false;
         });
 
-        const { result: chainJobs } = await jobQueries.listJob(dbKey, {
+        const { result: chainJobs } = await listJob(dbKey, {
           originalRequestId: chainRoot,
         });
         expect(chainJobs!.length).toBeGreaterThanOrEqual(2);
@@ -379,7 +380,7 @@ describe("jobs integration", () => {
   it("cancel-by-original-request cancels a delayed pending chain", async () => {
     const cancelChain = `cancel-${randomUUID()}`;
     const runAt = new Date(Date.now() + 60_000);
-    await jobQueries.createJob(dbKey, {
+    await createJob(dbKey, {
       id: "cancel-pending-job",
       status: "pending",
       operationId: "testJobStepB",
@@ -410,7 +411,7 @@ describe("jobs integration", () => {
     });
 
     const { result: cancelledRows } =
-      await jobQueries.cancelByOriginalRequestIdJob(dbKey, {
+      await cancelByOriginalRequestIdJob(dbKey, {
         originalRequestId: cancelChain,
         now: new Date(),
       });

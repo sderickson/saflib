@@ -8,10 +8,12 @@ import {
 import type { DbKey } from "@saflib/drizzle";
 import type { ReturnsError } from "@saflib/monorepo";
 import { makeSubsystemReporters } from "@saflib/node";
-import { analyzedCommitsDb } from "@saflib/dev-site-db/queries/analyzed-commits/index";
-import { packageMetricsDb } from "@saflib/dev-site-db/queries/package-metrics/index";
+
 import { analyzeCommit, ANALYZER_VERSION } from "./analyze-commit.ts";
 
+import { insert } from "@saflib/dev-site-db/queries/analyzed-commits/insert";
+import { getByHash } from "@saflib/dev-site-db/queries/analyzed-commits/get-by-hash";
+import { insertMany } from "@saflib/dev-site-db/queries/package-metrics/insert-many";
 export interface ScanOptions {
   repoRoot: string;
   /** Limit analysis to this path prefix (e.g. `products`). */
@@ -72,7 +74,7 @@ async function persistCommit(
   }
   const snap = analyzed.result;
 
-  await analyzedCommitsDb.insert(dbKey, {
+  await insert(dbKey, {
     hash: commit.hash,
     parentHashes: snap.parentHashes,
     authoredAt: snap.authoredAt,
@@ -85,7 +87,7 @@ async function persistCommit(
     testCaseCount: snap.testCaseCount,
   });
 
-  await packageMetricsDb.insertMany(
+  await insertMany(
     dbKey,
     snap.packageMetrics.map((m) => ({ ...m, commitHash: commit.hash })),
   );
@@ -140,7 +142,7 @@ export async function scanCommits(
     scanLog.info(
       `Scan start: single commit ${shortHash(options.commitHash)} (productRoot=${options.productRoot ?? ""})`,
     );
-    const existing = await analyzedCommitsDb.getByHash(
+    const existing = await getByHash(
       dbKey,
       options.commitHash,
     );
@@ -220,7 +222,7 @@ export async function scanCommits(
 
   const toAnalyze: GitCommit[] = [];
   for (const commit of mainline) {
-    const existing = await analyzedCommitsDb.getByHash(dbKey, commit.hash);
+    const existing = await getByHash(dbKey, commit.hash);
     if (existing.result) {
       skipped.push(commit.hash);
       continue;
@@ -254,7 +256,7 @@ export async function scanCommits(
       const tip = tipLog.result[0];
       if (!tip) continue;
 
-      const existing = await analyzedCommitsDb.getByHash(dbKey, tip.hash);
+      const existing = await getByHash(dbKey, tip.hash);
       if (existing.result) {
         skipped.push(tip.hash);
         continue;

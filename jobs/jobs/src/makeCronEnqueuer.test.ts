@@ -18,11 +18,12 @@ import type { OpenAPIV3 } from "express-openapi-validator/dist/framework/types.t
 import type { DbKey } from "@saflib/drizzle";
 import { startExpressServer } from "@saflib/express";
 import { jobsDbManager } from "@saflib/jobs-db/instances";
-import { jobQueries } from "@saflib/jobs-db";
+
 import { createJobsApp } from "./createJobsApp.ts";
 import { makeCronEnqueuer } from "./makeCronEnqueuer.ts";
 import { _resetJobsWakeForTests } from "./runJobs.ts";
 
+import { getByIdJob } from "@saflib/jobs-db";
 const TEST_SECRET = Buffer.from("cron-enqueuer-test-secret!!!!").toString(
   "base64",
 );
@@ -176,7 +177,7 @@ describe("makeCronEnqueuer", () => {
       },
     });
 
-    const { result: stored } = await jobQueries.getByIdJob(dbKey, {
+    const { result: stored } = await getByIdJob(dbKey, {
       id: result.job.id,
     });
     expect(stored?.authority).toMatchObject({

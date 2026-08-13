@@ -13,7 +13,7 @@ import type { CreateJobParams } from "./create.ts";
 import { createJob } from "./create.ts";
 import { deleteExpiredTerminalJob } from "./delete-expired-terminal.ts";
 import { getByIdJob } from "./get-by-id.ts";
-import { jobQueries } from "./index.ts";
+
 import { JobNotFoundError } from "../../errors.ts";
 
 const now = new Date("2026-08-06T12:00:00.000Z");
@@ -68,10 +68,6 @@ describe("deleteExpiredTerminalJob", () => {
 
   beforeEach(() => {
     jobsDbManager.clearAllTablesForTests(dbKey);
-  });
-
-  it("exports the query on jobQueries", () => {
-    expect(jobQueries.deleteExpiredTerminalJob).toBe(deleteExpiredTerminalJob);
   });
 
   it("returns 0 when nothing matches", async () => {

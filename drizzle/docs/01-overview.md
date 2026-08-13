@@ -71,7 +71,7 @@ See also [example Identity DB Errors](https://github.com/sderickson/saflib/blob/
 
 Export these via package subpaths (`./instances`, `./errors`, `./types`). Do not add a package-root `index.ts` barrel.
 
-The `DbManager` public interface lives on `instances.ts` (e.g. `__serviceName__Db`). Queries are imported from `@scope/my-db/queries/<group>/<name>` or `@scope/my-db/queries/<group>/index`.
+The `DbManager` public interface lives on `instances.ts` (e.g. `__serviceName__Db`). Queries are imported from leaf files: `@scope/my-db/queries/<group>/<name>`.
 
 `instances.ts` is the glue between the schema, config, and this library's logic. It will likely be exactly this:
 
@@ -107,13 +107,13 @@ Export queries with a single-star glob (Node `*` may include `/`):
 }
 ```
 
-Import leaves as `@scope/my-db/queries/<group>/<name>` and group barrels as `@scope/my-db/queries/<group>/index`. Adding a query file does not require editing `package.json`.
+Import leaves as `@scope/my-db/queries/<group>/<name>` (do not use bare `queries/<group>` or group `index` barrels — `./queries/*` maps to `./queries/*.ts`). Adding a query file does not require editing `package.json`.
 
 See [Migrations with Drizzle Kit](https://orm.drizzle.team/docs/kit-overview) for more info.
 
 ### `queries/`
 
-The meat of the database package. Queries should be organized into sub-folders by domain, and each of those folders should include an `index.ts` file which aggregates the individual query files for that domain.
+The meat of the database package. Queries should be organized into sub-folders by domain, and each of those folders holds one file per query operation. Consumers import leaf query functions directly — do not add a group `index.ts` barrel.
 
 See [Queries](./03-queries.md) for more information.
 

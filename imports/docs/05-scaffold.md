@@ -26,10 +26,10 @@ Node subpath exports allow **only one `*` per pattern key** (and per target). Th
 | Vue clients-common | `./components/*` → `./components/*.ts` |
 | Spec operations | `./operations/*` → `./dist/operations/*/index.ts` |
 
-Group barrels (`index.ts`) are imported **explicitly**:
+Import leaf query functions **explicitly** (no group `index` barrels):
 
 ```ts
-import { packetQueries } from "@scope/my-db/queries/packet/index";
+import { createPacket } from "@scope/my-db/queries/packet/create";
 import { listEvalsQuery } from "@scope/my-sdk/requests/evals/list";
 ```
 

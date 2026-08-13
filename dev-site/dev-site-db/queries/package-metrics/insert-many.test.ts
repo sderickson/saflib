@@ -2,11 +2,12 @@ import { describe, it, expect, beforeAll, afterAll, beforeEach } from "vitest";
 import type { DbKey } from "@saflib/drizzle";
 import { throwError } from "@saflib/monorepo";
 import { devSiteDbManager } from "../../instances.ts";
-import { analyzedCommitsDb } from "../analyzed-commits/index.ts";
+
 import { insertMany } from "./insert-many.ts";
 import { listByCommit } from "./list-by-commit.ts";
 import { makeCommit } from "../test-helpers.ts";
 
+import { insert } from "@saflib/dev-site-db/queries/analyzed-commits/insert";
 describe("package-metrics", () => {
   let dbKey: DbKey;
   const commitHash = "ffffffffffffffffffffffffffffffffffffffff";
@@ -22,7 +23,7 @@ describe("package-metrics", () => {
   beforeEach(async () => {
     devSiteDbManager.clearAllTablesForTests(dbKey);
     await throwError(
-      analyzedCommitsDb.insert(dbKey, makeCommit({ hash: commitHash })),
+      insert(dbKey, makeCommit({ hash: commitHash })),
     );
   });
 

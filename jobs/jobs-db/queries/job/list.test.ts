@@ -12,7 +12,6 @@ import { jobsDbManager } from "../../instances.ts";
 import type { CreateJobParams } from "./create.ts";
 import { createJob } from "./create.ts";
 import { listJob } from "./list.ts";
-import { jobQueries } from "./index.ts";
 
 function jobParams(
   overrides: Partial<CreateJobParams> &
@@ -62,10 +61,6 @@ describe("listJob", () => {
 
   beforeEach(() => {
     jobsDbManager.clearAllTablesForTests(dbKey);
-  });
-
-  it("exports the query on jobQueries", () => {
-    expect(jobQueries.listJob).toBe(listJob);
   });
 
   it("returns an empty list when there are no jobs", async () => {

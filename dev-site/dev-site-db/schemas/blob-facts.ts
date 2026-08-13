@@ -11,6 +11,11 @@ export interface BlobExportFact {
   docstring: string | null;
 }
 
+export interface BlobImportFact {
+  specifier: string;
+  names: string[];
+}
+
 export interface BlobTestCaseFact {
   fullName: string;
 }
@@ -32,22 +37,25 @@ export interface BlobTableFact {
 }
 
 /**
- * Discriminated specialty for one blob. `exports` are on every kind; kind-only
- * props are `testCases` (test) and `tables` (sql-table).
+ * Discriminated specialty for one blob. `exports` and `imports` are on every
+ * kind; kind-only props are `testCases` (test) and `tables` (sql-table).
  */
 export type BlobSpecialty =
   | {
       kind: "source";
       exports: BlobExportFact[];
+      imports: BlobImportFact[];
     }
   | {
       kind: "test";
       exports: BlobExportFact[];
+      imports: BlobImportFact[];
       testCases: BlobTestCaseFact[];
     }
   | {
       kind: "sql-table";
       exports: BlobExportFact[];
+      imports: BlobImportFact[];
       tables: BlobTableFact[];
     };
 
@@ -62,6 +70,10 @@ export interface BlobFactEntity {
 
 export function blobFactExports(fact: BlobFactEntity): BlobExportFact[] {
   return fact.specialty.exports;
+}
+
+export function blobFactImports(fact: BlobFactEntity): BlobImportFact[] {
+  return fact.specialty.imports;
 }
 
 export function blobFactTestCases(fact: BlobFactEntity): BlobTestCaseFact[] {

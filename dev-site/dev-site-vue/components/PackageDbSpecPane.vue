@@ -82,6 +82,27 @@
             No matching drizzle table for this query directory.
           </p>
 
+          <div v-if="e.usedBy.length" class="used-by mb-4">
+            <div class="text-caption text-medium-emphasis mb-1">Used by</div>
+            <ul class="used-by__list">
+              <li v-for="u in e.usedBy" :key="u.packageName + ':' + u.filePath">
+                <button
+                  type="button"
+                  class="used-by__link"
+                  @click="openFile(u.filePath)"
+                >
+                  {{ fileName(u.filePath) }}
+                </button>
+                <span
+                  v-if="u.packageName !== packageName"
+                  class="used-by__pkg text-medium-emphasis"
+                >
+                  {{ u.packageName }}
+                </span>
+              </li>
+            </ul>
+          </div>
+
           <div v-if="testsFor(e.entity).length" class="entity-tests">
             <div class="text-caption text-medium-emphasis mb-1">Tests</div>
             <TestTree
@@ -299,5 +320,27 @@ function openFile(path: string) {
   margin: 0.15rem 0 0;
   font-size: 0.8125rem;
   color: rgba(var(--v-theme-on-surface), 0.65);
+}
+.used-by__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.25rem;
+}
+.used-by__link {
+  border: none;
+  background: none;
+  padding: 0;
+  color: rgb(var(--v-theme-primary));
+  cursor: pointer;
+  font: inherit;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.8125rem;
+  text-decoration: underline;
+}
+.used-by__pkg {
+  margin-left: 0.5rem;
+  font-size: 0.75rem;
 }
 </style>

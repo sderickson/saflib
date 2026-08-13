@@ -12,8 +12,6 @@ import { jobsDbManager } from "../../instances.ts";
 import { JobSpawnCapExceededError } from "../../errors.ts";
 import type { CreateJobParams } from "./create.ts";
 import { createJob } from "./create.ts";
-import { jobQueries } from "./index.ts";
-
 function baseParams(
   overrides: Partial<CreateJobParams> &
     Pick<CreateJobParams, "id" | "originalRequestId">,
@@ -66,10 +64,6 @@ describe("createJob", () => {
 
   beforeEach(() => {
     jobsDbManager.clearAllTablesForTests(dbKey);
-  });
-
-  it("exports the query on jobQueries", () => {
-    expect(jobQueries.createJob).toBe(createJob);
   });
 
   it("inserts a new job", async () => {

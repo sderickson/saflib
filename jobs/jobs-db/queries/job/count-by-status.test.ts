@@ -12,7 +12,6 @@ import { jobsDbManager } from "../../instances.ts";
 import type { CreateJobParams } from "./create.ts";
 import { createJob } from "./create.ts";
 import { countByStatusJob } from "./count-by-status.ts";
-import { jobQueries } from "./index.ts";
 
 const now = new Date("2026-08-06T12:00:00.000Z");
 
@@ -63,10 +62,6 @@ describe("countByStatusJob", () => {
 
   beforeEach(() => {
     jobsDbManager.clearAllTablesForTests(dbKey);
-  });
-
-  it("exports the query on jobQueries", () => {
-    expect(jobQueries.countByStatusJob).toBe(countByStatusJob);
   });
 
   it("returns an empty array when there are no jobs", async () => {

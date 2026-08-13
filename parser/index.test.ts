@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   extractDrizzleTables,
   extractExports,
+  extractImports,
   extractTestCases,
 } from "./index.ts";
 
@@ -323,5 +324,33 @@ describe("extractDrizzleTables", () => {
         ],
       },
     ]);
+  });
+});
+
+describe("extractImports", () => {
+  it("collects named, default, namespace, and side-effect imports", () => {
+    const source = `
+      import { createMatter, getByIdMatter as get } from "@pathclerk/daemon-db/queries/matter/create";
+      import def from "./local.ts";
+      import * as ns from "../other/index.ts";
+      import "./side-effect.ts";
+      export { x } from "@scope/pkg/queries/foo/bar";
+      export * from "./reexport.ts";
+    `;
+    expect(extractImports(source)).toEqual([
+      { specifier: "../other/index.ts", names: ["*"] },
+      { specifier: "./local.ts", names: ["default"] },
+      { specifier: "./reexport.ts", names: ["*"] },
+      { specifier: "./side-effect.ts", names: [] },
+      {
+        specifier: "@pathclerk/daemon-db/queries/matter/create",
+        names: ["createMatter", "getByIdMatter"],
+      },
+      { specifier: "@scope/pkg/queries/foo/bar", names: ["x"] },
+    ]);
+  });
+
+  it("returns empty when there are no imports", () => {
+    expect(extractImports("export const x = 1;\n")).toEqual([]);
   });
 });

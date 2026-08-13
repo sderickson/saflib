@@ -2,7 +2,8 @@ import { describe, it, expect, beforeEach, assert } from "vitest";
 import request from "supertest";
 import express from "express";
 import { createApp } from "../http.ts";
-import { cronDb, jobSettingsDb, type JobSetting } from "@saflib/cron-db";
+import { cronDb, setEnabled } from "@saflib/cron-db";
+import type { JobSetting } from "@saflib/cron-db";
 import type { JobSettings } from "@saflib/cron-spec";
 import type { DbKey } from "@saflib/drizzle";
 import { mockEnqueueJob, mockJobs } from "../mock-jobs.ts";
@@ -23,13 +24,13 @@ describe("GET /jobs", () => {
     seededSettings = []; // Reset seeded settings
 
     // Seed test data using setEnabledByName (upsert)
-    const { result: setting1 } = await jobSettingsDb.setEnabled(
+    const { result: setting1 } = await setEnabled(
       dbKey,
       "job1",
       true,
       "admin-1",
     );
-    const { result: setting2 } = await jobSettingsDb.setEnabled(
+    const { result: setting2 } = await setEnabled(
       dbKey,
       "job2",
       false,
