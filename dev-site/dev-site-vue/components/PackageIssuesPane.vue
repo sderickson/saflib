@@ -5,7 +5,7 @@
 
     <div class="issues-cli mb-4">
       <div class="text-caption text-medium-emphasis mb-1">
-        Same list via CLI (paste to an agent to triage / fix):
+        Same list via CLI (HEAD + daemon DB by default — paste to an agent):
       </div>
       <div class="issues-cli__row">
         <code class="issues-cli__cmd">{{ cliCommand }}</code>
@@ -74,8 +74,6 @@ const props = defineProps<{
   githubRepo?: string;
   githubRef?: string;
   localRepoRoot?: string;
-  /** Relative path to the on-disk sqlite used by the running API (from monorepo root). */
-  dbPath?: string;
 }>();
 
 const { data, isLoading, error } = useCommitPackage(
@@ -93,22 +91,10 @@ const issues = computed(() => {
   });
 });
 
-const cliCommand = computed(() => {
-  const parts = [
-    "npm exec -- saf-dev-site issues",
-    `--package ${shellQuote(props.packageName)}`,
-  ];
-  if (props.productRoot) {
-    parts.push(`--product-root ${shellQuote(props.productRoot)}`);
-  }
-  if (props.dbPath) {
-    parts.push(`--db ${shellQuote(props.dbPath)}`);
-  }
-  if (props.commitHash) {
-    parts.push(props.commitHash);
-  }
-  return parts.join(" ");
-});
+const cliCommand = computed(
+  () =>
+    `npm exec -- saf-dev-site issues --package ${shellQuote(props.packageName)}`,
+);
 
 const copied = ref(false);
 let copyTimer: ReturnType<typeof setTimeout> | undefined;

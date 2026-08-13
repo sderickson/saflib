@@ -157,7 +157,6 @@
                   :github-repo="githubRepo"
                   :github-ref="githubRef"
                   :local-repo-root="localRepoRoot"
-                  :db-path="dbPath"
                 />
               </v-tabs-window-item>
             </v-tabs-window>
@@ -206,11 +205,6 @@ const props = withDefaults(
     githubRef?: string;
     /** Absolute host path to the analyzed checkout (IDE deep links). */
     localRepoRoot?: string;
-    /**
-     * Repo-relative path to the on-disk sqlite used by the API, for CLI copy
-     * commands (e.g. `daemon/dev-site/service/http/data/dev-site.sqlite`).
-     */
-    dbPath?: string;
   }>(),
   {
     hubPath: "/",
