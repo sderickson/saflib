@@ -13,7 +13,7 @@ import {
 } from "template-package-service-common/context";
 
 // BEGIN WORKFLOW AREA router-imports FOR express/add-handler
-import { create__GroupName__Router } from "./routes/__group-name__/index.ts";
+import { create__GroupName__Router } from "./handlers/__group-name__/index.ts";
 // END WORKFLOW AREA
 
 export type HttpRouterMount = {

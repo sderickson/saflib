@@ -27,9 +27,9 @@ To run this workflow automatically, tell the agent to:
 
 ## What gets generated
 
-- Handler file (`routes/<group>/<handler>.ts`)
-- Group router (`routes/<group>/index.ts`) with per-operation `createOperationScopedMiddleware`
-- Slim route test (`routes/<group>/<handler>.test.ts`) using `testing/slim-route-test.ts`
+- Handler file (`handlers/<group>/<handler>.ts`)
+- Group router (`handlers/<group>/index.ts`) with per-operation `createOperationScopedMiddleware`
+- Slim route test (`handlers/<group>/<handler>.test.ts`) using `testing/slim-route-test.ts`
 - Updates to `http.ts` `defaultRouterMounts()` workflow area
 
 Route handler tests mount the **group router**, not `create…HttpApp()` with every product router. Full app mounts are for `index.test.ts` smoke tests and `*.integration.test.ts` only.
@@ -57,7 +57,7 @@ Add a new route to an Express.js service.
 
 Arguments:
   path        Path of the new handler (e.g. 'routes/todos/create')
-              Example: "./routes/example-subpath/example-handler.ts"
+              Example: "./handlers/example-subpath/example-handler.ts"
   upload      Include file upload handling (multipart); shunt file data to a container in the store (optional flag)
   download    Return binary response (e.g. stream/send file from store or generated content) (optional flag)
 
