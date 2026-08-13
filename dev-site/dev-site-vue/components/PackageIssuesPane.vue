@@ -27,9 +27,10 @@
     <section v-else-if="issues.length" class="issues">
       <h3 class="issues__heading">Package issues</h3>
       <p class="issues__hint">
-        Dead code and same-file-only exports (no non-test importers outside the
-        defining file). Layout / LoC: use the CLI below or
-        <code>analyze-package</code>.
+        Dead code and layout findings. Agent triage:
+        <code>.cursor/rules/package-issues.mdc</code>
+        (un-export, split tested helpers, bin/ CLI, delete, or fix the tool).
+        Also: <code>analyze-package</code>.
       </p>
       <ul class="issues__list">
         <li
