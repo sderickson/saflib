@@ -12,10 +12,17 @@
             {{ node.label }}
           </a>
           <span v-else class="suite-card__name">{{ node.label }}</span>
+          <span
+            v-if="isUnusedExport(node)"
+            class="suite-card__unused"
+            title="No non-test importers found"
+          >
+            unused
+          </span>
         </header>
 
         <div
-          v-if="node.subjectSignature || node.subjectDocstring || (node.usedBy && node.usedBy.length)"
+          v-if="node.subjectSignature || node.subjectDocstring || (node.usedBy && node.usedBy.length) || isUnusedExport(node)"
           class="suite-card__spec"
         >
           <code v-if="node.subjectSignature" class="suite-card__sig">{{
@@ -38,6 +45,9 @@
               </a>
             </li>
           </ul>
+          <p v-else-if="isUnusedExport(node)" class="suite-card__no-importers">
+            No non-test importers
+          </p>
         </div>
 
         <div class="suite-card__tests">
@@ -116,6 +126,12 @@ const testLeaves = (node: TestTreeNode) =>
 
 const nestedSuites = (node: TestTreeNode) =>
   node.children.filter((c) => c.kind === "suite");
+
+/** Export/query card with no recorded non-test importers. */
+const isUnusedExport = (node: TestTreeNode) =>
+  // `usedBy === null` is set on export/query cards with zero importers;
+  // orphan suites leave `usedBy` undefined.
+  Boolean(node.subjectFilePath && node.subjectName) && node.usedBy === null;
 </script>
 
 <style scoped>
@@ -188,6 +204,20 @@ const nestedSuites = (node: TestTreeNode) =>
   padding: 0.55rem 0.75rem;
   border-bottom: 1px solid rgba(var(--v-theme-on-surface), 0.1);
   background: rgba(var(--v-theme-on-surface), 0.03);
+}
+.suite-card__unused {
+  margin-left: auto;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 600;
+  color: rgb(var(--v-theme-warning));
+  flex-shrink: 0;
+}
+.suite-card__no-importers {
+  margin: 0.45rem 0 0;
+  font-size: 0.75rem;
+  color: rgba(var(--v-theme-warning), 0.85);
 }
 .suite-card__name {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;

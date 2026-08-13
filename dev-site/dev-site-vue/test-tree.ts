@@ -25,7 +25,7 @@ export interface TestTreeNode {
   subjectConfidence?: "adjacent" | "package" | null;
   subjectFilePath?: string | null;
   /**
-   * Packages/files that import the subject (db Spec: query leaf importers).
+   * Packages/files that import the subject.
    * Rendered under signature/doc on suite cards.
    */
   usedBy?: Array<{
@@ -35,6 +35,9 @@ export interface TestTreeNode {
   }> | null;
 }
 
+/** Colocated source/test pairing for Spec nav. */
+export type ModulePresence = "source" | "test" | "both";
+
 /** Dir/file nav for Spec pane (no suites/tests). */
 export type TestFileNavNodeKind = "dir" | "file";
 
@@ -42,9 +45,20 @@ export interface TestFileNavNode {
   id: string;
   label: string;
   kind: TestFileNavNodeKind;
-  /** Package-local path (`src`, `src/math.test.ts`). */
+  /**
+   * Package-local path. For file nodes this is the **module stem**
+   * (`document-requirements/validate-document-requirements`), not a filename.
+   */
   localPath: string;
   children: TestFileNavNode[];
+  /** Present on file (module) nodes: source-only / test-only / both. */
+  presence?: ModulePresence;
+  /** Source module has ≥1 function/class/const export (vs types-only). */
+  hasCardExports?: boolean;
+  /** Repo path to the source file when present. */
+  sourceRepoPath?: string | null;
+  /** Repo path to the colocated test file when present. */
+  testRepoPath?: string | null;
 }
 
 export type TestScope =
@@ -52,7 +66,32 @@ export type TestScope =
   | { kind: "dir"; localPath: string }
   | { kind: "file"; localPath: string };
 
-function packageLocalPath(
+export interface ExportLike {
+  packageName: string;
+  filePath: string;
+  name: string;
+  kind: string;
+  signature?: string | null;
+  docstring?: string | null;
+  usedBy?: Array<{
+    packageName: string;
+    filePath: string;
+    repoPath: string;
+  }> | null;
+}
+
+const TEST_SUFFIX_RE = /\.(test|spec)\.(tsx?|jsx?|mjs|cjs)$/i;
+const SOURCE_EXT_RE = /\.(tsx?|jsx?|mjs|cjs)$/i;
+
+/** Strip `.test.ts` / `.ts` (etc.) to the colocated module stem. */
+export function toModuleStem(localOrFilePath: string): string {
+  if (TEST_SUFFIX_RE.test(localOrFilePath)) {
+    return localOrFilePath.replace(TEST_SUFFIX_RE, "");
+  }
+  return localOrFilePath.replace(SOURCE_EXT_RE, "");
+}
+
+export function packageLocalPath(
   filePath: string,
   packageDirectory: string,
   productRoot: string = "",
@@ -147,20 +186,92 @@ function packageTests(
   return tests.filter((t) => t.packageName === packageName);
 }
 
-function matchesScope(
-  localPath: string,
-  scope: TestScope,
-): boolean {
+function packageExports(
+  exports: ExportLike[],
+  packageName: string,
+): ExportLike[] {
+  return exports.filter((e) => e.packageName === packageName);
+}
+
+/** Exports worth showing as Spec cards (executable surface). */
+const CARD_EXPORT_KINDS = new Set(["function", "class", "const"]);
+
+export function isCardExport(kind: string): boolean {
+  return CARD_EXPORT_KINDS.has(kind);
+}
+
+interface ModuleUnit {
+  stem: string;
+  presence: ModulePresence;
+  hasCardExports: boolean;
+  sourceRepoPath: string | null;
+  testRepoPath: string | null;
+}
+
+function collectModuleUnits(
+  exports: ExportLike[],
+  tests: TestCaseLike[],
+  packageName: string,
+  packageDirectory: string,
+  productRoot: string,
+): ModuleUnit[] {
+  const byStem = new Map<string, ModuleUnit>();
+
+  const touch = (
+    stem: string,
+    side: "source" | "test",
+    repoPath: string,
+    cardExport = false,
+  ): void => {
+    let unit = byStem.get(stem);
+    if (!unit) {
+      unit = {
+        stem,
+        presence: side,
+        hasCardExports: false,
+        sourceRepoPath: null,
+        testRepoPath: null,
+      };
+      byStem.set(stem, unit);
+    }
+    if (side === "source") {
+      unit.sourceRepoPath = repoPath;
+      if (cardExport) unit.hasCardExports = true;
+    } else {
+      unit.testRepoPath = repoPath;
+    }
+    if (unit.sourceRepoPath && unit.testRepoPath) unit.presence = "both";
+    else if (unit.sourceRepoPath) unit.presence = "source";
+    else unit.presence = "test";
+  };
+
+  for (const e of packageExports(exports, packageName)) {
+    const local = packageLocalPath(e.filePath, packageDirectory, productRoot);
+    if (TEST_SUFFIX_RE.test(local)) continue;
+    touch(toModuleStem(local), "source", e.filePath, isCardExport(e.kind));
+  }
+  for (const t of packageTests(tests, packageName)) {
+    const local = packageLocalPath(t.filePath, packageDirectory, productRoot);
+    touch(toModuleStem(local), "test", t.filePath);
+  }
+
+  return [...byStem.values()].sort((a, b) => a.stem.localeCompare(b.stem));
+}
+
+function matchesStemScope(stem: string, scope: TestScope): boolean {
   if (scope.kind === "all") return true;
-  if (scope.kind === "file") return localPath === scope.localPath;
-  const prefix = scope.localPath.replace(/\/+$/, "");
-  return localPath === prefix || localPath.startsWith(`${prefix}/`);
+  if (scope.kind === "dir") {
+    const prefix = scope.localPath.replace(/\/+$/, "");
+    return stem === prefix || stem.startsWith(`${prefix}/`);
+  }
+  return toModuleStem(scope.localPath) === stem;
 }
 
 /**
- * Nav tree of test files only (dirs + files), package-local paths.
+ * Nav tree of colocated modules (dirs + stems), with source/test/both presence.
  */
-export function buildTestFileNav(
+export function buildModuleFileNav(
+  exports: ExportLike[],
   tests: TestCaseLike[],
   packageName: string,
   packageDirectory: string = "",
@@ -174,31 +285,182 @@ export function buildTestFileNav(
     children: [],
   };
 
-  const seen = new Set<string>();
-  for (const t of packageTests(tests, packageName)) {
-    const local = packageLocalPath(t.filePath, packageDirectory, productRoot);
-    if (seen.has(local)) continue;
-    seen.add(local);
-
-    const parts = local.split("/").filter(Boolean);
-    const fileName = parts.pop() ?? local;
+  for (const unit of collectModuleUnits(
+    exports,
+    tests,
+    packageName,
+    packageDirectory,
+    productRoot,
+  )) {
+    const parts = unit.stem.split("/").filter(Boolean);
+    const fileLabel = parts.pop() ?? unit.stem;
     let node = root;
     let acc = "";
     for (const dir of parts) {
       acc = acc ? `${acc}/${dir}` : dir;
       node = ensureNavChild(node, dir, "dir", acc);
     }
-    ensureNavChild(node, fileName, "file", local);
+    const leaf = ensureNavChild(node, fileLabel, "file", unit.stem);
+    leaf.presence = unit.presence;
+    leaf.hasCardExports = unit.hasCardExports;
+    leaf.sourceRepoPath = unit.sourceRepoPath;
+    leaf.testRepoPath = unit.testRepoPath;
   }
 
   sortNav(root);
   return root.children;
 }
 
+/** @deprecated Prefer {@link buildModuleFileNav}. */
+export function buildTestFileNav(
+  tests: TestCaseLike[],
+  packageName: string,
+  packageDirectory: string = "",
+  productRoot: string = "",
+): TestFileNavNode[] {
+  return buildModuleFileNav([], tests, packageName, packageDirectory, productRoot);
+}
+
+function suitesFromTests(tests: TestCaseLike[]): TestTreeNode[] {
+  const root: TestTreeNode = {
+    id: "tmp-suites",
+    label: "tmp",
+    kind: "dir",
+    children: [],
+  };
+  for (const t of tests) addSuitesAndLeaf(root, t);
+  sortTree(root);
+  return root.children.filter((c) => c.kind === "suite");
+}
+
+function mergeExportCards(
+  exports: ExportLike[],
+  suites: TestTreeNode[],
+): TestTreeNode[] {
+  const matched = new Set<string>();
+  const cards: TestTreeNode[] = [];
+
+  const cardExports = exports
+    .filter((e) => isCardExport(e.kind))
+    .slice()
+    .sort((a, b) => a.name.localeCompare(b.name));
+
+  for (const exp of cardExports) {
+    const suite =
+      suites.find(
+        (s) =>
+          s.subjectName === exp.name ||
+          s.label === exp.name ||
+          (s.subjectFilePath === exp.filePath && s.subjectName === exp.name),
+      ) ?? null;
+    if (suite) matched.add(suite.id);
+    cards.push({
+      id: suite?.id ?? `export:${exp.filePath}:${exp.name}`,
+      label: exp.name,
+      kind: "suite",
+      children: suite?.children ?? [],
+      subjectName: exp.name,
+      subjectSignature: exp.signature ?? suite?.subjectSignature ?? null,
+      subjectDocstring: exp.docstring ?? suite?.subjectDocstring ?? null,
+      subjectFilePath: exp.filePath,
+      subjectConfidence: suite?.subjectConfidence ?? null,
+      usedBy: exp.usedBy?.length ? exp.usedBy : null,
+    });
+  }
+
+  for (const suite of suites) {
+    if (matched.has(suite.id)) continue;
+    cards.push(suite);
+  }
+
+  return cards;
+}
+
 /**
- * Suite/test tree for a scope: all | one dir | one file.
- * File scope omits the file wrapper (suites are roots). Dir/all keep
- * dirs → files → suites under the scope.
+ * Spec cards for a scope: every card-worthy export (with importers/docs) plus
+ * colocated suites. Dir/all wrap modules under dirs; file scope is flat cards.
+ */
+export function buildPackageSpecTree(
+  exports: ExportLike[],
+  tests: TestCaseLike[],
+  packageName: string,
+  packageDirectory: string = "",
+  productRoot: string = "",
+  scope: TestScope = { kind: "all" },
+): TestTreeNode[] {
+  const units = collectModuleUnits(
+    exports,
+    tests,
+    packageName,
+    packageDirectory,
+    productRoot,
+  ).filter((u) => matchesStemScope(u.stem, scope));
+
+  const pkgExports = packageExports(exports, packageName);
+  const pkgTests = packageTests(tests, packageName);
+
+  if (scope.kind === "file") {
+    const stem = toModuleStem(scope.localPath);
+    const unit = units.find((u) => u.stem === stem);
+    const sourcePath = unit?.sourceRepoPath;
+    const testPath = unit?.testRepoPath;
+    const moduleExports = sourcePath
+      ? pkgExports.filter((e) => e.filePath === sourcePath)
+      : [];
+    const moduleTests = testPath
+      ? pkgTests.filter((t) => t.filePath === testPath)
+      : [];
+    return mergeExportCards(moduleExports, suitesFromTests(moduleTests));
+  }
+
+  const root: TestTreeNode = {
+    id: `pkg:${packageName}:${scope.kind}:${scope.kind === "all" ? "" : scope.localPath}`,
+    label: packageName,
+    kind: "dir",
+    children: [],
+  };
+
+  const stripPrefix =
+    scope.kind === "dir" ? scope.localPath.replace(/\/+$/, "") : "";
+
+  for (const unit of units) {
+    let relative = unit.stem;
+    if (stripPrefix) {
+      if (unit.stem === stripPrefix) {
+        relative = unit.stem.split("/").pop() ?? unit.stem;
+      } else if (unit.stem.startsWith(`${stripPrefix}/`)) {
+        relative = unit.stem.slice(stripPrefix.length + 1);
+      }
+    }
+    const parts = relative.split("/").filter(Boolean);
+    const fileLabel = parts.pop() ?? relative;
+    let node = root;
+    for (const dir of parts) {
+      node = ensureChild(node, dir, "dir");
+    }
+    const openPath = unit.sourceRepoPath ?? unit.testRepoPath ?? undefined;
+    const fileNode = ensureChild(node, fileLabel, "file", openPath);
+
+    const moduleExports = unit.sourceRepoPath
+      ? pkgExports.filter((e) => e.filePath === unit.sourceRepoPath)
+      : [];
+    const moduleTests = unit.testRepoPath
+      ? pkgTests.filter((t) => t.filePath === unit.testRepoPath)
+      : [];
+    for (const card of mergeExportCards(
+      moduleExports,
+      suitesFromTests(moduleTests),
+    )) {
+      fileNode.children.push(card);
+    }
+  }
+
+  sortTree(root);
+  return root.children;
+}
+
+/**
+ * Suite/test tree for a scope (tests only). Prefer {@link buildPackageSpecTree}.
  */
 export function buildPackageTestTree(
   tests: TestCaseLike[],
@@ -207,52 +469,14 @@ export function buildPackageTestTree(
   productRoot: string = "",
   scope: TestScope = { kind: "all" },
 ): TestTreeNode[] {
-  const root: TestTreeNode = {
-    id: `pkg:${packageName}:${scope.kind}:${scope.kind === "all" ? "" : scope.localPath}`,
-    label: packageName,
-    kind: "dir",
-    children: [],
-  };
-
-  const scoped = packageTests(tests, packageName).filter((t) =>
-    matchesScope(
-      packageLocalPath(t.filePath, packageDirectory, productRoot),
-      scope,
-    ),
+  return buildPackageSpecTree(
+    [],
+    tests,
+    packageName,
+    packageDirectory,
+    productRoot,
+    scope,
   );
-
-  if (scope.kind === "file") {
-    for (const t of scoped) {
-      addSuitesAndLeaf(root, t);
-    }
-    sortTree(root);
-    return root.children;
-  }
-
-  const stripPrefix =
-    scope.kind === "dir" ? scope.localPath.replace(/\/+$/, "") : "";
-
-  for (const t of scoped) {
-    const local = packageLocalPath(t.filePath, packageDirectory, productRoot);
-    let relative = local;
-    if (stripPrefix) {
-      if (local === stripPrefix) relative = local.split("/").pop() ?? local;
-      else if (local.startsWith(`${stripPrefix}/`)) {
-        relative = local.slice(stripPrefix.length + 1);
-      }
-    }
-    const parts = relative.split("/").filter(Boolean);
-    const fileName = parts.pop() ?? relative;
-    let node = root;
-    for (const dir of parts) {
-      node = ensureChild(node, dir, "dir");
-    }
-    node = ensureChild(node, fileName, "file", t.filePath);
-    addSuitesAndLeaf(node, t);
-  }
-
-  sortTree(root);
-  return root.children;
 }
 
 function sortNav(node: TestFileNavNode): void {
@@ -276,4 +500,18 @@ function sortTree(node: TestTreeNode): void {
     return a.label.localeCompare(b.label);
   });
   for (const c of node.children) sortTree(c);
+}
+
+/** Look up a module nav leaf by stem (normalizes old `*.test.ts` URLs). */
+export function findModuleNavNode(
+  nodes: TestFileNavNode[],
+  stemOrPath: string,
+): TestFileNavNode | null {
+  const stem = toModuleStem(stemOrPath);
+  for (const n of nodes) {
+    if (n.kind === "file" && n.localPath === stem) return n;
+    const hit = findModuleNavNode(n.children, stem);
+    if (hit) return hit;
+  }
+  return null;
 }
