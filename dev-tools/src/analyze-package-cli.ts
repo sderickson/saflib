@@ -237,7 +237,8 @@ const program = new Command()
         return;
       }
 
-      console.error(`${issues.length} issue(s) for ${options.package}:\n`);
+      console.error(`${issues.length} issue(s) for ${options.package}:`);
+      console.error(`triage: saflib/dev-tools/docs/package-issues.md\n`);
       for (const i of issues) {
         console.error(`  [${i.kind}] ${i.filePath}: ${i.name}`);
       }
