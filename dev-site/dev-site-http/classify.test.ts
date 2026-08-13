@@ -8,6 +8,7 @@ import {
   parsePackageName,
   looksLikeDbPackage,
   looksLikeSpecPackage,
+  looksLikeHttpPackage,
 } from "./classify.ts";
 
 describe("classify", () => {
@@ -74,8 +75,8 @@ describe("classify", () => {
     });
   });
 
-  describe("looksLikeSpecPackage / looksLikeDbPackage", () => {
-    it("detects -spec and -db naming", () => {
+  describe("looksLikeSpecPackage / looksLikeDbPackage / looksLikeHttpPackage", () => {
+    it("detects -spec, -db, and -http naming", () => {
       expect(
         looksLikeSpecPackage("@pathclerk/daemon-spec", "daemon/service/spec"),
       ).toBe(true);
@@ -88,6 +89,12 @@ describe("classify", () => {
       expect(looksLikeDbPackage("@pathclerk/daemon-db", "daemon/service/db")).toBe(
         true,
       );
+      expect(
+        looksLikeHttpPackage("@pathclerk/daemon-http", "daemon/service/http"),
+      ).toBe(true);
+      expect(
+        looksLikeHttpPackage("@pathclerk/daemon-spec", "daemon/service/spec"),
+      ).toBe(false);
     });
   });
 });

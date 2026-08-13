@@ -155,6 +155,22 @@ export function looksLikeDbPackage(
   );
 }
 
+/** Heuristic: npm name / directory looks like an Express `-http` package. */
+export function looksLikeHttpPackage(
+  packageName: string,
+  directory: string = "",
+): boolean {
+  const name = packageName.toLowerCase();
+  const dir = directory.replace(/\\/g, "/").toLowerCase();
+  return (
+    name.endsWith("-http") ||
+    name.includes("-http-") ||
+    /\/[^/]*-http$/.test(dir) ||
+    dir.endsWith("/service/http") ||
+    /(^|\/)http$/.test(dir)
+  );
+}
+
 /** Heuristic: npm name / directory looks like an OpenAPI `-spec` package. */
 export function looksLikeSpecPackage(
   packageName: string,

@@ -78,6 +78,8 @@ export interface SpecInventoryEntity {
 
 export interface PackageSpecInventory {
   entities: SpecInventoryEntity[];
+  /** Repo-relative directory of the `-spec` package this inventory was built from. */
+  packageDirectory?: string;
 }
 
 const HTTP_METHODS = new Set([

@@ -127,6 +127,19 @@
                   :github-ref="githubRef"
                   :local-repo-root="localRepoRoot"
                 />
+                <PackageHttpPane
+                  v-else-if="selectedPkg.kind === 'http'"
+                  :subdomain="subdomain"
+                  :commit-hash="checkout.hash"
+                  :package-name="selectedPkg.packageName"
+                  :package-directory="selectedPkg.directory"
+                  :product-root="checkout.productRoot"
+                  :github-repo="githubRepo"
+                  :github-ref="githubRef"
+                  :local-repo-root="localRepoRoot"
+                  :scope="specScope"
+                  @update:scope="setSpecScope"
+                />
                 <PackageSpecPane
                   v-else
                   :subdomain="subdomain"
@@ -205,6 +218,7 @@ import PackageDocsPane from "../components/PackageDocsPane.vue";
 import PackageSpecPane from "../components/PackageSpecPane.vue";
 import PackageDbSpecPane from "../components/PackageDbSpecPane.vue";
 import PackageSpecRoutesPane from "../components/PackageSpecRoutesPane.vue";
+import PackageHttpPane from "../components/PackageHttpPane.vue";
 import PackageIssuesPane from "../components/PackageIssuesPane.vue";
 
 const props = withDefaults(

@@ -4,16 +4,23 @@ import { AnalyzedCommitNotFoundError } from "@saflib/dev-site-db/errors";
 
 import { assemblePackageSymbols } from "./analyze-commit.ts";
 import { assemblePackageDbInventory } from "./assemble-package-db-inventory.ts";
-import { assemblePackageSpecInventory } from "./assemble-package-spec-inventory.ts";
 import {
   assembleExportUsedBy,
   exportUsedByKey,
   type ExportUsedBy,
 } from "./assemble-export-used-by.ts";
-import { looksLikeDbPackage, looksLikeSpecPackage } from "./classify.ts";
+import {
+  looksLikeDbPackage,
+  looksLikeHttpPackage,
+  looksLikeSpecPackage,
+} from "./classify.ts";
 import type { RepoReadOptions } from "./get-commit.ts";
 import type { PackageDbInventory } from "./assemble-package-db-inventory.ts";
-import type { PackageSpecInventory } from "./assemble-package-spec-inventory.ts";
+import {
+  assemblePackageSpecInventory,
+  siblingSpecPackageName,
+  type PackageSpecInventory,
+} from "./assemble-package-spec-inventory.ts";
 
 import { getByHash } from "@saflib/dev-site-db/queries/analyzed-commits/get-by-hash";
 import { listByCommit } from "@saflib/dev-site-db/queries/package-metrics/list-by-commit";
@@ -98,6 +105,7 @@ export async function getCommitPackage(
   let specInventory: PackageSpecInventory | undefined;
   const isDb = looksLikeDbPackage(metrics.packageName, metrics.directory);
   const isSpec = looksLikeSpecPackage(metrics.packageName, metrics.directory);
+  const isHttp = looksLikeHttpPackage(metrics.packageName, metrics.directory);
   if (isDb) {
     const inv = await assemblePackageDbInventory(
       dbKey,
@@ -118,10 +126,26 @@ export async function getCommitPackage(
     if (!inv.error) {
       specInventory = inv.result;
     }
+  } else if (isHttp) {
+    // Join sibling -spec routes so the HTTP pane can show PackageRouteCards
+    // while still presenting handlers/ as a normal source package.
+    const specName = siblingSpecPackageName(packageName);
+    if (specName) {
+      const inv = await assemblePackageSpecInventory(
+        dbKey,
+        hash,
+        specName,
+        repoOpts,
+      );
+      if (!inv.error) {
+        specInventory = inv.result;
+      }
+    }
   }
 
   // Source Spec: reverse-index importers onto exports. Db/spec packages use
-  // inventory usedBy instead (same whole-repo walk).
+  // inventory usedBy instead (same whole-repo walk). HTTP keeps export usedBy
+  // for arbitrary non-route modules.
   let usedByMap = new Map<string, ExportUsedBy[]>();
   if (!isDb && !isSpec) {
     const usedByRes = await assembleExportUsedBy(

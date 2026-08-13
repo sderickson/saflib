@@ -8,7 +8,9 @@ getCommitPackage:
     Prefer this over full commit detail for the checkout Spec panel — assembly
     only touches that package's source blobs. For db packages, also includes
     `dbInventory` (drizzle tables + query dirs). For `-spec` packages, also
-    includes `specInventory` (OpenAPI schemas + REST resources).
+    includes `specInventory` (OpenAPI schemas + REST resources). For `-http`
+    packages, `specInventory` is the sibling `-spec` triangle join (route cards)
+    while exports/tests remain the HTTP package's own source modules.
   parameters:
     - name: hash
       in: path

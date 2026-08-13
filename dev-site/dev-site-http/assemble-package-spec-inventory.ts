@@ -81,6 +81,12 @@ export function siblingServicePackageNames(specPackageName: string): {
   return { http: `${base}-http`, sdk: `${base}-sdk` };
 }
 
+/** `@foo/bar-http` → `@foo/bar-spec`. */
+export function siblingSpecPackageName(httpPackageName: string): string | null {
+  if (!httpPackageName.endsWith("-http")) return null;
+  return `${httpPackageName.slice(0, -"-http".length)}-spec`;
+}
+
 function handlerTestStem(filePath: string, stem: string): boolean {
   const prefix = `handlers/${stem}`;
   if (filePath === `${prefix}.test.ts` || filePath === `${prefix}.test.tsx`) {
@@ -423,6 +429,7 @@ export async function assemblePackageSpecInventory(
     }
   }
 
+  inventory.packageDirectory = targetRoot.directory;
   return { result: inventory };
 }
 
