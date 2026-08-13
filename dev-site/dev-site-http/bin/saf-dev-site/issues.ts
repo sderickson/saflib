@@ -30,6 +30,9 @@ function printIssuesText(args: {
   console.log(`# Issues in ${args.packageName} @ ${args.label}`);
   console.log(`# ${args.issues.length} issue(s)`);
   console.log(args.metaLine);
+  console.log(
+    "# triage: saflib/dev-tools/docs/package-issues.md",
+  );
   console.log("");
   if (!args.issues.length) {
     console.log("(none)");

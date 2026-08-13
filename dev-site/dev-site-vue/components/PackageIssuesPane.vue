@@ -27,10 +27,10 @@
     <section v-else-if="issues.length" class="issues">
       <h3 class="issues__heading">Package issues</h3>
       <p class="issues__hint">
-        Dead code and layout findings. Agent triage:
-        <code>.cursor/rules/package-issues.mdc</code>
-        (un-export, split tested helpers, bin/ CLI, delete, or fix the tool).
-        Also: <code>analyze-package</code>.
+        Dead code and layout findings. Triage guide:
+        <code>saflib/dev-tools/docs/package-issues.md</code>
+        (un-export, split tested helpers, scripts/bin CLI, delete, or fix the
+        tool). Also: <code>analyze-package</code>.
       </p>
       <ul class="issues__list">
         <li
