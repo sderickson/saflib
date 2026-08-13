@@ -141,7 +141,11 @@ interface DbQuery {
   exportName?: string | null;
   signature?: string | null;
   docstring?: string | null;
-  usedBy: Array<{ packageName: string; filePath: string }>;
+  usedBy: Array<{
+    packageName: string;
+    filePath: string;
+    repoPath: string;
+  }>;
 }
 
 interface DbEntity {

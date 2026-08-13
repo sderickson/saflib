@@ -32,7 +32,10 @@ export interface DbInventoryTable {
 
 export interface DbInventoryUsedBy {
   packageName: string;
+  /** Path within the importing package (no package-root prefix). */
   filePath: string;
+  /** Repo-relative path for source links. */
+  repoPath: string;
 }
 
 export interface DbInventoryQuery {
@@ -345,7 +348,13 @@ export async function assemblePackageDbInventory(
     if (isTestSourcePath(entry.path, fileName)) continue;
     const fact = facts.get(entry.blobHash);
     if (!fact) continue;
-    const importerPkg = packageForPath(entry.path, roots).packageName;
+    const importerRoot = packageForPath(entry.path, roots);
+    const importerPkg = importerRoot.packageName;
+    const localPath =
+      importerRoot.directory &&
+      entry.path.startsWith(`${importerRoot.directory}/`)
+        ? entry.path.slice(importerRoot.directory.length + 1)
+        : entry.path;
     for (const imp of blobFactImports(fact)) {
       const target = queryTargetFromImport(
         packageName,
@@ -376,7 +385,8 @@ export async function assemblePackageDbInventory(
       }
       used.set(`${importerPkg}\0${entry.path}`, {
         packageName: importerPkg,
-        filePath: entry.path,
+        filePath: localPath,
+        repoPath: entry.path,
       });
     }
   }

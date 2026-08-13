@@ -28,7 +28,11 @@ export interface TestTreeNode {
    * Packages/files that import the subject (db Spec: query leaf importers).
    * Rendered under signature/doc on suite cards.
    */
-  usedBy?: Array<{ packageName: string; filePath: string }> | null;
+  usedBy?: Array<{
+    packageName: string;
+    filePath: string;
+    repoPath: string;
+  }> | null;
 }
 
 /** Dir/file nav for Spec pane (no suites/tests). */

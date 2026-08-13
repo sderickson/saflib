@@ -1454,14 +1454,20 @@
                           "type": "object",
                           "required": [
                             "packageName",
-                            "filePath"
+                            "filePath",
+                            "repoPath"
                           ],
                           "properties": {
                             "packageName": {
                               "type": "string"
                             },
                             "filePath": {
-                              "type": "string"
+                              "type": "string",
+                              "description": "Path within the importing package (no package-root prefix)."
+                            },
+                            "repoPath": {
+                              "type": "string",
+                              "description": "Repo-relative path for source links."
                             }
                           }
                         }

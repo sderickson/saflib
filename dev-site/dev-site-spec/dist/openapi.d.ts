@@ -463,7 +463,10 @@ export interface components {
                     /** @description Non-test product files that import this leaf query module. */
                     usedBy: {
                         packageName: string;
+                        /** @description Path within the importing package (no package-root prefix). */
                         filePath: string;
+                        /** @description Repo-relative path for source links. */
+                        repoPath: string;
                     }[];
                 }[];
             }[];

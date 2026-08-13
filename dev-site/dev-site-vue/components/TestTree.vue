@@ -27,15 +27,15 @@
           <ul v-if="node.usedBy?.length" class="suite-card__used">
             <li
               v-for="u in node.usedBy"
-              :key="u.packageName + ':' + u.filePath"
+              :key="u.packageName + ':' + u.repoPath"
             >
-              <button
-                type="button"
+              <a
+                href="#"
                 class="suite-card__importer"
-                @click="$emit('open-source', u.filePath)"
+                @click.prevent="$emit('open-source', u.repoPath)"
               >
                 {{ u.packageName }}/{{ u.filePath }}
-              </button>
+              </a>
             </li>
           </ul>
         </div>
@@ -236,17 +236,13 @@ const nestedSuites = (node: TestTreeNode) =>
   gap: 0.15rem;
 }
 .suite-card__importer {
-  border: none;
-  background: none;
-  padding: 0;
   color: rgb(var(--v-theme-primary));
   cursor: pointer;
-  font: inherit;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 0.72rem;
-  text-align: left;
   text-decoration: underline;
   word-break: break-all;
+  user-select: text;
 }
 .suite-card__tests {
   padding: 0.45rem 0.75rem 0.65rem;
