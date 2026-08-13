@@ -92,7 +92,7 @@
             </p>
             <ul
               v-if="e.schema.usedBy.length"
-              class="op-card__used"
+              class="table-card__used"
             >
               <li
                 v-for="u in e.schema.usedBy"
@@ -149,47 +149,12 @@
             <li
               v-for="op in e.operations"
               :key="op.operationId + op.method + op.path"
-              class="op-card"
             >
-              <header class="op-card__head">
-                <span class="op-card__method">{{ op.method.toUpperCase() }}</span>
-                <code class="op-card__path">{{ op.path }}</code>
-                <a
-                  href="#"
-                  class="table-card__file"
-                  @click.prevent="openFile(repoPath(op.yamlPath))"
-                >
-                  {{ op.operationId }}
-                </a>
-              </header>
-              <p v-if="op.summary" class="op-card__summary">{{ op.summary }}</p>
-              <p
-                v-if="op.requestSchemas.length || op.responseSchemas.length"
-                class="op-card__schemas"
-              >
-                <span v-if="op.requestSchemas.length">
-                  req: <code>{{ op.requestSchemas.join(", ") }}</code>
-                </span>
-                <span v-if="op.responseSchemas.length">
-                  <span v-if="op.requestSchemas.length"> · </span>
-                  res: <code>{{ op.responseSchemas.join(", ") }}</code>
-                </span>
-              </p>
-              <ul v-if="op.usedBy.length" class="op-card__used">
-                <li
-                  v-for="u in op.usedBy"
-                  :key="u.packageName + ':' + u.repoPath"
-                >
-                  <a
-                    href="#"
-                    class="table-card__file"
-                    @click.prevent="openFile(u.repoPath)"
-                  >
-                    {{ u.packageName }}/{{ u.filePath }}
-                  </a>
-                </li>
-              </ul>
-              <p v-else class="op-card__no-importers">No non-test importers</p>
+              <PackageRouteCard
+                :operation="normalizeOp(op)"
+                :route-repo-path="repoPath(op.yamlPath)"
+                :open-file="openFile"
+              />
             </li>
           </ul>
           <p
@@ -206,6 +171,9 @@
 
 <script setup lang="ts">
 import { computed, ref } from "vue";
+import PackageRouteCard, {
+  type RouteCardOperation,
+} from "./PackageRouteCard.vue";
 import { useCommitPackage } from "../requests/queries.ts";
 import { openSource } from "../source-links.ts";
 import { repoPathPrefix } from "../repo-paths.ts";
@@ -216,6 +184,15 @@ interface SpecUsedBy {
   packageName: string;
   filePath: string;
   repoPath: string;
+}
+
+interface SpecFileRef {
+  filePath: string;
+  repoPath: string;
+}
+
+interface SpecTestSpec {
+  fullName: string;
 }
 
 interface SpecEntity {
@@ -241,7 +218,12 @@ interface SpecEntity {
     method: string;
     path: string;
     summary?: string | null;
+    tags?: string[];
     yamlPath: string;
+    routeStem?: string | null;
+    handler?: SpecFileRef | null;
+    request?: SpecFileRef | null;
+    handlerTests?: SpecTestSpec[];
     requestSchemas: string[];
     responseSchemas: string[];
     usedBy: SpecUsedBy[];
@@ -293,6 +275,26 @@ function repoPath(packageRelative: string): string {
   const prefix = repoPathPrefix(props.productRoot, props.packageDirectory);
   if (!prefix) return packageRelative;
   return `${prefix}/${packageRelative}`;
+}
+
+function normalizeOp(
+  op: SpecEntity["operations"][number],
+): RouteCardOperation {
+  return {
+    operationId: op.operationId,
+    method: op.method,
+    path: op.path,
+    summary: op.summary,
+    tags: op.tags ?? [],
+    yamlPath: op.yamlPath,
+    routeStem: op.routeStem ?? null,
+    handler: op.handler ?? null,
+    request: op.request ?? null,
+    handlerTests: op.handlerTests ?? [],
+    requestSchemas: op.requestSchemas,
+    responseSchemas: op.responseSchemas,
+    usedBy: op.usedBy ?? [],
+  };
 }
 
 function openFile(path: string) {
@@ -457,6 +459,14 @@ function openFile(path: string) {
   display: grid;
   gap: 0.45rem;
 }
+.table-card__used {
+  list-style: none;
+  margin: 0 0 0.5rem;
+  padding: 0;
+  display: grid;
+  gap: 0.2rem;
+  font-size: 0.8125rem;
+}
 .table-card__col-main {
   display: flex;
   gap: 0.75rem;
@@ -478,48 +488,5 @@ function openFile(path: string) {
   padding: 0;
   display: grid;
   gap: 0.65rem;
-}
-.op-card {
-  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
-  border-radius: 6px;
-  padding: 0.65rem 0.85rem;
-}
-.op-card__head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 0.5rem 0.75rem;
-}
-.op-card__method {
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  color: rgba(var(--v-theme-on-surface), 0.7);
-}
-.op-card__path {
-  font-size: 0.875rem;
-}
-.op-card__summary {
-  margin: 0.35rem 0 0;
-  font-size: 0.875rem;
-  color: rgba(var(--v-theme-on-surface), 0.7);
-}
-.op-card__schemas {
-  margin: 0.35rem 0 0;
-  font-size: 0.75rem;
-  color: rgba(var(--v-theme-on-surface), 0.6);
-}
-.op-card__used {
-  list-style: none;
-  margin: 0.4rem 0 0;
-  padding: 0;
-  display: grid;
-  gap: 0.2rem;
-  font-size: 0.8125rem;
-}
-.op-card__no-importers {
-  margin: 0.35rem 0 0;
-  font-size: 0.75rem;
-  color: rgba(var(--v-theme-on-surface), 0.45);
 }
 </style>

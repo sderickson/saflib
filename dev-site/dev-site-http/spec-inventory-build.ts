@@ -9,14 +9,47 @@ export type SpecEntityPresence = "object" | "routes" | "both";
 
 export type SpecInventoryUsedBy = ImportUsedBy;
 
+export interface SpecInventoryFileRef {
+  /** Path within the owning package (no package-root prefix). */
+  filePath: string;
+  /** Repo-relative path for source links. */
+  repoPath: string;
+}
+
+/** One extracted describe/it/test specification for a handler. */
+export interface SpecInventoryTestSpec {
+  /** Nested titles joined with `" > "` (from blob facts / `@saflib/parser`). */
+  fullName: string;
+}
+
 export interface SpecInventoryOperation {
   operationId: string;
   method: string;
   path: string;
   summary: string | null;
+  /** OpenAPI `tags` on the operation. */
+  tags: string[];
+  /** Package-relative route YAML (under the `-spec` package). */
   yamlPath: string;
+  /**
+   * Isomorphic stem after `routes/` / `handlers/` / `requests/`
+   * (e.g. `matters/core/create`).
+   */
+  routeStem: string | null;
+  /** HTTP handler implementation, when a sibling `-http` package matches. */
+  handler: SpecInventoryFileRef | null;
+  /** SDK request module, when a sibling `-sdk` package matches. */
+  request: SpecInventoryFileRef | null;
+  /** describe/it specifications from colocated handler test files. */
+  handlerTests: SpecInventoryTestSpec[];
+  /**
+   * Business objects in the request body — named schemas, expanding one layer
+   * into object/array properties when the body is a bag of BOs.
+   */
   requestSchemas: string[];
+  /** Same as requestSchemas for 2xx responses. */
   responseSchemas: string[];
+  /** Non-test product files importing the SDK request module for this route. */
   usedBy: SpecInventoryUsedBy[];
 }
 
@@ -170,48 +203,137 @@ function extractProperties(
   return out;
 }
 
-function collectSchemaNamesFromNode(
+/**
+ * Direct $ref / array-items $ref schema names on an object node's properties
+ * (one property level only — does not recurse into nested objects).
+ */
+function directPropertySchemaNames(
+  doc: unknown,
+  resolveName: (ref: string, fromFile: string) => string | null,
+  fromFile: string,
+): string[] {
+  if (!isRecord(doc) || !isRecord(doc.properties)) return [];
+  const out = new Set<string>();
+  for (const prop of Object.values(doc.properties)) {
+    if (!isRecord(prop)) continue;
+    if (typeof prop.$ref === "string") {
+      const name = resolveName(prop.$ref, fromFile);
+      if (name) out.add(name);
+      continue;
+    }
+    if (prop.type === "array" && isRecord(prop.items)) {
+      if (typeof prop.items.$ref === "string") {
+        const name = resolveName(prop.items.$ref, fromFile);
+        if (name) out.add(name);
+      }
+    }
+  }
+  return [...out];
+}
+
+function schemaNodeFromContent(
+  mediaParent: unknown,
+): { node: unknown; fromHint: string | null } | null {
+  if (!isRecord(mediaParent)) return null;
+  const content = mediaParent.content;
+  if (!isRecord(content)) return null;
+  for (const media of Object.values(content)) {
+    if (!isRecord(media) || media.schema == null) continue;
+    return { node: media.schema, fromHint: null };
+  }
+  return null;
+}
+
+/**
+ * Business objects for a request/response schema node.
+ * - Inline (or resolved) object whose properties are BO refs / arrays of BOs →
+ *   those nested names (one layer).
+ * - Otherwise a lone named schema $ref → that name.
+ */
+function businessObjectsFromSchemaNode(
   node: unknown,
   resolveName: (ref: string, fromFile: string) => string | null,
   fromFile: string,
-  out: Set<string>,
-): void {
-  if (Array.isArray(node)) {
-    for (const item of node) {
-      collectSchemaNamesFromNode(item, resolveName, fromFile, out);
+  schemaDocByName: Map<string, { yamlPath: string; doc: unknown }>,
+): string[] {
+  if (node == null) return [];
+
+  if (typeof node === "object" && !Array.isArray(node) && isRecord(node)) {
+    if (typeof node.$ref === "string") {
+      const name = resolveName(node.$ref, fromFile);
+      if (!name) return [];
+      const meta = schemaDocByName.get(name);
+      if (meta) {
+        const nested = directPropertySchemaNames(
+          meta.doc,
+          resolveName,
+          meta.yamlPath,
+        );
+        if (nested.length > 0) return nested;
+      }
+      return [name];
     }
-    return;
+    if (node.type === "array" && node.items != null) {
+      return businessObjectsFromSchemaNode(
+        node.items,
+        resolveName,
+        fromFile,
+        schemaDocByName,
+      );
+    }
+    const nested = directPropertySchemaNames(node, resolveName, fromFile);
+    if (nested.length > 0) return nested;
   }
-  if (!isRecord(node)) return;
-  if (typeof node.$ref === "string") {
-    const name = resolveName(node.$ref, fromFile);
-    if (name) out.add(name);
-  }
-  for (const v of Object.values(node)) {
-    collectSchemaNamesFromNode(v, resolveName, fromFile, out);
-  }
+  return [];
 }
 
 function extractOperationSchemas(
   op: Record<string, unknown>,
   resolveName: (ref: string, fromFile: string) => string | null,
   fromFile: string,
+  schemaDocByName: Map<string, { yamlPath: string; doc: unknown }>,
 ): { request: string[]; response: string[] } {
   const request = new Set<string>();
   const response = new Set<string>();
+
   if (op.requestBody != null) {
-    collectSchemaNamesFromNode(op.requestBody, resolveName, fromFile, request);
+    const media = schemaNodeFromContent(op.requestBody);
+    if (media) {
+      for (const n of businessObjectsFromSchemaNode(
+        media.node,
+        resolveName,
+        fromFile,
+        schemaDocByName,
+      )) {
+        request.add(n);
+      }
+    }
   }
   if (isRecord(op.responses)) {
     for (const [code, body] of Object.entries(op.responses)) {
       if (!/^2\d\d$/.test(code) && code !== "default") continue;
-      collectSchemaNamesFromNode(body, resolveName, fromFile, response);
+      const media = schemaNodeFromContent(body);
+      if (!media) continue;
+      for (const n of businessObjectsFromSchemaNode(
+        media.node,
+        resolveName,
+        fromFile,
+        schemaDocByName,
+      )) {
+        response.add(n);
+      }
     }
   }
   return {
     request: [...request].sort(),
     response: [...response].sort(),
   };
+}
+
+/** `routes/matters/core/create.yaml` → `matters/core/create`. */
+export function routeStemFromYamlPath(yamlPath: string): string | null {
+  const m = /^routes\/(.+)\.ya?ml$/i.exec(yamlPath.replace(/\\/g, "/"));
+  return m?.[1] ?? null;
 }
 
 /**
@@ -269,6 +391,7 @@ export function buildSpecInventoryFromFiles(
   };
 
   const schemas: SpecInventorySchema[] = [];
+  const schemaDocByName = new Map<string, { yamlPath: string; doc: unknown }>();
   for (const [name, meta] of schemaByName) {
     const text = files.get(meta.yamlPath);
     let doc: unknown = null;
@@ -279,6 +402,7 @@ export function buildSpecInventoryFromFiles(
         doc = null;
       }
     }
+    schemaDocByName.set(name, { yamlPath: meta.yamlPath, doc });
     const description =
       isRecord(doc) && typeof doc.description === "string"
         ? firstLine(doc.description)
@@ -293,7 +417,10 @@ export function buildSpecInventoryFromFiles(
     });
   }
 
-  type RawOp = Omit<SpecInventoryOperation, "usedBy"> & { resource: string };
+  type RawOp = Omit<
+    SpecInventoryOperation,
+    "usedBy" | "handler" | "request" | "handlerTests"
+  > & { resource: string };
   const opsByResource = new Map<string, RawOp[]>();
 
   const paths = isRecord(openapiDoc.paths) ? openapiDoc.paths : {};
@@ -337,10 +464,14 @@ export function buildSpecInventoryFromFiles(
           : fragKey ?? `${method}_${apiPath}`;
       const summary =
         typeof opNode.summary === "string" ? opNode.summary : null;
+      const tags = Array.isArray(opNode.tags)
+        ? opNode.tags.filter((t): t is string => typeof t === "string")
+        : [];
       const { request, response } = extractOperationSchemas(
         opNode,
         resolveSchemaName,
         yamlPath,
+        schemaDocByName,
       );
 
       const raw: RawOp = {
@@ -348,7 +479,9 @@ export function buildSpecInventoryFromFiles(
         method: method.toLowerCase(),
         path: apiPath,
         summary,
+        tags,
         yamlPath,
+        routeStem: routeStemFromYamlPath(yamlPath),
         requestSchemas: request,
         responseSchemas: response,
         resource,
@@ -396,7 +529,12 @@ export function buildSpecInventoryFromFiles(
       method: o.method,
       path: o.path,
       summary: o.summary,
+      tags: o.tags,
       yamlPath: o.yamlPath,
+      routeStem: o.routeStem,
+      handler: null as SpecInventoryOperation["handler"],
+      request: null as SpecInventoryOperation["request"],
+      handlerTests: [] as SpecInventoryTestSpec[],
       requestSchemas: o.requestSchemas,
       responseSchemas: o.responseSchemas,
       usedBy: [] as SpecInventoryUsedBy[],

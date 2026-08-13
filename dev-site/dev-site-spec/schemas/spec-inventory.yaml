@@ -1,7 +1,8 @@
 type: object
 description: >
   OpenAPI inventory for one `-spec` package — business objects (schemas/) and/or
-  REST resources (routes/), linked by normalized name stems.
+  REST resources (routes/), linked by normalized name stems. Operations include
+  triangle links to sibling `-http` handlers and `-sdk` requests when present.
 required:
   - entities
 properties:
@@ -81,7 +82,9 @@ properties:
                 type: string
         usedByPackages:
           type: array
-          description: Distinct packages importing any schema or operation under this entity.
+          description: >
+            Distinct packages importing this entity's schema and/or the SDK
+            request modules for its operations.
           items:
             type: string
         operations:
@@ -93,9 +96,11 @@ properties:
               - operationId
               - method
               - path
+              - tags
               - yamlPath
               - requestSchemas
               - responseSchemas
+              - handlerTests
               - usedBy
             properties:
               operationId:
@@ -107,19 +112,77 @@ properties:
               summary:
                 type: string
                 nullable: true
+              tags:
+                type: array
+                description: OpenAPI operation tags.
+                items:
+                  type: string
               yamlPath:
                 type: string
+                description: Package-relative route YAML under the spec package.
+              routeStem:
+                type: string
+                nullable: true
+                description: >
+                  Isomorphic stem after routes/handlers/requests
+                  (e.g. matters/core/create).
+              handler:
+                type: object
+                nullable: true
+                description: Sibling HTTP handler file when present.
+                required:
+                  - filePath
+                  - repoPath
+                properties:
+                  filePath:
+                    type: string
+                  repoPath:
+                    type: string
+              request:
+                type: object
+                nullable: true
+                description: Sibling SDK request module when present.
+                required:
+                  - filePath
+                  - repoPath
+                properties:
+                  filePath:
+                    type: string
+                  repoPath:
+                    type: string
+              handlerTests:
+                type: array
+                description: >
+                  describe/it/test specifications extracted from colocated HTTP
+                  handler test files (fullName uses " > " nesting).
+                items:
+                  type: object
+                  required:
+                    - fullName
+                  properties:
+                    fullName:
+                      type: string
+                      description: Nested describe/it titles joined with " > ".
+                      example: "createMatter > creates a matter for the org"
               requestSchemas:
                 type: array
+                description: >
+                  Business objects in the request body (one layer deep into
+                  object/array bags of schema refs).
                 items:
                   type: string
               responseSchemas:
                 type: array
+                description: >
+                  Business objects in 2xx responses (one layer deep into
+                  object/array bags of schema refs).
                 items:
                   type: string
               usedBy:
                 type: array
-                description: Non-test product files importing operations/<operationId>.
+                description: >
+                  Non-test product files importing the sibling SDK request
+                  module for this route stem.
                 items:
                   type: object
                   required:

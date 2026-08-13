@@ -148,7 +148,7 @@ export interface components {
                 }[];
             }[];
         };
-        /** @description OpenAPI inventory for one `-spec` package — business objects (schemas/) and/or REST resources (routes/), linked by normalized name stems. */
+        /** @description OpenAPI inventory for one `-spec` package — business objects (schemas/) and/or REST resources (routes/), linked by normalized name stems. Operations include triangle links to sibling `-http` handlers and `-sdk` requests when present. */
         "spec-inventory": {
             /** @description Flat alphabetical list of object / both / routes entities. */
             entities: {
@@ -179,7 +179,7 @@ export interface components {
                     /** @description operationIds whose request/2xx response $ref this schema. */
                     referencedByOperations: string[];
                 } | null;
-                /** @description Distinct packages importing any schema or operation under this entity. */
+                /** @description Distinct packages importing this entity's schema and/or the SDK request modules for its operations. */
                 usedByPackages: string[];
                 /** @description REST operations under the linked resource (empty for object-only). */
                 operations: {
@@ -187,10 +187,35 @@ export interface components {
                     method: string;
                     path: string;
                     summary?: string | null;
+                    /** @description OpenAPI operation tags. */
+                    tags: string[];
+                    /** @description Package-relative route YAML under the spec package. */
                     yamlPath: string;
+                    /** @description Isomorphic stem after routes/handlers/requests (e.g. matters/core/create). */
+                    routeStem?: string | null;
+                    /** @description Sibling HTTP handler file when present. */
+                    handler?: {
+                        filePath: string;
+                        repoPath: string;
+                    } | null;
+                    /** @description Sibling SDK request module when present. */
+                    request?: {
+                        filePath: string;
+                        repoPath: string;
+                    } | null;
+                    /** @description describe/it/test specifications extracted from colocated HTTP handler test files (fullName uses " > " nesting). */
+                    handlerTests: {
+                        /**
+                         * @description Nested describe/it titles joined with " > ".
+                         * @example createMatter > creates a matter for the org
+                         */
+                        fullName: string;
+                    }[];
+                    /** @description Business objects in the request body (one layer deep into object/array bags of schema refs). */
                     requestSchemas: string[];
+                    /** @description Business objects in 2xx responses (one layer deep into object/array bags of schema refs). */
                     responseSchemas: string[];
-                    /** @description Non-test product files importing operations/<operationId>. */
+                    /** @description Non-test product files importing the sibling SDK request module for this route stem. */
                     usedBy: {
                         packageName: string;
                         /** @description Path within the importing package (no package-root prefix). */

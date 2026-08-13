@@ -38,6 +38,9 @@ paths:
   /matters:
     post:
       $ref: "./routes/matters/create.yaml#/createMatter"
+  /matters/everything:
+    get:
+      $ref: "./routes/matters/list-everything.yaml#/listMattersEverything"
   /admin/test-error:
     post:
       $ref: "./routes/admin/test-error.yaml#/postAdminTestError"
@@ -45,6 +48,8 @@ components:
   schemas:
     Matter:
       $ref: "./schemas/matter.yaml"
+    Importer:
+      $ref: "./schemas/importer.yaml"
     Error:
       $ref: "./schemas/error.yaml"
     ProductEvent:
@@ -57,6 +62,8 @@ components:
 createMatter:
   summary: Create a matter
   operationId: createMatter
+  tags:
+    - email-verified
   requestBody:
     content:
       application/json:
@@ -71,6 +78,31 @@ createMatter:
         application/json:
           schema:
             $ref: "../../openapi.yaml#/components/schemas/Matter"
+`,
+      ],
+      [
+        "routes/matters/list-everything.yaml",
+        `
+listMattersEverything:
+  operationId: listMattersEverything
+  tags:
+    - email-verified
+    - mfa-required
+  responses:
+    "200":
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              matters:
+                type: array
+                items:
+                  $ref: "../../openapi.yaml#/components/schemas/Matter"
+              importers:
+                type: array
+                items:
+                  $ref: "../../openapi.yaml#/components/schemas/Importer"
 `,
       ],
       [
@@ -101,6 +133,15 @@ properties:
 `,
       ],
       [
+        "schemas/importer.yaml",
+        `
+type: object
+properties:
+  id:
+    type: string
+`,
+      ],
+      [
         "schemas/error.yaml",
         `
 type: object
@@ -126,6 +167,7 @@ properties:
     expect(inv.entities.map((e) => e.label)).toEqual([
       "admin",
       "Error",
+      "Importer",
       "Matter",
     ]);
 
@@ -133,6 +175,7 @@ properties:
     expect(byLabel.Matter?.resource).toBe("matters");
     expect(byLabel.Matter?.operations.map((o) => o.operationId)).toEqual([
       "createMatter",
+      "listMattersEverything",
     ]);
     expect(byLabel.Matter?.schema?.properties.map((p) => p.name)).toEqual([
       "id",
@@ -140,7 +183,22 @@ properties:
     ]);
     expect(byLabel.Matter?.schema?.referencedByOperations).toEqual([
       "createMatter",
+      "listMattersEverything",
     ]);
+
+    const create = byLabel.Matter?.operations.find(
+      (o) => o.operationId === "createMatter",
+    );
+    expect(create?.tags).toEqual(["email-verified"]);
+    expect(create?.routeStem).toBe("matters/create");
+    expect(create?.requestSchemas).toEqual([]);
+    expect(create?.responseSchemas).toEqual(["Matter"]);
+
+    const listAll = byLabel.Matter?.operations.find(
+      (o) => o.operationId === "listMattersEverything",
+    );
+    expect(listAll?.tags).toEqual(["email-verified", "mfa-required"]);
+    expect(listAll?.responseSchemas).toEqual(["Importer", "Matter"]);
 
     expect(byLabel.Error?.presence).toBe("object");
     expect(byLabel.Error?.operations).toEqual([]);
