@@ -24,6 +24,11 @@ export interface TestTreeNode {
   subjectDocstring?: string | null;
   subjectConfidence?: "adjacent" | "package" | null;
   subjectFilePath?: string | null;
+  /**
+   * Packages/files that import the subject (db Spec: query leaf importers).
+   * Rendered under signature/doc on suite cards.
+   */
+  usedBy?: Array<{ packageName: string; filePath: string }> | null;
 }
 
 /** Dir/file nav for Spec pane (no suites/tests). */

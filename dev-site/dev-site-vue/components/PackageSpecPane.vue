@@ -276,8 +276,6 @@ const openFile = (path: string) => {
   border: 1px solid rgba(var(--v-theme-on-surface), 0.12);
   border-radius: 6px;
   padding: 0.5rem 0.35rem;
-  max-height: 60vh;
-  overflow: auto;
 }
 .spec-all {
   display: flex;

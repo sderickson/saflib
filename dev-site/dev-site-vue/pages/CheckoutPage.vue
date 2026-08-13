@@ -370,8 +370,6 @@ const formatDateTime = (dateTimeString: string): string => {
   border: 1px solid rgba(var(--v-theme-on-surface), 0.12);
   border-radius: 6px;
   padding: 0.75rem 0.5rem;
-  max-height: 75vh;
-  overflow: auto;
 }
 .checkout-split__panel {
   min-width: 0;

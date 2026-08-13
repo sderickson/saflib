@@ -120,10 +120,20 @@ export interface components {
                         docstring?: string | null;
                     }[];
                 } | null;
-                /** @description Non-test product files that import queries under this entity. */
-                usedBy: {
-                    packageName: string;
+                /** @description Distinct packages (non-test) that import any query under this entity. */
+                usedByPackages: string[];
+                /** @description Leaf query modules under queries/<entity>/ (excluding index and tests). */
+                queries: {
+                    fileName: string;
                     filePath: string;
+                    exportName?: string | null;
+                    signature?: string | null;
+                    docstring?: string | null;
+                    /** @description Non-test product files that import this leaf query module. */
+                    usedBy: {
+                        packageName: string;
+                        filePath: string;
+                    }[];
                 }[];
             }[];
         };

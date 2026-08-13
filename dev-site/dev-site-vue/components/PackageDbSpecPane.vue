@@ -62,6 +62,18 @@
             <p v-if="e.table.docstring" class="table-card__doc">
               {{ e.table.docstring }}
             </p>
+            <ul
+              v-if="e.usedByPackages.length"
+              class="table-card__pkgs"
+            >
+              <li
+                v-for="pkg in e.usedByPackages"
+                :key="pkg"
+                class="table-card__pkg"
+              >
+                <code>{{ pkg }}</code>
+              </li>
+            </ul>
             <ul class="table-card__cols">
               <li
                 v-for="c in e.table.columns"
@@ -78,38 +90,35 @@
               </li>
             </ul>
           </div>
-          <p v-else class="text-body-2 text-medium-emphasis mb-3">
-            No matching drizzle table for this query directory.
-          </p>
-
-          <div v-if="e.usedBy.length" class="used-by mb-4">
-            <div class="text-caption text-medium-emphasis mb-1">Used by</div>
-            <ul class="used-by__list">
-              <li v-for="u in e.usedBy" :key="u.packageName + ':' + u.filePath">
-                <button
-                  type="button"
-                  class="used-by__link"
-                  @click="openFile(u.filePath)"
-                >
-                  {{ fileName(u.filePath) }}
-                </button>
-                <span
-                  v-if="u.packageName !== packageName"
-                  class="used-by__pkg text-medium-emphasis"
-                >
-                  {{ u.packageName }}
-                </span>
+          <template v-else>
+            <p class="text-body-2 text-medium-emphasis mb-2">
+              No matching drizzle table for this query directory.
+            </p>
+            <ul
+              v-if="e.usedByPackages.length"
+              class="table-card__pkgs mb-3"
+            >
+              <li
+                v-for="pkg in e.usedByPackages"
+                :key="pkg"
+                class="table-card__pkg"
+              >
+                <code>{{ pkg }}</code>
               </li>
             </ul>
-          </div>
+          </template>
 
-          <div v-if="testsFor(e.entity).length" class="entity-tests">
-            <div class="text-caption text-medium-emphasis mb-1">Tests</div>
-            <TestTree
-              :nodes="testsFor(e.entity)"
-              @open-source="openFile"
-            />
-          </div>
+          <TestTree
+            v-if="specCardsFor(e).length"
+            :nodes="specCardsFor(e)"
+            @open-source="openFile"
+          />
+          <p
+            v-else-if="!e.queries.length"
+            class="text-body-2 text-medium-emphasis"
+          >
+            No queries or tests for this entity.
+          </p>
         </div>
       </section>
     </div>
@@ -125,6 +134,31 @@ import {
 } from "../test-tree.ts";
 import { openSource } from "../source-links.ts";
 import TestTree from "./TestTree.vue";
+
+interface DbQuery {
+  fileName: string;
+  filePath: string;
+  exportName?: string | null;
+  signature?: string | null;
+  docstring?: string | null;
+  usedBy: Array<{ packageName: string; filePath: string }>;
+}
+
+interface DbEntity {
+  entity: string;
+  table: {
+    tableName: string;
+    filePath: string;
+    docstring?: string | null;
+    columns: Array<{
+      sqlName: string;
+      typeKind: string;
+      docstring?: string | null;
+    }>;
+  } | null;
+  usedByPackages: string[];
+  queries: DbQuery[];
+}
 
 const props = defineProps<{
   subdomain: string;
@@ -146,7 +180,9 @@ const { data, isLoading, error } = useCommitPackage(
 );
 
 const detail = computed(() => data.value?.packageDetail);
-const entities = computed(() => detail.value?.dbInventory?.entities ?? []);
+const entities = computed(
+  () => (detail.value?.dbInventory?.entities ?? []) as DbEntity[],
+);
 
 const visibleEntities = computed(() => {
   if (selectedEntity.value == null) return entities.value;
@@ -157,20 +193,120 @@ function fileName(path: string): string {
   return path.split("/").pop() ?? path;
 }
 
-function testsFor(entity: string): TestTreeNode[] {
+function stem(fileName: string): string {
+  return fileName.replace(/\.ts$/, "");
+}
+
+function walkSuites(nodes: TestTreeNode[], out: TestTreeNode[] = []): TestTreeNode[] {
+  for (const n of nodes) {
+    if (n.kind === "suite") out.push(n);
+    if (n.children.length) walkSuites(n.children, out);
+  }
+  return out;
+}
+
+function walkFiles(nodes: TestTreeNode[], out: TestTreeNode[] = []): TestTreeNode[] {
+  for (const n of nodes) {
+    if (n.kind === "file") out.push(n);
+    if (n.children.length) walkFiles(n.children, out);
+  }
+  return out;
+}
+
+function queryMatchesSuite(q: DbQuery, suite: TestTreeNode): boolean {
+  if (q.exportName && suite.subjectName === q.exportName) return true;
+  if (q.filePath && suite.subjectFilePath === q.filePath) return true;
+  if (q.exportName && suite.label === q.exportName) return true;
+  return false;
+}
+
+function queryMatchesTestFile(q: DbQuery, fileNode: TestTreeNode): boolean {
+  const path = fileNode.sourcePath ?? "";
+  const expected = q.filePath.replace(/\.ts$/, ".test.ts");
+  if (path === expected) return true;
+  const base = stem(q.fileName);
+  return (
+    fileNode.label === `${base}.test.ts` ||
+    path.endsWith(`/${base}.test.ts`)
+  );
+}
+
+/**
+ * Merge query inventory into suite cards: one card per query/suite with
+ * signature + docstring + importers + tests. Orphan queries (no suite) become
+ * suite-shaped cards; orphan suites keep their own cards.
+ */
+function specCardsFor(entity: DbEntity): TestTreeNode[] {
   const cases = (detail.value?.testCases ?? []).filter((t) => {
-    const needle = `/queries/${entity}/`;
+    const needle = `/queries/${entity.entity}/`;
     return (
       t.filePath.includes(needle) ||
-      t.filePath.includes(`queries/${entity}/`)
+      t.filePath.includes(`queries/${entity.entity}/`)
     );
   });
-  return buildPackageTestTree(
+  const tree = buildPackageTestTree(
     cases,
     props.packageName,
     props.packageDirectory,
     props.productRoot ?? "",
   );
+
+  const suites = walkSuites(tree);
+  const files = walkFiles(tree);
+  const matchedSuiteIds = new Set<string>();
+  const cards: TestTreeNode[] = [];
+
+  for (const q of entity.queries) {
+    let suite =
+      suites.find((s) => queryMatchesSuite(q, s)) ??
+      null;
+
+    if (!suite) {
+      const file = files.find((f) => queryMatchesTestFile(q, f));
+      if (file) {
+        suite =
+          (q.exportName
+            ? file.children.find(
+                (c) => c.kind === "suite" && c.label === q.exportName,
+              )
+            : undefined) ??
+          file.children.find((c) => c.kind === "suite") ??
+          null;
+      }
+    }
+
+    if (suite) {
+      matchedSuiteIds.add(suite.id);
+      cards.push({
+        ...suite,
+        subjectName: suite.subjectName ?? q.exportName,
+        subjectSignature: suite.subjectSignature ?? q.signature,
+        subjectDocstring: suite.subjectDocstring ?? q.docstring,
+        subjectFilePath: suite.subjectFilePath ?? q.filePath,
+        usedBy: q.usedBy.length ? q.usedBy : suite.usedBy ?? null,
+      });
+    } else {
+      cards.push({
+        id: `query:${q.filePath}`,
+        label: q.exportName ?? q.fileName,
+        kind: "suite",
+        children: [],
+        subjectName: q.exportName,
+        subjectSignature: q.signature,
+        subjectDocstring: q.docstring,
+        subjectFilePath: q.filePath,
+        usedBy: q.usedBy.length ? q.usedBy : null,
+      });
+    }
+  }
+
+  // Suites not claimed by a query (helpers, cross-cutting tests).
+  for (const suite of suites) {
+    if (matchedSuiteIds.has(suite.id)) continue;
+    cards.push(suite);
+  }
+
+  return cards;
 }
 
 function openFile(path: string) {
@@ -198,8 +334,6 @@ function openFile(path: string) {
   border: 1px solid rgba(var(--v-theme-on-surface), 0.12);
   border-radius: 6px;
   padding: 0.5rem 0.35rem;
-  max-height: 60vh;
-  overflow: auto;
 }
 .spec-all {
   display: flex;
@@ -300,9 +434,21 @@ function openFile(path: string) {
   text-decoration: underline;
 }
 .table-card__doc {
-  margin: 0 0 0.65rem;
+  margin: 0 0 0.5rem;
   font-size: 0.875rem;
   color: rgba(var(--v-theme-on-surface), 0.7);
+}
+.table-card__pkgs {
+  list-style: none;
+  margin: 0 0 0.65rem;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.75rem;
+}
+.table-card__pkg code {
+  font-size: 0.75rem;
+  color: rgba(var(--v-theme-on-surface), 0.75);
 }
 .table-card__cols {
   list-style: none;
@@ -320,27 +466,5 @@ function openFile(path: string) {
   margin: 0.15rem 0 0;
   font-size: 0.8125rem;
   color: rgba(var(--v-theme-on-surface), 0.65);
-}
-.used-by__list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: 0.25rem;
-}
-.used-by__link {
-  border: none;
-  background: none;
-  padding: 0;
-  color: rgb(var(--v-theme-primary));
-  cursor: pointer;
-  font: inherit;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 0.8125rem;
-  text-decoration: underline;
-}
-.used-by__pkg {
-  margin-left: 0.5rem;
-  font-size: 0.75rem;
 }
 </style>

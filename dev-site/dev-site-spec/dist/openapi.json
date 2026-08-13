@@ -1350,7 +1350,8 @@
               "type": "object",
               "required": [
                 "entity",
-                "usedBy"
+                "usedByPackages",
+                "queries"
               ],
               "properties": {
                 "entity": {
@@ -1410,21 +1411,60 @@
                     }
                   }
                 },
-                "usedBy": {
+                "usedByPackages": {
                   "type": "array",
-                  "description": "Non-test product files that import queries under this entity.",
+                  "description": "Distinct packages (non-test) that import any query under this entity.",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "queries": {
+                  "type": "array",
+                  "description": "Leaf query modules under queries/<entity>/ (excluding index and tests).",
                   "items": {
                     "type": "object",
                     "required": [
-                      "packageName",
-                      "filePath"
+                      "fileName",
+                      "filePath",
+                      "usedBy"
                     ],
                     "properties": {
-                      "packageName": {
+                      "fileName": {
                         "type": "string"
                       },
                       "filePath": {
                         "type": "string"
+                      },
+                      "exportName": {
+                        "type": "string",
+                        "nullable": true
+                      },
+                      "signature": {
+                        "type": "string",
+                        "nullable": true
+                      },
+                      "docstring": {
+                        "type": "string",
+                        "nullable": true
+                      },
+                      "usedBy": {
+                        "type": "array",
+                        "description": "Non-test product files that import this leaf query module.",
+                        "items": {
+                          "type": "object",
+                          "required": [
+                            "packageName",
+                            "filePath"
+                          ],
+                          "properties": {
+                            "packageName": {
+                              "type": "string"
+                            },
+                            "filePath": {
+                              "type": "string"
+                            }
+                          }
+                        }
                       }
                     }
                   }

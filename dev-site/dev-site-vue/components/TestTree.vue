@@ -15,7 +15,7 @@
         </header>
 
         <div
-          v-if="node.subjectSignature || node.subjectDocstring"
+          v-if="node.subjectSignature || node.subjectDocstring || (node.usedBy && node.usedBy.length)"
           class="suite-card__spec"
         >
           <code v-if="node.subjectSignature" class="suite-card__sig">{{
@@ -24,6 +24,20 @@
           <p v-if="node.subjectDocstring" class="suite-card__doc">
             {{ node.subjectDocstring }}
           </p>
+          <ul v-if="node.usedBy?.length" class="suite-card__used">
+            <li
+              v-for="u in node.usedBy"
+              :key="u.packageName + ':' + u.filePath"
+            >
+              <button
+                type="button"
+                class="suite-card__importer"
+                @click="$emit('open-source', u.filePath)"
+              >
+                {{ u.packageName }}/{{ u.filePath }}
+              </button>
+            </li>
+          </ul>
         </div>
 
         <div class="suite-card__tests">
@@ -213,6 +227,26 @@ const nestedSuites = (node: TestTreeNode) =>
 }
 .suite-card__spec .suite-card__doc:first-child {
   margin-top: 0;
+}
+.suite-card__used {
+  list-style: disc;
+  margin: 0.45rem 0 0;
+  padding-left: 1.15rem;
+  display: grid;
+  gap: 0.15rem;
+}
+.suite-card__importer {
+  border: none;
+  background: none;
+  padding: 0;
+  color: rgb(var(--v-theme-primary));
+  cursor: pointer;
+  font: inherit;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.72rem;
+  text-align: left;
+  text-decoration: underline;
+  word-break: break-all;
 }
 .suite-card__tests {
   padding: 0.45rem 0.75rem 0.65rem;

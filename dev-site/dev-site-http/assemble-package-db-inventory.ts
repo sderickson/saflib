@@ -3,6 +3,7 @@ import type { ReturnsError } from "@saflib/monorepo";
 import type { GitCommandError } from "@saflib/git";
 import { listTree, readBlobs } from "@saflib/git";
 import {
+  blobFactExports,
   blobFactImports,
   blobFactTables,
   type BlobTableFact,
@@ -34,12 +35,31 @@ export interface DbInventoryUsedBy {
   filePath: string;
 }
 
+export interface DbInventoryQuery {
+  /** Leaf filename without path, e.g. `create.ts`. */
+  fileName: string;
+  /** Repo-relative path to the query module. */
+  filePath: string;
+  /** Primary exported symbol name when known. */
+  exportName: string | null;
+  /** Syntactic signature of the primary export. */
+  signature: string | null;
+  /** Best-effort docstring from the query's primary export. */
+  docstring: string | null;
+  /** Non-test product files that import this leaf module. */
+  usedBy: DbInventoryUsedBy[];
+}
+
 export interface DbInventoryEntity {
   /** Query dir name or schema stem, e.g. `package-metrics`. */
   entity: string;
   table: DbInventoryTable | null;
-  /** Non-test product files that import this entity's query modules. */
-  usedBy: DbInventoryUsedBy[];
+  /**
+   * Distinct packages (non-test) that import any query under this entity.
+   * Shown on the table card.
+   */
+  usedByPackages: string[];
+  queries: DbInventoryQuery[];
 }
 
 export interface PackageDbInventory {
@@ -77,43 +97,84 @@ function stripTsExt(path: string): string {
 }
 
 /**
- * If `specifier` (absolute or relative to `importerPath`) targets
- * `${packageName}/queries/<entity>/…` or `<pkgDir>/queries/<entity>/…`,
- * return the entity name.
+ * If specifier targets this package's `queries/<entity>/<leaf>`, return
+ * `{ entity, leaf }` where leaf is the module stem (`create`, not `create.ts`).
  */
-function entityFromQueryImport(
+function queryTargetFromImport(
   packageName: string,
   packageDirectory: string,
   importerPath: string,
   specifier: string,
-): string | null {
+): { entity: string; leaf: string } | null {
   const absPrefix = `${packageName}/queries/`;
+  let relUnderQueries: string | null = null;
+
   if (specifier.startsWith(absPrefix)) {
-    const rest = specifier.slice(absPrefix.length);
-    const entity = rest.split("/")[0];
-    return entity || null;
+    relUnderQueries = specifier.slice(absPrefix.length);
+  } else if (specifier.startsWith(".")) {
+    const resolved = stripTsExt(resolveRelative(importerPath, specifier));
+    const pkgPrefix = packageDirectory
+      ? packageDirectory.replace(/\/+$/, "") + "/"
+      : "";
+    const rel =
+      pkgPrefix && resolved.startsWith(pkgPrefix)
+        ? resolved.slice(pkgPrefix.length)
+        : !pkgPrefix
+          ? resolved
+          : null;
+    if (rel === null) return null;
+    const m = /^queries\/(.+)$/.exec(rel);
+    if (!m) return null;
+    relUnderQueries = m[1]!;
   }
 
-  if (!specifier.startsWith(".")) return null;
-  const resolved = stripTsExt(resolveRelative(importerPath, specifier));
-  const pkgPrefix = packageDirectory
-    ? packageDirectory.replace(/\/+$/, "") + "/"
-    : "";
-  const rel = pkgPrefix && resolved.startsWith(pkgPrefix)
-    ? resolved.slice(pkgPrefix.length)
-    : !pkgPrefix
-      ? resolved
-      : null;
-  if (rel === null) return null;
-  const m = /^queries\/([^/]+)\//.exec(rel);
-  return m?.[1] ?? null;
+  if (!relUnderQueries) return null;
+  const parts = relUnderQueries.split("/").filter(Boolean);
+  if (parts.length < 2) return null;
+  const entity = parts[0]!;
+  const leaf = stripTsExt(parts[parts.length - 1]!);
+  if (!entity || !leaf || leaf === "index") return null;
+  return { entity, leaf };
+}
+
+function pickQueryExport(
+  exports: Array<{
+    name: string;
+    kind: string;
+    signature: string | null;
+    docstring: string | null;
+  }>,
+  leafStem: string,
+): {
+  exportName: string | null;
+  signature: string | null;
+  docstring: string | null;
+} {
+  const camel =
+    leafStem.replace(/-([a-z])/g, (_, c: string) => c.toUpperCase()) ?? leafStem;
+  const preferred =
+    exports.find(
+      (e) =>
+        e.name === camel ||
+        e.name.toLowerCase().startsWith(camel.toLowerCase()) ||
+        e.name.toLowerCase().endsWith(camel.toLowerCase()),
+    ) ??
+    exports.find((e) => e.kind === "function" || e.kind === "const") ??
+    exports[0];
+  if (!preferred) {
+    return { exportName: null, signature: null, docstring: null };
+  }
+  return {
+    exportName: preferred.name,
+    signature: preferred.signature,
+    docstring: preferred.docstring,
+  };
 }
 
 /**
- * Assemble drizzle tables (from blob_facts) + query dirs (from ls-tree)
- * for one db package. Query dirs discover entities; query filenames are not
- * surfaced (tests under the dir are the Spec). `usedBy` is a reverse index of
- * non-test product files importing `queries/<entity>/…`.
+ * Assemble drizzle tables + query dirs for one db package.
+ * - `usedByPackages`: packages importing any query under the entity
+ * - `queries[].usedBy`: files importing that specific leaf module
  */
 export async function assemblePackageDbInventory(
   dbKey: DbKey,
@@ -190,13 +251,36 @@ export async function assemblePackageDbInventory(
     }
   }
 
-  const queryEntities = new Set<string>();
+  /** entityKey → leafStem → query row */
+  const queriesByEntity = new Map<string, Map<string, DbInventoryQuery>>();
+
   for (const entry of tree) {
     if (!underPackage(entry.path)) continue;
     const rel = relativeToPackage(entry.path);
-    const m = /^queries\/([^/]+)\//.exec(rel);
+    const m = /^queries\/([^/]+)\/([^/]+\.ts)$/.exec(rel);
     if (!m) continue;
-    queryEntities.add(m[1]!);
+    const entity = m[1]!;
+    const fileName = m[2]!;
+    if (fileName === "index.ts" || fileName.endsWith(".test.ts")) continue;
+    const leaf = stripTsExt(fileName);
+    const fact = facts.get(entry.blobHash);
+    const picked = fact
+      ? pickQueryExport(blobFactExports(fact), leaf)
+      : { exportName: null, signature: null, docstring: null };
+    const eKey = normalizeEntityKey(entity);
+    let byLeaf = queriesByEntity.get(eKey);
+    if (!byLeaf) {
+      byLeaf = new Map();
+      queriesByEntity.set(eKey, byLeaf);
+    }
+    byLeaf.set(leaf, {
+      fileName,
+      filePath: entry.path,
+      exportName: picked.exportName,
+      signature: picked.signature,
+      docstring: picked.docstring,
+      usedBy: [],
+    });
   }
 
   const byKey = new Map<string, DbInventoryEntity>();
@@ -210,16 +294,26 @@ export async function assemblePackageDbInventory(
           ? entityLabel.replace(/_/g, "-")
           : entityLabel,
         table: null,
-        usedBy: [],
+        usedByPackages: [],
+        queries: [],
       };
       byKey.set(key, row);
     }
     return row;
   };
 
-  for (const entity of queryEntities) {
-    const row = ensureEntity(entity);
-    row.entity = entity;
+  for (const [eKey, byLeaf] of queriesByEntity) {
+    const first = [...byLeaf.values()][0];
+    const entityLabel =
+      first &&
+      (() => {
+        const m = /\/queries\/([^/]+)\//.exec(first.filePath);
+        return m?.[1];
+      })();
+    const row = ensureEntity(entityLabel ?? eKey);
+    row.queries = [...byLeaf.values()].sort((a, b) =>
+      a.fileName.localeCompare(b.fileName),
+    );
   }
 
   for (const t of tables) {
@@ -239,7 +333,13 @@ export async function assemblePackageDbInventory(
     };
   }
 
-  const usedBySets = new Map<string, Map<string, DbInventoryUsedBy>>();
+  /** entityKey → leaf → usedBy map */
+  const queryUsedBy = new Map<
+    string,
+    Map<string, Map<string, DbInventoryUsedBy>>
+  >();
+  const entityPackages = new Map<string, Set<string>>();
+
   for (const entry of allSourceEntries) {
     const fileName = entry.path.split("/").pop() ?? entry.path;
     if (isTestSourcePath(entry.path, fileName)) continue;
@@ -247,36 +347,58 @@ export async function assemblePackageDbInventory(
     if (!fact) continue;
     const importerPkg = packageForPath(entry.path, roots).packageName;
     for (const imp of blobFactImports(fact)) {
-      const entity = entityFromQueryImport(
+      const target = queryTargetFromImport(
         packageName,
         targetRoot.directory,
         entry.path,
         imp.specifier,
       );
-      if (!entity) continue;
-      const key = normalizeEntityKey(entity);
-      // Only record for entities we already track (table or query dir).
-      if (!byKey.has(key)) continue;
-      let set = usedBySets.get(key);
-      if (!set) {
-        set = new Map();
-        usedBySets.set(key, set);
+      if (!target) continue;
+      const eKey = normalizeEntityKey(target.entity);
+      if (!byKey.has(eKey)) continue;
+
+      let pkgs = entityPackages.get(eKey);
+      if (!pkgs) {
+        pkgs = new Set();
+        entityPackages.set(eKey, pkgs);
       }
-      set.set(`${importerPkg}\0${entry.path}`, {
+      pkgs.add(importerPkg);
+
+      let byLeaf = queryUsedBy.get(eKey);
+      if (!byLeaf) {
+        byLeaf = new Map();
+        queryUsedBy.set(eKey, byLeaf);
+      }
+      let used = byLeaf.get(target.leaf);
+      if (!used) {
+        used = new Map();
+        byLeaf.set(target.leaf, used);
+      }
+      used.set(`${importerPkg}\0${entry.path}`, {
         packageName: importerPkg,
         filePath: entry.path,
       });
     }
   }
 
-  for (const [key, set] of usedBySets) {
-    const row = byKey.get(key);
-    if (!row) continue;
-    row.usedBy = [...set.values()].sort(
-      (a, b) =>
-        a.packageName.localeCompare(b.packageName) ||
-        a.filePath.localeCompare(b.filePath),
-    );
+  for (const [eKey, row] of byKey) {
+    const pkgs = entityPackages.get(eKey);
+    row.usedByPackages = pkgs
+      ? [...pkgs].sort((a, b) => a.localeCompare(b))
+      : [];
+
+    const byLeaf = queryUsedBy.get(eKey);
+    if (!byLeaf) continue;
+    for (const q of row.queries) {
+      const leaf = stripTsExt(q.fileName);
+      const used = byLeaf.get(leaf);
+      if (!used) continue;
+      q.usedBy = [...used.values()].sort(
+        (a, b) =>
+          a.packageName.localeCompare(b.packageName) ||
+          a.filePath.localeCompare(b.filePath),
+      );
+    }
   }
 
   const entities = [...byKey.values()].sort((a, b) =>
