@@ -3,9 +3,22 @@ import { addNewLinesToString } from "@saflib/utils";
 import { execFileSync } from "child_process";
 import { getSafReporters } from "@saflib/node";
 import { errorSchema } from "@saflib/openapi/error";
-import { mkdirSync, rmSync, writeFileSync } from "fs";
+import { mkdirSync, readdirSync, rmSync, writeFileSync } from "fs";
 import path from "path";
 import { resolvePackageBin } from "./resolve-bin.ts";
+
+/**
+ * Clear codegen outputs under `-o` while preserving `types/` (composite `tsc -b`
+ * declaration emit). A full `rmSync(dist)` leaves `vue-tsc -b` with stale
+ * tsbuildinfo and missing `.d.ts` → TS6305 until a forced rebuild.
+ */
+function clearGeneratedOutput(outputDir: string): void {
+  mkdirSync(outputDir, { recursive: true });
+  for (const entry of readdirSync(outputDir)) {
+    if (entry === "types") continue;
+    rmSync(path.join(outputDir, entry), { recursive: true, force: true });
+  }
+}
 
 export const addGenerateCommand = (program: Command) => {
   program
@@ -24,8 +37,7 @@ export const addGenerateCommand = (program: Command) => {
       const { file, output } = options;
       const outputDir = path.resolve(process.cwd(), output);
 
-      rmSync(outputDir, { recursive: true, force: true });
-      mkdirSync(outputDir, { recursive: true });
+      clearGeneratedOutput(outputDir);
 
       mkdirSync(path.join(process.cwd(), "./schemas"), { recursive: true });
 
