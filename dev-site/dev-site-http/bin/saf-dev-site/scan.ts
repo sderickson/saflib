@@ -8,6 +8,7 @@ import {
   resolveProductRoot,
   resolveRepoRoot,
 } from "./defaults.ts";
+import { ensureCliDbAvailable } from "./ensure-db.ts";
 
 export const addScanCommand = (program: Command) => {
   program
@@ -18,7 +19,10 @@ export const addScanCommand = (program: Command) => {
     .option("--repo-root <path>", "Git repository root to analyze")
     .option("--product-root <path>", "Path prefix within the repo (e.g. daemon)")
     .option("--main-ref <ref>", "Main branch ref")
-    .option("--db <path>", "SQLite file path (created if missing)")
+    .option(
+      "--db <path>",
+      "SQLite file path (created if missing; scan refuses if Docker api holds the shared daemon DB)",
+    )
     .option(
       "--limit <n>",
       "Max new commits to analyze this run (newest unanalyzed first)",
@@ -33,6 +37,7 @@ export const addScanCommand = (program: Command) => {
     }) => {
       const repoRoot = resolveRepoRoot(opts.repoRoot);
       const dbPath = resolveDbPath(repoRoot, opts.db);
+      ensureCliDbAvailable(dbPath, "write");
       const productRoot = resolveProductRoot(opts.productRoot, dbPath);
       const mainRef = resolveMainRef(opts.mainRef);
       const dbKey = devSiteDb.connect({ onDisk: dbPath });

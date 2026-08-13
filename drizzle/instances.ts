@@ -80,7 +80,9 @@ export class DbManager<S extends Schema, C extends Config> {
     }
 
     log.info(`Connecting to database: ${dbStorage}`);
-    const sqlite = new Database(dbStorage);
+    const sqlite = options?.readonly
+      ? new Database(dbStorage, { readonly: true, fileMustExist: true })
+      : new Database(dbStorage);
     if (options?.pragmas) {
       for (const [key, value] of Object.entries(options.pragmas)) {
         sqlite.pragma(`${key} = ${value}`);
@@ -88,7 +90,11 @@ export class DbManager<S extends Schema, C extends Config> {
     }
     const db = drizzle(sqlite, { schema: this.schema });
 
-    if (this.config.out && !options?.skipMigrations) {
+    if (
+      this.config.out &&
+      !options?.readonly &&
+      !options?.skipMigrations
+    ) {
       this.runMigrations(sqlite, db, log);
     }
 
@@ -357,13 +363,19 @@ export class DbManager<S extends Schema, C extends Config> {
     }
     const { log } = makeSubsystemReporters("init", "db.attachConnection");
     log.info(`Attaching database at ${sqlitePath}`);
-    const sqlite = new Database(sqlitePath);
+    const sqlite = options?.readonly
+      ? new Database(sqlitePath, { readonly: true, fileMustExist: true })
+      : new Database(sqlitePath);
     const pragmas = options?.pragmas ?? {};
     for (const [pragmaKey, value] of Object.entries(pragmas)) {
       sqlite.pragma(`${pragmaKey} = ${value}`);
     }
     const db = drizzle(sqlite, { schema: this.schema });
-    if (this.config.out && !options?.skipMigrations) {
+    if (
+      this.config.out &&
+      !options?.readonly &&
+      !options?.skipMigrations
+    ) {
       this.runMigrations(sqlite, db, log);
     }
     this.instances.set(key, db);

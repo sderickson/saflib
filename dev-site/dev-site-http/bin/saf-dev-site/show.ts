@@ -8,6 +8,7 @@ import {
   resolveProductRoot,
   resolveRepoRoot,
 } from "./defaults.ts";
+import { ensureCliDbAvailable } from "./ensure-db.ts";
 
 export const addShowCommand = (program: Command) => {
   program
@@ -30,9 +31,14 @@ export const addShowCommand = (program: Command) => {
       ) => {
         const repoRoot = resolveRepoRoot(opts.repoRoot);
         const dbPath = resolveDbPath(repoRoot, opts.db);
+        ensureCliDbAvailable(dbPath, "read");
         const productRoot = resolveProductRoot(opts.productRoot, dbPath);
         const mainRef = resolveMainRef(opts.mainRef);
-        const dbKey = devSiteDb.connect({ onDisk: dbPath });
+        const dbKey = devSiteDb.connect({
+          onDisk: dbPath,
+          readonly: true,
+          skipMigrations: true,
+        });
         try {
           const result = await throwError(
             getCommit(dbKey, hash, {

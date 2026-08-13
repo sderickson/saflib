@@ -11,6 +11,7 @@ import {
   resolveProductRoot,
   resolveRepoRoot,
 } from "./defaults.ts";
+import { ensureCliDbAvailable } from "./ensure-db.ts";
 
 export const addIssuesCommand = (program: Command) => {
   program
@@ -31,7 +32,7 @@ export const addIssuesCommand = (program: Command) => {
     .option("--main-ref <ref>", "Main branch ref (default: main / DEV_SITE_MAIN_REF)")
     .option(
       "--db <path>",
-      "SQLite file path (default: DEV_SITE_DB_PATH, else daemon/.../dev-site.sqlite if present)",
+      "SQLite file path (default: DEV_SITE_DB_PATH, else daemon/.../dev-site.sqlite if present; opens read-only)",
     )
     .option("--json", "Print machine-readable JSON", false)
     .action(
@@ -48,10 +49,15 @@ export const addIssuesCommand = (program: Command) => {
       ) => {
         const repoRoot = resolveRepoRoot(opts.repoRoot);
         const dbPath = resolveDbPath(repoRoot, opts.db);
+        ensureCliDbAvailable(dbPath, "read");
         const productRoot = resolveProductRoot(opts.productRoot, dbPath);
         const mainRef = resolveMainRef(opts.mainRef);
 
-        const dbKey = devSiteDb.connect({ onDisk: dbPath });
+        const dbKey = devSiteDb.connect({
+          onDisk: dbPath,
+          readonly: true,
+          skipMigrations: true,
+        });
         try {
           const ref = hashArg || "HEAD";
           const resolved = resolveRef(repoRoot, ref);

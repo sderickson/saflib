@@ -49,6 +49,13 @@ export interface DbOptions {
    * read would change the bytes we're about to verify.
    */
   skipMigrations?: boolean;
+
+  /**
+   * Open the SQLite file with `SQLITE_OPEN_READONLY` (better-sqlite3
+   * `readonly: true`, `fileMustExist: true`). Implies {@link skipMigrations}.
+   * In-memory DBs cannot be readonly.
+   */
+  readonly?: boolean;
 }
 
 /**
