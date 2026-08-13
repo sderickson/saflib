@@ -34,14 +34,14 @@
           "
         >
           <h3 class="scope-header__title">
-            <button
+            <a
               v-if="scope.kind === 'file' && scopeTestRepoPath"
-              type="button"
+              href="#"
               class="scope-header__link"
-              @click="openFile(scopeTestRepoPath)"
+              @click.prevent="openFile(scopeTestRepoPath)"
             >
               {{ scopeFileName }}
-            </button>
+            </a>
             <template v-else>
               {{ scope.kind === "dir" ? `${scope.localPath}/` : scopeFileName }}
             </template>
@@ -79,17 +79,17 @@
               :key="`${exp.filePath}:${exp.name}:${exp.kind}`"
               class="unlinked__item"
             >
-              <button
-                type="button"
+              <a
+                href="#"
                 class="unlinked__btn"
-                @click="openFile(exp.filePath)"
+                @click.prevent="openFile(exp.filePath)"
               >
                 <span class="unlinked__name">{{ exp.name }}</span>
                 <span class="unlinked__kind">{{ exp.kind }}</span>
                 <code v-if="exp.signature" class="unlinked__sig">{{
                   exp.signature
                 }}</code>
-              </button>
+              </a>
               <div v-if="exp.docstring" class="unlinked__doc">
                 {{ exp.docstring }}
               </div>
@@ -371,16 +371,11 @@ const openFile = (path: string) => {
   color: inherit;
 }
 .scope-header__link {
-  border: 0;
-  background: transparent;
-  padding: 0;
-  margin: 0;
-  font: inherit;
   color: inherit;
   cursor: pointer;
   text-decoration: underline;
   text-decoration-color: rgba(var(--v-theme-on-surface), 0.25);
-  text-align: left;
+  user-select: text;
 }
 .scope-header--file .scope-header__title {
   font-size: 0.95rem;
@@ -420,13 +415,10 @@ const openFile = (path: string) => {
   flex-wrap: wrap;
   align-items: baseline;
   gap: 0.4rem;
-  border: 0;
-  background: transparent;
-  padding: 0;
-  cursor: pointer;
   color: inherit;
-  font: inherit;
-  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+  user-select: text;
 }
 .unlinked__name {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;

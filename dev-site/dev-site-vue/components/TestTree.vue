@@ -3,14 +3,14 @@
     <li v-for="node in nodes" :key="node.id" class="test-tree__item">
       <article v-if="node.kind === 'suite'" class="suite-card">
         <header class="suite-card__head">
-          <button
+          <a
             v-if="node.subjectFilePath"
-            type="button"
+            href="#"
             class="suite-card__name suite-card__name--link"
-            @click="$emit('open-source', node.subjectFilePath!)"
+            @click.prevent="$emit('open-source', node.subjectFilePath!)"
           >
             {{ node.label }}
-          </button>
+          </a>
           <span v-else class="suite-card__name">{{ node.label }}</span>
         </header>
 
@@ -72,14 +72,14 @@
       </section>
 
       <section v-else-if="node.kind === 'file'" class="tree-section tree-section--file">
-        <button
+        <a
           v-if="node.sourcePath"
-          type="button"
+          href="#"
           class="tree-section__title tree-section__title--file tree-section__title--link"
-          @click="$emit('open-source', node.sourcePath!)"
+          @click.prevent="$emit('open-source', node.sourcePath!)"
         >
           {{ node.label }}
-        </button>
+        </a>
         <h4 v-else class="tree-section__title tree-section__title--file">
           {{ node.label }}
         </h4>
@@ -155,13 +155,11 @@ const nestedSuites = (node: TestTreeNode) =>
 }
 .tree-section__title--link {
   display: inline;
-  border: 0;
-  background: transparent;
-  padding: 0;
+  color: inherit;
   cursor: pointer;
-  text-align: left;
   text-decoration: underline;
   text-decoration-color: rgba(var(--v-theme-on-surface), 0.25);
+  user-select: text;
 }
 .tree-section--file {
   margin-top: 0.85rem;
@@ -195,16 +193,13 @@ const nestedSuites = (node: TestTreeNode) =>
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 0.9rem;
   font-weight: 600;
-  border: 0;
-  background: transparent;
-  padding: 0;
   color: inherit;
-  text-align: left;
 }
 .suite-card__name--link {
   cursor: pointer;
   text-decoration: underline;
   text-decoration-color: rgba(var(--v-theme-on-surface), 0.25);
+  user-select: text;
 }
 .suite-card__spec {
   padding: 0.55rem 0.75rem;

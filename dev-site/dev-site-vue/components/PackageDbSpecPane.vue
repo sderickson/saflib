@@ -51,13 +51,13 @@
           <div v-if="e.table" class="table-card">
             <div class="table-card__head">
               <code class="table-card__name">{{ e.table.tableName }}</code>
-              <button
-                type="button"
+              <a
+                href="#"
                 class="table-card__file"
-                @click="openFile(e.table.filePath)"
+                @click.prevent="openFile(e.table.filePath)"
               >
                 {{ fileName(e.table.filePath) }}
-              </button>
+              </a>
             </div>
             <p v-if="e.table.docstring" class="table-card__doc">
               {{ e.table.docstring }}
@@ -429,13 +429,11 @@ function openFile(path: string) {
   font-weight: 600;
 }
 .table-card__file {
-  border: none;
-  background: none;
-  padding: 0;
   color: rgb(var(--v-theme-primary));
   cursor: pointer;
   font: inherit;
   text-decoration: underline;
+  user-select: text;
 }
 .table-card__doc {
   margin: 0 0 0.5rem;
