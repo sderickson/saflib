@@ -35,3 +35,41 @@ export interface ExportEntry {
 export interface TestCaseEntry {
   fullName: string;
 }
+
+/** One static import / re-export-from found by {@link extractImports}. */
+export interface ImportEntry {
+  /** Module specifier string as written (`@scope/pkg/…` or relative). */
+  specifier: string;
+  /**
+   * Exported names pulled from the module. Empty for side-effect-only imports.
+   * `"default"` for default import; `"*"` for namespace / `export *`.
+   */
+  names: string[];
+}
+
+/** One column inside a drizzle table definition. */
+export interface DrizzleTableColumn {
+  propName: string;
+  sqlName: string;
+  /** Builder callee: `text`, `integer`, … */
+  typeKind: string;
+  /**
+   * First prose line of leading JSDoc on the column property (or a matching
+   * `*Entity` interface property in the same file), or `null` when absent.
+   */
+  docstring: string | null;
+}
+
+/** One drizzle `sqliteTable` / `pgTable` / `mysqlTable` found by {@link extractDrizzleTables}. */
+export interface DrizzleTableEntry {
+  /** Binding name of the const (`packageMetricsTable`). */
+  exportName: string;
+  /** SQL table name (first arg to `sqliteTable`). */
+  tableName: string;
+  /**
+   * First prose line of leading JSDoc on the table `const` declaration,
+   * or `null` when absent.
+   */
+  docstring: string | null;
+  columns: DrizzleTableColumn[];
+}

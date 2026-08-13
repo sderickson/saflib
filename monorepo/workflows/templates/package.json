@@ -10,10 +10,12 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "typecheck": "tsc -b"
+    "typecheck": "tsc -b",
+    "analyze": "analyze-package --package template-package"
   },
   "dependencies": {},
   "devDependencies": {
+    "@saflib/dev-tools": "*",
     "@saflib/vitest": "*",
     "@saflib/monorepo": "*"
   },

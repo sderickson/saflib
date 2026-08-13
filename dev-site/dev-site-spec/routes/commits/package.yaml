@@ -6,7 +6,8 @@ getCommitPackage:
   description: >
     Returns metrics, exports, and test cases for a single package at a commit.
     Prefer this over full commit detail for the checkout Spec panel — assembly
-    only touches that package's source blobs.
+    only touches that package's source blobs. For db packages, also includes
+    `dbInventory` (drizzle tables + query dirs).
   parameters:
     - name: hash
       in: path
@@ -67,6 +68,8 @@ getCommitPackage:
                     type: array
                     items:
                       $ref: "../../schemas/test-case.yaml"
+                  dbInventory:
+                    $ref: "../../schemas/db-inventory.yaml"
     "404":
       description: Commit or package not found
       content:

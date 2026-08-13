@@ -1,9 +1,9 @@
 import type { DbKey } from "@saflib/drizzle";
 import { resolveRef, log, GitCommandError } from "@saflib/git";
 import type { ReturnsError } from "@saflib/monorepo";
-import { analyzedCommitsDb } from "@saflib/dev-site-db/queries/analyzed-commits/index";
-import { packageMetricsDb } from "@saflib/dev-site-db/queries/package-metrics/index";
 
+import { getByHash } from "@saflib/dev-site-db/queries/analyzed-commits/get-by-hash";
+import { listByCommit } from "@saflib/dev-site-db/queries/package-metrics/list-by-commit";
 export interface CheckoutPackage {
   packageName: string;
   directory: string;
@@ -49,7 +49,7 @@ export async function getCheckoutStatus(
     };
   }
 
-  const existing = await analyzedCommitsDb.getByHash(dbKey, tip.hash);
+  const existing = await getByHash(dbKey, tip.hash);
   if (!existing.result) {
     return {
       result: {
@@ -63,7 +63,7 @@ export async function getCheckoutStatus(
     };
   }
 
-  const metrics = (await packageMetricsDb.listByCommit(dbKey, tip.hash)).result!;
+  const metrics = (await listByCommit(dbKey, tip.hash)).result!;
   return {
     result: {
       hash: tip.hash,

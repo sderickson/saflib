@@ -8,6 +8,10 @@ Provides utilities for getting information about the NPM workspace. The CLI tool
 
 See [Code Reference](./ref/index.md) for more info.
 
+## Package issues
+
+When clearing `saf-dev-site issues` / `analyze-package` findings (dead code, layout, oversized files), follow [Package issues triage](./package-issues.md).
+
 ## CLI
 
 These are fairly disparate tools, their only theme being they apply to all sorts of packages. These tools may be split out into separate packages later.

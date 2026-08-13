@@ -7,7 +7,6 @@ export const EXCLUDE_DIRS = new Set([
   "node_modules",
   ".git",
   "dist",
-  "build",
   "coverage",
   "playwright-report",
   "test-results",
@@ -38,7 +37,7 @@ export const SOURCE_EXTS = new Set([
   ".cjs",
 ]);
 
-/** Heuristic: *.test.* / *.spec.*, or under tests/ / __tests__/. */
+/** Heuristic: *.test.* / *.spec.* / *.fixtures.*, or under tests/ / __tests__/. */
 export function isTestSourcePath(relPosix: string, fileName: string): boolean {
   const lower = fileName.toLowerCase();
   if (
@@ -49,7 +48,9 @@ export function isTestSourcePath(relPosix: string, fileName: string): boolean {
     lower.endsWith(".spec.ts") ||
     lower.endsWith(".spec.tsx") ||
     lower.endsWith(".spec.js") ||
-    lower.endsWith(".spec.jsx")
+    lower.endsWith(".spec.jsx") ||
+    lower.endsWith(".fixtures.ts") ||
+    lower.endsWith(".fixtures.tsx")
   ) {
     return true;
   }
@@ -136,4 +137,20 @@ export function parsePackageName(packageJsonText: string): string | undefined {
   } catch {
     return undefined;
   }
+}
+
+/** Heuristic: npm name / directory looks like a drizzle db package. */
+export function looksLikeDbPackage(
+  packageName: string,
+  directory: string = "",
+): boolean {
+  const name = packageName.toLowerCase();
+  const dir = directory.replace(/\\/g, "/").toLowerCase();
+  return (
+    name.endsWith("-db") ||
+    name.includes("-db-") ||
+    /\/[^/]*-db$/.test(dir) ||
+    dir.endsWith("/service/db") ||
+    /(^|\/)db$/.test(dir)
+  );
 }

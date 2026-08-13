@@ -2,11 +2,9 @@ import express from "express";
 import { cronRouter } from "./routes/index.ts";
 import { createErrorMiddleware, createGlobalMiddleware } from "@saflib/express";
 import { cronDb } from "@saflib/cron-db";
-import type { DbKey } from "@saflib/drizzle";
+import type { DbKey, DbOptions } from "@saflib/drizzle";
 import { cronServiceStorage } from "./context.ts";
 import type { CronEnqueuer, JobsMap } from "./src/types.ts";
-import type { DbOptions } from "@saflib/drizzle";
-
 /**
  * Options to be passed when starting a cron service.
  */

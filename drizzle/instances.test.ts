@@ -233,4 +233,28 @@ describe("Instance Manager", () => {
 
     rmSync(dbPath, { force: true });
   });
+
+  it("readonly opens an existing on-disk db without writing", () => {
+    const dbPath = getTempDbPath("readonly");
+    const key1 = manager.connect({
+      onDisk: dbPath,
+      overrideTestDefault: true,
+    });
+    manager.disconnect(key1 as DbKey);
+    const hash1 = createHash("sha256").update(readFileSync(dbPath)).digest("hex");
+
+    const key2 = manager.connect({
+      onDisk: dbPath,
+      overrideTestDefault: true,
+      readonly: true,
+    });
+    const instance = manager.get(key2 as DbKey);
+    assert(instance);
+    expect(instance.select().from(schema.testTable).all()).toEqual([]);
+    manager.disconnect(key2 as DbKey);
+
+    const hash2 = createHash("sha256").update(readFileSync(dbPath)).digest("hex");
+    expect(hash2).toBe(hash1);
+    rmSync(dbPath, { force: true });
+  });
 });

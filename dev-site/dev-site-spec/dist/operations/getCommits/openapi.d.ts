@@ -145,6 +145,14 @@ export interface components {
              * @example Walk commits newest-first without checking out.
              */
             docstring: string | null;
+            /** @description Non-test product files that import this export (named import match, or whole-module import when names are `*` / default / empty). */
+            usedBy?: {
+                packageName: string;
+                /** @description Path within the importing package (no package-root prefix). */
+                filePath: string;
+                /** @description Repo-relative path for source links. */
+                repoPath: string;
+            }[];
         };
         /** @description One `describe`/`it`/`test` case extracted from a test file. `fullName` uses the `" > "` separator from `@saflib/parser` (e.g. `"outer > inner > does the thing"`). Optional `subject*` fields soft-link to an exported symbol by convention (suite title matching an adjacent or same-package export). */
         "test-case": {

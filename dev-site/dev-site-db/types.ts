@@ -10,7 +10,17 @@ export type {
 export type {
   BlobFactEntity,
   BlobExportFact,
+  BlobImportFact,
   BlobTestCaseFact,
+  BlobTableFact,
+  BlobTableColumnFact,
+  BlobSpecialty,
+} from "./schemas/blob-facts.ts";
+export {
+  blobFactExports,
+  blobFactImports,
+  blobFactTestCases,
+  blobFactTables,
 } from "./schemas/blob-facts.ts";
 
 export type InsertAnalyzedCommitParams = Omit<

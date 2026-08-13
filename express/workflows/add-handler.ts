@@ -212,7 +212,7 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
         * **Default tier:** mount \`create${kebabCaseToPascalCase(context.groupName)}Router\` (the group \`index.ts\` factory) via \`acquireRouterSlimRouteTest\` from \`testing/slim-route-test.ts\`, with \`beforeAll\`/\`afterAll\` and \`releaseSlimRouteTest\` in \`afterAll\`.
         * Do **not** import \`create…HttpApp\` from \`http.ts\` in handler tests — that mounts every product router (slow, heavy imports).
         * Multi-route chains: \`acquireRouterSlimRouteTestMulti([createA, createB])\` or a dedicated \`*.integration.test.ts\` with explicit scope.
-        * **Imports:** use package subpath exports (e.g. \`@scope/my-db/queries/<group>/<name>\` or \`…/queries/<group>/index\`, \`@scope/my-service-common/context\`) — never import from a package root. \`./queries/*\` / \`./routes/*\` cover new files; do not edit \`package.json\` exports when adding handlers.
+        * **Imports:** use package subpath exports (e.g. \`@scope/my-db/queries/<group>/<name>\`, \`@scope/my-service-common/context\`) — never import from a package root or group query barrels. \`./queries/*\` / \`./routes/*\` cover new files; do not edit \`package.json\` exports when adding handlers.
         
         Review ${context.docFiles?.testingGuide} for more details.`,
     })),

@@ -13,7 +13,6 @@ import { JobNotCancellableError, JobNotFoundError } from "../../errors.ts";
 import type { CreateJobParams } from "./create.ts";
 import { createJob } from "./create.ts";
 import { cancelByIdJob } from "./cancel-by-id.ts";
-import { jobQueries } from "./index.ts";
 
 const now = new Date("2026-08-06T12:00:00.000Z");
 const later = new Date("2026-08-06T12:01:00.000Z");
@@ -65,10 +64,6 @@ describe("cancelByIdJob", () => {
 
   beforeEach(() => {
     jobsDbManager.clearAllTablesForTests(dbKey);
-  });
-
-  it("exports the query on jobQueries", () => {
-    expect(jobQueries.cancelByIdJob).toBe(cancelByIdJob);
   });
 
   it.each(["pending", "retrying"] as const)(

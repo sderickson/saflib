@@ -1,0 +1,101 @@
+type: object
+description: Drizzle table inventory for one db package (schemas + query dirs).
+required:
+  - entities
+properties:
+  entities:
+    type: array
+    items:
+      type: object
+      required:
+        - entity
+        - usedByPackages
+        - queries
+      properties:
+        entity:
+          type: string
+          description: Query directory name or kebab form of table name (e.g. package-metrics).
+        table:
+          type: object
+          nullable: true
+          required:
+            - exportName
+            - tableName
+            - columns
+            - filePath
+          properties:
+            exportName:
+              type: string
+            tableName:
+              type: string
+            filePath:
+              type: string
+            docstring:
+              type: string
+              nullable: true
+              description: First prose line of leading JSDoc on the table const.
+            columns:
+              type: array
+              items:
+                type: object
+                required:
+                  - propName
+                  - sqlName
+                  - typeKind
+                properties:
+                  propName:
+                    type: string
+                  sqlName:
+                    type: string
+                  typeKind:
+                    type: string
+                  docstring:
+                    type: string
+                    nullable: true
+                    description: First prose line of leading JSDoc on the column.
+        usedByPackages:
+          type: array
+          description: Distinct packages (non-test) that import any query under this entity.
+          items:
+            type: string
+        queries:
+          type: array
+          description: Leaf query modules under queries/<entity>/ (excluding index and tests).
+          items:
+            type: object
+            required:
+              - fileName
+              - filePath
+              - usedBy
+            properties:
+              fileName:
+                type: string
+              filePath:
+                type: string
+              exportName:
+                type: string
+                nullable: true
+              signature:
+                type: string
+                nullable: true
+              docstring:
+                type: string
+                nullable: true
+              usedBy:
+                type: array
+                description: Non-test product files that import this leaf query module.
+                items:
+                  type: object
+                  required:
+                    - packageName
+                    - filePath
+                    - repoPath
+                  properties:
+                    packageName:
+                      type: string
+                    filePath:
+                      type: string
+                      description: Path within the importing package (no package-root prefix).
+                    repoPath:
+                      type: string
+                      description: Repo-relative path for source links.

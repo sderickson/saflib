@@ -25,9 +25,12 @@ describe("classify", () => {
   });
 
   describe("isTestSourcePath", () => {
-    it("detects *.test.* / *.spec.* and tests/ dirs", () => {
+    it("detects *.test.* / *.spec.* / *.fixtures.* and tests/ dirs", () => {
       expect(isTestSourcePath("a.test.ts", "a.test.ts")).toBe(true);
       expect(isTestSourcePath("b.spec.tsx", "b.spec.tsx")).toBe(true);
+      expect(
+        isTestSourcePath("x/m5.fixtures.ts", "m5.fixtures.ts"),
+      ).toBe(true);
       expect(isTestSourcePath("tests/foo.ts", "foo.ts")).toBe(true);
       expect(isTestSourcePath("src/foo.ts", "foo.ts")).toBe(false);
     });

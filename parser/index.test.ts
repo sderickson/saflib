@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { extractExports, extractTestCases } from "./index.ts";
+import {
+  extractDrizzleTables,
+  extractExports,
+  extractImports,
+  extractTestCases,
+} from "./index.ts";
 
 describe("extractExports", () => {
   it("collects function / class / interface / type / const / enum with signatures", () => {
@@ -191,5 +196,161 @@ describe("extractTestCases", () => {
   it("returns an empty array when there are no tests", () => {
     expect(extractTestCases("export const x = 1;\n")).toEqual([]);
     expect(extractTestCases("")).toEqual([]);
+  });
+});
+
+describe("extractDrizzleTables", () => {
+  it("extracts sqliteTable name, export binding, and columns", () => {
+    const source = `
+      import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+      export const packageMetricsTable = sqliteTable("package_metrics", {
+        id: text("id").primaryKey(),
+        commitHash: text("commit_hash").notNull(),
+        sourceFiles: integer("source_files").notNull(),
+      });
+    `;
+    expect(extractDrizzleTables(source)).toEqual([
+      {
+        exportName: "packageMetricsTable",
+        tableName: "package_metrics",
+        docstring: null,
+        columns: [
+          {
+            propName: "id",
+            sqlName: "id",
+            typeKind: "text",
+            docstring: null,
+          },
+          {
+            propName: "commitHash",
+            sqlName: "commit_hash",
+            typeKind: "text",
+            docstring: null,
+          },
+          {
+            propName: "sourceFiles",
+            sqlName: "source_files",
+            typeKind: "integer",
+            docstring: null,
+          },
+        ],
+      },
+    ]);
+  });
+
+  it("extracts multiple tables and ignores third-arg index callbacks", () => {
+    const source = `
+      export const a = sqliteTable("a", {
+        id: text("id").primaryKey(),
+      }, (table) => [index("a_idx").on(table.id)]);
+      export const b = sqliteTable("b", {
+        name: text("name"),
+      });
+    `;
+    expect(extractDrizzleTables(source)).toEqual([
+      {
+        exportName: "a",
+        tableName: "a",
+        docstring: null,
+        columns: [
+          {
+            propName: "id",
+            sqlName: "id",
+            typeKind: "text",
+            docstring: null,
+          },
+        ],
+      },
+      {
+        exportName: "b",
+        tableName: "b",
+        docstring: null,
+        columns: [
+          {
+            propName: "name",
+            sqlName: "name",
+            typeKind: "text",
+            docstring: null,
+          },
+        ],
+      },
+    ]);
+  });
+
+  it("returns empty when there are no table calls", () => {
+    expect(extractDrizzleTables("export const x = 1;\n")).toEqual([]);
+  });
+
+  it("extracts table and column JSDoc, with Entity interface fallback", () => {
+    const source = `
+      export interface PackageMetricsEntity {
+        id: string;
+        /** Number of source files in the package. */
+        source_files: number;
+      }
+
+      /** Per-package LOC and file counts for one analyzed commit. */
+      export const packageMetricsTable = sqliteTable("package_metrics", {
+        id: text("id").primaryKey(),
+        /** Commit that owns this row. */
+        commitHash: text("commit_hash").notNull(),
+        sourceFiles: integer("source_files").notNull(),
+      });
+    `;
+    expect(extractDrizzleTables(source)).toEqual([
+      {
+        exportName: "packageMetricsTable",
+        tableName: "package_metrics",
+        docstring: "Per-package LOC and file counts for one analyzed commit.",
+        columns: [
+          {
+            propName: "id",
+            sqlName: "id",
+            typeKind: "text",
+            docstring: null,
+          },
+          {
+            propName: "commitHash",
+            sqlName: "commit_hash",
+            typeKind: "text",
+            docstring: "Commit that owns this row.",
+          },
+          {
+            propName: "sourceFiles",
+            sqlName: "source_files",
+            typeKind: "integer",
+            docstring: "Number of source files in the package.",
+          },
+        ],
+      },
+    ]);
+  });
+});
+
+describe("extractImports", () => {
+  it("collects named, default, namespace, and side-effect imports", () => {
+    const source = `
+      import { createMatter, getByIdMatter as get } from "@pathclerk/daemon-db/queries/matter/create";
+      import def from "./local.ts";
+      import * as ns from "../other/index.ts";
+      import "./side-effect.ts";
+      export { x } from "@scope/pkg/queries/foo/bar";
+      export * from "./reexport.ts";
+    `;
+    expect(extractImports(source)).toEqual([
+      { specifier: "../other/index.ts", names: ["*"] },
+      { specifier: "./local.ts", names: ["default"] },
+      { specifier: "./reexport.ts", names: ["*"] },
+      { specifier: "./side-effect.ts", names: [] },
+      {
+        specifier: "@pathclerk/daemon-db/queries/matter/create",
+        names: ["createMatter", "getByIdMatter"],
+      },
+      { specifier: "@scope/pkg/queries/foo/bar", names: ["x"] },
+    ]);
+  });
+
+  it("returns empty when there are no imports", () => {
+    expect(extractImports("export const x = 1;\n")).toEqual([]);
   });
 });

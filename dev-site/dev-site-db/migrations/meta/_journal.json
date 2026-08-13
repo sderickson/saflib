@@ -8,6 +8,13 @@
       "when": 1786562936688,
       "tag": "0000_fancy_colonel_america",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1786650000000,
+      "tag": "0001_blob_facts_specialty",
+      "breakpoints": true
     }
   ]
 }

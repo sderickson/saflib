@@ -2,6 +2,8 @@ import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
 import type { packageName, directoryPath, PackageJson } from "./workspace-types.ts";
 
+export type { packageName, directoryPath, PackageJson };
+
 /**
  * Raw package.json files.
  */

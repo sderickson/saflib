@@ -1,11 +1,20 @@
 import type { DbKey } from "@saflib/drizzle";
 import type { ReturnsError } from "@saflib/monorepo";
 import { AnalyzedCommitNotFoundError } from "@saflib/dev-site-db/errors";
-import { analyzedCommitsDb } from "@saflib/dev-site-db/queries/analyzed-commits/index";
-import { packageMetricsDb } from "@saflib/dev-site-db/queries/package-metrics/index";
-import { assemblePackageSymbols } from "./analyze-commit.ts";
-import type { RepoReadOptions } from "./get-commit.ts";
 
+import { assemblePackageSymbols } from "./analyze-commit.ts";
+import { assemblePackageDbInventory } from "./assemble-package-db-inventory.ts";
+import {
+  assembleExportUsedBy,
+  exportUsedByKey,
+  type ExportUsedBy,
+} from "./assemble-export-used-by.ts";
+import { looksLikeDbPackage } from "./classify.ts";
+import type { RepoReadOptions } from "./get-commit.ts";
+import type { PackageDbInventory } from "./assemble-package-db-inventory.ts";
+
+import { getByHash } from "@saflib/dev-site-db/queries/analyzed-commits/get-by-hash";
+import { listByCommit } from "@saflib/dev-site-db/queries/package-metrics/list-by-commit";
 export interface CommitPackageDetail {
   commitHash: string;
   packageName: string;
@@ -22,6 +31,7 @@ export interface CommitPackageDetail {
     kind: string;
     signature: string | null;
     docstring: string | null;
+    usedBy: ExportUsedBy[];
   }>;
   testCases: Array<{
     packageName: string;
@@ -33,6 +43,7 @@ export interface CommitPackageDetail {
     subjectFilePath?: string;
     subjectConfidence?: "adjacent" | "package";
   }>;
+  dbInventory?: PackageDbInventory;
 }
 
 export type GetCommitPackageError = AnalyzedCommitNotFoundError;
@@ -52,12 +63,12 @@ export async function getCommitPackage(
   packageName: string,
   repo: RepoReadOptions,
 ): Promise<GetCommitPackageResult> {
-  const commitRes = await analyzedCommitsDb.getByHash(dbKey, hash);
+  const commitRes = await getByHash(dbKey, hash);
   if (commitRes.error) {
     return { error: commitRes.error };
   }
 
-  const metricsRes = await packageMetricsDb.listByCommit(dbKey, hash);
+  const metricsRes = await listByCommit(dbKey, hash);
   const metrics = (metricsRes.result ?? []).find(
     (m) => m.packageName === packageName,
   );
@@ -69,14 +80,44 @@ export async function getCommitPackage(
     };
   }
 
-  const symbols = await assemblePackageSymbols(dbKey, hash, packageName, {
+  const repoOpts = {
     repoRoot: repo.repoRoot,
     productRoot: repo.productRoot,
     mainRef: repo.mainRef,
-  });
+  };
 
-  const exports = symbols.result?.exports ?? [];
+  const symbols = await assemblePackageSymbols(dbKey, hash, packageName, repoOpts);
+
+  const rawExports = symbols.result?.exports ?? [];
   const testCases = symbols.result?.testCases ?? [];
+
+  let dbInventory: PackageDbInventory | undefined;
+  const isDb = looksLikeDbPackage(metrics.packageName, metrics.directory);
+  if (isDb) {
+    const inv = await assemblePackageDbInventory(
+      dbKey,
+      hash,
+      packageName,
+      repoOpts,
+    );
+    if (!inv.error) {
+      dbInventory = inv.result;
+    }
+  }
+
+  // Source Spec: reverse-index importers onto exports. Db packages use
+  // dbInventory.queries[].usedBy instead (same whole-repo walk).
+  let usedByMap = new Map<string, ExportUsedBy[]>();
+  if (!isDb) {
+    const usedByRes = await assembleExportUsedBy(
+      dbKey,
+      hash,
+      packageName,
+      rawExports,
+      repoOpts,
+    );
+    if (!usedByRes.error) usedByMap = usedByRes.result;
+  }
 
   return {
     result: {
@@ -88,13 +129,14 @@ export async function getCommitPackage(
       prodLines: metrics.prodLines,
       testLines: metrics.testLines,
       testFiles: metrics.testFiles,
-      exports: exports.map((e) => ({
+      exports: rawExports.map((e) => ({
         packageName: e.packageName,
         filePath: e.filePath,
         name: e.name,
         kind: e.kind,
         signature: e.signature,
         docstring: e.docstring,
+        usedBy: usedByMap.get(exportUsedByKey(e.filePath, e.name)) ?? [],
       })),
       testCases: testCases.map((t) => {
         if (!t.subjectName || !t.subjectConfidence || !t.subjectFilePath) {
@@ -115,6 +157,7 @@ export async function getCommitPackage(
           subjectConfidence: t.subjectConfidence,
         };
       }),
+      ...(dbInventory ? { dbInventory } : {}),
     },
   };
 }

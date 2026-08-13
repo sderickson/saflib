@@ -4,13 +4,8 @@ import {
   getSafContextWithAuth,
   verifyAssertion,
 } from "@saflib/node";
-import {
-  jobQueries,
-  JobSpawnCapExceededError,
-  type JobAuthority,
-  type JobAuthorityAssertion,
-  type JobRequest,
-} from "@saflib/jobs-db";
+import { JobSpawnCapExceededError, createJob } from "@saflib/jobs-db";
+import type { JobAuthority, JobAuthorityAssertion, JobRequest } from "@saflib/jobs-db";
 import type {
   JobsServiceRequestBody,
   JobsServiceResponseBody,
@@ -146,7 +141,7 @@ export const enqueueJobHandler = createHandler(async (req, res) => {
 
   const parentJobId = assertion.claims?.jobId ?? null;
 
-  const { result, error } = await jobQueries.createJob(ctx.dbKey, {
+  const { result, error } = await createJob(ctx.dbKey, {
     status: "pending",
     operationId: data.operationId,
     request,

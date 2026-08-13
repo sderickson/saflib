@@ -2,11 +2,12 @@ import { createHandler } from "@saflib/express";
 import type {
   JobsServiceResponseBody,
 } from "jobs-spec";
-import { jobQueries } from "@saflib/jobs-db";
+
 import type { JobStatus } from "@saflib/jobs-db";
 import { jobsServiceStorage } from "../../src/context.ts";
 import { mapJobToWire } from "../../src/mapJob.ts";
 
+import { listJob } from "@saflib/jobs-db";
 export const listJobsHandler = createHandler(async (req, res) => {
   const ctx = jobsServiceStorage.getStore()!;
   const query = req.query as {
@@ -20,7 +21,7 @@ export const listJobsHandler = createHandler(async (req, res) => {
     offset?: string;
   };
 
-  const { result } = await jobQueries.listJob(ctx.dbKey, {
+  const { result } = await listJob(ctx.dbKey, {
     status: query.status,
     operationId: query.operationId,
     userId: query.userId,

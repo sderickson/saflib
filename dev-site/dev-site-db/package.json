@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@saflib/drizzle": "*",
+    "@saflib/imports": "*",
     "@saflib/parser": "*",
     "drizzle-orm": "^0.45.2"
   },

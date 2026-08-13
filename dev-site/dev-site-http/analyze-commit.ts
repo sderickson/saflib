@@ -6,17 +6,22 @@ import {
   type GitCommit,
 } from "@saflib/git";
 import type { DbKey } from "@saflib/drizzle";
-import type { AnalyzedCommitRef } from "@saflib/dev-site-db/types";
-import type { InsertPackageMetricsParams } from "@saflib/dev-site-db/types";
-import type { InsertBlobFactParams } from "@saflib/dev-site-db/types";
-import type { BlobFactEntity } from "@saflib/dev-site-db/types";
-import { blobFactsDb } from "@saflib/dev-site-db/queries/blob-facts/index";
-import { extractExports, extractTestCases } from "@saflib/parser";
+import type { AnalyzedCommitRef, BlobFactEntity, InsertBlobFactParams, InsertPackageMetricsParams } from "@saflib/dev-site-db/types";
+import {
+  blobFactExports,
+  blobFactTestCases,
+} from "@saflib/dev-site-db/types";
+
+import {
+  ANALYZER_VERSION,
+  buildFileSpecialty,
+  countSourceLines,
+  type FileSpecialty,
+} from "@saflib/imports";
 import type { ReturnsError } from "@saflib/monorepo";
 import type { GitCommandError } from "@saflib/git";
 import { makeSubsystemReporters } from "@saflib/node";
 import {
-  countLines,
   isSourcePath,
   isTestSourcePath,
   packageForPath,
@@ -25,7 +30,9 @@ import {
 } from "./classify.ts";
 import { linkTestSubjects } from "./link-test-subjects.ts";
 
-export const ANALYZER_VERSION = "4";
+import { getByHashes } from "@saflib/dev-site-db/queries/blob-facts/get-by-hashes";
+import { upsertMany } from "@saflib/dev-site-db/queries/blob-facts/upsert-many";
+export { ANALYZER_VERSION };
 
 export interface AnalyzeCommitOptions {
   repoRoot: string;
@@ -39,7 +46,7 @@ export interface AnalyzedExport {
   packageName: string;
   filePath: string;
   name: string;
-  kind: InsertBlobFactParams["exports"][number]["kind"];
+  kind: InsertBlobFactParams["specialty"]["exports"][number]["kind"];
   signature: string | null;
   docstring: string | null;
 }
@@ -84,6 +91,11 @@ function stripProductRoot(path: string, productRoot: string): string {
   return path;
 }
 
+/** Parse exports/imports(/tests/tables) from source text — no git or DB. */
+export function parseSourceSpecialty(source: string): FileSpecialty {
+  return buildFileSpecialty(source);
+}
+
 function parseBlobFact(
   blobHash: string,
   source: string,
@@ -91,9 +103,8 @@ function parseBlobFact(
   return {
     blobHash,
     analyzerVersion: ANALYZER_VERSION,
-    lineCount: countLines(source),
-    exports: extractExports(source),
-    testCases: extractTestCases(source).map((t) => ({ fullName: t.fullName })),
+    lineCount: countSourceLines(source),
+    specialty: buildFileSpecialty(source),
     computedAt: new Date(),
   };
 }
@@ -108,7 +119,7 @@ export async function ensureBlobFacts(
   blobHashes: string[],
 ): Promise<ReturnsError<Map<string, BlobFactEntity>, GitCommandError>> {
   const unique = [...new Set(blobHashes)];
-  const existing = (await blobFactsDb.getByHashes(dbKey, unique)).result!;
+  const existing = (await getByHashes(dbKey, unique)).result!;
   const byHash = new Map<string, BlobFactEntity>();
   for (const row of existing) {
     if (row.analyzerVersion === ANALYZER_VERSION) {
@@ -142,7 +153,7 @@ export async function ensureBlobFacts(
     }
   }
   if (toUpsert.length > 0) {
-    await blobFactsDb.upsertMany(dbKey, toUpsert);
+    await upsertMany(dbKey, toUpsert);
     for (const row of toUpsert) {
       byHash.set(row.blobHash, row);
     }
@@ -249,7 +260,7 @@ export async function analyzeCommit(
     if (isTest) {
       agg.testFiles += 1;
       agg.testLines += fact.lineCount;
-      for (const tc of fact.testCases) {
+      for (const tc of blobFactTestCases(fact)) {
         testCasesOut.push({
           packageName: pkg.packageName,
           filePath: entry.path,
@@ -263,7 +274,7 @@ export async function analyzeCommit(
       }
     } else {
       agg.prodLines += fact.lineCount;
-      for (const exp of fact.exports) {
+      for (const exp of blobFactExports(fact)) {
         exportsOut.push({
           packageName: pkg.packageName,
           filePath: entry.path,
@@ -409,7 +420,7 @@ export async function assemblePackageSymbols(
     const fileName = entry.path.split("/").pop() ?? entry.path;
     const isTest = isTestSourcePath(entry.path, fileName);
     if (isTest) {
-      for (const tc of fact.testCases) {
+      for (const tc of blobFactTestCases(fact)) {
         testCasesOut.push({
           packageName,
           filePath: entry.path,
@@ -422,7 +433,7 @@ export async function assemblePackageSymbols(
         });
       }
     } else {
-      for (const exp of fact.exports) {
+      for (const exp of blobFactExports(fact)) {
         exportsOut.push({
           packageName,
           filePath: entry.path,

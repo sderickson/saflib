@@ -14,6 +14,9 @@
       "path": "../../git"
     },
     {
+      "path": "../../imports"
+    },
+    {
       "path": "../../monorepo"
     },
     {

@@ -11,8 +11,9 @@
       >
         <v-icon
           size="x-small"
-          :icon="node.kind === 'dir' ? 'mdi-folder-outline' : 'mdi-file-outline'"
+          :icon="navIcon(node)"
           class="file-nav__icon"
+          :title="navTitle(node)"
         />
         <span class="file-nav__label">{{ node.label }}</span>
       </button>
@@ -27,7 +28,11 @@
 </template>
 
 <script setup lang="ts">
-import type { TestFileNavNode, TestScope } from "../test-tree";
+import {
+  toModuleStem,
+  type TestFileNavNode,
+  type TestScope,
+} from "../test-tree";
 
 const props = defineProps<{
   nodes: TestFileNavNode[];
@@ -40,10 +45,34 @@ defineEmits<{
 
 const isSelected = (node: TestFileNavNode) => {
   if (props.selected.kind === "all") return false;
+  if (props.selected.kind === "dir") {
+    return node.kind === "dir" && props.selected.localPath === node.localPath;
+  }
   return (
-    props.selected.kind === node.kind &&
-    props.selected.localPath === node.localPath
+    node.kind === "file" &&
+    toModuleStem(props.selected.localPath) === node.localPath
   );
+};
+
+const navIcon = (node: TestFileNavNode): string => {
+  if (node.kind === "dir") return "mdi-folder-outline";
+  if (node.presence === "test") return "mdi-test-tube";
+  // Quiet mark for modules with no function/class/const exports (e.g. types.ts).
+  if (!node.hasCardExports) return "mdi-circle-small";
+  if (node.presence === "both") return "mdi-file-document-outline";
+  return "mdi-file-outline";
+};
+
+const navTitle = (node: TestFileNavNode): string => {
+  if (node.kind === "dir") return "Directory";
+  if (node.presence === "test") return "Test only";
+  if (!node.hasCardExports) {
+    return node.presence === "both"
+      ? "Types/constants + colocated test"
+      : "Source only (no functions)";
+  }
+  if (node.presence === "both") return "Source + colocated test";
+  return "Source only";
 };
 </script>
 

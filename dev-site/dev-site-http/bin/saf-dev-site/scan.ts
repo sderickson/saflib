@@ -2,6 +2,13 @@ import type { Command } from "commander";
 import { throwError } from "@saflib/monorepo";
 import { devSiteDb } from "@saflib/dev-site-db/instances";
 import { scanCommits } from "../../scan.ts";
+import {
+  resolveDbPath,
+  resolveMainRef,
+  resolveProductRoot,
+  resolveRepoRoot,
+} from "./defaults.ts";
+import { ensureCliDbAvailable } from "./ensure-db.ts";
 
 export const addScanCommand = (program: Command) => {
   program
@@ -9,20 +16,12 @@ export const addScanCommand = (program: Command) => {
     .description(
       "Ingest mainline commits newest-first from tip (plus feature-branch tips when --limit is unset).",
     )
-    .option(
-      "--repo-root <path>",
-      "Git repository root to analyze",
-      process.cwd(),
-    )
-    .option(
-      "--product-root <path>",
-      "Path prefix within the repo (e.g. products)",
-      "",
-    )
-    .option("--main-ref <ref>", "Main branch ref", "main")
+    .option("--repo-root <path>", "Git repository root to analyze")
+    .option("--product-root <path>", "Path prefix within the repo (e.g. daemon)")
+    .option("--main-ref <ref>", "Main branch ref")
     .option(
       "--db <path>",
-      "SQLite file path (created if missing). Defaults to an on-disk file under @saflib/dev-site-db/data/.",
+      "SQLite file path (created if missing; scan refuses if Docker api holds the shared daemon DB)",
     )
     .option(
       "--limit <n>",
@@ -30,21 +29,24 @@ export const addScanCommand = (program: Command) => {
       (v) => Number(v),
     )
     .action(async (opts: {
-      repoRoot: string;
-      productRoot: string;
-      mainRef: string;
+      repoRoot?: string;
+      productRoot?: string;
+      mainRef?: string;
       db?: string;
       limit?: number;
     }) => {
-      const dbKey = devSiteDb.connect({
-        onDisk: opts.db ?? true,
-      });
+      const repoRoot = resolveRepoRoot(opts.repoRoot);
+      const dbPath = resolveDbPath(repoRoot, opts.db);
+      ensureCliDbAvailable(dbPath, "write");
+      const productRoot = resolveProductRoot(opts.productRoot, dbPath);
+      const mainRef = resolveMainRef(opts.mainRef);
+      const dbKey = devSiteDb.connect({ onDisk: dbPath });
       try {
         const result = await throwError(
           scanCommits(dbKey, {
-            repoRoot: opts.repoRoot,
-            productRoot: opts.productRoot || undefined,
-            mainRef: opts.mainRef,
+            repoRoot,
+            productRoot: productRoot || undefined,
+            mainRef,
             limit: opts.limit,
           }),
         );

@@ -12,7 +12,6 @@ import { jobsDbManager } from "../../instances.ts";
 import type { CreateJobParams } from "./create.ts";
 import { createJob } from "./create.ts";
 import { recoverStalledJob } from "./recover-stalled.ts";
-import { jobQueries } from "./index.ts";
 
 const now = new Date("2026-08-06T12:00:00.000Z");
 const staleHeartbeat = new Date("2026-08-06T11:50:00.000Z");
@@ -64,10 +63,6 @@ describe("recoverStalledJob", () => {
 
   beforeEach(() => {
     jobsDbManager.clearAllTablesForTests(dbKey);
-  });
-
-  it("exports the query on jobQueries", () => {
-    expect(jobQueries.recoverStalledJob).toBe(recoverStalledJob);
   });
 
   it("returns an empty array when no ids are provided", async () => {

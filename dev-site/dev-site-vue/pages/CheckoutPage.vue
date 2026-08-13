@@ -89,11 +89,35 @@
             >
               <v-tab value="spec">Spec</v-tab>
               <v-tab value="docs">Docs</v-tab>
+              <v-tab value="issues">
+                Issues
+                <v-chip
+                  v-if="issueCount > 0"
+                  class="ml-2"
+                  size="x-small"
+                  color="warning"
+                  variant="flat"
+                >
+                  {{ issueCount }}
+                </v-chip>
+              </v-tab>
             </v-tabs>
 
             <v-tabs-window :model-value="tab">
               <v-tabs-window-item value="spec">
+                <PackageDbSpecPane
+                  v-if="selectedPkg.kind === 'db'"
+                  :subdomain="subdomain"
+                  :commit-hash="checkout.hash"
+                  :package-name="selectedPkg.packageName"
+                  :package-directory="selectedPkg.directory"
+                  :product-root="checkout.productRoot"
+                  :github-repo="githubRepo"
+                  :github-ref="githubRef"
+                  :local-repo-root="localRepoRoot"
+                />
                 <PackageSpecPane
+                  v-else
                   :subdomain="subdomain"
                   :commit-hash="checkout.hash"
                   :package-name="selectedPkg.packageName"
@@ -122,6 +146,19 @@
                   @navigate-package="onDocNavigatePackage"
                 />
               </v-tabs-window-item>
+
+              <v-tabs-window-item value="issues">
+                <PackageIssuesPane
+                  :subdomain="subdomain"
+                  :commit-hash="checkout.hash"
+                  :package-name="selectedPkg.packageName"
+                  :package-directory="selectedPkg.directory"
+                  :product-root="checkout.productRoot"
+                  :github-repo="githubRepo"
+                  :github-ref="githubRef"
+                  :local-repo-root="localRepoRoot"
+                />
+              </v-tabs-window-item>
             </v-tabs-window>
           </template>
           <p v-else class="text-body-2 text-medium-emphasis">
@@ -136,7 +173,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { useCheckout, useRepoFile, useScanMutation } from "../requests/queries";
+import { useCheckout, useCommitPackage, useRepoFile, useScanMutation } from "../requests/queries";
 import { classifyPackageKind } from "../package-kind";
 import {
   buildPackageDirTree,
@@ -148,11 +185,15 @@ import {
   packageSizeColor,
 } from "../package-size";
 import { parsePackageDescription } from "../scope-docs";
+import { collectPackageIssues } from "../package-issues";
 import { repoPathPrefix } from "../repo-paths";
 import type { TestScope } from "../test-tree";
+import { toModuleStem } from "../test-tree";
 import PackageDirTree from "../components/PackageDirTree.vue";
 import PackageDocsPane from "../components/PackageDocsPane.vue";
 import PackageSpecPane from "../components/PackageSpecPane.vue";
+import PackageDbSpecPane from "../components/PackageDbSpecPane.vue";
+import PackageIssuesPane from "../components/PackageIssuesPane.vue";
 
 const props = withDefaults(
   defineProps<{
@@ -211,15 +252,34 @@ const selectedPkg = computed(() =>
   packageRows.value.find((p) => p.packageName === selectedPackageName.value),
 );
 
-const tab = computed<"spec" | "docs">(() =>
-  route.query.tab === "docs" ? "docs" : "spec",
+const { data: packageDetailData } = useCommitPackage(
+  props.subdomain,
+  () => (checkout.value?.analyzed ? checkout.value.hash : ""),
+  () => selectedPackageName.value,
 );
+
+const issueCount = computed(() => {
+  const d = packageDetailData.value?.packageDetail;
+  const pkg = selectedPkg.value;
+  if (!d || !pkg) return 0;
+  return collectPackageIssues(d, {
+    packageDirectory: pkg.directory,
+    productRoot: checkout.value?.productRoot ?? "",
+  }).length;
+});
+
+const tab = computed<"spec" | "docs" | "issues">(() => {
+  const t = route.query.tab;
+  if (t === "docs" || t === "issues") return t;
+  return "spec";
+});
 
 const specScope = computed<TestScope>(() => {
   const file = route.query.file;
   const dir = route.query.dir;
   if (typeof file === "string" && file) {
-    return { kind: "file", localPath: file };
+    // Normalize legacy `foo.test.ts` URLs to the module stem.
+    return { kind: "file", localPath: toModuleStem(file) };
   }
   if (typeof dir === "string" && dir) {
     return { kind: "dir", localPath: dir };
@@ -243,7 +303,8 @@ const replaceQuery = (patch: Record<string, string | undefined>) => {
 };
 
 const setTab = (value: unknown) => {
-  const next = value === "docs" ? "docs" : "spec";
+  const next =
+    value === "docs" || value === "issues" ? value : "spec";
   replaceQuery({ tab: next === "spec" ? undefined : next });
 };
 
@@ -253,7 +314,7 @@ const setSpecScope = (scope: TestScope) => {
     return;
   }
   if (scope.kind === "file") {
-    replaceQuery({ file: scope.localPath, dir: undefined });
+    replaceQuery({ file: toModuleStem(scope.localPath), dir: undefined });
     return;
   }
   replaceQuery({ dir: scope.localPath, file: undefined });
@@ -357,8 +418,6 @@ const formatDateTime = (dateTimeString: string): string => {
   border: 1px solid rgba(var(--v-theme-on-surface), 0.12);
   border-radius: 6px;
   padding: 0.75rem 0.5rem;
-  max-height: 75vh;
-  overflow: auto;
 }
 .checkout-split__panel {
   min-width: 0;

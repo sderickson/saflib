@@ -3,19 +3,26 @@
     <li v-for="node in nodes" :key="node.id" class="test-tree__item">
       <article v-if="node.kind === 'suite'" class="suite-card">
         <header class="suite-card__head">
-          <button
+          <a
             v-if="node.subjectFilePath"
-            type="button"
+            href="#"
             class="suite-card__name suite-card__name--link"
-            @click="$emit('open-source', node.subjectFilePath!)"
+            @click.prevent="$emit('open-source', node.subjectFilePath!)"
           >
             {{ node.label }}
-          </button>
+          </a>
           <span v-else class="suite-card__name">{{ node.label }}</span>
+          <span
+            v-if="isUnusedExport(node)"
+            class="suite-card__unused"
+            title="No non-test importers found"
+          >
+            unused
+          </span>
         </header>
 
         <div
-          v-if="node.subjectSignature || node.subjectDocstring"
+          v-if="node.subjectSignature || node.subjectDocstring || (node.usedBy && node.usedBy.length) || isUnusedExport(node)"
           class="suite-card__spec"
         >
           <code v-if="node.subjectSignature" class="suite-card__sig">{{
@@ -23,6 +30,23 @@
           }}</code>
           <p v-if="node.subjectDocstring" class="suite-card__doc">
             {{ node.subjectDocstring }}
+          </p>
+          <ul v-if="node.usedBy?.length" class="suite-card__used">
+            <li
+              v-for="u in node.usedBy"
+              :key="u.packageName + ':' + u.repoPath"
+            >
+              <a
+                href="#"
+                class="suite-card__importer"
+                @click.prevent="$emit('open-source', u.repoPath)"
+              >
+                {{ u.packageName }}/{{ u.filePath }}
+              </a>
+            </li>
+          </ul>
+          <p v-else-if="isUnusedExport(node)" class="suite-card__no-importers">
+            No non-test importers
           </p>
         </div>
 
@@ -58,14 +82,14 @@
       </section>
 
       <section v-else-if="node.kind === 'file'" class="tree-section tree-section--file">
-        <button
+        <a
           v-if="node.sourcePath"
-          type="button"
+          href="#"
           class="tree-section__title tree-section__title--file tree-section__title--link"
-          @click="$emit('open-source', node.sourcePath!)"
+          @click.prevent="$emit('open-source', node.sourcePath!)"
         >
           {{ node.label }}
-        </button>
+        </a>
         <h4 v-else class="tree-section__title tree-section__title--file">
           {{ node.label }}
         </h4>
@@ -102,6 +126,12 @@ const testLeaves = (node: TestTreeNode) =>
 
 const nestedSuites = (node: TestTreeNode) =>
   node.children.filter((c) => c.kind === "suite");
+
+/** Export/query card with no recorded non-test importers. */
+const isUnusedExport = (node: TestTreeNode) =>
+  // `usedBy === null` is set on export/query cards with zero importers;
+  // orphan suites leave `usedBy` undefined.
+  Boolean(node.subjectFilePath && node.subjectName) && node.usedBy === null;
 </script>
 
 <style scoped>
@@ -141,13 +171,11 @@ const nestedSuites = (node: TestTreeNode) =>
 }
 .tree-section__title--link {
   display: inline;
-  border: 0;
-  background: transparent;
-  padding: 0;
+  color: inherit;
   cursor: pointer;
-  text-align: left;
   text-decoration: underline;
   text-decoration-color: rgba(var(--v-theme-on-surface), 0.25);
+  user-select: text;
 }
 .tree-section--file {
   margin-top: 0.85rem;
@@ -177,20 +205,31 @@ const nestedSuites = (node: TestTreeNode) =>
   border-bottom: 1px solid rgba(var(--v-theme-on-surface), 0.1);
   background: rgba(var(--v-theme-on-surface), 0.03);
 }
+.suite-card__unused {
+  margin-left: auto;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 600;
+  color: rgb(var(--v-theme-warning));
+  flex-shrink: 0;
+}
+.suite-card__no-importers {
+  margin: 0.45rem 0 0;
+  font-size: 0.75rem;
+  color: rgba(var(--v-theme-warning), 0.85);
+}
 .suite-card__name {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 0.9rem;
   font-weight: 600;
-  border: 0;
-  background: transparent;
-  padding: 0;
   color: inherit;
-  text-align: left;
 }
 .suite-card__name--link {
   cursor: pointer;
   text-decoration: underline;
   text-decoration-color: rgba(var(--v-theme-on-surface), 0.25);
+  user-select: text;
 }
 .suite-card__spec {
   padding: 0.55rem 0.75rem;
@@ -213,6 +252,22 @@ const nestedSuites = (node: TestTreeNode) =>
 }
 .suite-card__spec .suite-card__doc:first-child {
   margin-top: 0;
+}
+.suite-card__used {
+  list-style: disc;
+  margin: 0.45rem 0 0;
+  padding-left: 1.15rem;
+  display: grid;
+  gap: 0.15rem;
+}
+.suite-card__importer {
+  color: rgb(var(--v-theme-primary));
+  cursor: pointer;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.72rem;
+  text-decoration: underline;
+  word-break: break-all;
+  user-select: text;
 }
 .suite-card__tests {
   padding: 0.45rem 0.75rem 0.65rem;

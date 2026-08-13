@@ -11,10 +11,10 @@ import {
   type SafReporters,
   getServiceName,
 } from "@saflib/node";
-import { jobSettingsDb } from "@saflib/cron-db";
+
 import type { CronEnqueuer, JobConfig, JobsMap } from "./types.ts";
 import type { DbKey } from "@saflib/drizzle";
-import { JobSettingNotFoundError } from "@saflib/cron-db";
+import { JobSettingNotFoundError, getByName, setEnabled, setLastRunStatus } from "@saflib/cron-db";
 import { cronMetric, type CronLabels } from "./metrics.ts";
 
 async function executeJobWithHandling(
@@ -67,7 +67,7 @@ async function executeJobWithHandling(
       } finally {
         timer();
         try {
-          await jobSettingsDb.setLastRunStatus(dbKey, jobName, statusToSet);
+          await setLastRunStatus(dbKey, jobName, statusToSet);
         } catch (dbError) {
           logError(
             new Error(
@@ -94,13 +94,13 @@ export const startJobs = async (
   const { dbKey, enqueueJob } = config;
   const jobs: CronJob[] = [];
   for (const [jobName, jobConfig] of Object.entries(jobsToStart)) {
-    const { error } = await jobSettingsDb.getByName(dbKey, jobName);
+    const { error } = await getByName(dbKey, jobName);
     if (error) {
       if (error instanceof JobSettingNotFoundError) {
         log.warn(
           `Job setting for '${jobName}' not found in DB. Creating default (disabled).`,
         );
-        await jobSettingsDb.setEnabled(dbKey, jobName, false);
+        await setEnabled(dbKey, jobName, false);
       } else {
         log.error(
           `Failed to retrieve initial job setting for '${jobName}'. Skipping job.`,
@@ -115,7 +115,7 @@ export const startJobs = async (
         onTick: async () => {
           try {
             const { result: currentJobSetting, error } =
-              await jobSettingsDb.getByName(dbKey, jobName);
+              await getByName(dbKey, jobName);
             if (error) {
               logError(error);
               return;

@@ -2,8 +2,10 @@ import { describe, it, expect, vi, beforeAll, afterAll } from "vitest";
 import type { DbKey } from "@saflib/drizzle";
 import { JobSettingNotFoundError } from "../../errors.ts";
 import { throwError } from "@saflib/monorepo";
-import { jobSettingsDb, cronDb } from "@saflib/cron-db";
+import { cronDb } from "@saflib/cron-db";
 
+import { setEnabled } from "./set-enabled.ts";
+import { getByName } from "./get-by-name.ts";
 describe("getByName", () => {
   let dbKey: DbKey;
   beforeAll(() => {
@@ -20,14 +22,14 @@ describe("getByName", () => {
 
   it("should return the full job setting for an existing job", async () => {
     const jobName = "test-job-get-by-name";
-    const { result: createdJob } = await jobSettingsDb.setEnabled(
+    const { result: createdJob } = await setEnabled(
       dbKey,
       jobName,
       true,
     ); // Use setEnabledByName to create the job
 
     const retrievedJob = await throwError(
-      jobSettingsDb.getByName(dbKey, jobName),
+      getByName(dbKey, jobName),
     );
     expect(retrievedJob).toEqual(createdJob);
     expect(retrievedJob.jobName).toBe(jobName);
@@ -36,7 +38,7 @@ describe("getByName", () => {
 
   it("should throw JobSettingNotFoundError for a non-existent job", async () => {
     const jobName = "non-existent-job";
-    const { error } = await jobSettingsDb.getByName(dbKey, jobName);
+    const { error } = await getByName(dbKey, jobName);
     expect(error).toBeInstanceOf(JobSettingNotFoundError);
   });
 });

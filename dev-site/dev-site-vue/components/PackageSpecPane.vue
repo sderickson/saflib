@@ -4,7 +4,7 @@
     <v-alert v-if="error" type="error" class="mb-2">{{ error.message }}</v-alert>
 
     <div v-if="!isLoading && !fileNav.length" class="text-body-2 text-medium-emphasis">
-      No test cases found for this package.
+      No source or test modules found for this package.
     </div>
 
     <div v-else-if="fileNav.length" class="spec-split">
@@ -16,7 +16,7 @@
           @click="setScope({ kind: 'all' })"
         >
           <v-icon size="x-small" icon="mdi-folder-outline" />
-          <span>All tests</span>
+          <span>All modules</span>
         </button>
         <TestFileNav
           :nodes="fileNav"
@@ -34,18 +34,21 @@
           "
         >
           <h3 class="scope-header__title">
-            <button
-              v-if="scope.kind === 'file' && scopeTestRepoPath"
-              type="button"
+            <a
+              v-if="scope.kind === 'file' && scopeOpenPath"
+              href="#"
               class="scope-header__link"
-              @click="openFile(scopeTestRepoPath)"
+              @click.prevent="openFile(scopeOpenPath)"
             >
               {{ scopeFileName }}
-            </button>
+            </a>
             <template v-else>
               {{ scope.kind === "dir" ? `${scope.localPath}/` : scopeFileName }}
             </template>
           </h3>
+          <p v-if="scopePresenceLabel" class="scope-header__presence">
+            {{ scopePresenceLabel }}
+          </p>
           <p v-if="scopeSummary" class="scope-header__summary">
             {{ scopeSummary }}
           </p>
@@ -57,45 +60,17 @@
           </p>
         </header>
         <div v-else class="scope-header scope-header--all">
-          <h3 class="scope-header__title">All test files</h3>
+          <h3 class="scope-header__title">All modules</h3>
         </div>
 
         <TestTree
-          v-if="testTree.length"
-          :nodes="testTree"
+          v-if="specTree.length"
+          :nodes="specTree"
           @open-source="openFile"
         />
         <p v-else class="text-body-2 text-medium-emphasis">
-          No suites in this scope.
+          No exports or tests in this scope.
         </p>
-
-        <div v-if="scope.kind === 'all' && unlinkedExports.length" class="unlinked mt-6">
-          <div class="text-caption text-medium-emphasis mb-2">
-            Functions &amp; classes without a matching suite
-          </div>
-          <ul class="unlinked__list">
-            <li
-              v-for="exp in unlinkedExports"
-              :key="`${exp.filePath}:${exp.name}:${exp.kind}`"
-              class="unlinked__item"
-            >
-              <button
-                type="button"
-                class="unlinked__btn"
-                @click="openFile(exp.filePath)"
-              >
-                <span class="unlinked__name">{{ exp.name }}</span>
-                <span class="unlinked__kind">{{ exp.kind }}</span>
-                <code v-if="exp.signature" class="unlinked__sig">{{
-                  exp.signature
-                }}</code>
-              </button>
-              <div v-if="exp.docstring" class="unlinked__doc">
-                {{ exp.docstring }}
-              </div>
-            </li>
-          </ul>
-        </div>
       </section>
     </div>
   </div>
@@ -105,8 +80,10 @@
 import { computed } from "vue";
 import { useCommitPackage, useFirstRepoFile } from "../requests/queries";
 import {
-  buildPackageTestTree,
-  buildTestFileNav,
+  buildModuleFileNav,
+  buildPackageSpecTree,
+  findModuleNavNode,
+  toModuleStem,
   type TestScope,
 } from "../test-tree";
 import {
@@ -118,8 +95,6 @@ import { repoPathPrefix } from "../repo-paths";
 import { openSource } from "../source-links";
 import TestTree from "./TestTree.vue";
 import TestFileNav from "./TestFileNav.vue";
-
-const SPEC_EXPORT_KINDS = new Set(["function", "class"]);
 
 const props = withDefaults(
   defineProps<{
@@ -162,6 +137,23 @@ const pkgPrefix = computed(() =>
   repoPathPrefix(props.productRoot, props.packageDirectory),
 );
 
+const fileNav = computed(() => {
+  const d = detail.value;
+  if (!d) return [];
+  return buildModuleFileNav(
+    d.exports ?? [],
+    d.testCases,
+    d.packageName,
+    props.packageDirectory,
+    props.productRoot ?? "",
+  );
+});
+
+const selectedModule = computed(() => {
+  if (scope.value.kind !== "file") return null;
+  return findModuleNavNode(fileNav.value, scope.value.localPath);
+});
+
 const scopeDocPaths = computed(() => {
   const prefix = pkgPrefix.value;
   const s = scope.value;
@@ -170,8 +162,8 @@ const scopeDocPaths = computed(() => {
     const base = [prefix, s.localPath].filter(Boolean).join("/");
     return [`${base}/README.md`, `${base}/readme.md`];
   }
-  const testRepoPath = [prefix, s.localPath].filter(Boolean).join("/");
-  return fileScopeDocCandidates(testRepoPath);
+  const stemRepo = [prefix, toModuleStem(s.localPath)].filter(Boolean).join("/");
+  return fileScopeDocCandidates(stemRepo);
 });
 
 const {
@@ -196,26 +188,24 @@ const missingScopeHint = computed(() => {
     return "Add a README.md in this directory to describe what belongs here.";
   }
   if (scope.value.kind === "file") {
-    return "Add a file-level /** … */ on the adjacent source (or this test) to describe its scope.";
+    return "Add a leading /** … */ on the source (or colocated test) to describe this module.";
   }
   return "";
 });
 
-const fileNav = computed(() => {
-  const d = detail.value;
-  if (!d) return [];
-  return buildTestFileNav(
-    d.testCases,
-    d.packageName,
-    props.packageDirectory,
-    props.productRoot ?? "",
-  );
+const scopePresenceLabel = computed(() => {
+  const p = selectedModule.value?.presence;
+  if (p === "both") return "Source + colocated test";
+  if (p === "test") return "Test only";
+  if (p === "source") return "Source only";
+  return "";
 });
 
-const testTree = computed(() => {
+const specTree = computed(() => {
   const d = detail.value;
   if (!d) return [];
-  return buildPackageTestTree(
+  return buildPackageSpecTree(
+    d.exports ?? [],
     d.testCases,
     d.packageName,
     props.packageDirectory,
@@ -226,29 +216,15 @@ const testTree = computed(() => {
 
 const scopeFileName = computed(() => {
   if (scope.value.kind !== "file") return "";
-  const parts = scope.value.localPath.split("/");
-  return parts[parts.length - 1] ?? scope.value.localPath;
+  const stem = toModuleStem(scope.value.localPath);
+  const parts = stem.split("/");
+  return parts[parts.length - 1] ?? stem;
 });
 
-const scopeTestRepoPath = computed(() => {
-  if (scope.value.kind !== "file") return "";
-  return [pkgPrefix.value, scope.value.localPath].filter(Boolean).join("/");
-});
-
-const linkedSubjectNames = computed(() => {
-  const names = new Set<string>();
-  for (const t of detail.value?.testCases ?? []) {
-    if (t.subjectName) names.add(t.subjectName);
-  }
-  return names;
-});
-
-const unlinkedExports = computed(() => {
-  const linked = linkedSubjectNames.value;
-  return (detail.value?.exports ?? [])
-    .filter((e) => SPEC_EXPORT_KINDS.has(e.kind) && !linked.has(e.name))
-    .slice()
-    .sort((a, b) => a.name.localeCompare(b.name));
+const scopeOpenPath = computed(() => {
+  const mod = selectedModule.value;
+  if (!mod) return "";
+  return mod.sourceRepoPath || mod.testRepoPath || "";
 });
 
 const openFile = (path: string) => {
@@ -276,8 +252,6 @@ const openFile = (path: string) => {
   border: 1px solid rgba(var(--v-theme-on-surface), 0.12);
   border-radius: 6px;
   padding: 0.5rem 0.35rem;
-  max-height: 60vh;
-  overflow: auto;
 }
 .spec-all {
   display: flex;
@@ -316,16 +290,11 @@ const openFile = (path: string) => {
   color: inherit;
 }
 .scope-header__link {
-  border: 0;
-  background: transparent;
-  padding: 0;
-  margin: 0;
-  font: inherit;
   color: inherit;
   cursor: pointer;
   text-decoration: underline;
   text-decoration-color: rgba(var(--v-theme-on-surface), 0.25);
-  text-align: left;
+  user-select: text;
 }
 .scope-header--file .scope-header__title {
   font-size: 0.95rem;
@@ -337,6 +306,13 @@ const openFile = (path: string) => {
   font-size: 0.95rem;
   font-weight: 500;
   color: rgba(var(--v-theme-on-surface), 0.65);
+}
+.scope-header__presence {
+  margin: 0.25rem 0 0;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: rgba(var(--v-theme-on-surface), 0.5);
 }
 .scope-header__summary {
   margin: 0.4rem 0 0;
@@ -351,48 +327,5 @@ const openFile = (path: string) => {
   margin: 0.35rem 0 0;
   font-size: 0.75rem;
   color: rgba(var(--v-theme-on-surface), 0.45);
-}
-.unlinked__list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-.unlinked__item {
-  margin: 0.35rem 0 0.6rem;
-}
-.unlinked__btn {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 0.4rem;
-  border: 0;
-  background: transparent;
-  padding: 0;
-  cursor: pointer;
-  color: inherit;
-  font: inherit;
-  text-align: left;
-}
-.unlinked__name {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-weight: 600;
-  font-size: 0.875rem;
-}
-.unlinked__kind {
-  font-size: 0.65rem;
-  text-transform: uppercase;
-  color: rgba(var(--v-theme-on-surface), 0.45);
-}
-.unlinked__sig {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 0.75rem;
-  color: rgba(var(--v-theme-on-surface), 0.55);
-  font-weight: 400;
-}
-.unlinked__doc {
-  margin-top: 0.15rem;
-  font-size: 0.85rem;
-  color: rgba(var(--v-theme-on-surface), 0.7);
-  max-width: 48rem;
 }
 </style>

@@ -13,7 +13,7 @@ export interface paths {
         };
         /**
          * Package-scoped symbols for one analyzed commit
-         * @description Returns metrics, exports, and test cases for a single package at a commit. Prefer this over full commit detail for the checkout Spec panel — assembly only touches that package's source blobs.
+         * @description Returns metrics, exports, and test cases for a single package at a commit. Prefer this over full commit detail for the checkout Spec panel — assembly only touches that package's source blobs. For db packages, also includes `dbInventory` (drizzle tables + query dirs).
          */
         get: operations["getCommitPackage"];
         put?: never;
@@ -60,6 +60,14 @@ export interface components {
              * @example Walk commits newest-first without checking out.
              */
             docstring: string | null;
+            /** @description Non-test product files that import this export (named import match, or whole-module import when names are `*` / default / empty). */
+            usedBy?: {
+                packageName: string;
+                /** @description Path within the importing package (no package-root prefix). */
+                filePath: string;
+                /** @description Repo-relative path for source links. */
+                repoPath: string;
+            }[];
         };
         /** @description One `describe`/`it`/`test` case extracted from a test file. `fullName` uses the `" > "` separator from `@saflib/parser` (e.g. `"outer > inner > does the thing"`). Optional `subject*` fields soft-link to an exported symbol by convention (suite title matching an adjacent or same-package export). */
         "test-case": {
@@ -100,6 +108,45 @@ export interface components {
              * @enum {string}
              */
             subjectConfidence?: "adjacent" | "package";
+        };
+        /** @description Drizzle table inventory for one db package (schemas + query dirs). */
+        "db-inventory": {
+            entities: {
+                /** @description Query directory name or kebab form of table name (e.g. package-metrics). */
+                entity: string;
+                table?: {
+                    exportName: string;
+                    tableName: string;
+                    filePath: string;
+                    /** @description First prose line of leading JSDoc on the table const. */
+                    docstring?: string | null;
+                    columns: {
+                        propName: string;
+                        sqlName: string;
+                        typeKind: string;
+                        /** @description First prose line of leading JSDoc on the column. */
+                        docstring?: string | null;
+                    }[];
+                } | null;
+                /** @description Distinct packages (non-test) that import any query under this entity. */
+                usedByPackages: string[];
+                /** @description Leaf query modules under queries/<entity>/ (excluding index and tests). */
+                queries: {
+                    fileName: string;
+                    filePath: string;
+                    exportName?: string | null;
+                    signature?: string | null;
+                    docstring?: string | null;
+                    /** @description Non-test product files that import this leaf query module. */
+                    usedBy: {
+                        packageName: string;
+                        /** @description Path within the importing package (no package-root prefix). */
+                        filePath: string;
+                        /** @description Repo-relative path for source links. */
+                        repoPath: string;
+                    }[];
+                }[];
+            }[];
         };
         error: {
             /** @description A short, machine-readable error code, for when HTTP status codes are not sufficient. */
@@ -150,6 +197,7 @@ export interface operations {
                             testFiles: number;
                             exports: components["schemas"]["export-entry"][];
                             testCases: components["schemas"]["test-case"][];
+                            dbInventory?: components["schemas"]["db-inventory"];
                         };
                     };
                 };

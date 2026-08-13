@@ -19,7 +19,10 @@
       "path": "../commander"
     },
     {
-      "path": "../dev-tools"
+      "path": "../monorepo"
+    },
+    {
+      "path": "../parser"
     }
   ],
   "compilerOptions": {

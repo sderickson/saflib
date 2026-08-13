@@ -50,6 +50,21 @@ export interface components {
                 added: components["schemas"]["test-case"][];
                 removed: components["schemas"]["test-case"][];
             };
+            /** @description Structural drizzle table/column deltas across both commits. */
+            dbSchemas: {
+                tables: {
+                    added: components["schemas"]["db-schema-table"][];
+                    removed: components["schemas"]["db-schema-table"][];
+                };
+                columns: {
+                    added: components["schemas"]["db-schema-column"][];
+                    removed: components["schemas"]["db-schema-column"][];
+                    changed: {
+                        before: components["schemas"]["db-schema-column"];
+                        after: components["schemas"]["db-schema-column"];
+                    }[];
+                };
+            };
         };
         /** @description Per-package file/LOC inventory at a single commit. */
         "package-metrics": {
@@ -106,6 +121,14 @@ export interface components {
              * @example Walk commits newest-first without checking out.
              */
             docstring: string | null;
+            /** @description Non-test product files that import this export (named import match, or whole-module import when names are `*` / default / empty). */
+            usedBy?: {
+                packageName: string;
+                /** @description Path within the importing package (no package-root prefix). */
+                filePath: string;
+                /** @description Repo-relative path for source links. */
+                repoPath: string;
+            }[];
         };
         /** @description One `describe`/`it`/`test` case extracted from a test file. `fullName` uses the `" > "` separator from `@saflib/parser` (e.g. `"outer > inner > does the thing"`). Optional `subject*` fields soft-link to an exported symbol by convention (suite title matching an adjacent or same-package export). */
         "test-case": {
@@ -146,6 +169,23 @@ export interface components {
              * @enum {string}
              */
             subjectConfidence?: "adjacent" | "package";
+        };
+        /** @description A drizzle table identity for schema diffs. */
+        "db-schema-table": {
+            packageName: string;
+            tableName: string;
+            exportName: string;
+            filePath: string;
+            docstring?: string | null;
+        };
+        /** @description A drizzle column identity for schema diffs. */
+        "db-schema-column": {
+            packageName: string;
+            tableName: string;
+            sqlName: string;
+            typeKind: string;
+            propName: string;
+            docstring?: string | null;
         };
         error: {
             /** @description A short, machine-readable error code, for when HTTP status codes are not sufficient. */

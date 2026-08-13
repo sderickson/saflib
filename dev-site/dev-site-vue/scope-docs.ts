@@ -14,9 +14,18 @@ export function adjacentSourcePaths(testFilePath: string): string[] {
   return exts.map((ext) => `${stem}${ext}`);
 }
 
-/** Repo paths to try for a test-file scope summary (adjacent first, then the test). */
-export function fileScopeDocCandidates(testRepoPath: string): string[] {
-  return [...adjacentSourcePaths(testRepoPath), testRepoPath];
+/** Repo paths to try for a module-stem scope summary (source first, then test). */
+export function fileScopeDocCandidates(stemOrTestPath: string): string[] {
+  if (TEST_FILE_RE.test(stemOrTestPath)) {
+    return [...adjacentSourcePaths(stemOrTestPath), stemOrTestPath];
+  }
+  // Module stem (no extension) or plain source path.
+  const stem = stemOrTestPath.replace(/\.(tsx?|jsx?|mjs|cjs)$/i, "");
+  const exts = [".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs"];
+  return [
+    ...exts.map((ext) => `${stem}${ext}`),
+    ...exts.flatMap((ext) => [`${stem}.test${ext}`, `${stem}.spec${ext}`]),
+  ];
 }
 
 /**

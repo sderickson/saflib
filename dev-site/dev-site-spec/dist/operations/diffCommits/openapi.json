@@ -161,6 +161,77 @@
               "added",
               "removed"
             ]
+          },
+          "dbSchemas": {
+            "type": "object",
+            "description": "Structural drizzle table/column deltas across both commits.",
+            "properties": {
+              "tables": {
+                "type": "object",
+                "required": [
+                  "added",
+                  "removed"
+                ],
+                "properties": {
+                  "added": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/db-schema-table"
+                    }
+                  },
+                  "removed": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/db-schema-table"
+                    }
+                  }
+                }
+              },
+              "columns": {
+                "type": "object",
+                "required": [
+                  "added",
+                  "removed",
+                  "changed"
+                ],
+                "properties": {
+                  "added": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/db-schema-column"
+                    }
+                  },
+                  "removed": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/db-schema-column"
+                    }
+                  },
+                  "changed": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": [
+                        "before",
+                        "after"
+                      ],
+                      "properties": {
+                        "before": {
+                          "$ref": "#/components/schemas/db-schema-column"
+                        },
+                        "after": {
+                          "$ref": "#/components/schemas/db-schema-column"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "required": [
+              "tables",
+              "columns"
+            ]
           }
         },
         "required": [
@@ -168,7 +239,8 @@
           "toHash",
           "packageMetrics",
           "exports",
-          "testCases"
+          "testCases",
+          "dbSchemas"
         ]
       },
       "package-metrics": {
@@ -264,6 +336,31 @@
             "nullable": true,
             "description": "First prose line of the leading JSDoc on the export declaration. Null when absent or for bare re-exports (`export { a }`).\n",
             "example": "Walk commits newest-first without checking out."
+          },
+          "usedBy": {
+            "type": "array",
+            "description": "Non-test product files that import this export (named import match, or whole-module import when names are `*` / default / empty).\n",
+            "items": {
+              "type": "object",
+              "required": [
+                "packageName",
+                "filePath",
+                "repoPath"
+              ],
+              "properties": {
+                "packageName": {
+                  "type": "string"
+                },
+                "filePath": {
+                  "type": "string",
+                  "description": "Path within the importing package (no package-root prefix)."
+                },
+                "repoPath": {
+                  "type": "string",
+                  "description": "Repo-relative path for source links."
+                }
+              }
+            }
           }
         },
         "required": [
@@ -329,6 +426,66 @@
           "filePath",
           "fullName"
         ]
+      },
+      "db-schema-table": {
+        "type": "object",
+        "description": "A drizzle table identity for schema diffs.",
+        "required": [
+          "packageName",
+          "tableName",
+          "exportName",
+          "filePath"
+        ],
+        "properties": {
+          "packageName": {
+            "type": "string"
+          },
+          "tableName": {
+            "type": "string"
+          },
+          "exportName": {
+            "type": "string"
+          },
+          "filePath": {
+            "type": "string"
+          },
+          "docstring": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "db-schema-column": {
+        "type": "object",
+        "description": "A drizzle column identity for schema diffs.",
+        "required": [
+          "packageName",
+          "tableName",
+          "sqlName",
+          "typeKind",
+          "propName"
+        ],
+        "properties": {
+          "packageName": {
+            "type": "string"
+          },
+          "tableName": {
+            "type": "string"
+          },
+          "sqlName": {
+            "type": "string"
+          },
+          "typeKind": {
+            "type": "string"
+          },
+          "propName": {
+            "type": "string"
+          },
+          "docstring": {
+            "type": "string",
+            "nullable": true
+          }
+        }
       },
       "error": {
         "type": "object",

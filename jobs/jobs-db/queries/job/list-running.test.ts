@@ -12,7 +12,6 @@ import { jobsDbManager } from "../../instances.ts";
 import type { CreateJobParams } from "./create.ts";
 import { createJob } from "./create.ts";
 import { listRunningJobsJob } from "./list-running.ts";
-import { jobQueries } from "./index.ts";
 
 const now = new Date("2026-08-06T12:00:00.000Z");
 
@@ -63,10 +62,6 @@ describe("listRunningJobsJob", () => {
 
   beforeEach(() => {
     jobsDbManager.clearAllTablesForTests(dbKey);
-  });
-
-  it("exports the query on jobQueries", () => {
-    expect(jobQueries.listRunningJobsJob).toBe(listRunningJobsJob);
   });
 
   it("returns only running jobs", async () => {

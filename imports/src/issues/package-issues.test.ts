@@ -1,0 +1,106 @@
+import { describe, expect, it } from "vitest";
+import { collectPackageIssues } from "./package-issues.ts";
+
+describe("collectPackageIssues", () => {
+  it("lists card exports with empty usedBy as dead code", () => {
+    const issues = collectPackageIssues(
+      {
+        packageName: "@pkg",
+        exports: [
+          {
+            name: "usedFn",
+            kind: "function",
+            filePath: "pkg/a.ts",
+            usedBy: [
+              {
+                packageName: "@other",
+                filePath: "x.ts",
+                repoPath: "other/x.ts",
+              },
+            ],
+          },
+          {
+            name: "deadFn",
+            kind: "function",
+            filePath: "pkg/b.ts",
+            usedBy: [],
+          },
+          {
+            name: "OnlyType",
+            kind: "type",
+            filePath: "pkg/t.ts",
+            usedBy: [],
+          },
+        ],
+      },
+      { packageDirectory: "pkg" },
+    );
+
+    expect(issues).toHaveLength(1);
+    expect(issues[0]!.name).toBe("deadFn");
+    expect(issues[0]!.kind).toBe("dead-code");
+    expect(issues[0]!.filePath).toBe("b.ts");
+  });
+
+  it("lists same-file-only exports", () => {
+    const issues = collectPackageIssues(
+      {
+        packageName: "@pkg",
+        exports: [
+          {
+            name: "helper",
+            kind: "function",
+            filePath: "pkg/a.ts",
+            usedBy: [
+              {
+                packageName: "@pkg",
+                filePath: "a.ts",
+                repoPath: "pkg/a.ts",
+              },
+            ],
+          },
+        ],
+      },
+      { packageDirectory: "pkg" },
+    );
+
+    expect(issues).toHaveLength(1);
+    expect(issues[0]!.kind).toBe("same-file-only-export");
+    expect(issues[0]!.name).toBe("helper");
+  });
+
+  it("lists unused db queries", () => {
+    const issues = collectPackageIssues({
+      packageName: "@pkg-db",
+      dbInventory: {
+        entities: [
+          {
+            entity: "matter",
+            queries: [
+              {
+                fileName: "create.ts",
+                filePath: "db/queries/matter/create.ts",
+                exportName: "createMatter",
+                usedBy: [],
+              },
+              {
+                fileName: "get.ts",
+                filePath: "db/queries/matter/get.ts",
+                exportName: "getMatter",
+                usedBy: [
+                  {
+                    packageName: "@http",
+                    filePath: "r.ts",
+                    repoPath: "http/r.ts",
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    });
+
+    expect(issues.map((i) => i.name)).toEqual(["createMatter"]);
+  });
+});

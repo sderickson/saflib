@@ -51,6 +51,7 @@ function isExportableTs(name: string): boolean {
   if (!name.endsWith(".ts") && !name.endsWith(".tsx")) return false;
   if (name.endsWith(".d.ts")) return false;
   if (/\.(test|spec)\.(ts|tsx)$/.test(name)) return false;
+  if (/\.fixtures\.(ts|tsx)$/.test(name)) return false;
   return true;
 }
 
@@ -124,13 +125,56 @@ export function computeExportsMap(pkgDir: string): ExportsMap {
       exportKey = ".";
     } else {
       // Keep `/index` for nested barrels so imports are explicit
-      // (`@scope/pkg/queries/foo/index`) and match `./queries/*` → `./queries/*.ts`.
+      // Prefer leaf query paths (`@scope/pkg/queries/foo/create`) that match
+      // `./queries/*` → `./queries/*.ts`. Do not emit group `index` barrels.
       exportKey = "./" + withoutExt;
     }
     map[exportKey] = "./" + rel;
   }
 
-  return sortExportsMap({ ...map, ...readExportsAliases(pkgDir) });
+  return sortExportsMap(map);
+}
+
+/**
+ * Leaf export keys must mirror disk paths (no `./foo` → `./lib/foo.ts` remaps).
+ * Pattern keys (`*`) are skipped here — validated by pattern coverage.
+ */
+export function leafExportRemapDiffs(map: ExportsMap): string[] {
+  const diffs: string[] = [];
+  for (const [key, value] of Object.entries(map)) {
+    if (key.includes("*")) continue;
+    if (typeof value !== "string" || !value.startsWith("./")) {
+      diffs.push(`remap: ${key} → ${value} (target must be a relative ./ path)`);
+      continue;
+    }
+    const stripExt = (p: string) =>
+      p.replace(/\.(tsx?|jsx?|mjs|cjs)$/, "");
+    const keyPath = key === "." ? "index" : key.replace(/^\.\//, "");
+    let keyStem = stripExt(keyPath);
+    if (keyStem.endsWith("/index")) {
+      keyStem = keyStem.slice(0, -"/index".length) || "index";
+    }
+    let valPath = stripExt(value.replace(/^\.\//, ""));
+    if (valPath.endsWith("/index")) {
+      valPath = valPath.slice(0, -"/index".length) || "index";
+    }
+    if (keyStem !== valPath) {
+      diffs.push(
+        `remap: ${key} → ${value} (path must mirror key; no leaf aliases)`,
+      );
+    }
+  }
+  return diffs;
+}
+
+/** Fail closed on package.json `exportsAliases` (explicit remaps). */
+export function exportsAliasesDiffs(pkgDir: string): string[] {
+  const aliases = readExportsAliases(pkgDir);
+  const keys = Object.keys(aliases);
+  if (keys.length === 0) return [];
+  return keys
+    .sort()
+    .map((k) => `remap alias: ${k} → ${aliases[k]} (exportsAliases forbidden)`);
 }
 
 export function sortExportsMap(map: ExportsMap): ExportsMap {
@@ -206,6 +250,8 @@ export function checkExportPatternCoverage(pkgDir: string): CheckExportsResult {
   const diffs: string[] = [
     ...invalidMultiStarPatternDiffs(actual),
     ...invalidMultiStarPatternDiffs(aliases),
+    ...leafExportRemapDiffs(actual),
+    ...exportsAliasesDiffs(pkgDir),
   ];
 
   for (const [key, relTarget] of Object.entries(expected)) {
@@ -251,7 +297,10 @@ export function checkExports(pkgDir: string): CheckExportsResult {
     return checkExportPatternCoverage(pkgDir);
   }
 
-  const diffs: string[] = [];
+  const diffs: string[] = [
+    ...leafExportRemapDiffs(actual),
+    ...exportsAliasesDiffs(pkgDir),
+  ];
   const allKeys = new Set([...Object.keys(expected), ...Object.keys(actual)]);
   for (const key of [...allKeys].sort()) {
     const e = expected[key];
@@ -297,12 +346,10 @@ export function generateExports(pkgDir: string): {
     string,
     unknown
   >;
-  const exportsAliases = readExportsAliases(pkgDir);
   const exports = computeExportsMap(pkgDir);
   pj.exports = exports;
-  if (Object.keys(exportsAliases).length > 0) {
-    pj.exportsAliases = exportsAliases;
-  }
+  // Leaf remaps / exportsAliases are forbidden — drop if present.
+  delete pj.exportsAliases;
   fs.writeFileSync(pjPath, JSON.stringify(pj, null, 2) + "\n", "utf8");
   return { written: true, exports };
 }
