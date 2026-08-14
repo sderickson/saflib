@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  debtDensityPerKloc,
   debtDotColor,
   debtDotSizePx,
   debtTooltipText,
@@ -12,17 +13,30 @@ function parseRgb(rgb: string): [number, number, number] {
   return m ? [Number(m[1]), Number(m[2]), Number(m[3])] : [0, 0, 0];
 }
 
+describe("debtDensityPerKloc", () => {
+  it("scales with debt and LOC", () => {
+    expect(debtDensityPerKloc(0, 1000)).toBe(0);
+    expect(debtDensityPerKloc(8, 1000)).toBe(8);
+    expect(debtDensityPerKloc(4, 500)).toBe(8);
+  });
+});
+
 describe("debtDotColor", () => {
   it("is green at zero debt", () => {
-    expect(debtDotColor(0)).toBe("rgb(67, 160, 71)");
+    expect(debtDotColor(0, 1000)).toBe("rgb(67, 160, 71)");
   });
 
-  it("moves green → yellow → red as debt rises", () => {
-    const zero = parseRgb(debtDotColor(0));
-    const mid = parseRgb(debtDotColor(3));
-    const high = parseRgb(debtDotColor(20));
-    expect(mid[0]).toBeGreaterThan(zero[0]);
-    expect(high[1]).toBeLessThan(mid[1]);
+  it("is hotter for the same debt in a smaller package", () => {
+    const small = parseRgb(debtDotColor(4, 400));
+    const large = parseRgb(debtDotColor(4, 8000));
+    // Higher density → more red / less green
+    expect(small[1]).toBeLessThan(large[1]);
+  });
+
+  it("moves toward red as density rises", () => {
+    const low = parseRgb(debtDotColor(1, 5000));
+    const high = parseRgb(debtDotColor(40, 1000));
+    expect(high[1]).toBeLessThan(low[1]);
     expect(high[0]).toBeGreaterThan(150);
   });
 });
@@ -37,7 +51,7 @@ describe("debtDotSizePx", () => {
 });
 
 describe("debtTooltipText", () => {
-  it("summarizes debt kinds, size, and LOC", () => {
+  it("summarizes density, debt kinds, size, and LOC", () => {
     const counts = emptyIssueCountsByKind();
     counts["dead-code"] = 2;
     counts["oversized-file"] = 1;
@@ -46,11 +60,11 @@ describe("debtTooltipText", () => {
         debtCount: 3,
         issueCountsByKind: counts,
         packageSize: "M",
-        sourceLines: 100,
+        sourceLines: 1000,
         testLines: 40,
       }),
     ).toBe(
-      "Debt 3 · dead 2 · oversized 1 · layout 0 · size medium · 100/40 LOC",
+      "Debt 3 · 3.0/kLOC · dead 2 · oversized 1 · layout 0 · size medium · 1000/40 LOC",
     );
   });
 });

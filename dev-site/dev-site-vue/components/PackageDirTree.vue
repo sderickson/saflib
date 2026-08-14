@@ -74,7 +74,7 @@ const onClick = (node: PackageDirNode) => {
 const debtStyle = (node: PackageDirNode) => {
   const px = debtDotSizePx(node.packageSize);
   return {
-    background: debtDotColor(node.debtCount ?? 0),
+    background: debtDotColor(node.debtCount ?? 0, node.sourceLines ?? 0),
     width: `${px}px`,
     height: `${px}px`,
   };

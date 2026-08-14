@@ -16,6 +16,13 @@ export const DEBT_DOT_SIZE_PX: Record<PackageSizeTier, number> = {
   XL: 16,
 };
 
+/**
+ * Debt density (issues per 1000 LOC) that maps to full red.
+ * Tuned so a few issues in a tiny package read hot; dozens in a large package
+ * need higher absolute counts to look the same.
+ */
+export const DEBT_DENSITY_CAP_PER_KLOC = 8;
+
 function lerpChannel(a: number, b: number, t: number): number {
   return Math.round(a + (b - a) * t);
 }
@@ -24,18 +31,23 @@ function mix(a: Rgb, b: Rgb, t: number): string {
   return `rgb(${lerpChannel(a[0], b[0], t)}, ${lerpChannel(a[1], b[1], t)}, ${lerpChannel(a[2], b[2], t)})`;
 }
 
+/** Issues per 1000 lines of analyzed source (floors LOC at 1). */
+export function debtDensityPerKloc(debtCount: number, sourceLines: number): number {
+  const loc = Math.max(1, sourceLines);
+  return (Math.max(0, debtCount) / loc) * 1000;
+}
+
 /**
- * Solid-circle color for every package: green (0) → yellow → red as debt rises.
+ * Solid-circle color from debt density (issues / kLOC): green → yellow → red.
  */
 export function debtDotColor(
   debtCount: number,
-  /** Debt count that maps to full red (log scale). */
-  cap = 15,
+  sourceLines = 0,
+  densityCapPerKloc = DEBT_DENSITY_CAP_PER_KLOC,
 ): string {
-  const t = Math.min(
-    1,
-    Math.log2(1 + Math.max(0, debtCount)) / Math.log2(1 + cap),
-  );
+  if (debtCount <= 0) return mix(GREEN, GREEN, 0);
+  const density = debtDensityPerKloc(debtCount, sourceLines);
+  const t = Math.min(1, density / Math.max(densityCapPerKloc, 1e-6));
   if (t <= 0.5) return mix(GREEN, YELLOW, t / 0.5);
   return mix(YELLOW, RED, (t - 0.5) / 0.5);
 }
@@ -55,8 +67,11 @@ export interface DebtTooltipInput {
 /** Short tooltip for package nav debt dots. */
 export function debtTooltipText(input: DebtTooltipInput): string {
   const k = input.issueCountsByKind;
+  const loc = input.sourceLines ?? 0;
+  const density = debtDensityPerKloc(input.debtCount, loc);
   const parts = [
     `Debt ${input.debtCount}`,
+    `${density.toFixed(1)}/kLOC`,
     `dead ${k["dead-code"]}`,
     `oversized ${k["oversized-file"]}`,
     `layout ${k["package-layout"]}`,
