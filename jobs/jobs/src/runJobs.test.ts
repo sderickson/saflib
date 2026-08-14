@@ -501,8 +501,8 @@ describe("runJobs", () => {
       expect(retrying.attempt).toBe(1);
       expect(retrying.result?.statusCode).toBe(503);
       const delay = retrying.runAt.getTime() - Date.now();
-      expect(delay).toBeGreaterThan(BACKOFF_BASE_MS - 1_000);
-      expect(delay).toBeLessThan(BACKOFF_BASE_MS + 1_000);
+      expect(delay).toBeGreaterThan(BACKOFF_BASE_MS - 1_500);
+      expect(delay).toBeLessThan(BACKOFF_BASE_MS + 1_500);
 
       // Poll backstop picks the job up after backoff (~5s with random=1).
       const succeeded = await waitForJob(

@@ -1,4 +1,4 @@
-import type { NextFunction, Request, Response } from "express";
+import type { NextFunction, Request, RequestHandler, Response } from "express";
 
 /**
  * Wrapper for Express handlers. Promisifies the handler, ensuring any uncaught
@@ -6,8 +6,8 @@ import type { NextFunction, Request, Response } from "express";
  */
 export const createHandler = (
   handler: (req: Request, res: Response, next: NextFunction) => Promise<void>,
-) => {
-  return (req: Request, res: Response, next: NextFunction) => {
+): RequestHandler => {
+  return (req, res, next) => {
     handler(req, res, next).catch(next);
   };
 };

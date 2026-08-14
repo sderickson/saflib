@@ -63,11 +63,14 @@ const baseCoverage = {
 /**
  * Default vitest config for Vue SPAs. Coverage is collected only when
  * you pass --coverage on the CLI.
+ *
+ * Root and saflib can each hoist Vue; mixed runtimes break AsyncPage /
+ * Vuetify. Pathclerk's postinstall removes the nested saflib copies when
+ * the root copy is present.
  */
 export const defaultConfig = defineConfig({
   plugins: [vue(), vuetify()],
   resolve: {
-    // Root and saflib can resolve different vue copies; mixed runtimes break Vuetify slots.
     dedupe: [
       "vue",
       "vue-router",

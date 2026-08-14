@@ -85,5 +85,5 @@ export function createSentryViteBuildPlugin(
         ? false
         : { repo: options.githubRepoSlug, commit: gitRoot },
     },
-  });
+  }) as PluginOption[];
 }
