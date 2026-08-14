@@ -1,197 +1,200 @@
 <template>
-  <v-container fluid class="checkout-page">
-    <div class="d-flex align-center mb-4 ga-2">
-      <v-btn variant="text" :to="hubPath">← Hub</v-btn>
-      <h1 class="text-h4">Current checkout</h1>
-    </div>
-
-    <v-progress-linear v-if="isLoading" indeterminate class="mb-4" />
-    <v-alert v-if="error" type="error" class="mb-4">
+  <div class="checkout-page">
+    <v-progress-linear v-if="isLoading" indeterminate class="checkout-progress" />
+    <v-alert v-if="error" type="error" density="compact" class="ma-2">
       {{ error.message }}
     </v-alert>
-    <v-alert v-if="scanError" type="error" class="mb-4">
+    <v-alert v-if="scanError" type="error" density="compact" class="ma-2">
       Scan failed: {{ scanError.message }}
     </v-alert>
 
     <template v-if="checkout">
-      <v-sheet class="pa-4 mb-4" border rounded>
-        <div class="text-caption text-medium-emphasis">HEAD</div>
-        <div class="d-flex flex-wrap align-center ga-3 mb-2">
-          <code>{{ shortHash(checkout.hash) }}</code>
-          <v-chip
-            size="small"
-            :color="checkout.analyzed ? 'success' : 'warning'"
-          >
-            {{ checkout.analyzed ? "Analyzed" : "Not analyzed" }}
-          </v-chip>
-        </div>
-        <div class="text-body-1 mb-1">{{ firstLine(checkout.message) }}</div>
-        <div class="text-caption text-medium-emphasis">
-          {{ formatDateTime(checkout.authoredAt) }}
-        </div>
-
+      <div class="checkout-strip">
+        <code class="checkout-strip__hash">{{ shortHash(checkout.hash) }}</code>
+        <span
+          class="checkout-strip__msg"
+          :title="checkout.message"
+        >{{ firstLine(checkout.message) }}</span>
+        <span class="checkout-strip__date">{{ formatDateTime(checkout.authoredAt) }}</span>
+        <v-chip
+          size="x-small"
+          variant="tonal"
+          :color="checkout.analyzed ? 'success' : 'warning'"
+          class="checkout-strip__chip"
+        >
+          {{ checkout.analyzed ? "analyzed" : "not analyzed" }}
+        </v-chip>
         <v-btn
           v-if="!checkout.analyzed"
-          class="mt-4"
+          size="x-small"
           color="primary"
+          variant="flat"
+          class="checkout-strip__scan"
           :loading="isScanning"
           :disabled="isScanning"
           @click="scanThisCommit"
         >
-          Scan this commit
+          Scan
         </v-btn>
-      </v-sheet>
+      </div>
 
-      <div v-if="checkout.analyzed" class="checkout-split">
-        <aside class="checkout-split__nav">
-          <div class="text-caption text-medium-emphasis mb-2 px-1">
-            Packages
-          </div>
-          <PackageDirTree
-            :nodes="dirTree"
-            :selected-package-name="selectedPackageName"
-            @select="selectPackage"
-          />
-        </aside>
-
-        <section class="checkout-split__panel">
-          <template v-if="selectedPkg">
-            <div class="d-flex flex-wrap align-center ga-2 mb-2">
-              <v-icon
-                :icon="packageKindIcon(selectedPkg.kind)"
-                :title="selectedPkg.kind"
+      <div v-if="checkout.analyzed" class="checkout-body">
+        <ResizableColumns
+          storage-key="dev-site.checkout.packagesWidth"
+          :default-left="200"
+          :min-left="140"
+          :max-left="360"
+        >
+          <template #left>
+            <div class="checkout-col checkout-col--packages">
+              <PackageDirTree
+                :nodes="dirTree"
+                :selected-package-name="selectedPackageName"
+                @select="selectPackage"
               />
-              <h2 class="text-h6 mb-0">{{ selectedPkg.packageName }}</h2>
-              <v-chip
-                size="small"
-                variant="tonal"
-                :color="packageSizeColor(selectedPkg.size)"
-                :title="`Size: ${PACKAGE_SIZE_LABELS[selectedPkg.size]}`"
-              >
-                {{ selectedPkg.size }} · {{ PACKAGE_SIZE_LABELS[selectedPkg.size] }}
-              </v-chip>
             </div>
-            <p v-if="packageDescription" class="text-body-2 mb-2 package-desc">
-              {{ packageDescription }}
-            </p>
-            <p class="text-body-2 text-medium-emphasis mb-3">
-              {{ selectedPkg.sourceLines }} src /
-              {{ selectedPkg.testLines }} test LOC ·
-              {{ selectedPkg.testFiles }} test files ·
-              <code>{{ selectedPkg.directory || "." }}</code>
-            </p>
-
-            <v-tabs
-              :model-value="tab"
-              density="compact"
-              class="mb-3"
-              @update:model-value="setTab"
-            >
-              <v-tab value="spec">Spec</v-tab>
-              <v-tab value="docs">Docs</v-tab>
-              <v-tab value="issues">
-                Issues
-                <v-chip
-                  v-if="issueCount > 0"
-                  class="ml-2"
-                  size="x-small"
-                  color="warning"
-                  variant="flat"
-                >
-                  {{ issueCount }}
-                </v-chip>
-              </v-tab>
-            </v-tabs>
-
-            <v-tabs-window :model-value="tab">
-              <v-tabs-window-item value="spec">
-                <PackageDbSpecPane
-                  v-if="selectedPkg.kind === 'db'"
-                  :subdomain="subdomain"
-                  :commit-hash="checkout.hash"
-                  :package-name="selectedPkg.packageName"
-                  :package-directory="selectedPkg.directory"
-                  :product-root="checkout.productRoot"
-                  :github-repo="githubRepo"
-                  :github-ref="githubRef"
-                  :local-repo-root="localRepoRoot"
-                />
-                <PackageSpecRoutesPane
-                  v-else-if="selectedPkg.kind === 'spec'"
-                  :subdomain="subdomain"
-                  :commit-hash="checkout.hash"
-                  :package-name="selectedPkg.packageName"
-                  :package-directory="selectedPkg.directory"
-                  :product-root="checkout.productRoot"
-                  :github-repo="githubRepo"
-                  :github-ref="githubRef"
-                  :local-repo-root="localRepoRoot"
-                />
-                <PackageHttpPane
-                  v-else-if="selectedPkg.kind === 'http'"
-                  :subdomain="subdomain"
-                  :commit-hash="checkout.hash"
-                  :package-name="selectedPkg.packageName"
-                  :package-directory="selectedPkg.directory"
-                  :product-root="checkout.productRoot"
-                  :github-repo="githubRepo"
-                  :github-ref="githubRef"
-                  :local-repo-root="localRepoRoot"
-                  :scope="specScope"
-                  @update:scope="setSpecScope"
-                />
-                <PackageSpecPane
-                  v-else
-                  :subdomain="subdomain"
-                  :commit-hash="checkout.hash"
-                  :package-name="selectedPkg.packageName"
-                  :package-directory="selectedPkg.directory"
-                  :product-root="checkout.productRoot"
-                  :github-repo="githubRepo"
-                  :github-ref="githubRef"
-                  :local-repo-root="localRepoRoot"
-                  :scope="specScope"
-                  @update:scope="setSpecScope"
-                />
-              </v-tabs-window-item>
-
-              <v-tabs-window-item value="docs">
-                <PackageDocsPane
-                  ref="docsPane"
-                  :subdomain="subdomain"
-                  :commit-hash="checkout.hash"
-                  :package-directory="selectedPkg.directory"
-                  :package-name="selectedPkg.packageName"
-                  :product-root="checkout.productRoot"
-                  :packages="checkout.packages"
-                  :github-repo="githubRepo"
-                  :github-ref="githubRef"
-                  :local-repo-root="localRepoRoot"
-                  @navigate-package="onDocNavigatePackage"
-                />
-              </v-tabs-window-item>
-
-              <v-tabs-window-item value="issues">
-                <PackageIssuesPane
-                  :subdomain="subdomain"
-                  :commit-hash="checkout.hash"
-                  :package-name="selectedPkg.packageName"
-                  :package-directory="selectedPkg.directory"
-                  :product-root="checkout.productRoot"
-                  :github-repo="githubRepo"
-                  :github-ref="githubRef"
-                  :local-repo-root="localRepoRoot"
-                />
-              </v-tabs-window-item>
-            </v-tabs-window>
           </template>
-          <p v-else class="text-body-2 text-medium-emphasis">
-            Select a package on the left.
-          </p>
-        </section>
+          <template #right>
+            <div class="checkout-col checkout-col--package">
+              <template v-if="selectedPkg">
+                <header class="pkg-head">
+                  <v-icon
+                    size="small"
+                    :icon="packageKindIcon(selectedPkg.kind)"
+                    :title="selectedPkg.kind"
+                  />
+                  <span class="pkg-head__name" :title="selectedPkg.packageName">
+                    {{ selectedPkg.packageName }}
+                  </span>
+                  <v-chip
+                    size="x-small"
+                    variant="tonal"
+                    :color="packageSizeColor(selectedPkg.size)"
+                    :title="`Size: ${PACKAGE_SIZE_LABELS[selectedPkg.size]}`"
+                  >
+                    {{ selectedPkg.size }}
+                  </v-chip>
+                  <span class="pkg-head__meta">
+                    {{ selectedPkg.sourceLines }}/{{ selectedPkg.testLines }} LOC
+                    ·
+                    <code>{{ selectedPkg.directory || "." }}</code>
+                  </span>
+                </header>
+                <p
+                  v-if="packageDescription"
+                  class="pkg-desc"
+                  :title="packageDescription"
+                >
+                  {{ packageDescription }}
+                </p>
+
+                <v-tabs
+                  :model-value="tab"
+                  density="compact"
+                  class="pkg-tabs"
+                  @update:model-value="setTab"
+                >
+                  <v-tab value="spec">Spec</v-tab>
+                  <v-tab value="docs">Docs</v-tab>
+                  <v-tab value="issues">
+                    Issues
+                    <v-chip
+                      v-if="issueCount > 0"
+                      class="ml-2"
+                      size="x-small"
+                      color="warning"
+                      variant="flat"
+                    >
+                      {{ issueCount }}
+                    </v-chip>
+                  </v-tab>
+                </v-tabs>
+
+                <div class="pkg-pane">
+                  <PackageDbSpecPane
+                    v-if="tab === 'spec' && selectedPkg.kind === 'db'"
+                    :subdomain="subdomain"
+                    :commit-hash="checkout.hash"
+                    :package-name="selectedPkg.packageName"
+                    :package-directory="selectedPkg.directory"
+                    :product-root="checkout.productRoot"
+                    :github-repo="githubRepo"
+                    :github-ref="githubRef"
+                    :local-repo-root="localRepoRoot"
+                  />
+                  <PackageSpecRoutesPane
+                    v-else-if="tab === 'spec' && selectedPkg.kind === 'spec'"
+                    :subdomain="subdomain"
+                    :commit-hash="checkout.hash"
+                    :package-name="selectedPkg.packageName"
+                    :package-directory="selectedPkg.directory"
+                    :product-root="checkout.productRoot"
+                    :github-repo="githubRepo"
+                    :github-ref="githubRef"
+                    :local-repo-root="localRepoRoot"
+                  />
+                  <PackageHttpPane
+                    v-else-if="tab === 'spec' && selectedPkg.kind === 'http'"
+                    :subdomain="subdomain"
+                    :commit-hash="checkout.hash"
+                    :package-name="selectedPkg.packageName"
+                    :package-directory="selectedPkg.directory"
+                    :product-root="checkout.productRoot"
+                    :github-repo="githubRepo"
+                    :github-ref="githubRef"
+                    :local-repo-root="localRepoRoot"
+                    :scope="specScope"
+                    @update:scope="setSpecScope"
+                  />
+                  <PackageSpecPane
+                    v-else-if="tab === 'spec'"
+                    :subdomain="subdomain"
+                    :commit-hash="checkout.hash"
+                    :package-name="selectedPkg.packageName"
+                    :package-directory="selectedPkg.directory"
+                    :product-root="checkout.productRoot"
+                    :github-repo="githubRepo"
+                    :github-ref="githubRef"
+                    :local-repo-root="localRepoRoot"
+                    :scope="specScope"
+                    @update:scope="setSpecScope"
+                  />
+                  <PackageDocsPane
+                    v-else-if="tab === 'docs'"
+                    ref="docsPane"
+                    :subdomain="subdomain"
+                    :commit-hash="checkout.hash"
+                    :package-directory="selectedPkg.directory"
+                    :package-name="selectedPkg.packageName"
+                    :product-root="checkout.productRoot"
+                    :packages="checkout.packages"
+                    :github-repo="githubRepo"
+                    :github-ref="githubRef"
+                    :local-repo-root="localRepoRoot"
+                    @navigate-package="onDocNavigatePackage"
+                  />
+                  <PackageIssuesPane
+                    v-else
+                    :subdomain="subdomain"
+                    :commit-hash="checkout.hash"
+                    :package-name="selectedPkg.packageName"
+                    :package-directory="selectedPkg.directory"
+                    :product-root="checkout.productRoot"
+                    :github-repo="githubRepo"
+                    :github-ref="githubRef"
+                    :local-repo-root="localRepoRoot"
+                  />
+                </div>
+              </template>
+              <p v-else class="text-body-2 text-medium-emphasis pa-3">
+                Select a package.
+              </p>
+            </div>
+          </template>
+        </ResizableColumns>
       </div>
     </template>
-  </v-container>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -220,16 +223,14 @@ import PackageDbSpecPane from "../components/PackageDbSpecPane.vue";
 import PackageSpecRoutesPane from "../components/PackageSpecRoutesPane.vue";
 import PackageHttpPane from "../components/PackageHttpPane.vue";
 import PackageIssuesPane from "../components/PackageIssuesPane.vue";
+import ResizableColumns from "../components/ResizableColumns.vue";
 
 const props = withDefaults(
   defineProps<{
     subdomain: string;
     hubPath?: string;
-    /** `owner/repo` for GitHub blob links. */
     githubRepo?: string;
-    /** Branch/tag for GitHub blob links (default `main`). */
     githubRef?: string;
-    /** Absolute host path to the analyzed checkout (IDE deep links). */
     localRepoRoot?: string;
   }>(),
   {
@@ -304,7 +305,6 @@ const specScope = computed<TestScope>(() => {
   const file = route.query.file;
   const dir = route.query.dir;
   if (typeof file === "string" && file) {
-    // Normalize legacy `foo.test.ts` URLs to the module stem.
     return { kind: "file", localPath: toModuleStem(file) };
   }
   if (typeof dir === "string" && dir) {
@@ -428,28 +428,115 @@ const formatDateTime = (dateTimeString: string): string => {
 </script>
 
 <style scoped>
-.checkout-split {
-  display: grid;
-  grid-template-columns: minmax(14rem, 20rem) 1fr;
-  gap: 1.25rem;
-  align-items: start;
-  min-height: 60vh;
+.checkout-page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
 }
-@media (max-width: 960px) {
-  .checkout-split {
-    grid-template-columns: 1fr;
-  }
+.checkout-progress {
+  flex: 0 0 auto;
 }
-.checkout-split__nav {
-  border: 1px solid rgba(var(--v-theme-on-surface), 0.12);
-  border-radius: 6px;
-  padding: 0.75rem 0.5rem;
-}
-.checkout-split__panel {
+.checkout-strip {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.35rem 0.75rem;
+  border-bottom: 1px solid rgba(var(--v-theme-on-surface), 0.12);
+  font-size: 0.75rem;
   min-width: 0;
 }
-.package-desc {
-  max-width: 42rem;
-  line-height: 1.45;
+.checkout-strip__hash {
+  flex: 0 0 auto;
+  font-size: 0.75rem;
+}
+.checkout-strip__msg {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: rgba(var(--v-theme-on-surface), 0.85);
+}
+.checkout-strip__date {
+  flex: 0 0 auto;
+  color: rgba(var(--v-theme-on-surface), 0.5);
+  white-space: nowrap;
+}
+.checkout-strip__chip,
+.checkout-strip__scan {
+  flex: 0 0 auto;
+}
+.checkout-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+.checkout-col {
+  flex: 1 1 auto;
+  height: 100%;
+  min-height: 0;
+  overflow: auto;
+}
+.checkout-col--packages {
+  padding: 0.4rem 0.35rem;
+}
+.checkout-col--package {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.pkg-head {
+  flex: 0 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 0.55rem;
+  padding: 0.45rem 0.75rem 0.25rem;
+  min-width: 0;
+}
+.pkg-head__name {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.85rem;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: min(28rem, 55vw);
+}
+.pkg-head__meta {
+  font-size: 0.7rem;
+  color: rgba(var(--v-theme-on-surface), 0.5);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pkg-desc {
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 0 0.75rem 0.35rem;
+  font-size: 0.75rem;
+  line-height: 1.35;
+  color: rgba(var(--v-theme-on-surface), 0.65);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pkg-tabs {
+  flex: 0 0 auto;
+  padding: 0 0.35rem;
+  border-bottom: 1px solid rgba(var(--v-theme-on-surface), 0.1);
+}
+.pkg-pane {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  padding: 0.5rem 0.5rem 0.75rem;
+}
+.pkg-pane > * {
+  height: 100%;
+  min-height: 0;
 }
 </style>

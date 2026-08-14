@@ -1,114 +1,124 @@
 <template>
-  <div>
+  <div class="pane-root">
     <v-progress-linear v-if="isLoading" indeterminate class="mb-2" />
-    <v-alert v-if="error" type="error" class="mb-2">{{ error.message }}</v-alert>
+    <v-alert v-if="error" type="error" density="compact" class="mb-2">{{ error.message }}</v-alert>
 
     <div v-if="!isLoading && !fileNav.length" class="text-body-2 text-medium-emphasis">
       No source or test modules found for this package.
     </div>
 
-    <div v-else-if="fileNav.length" class="spec-split">
-      <aside class="spec-split__nav">
-        <button
-          type="button"
-          class="spec-all"
-          :class="{ 'spec-all--selected': scope.kind === 'all' }"
-          @click="setScope({ kind: 'all' })"
-        >
-          <v-icon size="x-small" icon="mdi-folder-outline" />
-          <span>All modules</span>
-        </button>
-        <TestFileNav
-          :nodes="fileNav"
-          :selected="scope"
-          @select="setScope"
-        />
-      </aside>
-
-      <section class="spec-split__panel">
-        <header
-          v-if="scope.kind !== 'all'"
-          class="scope-header"
-          :class="
-            scope.kind === 'dir' ? 'scope-header--dir' : 'scope-header--file'
-          "
-        >
-          <h3 class="scope-header__title">
-            <a
-              v-if="scope.kind === 'file' && scopeOpenPath"
-              href="#"
-              class="scope-header__link"
-              @click.prevent="openFile(scopeOpenPath)"
+    <ResizableColumns
+      v-else-if="fileNav.length"
+      class="pane-split"
+      storage-key="dev-site.http.moduleNavWidth"
+      :default-left="180"
+      :min-left="120"
+      :max-left="320"
+    >
+      <template #left>
+        <div class="pane-nav">
+          <button
+            type="button"
+            class="spec-all"
+            :class="{ 'spec-all--selected': scope.kind === 'all' }"
+            @click="setScope({ kind: 'all' })"
+          >
+            <v-icon size="x-small" icon="mdi-folder-outline" />
+            <span>All modules</span>
+          </button>
+          <TestFileNav
+            :nodes="fileNav"
+            :selected="scope"
+            @select="setScope"
+          />
+        </div>
+      </template>
+      <template #right>
+        <div class="pane-panel">
+          <header
+            v-if="scope.kind !== 'all'"
+            class="scope-header"
+            :class="
+              scope.kind === 'dir' ? 'scope-header--dir' : 'scope-header--file'
+            "
+          >
+            <h3 class="scope-header__title">
+              <a
+                v-if="scope.kind === 'file' && scopeOpenPath"
+                href="#"
+                class="scope-header__link"
+                @click.prevent="openFile(scopeOpenPath)"
+              >
+                {{ scopeFileName }}
+              </a>
+              <template v-else>
+                {{ scope.kind === "dir" ? `${scope.localPath}/` : scopeFileName }}
+              </template>
+            </h3>
+            <p v-if="scopePresenceLabel" class="scope-header__presence">
+              {{ scopePresenceLabel }}
+            </p>
+            <p v-if="scopeSummary" class="scope-header__summary">
+              {{ scopeSummary }}
+            </p>
+            <p
+              v-else-if="!scopeDocLoading"
+              class="scope-header__hint"
             >
-              {{ scopeFileName }}
-            </a>
-            <template v-else>
-              {{ scope.kind === "dir" ? `${scope.localPath}/` : scopeFileName }}
-            </template>
-          </h3>
-          <p v-if="scopePresenceLabel" class="scope-header__presence">
-            {{ scopePresenceLabel }}
-          </p>
-          <p v-if="scopeSummary" class="scope-header__summary">
-            {{ scopeSummary }}
+              {{ missingScopeHint }}
+            </p>
+          </header>
+          <div v-else class="scope-header scope-header--all">
+            <h3 class="scope-header__title">All modules</h3>
+          </div>
+
+          <div v-if="scopedRoutes.length" class="routes-block">
+            <h4 class="routes-block__title">
+              Routes
+              <span class="routes-block__count">{{ scopedRoutes.length }}</span>
+            </h4>
+            <ul class="routes-block__list">
+              <li
+                v-for="op in scopedRoutes"
+                :key="op.operationId + op.method + op.path"
+              >
+                <PackageRouteCard
+                  :operation="normalizeOp(op)"
+                  :route-repo-path="routeRepoPath(op.yamlPath)"
+                  :open-file="openFile"
+                />
+              </li>
+            </ul>
+          </div>
+          <p
+            v-else-if="handlersScope && !isLoading"
+            class="text-body-2 text-medium-emphasis mb-3"
+          >
+            No joined OpenAPI routes for this handler scope (sibling
+            <code>-spec</code> package).
           </p>
           <p
-            v-else-if="!scopeDocLoading"
-            class="scope-header__hint"
+            v-else-if="scope.kind === 'all' && allRouteCount > 0"
+            class="routes-hint"
           >
-            {{ missingScopeHint }}
+            {{ allRouteCount }} routes under
+            <code>handlers/</code> — open that folder to browse route cards.
           </p>
-        </header>
-        <div v-else class="scope-header scope-header--all">
-          <h3 class="scope-header__title">All modules</h3>
-        </div>
 
-        <div v-if="scopedRoutes.length" class="routes-block">
-          <h4 class="routes-block__title">
-            Routes
-            <span class="routes-block__count">{{ scopedRoutes.length }}</span>
-          </h4>
-          <ul class="routes-block__list">
-            <li
-              v-for="op in scopedRoutes"
-              :key="op.operationId + op.method + op.path"
-            >
-              <PackageRouteCard
-                :operation="normalizeOp(op)"
-                :route-repo-path="routeRepoPath(op.yamlPath)"
-                :open-file="openFile"
-              />
-            </li>
-          </ul>
+          <TestTree
+            v-if="specTree.length"
+            :nodes="specTree"
+            @open-source="openFile"
+          />
+          <p
+            v-else-if="!scopedRoutes.length"
+            class="text-body-2 text-medium-emphasis"
+          >
+            No exports or tests in this scope.
+          </p>
         </div>
-        <p
-          v-else-if="handlersScope && !isLoading"
-          class="text-body-2 text-medium-emphasis mb-3"
-        >
-          No joined OpenAPI routes for this handler scope (sibling
-          <code>-spec</code> package).
-        </p>
-        <p
-          v-else-if="scope.kind === 'all' && allRouteCount > 0"
-          class="routes-hint"
-        >
-          {{ allRouteCount }} routes under
-          <code>handlers/</code> — open that folder to browse route cards.
-        </p>
-
-        <TestTree
-          v-if="specTree.length"
-          :nodes="specTree"
-          @open-source="openFile"
-        />
-        <p
-          v-else-if="!scopedRoutes.length"
-          class="text-body-2 text-medium-emphasis"
-        >
-          No exports or tests in this scope.
-        </p>
-      </section>
-    </div>
+      </template>
+    </ResizableColumns>
   </div>
 </template>
 
@@ -134,6 +144,7 @@ import TestFileNav from "./TestFileNav.vue";
 import PackageRouteCard, {
   type RouteCardOperation,
 } from "./PackageRouteCard.vue";
+import ResizableColumns from "./ResizableColumns.vue";
 
 interface SpecFileRef {
   filePath: string;
@@ -390,21 +401,24 @@ function openFile(path: string) {
 </script>
 
 <style scoped>
-.spec-split {
-  display: grid;
-  grid-template-columns: minmax(10rem, 14rem) 1fr;
-  gap: 1rem;
-  align-items: start;
+.pane-root {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
 }
-@media (max-width: 720px) {
-  .spec-split {
-    grid-template-columns: 1fr;
-  }
+.pane-split {
+  flex: 1 1 auto;
+  min-height: 0;
 }
-.spec-split__nav {
-  border: 1px solid rgba(var(--v-theme-on-surface), 0.12);
-  border-radius: 6px;
-  padding: 0.5rem 0.35rem;
+.pane-nav,
+.pane-panel {
+  flex: 1 1 auto;
+  height: 100%;
+  min-height: 0;
+  overflow: auto;
+  padding: 0.25rem 0.35rem;
 }
 .spec-all {
   display: flex;
@@ -429,11 +443,8 @@ function openFile(path: string) {
 .spec-all--selected {
   background: rgba(var(--v-theme-primary), 0.12);
 }
-.spec-split__panel {
-  min-width: 0;
-}
 .scope-header {
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
   max-width: 44rem;
 }
 .scope-header__title {

@@ -1,7 +1,7 @@
 <template>
-  <div>
+  <div class="pane-root">
     <v-progress-linear v-if="isLoading" indeterminate class="mb-2" />
-    <v-alert v-if="error" type="error" class="mb-2">{{ error.message }}</v-alert>
+    <v-alert v-if="error" type="error" density="compact" class="mb-2">{{ error.message }}</v-alert>
 
     <div
       v-if="!isLoading && !entities.length"
@@ -10,38 +10,47 @@
       No OpenAPI schemas or route resources found for this package.
     </div>
 
-    <div v-else-if="entities.length" class="spec-split">
-      <aside class="spec-split__nav">
-        <button
-          type="button"
-          class="spec-all"
-          :class="{ 'spec-all--selected': selectedKey === null }"
-          @click="selectedKey = null"
-        >
-          <v-icon size="x-small" icon="mdi-folder-outline" class="entity-nav__icon" />
-          <span>All</span>
-        </button>
-        <ul class="entity-nav">
-          <li v-for="e in entities" :key="e.key" class="entity-nav__item">
-            <button
-              type="button"
-              class="entity-nav__row"
-              :class="{ 'entity-nav__row--selected': selectedKey === e.key }"
-              :title="presenceTitle(e.presence)"
-              @click="selectedKey = e.key"
-            >
-              <v-icon
-                size="x-small"
-                :icon="presenceIcon(e.presence)"
-                class="entity-nav__icon"
-              />
-              <span class="entity-nav__label">{{ e.label }}</span>
-            </button>
-          </li>
-        </ul>
-      </aside>
-
-      <section class="spec-split__panel">
+    <ResizableColumns
+      v-else-if="entities.length"
+      class="pane-split"
+      storage-key="dev-site.specRoutes.entityNavWidth"
+      :default-left="180"
+      :min-left="120"
+      :max-left="320"
+    >
+      <template #left>
+        <div class="pane-nav">
+          <button
+            type="button"
+            class="spec-all"
+            :class="{ 'spec-all--selected': selectedKey === null }"
+            @click="selectedKey = null"
+          >
+            <v-icon size="x-small" icon="mdi-folder-outline" class="entity-nav__icon" />
+            <span>All</span>
+          </button>
+          <ul class="entity-nav">
+            <li v-for="e in entities" :key="e.key" class="entity-nav__item">
+              <button
+                type="button"
+                class="entity-nav__row"
+                :class="{ 'entity-nav__row--selected': selectedKey === e.key }"
+                :title="presenceTitle(e.presence)"
+                @click="selectedKey = e.key"
+              >
+                <v-icon
+                  size="x-small"
+                  :icon="presenceIcon(e.presence)"
+                  class="entity-nav__icon"
+                />
+                <span class="entity-nav__label">{{ e.label }}</span>
+              </button>
+            </li>
+          </ul>
+        </div>
+      </template>
+      <template #right>
+        <div class="pane-panel">
         <div
           v-for="e in visibleEntities"
           :key="e.key"
@@ -164,8 +173,9 @@
             No REST endpoints linked to this schema.
           </p>
         </div>
-      </section>
-    </div>
+        </div>
+      </template>
+    </ResizableColumns>
   </div>
 </template>
 
@@ -174,6 +184,7 @@ import { computed, ref } from "vue";
 import PackageRouteCard, {
   type RouteCardOperation,
 } from "./PackageRouteCard.vue";
+import ResizableColumns from "./ResizableColumns.vue";
 import { useCommitPackage } from "../requests/queries.ts";
 import { openSource } from "../source-links.ts";
 import { repoPathPrefix } from "../repo-paths.ts";
@@ -307,23 +318,24 @@ function openFile(path: string) {
 </script>
 
 <style scoped>
-.spec-split {
-  display: grid;
-  grid-template-columns: minmax(10rem, 14rem) minmax(0, 1fr);
-  gap: 1rem;
-  align-items: start;
+.pane-root {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
 }
-@media (max-width: 720px) {
-  .spec-split {
-    grid-template-columns: 1fr;
-  }
+.pane-split {
+  flex: 1 1 auto;
+  min-height: 0;
 }
-.spec-split__nav {
-  border: 1px solid rgba(var(--v-theme-on-surface), 0.12);
-  border-radius: 6px;
-  padding: 0.5rem 0.35rem;
-  max-height: min(70vh, 40rem);
+.pane-nav,
+.pane-panel {
+  flex: 1 1 auto;
+  height: 100%;
+  min-height: 0;
   overflow: auto;
+  padding: 0.25rem 0.35rem;
 }
 .spec-all {
   display: flex;
@@ -386,9 +398,6 @@ function openFile(path: string) {
 .entity-nav__icon {
   opacity: 0.7;
   flex-shrink: 0;
-}
-.spec-split__panel {
-  min-width: 0;
 }
 .entity-block {
   margin-bottom: 1.75rem;
