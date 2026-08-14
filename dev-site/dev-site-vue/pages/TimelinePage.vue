@@ -73,11 +73,7 @@
                 oversized
                 {{ item.summaryMetrics.issueCountsByKind["oversized-file"] }} ·
                 layout
-                {{ item.summaryMetrics.issueCountsByKind["package-layout"] }} ·
-                same-file
-                {{
-                  item.summaryMetrics.issueCountsByKind["same-file-only-export"]
-                }}
+                {{ item.summaryMetrics.issueCountsByKind["package-layout"] }}
               </span>
             </v-tooltip>
           </template>

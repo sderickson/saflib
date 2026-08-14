@@ -305,13 +305,9 @@
       },
       "issue-counts-by-kind": {
         "type": "object",
-        "description": "Per-kind issue counts for a commit or package. Debt excludes same-file-only-export (co-location signal, not structural debt).\n",
+        "description": "Per-kind issue counts for a commit or package (all kinds count as debt).",
         "properties": {
           "dead-code": {
-            "type": "integer",
-            "minimum": 0
-          },
-          "same-file-only-export": {
             "type": "integer",
             "minimum": 0
           },
@@ -326,7 +322,6 @@
         },
         "required": [
           "dead-code",
-          "same-file-only-export",
           "oversized-file",
           "package-layout"
         ]

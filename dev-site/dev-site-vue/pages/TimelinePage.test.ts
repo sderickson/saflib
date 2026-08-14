@@ -34,7 +34,6 @@ const mockList: ListResponse = {
         hasIssueStats: true,
         issueCountsByKind: {
           "dead-code": 1,
-          "same-file-only-export": 0,
           "oversized-file": 1,
           "package-layout": 0,
         },

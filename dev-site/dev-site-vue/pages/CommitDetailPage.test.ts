@@ -36,7 +36,6 @@ const mockDetail: GetResponse = {
         debtCount: 1,
         issueCountsByKind: {
           "dead-code": 1,
-          "same-file-only-export": 0,
           "oversized-file": 0,
           "package-layout": 0,
         },

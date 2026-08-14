@@ -711,7 +711,6 @@
             "type": "string",
             "enum": [
               "dead-code",
-              "same-file-only-export",
               "oversized-file",
               "package-layout"
             ]

@@ -46,7 +46,7 @@ describe("collectPackageIssues", () => {
     expect(issues[0]!.filePath).toBe("b.ts");
   });
 
-  it("lists same-file-only exports", () => {
+  it("ignores same-file-only exports (not an issue)", () => {
     const issues = collectPackageIssues(
       {
         packageName: "@pkg",
@@ -67,10 +67,7 @@ describe("collectPackageIssues", () => {
       },
       { packageDirectory: "pkg" },
     );
-
-    expect(issues).toHaveLength(1);
-    expect(issues[0]!.kind).toBe("same-file-only-export");
-    expect(issues[0]!.name).toBe("helper");
+    expect(issues).toEqual([]);
   });
 
   it("lists unused db queries", () => {
@@ -148,7 +145,7 @@ describe("collectPackageIssues", () => {
 });
 
 describe("debt helpers", () => {
-  it("excludes same-file-only from debtCount", () => {
+  it("sums all tracked kinds as debt", () => {
     const counts = countIssuesByKind([
       {
         kind: "dead-code",
@@ -157,14 +154,6 @@ describe("debt helpers", () => {
         kindLabel: "",
         filePath: "a.ts",
         repoPath: "a.ts",
-      },
-      {
-        kind: "same-file-only-export",
-        title: "",
-        name: "b",
-        kindLabel: "",
-        filePath: "b.ts",
-        repoPath: "b.ts",
       },
       {
         kind: "package-layout",
@@ -177,7 +166,6 @@ describe("debt helpers", () => {
     ]);
     expect(counts).toEqual({
       "dead-code": 1,
-      "same-file-only-export": 1,
       "oversized-file": 0,
       "package-layout": 1,
     });

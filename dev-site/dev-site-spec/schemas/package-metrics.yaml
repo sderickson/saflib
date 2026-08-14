@@ -35,7 +35,7 @@ properties:
     type: integer
     minimum: 0
     description: >
-      Sum of debt kinds only (dead-code + oversized-file + package-layout).
+      Sum of all issue kinds (dead-code + oversized-file + package-layout).
 required:
   - packageName
   - directory

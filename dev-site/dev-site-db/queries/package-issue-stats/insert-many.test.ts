@@ -45,7 +45,7 @@ describe("package-issue-stats", () => {
         {
           commitHash,
           packageName: "@pathclerk/daemon-form-mappings",
-          kind: "same-file-only-export",
+          kind: "package-layout",
           count: 5,
         },
       ]),
@@ -60,7 +60,7 @@ describe("package-issue-stats", () => {
         .map((r) => `${r.packageName}:${r.kind}:${r.count}`)
         .sort(),
     ).toEqual([
-      "@pathclerk/daemon-form-mappings:same-file-only-export:5",
+      "@pathclerk/daemon-form-mappings:package-layout:5",
       "@pathclerk/daemon-http:dead-code:3",
       "@pathclerk/daemon-http:oversized-file:1",
     ]);

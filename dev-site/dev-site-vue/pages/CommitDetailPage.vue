@@ -31,9 +31,7 @@
                 d{{ item.issueCountsByKind["dead-code"] }} · o{{
                   item.issueCountsByKind["oversized-file"]
                 }}
-                · l{{ item.issueCountsByKind["package-layout"] }} · s{{
-                  item.issueCountsByKind["same-file-only-export"]
-                }}
+                · l{{ item.issueCountsByKind["package-layout"] }}
               </span>
             </template>
             <template #bottom></template>

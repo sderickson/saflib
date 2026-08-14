@@ -13,7 +13,6 @@ describe("buildPackageDirTree", () => {
         debtCount: 2,
         issueCountsByKind: {
           "dead-code": 2,
-          "same-file-only-export": 0,
           "oversized-file": 0,
           "package-layout": 0,
         },

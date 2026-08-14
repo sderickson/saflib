@@ -4,7 +4,7 @@ import { extractExports } from "./extract-exports.ts";
 /**
  * Export names that are referenced as **values** elsewhere in the same file
  * (beyond their declaration). Used so same-file helpers aren't false `dead-code`
- * — they become `same-file-only-export` via a self `usedBy` edge.
+ * (they get a self `usedBy` edge and are otherwise ignored).
  *
  * Skips: binding declaration names, export-clause names, property/method names,
  * and identifiers in type positions.

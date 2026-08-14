@@ -92,10 +92,9 @@ export interface components {
             /** @description Sum of debt kinds only (dead-code + oversized-file + package-layout). */
             debtCount: number;
         };
-        /** @description Per-kind issue counts for a commit or package. Debt excludes same-file-only-export (co-location signal, not structural debt). */
+        /** @description Per-kind issue counts for a commit or package (all kinds count as debt). */
         "issue-counts-by-kind": {
             "dead-code": number;
-            "same-file-only-export": number;
             "oversized-file": number;
             "package-layout": number;
         };

@@ -4,7 +4,6 @@ import type { IssueCountsByKind } from "@saflib/imports/issues";
 export function emptyIssueCountsFixture(): IssueCountsByKind {
   return {
     "dead-code": 0,
-    "same-file-only-export": 0,
     "oversized-file": 0,
     "package-layout": 0,
   };

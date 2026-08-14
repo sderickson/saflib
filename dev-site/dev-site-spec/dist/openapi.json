@@ -724,13 +724,9 @@
       },
       "issue-counts-by-kind": {
         "type": "object",
-        "description": "Per-kind issue counts for a commit or package. Debt excludes same-file-only-export (co-location signal, not structural debt).\n",
+        "description": "Per-kind issue counts for a commit or package (all kinds count as debt).",
         "properties": {
           "dead-code": {
-            "type": "integer",
-            "minimum": 0
-          },
-          "same-file-only-export": {
             "type": "integer",
             "minimum": 0
           },
@@ -745,7 +741,6 @@
         },
         "required": [
           "dead-code",
-          "same-file-only-export",
           "oversized-file",
           "package-layout"
         ]
@@ -832,7 +827,7 @@
               "debtCount": {
                 "type": "integer",
                 "minimum": 0,
-                "description": "Sum of debt kinds only (dead-code + oversized-file + package-layout). Excludes same-file-only-export.\n"
+                "description": "Sum of all issue kinds (dead-code + oversized-file + package-layout).\n"
               },
               "hasIssueStats": {
                 "type": "boolean",
@@ -1845,7 +1840,6 @@
             "type": "string",
             "enum": [
               "dead-code",
-              "same-file-only-export",
               "oversized-file",
               "package-layout"
             ]

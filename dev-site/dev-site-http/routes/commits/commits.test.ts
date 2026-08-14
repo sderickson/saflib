@@ -129,7 +129,6 @@ describe("commits routes", () => {
       hasIssueStats: true,
       issueCountsByKind: {
         "dead-code": expect.any(Number),
-        "same-file-only-export": expect.any(Number),
         "oversized-file": expect.any(Number),
         "package-layout": expect.any(Number),
       },

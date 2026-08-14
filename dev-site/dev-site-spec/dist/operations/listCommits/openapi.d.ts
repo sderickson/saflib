@@ -56,7 +56,7 @@ export interface components {
                 exportCount: number;
                 testCaseCount: number;
                 issueCountsByKind: components["schemas"]["issue-counts-by-kind"];
-                /** @description Sum of debt kinds only (dead-code + oversized-file + package-layout). Excludes same-file-only-export. */
+                /** @description Sum of all issue kinds (dead-code + oversized-file + package-layout). */
                 debtCount: number;
                 /** @description True when package_issue_stats were computed for this commit (including a zero-debt sentinel). False for commits scanned before issue stats. */
                 hasIssueStats: boolean;
@@ -77,10 +77,9 @@ export interface components {
             /** @description True when this commit is an ancestor of the configured main branch (including main itself). Used to distinguish mainline history from feature-branch tips. */
             isMainAncestor: boolean;
         };
-        /** @description Per-kind issue counts for a commit or package. Debt excludes same-file-only-export (co-location signal, not structural debt). */
+        /** @description Per-kind issue counts for a commit or package (all kinds count as debt). */
         "issue-counts-by-kind": {
             "dead-code": number;
-            "same-file-only-export": number;
             "oversized-file": number;
             "package-layout": number;
         };

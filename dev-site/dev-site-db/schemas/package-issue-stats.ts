@@ -11,7 +11,6 @@ import { analyzedCommitsTable } from "./analyzed-commits.ts";
 
 export const packageIssueKinds = [
   "dead-code",
-  "same-file-only-export",
   "oversized-file",
   "package-layout",
 ] as const;

@@ -8,13 +8,12 @@ How to clear findings from:
 
 Do **not** blindly delete exports. Triage each item.
 
-## Decision tree (dead-code / same-file-only)
+## Decision tree (dead-code)
 
-1. **Same-file helper** — exported but only used in its defining file  
-   → **Un-export** (`export` → local), or split if tests need a public leaf.  
-   Same-file **value** references count as `usedBy` (self-edge) and surface as
-   `same-file-only-export`, not `dead-code`. Pure unused exports (never called
-   in-file or out) remain `dead-code`.
+1. **Same-file helper** — exported and only used in its defining file  
+   → Not an issue. Same-file value references count as `usedBy` (self-edge) so
+   these are **not** `dead-code`. Optional: drop `export` if you want a narrower
+   public surface.
 
 2. **Tested helper only used in that file (+ tests)** — unit tests import the export  
    → **Split into its own module**; production parent imports the leaf.  
@@ -62,7 +61,6 @@ The History page tracks **per-commit issue counts** stored at scan time
 zero SLA.
 
 - **Debt** = `dead-code` + `oversized-file` + `package-layout`
-- **`same-file-only-export`** is tracked but **not** debt (co-location signal)
 - New packages start near zero; growth/restructure seasons spike specific kinds
 - Prefer fixing issues in packages you touch; use History hotspots to decide when
   a dedicated cleanup PR is worth it

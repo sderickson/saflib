@@ -237,7 +237,7 @@ export interface components {
         };
         "package-issue": {
             /** @enum {string} */
-            kind: "dead-code" | "same-file-only-export" | "oversized-file" | "package-layout";
+            kind: "dead-code" | "oversized-file" | "package-layout";
             title: string;
             name: string;
             kindLabel: string;

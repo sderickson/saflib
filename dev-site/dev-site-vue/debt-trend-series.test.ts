@@ -47,7 +47,6 @@ describe("buildDebtTrendSeries", () => {
           hasIssueStats: true,
           issueCountsByKind: {
             "dead-code": 3,
-            "same-file-only-export": 0,
             "oversized-file": 0,
             "package-layout": 0,
           },
