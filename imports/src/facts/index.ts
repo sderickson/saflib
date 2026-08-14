@@ -10,6 +10,7 @@ export {
   countSourceLines,
   specialtyExports,
   specialtyImports,
+  specialtyLocalExportUsages,
   specialtyTables,
   specialtyTestCases,
   type FileExportFact,

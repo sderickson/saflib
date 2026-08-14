@@ -10,8 +10,11 @@ Do **not** blindly delete exports. Triage each item.
 
 ## Decision tree (dead-code / same-file-only)
 
-1. **Same-file helper** — exported but only referenced in its defining file  
-   → **Un-export** (`export` → local). Same-file calls do not create `usedBy` edges.
+1. **Same-file helper** — exported but only used in its defining file  
+   → **Un-export** (`export` → local), or split if tests need a public leaf.  
+   Same-file **value** references count as `usedBy` (self-edge) and surface as
+   `same-file-only-export`, not `dead-code`. Pure unused exports (never called
+   in-file or out) remain `dead-code`.
 
 2. **Tested helper only used in that file (+ tests)** — unit tests import the export  
    → **Split into its own module**; production parent imports the leaf.  

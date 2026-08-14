@@ -5,6 +5,7 @@ import {
   extractDrizzleTables,
   extractExports,
   extractImports,
+  extractLocalExportUsages,
   extractTestCases,
   type ExportKind,
 } from "@saflib/parser";
@@ -46,23 +47,28 @@ export interface FileTableFact {
 /**
  * Discriminated specialty for one file. `exports` and `imports` are on every
  * kind; kind-only props are `testCases` (test) and `tables` (sql-table).
+ * `localExportUsages` is optional for older blob_facts rows (pre analyzer v8).
  */
 export type FileSpecialty =
   | {
       kind: "source";
       exports: FileExportFact[];
       imports: FileImportFact[];
+      /** Export names referenced as values elsewhere in this file. */
+      localExportUsages?: string[];
     }
   | {
       kind: "test";
       exports: FileExportFact[];
       imports: FileImportFact[];
+      localExportUsages?: string[];
       testCases: FileTestCaseFact[];
     }
   | {
       kind: "sql-table";
       exports: FileExportFact[];
       imports: FileImportFact[];
+      localExportUsages?: string[];
       tables: FileTableFact[];
     };
 
@@ -72,6 +78,12 @@ export function specialtyExports(specialty: FileSpecialty): FileExportFact[] {
 
 export function specialtyImports(specialty: FileSpecialty): FileImportFact[] {
   return specialty.imports;
+}
+
+export function specialtyLocalExportUsages(
+  specialty: FileSpecialty,
+): string[] {
+  return specialty.localExportUsages ?? [];
 }
 
 export function specialtyTestCases(
@@ -106,6 +118,7 @@ export function buildFileSpecialty(source: string): FileSpecialty {
     specifier: i.specifier,
     names: i.names,
   }));
+  const localExportUsages = extractLocalExportUsages(source);
   const tables = extractDrizzleTables(source).map((t) => ({
     exportName: t.exportName,
     tableName: t.tableName,
@@ -118,13 +131,13 @@ export function buildFileSpecialty(source: string): FileSpecialty {
     })),
   }));
   if (tables.length > 0) {
-    return { kind: "sql-table", exports, imports, tables };
+    return { kind: "sql-table", exports, imports, localExportUsages, tables };
   }
   const testCases = extractTestCases(source).map((t) => ({
     fullName: t.fullName,
   }));
   if (testCases.length > 0) {
-    return { kind: "test", exports, imports, testCases };
+    return { kind: "test", exports, imports, localExportUsages, testCases };
   }
-  return { kind: "source", exports, imports };
+  return { kind: "source", exports, imports, localExportUsages };
 }

@@ -165,6 +165,7 @@ async function analyzeOnePackage(opts: {
       packageDirectory: root.directory,
       isTest: isTestPath(rel),
       imports: specialty.imports,
+      localExportUsages: specialty.localExportUsages,
     });
   }
 

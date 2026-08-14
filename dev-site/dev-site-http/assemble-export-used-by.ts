@@ -6,6 +6,7 @@ import { blobFactImports } from "@saflib/dev-site-db/types";
 import {
   assembleUsedBy,
   exportUsedByKey,
+  specialtyLocalExportUsages,
   type ExportUsedBy,
   type ExportUsedByMap,
   type UsedByImporterUnit,
@@ -89,6 +90,7 @@ export async function assembleExportUsedBy(
       packageDirectory: importerRoot.directory,
       isTest: isTestSourcePath(entry.path, fileName),
       imports: blobFactImports(fact),
+      localExportUsages: specialtyLocalExportUsages(fact.specialty),
     });
   }
 
