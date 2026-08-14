@@ -40,6 +40,8 @@ export interface SpecInventoryOperation {
   handler: SpecInventoryFileRef | null;
   /** SDK request module, when a sibling `-sdk` package matches. */
   request: SpecInventoryFileRef | null;
+  /** SDK MSW/fake handler module (`*.fake.ts`) when present beside the request. */
+  fake: SpecInventoryFileRef | null;
   /** describe/it specifications from colocated handler test files. */
   handlerTests: SpecInventoryTestSpec[];
   /**
@@ -421,7 +423,7 @@ export function buildSpecInventoryFromFiles(
 
   type RawOp = Omit<
     SpecInventoryOperation,
-    "usedBy" | "handler" | "request" | "handlerTests"
+    "usedBy" | "handler" | "request" | "fake" | "handlerTests"
   > & { resource: string };
   const opsByResource = new Map<string, RawOp[]>();
 
@@ -536,6 +538,7 @@ export function buildSpecInventoryFromFiles(
       routeStem: o.routeStem,
       handler: null as SpecInventoryOperation["handler"],
       request: null as SpecInventoryOperation["request"],
+      fake: null as SpecInventoryOperation["fake"],
       handlerTests: [] as SpecInventoryTestSpec[],
       requestSchemas: o.requestSchemas,
       responseSchemas: o.responseSchemas,

@@ -10,7 +10,7 @@
     <ResizableColumns
       v-else-if="fileNav.length"
       class="pane-split"
-      storage-key="dev-site.http.moduleNavWidth"
+      storage-key="dev-site.sdk.moduleNavWidth"
       :default-left="180"
       :min-left="120"
       :max-left="320"
@@ -20,7 +20,7 @@
           <TestFileNav
             :nodes="fileNav"
             :selected="scope"
-            collapse-dirs-under="handlers"
+            collapse-dirs-under="requests"
             @select="setScope"
           />
         </div>
@@ -86,10 +86,10 @@
             </ul>
           </div>
           <p
-            v-else-if="handlersScope && !isLoading"
+            v-else-if="requestsScope && !isLoading"
             class="text-body-2 text-medium-emphasis mb-3"
           >
-            No joined OpenAPI routes for this handler scope (sibling
+            No joined OpenAPI routes for this request scope (sibling
             <code>-spec</code> package).
           </p>
 
@@ -117,6 +117,7 @@ import {
   buildModuleFileNav,
   buildPackageSpecTree,
   findModuleNavNode,
+  isSdkPackageHiddenModuleStem,
   toModuleStem,
   type TestFileNavNode,
   type TestScope,
@@ -224,19 +225,20 @@ const fileNav = computed(() => {
       d.packageName,
       props.packageDirectory,
       props.productRoot ?? "",
+      { excludeStem: isSdkPackageHiddenModuleStem },
     ),
   );
 });
 
-/** Prefer `handlers/` when landing with no selection. */
+/** Prefer `requests/` when landing with no selection. */
 watch(
   fileNav,
   (nodes) => {
     if (scope.value.kind !== "all" || !nodes.length) return;
-    const handlers = nodes.find(
-      (n) => n.kind === "dir" && n.localPath === "handlers",
+    const requests = nodes.find(
+      (n) => n.kind === "dir" && n.localPath === "requests",
     );
-    const first = handlers ?? nodes[0];
+    const first = requests ?? nodes[0];
     if (first) {
       setScope({ kind: first.kind, localPath: first.localPath });
     }
@@ -244,7 +246,7 @@ watch(
   { immediate: true },
 );
 
-/** Drop `index` leaves with no function/class/const exports (empty router barrels). */
+/** Drop empty `index` / `index.fakes` leaves (aggregator barrels). */
 function pruneEmptyIndexModules(nodes: TestFileNavNode[]): TestFileNavNode[] {
   return nodes
     .map((n) =>
@@ -254,7 +256,7 @@ function pruneEmptyIndexModules(nodes: TestFileNavNode[]): TestFileNavNode[] {
     )
     .filter((n) => {
       if (n.kind === "dir") return n.children.length > 0;
-      if (n.label === "index" && !n.hasCardExports) return false;
+      if (n.label === "index" || n.label === "index.fakes") return false;
       return true;
     });
 }
@@ -321,6 +323,7 @@ const specTree = computed(() => {
     props.packageDirectory,
     props.productRoot ?? "",
     scope.value,
+    { excludeStem: isSdkPackageHiddenModuleStem },
   );
 });
 
@@ -333,45 +336,45 @@ const allOperations = computed((): SpecOperation[] => {
     }
   }
   return ops.sort((a, b) => {
-    const ha = a.handler?.filePath ?? a.routeStem ?? a.path;
-    const hb = b.handler?.filePath ?? b.routeStem ?? b.path;
+    const ra = a.request?.filePath ?? a.routeStem ?? a.path;
+    const rb = b.request?.filePath ?? b.routeStem ?? b.path;
     return (
-      ha.localeCompare(hb) ||
+      ra.localeCompare(rb) ||
       a.method.localeCompare(b.method) ||
       a.operationId.localeCompare(b.operationId)
     );
   });
 });
 
-const handlersScope = computed(() => {
+const requestsScope = computed(() => {
   const s = scope.value;
   if (s.kind === "all") return false;
-  return s.localPath === "handlers" || s.localPath.startsWith("handlers/");
+  return s.localPath === "requests" || s.localPath.startsWith("requests/");
 });
 
-function handlerMatchesScope(
-  handlerPath: string | undefined,
+function requestMatchesScope(
+  requestPath: string | undefined,
   s: TestScope,
 ): boolean {
   if (s.kind === "all") return false;
-  if (!handlerPath) return false;
+  if (!requestPath) return false;
   const stem = toModuleStem(s.localPath);
-  const handlerStem = toModuleStem(handlerPath);
+  const requestStem = toModuleStem(requestPath);
   if (s.kind === "file") {
-    return handlerStem === stem || handlerPath === s.localPath;
+    return requestStem === stem || requestPath === s.localPath;
   }
   return (
-    handlerPath === s.localPath ||
-    handlerPath.startsWith(`${s.localPath}/`) ||
-    handlerStem === s.localPath ||
-    handlerStem.startsWith(`${s.localPath}/`)
+    requestPath === s.localPath ||
+    requestPath.startsWith(`${s.localPath}/`) ||
+    requestStem === s.localPath ||
+    requestStem.startsWith(`${s.localPath}/`)
   );
 }
 
 const scopedRoutes = computed(() => {
-  if (!handlersScope.value) return [] as SpecOperation[];
+  if (!requestsScope.value) return [] as SpecOperation[];
   return allOperations.value.filter((op) =>
-    handlerMatchesScope(op.handler?.filePath, scope.value),
+    requestMatchesScope(op.request?.filePath, scope.value),
   );
 });
 

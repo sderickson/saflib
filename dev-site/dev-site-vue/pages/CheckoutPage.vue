@@ -136,6 +136,19 @@
                     :scope="specScope"
                     @update:scope="setSpecScope"
                   />
+                  <PackageSdkPane
+                    v-else-if="tab === 'spec' && selectedPkg.kind === 'sdk'"
+                    :subdomain="subdomain"
+                    :commit-hash="checkout.hash"
+                    :package-name="selectedPkg.packageName"
+                    :package-directory="selectedPkg.directory"
+                    :product-root="checkout.productRoot"
+                    :github-repo="githubRepo"
+                    :github-ref="githubRef"
+                    :local-repo-root="localRepoRoot"
+                    :scope="specScope"
+                    @update:scope="setSpecScope"
+                  />
                   <PackageSpecPane
                     v-else-if="tab === 'spec'"
                     :subdomain="subdomain"
@@ -230,6 +243,7 @@ import PackageSpecPane from "../components/PackageSpecPane.vue";
 import PackageDbSpecPane from "../components/PackageDbSpecPane.vue";
 import PackageSpecRoutesPane from "../components/PackageSpecRoutesPane.vue";
 import PackageHttpPane from "../components/PackageHttpPane.vue";
+import PackageSdkPane from "../components/PackageSdkPane.vue";
 import PackageIssuesPane from "../components/PackageIssuesPane.vue";
 import ResizableColumns from "../components/ResizableColumns.vue";
 

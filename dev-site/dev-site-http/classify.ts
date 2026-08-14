@@ -183,6 +183,22 @@ export function looksLikeHttpPackage(
   );
 }
 
+/** Heuristic: npm name / directory looks like a TanStack `-sdk` package. */
+export function looksLikeSdkPackage(
+  packageName: string,
+  directory: string = "",
+): boolean {
+  const name = packageName.toLowerCase();
+  const dir = directory.replace(/\\/g, "/").toLowerCase();
+  return (
+    name.endsWith("-sdk") ||
+    name.includes("-sdk-") ||
+    /\/[^/]*-sdk$/.test(dir) ||
+    dir.endsWith("/service/sdk") ||
+    /(^|\/)sdk$/.test(dir)
+  );
+}
+
 /** Heuristic: npm name / directory looks like an OpenAPI `-spec` package. */
 export function looksLikeSpecPackage(
   packageName: string,

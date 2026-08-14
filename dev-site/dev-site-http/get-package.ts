@@ -13,6 +13,7 @@ import {
 import {
   looksLikeDbPackage,
   looksLikeHttpPackage,
+  looksLikeSdkPackage,
   looksLikeSpecPackage,
 } from "./classify.ts";
 import type { RepoReadOptions } from "./get-commit.ts";
@@ -143,6 +144,7 @@ export async function getCommitPackage(
   const isDb = looksLikeDbPackage(metrics.packageName, metrics.directory);
   const isSpec = looksLikeSpecPackage(metrics.packageName, metrics.directory);
   const isHttp = looksLikeHttpPackage(metrics.packageName, metrics.directory);
+  const isSdk = looksLikeSdkPackage(metrics.packageName, metrics.directory);
   if (isDb) {
     const inv = await assemblePackageDbInventory(
       dbKey,
@@ -163,9 +165,9 @@ export async function getCommitPackage(
     if (!inv.error) {
       specInventory = inv.result;
     }
-  } else if (isHttp) {
-    // Join sibling -spec routes so the HTTP pane can show PackageRouteCards
-    // while still presenting handlers/ as a normal source package.
+  } else if (isHttp || isSdk) {
+    // Join sibling -spec routes so HTTP/SDK panes can show PackageRouteCards
+    // while still presenting handlers/ or requests/ as a normal source package.
     const specName = siblingSpecPackageName(packageName);
     if (specName) {
       const inv = await assemblePackageSpecInventory(

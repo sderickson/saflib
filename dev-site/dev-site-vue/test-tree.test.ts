@@ -5,6 +5,7 @@ import {
   buildPackageSpecTree,
   dbEntitySelectionFromScope,
   isDbPackageHiddenModuleStem,
+  isSdkPackageHiddenModuleStem,
   toModuleStem,
 } from "./test-tree.ts";
 
@@ -13,6 +14,7 @@ describe("toModuleStem", () => {
     expect(toModuleStem("a/b.ts")).toBe("a/b");
     expect(toModuleStem("a/b.test.ts")).toBe("a/b");
     expect(toModuleStem("a/b.spec.tsx")).toBe("a/b");
+    expect(toModuleStem("a/b.fake.ts")).toBe("a/b");
     expect(toModuleStem("a/b")).toBe("a/b");
   });
 });
@@ -80,6 +82,61 @@ describe("buildDbPackageFileNav", () => {
     ).toBeUndefined();
     expect(isDbPackageHiddenModuleStem("queries/matter/create")).toBe(true);
     expect(isDbPackageHiddenModuleStem("errors/index")).toBe(false);
+  });
+});
+
+describe("sdk module nav", () => {
+  it("folds *.fake.ts into the request stem and hides request barrels", () => {
+    const nav = buildModuleFileNav(
+      [
+        {
+          packageName: "@pkg/sdk",
+          filePath: "sdk/requests/forms/get.ts",
+          name: "getForm",
+          kind: "function",
+        },
+        {
+          packageName: "@pkg/sdk",
+          filePath: "sdk/requests/forms/get.fake.ts",
+          name: "getFormHandler",
+          kind: "const",
+        },
+        {
+          packageName: "@pkg/sdk",
+          filePath: "sdk/requests/forms/index.fakes.ts",
+          name: "formsFakes",
+          kind: "const",
+        },
+        {
+          packageName: "@pkg/sdk",
+          filePath: "sdk/requests/forms/index.ts",
+          name: "default",
+          kind: "const",
+        },
+      ],
+      [
+        {
+          packageName: "@pkg/sdk",
+          filePath: "sdk/requests/forms/get.test.ts",
+          fullName: "getForm > ok",
+        },
+      ],
+      "@pkg/sdk",
+      "sdk",
+      "",
+      { excludeStem: isSdkPackageHiddenModuleStem },
+    );
+
+    const requests = nav.find((n) => n.label === "requests");
+    const forms = requests?.children.find((c) => c.label === "forms");
+    const labels = (forms?.children ?? []).map((c) => c.label);
+    expect(labels).toEqual(["get"]);
+    expect(forms?.children[0]?.presence).toBe("both");
+    expect(isSdkPackageHiddenModuleStem("requests/forms/index")).toBe(true);
+    expect(isSdkPackageHiddenModuleStem("requests/forms/index.fakes")).toBe(
+      true,
+    );
+    expect(isSdkPackageHiddenModuleStem("requests/forms/get")).toBe(false);
   });
 });
 

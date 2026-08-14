@@ -76,6 +76,15 @@
         request
       </a>
       <span v-else class="route-card__missing">request</span>
+      <a
+        v-if="operation.fake"
+        href="#"
+        class="route-card__file"
+        @click.prevent="openFile(operation.fake.repoPath)"
+      >
+        fake
+      </a>
+      <span v-else class="route-card__missing">fake</span>
     </div>
 
     <section v-if="operation.handlerTests.length" class="route-card__section">
@@ -142,6 +151,8 @@ export interface RouteCardOperation {
   routeStem?: string | null;
   handler: RouteCardFileRef | null;
   request: RouteCardFileRef | null;
+  /** SDK `*.fake.ts` beside the request, when present. */
+  fake: RouteCardFileRef | null;
   handlerTests: RouteCardTestSpec[];
   requestSchemas: string[];
   responseSchemas: string[];

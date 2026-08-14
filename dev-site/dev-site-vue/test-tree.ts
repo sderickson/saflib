@@ -81,12 +81,16 @@ export interface ExportLike {
 }
 
 const TEST_SUFFIX_RE = /\.(test|spec)\.(tsx?|jsx?|mjs|cjs)$/i;
+const FAKE_SUFFIX_RE = /\.fake\.(tsx?|jsx?|mjs|cjs)$/i;
 const SOURCE_EXT_RE = /\.(tsx?|jsx?|mjs|cjs)$/i;
 
-/** Strip `.test.ts` / `.ts` (etc.) to the colocated module stem. */
+/** Strip `.test.ts` / `.fake.ts` / `.ts` (etc.) to the colocated module stem. */
 export function toModuleStem(localOrFilePath: string): string {
   if (TEST_SUFFIX_RE.test(localOrFilePath)) {
     return localOrFilePath.replace(TEST_SUFFIX_RE, "");
+  }
+  if (FAKE_SUFFIX_RE.test(localOrFilePath)) {
+    return localOrFilePath.replace(FAKE_SUFFIX_RE, "");
   }
   return localOrFilePath.replace(SOURCE_EXT_RE, "");
 }
@@ -248,6 +252,8 @@ function collectModuleUnits(
   for (const e of packageExports(exports, packageName)) {
     const local = packageLocalPath(e.filePath, packageDirectory, productRoot);
     if (TEST_SUFFIX_RE.test(local)) continue;
+    // Fold `*.fake.ts` into the product request stem (not a separate nav leaf).
+    if (FAKE_SUFFIX_RE.test(local)) continue;
     touch(toModuleStem(local), "source", e.filePath, isCardExport(e.kind));
   }
   for (const t of packageTests(tests, packageName)) {
@@ -321,7 +327,7 @@ export function buildModuleFileNav(
 /** Virtual nav folder for drizzle table+query inventory in db Spec panes. */
 export const DB_ENTITY_NAV_DIR = "entities";
 
-/** Hide schema/query inventory from the normal module tree on db packages (shown under `entities/`). */
+/** Hide query/schema inventory from the normal module tree on db packages (shown under `entities/`). */
 export function isDbPackageHiddenModuleStem(stem: string): boolean {
   const s = stem.replace(/\/+$/, "");
   return (
@@ -330,6 +336,17 @@ export function isDbPackageHiddenModuleStem(stem: string): boolean {
     s === "queries" ||
     s.startsWith("queries/")
   );
+}
+
+/**
+ * Hide request aggregator barrels on SDK packages (`index.ts`, `index.fakes.ts`
+ * under `requests/`). Per-route `*.fake.ts` files are folded via {@link toModuleStem}.
+ */
+export function isSdkPackageHiddenModuleStem(stem: string): boolean {
+  const s = stem.replace(/\/+$/, "");
+  if (s === "requests" || !s.startsWith("requests/")) return false;
+  const base = s.split("/").pop() ?? s;
+  return base === "index" || base === "index.fakes";
 }
 
 export function isDbEntityNavPath(localPath: string): boolean {
