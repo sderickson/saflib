@@ -113,7 +113,7 @@ export interface components {
             /** @description Count of test files. */
             testFiles: number;
             issueCountsByKind: components["schemas"]["issue-counts-by-kind"];
-            /** @description Sum of debt kinds only (dead-code + oversized-file + package-layout). */
+            /** @description Sum of all issue kinds (dead-code + oversized-file + package-layout). */
             debtCount: number;
         };
         /** @description Per-kind issue counts for a commit or package (all kinds count as debt). */

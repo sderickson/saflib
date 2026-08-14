@@ -88,10 +88,22 @@ const { data, isLoading, error } = useCommitPackage(
 const issues = computed(() => {
   const d = data.value?.packageDetail;
   if (!d) return [];
-  return collectPackageIssues(d, {
-    packageDirectory: props.packageDirectory,
-    productRoot: props.productRoot ?? "",
-  });
+  // Prefer server workdir scan — matches `saf-dev-site issues --workdir`.
+  // Do not derive from commit `dbInventory` (that over-flags fixtures / aliases).
+  if (d.workdirIssues) return d.workdirIssues;
+  return collectPackageIssues(
+    {
+      packageName: d.packageName,
+      directory: d.directory,
+      exports: d.exports,
+      layoutIssues: d.layoutIssues,
+      // Intentionally omit dbInventory so fallback matches export-based workdir.
+    },
+    {
+      packageDirectory: props.packageDirectory,
+      productRoot: props.productRoot ?? "",
+    },
+  );
 });
 
 const cliCommand = computed(

@@ -73,7 +73,7 @@ export interface paths {
         };
         /**
          * Package-scoped symbols for one analyzed commit
-         * @description Returns metrics, exports, and test cases for a single package at a commit. Prefer this over full commit detail for the checkout Spec panel — assembly only touches that package's source blobs. For db packages, also includes `dbInventory` (drizzle tables + query dirs). For `-spec` packages, also includes `specInventory` (OpenAPI schemas + REST resources). For `-http` packages, `specInventory` is the sibling `-spec` triangle join (route cards) while exports/tests remain the HTTP package's own source modules. `layoutIssues` are live working-tree layout/LoC findings for the package directory (same source as `saf-dev-site issues --workdir`), not commit blobs.
+         * @description Returns metrics, exports, and test cases for a single package at a commit. Prefer this over full commit detail for the checkout Spec panel — assembly only touches that package's source blobs. For db packages, also includes `dbInventory` (drizzle tables + query dirs). For `-spec` packages, also includes `specInventory` (OpenAPI schemas + REST resources). For `-http` packages, `specInventory` is the sibling `-spec` triangle join (route cards) while exports/tests remain the HTTP package's own source modules. `workdirIssues` (and layout-only `layoutIssues`) are live working-tree findings — same source as `saf-dev-site issues --workdir`, not commit blobs.
          */
         get: operations["getCommitPackage"];
         put?: never;
@@ -302,7 +302,7 @@ export interface components {
             /** @description Count of test files. */
             testFiles: number;
             issueCountsByKind: components["schemas"]["issue-counts-by-kind"];
-            /** @description Sum of debt kinds only (dead-code + oversized-file + package-layout). */
+            /** @description Sum of all issue kinds (dead-code + oversized-file + package-layout). */
             debtCount: number;
         };
         /** @description One exported symbol extracted from a source file at a commit. */
@@ -768,7 +768,9 @@ export interface operations {
                             testCases: components["schemas"]["test-case"][];
                             dbInventory?: components["schemas"]["db-inventory"];
                             specInventory?: components["schemas"]["spec-inventory"];
-                            /** @description Working-tree package-layout and oversized-file findings (matches `saf-dev-site issues --workdir` layout portion). */
+                            /** @description Full working-tree package issues (dead code + layout/LoC). Same list as `saf-dev-site issues --workdir`. Prefer this for the checkout Issues tab. */
+                            workdirIssues?: components["schemas"]["package-issue"][];
+                            /** @description Working-tree package-layout and oversized-file findings (subset of `workdirIssues`). */
                             layoutIssues?: components["schemas"]["package-issue"][];
                         };
                     };

@@ -297,10 +297,19 @@ const issueCount = computed(() => {
   const d = packageDetailData.value?.packageDetail;
   const pkg = selectedPkg.value;
   if (!d || !pkg) return 0;
-  return collectPackageIssues(d, {
-    packageDirectory: pkg.directory,
-    productRoot: checkout.value?.productRoot ?? "",
-  }).length;
+  if (d.workdirIssues) return d.workdirIssues.length;
+  return collectPackageIssues(
+    {
+      packageName: d.packageName,
+      directory: d.directory,
+      exports: d.exports,
+      layoutIssues: d.layoutIssues,
+    },
+    {
+      packageDirectory: pkg.directory,
+      productRoot: checkout.value?.productRoot ?? "",
+    },
+  ).length;
 });
 
 const tab = computed<"spec" | "docs" | "issues">(() => {

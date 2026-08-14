@@ -185,7 +185,7 @@
         "tags": [
           "no-auth"
         ],
-        "description": "Returns metrics, exports, and test cases for a single package at a commit. Prefer this over full commit detail for the checkout Spec panel — assembly only touches that package's source blobs. For db packages, also includes `dbInventory` (drizzle tables + query dirs). For `-spec` packages, also includes `specInventory` (OpenAPI schemas + REST resources). For `-http` packages, `specInventory` is the sibling `-spec` triangle join (route cards) while exports/tests remain the HTTP package's own source modules. `layoutIssues` are live working-tree layout/LoC findings for the package directory (same source as `saf-dev-site issues --workdir`), not commit blobs.\n",
+        "description": "Returns metrics, exports, and test cases for a single package at a commit. Prefer this over full commit detail for the checkout Spec panel — assembly only touches that package's source blobs. For db packages, also includes `dbInventory` (drizzle tables + query dirs). For `-spec` packages, also includes `specInventory` (OpenAPI schemas + REST resources). For `-http` packages, `specInventory` is the sibling `-spec` triangle join (route cards) while exports/tests remain the HTTP package's own source modules. `workdirIssues` (and layout-only `layoutIssues`) are live working-tree findings — same source as `saf-dev-site issues --workdir`, not commit blobs.\n",
         "parameters": [
           {
             "name": "hash",
@@ -273,9 +273,16 @@
                         "specInventory": {
                           "$ref": "#/components/schemas/spec-inventory"
                         },
+                        "workdirIssues": {
+                          "type": "array",
+                          "description": "Full working-tree package issues (dead code + layout/LoC). Same list as `saf-dev-site issues --workdir`. Prefer this for the checkout Issues tab.\n",
+                          "items": {
+                            "$ref": "#/components/schemas/package-issue"
+                          }
+                        },
                         "layoutIssues": {
                           "type": "array",
-                          "description": "Working-tree package-layout and oversized-file findings (matches `saf-dev-site issues --workdir` layout portion).\n",
+                          "description": "Working-tree package-layout and oversized-file findings (subset of `workdirIssues`).\n",
                           "items": {
                             "$ref": "#/components/schemas/package-issue"
                           }
@@ -972,7 +979,7 @@
           "debtCount": {
             "type": "integer",
             "minimum": 0,
-            "description": "Sum of debt kinds only (dead-code + oversized-file + package-layout).\n"
+            "description": "Sum of all issue kinds (dead-code + oversized-file + package-layout).\n"
           }
         },
         "required": [

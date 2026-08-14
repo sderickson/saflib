@@ -227,6 +227,10 @@ export async function assemblePackageDbInventory(
     const entity = m[1]!;
     const fileName = m[2]!;
     if (fileName === "index.ts" || fileName.endsWith(".test.ts")) continue;
+    // Match classify.isTestSourcePath — fixtures are test helpers, not product queries.
+    if (fileName.endsWith(".fixtures.ts") || fileName.endsWith(".fixtures.tsx")) {
+      continue;
+    }
     const leaf = stripTsExt(fileName);
     const fact = facts.get(entry.blobHash);
     const picked = fact
