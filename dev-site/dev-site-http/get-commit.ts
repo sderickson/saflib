@@ -5,10 +5,18 @@ import { AnalyzedCommitNotFoundError } from "@saflib/dev-site-db/errors";
 import type { components as GetCommitComponents } from "@saflib/dev-site-spec/operations/getCommits";
 import type { components as ListCommitsComponents } from "@saflib/dev-site-spec/operations/listCommits";
 import { assembleCommitSymbols } from "./analyze-commit.ts";
+import {
+  debtCountFromIssueCounts,
+  emptyIssueCountsByKind,
+  type IssueCountsByKind,
+  type PackageIssueKind,
+} from "./package-issues.ts";
 
 import { getByHash } from "@saflib/dev-site-db/queries/analyzed-commits/get-by-hash";
 import { list } from "@saflib/dev-site-db/queries/analyzed-commits/list";
 import { listByCommit } from "@saflib/dev-site-db/queries/package-metrics/list-by-commit";
+import { listByCommit as listIssueStats } from "@saflib/dev-site-db/queries/package-issue-stats/list-by-commit";
+
 export type CommitDetail = GetCommitComponents["schemas"]["commit-detail"];
 export type CommitSummary = ListCommitsComponents["schemas"]["commit-summary"];
 
@@ -56,6 +64,25 @@ function toApiTestCase(t: {
   };
 }
 
+function rollupIssueCounts(
+  rows: Array<{ packageName: string; kind: string; count: number }>,
+): {
+  byPackage: Map<string, IssueCountsByKind>;
+  totals: IssueCountsByKind;
+} {
+  const byPackage = new Map<string, IssueCountsByKind>();
+  const totals = emptyIssueCountsByKind();
+  for (const row of rows) {
+    const kind = row.kind as PackageIssueKind;
+    if (!(kind in totals)) continue;
+    totals[kind] += row.count;
+    const pkg = byPackage.get(row.packageName) ?? emptyIssueCountsByKind();
+    pkg[kind] += row.count;
+    byPackage.set(row.packageName, pkg);
+  }
+  return { byPackage, totals };
+}
+
 export async function getCommit(
   dbKey: DbKey,
   hash: string,
@@ -69,6 +96,8 @@ export async function getCommit(
 
   const metricsRes = await listByCommit(dbKey, hash);
   const metrics = metricsRes.result!;
+  const issueRows = (await listIssueStats(dbKey, hash)).result ?? [];
+  const { byPackage } = rollupIssueCounts(issueRows);
 
   const symbols = await assembleCommitSymbols(dbKey, hash, {
     repoRoot: repo.repoRoot,
@@ -91,15 +120,21 @@ export async function getCommit(
       computedAt: toIso(commit.computedAt),
       status: commit.status,
     },
-    packageMetrics: metrics.map((m) => ({
-      packageName: m.packageName,
-      directory: m.directory,
-      sourceFiles: m.sourceFiles,
-      sourceLines: m.sourceLines,
-      prodLines: m.prodLines,
-      testLines: m.testLines,
-      testFiles: m.testFiles,
-    })),
+    packageMetrics: metrics.map((m) => {
+      const issueCountsByKind =
+        byPackage.get(m.packageName) ?? emptyIssueCountsByKind();
+      return {
+        packageName: m.packageName,
+        directory: m.directory,
+        sourceFiles: m.sourceFiles,
+        sourceLines: m.sourceLines,
+        prodLines: m.prodLines,
+        testLines: m.testLines,
+        testFiles: m.testFiles,
+        issueCountsByKind,
+        debtCount: debtCountFromIssueCounts(issueCountsByKind),
+      };
+    }),
     exports: exportRows.map((e) => ({
       packageName: e.packageName,
       filePath: e.filePath,
@@ -127,8 +162,9 @@ export async function listCommitSummaries(
 
   const commits: CommitSummary[] = [];
   for (const c of page.result.commits) {
-    const metrics = (await listByCommit(dbKey, c.hash))
-      .result!;
+    const metrics = (await listByCommit(dbKey, c.hash)).result!;
+    const issueRows = (await listIssueStats(dbKey, c.hash)).result ?? [];
+    const { totals } = rollupIssueCounts(issueRows);
     commits.push({
       hash: c.hash,
       parentHashes: c.parentHashes,
@@ -146,6 +182,8 @@ export async function listCommitSummaries(
         testLines: metrics.reduce((n, m) => n + m.testLines, 0),
         exportCount: c.exportCount,
         testCaseCount: c.testCaseCount,
+        issueCountsByKind: totals,
+        debtCount: debtCountFromIssueCounts(totals),
       },
     });
   }

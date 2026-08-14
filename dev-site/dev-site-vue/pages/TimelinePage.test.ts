@@ -6,6 +6,7 @@ import type { DevSiteResponseBody } from "@saflib/dev-site-spec";
 import TimelinePage from "./TimelinePage.vue";
 import { router } from "./test_router";
 import { mountTestApp } from "../test-app";
+import { summaryMetricsFixture } from "../test-fixtures.ts";
 
 type ListResponse = DevSiteResponseBody["listCommits"][200];
 type ScanResponse = DevSiteResponseBody["executeScan"][200];
@@ -21,7 +22,7 @@ const mockList: ListResponse = {
       analyzerVersion: "1",
       computedAt: "2026-01-02T01:00:00.000Z",
       status: "complete",
-      summaryMetrics: {
+      summaryMetrics: summaryMetricsFixture({
         packageCount: 1,
         sourceFiles: 2,
         sourceLines: 100,
@@ -29,7 +30,14 @@ const mockList: ListResponse = {
         testLines: 30,
         exportCount: 2,
         testCaseCount: 3,
-      },
+        debtCount: 2,
+        issueCountsByKind: {
+          "dead-code": 1,
+          "same-file-only-export": 0,
+          "oversized-file": 1,
+          "package-layout": 0,
+        },
+      }),
     },
     {
       hash: "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
@@ -40,7 +48,7 @@ const mockList: ListResponse = {
       analyzerVersion: "1",
       computedAt: "2026-01-01T01:00:00.000Z",
       status: "complete",
-      summaryMetrics: {
+      summaryMetrics: summaryMetricsFixture({
         packageCount: 1,
         sourceFiles: 1,
         sourceLines: 50,
@@ -48,7 +56,7 @@ const mockList: ListResponse = {
         testLines: 0,
         exportCount: 1,
         testCaseCount: 0,
-      },
+      }),
     },
   ],
   nextCursor: null,
@@ -107,6 +115,7 @@ describe("TimelinePage", () => {
     expect(table.exists()).toBe(true);
     expect(wrapper.text()).toContain("second commit");
     expect(wrapper.text()).toContain("aaaaaaaaaa");
+    expect(wrapper.text()).toContain("Debt over time");
     expect(
       wrapper.findComponent({ name: "v-chip", text: "Healthy" }).exists(),
     ).toBe(true);

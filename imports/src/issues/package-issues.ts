@@ -32,6 +32,52 @@ export type PackageIssueKind =
   | "oversized-file"
   | "package-layout";
 
+/** All tracked issue kinds (including informational same-file-only). */
+export const PACKAGE_ISSUE_KINDS: readonly PackageIssueKind[] = [
+  "dead-code",
+  "same-file-only-export",
+  "oversized-file",
+  "package-layout",
+] as const;
+
+/**
+ * Kinds that count toward architectural debt (excludes same-file-only-export).
+ */
+export const DEBT_ISSUE_KINDS: readonly PackageIssueKind[] = [
+  "dead-code",
+  "oversized-file",
+  "package-layout",
+] as const;
+
+export type IssueCountsByKind = Record<PackageIssueKind, number>;
+
+export function emptyIssueCountsByKind(): IssueCountsByKind {
+  return {
+    "dead-code": 0,
+    "same-file-only-export": 0,
+    "oversized-file": 0,
+    "package-layout": 0,
+  };
+}
+
+export function countIssuesByKind(
+  issues: Array<{ kind: PackageIssueKind }>,
+): IssueCountsByKind {
+  const counts = emptyIssueCountsByKind();
+  for (const issue of issues) {
+    counts[issue.kind] += 1;
+  }
+  return counts;
+}
+
+export function debtCountFromIssueCounts(counts: IssueCountsByKind): number {
+  let n = 0;
+  for (const kind of DEBT_ISSUE_KINDS) {
+    n += counts[kind];
+  }
+  return n;
+}
+
 export interface PackageIssue {
   kind: PackageIssueKind;
   /** Short label for the issue row. */

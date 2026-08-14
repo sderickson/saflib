@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { collectPackageIssues } from "./package-issues.ts";
+import {
+  collectPackageIssues,
+  countIssuesByKind,
+  debtCountFromIssueCounts,
+} from "./package-issues.ts";
 
 describe("collectPackageIssues", () => {
   it("lists card exports with empty usedBy as dead code", () => {
@@ -140,5 +144,43 @@ describe("collectPackageIssues", () => {
       "oversized-file",
       "package-layout",
     ]);
+  });
+});
+
+describe("debt helpers", () => {
+  it("excludes same-file-only from debtCount", () => {
+    const counts = countIssuesByKind([
+      {
+        kind: "dead-code",
+        title: "",
+        name: "a",
+        kindLabel: "",
+        filePath: "a.ts",
+        repoPath: "a.ts",
+      },
+      {
+        kind: "same-file-only-export",
+        title: "",
+        name: "b",
+        kindLabel: "",
+        filePath: "b.ts",
+        repoPath: "b.ts",
+      },
+      {
+        kind: "package-layout",
+        title: "",
+        name: "c",
+        kindLabel: "",
+        filePath: "package.json",
+        repoPath: "package.json",
+      },
+    ]);
+    expect(counts).toEqual({
+      "dead-code": 1,
+      "same-file-only-export": 1,
+      "oversized-file": 0,
+      "package-layout": 1,
+    });
+    expect(debtCountFromIssueCounts(counts)).toBe(2);
   });
 });

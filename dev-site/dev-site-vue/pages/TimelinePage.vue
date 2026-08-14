@@ -30,6 +30,12 @@
           {{ scanResult.failed.length }}.
         </v-alert>
 
+        <DebtTrendChart
+          v-if="commits && commits.length > 0"
+          class="mb-4"
+          :commits="commits"
+        />
+
         <v-data-table
           v-if="commits && commits.length > 0"
           :headers="headers"
@@ -53,6 +59,25 @@
 
           <template #[`item.authoredAt`]="{ item }">
             {{ formatDateTime(item.authoredAt) }}
+          </template>
+
+          <template #[`item.debt`]="{ item }">
+            <v-tooltip location="top">
+              <template #activator="{ props: tip }">
+                <span v-bind="tip">{{ item.summaryMetrics.debtCount }}</span>
+              </template>
+              <span>
+                dead {{ item.summaryMetrics.issueCountsByKind["dead-code"] }} ·
+                oversized
+                {{ item.summaryMetrics.issueCountsByKind["oversized-file"] }} ·
+                layout
+                {{ item.summaryMetrics.issueCountsByKind["package-layout"] }} ·
+                same-file
+                {{
+                  item.summaryMetrics.issueCountsByKind["same-file-only-export"]
+                }}
+              </span>
+            </v-tooltip>
           </template>
 
           <template #[`item.summaryMetrics`]="{ item }">
@@ -86,6 +111,7 @@
 import { computed } from "vue";
 import { useCommits, useScanMutation } from "../requests/queries";
 import { commitHealth } from "../health";
+import DebtTrendChart from "../components/DebtTrendChart.vue";
 
 const props = withDefaults(
   defineProps<{
@@ -106,6 +132,7 @@ const headers = [
   { title: "Hash", key: "hash", sortable: false },
   { title: "Message", key: "message", sortable: false },
   { title: "Authored", key: "authoredAt", sortable: false },
+  { title: "Debt", key: "debt", sortable: false },
   { title: "Metrics", key: "summaryMetrics", sortable: false },
   { title: "Actions", key: "actions", sortable: false },
 ];

@@ -15,14 +15,27 @@
         </v-alert>
 
         <template v-if="detail">
-          <h2 class="text-h6 mb-2">By package</h2>
+          <h2 class="text-h6 mb-2">By package (debt hotspots first)</h2>
           <v-data-table
-            v-if="detail.packageMetrics.length > 0"
+            v-if="sortedPackages.length > 0"
             :headers="packageHeaders"
-            :items="detail.packageMetrics"
+            :items="sortedPackages"
             item-value="packageName"
             class="elevation-1 mb-6"
           >
+            <template #[`item.debtCount`]="{ item }">
+              <strong>{{ item.debtCount }}</strong>
+            </template>
+            <template #[`item.issueBreakdown`]="{ item }">
+              <span class="text-caption">
+                d{{ item.issueCountsByKind["dead-code"] }} · o{{
+                  item.issueCountsByKind["oversized-file"]
+                }}
+                · l{{ item.issueCountsByKind["package-layout"] }} · s{{
+                  item.issueCountsByKind["same-file-only-export"]
+                }}
+              </span>
+            </template>
             <template #bottom></template>
           </v-data-table>
           <p v-else class="text-body-2 mb-6">No package metrics.</p>
@@ -66,6 +79,8 @@ const props = defineProps<{
 }>();
 
 const packageHeaders = [
+  { title: "Debt", key: "debtCount" },
+  { title: "Breakdown", key: "issueBreakdown", sortable: false },
   { title: "Package", key: "packageName" },
   { title: "Directory", key: "directory" },
   { title: "Source files", key: "sourceFiles" },
@@ -98,6 +113,15 @@ const {
 } = useCommit(props.subdomain, toRef(props, "hash"));
 
 const detail = computed(() => data.value?.commitDetail);
+
+const sortedPackages = computed(() => {
+  const rows = detail.value?.packageMetrics ?? [];
+  return [...rows].sort(
+    (a, b) =>
+      (b.debtCount ?? 0) - (a.debtCount ?? 0) ||
+      a.packageName.localeCompare(b.packageName),
+  );
+});
 
 const firstLine = (message: string) => message.split("\n")[0] ?? message;
 </script>

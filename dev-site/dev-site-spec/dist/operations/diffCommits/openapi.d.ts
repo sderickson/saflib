@@ -88,6 +88,16 @@ export interface components {
             testLines: number;
             /** @description Count of test files. */
             testFiles: number;
+            issueCountsByKind: components["schemas"]["issue-counts-by-kind"];
+            /** @description Sum of debt kinds only (dead-code + oversized-file + package-layout). */
+            debtCount: number;
+        };
+        /** @description Per-kind issue counts for a commit or package. Debt excludes same-file-only-export (co-location signal, not structural debt). */
+        "issue-counts-by-kind": {
+            "dead-code": number;
+            "same-file-only-export": number;
+            "oversized-file": number;
+            "package-layout": number;
         };
         /** @description One exported symbol extracted from a source file at a commit. */
         "export-entry": {

@@ -69,8 +69,11 @@ export const throwError = async <T>(
 
 export {
   checkPackageLayout,
+  checkPackageLayoutFromInputs,
   DEFAULT_MAX_SOURCE_LINES,
   type CheckPackageLayoutOptions,
+  type CheckPackageLayoutFromInputsOptions,
+  type PackageJsonLayoutFields,
   type PackageLayoutIssue,
   type PackageLayoutIssueKind,
 } from "./src/package-layout.ts";

@@ -15,6 +15,13 @@
       "when": 1786650000000,
       "tag": "0001_blob_facts_specialty",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1786733595671,
+      "tag": "0002_huge_star_brand",
+      "breakpoints": true
     }
   ]
 }

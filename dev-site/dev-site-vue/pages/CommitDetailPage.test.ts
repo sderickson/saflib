@@ -6,6 +6,7 @@ import type { DevSiteResponseBody } from "@saflib/dev-site-spec";
 import CommitDetailPage from "./CommitDetailPage.vue";
 import { router } from "./test_router";
 import { mountTestApp } from "../test-app";
+import { packageMetricsFixture } from "../test-fixtures.ts";
 
 type GetResponse = DevSiteResponseBody["getCommits"][200];
 
@@ -24,7 +25,7 @@ const mockDetail: GetResponse = {
       status: "complete",
     },
     packageMetrics: [
-      {
+      packageMetricsFixture({
         packageName: "@fixture/root",
         directory: "",
         sourceFiles: 2,
@@ -32,7 +33,14 @@ const mockDetail: GetResponse = {
         prodLines: 30,
         testLines: 10,
         testFiles: 1,
-      },
+        debtCount: 1,
+        issueCountsByKind: {
+          "dead-code": 1,
+          "same-file-only-export": 0,
+          "oversized-file": 0,
+          "package-layout": 0,
+        },
+      }),
     ],
     exports: [
       {
@@ -77,6 +85,7 @@ describe("CommitDetailPage", () => {
     });
     expect(wrapper.find("h1").text()).toBe("Commit detail");
     expect(wrapper.text()).toContain("add math helpers");
+    expect(wrapper.text()).toContain("debt hotspots");
     expect(wrapper.text()).toContain("@fixture/root");
     expect(wrapper.text()).toContain("add");
     expect(wrapper.text()).toContain("math > adds");

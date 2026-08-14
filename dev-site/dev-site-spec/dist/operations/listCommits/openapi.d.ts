@@ -55,6 +55,9 @@ export interface components {
                 testLines: number;
                 exportCount: number;
                 testCaseCount: number;
+                issueCountsByKind: components["schemas"]["issue-counts-by-kind"];
+                /** @description Sum of debt kinds only (dead-code + oversized-file + package-layout). Excludes same-file-only-export. */
+                debtCount: number;
             };
         };
         /** @description A branch or tag pointer observed at scan time for a commit. */
@@ -71,6 +74,13 @@ export interface components {
             type: "branch" | "tag";
             /** @description True when this commit is an ancestor of the configured main branch (including main itself). Used to distinguish mainline history from feature-branch tips. */
             isMainAncestor: boolean;
+        };
+        /** @description Per-kind issue counts for a commit or package. Debt excludes same-file-only-export (co-location signal, not structural debt). */
+        "issue-counts-by-kind": {
+            "dead-code": number;
+            "same-file-only-export": number;
+            "oversized-file": number;
+            "package-layout": number;
         };
     };
     responses: never;

@@ -711,6 +711,9 @@
       "PackageIssue": {
         "$ref": "#/components/schemas/package-issue"
       },
+      "IssueCountsByKind": {
+        "$ref": "#/components/schemas/issue-counts-by-kind"
+      },
       "DbSchemaTable": {
         "$ref": "#/components/schemas/db-schema-table"
       },
@@ -743,6 +746,34 @@
           "name",
           "type",
           "isMainAncestor"
+        ]
+      },
+      "issue-counts-by-kind": {
+        "type": "object",
+        "description": "Per-kind issue counts for a commit or package. Debt excludes same-file-only-export (co-location signal, not structural debt).\n",
+        "properties": {
+          "dead-code": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "same-file-only-export": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "oversized-file": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "package-layout": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "dead-code",
+          "same-file-only-export",
+          "oversized-file",
+          "package-layout"
         ]
       },
       "commit-summary": {
@@ -820,6 +851,14 @@
               "testCaseCount": {
                 "type": "integer",
                 "minimum": 0
+              },
+              "issueCountsByKind": {
+                "$ref": "#/components/schemas/issue-counts-by-kind"
+              },
+              "debtCount": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "Sum of debt kinds only (dead-code + oversized-file + package-layout). Excludes same-file-only-export.\n"
               }
             },
             "required": [
@@ -829,7 +868,9 @@
               "testFiles",
               "testLines",
               "exportCount",
-              "testCaseCount"
+              "testCaseCount",
+              "issueCountsByKind",
+              "debtCount"
             ]
           }
         },
@@ -950,6 +991,14 @@
             "type": "integer",
             "minimum": 0,
             "description": "Count of test files."
+          },
+          "issueCountsByKind": {
+            "$ref": "#/components/schemas/issue-counts-by-kind"
+          },
+          "debtCount": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Sum of debt kinds only (dead-code + oversized-file + package-layout).\n"
           }
         },
         "required": [
@@ -959,7 +1008,9 @@
           "sourceLines",
           "prodLines",
           "testLines",
-          "testFiles"
+          "testFiles",
+          "issueCountsByKind",
+          "debtCount"
         ]
       },
       "export-entry": {

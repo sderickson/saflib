@@ -56,6 +56,14 @@ properties:
       testCaseCount:
         type: integer
         minimum: 0
+      issueCountsByKind:
+        $ref: "./issue-counts-by-kind.yaml"
+      debtCount:
+        type: integer
+        minimum: 0
+        description: >
+          Sum of debt kinds only (dead-code + oversized-file + package-layout).
+          Excludes same-file-only-export.
     required:
       - packageCount
       - sourceFiles
@@ -64,6 +72,8 @@ properties:
       - testLines
       - exportCount
       - testCaseCount
+      - issueCountsByKind
+      - debtCount
 required:
   - hash
   - parentHashes

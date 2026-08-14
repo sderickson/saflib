@@ -54,3 +54,22 @@ npm exec -- analyze-package --package <name>
 ```
 
 Prefer small, coherent batches (one pattern at a time) over boiling the ocean.
+
+## History debt graph (dev-site)
+
+The History page tracks **per-commit issue counts** stored at scan time
+(`package_issue_stats`). Use it as a **seasonal debt gauge**, not a permanent
+zero SLA.
+
+- **Debt** = `dead-code` + `oversized-file` + `package-layout`
+- **`same-file-only-export`** is tracked but **not** debt (co-location signal)
+- New packages start near zero; growth/restructure seasons spike specific kinds
+- Prefer fixing issues in packages you touch; use History hotspots to decide when
+  a dedicated cleanup PR is worth it
+- After analyzer changes, backfill with:
+
+```bash
+npm exec -- saf-dev-site scan --recompute-issues --limit 20
+# replace existing rows:
+npm exec -- saf-dev-site scan --recompute-issues --force --limit 20
+```
