@@ -11,8 +11,9 @@ getCommitPackage:
     includes `specInventory` (OpenAPI schemas + REST resources). For `-http`
     packages, `specInventory` is the sibling `-spec` triangle join (route cards)
     while exports/tests remain the HTTP package's own source modules.
-    `workdirIssues` (and layout-only `layoutIssues`) are live working-tree
-    findings — same source as `saf-dev-site issues --workdir`, not commit blobs.
+    `layoutIssues` are live working-tree layout/LoC findings for the package
+    directory (cheap; package-local). Full dead-code workdir scans stay on
+    `saf-dev-site issues --workdir` — not on this Spec package load.
   parameters:
     - name: hash
       in: path
@@ -77,19 +78,11 @@ getCommitPackage:
                     $ref: "../../schemas/db-inventory.yaml"
                   specInventory:
                     $ref: "../../schemas/spec-inventory.yaml"
-                  workdirIssues:
-                    type: array
-                    description: >
-                      Full working-tree package issues (dead code + layout/LoC).
-                      Same list as `saf-dev-site issues --workdir`. Prefer this
-                      for the checkout Issues tab.
-                    items:
-                      $ref: "../../schemas/package-issue.yaml"
                   layoutIssues:
                     type: array
                     description: >
                       Working-tree package-layout and oversized-file findings
-                      (subset of `workdirIssues`).
+                      (package-local; cheap). Dead-code workdir scans are CLI-only.
                     items:
                       $ref: "../../schemas/package-issue.yaml"
     "404":

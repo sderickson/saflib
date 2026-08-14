@@ -1,6 +1,7 @@
 import type { DbKey } from "@saflib/drizzle";
-import type { ReturnsError } from "@saflib/monorepo";
+import { checkPackageLayout, type ReturnsError } from "@saflib/monorepo";
 import { AnalyzedCommitNotFoundError } from "@saflib/dev-site-db/errors";
+import path from "node:path";
 
 import { assemblePackageSymbols } from "./analyze-commit.ts";
 import { assemblePackageDbInventory } from "./assemble-package-db-inventory.ts";
@@ -22,10 +23,37 @@ import {
   type PackageSpecInventory,
 } from "./assemble-package-spec-inventory.ts";
 import type { PackageIssue } from "./package-issues.ts";
-import { collectWorkdirPackageIssues } from "./workdir-package-issues.ts";
 
 import { getByHash } from "@saflib/dev-site-db/queries/analyzed-commits/get-by-hash";
 import { listByCommit } from "@saflib/dev-site-db/queries/package-metrics/list-by-commit";
+
+function joinRepoPath(...parts: Array<string | undefined>): string {
+  return parts
+    .map((p) => (p ?? "").replace(/^\/+|\/+$/g, ""))
+    .filter(Boolean)
+    .join("/");
+}
+
+/** Fast live layout/LoC only — do not run full workdir dead-code here (multi-second). */
+function collectLiveLayoutIssues(
+  repoRoot: string,
+  productRoot: string | undefined,
+  packageDirectory: string,
+): PackageIssue[] {
+  const packageRepoPath = joinRepoPath(productRoot, packageDirectory);
+  const packageDir = path.join(repoRoot, packageRepoPath || ".");
+  return checkPackageLayout({
+    packageDir,
+    packageRepoPath,
+  }).map((i) => ({
+    kind: i.kind,
+    title: i.title,
+    name: i.name,
+    kindLabel: i.kindLabel,
+    filePath: i.filePath,
+    repoPath: i.repoPath,
+  }));
+}
 
 export interface CommitPackageDetail {
   commitHash: string;
@@ -58,11 +86,10 @@ export interface CommitPackageDetail {
   dbInventory?: PackageDbInventory;
   specInventory?: PackageSpecInventory;
   /**
-   * Full working-tree issues (dead code + layout/LoC) — same as
-   * `saf-dev-site issues --workdir`. Prefer this for the Issues tab.
+   * Working-tree package-layout and oversized-file findings (cheap; package-local).
+   * Full dead-code workdir scans belong in `saf-dev-site issues --workdir` / a
+   * dedicated Issues fetch — not on every Spec package load.
    */
-  workdirIssues?: PackageIssue[];
-  /** @deprecated Prefer `workdirIssues`; layout/oversized subset only. */
   layoutIssues?: PackageIssue[];
 }
 
@@ -168,14 +195,10 @@ export async function getCommitPackage(
     if (!usedByRes.error) usedByMap = usedByRes.result;
   }
 
-  const workdir = await collectWorkdirPackageIssues({
-    repoRoot: repo.repoRoot,
-    productRoot: repo.productRoot,
-    packageName,
-  });
-  const workdirIssues = workdir.issues;
-  const layoutIssues = workdirIssues.filter(
-    (i) => i.kind === "package-layout" || i.kind === "oversized-file",
+  const layoutIssues = collectLiveLayoutIssues(
+    repo.repoRoot,
+    repo.productRoot,
+    metrics.directory,
   );
 
   return {
@@ -218,7 +241,6 @@ export async function getCommitPackage(
       }),
       ...(dbInventory ? { dbInventory } : {}),
       ...(specInventory ? { specInventory } : {}),
-      workdirIssues,
       ...(layoutIssues.length ? { layoutIssues } : {}),
     },
   };
