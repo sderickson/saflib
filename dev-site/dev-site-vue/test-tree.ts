@@ -267,6 +267,11 @@ function matchesStemScope(stem: string, scope: TestScope): boolean {
   return toModuleStem(scope.localPath) === stem;
 }
 
+export type ModuleNavOptions = {
+  /** Drop module stems for which this returns true (e.g. db `queries/`). */
+  excludeStem?: (stem: string) => boolean;
+};
+
 /**
  * Nav tree of colocated modules (dirs + stems), with source/test/both presence.
  */
@@ -276,6 +281,7 @@ export function buildModuleFileNav(
   packageName: string,
   packageDirectory: string = "",
   productRoot: string = "",
+  options: ModuleNavOptions = {},
 ): TestFileNavNode[] {
   const root: TestFileNavNode = {
     id: `nav:${packageName}`,
@@ -292,6 +298,7 @@ export function buildModuleFileNav(
     packageDirectory,
     productRoot,
   )) {
+    if (options.excludeStem?.(unit.stem)) continue;
     const parts = unit.stem.split("/").filter(Boolean);
     const fileLabel = parts.pop() ?? unit.stem;
     let node = root;
@@ -309,6 +316,89 @@ export function buildModuleFileNav(
 
   sortNav(root);
   return root.children;
+}
+
+/** Virtual nav folder for drizzle table+query inventory in db Spec panes. */
+export const DB_ENTITY_NAV_DIR = "entities";
+
+/** Hide query/instance plumbing from the normal module tree on db packages. */
+export function isDbPackageHiddenModuleStem(stem: string): boolean {
+  const s = stem.replace(/\/+$/, "");
+  return (
+    s === "instances" ||
+    s.startsWith("instances/") ||
+    s === "queries" ||
+    s.startsWith("queries/")
+  );
+}
+
+export function isDbEntityNavPath(localPath: string): boolean {
+  const p = localPath.replace(/\/+$/, "");
+  return (
+    p === DB_ENTITY_NAV_DIR || p.startsWith(`${DB_ENTITY_NAV_DIR}/`)
+  );
+}
+
+/**
+ * Scope helpers for the virtual `entities/` nav:
+ * - `undefined` — not an entity-only scope (normal modules, or `all`)
+ * - `null` — all entities (`dir: entities`)
+ * - `string` — one entity name (`file: entities/<name>`)
+ */
+export function dbEntitySelectionFromScope(
+  scope: TestScope,
+): string | null | undefined {
+  if (scope.kind === "all") return undefined;
+  if (scope.kind === "dir") {
+    const p = scope.localPath.replace(/\/+$/, "");
+    if (p === DB_ENTITY_NAV_DIR) return null;
+    return undefined;
+  }
+  const stem = toModuleStem(scope.localPath);
+  if (!isDbEntityNavPath(stem)) return undefined;
+  if (stem === DB_ENTITY_NAV_DIR) return null;
+  return stem.slice(DB_ENTITY_NAV_DIR.length + 1) || null;
+}
+
+/**
+ * Db Spec nav: virtual `entities/` dir (table+query inventory) plus normal
+ * modules with `instances/` and `queries/` omitted.
+ */
+export function buildDbPackageFileNav(
+  entityNames: string[],
+  exports: ExportLike[],
+  tests: TestCaseLike[],
+  packageName: string,
+  packageDirectory: string = "",
+  productRoot: string = "",
+): TestFileNavNode[] {
+  const entitiesDir: TestFileNavNode = {
+    id: `nav:${packageName}/dir:${DB_ENTITY_NAV_DIR}`,
+    label: DB_ENTITY_NAV_DIR,
+    kind: "dir",
+    localPath: DB_ENTITY_NAV_DIR,
+    children: [...entityNames]
+      .sort((a, b) => a.localeCompare(b))
+      .map((name) => ({
+        id: `nav:${packageName}/file:${DB_ENTITY_NAV_DIR}/${name}`,
+        label: name,
+        kind: "file" as const,
+        localPath: `${DB_ENTITY_NAV_DIR}/${name}`,
+        children: [],
+        presence: "source" as const,
+      })),
+  };
+
+  const modules = buildModuleFileNav(
+    exports,
+    tests,
+    packageName,
+    packageDirectory,
+    productRoot,
+    { excludeStem: isDbPackageHiddenModuleStem },
+  );
+
+  return [entitiesDir, ...modules];
 }
 
 /** @deprecated Prefer {@link buildModuleFileNav}. */
@@ -387,6 +477,7 @@ export function buildPackageSpecTree(
   packageDirectory: string = "",
   productRoot: string = "",
   scope: TestScope = { kind: "all" },
+  options: ModuleNavOptions = {},
 ): TestTreeNode[] {
   const units = collectModuleUnits(
     exports,
@@ -394,7 +485,10 @@ export function buildPackageSpecTree(
     packageName,
     packageDirectory,
     productRoot,
-  ).filter((u) => matchesStemScope(u.stem, scope));
+  ).filter(
+    (u) =>
+      !options.excludeStem?.(u.stem) && matchesStemScope(u.stem, scope),
+  );
 
   const pkgExports = packageExports(exports, packageName);
   const pkgTests = packageTests(tests, packageName);

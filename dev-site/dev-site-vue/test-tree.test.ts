@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildDbPackageFileNav,
   buildModuleFileNav,
   buildPackageSpecTree,
+  dbEntitySelectionFromScope,
+  isDbPackageHiddenModuleStem,
   toModuleStem,
 } from "./test-tree.ts";
 
@@ -11,6 +14,72 @@ describe("toModuleStem", () => {
     expect(toModuleStem("a/b.test.ts")).toBe("a/b");
     expect(toModuleStem("a/b.spec.tsx")).toBe("a/b");
     expect(toModuleStem("a/b")).toBe("a/b");
+  });
+});
+
+describe("buildDbPackageFileNav", () => {
+  it("puts entities first and hides instances/queries modules", () => {
+    const nav = buildDbPackageFileNav(
+      ["matter", "org"],
+      [
+        {
+          packageName: "@pkg/db",
+          filePath: "db/errors/index.ts",
+          name: "MatterNotFoundError",
+          kind: "class",
+        },
+        {
+          packageName: "@pkg/db",
+          filePath: "db/schemas/matter.ts",
+          name: "matterTable",
+          kind: "const",
+        },
+        {
+          packageName: "@pkg/db",
+          filePath: "db/instances/registry.ts",
+          name: "daemonDbManager",
+          kind: "const",
+        },
+        {
+          packageName: "@pkg/db",
+          filePath: "db/queries/matter/create.ts",
+          name: "createMatter",
+          kind: "function",
+        },
+      ],
+      [],
+      "@pkg/db",
+      "db",
+    );
+
+    expect(nav[0]?.label).toBe("entities");
+    expect(nav[0]?.kind).toBe("dir");
+    expect(nav[0]?.children.map((c) => c.label)).toEqual(["matter", "org"]);
+    expect(nav[0]?.children[0]?.localPath).toBe("entities/matter");
+
+    const labels = nav.slice(1).map((n) => n.label);
+    expect(labels).toContain("errors");
+    expect(labels).toContain("schemas");
+    expect(labels).not.toContain("instances");
+    expect(labels).not.toContain("queries");
+  });
+
+  it("maps entity scopes from the virtual entities/ path", () => {
+    expect(dbEntitySelectionFromScope({ kind: "all" })).toBeUndefined();
+    expect(
+      dbEntitySelectionFromScope({ kind: "dir", localPath: "entities" }),
+    ).toBeNull();
+    expect(
+      dbEntitySelectionFromScope({
+        kind: "file",
+        localPath: "entities/matter",
+      }),
+    ).toBe("matter");
+    expect(
+      dbEntitySelectionFromScope({ kind: "dir", localPath: "errors" }),
+    ).toBeUndefined();
+    expect(isDbPackageHiddenModuleStem("queries/matter/create")).toBe(true);
+    expect(isDbPackageHiddenModuleStem("errors/index")).toBe(false);
   });
 });
 

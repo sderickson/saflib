@@ -109,6 +109,8 @@
                     :github-repo="githubRepo"
                     :github-ref="githubRef"
                     :local-repo-root="localRepoRoot"
+                    :scope="specScope"
+                    @update:scope="setSpecScope"
                   />
                   <PackageSpecRoutesPane
                     v-else-if="tab === 'spec' && selectedPkg.kind === 'spec'"
