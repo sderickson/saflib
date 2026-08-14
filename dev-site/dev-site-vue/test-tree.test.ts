@@ -18,7 +18,7 @@ describe("toModuleStem", () => {
 });
 
 describe("buildDbPackageFileNav", () => {
-  it("puts entities first and hides instances/queries modules", () => {
+  it("puts entities first and hides schemas/queries modules", () => {
     const nav = buildDbPackageFileNav(
       ["matter", "org"],
       [
@@ -59,8 +59,8 @@ describe("buildDbPackageFileNav", () => {
 
     const labels = nav.slice(1).map((n) => n.label);
     expect(labels).toContain("errors");
-    expect(labels).toContain("schemas");
-    expect(labels).not.toContain("instances");
+    expect(labels).toContain("instances");
+    expect(labels).not.toContain("schemas");
     expect(labels).not.toContain("queries");
   });
 

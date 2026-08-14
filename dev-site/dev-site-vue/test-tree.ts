@@ -321,12 +321,12 @@ export function buildModuleFileNav(
 /** Virtual nav folder for drizzle table+query inventory in db Spec panes. */
 export const DB_ENTITY_NAV_DIR = "entities";
 
-/** Hide query/instance plumbing from the normal module tree on db packages. */
+/** Hide schema/query inventory from the normal module tree on db packages (shown under `entities/`). */
 export function isDbPackageHiddenModuleStem(stem: string): boolean {
   const s = stem.replace(/\/+$/, "");
   return (
-    s === "instances" ||
-    s.startsWith("instances/") ||
+    s === "schemas" ||
+    s.startsWith("schemas/") ||
     s === "queries" ||
     s.startsWith("queries/")
   );
@@ -362,7 +362,7 @@ export function dbEntitySelectionFromScope(
 
 /**
  * Db Spec nav: virtual `entities/` dir (table+query inventory) plus normal
- * modules with `instances/` and `queries/` omitted.
+ * modules with `schemas/` and `queries/` omitted (covered by `entities/`).
  */
 export function buildDbPackageFileNav(
   entityNames: string[],
