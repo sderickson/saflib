@@ -8,6 +8,7 @@ import path from "node:path";
 import fs from "node:fs";
 import { devSiteDb } from "@saflib/dev-site-db/instances";
 import { devSiteHttpStorage } from "./context.ts";
+import type { JobTriggerMap } from "./annotate-spec-inventory-jobs.ts";
 
 // BEGIN WORKFLOW AREA router-imports FOR express/add-handler
 import { createCommitsRouter } from "./routes/commits/index.ts";
@@ -40,6 +41,11 @@ export type CreateDevSiteHttpAppOptions = {
    * product router from the workflow area below is mounted (monolith / smoke).
    */
   mounts?: HttpRouterMount[];
+  /**
+   * Optional product job graph (e.g. `daemonTriggerMap`). Annotates Spec
+   * inventory ops with enqueue edges for route cards.
+   */
+  jobTriggerMap?: JobTriggerMap;
 };
 
 export type DevSiteHttpAppLease = {
@@ -76,6 +82,7 @@ export function createDevSiteHttpApp(
   const productRoot = options.productRoot ?? "";
   const mainRef = options.mainRef ?? "main";
   const dbPath = devSiteDb.getDbPath(dbKey!);
+  const jobTriggerMap = options.jobTriggerMap;
 
   const app = express();
   app.use(
@@ -87,7 +94,7 @@ export function createDevSiteHttpApp(
 
   app.use((_req, _res, next) => {
     devSiteHttpStorage.run(
-      { dbKey: dbKey!, repoRoot, productRoot, mainRef, dbPath },
+      { dbKey: dbKey!, repoRoot, productRoot, mainRef, dbPath, jobTriggerMap },
       () => next(),
     );
   });

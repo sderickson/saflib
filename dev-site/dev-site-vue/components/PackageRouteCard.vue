@@ -119,6 +119,31 @@
       </ul>
     </section>
     <p v-else class="route-card__hint">No non-test SDK importers</p>
+
+    <section
+      v-if="operation.enqueues?.length || operation.enqueuedBy?.length"
+      class="route-card__section"
+    >
+      <h4 class="route-card__section-title">Jobs</h4>
+      <dl class="route-card__jobs">
+        <div v-if="operation.enqueues?.length" class="route-card__job-row">
+          <dt>enqueues</dt>
+          <dd>
+            <code class="route-card__job-id">{{
+              operation.enqueues.join(", ")
+            }}</code>
+          </dd>
+        </div>
+        <div v-if="operation.enqueuedBy?.length" class="route-card__job-row">
+          <dt>enqueued by</dt>
+          <dd>
+            <code class="route-card__job-id">{{
+              operation.enqueuedBy.join(", ")
+            }}</code>
+          </dd>
+        </div>
+      </dl>
+    </section>
   </article>
 </template>
 
@@ -157,6 +182,10 @@ export interface RouteCardOperation {
   requestSchemas: string[];
   responseSchemas: string[];
   usedBy: RouteCardUsedBy[];
+  /** Job targets this op may enqueue (from product trigger map). */
+  enqueues?: string[];
+  /** Callers (ops or `cron:…`) that may enqueue this op. */
+  enqueuedBy?: string[];
 }
 
 const props = defineProps<{
@@ -296,5 +325,33 @@ const operation = computed(() => props.operation);
   margin: 0.4rem 0 0;
   font-size: 0.75rem;
   color: rgba(var(--v-theme-on-surface), 0.45);
+}
+.route-card__jobs {
+  margin: 0;
+  display: grid;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+}
+.route-card__job-row {
+  display: grid;
+  grid-template-columns: 5.5rem minmax(0, 1fr);
+  gap: 0.5rem;
+  align-items: baseline;
+}
+.route-card__job-row dt {
+  margin: 0;
+  color: rgba(var(--v-theme-on-surface), 0.45);
+  font-weight: 600;
+  font-size: 0.65rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+.route-card__job-row dd {
+  margin: 0;
+}
+.route-card__job-id {
+  font-size: 0.75rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  color: rgba(var(--v-theme-on-surface), 0.78);
 }
 </style>

@@ -53,6 +53,15 @@ export interface SpecInventoryOperation {
   responseSchemas: string[];
   /** Non-test product files importing the SDK request module for this route. */
   usedBy: SpecInventoryUsedBy[];
+  /**
+   * operationIds this op may enqueue (product trigger map), when annotated.
+   * Empty when unknown / not a caller.
+   */
+  enqueues?: string[];
+  /**
+   * operationIds (or `cron:…` keys) that may enqueue this op, when annotated.
+   */
+  enqueuedBy?: string[];
 }
 
 export interface SpecInventorySchema {

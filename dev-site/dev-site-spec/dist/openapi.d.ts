@@ -585,6 +585,10 @@ export interface components {
                         /** @description Repo-relative path for source links. */
                         repoPath: string;
                     }[];
+                    /** @description operationIds this op may enqueue (product job trigger map). Present only when the HTTP app was configured with a map. */
+                    enqueues?: string[];
+                    /** @description operationIds or `cron:…` keys that may enqueue this op. Present only when the HTTP app was configured with a map. */
+                    enqueuedBy?: string[];
                 }[];
             }[];
         };

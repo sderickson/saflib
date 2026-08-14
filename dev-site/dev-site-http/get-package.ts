@@ -24,9 +24,20 @@ import {
   type PackageSpecInventory,
 } from "./assemble-package-spec-inventory.ts";
 import type { PackageIssue } from "./package-issues.ts";
+import { annotateSpecInventoryJobEdges } from "./annotate-spec-inventory-jobs.ts";
+import { devSiteHttpStorage } from "./context.ts";
 
 import { getByHash } from "@saflib/dev-site-db/queries/analyzed-commits/get-by-hash";
 import { listByCommit } from "@saflib/dev-site-db/queries/package-metrics/list-by-commit";
+
+function annotateJobsIfConfigured(
+  inventory: PackageSpecInventory | undefined,
+): void {
+  if (!inventory) return;
+  const triggerMap = devSiteHttpStorage.getStore()?.jobTriggerMap;
+  if (!triggerMap) return;
+  annotateSpecInventoryJobEdges(inventory, triggerMap);
+}
 
 function joinRepoPath(...parts: Array<string | undefined>): string {
   return parts
@@ -164,6 +175,7 @@ export async function getCommitPackage(
     );
     if (!inv.error) {
       specInventory = inv.result;
+      annotateJobsIfConfigured(specInventory);
     }
   } else if (isHttp || isSdk) {
     // Join sibling -spec routes so HTTP/SDK panes can show PackageRouteCards
@@ -178,6 +190,7 @@ export async function getCommitPackage(
       );
       if (!inv.error) {
         specInventory = inv.result;
+        annotateJobsIfConfigured(specInventory);
       }
     }
   }

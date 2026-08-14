@@ -239,6 +239,8 @@ interface SpecEntity {
     requestSchemas: string[];
     responseSchemas: string[];
     usedBy: SpecUsedBy[];
+    enqueues?: string[];
+    enqueuedBy?: string[];
   }>;
 }
 
@@ -307,6 +309,8 @@ function normalizeOp(
     requestSchemas: op.requestSchemas,
     responseSchemas: op.responseSchemas,
     usedBy: op.usedBy ?? [],
+    enqueues: op.enqueues,
+    enqueuedBy: op.enqueuedBy,
   };
 }
 

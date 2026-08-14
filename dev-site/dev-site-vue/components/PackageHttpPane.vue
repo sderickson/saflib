@@ -165,6 +165,8 @@ interface SpecOperation {
   requestSchemas: string[];
   responseSchemas: string[];
   usedBy: SpecUsedBy[];
+  enqueues?: string[];
+  enqueuedBy?: string[];
 }
 
 const props = withDefaults(
@@ -410,6 +412,8 @@ function normalizeOp(op: SpecOperation): RouteCardOperation {
     requestSchemas: op.requestSchemas,
     responseSchemas: op.responseSchemas,
     usedBy: op.usedBy ?? [],
+    enqueues: op.enqueues,
+    enqueuedBy: op.enqueuedBy,
   };
 }
 
