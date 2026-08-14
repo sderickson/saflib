@@ -90,6 +90,21 @@ describe("checkPackageLayout", () => {
     );
   });
 
+  it("allows drizzle.config.ts at package root", () => {
+    withTempPkg(
+      {
+        "package.json": JSON.stringify({ name: "@t/p", scripts: {} }),
+        "drizzle.config.ts": "export default {};\n",
+        "helper.ts": "export const x = 1;\n",
+      },
+      (dir) => {
+        const issues = checkPackageLayout({ packageDir: dir });
+        const root = issues.filter((i) => i.kindLabel === "root");
+        expect(root.map((i) => i.filePath)).toEqual(["helper.ts"]);
+      },
+    );
+  });
+
   it("flags oversized files above default 800", () => {
     const body = Array.from({ length: 801 }, (_, i) => `// ${i}`).join("\n");
     withTempPkg(

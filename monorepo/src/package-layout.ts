@@ -190,7 +190,9 @@ export function checkPackageLayoutFromInputs(
   for (const name of options.rootTsFiles ?? []) {
     if (
       (name.endsWith(".ts") || name.endsWith(".tsx")) &&
-      !name.endsWith(".d.ts")
+      !name.endsWith(".d.ts") &&
+      // drizzle-kit requires this file at the package root
+      name !== "drizzle.config.ts"
     ) {
       issues.push({
         kind: "package-layout",

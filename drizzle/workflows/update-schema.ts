@@ -71,7 +71,7 @@ export const UpdateSchemaWorkflowDefinition = defineWorkflow<
 
   templateFiles: {
     schema: path.join(sourceDir, "schemas/__group-name__.ts"),
-    schemaIndex: path.join(sourceDir, "schema.ts"),
+    schemaIndex: path.join(sourceDir, "schemas/index.ts"),
   },
 
   docFiles: {
