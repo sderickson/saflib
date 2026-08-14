@@ -40,13 +40,23 @@ describe("collectWorkdirPackageIssues", () => {
       path.join(srcDir, "live.test.ts"),
       'import { unusedOnly } from "./dead.ts";\nit("x", () => { unusedOnly(); });\n',
     );
+    // Root-level TS should surface as package-layout alongside dead-code.
+    writeFileSync(
+      path.join(pkgDir, "root-helper.ts"),
+      "export function rootHelper() { return 0; }\n",
+    );
 
     const result = await collectWorkdirPackageIssues({
       repoRoot: root,
       packageName: "@test/pkg",
     });
 
-    expect(result.issues.map((i) => i.name).sort()).toEqual(["unusedOnly"]);
+    expect(result.issues.map((i) => `${i.kind}:${i.name}`).sort()).toEqual([
+      "dead-code:rootHelper",
+      "dead-code:unusedOnly",
+      "package-layout:root-helper.ts at package root (move into a thematic folder)",
+    ]);
     expect(result.issues.map((i) => i.name)).not.toContain("usedFn");
+    expect(result.issues.some((i) => i.kind === "package-layout")).toBe(true);
   });
 });

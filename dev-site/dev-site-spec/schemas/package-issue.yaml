@@ -1,0 +1,28 @@
+type: object
+required:
+  - kind
+  - title
+  - name
+  - kindLabel
+  - filePath
+  - repoPath
+properties:
+  kind:
+    type: string
+    enum:
+      - dead-code
+      - same-file-only-export
+      - oversized-file
+      - package-layout
+  title:
+    type: string
+  name:
+    type: string
+  kindLabel:
+    type: string
+  filePath:
+    type: string
+    description: Package-local path for display
+  repoPath:
+    type: string
+    description: Repo-relative path for open-source links

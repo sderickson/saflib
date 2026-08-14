@@ -163,21 +163,6 @@ export async function collectWorkdirPackageIssues(
   );
 
   const directory = targetRoot.directory;
-  const graphIssues = collectPackageIssues(
-    {
-      packageName,
-      directory,
-      productRoot,
-      exports: exports.map((e) => ({
-        name: e.name,
-        kind: e.kind,
-        filePath: e.filePath,
-        usedBy: usedByMap.get(exportUsedByKey(e.filePath, e.name)) ?? [],
-      })),
-    },
-    { packageDirectory: directory, productRoot },
-  );
-
   const layoutIssues: PackageIssue[] = includeLayout
     ? checkPackageLayout({
         packageDir: path.join(repoRoot, directory || "."),
@@ -192,9 +177,20 @@ export async function collectWorkdirPackageIssues(
       }))
     : [];
 
-  const issues = [...graphIssues, ...layoutIssues].sort(
-    (a, b) =>
-      a.filePath.localeCompare(b.filePath) || a.name.localeCompare(b.name),
+  const issues = collectPackageIssues(
+    {
+      packageName,
+      directory,
+      productRoot,
+      exports: exports.map((e) => ({
+        name: e.name,
+        kind: e.kind,
+        filePath: e.filePath,
+        usedBy: usedByMap.get(exportUsedByKey(e.filePath, e.name)) ?? [],
+      })),
+      layoutIssues,
+    },
+    { packageDirectory: directory, productRoot },
   );
 
   return {
