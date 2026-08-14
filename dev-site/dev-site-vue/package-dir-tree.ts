@@ -2,6 +2,8 @@ import type { PackageKind } from "./package-kind.ts";
 import { classifyPackageKind } from "./package-kind.ts";
 import type { IssueCountsByKind } from "./package-issues.ts";
 import { emptyIssueCountsByKind } from "./package-issues.ts";
+import type { PackageSizeTier } from "./package-size.ts";
+import { classifyPackageSize } from "./package-size.ts";
 
 export type PackageDirNodeKind = "dir" | "package";
 
@@ -12,6 +14,7 @@ export interface PackageDirNode {
   /** Present when kind === "package". */
   packageName?: string;
   packageKind?: PackageKind;
+  packageSize?: PackageSizeTier;
   debtCount?: number;
   issueCountsByKind?: IssueCountsByKind;
   sourceLines?: number;
@@ -56,6 +59,10 @@ export function buildPackageDirTree(
     const packageFields = {
       packageName: pkg.packageName,
       packageKind: classifyPackageKind(pkg.packageName, pkg.directory),
+      packageSize: classifyPackageSize({
+        sourceLines: pkg.sourceLines ?? 0,
+        testFiles: pkg.testFiles,
+      }),
       debtCount: pkg.debtCount ?? 0,
       issueCountsByKind: pkg.issueCountsByKind ?? emptyIssueCountsByKind(),
       sourceLines: pkg.sourceLines ?? 0,

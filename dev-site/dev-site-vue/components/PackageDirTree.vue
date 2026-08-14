@@ -23,12 +23,12 @@
         />
         <span class="pkg-tree__label">{{ node.label }}</span>
         <span v-if="node.kind === 'package'" class="pkg-tree__meta">
-          <v-tooltip v-if="debtColor(node)" location="end">
+          <v-tooltip location="end">
             <template #activator="{ props: tip }">
               <span
                 v-bind="tip"
                 class="pkg-tree__debt"
-                :style="{ background: debtColor(node)! }"
+                :style="debtStyle(node)"
                 aria-hidden="true"
               />
             </template>
@@ -49,7 +49,11 @@
 <script setup lang="ts">
 import type { PackageDirNode } from "../package-dir-tree";
 import { packageKindIcon } from "../package-dir-tree";
-import { debtDotColor, debtTooltipText } from "../package-debt";
+import {
+  debtDotColor,
+  debtDotSizePx,
+  debtTooltipText,
+} from "../package-debt";
 import { emptyIssueCountsByKind } from "../package-issues";
 
 defineProps<{
@@ -67,13 +71,20 @@ const onClick = (node: PackageDirNode) => {
   }
 };
 
-const debtColor = (node: PackageDirNode) =>
-  debtDotColor(node.debtCount ?? 0);
+const debtStyle = (node: PackageDirNode) => {
+  const px = debtDotSizePx(node.packageSize);
+  return {
+    background: debtDotColor(node.debtCount ?? 0),
+    width: `${px}px`,
+    height: `${px}px`,
+  };
+};
 
 const debtTip = (node: PackageDirNode) =>
   debtTooltipText({
     debtCount: node.debtCount ?? 0,
     issueCountsByKind: node.issueCountsByKind ?? emptyIssueCountsByKind(),
+    packageSize: node.packageSize,
     sourceLines: node.sourceLines,
     testLines: node.testLines,
   });
@@ -127,8 +138,6 @@ const debtTip = (node: PackageDirNode) =>
   flex-shrink: 0;
 }
 .pkg-tree__debt {
-  width: 0.55rem;
-  height: 0.55rem;
   border-radius: 50%;
   display: inline-block;
   flex-shrink: 0;
