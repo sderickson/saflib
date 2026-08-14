@@ -15,7 +15,7 @@ const mockList: ListResponse = {
   commits: [
     {
       hash: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-      parentHashes: [],
+      parentHashes: ["bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"],
       authoredAt: "2026-01-02T00:00:00.000Z",
       message: "second commit\n\nbody",
       refs: [{ name: "main", type: "branch", isMainAncestor: true }],
@@ -31,6 +31,7 @@ const mockList: ListResponse = {
         exportCount: 2,
         testCaseCount: 3,
         debtCount: 2,
+        hasIssueStats: true,
         issueCountsByKind: {
           "dead-code": 1,
           "same-file-only-export": 0,
@@ -56,16 +57,33 @@ const mockList: ListResponse = {
         testLines: 0,
         exportCount: 1,
         testCaseCount: 0,
+        hasIssueStats: true,
       }),
     },
   ],
   nextCursor: null,
 };
 
+type CheckoutResponse = DevSiteResponseBody["getCheckout"][200];
+
+const mockCheckout: CheckoutResponse = {
+  hash: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  message: "second commit",
+  authoredAt: "2026-01-02T00:00:00.000Z",
+  analyzed: true,
+  productRoot: "",
+  branch: "main",
+  packages: [],
+};
+
 const handlers = [
   http.get<PathParams, never, ListResponse>(
     "http://test.localhost:3000/api/commits",
     () => HttpResponse.json(mockList),
+  ),
+  http.get<PathParams, never, CheckoutResponse>(
+    "http://test.localhost:3000/api/checkout",
+    () => HttpResponse.json(mockCheckout),
   ),
   http.post<PathParams, { limit?: number }, ScanResponse>(
     "http://test.localhost:3000/api/scan",

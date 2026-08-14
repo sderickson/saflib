@@ -427,6 +427,7 @@
                     "authoredAt",
                     "analyzed",
                     "productRoot",
+                    "branch",
                     "packages"
                   ],
                   "properties": {
@@ -447,42 +448,15 @@
                       "type": "string",
                       "description": "Analysis path prefix within the repo (e.g. `products`). Empty string means the whole repository. Package `directory` values are relative to this prefix; prepend it for repo-absolute paths.\n"
                     },
+                    "branch": {
+                      "type": "string",
+                      "nullable": true,
+                      "description": "Short branch name for HEAD, or null when detached."
+                    },
                     "packages": {
                       "type": "array",
                       "items": {
-                        "type": "object",
-                        "required": [
-                          "packageName",
-                          "directory",
-                          "sourceFiles",
-                          "sourceLines",
-                          "prodLines",
-                          "testLines",
-                          "testFiles"
-                        ],
-                        "properties": {
-                          "packageName": {
-                            "type": "string"
-                          },
-                          "directory": {
-                            "type": "string"
-                          },
-                          "sourceFiles": {
-                            "type": "integer"
-                          },
-                          "sourceLines": {
-                            "type": "integer"
-                          },
-                          "prodLines": {
-                            "type": "integer"
-                          },
-                          "testLines": {
-                            "type": "integer"
-                          },
-                          "testFiles": {
-                            "type": "integer"
-                          }
-                        }
+                        "$ref": "#/components/schemas/package-metrics"
                       }
                     }
                   }
@@ -859,6 +833,10 @@
                 "type": "integer",
                 "minimum": 0,
                 "description": "Sum of debt kinds only (dead-code + oversized-file + package-layout). Excludes same-file-only-export.\n"
+              },
+              "hasIssueStats": {
+                "type": "boolean",
+                "description": "True when package_issue_stats were computed for this commit (including a zero-debt sentinel). False for commits scanned before issue stats.\n"
               }
             },
             "required": [
@@ -870,7 +848,8 @@
               "exportCount",
               "testCaseCount",
               "issueCountsByKind",
-              "debtCount"
+              "debtCount",
+              "hasIssueStats"
             ]
           }
         },

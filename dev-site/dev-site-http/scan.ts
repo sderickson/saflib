@@ -87,10 +87,19 @@ async function persistIssueStatsForCommit(
   if (stats.error) return { error: stats.error };
 
   await deleteIssueStats(dbKey, commitHash);
-  await insertIssueStats(
-    dbKey,
-    stats.result.map((row) => ({ ...row, commitHash })),
-  );
+  const rows =
+    stats.result.length > 0
+      ? stats.result.map((row) => ({ ...row, commitHash }))
+      : [
+          {
+            commitHash,
+            // Sentinel so list APIs can tell "computed, zero issues" from "never computed".
+            packageName: "__meta__",
+            kind: "dead-code" as const,
+            count: 0,
+          },
+        ];
+  await insertIssueStats(dbKey, rows);
   return { result: undefined };
 }
 

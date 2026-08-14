@@ -28,6 +28,39 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** @description Per-package file/LOC inventory at a single commit. */
+        "package-metrics": {
+            /**
+             * @description npm package name (e.g. `@saflib/git`).
+             * @example @saflib/git
+             */
+            packageName: string;
+            /**
+             * @description Package directory relative to the analyzed product root.
+             * @example saflib/git
+             */
+            directory: string;
+            /** @description Count of source files (excluding tests). */
+            sourceFiles: number;
+            /** @description Total lines across source files. */
+            sourceLines: number;
+            /** @description Production (non-test) source lines. */
+            prodLines: number;
+            /** @description Test file lines. */
+            testLines: number;
+            /** @description Count of test files. */
+            testFiles: number;
+            issueCountsByKind: components["schemas"]["issue-counts-by-kind"];
+            /** @description Sum of debt kinds only (dead-code + oversized-file + package-layout). */
+            debtCount: number;
+        };
+        /** @description Per-kind issue counts for a commit or package. Debt excludes same-file-only-export (co-location signal, not structural debt). */
+        "issue-counts-by-kind": {
+            "dead-code": number;
+            "same-file-only-export": number;
+            "oversized-file": number;
+            "package-layout": number;
+        };
         error: {
             /** @description A short, machine-readable error code, for when HTTP status codes are not sufficient. */
             code?: string;
@@ -69,15 +102,9 @@ export interface operations {
                         analyzed: boolean;
                         /** @description Analysis path prefix within the repo (e.g. `products`). Empty string means the whole repository. Package `directory` values are relative to this prefix; prepend it for repo-absolute paths. */
                         productRoot: string;
-                        packages: {
-                            packageName: string;
-                            directory: string;
-                            sourceFiles: number;
-                            sourceLines: number;
-                            prodLines: number;
-                            testLines: number;
-                            testFiles: number;
-                        }[];
+                        /** @description Short branch name for HEAD, or null when detached. */
+                        branch: string | null;
+                        packages: components["schemas"]["package-metrics"][];
                     };
                 };
             };

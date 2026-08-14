@@ -1,7 +1,7 @@
 import type { PackageKind } from "./package-kind.ts";
 import { classifyPackageKind } from "./package-kind.ts";
-import type { PackageSizeTier } from "./package-size.ts";
-import { classifyPackageSize } from "./package-size.ts";
+import type { IssueCountsByKind } from "./package-issues.ts";
+import { emptyIssueCountsByKind } from "./package-issues.ts";
 
 export type PackageDirNodeKind = "dir" | "package";
 
@@ -12,7 +12,10 @@ export interface PackageDirNode {
   /** Present when kind === "package". */
   packageName?: string;
   packageKind?: PackageKind;
-  packageSize?: PackageSizeTier;
+  debtCount?: number;
+  issueCountsByKind?: IssueCountsByKind;
+  sourceLines?: number;
+  testLines?: number;
   directory?: string;
   children: PackageDirNode[];
 }
@@ -21,7 +24,10 @@ export interface PackageDirInput {
   packageName: string;
   directory: string;
   sourceLines?: number;
+  testLines?: number;
   testFiles?: number;
+  debtCount?: number;
+  issueCountsByKind?: IssueCountsByKind;
 }
 
 /**
@@ -43,23 +49,26 @@ export function buildPackageDirTree(
   );
 
   for (const pkg of sorted) {
-    const size = classifyPackageSize({
-      sourceLines: pkg.sourceLines ?? 0,
-      testFiles: pkg.testFiles,
-    });
     const dir = pkg.directory.replace(/^\/+|\/+$/g, "");
     const parts = dir ? dir.split("/").filter(Boolean) : [];
     let node = root;
+
+    const packageFields = {
+      packageName: pkg.packageName,
+      packageKind: classifyPackageKind(pkg.packageName, pkg.directory),
+      debtCount: pkg.debtCount ?? 0,
+      issueCountsByKind: pkg.issueCountsByKind ?? emptyIssueCountsByKind(),
+      sourceLines: pkg.sourceLines ?? 0,
+      testLines: pkg.testLines ?? 0,
+      directory: pkg.directory,
+    };
 
     if (parts.length === 0) {
       const child: PackageDirNode = {
         id: `pkg:${pkg.packageName}`,
         label: pkg.packageName,
         kind: "package",
-        packageName: pkg.packageName,
-        packageKind: classifyPackageKind(pkg.packageName, pkg.directory),
-        packageSize: size,
-        directory: pkg.directory,
+        ...packageFields,
         children: [],
       };
       root.children.push(child);
@@ -80,10 +89,7 @@ export function buildPackageDirTree(
             id: `pkg:${pkg.packageName}`,
             label,
             kind: "package",
-            packageName: pkg.packageName,
-            packageKind: classifyPackageKind(pkg.packageName, pkg.directory),
-            packageSize: size,
-            directory: pkg.directory,
+            ...packageFields,
             children: [],
           };
           node.children.push(child);

@@ -58,6 +58,8 @@ export interface components {
                 issueCountsByKind: components["schemas"]["issue-counts-by-kind"];
                 /** @description Sum of debt kinds only (dead-code + oversized-file + package-layout). Excludes same-file-only-export. */
                 debtCount: number;
+                /** @description True when package_issue_stats were computed for this commit (including a zero-debt sentinel). False for commits scanned before issue stats. */
+                hasIssueStats: boolean;
             };
         };
         /** @description A branch or tag pointer observed at scan time for a commit. */

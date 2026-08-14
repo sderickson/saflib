@@ -34,6 +34,8 @@
           v-if="commits && commits.length > 0"
           class="mb-4"
           :commits="commits"
+          :head-hash="checkout?.hash ?? null"
+          :current-branch="checkout?.branch ?? null"
         />
 
         <v-data-table
@@ -109,7 +111,7 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
-import { useCommits, useScanMutation } from "../requests/queries";
+import { useCheckout, useCommits, useScanMutation } from "../requests/queries";
 import { commitHealth } from "../health";
 import DebtTrendChart from "../components/DebtTrendChart.vue";
 
@@ -141,7 +143,10 @@ const {
   data: listData,
   isLoading,
   error: listError,
-} = useCommits(props.subdomain, { limit: 50 });
+} = useCommits(props.subdomain, { limit: 200 });
+
+const { data: checkoutData } = useCheckout(props.subdomain);
+const checkout = computed(() => checkoutData.value);
 
 const commits = computed(() => listData.value?.commits ?? []);
 

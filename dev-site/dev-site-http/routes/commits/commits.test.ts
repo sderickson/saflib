@@ -126,6 +126,7 @@ describe("commits routes", () => {
       exportCount: 2,
       testCaseCount: 2,
       debtCount: expect.any(Number),
+      hasIssueStats: true,
       issueCountsByKind: {
         "dead-code": expect.any(Number),
         "same-file-only-export": expect.any(Number),

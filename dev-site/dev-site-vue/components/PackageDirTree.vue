@@ -23,12 +23,17 @@
         />
         <span class="pkg-tree__label">{{ node.label }}</span>
         <span v-if="node.kind === 'package'" class="pkg-tree__meta">
-          <span
-            v-if="node.packageSize"
-            class="pkg-tree__size"
-            :class="`pkg-tree__size--${node.packageSize}`"
-            :title="sizeTitle(node.packageSize)"
-          >{{ node.packageSize }}</span>
+          <v-tooltip v-if="debtColor(node)" location="end">
+            <template #activator="{ props: tip }">
+              <span
+                v-bind="tip"
+                class="pkg-tree__debt"
+                :style="{ background: debtColor(node)! }"
+                aria-hidden="true"
+              />
+            </template>
+            <span>{{ debtTip(node) }}</span>
+          </v-tooltip>
         </span>
       </button>
       <PackageDirTree
@@ -44,10 +49,8 @@
 <script setup lang="ts">
 import type { PackageDirNode } from "../package-dir-tree";
 import { packageKindIcon } from "../package-dir-tree";
-import {
-  PACKAGE_SIZE_LABELS,
-  type PackageSizeTier,
-} from "../package-size";
+import { debtDotColor, debtTooltipText } from "../package-debt";
+import { emptyIssueCountsByKind } from "../package-issues";
 
 defineProps<{
   nodes: PackageDirNode[];
@@ -64,8 +67,16 @@ const onClick = (node: PackageDirNode) => {
   }
 };
 
-const sizeTitle = (tier: PackageSizeTier) =>
-  `Size: ${PACKAGE_SIZE_LABELS[tier]}`;
+const debtColor = (node: PackageDirNode) =>
+  debtDotColor(node.debtCount ?? 0);
+
+const debtTip = (node: PackageDirNode) =>
+  debtTooltipText({
+    debtCount: node.debtCount ?? 0,
+    issueCountsByKind: node.issueCountsByKind ?? emptyIssueCountsByKind(),
+    sourceLines: node.sourceLines,
+    testLines: node.testLines,
+  });
 </script>
 
 <style scoped>
@@ -115,29 +126,12 @@ const sizeTitle = (tier: PackageSizeTier) =>
   gap: 0.35rem;
   flex-shrink: 0;
 }
-.pkg-tree__size {
-  font-size: 0.6rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  padding: 0.05rem 0.28rem;
-  border-radius: 3px;
-  line-height: 1.2;
-}
-.pkg-tree__size--S {
-  background: rgba(var(--v-theme-success), 0.18);
-  color: rgb(var(--v-theme-success));
-}
-.pkg-tree__size--M {
-  background: rgba(var(--v-theme-info), 0.18);
-  color: rgb(var(--v-theme-info));
-}
-.pkg-tree__size--L {
-  background: rgba(var(--v-theme-warning), 0.22);
-  color: rgb(var(--v-theme-warning));
-}
-.pkg-tree__size--XL {
-  background: rgba(var(--v-theme-error), 0.18);
-  color: rgb(var(--v-theme-error));
+.pkg-tree__debt {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
 }
 .pkg-tree__icon {
   opacity: 0.75;

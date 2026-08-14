@@ -64,6 +64,11 @@ properties:
         description: >
           Sum of debt kinds only (dead-code + oversized-file + package-layout).
           Excludes same-file-only-export.
+      hasIssueStats:
+        type: boolean
+        description: >
+          True when package_issue_stats were computed for this commit (including
+          a zero-debt sentinel). False for commits scanned before issue stats.
     required:
       - packageCount
       - sourceFiles
@@ -74,6 +79,7 @@ properties:
       - testCaseCount
       - issueCountsByKind
       - debtCount
+      - hasIssueStats
 required:
   - hash
   - parentHashes

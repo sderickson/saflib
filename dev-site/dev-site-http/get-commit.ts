@@ -8,14 +8,13 @@ import { assembleCommitSymbols } from "./analyze-commit.ts";
 import {
   debtCountFromIssueCounts,
   emptyIssueCountsByKind,
-  type IssueCountsByKind,
-  type PackageIssueKind,
 } from "./package-issues.ts";
 
 import { getByHash } from "@saflib/dev-site-db/queries/analyzed-commits/get-by-hash";
 import { list } from "@saflib/dev-site-db/queries/analyzed-commits/list";
 import { listByCommit } from "@saflib/dev-site-db/queries/package-metrics/list-by-commit";
 import { listByCommit as listIssueStats } from "@saflib/dev-site-db/queries/package-issue-stats/list-by-commit";
+import { rollupIssueCounts } from "./issue-stats-rollup.ts";
 
 export type CommitDetail = GetCommitComponents["schemas"]["commit-detail"];
 export type CommitSummary = ListCommitsComponents["schemas"]["commit-summary"];
@@ -62,25 +61,6 @@ function toApiTestCase(t: {
     subjectFilePath: t.subjectFilePath,
     subjectConfidence: t.subjectConfidence,
   };
-}
-
-function rollupIssueCounts(
-  rows: Array<{ packageName: string; kind: string; count: number }>,
-): {
-  byPackage: Map<string, IssueCountsByKind>;
-  totals: IssueCountsByKind;
-} {
-  const byPackage = new Map<string, IssueCountsByKind>();
-  const totals = emptyIssueCountsByKind();
-  for (const row of rows) {
-    const kind = row.kind as PackageIssueKind;
-    if (!(kind in totals)) continue;
-    totals[kind] += row.count;
-    const pkg = byPackage.get(row.packageName) ?? emptyIssueCountsByKind();
-    pkg[kind] += row.count;
-    byPackage.set(row.packageName, pkg);
-  }
-  return { byPackage, totals };
 }
 
 export async function getCommit(
@@ -164,7 +144,7 @@ export async function listCommitSummaries(
   for (const c of page.result.commits) {
     const metrics = (await listByCommit(dbKey, c.hash)).result!;
     const issueRows = (await listIssueStats(dbKey, c.hash)).result ?? [];
-    const { totals } = rollupIssueCounts(issueRows);
+    const { totals, hasIssueStats } = rollupIssueCounts(issueRows);
     commits.push({
       hash: c.hash,
       parentHashes: c.parentHashes,
@@ -184,6 +164,7 @@ export async function listCommitSummaries(
         testCaseCount: c.testCaseCount,
         issueCountsByKind: totals,
         debtCount: debtCountFromIssueCounts(totals),
+        hasIssueStats,
       },
     });
   }

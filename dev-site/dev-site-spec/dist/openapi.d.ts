@@ -236,6 +236,8 @@ export interface components {
                 issueCountsByKind: components["schemas"]["issue-counts-by-kind"];
                 /** @description Sum of debt kinds only (dead-code + oversized-file + package-layout). Excludes same-file-only-export. */
                 debtCount: number;
+                /** @description True when package_issue_stats were computed for this commit (including a zero-debt sentinel). False for commits scanned before issue stats. */
+                hasIssueStats: boolean;
             };
         };
         /** @description Analyzed commit metadata — one row per scanned commit. Does not include per-package / export / test-case payloads (see CommitDetail for those). */
@@ -867,15 +869,9 @@ export interface operations {
                         analyzed: boolean;
                         /** @description Analysis path prefix within the repo (e.g. `products`). Empty string means the whole repository. Package `directory` values are relative to this prefix; prepend it for repo-absolute paths. */
                         productRoot: string;
-                        packages: {
-                            packageName: string;
-                            directory: string;
-                            sourceFiles: number;
-                            sourceLines: number;
-                            prodLines: number;
-                            testLines: number;
-                            testFiles: number;
-                        }[];
+                        /** @description Short branch name for HEAD, or null when detached. */
+                        branch: string | null;
+                        packages: components["schemas"]["package-metrics"][];
                     };
                 };
             };

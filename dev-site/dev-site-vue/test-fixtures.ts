@@ -21,6 +21,7 @@ export function summaryMetricsFixture(
     testCaseCount?: number;
     issueCountsByKind?: IssueCountsByKind;
     debtCount?: number;
+    hasIssueStats?: boolean;
   } = {},
 ) {
   const issueCountsByKind =
@@ -35,6 +36,7 @@ export function summaryMetricsFixture(
     testCaseCount: partial.testCaseCount ?? 0,
     issueCountsByKind,
     debtCount: partial.debtCount ?? 0,
+    hasIssueStats: partial.hasIssueStats ?? true,
   };
 }
 
