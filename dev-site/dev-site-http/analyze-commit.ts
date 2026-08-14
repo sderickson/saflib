@@ -22,6 +22,7 @@ import type { ReturnsError } from "@saflib/monorepo";
 import type { GitCommandError } from "@saflib/git";
 import { makeSubsystemReporters } from "@saflib/node";
 import {
+  isScaffoldTemplatePath,
   isSourcePath,
   isTestSourcePath,
   packageForPath,
@@ -274,15 +275,17 @@ export async function analyzeCommit(
       }
     } else {
       agg.prodLines += fact.lineCount;
-      for (const exp of blobFactExports(fact)) {
-        exportsOut.push({
-          packageName: pkg.packageName,
-          filePath: entry.path,
-          name: exp.name,
-          kind: exp.kind,
-          signature: exp.signature ?? null,
-          docstring: exp.docstring ?? null,
-        });
+      if (!isScaffoldTemplatePath(entry.path)) {
+        for (const exp of blobFactExports(fact)) {
+          exportsOut.push({
+            packageName: pkg.packageName,
+            filePath: entry.path,
+            name: exp.name,
+            kind: exp.kind,
+            signature: exp.signature ?? null,
+            docstring: exp.docstring ?? null,
+          });
+        }
       }
     }
     byPackage.set(key, agg);
@@ -432,7 +435,7 @@ export async function assemblePackageSymbols(
           subjectConfidence: null,
         });
       }
-    } else {
+    } else if (!isScaffoldTemplatePath(entry.path)) {
       for (const exp of blobFactExports(fact)) {
         exportsOut.push({
           packageName,

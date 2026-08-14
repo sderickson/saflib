@@ -63,6 +63,8 @@ components:
       $ref: "./schemas/db-inventory.yaml"
     SpecInventory:
       $ref: "./schemas/spec-inventory.yaml"
+    PackageIssue:
+      $ref: "./schemas/package-issue.yaml"
     DbSchemaTable:
       $ref: "./schemas/db-schema-table.yaml"
     DbSchemaColumn:

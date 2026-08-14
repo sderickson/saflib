@@ -103,4 +103,42 @@ describe("collectPackageIssues", () => {
 
     expect(issues.map((i) => i.name)).toEqual(["createMatter"]);
   });
+
+  it("merges layoutIssues into the result list", () => {
+    const issues = collectPackageIssues({
+      packageName: "@pkg",
+      exports: [
+        {
+          name: "deadFn",
+          kind: "function",
+          filePath: "pkg/b.ts",
+          usedBy: [],
+        },
+      ],
+      layoutIssues: [
+        {
+          kind: "package-layout",
+          title: "Package layout",
+          name: "root.ts at package root (move into a thematic folder)",
+          kindLabel: "root",
+          filePath: "root.ts",
+          repoPath: "pkg/root.ts",
+        },
+        {
+          kind: "oversized-file",
+          title: "Oversized file",
+          name: "big.ts (900 LoC > 800)",
+          kindLabel: "file",
+          filePath: "big.ts",
+          repoPath: "pkg/big.ts",
+        },
+      ],
+    });
+
+    expect(issues.map((i) => i.kind).sort()).toEqual([
+      "dead-code",
+      "oversized-file",
+      "package-layout",
+    ]);
+  });
 });

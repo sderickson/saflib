@@ -13,7 +13,7 @@ export interface paths {
         };
         /**
          * Package-scoped symbols for one analyzed commit
-         * @description Returns metrics, exports, and test cases for a single package at a commit. Prefer this over full commit detail for the checkout Spec panel — assembly only touches that package's source blobs. For db packages, also includes `dbInventory` (drizzle tables + query dirs). For `-spec` packages, also includes `specInventory` (OpenAPI schemas + REST resources). For `-http` packages, `specInventory` is the sibling `-spec` triangle join (route cards) while exports/tests remain the HTTP package's own source modules.
+         * @description Returns metrics, exports, and test cases for a single package at a commit. Prefer this over full commit detail for the checkout Spec panel — assembly only touches that package's source blobs. For db packages, also includes `dbInventory` (drizzle tables + query dirs). For `-spec` packages, also includes `specInventory` (OpenAPI schemas + REST resources). For `-http` packages, `specInventory` is the sibling `-spec` triangle join (route cards) while exports/tests remain the HTTP package's own source modules. `layoutIssues` are live working-tree layout/LoC findings for the package directory (same source as `saf-dev-site issues --workdir`), not commit blobs.
          */
         get: operations["getCommitPackage"];
         put?: never;
@@ -235,6 +235,17 @@ export interface components {
             /** @description Repo-relative path for source links. */
             repoPath: string;
         };
+        "package-issue": {
+            /** @enum {string} */
+            kind: "dead-code" | "same-file-only-export" | "oversized-file" | "package-layout";
+            title: string;
+            name: string;
+            kindLabel: string;
+            /** @description Package-local path for display */
+            filePath: string;
+            /** @description Repo-relative path for open-source links */
+            repoPath: string;
+        };
         error: {
             /** @description A short, machine-readable error code, for when HTTP status codes are not sufficient. */
             code?: string;
@@ -286,6 +297,8 @@ export interface operations {
                             testCases: components["schemas"]["test-case"][];
                             dbInventory?: components["schemas"]["db-inventory"];
                             specInventory?: components["schemas"]["spec-inventory"];
+                            /** @description Working-tree package-layout and oversized-file findings (matches `saf-dev-site issues --workdir` layout portion). */
+                            layoutIssues?: components["schemas"]["package-issue"][];
                         };
                     };
                 };

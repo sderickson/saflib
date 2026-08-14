@@ -37,7 +37,7 @@ export const SOURCE_EXTS = new Set([
   ".cjs",
 ]);
 
-/** Heuristic: *.test.* / *.spec.* / *.fixtures.*, or under tests/ / __tests__/. */
+/** Heuristic: *.test.* / *.spec.* / *.fixtures.*, or under testing/ / tests/ / __tests__/. */
 export function isTestSourcePath(relPosix: string, fileName: string): boolean {
   const lower = fileName.toLowerCase();
   if (
@@ -55,7 +55,19 @@ export function isTestSourcePath(relPosix: string, fileName: string): boolean {
     return true;
   }
   const parts = relPosix.split("/");
-  return parts.includes("tests") || parts.includes("__tests__");
+  return (
+    parts.includes("testing") ||
+    parts.includes("tests") ||
+    parts.includes("__tests__")
+  );
+}
+
+/**
+ * Workflow scaffold placeholders (e.g. `handlers/__group-name__/`), not real product code.
+ * Double-underscore path segments mark copy-paste templates from SAF workflows.
+ */
+export function isScaffoldTemplatePath(relPosix: string): boolean {
+  return relPosix.split("/").some((part) => /^__[^/]+__$/.test(part));
 }
 
 export function extOf(fileName: string): string {

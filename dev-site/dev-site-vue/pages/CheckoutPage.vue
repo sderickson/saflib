@@ -24,18 +24,6 @@
         >
           {{ checkout.analyzed ? "analyzed" : "not analyzed" }}
         </v-chip>
-        <v-btn
-          v-if="!checkout.analyzed"
-          size="x-small"
-          color="primary"
-          variant="flat"
-          class="checkout-strip__scan"
-          :loading="isScanning"
-          :disabled="isScanning"
-          @click="scanThisCommit"
-        >
-          Scan
-        </v-btn>
       </div>
 
       <div v-if="checkout.analyzed" class="checkout-body">
@@ -192,6 +180,24 @@
             </div>
           </template>
         </ResizableColumns>
+      </div>
+
+      <div v-else class="checkout-unscanned">
+        <p class="checkout-unscanned__title">This commit hasn’t been scanned yet</p>
+        <p class="checkout-unscanned__body">
+          Scan builds the package inventory so you can browse specs, docs, and
+          issues for this checkout.
+        </p>
+        <v-btn
+          color="primary"
+          size="large"
+          variant="flat"
+          :loading="isScanning"
+          :disabled="isScanning"
+          @click="scanThisCommit"
+        >
+          Scan this commit
+        </v-btn>
       </div>
     </template>
   </div>
@@ -465,9 +471,31 @@ const formatDateTime = (dateTimeString: string): string => {
   color: rgba(var(--v-theme-on-surface), 0.5);
   white-space: nowrap;
 }
-.checkout-strip__chip,
-.checkout-strip__scan {
+.checkout-strip__chip {
   flex: 0 0 auto;
+}
+.checkout-unscanned {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 2rem 1.5rem;
+  text-align: center;
+}
+.checkout-unscanned__title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+.checkout-unscanned__body {
+  margin: 0 0 0.5rem;
+  max-width: 28rem;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: rgba(var(--v-theme-on-surface), 0.6);
 }
 .checkout-body {
   flex: 1 1 auto;

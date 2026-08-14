@@ -1,62 +1,64 @@
 <template>
-  <div>
+  <div class="pane-root">
     <v-progress-linear v-if="isLoading" indeterminate class="mb-2" />
     <v-alert v-if="error" type="error" class="mb-2">{{ error.message }}</v-alert>
 
-    <div class="issues-cli mb-4">
-      <div class="text-caption text-medium-emphasis mb-1">
-        Same list via CLI (working tree — no DB scan required):
-      </div>
-      <div class="issues-cli__row">
-        <code class="issues-cli__cmd">{{ cliCommand }}</code>
-        <v-btn
-          size="small"
-          variant="tonal"
-          :color="copied ? 'success' : undefined"
-          @click="copyCli"
-        >
-          {{ copied ? "Copied" : "Copy" }}
-        </v-btn>
-      </div>
-    </div>
-
-    <div v-if="!isLoading && !issues.length" class="text-body-2 text-medium-emphasis">
-      No issues found for this package.
-    </div>
-
-    <section v-else-if="issues.length" class="issues">
-      <h3 class="issues__heading">Package issues</h3>
-      <p class="issues__hint">
-        Dead code and layout findings. Triage guide:
-        <code>saflib/dev-tools/docs/package-issues.md</code>
-        (un-export, split tested helpers, scripts/bin CLI, delete, or fix the
-        tool). Also: <code>analyze-package</code>.
-      </p>
-      <ul class="issues__list">
-        <li
-          v-for="issue in issues"
-          :key="issue.repoPath + ':' + issue.name"
-          class="issues__item"
-        >
-          <span class="issues__badge">{{ issue.title }}</span>
-          <a
-            href="#"
-            class="issues__name"
-            @click.prevent="openFile(issue.repoPath)"
+    <div class="pane-scroll">
+      <div class="issues-cli mb-4">
+        <div class="text-caption text-medium-emphasis mb-1">
+          Same list via CLI (working tree — no DB scan required):
+        </div>
+        <div class="issues-cli__row">
+          <code class="issues-cli__cmd">{{ cliCommand }}</code>
+          <v-btn
+            size="small"
+            variant="tonal"
+            :color="copied ? 'success' : undefined"
+            @click="copyCli"
           >
-            {{ issue.name }}
-          </a>
-          <span class="issues__kind">{{ issue.kindLabel }}</span>
-          <a
-            href="#"
-            class="issues__path"
-            @click.prevent="openFile(issue.repoPath)"
+            {{ copied ? "Copied" : "Copy" }}
+          </v-btn>
+        </div>
+      </div>
+
+      <div v-if="!isLoading && !issues.length" class="text-body-2 text-medium-emphasis">
+        No issues found for this package.
+      </div>
+
+      <section v-else-if="issues.length" class="issues">
+        <h3 class="issues__heading">Package issues</h3>
+        <p class="issues__hint">
+          Dead code and layout findings. Triage guide:
+          <code>saflib/dev-tools/docs/package-issues.md</code>
+          (un-export, split tested helpers, scripts/bin CLI, delete, or fix the
+          tool). Also: <code>analyze-package</code>.
+        </p>
+        <ul class="issues__list">
+          <li
+            v-for="issue in issues"
+            :key="issue.repoPath + ':' + issue.name"
+            class="issues__item"
           >
-            {{ issue.filePath }}
-          </a>
-        </li>
-      </ul>
-    </section>
+            <span class="issues__badge">{{ issue.title }}</span>
+            <a
+              href="#"
+              class="issues__name"
+              @click.prevent="openFile(issue.repoPath)"
+            >
+              {{ issue.name }}
+            </a>
+            <span class="issues__kind">{{ issue.kindLabel }}</span>
+            <a
+              href="#"
+              class="issues__path"
+              @click.prevent="openFile(issue.repoPath)"
+            >
+              {{ issue.filePath }}
+            </a>
+          </li>
+        </ul>
+      </section>
+    </div>
   </div>
 </template>
 
@@ -132,6 +134,18 @@ defineExpose({
 </script>
 
 <style scoped>
+.pane-root {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+.pane-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+}
 .issues-cli__row {
   display: flex;
   flex-wrap: wrap;

@@ -73,7 +73,7 @@ export interface paths {
         };
         /**
          * Package-scoped symbols for one analyzed commit
-         * @description Returns metrics, exports, and test cases for a single package at a commit. Prefer this over full commit detail for the checkout Spec panel — assembly only touches that package's source blobs. For db packages, also includes `dbInventory` (drizzle tables + query dirs). For `-spec` packages, also includes `specInventory` (OpenAPI schemas + REST resources). For `-http` packages, `specInventory` is the sibling `-spec` triangle join (route cards) while exports/tests remain the HTTP package's own source modules.
+         * @description Returns metrics, exports, and test cases for a single package at a commit. Prefer this over full commit detail for the checkout Spec panel — assembly only touches that package's source blobs. For db packages, also includes `dbInventory` (drizzle tables + query dirs). For `-spec` packages, also includes `specInventory` (OpenAPI schemas + REST resources). For `-http` packages, `specInventory` is the sibling `-spec` triangle join (route cards) while exports/tests remain the HTTP package's own source modules. `layoutIssues` are live working-tree layout/LoC findings for the package directory (same source as `saf-dev-site issues --workdir`), not commit blobs.
          */
         get: operations["getCommitPackage"];
         put?: never;
@@ -180,6 +180,7 @@ export interface components {
         CommitRef: components["schemas"]["commit-ref"];
         DbInventory: components["schemas"]["db-inventory"];
         SpecInventory: components["schemas"]["spec-inventory"];
+        PackageIssue: components["schemas"]["package-issue"];
         DbSchemaTable: components["schemas"]["db-schema-table"];
         DbSchemaColumn: components["schemas"]["db-schema-column"];
         /** @description A branch or tag pointer observed at scan time for a commit. */
@@ -567,6 +568,17 @@ export interface components {
                 }[];
             }[];
         };
+        "package-issue": {
+            /** @enum {string} */
+            kind: "dead-code" | "same-file-only-export" | "oversized-file" | "package-layout";
+            title: string;
+            name: string;
+            kindLabel: string;
+            /** @description Package-local path for display */
+            filePath: string;
+            /** @description Repo-relative path for open-source links */
+            repoPath: string;
+        };
         login: {
             /** @enum {string} */
             event: "login";
@@ -741,6 +753,8 @@ export interface operations {
                             testCases: components["schemas"]["test-case"][];
                             dbInventory?: components["schemas"]["db-inventory"];
                             specInventory?: components["schemas"]["spec-inventory"];
+                            /** @description Working-tree package-layout and oversized-file findings (matches `saf-dev-site issues --workdir` layout portion). */
+                            layoutIssues?: components["schemas"]["package-issue"][];
                         };
                     };
                 };

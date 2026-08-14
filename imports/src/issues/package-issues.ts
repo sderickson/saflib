@@ -68,6 +68,11 @@ export interface PackageDetailForIssues {
       }>;
     }>;
   };
+  /**
+   * Layout / oversized findings (e.g. from `checkPackageLayout`).
+   * Merged into the returned list so Spec UI and `--workdir` CLI share one collector.
+   */
+  layoutIssues?: PackageIssue[];
 }
 
 function isSameFileOnly(
@@ -139,6 +144,10 @@ export function collectPackageIssues(
         });
       }
     }
+  }
+
+  for (const layout of detail.layoutIssues ?? []) {
+    issues.push({ ...layout });
   }
 
   issues.sort(

@@ -17,18 +17,10 @@
     >
       <template #left>
         <div class="pane-nav">
-          <button
-            type="button"
-            class="spec-all"
-            :class="{ 'spec-all--selected': scope.kind === 'all' }"
-            @click="setScope({ kind: 'all' })"
-          >
-            <v-icon size="x-small" icon="mdi-folder-outline" />
-            <span>All modules</span>
-          </button>
           <TestFileNav
             :nodes="fileNav"
             :selected="scope"
+            collapse-dirs-under="handlers"
             @select="setScope"
           />
         </div>
@@ -68,9 +60,12 @@
               {{ missingScopeHint }}
             </p>
           </header>
-          <div v-else class="scope-header scope-header--all">
-            <h3 class="scope-header__title">All modules</h3>
-          </div>
+          <p
+            v-else
+            class="text-body-2 text-medium-emphasis mb-3"
+          >
+            Select a module in the nav.
+          </p>
 
           <div v-if="scopedRoutes.length" class="routes-block">
             <h4 class="routes-block__title">
@@ -97,13 +92,6 @@
             No joined OpenAPI routes for this handler scope (sibling
             <code>-spec</code> package).
           </p>
-          <p
-            v-else-if="scope.kind === 'all' && allRouteCount > 0"
-            class="routes-hint"
-          >
-            {{ allRouteCount }} routes under
-            <code>handlers/</code> — open that folder to browse route cards.
-          </p>
 
           <TestTree
             v-if="specTree.length"
@@ -111,7 +99,7 @@
             @open-source="openFile"
           />
           <p
-            v-else-if="!scopedRoutes.length"
+            v-else-if="scope.kind !== 'all' && !scopedRoutes.length"
             class="text-body-2 text-medium-emphasis"
           >
             No exports or tests in this scope.
@@ -123,13 +111,14 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, watch } from "vue";
 import { useCommitPackage, useFirstRepoFile } from "../requests/queries";
 import {
   buildModuleFileNav,
   buildPackageSpecTree,
   findModuleNavNode,
   toModuleStem,
+  type TestFileNavNode,
   type TestScope,
 } from "../test-tree";
 import {
@@ -227,14 +216,47 @@ const specPkgPrefix = computed(() => {
 const fileNav = computed(() => {
   const d = detail.value;
   if (!d) return [];
-  return buildModuleFileNav(
-    d.exports ?? [],
-    d.testCases,
-    d.packageName,
-    props.packageDirectory,
-    props.productRoot ?? "",
+  return pruneEmptyIndexModules(
+    buildModuleFileNav(
+      d.exports ?? [],
+      d.testCases,
+      d.packageName,
+      props.packageDirectory,
+      props.productRoot ?? "",
+    ),
   );
 });
+
+/** Prefer `handlers/` when landing with no selection. */
+watch(
+  fileNav,
+  (nodes) => {
+    if (scope.value.kind !== "all" || !nodes.length) return;
+    const handlers = nodes.find(
+      (n) => n.kind === "dir" && n.localPath === "handlers",
+    );
+    const first = handlers ?? nodes[0];
+    if (first) {
+      setScope({ kind: first.kind, localPath: first.localPath });
+    }
+  },
+  { immediate: true },
+);
+
+/** Drop `index` leaves with no function/class/const exports (empty router barrels). */
+function pruneEmptyIndexModules(nodes: TestFileNavNode[]): TestFileNavNode[] {
+  return nodes
+    .map((n) =>
+      n.kind === "dir"
+        ? { ...n, children: pruneEmptyIndexModules(n.children) }
+        : n,
+    )
+    .filter((n) => {
+      if (n.kind === "dir") return n.children.length > 0;
+      if (n.label === "index" && !n.hasCardExports) return false;
+      return true;
+    });
+}
 
 const selectedModule = computed(() => {
   if (scope.value.kind !== "file") return null;
@@ -319,8 +341,6 @@ const allOperations = computed((): SpecOperation[] => {
     );
   });
 });
-
-const allRouteCount = computed(() => allOperations.value.length);
 
 const handlersScope = computed(() => {
   const s = scope.value;
@@ -420,29 +440,6 @@ function openFile(path: string) {
   overflow: auto;
   padding: 0.25rem 0.35rem;
 }
-.spec-all {
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-  width: 100%;
-  border: 0;
-  background: transparent;
-  text-align: left;
-  padding: 0.2rem 0.3rem;
-  border-radius: 4px;
-  cursor: pointer;
-  color: inherit;
-  font: inherit;
-  font-size: 0.75rem;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  margin-bottom: 0.15rem;
-}
-.spec-all:hover {
-  background: rgba(var(--v-theme-on-surface), 0.06);
-}
-.spec-all--selected {
-  background: rgba(var(--v-theme-primary), 0.12);
-}
 .scope-header {
   margin-bottom: 0.75rem;
   max-width: 44rem;
@@ -466,11 +463,6 @@ function openFile(path: string) {
 .scope-header--dir .scope-header__title {
   font-size: 1.15rem;
 }
-.scope-header--all .scope-header__title {
-  font-size: 0.95rem;
-  font-weight: 500;
-  color: rgba(var(--v-theme-on-surface), 0.65);
-}
 .scope-header__presence {
   margin: 0.25rem 0 0;
   font-size: 0.7rem;
@@ -491,11 +483,6 @@ function openFile(path: string) {
   margin: 0.35rem 0 0;
   font-size: 0.75rem;
   color: rgba(var(--v-theme-on-surface), 0.45);
-}
-.routes-hint {
-  margin: 0 0 1rem;
-  font-size: 0.8125rem;
-  color: rgba(var(--v-theme-on-surface), 0.55);
 }
 .routes-block {
   margin-bottom: 1.25rem;

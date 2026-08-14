@@ -185,7 +185,7 @@
         "tags": [
           "no-auth"
         ],
-        "description": "Returns metrics, exports, and test cases for a single package at a commit. Prefer this over full commit detail for the checkout Spec panel — assembly only touches that package's source blobs. For db packages, also includes `dbInventory` (drizzle tables + query dirs). For `-spec` packages, also includes `specInventory` (OpenAPI schemas + REST resources). For `-http` packages, `specInventory` is the sibling `-spec` triangle join (route cards) while exports/tests remain the HTTP package's own source modules.\n",
+        "description": "Returns metrics, exports, and test cases for a single package at a commit. Prefer this over full commit detail for the checkout Spec panel — assembly only touches that package's source blobs. For db packages, also includes `dbInventory` (drizzle tables + query dirs). For `-spec` packages, also includes `specInventory` (OpenAPI schemas + REST resources). For `-http` packages, `specInventory` is the sibling `-spec` triangle join (route cards) while exports/tests remain the HTTP package's own source modules. `layoutIssues` are live working-tree layout/LoC findings for the package directory (same source as `saf-dev-site issues --workdir`), not commit blobs.\n",
         "parameters": [
           {
             "name": "hash",
@@ -272,6 +272,13 @@
                         },
                         "specInventory": {
                           "$ref": "#/components/schemas/spec-inventory"
+                        },
+                        "layoutIssues": {
+                          "type": "array",
+                          "description": "Working-tree package-layout and oversized-file findings (matches `saf-dev-site issues --workdir` layout portion).\n",
+                          "items": {
+                            "$ref": "#/components/schemas/package-issue"
+                          }
                         }
                       }
                     }
@@ -700,6 +707,9 @@
       },
       "SpecInventory": {
         "$ref": "#/components/schemas/spec-inventory"
+      },
+      "PackageIssue": {
+        "$ref": "#/components/schemas/package-issue"
       },
       "DbSchemaTable": {
         "$ref": "#/components/schemas/db-schema-table"
@@ -1787,6 +1797,45 @@
                 }
               }
             }
+          }
+        }
+      },
+      "package-issue": {
+        "type": "object",
+        "required": [
+          "kind",
+          "title",
+          "name",
+          "kindLabel",
+          "filePath",
+          "repoPath"
+        ],
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "dead-code",
+              "same-file-only-export",
+              "oversized-file",
+              "package-layout"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "kindLabel": {
+            "type": "string"
+          },
+          "filePath": {
+            "type": "string",
+            "description": "Package-local path for display"
+          },
+          "repoPath": {
+            "type": "string",
+            "description": "Repo-relative path for open-source links"
           }
         }
       },

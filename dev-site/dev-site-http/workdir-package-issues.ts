@@ -17,6 +17,7 @@ import { checkPackageLayout } from "@saflib/monorepo";
 import {
   EXCLUDE_DIRS,
   isSourcePath,
+  isScaffoldTemplatePath,
   isTestSourcePath,
   packageForPath,
   packageRootsFromPackageJsonPaths,
@@ -129,6 +130,7 @@ export async function collectWorkdirPackageIssues(
     if (!underPackage(repoPath)) continue;
     const fileName = repoPath.split("/").pop() ?? repoPath;
     if (isTestSourcePath(repoPath, fileName)) continue;
+    if (isScaffoldTemplatePath(repoPath)) continue;
     const specialty = specialtyByPath.get(repoPath);
     if (!specialty) continue;
     for (const exp of specialty.exports) {
@@ -163,21 +165,6 @@ export async function collectWorkdirPackageIssues(
   );
 
   const directory = targetRoot.directory;
-  const graphIssues = collectPackageIssues(
-    {
-      packageName,
-      directory,
-      productRoot,
-      exports: exports.map((e) => ({
-        name: e.name,
-        kind: e.kind,
-        filePath: e.filePath,
-        usedBy: usedByMap.get(exportUsedByKey(e.filePath, e.name)) ?? [],
-      })),
-    },
-    { packageDirectory: directory, productRoot },
-  );
-
   const layoutIssues: PackageIssue[] = includeLayout
     ? checkPackageLayout({
         packageDir: path.join(repoRoot, directory || "."),
@@ -192,9 +179,20 @@ export async function collectWorkdirPackageIssues(
       }))
     : [];
 
-  const issues = [...graphIssues, ...layoutIssues].sort(
-    (a, b) =>
-      a.filePath.localeCompare(b.filePath) || a.name.localeCompare(b.name),
+  const issues = collectPackageIssues(
+    {
+      packageName,
+      directory,
+      productRoot,
+      exports: exports.map((e) => ({
+        name: e.name,
+        kind: e.kind,
+        filePath: e.filePath,
+        usedBy: usedByMap.get(exportUsedByKey(e.filePath, e.name)) ?? [],
+      })),
+      layoutIssues,
+    },
+    { packageDirectory: directory, productRoot },
   );
 
   return {

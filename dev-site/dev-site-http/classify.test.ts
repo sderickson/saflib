@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   isSourcePath,
+  isScaffoldTemplatePath,
   isTestSourcePath,
   countLines,
   packageRootsFromPackageJsonPaths,
@@ -28,14 +29,26 @@ describe("classify", () => {
   });
 
   describe("isTestSourcePath", () => {
-    it("detects *.test.* / *.spec.* / *.fixtures.* and tests/ dirs", () => {
+    it("detects *.test.* / *.spec.* / *.fixtures.* and testing/tests dirs", () => {
       expect(isTestSourcePath("a.test.ts", "a.test.ts")).toBe(true);
       expect(isTestSourcePath("b.spec.tsx", "b.spec.tsx")).toBe(true);
       expect(
         isTestSourcePath("x/m5.fixtures.ts", "m5.fixtures.ts"),
       ).toBe(true);
       expect(isTestSourcePath("tests/foo.ts", "foo.ts")).toBe(true);
+      expect(isTestSourcePath("pkg/testing/slim-route-test.ts", "slim-route-test.ts")).toBe(
+        true,
+      );
       expect(isTestSourcePath("src/foo.ts", "foo.ts")).toBe(false);
+    });
+  });
+
+  describe("isScaffoldTemplatePath", () => {
+    it("detects __placeholder__ path segments", () => {
+      expect(
+        isScaffoldTemplatePath("handlers/__group-name__/index.ts"),
+      ).toBe(true);
+      expect(isScaffoldTemplatePath("handlers/matters/index.ts")).toBe(false);
     });
   });
 

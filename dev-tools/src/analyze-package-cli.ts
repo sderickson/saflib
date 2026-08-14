@@ -61,7 +61,15 @@ function isTestPath(rel: string): boolean {
   if (/\.(test|spec)\.(ts|tsx)$/.test(base)) return true;
   if (/\.fixtures\.(ts|tsx)$/.test(base)) return true;
   const parts = rel.split("/");
-  return parts.includes("tests") || parts.includes("__tests__");
+  return (
+    parts.includes("testing") ||
+    parts.includes("tests") ||
+    parts.includes("__tests__")
+  );
+}
+
+function isScaffoldTemplatePath(rel: string): boolean {
+  return rel.split("/").some((part) => /^__[^/]+__$/.test(part));
 }
 
 function packageForRepoPath(
@@ -142,7 +150,7 @@ async function analyzeOnePackage(opts: {
 
   const exports: Array<{ filePath: string; name: string; kind: string }> = [];
   for (const [rel, specialty] of specialtyByPath) {
-    if (!underPkg(rel) || isTestPath(rel)) continue;
+    if (!underPkg(rel) || isTestPath(rel) || isScaffoldTemplatePath(rel)) continue;
     for (const exp of specialty.exports) {
       exports.push({ filePath: rel, name: exp.name, kind: exp.kind });
     }

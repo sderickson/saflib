@@ -11,6 +11,8 @@ getCommitPackage:
     includes `specInventory` (OpenAPI schemas + REST resources). For `-http`
     packages, `specInventory` is the sibling `-spec` triangle join (route cards)
     while exports/tests remain the HTTP package's own source modules.
+    `layoutIssues` are live working-tree layout/LoC findings for the package
+    directory (same source as `saf-dev-site issues --workdir`), not commit blobs.
   parameters:
     - name: hash
       in: path
@@ -75,6 +77,13 @@ getCommitPackage:
                     $ref: "../../schemas/db-inventory.yaml"
                   specInventory:
                     $ref: "../../schemas/spec-inventory.yaml"
+                  layoutIssues:
+                    type: array
+                    description: >
+                      Working-tree package-layout and oversized-file findings
+                      (matches `saf-dev-site issues --workdir` layout portion).
+                    items:
+                      $ref: "../../schemas/package-issue.yaml"
     "404":
       description: Commit or package not found
       content:
