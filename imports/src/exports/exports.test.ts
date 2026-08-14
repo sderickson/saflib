@@ -260,16 +260,16 @@ describe("export patterns", () => {
     const index = buildPackageIndex(root);
     const from = path.join(
       root,
-      "saflib/express/workflows/templates/routes/foo/handler.ts",
+      "saflib/express/workflows/templates/handlers/foo/handler.ts",
     );
     const result = resolveSpecifier(
-      "template-package-http/routes/__group-name__/index",
+      "template-package-http/handlers/__group-name__/index",
       from,
       index,
     );
     expect(result?.kind).toBe("file");
     if (result?.kind === "file") {
-      expect(result.path).toMatch(/routes\/__group-name__\/index\.ts$/);
+      expect(result.path).toMatch(/handlers\/__group-name__\/index\.ts$/);
     }
   });
 });

@@ -143,10 +143,10 @@ export const TestAllWorkflowsDefinition = defineWorkflow<
       args: ["install"],
     })),
     step(makeWorkflowMachine(AddHandlerWorkflowDefinition), () => ({
-      path: "./routes/users/list.ts",
+      path: "./handlers/users/list.ts",
     })),
     step(makeWorkflowMachine(AddHandlerWorkflowDefinition), () => ({
-      path: "./routes/users/upload.ts",
+      path: "./handlers/users/upload.ts",
       upload: true,
     })),
 

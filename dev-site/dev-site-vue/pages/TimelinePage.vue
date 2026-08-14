@@ -4,7 +4,6 @@
       <v-col>
         <div class="d-flex align-center justify-space-between mb-4">
           <div class="d-flex align-center ga-2">
-            <v-btn variant="text" :to="hubPath">← Hub</v-btn>
             <h1 class="text-h4">History</h1>
           </div>
           <v-btn

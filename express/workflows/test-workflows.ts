@@ -82,7 +82,7 @@ const TestExpressWorkflowsDefinition = defineWorkflow<
       path: "test-http",
     })),
     step(makeWorkflowMachine(AddHandlerWorkflowDefinition), () => ({
-      path: "routes/users/list",
+      path: "./handlers/users/list.ts",
     })),
 
     step(PromptStepMachine, () => ({

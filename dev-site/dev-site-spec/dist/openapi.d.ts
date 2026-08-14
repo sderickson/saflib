@@ -73,7 +73,7 @@ export interface paths {
         };
         /**
          * Package-scoped symbols for one analyzed commit
-         * @description Returns metrics, exports, and test cases for a single package at a commit. Prefer this over full commit detail for the checkout Spec panel — assembly only touches that package's source blobs. For db packages, also includes `dbInventory` (drizzle tables + query dirs).
+         * @description Returns metrics, exports, and test cases for a single package at a commit. Prefer this over full commit detail for the checkout Spec panel — assembly only touches that package's source blobs. For db packages, also includes `dbInventory` (drizzle tables + query dirs). For `-spec` packages, also includes `specInventory` (OpenAPI schemas + REST resources). For `-http` packages, `specInventory` is the sibling `-spec` triangle join (route cards) while exports/tests remain the HTTP package's own source modules.
          */
         get: operations["getCommitPackage"];
         put?: never;
@@ -179,6 +179,7 @@ export interface components {
         CommitDiff: components["schemas"]["commit-diff"];
         CommitRef: components["schemas"]["commit-ref"];
         DbInventory: components["schemas"]["db-inventory"];
+        SpecInventory: components["schemas"]["spec-inventory"];
         DbSchemaTable: components["schemas"]["db-schema-table"];
         DbSchemaColumn: components["schemas"]["db-schema-column"];
         /** @description A branch or tag pointer observed at scan time for a commit. */
@@ -479,6 +480,93 @@ export interface components {
                 }[];
             }[];
         };
+        items: {
+            packageName: string;
+            /** @description Path within the importing package (no package-root prefix). */
+            filePath: string;
+            /** @description Repo-relative path for source links. */
+            repoPath: string;
+        };
+        /** @description OpenAPI inventory for one `-spec` package — business objects (schemas/) and/or REST resources (routes/), linked by normalized name stems. Operations include triangle links to sibling `-http` handlers and `-sdk` requests when present. Also attached to `-http` package detail (sibling join) for the HTTP Spec pane. */
+        "spec-inventory": {
+            /** @description Repo-relative directory of the `-spec` package this inventory was built from (used for route YAML source links when shown from an `-http` pane). */
+            packageDirectory?: string;
+            /** @description Flat alphabetical list of object / both / routes entities. */
+            entities: {
+                /** @description Stable entity key (e.g. both:Matter, routes:admin, object:Error). */
+                key: string;
+                /** @description Display name — schema component name when present, else resource folder. */
+                label: string;
+                /**
+                 * @description object = schema only; routes = REST resource only; both = schema + matching resource.
+                 * @enum {string}
+                 */
+                presence: "object" | "routes" | "both";
+                /** @description routes/<resource> folder name when present. */
+                resource?: string | null;
+                schema?: {
+                    /** @description components/schemas name (e.g. Matter). */
+                    name: string;
+                    /** @description Package-relative path to the schema YAML. */
+                    yamlPath: string;
+                    description?: string | null;
+                    properties: {
+                        name: string;
+                        typeKind: string;
+                        docstring?: string | null;
+                    }[];
+                    /** @description Non-test product files importing schemas/<Name>. */
+                    usedBy: components["schemas"]["items"][];
+                    /** @description operationIds whose request/2xx response $ref this schema. */
+                    referencedByOperations: string[];
+                } | null;
+                /** @description Distinct packages importing this entity's schema and/or the SDK request modules for its operations. */
+                usedByPackages: string[];
+                /** @description REST operations under the linked resource (empty for object-only). */
+                operations: {
+                    operationId: string;
+                    method: string;
+                    path: string;
+                    summary?: string | null;
+                    /** @description OpenAPI operation tags. */
+                    tags: string[];
+                    /** @description Package-relative route YAML under the spec package. */
+                    yamlPath: string;
+                    /** @description Isomorphic stem after routes/handlers/requests (e.g. matters/core/create). */
+                    routeStem?: string | null;
+                    /** @description Sibling HTTP handler file when present. */
+                    handler?: {
+                        filePath: string;
+                        repoPath: string;
+                    } | null;
+                    /** @description Sibling SDK request module when present. */
+                    request?: {
+                        filePath: string;
+                        repoPath: string;
+                    } | null;
+                    /** @description describe/it/test specifications extracted from colocated HTTP handler test files (fullName uses " > " nesting). */
+                    handlerTests: {
+                        /**
+                         * @description Nested describe/it titles joined with " > ".
+                         * @example createMatter > creates a matter for the org
+                         */
+                        fullName: string;
+                    }[];
+                    /** @description Business objects in the request body (one layer deep into object/array bags of schema refs). */
+                    requestSchemas: string[];
+                    /** @description Business objects in 2xx responses (one layer deep into object/array bags of schema refs). */
+                    responseSchemas: string[];
+                    /** @description Non-test product files importing the sibling SDK request module for this route stem. */
+                    usedBy: {
+                        packageName: string;
+                        /** @description Path within the importing package (no package-root prefix). */
+                        filePath: string;
+                        /** @description Repo-relative path for source links. */
+                        repoPath: string;
+                    }[];
+                }[];
+            }[];
+        };
         login: {
             /** @enum {string} */
             event: "login";
@@ -652,6 +740,7 @@ export interface operations {
                             exports: components["schemas"]["export-entry"][];
                             testCases: components["schemas"]["test-case"][];
                             dbInventory?: components["schemas"]["db-inventory"];
+                            specInventory?: components["schemas"]["spec-inventory"];
                         };
                     };
                 };

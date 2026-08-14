@@ -25,13 +25,12 @@ Each SDK package should have the following structure:
 │   └── ...
 ├── requests/
 │   └── {resource-1}/
-│   │   ├── index.ts
 │   │   ├── index.fakes.ts
 │   │   ├── {operation-id-1}.test.ts
 │   │   ├── {operation-id-1}.ts
-│   │   ├── {operation-id-1}.fakes.ts
+│   │   ├── {operation-id-1}.fake.ts
 │   │   ├── {operation-id-2}.ts
-│   │   ├── {operation-id-2}.fakes.ts
+│   │   ├── {operation-id-2}.fake.ts
 │   │   └── ...
 │   ├── {resource-2}/
 │   ├── ...
@@ -65,7 +64,7 @@ Components are shared components for the service. These should be organized simi
 
 ### `requests/`
 
-Requests are the core of the SDK, and are implemented with [Tanstack Query](https://tanstack.com/query/latest/docs/framework/vue/overview). There should be one file per operation, the files should be named after the operation ID, and be organized by resource. See [Requests](./02-requests.md) and [Testing](./03-testing.md) for more information.
+Requests are the core of the SDK, and are implemented with [Tanstack Query](https://tanstack.com/query/latest/docs/framework/vue/overview). There should be one file per operation, the files should be named after the operation ID, and be organized by resource. Import leaf modules directly (e.g. `@…/requests/orgs/list`) — do **not** add per-resource `index.ts` barrels, so usage stays attributable to a single request stem. See [Requests](./02-requests.md) and [Testing](./03-testing.md) for more information.
 
 These are called "requests" to distinguish them from database queries, to include both Tanstack queries and mutations, and as shorthand for "HTTP [Requests](https://developer.mozilla.org/en-US/docs/Web/API/Request)".
 

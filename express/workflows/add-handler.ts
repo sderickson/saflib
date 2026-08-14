@@ -22,8 +22,8 @@ const sourceDir = path.join(import.meta.dirname, "templates");
 const input = [
   {
     name: "path",
-    description: "Path of the new handler (e.g. 'routes/todos/create')",
-    exampleValue: "./routes/example-subpath/example-handler.ts",
+    description: "Path of the new handler (e.g. 'handlers/todos/create')",
+    exampleValue: "./handlers/example-subpath/example-handler.ts",
   },
   {
     name: "upload",
@@ -68,7 +68,7 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
     const pathResult = parsePath(input.path, {
       requiredSuffix: ".ts",
       cwd: input.cwd,
-      requiredPrefix: "./routes/",
+      requiredPrefix: "./handlers/",
     });
     const storeName = `${pathResult.groupName}-file-container`;
     const operationId =
@@ -89,11 +89,11 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
   },
 
   templateFiles: {
-    handler: path.join(sourceDir, "routes/__group-name__/__target-name__.ts"),
-    test: path.join(sourceDir, "routes/__group-name__/__target-name__.test.ts"),
-    index: path.join(sourceDir, "routes/__group-name__/index.ts"),
+    handler: path.join(sourceDir, "handlers/__group-name__/__target-name__.ts"),
+    test: path.join(sourceDir, "handlers/__group-name__/__target-name__.test.ts"),
+    index: path.join(sourceDir, "handlers/__group-name__/index.ts"),
     http: path.join(sourceDir, "http.ts"),
-    helpers: path.join(sourceDir, "routes/__group-name__/_helpers.ts"),
+    helpers: path.join(sourceDir, "handlers/__group-name__/_helpers.ts"),
   },
 
   docFiles: {
@@ -142,7 +142,7 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
       Make sure to:
       - Use createHandler from @saflib/express
       - Import \`RequestBody\` / \`ResponseBody\` from \`@…-spec/operations/${context.operationId}\` (per-operation fragments — not a root barrel type)
-      - Use mapper functions from routes/_helpers.ts to convert database models to API responses
+      - Use mapper functions from handlers/_helpers.ts to convert database models to API responses
       - Import types from both the adjacent spec and db packages; don't declare new ones
       - Handle expected errors from service/DB layers, with "satisfies never" for exhaustive error handling
       - Let unexpected errors propagate to central error handler (no try/catch!)
@@ -212,7 +212,7 @@ export const AddHandlerWorkflowDefinition = defineWorkflow<
         * **Default tier:** mount \`create${kebabCaseToPascalCase(context.groupName)}Router\` (the group \`index.ts\` factory) via \`acquireRouterSlimRouteTest\` from \`testing/slim-route-test.ts\`, with \`beforeAll\`/\`afterAll\` and \`releaseSlimRouteTest\` in \`afterAll\`.
         * Do **not** import \`create…HttpApp\` from \`http.ts\` in handler tests — that mounts every product router (slow, heavy imports).
         * Multi-route chains: \`acquireRouterSlimRouteTestMulti([createA, createB])\` or a dedicated \`*.integration.test.ts\` with explicit scope.
-        * **Imports:** use package subpath exports (e.g. \`@scope/my-db/queries/<group>/<name>\`, \`@scope/my-service-common/context\`) — never import from a package root or group query barrels. \`./queries/*\` / \`./routes/*\` cover new files; do not edit \`package.json\` exports when adding handlers.
+        * **Imports:** use package subpath exports (e.g. \`@scope/my-db/queries/<group>/<name>\`, \`@scope/my-service-common/context\`) — never import from a package root or group query barrels. \`./queries/*\` / \`./handlers/*\` cover new files; do not edit \`package.json\` exports when adding handlers.
         
         Review ${context.docFiles?.testingGuide} for more details.`,
     })),

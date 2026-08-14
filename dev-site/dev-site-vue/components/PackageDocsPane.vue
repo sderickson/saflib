@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="pane-root">
     <v-progress-linear v-if="filesLoading" indeterminate class="mb-2" />
     <v-alert v-if="filesError" type="error" class="mb-2" density="compact">
       {{ filesError.message }}
@@ -9,44 +9,56 @@
       No markdown docs under this package.
     </div>
 
-    <div v-else class="docs-layout">
-      <ul class="docs-nav">
-        <li v-for="f in mdFiles" :key="f.path">
-          <button
-            type="button"
-            class="docs-nav__btn"
-            :class="{ 'docs-nav__btn--active': f.path === selectedPath }"
-            @click="selectedPath = f.path"
-          >
-            {{ localPath(f.path) }}
-          </button>
-        </li>
-      </ul>
-
-      <div class="docs-body">
-        <div class="d-flex ga-2 mb-2 flex-wrap">
-          <v-btn
-            size="small"
-            variant="text"
-            :disabled="!selectedPath"
-            @click="openSelected"
-          >
-            Open source
-          </v-btn>
+    <ResizableColumns
+      v-else
+      class="pane-split"
+      storage-key="dev-site.docs.navWidth"
+      :default-left="180"
+      :min-left="120"
+      :max-left="360"
+    >
+      <template #left>
+        <div class="pane-nav">
+          <ul class="docs-nav">
+            <li v-for="f in mdFiles" :key="f.path">
+              <button
+                type="button"
+                class="docs-nav__btn"
+                :class="{ 'docs-nav__btn--active': f.path === selectedPath }"
+                @click="selectedPath = f.path"
+              >
+                {{ localPath(f.path) }}
+              </button>
+            </li>
+          </ul>
         </div>
-        <v-progress-linear v-if="fileLoading" indeterminate class="mb-2" />
-        <v-alert v-if="fileError" type="error" density="compact">
-          {{ fileError.message }}
-        </v-alert>
-        <!-- eslint-disable-next-line vue/no-v-html -->
-        <div
-          v-if="html"
-          class="docs-html"
-          v-html="html"
-          @click="onDocClick"
-        />
-      </div>
-    </div>
+      </template>
+      <template #right>
+        <div class="pane-panel">
+          <div class="d-flex ga-2 mb-2 flex-wrap">
+            <v-btn
+              size="small"
+              variant="text"
+              :disabled="!selectedPath"
+              @click="openSelected"
+            >
+              Open source
+            </v-btn>
+          </div>
+          <v-progress-linear v-if="fileLoading" indeterminate class="mb-2" />
+          <v-alert v-if="fileError" type="error" density="compact">
+            {{ fileError.message }}
+          </v-alert>
+          <!-- eslint-disable-next-line vue/no-v-html -->
+          <div
+            v-if="html"
+            class="docs-html"
+            v-html="html"
+            @click="onDocClick"
+          />
+        </div>
+      </template>
+    </ResizableColumns>
   </div>
 </template>
 
@@ -56,6 +68,7 @@ import { marked } from "marked";
 import { useRepoFile, useRepoFiles } from "../requests/queries";
 import { openSource } from "../source-links";
 import { repoPathPrefix } from "../repo-paths";
+import ResizableColumns from "./ResizableColumns.vue";
 
 const props = defineProps<{
   subdomain: string;
@@ -234,23 +247,29 @@ defineExpose({
 </script>
 
 <style scoped>
-.docs-layout {
-  display: grid;
-  grid-template-columns: minmax(10rem, 14rem) 1fr;
-  gap: 1rem;
-  align-items: start;
+.pane-root {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
 }
-@media (max-width: 900px) {
-  .docs-layout {
-    grid-template-columns: 1fr;
-  }
+.pane-split {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+.pane-nav,
+.pane-panel {
+  flex: 1 1 auto;
+  height: 100%;
+  min-height: 0;
+  overflow: auto;
+  padding: 0.25rem 0.35rem;
 }
 .docs-nav {
   list-style: none;
   margin: 0;
   padding: 0;
-  max-height: 60vh;
-  overflow: auto;
 }
 .docs-nav__btn {
   display: block;

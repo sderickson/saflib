@@ -7,13 +7,13 @@
       v-if="!isLoading && !entities.length"
       class="text-body-2 text-medium-emphasis"
     >
-      No schemas or query directories found for this package.
+      No OpenAPI schemas or route resources found for this package.
     </div>
 
     <ResizableColumns
       v-else-if="entities.length"
       class="pane-split"
-      storage-key="dev-site.db.entityNavWidth"
+      storage-key="dev-site.specRoutes.entityNavWidth"
       :default-left="180"
       :min-left="120"
       :max-left="320"
@@ -23,26 +23,27 @@
           <button
             type="button"
             class="spec-all"
-            :class="{ 'spec-all--selected': selectedEntity === null }"
-            @click="selectedEntity = null"
+            :class="{ 'spec-all--selected': selectedKey === null }"
+            @click="selectedKey = null"
           >
             <v-icon size="x-small" icon="mdi-folder-outline" class="entity-nav__icon" />
-            <span>All entities</span>
+            <span>All</span>
           </button>
           <ul class="entity-nav">
-            <li v-for="e in entities" :key="e.entity" class="entity-nav__item">
+            <li v-for="e in entities" :key="e.key" class="entity-nav__item">
               <button
                 type="button"
                 class="entity-nav__row"
-                :class="{ 'entity-nav__row--selected': selectedEntity === e.entity }"
-                @click="selectedEntity = e.entity"
+                :class="{ 'entity-nav__row--selected': selectedKey === e.key }"
+                :title="presenceTitle(e.presence)"
+                @click="selectedKey = e.key"
               >
                 <v-icon
                   size="x-small"
-                  :icon="e.table ? 'mdi-table' : 'mdi-file-outline'"
+                  :icon="presenceIcon(e.presence)"
                   class="entity-nav__icon"
                 />
-                <span class="entity-nav__label">{{ e.entity }}</span>
+                <span class="entity-nav__label">{{ e.label }}</span>
               </button>
             </li>
           </ul>
@@ -52,24 +53,27 @@
         <div class="pane-panel">
         <div
           v-for="e in visibleEntities"
-          :key="e.entity"
+          :key="e.key"
           class="entity-block"
         >
-          <h3 class="entity-block__title">{{ e.entity }}</h3>
+          <h3 class="entity-block__title">
+            {{ e.label }}
+            <span class="entity-block__presence">{{ presenceTitle(e.presence) }}</span>
+          </h3>
 
-          <div v-if="e.table" class="table-card">
+          <div v-if="e.schema" class="table-card">
             <div class="table-card__head">
-              <code class="table-card__name">{{ e.table.tableName }}</code>
+              <code class="table-card__name">{{ e.schema.name }}</code>
               <a
                 href="#"
                 class="table-card__file"
-                @click.prevent="openFile(e.table.filePath)"
+                @click.prevent="openFile(repoPath(e.schema.yamlPath))"
               >
-                {{ fileName(e.table.filePath) }}
+                {{ e.schema.yamlPath }}
               </a>
             </div>
-            <p v-if="e.table.docstring" class="table-card__doc">
-              {{ e.table.docstring }}
+            <p v-if="e.schema.description" class="table-card__doc">
+              {{ e.schema.description }}
             </p>
             <ul
               v-if="e.usedByPackages.length"
@@ -83,14 +87,43 @@
                 <code>{{ pkg }}</code>
               </li>
             </ul>
+            <p
+              v-if="e.schema.referencedByOperations.length"
+              class="table-card__refs"
+            >
+              Referenced by:
+              <template
+                v-for="(opId, i) in e.schema.referencedByOperations"
+                :key="opId"
+              >
+                <code>{{ opId }}</code><span v-if="i < e.schema.referencedByOperations.length - 1">, </span>
+              </template>
+            </p>
+            <ul
+              v-if="e.schema.usedBy.length"
+              class="table-card__used"
+            >
+              <li
+                v-for="u in e.schema.usedBy"
+                :key="u.packageName + ':' + u.repoPath"
+              >
+                <a
+                  href="#"
+                  class="table-card__file"
+                  @click.prevent="openFile(u.repoPath)"
+                >
+                  {{ u.packageName }}/{{ u.filePath }}
+                </a>
+              </li>
+            </ul>
             <ul class="table-card__cols">
               <li
-                v-for="c in e.table.columns"
-                :key="c.sqlName"
+                v-for="c in e.schema.properties"
+                :key="c.name"
                 class="table-card__col"
               >
                 <div class="table-card__col-main">
-                  <code>{{ c.sqlName }}</code>
+                  <code>{{ c.name }}</code>
                   <span class="text-medium-emphasis">{{ c.typeKind }}</span>
                 </div>
                 <p v-if="c.docstring" class="table-card__col-doc">
@@ -101,7 +134,7 @@
           </div>
           <template v-else>
             <p class="text-body-2 text-medium-emphasis mb-2">
-              No matching drizzle table for this query directory.
+              REST resource <code>{{ e.resource }}</code> — no matching business-object schema.
             </p>
             <ul
               v-if="e.usedByPackages.length"
@@ -117,16 +150,27 @@
             </ul>
           </template>
 
-          <TestTree
-            v-if="specCardsFor(e).length"
-            :nodes="specCardsFor(e)"
-            @open-source="openFile"
-          />
+          <div v-if="e.resource && e.presence === 'both'" class="resource-hint">
+            Resource: <code>routes/{{ e.resource }}/</code>
+          </div>
+
+          <ul v-if="e.operations.length" class="op-list">
+            <li
+              v-for="op in e.operations"
+              :key="op.operationId + op.method + op.path"
+            >
+              <PackageRouteCard
+                :operation="normalizeOp(op)"
+                :route-repo-path="repoPath(op.yamlPath)"
+                :open-file="openFile"
+              />
+            </li>
+          </ul>
           <p
-            v-else-if="!e.queries.length"
+            v-else-if="e.presence === 'object'"
             class="text-body-2 text-medium-emphasis"
           >
-            No queries or tests for this entity.
+            No REST endpoints linked to this schema.
           </p>
         </div>
         </div>
@@ -137,42 +181,64 @@
 
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { useCommitPackage } from "../requests/queries.ts";
-import {
-  buildPackageTestTree,
-  type TestTreeNode,
-} from "../test-tree.ts";
-import { openSource } from "../source-links.ts";
+import PackageRouteCard, {
+  type RouteCardOperation,
+} from "./PackageRouteCard.vue";
 import ResizableColumns from "./ResizableColumns.vue";
-import TestTree from "./TestTree.vue";
+import { useCommitPackage } from "../requests/queries.ts";
+import { openSource } from "../source-links.ts";
+import { repoPathPrefix } from "../repo-paths.ts";
 
-interface DbQuery {
-  fileName: string;
+type SpecPresence = "object" | "routes" | "both";
+
+interface SpecUsedBy {
+  packageName: string;
   filePath: string;
-  exportName?: string | null;
-  signature?: string | null;
-  docstring?: string | null;
-  usedBy: Array<{
-    packageName: string;
-    filePath: string;
-    repoPath: string;
-  }>;
+  repoPath: string;
 }
 
-interface DbEntity {
-  entity: string;
-  table: {
-    tableName: string;
-    filePath: string;
-    docstring?: string | null;
-    columns: Array<{
-      sqlName: string;
+interface SpecFileRef {
+  filePath: string;
+  repoPath: string;
+}
+
+interface SpecTestSpec {
+  fullName: string;
+}
+
+interface SpecEntity {
+  key: string;
+  label: string;
+  presence: SpecPresence;
+  resource: string | null;
+  schema: {
+    name: string;
+    yamlPath: string;
+    description?: string | null;
+    properties: Array<{
+      name: string;
       typeKind: string;
       docstring?: string | null;
     }>;
+    usedBy: SpecUsedBy[];
+    referencedByOperations: string[];
   } | null;
   usedByPackages: string[];
-  queries: DbQuery[];
+  operations: Array<{
+    operationId: string;
+    method: string;
+    path: string;
+    summary?: string | null;
+    tags?: string[];
+    yamlPath: string;
+    routeStem?: string | null;
+    handler?: SpecFileRef | null;
+    request?: SpecFileRef | null;
+    handlerTests?: SpecTestSpec[];
+    requestSchemas: string[];
+    responseSchemas: string[];
+    usedBy: SpecUsedBy[];
+  }>;
 }
 
 const props = defineProps<{
@@ -186,7 +252,7 @@ const props = defineProps<{
   localRepoRoot?: string;
 }>();
 
-const selectedEntity = ref<string | null>(null);
+const selectedKey = ref<string | null>(null);
 
 const { data, isLoading, error } = useCommitPackage(
   props.subdomain,
@@ -196,132 +262,50 @@ const { data, isLoading, error } = useCommitPackage(
 
 const detail = computed(() => data.value?.packageDetail);
 const entities = computed(
-  () => (detail.value?.dbInventory?.entities ?? []) as DbEntity[],
+  () => (detail.value?.specInventory?.entities ?? []) as SpecEntity[],
 );
 
 const visibleEntities = computed(() => {
-  if (selectedEntity.value == null) return entities.value;
-  return entities.value.filter((e) => e.entity === selectedEntity.value);
+  if (selectedKey.value == null) return entities.value;
+  return entities.value.filter((e) => e.key === selectedKey.value);
 });
 
-function fileName(path: string): string {
-  return path.split("/").pop() ?? path;
+function presenceIcon(p: SpecPresence): string {
+  if (p === "both") return "mdi-cube";
+  if (p === "routes") return "mdi-api";
+  return "mdi-cube-outline";
 }
 
-function stem(fileName: string): string {
-  return fileName.replace(/\.ts$/, "");
+function presenceTitle(p: SpecPresence): string {
+  if (p === "both") return "Schema + REST";
+  if (p === "routes") return "REST only";
+  return "Schema only";
 }
 
-function walkSuites(nodes: TestTreeNode[], out: TestTreeNode[] = []): TestTreeNode[] {
-  for (const n of nodes) {
-    if (n.kind === "suite") out.push(n);
-    if (n.children.length) walkSuites(n.children, out);
-  }
-  return out;
+function repoPath(packageRelative: string): string {
+  const prefix = repoPathPrefix(props.productRoot, props.packageDirectory);
+  if (!prefix) return packageRelative;
+  return `${prefix}/${packageRelative}`;
 }
 
-function walkFiles(nodes: TestTreeNode[], out: TestTreeNode[] = []): TestTreeNode[] {
-  for (const n of nodes) {
-    if (n.kind === "file") out.push(n);
-    if (n.children.length) walkFiles(n.children, out);
-  }
-  return out;
-}
-
-function queryMatchesSuite(q: DbQuery, suite: TestTreeNode): boolean {
-  if (q.exportName && suite.subjectName === q.exportName) return true;
-  if (q.filePath && suite.subjectFilePath === q.filePath) return true;
-  if (q.exportName && suite.label === q.exportName) return true;
-  return false;
-}
-
-function queryMatchesTestFile(q: DbQuery, fileNode: TestTreeNode): boolean {
-  const path = fileNode.sourcePath ?? "";
-  const expected = q.filePath.replace(/\.ts$/, ".test.ts");
-  if (path === expected) return true;
-  const base = stem(q.fileName);
-  return (
-    fileNode.label === `${base}.test.ts` ||
-    path.endsWith(`/${base}.test.ts`)
-  );
-}
-
-/**
- * Merge query inventory into suite cards: one card per query/suite with
- * signature + docstring + importers + tests. Orphan queries (no suite) become
- * suite-shaped cards; orphan suites keep their own cards.
- */
-function specCardsFor(entity: DbEntity): TestTreeNode[] {
-  const cases = (detail.value?.testCases ?? []).filter((t) => {
-    const needle = `/queries/${entity.entity}/`;
-    return (
-      t.filePath.includes(needle) ||
-      t.filePath.includes(`queries/${entity.entity}/`)
-    );
-  });
-  const tree = buildPackageTestTree(
-    cases,
-    props.packageName,
-    props.packageDirectory,
-    props.productRoot ?? "",
-  );
-
-  const suites = walkSuites(tree);
-  const files = walkFiles(tree);
-  const matchedSuiteIds = new Set<string>();
-  const cards: TestTreeNode[] = [];
-
-  for (const q of entity.queries) {
-    let suite =
-      suites.find((s) => queryMatchesSuite(q, s)) ??
-      null;
-
-    if (!suite) {
-      const file = files.find((f) => queryMatchesTestFile(q, f));
-      if (file) {
-        suite =
-          (q.exportName
-            ? file.children.find(
-                (c) => c.kind === "suite" && c.label === q.exportName,
-              )
-            : undefined) ??
-          file.children.find((c) => c.kind === "suite") ??
-          null;
-      }
-    }
-
-    if (suite) {
-      matchedSuiteIds.add(suite.id);
-      cards.push({
-        ...suite,
-        subjectName: suite.subjectName ?? q.exportName,
-        subjectSignature: suite.subjectSignature ?? q.signature,
-        subjectDocstring: suite.subjectDocstring ?? q.docstring,
-        subjectFilePath: suite.subjectFilePath ?? q.filePath,
-        usedBy: q.usedBy.length ? q.usedBy : suite.usedBy ?? null,
-      });
-    } else {
-      cards.push({
-        id: `query:${q.filePath}`,
-        label: q.exportName ?? q.fileName,
-        kind: "suite",
-        children: [],
-        subjectName: q.exportName,
-        subjectSignature: q.signature,
-        subjectDocstring: q.docstring,
-        subjectFilePath: q.filePath,
-        usedBy: q.usedBy.length ? q.usedBy : null,
-      });
-    }
-  }
-
-  // Suites not claimed by a query (helpers, cross-cutting tests).
-  for (const suite of suites) {
-    if (matchedSuiteIds.has(suite.id)) continue;
-    cards.push(suite);
-  }
-
-  return cards;
+function normalizeOp(
+  op: SpecEntity["operations"][number],
+): RouteCardOperation {
+  return {
+    operationId: op.operationId,
+    method: op.method,
+    path: op.path,
+    summary: op.summary,
+    tags: op.tags ?? [],
+    yamlPath: op.yamlPath,
+    routeStem: op.routeStem ?? null,
+    handler: op.handler ?? null,
+    request: op.request ?? null,
+    handlerTests: op.handlerTests ?? [],
+    requestSchemas: op.requestSchemas,
+    responseSchemas: op.responseSchemas,
+    usedBy: op.usedBy ?? [],
+  };
 }
 
 function openFile(path: string) {
@@ -422,6 +406,15 @@ function openFile(path: string) {
   font-size: 1rem;
   font-weight: 600;
   margin: 0 0 0.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+.entity-block__presence {
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: rgba(var(--v-theme-on-surface), 0.55);
 }
 .table-card {
   border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
@@ -451,6 +444,11 @@ function openFile(path: string) {
   font-size: 0.875rem;
   color: rgba(var(--v-theme-on-surface), 0.7);
 }
+.table-card__refs {
+  margin: 0 0 0.5rem;
+  font-size: 0.8125rem;
+  color: rgba(var(--v-theme-on-surface), 0.7);
+}
 .table-card__pkgs {
   list-style: none;
   margin: 0 0 0.65rem;
@@ -470,6 +468,14 @@ function openFile(path: string) {
   display: grid;
   gap: 0.45rem;
 }
+.table-card__used {
+  list-style: none;
+  margin: 0 0 0.5rem;
+  padding: 0;
+  display: grid;
+  gap: 0.2rem;
+  font-size: 0.8125rem;
+}
 .table-card__col-main {
   display: flex;
   gap: 0.75rem;
@@ -479,5 +485,17 @@ function openFile(path: string) {
   margin: 0.15rem 0 0;
   font-size: 0.8125rem;
   color: rgba(var(--v-theme-on-surface), 0.65);
+}
+.resource-hint {
+  font-size: 0.8125rem;
+  color: rgba(var(--v-theme-on-surface), 0.6);
+  margin-bottom: 0.5rem;
+}
+.op-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.65rem;
 }
 </style>

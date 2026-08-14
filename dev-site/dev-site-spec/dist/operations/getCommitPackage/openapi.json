@@ -12,7 +12,7 @@
         "tags": [
           "no-auth"
         ],
-        "description": "Returns metrics, exports, and test cases for a single package at a commit. Prefer this over full commit detail for the checkout Spec panel — assembly only touches that package's source blobs. For db packages, also includes `dbInventory` (drizzle tables + query dirs).\n",
+        "description": "Returns metrics, exports, and test cases for a single package at a commit. Prefer this over full commit detail for the checkout Spec panel — assembly only touches that package's source blobs. For db packages, also includes `dbInventory` (drizzle tables + query dirs). For `-spec` packages, also includes `specInventory` (OpenAPI schemas + REST resources). For `-http` packages, `specInventory` is the sibling `-spec` triangle join (route cards) while exports/tests remain the HTTP package's own source modules.\n",
         "parameters": [
           {
             "name": "hash",
@@ -96,6 +96,9 @@
                         },
                         "dbInventory": {
                           "$ref": "#/components/schemas/db-inventory"
+                        },
+                        "specInventory": {
+                          "$ref": "#/components/schemas/spec-inventory"
                         }
                       }
                     }
@@ -404,6 +407,285 @@
                 }
               }
             }
+          }
+        }
+      },
+      "spec-inventory": {
+        "type": "object",
+        "description": "OpenAPI inventory for one `-spec` package — business objects (schemas/) and/or REST resources (routes/), linked by normalized name stems. Operations include triangle links to sibling `-http` handlers and `-sdk` requests when present. Also attached to `-http` package detail (sibling join) for the HTTP Spec pane.\n",
+        "required": [
+          "entities"
+        ],
+        "properties": {
+          "packageDirectory": {
+            "type": "string",
+            "description": "Repo-relative directory of the `-spec` package this inventory was built from (used for route YAML source links when shown from an `-http` pane).\n"
+          },
+          "entities": {
+            "type": "array",
+            "description": "Flat alphabetical list of object / both / routes entities.",
+            "items": {
+              "type": "object",
+              "required": [
+                "key",
+                "label",
+                "presence",
+                "usedByPackages",
+                "operations"
+              ],
+              "properties": {
+                "key": {
+                  "type": "string",
+                  "description": "Stable entity key (e.g. both:Matter, routes:admin, object:Error)."
+                },
+                "label": {
+                  "type": "string",
+                  "description": "Display name — schema component name when present, else resource folder."
+                },
+                "presence": {
+                  "type": "string",
+                  "enum": [
+                    "object",
+                    "routes",
+                    "both"
+                  ],
+                  "description": "object = schema only; routes = REST resource only; both = schema + matching resource.\n"
+                },
+                "resource": {
+                  "type": "string",
+                  "nullable": true,
+                  "description": "routes/<resource> folder name when present."
+                },
+                "schema": {
+                  "type": "object",
+                  "nullable": true,
+                  "required": [
+                    "name",
+                    "yamlPath",
+                    "properties",
+                    "usedBy",
+                    "referencedByOperations"
+                  ],
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "description": "components/schemas name (e.g. Matter)."
+                    },
+                    "yamlPath": {
+                      "type": "string",
+                      "description": "Package-relative path to the schema YAML."
+                    },
+                    "description": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "properties": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "name",
+                          "typeKind"
+                        ],
+                        "properties": {
+                          "name": {
+                            "type": "string"
+                          },
+                          "typeKind": {
+                            "type": "string"
+                          },
+                          "docstring": {
+                            "type": "string",
+                            "nullable": true
+                          }
+                        }
+                      }
+                    },
+                    "usedBy": {
+                      "type": "array",
+                      "description": "Non-test product files importing schemas/<Name>.",
+                      "items": {
+                        "$ref": "#/components/schemas/items"
+                      }
+                    },
+                    "referencedByOperations": {
+                      "type": "array",
+                      "description": "operationIds whose request/2xx response $ref this schema.",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "usedByPackages": {
+                  "type": "array",
+                  "description": "Distinct packages importing this entity's schema and/or the SDK request modules for its operations.\n",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "operations": {
+                  "type": "array",
+                  "description": "REST operations under the linked resource (empty for object-only).",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "operationId",
+                      "method",
+                      "path",
+                      "tags",
+                      "yamlPath",
+                      "requestSchemas",
+                      "responseSchemas",
+                      "handlerTests",
+                      "usedBy"
+                    ],
+                    "properties": {
+                      "operationId": {
+                        "type": "string"
+                      },
+                      "method": {
+                        "type": "string"
+                      },
+                      "path": {
+                        "type": "string"
+                      },
+                      "summary": {
+                        "type": "string",
+                        "nullable": true
+                      },
+                      "tags": {
+                        "type": "array",
+                        "description": "OpenAPI operation tags.",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "yamlPath": {
+                        "type": "string",
+                        "description": "Package-relative route YAML under the spec package."
+                      },
+                      "routeStem": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "Isomorphic stem after routes/handlers/requests (e.g. matters/core/create).\n"
+                      },
+                      "handler": {
+                        "type": "object",
+                        "nullable": true,
+                        "description": "Sibling HTTP handler file when present.",
+                        "required": [
+                          "filePath",
+                          "repoPath"
+                        ],
+                        "properties": {
+                          "filePath": {
+                            "type": "string"
+                          },
+                          "repoPath": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "request": {
+                        "type": "object",
+                        "nullable": true,
+                        "description": "Sibling SDK request module when present.",
+                        "required": [
+                          "filePath",
+                          "repoPath"
+                        ],
+                        "properties": {
+                          "filePath": {
+                            "type": "string"
+                          },
+                          "repoPath": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "handlerTests": {
+                        "type": "array",
+                        "description": "describe/it/test specifications extracted from colocated HTTP handler test files (fullName uses \" > \" nesting).\n",
+                        "items": {
+                          "type": "object",
+                          "required": [
+                            "fullName"
+                          ],
+                          "properties": {
+                            "fullName": {
+                              "type": "string",
+                              "description": "Nested describe/it titles joined with \" > \".",
+                              "example": "createMatter > creates a matter for the org"
+                            }
+                          }
+                        }
+                      },
+                      "requestSchemas": {
+                        "type": "array",
+                        "description": "Business objects in the request body (one layer deep into object/array bags of schema refs).\n",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "responseSchemas": {
+                        "type": "array",
+                        "description": "Business objects in 2xx responses (one layer deep into object/array bags of schema refs).\n",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "usedBy": {
+                        "type": "array",
+                        "description": "Non-test product files importing the sibling SDK request module for this route stem.\n",
+                        "items": {
+                          "type": "object",
+                          "required": [
+                            "packageName",
+                            "filePath",
+                            "repoPath"
+                          ],
+                          "properties": {
+                            "packageName": {
+                              "type": "string"
+                            },
+                            "filePath": {
+                              "type": "string",
+                              "description": "Path within the importing package (no package-root prefix)."
+                            },
+                            "repoPath": {
+                              "type": "string",
+                              "description": "Repo-relative path for source links."
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "items": {
+        "type": "object",
+        "required": [
+          "packageName",
+          "filePath",
+          "repoPath"
+        ],
+        "properties": {
+          "packageName": {
+            "type": "string"
+          },
+          "filePath": {
+            "type": "string",
+            "description": "Path within the importing package (no package-root prefix)."
+          },
+          "repoPath": {
+            "type": "string",
+            "description": "Repo-relative path for source links."
           }
         }
       },

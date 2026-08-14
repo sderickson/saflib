@@ -12,7 +12,7 @@ export type PackageKind =
 export const PACKAGE_KIND_SURFACES: Record<PackageKind, string[]> = {
   db: ["Schemas / queries"],
   http: ["Routes"],
-  spec: ["OpenAPI operations"],
+  spec: ["Objects / routes"],
   spa: ["Pages"],
   sdk: ["Exports"],
   lib: ["Exports"],

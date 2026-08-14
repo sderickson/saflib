@@ -10,7 +10,7 @@
     <ResizableColumns
       v-else-if="fileNav.length"
       class="pane-split"
-      storage-key="dev-site.spec.moduleNavWidth"
+      storage-key="dev-site.http.moduleNavWidth"
       :default-left="180"
       :min-left="120"
       :max-left="320"
@@ -72,12 +72,48 @@
             <h3 class="scope-header__title">All modules</h3>
           </div>
 
+          <div v-if="scopedRoutes.length" class="routes-block">
+            <h4 class="routes-block__title">
+              Routes
+              <span class="routes-block__count">{{ scopedRoutes.length }}</span>
+            </h4>
+            <ul class="routes-block__list">
+              <li
+                v-for="op in scopedRoutes"
+                :key="op.operationId + op.method + op.path"
+              >
+                <PackageRouteCard
+                  :operation="normalizeOp(op)"
+                  :route-repo-path="routeRepoPath(op.yamlPath)"
+                  :open-file="openFile"
+                />
+              </li>
+            </ul>
+          </div>
+          <p
+            v-else-if="handlersScope && !isLoading"
+            class="text-body-2 text-medium-emphasis mb-3"
+          >
+            No joined OpenAPI routes for this handler scope (sibling
+            <code>-spec</code> package).
+          </p>
+          <p
+            v-else-if="scope.kind === 'all' && allRouteCount > 0"
+            class="routes-hint"
+          >
+            {{ allRouteCount }} routes under
+            <code>handlers/</code> — open that folder to browse route cards.
+          </p>
+
           <TestTree
             v-if="specTree.length"
             :nodes="specTree"
             @open-source="openFile"
           />
-          <p v-else class="text-body-2 text-medium-emphasis">
+          <p
+            v-else-if="!scopedRoutes.length"
+            class="text-body-2 text-medium-emphasis"
+          >
             No exports or tests in this scope.
           </p>
         </div>
@@ -105,7 +141,41 @@ import { repoPathPrefix } from "../repo-paths";
 import { openSource } from "../source-links";
 import TestTree from "./TestTree.vue";
 import TestFileNav from "./TestFileNav.vue";
+import PackageRouteCard, {
+  type RouteCardOperation,
+} from "./PackageRouteCard.vue";
 import ResizableColumns from "./ResizableColumns.vue";
+
+interface SpecFileRef {
+  filePath: string;
+  repoPath: string;
+}
+
+interface SpecTestSpec {
+  fullName: string;
+}
+
+interface SpecUsedBy {
+  packageName: string;
+  filePath: string;
+  repoPath: string;
+}
+
+interface SpecOperation {
+  operationId: string;
+  method: string;
+  path: string;
+  summary?: string | null;
+  tags?: string[];
+  yamlPath: string;
+  routeStem?: string | null;
+  handler?: SpecFileRef | null;
+  request?: SpecFileRef | null;
+  handlerTests?: SpecTestSpec[];
+  requestSchemas: string[];
+  responseSchemas: string[];
+  usedBy: SpecUsedBy[];
+}
 
 const props = withDefaults(
   defineProps<{
@@ -115,10 +185,8 @@ const props = withDefaults(
     packageDirectory: string;
     productRoot?: string;
     githubRepo?: string;
-    /** Branch/tag for GitHub links (default `main`). */
     githubRef?: string;
     localRepoRoot?: string;
-    /** Controlled Spec scope (from checkout URL). */
     scope?: TestScope;
   }>(),
   {
@@ -147,6 +215,14 @@ const detail = computed(() => data.value?.packageDetail);
 const pkgPrefix = computed(() =>
   repoPathPrefix(props.productRoot, props.packageDirectory),
 );
+
+const specPkgPrefix = computed(() => {
+  const dir = detail.value?.specInventory?.packageDirectory as
+    | string
+    | undefined;
+  if (!dir) return "";
+  return repoPathPrefix(props.productRoot, dir);
+});
 
 const fileNav = computed(() => {
   const d = detail.value;
@@ -225,6 +301,59 @@ const specTree = computed(() => {
   );
 });
 
+const allOperations = computed((): SpecOperation[] => {
+  const entities = detail.value?.specInventory?.entities ?? [];
+  const ops: SpecOperation[] = [];
+  for (const e of entities) {
+    for (const op of e.operations ?? []) {
+      ops.push(op as SpecOperation);
+    }
+  }
+  return ops.sort((a, b) => {
+    const ha = a.handler?.filePath ?? a.routeStem ?? a.path;
+    const hb = b.handler?.filePath ?? b.routeStem ?? b.path;
+    return (
+      ha.localeCompare(hb) ||
+      a.method.localeCompare(b.method) ||
+      a.operationId.localeCompare(b.operationId)
+    );
+  });
+});
+
+const allRouteCount = computed(() => allOperations.value.length);
+
+const handlersScope = computed(() => {
+  const s = scope.value;
+  if (s.kind === "all") return false;
+  return s.localPath === "handlers" || s.localPath.startsWith("handlers/");
+});
+
+function handlerMatchesScope(
+  handlerPath: string | undefined,
+  s: TestScope,
+): boolean {
+  if (s.kind === "all") return false;
+  if (!handlerPath) return false;
+  const stem = toModuleStem(s.localPath);
+  const handlerStem = toModuleStem(handlerPath);
+  if (s.kind === "file") {
+    return handlerStem === stem || handlerPath === s.localPath;
+  }
+  return (
+    handlerPath === s.localPath ||
+    handlerPath.startsWith(`${s.localPath}/`) ||
+    handlerStem === s.localPath ||
+    handlerStem.startsWith(`${s.localPath}/`)
+  );
+}
+
+const scopedRoutes = computed(() => {
+  if (!handlersScope.value) return [] as SpecOperation[];
+  return allOperations.value.filter((op) =>
+    handlerMatchesScope(op.handler?.filePath, scope.value),
+  );
+});
+
 const scopeFileName = computed(() => {
   if (scope.value.kind !== "file") return "";
   const stem = toModuleStem(scope.value.localPath);
@@ -238,13 +367,37 @@ const scopeOpenPath = computed(() => {
   return mod.sourceRepoPath || mod.testRepoPath || "";
 });
 
-const openFile = (path: string) => {
+function routeRepoPath(packageRelative: string): string {
+  const prefix = specPkgPrefix.value;
+  if (!prefix) return packageRelative;
+  return `${prefix}/${packageRelative}`;
+}
+
+function normalizeOp(op: SpecOperation): RouteCardOperation {
+  return {
+    operationId: op.operationId,
+    method: op.method,
+    path: op.path,
+    summary: op.summary,
+    tags: op.tags ?? [],
+    yamlPath: op.yamlPath,
+    routeStem: op.routeStem ?? null,
+    handler: op.handler ?? null,
+    request: op.request ?? null,
+    handlerTests: op.handlerTests ?? [],
+    requestSchemas: op.requestSchemas,
+    responseSchemas: op.responseSchemas,
+    usedBy: op.usedBy ?? [],
+  };
+}
+
+function openFile(path: string) {
   openSource(path, {
     githubRef: props.githubRef,
     githubRepo: props.githubRepo,
     localRepoRoot: props.localRepoRoot,
   });
-};
+}
 </script>
 
 <style scoped>
@@ -338,5 +491,35 @@ const openFile = (path: string) => {
   margin: 0.35rem 0 0;
   font-size: 0.75rem;
   color: rgba(var(--v-theme-on-surface), 0.45);
+}
+.routes-hint {
+  margin: 0 0 1rem;
+  font-size: 0.8125rem;
+  color: rgba(var(--v-theme-on-surface), 0.55);
+}
+.routes-block {
+  margin-bottom: 1.25rem;
+}
+.routes-block__title {
+  margin: 0 0 0.5rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: rgba(var(--v-theme-on-surface), 0.5);
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+}
+.routes-block__count {
+  font-weight: 400;
+  color: rgba(var(--v-theme-on-surface), 0.4);
+}
+.routes-block__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.65rem;
 }
 </style>

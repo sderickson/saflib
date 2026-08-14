@@ -21,7 +21,7 @@ Node subpath exports allow **only one `*` per pattern key** (and per target). Th
 | SDK requests | `./requests/*` → `./requests/*.ts` |
 | DB queries | `./queries/*` → `./queries/*.ts` |
 | DB schemas | `./schemas/*` → `./schemas/*.ts` |
-| HTTP routes | `./routes/*` → `./routes/*.ts` |
+| HTTP handlers | `./handlers/*` → `./handlers/*.ts` |
 | Service common / forms | `./*` → `./*.ts` (plus aliases when useful) |
 | Vue clients-common | `./components/*` → `./components/*.ts` |
 | Spec operations | `./operations/*` → `./dist/operations/*/index.ts` |
