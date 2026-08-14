@@ -17,6 +17,7 @@ import { checkPackageLayout } from "@saflib/monorepo";
 import {
   EXCLUDE_DIRS,
   isSourcePath,
+  isScaffoldTemplatePath,
   isTestSourcePath,
   packageForPath,
   packageRootsFromPackageJsonPaths,
@@ -129,6 +130,7 @@ export async function collectWorkdirPackageIssues(
     if (!underPackage(repoPath)) continue;
     const fileName = repoPath.split("/").pop() ?? repoPath;
     if (isTestSourcePath(repoPath, fileName)) continue;
+    if (isScaffoldTemplatePath(repoPath)) continue;
     const specialty = specialtyByPath.get(repoPath);
     if (!specialty) continue;
     for (const exp of specialty.exports) {
