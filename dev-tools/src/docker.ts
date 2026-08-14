@@ -52,7 +52,7 @@ export function generateDockerfiles(
       ctx,
     ).map((relativePath) => relativePath + "/package.json");
 
-    const copyPackageJsonCommand = `COPY --parents ./package.json ./package-lock.json ${packageJsonRelativePaths.join(" ")} ./scripts/postinstall-tsconfig-refs.mjs ./`;
+    const copyPackageJsonCommand = `COPY --parents ./package.json ./package-lock.json ${packageJsonRelativePaths.join(" ")} ./scripts/postinstall-tsconfig-refs.mjs ./scripts/dedupe-vue-runtime.mjs ./`;
     const copySrcCommand = `COPY --parents ${packageRelativePaths.join(" ")} ./`;
 
     const dockerfileContents = dockerTemplate
