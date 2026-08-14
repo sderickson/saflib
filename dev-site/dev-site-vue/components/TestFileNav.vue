@@ -1,26 +1,46 @@
 <template>
   <ul class="file-nav">
     <li v-for="node in nodes" :key="node.id" class="file-nav__item">
-      <button
-        type="button"
-        class="file-nav__row"
-        :class="{
-          'file-nav__row--selected': isSelected(node),
-        }"
-        @click="$emit('select', { kind: node.kind, localPath: node.localPath })"
-      >
-        <v-icon
-          size="x-small"
-          :icon="navIcon(node)"
-          class="file-nav__icon"
-          :title="navTitle(node)"
+      <div class="file-nav__row-wrap">
+        <button
+          v-if="isCollapsible(node)"
+          type="button"
+          class="file-nav__toggle"
+          :aria-expanded="isExpanded(node)"
+          :aria-label="isExpanded(node) ? 'Collapse' : 'Expand'"
+          @click.stop="toggle(node.localPath)"
+        >
+          <v-icon
+            size="x-small"
+            :icon="isExpanded(node) ? 'mdi-chevron-down' : 'mdi-chevron-right'"
+          />
+        </button>
+        <span
+          v-else-if="needsToggleGutter(node)"
+          class="file-nav__toggle-spacer"
         />
-        <span class="file-nav__label">{{ node.label }}</span>
-      </button>
+        <button
+          type="button"
+          class="file-nav__row"
+          :class="{
+            'file-nav__row--selected': isSelected(node),
+          }"
+          @click="$emit('select', { kind: node.kind, localPath: node.localPath })"
+        >
+          <v-icon
+            size="x-small"
+            :icon="navIcon(node)"
+            class="file-nav__icon"
+            :title="navTitle(node)"
+          />
+          <span class="file-nav__label">{{ node.label }}</span>
+        </button>
+      </div>
       <TestFileNav
-        v-if="node.children.length"
+        v-if="node.children.length && isExpanded(node)"
         :nodes="node.children"
         :selected="selected"
+        :collapse-dirs-under="collapseDirsUnder"
         @select="$emit('select', $event)"
       />
     </li>
@@ -28,20 +48,100 @@
 </template>
 
 <script setup lang="ts">
+import { inject, provide, shallowRef, watch, type ShallowRef } from "vue";
 import {
   toModuleStem,
   type TestFileNavNode,
   type TestScope,
 } from "../test-tree";
 
+const COLLAPSE_KEY = Symbol("test-file-nav-collapse");
+
+type CollapseStore = {
+  expanded: ShallowRef<Set<string>>;
+  toggle: (localPath: string) => void;
+  isPathExpanded: (localPath: string) => boolean;
+};
+
 const props = defineProps<{
   nodes: TestFileNavNode[];
   selected: TestScope;
+  /**
+   * Dirs nested under this path (e.g. `handlers/matters`) are collapsible and
+   * start collapsed. The root folder itself stays expanded.
+   */
+  collapseDirsUnder?: string;
 }>();
 
 defineEmits<{
   select: [scope: Extract<TestScope, { kind: "dir" | "file" }>];
 }>();
+
+const parentStore = inject<CollapseStore | null>(COLLAPSE_KEY, null);
+
+let store = parentStore;
+if (props.collapseDirsUnder && !parentStore) {
+  const expanded = shallowRef(new Set<string>());
+  store = {
+    expanded,
+    toggle(localPath: string) {
+      const next = new Set(expanded.value);
+      if (next.has(localPath)) next.delete(localPath);
+      else next.add(localPath);
+      expanded.value = next;
+    },
+    isPathExpanded(localPath: string) {
+      return expanded.value.has(localPath);
+    },
+  };
+  provide(COLLAPSE_KEY, store);
+
+  watch(
+    () => props.selected,
+    (sel) => {
+      const under = props.collapseDirsUnder;
+      if (!under || sel.kind === "all") return;
+      const next = new Set(expanded.value);
+      let changed = false;
+      const parts = sel.localPath.split("/").filter(Boolean);
+      let acc = "";
+      for (const part of parts) {
+        acc = acc ? `${acc}/${part}` : part;
+        if (acc.startsWith(`${under}/`) && !next.has(acc)) {
+          next.add(acc);
+          changed = true;
+        }
+      }
+      if (changed) expanded.value = next;
+    },
+    { immediate: true },
+  );
+}
+
+const isCollapsible = (node: TestFileNavNode): boolean => {
+  if (node.kind !== "dir" || !node.children.length) return false;
+  const under = props.collapseDirsUnder;
+  if (!under || !store) return false;
+  // Nested under handlers/, not handlers itself.
+  return node.localPath.startsWith(`${under}/`);
+};
+
+/** Spacer only for rows that sit beside chevron toggles (not the collapse root). */
+const needsToggleGutter = (node: TestFileNavNode): boolean => {
+  const under = props.collapseDirsUnder;
+  if (!under || !store) return false;
+  if (isCollapsible(node)) return false;
+  return node.localPath.startsWith(`${under}/`);
+};
+
+const isExpanded = (node: TestFileNavNode): boolean => {
+  if (!isCollapsible(node) || !store) return true;
+  return store.isPathExpanded(node.localPath);
+};
+
+const toggle = (localPath: string) => {
+  store?.toggle(localPath);
+};
 
 const isSelected = (node: TestFileNavNode) => {
   if (props.selected.kind === "all") return false;
@@ -57,7 +157,6 @@ const isSelected = (node: TestFileNavNode) => {
 const navIcon = (node: TestFileNavNode): string => {
   if (node.kind === "dir") return "mdi-folder-outline";
   if (node.presence === "test") return "mdi-test-tube";
-  // Quiet mark for modules with no function/class/const exports (e.g. types.ts).
   if (!node.hasCardExports) return "mdi-circle-small";
   if (node.presence === "both") return "mdi-file-document-outline";
   return "mdi-file-outline";
@@ -80,16 +179,47 @@ const navTitle = (node: TestFileNavNode): string => {
 .file-nav {
   list-style: none;
   margin: 0;
+  padding-left: 0;
+}
+.file-nav :deep(.file-nav) {
   padding-left: 0.75rem;
 }
 .file-nav__item {
   margin: 0.05rem 0;
 }
+.file-nav__row-wrap {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+.file-nav__toggle,
+.file-nav__toggle-spacer {
+  flex: 0 0 1.1rem;
+  width: 1.1rem;
+  height: 1.25rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.65;
+}
+.file-nav__toggle:hover {
+  opacity: 1;
+}
+.file-nav__toggle-spacer {
+  cursor: default;
+  pointer-events: none;
+}
 .file-nav__row {
   display: flex;
   align-items: center;
   gap: 0.3rem;
-  width: 100%;
+  flex: 1 1 auto;
+  min-width: 0;
   border: 0;
   background: transparent;
   text-align: left;
