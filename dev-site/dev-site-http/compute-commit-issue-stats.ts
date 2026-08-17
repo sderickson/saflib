@@ -7,6 +7,7 @@ import type { ReturnsError } from "@saflib/monorepo";
 import {
   checkPackageLayoutFromInputs,
   DEFAULT_MAX_SOURCE_LINES,
+  listPackageJsonExportTargetFiles,
   type PackageJsonLayoutFields,
   type PackageLayoutIssue,
 } from "@saflib/monorepo";
@@ -79,6 +80,7 @@ function parsePackageJsonFields(text: string): PackageJsonLayoutFields | null {
     return {
       bin: parsed.bin,
       scripts: parsed.scripts,
+      exports: parsed.exports,
     };
   } catch {
     return null;
@@ -315,6 +317,9 @@ export async function computeCommitIssueStats(
             })),
         dbInventory,
         layoutIssues,
+        publicExportFilePaths: listPackageJsonExportTargetFiles(pj.exports).map(
+          (rel) => joinRepoPath(packageRepoPath, rel),
+        ),
       },
       { packageDirectory: pkg.directory, productRoot },
     );

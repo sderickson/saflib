@@ -87,63 +87,65 @@
       <span v-else class="route-card__missing">fake</span>
     </div>
 
-    <section v-if="operation.handlerTests.length" class="route-card__section">
-      <h4 class="route-card__section-title">Handler tests</h4>
-      <ul class="route-card__specs">
-        <li
-          v-for="t in operation.handlerTests"
-          :key="t.fullName"
-          class="route-card__spec"
-        >
-          {{ t.fullName }}
-        </li>
-      </ul>
-    </section>
-    <p v-else class="route-card__hint">No handler test specs</p>
-
-    <section v-if="operation.usedBy.length" class="route-card__section">
-      <h4 class="route-card__section-title">SDK importers</h4>
-      <ul class="route-card__list">
-        <li
-          v-for="u in operation.usedBy"
-          :key="u.packageName + ':' + u.repoPath"
-        >
-          <a
-            href="#"
-            class="route-card__file"
-            @click.prevent="openFile(u.repoPath)"
+    <template v-if="!throughFiles">
+      <section v-if="operation.handlerTests.length" class="route-card__section">
+        <h4 class="route-card__section-title">Handler tests</h4>
+        <ul class="route-card__specs">
+          <li
+            v-for="t in operation.handlerTests"
+            :key="t.fullName"
+            class="route-card__spec"
           >
-            {{ u.packageName }}/{{ u.filePath }}
-          </a>
-        </li>
-      </ul>
-    </section>
-    <p v-else class="route-card__hint">No non-test SDK importers</p>
+            {{ t.fullName }}
+          </li>
+        </ul>
+      </section>
+      <p v-else class="route-card__hint">No handler test specs</p>
 
-    <section
-      v-if="operation.enqueues?.length || operation.enqueuedBy?.length"
-      class="route-card__section"
-    >
-      <h4 class="route-card__section-title">Jobs</h4>
-      <dl class="route-card__jobs">
-        <div v-if="operation.enqueues?.length" class="route-card__job-row">
-          <dt>enqueues</dt>
-          <dd>
-            <code class="route-card__job-id">{{
-              operation.enqueues.join(", ")
-            }}</code>
-          </dd>
-        </div>
-        <div v-if="operation.enqueuedBy?.length" class="route-card__job-row">
-          <dt>enqueued by</dt>
-          <dd>
-            <code class="route-card__job-id">{{
-              operation.enqueuedBy.join(", ")
-            }}</code>
-          </dd>
-        </div>
-      </dl>
-    </section>
+      <section v-if="operation.usedBy.length" class="route-card__section">
+        <h4 class="route-card__section-title">SDK importers</h4>
+        <ul class="route-card__list">
+          <li
+            v-for="u in operation.usedBy"
+            :key="u.packageName + ':' + u.repoPath"
+          >
+            <a
+              href="#"
+              class="route-card__file"
+              @click.prevent="openFile(u.repoPath)"
+            >
+              {{ u.packageName }}/{{ u.filePath }}
+            </a>
+          </li>
+        </ul>
+      </section>
+      <p v-else class="route-card__hint">No non-test SDK importers</p>
+
+      <section
+        v-if="operation.enqueues?.length || operation.enqueuedBy?.length"
+        class="route-card__section"
+      >
+        <h4 class="route-card__section-title">Jobs</h4>
+        <dl class="route-card__jobs">
+          <div v-if="operation.enqueues?.length" class="route-card__job-row">
+            <dt>enqueues</dt>
+            <dd>
+              <code class="route-card__job-id">{{
+                operation.enqueues.join(", ")
+              }}</code>
+            </dd>
+          </div>
+          <div v-if="operation.enqueuedBy?.length" class="route-card__job-row">
+            <dt>enqueued by</dt>
+            <dd>
+              <code class="route-card__job-id">{{
+                operation.enqueuedBy.join(", ")
+              }}</code>
+            </dd>
+          </div>
+        </dl>
+      </section>
+    </template>
   </article>
 </template>
 
@@ -193,6 +195,8 @@ const props = defineProps<{
   /** Repo-relative path for the route YAML (spec package–prefixed). */
   routeRepoPath: string;
   openFile: (repoPath: string) => void;
+  /** Vue loader cards: keep header through file links, omit tests/importers/jobs. */
+  throughFiles?: boolean;
 }>();
 
 const operation = computed(() => props.operation);

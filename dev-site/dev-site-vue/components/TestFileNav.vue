@@ -51,6 +51,7 @@
 import { inject, provide, shallowRef, watch, type ShallowRef } from "vue";
 import {
   toModuleStem,
+  toVueBundleStem,
   type TestFileNavNode,
   type TestScope,
 } from "../test-tree";
@@ -71,6 +72,8 @@ const props = defineProps<{
    * start collapsed. The root folder itself stays expanded.
    */
   collapseDirsUnder?: string;
+  /** Match selected stems using Vue companion grouping. */
+  vueBundles?: boolean;
 }>();
 
 defineEmits<{
@@ -148,14 +151,15 @@ const isSelected = (node: TestFileNavNode) => {
   if (props.selected.kind === "dir") {
     return node.kind === "dir" && props.selected.localPath === node.localPath;
   }
-  return (
-    node.kind === "file" &&
-    toModuleStem(props.selected.localPath) === node.localPath
-  );
+  const stem = props.vueBundles
+    ? toVueBundleStem(props.selected.localPath)
+    : toModuleStem(props.selected.localPath);
+  return node.kind === "file" && node.localPath === stem;
 };
 
 const navIcon = (node: TestFileNavNode): string => {
   if (node.kind === "dir") return "mdi-folder-outline";
+  if (node.hasVueComponent) return "mdi-vuejs";
   if (node.presence === "test") return "mdi-test-tube";
   if (!node.hasCardExports) return "mdi-circle-small";
   if (node.presence === "both") return "mdi-file-document-outline";
@@ -164,6 +168,11 @@ const navIcon = (node: TestFileNavNode): string => {
 
 const navTitle = (node: TestFileNavNode): string => {
   if (node.kind === "dir") return "Directory";
+  if (node.hasVueComponent) {
+    return node.loadableAsync
+      ? "Vue component (async)"
+      : "Vue component";
+  }
   if (node.presence === "test") return "Test only";
   if (!node.hasCardExports) {
     return node.presence === "both"

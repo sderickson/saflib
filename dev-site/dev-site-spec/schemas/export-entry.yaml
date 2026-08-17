@@ -24,6 +24,10 @@ properties:
       - const
       - enum
       - variable
+      - component
+      - prop
+      - emit
+      - model
   signature:
     type: string
     nullable: true

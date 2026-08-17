@@ -1,6 +1,7 @@
 import type { IssueCountsByKind } from "./package-issues.ts";
 import type { PackageSizeTier } from "./package-size.ts";
 import { PACKAGE_SIZE_LABELS } from "./package-size.ts";
+import { formatLocPair } from "./format-loc.ts";
 
 type Rgb = readonly [number, number, number];
 
@@ -80,7 +81,7 @@ export function debtTooltipText(input: DebtTooltipInput): string {
     parts.push(`size ${PACKAGE_SIZE_LABELS[input.packageSize]}`);
   }
   if (input.sourceLines != null && input.testLines != null) {
-    parts.push(`${input.sourceLines}/${input.testLines} LOC`);
+    parts.push(`${formatLocPair(input.sourceLines, input.testLines)} LOC`);
   }
   return parts.join(" · ");
 }

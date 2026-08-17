@@ -73,7 +73,7 @@ export interface paths {
         };
         /**
          * Package-scoped symbols for one analyzed commit
-         * @description Returns metrics, exports, and test cases for a single package at a commit. Prefer this over full commit detail for the checkout Spec panel — assembly only touches that package's source blobs. For db packages, also includes `dbInventory` (drizzle tables + query dirs). For `-spec` packages, also includes `specInventory` (OpenAPI schemas + REST resources). For `-http` packages, `specInventory` is the sibling `-spec` triangle join (route cards) while exports/tests remain the HTTP or SDK package's own source modules. `layoutIssues` are live working-tree layout/LoC findings for the package directory (cheap; package-local). Full dead-code workdir scans stay on `saf-dev-site issues --workdir` — not on this Spec package load.
+         * @description Returns metrics, exports, and test cases for a single package at a commit. Prefer this over full commit detail for the checkout Spec panel — assembly only touches that package's source blobs. For db packages, also includes `dbInventory` (drizzle tables + query dirs). For `-spec` packages, also includes `specInventory` (OpenAPI schemas + REST resources). For `-http` packages, `specInventory` is the sibling `-spec` triangle join (route cards) while exports/tests remain the HTTP or SDK package's own source modules. For Vue SPA / `-vue` packages, `specInventory` is the product `-spec` joined through SDK request imports so Spec can show loader routes on a component bundle. `layoutIssues` are live working-tree layout/LoC findings for the package directory (cheap; package-local). Full dead-code workdir scans stay on `saf-dev-site issues --workdir` — not on this Spec package load.
          */
         get: operations["getCommitPackage"];
         put?: never;
@@ -133,7 +133,7 @@ export interface paths {
         };
         /**
          * List files at a commit
-         * @description List blob paths at a commit (git ls-tree), optionally filtered by path prefix and/or file extension(s). Used for browsing docs and source without checking out.
+         * @description List blob paths at a commit (git ls-tree), optionally filtered by path prefix and/or file extension(s). Prefix matches the exact path, descendants (`docs` matches `docs/guide.md`), and files sharing the stem (`src/Foo` matches `src/Foo.ts`, `src/Foo.vue`, `src/Foo.test.ts` — not `src/FooAsync.vue`). Used for browsing docs and source without checking out.
          */
         get: operations["listRepoFiles"];
         put?: never;
@@ -326,7 +326,7 @@ export interface components {
              * @description Declaration kind (mirrors `@saflib/parser`'s ExportKind).
              * @enum {string}
              */
-            kind: "function" | "class" | "interface" | "type" | "const" | "enum" | "variable";
+            kind: "function" | "class" | "interface" | "type" | "const" | "enum" | "variable" | "component" | "prop" | "emit" | "model";
             /**
              * @description Syntactic display signature from the AST (no type-checker). Null for re-exports without a local declaration.
              * @example (repoRoot: string, options?: LogOptions)
@@ -779,6 +779,8 @@ export interface operations {
                             specInventory?: components["schemas"]["spec-inventory"];
                             /** @description Working-tree package-layout and oversized-file findings (package-local; cheap). Dead-code workdir scans are CLI-only. */
                             layoutIssues?: components["schemas"]["package-issue"][];
+                            /** @description Repo-relative files from live package.json `exports` (SPA main.ts, test-app.ts). Spec Issues skips these for dead-code so the panel matches `saf-dev-site issues --workdir`. */
+                            publicExportFilePaths?: string[];
                         };
                     };
                 };
@@ -899,10 +901,12 @@ export interface operations {
             query: {
                 /** @description Commit hash (or other tree-ish) to list. */
                 ref: string;
-                /** @description Optional path prefix (repo-relative). Matches exact path or descendants (`docs` matches `docs` and `docs/guide.md`). */
+                /** @description Optional path prefix (repo-relative). Matches exact path, descendants (`docs` matches `docs` and `docs/guide.md`), and stem siblings (`src/Foo` matches `src/Foo.ts` and `src/Foo.test.ts`). */
                 prefix?: string;
                 /** @description Optional file extension filter (e.g. `.md`). May be repeated (`ext=.md&ext=.txt`) or comma-separated (`ext=.md,.txt`). */
                 ext?: string[];
+                /** @description When true, include UTF-8 `content` for each matching file. Requires `prefix` so the whole tree is not dumped. */
+                content?: boolean;
             };
             header?: never;
             path?: never;
@@ -920,10 +924,21 @@ export interface operations {
                         files: {
                             /** @description Path relative to the repo root. */
                             path: string;
-                            /** @description Git blob object hash. */
+                            /** @description Git blob object hash. Empty string for working-tree-only files at HEAD that are not in the commit tree. */
                             blobHash: string;
+                            /** @description UTF-8 file text when `content=true`. */
+                            content?: string;
                         }[];
                     };
+                };
+            };
+            /** @description Invalid query (content=true requires prefix) */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["error"];
                 };
             };
             /** @description Git command failed */

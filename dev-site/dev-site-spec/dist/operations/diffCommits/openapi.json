@@ -355,7 +355,11 @@
               "type",
               "const",
               "enum",
-              "variable"
+              "variable",
+              "component",
+              "prop",
+              "emit",
+              "model"
             ]
           },
           "signature": {

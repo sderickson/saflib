@@ -3,29 +3,67 @@
  * Prefer adjacent implementation JSDoc; fall back to the test file itself.
  */
 
-const TEST_FILE_RE = /\.(test|spec)\.(tsx?|jsx?|mjs|cjs)$/i;
+/** Primary module file extensions, ranked for scope-doc picking. */
+const PRIMARY_EXT = [
+  ".vue",
+  ".ts",
+  ".tsx",
+  ".js",
+  ".jsx",
+  ".mjs",
+  ".cjs",
+  ".md",
+];
 
-/** Map `foo.test.ts` → candidate sibling implementation paths. */
-export function adjacentSourcePaths(testFilePath: string): string[] {
-  const m = testFilePath.match(TEST_FILE_RE);
-  if (!m) return [];
-  const stem = testFilePath.slice(0, -m[0].length);
-  const exts = [".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs", ".vue"];
-  return exts.map((ext) => `${stem}${ext}`);
+/**
+ * Prefix for `GET /api/repo/files` when loading a scope README / JSDoc.
+ * Directories use `…/README` (stem-matches `README.md`); files use the module stem.
+ */
+export function scopeDocListPrefix(args: {
+  kind: "all" | "dir" | "file";
+  pkgPrefix: string;
+  localPath: string;
+  moduleStem: string;
+}): string {
+  if (args.kind === "all") return "";
+  if (args.kind === "dir") {
+    const base = [args.pkgPrefix, args.localPath].filter(Boolean).join("/");
+    return `${base}/README`;
+  }
+  return [args.pkgPrefix, args.moduleStem].filter(Boolean).join("/");
 }
 
-/** Repo paths to try for a module-stem scope summary (source first, then test). */
-export function fileScopeDocCandidates(stemOrTestPath: string): string[] {
-  if (TEST_FILE_RE.test(stemOrTestPath)) {
-    return [...adjacentSourcePaths(stemOrTestPath), stemOrTestPath];
+function scopeDocRank(path: string, prefix: string): number {
+  const rest = path.startsWith(prefix) ? path.slice(prefix.length) : `/${path}`;
+  const primary = PRIMARY_EXT.indexOf(rest);
+  if (primary !== -1) return primary;
+  const test = rest.match(/^\.(test|spec)(\.[^.]+)$/i);
+  if (test) {
+    const ei = PRIMARY_EXT.indexOf(test[2]!.toLowerCase());
+    return 20 + (ei === -1 ? 9 : ei);
   }
-  // Module stem (no extension) or plain source path.
-  const stem = stemOrTestPath.replace(/\.(tsx?|jsx?|mjs|cjs)$/i, "");
-  const exts = [".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs"];
-  return [
-    ...exts.map((ext) => `${stem}${ext}`),
-    ...exts.flatMap((ext) => [`${stem}.test${ext}`, `${stem}.spec${ext}`]),
-  ];
+  return 40;
+}
+
+/** Prefer the primary source (or README) among prefix-listed files, then tests. */
+export function pickScopeDocFile<T extends { path: string }>(
+  files: T[],
+  prefix: string,
+): T | undefined {
+  if (!files.length || !prefix) return undefined;
+  return [...files].sort(
+    (a, b) => scopeDocRank(a.path, prefix) - scopeDocRank(b.path, prefix),
+  )[0];
+}
+
+export function summarizeScopeDoc(
+  file: { path: string; content?: string } | undefined,
+): string | null {
+  if (!file?.content) return null;
+  if (file.path.toLowerCase().endsWith(".md")) {
+    return shortenMarkdownSummary(file.content);
+  }
+  return extractLeadingJsDocProse(file.content);
 }
 
 /**

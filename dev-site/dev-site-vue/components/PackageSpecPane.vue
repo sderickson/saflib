@@ -29,6 +29,7 @@
           <TestFileNav
             :nodes="fileNav"
             :selected="scope"
+            :vue-bundles="vueBundles"
             @select="setScope"
           />
         </div>
@@ -72,12 +73,108 @@
             <h3 class="scope-header__title">All modules</h3>
           </div>
 
+          <p
+            v-if="selectedModule?.loadableAsync"
+            class="async-note"
+          >
+            Can be loaded <strong>async</strong>
+          </p>
+
+          <div v-if="showVueSurface" class="surface-block">
+            <h4 class="surface-block__title">Component</h4>
+            <table v-if="vueRootTag" class="surface-table">
+              <tbody>
+                <tr>
+                  <th>root</th>
+                  <td>
+                    <code>&lt;{{ vueRootTag }}&gt;</code>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <template v-if="vueModels.length">
+              <h5 class="surface-block__subtitle">Models</h5>
+              <table class="surface-table">
+                <tbody>
+                  <tr v-for="m in vueModels" :key="'model-' + m.name">
+                    <th>{{ m.name }}</th>
+                    <td>
+                      <code v-if="m.signature">{{ m.signature }}</code>
+                      <span v-if="m.docstring" class="surface-table__doc">{{
+                        m.docstring
+                      }}</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </template>
+            <template v-if="vueProps.length">
+              <h5 class="surface-block__subtitle">Props</h5>
+              <table class="surface-table">
+                <tbody>
+                  <tr v-for="p in vueProps" :key="'prop-' + p.name">
+                    <th>{{ p.name }}</th>
+                    <td>
+                      <code v-if="p.signature">{{ p.signature }}</code>
+                      <span v-if="p.docstring" class="surface-table__doc">{{
+                        p.docstring
+                      }}</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </template>
+            <template v-if="vueEmits.length">
+              <h5 class="surface-block__subtitle">Emits</h5>
+              <table class="surface-table">
+                <tbody>
+                  <tr v-for="e in vueEmits" :key="'emit-' + e.name">
+                    <th>{{ e.name }}</th>
+                    <td>
+                      <code v-if="e.signature">{{ e.signature }}</code>
+                      <span v-if="e.docstring" class="surface-table__doc">{{
+                        e.docstring
+                      }}</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </template>
+          </div>
+
+          <div v-if="scopedRoutes.length" class="routes-block">
+            <h4 class="routes-block__title">
+              Loader routes
+              <span class="routes-block__count">{{ scopedRoutes.length }}</span>
+            </h4>
+            <ul class="routes-block__list">
+              <li
+                v-for="op in scopedRoutes"
+                :key="op.operationId + op.method + op.path"
+              >
+                <PackageRouteCard
+                  :operation="normalizeOp(op)"
+                  :route-repo-path="routeRepoPath(op.yamlPath)"
+                  :open-file="openFile"
+                  through-files
+                />
+              </li>
+            </ul>
+          </div>
+
           <TestTree
             v-if="specTree.length"
             :nodes="specTree"
             @open-source="openFile"
           />
-          <p v-else class="text-body-2 text-medium-emphasis">
+          <p
+            v-else-if="
+              !showVueSurface &&
+              !scopedRoutes.length &&
+              !selectedModule?.loadableAsync
+            "
+            class="text-body-2 text-medium-emphasis"
+          >
             No exports or tests in this scope.
           </p>
         </div>
@@ -88,23 +185,25 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
-import { useCommitPackage, useFirstRepoFile } from "../requests/queries";
+import { useCommitPackage, useScopeSummary } from "../requests/queries";
 import {
   buildModuleFileNav,
   buildPackageSpecTree,
   findModuleNavNode,
+  packageHasVueFiles,
+  packageLocalPath,
   toModuleStem,
+  toVueBundleStem,
   type TestScope,
 } from "../test-tree";
-import {
-  extractLeadingJsDocProse,
-  fileScopeDocCandidates,
-  shortenMarkdownSummary,
-} from "../scope-docs";
+import { scopeDocListPrefix } from "../scope-docs";
 import { repoPathPrefix } from "../repo-paths";
 import { openSource } from "../source-links";
 import TestTree from "./TestTree.vue";
 import TestFileNav from "./TestFileNav.vue";
+import PackageRouteCard, {
+  type RouteCardOperation,
+} from "./PackageRouteCard.vue";
 import ResizableColumns from "./ResizableColumns.vue";
 
 const props = withDefaults(
@@ -148,6 +247,12 @@ const pkgPrefix = computed(() =>
   repoPathPrefix(props.productRoot, props.packageDirectory),
 );
 
+const vueBundles = computed(() => {
+  const d = detail.value;
+  if (!d) return false;
+  return packageHasVueFiles(d.exports ?? [], d.testCases, d.packageName);
+});
+
 const fileNav = computed(() => {
   const d = detail.value;
   if (!d) return [];
@@ -157,42 +262,40 @@ const fileNav = computed(() => {
     d.packageName,
     props.packageDirectory,
     props.productRoot ?? "",
+    { vueBundles: vueBundles.value },
   );
 });
 
 const selectedModule = computed(() => {
   if (scope.value.kind !== "file") return null;
-  return findModuleNavNode(fileNav.value, scope.value.localPath);
+  return findModuleNavNode(
+    fileNav.value,
+    scope.value.localPath,
+    vueBundles.value,
+  );
 });
 
-const scopeDocPaths = computed(() => {
-  const prefix = pkgPrefix.value;
-  const s = scope.value;
-  if (s.kind === "all") return [] as string[];
-  if (s.kind === "dir") {
-    const base = [prefix, s.localPath].filter(Boolean).join("/");
-    return [`${base}/README.md`, `${base}/readme.md`];
-  }
-  const stemRepo = [prefix, toModuleStem(s.localPath)].filter(Boolean).join("/");
-  return fileScopeDocCandidates(stemRepo);
-});
+const scopeDocPrefix = computed(() =>
+  scopeDocListPrefix({
+    kind: scope.value.kind,
+    pkgPrefix: pkgPrefix.value,
+    localPath: scope.value.kind === "all" ? "" : scope.value.localPath,
+    moduleStem:
+      scope.value.kind === "file"
+        ? vueBundles.value
+          ? toVueBundleStem(scope.value.localPath)
+          : toModuleStem(scope.value.localPath)
+        : "",
+  }),
+);
 
-const {
-  data: scopeDocFile,
-  isLoading: scopeDocLoading,
-} = useFirstRepoFile(props.subdomain, () => ({
-  ref: props.commitHash,
-  paths: scopeDocPaths.value,
-}));
-
-const scopeSummary = computed(() => {
-  const file = scopeDocFile.value;
-  if (!file?.content) return null;
-  if (file.path.toLowerCase().endsWith(".md")) {
-    return shortenMarkdownSummary(file.content);
-  }
-  return extractLeadingJsDocProse(file.content);
-});
+const { summary: scopeSummary, isLoading: scopeDocLoading } = useScopeSummary(
+  props.subdomain,
+  () => ({
+    ref: props.commitHash,
+    prefix: scopeDocPrefix.value,
+  }),
+);
 
 const missingScopeHint = computed(() => {
   if (scope.value.kind === "dir") {
@@ -205,11 +308,14 @@ const missingScopeHint = computed(() => {
 });
 
 const scopePresenceLabel = computed(() => {
-  const p = selectedModule.value?.presence;
-  if (p === "both") return "Source + colocated test";
-  if (p === "test") return "Test only";
-  if (p === "source") return "Source only";
-  return "";
+  const mod = selectedModule.value;
+  const p = mod?.presence;
+  const bits: string[] = [];
+  if (p === "both") bits.push("Source + colocated test");
+  else if (p === "test") bits.push("Test only");
+  else if (p === "source") bits.push("Source only");
+  if (mod?.hasVueComponent) bits.push("Vue component");
+  return bits.join(" · ");
 });
 
 const specTree = computed(() => {
@@ -222,8 +328,163 @@ const specTree = computed(() => {
     props.packageDirectory,
     props.productRoot ?? "",
     scope.value,
+    { vueBundles: vueBundles.value },
   );
 });
+
+const bundleExports = computed(() => {
+  const d = detail.value;
+  if (!d || !vueBundles.value || scope.value.kind === "all") return [];
+  const s = scope.value;
+  const wanted =
+    s.kind === "file" ? toVueBundleStem(s.localPath) : s.localPath.replace(/\/+$/, "");
+  return (d.exports ?? []).filter((e) => {
+    const local = packageLocalPath(
+      e.filePath,
+      props.packageDirectory,
+      props.productRoot ?? "",
+    );
+    const stem = toVueBundleStem(local);
+    if (s.kind === "file") return stem === wanted;
+    return stem === wanted || stem.startsWith(`${wanted}/`);
+  });
+});
+
+const vueComponent = computed(() =>
+  bundleExports.value.find(
+    (e) => e.kind === "component" && !/Async\.vue$/i.test(e.filePath),
+  ),
+);
+const vueRootTag = computed(() => {
+  const sig = vueComponent.value?.signature;
+  if (!sig || sig === "(vue component)") return null;
+  return sig.replace(/^<|>$/g, "");
+});
+const vueModels = computed(() =>
+  bundleExports.value.filter((e) => e.kind === "model"),
+);
+const vueProps = computed(() =>
+  bundleExports.value.filter((e) => e.kind === "prop"),
+);
+const vueEmits = computed(() =>
+  bundleExports.value.filter((e) => e.kind === "emit"),
+);
+const showVueSurface = computed(
+  () =>
+    Boolean(vueRootTag.value) ||
+    vueModels.value.length > 0 ||
+    vueProps.value.length > 0 ||
+    vueEmits.value.length > 0,
+);
+
+interface SpecUsedBy {
+  packageName: string;
+  filePath: string;
+  repoPath: string;
+}
+
+interface SpecFileRef {
+  filePath: string;
+  repoPath: string;
+}
+
+interface SpecTestSpec {
+  fullName: string;
+}
+
+interface SpecOperation {
+  operationId: string;
+  method: string;
+  path: string;
+  summary?: string | null;
+  tags?: string[];
+  yamlPath: string;
+  routeStem?: string | null;
+  handler?: SpecFileRef | null;
+  request?: SpecFileRef | null;
+  fake?: SpecFileRef | null;
+  handlerTests?: SpecTestSpec[];
+  requestSchemas: string[];
+  responseSchemas: string[];
+  usedBy: SpecUsedBy[];
+  enqueues?: string[];
+  enqueuedBy?: string[];
+}
+
+const specPkgPrefix = computed(() => {
+  const dir = detail.value?.specInventory?.packageDirectory as
+    | string
+    | undefined;
+  if (!dir) return "";
+  return repoPathPrefix(props.productRoot, dir);
+});
+
+const allOperations = computed((): SpecOperation[] => {
+  const entities = detail.value?.specInventory?.entities ?? [];
+  const ops: SpecOperation[] = [];
+  for (const e of entities) {
+    for (const op of e.operations ?? []) {
+      ops.push(op as SpecOperation);
+    }
+  }
+  return ops;
+});
+
+const scopedRoutes = computed(() => {
+  if (!vueBundles.value || scope.value.kind === "all") return [] as SpecOperation[];
+  const s = scope.value;
+  const wanted =
+    s.kind === "file"
+      ? toVueBundleStem(s.localPath)
+      : s.localPath.replace(/\/+$/, "");
+  const pkg = detail.value?.packageName;
+  const seen = new Set<string>();
+  const out: SpecOperation[] = [];
+  for (const op of allOperations.value) {
+    const hit = (op.usedBy ?? []).some((u) => {
+      if (pkg && u.packageName !== pkg) return false;
+      const stem = toVueBundleStem(u.filePath);
+      if (s.kind === "file") return stem === wanted;
+      return stem === wanted || stem.startsWith(`${wanted}/`);
+    });
+    if (!hit) continue;
+    const key = `${op.operationId}\0${op.method}\0${op.path}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(op);
+  }
+  return out.sort(
+    (a, b) =>
+      a.path.localeCompare(b.path) || a.method.localeCompare(b.method),
+  );
+});
+
+function routeRepoPath(packageRelative: string): string {
+  const prefix = specPkgPrefix.value;
+  if (!prefix) return packageRelative;
+  return `${prefix}/${packageRelative}`;
+}
+
+function normalizeOp(op: SpecOperation): RouteCardOperation {
+  return {
+    operationId: op.operationId,
+    method: op.method,
+    path: op.path,
+    summary: op.summary,
+    tags: op.tags ?? [],
+    yamlPath: op.yamlPath,
+    routeStem: op.routeStem ?? null,
+    handler: op.handler ?? null,
+    request: op.request ?? null,
+    fake: op.fake ?? null,
+    handlerTests: op.handlerTests ?? [],
+    requestSchemas: op.requestSchemas,
+    responseSchemas: op.responseSchemas,
+    usedBy: op.usedBy ?? [],
+    enqueues: op.enqueues,
+    enqueuedBy: op.enqueuedBy,
+  };
+}
 
 const scopeFileName = computed(() => {
   if (scope.value.kind !== "file") return "";
@@ -338,5 +599,76 @@ const openFile = (path: string) => {
   margin: 0.35rem 0 0;
   font-size: 0.75rem;
   color: rgba(var(--v-theme-on-surface), 0.45);
+}
+.async-note {
+  margin: 0 0 0.85rem;
+  max-width: 44rem;
+  font-size: 0.8rem;
+  color: rgba(var(--v-theme-on-surface), 0.7);
+}
+.surface-block,
+.routes-block {
+  margin-bottom: 1.1rem;
+  max-width: 44rem;
+}
+.surface-block__title,
+.routes-block__title {
+  margin: 0 0 0.5rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: rgba(var(--v-theme-on-surface), 0.5);
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+}
+.surface-block__subtitle {
+  margin: 0.7rem 0 0.35rem;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(var(--v-theme-on-surface), 0.45);
+}
+.routes-block__count {
+  font-weight: 400;
+  color: rgba(var(--v-theme-on-surface), 0.4);
+}
+.routes-block__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.65rem;
+}
+.surface-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+.surface-table th {
+  text-align: left;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-weight: 600;
+  padding: 0.28rem 0.65rem 0.28rem 0;
+  vertical-align: top;
+  white-space: nowrap;
+  width: 1%;
+}
+.surface-table td {
+  padding: 0.28rem 0;
+  color: rgba(var(--v-theme-on-surface), 0.75);
+}
+.surface-table code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.75rem;
+  color: rgba(var(--v-theme-on-surface), 0.62);
+}
+.surface-table__doc {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.75rem;
+  color: rgba(var(--v-theme-on-surface), 0.55);
 }
 </style>

@@ -11,6 +11,8 @@ import {
   looksLikeSpecPackage,
   looksLikeHttpPackage,
   looksLikeSdkPackage,
+  looksLikeSpaPackage,
+  sdkRequestFromSpecifier,
 } from "./classify.ts";
 
 describe("classify", () => {
@@ -30,11 +32,20 @@ describe("classify", () => {
   });
 
   describe("isTestSourcePath", () => {
-    it("detects *.test.* / *.spec.* / *.fixtures.* and testing/tests dirs", () => {
+    it("detects *.test.* / *.spec.* / *.fixture(s).* / *.test-helpers.* and testing/tests dirs", () => {
       expect(isTestSourcePath("a.test.ts", "a.test.ts")).toBe(true);
       expect(isTestSourcePath("b.spec.tsx", "b.spec.tsx")).toBe(true);
       expect(
         isTestSourcePath("x/m5.fixtures.ts", "m5.fixtures.ts"),
+      ).toBe(true);
+      expect(
+        isTestSourcePath("pages/Home.fixture.ts", "Home.fixture.ts"),
+      ).toBe(true);
+      expect(
+        isTestSourcePath(
+          "pages/PreviewTab.test-helpers.ts",
+          "PreviewTab.test-helpers.ts",
+        ),
       ).toBe(true);
       expect(isTestSourcePath("tests/foo.ts", "foo.ts")).toBe(true);
       expect(isTestSourcePath("pkg/testing/slim-route-test.ts", "slim-route-test.ts")).toBe(
@@ -115,6 +126,22 @@ describe("classify", () => {
       expect(
         looksLikeSdkPackage("@pathclerk/daemon-http", "daemon/service/http"),
       ).toBe(false);
+      expect(
+        looksLikeSpaPackage("@pathclerk/daemon-account-spa", "daemon/clients/account"),
+      ).toBe(true);
+      expect(
+        looksLikeSpaPackage("@saflib/dev-site-vue", "saflib/dev-site/dev-site-vue"),
+      ).toBe(true);
+      expect(looksLikeSpaPackage("@pathclerk/daemon-sdk", "daemon/service/sdk")).toBe(
+        false,
+      );
+      expect(
+        sdkRequestFromSpecifier("@pathclerk/daemon-sdk/requests/orgs/list"),
+      ).toEqual({
+        sdkPackageName: "@pathclerk/daemon-sdk",
+        requestStem: "orgs/list",
+      });
+      expect(sdkRequestFromSpecifier("./ChooseOrg.logic.ts")).toBeNull();
     });
   });
 });

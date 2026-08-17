@@ -178,7 +178,7 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
-import { useCommitPackage, useFirstRepoFile } from "../requests/queries.ts";
+import { useCommitPackage, useScopeSummary } from "../requests/queries.ts";
 import {
   buildDbPackageFileNav,
   buildPackageSpecTree,
@@ -190,11 +190,7 @@ import {
   type TestScope,
   type TestTreeNode,
 } from "../test-tree.ts";
-import {
-  extractLeadingJsDocProse,
-  fileScopeDocCandidates,
-  shortenMarkdownSummary,
-} from "../scope-docs.ts";
+import { scopeDocListPrefix } from "../scope-docs.ts";
 import { repoPathPrefix } from "../repo-paths.ts";
 import { openSource } from "../source-links.ts";
 import ResizableColumns from "./ResizableColumns.vue";
@@ -314,35 +310,26 @@ const selectedModule = computed(() => {
   return findModuleNavNode(fileNav.value, scope.value.localPath);
 });
 
-const scopeDocPaths = computed(() => {
-  if (entitySelection.value !== undefined) return [] as string[];
-  const prefix = pkgPrefix.value;
-  const s = scope.value;
-  if (s.kind === "all") return [] as string[];
-  if (s.kind === "dir") {
-    const base = [prefix, s.localPath].filter(Boolean).join("/");
-    return [`${base}/README.md`, `${base}/readme.md`];
-  }
-  const stemRepo = [prefix, toModuleStem(s.localPath)].filter(Boolean).join("/");
-  return fileScopeDocCandidates(stemRepo);
+const scopeDocPrefix = computed(() => {
+  if (entitySelection.value !== undefined) return "";
+  return scopeDocListPrefix({
+    kind: scope.value.kind,
+    pkgPrefix: pkgPrefix.value,
+    localPath: scope.value.kind === "all" ? "" : scope.value.localPath,
+    moduleStem:
+      scope.value.kind === "file"
+        ? toModuleStem(scope.value.localPath)
+        : "",
+  });
 });
 
-const {
-  data: scopeDocFile,
-  isLoading: scopeDocLoading,
-} = useFirstRepoFile(props.subdomain, () => ({
-  ref: props.commitHash,
-  paths: scopeDocPaths.value,
-}));
-
-const scopeSummary = computed(() => {
-  const file = scopeDocFile.value;
-  if (!file?.content) return null;
-  if (file.path.toLowerCase().endsWith(".md")) {
-    return shortenMarkdownSummary(file.content);
-  }
-  return extractLeadingJsDocProse(file.content);
-});
+const { summary: scopeSummary, isLoading: scopeDocLoading } = useScopeSummary(
+  props.subdomain,
+  () => ({
+    ref: props.commitHash,
+    prefix: scopeDocPrefix.value,
+  }),
+);
 
 const missingScopeHint = computed(() => {
   if (scope.value.kind === "dir") {

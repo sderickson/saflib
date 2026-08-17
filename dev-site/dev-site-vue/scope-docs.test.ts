@@ -1,25 +1,75 @@
 import { describe, expect, it } from "vitest";
 import {
-  adjacentSourcePaths,
   extractLeadingJsDocProse,
-  fileScopeDocCandidates,
   parsePackageDescription,
+  pickScopeDocFile,
+  scopeDocListPrefix,
   shortenMarkdownSummary,
+  summarizeScopeDoc,
 } from "./scope-docs.ts";
 
-describe("adjacentSourcePaths", () => {
-  it("maps test stems to sibling sources", () => {
-    expect(adjacentSourcePaths("forms/additional-info/foo.test.ts")).toContain(
-      "forms/additional-info/foo.ts",
-    );
+describe("scopeDocListPrefix", () => {
+  it("uses README stem for directories and the module stem for files", () => {
+    expect(
+      scopeDocListPrefix({
+        kind: "dir",
+        pkgPrefix: "pkg",
+        localPath: "pages",
+        moduleStem: "pages",
+      }),
+    ).toBe("pkg/pages/README");
+    expect(
+      scopeDocListPrefix({
+        kind: "file",
+        pkgPrefix: "pkg",
+        localPath: "pages/Home.vue",
+        moduleStem: "pages/Home",
+      }),
+    ).toBe("pkg/pages/Home");
+    expect(
+      scopeDocListPrefix({
+        kind: "all",
+        pkgPrefix: "pkg",
+        localPath: "",
+        moduleStem: "",
+      }),
+    ).toBe("");
   });
 });
 
-describe("fileScopeDocCandidates", () => {
-  it("prefers adjacent source then the test file", () => {
-    const c = fileScopeDocCandidates("pkg/a.test.ts");
-    expect(c[0]).toBe("pkg/a.ts");
-    expect(c.at(-1)).toBe("pkg/a.test.ts");
+describe("pickScopeDocFile", () => {
+  it("prefers the primary source over companions and tests", () => {
+    const prefix = "pages/Home";
+    const picked = pickScopeDocFile(
+      [
+        { path: "pages/Home.loader.ts" },
+        { path: "pages/Home.test.ts" },
+        { path: "pages/Home.vue" },
+        { path: "pages/Home.strings.ts" },
+      ],
+      prefix,
+    );
+    expect(picked?.path).toBe("pages/Home.vue");
+  });
+
+  it("falls back to a colocated test when no primary source exists", () => {
+    const prefix = "pkg/a";
+    const picked = pickScopeDocFile(
+      [{ path: "pkg/a.test.ts" }, { path: "pkg/a.loader.ts" }],
+      prefix,
+    );
+    expect(picked?.path).toBe("pkg/a.test.ts");
+  });
+});
+
+describe("summarizeScopeDoc", () => {
+  it("extracts leading JSDoc", () => {
+    expect(
+      summarizeScopeDoc({
+        path: "a.ts",
+        content: "/** Hello there. */\nexport const x = 1;\n",
+      }),
+    ).toBe("Hello there.");
   });
 });
 

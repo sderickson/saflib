@@ -6,6 +6,7 @@ import {
   dbEntitySelectionFromScope,
   isDbPackageHiddenModuleStem,
   isSdkPackageHiddenModuleStem,
+  packageHasVueFiles,
   toModuleStem,
 } from "./test-tree.ts";
 
@@ -15,7 +16,41 @@ describe("toModuleStem", () => {
     expect(toModuleStem("a/b.test.ts")).toBe("a/b");
     expect(toModuleStem("a/b.spec.tsx")).toBe("a/b");
     expect(toModuleStem("a/b.fake.ts")).toBe("a/b");
+    expect(toModuleStem("a/b.vue")).toBe("a/b");
     expect(toModuleStem("a/b")).toBe("a/b");
+  });
+});
+
+describe("packageHasVueFiles", () => {
+  it("detects .vue and colocated Vue role files", () => {
+    expect(
+      packageHasVueFiles(
+        [
+          {
+            packageName: "@p",
+            filePath: "spa/Foo.logic.ts",
+            name: "x",
+            kind: "function",
+          },
+        ],
+        [],
+        "@p",
+      ),
+    ).toBe(true);
+    expect(
+      packageHasVueFiles(
+        [
+          {
+            packageName: "@p",
+            filePath: "spa/log.ts",
+            name: "log",
+            kind: "function",
+          },
+        ],
+        [],
+        "@p",
+      ),
+    ).toBe(false);
   });
 });
 
@@ -243,3 +278,206 @@ describe("buildPackageSpecTree", () => {
     expect(cards[0]!.children).toHaveLength(0);
   });
 });
+
+describe("vue bundle nav", () => {
+  const vueExports = [
+    {
+      packageName: "@pkg/spa",
+      filePath: "spa/pages/home/Home.vue",
+      name: "default",
+      kind: "component",
+    },
+    {
+      packageName: "@pkg/spa",
+      filePath: "spa/pages/home/Home.vue",
+      name: "title",
+      kind: "prop",
+    },
+    {
+      packageName: "@pkg/spa",
+      filePath: "spa/pages/home/HomeAsync.vue",
+      name: "default",
+      kind: "component",
+    },
+    {
+      packageName: "@pkg/spa",
+      filePath: "spa/pages/home/Home.loader.ts",
+      name: "useHomeLoader",
+      kind: "function",
+    },
+    {
+      packageName: "@pkg/spa",
+      filePath: "spa/pages/home/Home.logic.ts",
+      name: "homeViewMode",
+      kind: "function",
+    },
+    {
+      packageName: "@pkg/spa",
+      filePath: "spa/pages/home/Home.strings.ts",
+      name: "home",
+      kind: "const",
+    },
+    {
+      packageName: "@pkg/spa",
+      filePath: "spa/pages/home/HomeNavList.vue",
+      name: "default",
+      kind: "component",
+    },
+    {
+      packageName: "@pkg/spa",
+      filePath: "spa/i18n.ts",
+      name: "useReverseT",
+      kind: "function",
+    },
+  ];
+  const vueTests = [
+    {
+      packageName: "@pkg/spa",
+      filePath: "spa/pages/home/Home.test.ts",
+      fullName: "Home > renders",
+    },
+    {
+      packageName: "@pkg/spa",
+      filePath: "spa/pages/home/Home.logic.test.ts",
+      fullName: "homeViewMode > list",
+    },
+  ];
+
+  it("folds same-prefix vue companions and hides Async from nav", () => {
+    const nav = buildModuleFileNav(
+      vueExports,
+      vueTests,
+      "@pkg/spa",
+      "spa",
+      "",
+      { vueBundles: true },
+    );
+
+    const pages = nav.find((n) => n.label === "pages");
+    const homeDir = pages?.children.find((c) => c.label === "home");
+    const labels = (homeDir?.children ?? []).map((c) => c.label).sort();
+    expect(labels).toEqual(["Home", "HomeNavList"]);
+    const home = homeDir?.children.find((c) => c.label === "Home");
+    expect(home?.hasVueComponent).toBe(true);
+    expect(home?.loadableAsync).toBe(true);
+    expect(home?.presence).toBe("both");
+    expect(home?.sourceRepoPath).toBe("spa/pages/home/Home.vue");
+    expect(nav.find((n) => n.label === "i18n")?.label).toBe("i18n");
+  });
+
+  it("merges component and logic tests into the bundle spec tree", () => {
+    const cards = buildPackageSpecTree(
+      vueExports,
+      vueTests,
+      "@pkg/spa",
+      "spa",
+      "",
+      { kind: "file", localPath: "pages/home/Home" },
+      { vueBundles: true },
+    );
+    const labels = cards.map((c) => c.label);
+    expect(labels).toContain("useHomeLoader");
+    expect(labels).toContain("homeViewMode");
+    expect(labels).not.toContain("home");
+    expect(labels).not.toContain("default");
+    expect(labels).not.toContain("title");
+    const logic = cards.find((c) => c.label === "homeViewMode");
+    expect(logic?.children.some((c) => c.label === "list")).toBe(true);
+  });
+
+  it("folds *.logic.ts companions even when the .vue file is missing from exports", () => {
+    const nav = buildModuleFileNav(
+      [
+        {
+          packageName: "@pkg/spa",
+          filePath:
+            "spa/components/profile-contact-fields/ProfileContactFields.logic.ts",
+          name: "initialSameAsMobileChecked",
+          kind: "function",
+        },
+        {
+          packageName: "@pkg/spa",
+          filePath:
+            "spa/components/profile-contact-fields/ProfileContactFields.strings.ts",
+          name: "profile_contact_fields",
+          kind: "const",
+        },
+      ],
+      [
+        {
+          packageName: "@pkg/spa",
+          filePath:
+            "spa/components/profile-contact-fields/ProfileContactFields.logic.test.ts",
+          fullName: "initialSameAsMobileChecked > starts checked when phones match",
+        },
+      ],
+      "@pkg/spa",
+      "spa",
+      "",
+      { vueBundles: true },
+    );
+    const fields = nav
+      .find((n) => n.label === "components")
+      ?.children.find((c) => c.label === "profile-contact-fields")
+      ?.children.map((c) => c.label);
+    expect(fields).toEqual(["ProfileContactFields"]);
+  });
+
+  it("nests describe(functionName) tests under the matching logic export", () => {
+    const cards = buildPackageSpecTree(
+      [
+        {
+          packageName: "@pkg/spa",
+          filePath:
+            "spa/components/profile-contact-fields/ProfileContactFields.vue",
+          name: "default",
+          kind: "component",
+        },
+        {
+          packageName: "@pkg/spa",
+          filePath:
+            "spa/components/profile-contact-fields/ProfileContactFields.vue",
+          name: "contact",
+          kind: "model",
+        },
+        {
+          packageName: "@pkg/spa",
+          filePath:
+            "spa/components/profile-contact-fields/ProfileContactFields.logic.ts",
+          name: "initialSameAsMobileChecked",
+          kind: "function",
+        },
+        {
+          packageName: "@pkg/spa",
+          filePath:
+            "spa/components/profile-contact-fields/ProfileContactFields.strings.ts",
+          name: "profile_contact_fields",
+          kind: "const",
+        },
+      ],
+      [
+        {
+          packageName: "@pkg/spa",
+          filePath:
+            "spa/components/profile-contact-fields/ProfileContactFields.logic.test.ts",
+          fullName:
+            "initialSameAsMobileChecked > starts checked when phones match",
+          subjectName: "initialSameAsMobileChecked",
+        },
+      ],
+      "@pkg/spa",
+      "spa",
+      "",
+      {
+        kind: "file",
+        localPath: "components/profile-contact-fields/ProfileContactFields",
+      },
+      { vueBundles: true },
+    );
+    expect(cards.map((c) => c.label)).toEqual(["initialSameAsMobileChecked"]);
+    expect(cards[0]!.children.map((c) => c.label)).toEqual([
+      "starts checked when phones match",
+    ]);
+  });
+});
+

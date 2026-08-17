@@ -143,7 +143,7 @@ export interface components {
              * @description Declaration kind (mirrors `@saflib/parser`'s ExportKind).
              * @enum {string}
              */
-            kind: "function" | "class" | "interface" | "type" | "const" | "enum" | "variable";
+            kind: "function" | "class" | "interface" | "type" | "const" | "enum" | "variable" | "component" | "prop" | "emit" | "model";
             /**
              * @description Syntactic display signature from the AST (no type-checker). Null for re-exports without a local declaration.
              * @example (repoRoot: string, options?: LogOptions)

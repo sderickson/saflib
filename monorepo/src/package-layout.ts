@@ -106,6 +106,14 @@ export const ROOT_TS_ALLOWLIST = new Set([
   "index.tsx",
   /** SDK (and similar) HTTP client entry — one file, public `./client` export */
   "client.ts",
+  /** Vue SPA boot (see `@saflib/vue` package structure) */
+  "main.ts",
+  "router.ts",
+  /** Tooling configs that Vite / Vitest / Playwright resolve from the package root */
+  "vite.config.ts",
+  "vitest.config.ts",
+  "vitest.config.js",
+  "playwright.config.ts",
 ]);
 
 function exportTargetPath(target: unknown): string | null {
@@ -121,8 +129,30 @@ function exportTargetPath(target: unknown): string | null {
 }
 
 /**
+ * Concrete `package.json` `exports` file targets (`main.ts`, `test-app.ts`).
+ * Skips glob remaps (`./foo/*`).
+ */
+export function listPackageJsonExportTargetFiles(
+  exportsMap?: Record<string, unknown> | string,
+): string[] {
+  if (exportsMap == null) return [];
+  const values =
+    typeof exportsMap === "string" ? [exportsMap] : Object.values(exportsMap);
+  const out: string[] = [];
+  const seen = new Set<string>();
+  for (const target of values) {
+    const rel = exportTargetPath(target);
+    if (!rel || rel.includes("*")) continue;
+    if (seen.has(rel)) continue;
+    seen.add(rel);
+    out.push(rel);
+  }
+  return out;
+}
+
+/**
  * Root source file is allowed when allowlisted, or when `package.json`
- * exports `./<stem>` → `./<stem>.ts` (public entry, not a junk drawer).
+ * exports it (`"."` → `./main.ts`, or `./<stem>` → `./<stem>.ts`).
  */
 export function isAllowedRootTsFile(
   fileName: string,
@@ -133,6 +163,7 @@ export function isAllowedRootTsFile(
   if (fileName.endsWith(".d.ts")) return false;
   if (isTestOrFixtureFileName(fileName)) return false;
   if (!exportsMap) return false;
+  if (exportTargetPath(exportsMap["."]) === fileName) return true;
   const stem = fileName.replace(/\.tsx?$/, "");
   const target = exportTargetPath(exportsMap[`./${stem}`]);
   return target === fileName;
@@ -140,7 +171,9 @@ export function isAllowedRootTsFile(
 
 function isTestOrFixtureFileName(name: string): boolean {
   return (
-    /\.(test|spec)\.(ts|tsx)$/.test(name) || /\.fixtures\.(ts|tsx)$/.test(name)
+    /\.(test|spec)\.(ts|tsx)$/.test(name) ||
+    /\.fixtures?\.(ts|tsx)$/.test(name) ||
+    /\.test-helpers\.(ts|tsx)$/.test(name)
   );
 }
 

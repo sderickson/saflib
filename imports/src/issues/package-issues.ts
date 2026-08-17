@@ -109,6 +109,11 @@ export interface PackageDetailForIssues {
    * Merged into the returned list so Spec UI and `--workdir` CLI share one collector.
    */
   layoutIssues?: PackageIssue[];
+  /**
+   * Repo-relative files that `package.json` `exports` (SPA `main.ts`,
+   * `./test-app`, …). Skipped for dead-code — they are public API.
+   */
+  publicExportFilePaths?: string[];
 }
 
 /**
@@ -144,6 +149,11 @@ export function collectPackageIssues(
       }
     }
   } else {
+    const publicFiles = new Set(detail.publicExportFilePaths ?? []);
+    const publicLocals = new Set<string>();
+    for (const p of publicFiles) {
+      publicLocals.add(packageLocalPath(p, packageDirectory, productRoot));
+    }
     for (const exp of detail.exports ?? []) {
       if (!CARD_EXPORT_KINDS.has(exp.kind)) continue;
       const local = packageLocalPath(
@@ -151,6 +161,13 @@ export function collectPackageIssues(
         packageDirectory,
         productRoot,
       );
+      if (
+        publicFiles.has(exp.filePath) ||
+        publicFiles.has(local) ||
+        publicLocals.has(local)
+      ) {
+        continue;
+      }
       if (!exp.usedBy || exp.usedBy.length === 0) {
         issues.push({
           kind: "dead-code",

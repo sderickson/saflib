@@ -1,6 +1,11 @@
 import type { DbKey } from "@saflib/drizzle";
-import { checkPackageLayout, type ReturnsError } from "@saflib/monorepo";
+import {
+  checkPackageLayout,
+  listPackageJsonExportTargetFiles,
+  type ReturnsError,
+} from "@saflib/monorepo";
 import { AnalyzedCommitNotFoundError } from "@saflib/dev-site-db/errors";
+import fs from "node:fs";
 import path from "node:path";
 
 import { assemblePackageSymbols } from "./analyze-commit.ts";
@@ -14,6 +19,7 @@ import {
   looksLikeDbPackage,
   looksLikeHttpPackage,
   looksLikeSdkPackage,
+  looksLikeSpaPackage,
   looksLikeSpecPackage,
 } from "./classify.ts";
 import type { RepoReadOptions } from "./get-commit.ts";
@@ -67,6 +73,30 @@ function collectLiveLayoutIssues(
   }));
 }
 
+/**
+ * Repo-relative files from live `package.json` `exports` (`main.ts`, `test-app.ts`).
+ * Same skip list as `saf-dev-site issues --workdir` so Spec Issues matches CLI.
+ */
+function collectPublicExportFilePaths(
+  repoRoot: string,
+  productRoot: string | undefined,
+  packageDirectory: string,
+): string[] {
+  const packageRepoPath = joinRepoPath(productRoot, packageDirectory);
+  const pkgJsonPath = path.join(repoRoot, packageRepoPath || ".", "package.json");
+  let parsed: { exports?: Record<string, unknown> | string };
+  try {
+    parsed = JSON.parse(fs.readFileSync(pkgJsonPath, "utf8")) as {
+      exports?: Record<string, unknown> | string;
+    };
+  } catch {
+    return [];
+  }
+  return listPackageJsonExportTargetFiles(parsed.exports).map((rel) =>
+    joinRepoPath(packageRepoPath, rel),
+  );
+}
+
 export interface CommitPackageDetail {
   commitHash: string;
   packageName: string;
@@ -103,6 +133,11 @@ export interface CommitPackageDetail {
    * dedicated Issues fetch — not on every Spec package load.
    */
   layoutIssues?: PackageIssue[];
+  /**
+   * Files targeted by live `package.json` `exports`. Spec Issues skips these
+   * for dead-code (SPA `main.ts` / `test-app.ts` are public API).
+   */
+  publicExportFilePaths?: string[];
 }
 
 export type GetCommitPackageError = AnalyzedCommitNotFoundError;
@@ -156,6 +191,8 @@ export async function getCommitPackage(
   const isSpec = looksLikeSpecPackage(metrics.packageName, metrics.directory);
   const isHttp = looksLikeHttpPackage(metrics.packageName, metrics.directory);
   const isSdk = looksLikeSdkPackage(metrics.packageName, metrics.directory);
+  const isSpa = looksLikeSpaPackage(metrics.packageName, metrics.directory);
+  const hasVue = symbols.result?.hasVue ?? false;
   if (isDb) {
     const inv = await assemblePackageDbInventory(
       dbKey,
@@ -193,6 +230,28 @@ export async function getCommitPackage(
         annotateJobsIfConfigured(specInventory);
       }
     }
+  } else if (isSpa || hasVue) {
+    // Join the product `-spec` whose SDK request modules this SPA/Vue package
+    // actually imports, so bundle views can show loader routes.
+    const counts = new Map<string, number>();
+    for (const imp of symbols.result?.sdkRequestImports ?? []) {
+      const specName = siblingSpecPackageName(imp.sdkPackageName);
+      if (!specName) continue;
+      counts.set(specName, (counts.get(specName) ?? 0) + 1);
+    }
+    const specName = [...counts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0];
+    if (specName) {
+      const inv = await assemblePackageSpecInventory(
+        dbKey,
+        hash,
+        specName,
+        repoOpts,
+      );
+      if (!inv.error) {
+        specInventory = inv.result;
+        annotateJobsIfConfigured(specInventory);
+      }
+    }
   }
 
   // Source Spec: reverse-index importers onto exports. Db/spec packages use
@@ -211,6 +270,11 @@ export async function getCommitPackage(
   }
 
   const layoutIssues = collectLiveLayoutIssues(
+    repo.repoRoot,
+    repo.productRoot,
+    metrics.directory,
+  );
+  const publicExportFilePaths = collectPublicExportFilePaths(
     repo.repoRoot,
     repo.productRoot,
     metrics.directory,
@@ -257,6 +321,7 @@ export async function getCommitPackage(
       ...(dbInventory ? { dbInventory } : {}),
       ...(specInventory ? { specInventory } : {}),
       ...(layoutIssues.length ? { layoutIssues } : {}),
+      ...(publicExportFilePaths.length ? { publicExportFilePaths } : {}),
     },
   };
 }

@@ -55,6 +55,10 @@ export interface TestFileNavNode {
   presence?: ModulePresence;
   /** Source module has ≥1 function/class/const export (vs types-only). */
   hasCardExports?: boolean;
+  /** This nav leaf is a Vue component bundle (SFC + same-prefix companions). */
+  hasVueComponent?: boolean;
+  /** A colocated `*Async.vue` exists for this bundle. */
+  loadableAsync?: boolean;
   /** Repo path to the source file when present. */
   sourceRepoPath?: string | null;
   /** Repo path to the colocated test file when present. */
@@ -82,9 +86,13 @@ export interface ExportLike {
 
 const TEST_SUFFIX_RE = /\.(test|spec)\.(tsx?|jsx?|mjs|cjs)$/i;
 const FAKE_SUFFIX_RE = /\.fake\.(tsx?|jsx?|mjs|cjs)$/i;
-const SOURCE_EXT_RE = /\.(tsx?|jsx?|mjs|cjs)$/i;
+const SOURCE_EXT_RE = /\.(tsx?|jsx?|mjs|cjs|vue)$/i;
+const VUE_ROLE_SUFFIX_RE = /\.(loader|logic|strings|fixture)$/i;
+const VUE_ASYNC_STEM_RE = /Async$/;
+const VUE_ASYNC_FILE_RE = /Async\.vue$/i;
+const VUE_HIDDEN_FILE_RE = /(Async\.vue|\.(strings|fixture)\.(tsx?|jsx?))$/i;
 
-/** Strip `.test.ts` / `.fake.ts` / `.ts` (etc.) to the colocated module stem. */
+/** Strip `.test.ts` / `.fake.ts` / `.ts` / `.vue` (etc.) to the colocated module stem. */
 export function toModuleStem(localOrFilePath: string): string {
   if (TEST_SUFFIX_RE.test(localOrFilePath)) {
     return localOrFilePath.replace(TEST_SUFFIX_RE, "");
@@ -93,6 +101,36 @@ export function toModuleStem(localOrFilePath: string): string {
     return localOrFilePath.replace(FAKE_SUFFIX_RE, "");
   }
   return localOrFilePath.replace(SOURCE_EXT_RE, "");
+}
+
+/**
+ * Vue companion grouping: `Home.vue` + `Home.loader.ts` + `HomeAsync.vue` +
+ * `Home.logic.ts` (+ tests) share one nav stem. Idempotent on already-bundled
+ * stems.
+ */
+export function toVueBundleStem(localOrFilePath: string): string {
+  let stem = toModuleStem(localOrFilePath);
+  stem = stem.replace(VUE_ASYNC_STEM_RE, "");
+  stem = stem.replace(VUE_ROLE_SUFFIX_RE, "");
+  return stem;
+}
+
+export function packageHasVueFiles(
+  exports: ExportLike[],
+  tests: TestCaseLike[],
+  packageName: string,
+): boolean {
+  const vueish = (filePath: string) =>
+    filePath.endsWith(".vue") || VUE_ROLE_SUFFIX_RE.test(toModuleStem(filePath));
+  return (
+    exports.some((e) => e.packageName === packageName && vueish(e.filePath)) ||
+    tests.some((t) => t.packageName === packageName && vueish(t.filePath))
+  );
+}
+
+function isHiddenVueCompanion(repoOrLocalPath: string): boolean {
+  const base = repoOrLocalPath.split("/").pop() ?? repoOrLocalPath;
+  return VUE_HIDDEN_FILE_RE.test(base);
 }
 
 export function packageLocalPath(
@@ -208,8 +246,21 @@ interface ModuleUnit {
   stem: string;
   presence: ModulePresence;
   hasCardExports: boolean;
+  hasVueComponent: boolean;
+  loadableAsync: boolean;
   sourceRepoPath: string | null;
   testRepoPath: string | null;
+  sourceRepoPaths: string[];
+  testRepoPaths: string[];
+}
+
+function pickPreferredSource(paths: string[]): string | null {
+  const vue = paths.find(
+    (p) => p.endsWith(".vue") && !VUE_ASYNC_FILE_RE.test(p),
+  );
+  if (vue) return vue;
+  const nonHidden = paths.find((p) => !isHiddenVueCompanion(p));
+  return nonHidden ?? paths[0] ?? null;
 }
 
 function collectModuleUnits(
@@ -218,8 +269,11 @@ function collectModuleUnits(
   packageName: string,
   packageDirectory: string,
   productRoot: string,
+  options: ModuleNavOptions = {},
 ): ModuleUnit[] {
   const byStem = new Map<string, ModuleUnit>();
+  const stemOf = (local: string) =>
+    options.vueBundles ? toVueBundleStem(local) : toModuleStem(local);
 
   const touch = (
     stem: string,
@@ -233,16 +287,30 @@ function collectModuleUnits(
         stem,
         presence: side,
         hasCardExports: false,
+        hasVueComponent: false,
+        loadableAsync: false,
         sourceRepoPath: null,
         testRepoPath: null,
+        sourceRepoPaths: [],
+        testRepoPaths: [],
       };
       byStem.set(stem, unit);
     }
     if (side === "source") {
-      unit.sourceRepoPath = repoPath;
+      if (!unit.sourceRepoPaths.includes(repoPath)) {
+        unit.sourceRepoPaths.push(repoPath);
+      }
+      unit.sourceRepoPath = pickPreferredSource(unit.sourceRepoPaths);
       if (cardExport) unit.hasCardExports = true;
+      if (repoPath.endsWith(".vue") && !VUE_ASYNC_FILE_RE.test(repoPath)) {
+        unit.hasVueComponent = true;
+      }
+      if (VUE_ASYNC_FILE_RE.test(repoPath)) unit.loadableAsync = true;
     } else {
-      unit.testRepoPath = repoPath;
+      if (!unit.testRepoPaths.includes(repoPath)) {
+        unit.testRepoPaths.push(repoPath);
+      }
+      unit.testRepoPath = unit.testRepoPaths[0] ?? null;
     }
     if (unit.sourceRepoPath && unit.testRepoPath) unit.presence = "both";
     else if (unit.sourceRepoPath) unit.presence = "source";
@@ -254,29 +322,55 @@ function collectModuleUnits(
     if (TEST_SUFFIX_RE.test(local)) continue;
     // Fold `*.fake.ts` into the product request stem (not a separate nav leaf).
     if (FAKE_SUFFIX_RE.test(local)) continue;
-    touch(toModuleStem(local), "source", e.filePath, isCardExport(e.kind));
+    touch(
+      stemOf(local),
+      "source",
+      e.filePath,
+      isCardExport(e.kind) && !isHiddenVueCompanion(e.filePath),
+    );
   }
   for (const t of packageTests(tests, packageName)) {
     const local = packageLocalPath(t.filePath, packageDirectory, productRoot);
-    touch(toModuleStem(local), "test", t.filePath);
+    touch(stemOf(local), "test", t.filePath);
   }
 
   return [...byStem.values()].sort((a, b) => a.stem.localeCompare(b.stem));
 }
 
-function matchesStemScope(stem: string, scope: TestScope): boolean {
+function matchesStemScope(
+  stem: string,
+  scope: TestScope,
+  vueBundles = false,
+): boolean {
   if (scope.kind === "all") return true;
   if (scope.kind === "dir") {
     const prefix = scope.localPath.replace(/\/+$/, "");
     return stem === prefix || stem.startsWith(`${prefix}/`);
   }
-  return toModuleStem(scope.localPath) === stem;
+  const wanted = vueBundles
+    ? toVueBundleStem(scope.localPath)
+    : toModuleStem(scope.localPath);
+  return wanted === stem;
 }
 
 export type ModuleNavOptions = {
   /** Drop module stems for which this returns true (e.g. db `queries/`). */
   excludeStem?: (stem: string) => boolean;
+  /**
+   * Fold Vue companions (`*.vue`, `*.loader.ts`, `*Async.vue`, `*.logic.ts`,
+   * colocated tests) into one nav leaf. Hide lone `*Async.vue` files.
+   */
+  vueBundles?: boolean;
 };
+
+function isLoneAsyncUnit(unit: ModuleUnit): boolean {
+  return (
+    unit.loadableAsync &&
+    !unit.hasVueComponent &&
+    unit.testRepoPaths.length === 0 &&
+    unit.sourceRepoPaths.every((p) => VUE_ASYNC_FILE_RE.test(p))
+  );
+}
 
 /**
  * Nav tree of colocated modules (dirs + stems), with source/test/both presence.
@@ -303,8 +397,10 @@ export function buildModuleFileNav(
     packageName,
     packageDirectory,
     productRoot,
+    options,
   )) {
     if (options.excludeStem?.(unit.stem)) continue;
+    if (options.vueBundles && isLoneAsyncUnit(unit)) continue;
     const parts = unit.stem.split("/").filter(Boolean);
     const fileLabel = parts.pop() ?? unit.stem;
     let node = root;
@@ -316,6 +412,8 @@ export function buildModuleFileNav(
     const leaf = ensureNavChild(node, fileLabel, "file", unit.stem);
     leaf.presence = unit.presence;
     leaf.hasCardExports = unit.hasCardExports;
+    leaf.hasVueComponent = unit.hasVueComponent;
+    leaf.loadableAsync = unit.loadableAsync;
     leaf.sourceRepoPath = unit.sourceRepoPath;
     leaf.testRepoPath = unit.testRepoPath;
   }
@@ -502,26 +600,35 @@ export function buildPackageSpecTree(
     packageName,
     packageDirectory,
     productRoot,
+    options,
   ).filter(
     (u) =>
-      !options.excludeStem?.(u.stem) && matchesStemScope(u.stem, scope),
+      !options.excludeStem?.(u.stem) &&
+      !(options.vueBundles && isLoneAsyncUnit(u)) &&
+      matchesStemScope(u.stem, scope, options.vueBundles),
   );
 
   const pkgExports = packageExports(exports, packageName);
   const pkgTests = packageTests(tests, packageName);
 
+  const unitExports = (unit: ModuleUnit) => {
+    const paths = new Set(unit.sourceRepoPaths);
+    return pkgExports.filter(
+      (e) => paths.has(e.filePath) && !isHiddenVueCompanion(e.filePath),
+    );
+  };
+  const unitTests = (unit: ModuleUnit) => {
+    const paths = new Set(unit.testRepoPaths);
+    return pkgTests.filter((t) => paths.has(t.filePath));
+  };
+
   if (scope.kind === "file") {
-    const stem = toModuleStem(scope.localPath);
+    const stem = options.vueBundles
+      ? toVueBundleStem(scope.localPath)
+      : toModuleStem(scope.localPath);
     const unit = units.find((u) => u.stem === stem);
-    const sourcePath = unit?.sourceRepoPath;
-    const testPath = unit?.testRepoPath;
-    const moduleExports = sourcePath
-      ? pkgExports.filter((e) => e.filePath === sourcePath)
-      : [];
-    const moduleTests = testPath
-      ? pkgTests.filter((t) => t.filePath === testPath)
-      : [];
-    return mergeExportCards(moduleExports, suitesFromTests(moduleTests));
+    if (!unit) return [];
+    return mergeExportCards(unitExports(unit), suitesFromTests(unitTests(unit)));
   }
 
   const root: TestTreeNode = {
@@ -552,12 +659,8 @@ export function buildPackageSpecTree(
     const openPath = unit.sourceRepoPath ?? unit.testRepoPath ?? undefined;
     const fileNode = ensureChild(node, fileLabel, "file", openPath);
 
-    const moduleExports = unit.sourceRepoPath
-      ? pkgExports.filter((e) => e.filePath === unit.sourceRepoPath)
-      : [];
-    const moduleTests = unit.testRepoPath
-      ? pkgTests.filter((t) => t.filePath === unit.testRepoPath)
-      : [];
+    const moduleExports = unitExports(unit);
+    const moduleTests = unitTests(unit);
     for (const card of mergeExportCards(
       moduleExports,
       suitesFromTests(moduleTests),
@@ -617,11 +720,14 @@ function sortTree(node: TestTreeNode): void {
 export function findModuleNavNode(
   nodes: TestFileNavNode[],
   stemOrPath: string,
+  vueBundles = false,
 ): TestFileNavNode | null {
-  const stem = toModuleStem(stemOrPath);
+  const stem = vueBundles
+    ? toVueBundleStem(stemOrPath)
+    : toModuleStem(stemOrPath);
   for (const n of nodes) {
     if (n.kind === "file" && n.localPath === stem) return n;
-    const hit = findModuleNavNode(n.children, stem);
+    const hit = findModuleNavNode(n.children, stem, vueBundles);
     if (hit) return hit;
   }
   return null;

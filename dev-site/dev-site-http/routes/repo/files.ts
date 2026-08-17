@@ -1,17 +1,16 @@
 import { createHandler } from "@saflib/express";
 import type { ResponseBody, QueryParams } from "@saflib/dev-site-spec/operations/listRepoFiles";
 import createError from "http-errors";
-import { GitCommandError, listTree } from "@saflib/git";
+import { existsSync, readdirSync, statSync } from "node:fs";
+import { resolve, sep } from "node:path";
+import { GitCommandError, listTree, readBlobs, resolveRef } from "@saflib/git";
 import { getDevSiteHttpContext } from "../../context.ts";
+import { readWorkingTreeFile } from "./file.ts";
+import { matchesPathPrefix } from "../../repo-path-prefix.ts";
 
 function normalizePrefix(prefix: string | undefined): string {
   if (!prefix) return "";
   return prefix.replace(/^\/+|\/+$/g, "");
-}
-
-function matchesPrefix(path: string, prefix: string): boolean {
-  if (!prefix) return true;
-  return path === prefix || path.startsWith(prefix + "/");
 }
 
 /** Accept repeated `ext` query values and/or comma-separated lists. */
@@ -34,10 +33,45 @@ function matchesExt(path: string, exts: string[]): boolean {
   return exts.some((e) => path.endsWith(e));
 }
 
+function parseBool(value: unknown): boolean {
+  if (value === true || value === "true" || value === "1") return true;
+  if (Array.isArray(value)) return parseBool(value[0]);
+  return false;
+}
+
+function isUnderRepoRoot(repoRoot: string, abs: string): boolean {
+  const root = resolve(repoRoot);
+  return abs === root || abs.startsWith(root + sep);
+}
+
+/** Files in the prefix's parent directory that match the stem/dir prefix. */
+function listWorkingTreePrefixFiles(
+  repoRoot: string,
+  prefix: string,
+): string[] {
+  if (!prefix) return [];
+  const lastSlash = prefix.lastIndexOf("/");
+  const dirRel = lastSlash === -1 ? "" : prefix.slice(0, lastSlash);
+  const root = resolve(repoRoot);
+  const absDir = dirRel ? resolve(root, dirRel) : root;
+  if (!isUnderRepoRoot(repoRoot, absDir) || !existsSync(absDir)) return [];
+  if (!statSync(absDir).isDirectory()) return [];
+  const out: string[] = [];
+  for (const name of readdirSync(absDir)) {
+    const rel = dirRel ? `${dirRel}/${name}` : name;
+    if (!matchesPathPrefix(rel, prefix)) continue;
+    const abs = resolve(absDir, name);
+    if (!statSync(abs).isFile()) continue;
+    out.push(rel);
+  }
+  return out;
+}
+
 export const listRepoFilesHandler = createHandler(async (req, res) => {
   const { repoRoot } = getDevSiteHttpContext();
   const query = (req.query ?? {}) as NonNullable<QueryParams["listRepoFiles"]> & {
     ext?: string | string[];
+    content?: string | boolean | string[];
   };
   const ref = query.ref;
   if (!ref) {
@@ -47,6 +81,12 @@ export const listRepoFilesHandler = createHandler(async (req, res) => {
     typeof query.prefix === "string" ? query.prefix : undefined,
   );
   const exts = parseExts(query.ext);
+  const includeContent = parseBool(query.content);
+  if (includeContent && !prefix) {
+    throw createError(400, "content=true requires prefix", {
+      code: "MISSING_PREFIX",
+    });
+  }
 
   const { result, error } = listTree(repoRoot, ref);
   if (error) {
@@ -58,10 +98,71 @@ export const listRepoFilesHandler = createHandler(async (req, res) => {
     }
   }
 
-  const files = result
-    .filter((e) => matchesPrefix(e.path, prefix) && matchesExt(e.path, exts))
-    .map((e) => ({ path: e.path, blobHash: e.blobHash }));
+  const byPath = new Map<string, { path: string; blobHash: string }>();
+  for (const e of result) {
+    if (!matchesPathPrefix(e.path, prefix) || !matchesExt(e.path, exts)) {
+      continue;
+    }
+    byPath.set(e.path, { path: e.path, blobHash: e.blobHash });
+  }
 
-  const response: ResponseBody["listRepoFiles"][200] = { files };
+  const head = resolveRef(repoRoot, "HEAD");
+  const tip = resolveRef(repoRoot, ref);
+  const atHead = !head.error && !tip.error && head.result === tip.result;
+  if (atHead && prefix) {
+    for (const rel of listWorkingTreePrefixFiles(repoRoot, prefix)) {
+      if (!matchesExt(rel, exts)) continue;
+      if (!byPath.has(rel)) {
+        byPath.set(rel, { path: rel, blobHash: "" });
+      }
+    }
+  }
+
+  const files = [...byPath.values()].sort((a, b) =>
+    a.path.localeCompare(b.path),
+  );
+
+  if (!includeContent) {
+    const response: ResponseBody["listRepoFiles"][200] = { files };
+    res.status(200).json(response);
+    return;
+  }
+
+  const contents = new Map<string, string>();
+  if (atHead) {
+    for (const f of files) {
+      const wt = readWorkingTreeFile(repoRoot, f.path);
+      if (wt != null) contents.set(f.path, wt);
+    }
+  }
+  const missing = files
+    .filter((f) => !contents.has(f.path) && f.blobHash)
+    .map((f) => f.blobHash);
+  if (missing.length) {
+    const blobs = readBlobs(repoRoot, missing);
+    if (blobs.error) {
+      switch (true) {
+        case blobs.error instanceof GitCommandError:
+          throw createError(500, blobs.error.message, {
+            code: "GIT_COMMAND_FAILED",
+          });
+        default:
+          throw blobs.error satisfies never;
+      }
+    }
+    const hashToContent = blobs.result;
+    for (const f of files) {
+      if (contents.has(f.path) || !f.blobHash) continue;
+      const text = hashToContent.get(f.blobHash);
+      if (text != null) contents.set(f.path, text);
+    }
+  }
+
+  const response: ResponseBody["listRepoFiles"][200] = {
+    files: files.map((f) => ({
+      ...f,
+      content: contents.get(f.path) ?? "",
+    })),
+  };
   res.status(200).json(response);
 });
