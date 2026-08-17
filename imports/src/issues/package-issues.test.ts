@@ -147,22 +147,8 @@ describe("collectPackageIssues", () => {
 describe("debt helpers", () => {
   it("sums all tracked kinds as debt", () => {
     const counts = countIssuesByKind([
-      {
-        kind: "dead-code",
-        title: "",
-        name: "a",
-        kindLabel: "",
-        filePath: "a.ts",
-        repoPath: "a.ts",
-      },
-      {
-        kind: "package-layout",
-        title: "",
-        name: "c",
-        kindLabel: "",
-        filePath: "package.json",
-        repoPath: "package.json",
-      },
+      { kind: "dead-code" },
+      { kind: "package-layout" },
     ]);
     expect(counts).toEqual({
       "dead-code": 1,

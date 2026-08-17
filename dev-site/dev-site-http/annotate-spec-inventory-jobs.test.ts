@@ -24,7 +24,6 @@ function emptyOp(operationId: string) {
 describe("annotateSpecInventoryJobEdges", () => {
   it("sets enqueues and reverse enqueuedBy from the trigger map", () => {
     const inventory: PackageSpecInventory = {
-      packageName: "@pathclerk/daemon-spec",
       entities: [
         {
           key: "matters",

@@ -42,7 +42,7 @@ function firstParentChain(
   let cur: string | undefined = tipHash;
   while (cur && byHash.has(cur) && !seen.has(cur)) {
     seen.add(cur);
-    const commit = byHash.get(cur)!;
+    const commit: CommitSummary = byHash.get(cur)!;
     chain.push(commit);
     cur = commit.parentHashes[0];
   }
