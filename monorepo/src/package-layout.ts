@@ -30,6 +30,8 @@ export interface CheckPackageLayoutOptions {
 export interface PackageJsonLayoutFields {
   bin?: Record<string, string> | string;
   scripts?: Record<string, string>;
+  /** Subpath exports map (`"./foo": "./foo.ts"`). */
+  exports?: Record<string, unknown>;
 }
 
 export interface CheckPackageLayoutFromInputsOptions {
@@ -88,6 +90,51 @@ const SKIP_DIRS = new Set([
   "fixtures",
   "workflows",
 ]);
+
+/**
+ * `.ts` / `.tsx` basenames always allowed at the package root.
+ * Everything else should live in a thematic folder — unless it is a
+ * direct package export target (see {@link isAllowedRootTsFile}).
+ */
+export const ROOT_TS_ALLOWLIST = new Set([
+  /** drizzle-kit requires this at the package root */
+  "drizzle.config.ts",
+  /** Package entry / re-export surface */
+  "index.ts",
+  "index.tsx",
+  /** SDK (and similar) HTTP client entry — one file, public `./client` export */
+  "client.ts",
+]);
+
+function exportTargetPath(target: unknown): string | null {
+  if (typeof target === "string") return target.replace(/^\.\//, "");
+  if (target && typeof target === "object" && !Array.isArray(target)) {
+    const rec = target as Record<string, unknown>;
+    for (const key of ["default", "import", "require", "module", "node"]) {
+      const inner = exportTargetPath(rec[key]);
+      if (inner) return inner;
+    }
+  }
+  return null;
+}
+
+/**
+ * Root source file is allowed when allowlisted, or when `package.json`
+ * exports `./<stem>` → `./<stem>.ts` (public entry, not a junk drawer).
+ */
+export function isAllowedRootTsFile(
+  fileName: string,
+  exportsMap?: Record<string, unknown>,
+): boolean {
+  if (ROOT_TS_ALLOWLIST.has(fileName)) return true;
+  if (!fileName.endsWith(".ts") && !fileName.endsWith(".tsx")) return false;
+  if (fileName.endsWith(".d.ts")) return false;
+  if (isTestOrFixtureFileName(fileName)) return false;
+  if (!exportsMap) return false;
+  const stem = fileName.replace(/\.tsx?$/, "");
+  const target = exportTargetPath(exportsMap[`./${stem}`]);
+  return target === fileName;
+}
 
 function isTestOrFixtureFileName(name: string): boolean {
   return (
@@ -191,8 +238,7 @@ export function checkPackageLayoutFromInputs(
     if (
       (name.endsWith(".ts") || name.endsWith(".tsx")) &&
       !name.endsWith(".d.ts") &&
-      // drizzle-kit requires this file at the package root
-      name !== "drizzle.config.ts"
+      !isAllowedRootTsFile(name, pj.exports)
     ) {
       issues.push({
         kind: "package-layout",

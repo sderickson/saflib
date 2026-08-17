@@ -41,7 +41,7 @@ Do **not** blindly delete exports. Triage each item.
 | Kind | Typical fix |
 | --- | --- |
 | `oversized-file` (>800 LoC) | Split into folders/modules; don't silence without splitting |
-| `package-layout` | No `.ts` at package root (except `drizzle.config.ts`); `bin` → `./bin/…`; `saf-ts-run` → `./scripts/` or `./bin/`; ban `node --experimental-strip-types` in scripts |
+| `package-layout` | No `.ts` at package root except allowlisted entry/config files (`index.ts`, `client.ts`, `drizzle.config.ts`) **or** files that are direct package exports (`./name` → `./name.ts`); `bin` → `./bin/…`; `saf-ts-run` → `./scripts/` or `./bin/`; ban `node --experimental-strip-types` in scripts |
 | exports remaps | Make import path = file path; `saf-imports exports check` / `analyze-package` |
 
 ## Verify
