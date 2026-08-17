@@ -34,6 +34,15 @@
                 · l{{ item.issueCountsByKind["package-layout"] }}
               </span>
             </template>
+            <template #[`item.sourceLines`]="{ item }">
+              {{ formatLoc(item.sourceLines) }}
+            </template>
+            <template #[`item.prodLines`]="{ item }">
+              {{ formatLoc(item.prodLines) }}
+            </template>
+            <template #[`item.testLines`]="{ item }">
+              {{ formatLoc(item.testLines) }}
+            </template>
             <template #bottom></template>
           </v-data-table>
           <p v-else class="text-body-2 mb-6">No package metrics.</p>
@@ -70,6 +79,7 @@
 <script setup lang="ts">
 import { computed, toRef } from "vue";
 import { useCommit } from "../requests/queries";
+import { formatLoc } from "../format-loc";
 
 const props = defineProps<{
   subdomain: string;

@@ -79,8 +79,8 @@
           </template>
 
           <template #[`item.summaryMetrics`]="{ item }">
-            {{ item.summaryMetrics.sourceLines }} src /
-            {{ item.summaryMetrics.testLines }} test LOC ·
+            {{ formatLoc(item.summaryMetrics.sourceLines) }} src /
+            {{ formatLoc(item.summaryMetrics.testLines) }} test LOC ·
             {{ item.summaryMetrics.testCaseCount }} tests ·
             {{ item.summaryMetrics.exportCount }} exports
           </template>
@@ -109,6 +109,7 @@
 import { computed } from "vue";
 import { useCheckout, useCommits, useScanMutation } from "../requests/queries";
 import { commitHealth } from "../health";
+import { formatLoc } from "../format-loc";
 import DebtTrendChart from "../components/DebtTrendChart.vue";
 
 const props = withDefaults(

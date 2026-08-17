@@ -64,7 +64,7 @@ describe("debtTooltipText", () => {
         testLines: 40,
       }),
     ).toBe(
-      "Debt 3 · 3.0/kLOC · dead 2 · oversized 1 · layout 0 · size medium · 1000/40 LOC",
+      "Debt 3 · 3.0/kLOC · dead 2 · oversized 1 · layout 0 · size medium · 1k/40 LOC",
     );
   });
 });

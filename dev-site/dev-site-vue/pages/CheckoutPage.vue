@@ -62,8 +62,11 @@
                   >
                     {{ selectedPkg.size }}
                   </v-chip>
-                  <span class="pkg-head__meta">
-                    {{ selectedPkg.sourceLines }}/{{ selectedPkg.testLines }} LOC
+                  <span
+                    class="pkg-head__meta"
+                    :title="`${selectedPkg.sourceLines}/${selectedPkg.testLines} LOC`"
+                  >
+                    {{ formatLocPair(selectedPkg.sourceLines, selectedPkg.testLines) }} LOC
                     ·
                     <code>{{ selectedPkg.directory || "." }}</code>
                   </span>
@@ -235,6 +238,7 @@ import {
 import { parsePackageDescription } from "../scope-docs";
 import { collectPackageIssues } from "../package-issues";
 import { repoPathPrefix } from "../repo-paths";
+import { formatLocPair } from "../format-loc";
 import type { TestScope } from "../test-tree";
 import { toModuleStem } from "../test-tree";
 import PackageDirTree from "../components/PackageDirTree.vue";

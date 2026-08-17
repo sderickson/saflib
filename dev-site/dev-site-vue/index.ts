@@ -30,6 +30,7 @@ export {
 export { buildPackageDirTree, packageKindIcon } from "./package-dir-tree.ts";
 export type { PackageDirNode } from "./package-dir-tree.ts";
 export { sourceOpenUrls, openSource } from "./source-links.ts";
+export { formatLoc, formatLocPair } from "./format-loc.ts";
 
 export {
   TimelinePage,

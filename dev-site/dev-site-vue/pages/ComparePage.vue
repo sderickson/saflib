@@ -71,8 +71,8 @@
             >
               <v-chip color="warning" size="x-small" class="mr-2">changed</v-chip>
               {{ chg.after.packageName }}:
-              {{ chg.before.sourceLines }}→{{ chg.after.sourceLines }} src LOC,
-              {{ chg.before.testLines }}→{{ chg.after.testLines }} test LOC
+              {{ formatLoc(chg.before.sourceLines) }}→{{ formatLoc(chg.after.sourceLines) }} src LOC,
+              {{ formatLoc(chg.before.testLines) }}→{{ formatLoc(chg.after.testLines) }} test LOC
             </v-list-item>
           </v-list>
           <p v-else class="text-body-2 mb-4">No package metric changes.</p>
@@ -190,6 +190,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 import { useCommits, useCommitDiff } from "../requests/queries";
+import { formatLoc } from "../format-loc";
 
 const props = defineProps<{
   subdomain: string;
